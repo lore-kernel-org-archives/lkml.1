@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755073AbYLCUPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYLCUQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755073AbYLCUPu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 15:15:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbYLCTyl
+	id S1756695AbYLCUQg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 15:16:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbYLCTyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 14:54:41 -0500
-Received: from kroah.org ([198.145.64.141]:60411 "EHLO coco.kroah.org"
+	Wed, 3 Dec 2008 14:54:45 -0500
+Received: from kroah.org ([198.145.64.141]:60436 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754480AbYLCTyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 14:54:40 -0500
-Date: Wed, 3 Dec 2008 11:53:18 -0800
+	id S1751603AbYLCTyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 14:54:43 -0500
+Date: Wed, 3 Dec 2008 11:53:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,80 +22,75 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jack Morgenstein <jackm@dev.mellanox.co.il>,
-       Roland Dreier <rolandd@cisco.com>
-Subject: [patch 065/104] IB/mlx4: Fix MTT leakage in resize CQ
-Message-ID: <20081203195318.GN8950@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 067/104] libata: improve phantom device detection
+Message-ID: <20081203195323.GP8950@kroah.com>
 References: <20081203193901.715896543@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ib-mlx4-fix-mtt-leakage-in-resize-cq.patch"
+Content-Disposition: inline; filename="libata-improve-phantom-device-detection.patch"
 In-Reply-To: <20081203194725.GA8950@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jack Morgenstein <jackm@dev.mellanox.co.il>
+From: Tejun Heo <tj@kernel.org>
 
-commit 42ab01c31526ac1d06d193f81a498bf3cf2acfe4 upstream.
+commit 6a6b97d360702b98c02c7fca4c4e088dcf3a2985 upstream.
 
-When resizing a CQ, MTTs associated with the old CQE buffer were not
-freed.  As a result, if any app used resize CQ repeatedly, all MTTs
-were eventually exhausted, which led to all memory registration
-operations failing until the driver is reloaded.
+Currently libata uses four methods to detect device presence.
 
-Once the RESIZE_CQ command returns successfully from FW, FW no longer
-accesses the old CQ buffer, so it is safe to deallocate the MTT
-entries used by the old CQ buffer.
+1. PHY status if available.
+2. TF register R/W test (only promotes presence, never demotes)
+3. device signature after reset
+4. IDENTIFY failure detection in SFF state machine
 
-Finally, if the RESIZE_CQ command fails, the MTTs allocated for the
-new CQEs buffer also need to be de-allocated.
+Combination of the above works well in most cases but recently there
+have been a few reports where a phantom device causes unnecessary
+delay during probe.  In both cases, PHY status wasn't available.  In
+one case, it passed #2 and #3 and failed IDENTIFY with ATA_ERR which
+didn't qualify as #4.  The other failed #2 but as it passed #3 and #4,
+it still caused failure.
 
-This fixes <https://bugs.openfabrics.org/show_bug.cgi?id=1416>.
+In both cases, phantom device reported diagnostic failure, so these
+cases can be safely worked around by considering any !ATA_DRQ IDENTIFY
+failure as NODEV_HINT if diagnostic failure is set.
 
-Signed-off-by: Jack Morgenstein <jackm@dev.mellanox.co.il>
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/infiniband/hw/mlx4/cq.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/ata/libata-sff.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
---- a/drivers/infiniband/hw/mlx4/cq.c
-+++ b/drivers/infiniband/hw/mlx4/cq.c
-@@ -343,6 +343,7 @@ int mlx4_ib_resize_cq(struct ib_cq *ibcq
- {
- 	struct mlx4_ib_dev *dev = to_mdev(ibcq->device);
- 	struct mlx4_ib_cq *cq = to_mcq(ibcq);
-+	struct mlx4_mtt mtt;
- 	int outst_cqe;
- 	int err;
- 
-@@ -376,10 +377,13 @@ int mlx4_ib_resize_cq(struct ib_cq *ibcq
- 			goto out;
- 	}
- 
-+	mtt = cq->buf.mtt;
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -1227,10 +1227,19 @@ fsm_start:
+ 			/* ATA PIO protocol */
+ 			if (unlikely((status & ATA_DRQ) == 0)) {
+ 				/* handle BSY=0, DRQ=0 as error */
+-				if (likely(status & (ATA_ERR | ATA_DF)))
++				if (likely(status & (ATA_ERR | ATA_DF))) {
+ 					/* device stops HSM for abort/error */
+ 					qc->err_mask |= AC_ERR_DEV;
+-				else {
 +
- 	err = mlx4_cq_resize(dev->dev, &cq->mcq, entries, &cq->resize_buf->buf.mtt);
- 	if (err)
- 		goto err_buf;
- 
-+	mlx4_mtt_cleanup(dev->dev, &mtt);
- 	if (ibcq->uobject) {
- 		cq->buf      = cq->resize_buf->buf;
- 		cq->ibcq.cqe = cq->resize_buf->cqe;
-@@ -406,6 +410,7 @@ int mlx4_ib_resize_cq(struct ib_cq *ibcq
- 	goto out;
- 
- err_buf:
-+	mlx4_mtt_cleanup(dev->dev, &cq->resize_buf->buf.mtt);
- 	if (!ibcq->uobject)
- 		mlx4_ib_free_cq_buf(dev, &cq->resize_buf->buf,
- 				    cq->resize_buf->cqe);
++					/* If diagnostic failed and this is
++					 * IDENTIFY, it's likely a phantom
++					 * device.  Mark hint.
++					 */
++					if (qc->dev->horkage &
++					    ATA_HORKAGE_DIAGNOSTIC)
++						qc->err_mask |=
++							AC_ERR_NODEV_HINT;
++				} else {
+ 					/* HSM violation. Let EH handle this.
+ 					 * Phantom devices also trigger this
+ 					 * condition.  Mark hint.
 
