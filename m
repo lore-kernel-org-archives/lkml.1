@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbYLCSNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbYLCSOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754232AbYLCSNy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 13:13:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYLCSNn
+	id S1754600AbYLCSOO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 13:14:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYLCSNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 13:13:43 -0500
-Received: from rn-out-0910.google.com ([64.233.170.185]:48763 "EHLO
+	Wed, 3 Dec 2008 13:13:45 -0500
+Received: from rn-out-0910.google.com ([64.233.170.186]:51766 "EHLO
 	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751254AbYLCSNn (ORCPT
+	with ESMTP id S1751392AbYLCSNo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 13:13:43 -0500
+	Wed, 3 Dec 2008 13:13:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=GLn1aN4j0GTEtAVplAsFgnfuTKf6VFYSRygb56xx36UlTYmOHqeX5liwXkAxdQw/DP
-         UpAol905jsx4x7fMv3S503tZfp0jXL3UiprM/HcGA/UX+QHoBYeKnH+eb0EmHEnElz0W
-         bGtUUTVDA0jqskLC9O4utZkdJlDh9yrmxnzn0=
-Subject: [PATCH-mm 1/2] crypto: replace private helper with common
- unaligned endian helper
+        b=eEbpO126SGAfXSJWLW//vJNDq4DJ8AuSe0kbWSalaUcCVrTt1mnPtvRsdSFUHN1MBM
+         AdzvDmXB1h5ZjZIyV538hiheGTz9AvBK6u34X6IDn9K1CGtoshoDK40oa0hijlq7kAfi
+         WIIy0MVmX3xWqtSr+Z3L8Kgbu1md5XWLzHWoI=
+Subject: [PATCH-mm 2/2] ata: replace byteshifting with unaligned endian
+ helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jeff Garzik <jeff@garzik.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 03 Dec 2008 10:13:39 -0800
-Message-Id: <1228328019.5412.23.camel@brick>
+Date: Wed, 03 Dec 2008 10:13:40 -0800
+Message-Id: <1228328020.5412.24.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
@@ -37,89 +38,97 @@ Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
 Depends on the unaligned access work in -mm.
 
- crypto/salsa20_generic.c |   37 ++++++++++++++++---------------------
- 1 files changed, 16 insertions(+), 21 deletions(-)
+ drivers/ata/libata-scsi.c |   50 ++++++--------------------------------------
+ 1 files changed, 7 insertions(+), 43 deletions(-)
 
-diff --git a/crypto/salsa20_generic.c b/crypto/salsa20_generic.c
-index b07d559..dbc9e4a 100644
---- a/crypto/salsa20_generic.c
-+++ b/crypto/salsa20_generic.c
-@@ -26,6 +26,7 @@
- #include <linux/types.h>
- #include <crypto/algapi.h>
- #include <asm/byteorder.h>
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index d763b2b..1c16b63 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -46,6 +46,7 @@
+ #include <linux/libata.h>
+ #include <linux/hdreg.h>
+ #include <linux/uaccess.h>
 +#include <asm/unaligned.h>
  
- #define SALSA20_IV_SIZE        8U
- #define SALSA20_MIN_KEY_SIZE  16U
-@@ -46,12 +47,6 @@ Public domain.
- #define XOR(v,w) ((v) ^ (w))
- #define PLUS(v,w) (((v) + (w)))
- #define PLUSONE(v) (PLUS((v),1))
--#define U32TO8_LITTLE(p, v) \
--	{ (p)[0] = (v >>  0) & 0xff; (p)[1] = (v >>  8) & 0xff; \
--	  (p)[2] = (v >> 16) & 0xff; (p)[3] = (v >> 24) & 0xff; }
--#define U8TO32_LITTLE(p)   \
--	(((u32)((p)[0])      ) | ((u32)((p)[1]) <<  8) | \
--	 ((u32)((p)[2]) << 16) | ((u32)((p)[3]) << 24)   )
+ #include "libata.h"
  
- struct salsa20_ctx
+@@ -1384,19 +1385,10 @@ static unsigned int ata_scsi_flush_xlat(struct ata_queued_cmd *qc)
+  */
+ static void scsi_6_lba_len(const u8 *cdb, u64 *plba, u32 *plen)
  {
-@@ -101,7 +96,7 @@ static void salsa20_wordtobyte(u8 output[64], const u32 input[16])
- 	for (i = 0; i < 16; ++i)
- 		x[i] = PLUS(x[i],input[i]);
- 	for (i = 0; i < 16; ++i)
--		U32TO8_LITTLE(output + 4 * i,x[i]);
-+		store_le32_noalign((__le32 *)(output + 4 * i), x[i]);
+-	u64 lba = 0;
+-	u32 len;
+-
+ 	VPRINTK("six-byte command\n");
+ 
+-	lba |= ((u64)(cdb[1] & 0x1f)) << 16;
+-	lba |= ((u64)cdb[2]) << 8;
+-	lba |= ((u64)cdb[3]);
+-
+-	len = cdb[4];
+-
+-	*plba = lba;
+-	*plen = len;
++	*plba = load_be32_noalign((__be32 *)&cdb[0]) & 0x1fffff;
++	*plen = cdb[4];
  }
  
- static const char sigma[16] = "expand 32-byte k";
-@@ -111,30 +106,30 @@ static void salsa20_keysetup(struct salsa20_ctx *ctx, const u8 *k, u32 kbytes)
+ /**
+@@ -1411,21 +1403,10 @@ static void scsi_6_lba_len(const u8 *cdb, u64 *plba, u32 *plen)
+  */
+ static void scsi_10_lba_len(const u8 *cdb, u64 *plba, u32 *plen)
  {
- 	const char *constants;
+-	u64 lba = 0;
+-	u32 len = 0;
+-
+ 	VPRINTK("ten-byte command\n");
  
--	ctx->input[1] = U8TO32_LITTLE(k + 0);
--	ctx->input[2] = U8TO32_LITTLE(k + 4);
--	ctx->input[3] = U8TO32_LITTLE(k + 8);
--	ctx->input[4] = U8TO32_LITTLE(k + 12);
-+	ctx->input[1] = load_le32_noalign((__le32 *)(k + 0));
-+	ctx->input[2] = load_le32_noalign((__le32 *)(k + 4));
-+	ctx->input[3] = load_le32_noalign((__le32 *)(k + 8));
-+	ctx->input[4] = load_le32_noalign((__le32 *)(k + 12));
- 	if (kbytes == 32) { /* recommended */
- 		k += 16;
- 		constants = sigma;
- 	} else { /* kbytes == 16 */
- 		constants = tau;
- 	}
--	ctx->input[11] = U8TO32_LITTLE(k + 0);
--	ctx->input[12] = U8TO32_LITTLE(k + 4);
--	ctx->input[13] = U8TO32_LITTLE(k + 8);
--	ctx->input[14] = U8TO32_LITTLE(k + 12);
--	ctx->input[0] = U8TO32_LITTLE(constants + 0);
--	ctx->input[5] = U8TO32_LITTLE(constants + 4);
--	ctx->input[10] = U8TO32_LITTLE(constants + 8);
--	ctx->input[15] = U8TO32_LITTLE(constants + 12);
-+	ctx->input[11] = load_le32_noalign((__le32 *)(k + 0));
-+	ctx->input[12] = load_le32_noalign((__le32 *)(k + 4));
-+	ctx->input[13] = load_le32_noalign((__le32 *)(k + 8));
-+	ctx->input[14] = load_le32_noalign((__le32 *)(k + 12));
-+	ctx->input[0] = load_le32_noalign((__le32 *)(constants + 0));
-+	ctx->input[5] = load_le32_noalign((__le32 *)(constants + 4));
-+	ctx->input[10] = load_le32_noalign((__le32 *)(constants + 8));
-+	ctx->input[15] = load_le32_noalign((__le32 *)(constants + 12));
+-	lba |= ((u64)cdb[2]) << 24;
+-	lba |= ((u64)cdb[3]) << 16;
+-	lba |= ((u64)cdb[4]) << 8;
+-	lba |= ((u64)cdb[5]);
+-
+-	len |= ((u32)cdb[7]) << 8;
+-	len |= ((u32)cdb[8]);
+-
+-	*plba = lba;
+-	*plen = len;
++	*plba = load_be32_noalign((__be32 *)&cdb[2]);
++	*plen = load_be16_noalign((__be16 *)&cdb[7]);
  }
  
- static void salsa20_ivsetup(struct salsa20_ctx *ctx, const u8 *iv)
+ /**
+@@ -1440,27 +1421,10 @@ static void scsi_10_lba_len(const u8 *cdb, u64 *plba, u32 *plen)
+  */
+ static void scsi_16_lba_len(const u8 *cdb, u64 *plba, u32 *plen)
  {
--	ctx->input[6] = U8TO32_LITTLE(iv + 0);
--	ctx->input[7] = U8TO32_LITTLE(iv + 4);
-+	ctx->input[6] = load_le32_noalign((__le32 *)(iv + 0));
-+	ctx->input[7] = load_le32_noalign((__le32 *)(iv + 4));
- 	ctx->input[8] = 0;
- 	ctx->input[9] = 0;
+-	u64 lba = 0;
+-	u32 len = 0;
+-
+ 	VPRINTK("sixteen-byte command\n");
+ 
+-	lba |= ((u64)cdb[2]) << 56;
+-	lba |= ((u64)cdb[3]) << 48;
+-	lba |= ((u64)cdb[4]) << 40;
+-	lba |= ((u64)cdb[5]) << 32;
+-	lba |= ((u64)cdb[6]) << 24;
+-	lba |= ((u64)cdb[7]) << 16;
+-	lba |= ((u64)cdb[8]) << 8;
+-	lba |= ((u64)cdb[9]);
+-
+-	len |= ((u32)cdb[10]) << 24;
+-	len |= ((u32)cdb[11]) << 16;
+-	len |= ((u32)cdb[12]) << 8;
+-	len |= ((u32)cdb[13]);
+-
+-	*plba = lba;
+-	*plen = len;
++	*plba = load_be64_noalign((__be64 *)&cdb[2]);
++	*plen = load_be32_noalign((__be32 *)&cdb[10]);
  }
+ 
+ /**
 -- 
 1.6.1.rc1.262.gb6810
-
 
