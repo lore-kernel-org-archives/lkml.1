@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbYLCRIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751844AbYLCRJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbYLCRIk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 12:08:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYLCRIb
+	id S1751844AbYLCRJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 12:09:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYLCRJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 12:08:31 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45675 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751298AbYLCRIb (ORCPT
+	Wed, 3 Dec 2008 12:09:15 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:31101 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298AbYLCRJO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 12:08:31 -0500
-Date: Wed, 3 Dec 2008 12:08:29 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 3/6] integrity: IMA as an integrity service provider
-Message-ID: <20081203170829.GA32608@infradead.org>
-References: <cover.1228253618.git.zohar@linux.vnet.ibm.com> <5bea2422d059b97475d735feb9feb78b57ec8eca.1228253619.git.zohar@linux.vnet.ibm.com> <1228260925.2971.240.camel@nimitz> <20081203130301.GA9681@infradead.org> <1228323355.2971.259.camel@nimitz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1228323355.2971.259.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 3 Dec 2008 12:09:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=a7bThdZbL8y93TdQltMYVIRebxjTfu9baj6YnG81vFvYzJvxMDWQ+0QHAQjQaJqNCI
+         PHn6Z5xcN3tIVldYM+CW7R8ixwp998FSwDs2EU2S02n4EaqeyO4WXNIIuPcBYaCgL6Nd
+         zzb9O4ScxVYg5PcdodJVb9tGFhZyaFJUC643Q=
+Subject: Re: Unusually low speeds with ath5k and iwl3945
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: reinette chatre <reinette.chatre@intel.com>
+Cc: Bob Copeland <me@bobcopeland.com>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>,
+       "ath5k-devel@lists.ath5k.org" <ath5k-devel@venema.h4ckr.net>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "wally@theblackmoor.net" <wally@theblackmoor.net>
+In-Reply-To: <1228323319.12006.3.camel@rc-desk>
+References: <492719ED.5000006@gmail.com>  <1228323319.12006.3.camel@rc-desk>
+Content-Type: text/plain
+Date: Wed, 03 Dec 2008 19:09:07 +0200
+Message-Id: <1228324148.23040.0.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 08:55:54AM -0800, Dave Hansen wrote:
-> On Wed, 2008-12-03 at 08:03 -0500, Christoph Hellwig wrote:
-> > On Tue, Dec 02, 2008 at 03:35:25PM -0800, Dave Hansen wrote:
-> > > If you're looking for another way to split your patch out, you could
-> > > just stick use inode->integrity for the first patch, then introduce your
-> > > radix-tree in a subsequent patch.  It would be functionally fine, and
-> > > more clearly separate out the ideas.
-> > 
-> > This was done earlier and is a really bad thing for review.  Just as the
-> > breakout happening in this round.
+On Wed, 2008-12-03 at 08:55 -0800, reinette chatre wrote:
+> On Fri, 2008-11-21 at 12:28 -0800, Maxim Levitsky wrote:
 > 
-> If Christoph and I tell you conflicting things, it goes without saying
-> to listen to Christoph.  :)
+> > sorry for cross-posting, but this issue really spans both iwl3945 and ath5k.
+> > 
+> > I have two laptops (acer 5720, and aspire one) and I see some strange speed issues.
+> > 
+> > I initially blamed iwl3945, then thought it got fixed, but now I have ath5k, and speeds are low
+> > and I suspect that both drivers has bugs regarding to speed.
+> 
+> We just posted some fixes to iwl3945 rate scaling. Could you please test
+> with http://marc.info/?l=linux-wireless&m=122824880823630&w=2 ?
+> 
+> Thank you
+> 
+> Reinette
+> 
+> 
+I''l test this, but for all my tests rate on iwl3945 was already 54M,
+could this still help?
 
-Or listen to what makes more sense.  It's not the most important comment
-of the review anyway..
+Best regards,
+	Maxim Levitsky
 
