@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbYLCPOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752022AbYLCPSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752500AbYLCPOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 10:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbYLCPON
+	id S1752022AbYLCPSN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 10:18:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYLCPR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 10:14:13 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:61517 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751182AbYLCPOM (ORCPT
+	Wed, 3 Dec 2008 10:17:58 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:14562 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751005AbYLCPR5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 10:14:12 -0500
+	Wed, 3 Dec 2008 10:17:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=t5lwJsY1pYbMAUSvE24f8t/2IgDXZm6mhNZxLDBFwIeH+VhfTpXHN+ZpSqTqacBliF
-         zbwMQmieD38ulc7EGisnjdSQSbelR0l0LPYSYcaDIy6fThOEep3jqX2fXLD0sbIOCF4v
-         EZC6Ul9S5NiVDzErkBAkpHINlmXpLJMzCZQ/U=
-Message-ID: <fbdd0e50812030714md7dd899xeb8940798632b08b@mail.gmail.com>
-Date: Wed, 3 Dec 2008 16:14:10 +0100
-From: Geralt <usr.gentoo@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Shebang - why are parameters not splitted on whitespace?
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=mHB2M4jWub2yIi3ADKN7M8hxeHbKgOamAHSlIfctFw7ab5vDAQQFHzm8uP4QEqjf13
+         hhGZ4RYNHzHjCMkbCeVfkfVWFDzk+QL44EgMzEAonjnDtx2exgn2bdgb2gBfU1f6Cg9l
+         RoKNge52yKQiI0DuGMxIKocvPgDlCAk7uiknk=
+Message-ID: <4936A320.3050801@gmail.com>
+Date: Wed, 03 Dec 2008 16:17:52 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Char: n_tty, include module.h
+References: <1228307338-18467-1-git-send-email-jirislaby@gmail.com> <20081203124300.3f03dec8@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081203124300.3f03dec8@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 12/03/2008 01:43 PM, Alan Cox wrote:
+> On Wed,  3 Dec 2008 13:28:58 +0100
+> Jiri Slaby <jirislaby@gmail.com> wrote:
+> 
+>> Since we are using EXPORT_SYMBOL, we should include linux/module.h
+>>
+>> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> 
+> NAK
+> 
+> n_tty doesn't use EXPORT_SYMBOL.
 
-I've just noticed, that it's not possible to use more than one
-parameter in a shebang on linux, because everything following the
-executable path in the shebang is treated as one parameter, so for
-example
-#!/bin/awk --re-interval -f
-in a script called "test.awk" results in a call likes this:
-/bin/awk "--re-interval -f" ./test.awk
-when running it with "./test.awk".
+Sure it does. Maybe the patch didn't come to you yet. Will repost to akpm as a
+ldisc-n_tty-export-all-n_tty-ldisc-methods.patch fix.
 
-Is there any reason why the parameters are not split before passing
-them on to the program?
-I mean we're talking here about linux where every program starts
-somewhere with int main( int argc, char* argv[]), i.e. the arguments
-are given piecewise, not in one big string (as it is the case for
-win32 applications), so I was very surprised at first why my snipped
-from above did not work and I suppose a lot of people would expect it
-to behave in the natural way (= splitting the arguments).
+$ grep EXPORT drivers/char/n_tty.c
+EXPORT_SYMBOL_GPL(n_tty_flush_buffer);
+EXPORT_SYMBOL_GPL(n_tty_chars_in_buffer);
+EXPORT_SYMBOL_GPL(n_tty_write_wakeup);
+EXPORT_SYMBOL_GPL(n_tty_receive_buf);
+EXPORT_SYMBOL_GPL(n_tty_set_termios);
+EXPORT_SYMBOL_GPL(n_tty_close);
+EXPORT_SYMBOL_GPL(n_tty_open);
+EXPORT_SYMBOL_GPL(n_tty_read);
+EXPORT_SYMBOL_GPL(n_tty_write);
+EXPORT_SYMBOL_GPL(n_tty_poll);
 
-
-
-
-Geralt.
