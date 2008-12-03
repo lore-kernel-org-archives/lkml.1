@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYLCX2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYLCXay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756749AbYLCX2X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 18:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYLCX2N
+	id S1756656AbYLCXay (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 18:30:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYLCXam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 18:28:13 -0500
-Received: from ns2.suse.de ([195.135.220.15]:45907 "EHLO mx2.suse.de"
+	Wed, 3 Dec 2008 18:30:42 -0500
+Received: from tundra.namei.org ([65.99.196.166]:57790 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754491AbYLCX2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 18:28:12 -0500
-Date: Wed, 3 Dec 2008 15:19:00 -0800
-From: Greg KH <gregkh@suse.de>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 000/104] 2.6.27-stable review
-Message-ID: <20081203231900.GC632@suse.de>
-References: <20081203194725.GA8950@kroah.com> <493702CC.5030804@msgid.tls.msk.ru>
+	id S1751822AbYLCXal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 18:30:41 -0500
+Date: Thu, 4 Dec 2008 10:29:39 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, viro@ZenIV.linux.org.uk,
+       safford@watson.ibm.com, serue@linux.vnet.ibm.com
+Subject: Re: [PATCH 0/4] integrity
+In-Reply-To: <20081114141813.71a0050a.akpm@linux-foundation.org>
+Message-ID: <alpine.LRH.1.10.0812041004570.4364@tundra.namei.org>
+References: <cover.1226547084.git.zohar@linux.vnet.ibm.com> <20081114141813.71a0050a.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <493702CC.5030804@msgid.tls.msk.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 04, 2008 at 01:06:04AM +0300, Michael Tokarev wrote:
-> Greg KH wrote:
-> []
-> > And yes, there are a lot of patches here, the big series are:
-> ...
-> > 	- ext4 bugfixes
-> 
-> I wonder why updates for ext4, which is still marked
-> "experimental" in kconfig, should go to -stable in
-> the first place...  Given the number of bugs^Wpatches
-> in this part of the kernel, and given the amount
-> of current development in this area.  Just.. curious.
+On Fri, 14 Nov 2008, Andrew Morton wrote:
 
-Primarily because at least 4 distros are basing their releases off of
-the 2.6.27 kernel tree.  Those distos do have users who are using the
-ext4 file system for their daily use, and so bugfixes for it are worthy
-to keep track of in a centralized place like the -stable tree.
+> One thing which I cannot say, and which is quite important: how useful
+> will all of this be to our users?  Are people asking for it? 
 
-thanks,
+Apparently, some government users are, and there's a DoD decree which 
+requires new equipment to include TPM hardware where possible:
 
-greg k-h
+http://iase.disa.mil/policy-guidance/dod-dar-tpm-decree07-03-07.pdf
+
+This is to support encryption of data at rest, and for "device 
+authentication" (requiring remote attestation of system integrity).
+
+It's not clear to me yet how compelling this will be for general-case 
+users.
+
+> Are
+> people likely to enable and use it?  Are they even likely to understand
+> it?  ;) Are any large/important customers asking for it?  Are distros
+> likely to enable and support it?
+
+I believe that TPM is in "tech preview" in RHEL 5.2, and that there is a 
+desire to integrate it more fully with the OS via TCG software such as 
+Trousers:  http://trousers.sourceforge.net/
+
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
