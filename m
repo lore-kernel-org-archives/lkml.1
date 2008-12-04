@@ -1,204 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYLDIR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbYLDITV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYLDIR5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 03:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbYLDIRs
+	id S1755109AbYLDITV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 03:19:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYLDITM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 03:17:48 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44240 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbYLDIRr (ORCPT
+	Thu, 4 Dec 2008 03:19:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42227 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750877AbYLDITM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 03:17:47 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [mmotm][PATCH] memcg: memcg reclaim stat trivial fixes
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20081204170937.1D7A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081204170937.1D7A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20081204171605.1D7D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 4 Dec 2008 03:19:12 -0500
+Date: Thu, 4 Dec 2008 00:18:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Eric Biederman <ebiederm@xmission.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 3/3] ftrace: add ability to only trace swapper tasks
+Message-Id: <20081204001803.598063f5.akpm@linux-foundation.org>
+In-Reply-To: <20081204052735.362609481@goodmis.org>
+References: <20081204052638.425740534@goodmis.org>
+	<20081204052735.362609481@goodmis.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu,  4 Dec 2008 17:17:43 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied after: memcg-add-zone_reclaim_stat.patch
+On Thu, 04 Dec 2008 00:26:41 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Andrew, if you like folded patch instead incremental patch, 
-please let me know it.
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> Impact: New feature
+> 
+> This patch lets the swapper tasks of all CPUS be filtered by the
+> set_ftrace_pid file.
 
+"filtered" is one of those nasty words.  It is unclear whether the
+filteree is included or excluded.
 
-==
-This patch has three trivial fixes.
+> If '0' is echoed into this file, then all the idle tasks (aka swapper)
+> is flagged to be traced.  This affects all CPU idle tasks.
+> 
 
- - rename mem_cgroup_get_reclaim_stat_by_page to mem_cgroup_get_reclaim_stat_from_page
- - repair silly forgotten "return" in get_reclaim_stat()
- - make update_zone_reclaim_stat() helper function for cleanup
+s/is/are/
 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>
----
- include/linux/memcontrol.h |    4 +--
- mm/memcontrol.c            |    3 +-
- mm/swap.c                  |   48 +++++++++++++++++++++++----------------------
- mm/vmscan.c                |    2 -
- 4 files changed, 30 insertions(+), 27 deletions(-)
+What does this patch actually do?  Is swapper currently excluded from
+tracing for undisclosed reasons and this patch permits it to be traced?
+If so, why was swapper thus excluded?  Or am I totally off track?
 
-Index: b/include/linux/memcontrol.h
-===================================================================
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -108,7 +108,7 @@ unsigned long mem_cgroup_zone_nr_pages(s
- struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
- 						      struct zone *zone);
- struct zone_reclaim_stat*
--mem_cgroup_get_reclaim_stat_by_page(struct page *page);
-+mem_cgroup_get_reclaim_stat_from_page(struct page *page);
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
- extern int do_swap_account;
-@@ -282,7 +282,7 @@ mem_cgroup_get_reclaim_stat(struct mem_c
- }
- 
- static inline struct zone_reclaim_stat*
--mem_cgroup_get_reclaim_stat_by_page(struct page *page)
-+mem_cgroup_get_reclaim_stat_from_page(struct page *page)
- {
- 	return NULL;
- }
-Index: b/mm/memcontrol.c
-===================================================================
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -470,7 +470,8 @@ struct zone_reclaim_stat *mem_cgroup_get
- 	return &mz->reclaim_stat;
- }
- 
--struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat_by_page(struct page *page)
-+struct zone_reclaim_stat *
-+mem_cgroup_get_reclaim_stat_from_page(struct page *page)
- {
- 	struct page_cgroup *pc = lookup_page_cgroup(page);
- 	struct mem_cgroup_per_zone *mz = page_cgroup_zoneinfo(pc);
-Index: b/mm/swap.c
-===================================================================
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -151,14 +151,32 @@ void  rotate_reclaimable_page(struct pag
- 	}
- }
- 
-+static void update_page_reclaim_stat(struct zone *zone, struct page *page,
-+				     int file, int rotated)
-+{
-+	struct zone_reclaim_stat *reclaim_stat = &zone->reclaim_stat;
-+	struct zone_reclaim_stat *memcg_reclaim_stat;
-+
-+	memcg_reclaim_stat = mem_cgroup_get_reclaim_stat_from_page(page);
-+
-+	reclaim_stat->recent_scanned[file]++;
-+	if (rotated)
-+		reclaim_stat->recent_rotated[file]++;
-+
-+	if (!memcg_reclaim_stat)
-+		return;
-+
-+	memcg_reclaim_stat->recent_scanned[file]++;
-+	if (rotated)
-+		memcg_reclaim_stat->recent_rotated[file]++;
-+}
-+
- /*
-  * FIXME: speed this up?
-  */
- void activate_page(struct page *page)
- {
- 	struct zone *zone = page_zone(page);
--	struct zone_reclaim_stat *reclaim_stat = &zone->reclaim_stat;
--	struct zone_reclaim_stat *memcg_reclaim_stat;
- 
- 	spin_lock_irq(&zone->lru_lock);
- 	if (PageLRU(page) && !PageActive(page) && !PageUnevictable(page)) {
-@@ -171,14 +189,7 @@ void activate_page(struct page *page)
- 		add_page_to_lru_list(zone, page, lru);
- 		__count_vm_event(PGACTIVATE);
- 
--		reclaim_stat->recent_rotated[!!file]++;
--		reclaim_stat->recent_scanned[!!file]++;
--
--		memcg_reclaim_stat = mem_cgroup_get_reclaim_stat_by_page(page);
--		if (memcg_reclaim_stat) {
--			memcg_reclaim_stat->recent_rotated[!!file]++;
--			memcg_reclaim_stat->recent_scanned[!!file]++;
--		}
-+		update_page_reclaim_stat(zone, page, !!file, 1);
- 	}
- 	spin_unlock_irq(&zone->lru_lock);
- }
-@@ -406,8 +417,6 @@ void ____pagevec_lru_add(struct pagevec 
- {
- 	int i;
- 	struct zone *zone = NULL;
--	struct zone_reclaim_stat *reclaim_stat = NULL;
--	struct zone_reclaim_stat *memcg_reclaim_stat = NULL;
- 
- 	VM_BUG_ON(is_unevictable_lru(lru));
- 
-@@ -415,30 +424,23 @@ void ____pagevec_lru_add(struct pagevec 
- 		struct page *page = pvec->pages[i];
- 		struct zone *pagezone = page_zone(page);
- 		int file;
-+		int active;
- 
- 		if (pagezone != zone) {
- 			if (zone)
- 				spin_unlock_irq(&zone->lru_lock);
- 			zone = pagezone;
--			reclaim_stat = &zone->reclaim_stat;
--			memcg_reclaim_stat =
--				mem_cgroup_get_reclaim_stat_by_page(page);
- 			spin_lock_irq(&zone->lru_lock);
- 		}
- 		VM_BUG_ON(PageActive(page));
- 		VM_BUG_ON(PageUnevictable(page));
- 		VM_BUG_ON(PageLRU(page));
- 		SetPageLRU(page);
-+		active = is_active_lru(lru);
- 		file = is_file_lru(lru);
--		reclaim_stat->recent_scanned[file]++;
--		if (memcg_reclaim_stat)
--			memcg_reclaim_stat->recent_scanned[file]++;
--		if (is_active_lru(lru)) {
-+		if (active)
- 			SetPageActive(page);
--			reclaim_stat->recent_rotated[file]++;
--			if (memcg_reclaim_stat)
--				memcg_reclaim_stat->recent_rotated[file]++;
--		}
-+		update_page_reclaim_stat(zone, page, file, active);
- 		add_page_to_lru_list(zone, page, lru);
- 	}
- 	if (zone)
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -135,7 +135,7 @@ static struct zone_reclaim_stat *get_rec
- 						  struct scan_control *sc)
- {
- 	if (!scan_global_lru(sc))
--		mem_cgroup_get_reclaim_stat(sc->mem_cgroup, zone);
-+		return mem_cgroup_get_reclaim_stat(sc->mem_cgroup, zone);
- 
- 	return &zone->reclaim_stat;
- }
+> ---
+>  kernel/trace/ftrace.c |   74 +++++++++++++++++++++++++++++++++++++++++-------
+>  1 files changed, 63 insertions(+), 11 deletions(-)
+> 
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 10b1d7c..eb57dc1 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -49,6 +49,7 @@ static int last_ftrace_enabled;
+>  
+>  /* set when tracing only a pid */
+>  struct pid *ftrace_pid_trace;
+> +static struct pid * const ftrace_swapper_pid = (struct pid *)1;
 
+eh?
+
+>  /* Quick disabling of function tracer. */
+>  int function_trace_stop;
+> @@ -1678,7 +1679,9 @@ ftrace_pid_read(struct file *file, char __user *ubuf,
+>  	char buf[64];
+>  	int r;
+>  
+> -	if (ftrace_pid_trace)
+> +	if (ftrace_pid_trace == ftrace_swapper_pid)
+> +		r = sprintf(buf, "swapper tasks\n");
+> +	else if (ftrace_pid_trace)
+>  		r = sprintf(buf, "%u\n", pid_nr(ftrace_pid_trace));
+>  	else
+>  		r = sprintf(buf, "no pid\n");
+> @@ -1686,19 +1689,43 @@ ftrace_pid_read(struct file *file, char __user *ubuf,
+>  	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
+>  }
+>  
+> -static void clear_ftrace_pid_task(struct pid **pid)
+> +static void clear_ftrace_swapper(void)
+>  {
+>  	struct task_struct *p;
+> +	int cpu;
+>  
+> -	do_each_pid_task(*pid, PIDTYPE_PID, p) {
+> +	get_online_cpus();
+> +	for_each_online_cpu(cpu) {
+> +		p = idle_task(cpu);
+>  		clear_tsk_trace_trace(p);
+> -	} while_each_pid_task(*pid, PIDTYPE_PID, p);
+> -	put_pid(*pid);
+> +	}
+> +	put_online_cpus();
+> +}
+>  
+> -	*pid = NULL;
+> +static void set_ftrace_swapper(void)
+> +{
+> +	struct task_struct *p;
+> +	int cpu;
+> +
+> +	get_online_cpus();
+> +	for_each_online_cpu(cpu) {
+> +		p = idle_task(cpu);
+> +		set_tsk_trace_trace(p);
+> +	}
+> +	put_online_cpus();
+>  }
+>  
+> -static void set_ftrace_pid_task(struct pid *pid)
+> +static void clear_ftrace_pid(struct pid *pid)
+> +{
+> +	struct task_struct *p;
+> +
+> +	do_each_pid_task(pid, PIDTYPE_PID, p) {
+> +		clear_tsk_trace_trace(p);
+> +	} while_each_pid_task(pid, PIDTYPE_PID, p);
+> +	put_pid(pid);
+> +}
+
+What locking does this traversal need, and does this function have it?
+
+> +static void set_ftrace_pid(struct pid *pid)
+>  {
+>  	struct task_struct *p;
+>  
+> @@ -1707,6 +1734,24 @@ static void set_ftrace_pid_task(struct pid *pid)
+>  	} while_each_pid_task(pid, PIDTYPE_PID, p);
+>  }
+>  
+> +static void clear_ftrace_pid_task(struct pid **pid)
+> +{
+> +	if (*pid == ftrace_swapper_pid)
+> +		clear_ftrace_swapper();
+> +	else
+> +		clear_ftrace_pid(*pid);
+> +
+> +	*pid = NULL;
+> +}
+> +
+> +static void set_ftrace_pid_task(struct pid *pid)
+> +{
+> +	if (pid == ftrace_swapper_pid)
+> +		set_ftrace_swapper();
+> +	else
+> +		set_ftrace_pid(pid);
+> +}
+> +
+>  static ssize_t
+>  ftrace_pid_write(struct file *filp, const char __user *ubuf,
+>  		   size_t cnt, loff_t *ppos)
+> @@ -1737,11 +1782,18 @@ ftrace_pid_write(struct file *filp, const char __user *ubuf,
+>  		clear_ftrace_pid_task(&ftrace_pid_trace);
+>  
+>  	} else {
+> -		pid = find_get_pid(val);
+> +		/* swapper task is special */
+> +		if (!val) {
+> +			pid = ftrace_swapper_pid;
+> +			if (pid == ftrace_pid_trace)
+> +				goto out;
+> +		} else {
+> +			pid = find_get_pid(val);
+>  
+> -		if (pid == ftrace_pid_trace) {
+> -			put_pid(pid);
+> -			goto out;
+> +			if (pid == ftrace_pid_trace) {
+> +				put_pid(pid);
+> +				goto out;
+> +			}
+>  		}
+>  
+>  		if (ftrace_pid_trace)
 
