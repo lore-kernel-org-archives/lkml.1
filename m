@@ -1,100 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbYLDT2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755685AbYLDTjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756399AbYLDT2f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 14:28:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbYLDT2W
+	id S1755685AbYLDTjb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 14:39:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYLDTjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 14:28:22 -0500
-Received: from mail.gmx.net ([213.165.64.20]:43330 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753906AbYLDT2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 14:28:21 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+HCTls2dSHyY1tC/gaUkx/9wI/cD5E1yrdEy++CB
-	XfeZ4vqh1sYGMp
-Date: Thu, 4 Dec 2008 20:28:33 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Dan Williams <dan.j.williams@intel.com>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       maciej.sosnowski@intel.com, hskinnemoen@atmel.com,
-       nicolas.ferre@atmel.com
-Subject: Re: [PATCH 03/13] dmaengine: up-level reference counting to the
- module level
-In-Reply-To: <e9c3a7c20812041051l44bd8086o97c12d77a116f62@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0812041959530.8851@axis700.grange>
-References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com> 
- <20081114213432.32354.2427.stgit@dwillia2-linux.ch.intel.com> 
- <Pine.LNX.4.64.0812041746400.5079@axis700.grange>
- <e9c3a7c20812041051l44bd8086o97c12d77a116f62@mail.gmail.com>
+	Thu, 4 Dec 2008 14:39:22 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:6382 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbYLDTjV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 14:39:21 -0500
+Message-ID: <493831A9.3050904@caviumnetworks.com>
+Date: Thu, 04 Dec 2008 11:38:17 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55
+To: prasad@linux.vnet.ibm.com
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
+       mingo@elte.hu, richardj_moore@uk.ibm.com
+Subject: Re: [RFC Patch 1/9] Introducing generic hardware breakpoint handler
+ interfaces
+References: <20081204190804.GA15134@in.ibm.com> <20081204191119.GA20563@in.ibm.com>
+In-Reply-To: <20081204191119.GA20563@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Dec 2008 19:38:17.0382 (UTC) FILETIME=[DB02A460:01C95647]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Dec 2008, Dan Williams wrote:
+K.Prasad wrote:
+[...]
+> + * len and type values are defined in include/asm/hw_breakpoint.h.
+> + * Available values vary according to the architecture.  On i386 the
+> + * possibilities are:
+> + *
+> + *	HW_BREAKPOINT_LEN_1
+> + *	HW_BREAKPOINT_LEN_2
+> + *	HW_BREAKPOINT_LEN_4
+> + *	HW_BREAKPOINT_LEN_EXECUTE
+> + *	HW_BREAKPOINT_RW
+> + *	HW_BREAKPOINT_READ
+> + *	HW_BREAKPOINT_EXECUTE
+> + *
+> + * On other architectures HW_BREAKPOINT_LEN_8 may be available, and the
+> + * 1-, 2-, and 4-byte lengths may be unavailable.  There also may be
+> + * HW_BREAKPOINT_WRITE.  You can use #ifdef to check at compile time.
+> + */
 
-> On Thu, Dec 4, 2008 at 9:56 AM, Guennadi Liakhovetski
-> <g.liakhovetski@gmx.de> wrote:
-> >> +
-> >> +     /* try to grab channels */
-> >> +     list_for_each_entry_safe(device, _d, &dma_device_list, global_node)
-> >> +             list_for_each_entry(chan, &device->channels, device_node) {
-> >> +                     err = dma_chan_get(chan);
-> >
-> > Dan, could you please explain this: dma_chan_get() takes a reference on
-> > the channel _and_ calls .device_alloc_chan_resources() on first invocation
-> > for a specific channel. I now see three locations in dmaengine.c, where
-> > dma_chan_get() is called: in dma_request_channel() - logical, but also in
-> > dmaengine_get() and dma_async_device_register(), and these latter two I
-> > don't understand. I do not understand why we have to grab references and
-> > allocate resources for all (public) channels on all controllers in the
-> > system if someone just called dmaengine_get()?
-> 
-> Consider the case where a subsystem that consumes engines like
-> async_tx or net_dma loads before engines are available in the system.
-> They will have taken a reference against dmaengine, but calls to
-> dma_find_channel will return NULL.  Once a channel driver is loaded
-> dma_find_channel() can start returning results, and it is at this
-> point that resources must be allocated and the backing module pinned.
-> So dmaengine_get() means "I am interested in offloading stuff, if you
-> see an offload resource grab it and prep it so I can discover it with
-> dma_find_channel()".
+On MIPS we support breakpoint lengths that are powers of 2 between 8 and 
+4096.  Do you really want symbolic values for these?  The debuggers have 
+to do calculations with the length values, so translating between the 
+symbolic values and numeric values would be tedious at best.
 
-Ok, but why not postpone calling .device_alloc_chan_resources() until a 
-channel is _found_? Calling it for all channels just because one client 
-has once called dmaengine_get() and _probably_ will poll if any channels 
-become available - doesn't it look like an overkill?
 
-> >> @@ -420,6 +443,19 @@ int dma_async_device_register(struct dma_device *device)
-> >>       }
-> >>
-> >>       mutex_lock(&dma_list_mutex);
-> >> +     list_for_each_entry(chan, &device->channels, device_node) {
-> >> +             /* if clients are already waiting for channels we need to
-> >> +              * take references on their behalf
-> >> +              */
-> >> +             if (dmaengine_ref_count && dma_chan_get(chan) == -ENODEV) {
-> >> +                     /* note we can only get here for the first
-> >> +                      * channel as the remaining channels are
-> >> +                      * guaranteed to get a reference
-> >> +                      */
-> >
-> > This is the second location - where and how are clients waiting for
-> > channels? In the old implementation clients had notification callbacks,
-> > which were called as new channels became available. Now clients are gone,
-> > so, what is meant here?
-> >
-> 
-> The assumption is that mem-to-mem offload clients poll dma_find_channel().
-
-Hm, interesting, so that's why you want dma_find_channel() as light-weight 
-as possible?
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+David Daney
