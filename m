@@ -1,60 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbYLDP1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbYLDPfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbYLDP1z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 10:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbYLDP1q
+	id S1755499AbYLDPfv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 10:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYLDPfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 10:27:46 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49006 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750852AbYLDP1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 10:27:45 -0500
-Date: Thu, 4 Dec 2008 16:26:01 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       rnalumasu@gmail.com
-Subject: Re: + do_wait-wakeup-optimization.patch added to -mm tree
-Message-ID: <20081204152601.GB8816@redhat.com>
-References: <200811212015.mALKFMs4019558@imap1.linux-foundation.org> <20081123213929.GA9097@redhat.com> <20081204005203.C795EFC3AB@magilla.sf.frob.com>
+	Thu, 4 Dec 2008 10:35:41 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53123 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751704AbYLDPfk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 10:35:40 -0500
+Date: Thu, 4 Dec 2008 10:35:37 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <srostedt@redhat.com>, containers@lists.osdl.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] ftrace: use struct pid
+In-Reply-To: <1228403547.13111.73.camel@nimitz>
+Message-ID: <alpine.DEB.1.10.0812041033240.5240@gandalf.stny.rr.com>
+References: <20081204052638.425740534@goodmis.org>  <20081204052735.175697908@goodmis.org> <m1d4g8un6b.fsf@frodo.ebiederm.org>  <1228395378.13111.23.camel@nimitz> <1228396022.13111.27.camel@nimitz>  <m1prk8t5xr.fsf@frodo.ebiederm.org>
+ <1228403547.13111.73.camel@nimitz>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081204005203.C795EFC3AB@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/23, Roland McGrath wrote:
->
-> > > +static int do_wait_wake_function(wait_queue_t *curr, unsigned mode, int sync,
-> > > +				 void *key)
-> > > +{
-> > > +	struct task_struct *task = current;
-> >
-> > I think we can fix (and simplify) this code if we change __wake_up_parent(),
-> > it should call __wake_up(key => p), so we can do
-> >
-> > 	struct task_struct *task = key;
->
-> I don't see an exposed __wake_up* variant that both passes a "key" pointer
-> through and does "sync".  For __wake_up_parent, "sync" is quite desireable.
 
-Well, yes... and __wake_up_common() is static. Perhaps we can make a new
-helper. I must admit, I don't understand what "sync" actually means nowadays.
+On Thu, 4 Dec 2008, Dave Hansen wrote:
+> > >> 
+> > >> Could we get away with sticking the rcu_read_{un}lock() inside those
+> > >> macros?  Those are going to get used in pretty high level code and we're
+> > >> allowed to nest rcu_read_lock().  No danger of deadlocks or lock
+> > >> inversions.
+> > >
+> > > Why don't any of the other users of do_each_pid_task() use
+> > > rcu_read_lock()?  They all seem to be under read_lock(&tasklist_lock)
+> > > (except one is under a write lock of the same).
+> > 
+> > We probably should.  Historically read_lock(&tasklist_lock) implies
+> > rcu_read_lock().
+> 
+> You mean because the current task can't go through a quiescent period
+> until it hits userspace, and we can't go to userspace while holding
+> read_lock()?  Nah, that's not subtle. ;)
 
-> > > +	if (!needs_wakeup(task, w))
-> > > +		return 0;
-> > > +
-> > > +	return default_wake_function(curr, mode, sync, key);
-> >
-> > perhaps autoremove_wake_function() makes more sense.
->
-> Why?  The do_wait loop will have to go through again and still might just
-> sleep again.  The explicit remove at the end of do_wait seems fine to me.
+Has nothing to do with userspace. We can not go through a quiescent period 
+while holding a rcu_read_lock, or if preemption is disabled. read_lock 
+prevents preemption, as does spin_locks.
 
-Yes, yes, I was wrong. I forgot about "repeat:" in do_wait().
+> 
+> > And the tasklist lock is what we hold when it is safe.
+> > 
+> > But if you look at find_vpid we should be holding just the rcu lock there.
+> 
+> Yup, I see it there.
+> 
+> So, any reason not to do this?  Brown-bag compile tested.
+> 
+> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> 
+> ---
+> 
+>  linux-2.6.git-dave/include/linux/pid.h |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff -puN include/linux/pid.h~put-rcu-ops-in-do_each_pid_task include/linux/pid.h
+> --- linux-2.6.git/include/linux/pid.h~put-rcu-ops-in-do_each_pid_task	2008-12-04 06:03:09.000000000 -0800
+> +++ linux-2.6.git-dave/include/linux/pid.h	2008-12-04 06:19:35.000000000 -0800
+> @@ -147,6 +147,7 @@ pid_t pid_vnr(struct pid *pid);
+>  #define do_each_pid_task(pid, type, task)				\
+>  	do {								\
+>  		struct hlist_node *pos___;				\
+> +		rcu_read_lock();					\
+>  		if (pid != NULL)					\
+>  			hlist_for_each_entry_rcu((task), pos___,	\
+>  				&pid->tasks[type], pids[type].node) {
+> @@ -159,6 +160,7 @@ pid_t pid_vnr(struct pid *pid);
+>  				if (type == PIDTYPE_PID)		\
+>  					break;				\
+>  			}						\
+> +		rcu_read_unlock();					\
+>  	} while (0)
 
-Oleg.
+That probably could work.
+
+-- Steve
 
