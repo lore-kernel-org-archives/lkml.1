@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbYLDJS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbYLDJZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756259AbYLDJS1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 04:18:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbYLDJSO
+	id S1756093AbYLDJZi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 04:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbYLDJZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 04:18:14 -0500
-Received: from edna.telenet-ops.be ([195.130.132.58]:35089 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752678AbYLDJSM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 04:18:12 -0500
-Date: Thu, 4 Dec 2008 10:18:06 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: Yet more ARM breakage in linux-next
-In-Reply-To: <20081203124109.79f8f15b.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0812041017470.10635@anakin>
-References: <20081203192905.GA12502@flint.arm.linux.org.uk>
- <20081203124109.79f8f15b.akpm@linux-foundation.org>
+	Thu, 4 Dec 2008 04:25:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47335 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753494AbYLDJZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 04:25:16 -0500
+Date: Thu, 4 Dec 2008 10:24:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ken Chen <kenchen@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] export percpu cpuacct cgroup stats
+Message-ID: <20081204092454.GK32594@elte.hu>
+References: <b040c32a0812032048x4a11dc26k184a4b279b509050@mail.gmail.com> <49376BE3.1040909@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49376BE3.1040909@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Dec 2008, Andrew Morton wrote:
-> On Wed, 3 Dec 2008 19:29:05 +0000
-> Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
+
+> (I guess it's more appropriate to ask Ingo to pick up this patch)
 > 
-> > This seems to be causing lots of ARM breakage:
+> Ken Chen wrote:
+> > This patch export per-cpu CPU cycle usage for a given cpuacct cgroup.
+> > There is a need for a user space monitor daemon to track group CPU
+> > usage on per-cpu base.  It is also useful for monitor CFS load
+> > balancer behavior by tracking per CPU group usage.
 > > 
-> > lib/find_next_bit.c:183: error: implicit declaration of function '__fls'
 > > 
-> > Whoever's responsible,
+> > Signed-off-by: Ken Chen <kenchen@google.com>
+> > 
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index b7480fb..cd78948 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -9345,12 +9345,34 @@ out:
+> >  	return err;
+> >  }
+> > 
+> > +static int cpuacct_percpu_seq_read(struct cgroup *cgroup, struct cftype *cft,
+> > +				   struct seq_file *m)
+> > +{
+> > +	struct cpuacct *ca = cgroup_ca(cgroup);
+> > +	u64 percpu;
+> > +	int i;
+> > +
+> > +	for_each_possible_cpu(i) {
+> > +		spin_lock_irq(&cpu_rq(i)->lock);
+> > +		percpu = *percpu_ptr(ca->cpuusage, i);
+> > +		spin_unlock_irq(&cpu_rq(i)->lock);
+> > +		seq_printf(m, "%lld ", percpu);
 > 
-> git-blame?
+> Should be %llu. And if we don't cast percpu to unsigned long long, will 
+> it trigger compile warning in some archs?
+
+yes.
+
+> > +	}
+> > +	seq_printf(m, "\n");
+> > +	return 0;
+> > +}
+> > +
+> >  static struct cftype files[] = {
+> >  	{
+> >  		.name = "usage",
+> >  		.read_u64 = cpuusage_read,
+> >  		.write_u64 = cpuusage_write,
+> >  	},
+> > +	{
+> > +		.name = "percpu",
 > 
-> > please fix this ASAP so I can see whether my fixes
-> > I merged on Monday fix the previous set of ARM build errors in linux-next.
-> 
-> commit b032dfc80921daa9c957810fb2e2ff253aaf2ac4
-> Author: Rusty Russell <rusty@rustcorp.com.au>
-> Date:   Wed Dec 3 11:16:59 2008 +1100
-> 
->     bitmap:find_last_bit
+> IMO percpu_usage is a better name.
 
-Also broke m68k (a bit more hidden due to other build failures).
+agreed. Looks good otherwise - will wait for v2 of the patch.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Ingo
