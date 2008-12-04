@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbYLDEm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbYLDErR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbYLDEm0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 23:42:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYLDEmR
+	id S1754696AbYLDErR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 23:47:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbYLDErA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 23:42:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33857 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752123AbYLDEmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 23:42:16 -0500
-Date: Wed, 3 Dec 2008 20:40:58 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
- on Toshiba R500 (bisected)
-In-Reply-To: <200812040223.54341.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0812032034150.3256@nehalem.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812031220.36711.rjw@sisk.pl> <alpine.LFD.2.00.0812030735230.3256@nehalem.linux-foundation.org> <200812040223.54341.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 3 Dec 2008 23:47:00 -0500
+Received: from mx2.suse.de ([195.135.220.15]:57832 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751121AbYLDEq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 23:46:59 -0500
+Date: Wed, 3 Dec 2008 20:17:39 -0800
+From: Greg KH <gregkh@suse.de>
+To: Edward Estabrook <edward.estabrook.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, hjk@linutronix.de,
+       edward.estabrook@gmail.com, edward_estabrook@agilent.com
+Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
+	(corrected)
+Message-ID: <20081204041739.GA16329@suse.de>
+References: <208aa0f00812031751n27a75d21h8747054651639463@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <208aa0f00812031751n27a75d21h8747054651639463@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 4 Dec 2008, Rafael J. Wysocki wrote:
+On Wed, Dec 03, 2008 at 05:51:30PM -0800, Edward Estabrook wrote:
+> From: Edward Estabrook <Edward_Estabrook@agilent.com>
 > 
-> Well, in principle it may be related to the way we handle bridges during
-> resume
+> Here is a patch that adds the ability to dynamically allocate and use
+> coherent DMA
+> from userspace by extending the Userspace IO driver.  This patch applies against
+> 2.6.28-rc6.
+> 
+> The gist of this implementation is to overload uio's mmap
+> functionality to allocate
+> and map a new DMA region on demand.  The bus-specific DMA address as returned by
+> dma_alloc_coherent is made available to userspace in the 1st long word
+> of the newly
+> created region (as well as through the conventional 'addr' file in sysfs).
+> 
+> The kernel-api change is that passing an offset value of 0xFFFFF000UL
+> to the a uio
+> device's mmap operation will dynamically allocate a DMA region.  This
+> cannot change/
+> break existing behavior as the previous UIO code only allowed a maximum of 5
+> mappings.
 
-Ahh. Yes, that's possible. It's quite possible that the problem isn't 
-resource allocation per se, but just the bigger complexity at resume time.
+Odd formatting of your paragraphs :(
 
-This is a hibernate-only issue for you, right? Or is it about regular 
-suspend-to-ram too?
+Anyway, what about 64bit processors?  What happens if they try to use a
+valid address in this range?
 
-> but I really need to read some docs and compare them with the code 
-> before I can say anything more about that.  Surely, nothing like this 
-> issue has ever been reported before.
+Is this value always an "invalid" value for all arches that Linux runs
+on?
 
-Well, how stable has hibernate been on that particular machine 
-historically?
+thanks,
 
-Because the half-revert alignment patch (ie reverting part of 5f17cf) that 
-made it work for you would actually have been a non-issue in the original 
-code that was pre-PCI-resource-alignment cleanup (commit 88452565).
-
-So the patch you partially reverted was literally the one that made the 
-Cardbus allocation work the _same_ way as it did historically, before 
-88452565. So if the new code breaks for you, then so should the "old" code 
-(ie 2.6.25 and earlier).
-
-So the "hasn't been reported before" case may well be just another way of 
-saying "hibernate has never been very reliable".
-
-			Linus
+greg k-h
