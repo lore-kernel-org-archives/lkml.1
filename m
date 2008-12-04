@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757736AbYLDK5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757792AbYLDLBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757736AbYLDK5X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 05:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbYLDK5P
+	id S1757792AbYLDLBJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 06:01:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYLDLAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 05:57:15 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57579 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754621AbYLDK5O (ORCPT
+	Thu, 4 Dec 2008 06:00:53 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:35603 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754853AbYLDLAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 05:57:14 -0500
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] tty: SprogII DCC controller identifiers
-To: gre@kroah.com, linux-kernel@vger.kernel.org
-Date: Thu, 04 Dec 2008 10:57:19 +0000
-Message-ID: <20081204105654.12531.54129.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Thu, 4 Dec 2008 06:00:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=oC812UPFMv+YY77rUCyz45ch1yHeMJMzwwv+eOY6Nwli4KaoSeY0/WLS+JJJTDhXG7
+         012ONZVGJB+7b2OF0sO/jiDZhh+1BXCwbAcBI08IJz87BHEiE2Li2DV/9BbetRPqiKrc
+         rp7WsIHiXnPBW6GNyRJt+vkYXooLUzduSBGCQ=
+Message-ID: <4937B85C.5050808@tuffmail.co.uk>
+Date: Thu, 04 Dec 2008 11:00:44 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Matt_Domsch@dell.com, greg@kroah.com,
+       linux-acpi@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>,
+       Ivo van Doorn <ivdoorn@gmail.com>
+Subject: Re: [PATCH 2/2 update] misc: Add dell-laptop driver
+References: <20081127163357.GA22846@srcf.ucam.org> <20081127163444.GB22846@srcf.ucam.org> <20081202115029.2b9d1153.akpm@linux-foundation.org> <20081202201645.GB31620@srcf.ucam.org> <alpine.LFD.2.00.0812031414150.3255@localhost.localdomain> <20081203195238.GA22560@srcf.ucam.org>
+In-Reply-To: <20081203195238.GA22560@srcf.ucam.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@redhat.com>
+I still think you need to initialise wifi_rfkill->state before you call
+rfkill_register().
 
-Someone on rmweb reminded me this had been overlooked from ages ago..
+It seems an easy mistake, probably the rfkill core should test for it.
 
-Add the identifiers for the Sprog II USB. This is a DCC control interface
-using the FTDI-SIO hardware: http://www.sprog-dcc.co.uk/. People have been
-using it with insmod options for ages, this just puts it into the driver
-data.
+Alan
 
-Signed-off-by: Alan Cox <alan@redhat.com>
----
-
- drivers/usb/serial/ftdi_sio.c |    1 +
- drivers/usb/serial/ftdi_sio.h |    3 +++
- 2 files changed, 4 insertions(+), 0 deletions(-)
-
-
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index e4e4f05..b7d4898 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -166,6 +166,7 @@ static struct usb_device_id id_table_combined [] = {
- 	{ USB_DEVICE(FTDI_VID, FTDI_OPENDCC_PID) },
- 	{ USB_DEVICE(INTERBIOMETRICS_VID, INTERBIOMETRICS_IOBOARD_PID) },
- 	{ USB_DEVICE(INTERBIOMETRICS_VID, INTERBIOMETRICS_MINI_IOBOARD_PID) },
-+	{ USB_DEVICE(FTDI_VID, FTDI_SPROG_II) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_XF_632_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_XF_634_PID) },
- 	{ USB_DEVICE(FTDI_VID, FTDI_XF_547_PID) },
-diff --git a/drivers/usb/serial/ftdi_sio.h b/drivers/usb/serial/ftdi_sio.h
-index 07a3992..70703b7 100644
---- a/drivers/usb/serial/ftdi_sio.h
-+++ b/drivers/usb/serial/ftdi_sio.h
-@@ -75,6 +75,9 @@
- /* OpenDCC (www.opendcc.de) product id */
- #define FTDI_OPENDCC_PID	0xBFD8
- 
-+/* Sprog II (Andrew Crosland's SprogII DCC interface) */
-+#define FTDI_SPROG_II		0xF0C8
-+
- /* www.crystalfontz.com devices - thanx for providing free devices for evaluation ! */
- /* they use the ftdi chipset for the USB interface and the vendor id is the same */
- #define FTDI_XF_632_PID 0xFC08	/* 632: 16x2 Character Display */
+(Sorry about the insane From: header in my previous mail)
 
