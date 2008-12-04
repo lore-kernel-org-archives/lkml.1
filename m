@@ -1,153 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758750AbYLDW2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbYLDWbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758750AbYLDW2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 17:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbYLDW17
+	id S1758880AbYLDWbU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 17:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbYLDWbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 17:27:59 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:38331 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754906AbYLDW16 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 17:27:58 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=rXPOHOx1Vum5bkx8bpChwpgWCO2yhI4RR2GofWHuo9RI87/I4R2+eQvwkKMsfa9DP
-	qlFR53X+RBHBrkJ0LRv9g==
-MIME-Version: 1.0
-In-Reply-To: <492E97FA.5000804@gmail.com>
-References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com>
-	 <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com>
-	 <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com>
-	 <492E8708.4060601@gmail.com> <20081127120330.GM28285@wotan.suse.de>
-	 <492E90BC.1090208@gmail.com> <20081127123926.GN28285@wotan.suse.de>
-	 <492E97FA.5000804@gmail.com>
-Date: Thu, 4 Dec 2008 14:27:54 -0800
-Message-ID: <604427e00812041427j7f1c8118p48b1b5b577143703@mail.gmail.com>
-Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
-From: Ying Han <yinghan@google.com>
-To: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>, Mike Waychison <mikew@google.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
-       Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 4 Dec 2008 17:31:10 -0500
+Received: from ivent.com.au ([125.7.48.1]:35721 "EHLO picard.ivent.com.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756439AbYLDWbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 17:31:09 -0500
+Subject: Re: New Security Features, Please Comment
+From: Geoffrey McRae <geoff@rabidhost.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Peter Teoh <htmldeveloper@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <80413.1228427770@turing-police.cc.vt.edu>
+References: <1228260494.24232.21.camel@compy.ivent.com.au>
+	 <20081203005338.6472db7a@lxorguk.ukuu.org.uk>
+	 <1228268657.6679.4.camel@lappy.spacevs.com>
+	 <20081203124252.GD11807@mail.local.tull.net>
+	 <1228344292.6993.27.camel@lappy.spacevs.com>
+	 <20081203230820.4473a162@lxorguk.ukuu.org.uk>
+	 <804dabb00812031527k3fae11dcnef3b1696c3d136f8@mail.gmail.com>
+	 <1228347656.6993.31.camel@lappy.spacevs.com>
+	 <80413.1228427770@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Fri, 05 Dec 2008 09:30:54 +1100
+Message-Id: <1228429854.7546.6.camel@lappy.spacevs.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - picard.ivent.com.au
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - rabidhost.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am trying your test program(scalability) in house, but somehow i got
-different result as you saw. i created 8 files each with 1G size on
-separate drives( to avoid the latency disturbing of disk seek). I got
-this number without applying the batch based on 2.6.26. May i ask how
-to reproduce the mmap issue you mentioned?
+On Thu, 2008-12-04 at 16:56 -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Thu, 04 Dec 2008 10:40:56 +1100, Geoffrey McRae said:
+> 
+> > Ok, so this is a pretty major flaw of the idea, thats why I put this
+> > concept out there, any suggestions as to how to get around this?
+> > Possibly add some checking to disable certain functions in the child
+> > when the enable_setpresuid function has been called?.
+> 
+> Or just deploy SELinux instead.
 
-8 CPU
-read_worker
-1 threads Real time: 101.058262 s (since task start)
-2 threads Real time: 50.670456 s (since task start)
-4 threads Real time: 25.904657 s (since task start)
-8 threads Real time: 20.090677 s (since task start)
---------------------------------------------------------------------------------
-mmap_worker
-1 threads Real time: 101.340662 s (since task start)
-2 threads Real time: 51.484646 s (since task start)
-4 threads Real time: 28.414534 s (since task start)
-8 threads Real time: 21.785818 s (since task start)
+SELinux is insanely complicated, and is sort of a blanket fix, it does
+not fix the problem at the root, in the target application.
 
---Ying
+> 
+> > Or save the signal handlers the first time setpresuid is called, and the
+> > next time, restore them so if the child has changed them, they get
+> > re-set back to their initial state?
+> 
+> It's not just signal handlers.
+> 
+> 	while (getpid()) msleep(1);
+> 	/* malicious code here */
+> 
 
-On Thu, Nov 27, 2008 at 4:52 AM, Török Edwin <edwintorok@gmail.com> wrote:
-> On 2008-11-27 14:39, Nick Piggin wrote:
->> On Thu, Nov 27, 2008 at 02:21:16PM +0200, Török Edwin wrote:
->>
->>> On 2008-11-27 14:03, Nick Piggin wrote:
->>>
->>>>> Running my testcase shows no significant performance difference. What am
->>>>> I doing wrong?
->>>>>
->>>>>
->>>>
->>>> Software may just be doing a lot of mmap/munmap activity. threads +
->>>> mmap is never going to be pretty because it is always going to involve
->>>> broadcasting tlb flushes to other cores... Software writers shouldn't
->>>> be scared of using processes (possibly with some shared memory).
->>>>
->>>>
->>> It would be interesting to compare the performance of a threaded clamd,
->>> and of a clamd that uses multiple processes.
->>> Distributing tasks will be a bit more tricky, since it would need to use
->>> IPC, instead of mutexes and condition variables.
->>>
->>
->> Yes, although you could use PTHREAD_PROCESS_SHARED pthread mutexes on
->> the shared memory I believe (having never tried it myself).
->>
->>
->>
->>>> Actually, a lot of things get faster (like malloc, or file descriptor
->>>> operations) because locks aren't needed.
->>>>
->>>> Despite common perception, processes are actually much *faster* than
->>>> threads when doing common operations like these. They are slightly slower
->>>> sometimes with things like creation and exit, or context switching, but
->>>> if you're doing huge numbers of those operations, then it is unlikely
->>>> to be a performance critical app... :)
->>>>
->>>>
->>> How about distributing tasks to a set of worked threads, is the overhead
->>> of using IPC instead of
->>> mutexes/cond variables acceptable?
->>>
->>
->> It is really going to depend on a lot of things. What is involved in
->> distributing tasks, how many cores and cache/TLB architecture of the
->> system running on, etc.
->>
->> You want to distribute as much work as possible while touching as
->> little memory as possible, in general.
->>
->> But if you're distributing threads over cores, and shared caches are
->> physically tagged (which I think all x86 CPUs are), then you should
->> be able to have multiple processes operate on shared memory just as
->> efficiently as multiple threads I think.
->>
->> And then you also get the advantages of reduced contention on other
->> shared locks and resources.
->>
->
-> Thanks for the tips, but lets get back to the original question:
-> why don't I see any performance improvement with the fault-retry patches?
->
-> My testcase only compares reads file with mmap, vs. reading files with
-> read, with different number of threads.
-> Leaving aside other reasons why mmap is slower, there should be some
-> speedup by running 4 threads vs 1 thread, but:
->
-> 1 thread: read:27,18 28.76
-> 1 thread: mmap: 25.45, 25.24
-> 2 thread: read: 16.03, 15.66
-> 2 thread: mmap: 22.20, 20.99
-> 4 thread: read: 9.15, 9.12
-> 4 thread: mmap: 20.38, 20.47
->
-> The speed of 4 threads is about the same as for 2 threads with mmap, yet
-> with read it scales nicely.
-> And the patch doesn't seem to improve scalability.
-> How can I find out if the patch works as expected? [i.e. verify that
-> faults are actually retried, and that they don't keep the semaphore locked]
->
->> OK, I'll see if I can find them (am overseas at the moment, and I suspect
->> they are stranded on some stationary rust back home, but I might be able
->> to find them on the web).
->
-> Ok.
->
-> Best regards,
-> --Edwin
->
+This would only be dangerous if the parent did not wait for the child to
+finish its task before changing its uid, which for a FastCGI app, it has
+to as it needs the response to send back to the client. All that would
+happen here is the CGI script would sleep forever, or until the HTTP
+server killed the process.
+
+> Just loop, pop up every few milliseconds and check if you're root,
+> and fall out of the loop and go into attack mode if you are.
+> 
+> If you're using it to toggle between various non-root userids, just adjust
+> the while accordingly: 'while ((me = getpid()) != 497) ...'  or whatever
+> you need.
+
+Same as above, it would just sleep forever.
+
+> 
+> And if you try to disable getpid to prevent that attack, consider something
+> that does this:
+> 
+> 	while (open("only_creatable_by_target_uid",O_CREAT) < 0)
+> 
+> You can hardly take open() away from processes. ;)
+
+I dont exactly like the idea of disabling system functions, its more of
+a hack then a solution, it was just a suggestion.
+
+> 
+> > I know many people are against the idea of adding new functions at will
+> > to the kernel, thats why I am trying to flesh out all the potential
+> > problems and find solutions to them first.
+> 
+> We don't mind adding functions.  We just hate broken-by-design functions.
+
+Thats fine, I dont want to make things less secure, bear in mind that
+this is my first kernel patch, and I am still learning how things are
+written in the kernel.
+
