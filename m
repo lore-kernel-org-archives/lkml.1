@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbYLDMpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYLDMqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755545AbYLDMpj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 07:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbYLDMpR
+	id S1755835AbYLDMqY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 07:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbYLDMqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 07:45:17 -0500
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:36073 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755173AbYLDMpP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 07:45:15 -0500
-Date: Thu, 4 Dec 2008 13:45:11 +0100
-From: Bastian Blank <bastian@waldi.eu.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
-       xemul@openvz.org
-Subject: Re: [RFC][PATCH 3/5] Determine if sender is from ancestor ns+
-Message-ID: <20081204124511.GA31061@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
-	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, oleg@redhat.com,
-	ebiederm@xmission.com, roland@redhat.com, containers@lists.osdl.org,
-	linux-kernel@vger.kernel.org, xemul@openvz.org
-References: <20081126034242.GA23120@us.ibm.com> <20081126034611.GC23238@us.ibm.com> <20081127010101.GA13545@wavehammer.waldi.eu.org> <20081201201506.GB12493@us.ibm.com> <20081202114833.GA1132@wavehammer.waldi.eu.org> <20081202195904.GA20077@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20081202195904.GA20077@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Dec 2008 07:46:11 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57213 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752019AbYLDMqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 07:46:09 -0500
+Subject: [PATCH] virtio: make PCI devices take a virtio_pci module ref
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>,
+       Anthony Liguori <aliguori@us.ibm.com>, Michael Tokarev <mjt@tls.msk.ru>
+Content-Type: text/plain
+Date: Thu, 04 Dec 2008 12:44:31 +0000
+Message-Id: <1228394671.3732.77.camel@blaa>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 11:59:04AM -0800, Sukadev Bhattiprolu wrote:
-> Bastian Blank [bastian@waldi.eu.org] wrote:
-> | sys_rt_sigqueueinfo disallows setting si_code to any value which
-> | describes kernel signals from userspace. So using SI_FROMUSER should be
-> | sufficient.
-> SI_ASYNCIO qualifies as SI_FROMUSER() even when it originates from
-> kernel (usb/core/devio.c async_completed())...
+Nothing takes a ref on virtio_pci, so even if you have
+devices in use, rmmod will attempt to unload the module.
 
-SI_ASYNCIO currently qualifies as user signal, it is sent in the context
-of the pid issuing the async io request. It is never used as a kernel
-originated signal in any way. The code sending it even seems to do a
-full permission check.
+Fix by simply making each device take a ref on the module.
 
-If you think this is wrong, maybe this should be fixed first.
+Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+Reported-by: Michael Tokarev <mjt@tls.msk.ru>
+---
+ drivers/virtio/virtio_pci.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-> If we know that it came from rt_sigqueueinfo(), we can safely check
-> the namespace. If it came from driver we should skip the ns check.
-
-If it have a sender pid attached, this should be checked.
-
-> Yes, (Eric Biederman, Dec 2007)
-> 	https://lists.linux-foundation.org/pipermail/containers/2007-December/009152.html
-> Oleg Nesterov, Aug 2007:
-> 	http://marc.info/?l=linux-kernel&m=118753610515859
-> I had sent out a summary of the above attempts to Containers list recently:
-> 	https://lists.linux-foundation.org/pipermail/containers/2008-November/013991.html
-
-Okay.
-
-> | Please add a complete comment to the function which describes the
-> | function. And don't us "it" for not defined entities.
-> Ah, I see the problem now. The 't' refers to the task parameter - how
-> about changing comment to:
-
-No, I meant a real comment, defining the complete behaviour, each
-parameter with constraints and the possible return values.
-
-Bastian
-
+diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
+index c7dc37c..147a17f 100644
+--- a/drivers/virtio/virtio_pci.c
++++ b/drivers/virtio/virtio_pci.c
+@@ -322,6 +322,9 @@ static int __devinit virtio_pci_probe(struct pci_dev *pci_dev,
+ 		return -ENODEV;
+ 	}
+ 
++	if (!try_module_get(THIS_MODULE))
++		return -ENODEV;
++
+ 	/* allocate our structure and fill it out */
+ 	vp_dev = kzalloc(sizeof(struct virtio_pci_device), GFP_KERNEL);
+ 	if (vp_dev == NULL)
+@@ -393,6 +396,7 @@ static void __devexit virtio_pci_remove(struct pci_dev *pci_dev)
+ 	pci_release_regions(pci_dev);
+ 	pci_disable_device(pci_dev);
+ 	kfree(vp_dev);
++	module_put(THIS_MODULE);
+ }
+ 
+ #ifdef CONFIG_PM
 -- 
-Insufficient facts always invite danger.
-		-- Spock, "Space Seed", stardate 3141.9
+1.6.0.3
+
