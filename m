@@ -1,65 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbYLDWdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758921AbYLDWkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758974AbYLDWdu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 17:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716AbYLDWdk
+	id S1758921AbYLDWkq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 17:40:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbYLDWkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 17:33:40 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:44717 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756337AbYLDWdj (ORCPT
+	Thu, 4 Dec 2008 17:40:37 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:43132 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752776AbYLDWkh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 17:33:39 -0500
-Date: Thu, 4 Dec 2008 16:33:36 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Bryan Donlan <bdonlan@gmail.com>
-Cc: mtk.manpages@gmail.com, ebiederm@xmission.com,
-       lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org,
-       clg@fr.ibm.com, herbert@13thfloor.at, dev@sw.ru,
-       Subrata Modak <subrata@linux.vnet.ibm.com>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: Could you write some CLONE_NEWUSER?
-Message-ID: <20081204223336.GA20990@us.ibm.com>
-References: <cfd18e0f0812040720y5cabd2aarbf3912644dea42c4@mail.gmail.com> <20081204190430.GA16026@us.ibm.com> <3e8340490812041218l7b4633fev5126f25a5d33076c@mail.gmail.com>
+	Thu, 4 Dec 2008 17:40:37 -0500
+Date: Thu, 4 Dec 2008 23:40:22 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Dan =?unknown-8bit?Q?No=C3=A9?= <dpn@isomerica.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: Page alloc failures under network/disk IO load
+Message-ID: <20081204224021.GA323@electric-eye.fr.zoreil.com>
+References: <20081203222750.391e8890@tuna> <1228378983.5092.7.camel@twins> <1228380128.5092.15.camel@twins> <20081204135443.7c24234a@rockhopper.limebrokerage.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=unknown-8bit
 Content-Disposition: inline
-In-Reply-To: <3e8340490812041218l7b4633fev5126f25a5d33076c@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081204135443.7c24234a@rockhopper.limebrokerage.com>
+X-Organisation: Land of Sunshine Inc.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Bryan Donlan (bdonlan@gmail.com):
-> This is something more of a general question than one about this
-> manpage, but how will files owned by user namespaces be represented on
-> the underlying filesystem? Since (C, 501) will be meaningless after a
-> reboot at the latest, it makes little sense to persist them...
+Dan Noé <dpn@isomerica.net> :
+[...]
+> I'm a bit confused because on another system (2.6.26.3) I never see
+> messages like this despite having the same amount of physical RAM in
+> each.  The 2.6.26.3 system is also under more active use, and has more
+> userspace memory usage.  On that system:
 
-Yeah that's a very interesting question.  Clearly persistant names for
-the user namespaces are needed.  Eric very much wanted to avoid having
-the user namespaces be explicitly named, so we pursued the path of
-having the filesystem handle the naming.  So in my last patchset,
-a mount option could register the mounter's user namespace name.
-There would be a system-wide policy saying for instance that (B,500)
-user namespaces owned by can register themselves at C.
+Does this system use the same network card ?
 
-(end of discussion arising from that patchset is here: )
-https://lists.linux-foundation.org/pipermail/containers/2008-August/012793.html
-
-In the simplest case of no fs support for user namespaces, the mount
-will be 'owned' by the userns which mounted it (no persistant name
-needed for that).  Users who are in a different namespace will only get
-the 'user other' permission to the file/dir, and may not create files
-there (since we wouldn't know which userid to place on it).
-
-Then the fs can support user namespaces - however it wants.  It could
-just store (B, 500),(C, 501) in an xattr.  Or it could just store the
-userid and userns name of the lowest user (I.e. C and 0), and count on
-knowning that (B, 500) owns user namespace C.  We do want to provide
-generic helpers in lib/fsuserns.c which any fs could use.
-
-But yes, picking a meaningful persistant name for a user namespace
-is an issue.
-
--serge
+-- 
+Ueimor
