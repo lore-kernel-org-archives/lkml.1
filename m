@@ -1,117 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbYLDPuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYLDPus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073AbYLDPuZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 10:50:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYLDPuN
+	id S1755849AbYLDPus (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 10:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbYLDPud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 10:50:13 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:5138 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbYLDPuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 10:50:12 -0500
-Date: Thu, 4 Dec 2008 16:50:07 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: kernel BUG at block/blk-timeout.c:178!
-Message-ID: <20081204155005.GX18255@kernel.dk>
-References: <4937E888.3060208@hp.com>
+	Thu, 4 Dec 2008 10:50:33 -0500
+Received: from rn-out-0910.google.com ([64.233.170.189]:6742 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbYLDPub (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 10:50:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=hLnVPIm5l5HvAED/dWGRaKhMHxWIZGK6MtLSYxlujENBzBZLulkn1MURP9Q247/CW1
+         BTIpm4X0a5RL5/89rYRFhWrZw8nfN+yunIBpfZYzyYGSxcS91WVRnk7tWWXNNqqRk6h5
+         9Gr7OXOc691ETnetciDQljbBw0QEopnk+G4h8=
+Message-ID: <87a5b0800812040750p6231b0c9s2f664345b23596f0@mail.gmail.com>
+Date: Thu, 4 Dec 2008 15:50:29 +0000
+From: "Will Newton" <will.newton@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] tty: Flags should be accessed via the foo_bit interfaces
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20081204154030.27980.82380.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4937E888.3060208@hp.com>
+References: <20081204154030.27980.82380.stgit@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 04 2008, Alan D. Brunelle wrote:
-> (I'll be checking into reproducibility &c., but for now...)
-> 
-> Using git tree as of:
-> 
-> commit 6a1214113090905aca6a492fc8ef10d84c608a69
-> Merge: c07f62e... 2642b11...
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Mon Dec 1 09:34:23 2008 -0800
-> 
->     Merge branch 'for-linus' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/ie
-> 
->     * 'for-linus' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linu
->       ieee1394: sbp2: fix race condition in state change
->       ieee1394: fix list corruption (reported at module removal)
->       firewire: fw-sbp2: another iPod mini quirk entry
->       ieee1394: sbp2: another iPod mini quirk entry
-> 
-> I just got whilst booting (16-way AMD64, 126GB RAM, 3@CCISS, 4@QLA):
-> 
-> ------------[ cut here ]------------
-> kernel BUG at block/blk-timeout.c:178!
-> invalid opcode: 0000 [#1] SMP
-> last sysfs file:
-> CPU 0
-> Pid: 268, comm: scsi_wq_0 Not tainted 2.6.28-rc6 #13
-> RIP: 0010:[<ffffffff804e8d4d>]  [<ffffffff804e8d4d>] blk_add_timer+0xdd/0xf0
-> RSP: 0018:ffff88087b6c3830  EFLAGS: 00010002
-> RAX: ffff88087cdf4408 RBX: ffff88087cded670 RCX: ffff88087cdf4408
-> RDX: ffff88087cded670 RSI: ffff88087cdf42c8 RDI: ffff88087cdf42c8
-> RBP: ffff88087b6c3840 R08: 0000000000000020 R09: ffff88087cded670
-> R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000020
-> R13: ffff88087cdf42c8 R14: 0000000000000020 R15: 0000000000000008
-> FS:  0000000000000000(0000) GS:ffffffff80f76980(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process scsi_wq_0 (pid: 268, threadinfo ffff88087b6c2000, task
-> ffff88087bf706c0)
-> Stack:
->  ffff88087cded670 ffff88087b6cf460 ffff88087b6c3850 ffffffff804e2308
->  ffff88087b6c3890 ffffffff804e5566 ffff88087cded670 ffff88087cded670
->  ffff88087cdf1800 ffff88087cded670 ffff88087cded670 ffff88087cdf42c8
-> Call Trace:
->  [<ffffffff804e2308>] elv_dequeue_request+0x48/0x60
->  [<ffffffff804e5566>] blk_queue_start_tag+0x96/0x130
->  [<ffffffff8060c900>] scsi_request_fn+0x120/0x5a0
->  [<ffffffff804e47db>] __generic_unplug_device+0x2b/0x40
->  [<ffffffff804e7d56>] blk_execute_rq_nowait+0x66/0xb0
->  [<ffffffff804e7dfd>] blk_execute_rq+0x5d/0xb0
->  [<ffffffff80308c80>] ? sysfs_ilookup_test+0x0/0x20
->  [<ffffffff8063011e>] hp_sw_tur+0xbe/0x230
->  [<ffffffff8062ecc6>] ? scsi_dh_handler_lookup+0x56/0xb0
->  [<ffffffff806305c8>] hp_sw_bus_attach+0x58/0x160
->  [<ffffffff8062eba2>] scsi_dh_handler_attach+0x32/0x40
->  [<ffffffff8062f0da>] scsi_dh_notifier+0x6a/0xa0
->  [<ffffffff8025f3df>] notifier_call_chain+0x3f/0x80
->  [<ffffffff8025f7f8>] __blocking_notifier_call_chain+0x58/0x80
->  [<ffffffff8025f831>] blocking_notifier_call_chain+0x11/0x20
->  [<ffffffff805b4703>] device_add+0x133/0x650
->  [<ffffffff805ba50c>] ? attribute_container_device_trigger+0xbc/0xd0
->  [<ffffffff80612944>] scsi_sysfs_add_sdev+0x64/0x280
->  [<ffffffff80610379>] scsi_probe_and_add_lun+0xdb9/0xde0
->  [<ffffffff80610a07>] __scsi_scan_target+0x4d7/0x6f0
->  [<ffffffff806112e0>] scsi_scan_target+0xc0/0xd0
->  [<ffffffff8061c2f7>] fc_scsi_scan_rport+0xb7/0xc0
->  [<ffffffff8061c240>] ? fc_scsi_scan_rport+0x0/0xc0
->  [<ffffffff80256c70>] run_workqueue+0x70/0x120
->  [<ffffffff80256d80>] worker_thread+0x60/0xb0
->  [<ffffffff8025aca0>] ? autoremove_wake_function+0x0/0x40
->  [<ffffffff80256d20>] ? worker_thread+0x0/0xb0
->  [<ffffffff8025a8e9>] kthread+0x49/0x80
->  [<ffffffff8020d269>] child_rip+0xa/0x11
->  [<ffffffff8025a8a0>] ? kthread+0x0/0x80
->  [<ffffffff8020d25f>] ? child_rip+0x0/0x11
-> Code: 48 8d bb 28 03 00 00 48 89 c6 e8 af 6f d6 ff 48 83 c4 08 5b c9 c3
-> 48 8b 15 81 cb a9 00 89 c0 48 01 d0 48 89 87 38 01 00 00 eb 90 <0f> 0b
-> eb fe 0f 1f 80 00 00 00 00 0f 0b eb fe 0f 1f 40 00 55 48
-> RIP  [<ffffffff804e8d4d>] blk_add_timer+0xdd/0xf0
->  RSP <ffff88087b6c3830>
-> ---[ end trace 1d1b7db6f1a8b5dd ]---
+On Thu, Dec 4, 2008 at 3:41 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> From: Alan Cox <alan@redhat.com>
+>
+> We have various drivers that poke around directly and we need to clean this
+> up before it causes problems. Fix up the networking ones - (Dave can you send
+> this via the net tree as that seems simplest)
+>
+> Signed-off-by: Alan Cox <alan@redhat.com>
 
-Alan, can you try latest -git? feaf3848a813a106f163013af6fcf6c4bfec92d9
-or later.
+> diff --git a/drivers/net/slip.c b/drivers/net/slip.c
+> index 1d58991..951c7df 100644
+> --- a/drivers/net/slip.c
+> +++ b/drivers/net/slip.c
+> @@ -402,7 +402,7 @@ static void sl_encaps(struct slip *sl, unsigned char *icp, int len)
+>         * if we did not request it before write operation.
+>         *       14 Oct 1994  Dmitry Gorodchanin.
+>         */
+> -       sl->tty->flags |= (1 << TTY_DO_WRITE_WAKEUP);
+> +       set_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+>        actual = sl->tty->ops->write(sl->tty, sl->xbuff, count);
+>  #ifdef SL_CHECK_TRANSMIT
+>        sl->dev->trans_start = jiffies;
+> @@ -432,7 +432,7 @@ static void slip_write_wakeup(struct tty_struct *tty)
+>                /* Now serial buffer is almost free & we can start
+>                 * transmission of another packet */
+>                sl->tx_packets++;
+> -               tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
+> +               clear_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+>                sl_unlock(sl);
+>                return;
+>        }
+> @@ -465,7 +465,7 @@ static void sl_tx_timeout(struct net_device *dev)
+>                        (tty_chars_in_buffer(sl->tty) || sl->xleft) ?
+>                                "bad line quality" : "driver error");
+>                sl->xleft = 0;
+> -               sl->tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
+> +               clear_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+>                sl_unlock(sl);
+>  #endif
+>        }
+> @@ -515,10 +515,9 @@ sl_close(struct net_device *dev)
+>        struct slip *sl = netdev_priv(dev);
+>
+>        spin_lock_bh(&sl->lock);
+> -       if (sl->tty) {
+> +       if (sl->tty)
+> +               clear_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+>                /* TTY discipline is running. */
+> -               sl->tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
+> -       }
 
--- 
-Jens Axboe
+The indentation of the comment looks like it might be wrong here.
 
+>        netif_stop_queue(dev);
+>        sl->rcount   = 0;
+>        sl->xleft    = 0;
