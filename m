@@ -1,45 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759101AbYLDWVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758750AbYLDW2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759101AbYLDWVb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 17:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757900AbYLDWVH
+	id S1758750AbYLDW2S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 17:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbYLDW17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 17:21:07 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56399 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757508AbYLDWVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 17:21:06 -0500
-Message-ID: <493857B5.8000104@kernel.org>
-Date: Thu, 04 Dec 2008 14:20:37 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Thu, 4 Dec 2008 17:27:59 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:38331 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754906AbYLDW16 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 17:27:58 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=rXPOHOx1Vum5bkx8bpChwpgWCO2yhI4RR2GofWHuo9RI87/I4R2+eQvwkKMsfa9DP
+	qlFR53X+RBHBrkJ0LRv9g==
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.28-rc6: early panic with boot option "nosmp"
-References: <20081204022806.GA29293@localhost> <20081204101343.GO6703@one.firstfloor.org> <20081204120214.GA30833@localhost> <20081204123335.GP6703@one.firstfloor.org> <20081204153411.GA18306@elte.hu> <493846E1.7010104@kernel.org> <20081204220919.GU6703@one.firstfloor.org>
-In-Reply-To: <20081204220919.GU6703@one.firstfloor.org>
+In-Reply-To: <492E97FA.5000804@gmail.com>
+References: <604427e00811212247k1fe6b63u9efe8cfe37bddfb5@mail.gmail.com>
+	 <20081126123246.GB23649@wotan.suse.de> <492DAA24.8040100@google.com>
+	 <20081127085554.GD28285@wotan.suse.de> <492E6849.6090205@google.com>
+	 <492E8708.4060601@gmail.com> <20081127120330.GM28285@wotan.suse.de>
+	 <492E90BC.1090208@gmail.com> <20081127123926.GN28285@wotan.suse.de>
+	 <492E97FA.5000804@gmail.com>
+Date: Thu, 4 Dec 2008 14:27:54 -0800
+Message-ID: <604427e00812041427j7f1c8118p48b1b5b577143703@mail.gmail.com>
+Subject: Re: [RFC v1][PATCH]page_fault retry with NOPAGE_RETRY
+From: Ying Han <yinghan@google.com>
+To: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+Cc: Nick Piggin <npiggin@suse.de>, Mike Waychison <mikew@google.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rohit Seth <rohitseth@google.com>,
+       Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> but smp_found_config is set acpi_boot_init.. with madt.
+I am trying your test program(scalability) in house, but somehow i got
+different result as you saw. i created 8 files each with 1G size on
+separate drives( to avoid the latency disturbing of disk seek). I got
+this number without applying the batch based on 2.6.26. May i ask how
+to reproduce the mmap issue you mentioned?
+
+8 CPU
+read_worker
+1 threads Real time: 101.058262 s (since task start)
+2 threads Real time: 50.670456 s (since task start)
+4 threads Real time: 25.904657 s (since task start)
+8 threads Real time: 20.090677 s (since task start)
+--------------------------------------------------------------------------------
+mmap_worker
+1 threads Real time: 101.340662 s (since task start)
+2 threads Real time: 51.484646 s (since task start)
+4 threads Real time: 28.414534 s (since task start)
+8 threads Real time: 21.785818 s (since task start)
+
+--Ying
+
+On Thu, Nov 27, 2008 at 4:52 AM, Török Edwin <edwintorok@gmail.com> wrote:
+> On 2008-11-27 14:39, Nick Piggin wrote:
+>> On Thu, Nov 27, 2008 at 02:21:16PM +0200, Török Edwin wrote:
 >>
->> could move that check earlier
-> 
-> Then it wouldn't print the "Using ACPI foo" messages. I think it's better
-> to put it later like my patch did.
-> 
-> BTW the function could really need splitting up, it seems to do lots
-> of unrelated things.
-
-should move those print out to acpi_boot_init(). 
-
-YH
+>>> On 2008-11-27 14:03, Nick Piggin wrote:
+>>>
+>>>>> Running my testcase shows no significant performance difference. What am
+>>>>> I doing wrong?
+>>>>>
+>>>>>
+>>>>
+>>>> Software may just be doing a lot of mmap/munmap activity. threads +
+>>>> mmap is never going to be pretty because it is always going to involve
+>>>> broadcasting tlb flushes to other cores... Software writers shouldn't
+>>>> be scared of using processes (possibly with some shared memory).
+>>>>
+>>>>
+>>> It would be interesting to compare the performance of a threaded clamd,
+>>> and of a clamd that uses multiple processes.
+>>> Distributing tasks will be a bit more tricky, since it would need to use
+>>> IPC, instead of mutexes and condition variables.
+>>>
+>>
+>> Yes, although you could use PTHREAD_PROCESS_SHARED pthread mutexes on
+>> the shared memory I believe (having never tried it myself).
+>>
+>>
+>>
+>>>> Actually, a lot of things get faster (like malloc, or file descriptor
+>>>> operations) because locks aren't needed.
+>>>>
+>>>> Despite common perception, processes are actually much *faster* than
+>>>> threads when doing common operations like these. They are slightly slower
+>>>> sometimes with things like creation and exit, or context switching, but
+>>>> if you're doing huge numbers of those operations, then it is unlikely
+>>>> to be a performance critical app... :)
+>>>>
+>>>>
+>>> How about distributing tasks to a set of worked threads, is the overhead
+>>> of using IPC instead of
+>>> mutexes/cond variables acceptable?
+>>>
+>>
+>> It is really going to depend on a lot of things. What is involved in
+>> distributing tasks, how many cores and cache/TLB architecture of the
+>> system running on, etc.
+>>
+>> You want to distribute as much work as possible while touching as
+>> little memory as possible, in general.
+>>
+>> But if you're distributing threads over cores, and shared caches are
+>> physically tagged (which I think all x86 CPUs are), then you should
+>> be able to have multiple processes operate on shared memory just as
+>> efficiently as multiple threads I think.
+>>
+>> And then you also get the advantages of reduced contention on other
+>> shared locks and resources.
+>>
+>
+> Thanks for the tips, but lets get back to the original question:
+> why don't I see any performance improvement with the fault-retry patches?
+>
+> My testcase only compares reads file with mmap, vs. reading files with
+> read, with different number of threads.
+> Leaving aside other reasons why mmap is slower, there should be some
+> speedup by running 4 threads vs 1 thread, but:
+>
+> 1 thread: read:27,18 28.76
+> 1 thread: mmap: 25.45, 25.24
+> 2 thread: read: 16.03, 15.66
+> 2 thread: mmap: 22.20, 20.99
+> 4 thread: read: 9.15, 9.12
+> 4 thread: mmap: 20.38, 20.47
+>
+> The speed of 4 threads is about the same as for 2 threads with mmap, yet
+> with read it scales nicely.
+> And the patch doesn't seem to improve scalability.
+> How can I find out if the patch works as expected? [i.e. verify that
+> faults are actually retried, and that they don't keep the semaphore locked]
+>
+>> OK, I'll see if I can find them (am overseas at the moment, and I suspect
+>> they are stranded on some stationary rust back home, but I might be able
+>> to find them on the web).
+>
+> Ok.
+>
+> Best regards,
+> --Edwin
+>
