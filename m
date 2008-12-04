@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759111AbYLDRew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758589AbYLDRfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759111AbYLDRew (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 12:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757007AbYLDRao
+	id S1758589AbYLDRfS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 12:35:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758186AbYLDRcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 12:30:44 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:34173 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758008AbYLDRan (ORCPT
+	Thu, 4 Dec 2008 12:32:10 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:27818 "EHLO
+	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758009AbYLDRcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 12:30:43 -0500
-Date: Thu, 4 Dec 2008 23:00:33 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, akpm@linux-foundation.org,
-       mingo@elte.hu, jason.wessel@windriver.com, avi@qumranet.com,
-       richardj_moore@uk.ibm.com
-Subject: Re: [RFC Patch 8/9] Modify Ptrace to use wrapper routines to
-	access breakpoint registers
-Message-ID: <20081204173033.GA7715@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20081008192044.GA4510@in.ibm.com> <20081008192637.GH4989@in.ibm.com> <20081016014446.374641544CB@magilla.localdomain>
+	Thu, 4 Dec 2008 12:32:08 -0500
+X-BigFish: VPS10(zzzzzzz32i43j68o)
+X-Spam-TCS-SCL: 7:0
+X-WSS-ID: 0KBD4P6-04-YDJ-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: avi@redhat.com, mingo@redhat.com, dwmw2@infradead.org, gregkh@suse.de,
+       weidong.han@intel.com
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 05/19] AMD IOMMU: add domain id free function
+Date: Thu, 4 Dec 2008 18:31:42 +0100
+Message-ID: <1228411916-22668-6-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.6.4
+In-Reply-To: <20081204172142.GH12816@amd.com>
+References: <20081204172142.GH12816@amd.com>
+X-OriginalArrivalTime: 04 Dec 2008 17:31:57.0074 (UTC) FILETIME=[34CB6F20:01C95636]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081016014446.374641544CB@magilla.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 15, 2008 at 06:44:46PM -0700, Roland McGrath wrote:
-> Just make the new functions in hw_breakpoint code use the same old ptrace_*
-> names.  Those are the proper names for this.  It really is just compatibility
-> for the old ptrace interface, not any other reason for "thread" debugregs.
-> Then this patch need do nothing but remove the static ptrace.c functions.
-> 
-> 
-> Thanks,
-> Roland
->
-I will rename the thread_<set/get>_debugreg() functions to ptrace_* and
-move the related functions to arch/x86/kernel/ptrace.c
+Impact: add code to release a domain id
 
-Thanks,
-K.Prasad
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/amd_iommu.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index bec34fd..b774638 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -568,6 +568,16 @@ static u16 domain_id_alloc(void)
+ 	return id;
+ }
  
++static void domain_id_free(int id)
++{
++	unsigned long flags;
++
++	write_lock_irqsave(&amd_iommu_devtable_lock, flags);
++	if (id > 0 && id < MAX_DOMAIN_ID)
++		__clear_bit(id, amd_iommu_pd_alloc_bitmap);
++	write_unlock_irqrestore(&amd_iommu_devtable_lock, flags);
++}
++
+ /*
+  * Used to reserve address ranges in the aperture (e.g. for exclusion
+  * ranges.
+-- 
+1.5.6.4
+
+
