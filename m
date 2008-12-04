@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbYLDGrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbYLDGr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757605AbYLDGrW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 01:47:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbYLDGrM
+	id S1758171AbYLDGr5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 01:47:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbYLDGrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 01:47:12 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:32888 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754362AbYLDGrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 01:47:10 -0500
-Date: Thu, 4 Dec 2008 07:47:02 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: philipl@overt.org
-Cc: "linux kernel" <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx,
-       "Matthew Garrett" <mjg59@srcf.ucam.org>,
-       "Frans Pop" <elendil@planet.nl>
-Subject: Re: [PATCH] ricoh_mmc: Use suspend/resume_noirq (v2)
-Message-ID: <20081204074702.63308010@mjolnir.drzeus.cx>
-In-Reply-To: <54240.67.164.5.76.1228323573.squirrel@overt.org>
-References: <54240.67.164.5.76.1228323573.squirrel@overt.org>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-13934-1228373228-0001-2"
+	Thu, 4 Dec 2008 01:47:47 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:59110 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754874AbYLDGrp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 01:47:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QLhGpDFB3CcsI96Q+V1ghmvWjSPERNdVJGFSsEYMy9nshN4x4gtwGoeL8oRlBBkVH0
+         tgfXLqzoXQoGubH0kH7JNcD6q/n1hfw+m5mwxG1uMnCHp4n2OSCpHvlEAk8E1FBHZwIK
+         SDcfrm/eXL1cdpYxciezto67zeWCzaHtCyuJg=
+Date: Thu, 4 Dec 2008 09:46:43 +0300
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH] [STAGING] Move staging drivers back to
+	staging-specific menu
+Message-ID: <20081204064643.GA29338@doriath.ww600.siemens.net>
+References: <1227819688-24035-1-git-send-email-dbaryshkov@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1227819688-24035-1-git-send-email-dbaryshkov@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi,
 
---=_freyr.drzeus.cx-13934-1228373228-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 3 Dec 2008 11:59:33 -0500 (EST)
-philipl@overt.org wrote:
-
-> If ricoh_mmc suspends before sdhci_pci, it will pull the card
-> out from under the controller, which could leave the system in
-> a very confused state.
->=20
-> Using suspend/resume_noirq ensures that sdhci_pci suspends first
-> and resumes second.
->=20
-> Signed-off-by: Philip Langdale <philipl@overt.org>
+On Fri, Nov 28, 2008 at 12:01:28AM +0300, Dmitry Baryshkov wrote:
+> Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
 > ---
+>  drivers/staging/Kconfig |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 
-It's probably easier if this is carried in rafael's tree, where the PM
-change is. Add a
+What about this patch? I don't see it in linux-next
 
-Acked-by: Pierre Ossman <drzeus@drzeus.cx>
+> 
+> diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+> index c95b286..4089f14 100644
+> --- a/drivers/staging/Kconfig
+> +++ b/drivers/staging/Kconfig
+> @@ -22,6 +22,8 @@ menuconfig STAGING
+>  	  If in doubt, say N here.
+>  
+>  
+> +if STAGING
+> +
+>  config STAGING_EXCLUDE_BUILD
+>  	bool "Exclude Staging drivers from being built" if STAGING
+>  	default y
+> @@ -37,8 +39,6 @@ config STAGING_EXCLUDE_BUILD
+>  	  when selecting 'make allyesconfg' and 'make allmodconfig' so
+>  	  don't be all that put off, your dog will be just fine.
+>  
+> -if !STAGING_EXCLUDE_BUILD
+> -
+>  source "drivers/staging/et131x/Kconfig"
+>  
+>  source "drivers/staging/slicoss/Kconfig"
+> -- 
+> 1.5.6.5
+> 
 
-Rgds
---=20
-     -- Pierre Ossman
+-- 
+With best wishes
+Dmitry
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-13934-1228373228-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkk3fOsACgkQ7b8eESbyJLjSdwCffc/stIRAeJLH3o6VwalTVt8y
-BYAAoPyS5slcr49YB8uhjlkYf7ryJ+oa
-=OY+t
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-13934-1228373228-0001-2--
