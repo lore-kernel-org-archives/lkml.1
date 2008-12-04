@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYLDIlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbYLDIlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbYLDIlV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 03:41:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYLDIlM
+	id S1756621AbYLDIlh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 03:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756220AbYLDIlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 03:41:12 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:35488 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751753AbYLDIlK (ORCPT
+	Thu, 4 Dec 2008 03:41:23 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49447 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756184AbYLDIlV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 03:41:10 -0500
-Date: Thu, 4 Dec 2008 09:40:13 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, jirislaby@gmail.com,
-       linux-kernel@vger.kernel.org
-Message-ID: <20081204084013.GA24397@gundam.enneenne.com>
-References: <1228317711-1311-1-git-send-email-jirislaby@gmail.com> <20081203153537.4504bdd7@lxorguk.ukuu.org.uk> <20081203120643.169baeee.akpm@linux-foundation.org>
+	Thu, 4 Dec 2008 03:41:21 -0500
+Date: Thu, 4 Dec 2008 09:43:10 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, john@johnmccutchan.com,
+       arnd@arndb.de, mtk.manpages@gmail.com, hch@lst.de, rlove@rlove.org,
+       linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davidn@davidnewall.com, Eric Paris <eparis@redhat.com>
+Subject: Re: [take2] Inotify: nested attributes support.
+Message-ID: <20081204084309.GA2072@elf.ucw.cz>
+References: <20081125194234.GA24449@ioremap.net> <20081125162434.4feacbbf.akpm@linux-foundation.org> <20081126074239.GA17525@ioremap.net> <20081126001538.4b1c7c99.akpm@linux-foundation.org> <20081126082936.GB17525@ioremap.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081203120643.169baeee.akpm@linux-foundation.org>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/1 #2] Char: n_tty, include module.h
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <20081126082936.GB17525@ioremap.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 12:06:43PM -0800, Andrew Morton wrote:
-> On Wed, 3 Dec 2008 15:35:37 +0000
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Wed 2008-11-26 11:29:36, Evgeniy Polyakov wrote:
+> On Wed, Nov 26, 2008 at 12:15:38AM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > OK, so we have a super-duper framework which will allow us to add pids
+> > (and other things) to inotify messages.
 > 
-> > On Wed,  3 Dec 2008 16:21:51 +0100
-> > Jiri Slaby <jirislaby@gmail.com> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > this is a ldisc-n_tty-export-all-n_tty-ldisc-methods.patch fix.
-> > 
-> > NAK and NAK the patch needing it.
+> Yup :)
 > 
-> Late :(
+> > This still doesn't provide a reason for anyone to be interested in the
+> > code!  Why do we want pids in inotify messages?
+>  
+> I actually cared only about myself :)
+> I started the thread and implementation, because my application has to
+> differentiate IO made by itself and any IO made by system (another
+> users, crons, whatever else), inotify did not give me that info, so I
+> extended it. As of others: PID/TID may be used by watching applications
+> to reduce own load to not process own IO, things like beagle may show
+> who actually made changes into the file.
+
+Actually, does the kernel even know who initiated the i/o?
+
+Take two threads, both mapping /etc/something , both of them writing
+through the mmap. Kernel sees dirty pages so it writes them back, but
+which thread is repsonsible for the write?
+ 
+> > And how does this work give that pids are (no longer) system-wide unique?
 > 
-> > Once PPS is in
-> 
-> PPS can't go in without this?
+> It gets pids from the caller's task_struct (via current), so its data is
+> as unique as process calling getpid() or syscall(__NR_gettid).
 
-No, PPS works perfectly without that patch.
-
-> Perhaps I can drop pps-serial-clients-support.patch, dunno.
-
-I think you can drop the last fix.
-
-Ciao,
-
-Rodolfo
-
+What happens on mmap()?
+									Pavel
 -- 
-
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming                     skype:  rodolfo.giometti
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
