@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYLDSBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbYLDSIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbYLDSBy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 13:01:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYLDSBp
+	id S1757424AbYLDSIq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 13:08:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbYLDSIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 13:01:45 -0500
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:61182 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753919AbYLDSBo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 13:01:44 -0500
-Subject: Re: [PATCH] mm: remove UP version lru_add_drain_all()
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       y-goto@jp.fujitsu.com, npiggin@suse.de,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <20081204110013.1D62.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <1228342567.13111.11.camel@nimitz>
-	 <20081204093143.390afa9f.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20081204110013.1D62.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Thu, 04 Dec 2008 19:01:39 +0100
-Message-Id: <1228413699.18010.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Dec 2008 13:08:35 -0500
+Received: from www.tglx.de ([62.245.132.106]:59468 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751605AbYLDSIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 13:08:35 -0500
+Date: Thu, 4 Dec 2008 19:08:09 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: edward_estabrook@agilent.com, linux-kernel@vger.kernel.org,
+       hjk@linutronix.de, gregkh@suse.de, edward.estabrook@gmail.com,
+       hugh <hugh@veritas.com>, linux-mm <linux-mm@kvack.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
+Message-ID: <20081204180809.GB3079@local>
+References: <43FC624C55D8C746A914570B66D642610367F29B@cos-us-mb03.cos.agilent.com> <1228379942.5092.14.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1228379942.5092.14.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-04 at 11:14 +0900, KOSAKI Motohiro wrote:
-> Then this ifdef is not valueable.
-> simple removing is better.
+On Thu, Dec 04, 2008 at 09:39:02AM +0100, Peter Zijlstra wrote:
+> On Wed, 2008-12-03 at 14:39 -0700, edward_estabrook@agilent.com wrote:
+> > From: Edward Estabrook <Edward_Estabrook@agilent.com>
+> > 
+> > Here is a patch that adds the ability to dynamically allocate (and
+> > use) coherent DMA from userspace by extending the userspace IO driver.
+> > This patch applies against 2.6.28-rc6.
+> > 
+> > The gist of this implementation is to overload uio's mmap
+> > functionality to allocate and map a new DMA region on demand.  The
+> > bus-specific DMA address as returned by dma_alloc_coherent is made
+> > available to userspace in the 1st long word of the newly created
+> > region (as well as through the conventional 'addr' file in sysfs).  
+> > 
+> > To allocate a DMA region you use the following:
+> > /* Pass this magic number to mmap as offset to dynamically allocate a
+> > chunk of memory */ #define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
+> > 
+> > void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
+> > fd, DMA_MEM_ALLOCATE_MMAP_OFFSET); u_int64_t *addr = *(u_int64_t *)
+> > memory;
+> > 
+> > where 'size' is the size in bytes of the region you want and fd is the
+> > opened /dev/uioN file.
+> > 
+> > Allocation occurs in page sized pieces by design to ensure that
+> > buffers are page-aligned.
+> > 
+> > Memory is released when uio_unregister_device() is called.
+> >
+> > I have used this extensively on a 2.6.21-based kernel and ported it to
+> > 2.6.28-rc6 for review / submission here.
+> > 
+> > Comments appreciated!
 > 
+> Yuck!
 > 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Christoph Lameter <cl@linux-foundation.org>
-> CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+> Why not create another special device that will give you DMA memory when
+> you mmap it? That would also allow you to obtain the physical address
+> without this utter horrid hack of writing it in the mmap'ed memory.
+> 
+> /dev/uioN-dma would seem like a fine name for that.
 
-Thanks, works for me.
+I don't like to have a separate device for DMA memory. It would completely
+break the current concept of userspace drivers if you had to get normal
+memory from one device and DMA memory from another. Note that one driver
+can have both.
 
-Acked-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+But I agree that it's confusing if the physical address is stored somewhere
+in the mapped memory. That should simply be omitted, we have that information
+in sysfs anyway - like for any other memory mappings. But I guess we need
+some kind of "type" or "flags" attribute for the mappings so that userspace
+can find out if a mapping is DMA capable or not.
+
+Thanks,
+Hans
 
