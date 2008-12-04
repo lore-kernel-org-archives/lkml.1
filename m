@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbYLDC3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbYLDCau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757868AbYLDC3Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 21:29:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbYLDC3N
+	id S1757624AbYLDCau (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 21:30:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYLDCal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 21:29:13 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:48625 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750980AbYLDC3M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 21:29:12 -0500
-Date: Wed, 3 Dec 2008 21:29:10 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, fweisbec@gmail.com, peterz@infradead.org,
-       arjan@infradead.org, dave@linux.vnet.ibm.com, containers@lists.osdl.org,
-       sukadev@linux.vnet.ibm.com, serue@us.ibm.com, srostedt@redhat.com
-Subject: Re: [PATCH 3/3] ftrace: trace single pid for function graph tracer
-In-Reply-To: <m1y6yw25mq.fsf@frodo.ebiederm.org>
-Message-ID: <alpine.DEB.1.10.0812032125340.28153@gandalf.stny.rr.com>
-References: <20081203203656.776893226@goodmis.org> <20081203203829.362295724@goodmis.org> <20081203124915.2eb9e7cd.akpm@linux-foundation.org> <alpine.DEB.1.10.0812031551360.29045@gandalf.stny.rr.com> <m1y6yw25mq.fsf@frodo.ebiederm.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 3 Dec 2008 21:30:41 -0500
+Received: from sh.osrg.net ([192.16.179.4]:41781 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751659AbYLDCak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 21:30:40 -0500
+Date: Thu, 4 Dec 2008 11:30:16 +0900
+To: agk@redhat.com
+Cc: fujita.tomonori@lab.ntt.co.jp, mbroz@redhat.com, jens.axboe@oracle.com,
+       neilb@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] block: fix setting of max_segment_size and
+ seg_boundary mask
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081203120616.GM26097@agk.fab.redhat.com>
+References: <493324D1.7010202@redhat.com>
+	<20081203143112F.fujita.tomonori@lab.ntt.co.jp>
+	<20081203120616.GM26097@agk.fab.redhat.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081204112959X.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 3 Dec 2008 12:06:16 +0000
+Alasdair G Kergon <agk@redhat.com> wrote:
 
-On Wed, 3 Dec 2008, Eric W. Biederman wrote:
-
-> Steven Rostedt <rostedt@goodmis.org> writes:
+> On Wed, Dec 03, 2008 at 02:32:00PM +0900, FUJITA Tomonori wrote:
+> > On Mon, 01 Dec 2008 00:42:09 +0100
+> > Milan Broz <mbroz@redhat.com> wrote:
+>  
+> > > @@ -314,6 +317,7 @@ void blk_queue_stack_limits(struct request_queue *t, struct request_queue *b)
+> > >  	/* zero is "infinity" */
+> > >  	t->max_sectors = min_not_zero(t->max_sectors, b->max_sectors);
+> > >  	t->max_hw_sectors = min_not_zero(t->max_hw_sectors, b->max_hw_sectors);
+> > > +	t->seg_boundary_mask = min_not_zero(t->seg_boundary_mask, b->seg_boundary_mask);
+> > >  
+> > >  	t->max_phys_segments = min(t->max_phys_segments, b->max_phys_segments);
+> > >  	t->max_hw_segments = min(t->max_hw_segments, b->max_hw_segments);
+>  
+> > Theoretically, blk_queue_stack_limits() better use min_not_zero
+> > instead of min for max_phys_segments, max_hw_segments, and
+> > max_segment_size?
 > 
-> The way patch 2 uses pids is just stupid.  It has nothing to do with
-> pids aren't unique.  You do a full walk of the process list instead
-> of using the hash table.
+> But does zero have any valid use there?
 
-The way patch 2 uses the pids is stupid, it was just the easiest way to 
-implement it correctly ;-)  I work with, do it stupid but correct first, 
-then optimize.
+I think that zero is invalid for all the parameters.
 
-> 
-> It makes me think that task->pid really should go away because with it
-> there people don't bother to look and see how things normally work.
+Setting max_phys_segments to zero means that we can't do any data
+transfer... Ditto for max_hw_segments, and max_segment_size.
 
-This is far from a fast path, and I can easily fix it. The hard work was 
-the rest of the patch not this part. I even did it stupid knowing that I 
-would be rewriting it to handle namespaces. I stated that this needed to 
-be fixed in the patch itself.
+I think that the lowest layer (scsi in this case) needs to setup them
+properly and the upper layers should inherit them.
 
-One thing I never got an answer for, using the namespace pid path, can I 
-still select the idle task to trace, i.e. pid == 0.
 
--- Steve
+> We left those alone for now, feeling that BUG_ON() might be more appropriate.
 
+Yeah, the patch is fine for now.
