@@ -1,25 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbYLDPl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757630AbYLDPms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758641AbYLDPl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 10:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757132AbYLDPkU
+	id S1757630AbYLDPms (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 10:42:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758155AbYLDPlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 10:40:20 -0500
-Received: from 68-112-229-48.dhcp.oxfr.ma.charter.com ([68.112.229.48]:53221
-	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757032AbYLDPkS (ORCPT
+	Thu, 4 Dec 2008 10:41:08 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51647 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756688AbYLDPlG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 10:40:18 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH v3 4/4] sched: use highest_prio.next to optimize pull
-	operations
-To: mingo@elte.hu
-Cc: peterz@infradead.org, rostedt@goodmis.org, ghaskins@novell.com,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Date: Thu, 04 Dec 2008 10:43:57 -0500
-Message-ID: <20081204154357.21712.52115.stgit@dev.haskins.net>
-In-Reply-To: <20081204154100.21712.88806.stgit@dev.haskins.net>
-References: <20081204154100.21712.88806.stgit@dev.haskins.net>
+	Thu, 4 Dec 2008 10:41:06 -0500
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] tty: Flags should be accessed via the foo_bit interfaces
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 04 Dec 2008 15:41:19 +0000
+Message-ID: <20081204154030.27980.82380.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -28,41 +23,169 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We currently take the rq->lock for every cpu in an overload state during
-pull_rt_tasks().  However, we now have enough information via the
-highest_prio.[curr|next] fields to determine if there is any tasks of
-interest to warrant the overhead of the rq->lock, before we actually take
-it.  So we use this information to reduce lock contention during the
-pull for the case where the source-rq doesnt have tasks that preempt
-the current task.
+From: Alan Cox <alan@redhat.com>
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+We have various drivers that poke around directly and we need to clean this
+up before it causes problems. Fix up the networking ones - (Dave can you send
+this via the net tree as that seems simplest)
+
+Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- kernel/sched_rt.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+ drivers/net/irda/irtty-sir.c |    7 +++----
+ drivers/net/slip.c           |   11 +++++------
+ drivers/net/wan/x25_asy.c    |    8 ++++----
+ drivers/net/wireless/strip.c |    8 +++-----
+ 4 files changed, 15 insertions(+), 19 deletions(-)
 
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index ffdd00e..afcc67a 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1220,6 +1220,18 @@ static int pull_rt_task(struct rq *this_rq)
- 			continue;
+
+diff --git a/drivers/net/irda/irtty-sir.c b/drivers/net/irda/irtty-sir.c
+index 6bcee01..d53aa95 100644
+--- a/drivers/net/irda/irtty-sir.c
++++ b/drivers/net/irda/irtty-sir.c
+@@ -191,7 +191,7 @@ static int irtty_do_write(struct sir_dev *dev, const unsigned char *ptr, size_t
+ 	tty = priv->tty;
+ 	if (!tty->ops->write)
+ 		return 0;
+-	tty->flags |= (1 << TTY_DO_WRITE_WAKEUP);
++	set_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
+ 	writelen = tty_write_room(tty);
+ 	if (writelen > len)
+ 		writelen = len;
+@@ -263,8 +263,7 @@ static void irtty_write_wakeup(struct tty_struct *tty)
+ 	IRDA_ASSERT(priv != NULL, return;);
+ 	IRDA_ASSERT(priv->magic == IRTTY_MAGIC, return;);
  
- 		src_rq = cpu_rq(cpu);
-+
-+		/*
-+		 * Don't bother taking the src_rq->lock if the next highest
-+		 * task is known to be lower-priority than our current task.
-+		 * This may look racy, but if this value is about to go
-+		 * logically higher, the src_rq will push this task away.
-+		 * And if its going logically lower, we do not care
-+		 */
-+		if (src_rq->rt.highest_prio.next >=
-+		    this_rq->rt.highest_prio.curr)
-+			continue;
-+
- 		/*
- 		 * We can potentially drop this_rq's lock in
- 		 * double_lock_balance, and another CPU could
+-	tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
+-
++	clear_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
+ 	if (priv->dev)
+ 		sirdev_write_complete(priv->dev);
+ }
+@@ -522,7 +521,7 @@ static void irtty_close(struct tty_struct *tty)
+ 
+ 	/* Stop tty */
+ 	irtty_stop_receiver(tty, TRUE);
+-	tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
++	clear_bit(TTY_DO_WRITE_WAKEUP, &tty->flags);
+ 	if (tty->ops->stop)
+ 		tty->ops->stop(tty);
+ 
+diff --git a/drivers/net/slip.c b/drivers/net/slip.c
+index 1d58991..951c7df 100644
+--- a/drivers/net/slip.c
++++ b/drivers/net/slip.c
+@@ -402,7 +402,7 @@ static void sl_encaps(struct slip *sl, unsigned char *icp, int len)
+ 	 * if we did not request it before write operation.
+ 	 *       14 Oct 1994  Dmitry Gorodchanin.
+ 	 */
+-	sl->tty->flags |= (1 << TTY_DO_WRITE_WAKEUP);
++	set_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+ 	actual = sl->tty->ops->write(sl->tty, sl->xbuff, count);
+ #ifdef SL_CHECK_TRANSMIT
+ 	sl->dev->trans_start = jiffies;
+@@ -432,7 +432,7 @@ static void slip_write_wakeup(struct tty_struct *tty)
+ 		/* Now serial buffer is almost free & we can start
+ 		 * transmission of another packet */
+ 		sl->tx_packets++;
+-		tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
++		clear_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+ 		sl_unlock(sl);
+ 		return;
+ 	}
+@@ -465,7 +465,7 @@ static void sl_tx_timeout(struct net_device *dev)
+ 			(tty_chars_in_buffer(sl->tty) || sl->xleft) ?
+ 				"bad line quality" : "driver error");
+ 		sl->xleft = 0;
+-		sl->tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
++		clear_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+ 		sl_unlock(sl);
+ #endif
+ 	}
+@@ -515,10 +515,9 @@ sl_close(struct net_device *dev)
+ 	struct slip *sl = netdev_priv(dev);
+ 
+ 	spin_lock_bh(&sl->lock);
+-	if (sl->tty) {
++	if (sl->tty)
++		clear_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+ 		/* TTY discipline is running. */
+-		sl->tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
+-	}
+ 	netif_stop_queue(dev);
+ 	sl->rcount   = 0;
+ 	sl->xleft    = 0;
+diff --git a/drivers/net/wan/x25_asy.c b/drivers/net/wan/x25_asy.c
+index 2a6c7a6..ed0b196 100644
+--- a/drivers/net/wan/x25_asy.c
++++ b/drivers/net/wan/x25_asy.c
+@@ -243,7 +243,7 @@ static void x25_asy_encaps(struct x25_asy *sl, unsigned char *icp, int len)
+ 	 * if we did not request it before write operation.
+ 	 *       14 Oct 1994  Dmitry Gorodchanin.
+ 	 */
+-	sl->tty->flags |= (1 << TTY_DO_WRITE_WAKEUP);
++	set_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+ 	actual = sl->tty->ops->write(sl->tty, sl->xbuff, count);
+ 	sl->xleft = count - actual;
+ 	sl->xhead = sl->xbuff + actual;
+@@ -268,7 +268,7 @@ static void x25_asy_write_wakeup(struct tty_struct *tty)
+ 		/* Now serial buffer is almost free & we can start
+ 		 * transmission of another packet */
+ 		sl->stats.tx_packets++;
+-		tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
++		clear_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+ 		x25_asy_unlock(sl);
+ 		return;
+ 	}
+@@ -291,7 +291,7 @@ static void x25_asy_timeout(struct net_device *dev)
+ 		       (tty_chars_in_buffer(sl->tty) || sl->xleft) ?
+ 		       "bad line quality" : "driver error");
+ 		sl->xleft = 0;
+-		sl->tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
++		clear_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+ 		x25_asy_unlock(sl);
+ 	}
+ 	spin_unlock(&sl->lock);
+@@ -504,7 +504,7 @@ static int x25_asy_close(struct net_device *dev)
+ 
+ 	spin_lock(&sl->lock);
+ 	if (sl->tty)
+-		sl->tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
++		clear_bit(TTY_DO_WRITE_WAKEUP, &sl->tty->flags);
+ 
+ 	netif_stop_queue(dev);
+ 	sl->rcount = 0;
+diff --git a/drivers/net/wireless/strip.c b/drivers/net/wireless/strip.c
+index 417e9e6..fdba397 100644
+--- a/drivers/net/wireless/strip.c
++++ b/drivers/net/wireless/strip.c
+@@ -1252,7 +1252,7 @@ static void strip_write_some_more(struct tty_struct *tty)
+ #endif
+ 	} else {		/* Else start transmission of another packet */
+ 
+-		tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
++		clear_bit(TTY_DO_WRITE_WAKEUP, &strip_info->tty->flags);
+ 		strip_unlock(strip_info);
+ 	}
+ }
+@@ -1455,8 +1455,7 @@ static void strip_send(struct strip *strip_info, struct sk_buff *skb)
+ 	 */
+ 	strip_info->tx_head = strip_info->tx_buff;
+ 	strip_info->tx_left = ptr - strip_info->tx_buff;
+-	strip_info->tty->flags |= (1 << TTY_DO_WRITE_WAKEUP);
+-
++	set_bit(TTY_DO_WRITE_WAKEUP, &strip_info->tty->flags);
+ 	/*
+ 	 * 4. Debugging check to make sure we're not overflowing the buffer.
+ 	 */
+@@ -2455,8 +2454,7 @@ static int strip_close_low(struct net_device *dev)
+ 
+ 	if (strip_info->tty == NULL)
+ 		return -EBUSY;
+-	strip_info->tty->flags &= ~(1 << TTY_DO_WRITE_WAKEUP);
+-
++	clear_bit(TTY_DO_WRITE_WAKEUP, &strip_info->tty->flags);
+ 	netif_stop_queue(dev);
+ 
+ 	/*
 
