@@ -1,32 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbYLDPhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYLDPjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756688AbYLDPhb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 10:37:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYLDPhV
+	id S1755955AbYLDPjj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 10:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYLDPja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 10:37:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50282 "EHLO mx2.mail.elte.hu"
+	Thu, 4 Dec 2008 10:39:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35404 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753148AbYLDPhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 10:37:20 -0500
-Date: Thu, 4 Dec 2008 16:36:26 +0100
+	id S1753555AbYLDPja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 10:39:30 -0500
+Date: Thu, 4 Dec 2008 16:34:11 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 3/3] ftrace: add ability to only trace swapper tasks
-Message-ID: <20081204153626.GB18293@elte.hu>
-References: <20081204052638.425740534@goodmis.org> <20081204052735.362609481@goodmis.org> <20081204001803.598063f5.akpm@linux-foundation.org> <20081204091023.GJ32594@elte.hu> <m1vdu0t7tz.fsf@frodo.ebiederm.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Yinghai Lu <yinghai@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.28-rc6: early panic with boot option "nosmp"
+Message-ID: <20081204153411.GA18306@elte.hu>
+References: <20081204022806.GA29293@localhost> <20081204101343.GO6703@one.firstfloor.org> <20081204120214.GA30833@localhost> <20081204123335.GP6703@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1vdu0t7tz.fsf@frodo.ebiederm.org>
+In-Reply-To: <20081204123335.GP6703@one.firstfloor.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,27 +37,25 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-> Ingo Molnar <mingo@elte.hu> writes:
+> > The exception raised on dereferencing mpf or mpf_found.
 > 
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> >> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> >> 
-> >> What does this patch actually do?  Is swapper currently excluded from 
-> >> tracing for undisclosed reasons and this patch permits it to be traced? 
-> >> If so, why was swapper thus excluded?  Or am I totally off track?
-> >
-> >> > +static struct pid * const ftrace_swapper_pid = (struct pid *)1;
-> >> 
-> >> eh?
-> >
-> > all side-effects of getting rid of the integer based PID namespace 
-> > and replacing them with struct pid pointers.
+> This obvious patch should fix it then. Does it?
 > 
-> Thanks for asking Andrew it looks like an unnecessary side effect.
+> --
+> 
+> Fix early exception in __get_smp_config with nosmp
+> 
+> Bail out early when there is no MP table.
+> 
+> Reported by Wu Fengguang
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  arch/x86/kernel/mpparse.c |    3 +++
+>  1 file changed, 3 insertions(+)
 
-Will wait for how the end result looks like ;-)
+applied to tip/x86/urgent, thanks Andi!
 
 	Ingo
