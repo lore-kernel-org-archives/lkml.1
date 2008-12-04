@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbYLDOeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYLDOfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757930AbYLDOeT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 09:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754931AbYLDOeJ
+	id S1757279AbYLDOfv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 09:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYLDOfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 09:34:09 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:55713 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753849AbYLDOeI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 09:34:08 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jody McIntyre <scjody@sun.com>
-Subject: Re: [PATCH] Fix compile error in arch/x86/kernel/syscall_64.c
-Date: Thu, 4 Dec 2008 15:32:59 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       tglx@linutronix.de, mingo@redhat.com
-References: <20081202215154.GL29919@clouds>
-In-Reply-To: <20081202215154.GL29919@clouds>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 4 Dec 2008 09:35:42 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54121 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752572AbYLDOfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 09:35:41 -0500
+Date: Thu, 4 Dec 2008 15:34:09 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Andi Kleen <ak@linux.intel.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: BUG? "Call fasync() functions without the BKL" is racy
+Message-ID: <20081204143409.GA10384@redhat.com>
+References: <20081128192508.GA21369@redhat.com> <4933CBB0.2060003@linux.intel.com> <20081201191555.GA21385@redhat.com> <20081201123405.51d20d84@bike.lwn.net> <20081202122939.GA3619@redhat.com> <493562B5.5020600@linux.intel.com> <20081203190648.GA23893@redhat.com> <4936F83E.7090506@linux.intel.com> <20081203154508.3502b365@bike.lwn.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812041533.00736.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+feWzXRGCoOBKJ8Qp36RSMfIXC+vRfUqKY+57
- 8UM6w/9SFdpv6mQhNC6prq9l5jogjv5ljfGUf4N9fkyMOF7xC8
- QK5a8Iwim59flulPzQyoA==
+In-Reply-To: <20081203154508.3502b365@bike.lwn.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 December 2008, Jody McIntyre wrote:
-> 1965aae3c98397aad957412413c07e97b1bd4e64 broke compilation on one of my
-> systems:
-> 
->   CC      arch/x86/kernel/syscall_64.o
-> arch/x86/kernel/syscall_64.c:27: error: array index in initializer exceeds array bounds
-> arch/x86/kernel/syscall_64.c:27: error: (near initialization for ‘sys_call_table’)
-> arch/x86/kernel/syscall_64.c:27: warning: excess elements in array initializer
-> arch/x86/kernel/syscall_64.c:27: warning: (near initialization for ‘sys_call_table’)
-> make[1]: *** [arch/x86/kernel/syscall_64.o] Error 1
-> make: *** [arch/x86/kernel/syscall_64.o] Error 2
-> 
-> Reverting only the parts of the commit that change ASM_X86__UNISTD_64_H
-> to _ASM_X86_UNISTD_64_H fixes the problem.  Patch below.
-> 
-> I have no idea what's going on here.  Compiler bug?
+On 12/03, Jonathan Corbet wrote:
+>
+> On Wed, 03 Dec 2008 22:21:02 +0100
+> Andi Kleen <ak@linux.intel.com> wrote:
+>
+> > > Serioulsy, I think the best (partial, yes) fix for now is to restore
+> > > lock_kernel() in setfl() and change ioctl_fioxxx() accordingly.
+> > > At least this protect us from tty too.
+> >
+> > For 2.6.28 I agree.
+>
+> OK, what do you all think of the following?  It returns fcntl.c to its
+> previous state, and adds locking in fs/ioctl.c.  It's worth noting that
+> ioctl_fioasync() has always been racy in exactly the same way.
 
-Maybe you have stale header files in include/asm-x86/? That sometimes
-happens if you git-checkout -f or git-reset --hard.
+Yes, I agree with you and Andi, imho this is what we need for 2.6.28.
 
-	Arnd <><
+Thanks Jonathan!
+
+Oleg.
+
