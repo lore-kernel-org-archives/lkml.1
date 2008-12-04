@@ -1,66 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbYLDXd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbYLDXq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbYLDXd3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 18:33:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYLDXdT
+	id S1754685AbYLDXq0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 18:46:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYLDXqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 18:33:19 -0500
-Received: from host44-35-static.37-85-b.business.telecomitalia.it ([85.37.35.44]:50432
-	"EHLO mail.sineo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbYLDXdS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 18:33:18 -0500
-X-Greylist: delayed 1860 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Dec 2008 18:33:18 EST
-From: Luca Santarelli <hrk@users.sourceforge.net>
-To: marcel@holtmann.org
-Subject: [PATCH] bluetooth usb hci: ISSC usb dongle with buggy SCO support
-Date: Fri, 5 Dec 2008 00:02:13 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812050002.13560.hrk@users.sourceforge.net>
+	Thu, 4 Dec 2008 18:46:03 -0500
+Received: from www.tglx.de ([62.245.132.106]:38346 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751392AbYLDXqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 18:46:01 -0500
+Message-Id: <20081204230228.557959174@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Thu, 04 Dec 2008 23:44:54 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>
+Subject: [patch 2/3] performance counters: documentation
+References: <20081204225345.654705757@linutronix.de>
+Content-Disposition: inline; filename=perf-counters-docs.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Luca Santarelli <hrk <t> users.sourceforge.net>
+From: Ingo Molnar <mingo@elte.hu>
 
-As reported at:
-http://bugs.gentoo.org/show_bug.cgi?id=249523
-and in reference of similar patches such as:
-http://thread.gmane.org/gmane.linux.bluez.devel/15067
+Add more documentation about performance counters.
 
-This patch changes the blacklist entry for the ISSC bluetooth USB
-dongle fixing the issue of the repeatedly appearing message
-
-  hci_scodata_packet: hci0 SCO packet for unknown connection handle 92
-
-in the kernel logs.
-
-Sighed-off-by: Luca Santarelli <hrk <at> users.sourceforge.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
-This is my first kernel patch ever, I read the docs, but please notify
-me if I made any mistake. Thank you all for your work, I'm happy to have
-been able to contribute to this!
+ Documentation/perf-counters.txt |  104 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 104 insertions(+)
 
-The patch has been run against 2.6.27.7 and has been tested on three x86
-machines, showing no issues. In my own tests, the dongle has been then
-used to connect to devices and everything worked fine.
+Index: linux/Documentation/perf-counters.txt
+===================================================================
+--- /dev/null
++++ linux/Documentation/perf-counters.txt
+@@ -0,0 +1,104 @@
++
++Performance Counters for Linux
++------------------------------
++
++Performance counters are special hardware registers available on most modern
++CPUs. These registers count the number of certain types of hw events: such
++as instructions executed, cachemisses suffered, or branches mis-predicted -
++without slowing down the kernel or applications. These registers can also
++trigger interrupts when a threshold number of events have passed - and can
++thus be used to profile the code that runs on that CPU.
++
++The Linux Performance Counter subsystem provides an abstraction of these
++hardware capabilities. It provides per task and per CPU counters, and
++it provides event capabilities on top of those.
++
++Performance counters are accessed via special file descriptors.
++There's one file descriptor per virtual counter used.
++
++The special file descriptor is opened via the perf_counter_open()
++system call:
++
++ int
++ perf_counter_open(u32 hw_event_type,
++                   u32 hw_event_period,
++                   u32 record_type,
++                   pid_t pid,
++                   int cpu);
++
++The syscall returns the new fd. The fd can be used via the normal
++VFS system calls: read() can be used to read the counter, fcntl()
++can be used to set the blocking mode, etc.
++
++Multiple counters can be kept open at a time, and the counters
++can be poll()ed.
++
++When creating a new counter fd, 'hw_event_type' is one of:
++
++ enum hw_event_types {
++	PERF_COUNT_CYCLES,
++	PERF_COUNT_INSTRUCTIONS,
++	PERF_COUNT_CACHE_REFERENCES,
++	PERF_COUNT_CACHE_MISSES,
++	PERF_COUNT_BRANCH_INSTRUCTIONS,
++	PERF_COUNT_BRANCH_MISSES,
++ };
++
++These are standardized types of events that work uniformly on all CPUs
++that implements Performance Counters support under Linux. If a CPU is
++not able to count branch-misses, then the system call will return
++-EINVAL.
++
++[ Note: more hw_event_types are supported as well, but they are CPU
++  specific and are enumerated via /sys on a per CPU basis. Raw hw event
++  types can be passed in as negative numbers. For example, to count
++  "External bus cycles while bus lock signal asserted" events on Intel
++  Core CPUs, pass in a -0x4064 event type value. ]
++
++The parameter 'hw_event_period' is the number of events before waking up
++a read() that is blocked on a counter fd. Zero value means a non-blocking
++counter.
++
++'record_type' is the type of data that a read() will provide for the
++counter, and it can be one of:
++
++  enum perf_record_type {
++	PERF_RECORD_SIMPLE,
++	PERF_RECORD_IRQ,
++  };
++
++a "simple" counter is one that counts hardware events and allows
++them to be read out into a u64 count value. (read() returns 8 on
++a successful read of a simple counter.)
++
++An "irq" counter is one that will also provide an IRQ context information:
++the IP of the interrupted context. In this case read() will return
++the 8-byte counter value, plus the Instruction Pointer address of the
++interrupted context.
++
++The 'pid' parameter allows the counter to be specific to a task:
++
++ pid == 0: if the pid parameter is zero, the counter is attached to the
++ current task.
++
++ pid > 0: the counter is attached to a specific task (if the current task
++ has sufficient privilege to do so)
++
++ pid < 0: all tasks are counted (per cpu counters)
++
++The 'cpu' parameter allows a counter to be made specific to a full
++CPU:
++
++ cpu >= 0: the counter is restricted to a specific CPU
++ cpu == -1: the counter counts on all CPUs
++
++Note: the combination of 'pid == -1' and 'cpu == -1' is not valid.
++
++A 'pid > 0' and 'cpu == -1' counter is a per task counter that counts
++events of that task and 'follows' that task to whatever CPU the task
++gets schedule to. Per task counters can be created by any user, for
++their own tasks.
++
++A 'pid == -1' and 'cpu == x' counter is a per CPU counter that counts
++all events on CPU-x. Per CPU counters need CAP_SYS_ADMIN privilege.
++
 
---- linux-2.6.27.7/drivers/bluetooth/hci_usb.c.orig	2008-12-04 20:18:38.000000000 +0100
-+++ linux-2.6.27.7/drivers/bluetooth/hci_usb.c	2008-12-04 20:19:37.000000000 +0100
-@@ -148,8 +148,8 @@ static struct usb_device_id blacklist_id
- 	{ USB_DEVICE(0x047d, 0x105d), .driver_info = HCI_RESET },
- 	{ USB_DEVICE(0x047d, 0x105e), .driver_info = HCI_RESET | HCI_WRONG_SCO_MTU },
- 
--	/* ISSC Bluetooth Adapter v3.1 */
--	{ USB_DEVICE(0x1131, 0x1001), .driver_info = HCI_RESET },
-+	/* ISSC Bluetooth Adapter v3.1 with buggy SCO support */
-+	{ USB_DEVICE(0x1131, 0x1001), .driver_info = HCI_RESET | HCI_BROKEN_ISOC },
- 
- 	/* RTX Telecom based adapters with buggy SCO support */
- 	{ USB_DEVICE(0x0400, 0x0807), .driver_info = HCI_BROKEN_ISOC },
+
