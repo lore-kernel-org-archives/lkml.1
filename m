@@ -1,208 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbYLDF2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYLDFex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756766AbYLDF2t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 00:28:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYLDF1j
+	id S1755593AbYLDFex (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 00:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYLDFen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 00:27:39 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39868 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751638AbYLDF1h (ORCPT
+	Thu, 4 Dec 2008 00:34:43 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:41712 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbYLDFem (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 00:27:37 -0500
-Message-Id: <20081204052735.175697908@goodmis.org>
-References: <20081204052638.425740534@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 04 Dec 2008 00:26:40 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
-       Eric Biederman <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/3] ftrace: use struct pid
-Content-Disposition: inline; filename=0002-ftrace-use-struct-pid.patch
+	Thu, 4 Dec 2008 00:34:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YGbgaIT3tWErt7MnhGRNGTaGH4KeSdwrLyFv/R4jkUbiGLw17nxtmcyIJY1AVHYgw/
+         mZTpQIt+rIpkZLjiPqowAPxACb+cGCus0Ce9NdTqdmaK+s//jvyntEAog4E110kHgDRc
+         aNLZyq7r/HE1MpJUJBEl2citGaQ/PgPOJiuRc=
+Message-ID: <208aa0f00812032134l5d0df1d9pa1359aba6e719e26@mail.gmail.com>
+Date: Wed, 3 Dec 2008 21:34:40 -0800
+From: "Edward Estabrook" <edward.estabrook.lkml@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA (corrected)
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, hjk@linutronix.de,
+       edward.estabrook@gmail.com, edward_estabrook@agilent.com
+In-Reply-To: <20081204041739.GA16329@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <208aa0f00812031751n27a75d21h8747054651639463@mail.gmail.com>
+	 <20081204041739.GA16329@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+> Anyway, what about 64bit processors?  What happens if they try to use a
+> valid address in this range?
+>
+> Is this value always an "invalid" value for all arches that Linux runs
+> on?
 
-Impact: clean up
+Yes. I have run this on 64-bit systems.
 
-Eric Biederman suggested using the struct pid for filtering on
-pids in the kernel. This patch is based off of a demonstration
-of an implementation that Eric sent me in an email.
+The offset parameter in UIO is used to specify the memory-mapping index
+of interest, where offset = N * getpagesize().
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/ftrace.c |   76 ++++++++++++++++++++++++++++--------------------
- kernel/trace/trace.h  |    4 +-
- 2 files changed, 46 insertions(+), 34 deletions(-)
+In include/linux/uio_driver.h we had:
+#define MAX_UIO_MAPS 5
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 57592a9..10b1d7c 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -48,7 +48,7 @@ int ftrace_enabled __read_mostly;
- static int last_ftrace_enabled;
- 
- /* set when tracing only a pid */
--int ftrace_pid_trace = -1;
-+struct pid *ftrace_pid_trace;
- 
- /* Quick disabling of function tracer. */
- int function_trace_stop;
-@@ -153,7 +153,7 @@ static int __register_ftrace_function(struct ftrace_ops *ops)
- 		else
- 			func = ftrace_list_func;
- 
--		if (ftrace_pid_trace >= 0) {
-+		if (ftrace_pid_trace) {
- 			set_ftrace_pid_function(func);
- 			func = ftrace_pid_func;
- 		}
-@@ -209,7 +209,7 @@ static int __unregister_ftrace_function(struct ftrace_ops *ops)
- 		if (ftrace_list->next == &ftrace_list_end) {
- 			ftrace_func_t func = ftrace_list->func;
- 
--			if (ftrace_pid_trace >= 0) {
-+			if (ftrace_pid_trace) {
- 				set_ftrace_pid_function(func);
- 				func = ftrace_pid_func;
- 			}
-@@ -239,7 +239,7 @@ static void ftrace_update_pid_func(void)
- 
- 	func = ftrace_trace_function;
- 
--	if (ftrace_pid_trace >= 0) {
-+	if (ftrace_pid_trace) {
- 		set_ftrace_pid_function(func);
- 		func = ftrace_pid_func;
- 	} else {
-@@ -1678,18 +1678,40 @@ ftrace_pid_read(struct file *file, char __user *ubuf,
- 	char buf[64];
- 	int r;
- 
--	if (ftrace_pid_trace >= 0)
--		r = sprintf(buf, "%u\n", ftrace_pid_trace);
-+	if (ftrace_pid_trace)
-+		r = sprintf(buf, "%u\n", pid_nr(ftrace_pid_trace));
- 	else
- 		r = sprintf(buf, "no pid\n");
- 
- 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
- }
- 
-+static void clear_ftrace_pid_task(struct pid **pid)
-+{
-+	struct task_struct *p;
-+
-+	do_each_pid_task(*pid, PIDTYPE_PID, p) {
-+		clear_tsk_trace_trace(p);
-+	} while_each_pid_task(*pid, PIDTYPE_PID, p);
-+	put_pid(*pid);
-+
-+	*pid = NULL;
-+}
-+
-+static void set_ftrace_pid_task(struct pid *pid)
-+{
-+	struct task_struct *p;
-+
-+	do_each_pid_task(pid, PIDTYPE_PID, p) {
-+		set_tsk_trace_trace(p);
-+	} while_each_pid_task(pid, PIDTYPE_PID, p);
-+}
-+
- static ssize_t
- ftrace_pid_write(struct file *filp, const char __user *ubuf,
- 		   size_t cnt, loff_t *ppos)
- {
-+	struct pid *pid;
- 	char buf[64];
- 	long val;
- 	int ret;
-@@ -1707,40 +1729,30 @@ ftrace_pid_write(struct file *filp, const char __user *ubuf,
- 		return ret;
- 
- 	mutex_lock(&ftrace_start_lock);
--	if (ret < 0) {
-+	if (val < 0) {
- 		/* disable pid tracing */
--		if (ftrace_pid_trace < 0)
-+		if (!ftrace_pid_trace)
- 			goto out;
--		ftrace_pid_trace = -1;
-+
-+		clear_ftrace_pid_task(&ftrace_pid_trace);
- 
- 	} else {
--		struct task_struct *p;
--		int found = 0;
-+		pid = find_get_pid(val);
- 
--		if (ftrace_pid_trace == val)
-+		if (pid == ftrace_pid_trace) {
-+			put_pid(pid);
- 			goto out;
--
--		/*
--		 * Find the task that matches this pid.
--		 * TODO: use pid namespaces instead.
--		 */
--		rcu_read_lock();
--		for_each_process(p) {
--			if (p->pid == val) {
--				found = 1;
--				set_tsk_trace_trace(p);
--			} else if (test_tsk_trace_trace(p))
--				clear_tsk_trace_trace(p);
- 		}
--		rcu_read_unlock();
- 
--		if (found)
--			ftrace_pid_trace = val;
--		else {
--			if (ftrace_pid_trace < 0)
--				goto out;
--			ftrace_pid_trace = -1;
--		}
-+		if (ftrace_pid_trace)
-+			clear_ftrace_pid_task(&ftrace_pid_trace);
-+
-+		if (!pid)
-+			goto out;
-+
-+		ftrace_pid_trace = pid;
-+
-+		set_ftrace_pid_task(ftrace_pid_trace);
- 	}
- 
- 	/* update the function call */
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 95fff37..8b81b4d 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -541,11 +541,11 @@ print_graph_function(struct trace_iterator *iter)
- }
- #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
- 
--extern int ftrace_pid_trace;
-+extern struct pid *ftrace_pid_trace;
- 
- static inline int ftrace_trace_task(struct task_struct *task)
- {
--	if (ftrace_pid_trace < 0)
-+	if (ftrace_pid_trace)
- 		return 1;
- 
- 	return test_tsk_trace_trace(task);
--- 
-1.5.6.5
+so assuming a page size of 4k the maximum legal value was 0x5000.
 
--- 
+This logic is equally true on in any architecture.
+
+With the dynamic DMA allocation one can now have an arbitrarily large
+number of mappings.  This magic number simply reduces the theoretical limit
+to the number of distinct mappings to of 1,048,574.
+
+Note that even if the in-kernel driver-stub choose to overload the mmap method
+both the original code and these modifications would error out on any value
+which did not correlate with a valid memory-mapping index number before
+handing control to the overloaded implementation.
