@@ -1,98 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbYLDS0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbYLDS0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758249AbYLDS0f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 13:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756140AbYLDS0M
+	id S1756405AbYLDS0y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 13:26:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbYLDS0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 4 Dec 2008 13:26:14 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:55564 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756038AbYLDS0M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Dec 2008 13:26:12 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:48453 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755872AbYLDS0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 13:26:10 -0500
-Subject: Re: [PATCH 3/6] integrity: IMA as an integrity service provider
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <1228330255.26913.29.camel@nimitz>
-References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
-	 <5bea2422d059b97475d735feb9feb78b57ec8eca.1228253619.git.zohar@linux.vnet.ibm.com>
-	 <1228260925.2971.240.camel@nimitz>  <20081203130301.GA9681@infradead.org>
-	 <1228328654.2821.35.camel@localhost.localdomain>
-	 <1228330255.26913.29.camel@nimitz>
-Content-Type: text/plain
-Date: Thu, 04 Dec 2008 13:26:08 -0500
-Message-Id: <1228415168.2540.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=TrKrJcwpYRPTEn0uqGw/cHIlc62kADwjTJWLVXKweBuGMXegATZcsRuulHrabTgpFS
+         wsmMzvTBNKBQDVCsWJzFxSr8JpVyqn6BdJnGGCpk9A2p7wPYGdQn8XSWCowPfU5+4xyi
+         9FsXNM9tNQjHN9sYT4p4Hz+N/q/hnE25xUAL8=
+Message-ID: <e9c3a7c20812041026v3293786sea3e81e2f777d58d@mail.gmail.com>
+Date: Thu, 4 Dec 2008 11:26:10 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Nicolas Ferre" <nicolas.ferre@atmel.com>
+Subject: Re: [PATCH] dmaengine: at_hdmac: new driver for the Atmel AHB DMA Controller
+Cc: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Andrew Victor" <linux@maxim.org.za>
+In-Reply-To: <492C1816.6020405@atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48F8B291.1060500@atmel.com>
+	 <1224530326.27425.25.camel@dwillia2-linux.ch.intel.com>
+	 <491DA8AC.5010703@atmel.com>
+	 <e9c3a7c20811181100q27af85ey49823ba326e70a09@mail.gmail.com>
+	 <492C1816.6020405@atmel.com>
+X-Google-Sender-Auth: c4637166866f5732
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-03 at 10:50 -0800, Dave Hansen wrote: 
-> On Wed, 2008-12-03 at 13:24 -0500, Mimi Zohar wrote:
-> > On Wed, 2008-12-03 at 08:03 -0500, Christoph Hellwig wrote: 
-> > > On Tue, Dec 02, 2008 at 03:35:25PM -0800, Dave Hansen wrote:
-> > > > I have memories of talking about this bit.  I was confused and you
-> > > > explained it to me, but it still isn't explained in the code. :(  Again,
-> > > > I'm not convinced that this works.  Can the code convince me, or should
-> > > > I go digging in my inbox?
-> > > 
-> > > I also haven't seen a good explanation for it yet.
-> > 
-> > Previous posting:
-> > "The OS protects against an executable file, already open for write,
-> > from being executed; and an executable file, open for execute, from
-> > being modified.  In the same vein, we want to know that the file
-> > measured is the same file read, that it hasn't been modified.  So, if a
-> > file already open for read is then opened for write, we log it with a
-> > "Time of Measure, Time of Use" error (ToMToU) and invalidate the
-> > PCR.....
-> > 
-> > This is important when measuring configuration files, shell scripts (not
-> > measured in brpm_check_integrity which are protected by the OS), and
-> > files imported/included by scripts."
-> > 
-> > Another posting:
-> > "From an integrity perspective, a file measurement might be invalidated
-> > unnecessarily, but it is safe. For any file when opened for write, while
-> > having an existing reader, will cause the file measurement to be
-> > invalidated."
-> 
-> Those are all great explanations.  But, some of that needs to get in the
-> patch somehow.  This is a subtle thing and someone looking at this a
-> year for now is going to have difficulty understanding why it was done.
-> 
-> > I'm just not seeing a problem. Perhaps because only regular files are
-> > being measured, and of them, only those defined by the policy, which
-> > most likely would not include pseudo filesystems (i.e. sysfs, procfs,
-> > tmpfs, securityfs).
-> 
-> There is no practical problem if you have false-positives on this check
-> and do extra invalidations.  But, I think both Christoph and I are
-> nervous that this check is racy and there may be false-negatives and
-> thus may miss some invalidations (which would be harmful).
-> 
-> The check is racy which is cause for concern by itself.  But, with
-> careful consideration, it may not be a dangerous or harmful race.  Could
-> you please consider it carefully and share some of your thoughts in a
-> comment in the next version?
-> 
-> You need to check very, very carefully that there are no possible ways
-> for i_writecount to be elevated without a corresponding elevation of
-> d_count.  I'm especially concerned as I look at some of the mmap() code.
-> It appears that there are some temporary i_writecount elevations as
-> VM_DENYWRITE is figured out.  That needs some careful auditing to ensure
-> it doesn't violate what is being assumed in the integrity code.
+On Tue, Nov 25, 2008 at 8:21 AM, Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+>>
+>> They will be acknowledged by client code.  Calls like async_memcpy
+>> assume that the the ack bit is clear by default so they can specify
+>> some actions to run at completion time.  By setting it early, at
+>> descriptor allocation time, async_tx will get confused.
+>
+> This ack bit is annoying me : I cannot figure out how it is used for plain
+> memcopy/slave offload calls...
+>
+> Moreover, at recycle time, if I keep a descriptor chain as a whole, I have
+> to introduce another state for my descriptors : consumed but not freed yet
+> (with another linked list management).
+> If I only take care of the ACK flag for releasing descriptors, I loose the
+> dependency in my descriptor chain (in a multi-descriptor memcpy case).
 
-The original IMA maintained its own readcount, but we thought the code
-would be simpler if we used existing kernel reference counts.  Based on
-both Christoph's and your concerns, we probably should go back to
-maintaining our own readcount for user level files.
+Maybe I misread your driver... in the multi-descriptor memcpy case it
+is perfectly fine to set the ack-bit in the driver for all but the
+last descriptor in the chain.  The client is only expected to attach
+dependencies at the end of the chain.
 
-Mimi
+> Can I only consider this information without taking care of the chaining
+> dependency (and loose this information in a multi-descriptor operation) ?
 
+You can lose it for all but the last descriptor.
+
+> Or, may I drop this DMA_CTRL_ACK bit management as I do not have the
+> usefulness of redoing an operations on one descriptor (no xor engine) ?
+>
+
+If you will never need to run async_memcpy and don't want to handle
+the bit then you could set DMA_PRIVATE and the channels would never be
+picked up by the async_tx api.  But, I am not convinced we need to
+take that step yet.
+
+> Kind regards,
+> --
+> Nicolas Ferre
+>
+
+Thanks,
+Dan
