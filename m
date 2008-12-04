@@ -1,70 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbYLDBGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbYLDBGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756779AbYLDBGS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 20:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYLDBGD
+	id S1757556AbYLDBGi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 20:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbYLDBGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 20:06:03 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59235 "EHLO mx1.redhat.com"
+	Wed, 3 Dec 2008 20:06:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59239 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751701AbYLDBGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 20:06:01 -0500
+	id S1754259AbYLDBGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 20:06:08 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: eranian@googlemail.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, x86@kernel.org, andi@firstfloor.org,
-       eranian@gmail.com, sfr@canb.auug.org.au,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [patch 20/24] perfmon: system calls interface
-In-Reply-To: Ingo Molnar's message of  Wednesday, 26 November 2008 15:00:27 +0100 <20081126140027.GC6562@elte.hu>
-References: <492d0c0b.170e660a.15ba.ffffdabf@mx.google.com>
-	<20081126140027.GC6562@elte.hu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       rnalumasu@gmail.com
+Subject: Re: do_wait() vs do_notify_parent_cldstop() theoretical race?
+In-Reply-To: Oleg Nesterov's message of  Sunday, 23 November 2008 22:55:11 +0100 <20081123215511.GB9097@redhat.com>
+References: <200811212015.mALKFMs4019558@imap1.linux-foundation.org>
+	<20081123213929.GA9097@redhat.com>
+	<20081123215511.GB9097@redhat.com>
 X-Fcc: ~/Mail/linus
-X-Zippy-Says: ALFRED JARRY!  Say something about th' DEATH of DISCO!!
-Message-Id: <20081204010526.9B888FC053@magilla.sf.frob.com>
-Date: Wed,  3 Dec 2008 17:05:26 -0800 (PST)
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20081204010548.90F91FC053@magilla.sf.frob.com>
+Date: Wed,  3 Dec 2008 17:05:48 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +	/*
-> > +	 * cannot attach to a kernel thread
-> > +	 */
-> > +	if (!task->mm) {
-
-This should test (task->flags & PF_KTHREAD).  (But it's superfluous anyway.)
-
-> > +	/*
-> > +	 * cannot attach to a zombie task
-> > +	 */
-> > +	if (task->exit_state == EXIT_ZOMBIE || task->exit_state == EXIT_DEAD) {
-
-The usual test to write here is just "if (task->exit_state)".
-(But it's superfluous anyway.)
-
-> Thirdly, the check for ->exit_state in pfm_task_incompatible() is not 
-> needed: we've just passed ptrace_check_attach() so we know we just 
-> transitioned the task to task->state == TASK_TRACED.
-
-Correct.
-
-> If you _ever_ see a task exit TASK_TRACED and go zombie or dead from 
-> there without this code allowing it that means the whole state machine 
-> with ptrace is borked up by perfmon. 
-
-Is always possible for a TASK_TRACED task to suddenly die via SIGKILL, and
-it's even possible it will be reaped (EXIT_DEAD) despite ptrace, in the
-de_thread() (MT exec) case.  This race is tolerable for everything ptrace
-does (it holds a task ref, and the arch code copes).  It must also be
-tolerated by the perfmon code.
-
-> For example i dont see where the perfmon-control task parents itself as
-> the exclusive debugger (parent) of the debuggee-task.
-
-ptrace_check_attach() ensures that this is so.  
+I guess.  There might well be something in there implicitly that's actually
+a memory barrier already.  But sounds like that should use set_current_state().
 
 
 Thanks,
