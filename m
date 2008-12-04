@@ -1,100 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbYLDWru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYLDWuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759441AbYLDWru (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 17:47:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbYLDWrl
+	id S1759300AbYLDWuF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 17:50:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbYLDWtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 17:47:41 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:39777 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757342AbYLDWrk (ORCPT
+	Thu, 4 Dec 2008 17:49:53 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:26517 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754714AbYLDWtw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 17:47:40 -0500
+	Thu, 4 Dec 2008 17:49:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :content-type:content-transfer-encoding;
-        b=ocY2gPc3V+LAAFKoD1sndgPHSsS+PdWi7X6R89zgR4x8BIZXWTBnsRoNNS4TEWT2aE
-         ThOLvHyPch6hw39heXzRAQtImfnqifYwxxOweCrZCUS+07M92euGk3HZYIdD80Ab87wk
-         IRi8Xmeh1qS7y2qIbmkE44Hnsj3RybYJ+YNps=
-Message-ID: <49385E07.7050304@gmail.com>
-Date: Thu, 04 Dec 2008 23:47:35 +0100
+        b=aUsV9LSp7liQTDzeAqjjHJF4H1IDLjAvmLQPLuJh2/jMQmewkiCPdGuUTQ1fRJp79g
+         zjO2Xj9UAMSKDZOMrQB+fchEsn1axPaHuuiUe06p9MaF88tjOvBCcdCWZspirav6NuLI
+         v7mCtgv/++rVc6oDyX4YNpIiCGVyH3Hh+L+fA=
+Message-ID: <49385E8B.7070900@gmail.com>
+Date: Thu, 04 Dec 2008 23:49:47 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
 CC: Steven Rostedt <rostedt@goodmis.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] tracing/ftrace: don't insert TRACE_PRINT during selftests
+Subject: [PATCH 2/3] tracing/ftrace: fix the check of ftrace_trace_task
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix tracer selfstests false results
+Impact: fix default empty traces on function-graph-tracer
 
-After setting a ftrace_printk somewhere in th kernel, I saw the
-Function tracer selftest failing.
+The actual ftrace_trace_task() checks if ftrace_pid_trace is allocated
+and return 1 if it is true.
+If it is NULL, it will check the bit of pid tracing flag for the current
+task (which are not set by default).
+So by default, a task is not traced.
+Actually all tasks should be traced by default and filter_by_pid when
+ftrace_pid_trace is allocated.
 
-When a selftest occurs, the ring buffer is lurked to see if
-some entries were inserted. But concurrent insertion such as
-ftrace_printk could occured at the same time and could give
-false positive or negative results.
+The appropriate condition should be to return 1 if filter_by_pid is
+set.
 
-This patch prevent prevent from TRACE_PRINT entries insertion
-during selftests.
-
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/trace/trace.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
+ kernel/trace/trace.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index ea38652..5dca6ef 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -44,6 +44,14 @@
- unsigned long __read_mostly	tracing_max_latency = (cycle_t)ULONG_MAX;
- unsigned long __read_mostly	tracing_thresh;
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index a71bbe0..5ac6970 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -551,7 +551,7 @@ extern struct pid *ftrace_pid_trace;
  
-+/* We need to change this state when a selftest is running.
-+ * A selftest will lurk into the ring-buffer to count the
-+ * entries inserted during the selftest although some concurrent
-+ * insertions into the ring-buffer such as ftrace_printk could occurred
-+ * at the same time, giving false positive or negative results.
-+ */
-+static atomic_t tracing_selftest_running = ATOMIC_INIT(0);
-+
- /* For tracers that don't implement custom flags */
- static struct tracer_opt dummy_tracer_opt[] = {
- 	{ }
-@@ -589,6 +597,8 @@ int register_tracer(struct tracer *type)
- 		struct tracer *saved_tracer = current_trace;
- 		struct trace_array *tr = &global_trace;
- 		int i;
-+
-+		atomic_set(&tracing_selftest_running, 1);
- 		/*
- 		 * Run a selftest on this tracer.
- 		 * Here we reset the trace buffer, and set the current
-@@ -603,6 +613,7 @@ int register_tracer(struct tracer *type)
- 		/* the test is responsible for initializing and enabling */
- 		pr_info("Testing tracer %s: ", type->name);
- 		ret = type->selftest(type, tr);
-+		atomic_set(&tracing_selftest_running, 0);
- 		/* the test is responsible for resetting too */
- 		current_trace = saved_tracer;
- 		if (ret) {
-@@ -3594,7 +3605,7 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
- 	unsigned long flags, irq_flags;
- 	int cpu, len = 0, size, pc;
+ static inline int ftrace_trace_task(struct task_struct *task)
+ {
+-	if (ftrace_pid_trace)
++	if (!ftrace_pid_trace)
+ 		return 1;
  
--	if (tracing_disabled)
-+	if (tracing_disabled || atomic_read(&tracing_selftest_running))
- 		return 0;
- 
- 	pc = preempt_count();
+ 	return test_tsk_trace_trace(task);
 -- 
 1.5.6.3
 
