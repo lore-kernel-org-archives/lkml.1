@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756692AbYLDRDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbYLDRQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756692AbYLDRDz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 12:03:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYLDRDq
+	id S1756567AbYLDRQU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 12:16:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbYLDRQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 12:03:46 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50681
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751775AbYLDRDp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 12:03:45 -0500
-Date: Thu, 04 Dec 2008 09:03:45 -0800 (PST)
-Message-Id: <20081204.090345.138944783.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: paulus@samba.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Joakim.Tjernlund@transmode.se
-Subject: Re: [PATCH] Allow times and time system calls to return small
- negative values
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081204154044.GC18293@elte.hu>
-References: <20081204075751.GA32594@elte.hu>
-	<18743.46549.833800.667962@cargo.ozlabs.ibm.com>
-	<20081204154044.GC18293@elte.hu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Dec 2008 12:16:05 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35376 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753231AbYLDRQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 12:16:03 -0500
+Date: Thu, 4 Dec 2008 18:14:30 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] processes: reparent_thread: don't call
+	kill_orphaned_pgrp() if task_detached()
+Message-ID: <20081204171430.GA16728@redhat.com>
+References: <20081118175901.GA17134@redhat.com> <20081119185148.DC1D31544EB@magilla.localdomain> <m1skpncg2b.fsf@frodo.ebiederm.org> <20081120145234.GA3325@redhat.com> <m13ahm9slb.fsf@frodo.ebiederm.org> <20081120200050.GA24467@redhat.com> <20081120202848.GA27241@redhat.com> <20081204005203.95F6FFC3C0@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081204005203.95F6FFC3C0@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 4 Dec 2008 16:40:44 +0100
+On 11/26, Roland McGrath wrote:
+>
+> > @@ -816,6 +816,8 @@ static void reparent_thread(struct task_
+> >
+> >  	list_move_tail(&p->sibling, &p->real_parent->children);
+> >
+> > +	if (task_detached(p))
+> > +		return;
+>
+> Seems like it would be cleaner to reorganize the code a little.
+> reparent_thread has only one caller.  How about we move:
+>
+> 	if (p->pdeath_signal)
+> 		/* We already hold the tasklist_lock here.  */
+> 		group_send_sig_info(p->pdeath_signal, SEND_SIG_NOINFO, p);
+>
+> 	list_move_tail(&p->sibling, &p->real_parent->children);
+>
+> into forget_original_parent and rename reparent_thread to something else,
+> called only:
+>
+> 	if (!task_detached(p) && !same_thread_group(p->real_parent, father))
+> 		orphaned_process(p);
 
-> * Paul Mackerras <paulus@samba.org> wrote:
-> 
-> > Ingo Molnar writes:
-> > 
-> > > > +	force_successful_syscall_return();
-> > > >  	return compat_jiffies_to_clock_t(jiffies);
-> > > 
-> > > just curious: what code does force_successful_syscall_return() actually 
-> > > run in the powerpc case - those bits are missing from this patch. I 
-> > > suspect it sets some sort of flag?
-> > 
-> > It sets the TIF_NOERROR thread flag, which is tested in the syscall 
-> > exit path along with various other thread flags.
-> > 
-> > force_successful_syscall_return() is defined for powerpc in 
-> > arch/powerpc/include/asm/ptrace.h.  It's nothing new, it has existed 
-> > for ages and is used in a few other places already.  It has existing 
-> > non-null definitions on alpha, ia64, powerpc, and sparc64.
-> 
-> ok, was just curious. To make this code nicer, we could keep the time 
-> syscalls from returning small negative numbers.
-> 
-> the core issue is probably:
-> 
->  jiffies.h:#define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
-> 
-> the thing is, we did INITIAL_JIFFIES to find _in kernel_ jiffies 
-> wraparoudn bugs (hung timers, broken drivers, etc.) - we did not want to 
-> confuse userspace with it.
-> 
-> So how about adding INITIAL_JIFFIES to the sys_times() return value?
+Not that I think this really matters, but imho this code needs more
+little trivial reorganizations.
 
-I can't believe people are still making suggestions which just paper
-over this issue. :-)
+reparent_thread() (or whatever) needs the "&ptrace_dead" parameter
+too, if the new parent (init) ignores SIGCHLD we should release a
+zombie. So we should rename "ptrace_dead" and ptrace_exit_finish().
+And imho it makes sense to create the new helper which does
+"list_for_each_entry_safe(father->children) {}", to make this code
+more symmetrical() with ptrace_exit().
 
-This thing is going to wrap eventually, so wouldn't it be nice to wrap
-IMMEDIATELY so that you can trigger the problem and get it really
-fixed now?  And that's exactly how things work at the moment.
-
-On another note, this wouldn't be an issue if x86 did some condition
-code thing to indicate errors.  We all know this.  So why don't we put
-some kind of condition code setting support into the x86 syscall
-return path now and perhaps 5 years from now the userspace on most
-Linux machines will understand it and this bug will be essentially gone?
+Oleg.
 
