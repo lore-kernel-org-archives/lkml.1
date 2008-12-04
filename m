@@ -1,92 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbYLDOBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYLDOCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757480AbYLDOBM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 09:01:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676AbYLDOAx
+	id S1757428AbYLDOCG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 09:02:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYLDOBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 09:00:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54302 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754856AbYLDOAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 09:00:52 -0500
-Date: Thu, 4 Dec 2008 09:00:13 -0500 (EST)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-cc: Alasdair G Kergon <agk@redhat.com>, Andi Kleen <andi-suse@firstfloor.org>,
-       Milan Broz <mbroz@redhat.com>
-Subject: Device loses barrier support (was: Fixed patch for simple barriers.)
-In-Reply-To: <20081204100050.GN6703@one.firstfloor.org>
-Message-ID: <Pine.LNX.4.64.0812040836480.6118@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0812040009340.15169@hs20-bc2-1.build.redhat.com>
- <20081204100050.GN6703@one.firstfloor.org>
+	Thu, 4 Dec 2008 09:01:52 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:6427 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752264AbYLDOBv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 09:01:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HvmsTSPvRrLqA64PbLZQGb75PTzRmjcrusIfruIeexRZlti02ogilMen8i6upkx7ID
+         /m4LIHAs5TYW5ICngHju+7q8KxlZQEt+m6qP8aml5zbyZr8M/Ud+bDm13YKPzooHcR5o
+         3ZF42kkinBQ2jgQEsAHLBCeFzpUDmpEmM0fIg=
+Message-ID: <b2b2f2320812040601k55ab69a6n5da4d321151f94f@mail.gmail.com>
+Date: Thu, 4 Dec 2008 08:01:49 -0600
+From: "Shane McDonald" <mcdonald.shane@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Resurrect IT8172 IDE controller driver
+Cc: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20081204100717.32819f1b@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <E1L4UpB-0007ro-1g@localhost> <492A8306.9000400@ru.mvista.com>
+	 <b2b2f2320812031839q43eb6102jbae0fbddd9a1cf75@mail.gmail.com>
+	 <20081204100717.32819f1b@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Dec 2008, Andi Kleen wrote:
+Would it be acceptable to claim that these changes are outside the
+scope of this patch, and code the IT8172 driver to behave in the same
+manner as the other wrong drivers, with a suitable comment indicating
+this fact?
 
-> On Thu, Dec 04, 2008 at 12:09:56AM -0500, Mikulas Patocka wrote:
-> > 
-> > BTW. how is this patch supposed to work with pvmove? I.e. you advertise to 
-> > a filesystem that you support barriers, then the user runs pvmove and you 
-> > drop barrier support while the filesystem is mounted - that will confuse 
-> > the filesystem and maybe produce a data corruption. I wouldn't recommend 
-> 
-> File systems handle this generally. Also the pvmove itself will
-> act as a barrier.
-> 
-> -Andi
+Shane
 
-How do you want to handle this?
-
-Imagine:
-the filesystem submits a 1st write request
-the filesystem submits a 2nd write barrier request
-the filesystem submits a 3rd write request
-
-... time passes ...
-
-the 1st write request ends with success
-the 2nd write request ends with -EOPNOTSUPP
-the 3rd write request ends with success
-
---- when you first see -EOPNOTSUPP, you have already corrupted filesystem 
-(the 3rd write passed while the filesystem expected that it would be 
-finished after the 2nd write) and you are in an interrupt context, where 
-you can't reissue -EOPNOTSUPP request. So what do you want to do?
-
-
-Possible ways how to solve it:
-
-1) Wait synchronously for barriers, don't issue any other writes while 
-barrier is pending.
-
-- this basically supresses any performance advantage barriers could have. 
-Ext3 is doing this.
-
-- this solion is right. But if this is "the way it should be done", you 
-could rip barriers from the kernel completely and replace them with a 
-simple call to flush hardware cache. In this use scenario, they have no 
-advantage over a simple call to flush cache.
-
-2) Resubmit the failed -EOPNOTSUPP request from a thread.
-
-- this is what XFS is doing. Bad for code complexity (there must be a 
-special thread just to catch failed IOs). Also, it still produces 
-corrupted filesystem for a brief period of time.
-
-3) Fail barriers only synchronously? (so that the caller can detect 
-missing barrier support before issuing other writes)
-
-- unimplemntable in device mapper, if the device is suspended, it queues 
-bios.
-
-4) Disallow losing barrier support?
-
-- for me it looks like a sensible solution.
-
-Mikulas
+On Thu, Dec 4, 2008 at 4:07 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> I am not sure how to determine if IORDY sampling is supported by a
+>> drive.  If I'm reading the code correctly, other drivers only check
+>> that the PIO mode is > 2 (not > 1 as in my driver) -- that seems to be
+>> the case for at least piix.c, siimage.c, and it8213.c.
+>
+> Old IDE is wrong on this and in fact unless it has changed recently
+> simply can't cope with and doesn't provide functions for it. A libata
+> driver can use the libata helpers but those also rely on the core ata
+> code doing certain things so if you cut and paste it over you might have
+> to make other old IDE changes in parallel.
+>
+>
