@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbYLDSbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYLDSpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758155AbYLDSbo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 13:31:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYLDSbf
+	id S1757428AbYLDSpe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 13:45:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbYLDSpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 13:31:35 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:43662 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753228AbYLDSbe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 13:31:34 -0500
-Message-ID: <49382201.8030609@hp.com>
-Date: Thu, 04 Dec 2008 13:31:29 -0500
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Thu, 4 Dec 2008 13:45:24 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:37681 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753891AbYLDSpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 13:45:23 -0500
+Date: Thu, 4 Dec 2008 13:45:22 -0500
+To: Russell Miller <duskglow@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: nfs NULL procedure packets
+Message-ID: <20081204184522.GA7575@fieldses.org>
+References: <4eea36270812031011x5f014b04q352af666cacb2f93@mail.gmail.com>
 MIME-Version: 1.0
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: kernel BUG at block/blk-timeout.c:178!
-References: <4937E888.3060208@hp.com> <20081204155005.GX18255@kernel.dk> <493801AF.8050308@hp.com>
-In-Reply-To: <493801AF.8050308@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4eea36270812031011x5f014b04q352af666cacb2f93@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan D. Brunelle wrote:
-> Jens Axboe wrote:
+On Wed, Dec 03, 2008 at 10:11:26AM -0800, Russell Miller wrote:
+> Hi again, I was hoping someone here could answer another question.  I
+> apologize if these are easy questions...
 > 
->> Alan, can you try latest -git? feaf3848a813a106f163013af6fcf6c4bfec92d9
->> or later.
->>
+> So a couple of days ago I was troubleshooting yet another NFS problem
+> (not the non-one I described a few days ago).  I sent a 1G file over
+> to a server, did a TCP capture, and analyzed the results.
 > 
-> git pull()ed to: feaf3848a813a106f163013af6fcf6c4bfec92d9 and the same
-> problem occurs.
+> I noticed a lot of NULL procedure packets.  A *lot* of them.  In some
+> cases, one every 10 microseconds, and there were about 400,000 of them
+> I captured.
+> 
+> This seems like a lot of network traffic for very little reason.
+> 
+> Is this normal behavior, or something I should investigate further?
+> It seems to me like pinging the NFS server once every 10 microseconds
+> is a major waste of bandwidth.
 
-Maybe not - I've not been to reproduce that problem in subsequent
-reboots. It could be that I booted the wrong kernel first time (rc6
-instead of rc7). Will keep plugging - any idea as to what might have
-"fixed" the problem between rc6 & rc7?
+It's either a bug, or you're misreading the traces--how are you
+identifying these as NULL procedures?  Also, are they NULL NFS calls, or
+some other rpc protocol?  And are you using krb5?
 
-Alan
+--b.
