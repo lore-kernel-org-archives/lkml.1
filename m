@@ -1,71 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbYLDS0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbYLDS0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757194AbYLDS0T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 13:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYLDS0D
+	id S1758249AbYLDS0f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 13:26:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756140AbYLDS0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 13:26:03 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42224 "EHLO mx2.redhat.com"
+	Thu, 4 Dec 2008 13:26:12 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:48453 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752444AbYLDS0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 13:26:01 -0500
-Date: Thu, 4 Dec 2008 19:24:31 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Jan Kiszka <jan.kiszka@siemens.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: SIGTRAP vs. sys_exit_group race
-Message-ID: <20081204182431.GB17468@redhat.com>
-References: <48EA1BE9.1030707@siemens.com> <20081016165727.GA6442@redhat.com> <20081204005203.7AE1CFC053@magilla.sf.frob.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081204005203.7AE1CFC053@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1755872AbYLDS0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 13:26:10 -0500
+Subject: Re: [PATCH 3/6] integrity: IMA as an integrity service provider
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <1228330255.26913.29.camel@nimitz>
+References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
+	 <5bea2422d059b97475d735feb9feb78b57ec8eca.1228253619.git.zohar@linux.vnet.ibm.com>
+	 <1228260925.2971.240.camel@nimitz>  <20081203130301.GA9681@infradead.org>
+	 <1228328654.2821.35.camel@localhost.localdomain>
+	 <1228330255.26913.29.camel@nimitz>
+Content-Type: text/plain
+Date: Thu, 04 Dec 2008 13:26:08 -0500
+Message-Id: <1228415168.2540.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/02, Roland McGrath wrote:
->
-> > Roland, what do you think?
-> >
-> > On 10/06, Jan Kiszka wrote:
-> > >
-> > > --- a/kernel/signal.c
-> > > +++ b/kernel/signal.c
-> > > @@ -1528,10 +1528,11 @@ static void ptrace_stop(int exit_code, i
-> > >  		spin_unlock_irq(&current->sighand->siglock);
-> > >  		arch_ptrace_stop(exit_code, info);
-> > >  		spin_lock_irq(&current->sighand->siglock);
-> > > -		if (sigkill_pending(current))
-> > > -			return;
-> > >  	}
-> > >
-> > > +	if (sigkill_pending(current))
-> > > +		return;
-> > > +
-> >
-> > Personally, I think this change is good anyway. The tracee shouldn't
-> > sleep in TASK_TRACED with the pending SIGKILL.
->
-> I think this is actually superfluous since TASK_WAKEKILL (2.6.24?).
-> It won't sleep in TASK_TRACED at all, because of signal_pending_state().
+On Wed, 2008-12-03 at 10:50 -0800, Dave Hansen wrote: 
+> On Wed, 2008-12-03 at 13:24 -0500, Mimi Zohar wrote:
+> > On Wed, 2008-12-03 at 08:03 -0500, Christoph Hellwig wrote: 
+> > > On Tue, Dec 02, 2008 at 03:35:25PM -0800, Dave Hansen wrote:
+> > > > I have memories of talking about this bit.  I was confused and you
+> > > > explained it to me, but it still isn't explained in the code. :(  Again,
+> > > > I'm not convinced that this works.  Can the code convince me, or should
+> > > > I go digging in my inbox?
+> > > 
+> > > I also haven't seen a good explanation for it yet.
+> > 
+> > Previous posting:
+> > "The OS protects against an executable file, already open for write,
+> > from being executed; and an executable file, open for execute, from
+> > being modified.  In the same vein, we want to know that the file
+> > measured is the same file read, that it hasn't been modified.  So, if a
+> > file already open for read is then opened for write, we log it with a
+> > "Time of Measure, Time of Use" error (ToMToU) and invalidate the
+> > PCR.....
+> > 
+> > This is important when measuring configuration files, shell scripts (not
+> > measured in brpm_check_integrity which are protected by the OS), and
+> > files imported/included by scripts."
+> > 
+> > Another posting:
+> > "From an integrity perspective, a file measurement might be invalidated
+> > unnecessarily, but it is safe. For any file when opened for write, while
+> > having an existing reader, will cause the file measurement to be
+> > invalidated."
+> 
+> Those are all great explanations.  But, some of that needs to get in the
+> patch somehow.  This is a subtle thing and someone looking at this a
+> year for now is going to have difficulty understanding why it was done.
+> 
+> > I'm just not seeing a problem. Perhaps because only regular files are
+> > being measured, and of them, only those defined by the policy, which
+> > most likely would not include pseudo filesystems (i.e. sysfs, procfs,
+> > tmpfs, securityfs).
+> 
+> There is no practical problem if you have false-positives on this check
+> and do extra invalidations.  But, I think both Christoph and I are
+> nervous that this check is racy and there may be false-negatives and
+> thus may miss some invalidations (which would be harmful).
+> 
+> The check is racy which is cause for concern by itself.  But, with
+> careful consideration, it may not be a dangerous or harmful race.  Could
+> you please consider it carefully and share some of your thoughts in a
+> comment in the next version?
+> 
+> You need to check very, very carefully that there are no possible ways
+> for i_writecount to be elevated without a corresponding elevation of
+> d_count.  I'm especially concerned as I look at some of the mmap() code.
+> It appears that there are some temporary i_writecount elevations as
+> VM_DENYWRITE is figured out.  That needs some careful auditing to ensure
+> it doesn't violate what is being assumed in the integrity code.
 
-Yes. But what if the task was killed by the group-wide SIGKILL, and
-already dequeued SIGKILL from ->pending ? (do_exit path).
+The original IMA maintained its own readcount, but we thought the code
+would be simpler if we used existing kernel reference counts.  Based on
+both Christoph's and your concerns, we probably should go back to
+maintaining our own readcount for user level files.
 
-> > I think we need further changes. If the thread group group was killed
-> > by some fatal signal (but not SIGKILL) the tracee will sleep with
-> > SIGNAL_GROUP_EXIT, this is not nice too. But imho the patch makes
-> > sense anyway.
->
-> When there is no (user-level) SIGKILL and no core dump synchronization, I
-> think it's desireable for each thread to stop in exit tracing so it can be
-> fully examined.
-
-Yes. But my point was, it is not good the tracee sleeps and can't be
-killed. Yes, the user can use tkill(9) to wake it up, but still.
-
-Oleg.
+Mimi
 
