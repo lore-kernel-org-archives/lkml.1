@@ -1,89 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYLDHKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYLDHPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbYLDHKa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 02:10:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbYLDHKT
+	id S1756862AbYLDHPy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 02:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYLDHPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 02:10:19 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:36941 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751903AbYLDHKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 02:10:18 -0500
-Date: Thu, 4 Dec 2008 18:10:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Morris <jmorris@namei.org>
-Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       "J. Bruce Fields" <bfields@fieldses.org>
-Subject: Re: Conflict resolved in the security-testing tree
-Message-Id: <20081204181008.8a5c0f91.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LRH.1.10.0812041731280.6279@tundra.namei.org>
-References: <alpine.LRH.1.10.0812041731280.6279@tundra.namei.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__4_Dec_2008_18_10_08_+1100_ezNMzr4ghSikG2FO"
+	Thu, 4 Dec 2008 02:15:43 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41253 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752196AbYLDHPn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 02:15:43 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 08/11] memcg: make zone_reclaim_stat
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20081203140655.GG17701@balbir.in.ibm.com>
+References: <20081201211646.1CE2.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081203140655.GG17701@balbir.in.ibm.com>
+Message-Id: <20081204151647.1D78.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu,  4 Dec 2008 16:15:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__4_Dec_2008_18_10_08_+1100_ezNMzr4ghSikG2FO
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi James,
+> > +struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
+> > +						      struct zone *zone)
+> > +{
+> > +	int nid = zone->zone_pgdat->node_id;
+> > +	int zid = zone_idx(zone);
+> > +	struct mem_cgroup_per_zone *mz = mem_cgroup_zoneinfo(memcg, nid, zid);
+> > +
+> > +	return &mz->reclaim_stat;
+> > +}
+> > +
+> > +struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat_by_page(struct page *page)
+> > +{
+> 
+> I would prefer to use stat_from_page instead of stat_by_page, by page
+> is confusing.
 
-On Thu, 4 Dec 2008 17:33:39 +1100 (EST) James Morris <jmorris@namei.org> wr=
-ote:
->
-> I resolved a conflict between the new creds API and the nfs4 server code=
-=20
-> in=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.=
-6#next
->=20
-> per the patch below.  Please check.
->=20
->=20
-> diff --cc fs/nfsd/nfs4recover.c
-> index 9371ea1,b79ec93..0000000
-> --- a/fs/nfsd/nfs4recover.c
-> +++ b/fs/nfsd/nfs4recover.c
-> @@@ -230,12 -224,10 +230,13 @@@ nfsd4_list_rec_dir(struct dentry *dir,=20
->   	if (!rec_dir_init)
->   		return 0;
->  =20
->  -	nfs4_save_user(&uid, &gid);
->  +	status =3D nfs4_save_creds(&original_cred);
->  +	if (status < 0)
->  +		return status;
-> + 	INIT_LIST_HEAD(dentries);
->  =20
->  -	filp =3D dentry_open(dget(dir), mntget(rec_dir.mnt), O_RDONLY);
->  +	filp =3D dentry_open(dget(dir), mntget(rec_dir.mnt), O_RDONLY,
->  +			   current_cred());
->   	status =3D PTR_ERR(filp);
->   	if (IS_ERR(filp))
->   		goto out;
+ok.
+will fix.
 
-That is exactly what I did in linux-next in Nov 25 and got no screams
-then.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> > @@ -172,6 +173,12 @@ void activate_page(struct page *page)
+> > 
+> >  		reclaim_stat->recent_rotated[!!file]++;
+> >  		reclaim_stat->recent_scanned[!!file]++;
+> > +
+> > +		memcg_reclaim_stat = mem_cgroup_get_reclaim_stat_by_page(page);
+> > +		if (memcg_reclaim_stat) {
+> > +			memcg_reclaim_stat->recent_rotated[!!file]++;
+> > +			memcg_reclaim_stat->recent_scanned[!!file]++;
+> > +		}
+> 
+> Does it make sense to write two inline routines like
+> 
+> update_recent_rotated(page)
+> {
+>         zone = page_zone(page);
+> 
+>         zone->reclaim_stat->recent_rotated[!!file]++;
+>         mem_reclaim_stat = mem_cgroup_get_reclaim_stat_by_page(page);
+>         if (mem_reclaim_stat)
+>                 mem_cg_reclaim_stat->recent_rotated[!!file]++;
+>         ...
+> 
+> }
+> 
+> and similarly update_recent_reclaimed(page)
 
---Signature=_Thu__4_Dec_2008_18_10_08_+1100_ezNMzr4ghSikG2FO
-Content-Type: application/pgp-signature
+makes sense. good cleanup.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+will fix.
 
-iEYEARECAAYFAkk3glAACgkQjjKRsyhoI8zmgwCfSh+x2AfCDHceR0ZzbOO8ZoI9
-kb8AniVDiMbYSuXFzeESK05U0VGB61m/
-=pSCp
------END PGP SIGNATURE-----
 
---Signature=_Thu__4_Dec_2008_18_10_08_+1100_ezNMzr4ghSikG2FO--
+
+> > Index: b/mm/vmscan.c
+> > ===================================================================
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -134,6 +134,9 @@ static DECLARE_RWSEM(shrinker_rwsem);
+> >  static struct zone_reclaim_stat *get_reclaim_stat(struct zone *zone,
+> >  						  struct scan_control *sc)
+> >  {
+> > +	if (!scan_global_lru(sc))
+> > +		mem_cgroup_get_reclaim_stat(sc->mem_cgroup, zone);
+> 
+> What do we gain by just calling mem_cgroup_get_reclaim_stat? Where do
+> we return/use this value?
+
+Agghh.
+My last cleanup is _not_ cleanup..
+
+thanks! will fix.
+
+
+
+
+
