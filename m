@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbYLDF2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbYLDF2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755114AbYLDF2b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 00:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbYLDF1j
+	id S1756766AbYLDF2t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 00:28:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYLDF1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 4 Dec 2008 00:27:39 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63792 "EHLO
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39868 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751815AbYLDF1h (ORCPT
+	with ESMTP id S1751638AbYLDF1h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Dec 2008 00:27:37 -0500
-Message-Id: <20081204052734.913191217@goodmis.org>
+Message-Id: <20081204052735.175697908@goodmis.org>
 References: <20081204052638.425740534@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 04 Dec 2008 00:26:39 -0500
+Date: Thu, 04 Dec 2008 00:26:40 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -24,43 +24,184 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
        "Serge E. Hallyn" <serue@us.ibm.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/3] fix the do_each_pid_task macro
-Content-Disposition: inline; filename=0001-fix-the-do_each_pid_task-macro.patch
+Subject: [PATCH 2/3] ftrace: use struct pid
+Content-Disposition: inline; filename=0002-ftrace-use-struct-pid.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: fix
+Impact: clean up
 
-This patch adds parenthesis around 'pid' in the do_each_pid_task
-macro to allow callers to pass in more complex parameters.
-
-e.g.  do_each_pid_task(*pid, type, task)
+Eric Biederman suggested using the struct pid for filtering on
+pids in the kernel. This patch is based off of a demonstration
+of an implementation that Eric sent me in an email.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
 ---
- include/linux/pid.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/trace/ftrace.c |   76 ++++++++++++++++++++++++++++--------------------
+ kernel/trace/trace.h  |    4 +-
+ 2 files changed, 46 insertions(+), 34 deletions(-)
 
-diff --git a/include/linux/pid.h b/include/linux/pid.h
-index d7e98ff..bb206c5 100644
---- a/include/linux/pid.h
-+++ b/include/linux/pid.h
-@@ -147,9 +147,9 @@ pid_t pid_vnr(struct pid *pid);
- #define do_each_pid_task(pid, type, task)				\
- 	do {								\
- 		struct hlist_node *pos___;				\
--		if (pid != NULL)					\
-+		if ((pid) != NULL)					\
- 			hlist_for_each_entry_rcu((task), pos___,	\
--				&pid->tasks[type], pids[type].node) {
-+				&(pid)->tasks[type], pids[type].node) {
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 57592a9..10b1d7c 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -48,7 +48,7 @@ int ftrace_enabled __read_mostly;
+ static int last_ftrace_enabled;
  
- 			/*
- 			 * Both old and new leaders may be attached to
+ /* set when tracing only a pid */
+-int ftrace_pid_trace = -1;
++struct pid *ftrace_pid_trace;
+ 
+ /* Quick disabling of function tracer. */
+ int function_trace_stop;
+@@ -153,7 +153,7 @@ static int __register_ftrace_function(struct ftrace_ops *ops)
+ 		else
+ 			func = ftrace_list_func;
+ 
+-		if (ftrace_pid_trace >= 0) {
++		if (ftrace_pid_trace) {
+ 			set_ftrace_pid_function(func);
+ 			func = ftrace_pid_func;
+ 		}
+@@ -209,7 +209,7 @@ static int __unregister_ftrace_function(struct ftrace_ops *ops)
+ 		if (ftrace_list->next == &ftrace_list_end) {
+ 			ftrace_func_t func = ftrace_list->func;
+ 
+-			if (ftrace_pid_trace >= 0) {
++			if (ftrace_pid_trace) {
+ 				set_ftrace_pid_function(func);
+ 				func = ftrace_pid_func;
+ 			}
+@@ -239,7 +239,7 @@ static void ftrace_update_pid_func(void)
+ 
+ 	func = ftrace_trace_function;
+ 
+-	if (ftrace_pid_trace >= 0) {
++	if (ftrace_pid_trace) {
+ 		set_ftrace_pid_function(func);
+ 		func = ftrace_pid_func;
+ 	} else {
+@@ -1678,18 +1678,40 @@ ftrace_pid_read(struct file *file, char __user *ubuf,
+ 	char buf[64];
+ 	int r;
+ 
+-	if (ftrace_pid_trace >= 0)
+-		r = sprintf(buf, "%u\n", ftrace_pid_trace);
++	if (ftrace_pid_trace)
++		r = sprintf(buf, "%u\n", pid_nr(ftrace_pid_trace));
+ 	else
+ 		r = sprintf(buf, "no pid\n");
+ 
+ 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
+ }
+ 
++static void clear_ftrace_pid_task(struct pid **pid)
++{
++	struct task_struct *p;
++
++	do_each_pid_task(*pid, PIDTYPE_PID, p) {
++		clear_tsk_trace_trace(p);
++	} while_each_pid_task(*pid, PIDTYPE_PID, p);
++	put_pid(*pid);
++
++	*pid = NULL;
++}
++
++static void set_ftrace_pid_task(struct pid *pid)
++{
++	struct task_struct *p;
++
++	do_each_pid_task(pid, PIDTYPE_PID, p) {
++		set_tsk_trace_trace(p);
++	} while_each_pid_task(pid, PIDTYPE_PID, p);
++}
++
+ static ssize_t
+ ftrace_pid_write(struct file *filp, const char __user *ubuf,
+ 		   size_t cnt, loff_t *ppos)
+ {
++	struct pid *pid;
+ 	char buf[64];
+ 	long val;
+ 	int ret;
+@@ -1707,40 +1729,30 @@ ftrace_pid_write(struct file *filp, const char __user *ubuf,
+ 		return ret;
+ 
+ 	mutex_lock(&ftrace_start_lock);
+-	if (ret < 0) {
++	if (val < 0) {
+ 		/* disable pid tracing */
+-		if (ftrace_pid_trace < 0)
++		if (!ftrace_pid_trace)
+ 			goto out;
+-		ftrace_pid_trace = -1;
++
++		clear_ftrace_pid_task(&ftrace_pid_trace);
+ 
+ 	} else {
+-		struct task_struct *p;
+-		int found = 0;
++		pid = find_get_pid(val);
+ 
+-		if (ftrace_pid_trace == val)
++		if (pid == ftrace_pid_trace) {
++			put_pid(pid);
+ 			goto out;
+-
+-		/*
+-		 * Find the task that matches this pid.
+-		 * TODO: use pid namespaces instead.
+-		 */
+-		rcu_read_lock();
+-		for_each_process(p) {
+-			if (p->pid == val) {
+-				found = 1;
+-				set_tsk_trace_trace(p);
+-			} else if (test_tsk_trace_trace(p))
+-				clear_tsk_trace_trace(p);
+ 		}
+-		rcu_read_unlock();
+ 
+-		if (found)
+-			ftrace_pid_trace = val;
+-		else {
+-			if (ftrace_pid_trace < 0)
+-				goto out;
+-			ftrace_pid_trace = -1;
+-		}
++		if (ftrace_pid_trace)
++			clear_ftrace_pid_task(&ftrace_pid_trace);
++
++		if (!pid)
++			goto out;
++
++		ftrace_pid_trace = pid;
++
++		set_ftrace_pid_task(ftrace_pid_trace);
+ 	}
+ 
+ 	/* update the function call */
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 95fff37..8b81b4d 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -541,11 +541,11 @@ print_graph_function(struct trace_iterator *iter)
+ }
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+ 
+-extern int ftrace_pid_trace;
++extern struct pid *ftrace_pid_trace;
+ 
+ static inline int ftrace_trace_task(struct task_struct *task)
+ {
+-	if (ftrace_pid_trace < 0)
++	if (ftrace_pid_trace)
+ 		return 1;
+ 
+ 	return test_tsk_trace_trace(task);
 -- 
 1.5.6.5
 
