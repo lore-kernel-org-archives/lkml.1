@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYLDBHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYLDBHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbYLDBHY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 20:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbYLDBGv
+	id S1758701AbYLDBHs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 20:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbYLDBHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 20:06:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59268 "EHLO mx1.redhat.com"
+	Wed, 3 Dec 2008 20:07:04 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59279 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757855AbYLDBGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 20:06:50 -0500
+	id S1758288AbYLDBHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 20:07:01 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: oleg@redhat.com, ebiederm@xmission.com, daniel@hozac.com, xemul@openvz.org,
-       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
-       sukadev@us.ibm.com
-Subject: Re: [RFC][PATCH 3/5] Determine if sender is from ancestor ns
-In-Reply-To: Sukadev Bhattiprolu's message of  Tuesday, 25 November 2008 19:46:11 -0800 <20081126034611.GC23238@us.ibm.com>
-References: <20081126034242.GA23120@us.ibm.com>
-	<20081126034611.GC23238@us.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       rnalumasu@gmail.com
+Subject: Re: + do_wait-wakeup-optimization.patch added to -mm tree
+In-Reply-To: Oleg Nesterov's message of  Sunday, 23 November 2008 22:39:29 +0100 <20081123213929.GA9097@redhat.com>
+References: <200811212015.mALKFMs4019558@imap1.linux-foundation.org>
+	<20081123213929.GA9097@redhat.com>
 X-Fcc: ~/Mail/linus
-Message-Id: <20081204010636.A8465FC053@magilla.sf.frob.com>
-Date: Wed,  3 Dec 2008 17:06:36 -0800 (PST)
+X-Shopping-List: (1) Rhythmic compulsion departures
+   (2) Logical battalions
+   (3) Consistent missing intrusions
+   (4) Injudicious sugar
+Message-Id: <20081204010648.98A7CFC053@magilla.sf.frob.com>
+Date: Wed,  3 Dec 2008 17:06:48 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't quarrel with the intent, but I don't like this approach.
-I think we can do it more cleanly.  I don't have it all worked out,
-but a couple of thoughts come to mind.
+> Let's suppose the ptracer finds the EXIT_ZOMBIE tracee and notifies its
+> ->real_parent which sleeps in do_wait(). In that case the usage of
+> eligible_child(task == ptracer) above is bogus, and checking for
+> group_leader is not rifgt too.
 
-Firstly, it's no problem to split SIGNAL_UNKILLABLE out into multiple
-flags.  It's quite noninvasive, only signal.c looks at those flags.  Then
-we can implement the signal magic cleanly keyed on a few separate flags,
-using different flag combinations for global init and container inits.
+I had overlooked that do_notify_parent() call.
 
-I don't mind a feature that lets an unprivileged container init magically
-ignore normal exit signals.  That just does something it could do itself
-with sigaction, except its /proc/pid/status "SigIgn:" line will lie.
-That's OK.  Key that on its own flag and set that in both inits.  Just
-check that flag in prepare_signal() and in get_signal_to_deliver().
+> > +static int do_wait_wake_function(wait_queue_t *curr, unsigned mode, int sync,
+> > +				 void *key)
+> > +{
+> > +	struct task_struct *task = current;
+> 
+> I think we can fix (and simplify) this code if we change __wake_up_parent(),
+> it should call __wake_up(key => p), so we can do
+> 
+> 	struct task_struct *task = key;
 
-It's a different story for the signals that cannot be caught, blocked, or
-ignored, SIGKILL and SIGSTOP.  At least when sent from outside the
-container, circumventing either of those would be a privilege escalation
-from what's always been understood by admins and so on.  
+I had not looked into the bowels of various __wake_up variants, just
+assumed it would stay as it is and use wake_up_interruptible_sync.
 
-It's convenient for the implementation that we can treat these differently
-from other signals, precisely because they can never be caught, blocked, or
-ignored.  That is, when we decide in prepare_signal() to queue a SIGKILL or
-SIGSTOP, it can never turn out that we're later going to drop it because it
-went from caught or ignored or blocked to uncaught, unignored, and
-unblocked.  (It's only because of that possibility that there is any need
-to check for a suppressed exit signal in get_signal_to_deliver() rather
-than only in prepare_signal().)  That means that when the decision hinges
-on the namespace correlation of the sender and receiver, you can check that
-when it's handy (current vs p in prepare_signal) rather than trying to
-reconstruct the answer for a queued signal.
+That would certainly be cleaner.  Then do_wait_wake_function would not need
+the second of its special cases, only the one double-check for the
+thread_group_leader && task_detached case.
 
-Finally, one more thought.  This may be moot for the problem at hand if you
-take the approach I just suggested, but probably should be fixed anyway.
-It seems to me that the si_pid and si_uid fields of siginfo_t ought to be
-translated to the namespaces of the receiver.  I think it makes most sense
-to do this on the front end, i.e. in the callers that fill in the siginfo_t
-in the first place (sys_kill et al, or maybe a few layers down?).
-Currently it's inconsistent, but mostly wrong.  do_notify_parent() and
-do_notify_parent_cldstop() use the receiver's namespace to compute si_pid,
-but the rest of the signal.c routines do not.  A free side effect of doing
-this is that si_pid for a sender whose PID is not visible to the receiver
-(i.e. outside its container) would be distinctively 0 or -1 or something.
-(-1 might be the best choice, since si_[pu]id=0 already arises now in case
-of signal queue exhaustion and the like.)  Hence, possibly one could simply
-use si_pid>0 as a "sent from inside the container" check on a queued siginfo_t.
+I don't see an exposed __wake_up* variant that both passes a "key" pointer
+through and does "sync".  For __wake_up_parent, "sync" is quite desireable.
+
+> > +	if (!needs_wakeup(task, w))
+> > +		return 0;
+> > +
+> > +	return default_wake_function(curr, mode, sync, key);
+> 
+> perhaps autoremove_wake_function() makes more sense.
+
+Why?  The do_wait loop will have to go through again and still might just
+sleep again.  The explicit remove at the end of do_wait seems fine to me.
 
 
 Thanks,
