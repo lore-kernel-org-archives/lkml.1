@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbYLDXXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbYLDX0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757493AbYLDXXy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 18:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755326AbYLDXXo
+	id S1756749AbYLDX0x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 18:26:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYLDX0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 18:23:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34931 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755309AbYLDXXn (ORCPT
+	Thu, 4 Dec 2008 18:26:46 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42313 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbYLDX0p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 18:23:43 -0500
-Date: Thu, 4 Dec 2008 15:22:30 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
- on Toshiba R500 (bisected)
-In-Reply-To: <200812042340.58694.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0812041459120.3543@nehalem.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812041229.45443.elendil@planet.nl> <alpine.LFD.2.00.0812040754020.3256@nehalem.linux-foundation.org> <200812042340.58694.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 4 Dec 2008 18:26:45 -0500
+Date: Thu, 4 Dec 2008 18:26:44 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] tracing/ftrace: don't insert TRACE_PRINT during
+ selftests
+In-Reply-To: <c62985530812041503g4e6f8fa8uc9b7a1166fd3a907@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0812041826210.32726@gandalf.stny.rr.com>
+References: <49385E07.7050304@gmail.com>  <alpine.DEB.1.10.0812041752210.32726@gandalf.stny.rr.com> <c62985530812041503g4e6f8fa8uc9b7a1166fd3a907@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,135 +28,45 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Thu, 4 Dec 2008, Rafael J. Wysocki wrote:
+On Fri, 5 Dec 2008, Fr?d?ric Weisbecker wrote:
+> >
+> > Enable this in the mutex lock, and we could make it a normal int.
+> >
 > 
-> That said the "don't bother allocating bridging windows for transparent
-> bridges" patch resulted in the following layout on my box (from /proc/iomem):
 > 
-> 88000000-8807ffff : 0000:00:02.1
-> 88080000-88083fff : 0000:00:1b.0
->   88080000-88083fff : ICH HD audio
-> 88084000-88087fff : 0000:03:0b.1
-> 88088000-88088fff : 0000:03:0b.0
->   88088000-88088fff : yenta_socket
-> 88089000-880897ff : 0000:03:0b.1
->   88089000-880897ff : firewire_ohci
-> 88089800-880898ff : 0000:03:0b.3
->   88089800-880898ff : mmc0
-> 8808a000-8808afff : Intel Flush Page
-> 8c000000-8fffffff : PCI CardBus 0000:04
-> 90000000-93ffffff : PCI CardBus 0000:04
+> But ftrace_printk can be called from interrupt context. I think we can loose
+> some TRACE_PRINT entries at the selftests time since the tracer are not enabled
+> by the user at this time, except the boot tracer...
+
+I mean, move it down farther after we acquire the mutex. Should be fine.
+
+-- Steve
+
 > 
-> while my "don't allocate bridging windows for cardbus bridges behind
-> transparent bridges" patch I've just sent (appended for easier reference)
-> results in the layout:
+> >>               /*
+> >>                * Run a selftest on this tracer.
+> >>                * Here we reset the trace buffer, and set the current
+> >> @@ -603,6 +613,7 @@ int register_tracer(struct tracer *type)
+> >>               /* the test is responsible for initializing and enabling */
+> >>               pr_info("Testing tracer %s: ", type->name);
+> >>               ret = type->selftest(type, tr);
+> >> +             atomic_set(&tracing_selftest_running, 0);
+> >>               /* the test is responsible for resetting too */
+> >>               current_trace = saved_tracer;
+> >>               if (ret) {
+> >> @@ -3594,7 +3605,7 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+> >>       unsigned long flags, irq_flags;
+> >>       int cpu, len = 0, size, pc;
+> >>
+> >> -     if (tracing_disabled)
+> >> +     if (tracing_disabled || atomic_read(&tracing_selftest_running))
+> >>               return 0;
+> >>
+> >>       pc = preempt_count();
+> >> --
+> >
+> > -- Steve
+> >
+> >
 > 
-> 88000000-880fffff : PCI Bus 0000:03
->   88000000-88003fff : 0000:03:0b.1
->   88004000-88004fff : 0000:03:0b.0
->     88004000-88004fff : yenta_socket
->   88005000-880057ff : 0000:03:0b.1
->     88005000-880057ff : firewire_ohci
->   88005800-880058ff : 0000:03:0b.3
->     88005800-880058ff : mmc0
-> 88100000-8817ffff : 0000:00:02.1
-> 88180000-88183fff : 0000:00:1b.0
->   88180000-88183fff : ICH HD audio
-> 88184000-88184fff : Intel Flush Page
-> 8c000000-8fffffff : PCI CardBus 0000:04
-> 90000000-93ffffff : PCI CardBus 0000:04
-
-Well, this happens because in the second case, you still will allocate a 
-non-prefetchable window due to the _other_ devices behind the bridge (ie 
-the firewire and mmc device.
-
-So with your "ignore cardbus device resources", you still do end up with a 
-bridge window allocated, but now it will depend entirely on what other 
-devices exist on that PCI bus. Which is why I really dislike that patch, 
-because it really makes no sense at all. 
-
-And once you've allocated the PCI bridge window, then the alignment 
-requirements are that you end up having at least 1MB of window, and now 
-because a window exists, and will fit, it will then happily put the yenta 
-control mappings into that window even though it didn't size it for them.
-
-See?
-
-Also, notice how it doesn't put the actual cardbus bridge windows 
-themselves into that PCI bridge window, because they won't fit. So these 
-resources:
-
-	8c000000-8fffffff : PCI CardBus 0000:04
-	90000000-93ffffff : PCI CardBus 0000:04
-
-are outside the window, even though that bus is topologically inside the 
-same bus, and they both end up depending on the fact that the PCI bus 
-controller is transparent.
-
-So the above results are fairly easy to explain.
-
-The _ordering_ difference comes simply from the allocation order. We'll do 
-bus allocations first (if we do them), which is why _if_ we allocate a 
-window for that PCI bus 03 (ie the one that is bridged to by 0:1e.0, that 
-transparent bridge), then we'll end up allocating it first. So that's why 
-the PCI bridge window shows up at 0x88000000, if it shows up at all 
-(because that's the starting address for PCI allocations).
-
-Then, we'll do the regular devices in the order we found them, so then 
-we'll allocate the resources for device 0:02.1 and then 0:1b.0. Now, _if_ 
-we did a bus window allocation, they'll end up being after the bus window 
-we allocated. Otherwise they'll end up being the first allocations.
-
-So then, by the time we actually get to bus#3, and devices 3:0b.*, where 
-they end up is going to depend on whether we allocated that bus window (in 
-which case they'll preferentially get allocated inside the window - ie 
-starting at 0x88000000), or they'll just get allocated inside the parent 
-(root) PCI bus. In the latter case they'll be allocated after the 0:02.1 
-etc devices.
-
-So the differences in ordering really do make sense, and are a direct 
-consequence of whether we decided to need to allocate a bridging window 
-for that PCI-PCI bridge at 0:1e.0.
-
-Also note that _if_ PCI bus #3 had had other devices with prefetchable 
-memory resources, then we'd have allocated a prefetchable window for 
-those even with your patch, and then we'd have been back to the original 
-allocation again (although sizing might cause changes, since your patch 
-will make us ignore the cardbus controlle for sizing).
-
-> where devices behind the transparent bridge (PCI Bus 0000:03) are located
-> _before_ ICH HD audio in the memory address space, and this one appears to
-> work.  So there _may_ be an effect of the layout too.
-
-I do agree that your patch will affect layout. I just don't think it makes 
-any real amount of sense because of how it essentially does so "randomly" 
-depending on what other devices you'd have behind the transparent bridge.
-
-Which is why I think we should either not size transparent bridges at all, 
-or we should size _all_ the devices behind them.
-
-Oh, btw, I thought your and Frans' laptops were identical? They don't seem 
-to be: in Frans' case, the firmware does seem to set up one memory window, 
-so he gets that one even with my "don't size anything" patch, just because 
-we'll still honor allocations done by firmware.
-
-> Well, given that both affected boxes have the same chipset (945GM), I seriously
-> suspect a nastiness in that chipset we're not aware of.  Especially that
-> the problem is not reproducible without snd_hda_intel (at least on my box).
-
-Well, the counter-argument to that is that the 945GM should be a _very_ 
-common chipset. So I'd not expect a chipset nastiness.
-
-I'd be more wary about the BIOS doing something odd. Or an ACPI thing. 
-
-> I've already checked the resume ordering of PCI devices on my box and it
-> is the following:
->   [snip]
-> So, snd_hda_intel resumes before all of the bridges and the layout of devices
-> _behind_ the transparent bridge shouldn't affect it at all.
-
-Yes. And in the case of Frans' machine, the e1000e controller was before 
-all the bridges too.
-
-		Linus
+> 
