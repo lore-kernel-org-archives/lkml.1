@@ -1,61 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbYLDEtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYLDExj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbYLDEtQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 23:49:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbYLDEs2
+	id S1755573AbYLDExj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 23:53:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbYLDEx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 23:48:28 -0500
-Received: from kroah.org ([198.145.64.141]:51875 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755315AbYLDEsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 23:48:25 -0500
-Date: Wed, 3 Dec 2008 20:35:33 -0800
-From: Greg KH <greg@kroah.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       linux-pci@vger.kernel.org, netdev@vger.kernel.org, x86@kernel.org,
-       tytso@mit.edu, akpm@linux-foundation.org, alan@redhat.com,
-       airlied@redhat.com
-Subject: Re: Oops/Warning report for the week of December 3rd, 2008
-Message-ID: <20081204043533.GE18027@kroah.com>
-References: <20081203184652.0601b86b@linux.intel.com>
+	Wed, 3 Dec 2008 23:53:29 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:37509 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751701AbYLDEx2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 23:53:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=o8y2gG4OGGfwCishYJqXVp7+LLzC3j/WS1ghVm1IYpCr6vZzZKXe70aefrOgaZ96Ei
+         dX3YLvL9tdWhf3fbJn+HwPGrPM3gxGhKGP8fG/7w96M5sSNN6jDr86PxzWBwz+DvLESw
+         GYzKfN/N7CDUJXU6GWNNbjHpxwl7qALEgByF8=
+Message-ID: <208aa0f00812032053w5efb99dbk94511b0f8c1f0925@mail.gmail.com>
+Date: Wed, 3 Dec 2008 20:53:27 -0800
+From: "Edward Estabrook" <edward.estabrook.lkml@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] Userspace I/O (UIO): Documentatin for userspace DMA support
+Cc: linux-api@vger.kernel.org, "Greg KH" <gregkh@suse.de>, hjk@linutronix.de,
+       edward_estabrook@agilent.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081203184652.0601b86b@linux.intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 06:46:52PM -0800, Arjan van de Ven wrote:
-> Rank 1: pci_create_slot (warning)
-> 	Reported 1224 times (1662 total reports)
-> 	BIOS provided duplicated slot names, the PCI layer blindly passes to sysfs
-> 	This warning was last seen in version 2.6.27.5, and first seen in 2.6.27-rc7-git1.
-> 	More info: http://www.kerneloops.org/searchweek.php?search=pci_create_slot
+From: Edward Estabrook <Edward_Estabrook@agilent.com>
 
-This will be fixed in 2.6.27.8, so it should go away soon.
+Here is a patch updating the Userspace IO documentation to
+detail support to dynamically allocate and use coherent DMA
+from userspace.  This patch applies against 2.6.28-rc6.
 
-> Rank 5: VBoxDrvLinuxIOCtl (warning)
-> 	Reported 756 times (2332 total reports)
-> 	[external] bug in the VirtualBox drivers
-> 	This warning was last seen in version 2.6.28-rc3, and first seen in 2.6.25.11.
-> 	More info: http://www.kerneloops.org/searchweek.php?search=VBoxDrvLinuxIOCtl
+The gist of this implementation is to overload uio's mmap
+functionality to allocate
+and map a new DMA region on demand.  The bus-specific DMA address as returned by
+dma_alloc_coherent() is made available to userspace in the 1st long
+word of the newly
+created region (as well as through the conventional 'addr' file in sysfs).
 
-Does anyone have a link to the virtualbox linux kernel drivers?  I can't
-seem to find them poking around on their site.  All I found were some
-strange C++ files that couldn't possibly be the kernel code...
+The kernel-api change is that passing an offset value of 0xFFFFF000UL to a uio
+device's mmap() operation will dynamically allocate a DMA region.  This cannot
+break existing code as the previous UIO code only allowed a maximum of 5
+mappings.
 
-> Rank 14: sysfs_add_one (oops)
-> 	Reported 195 times (213 total reports)
-> 	Duplicate sysfs registration; mostly in USB audio
-> 	This oops was last seen in version 2.6.27.5, and first seen in 2.6.25.
-> 	More info: http://www.kerneloops.org/searchweek.php?search=sysfs_add_one
+To allocate a DMA region you use the following:
+/* Pass this magic number to mmap as offset to
+ * dynamically allocate a chunk of memory */
+#define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
 
-Should be resolved in 2.6.27.7, interesting that no one reported it in
-.6, perhaps no distro did a release with that kernel version.
+void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
+		     fd, DMA_MEM_ALLOCATE_MMAP_OFFSET);
+u_int64_t *addr = *(u_int64_t *) memory;
 
-thanks,
+where 'size' is the size in bytes of the region you want and fd is the
+opened /dev/uioN file.
 
-greg k-h
+Allocation occurs in page sized pieces by design to ensure that
+buffers are page-aligned.
+
+Memory is released when the uio_unregister_device() is called.
+
+Signed-off-by: Edward Estabrook <Edward_Estabrook@agilent.com>
+---
+--- linux-2.6.28-rc6/Documentation/DocBook/uio-howto.tmpl.orig	2008-12-03
+12:03:43.000000000 -0800
++++ linux-2.6.28-rc6/Documentation/DocBook/uio-howto.tmpl	2008-12-03
+13:11:53.000000000 -0800
+@@ -42,6 +42,12 @@ GPL version 2.
+
+ <revhistory>
+ 	<revision>
++	<revnumber>0.6</revnumber>
++	<date>2008-12-03</date>
++	<authorinitials>ee</authorinitials>
++	<revremark>Added description of DMA control.</revremark>
++	</revision>
++	<revision>
+ 	<revnumber>0.5</revnumber>
+ 	<date>2008-05-22</date>
+ 	<authorinitials>hjk</authorinitials>
+@@ -284,11 +290,17 @@ interested in translating it, please ema
+ 	require access to more than one PCI memory region in a driver.
+ </para>
+ <para>
++	Each UIO device can also dynamically allocate coherent DMA
++	memory regions and map these to userspace.  Once created they
++	can be mapped like any other UIO memory region.
++</para>
++<para>
+ 	Each mapping has its own directory in sysfs, the first mapping
+ 	appears as <filename>/sys/class/uio/uioX/maps/map0/</filename>.
+ 	Subsequent mappings create directories <filename>map1/</filename>,
+-	<filename>map2/</filename>, and so on. These directories will only
+-	appear if the size of the mapping is not 0.
++	<filename>map2/</filename>, and so on. These directories will
++	appear even if the size of the mapping is 0 to accommodate dynamically
++	created DMA mappings.
+ </para>
+ <para>
+ 	Each <filename>mapX/</filename> directory contains two read-only files
+@@ -318,6 +330,24 @@ interested in translating it, please ema
+ offset = N * getpagesize();
+ </programlisting>
+
++<para>
++	From userspace a DMA region may be dynamically allocated and mapped
++	via the <function>mmap()</function> call by specifying the size of the
++	region in bytes in the <varname>length</varname> parameter and setting
++	<varname>offset = 0xFFFFF000</varname>.
++</para>
++<para>
++	The bus-specific DMA address as required to configure hardware DMA
++	registers will be stored in the first long word of the resulting mapped
++	region.
++</para>
++<programlisting format="linespecific">
++#define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
++void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
++		     fd, DMA_MEM_ALLOCATE_MMAP_OFFSET);
++u_int64_t *addr = *(u_int64_t *) memory;
++</programlisting>
++
+ </sect1>
+ </chapter>
+
+@@ -572,6 +602,50 @@ to set up sysfs files for this mapping.
+ 	</para>
+ </sect1>
+
++<sect1 id="dma_region_mmap">
++<title>Allocating DMA region with mmap()</title>
++	<para>
++	To allocate and map a DMA memory region you use
++	use <function>mmap()</function>.  You may create as
++	many regions as system resources allow by repeated use of
++	<function>mmap()</function>.
++	</para>
++	<para>
++	Specify the size of the desired region, in bytes, in the
++	<varname>length</varname> parameter and set
++	<varname>offset = 0xFFFFF000</varname>.  The region size will
++	be rounded up to a multiple of page size to ensure proper
++	alignment.
++	</para>
++	<para>
++	The bus-specific DMA address is stored in the first long word of the
++	resulting mapped region.  The newly assigned memory index N is
++	returned in the second long word of the resulting mapped region.  This
++	index is only required if the userspace driver needs to unmap and
++	then later remap the DMA region as the single call to
++	<function>mmap()</function> is sufficient to both allocate and map the
++	region.
++	</para>
++	<para>
++	Since every memory mapping has its own directory in sysfs
++	<filename>/sys/class/uio/uioX/maps/mapN/</filename> will be created
++	where N is the dynamically generated index of the mapping just
++	allocated.
++	</para>
++	<para>
++	Dynamically allocated DMA regions remain available for use
++	until <function>uio_unregister_device()</function> is called, at
++	which point the memory is released.
++	</para>
++<programlisting format="linespecific">
++	#define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
++	void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
++			     fd, DMA_MEM_ALLOCATE_MMAP_OFFSET);
++	u_int64_t *addr = *(u_int64_t *) memory;
++</programlisting>
++
++</sect1>
++
+ <sect1 id="wait_for_interrupts">
+ <title>Waiting for interrupts</title>
+ 	<para>
+@@ -583,7 +657,7 @@ to set up sysfs files for this mapping.
+ 	attention because an error occured.
+ 	</para>
+ 	<para>
+-	<filename>/dev/uioX</filename> is a read-only file. A
++	<filename>/dev/uioX</filename> is a read-write file. A
+ 	<function>read()</function> will always block until an
+ 	interrupt occurs. There is only one legal value for the
+ 	<varname>count</varname> parameter of
