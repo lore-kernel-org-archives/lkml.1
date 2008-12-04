@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759236AbYLDWbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbYLDWdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759236AbYLDWbq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 17:31:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbYLDWbf
+	id S1758974AbYLDWdu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 17:33:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716AbYLDWdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 17:31:35 -0500
-Received: from igw3.br.ibm.com ([32.104.18.26]:33582 "EHLO igw3.br.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756593AbYLDWbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 17:31:34 -0500
-Subject: Re: [PATCH 1/6] integrity: TPM internel kernel interface
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>,
-       Rajiv Andrade <srajiv@br.ibm.com>
-In-Reply-To: <1228422093.19683.66.camel@blackbox>
-References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
-	 <1e02b363572908a21f67ff8abbf2b10190a4f6a6.1228253618.git.zohar@linux.vnet.ibm.com>
-	 <1228256380.2971.176.camel@nimitz>  <1228422093.19683.66.camel@blackbox>
-Content-Type: text/plain
-Date: Thu, 04 Dec 2008 20:31:14 -0200
-Message-Id: <1228429874.19683.73.camel@blackbox>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Dec 2008 17:33:40 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:44717 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756337AbYLDWdj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 17:33:39 -0500
+Date: Thu, 4 Dec 2008 16:33:36 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: mtk.manpages@gmail.com, ebiederm@xmission.com,
+       lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org,
+       clg@fr.ibm.com, herbert@13thfloor.at, dev@sw.ru,
+       Subrata Modak <subrata@linux.vnet.ibm.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: Could you write some CLONE_NEWUSER?
+Message-ID: <20081204223336.GA20990@us.ibm.com>
+References: <cfd18e0f0812040720y5cabd2aarbf3912644dea42c4@mail.gmail.com> <20081204190430.GA16026@us.ibm.com> <3e8340490812041218l7b4633fev5126f25a5d33076c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3e8340490812041218l7b4633fev5126f25a5d33076c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > +
-> > > +/**
-> > > + * tpm_pcr_read - read a pcr value
-> > > + * @chip_id: 	tpm chip identifier
-> > > + * 		Upper 2 bytes: ANY, HW_ONLY or SW_ONLY
-> > > + * 		Lower 2 bytes: tpm idx # or AN&
-> > > + * @pcr_idx:	pcr idx to retrieve
-> > > + * @res_buf: 	TPM_PCR value
-> > > + * 		size of res_buf is 20 bytes (or NULL if you don't care)
-> > > + *
-> > > + * The TPM driver should be built-in, but for whatever reason it
-> > > + * isn't, protect against the chip disappearing, by incrementing
-> > > + * the module usage count.
-> > > + */
-> > > +int tpm_pcr_read(u32 chip_id, int pcr_idx, u8 *res_buf)
-> > > +{
-> > > +	u8 data[READ_PCR_RESULT_SIZE];
-> > > +	int rc;
-> > > +	__be32 index;
-> > > +	int chip_num = chip_id & TPM_CHIP_NUM_MASK;
-> > > +	struct tpm_chip *chip;
-> > > +
-> > > +	rcu_read_lock();
-> > > +	chip = tpm_chip_lookup(chip_num, chip_id >> TPM_CHIP_TYPE_SHIFT);
-> > > +	if (chip == NULL) {
-> > > +		rcu_read_unlock();
-> > > +		return -ENODEV;
-> > > +	}
-> > > +	if (!try_module_get(chip->dev->driver->owner)) {
-> > > +		rcu_read_unlock();
-> > > +		return -ENODEV;
-> > > +	}
-> > > +	rcu_read_unlock();
-> > 
-> > This little bit of lookup, check for NULL, and try_module_get() looks
-> > cut-n-pasted in the next two functions.  Should be consolidated.
-> > 
-> 
-> Same here.
-> 
-> > Also, if you need to shift down the chip_id every time anyway, why not
-> > just do it inside the lookup function?
-> 
-> tpm_chip_lookup() only needs the chip type, not the entire chip_id, so
-> its usage is probably clearer if written this way.
-> 
+Quoting Bryan Donlan (bdonlan@gmail.com):
+> This is something more of a general question than one about this
+> manpage, but how will files owned by user namespaces be represented on
+> the underlying filesystem? Since (C, 501) will be meaningless after a
+> reboot at the latest, it makes little sense to persist them...
 
-Wait.. chip_num, the other parameter, depends on chip_id and a
-previously defined constant, so, you are right, it's saner to just pass
-chip_id to it.. sorry, and thanks. This will be included also on the
-next patchset I'm about to send.
+Yeah that's a very interesting question.  Clearly persistant names for
+the user namespaces are needed.  Eric very much wanted to avoid having
+the user namespaces be explicitly named, so we pursued the path of
+having the filesystem handle the naming.  So in my last patchset,
+a mount option could register the mounter's user namespace name.
+There would be a system-wide policy saying for instance that (B,500)
+user namespaces owned by can register themselves at C.
 
-Rajiv
+(end of discussion arising from that patchset is here: )
+https://lists.linux-foundation.org/pipermail/containers/2008-August/012793.html
 
+In the simplest case of no fs support for user namespaces, the mount
+will be 'owned' by the userns which mounted it (no persistant name
+needed for that).  Users who are in a different namespace will only get
+the 'user other' permission to the file/dir, and may not create files
+there (since we wouldn't know which userid to place on it).
+
+Then the fs can support user namespaces - however it wants.  It could
+just store (B, 500),(C, 501) in an xattr.  Or it could just store the
+userid and userns name of the lowest user (I.e. C and 0), and count on
+knowning that (B, 500) owns user namespace C.  We do want to provide
+generic helpers in lib/fsuserns.c which any fs could use.
+
+But yes, picking a meaningful persistant name for a user namespace
+is an issue.
+
+-serge
