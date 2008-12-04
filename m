@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbYLDRV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbYLDRWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756787AbYLDRV3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 12:21:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYLDRVV
+	id S1755959AbYLDRWN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 12:22:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbYLDRVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 12:21:21 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:47173 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752885AbYLDRVU (ORCPT
+	Thu, 4 Dec 2008 12:21:55 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:10166 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753951AbYLDRVy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 12:21:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=N8Zs7Z9AWd9CX7ttRLGvZ2PL2nlE19Tos0ErO9mzquTA2HYyLvkPfcuHea3olJy2SP
-         YAGS/Phus5KKSF0/uBtni2InMOD/ljjBeXRsQw9mcbGS/YJz2lhdBGDL9HAEXhkugq2q
-         4cendbPcHM1NtRyaxNnvHS9RhWXzTK3+Lsy98=
-Message-ID: <87a5b0800812040921i420c2076vbfcfa8ab456ecb0d@mail.gmail.com>
-Date: Thu, 4 Dec 2008 17:21:18 +0000
-From: "Will Newton" <will.newton@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] 8250: Add back missing space from banner printk.
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+	Thu, 4 Dec 2008 12:21:54 -0500
+X-BigFish: VPS-1(zba6iz4015Mzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KBD482-04-XU6-01
+Date: Thu, 4 Dec 2008 18:21:42 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: avi@redhat.com, mingo@redhat.com, dwmw2@infradead.org, gregkh@suse.de,
+       weidong.han@intel.com
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: [PATCHSETS] KVM device passthrough support with AMD IOMMU
+Message-ID: <20081204172142.GH12816@amd.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_8598_26917008.1228411278494"
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 04 Dec 2008 17:21:42.0495 (UTC) FILETIME=[C67A1EF0:01C95634]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_8598_26917008.1228411278494
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi,
 
-A space went missing from the printk output at port initialization time,
-add it back so the output is more readable.
+the two patchsets posted as reply to this email implement KVM device
+passthrough support for AMD IOMMU hardware.
 
-Signed-off-by: Will Newton <will.newton@gmail.com>
----
- drivers/serial/8250.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+The first patchset is version 3 of the generic iommu api patchset which
+generalizes the VT-d functions exported to KVM into a common api where
+the AMD IOMMU code can plug into.
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 303272a..ffa6c72 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -3018,7 +3018,7 @@ static int __init serial8250_init(void)
- 	if (nr_uarts > UART_NR)
- 		nr_uarts = UART_NR;
+The second patchset finally implements the KVM device passthrough
+support in the AMD IOMMU code. Together with KVM-79 I successfully
+passed an 10GBit network card into an KVM guest.
 
--	printk(KERN_INFO "Serial: 8250/16550 driver"
-+	printk(KERN_INFO "Serial: 8250/16550 driver "
- 		"%d ports, IRQ sharing %sabled\n", nr_uarts,
- 		share_irqs ? "en" : "dis");
+These two patchsets apply in order in top of the latest post of
+Han Weidong's Multiple device assignement support patches. Anybody who
+wants to try this out can pull the whole stuff from
+
+git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git kvm-amd-iommu
+
+Please give these patches a good review.
+
+Thanks,
+
+Joerg
 
 -- 
-1.5.5.2
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-------=_Part_8598_26917008.1228411278494
-Content-Type: text/x-patch;
- name=0001-8250-Add-back-missing-space-from-banner-printk.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_foboc08u0
-Content-Disposition: attachment;
- filename=0001-8250-Add-back-missing-space-from-banner-printk.patch
-
-RnJvbSA4ZTA1YmEwM2NhYTMzNjdlNDY2OGQwNTFkOTdhOWRjY2E3ZWVhMDc2IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBXaWxsIE5ld3RvbiA8d2lsbC5uZXd0b25AZ21haWwuY29tPgpE
-YXRlOiBUaHUsIDQgRGVjIDIwMDggMTc6MTg6MjAgKzAwMDAKU3ViamVjdDogW1BBVENIXSA4MjUw
-OiBBZGQgYmFjayBtaXNzaW5nIHNwYWNlIGZyb20gYmFubmVyIHByaW50ay4KCkEgc3BhY2Ugd2Vu
-dCBtaXNzaW5nIGZyb20gdGhlIHByaW50ayBvdXRwdXQgYXQgcG9ydCBpbml0aWFsaXphdGlvbiB0
-aW1lLAphZGQgaXQgYmFjayBzbyB0aGUgb3V0cHV0IGlzIG1vcmUgcmVhZGFibGUuCgpTaWduZWQt
-b2ZmLWJ5OiBXaWxsIE5ld3RvbiA8d2lsbC5uZXd0b25AZ21haWwuY29tPgotLS0KIGRyaXZlcnMv
-c2VyaWFsLzgyNTAuYyB8ICAgIDIgKy0KIDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRpb25zKCsp
-LCAxIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvc2VyaWFsLzgyNTAuYyBiL2Ry
-aXZlcnMvc2VyaWFsLzgyNTAuYwppbmRleCAzMDMyNzJhLi5mZmE2YzcyIDEwMDY0NAotLS0gYS9k
-cml2ZXJzL3NlcmlhbC84MjUwLmMKKysrIGIvZHJpdmVycy9zZXJpYWwvODI1MC5jCkBAIC0zMDE4
-LDcgKzMwMTgsNyBAQCBzdGF0aWMgaW50IF9faW5pdCBzZXJpYWw4MjUwX2luaXQodm9pZCkKIAlp
-ZiAobnJfdWFydHMgPiBVQVJUX05SKQogCQlucl91YXJ0cyA9IFVBUlRfTlI7CiAKLQlwcmludGso
-S0VSTl9JTkZPICJTZXJpYWw6IDgyNTAvMTY1NTAgZHJpdmVyIgorCXByaW50ayhLRVJOX0lORk8g
-IlNlcmlhbDogODI1MC8xNjU1MCBkcml2ZXIgIgogCQkiJWQgcG9ydHMsIElSUSBzaGFyaW5nICVz
-YWJsZWRcbiIsIG5yX3VhcnRzLAogCQlzaGFyZV9pcnFzID8gImVuIiA6ICJkaXMiKTsKIAotLSAK
-MS41LjUuMgoK
-------=_Part_8598_26917008.1228411278494--
