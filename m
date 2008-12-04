@@ -1,193 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYLDExj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYLDEzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbYLDExj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 23:53:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbYLDEx3
+	id S1755977AbYLDEzm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 23:55:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYLDEze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 23:53:29 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:37509 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751701AbYLDEx2 (ORCPT
+	Wed, 3 Dec 2008 23:55:34 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58105 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752091AbYLDEzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 23:53:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=o8y2gG4OGGfwCishYJqXVp7+LLzC3j/WS1ghVm1IYpCr6vZzZKXe70aefrOgaZ96Ei
-         dX3YLvL9tdWhf3fbJn+HwPGrPM3gxGhKGP8fG/7w96M5sSNN6jDr86PxzWBwz+DvLESw
-         GYzKfN/N7CDUJXU6GWNNbjHpxwl7qALEgByF8=
-Message-ID: <208aa0f00812032053w5efb99dbk94511b0f8c1f0925@mail.gmail.com>
-Date: Wed, 3 Dec 2008 20:53:27 -0800
-From: "Edward Estabrook" <edward.estabrook.lkml@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] Userspace I/O (UIO): Documentatin for userspace DMA support
-Cc: linux-api@vger.kernel.org, "Greg KH" <gregkh@suse.de>, hjk@linutronix.de,
-       edward_estabrook@agilent.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 3 Dec 2008 23:55:33 -0500
+Date: Thu, 4 Dec 2008 13:54:41 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "wassim dagash" <wassim.dagash@gmail.com>, linux-kernel@vger.kernel.org,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: KSWAPD Algorithm
+Message-Id: <20081204135441.dc95ffc7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <87prk9xqg0.fsf@basil.nowhere.org>
+References: <cb94e63d0812022302m341fcdf5wffbca0ec12db426b@mail.gmail.com>
+	<87prk9xqg0.fsf@basil.nowhere.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Edward Estabrook <Edward_Estabrook@agilent.com>
+On Wed, 03 Dec 2008 15:51:11 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-Here is a patch updating the Userspace IO documentation to
-detail support to dynamically allocate and use coherent DMA
-from userspace.  This patch applies against 2.6.28-rc6.
+> "wassim dagash" <wassim.dagash@gmail.com> writes:
+> 
+> > Hi All,
+> > Description:
+> > I countered a weird problem with kswapd:
+> > it runs in some infinite loop trying to swap until order 10 of zone
+> > highmem is OK, While zone higmem (as I understand) has nothing to do
+> > with contiguous physical memory (cause there is no 1-1 mapping) which
+> > means kswapd will continue to try to balance order 10 of zone highmem
+> > forever (or until someone release a very large chunk of highmem).
+> > Can anyone please explain me the algorithm of kswapd and why it tries
+> > to balance order 10 of zone higmem ?
+> 
+> hugetlbfs requires large continuous mappings even in highmem
+> to map 2MB pages or similar to user space.
+> However order 10 seems pretty high, normally that's only order 8
+> on a i386 system.
+> 
 
-The gist of this implementation is to overload uio's mmap
-functionality to allocate
-and map a new DMA region on demand.  The bus-specific DMA address as returned by
-dma_alloc_coherent() is made available to userspace in the 1st long
-word of the newly
-created region (as well as through the conventional 'addr' file in sysfs).
+Reading Kosaki's explanation, it seems
 
-The kernel-api change is that passing an offset value of 0xFFFFF000UL to a uio
-device's mmap() operation will dynamically allocate a DMA region.  This cannot
-break existing code as the previous UIO code only allowed a maximum of 5
-mappings.
+  - order-10 allocation occurs at ZONE_NORMAL.
 
-To allocate a DMA region you use the following:
-/* Pass this magic number to mmap as offset to
- * dynamically allocate a chunk of memory */
-#define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
+  - kswapd is kicked with order=10.
+	wakeup_kswaps(zone, 10) -> pgdat->kswapd_max_order = 10.
+  
+  - kswapd(balance_pgdat()) does 
+	if (!zone_watermark_ok(zone, order, zone->pages_high, end_zone, 0))
+			all_zones_ok = 0;
+    And this "zone" is all zone, i.e. DMA, NORMAL, HIGHMEM.
 
-void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
-		     fd, DMA_MEM_ALLOCATE_MMAP_OFFSET);
-u_int64_t *addr = *(u_int64_t *) memory;
+    Then, loop again,
 
-where 'size' is the size in bytes of the region you want and fd is the
-opened /dev/uioN file.
+	if (!all_zones_ok) {
+		cond_resched();
 
-Allocation occurs in page sized pieces by design to ensure that
-buffers are page-aligned.
+		try_to_freeze();
 
-Memory is released when the uio_unregister_device() is called.
+		goto loop_again;
+	}
 
-Signed-off-by: Edward Estabrook <Edward_Estabrook@agilent.com>
----
---- linux-2.6.28-rc6/Documentation/DocBook/uio-howto.tmpl.orig	2008-12-03
-12:03:43.000000000 -0800
-+++ linux-2.6.28-rc6/Documentation/DocBook/uio-howto.tmpl	2008-12-03
-13:11:53.000000000 -0800
-@@ -42,6 +42,12 @@ GPL version 2.
+Maybe...
 
- <revhistory>
- 	<revision>
-+	<revnumber>0.6</revnumber>
-+	<date>2008-12-03</date>
-+	<authorinitials>ee</authorinitials>
-+	<revremark>Added description of DMA control.</revremark>
-+	</revision>
-+	<revision>
- 	<revnumber>0.5</revnumber>
- 	<date>2008-05-22</date>
- 	<authorinitials>hjk</authorinitials>
-@@ -284,11 +290,17 @@ interested in translating it, please ema
- 	require access to more than one PCI memory region in a driver.
- </para>
- <para>
-+	Each UIO device can also dynamically allocate coherent DMA
-+	memory regions and map these to userspace.  Once created they
-+	can be mapped like any other UIO memory region.
-+</para>
-+<para>
- 	Each mapping has its own directory in sysfs, the first mapping
- 	appears as <filename>/sys/class/uio/uioX/maps/map0/</filename>.
- 	Subsequent mappings create directories <filename>map1/</filename>,
--	<filename>map2/</filename>, and so on. These directories will only
--	appear if the size of the mapping is not 0.
-+	<filename>map2/</filename>, and so on. These directories will
-+	appear even if the size of the mapping is 0 to accommodate dynamically
-+	created DMA mappings.
- </para>
- <para>
- 	Each <filename>mapX/</filename> directory contains two read-only files
-@@ -318,6 +330,24 @@ interested in translating it, please ema
- offset = N * getpagesize();
- </programlisting>
+-Kame
 
-+<para>
-+	From userspace a DMA region may be dynamically allocated and mapped
-+	via the <function>mmap()</function> call by specifying the size of the
-+	region in bytes in the <varname>length</varname> parameter and setting
-+	<varname>offset = 0xFFFFF000</varname>.
-+</para>
-+<para>
-+	The bus-specific DMA address as required to configure hardware DMA
-+	registers will be stored in the first long word of the resulting mapped
-+	region.
-+</para>
-+<programlisting format="linespecific">
-+#define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
-+void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
-+		     fd, DMA_MEM_ALLOCATE_MMAP_OFFSET);
-+u_int64_t *addr = *(u_int64_t *) memory;
-+</programlisting>
-+
- </sect1>
- </chapter>
-
-@@ -572,6 +602,50 @@ to set up sysfs files for this mapping.
- 	</para>
- </sect1>
-
-+<sect1 id="dma_region_mmap">
-+<title>Allocating DMA region with mmap()</title>
-+	<para>
-+	To allocate and map a DMA memory region you use
-+	use <function>mmap()</function>.  You may create as
-+	many regions as system resources allow by repeated use of
-+	<function>mmap()</function>.
-+	</para>
-+	<para>
-+	Specify the size of the desired region, in bytes, in the
-+	<varname>length</varname> parameter and set
-+	<varname>offset = 0xFFFFF000</varname>.  The region size will
-+	be rounded up to a multiple of page size to ensure proper
-+	alignment.
-+	</para>
-+	<para>
-+	The bus-specific DMA address is stored in the first long word of the
-+	resulting mapped region.  The newly assigned memory index N is
-+	returned in the second long word of the resulting mapped region.  This
-+	index is only required if the userspace driver needs to unmap and
-+	then later remap the DMA region as the single call to
-+	<function>mmap()</function> is sufficient to both allocate and map the
-+	region.
-+	</para>
-+	<para>
-+	Since every memory mapping has its own directory in sysfs
-+	<filename>/sys/class/uio/uioX/maps/mapN/</filename> will be created
-+	where N is the dynamically generated index of the mapping just
-+	allocated.
-+	</para>
-+	<para>
-+	Dynamically allocated DMA regions remain available for use
-+	until <function>uio_unregister_device()</function> is called, at
-+	which point the memory is released.
-+	</para>
-+<programlisting format="linespecific">
-+	#define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
-+	void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
-+			     fd, DMA_MEM_ALLOCATE_MMAP_OFFSET);
-+	u_int64_t *addr = *(u_int64_t *) memory;
-+</programlisting>
-+
-+</sect1>
-+
- <sect1 id="wait_for_interrupts">
- <title>Waiting for interrupts</title>
- 	<para>
-@@ -583,7 +657,7 @@ to set up sysfs files for this mapping.
- 	attention because an error occured.
- 	</para>
- 	<para>
--	<filename>/dev/uioX</filename> is a read-only file. A
-+	<filename>/dev/uioX</filename> is a read-write file. A
- 	<function>read()</function> will always block until an
- 	interrupt occurs. There is only one legal value for the
- 	<varname>count</varname> parameter of
