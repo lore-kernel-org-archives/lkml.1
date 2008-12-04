@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbYLDRCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756692AbYLDRDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbYLDRCO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 12:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbYLDRB5
+	id S1756692AbYLDRDz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 12:03:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYLDRDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 12:01:57 -0500
-Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:3248 "EHLO
-	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751775AbYLDRB4 (ORCPT
+	Thu, 4 Dec 2008 12:03:46 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50681
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751775AbYLDRDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 12:01:56 -0500
-Date: Thu, 4 Dec 2008 18:01:53 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6.27] filesystem (ext3) corruption (access beyond end)
-Message-ID: <20081204170153.GJ1547@vanheusden.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Fri Dec  5 10:48:25 CET 2008
-X-Message-Flag: www.vanheusden.com
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Dec 2008 12:03:45 -0500
+Date: Thu, 04 Dec 2008 09:03:45 -0800 (PST)
+Message-Id: <20081204.090345.138944783.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: paulus@samba.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Joakim.Tjernlund@transmode.se
+Subject: Re: [PATCH] Allow times and time system calls to return small
+ negative values
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081204154044.GC18293@elte.hu>
+References: <20081204075751.GA32594@elte.hu>
+	<18743.46549.833800.667962@cargo.ozlabs.ibm.com>
+	<20081204154044.GC18293@elte.hu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu, 4 Dec 2008 16:40:44 +0100
 
-With 2.6.26 and 2.6.27 a system of mine (a P4 with HT and IDE disk) gets
-massive disk-corruption: in dmesg warnings for access beyond drive end.
-Now this bug did not happen in 2.6.18 (debian kernel) and it seems to
-be gone in 2.6.28-rc* as well.
-My question now is: should it still be investigated?
+> * Paul Mackerras <paulus@samba.org> wrote:
+> 
+> > Ingo Molnar writes:
+> > 
+> > > > +	force_successful_syscall_return();
+> > > >  	return compat_jiffies_to_clock_t(jiffies);
+> > > 
+> > > just curious: what code does force_successful_syscall_return() actually 
+> > > run in the powerpc case - those bits are missing from this patch. I 
+> > > suspect it sets some sort of flag?
+> > 
+> > It sets the TIF_NOERROR thread flag, which is tested in the syscall 
+> > exit path along with various other thread flags.
+> > 
+> > force_successful_syscall_return() is defined for powerpc in 
+> > arch/powerpc/include/asm/ptrace.h.  It's nothing new, it has existed 
+> > for ages and is used in a few other places already.  It has existing 
+> > non-null definitions on alpha, ia64, powerpc, and sparc64.
+> 
+> ok, was just curious. To make this code nicer, we could keep the time 
+> syscalls from returning small negative numbers.
+> 
+> the core issue is probably:
+> 
+>  jiffies.h:#define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
+> 
+> the thing is, we did INITIAL_JIFFIES to find _in kernel_ jiffies 
+> wraparoudn bugs (hung timers, broken drivers, etc.) - we did not want to 
+> confuse userspace with it.
+> 
+> So how about adding INITIAL_JIFFIES to the sys_times() return value?
 
+I can't believe people are still making suggestions which just paper
+over this issue. :-)
 
-Folkert van Heusden
+This thing is going to wrap eventually, so wouldn't it be nice to wrap
+IMMEDIATELY so that you can trigger the problem and get it really
+fixed now?  And that's exactly how things work at the moment.
 
--- 
-To MultiTail einai ena polymorfiko ergaleio gia ta logfiles kai tin
-eksodo twn entolwn. Prosferei: filtrarisma, xrwmatismo, sygxwneysi,
-diaforetikes provoles. http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+On another note, this wouldn't be an issue if x86 did some condition
+code thing to indicate errors.  We all know this.  So why don't we put
+some kind of condition code setting support into the x86 syscall
+return path now and perhaps 5 years from now the userspace on most
+Linux machines will understand it and this bug will be essentially gone?
+
