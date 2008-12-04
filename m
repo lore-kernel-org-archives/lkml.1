@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYLDOfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbYLDOgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbYLDOfv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 09:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYLDOfm
+	id S1758247AbYLDOgg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 09:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYLDOg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 09:35:42 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:54121 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752572AbYLDOfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 09:35:41 -0500
-Date: Thu, 4 Dec 2008 15:34:09 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Andi Kleen <ak@linux.intel.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: BUG? "Call fasync() functions without the BKL" is racy
-Message-ID: <20081204143409.GA10384@redhat.com>
-References: <20081128192508.GA21369@redhat.com> <4933CBB0.2060003@linux.intel.com> <20081201191555.GA21385@redhat.com> <20081201123405.51d20d84@bike.lwn.net> <20081202122939.GA3619@redhat.com> <493562B5.5020600@linux.intel.com> <20081203190648.GA23893@redhat.com> <4936F83E.7090506@linux.intel.com> <20081203154508.3502b365@bike.lwn.net>
+	Thu, 4 Dec 2008 09:36:27 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:49894 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753414AbYLDOg0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 09:36:26 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/3] ftrace: use struct pid
+References: <20081204052638.425740534@goodmis.org>
+	<20081204052735.175697908@goodmis.org>
+	<m11vwoumjn.fsf@frodo.ebiederm.org>
+	<alpine.DEB.1.10.0812040921410.5240@gandalf.stny.rr.com>
+Date: Thu, 04 Dec 2008 06:32:55 -0800
+In-Reply-To: <alpine.DEB.1.10.0812040921410.5240@gandalf.stny.rr.com> (Steven
+	Rostedt's message of "Thu, 4 Dec 2008 09:23:07 -0500 (EST)")
+Message-ID: <m1abbct3hk.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081203154508.3502b365@bike.lwn.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: No (on mx04.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/03, Jonathan Corbet wrote:
+Steven Rostedt <rostedt@goodmis.org> writes:
+
+> On Thu, 4 Dec 2008, Eric W. Biederman wrote:
 >
-> On Wed, 03 Dec 2008 22:21:02 +0100
-> Andi Kleen <ak@linux.intel.com> wrote:
+>> Steven Rostedt <rostedt@goodmis.org> writes:
+>> 
+>> > From: Steven Rostedt <srostedt@redhat.com>
+>> >
+>> > Impact: clean up
+>> >
+>> > Eric Biederman suggested using the struct pid for filtering on
+>> > pids in the kernel. This patch is based off of a demonstration
+>> > of an implementation that Eric sent me in an email.
+>> 
+>> Please find_get_vpid and pid_vnr.  
 >
-> > > Serioulsy, I think the best (partial, yes) fix for now is to restore
-> > > lock_kernel() in setfl() and change ioctl_fioxxx() accordingly.
-> > > At least this protect us from tty too.
-> >
-> > For 2.6.28 I agree.
->
-> OK, what do you all think of the following?  It returns fcntl.c to its
-> previous state, and adds locking in fs/ioctl.c.  It's worth noting that
-> ioctl_fioasync() has always been racy in exactly the same way.
+> I could not find a "find_get_vpid".
 
-Yes, I agree with you and Andi, imho this is what we need for 2.6.28.
+Doh.  Grumble Pavel Grumble.
 
-Thanks Jonathan!
+find_get_pid is the right one.
 
-Oleg.
+Sorry.  We have a stupid inconsistency in the naming here,
+If we were consistent it would be find_get_vpid.
 
+pid_vnr in that case then pid_vnr is definitely what you want
+to use when talking to user space.
+
+Eric
