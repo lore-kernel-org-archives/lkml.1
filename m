@@ -1,84 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbYLDPHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757422AbYLDPNE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757571AbYLDPHZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 10:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYLDPHL
+	id S1757422AbYLDPNE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 10:13:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbYLDPMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 10:07:11 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:33366 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753993AbYLDPHK (ORCPT
+	Thu, 4 Dec 2008 10:12:53 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:44393 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754555AbYLDPMw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 10:07:10 -0500
-Date: Thu, 4 Dec 2008 10:07:09 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH-mm] usb: file_storage use unaligned endian helpers
- rather than private versions
-In-Reply-To: <1228343586.5412.115.camel@brick>
-Message-ID: <Pine.LNX.4.44L0.0812040956450.2416-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 4 Dec 2008 10:12:52 -0500
+Subject: Re: [PATCH 2/3] ftrace: use struct pid
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>, containers@lists.osdl.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <m1prk8t5xr.fsf@frodo.ebiederm.org>
+References: <20081204052638.425740534@goodmis.org>
+	 <20081204052735.175697908@goodmis.org> <m1d4g8un6b.fsf@frodo.ebiederm.org>
+	 <1228395378.13111.23.camel@nimitz> <1228396022.13111.27.camel@nimitz>
+	 <m1prk8t5xr.fsf@frodo.ebiederm.org>
+Content-Type: text/plain
+Date: Thu, 04 Dec 2008 07:12:27 -0800
+Message-Id: <1228403547.13111.73.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Dec 2008, Harvey Harrison wrote:
-
-> > Suppose instead we do this:
-> > 
-> > #define get_be16(buf)	load_be16_noalign((be16 *) (buf))
-> > #define get_be24(buf)	(load_be32_noalign((be32 *) (buf)) >> 8)
-> > #define get_be32(buf)	load_be32_noalign((be32 *) (buf))
-> > 
-> > #define put_be16(buf, val)	store_be16_noalign((be16 *) (buf), val)
-> > #define put_be32(buf, val)	store_be32_noalign((be32 *) (buf), val)
-> > 
-> > Then almost no more changes would be needed, only the 24-bit
-> > consolidation stuff.
-> > 
+On Thu, 2008-12-04 at 05:40 -0800, Eric W. Biederman wrote:
+> Dave Hansen <dave@linux.vnet.ibm.com> writes:
+> > On Thu, 2008-12-04 at 04:56 -0800, Dave Hansen wrote:
+> >> On Thu, 2008-12-04 at 04:42 -0800, Eric W. Biederman wrote:
+> >> > 
+> >> > > +static void clear_ftrace_pid_task(struct pid **pid)
+> >> > > +{
+> >> > > +     struct task_struct *p;
+> >> > > +
+> >> >         rcu_read_lock();
+> >> > 
+> >> > > +     do_each_pid_task(*pid, PIDTYPE_PID, p) {
+> >> > > +             clear_tsk_trace_trace(p);
+> >> > > +     } while_each_pid_task(*pid, PIDTYPE_PID, p);
+> >> >         rcu_read_unlock()
+> >> > 
+> >> > > +     put_pid(*pid);
+> >> > > +
+> >> > > +     *pid = NULL;
+> >> > > +}
+> >> 
+> >> Could we get away with sticking the rcu_read_{un}lock() inside those
+> >> macros?  Those are going to get used in pretty high level code and we're
+> >> allowed to nest rcu_read_lock().  No danger of deadlocks or lock
+> >> inversions.
+> >
+> > Why don't any of the other users of do_each_pid_task() use
+> > rcu_read_lock()?  They all seem to be under read_lock(&tasklist_lock)
+> > (except one is under a write lock of the same).
 > 
-> I'd rather the common functions just get used directly and cast as
-> necessary...but it's your code.  Or define a few generic structs
-> and get a pointer to those and get typechecking for free.
+> We probably should.  Historically read_lock(&tasklist_lock) implies
+> rcu_read_lock().
 
-Or use inline routines rather than micros for proper typechecking.  
-(Although that's not tremendously important, since the buffers are all
-unsigned byte arrays.)  Honestly, which is easier to read and
-understand, this:
+You mean because the current task can't go through a quiescent period
+until it hits userspace, and we can't go to userspace while holding
+read_lock()?  Nah, that's not subtle. ;)
 
-		lba = load_be32_noalign((__be32 *)&fsg->cmnd[0]) & 0xffffff;
-
-or this:
-
-		lba = get_be24(&fsg->cmnd[1]);
-
--- especially considering that the value being loaded is defined in the
-spec as a 3-byte field starting in byte 1 of the command buffer?
-
-> Something like (is this really so bad?):
+> And the tasklist lock is what we hold when it is safe.
 > 
-> 	store_be32_noalign((__be32 *)&buf[0], curlun->num_sectors - 1);
-> 	store_be32_noalign((__be32 *)&buf[4], 512);
+> But if you look at find_vpid we should be holding just the rcu lock there.
 
-IMO it's a lot worse than
+Yup, I see it there.
 
-	put_be32(&buf[0], curlun->num_sectors - 1);
-	put_be32(&buf[4], 512);
+So, any reason not to do this?  Brown-bag compile tested.
 
-> Personally I don't think it's that ugly just using the common functions
-> directly. BTW, note that if you know the alignment, there are aligned versions
-> coming as well.  YMMV.
+Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 
-In the end, it comes down to a matter of taste.
+---
 
-The aligned versions could be used in a few cases, but on the whole the 
-advantage would be negligible.  I say it's not worthwhile to worry 
-about using them -- which is consistent with the behavior of the 
-original code.
+ linux-2.6.git-dave/include/linux/pid.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Alan Stern
+diff -puN include/linux/pid.h~put-rcu-ops-in-do_each_pid_task include/linux/pid.h
+--- linux-2.6.git/include/linux/pid.h~put-rcu-ops-in-do_each_pid_task	2008-12-04 06:03:09.000000000 -0800
++++ linux-2.6.git-dave/include/linux/pid.h	2008-12-04 06:19:35.000000000 -0800
+@@ -147,6 +147,7 @@ pid_t pid_vnr(struct pid *pid);
+ #define do_each_pid_task(pid, type, task)				\
+ 	do {								\
+ 		struct hlist_node *pos___;				\
++		rcu_read_lock();					\
+ 		if (pid != NULL)					\
+ 			hlist_for_each_entry_rcu((task), pos___,	\
+ 				&pid->tasks[type], pids[type].node) {
+@@ -159,6 +160,7 @@ pid_t pid_vnr(struct pid *pid);
+ 				if (type == PIDTYPE_PID)		\
+ 					break;				\
+ 			}						\
++		rcu_read_unlock();					\
+ 	} while (0)
+ 
+ #define do_each_pid_thread(pid, type, task)				\
+_
+
+-- Dave
 
