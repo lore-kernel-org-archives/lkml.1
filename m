@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbYLDNJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbYLDNKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757343AbYLDNJP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 08:09:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbYLDNI6
+	id S1756983AbYLDNKA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 08:10:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbYLDNJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 08:08:58 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:2550 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753629AbYLDNI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 08:08:57 -0500
-Date: Thu, 4 Dec 2008 14:08:52 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] cdrom weirdness
-Message-ID: <20081204130851.GV18255@kernel.dk>
-References: <20081204041450.GH28946@ZenIV.linux.org.uk>
+	Thu, 4 Dec 2008 08:09:51 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56146 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751342AbYLDNJu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 08:09:50 -0500
+Date: Thu, 4 Dec 2008 08:09:49 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
+Message-ID: <20081204130949.GA18196@infradead.org>
+References: <cover.1228253618.git.zohar@linux.vnet.ibm.com> <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com> <20081203123021.GA30035@infradead.org> <1228328323.2821.30.camel@localhost.localdomain> <20081203182300.GA31203@infradead.org> <1228342655.2821.64.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081204041450.GH28946@ZenIV.linux.org.uk>
+In-Reply-To: <1228342655.2821.64.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 04 2008, Al Viro wrote:
-> 1) CDROM_LOCKDOOR sets a global variable (keeplocked) that affects all
-> cdroms.  Intentional?
-
-It's always been so, predates me. Pretty ugly, I don't think anyone
-would mind if that was changed to be per-device when the ioctl is ussed
-:-)
-
-> 2) cdrom_dvd_rw_close_write() call can be delayed indefinitely by keeping
-> an ioctl-only (opened with O_NDELAY) descriptor.
-
-Yep, not sure what you want me to say here...
-
-> 3) open cdrom for data, have the door locked, keep fd opened.
->    open it again for write, have the open fail and cleanup in cdrom_open()
->    will happily unlock the door for you.  I'd change that to "lock if we
->    had no lockers, unlock on failure exit if we did lock", but there's
->    an interesting comment:
->         /* Something failed.  Try to unlock the drive, because some drivers
->         (notably ide-cd) lock the drive after every command.
-> 	...
->    What the hell is that about?  It's not "some drivers", AFAICT - it's
->    been done explicitly in open_for_data().  Or is there something
->    really driver-specific in it?
+On Wed, Dec 03, 2008 at 05:17:35PM -0500, Mimi Zohar wrote:
+> > I have a bit of a problem parsing the above, and it certainly doesn't
+> > look like a justification for keeping all that unused code around.
 > 
-> 4) while we are at it, if you clear lockdoor via sysctl while something has
->    cdrom opened - no unlock on close for you.
+> The purpose of LIM is to provide an integrity infrastructure to support 
+> different types of integrity data.  IMA implements both the LIM
+> API for it's own internal use, and exports it for others to call.
 > 
-> 5) autoeject happens on the last close *IF* the last file happens to be
->    opened for data.  IOW, if some crap has opened it ioctl-only and kept
->    that opened after everyone else has closed - no autoeject for you.
+> As Dave Safford pointed out in http://lkml.org/lkml/2008/11/17/362,
+> there are other projects that want to add differently structured
+> measurements to the TPM measurement list.  The template abstraction is
+> critical to allowing these differently formatted messages to be added to
+> the list.
 
-Most of the above are long known issues with not counting
-write/non-write/ioctls opens, since it was tricky/impossible to do
-because of fcntl().
+I think we're talking past each other.
 
-> 6)	/*
-> 	 * flush cache on last write release
-> 	 */
-> 	if (CDROM_CAN(CDC_RAM) && !cdi->use_count && cdi->for_data)
-> 		cdrom_close_write(cdi);
->    is interesting, seeing that nothing has ever touched ->for_data, for
->    values of "ever" including "since the code in question had been merged
->    into the tree"...
+In integrity.h there are two operation vectors defines:
 
-Hmm weird, you are right. The member was added in 2.6.2, but never used
-except here. I guess this just needs to use opened_for_data.
+ - struct integrity_operations delcares the operations called from the
+   VFS.  This one is actually used.  While I don't agree to Dave's
+   argument, because we don't put bloat in just because people might
+   eventually some day use it when they are in the right mood and the
+   sun shines, thisn't isn't the one I'm talking about in this thread.
+ - struct template_operations on the others is not only really badly
+   named for appearing in a global header but also not used in a
+   meaningfull way.  There is one single instace of it,
+   ima_template_ops, and while there are five helpers added in the
+   second patch that use it (integrity_collect_measurement,
+   integrity_appraise_measurement, integrity_store_measurement,
+   integrity_store_template, integrity_must_measure) none of them
+   is used at all during the patch series.  There are two direct
+   uses of these template added in the third path, to implement the
+   show operations for the "binary_runtime_measurements" and
+   "ascii_runtime_measurements" files ins securityfs, but given that
+   those are inside ima there no reason for the indirection at all.
 
--- 
-Jens Axboe
 
+
+> 
+> Mimi
+> 
+> 
+> 
+---end quoted text---
