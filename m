@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757760AbYLDWEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYLDWFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757760AbYLDWEw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 17:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbYLDWEn
+	id S1758729AbYLDWFp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 17:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbYLDWFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 17:04:43 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:46367 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755839AbYLDWEm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 17:04:42 -0500
-Date: Thu, 4 Dec 2008 23:15:51 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, Alasdair G Kergon <agk@redhat.com>,
-       Andi Kleen <andi-suse@firstfloor.org>, Milan Broz <mbroz@redhat.com>
-Subject: Re: Device loses barrier support (was: Fixed patch for simple barriers.)
-Message-ID: <20081204221551.GV6703@one.firstfloor.org>
-References: <Pine.LNX.4.64.0812040009340.15169@hs20-bc2-1.build.redhat.com> <20081204100050.GN6703@one.firstfloor.org> <Pine.LNX.4.64.0812040836480.6118@hs20-bc2-1.build.redhat.com> <20081204142015.GQ6703@one.firstfloor.org> <Pine.LNX.4.64.0812040913510.6118@hs20-bc2-1.build.redhat.com> <20081204145810.GR6703@one.firstfloor.org> <Pine.LNX.4.64.0812041139200.2434@hs20-bc2-1.build.redhat.com> <20081204174838.GS6703@one.firstfloor.org> <Pine.LNX.4.64.0812041401210.23079@hs20-bc2-1.build.redhat.com>
-Mime-Version: 1.0
+	Thu, 4 Dec 2008 17:05:35 -0500
+Received: from relay4.ptmail.sapo.pt ([212.55.154.24]:45738 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1755987AbYLDWFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 17:05:34 -0500
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Thu, 4 Dec 2008 22:05:11 +0000
+From: Luis Henriques <henrix@sapo.pt>
+To: Avi Kivity <avi@redhat.com>
+Cc: Steven Rostedt <srostedt@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUG] kvm crashes in 2.6.28-rc6-00007-ged31348
+Message-ID: <20081204220511.GA3510@hades.domain.com>
+References: <4932F59D.2060002@redhat.com> <20081130203833.GA14903@hades> <4932FB47.6090300@redhat.com> <20081130210406.GA17952@hades> <493528D8.8010904@redhat.com> <20081202190914.GA12115@hades> <20081202194610.GA4864@hades> <1228249509.4886.11.camel@localhost.localdomain> <49359CDF.5060300@redhat.com> <4937F8F1.3070402@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812041401210.23079@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <4937F8F1.3070402@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If you are pushing what you are pushing --- barriers allowing to return 
-> EOPNOTSUPP anytime --- then asynchronous barrier submits can no longer be 
-> used, because by the time EOPNOTSUPP is detected, the filesystem is 
-> already corrupted.
+On Thu, Dec 04, 2008 at 05:36:17PM +0200, Avi Kivity wrote:
+> Avi Kivity wrote:
+>> Steven Rostedt wrote:
+>>> The following must be available without recursion for the function
+>>> tracer to work:
+>>>
+>>>   local_irq_save/restore
+>>>   smp_processor_id
+>>>   preempt_enable/disable_notrace
+>>>   atomic_inc/dec
+>>>   
+>>
+>> In arch/x86/kvm/svm.c, function svm_vcpu_run(), everything between the  
+>> vmrun instruction and the call to load_host_msrs() is executed without  
+>> a live pda, so no smp_processor_id().  Could easily be fixed by  
+>> rearranging things.
+>>
+>>
+>
+> Luis, please try the attached patch.
 
-Chris Mason pointed out that this can actually already happen. From
-a quick review this can happen in MD raid1 at least (their barriers_work
-flag is pretty similar to the DM implementation I did).  So everyone
-has to handle this already anyways.
+Sorry for taking so long testing the patch.  However, I got exactly the same
+result as before, i.e., a crash.
 
-> I'm wondering, where in fsync() does Linux wait for hardware disk cache to 
-> be flushed? Isn't there a bug that fsync() will return before the cache is 
-> flushed? I couldn't really find it. The last thing do_fsync calls is 
-> filemap_fdatawait and it doesn't do cache flush (blkdev_issue_flush).
-
-At least in fsync() on journaling fs the metadata update should push it.
-
--Andi
-
+Regards,
 -- 
-ak@linux.intel.com
+Luis Henriques
