@@ -1,103 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbYLDKQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbYLDKRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757020AbYLDKQu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 05:16:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbYLDKQk
+	id S1754879AbYLDKRM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 05:17:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757488AbYLDKQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 05:16:40 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51315 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbYLDKQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 05:16:39 -0500
-Date: Thu, 4 Dec 2008 11:16:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jianjun Kong <jianjun@zeuux.org>
-Cc: mingo@redhat.com, Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] x86: fix warning of uninitialized variable
-Message-ID: <20081204101633.GD18708@elte.hu>
-References: <20081204010013.GA17445@ubuntu> <20081204101023.GA18708@elte.hu>
+	Thu, 4 Dec 2008 05:16:52 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59634 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756910AbYLDKQu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 05:16:50 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: mengsanshui@yahoo.com.cn
+Subject: Re: question related page frame reclaim on embedded system
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
+In-Reply-To: <478468.3916.qm@web15702.mail.cnb.yahoo.com>
+References: <20081203103641.1D32.KOSAKI.MOTOHIRO@jp.fujitsu.com> <478468.3916.qm@web15702.mail.cnb.yahoo.com>
+Message-Id: <20081204191510.1D80.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081204101023.GA18708@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu,  4 Dec 2008 19:16:42 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Hi,Kosaki
+> 
+> 1. what happens if used IPC share memory ?
+>    As i knew IPC share memory  use anonymous mapping ,but not sure my understand is correctly .
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Yes.
+if you don't free IPC share memory, it remain on the system until reboot.
+
+
 
 > 
-> * Jianjun Kong <jianjun@zeuux.org> wrote:
+> Thanks advanced .
+> Best Regards.
+> Peter
 > 
-> > fix warning of uninitialized 'base' in arch/x86/kernel/scx200_32.c
+> 
+> --- On Wed, 12/3/08, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > Subject: Re: question related page frame reclaim on embedded system
+> > To: mengsanshui@yahoo.com.cn
+> > Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
+> > Date: Wednesday, December 3, 2008, 9:48 AM
+> > > 
+> > > Hi,Kosaki
+> > > 
+> > > Thank you very much .
+> > > I have another question about share memory . Assume a
+> > process create a share memory ,
+> > > seems the page that the process used can not be
+> > discard or swap out
 > > 
-> > arch/x86/kernel/scx200_32.c: In function ‘scx200_probe’:
-> > arch/x86/kernel/scx200_32.c:82: warning: ‘base’ may be used
-> > uninitialized in this function
+> > No. Linux can swap out COW shared memory too. see swap
+> > cache related code.
+> > Also, Linux can discard non-dirty and file mapped shared
+> > page.
 > > 
-> > Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
-> > ---
-> >  arch/x86/kernel/scx200_32.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > but, yes.
+> > Linux can't discart dirty or anonymous mapped page.
+> > 
+> > 
+> > > when they are no longer used by any process or no swap
+> > space .
+> > > 
+> > > 1.whether the maped page of the share memory is
+> > persistent in system until
+> > >   system restart ? if not how page frame reclaiming
+> > process it ? 
+> > 
+> > No.
+> > Linux manage page reference count.
+> > forrk increment it. exit decrement it.
+> > So, when process exiting, Linux can discard non used page
+> > immediately.
+> > 
+> > IOW, reclaim provide "page discard/swap although page
+> > is still used" mechanism.
 > 
-> this patch is wrong, and your analysis-free commit log is wrong as 
-> well!
 > 
-> i fixed this a few weeks ago, and GCC pinpointed a _real_ bug - which 
-> you hacked around instead of fixing. See the real fix below.
+>       
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Also, see an example below of the case where GCC is wrong about a 
-warning, and how it is annotated.
 
-	Ingo
 
-------------->
->From af4d2994e0e8e6e529b0e87f4e436dad062a9c05 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 25 Nov 2008 13:14:19 +0100
-Subject: [PATCH] fix warning in fs/ocfs2/stack_user.c
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-this warning:
-
-  fs/ocfs2/stack_user.c: In function ‘user_cluster_connect’:
-  fs/ocfs2/stack_user.c:807: warning: ‘control’ may be used uninitialized in this function
-
-triggers because GCC does not recognize the (correct) error flow
-between:
-
- - ocfs2_live_connection_new() and 'control'
-
-Annotate it.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- fs/ocfs2/stack_user.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
-index faec2d8..55e2cdc 100644
---- a/fs/ocfs2/stack_user.c
-+++ b/fs/ocfs2/stack_user.c
-@@ -804,7 +804,7 @@ static int fs_protocol_compare(struct ocfs2_protocol_version *existing,
- static int user_cluster_connect(struct ocfs2_cluster_connection *conn)
- {
- 	dlm_lockspace_t *fsdlm;
--	struct ocfs2_live_connection *control;
-+	struct ocfs2_live_connection *uninitialized_var(control);
- 	int rc = 0;
- 
- 	BUG_ON(conn == NULL);
