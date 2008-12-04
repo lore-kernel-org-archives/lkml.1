@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760346AbYLDRn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYLDRnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760346AbYLDRn3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 12:43:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbYLDRc6
+	id S1759430AbYLDRnr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 12:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758961AbYLDRhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 12:32:58 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:16833 "EHLO
-	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757756AbYLDRcp (ORCPT
+	Thu, 4 Dec 2008 12:37:35 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:35357 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755247AbYLDRhd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 12:32:45 -0500
-X-BigFish: VPS3(zzzzzzz32i43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0KBD4PD-03-CXG-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: avi@redhat.com, mingo@redhat.com, dwmw2@infradead.org, gregkh@suse.de,
-       weidong.han@intel.com
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 18/19] AMD IOMMU: add domain address lookup function for IOMMU API
-Date: Thu, 4 Dec 2008 18:31:55 +0100
-Message-ID: <1228411916-22668-19-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <20081204172142.GH12816@amd.com>
-References: <20081204172142.GH12816@amd.com>
-X-OriginalArrivalTime: 04 Dec 2008 17:31:57.0480 (UTC) FILETIME=[35096280:01C95636]
-MIME-Version: 1.0
-Content-Type: text/plain
+	Thu, 4 Dec 2008 12:37:33 -0500
+Date: Thu, 4 Dec 2008 18:48:38 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com, Alasdair G Kergon <agk@redhat.com>,
+       Andi Kleen <andi-suse@firstfloor.org>, Milan Broz <mbroz@redhat.com>
+Subject: Re: Device loses barrier support (was: Fixed patch for simple barriers.)
+Message-ID: <20081204174838.GS6703@one.firstfloor.org>
+References: <Pine.LNX.4.64.0812040009340.15169@hs20-bc2-1.build.redhat.com> <20081204100050.GN6703@one.firstfloor.org> <Pine.LNX.4.64.0812040836480.6118@hs20-bc2-1.build.redhat.com> <20081204142015.GQ6703@one.firstfloor.org> <Pine.LNX.4.64.0812040913510.6118@hs20-bc2-1.build.redhat.com> <20081204145810.GR6703@one.firstfloor.org> <Pine.LNX.4.64.0812041139200.2434@hs20-bc2-1.build.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0812041139200.2434@hs20-bc2-1.build.redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add a generic function to lockup addresses in protection domains
+On Thu, Dec 04, 2008 at 11:45:44AM -0500, Mikulas Patocka wrote:
+> > No there is nothing unordered. The file system path typically looks like
+> > 
+> > commit of a transaction
+> > 	if (i have never seen a barrier failing) 
+> > 		write block with barrier
+> > 		if (EOPNOTSUPP) {
+> > 			record failure
+> > 			submit synchronously
+> > 		}
+> > 	} else
+> > 		submit synchronously
+> > 
+> 
+> If you view this as a "right" way of using barriers, then you can drop 
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/amd_iommu.c |   31 +++++++++++++++++++++++++++++++
- 1 files changed, 31 insertions(+), 0 deletions(-)
+It's the way the file systems do it. If you don't believe me feel
+free to read the code for yourself.
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 6898d10..57e636e 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -1682,3 +1682,34 @@ static void amd_iommu_unmap_range(struct iommu_domain *dom,
- 
- 	iommu_flush_domain(domain->id);
- }
-+
-+static phys_addr_t amd_iommu_iova_to_phys(struct iommu_domain *dom,
-+					  unsigned long iova)
-+{
-+	struct protection_domain *domain = dom->priv;
-+	unsigned long offset = iova & ~PAGE_MASK;
-+	phys_addr_t paddr;
-+	u64 *pte;
-+
-+	pte = &domain->pt_root[IOMMU_PTE_L2_INDEX(iova)];
-+
-+	if (!IOMMU_PTE_PRESENT(*pte))
-+		return 0;
-+
-+	pte = IOMMU_PTE_PAGE(*pte);
-+	pte = &pte[IOMMU_PTE_L1_INDEX(iova)];
-+
-+	if (!IOMMU_PTE_PRESENT(*pte))
-+		return 0;
-+
-+	pte = IOMMU_PTE_PAGE(*pte);
-+	pte = &pte[IOMMU_PTE_L0_INDEX(iova)];
-+
-+	if (!IOMMU_PTE_PRESENT(*pte))
-+		return 0;
-+
-+	paddr  = *pte & IOMMU_PAGE_MASK;
-+	paddr |= offset;
-+
-+	return paddr;
-+}
--- 
-1.5.6.4
+> barrier support at all and replace this code sequence with:
+> 
+>  flush disk cache
+>  submit write synchronously
+>  flush disk cache
+> 
+> --- because synchronous barriers bring you no performance advantage over 
+> the above sequence.
 
+Remember this is done by a commit thread in a journaling file system. 
+Commits are ordered so the thread cannot really order out of order 
+anyways. And yes the barriers are essentially a way to flush the cache
+regularly for selected commits. The alternative (if you
+want to guarantee transaction order) would be to disable
+the write cache completely and do it synchronous on each IO.
+
+> 
+> > So if a pvmove barrier fails it will just submit synchronously.
+> > 
+> > The write block with barrier bit varies, jbd/gfs2 do it synchronously
+> > too and xfs does it asynchronously (with io done callbacks), but
+> 
+> And how does xfs preserve write ordering, if the barrier asynchronously 
+> fails with -EOPNOTSUPP and there are other writes submitted after the 
+> barrier?
+
+>From the high level journaling perspective they are not asynchronous
+I think. Just the low level xfs_buf interface happens to use the asynchronous
+callbacks instead of calling into the block layer directly like jbd et.al.
+do.
+
+-Andi
 
