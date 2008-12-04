@@ -1,66 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbYLDTM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbYLDTNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759285AbYLDTM5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 14:12:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759527AbYLDTMe
+	id S1759810AbYLDTNe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 14:13:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759577AbYLDTMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 14:12:34 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59246 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759504AbYLDTMd (ORCPT
+	Thu, 4 Dec 2008 14:12:40 -0500
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:51882 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759564AbYLDTMj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 14:12:33 -0500
-Message-ID: <49382B85.1020803@zytor.com>
-Date: Thu, 04 Dec 2008 11:12:05 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 4 Dec 2008 14:12:39 -0500
+Date: Fri, 5 Dec 2008 00:42:31 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
+       akpm@linux-foundation.org, mingo@elte.hu, richardj_moore@uk.ibm.com
+Subject: [RFC Patch 3/9] Modifying generic debug exception to use virtual
+	debug registers
+Message-ID: <20081204191231.GC20563@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20081204190804.GA15134@in.ibm.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Jody McIntyre <scjody@sun.com>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com
-Subject: Re: [PATCH] Fix compile error in arch/x86/kernel/syscall_64.c
-References: <20081202215154.GL29919@clouds> <200812041533.00736.arnd@arndb.de>
-In-Reply-To: <200812041533.00736.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081204190804.GA15134@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Tuesday 02 December 2008, Jody McIntyre wrote:
->> 1965aae3c98397aad957412413c07e97b1bd4e64 broke compilation on one of my
->> systems:
->>
->>   CC      arch/x86/kernel/syscall_64.o
->> arch/x86/kernel/syscall_64.c:27: error: array index in initializer exceeds array bounds
->> arch/x86/kernel/syscall_64.c:27: error: (near initialization for ‘sys_call_table’)
->> arch/x86/kernel/syscall_64.c:27: warning: excess elements in array initializer
->> arch/x86/kernel/syscall_64.c:27: warning: (near initialization for ‘sys_call_table’)
->> make[1]: *** [arch/x86/kernel/syscall_64.o] Error 1
->> make: *** [arch/x86/kernel/syscall_64.o] Error 2
->>
->> Reverting only the parts of the commit that change ASM_X86__UNISTD_64_H
->> to _ASM_X86_UNISTD_64_H fixes the problem.  Patch below.
->>
->> I have no idea what's going on here.  Compiler bug?
-> 
-> Maybe you have stale header files in include/asm-x86/? That sometimes
-> happens if you git-checkout -f or git-reset --hard.
-> 
+This patch modifies the breakpoint exception handler code to use the abstract
+register names.
 
-"git cleanup" should be used to catch that classes of problems.  I did
-notice that the include file trace used include/asm not
-arch/x86/include/asm, which to me implies something like this.
+Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+---
+ arch/x86/kernel/traps.c |   68 ++++++++++++++++--------------------------------
+ 1 file changed, 24 insertions(+), 44 deletions(-)
 
-I just tried, and when I make a .i file on a clean tree I get:
-
-# 10 "<full path>/arch/x86/include/asm/posix_types_64.h"
-
-not
-
-# 10 "include/asm/posix_types_64.h"
-
-as the posted .i file has.
-
-	-hpa
+Index: linux-HBKPT-2.6.28-rc7/arch/x86/kernel/traps.c
+===================================================================
+--- linux-HBKPT-2.6.28-rc7.orig/arch/x86/kernel/traps.c
++++ linux-HBKPT-2.6.28-rc7/arch/x86/kernel/traps.c
+@@ -573,10 +573,11 @@ asmlinkage __kprobes struct pt_regs *syn
+ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ {
+ 	struct task_struct *tsk = current;
+-	unsigned long condition;
++	unsigned long dr6;
+ 	int si_code;
+ 
+-	get_debugreg(condition, 6);
++	get_debugreg(dr6, 6);
++	set_debugreg(0, 6);	/* DR6 may or may not be cleared by the CPU */
+ 
+ 	/*
+ 	 * The processor cleared BTF, so don't mark that we need it set.
+@@ -584,61 +585,40 @@ dotraplinkage void __kprobes do_debug(st
+ 	clear_tsk_thread_flag(tsk, TIF_DEBUGCTLMSR);
+ 	tsk->thread.debugctlmsr = 0;
+ 
+-	if (notify_die(DIE_DEBUG, "debug", regs, condition, error_code,
++	/* Store the virtualized DR6 value */
++	tsk->thread.vdr6 = dr6;
++
++	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
+ 						SIGTRAP) == NOTIFY_STOP)
+ 		return;
+ 
+ 	/* It's safe to allow irq's after DR6 has been saved */
+ 	preempt_conditional_sti(regs);
+ 
+-	/* Mask out spurious debug traps due to lazy DR7 setting */
+-	if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) {
+-		if (!tsk->thread.debugreg7)
+-			goto clear_dr7;
++	if (regs->flags & X86_VM_MASK) {
++		handle_vm86_trap((struct kernel_vm86_regs *) regs,
++				error_code, 1);
++		return;
+ 	}
+ 
+ #ifdef CONFIG_X86_32
+-	if (regs->flags & X86_VM_MASK)
+-		goto debug_vm86;
+ #endif
+ 
+-	/* Save debug status register where ptrace can see it */
+-	tsk->thread.debugreg6 = condition;
+-
+-	/*
+-	 * Single-stepping through TF: make sure we ignore any events in
+-	 * kernel space (but re-enable TF when returning to user mode).
+-	 */
+-	if (condition & DR_STEP) {
+-		if (!user_mode(regs))
+-			goto clear_TF_reenable;
+-	}
+-
+-	si_code = get_si_code(condition);
+-	/* Ok, finally something we can handle */
+-	send_sigtrap(tsk, regs, error_code, si_code);
+-
+ 	/*
+-	 * Disable additional traps. They'll be re-enabled when
+-	 * the signal is delivered.
++	 * Single-stepping through system calls: ignore any exceptions in
++	 * kernel space, but re-enable TF when returning to user mode.
++	 *
++	 * We already checked v86 mode above, so we can check for kernel mode
++	 * by just checking the CPL of CS.
+ 	 */
+-clear_dr7:
+-	set_debugreg(0, 7);
+-	preempt_conditional_cli(regs);
+-	return;
+-
+-#ifdef CONFIG_X86_32
+-debug_vm86:
+-	handle_vm86_trap((struct kernel_vm86_regs *) regs, error_code, 1);
+-	preempt_conditional_cli(regs);
+-	return;
+-#endif
+-
+-clear_TF_reenable:
+-	set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
+-	regs->flags &= ~X86_EFLAGS_TF;
+-	preempt_conditional_cli(regs);
+-	return;
++	if ((dr6 & DR_STEP) && !user_mode(regs)) {
++		tsk->thread.vdr6 &= ~DR_STEP;
++		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
++		regs->flags &= ~X86_EFLAGS_TF;
++	}
++	si_code = get_si_code(dr6);
++	if (tsk->thread.vdr6 & (DR_STEP|DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
++		send_sigtrap(tsk, regs, error_code, si_code);
+ }
+ 
+ #ifdef CONFIG_X86_64
