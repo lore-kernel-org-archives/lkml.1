@@ -1,140 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbYLDCPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYLDCPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775AbYLDCPL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 21:15:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYLDCO4
+	id S1757357AbYLDCPo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 21:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYLDCPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 21:14:56 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57370 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751244AbYLDCOz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 21:14:55 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [PATCH] mm: remove UP version lru_add_drain_all()
-Cc: kosaki.motohiro@jp.fujitsu.com, Dave Hansen <dave@linux.vnet.ibm.com>,
-       gerald.schaefer@de.ibm.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       y-goto@jp.fujitsu.com, npiggin@suse.de,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <20081204093143.390afa9f.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1228342567.13111.11.camel@nimitz> <20081204093143.390afa9f.kamezawa.hiroyu@jp.fujitsu.com>
-Message-Id: <20081204110013.1D62.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 3 Dec 2008 21:15:30 -0500
+Received: from ozlabs.org ([203.10.76.45]:40189 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751632AbYLDCP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 21:15:28 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: Yet more ARM breakage in linux-next
+Date: Thu, 4 Dec 2008 12:45:24 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Russell King" <rmk+lkml@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, "Stephen Rothwell" <sfr@canb.auug.org.au>
+References: <20081203192905.GA12502@flint.arm.linux.org.uk> <200812040952.44957.rusty@rustcorp.com.au> <8bd0f97a0812031733n18184927m2b4fcfa0ed05cd7b@mail.gmail.com>
+In-Reply-To: <8bd0f97a0812031733n18184927m2b4fcfa0ed05cd7b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu,  4 Dec 2008 11:14:51 +0900 (JST)
+Content-Disposition: inline
+Message-Id: <200812041245.24568.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(CC to  Christoph Lameter and Lee Schermerhorn)
+On Thursday 04 December 2008 12:03:57 Mike Frysinger wrote:
+> On Wed, Dec 3, 2008 at 18:22, Rusty Russell wrote:
+> > On Thursday 04 December 2008 07:11:09 Andrew Morton wrote:
+> >> On Wed, 3 Dec 2008 19:29:05 +0000
+> >>
+> >> Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> >> > This seems to be causing lots of ARM breakage:
+> >> >
+> >> > lib/find_next_bit.c:183: error: implicit declaration of function
+> >> > '__fls'
+> >> >
+> >> > Whoever's responsible,
+> >>
+> >> git-blame?
+> >
+> > It's me.  Turns out sparc, avr32 and arm all don't define __fls in their
+> > asm/bitops.h, and I'm the first one to use it in generic code.
+>
+> the Blackfin port also does not ... you going to post a change for
+> that since the build breaks for Blackfin atm too ?
+> -mike
 
+Sure, why not join the party!
 
-> On Wed, 03 Dec 2008 14:16:07 -0800
-> Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-> > > This let us run
-> > > into the BUG_ON(!PageBuddy(page)) in __offline_isolated_pages() during
-> > > memory hotplug stress test on s390. The page in question was still on the
-> > > pcp list, because of a race with lru_add_drain_all() and drain_all_pages()
-> > > on different cpus.
-> > > 
-> > > This is fixed with this patch by adding CONFIG_MEMORY_HOTREMOVE to the
-> > > lru_add_drain_all() #ifdef, to let it run on each cpu.
-> > 
-> > This doesn't seem right to me.  CONFIG_MEMORY_HOTREMOVE doesn't change
-> > the layout of the LRUs, unlike NUMA or UNEVICTABLE_LRU.  So, I think
-> > this bug is more due to the hotremove code mis-expecting behavior out of
-> > lru_add_drain_all().
-> > 
-> How about 
-> 
-> #ifdef CONFIG_SMP
-> 
-> #else..
-> 
-> #endif
-> 
-> rather than
-> 
-> -#if defined(CONFIG_NUMA) || defined(CONFIG_UNEVICTABLE_LRU)
-> +#if defined(CONFIG_NUMA) || defined(CONFIG_UNEVICTABLE_LRU) || \
-> +    defined(CONFIG_MEMORY_HOTREMOVE)
-> ...
+(Hmm, maybe I should change that list to a shorter list of archs which
+*do* define __fls?)
 
+blackfin: define __fls
 
-The default value of CONFIG_UNEVICTABLE_LRU is ON.
-Then, almost machine use CONFIG_NUMA version lru_add_drain_all().
+Like fls, but can't be handed 0 and returns the bit number.
 
-Therefore, this config option is not so valuable.
-I like simple removing.
+(I broke this arch in linux-next by using __fls in generic code).
 
-following patch can boot on UP machine.
-===
-Currently, lru_add_drain_all() has two version.
-  (1) use schedule_on_each_cpu()
-  (2) don't use schedule_on_each_cpu()
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Gerald Schaefer reported it doesn't works well on SMP (not NUMA) S390 machine.
-
-  offline_pages() calls lru_add_drain_all() followed by drain_all_pages().
-  While drain_all_pages() works on each cpu, lru_add_drain_all() only runs
-  on the current cpu for architectures w/o CONFIG_NUMA. This let us run
-  into the BUG_ON(!PageBuddy(page)) in __offline_isolated_pages() during
-  memory hotplug stress test on s390. The page in question was still on the
-  pcp list, because of a race with lru_add_drain_all() and drain_all_pages()
-  on different cpus.
-
-Actually, Almost machine has CONFIG_UNEVICTABLE_LRU=y. Then almost machine use
-(1) version lru_add_drain_all although the machine is UP.
-
-Then this ifdef is not valueable.
-simple removing is better.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Christoph Lameter <cl@linux-foundation.org>
-CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-
----
- mm/swap.c |   13 -------------
- 1 file changed, 13 deletions(-)
-
-Index: b/mm/swap.c
-===================================================================
---- a/mm/swap.c	2008-11-24 19:33:26.000000000 +0900
-+++ b/mm/swap.c	2008-12-04 09:49:05.000000000 +0900
-@@ -299,7 +299,6 @@ void lru_add_drain(void)
- 	put_cpu();
- }
+diff --git a/arch/blackfin/include/asm/bitops.h b/arch/blackfin/include/asm/bitops.h
+--- a/arch/blackfin/include/asm/bitops.h
++++ b/arch/blackfin/include/asm/bitops.h
+@@ -213,6 +213,7 @@ static __inline__ int __test_bit(int nr,
+ #endif				/* __KERNEL__ */
  
--#if defined(CONFIG_NUMA) || defined(CONFIG_UNEVICTABLE_LRU)
- static void lru_add_drain_per_cpu(struct work_struct *dummy)
- {
- 	lru_add_drain();
-@@ -313,18 +312,6 @@ int lru_add_drain_all(void)
- 	return schedule_on_each_cpu(lru_add_drain_per_cpu);
- }
+ #include <asm-generic/bitops/fls.h>
++#include <asm-generic/bitops/__fls.h>
+ #include <asm-generic/bitops/fls64.h>
  
--#else
--
--/*
-- * Returns 0 for success
-- */
--int lru_add_drain_all(void)
--{
--	lru_add_drain();
--	return 0;
--}
--#endif
--
- /*
-  * Batched page_cache_release().  Decrement the reference count on all the
-  * passed pages.  If it fell to zero then remove the page from the LRU and
-
-
+ #endif				/* _BLACKFIN_BITOPS_H */
 
