@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbYLDSIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYLDSUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757424AbYLDSIq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 13:08:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbYLDSIf
+	id S1757315AbYLDSUe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 13:20:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbYLDSUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 13:08:35 -0500
-Received: from www.tglx.de ([62.245.132.106]:59468 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751605AbYLDSIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 13:08:35 -0500
-Date: Thu, 4 Dec 2008 19:08:09 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: edward_estabrook@agilent.com, linux-kernel@vger.kernel.org,
-       hjk@linutronix.de, gregkh@suse.de, edward.estabrook@gmail.com,
-       hugh <hugh@veritas.com>, linux-mm <linux-mm@kvack.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
-Message-ID: <20081204180809.GB3079@local>
-References: <43FC624C55D8C746A914570B66D642610367F29B@cos-us-mb03.cos.agilent.com> <1228379942.5092.14.camel@twins>
+	Thu, 4 Dec 2008 13:20:20 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:59778 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754982AbYLDSUR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 13:20:17 -0500
+Date: Thu, 4 Dec 2008 12:20:05 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: sds@tycho.nsa.gov, jmorris@namei.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       takedakn@nttdata.co.jp, haradats@nttdata.co.jp
+Subject: Re: [PATCH (mmotm-2008-12-02-17-08)] Introduce
+	security_path_set/clear() hooks.
+Message-ID: <20081204182005.GA14852@us.ibm.com>
+References: <200812021939.FFC05200.OVQJSOMtFFHLFO@I-love.SAKURA.ne.jp> <1228225719.26101.52.camel@moss-spartans.epoch.ncsc.mil> <49364808.1070907@nttdata.co.jp> <493649C5.2060402@nttdata.co.jp> <1228313605.32059.23.camel@moss-spartans.epoch.ncsc.mil> <200812042100.HFE00081.tFFOHMQVOLFOSJ@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1228379942.5092.14.camel@twins>
+In-Reply-To: <200812042100.HFE00081.tFFOHMQVOLFOSJ@I-love.SAKURA.ne.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 04, 2008 at 09:39:02AM +0100, Peter Zijlstra wrote:
-> On Wed, 2008-12-03 at 14:39 -0700, edward_estabrook@agilent.com wrote:
-> > From: Edward Estabrook <Edward_Estabrook@agilent.com>
-> > 
-> > Here is a patch that adds the ability to dynamically allocate (and
-> > use) coherent DMA from userspace by extending the userspace IO driver.
-> > This patch applies against 2.6.28-rc6.
-> > 
-> > The gist of this implementation is to overload uio's mmap
-> > functionality to allocate and map a new DMA region on demand.  The
-> > bus-specific DMA address as returned by dma_alloc_coherent is made
-> > available to userspace in the 1st long word of the newly created
-> > region (as well as through the conventional 'addr' file in sysfs).  
-> > 
-> > To allocate a DMA region you use the following:
-> > /* Pass this magic number to mmap as offset to dynamically allocate a
-> > chunk of memory */ #define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
-> > 
-> > void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
-> > fd, DMA_MEM_ALLOCATE_MMAP_OFFSET); u_int64_t *addr = *(u_int64_t *)
-> > memory;
-> > 
-> > where 'size' is the size in bytes of the region you want and fd is the
-> > opened /dev/uioN file.
-> > 
-> > Allocation occurs in page sized pieces by design to ensure that
-> > buffers are page-aligned.
-> > 
-> > Memory is released when uio_unregister_device() is called.
-> >
-> > I have used this extensively on a 2.6.21-based kernel and ported it to
-> > 2.6.28-rc6 for review / submission here.
-> > 
-> > Comments appreciated!
+Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
+> Hello.
 > 
-> Yuck!
+> Stephen Smalley wrote:
+> > On Wed, 2008-12-03 at 17:56 +0900, Kentaro Takeda wrote:
+> > > Stephen, Serge,
+> > > Here is the patch for introducing new security_path_set()/clear() hooks.
+> > > 
+> > > This patch enables LSM module to remember vfsmount's pathname so that it can 
+> > > calculate absolute pathname in security_inode_*(). Since actual MAC can be 
+> > > performed after DAC, there will not be any noise in auditing and learning 
+> > > features. This patch currently assumes that the vfsmount's pathname is stored in 
+> > > hash table in LSM module. (Should I use stack memory?)
+> > > 
+> > > Since security_inode_*() are not always called after security_path_set(), 
+> > > security_path_clear() hook is needed to free the remembered pathname.
+> > 
+> > Your security_path_set()/security_path_clear() pairs look rather similar
+> > to mnt_want_write()/mnt_drop_write() pairs.  What if you were to call
+> > your hooks from those functions, and then you would only need to add
+> > further hook calls in the case of read-only and execute/search checks?
 > 
-> Why not create another special device that will give you DMA memory when
-> you mmap it? That would also allow you to obtain the physical address
-> without this utter horrid hack of writing it in the mmap'ed memory.
-> 
-> /dev/uioN-dma would seem like a fine name for that.
+> Right. Locations of inserting security_path_set()/security_path_clear() pairs
+> are subset of mnt_want_write()/mnt_drop_write() pairs. Thus, we can insert
+> security_path_set()/security_path_clear() pairs into
+> mnt_want_write()/mnt_drop_write() pairs, if we can tolerate performance
+> regression. According to our rough measurement, there is about 8 - 22% of
+> performance regression.
 
-I don't like to have a separate device for DMA memory. It would completely
-break the current concept of userspace drivers if you had to get normal
-memory from one device and DMA memory from another. Note that one driver
-can have both.
+... compared to what, exactly?
 
-But I agree that it's confusing if the physical address is stored somewhere
-in the mapped memory. That should simply be omitted, we have that information
-in sysfs anyway - like for any other memory mappings. But I guess we need
-some kind of "type" or "flags" attribute for the mappings so that userspace
-can find out if a mapping is DMA capable or not.
+If having CONFIG_SECURITY_PATH=y but TOMOYO  disabled has this kind of
+regression against just not having CONFIG_SECURITY_PATH, then no that is
+not acceptable.
 
-Thanks,
-Hans
-
+-serge
