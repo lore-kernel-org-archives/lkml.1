@@ -1,69 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYLDWuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbYLDWvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759300AbYLDWuF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 17:50:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbYLDWtx
+	id S1759391AbYLDWvh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 17:51:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756946AbYLDWv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 17:49:53 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:26517 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754714AbYLDWtw (ORCPT
+	Thu, 4 Dec 2008 17:51:29 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:6769 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755219AbYLDWv2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 17:49:52 -0500
+	Thu, 4 Dec 2008 17:51:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :content-type:content-transfer-encoding;
-        b=aUsV9LSp7liQTDzeAqjjHJF4H1IDLjAvmLQPLuJh2/jMQmewkiCPdGuUTQ1fRJp79g
-         zjO2Xj9UAMSKDZOMrQB+fchEsn1axPaHuuiUe06p9MaF88tjOvBCcdCWZspirav6NuLI
-         v7mCtgv/++rVc6oDyX4YNpIiCGVyH3Hh+L+fA=
-Message-ID: <49385E8B.7070900@gmail.com>
-Date: Thu, 04 Dec 2008 23:49:47 +0100
+        b=XDJZrnTp+PVsWUMO7iUtVDYV8uAi2n/vX9Fm5PffkhMOXZ3a4p10yo3EcuDgHt3zZa
+         1BfBRFj4q2YYh9FYgrBEWLcQq9mei4WZgPzc2PoykF0oANrqBxv8o+5aiFHVaMsfQXCP
+         GqBrvJnio2EYYmuxI/HhBpiXkFZdabjIomqiI=
+Message-ID: <49385EEB.20003@gmail.com>
+Date: Thu, 04 Dec 2008 23:51:23 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
 CC: Steven Rostedt <rostedt@goodmis.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/3] tracing/ftrace: fix the check of ftrace_trace_task
+Subject: [PATCH 3/3] tracing/ftrace: provide the macro task_curr_ret_stack()
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix default empty traces on function-graph-tracer
+Impact: cleanup
 
-The actual ftrace_trace_task() checks if ftrace_pid_trace is allocated
-and return 1 if it is true.
-If it is NULL, it will check the bit of pid tracing flag for the current
-task (which are not set by default).
-So by default, a task is not traced.
-Actually all tasks should be traced by default and filter_by_pid when
-ftrace_pid_trace is allocated.
+As suggested by Steven Rostedt, this patch provide a new macro
+task_curr_ret_stack() to move the cpp conditionnal CONFIG into
+the linux/ftrace.h headers.
 
-The appropriate condition should be to return 1 if filter_by_pid is
-set.
-
-Cc: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/trace/trace.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ include/linux/ftrace.h |   11 +++++++++++
+ kernel/trace/trace.c   |    8 +-------
+ 2 files changed, 12 insertions(+), 7 deletions(-)
 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index a71bbe0..5ac6970 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -551,7 +551,7 @@ extern struct pid *ftrace_pid_trace;
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index b295d31..b9b4d0a 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -8,6 +8,7 @@
+ #include <linux/types.h>
+ #include <linux/kallsyms.h>
+ #include <linux/bitops.h>
++#include <linux/sched.h>
  
- static inline int ftrace_trace_task(struct task_struct *task)
- {
--	if (ftrace_pid_trace)
-+	if (!ftrace_pid_trace)
- 		return 1;
+ #ifdef CONFIG_FUNCTION_TRACER
  
- 	return test_tsk_trace_trace(task);
+@@ -387,9 +388,19 @@ extern void unregister_ftrace_graph(void);
+ 
+ extern void ftrace_graph_init_task(struct task_struct *t);
+ extern void ftrace_graph_exit_task(struct task_struct *t);
++
++static inline int task_curr_ret_stack(struct task_struct *t)
++{
++	return t->curr_ret_stack;
++}
+ #else
+ static inline void ftrace_graph_init_task(struct task_struct *t) { }
+ static inline void ftrace_graph_exit_task(struct task_struct *t) { }
++
++static inline int task_curr_ret_stack(struct task_struct *tsk)
++{
++	return -1;
++}
+ #endif
+ 
+ #ifdef CONFIG_TRACING
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 5dca6ef..7a93c66 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3657,13 +3657,7 @@ int __ftrace_printk(unsigned long ip, const char *fmt, ...)
+ 		return 0;
+ 
+ 	va_start(ap, fmt);
+-
+-#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+-	ret = trace_vprintk(ip, current->curr_ret_stack, fmt, ap);
+-#else
+-	ret = trace_vprintk(ip, -1, fmt, ap);
+-#endif
+-
++	ret = trace_vprintk(ip, task_curr_ret_stack(current), fmt, ap);
+ 	va_end(ap);
+ 	return ret;
+ }
 -- 
 1.5.6.3
 
