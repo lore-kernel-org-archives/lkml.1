@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbYLDUy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757751AbYLDU6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757842AbYLDUy5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 15:54:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbYLDUyr
+	id S1757751AbYLDU6A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 15:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbYLDU5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 15:54:47 -0500
-Received: from igw2.watson.ibm.com ([129.34.20.6]:54411 "EHLO
-	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754918AbYLDUyq (ORCPT
+	Thu, 4 Dec 2008 15:57:52 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50894 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754853AbYLDU5w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 15:54:46 -0500
-Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
-From: david safford <safford@watson.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <20081204130949.GA18196@infradead.org>
-References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
-	 <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com>
-	 <20081203123021.GA30035@infradead.org>
-	 <1228328323.2821.30.camel@localhost.localdomain>
-	 <20081203182300.GA31203@infradead.org>
-	 <1228342655.2821.64.camel@localhost.localdomain>
-	 <20081204130949.GA18196@infradead.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 04 Dec 2008 15:53:34 -0500
-Message-Id: <1228424014.3014.58.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 4 Dec 2008 15:57:52 -0500
+Date: Thu, 4 Dec 2008 15:57:48 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 3/3] ftrace: add ability to only trace swapper tasks
+In-Reply-To: <m11vwnu10b.fsf@frodo.ebiederm.org>
+Message-ID: <alpine.DEB.1.10.0812041551590.32726@gandalf.stny.rr.com>
+References: <20081204052638.425740534@goodmis.org> <20081204052735.362609481@goodmis.org> <20081204001803.598063f5.akpm@linux-foundation.org> <20081204091023.GJ32594@elte.hu> <m1vdu0t7tz.fsf@frodo.ebiederm.org> <alpine.DEB.1.10.0812040946060.5240@gandalf.stny.rr.com>
+ <m11vwnu10b.fsf@frodo.ebiederm.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-04 at 08:09 -0500, Christoph Hellwig wrote:
->
-> In integrity.h there are two operation vectors defines:
 
-In the past, the integrity hooks were discussed with the 
-LSM/security community, and others expressed interest in using 
-them, and we were trying to accommodate their requests. On the 
-other hand, we have separately asked them to chime in here to
-defend these hooks, and have heard nothing. As everyone has
-pointed out, if no one uses them, they are bloat, and if
-someone else wants them in the future, they can easily be
-added back. In a little more detail:
+On Thu, 4 Dec 2008, Eric W. Biederman wrote:
+> >> >
+> >> >> > +static struct pid * const ftrace_swapper_pid = (struct pid *)1;
+> >> >> 
+> >> >> eh?
+> >> >
+> >> > all side-effects of getting rid of the integer based PID namespace and 
+> >> > replacing them with struct pid pointers.
+> >> 
+> >> Thanks for asking Andrew it looks like an unnecessary side effect.
+> >
+> > Well, it was necessary without hacking fork.c ;-)
+> 
+> The (struct pid *)1 has always been unnecessary.
 
-> - struct integrity_operations delcares the operations called from the
-> VFS. This one is actually used. While I don't agree to Dave's
-> argument, because we don't put bloat in just because people might
-> eventually some day use it when they are in the right mood and the
-> sun shines, thisn't isn't the one I'm talking about in this thread.
+Well, I could set it to the &init_struct_pid as you said, but it will not 
+change any of the code below it. So it does not matter what 
+ftrace_swapper_pid is set to, as long as it is not set to something that 
+can be a legitimate pid struct for something not the swapper task.
 
-These hooks were for alternate integrity modules, and since
-no one else has defended them, we have to agree that they
-should be replaced with direct calls.
+It will only matter when we fix the fork code.
 
-> - struct template_operations on the others is not only really badly
-> named for appearing in a global header but also not used in a
-> meaningfull way. There is one single instace of it,
-> ima_template_ops, and while there are five helpers added in the
-> second patch that use it (integrity_collect_measurement,
-> integrity_appraise_measurement, integrity_store_measurement,
-> integrity_store_template, integrity_must_measure) none of them
-> is used at all during the patch series. There are two direct
-> uses of these template added in the third path, to implement the
-> show operations for the "binary_runtime_measurements" and
-> "ascii_runtime_measurements" files ins securityfs, but given that
-> those are inside ima there no reason for the indirection at all.
+> 
+> As for fork.  It would be nice to remove most of the special cases
+> for the idle thread.  At least the counts are significant.  The rest
+> is pretty much a don't care at this point.
 
-These hooks were for potential use by LSM modules to inquire about the
-integrity of files, and for other modules to be able to anchor data
-in the TPM list. Again, since no one has chimed in to defend the 
-hooks, we have no problem removing them.
+Well, the swapper task should still have a pid of zero. That is probably 
+important.
 
-Sorry about arguing too long on this, and thanks for all the reviews...
+-- Steve
 
-dave
