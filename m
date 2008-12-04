@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbYLDFJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYLDFMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754696AbYLDFJQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 00:09:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYLDFI6
+	id S1754782AbYLDFMG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 00:12:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYLDFLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 00:08:58 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:49085 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751366AbYLDFI5 (ORCPT
+	Thu, 4 Dec 2008 00:11:53 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39534
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751354AbYLDFLw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 00:08:57 -0500
-Subject: [PATCH] PCI: remove pci_dac_dma_... APIs on mn10300
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: akpm@linux-foundation.org
-Cc: jbeulich@novell.com, gregkh@suse.de, jbarnes@virtuousgeek.org,
-       linux-kernel@vger.kernel.org, dhowells@redhat.com,
-       yasutake.koichi@jp.panasonic.com,
-       Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Thu, 04 Dec 2008 14:08:55 +0900
-Message-Id: <1228367335.10823.22.camel@sebastian.kern.oss.ntt.co.jp>
+	Thu, 4 Dec 2008 00:11:52 -0500
+Date: Wed, 03 Dec 2008 21:11:52 -0800 (PST)
+Message-Id: <20081203.211152.263373582.davem@davemloft.net>
+To: npalix@diku.dk
+Cc: wli@holomorphy.com, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       julia@diku.dk
+Subject: Re: [PATCH linux-next] sparc: Add missing of_node_put
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200812021130.06197.npalix@diku.dk>
+References: <200812021130.06197.npalix@diku.dk>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems that mn10300 made it upstream after Jan Beulich's pci_dac_dma_*
-cleanup work and still defines pci_dac_dma_supported(). This API is not
-required by the PCI subsystem anymore, so remove it.
+From: Nicolas Palix <npalix@diku.dk>
+Date: Tue, 2 Dec 2008 11:30:06 +0100
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+> 
+> of_node_put is needed before discarding a value received from
+> of_find_node_by_name, eg in error handling code or when the device
+> node is no longer used.
 
-diff -urNp linux-2.6.28-rc7-orig/include/asm-mn10300/pci.h linux-2.6.28-rc7/include/asm-mn10300/pci.h
---- linux-2.6.28-rc7-orig/include/asm-mn10300/pci.h	2008-10-10 07:13:53.000000000 +0900
-+++ linux-2.6.28-rc7/include/asm-mn10300/pci.h	2008-12-04 13:53:13.000000000 +0900
-@@ -70,10 +70,6 @@ struct pci_dev;
-  */
- #define PCI_DMA_BUS_IS_PHYS	(1)
- 
--
--/* This is always fine. */
--#define pci_dac_dma_supported(pci_dev, mask)	(0)
--
- /* Return the index of the PCI controller for device. */
- static inline int pci_controller_num(struct pci_dev *dev)
- {
+Applied to sparc-next-2.6, thanks.
 
-
+I'm not going to add this to sparc-2.6 or stable, it doesn't
+fix any real bugs on sparc (no hot plugged OF nodes, ever)
+and adding it to sparc-2.6 would potentitally create some
+difficult conflicts in sparc-next-2.6 since we're just finishing
+a full merge of arch/sparc64 into arch/sparc there.
