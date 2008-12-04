@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757751AbYLDU6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYLDVAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757751AbYLDU6A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 15:58:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbYLDU5w
+	id S1757428AbYLDVAG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 16:00:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbYLDU7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 15:57:52 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50894 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754853AbYLDU5w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 15:57:52 -0500
-Date: Thu, 4 Dec 2008 15:57:48 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 3/3] ftrace: add ability to only trace swapper tasks
-In-Reply-To: <m11vwnu10b.fsf@frodo.ebiederm.org>
-Message-ID: <alpine.DEB.1.10.0812041551590.32726@gandalf.stny.rr.com>
-References: <20081204052638.425740534@goodmis.org> <20081204052735.362609481@goodmis.org> <20081204001803.598063f5.akpm@linux-foundation.org> <20081204091023.GJ32594@elte.hu> <m1vdu0t7tz.fsf@frodo.ebiederm.org> <alpine.DEB.1.10.0812040946060.5240@gandalf.stny.rr.com>
- <m11vwnu10b.fsf@frodo.ebiederm.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 4 Dec 2008 15:59:53 -0500
+Received: from waste.org ([66.93.16.53]:40037 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755034AbYLDU7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 15:59:53 -0500
+Subject: [PATCH] random: don't try to look at entropy_count outside the lock
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>
+Content-Type: text/plain
+Date: Thu, 04 Dec 2008 14:58:24 -0600
+Message-Id: <1228424304.3255.115.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+As a non-atomic value, it's only safe to look at entropy_count when
+the pool lock is held, so we move the BUG_ON inside the lock for
+correctness.
 
-On Thu, 4 Dec 2008, Eric W. Biederman wrote:
-> >> >
-> >> >> > +static struct pid * const ftrace_swapper_pid = (struct pid *)1;
-> >> >> 
-> >> >> eh?
-> >> >
-> >> > all side-effects of getting rid of the integer based PID namespace and 
-> >> > replacing them with struct pid pointers.
-> >> 
-> >> Thanks for asking Andrew it looks like an unnecessary side effect.
-> >
-> > Well, it was necessary without hacking fork.c ;-)
-> 
-> The (struct pid *)1 has always been unnecessary.
+Also remove the spurious comment. It's ok for entropy_count to
+temporarily exceed POOLBITS so long as it's left in a consistent state
+when the lock is released.
 
-Well, I could set it to the &init_struct_pid as you said, but it will not 
-change any of the code below it. So it does not matter what 
-ftrace_swapper_pid is set to, as long as it is not set to something that 
-can be a legitimate pid struct for something not the swapper task.
+This is a more correct, simple, and idiomatic fix for the bug in 8b76f46a2db.
+I've left the reorderings introduced by that patch in place as they're
+harmless, even though they don't properly deal with potential atomicity issues.
 
-It will only matter when we fix the fork code.
+Signed-off-by: Matt Mackall <mpm@selenic.com>
 
-> 
-> As for fork.  It would be nice to remove most of the special cases
-> for the idle thread.  At least the counts are significant.  The rest
-> is pretty much a don't care at this point.
+diff -r 4d01a524fee5 drivers/char/random.c
+--- a/drivers/char/random.c	Wed Sep 03 07:30:13 2008 -0700
++++ b/drivers/char/random.c	Wed Sep 17 17:20:14 2008 -0700
+@@ -407,7 +407,7 @@
+ 	/* read-write data: */
+ 	spinlock_t lock;
+ 	unsigned add_ptr;
+-	int entropy_count;	/* Must at no time exceed ->POOLBITS! */
++	int entropy_count;
+ 	int input_rotate;
+ };
+ 
+@@ -727,11 +727,10 @@
+ {
+ 	unsigned long flags;
+ 
+-	BUG_ON(r->entropy_count > r->poolinfo->POOLBITS);
+-
+ 	/* Hold lock while accounting */
+ 	spin_lock_irqsave(&r->lock, flags);
+ 
++	BUG_ON(r->entropy_count > r->poolinfo->POOLBITS);
+ 	DEBUG_ENT("trying to extract %d bits from %s\n",
+ 		  nbytes * 8, r->name);
+ 
 
-Well, the swapper task should still have a pid of zero. That is probably 
-important.
-
--- Steve
+-- 
+Mathematics is the supreme nostalgia of our time.
 
