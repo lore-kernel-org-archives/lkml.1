@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbYLDOHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYLDOJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbYLDOHw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 09:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbYLDOHm
+	id S1757410AbYLDOJV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 09:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbYLDOJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 09:07:42 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53481 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754710AbYLDOHl (ORCPT
+	Thu, 4 Dec 2008 09:09:10 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:47378 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754562AbYLDOJJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 09:07:41 -0500
-Date: Thu, 4 Dec 2008 14:07:42 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Shane McDonald" <mcdonald.shane@gmail.com>
-Cc: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>, bzolnier@gmail.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Resurrect IT8172 IDE controller driver
-Message-ID: <20081204140742.1d0d8046@lxorguk.ukuu.org.uk>
-In-Reply-To: <b2b2f2320812040601k55ab69a6n5da4d321151f94f@mail.gmail.com>
-References: <E1L4UpB-0007ro-1g@localhost>
-	<492A8306.9000400@ru.mvista.com>
-	<b2b2f2320812031839q43eb6102jbae0fbddd9a1cf75@mail.gmail.com>
-	<20081204100717.32819f1b@lxorguk.ukuu.org.uk>
-	<b2b2f2320812040601k55ab69a6n5da4d321151f94f@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 4 Dec 2008 09:09:09 -0500
+Date: Thu, 4 Dec 2008 15:20:15 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com, Alasdair G Kergon <agk@redhat.com>,
+       Andi Kleen <andi-suse@firstfloor.org>, Milan Broz <mbroz@redhat.com>
+Subject: Re: Device loses barrier support (was: Fixed patch for simple barriers.)
+Message-ID: <20081204142015.GQ6703@one.firstfloor.org>
+References: <Pine.LNX.4.64.0812040009340.15169@hs20-bc2-1.build.redhat.com> <20081204100050.GN6703@one.firstfloor.org> <Pine.LNX.4.64.0812040836480.6118@hs20-bc2-1.build.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0812040836480.6118@hs20-bc2-1.build.redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Dec 2008 08:01:49 -0600
-"Shane McDonald" <mcdonald.shane@gmail.com> wrote:
+> the 1st write request ends with success
+> the 2nd write request ends with -EOPNOTSUPP
+> the 3rd write request ends with success
+> 
+> --- when you first see -EOPNOTSUPP, you have already corrupted filesystem 
+> (the 3rd write passed while the filesystem expected that it would be 
 
-> Would it be acceptable to claim that these changes are outside the
-> scope of this patch, and code the IT8172 driver to behave in the same
-> manner as the other wrong drivers, with a suitable comment indicating
-> this fact?
+There's no passing of requests during pvmove. It's a really strong
+barrier.
 
-I think so..  and if its moved over to libata it can just be fixed then
+> finished after the 2nd write) and you are in an interrupt context, where 
+> you can't reissue -EOPNOTSUPP request. So what do you want to do?
 
+The barrier aware file systems I know of just resubmit synchronously when 
+a barrier fails.
 
-Alan
+-Andi
