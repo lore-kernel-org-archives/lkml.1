@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbYLDBAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758316AbYLDBAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758089AbYLDBAb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 20:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbYLDBAT
+	id S1758316AbYLDBAq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 20:00:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757382AbYLDBA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 20:00:19 -0500
-Received: from smtp.zeuux.org ([210.51.160.52]:62933 "EHLO z.billxu.com"
+	Wed, 3 Dec 2008 20:00:26 -0500
+Received: from smtp.zeuux.org ([210.51.160.52]:58206 "EHLO z.billxu.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752070AbYLDBAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 20:00:18 -0500
-Date: Thu, 4 Dec 2008 09:00:13 +0800
+	id S1757283AbYLDBAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 20:00:25 -0500
+Date: Thu, 4 Dec 2008 09:00:22 +0800
 From: Jianjun Kong <jianjun@zeuux.org>
-To: mingo@redhat.com
+To: rusty@rustcorp.com.au
 Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] x86: fix warning of uninitialized variable
-Message-ID: <20081204010013.GA17445@ubuntu>
+Subject: [PATCH 2/3] fix warning of not used variable
+Message-ID: <20081204010022.GB17445@ubuntu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,30 +25,50 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-fix warning of uninitialized 'base' in arch/x86/kernel/scx200_32.c
-
-arch/x86/kernel/scx200_32.c: In function ‘scx200_probe’:
-arch/x86/kernel/scx200_32.c:82: warning: ‘base’ may be used
-uninitialized in this function
+fix this warning:
+kernel/module.c:824: warning: ‘print_unload_info’ defined but not used
+print_unload_info() just used when CONFIG_PROC_FS was defined.
 
 Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
 ---
- arch/x86/kernel/scx200_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/module.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/scx200_32.c b/arch/x86/kernel/scx200_32.c
-index 7e004ac..e9e3a24 100644
---- a/arch/x86/kernel/scx200_32.c
-+++ b/arch/x86/kernel/scx200_32.c
-@@ -58,7 +58,7 @@ static void __devinit scx200_init_shadow(void)
+diff --git a/kernel/module.c b/kernel/module.c
+index 1f4cc00..20b5d25 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -820,6 +820,7 @@ sys_delete_module(const char __user *name_user, unsigned int flags)
+ 	return ret;
+ }
  
- static int __devinit scx200_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
++#ifdef CONFIG_PROC_FS
+ static void print_unload_info(struct seq_file *m, struct module *mod)
  {
--	unsigned base;
-+	unsigned base = 0;
+ 	struct module_use *use;
+@@ -842,6 +843,7 @@ static void print_unload_info(struct seq_file *m, struct module *mod)
+ 	if (!printed_something)
+ 		seq_printf(m, "-");
+ }
++#endif
  
- 	if (pdev->device == PCI_DEVICE_ID_NS_SCx200_BRIDGE ||
- 	    pdev->device == PCI_DEVICE_ID_NS_SC1100_BRIDGE) {
+ void __symbol_put(const char *symbol)
+ {
+@@ -893,11 +895,14 @@ void module_put(struct module *module)
+ EXPORT_SYMBOL(module_put);
+ 
+ #else /* !CONFIG_MODULE_UNLOAD */
++
++#ifdef CONFIG_PROC_FS
+ static void print_unload_info(struct seq_file *m, struct module *mod)
+ {
+ 	/* We don't know the usage count, or what modules are using. */
+ 	seq_printf(m, " - -");
+ }
++#endif
+ 
+ static inline void module_unload_free(struct module *mod)
+ {
 -- 
 1.5.6.3
 
