@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbYLDM7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbYLDNGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbYLDM7E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 07:59:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbYLDM6x
+	id S1756114AbYLDNGf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 08:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYLDNGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 07:58:53 -0500
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:56419 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752444AbYLDM6w (ORCPT
+	Thu, 4 Dec 2008 08:06:25 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:54085 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751936AbYLDNGY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 07:58:52 -0500
-Date: Thu, 4 Dec 2008 13:58:50 +0100
-From: Bastian Blank <bastian@waldi.eu.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Greg Kurz <gkurz@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       oleg@redhat.com, ebiederm@xmission.com, containers@lists.osdl.org,
-       roland@redhat.com, xemul@openvz.org
-Subject: Re: [RFC][PATCH 2/5] pid: Generalize task_active_pid_ns
-Message-ID: <20081204125850.GC31061@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
-	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-	Greg Kurz <gkurz@fr.ibm.com>, linux-kernel@vger.kernel.org,
-	oleg@redhat.com, ebiederm@xmission.com, containers@lists.osdl.org,
-	roland@redhat.com, xemul@openvz.org
-References: <20081126034242.GA23120@us.ibm.com> <20081126034528.GB23238@us.ibm.com> <20081127011738.GC13545@wavehammer.waldi.eu.org> <1227820765.5108.20.camel@bahia.kalilou.org> <20081201211518.GB15004@us.ibm.com> <20081202115729.GB1132@wavehammer.waldi.eu.org> <20081203074103.GA8487@us.ibm.com>
+	Thu, 4 Dec 2008 08:06:24 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/3] ftrace: use struct pid
+References: <20081204052638.425740534@goodmis.org>
+	<20081204052735.175697908@goodmis.org>
+Date: Thu, 04 Dec 2008 04:55:56 -0800
+In-Reply-To: <20081204052735.175697908@goodmis.org> (Steven Rostedt's message
+	of "Thu, 04 Dec 2008 00:26:40 -0500")
+Message-ID: <m11vwoumjn.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20081203074103.GA8487@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: No (on mx04.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 11:41:03PM -0800, Sukadev Bhattiprolu wrote:
-> Bastian Blank [bastian@waldi.eu.org] wrote:
-> | On Mon, Dec 01, 2008 at 01:15:18PM -0800, Sukadev Bhattiprolu wrote:
-> | > Greg Kurz [gkurz@fr.ibm.com] wrote:
-> | > | On Thu, 2008-11-27 at 02:17 +0100, Bastian Blank wrote:
-> | > | > On Tue, Nov 25, 2008 at 07:45:28PM -0800, Sukadev Bhattiprolu wrote:
-> | > | > > Currently task_active_pid_ns is not safe to call after a
-> | > | > > task becomes a zombie and exit_task_namespaces is called,
-> | > | > > as nsproxy becomes NULL.
-> | > | > Why do you need to be able to get the pid namespace from zombie
-> | > | > processes?
-> | > After exiting namespaces, the process notifies parent. With new changes
-> | > to signals (in this patchset), the signal code may need to determine
-> | > the namespace of sender (the exiting child in this case).
-> | So the parent of a process with a new pid namespace will never get a
-> | SIGCHLD?
-> I am wondering what I said that leads to that conclusion :-) If parent
-> has a handler the handler will be called as usual otherwise SIGCHLD
-> will be ignored.
+Steven Rostedt <rostedt@goodmis.org> writes:
 
-You said you need a way to check the namespace of a zombie process. The
-only signal a zombie can issue is the SIGCHLD to the parent.
+> From: Steven Rostedt <srostedt@redhat.com>
+>
+> Impact: clean up
+>
+> Eric Biederman suggested using the struct pid for filtering on
+> pids in the kernel. This patch is based off of a demonstration
+> of an implementation that Eric sent me in an email.
 
-> | What I read in the kernel source (kernel/signal.c:do_notify_parent,
-> | include/asm-generic/siginfo.h:CLD_EXITED) is that the exit signals
-> | (SIGCHLD) are describes as sent by the kernel. 
-> 
-> Yes. Are you suggesting a check like
-> 
-> 	if (!is_si_special(info) && !SI_FROMKERNEL(info)) ?
-> 		/* must be from user, safe to check ns */
+Please find_get_vpid and pid_vnr.  
 
-If "is_si_special(info) && SI_FROMKERNEL(info)" is true, there is no
-need to check anything. The double negations makes this not easier to
-read.
-
-Bastian
-
--- 
-Klingon phaser attack from front!!!!!
-100% Damage to life support!!!!
+Eric
