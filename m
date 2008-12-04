@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbYLDFwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbYLDGKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756070AbYLDFwi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 00:52:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYLDFw1
+	id S1756189AbYLDGKr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 01:10:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbYLDGK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 00:52:27 -0500
-Received: from mail.windriver.com ([147.11.1.11]:38038 "EHLO mail.wrs.com"
+	Thu, 4 Dec 2008 01:10:29 -0500
+Received: from mail.windriver.com ([147.11.1.11]:40282 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbYLDFw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 00:52:27 -0500
-Message-ID: <49376BFE.2010501@windriver.com>
-Date: Thu, 04 Dec 2008 13:34:54 +0800
+	id S1753205AbYLDGKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 01:10:23 -0500
+Message-ID: <49376FC1.1060701@windriver.com>
+Date: Thu, 04 Dec 2008 13:50:57 +0800
 From: Wang Liming <liming.wang@windriver.com>
 User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
@@ -25,21 +25,32 @@ CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        "Serge E. Hallyn" <serue@us.ibm.com>,
        Steven Rostedt <srostedt@redhat.com>
 Subject: Re: [PATCH 3/3] ftrace: add ability to only trace swapper tasks
-References: <20081204052638.425740534@goodmis.org> <20081204052735.362609481@goodmis.org>
-In-Reply-To: <20081204052735.362609481@goodmis.org>
+References: <20081204052638.425740534@goodmis.org> <20081204052735.362609481@goodmis.org> <49376BFE.2010501@windriver.com>
+In-Reply-To: <49376BFE.2010501@windriver.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Dec 2008 05:51:33.0911 (UTC) FILETIME=[5D09A270:01C955D4]
+X-OriginalArrivalTime: 04 Dec 2008 06:07:40.0781 (UTC) FILETIME=[9D5649D0:01C955D6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
- > /* set when tracing only a pid */
- > struct pid *ftrace_pid_trace;
- >+static struct pid * const ftrace_swapper_pid = (struct pid *)1;
+Wang Liming wrote:
+> Steven Rostedt wrote:
+>  > /* set when tracing only a pid */
+>  > struct pid *ftrace_pid_trace;
+>  >+static struct pid * const ftrace_swapper_pid = (struct pid *)1;
+> 
+> swapper pid is 1? not 0?
+hmm.. I skip "struct pid", please ignore this mail.
 
-swapper pid is 1? not 0?
 
+> 
+> 
+> Liming Wang
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Liming Wang
