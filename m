@@ -1,60 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbYLDNdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYLDNqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756621AbYLDNdU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 08:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754418AbYLDNdF
+	id S1755977AbYLDNqd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 08:46:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbYLDNqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 08:33:05 -0500
-Received: from verein.lst.de ([213.95.11.210]:58630 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754174AbYLDNdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 08:33:04 -0500
-Date: Thu, 4 Dec 2008 14:23:27 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Eric Sandeen <sandeen@sandeen.net>, Christoph Hellwig <hch@lst.de>,
-       Lachlan McIlroy <lachlan@sgi.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-Subject: Re: XFS breakage on m68k (was: Re: linux-next: Tree for December 3)
-Message-ID: <20081204132327.GA12971@lst.de>
-References: <20081203183602.c06f8c39.sfr@canb.auug.org.au> <Pine.LNX.4.64.0812040956370.10635@anakin> <20081204121330.GA18815@infradead.org> <20081204234603.b5a28cd6.sfr@canb.auug.org.au> <20081204125006.GA13411@infradead.org>
-Mime-Version: 1.0
+	Thu, 4 Dec 2008 08:46:23 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:32942 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753104AbYLDNqW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 08:46:22 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>, containers@lists.osdl.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] ftrace: use struct pid
+References: <20081204052638.425740534@goodmis.org>
+	<20081204052735.175697908@goodmis.org>
+	<m1d4g8un6b.fsf@frodo.ebiederm.org> <1228395378.13111.23.camel@nimitz>
+	<1228396022.13111.27.camel@nimitz>
+Date: Thu, 04 Dec 2008 05:40:00 -0800
+In-Reply-To: <1228396022.13111.27.camel@nimitz> (Dave Hansen's message of
+	"Thu, 04 Dec 2008 05:07:02 -0800")
+Message-ID: <m1prk8t5xr.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081204125006.GA13411@infradead.org>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: No (on mx04.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 04, 2008 at 07:50:06AM -0500, Christoph Hellwig wrote:
-> Yeah, but Niv fixed it up and the correct version is not in the xfs git
-> tree.
+Dave Hansen <dave@linux.vnet.ibm.com> writes:
 
-Hah, he noticed the bug but the wrong version got checked in anyway.
+> On Thu, 2008-12-04 at 04:56 -0800, Dave Hansen wrote:
+>> On Thu, 2008-12-04 at 04:42 -0800, Eric W. Biederman wrote:
+>> > 
+>> > > +static void clear_ftrace_pid_task(struct pid **pid)
+>> > > +{
+>> > > +     struct task_struct *p;
+>> > > +
+>> >         rcu_read_lock();
+>> > 
+>> > > +     do_each_pid_task(*pid, PIDTYPE_PID, p) {
+>> > > +             clear_tsk_trace_trace(p);
+>> > > +     } while_each_pid_task(*pid, PIDTYPE_PID, p);
+>> >         rcu_read_unlock()
+>> > 
+>> > > +     put_pid(*pid);
+>> > > +
+>> > > +     *pid = NULL;
+>> > > +}
+>> 
+>> Could we get away with sticking the rcu_read_{un}lock() inside those
+>> macros?  Those are going to get used in pretty high level code and we're
+>> allowed to nest rcu_read_lock().  No danger of deadlocks or lock
+>> inversions.
+>
+> Why don't any of the other users of do_each_pid_task() use
+> rcu_read_lock()?  They all seem to be under read_lock(&tasklist_lock)
+> (except one is under a write lock of the same).
 
-Here's the fix (for todays xfs tree):
+We probably should.  Historically read_lock(&tasklist_lock) implies
+rcu_read_lock().  And the tasklist lock is what we hold when it is safe.
 
--- 
+But if you look at find_vpid we should be holding just the rcu lock there.
 
-[XFS] Fix compile with CONFIG_COMPAT enabled
-
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: xfs/fs/xfs/linux-2.6/xfs_ioctl.h
-===================================================================
---- xfs.orig/fs/xfs/linux-2.6/xfs_ioctl.h	2008-12-04 14:19:32.000000000 +0100
-+++ xfs/fs/xfs/linux-2.6/xfs_ioctl.h	2008-12-04 14:19:38.000000000 +0100
-@@ -74,7 +74,7 @@ xfs_file_compat_ioctl(
- 	unsigned long		arg);
- 
- extern long
--xfs_file_compat_ioctl_invis(
-+xfs_file_compat_invis_ioctl(
- 	struct file		*file,
- 	unsigned int		cmd,
- 	unsigned long		arg);
+Eric
