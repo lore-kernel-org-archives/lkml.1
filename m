@@ -1,27 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbYLDJJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbYLDJLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757038AbYLDJJq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 04:09:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756668AbYLDJJT
+	id S1756861AbYLDJLa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 04:11:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYLDJLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 04:09:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45780 "EHLO mx3.mail.elte.hu"
+	Thu, 4 Dec 2008 04:11:16 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46130 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756510AbYLDJJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 04:09:16 -0500
-Date: Thu, 4 Dec 2008 10:09:00 +0100
+	id S1750773AbYLDJLN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 04:11:13 -0500
+Date: Thu, 4 Dec 2008 10:10:23 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dave Chinner <david@fromorbit.com>,
-       Dan =?iso-8859-1?B?Tm/p?= <dpn@isomerica.net>,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
-Subject: Re: Lockdep warning for iprune_mutex at shrink_icache_memory
-Message-ID: <20081204090900.GI32594@elte.hu>
-References: <20081125064357.5a4f1420@tuna> <20081126072625.GH6291@disturbed> <1227711779.4454.184.camel@twins> <20081126213454.GI6291@disturbed> <1227773115.4454.1208.camel@twins> <1228377618.19569.949.camel@twins>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Eric Biederman <ebiederm@xmission.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 3/3] ftrace: add ability to only trace swapper tasks
+Message-ID: <20081204091023.GJ32594@elte.hu>
+References: <20081204052638.425740534@goodmis.org> <20081204052735.362609481@goodmis.org> <20081204001803.598063f5.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1228377618.19569.949.camel@twins>
+In-Reply-To: <20081204001803.598063f5.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,44 +41,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Thu, 2008-11-27 at 09:05 +0100, Peter Zijlstra wrote:
-> > On Thu, 2008-11-27 at 08:34 +1100, Dave Chinner wrote:
-> > > Is changing the lock class dynamically possible/allowed?
-> > 
-> > Currently, no, but I'll see what I can do, it requires a bit of trickery
-> > to make that happen..
-> > 
-> > I'll let you know when I've sorted that out.
+> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 > 
-> Ok, that wasn't hard at all..
-> 
-> Dave, Christoph, can you have a play with this and post this patch along
-> with a potential user - I think it best if we don't merge this without
-> at least one user in tree :-)
-> 
-> ---
-> Subject: lockdep: change a held lock's class
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Thu Dec 04 08:34:56 CET 2008
-> 
-> Impact: introduce new lockdep API
-> 
-> Allow to change a held lock's class. Basically the same as the existing
-> code to change a subclass therefore reuse all that.
-> 
-> The XFS code will be able to use this to annotate their inode locking.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  include/linux/lockdep.h |   12 ++++++++++--
->  kernel/lockdep.c        |   24 +++++++++---------------
->  2 files changed, 19 insertions(+), 17 deletions(-)
+> What does this patch actually do?  Is swapper currently excluded from 
+> tracing for undisclosed reasons and this patch permits it to be traced? 
+> If so, why was swapper thus excluded?  Or am I totally off track?
 
-i've applied it to tip/core/locking, but it's just a new API without 
-really disturbing the current code - but it would be nice to know whether 
-it solves the XFS annotation problems.
+> > +static struct pid * const ftrace_swapper_pid = (struct pid *)1;
+> 
+> eh?
+
+all side-effects of getting rid of the integer based PID namespace and 
+replacing them with struct pid pointers.
 
 	Ingo
