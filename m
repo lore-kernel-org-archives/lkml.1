@@ -1,234 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYLDNMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYLDNOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756596AbYLDNMl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 08:12:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbYLDNMc
+	id S1756781AbYLDNOy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 08:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbYLDNOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 08:12:32 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41654 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbYLDNMb (ORCPT
+	Thu, 4 Dec 2008 08:14:45 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:26608 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754096AbYLDNOn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 08:12:31 -0500
-Date: Thu, 4 Dec 2008 08:12:27 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
-       Eric Biederman <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 3/3] ftrace: add ability to only trace swapper tasks
-In-Reply-To: <20081204001803.598063f5.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0812040803340.5240@gandalf.stny.rr.com>
-References: <20081204052638.425740534@goodmis.org> <20081204052735.362609481@goodmis.org> <20081204001803.598063f5.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 4 Dec 2008 08:14:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=a95NMm3FliiHAhEliwRV08VezIGJAXjx73h//+COQLfeAjMRxXDBhSu5xlYDCe4W2b
+         mv9KxOKEfX+ARlOkDDUDJA7RdCTJQCqazyDsHy6JthcLuLIC66ks7SxF4PXSYhVKcJpi
+         HF/EyB5fq5Vx0RGNvoHKXV5Xdz5jIDGyq/QgU=
+Message-ID: <cfd18e0f0812040514r45f8f74dh63be0d68567b8e60@mail.gmail.com>
+Date: Thu, 4 Dec 2008 08:14:41 -0500
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Edward Estabrook" <edward.estabrook.lkml@gmail.com>
+Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Documentatin for userspace DMA support
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+       "Greg KH" <gregkh@suse.de>, hjk@linutronix.de,
+       edward_estabrook@agilent.com
+In-Reply-To: <208aa0f00812032053w5efb99dbk94511b0f8c1f0925@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <208aa0f00812032053w5efb99dbk94511b0f8c1f0925@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Edward,
 
-On Thu, 4 Dec 2008, Andrew Morton wrote:
+A few small comments below
 
-> On Thu, 04 Dec 2008 00:26:41 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > Impact: New feature
-> > 
-> > This patch lets the swapper tasks of all CPUS be filtered by the
-> > set_ftrace_pid file.
-> 
-> "filtered" is one of those nasty words.  It is unclear whether the
-> filteree is included or excluded.
-> 
-> > If '0' is echoed into this file, then all the idle tasks (aka swapper)
-> > is flagged to be traced.  This affects all CPU idle tasks.
-> > 
-> 
-> s/is/are/
+On Wed, Dec 3, 2008 at 11:53 PM, Edward Estabrook
+<edward.estabrook.lkml@gmail.com> wrote:
+> From: Edward Estabrook <Edward_Estabrook@agilent.com>
+>
+> Here is a patch updating the Userspace IO documentation to
+> detail support to dynamically allocate and use coherent DMA
+> from userspace.  This patch applies against 2.6.28-rc6.
+>
+> The gist of this implementation is to overload uio's mmap
 
-My English is much better before midnight.
-But warning, it is worse before my first coffee. ;-)
+Sometimes you write "uio", sometimes "UIO".  Use just one?
 
-> 
-> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> 
-> What does this patch actually do?  Is swapper currently excluded from
-> tracing for undisclosed reasons and this patch permits it to be traced?
-> If so, why was swapper thus excluded?  Or am I totally off track?
+> functionality to allocate
+> and map a new DMA region on demand.  The bus-specific DMA address as returned by
+> dma_alloc_coherent() is made available to userspace in the 1st long
+> word
 
-Yes, it is excluded. For two reasons:
+Perhaps use a clearer term than "long word"?  Maybe '8 bytes'?
 
-1) you can not get to the swapper task using struct pid
-2) the swapper task is not part of the task link list. Well, the first
-  swapper task may be, but not the ones for other CPUS.
+> of the newly
+> created region (as well as through the conventional 'addr' file in sysfs).
+>
+> The kernel-api change is that passing an offset value of 0xFFFFF000UL to a uio
 
-In fork.c:
+s/api/API/
 
-	if (likely(p->pid)) {
-		[...]
-		if (thread_group_leader(p)) {
-			[...]
-			list_add_tail_rcu(&p->tasks, &init_task.tasks);
+> device's mmap() operation will dynamically allocate a DMA region.  This cannot
+> break existing code as the previous UIO code only allowed a maximum of 5
+> mappings.
+>
+> To allocate a DMA region you use the following:
+> /* Pass this magic number to mmap as offset to
+>  * dynamically allocate a chunk of memory */
+> #define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
+>
+> void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
+>                     fd, DMA_MEM_ALLOCATE_MMAP_OFFSET);
+> u_int64_t *addr = *(u_int64_t *) memory;
+>
+> where 'size' is the size in bytes of the region you want and fd is the
 
+s/fd/'fd'/  (consistent with 'size')
 
+> opened /dev/uioN file.
+>
+> Allocation occurs in page sized pieces by design to ensure that
 
-> 
-> > ---
-> >  kernel/trace/ftrace.c |   74 +++++++++++++++++++++++++++++++++++++++++-------
-> >  1 files changed, 63 insertions(+), 11 deletions(-)
-> > 
-> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> > index 10b1d7c..eb57dc1 100644
-> > --- a/kernel/trace/ftrace.c
-> > +++ b/kernel/trace/ftrace.c
-> > @@ -49,6 +49,7 @@ static int last_ftrace_enabled;
-> >  
-> >  /* set when tracing only a pid */
-> >  struct pid *ftrace_pid_trace;
-> > +static struct pid * const ftrace_swapper_pid = (struct pid *)1;
-> 
-> eh?
+s/page sized pieces/page-sized pieces/
 
-The swapper task has no pid structure, if we want to trace it, we
-need to find it outside the pid code. But other parts of ftrace use the
-ftrace_pid_trace to see if it it should only trace the tasks that have
-the trace bit set. We have:
-
-	if (ftrace_pid_trace)
-		/* only trace this task if it is marked to trace */
-
-But, I get your point. That line deserves a comment ;-)
+> buffers are page-aligned.
+>
+> Memory is released when the uio_unregister_device() is called.
 
 
-> 
-> >  /* Quick disabling of function tracer. */
-> >  int function_trace_stop;
-> > @@ -1678,7 +1679,9 @@ ftrace_pid_read(struct file *file, char __user *ubuf,
-> >  	char buf[64];
-> >  	int r;
-> >  
-> > -	if (ftrace_pid_trace)
-> > +	if (ftrace_pid_trace == ftrace_swapper_pid)
-> > +		r = sprintf(buf, "swapper tasks\n");
-> > +	else if (ftrace_pid_trace)
-> >  		r = sprintf(buf, "%u\n", pid_nr(ftrace_pid_trace));
-> >  	else
-> >  		r = sprintf(buf, "no pid\n");
-> > @@ -1686,19 +1689,43 @@ ftrace_pid_read(struct file *file, char __user *ubuf,
-> >  	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
-> >  }
-> >  
-> > -static void clear_ftrace_pid_task(struct pid **pid)
-> > +static void clear_ftrace_swapper(void)
-> >  {
-> >  	struct task_struct *p;
-> > +	int cpu;
-> >  
-> > -	do_each_pid_task(*pid, PIDTYPE_PID, p) {
-> > +	get_online_cpus();
-> > +	for_each_online_cpu(cpu) {
-> > +		p = idle_task(cpu);
-> >  		clear_tsk_trace_trace(p);
-> > -	} while_each_pid_task(*pid, PIDTYPE_PID, p);
-> > -	put_pid(*pid);
-> > +	}
-> > +	put_online_cpus();
-> > +}
-> >  
-> > -	*pid = NULL;
-> > +static void set_ftrace_swapper(void)
-> > +{
-> > +	struct task_struct *p;
-> > +	int cpu;
-> > +
-> > +	get_online_cpus();
-> > +	for_each_online_cpu(cpu) {
-> > +		p = idle_task(cpu);
-> > +		set_tsk_trace_trace(p);
-> > +	}
-> > +	put_online_cpus();
-> >  }
-> >  
-> > -static void set_ftrace_pid_task(struct pid *pid)
-> > +static void clear_ftrace_pid(struct pid *pid)
-> > +{
-> > +	struct task_struct *p;
-> > +
-> > +	do_each_pid_task(pid, PIDTYPE_PID, p) {
-> > +		clear_tsk_trace_trace(p);
-> > +	} while_each_pid_task(pid, PIDTYPE_PID, p);
-> > +	put_pid(pid);
-> > +}
-> 
-> What locking does this traversal need, and does this function have it?
+Cheers,
 
-No idea, I only did what Eric suggested.
+Michael
 
-And people wonder why we still stick to "task->pid"
+> Signed-off-by: Edward Estabrook <Edward_Estabrook@agilent.com>
+> ---
+> --- linux-2.6.28-rc6/Documentation/DocBook/uio-howto.tmpl.orig  2008-12-03
+> 12:03:43.000000000 -0800
+> +++ linux-2.6.28-rc6/Documentation/DocBook/uio-howto.tmpl       2008-12-03
+> 13:11:53.000000000 -0800
+> @@ -42,6 +42,12 @@ GPL version 2.
+>
+>  <revhistory>
+>        <revision>
+> +       <revnumber>0.6</revnumber>
+> +       <date>2008-12-03</date>
+> +       <authorinitials>ee</authorinitials>
+> +       <revremark>Added description of DMA control.</revremark>
+> +       </revision>
+> +       <revision>
+>        <revnumber>0.5</revnumber>
+>        <date>2008-05-22</date>
+>        <authorinitials>hjk</authorinitials>
+> @@ -284,11 +290,17 @@ interested in translating it, please ema
+>        require access to more than one PCI memory region in a driver.
+>  </para>
+>  <para>
+> +       Each UIO device can also dynamically allocate coherent DMA
+> +       memory regions and map these to userspace.  Once created they
+> +       can be mapped like any other UIO memory region.
+> +</para>
+> +<para>
+>        Each mapping has its own directory in sysfs, the first mapping
+>        appears as <filename>/sys/class/uio/uioX/maps/map0/</filename>.
+>        Subsequent mappings create directories <filename>map1/</filename>,
+> -       <filename>map2/</filename>, and so on. These directories will only
+> -       appear if the size of the mapping is not 0.
+> +       <filename>map2/</filename>, and so on. These directories will
+> +       appear even if the size of the mapping is 0 to accommodate dynamically
+> +       created DMA mappings.
+>  </para>
+>  <para>
+>        Each <filename>mapX/</filename> directory contains two read-only files
+> @@ -318,6 +330,24 @@ interested in translating it, please ema
+>  offset = N * getpagesize();
+>  </programlisting>
+>
+> +<para>
+> +       From userspace a DMA region may be dynamically allocated and mapped
+> +       via the <function>mmap()</function> call by specifying the size of the
+> +       region in bytes in the <varname>length</varname> parameter and setting
+> +       <varname>offset = 0xFFFFF000</varname>.
+> +</para>
+> +<para>
+> +       The bus-specific DMA address as required to configure hardware DMA
+> +       registers will be stored in the first long word of the resulting mapped
+> +       region.
+> +</para>
+> +<programlisting format="linespecific">
+> +#define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
+> +void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
+> +                    fd, DMA_MEM_ALLOCATE_MMAP_OFFSET);
+> +u_int64_t *addr = *(u_int64_t *) memory;
+> +</programlisting>
+> +
+>  </sect1>
+>  </chapter>
+>
+> @@ -572,6 +602,50 @@ to set up sysfs files for this mapping.
+>        </para>
+>  </sect1>
+>
+> +<sect1 id="dma_region_mmap">
+> +<title>Allocating DMA region with mmap()</title>
+> +       <para>
+> +       To allocate and map a DMA memory region you use
+> +       use <function>mmap()</function>.  You may create as
+> +       many regions as system resources allow by repeated use of
+> +       <function>mmap()</function>.
+> +       </para>
+> +       <para>
+> +       Specify the size of the desired region, in bytes, in the
+> +       <varname>length</varname> parameter and set
+> +       <varname>offset = 0xFFFFF000</varname>.  The region size will
+> +       be rounded up to a multiple of page size to ensure proper
+> +       alignment.
+> +       </para>
+> +       <para>
+> +       The bus-specific DMA address is stored in the first long word of the
+> +       resulting mapped region.  The newly assigned memory index N is
+> +       returned in the second long word of the resulting mapped region.  This
+> +       index is only required if the userspace driver needs to unmap and
+> +       then later remap the DMA region as the single call to
+> +       <function>mmap()</function> is sufficient to both allocate and map the
+> +       region.
+> +       </para>
+> +       <para>
+> +       Since every memory mapping has its own directory in sysfs
+> +       <filename>/sys/class/uio/uioX/maps/mapN/</filename> will be created
+> +       where N is the dynamically generated index of the mapping just
+> +       allocated.
+> +       </para>
+> +       <para>
+> +       Dynamically allocated DMA regions remain available for use
+> +       until <function>uio_unregister_device()</function> is called, at
+> +       which point the memory is released.
+> +       </para>
+> +<programlisting format="linespecific">
+> +       #define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
+> +       void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
+> +                            fd, DMA_MEM_ALLOCATE_MMAP_OFFSET);
+> +       u_int64_t *addr = *(u_int64_t *) memory;
+> +</programlisting>
+> +
+> +</sect1>
+> +
+>  <sect1 id="wait_for_interrupts">
+>  <title>Waiting for interrupts</title>
+>        <para>
+> @@ -583,7 +657,7 @@ to set up sysfs files for this mapping.
+>        attention because an error occured.
+>        </para>
+>        <para>
+> -       <filename>/dev/uioX</filename> is a read-only file. A
+> +       <filename>/dev/uioX</filename> is a read-write file. A
+>        <function>read()</function> will always block until an
+>        interrupt occurs. There is only one legal value for the
+>        <varname>count</varname> parameter of
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-api" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
--- Steve
 
-> 
-> > +static void set_ftrace_pid(struct pid *pid)
-> >  {
-> >  	struct task_struct *p;
-> >  
-> > @@ -1707,6 +1734,24 @@ static void set_ftrace_pid_task(struct pid *pid)
-> >  	} while_each_pid_task(pid, PIDTYPE_PID, p);
-> >  }
-> >  
-> > +static void clear_ftrace_pid_task(struct pid **pid)
-> > +{
-> > +	if (*pid == ftrace_swapper_pid)
-> > +		clear_ftrace_swapper();
-> > +	else
-> > +		clear_ftrace_pid(*pid);
-> > +
-> > +	*pid = NULL;
-> > +}
-> > +
-> > +static void set_ftrace_pid_task(struct pid *pid)
-> > +{
-> > +	if (pid == ftrace_swapper_pid)
-> > +		set_ftrace_swapper();
-> > +	else
-> > +		set_ftrace_pid(pid);
-> > +}
-> > +
-> >  static ssize_t
-> >  ftrace_pid_write(struct file *filp, const char __user *ubuf,
-> >  		   size_t cnt, loff_t *ppos)
-> > @@ -1737,11 +1782,18 @@ ftrace_pid_write(struct file *filp, const char __user *ubuf,
-> >  		clear_ftrace_pid_task(&ftrace_pid_trace);
-> >  
-> >  	} else {
-> > -		pid = find_get_pid(val);
-> > +		/* swapper task is special */
-> > +		if (!val) {
-> > +			pid = ftrace_swapper_pid;
-> > +			if (pid == ftrace_pid_trace)
-> > +				goto out;
-> > +		} else {
-> > +			pid = find_get_pid(val);
-> >  
-> > -		if (pid == ftrace_pid_trace) {
-> > -			put_pid(pid);
-> > -			goto out;
-> > +			if (pid == ftrace_pid_trace) {
-> > +				put_pid(pid);
-> > +				goto out;
-> > +			}
-> >  		}
-> >  
-> >  		if (ftrace_pid_trace)
-> 
-> 
-> 
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
