@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYLDO3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbYLDOai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbYLDO3W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 09:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757970AbYLDO3H
+	id S1758010AbYLDOai (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 09:30:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbYLDOa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 09:29:07 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51637 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754524AbYLDO3F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 09:29:05 -0500
-Date: Thu, 4 Dec 2008 09:29:04 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <srostedt@redhat.com>, containers@lists.osdl.org,
-       Ingo Molnar <mingo@elte.hu>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3] ftrace: use struct pid
-In-Reply-To: <1228396022.13111.27.camel@nimitz>
-Message-ID: <alpine.DEB.1.10.0812040925390.5240@gandalf.stny.rr.com>
-References: <20081204052638.425740534@goodmis.org>  <20081204052735.175697908@goodmis.org> <m1d4g8un6b.fsf@frodo.ebiederm.org>  <1228395378.13111.23.camel@nimitz> <1228396022.13111.27.camel@nimitz>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 4 Dec 2008 09:30:27 -0500
+Received: from gherkin.frus.com ([192.158.254.49]:58848 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752287AbYLDOa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 09:30:26 -0500
+Date: Thu, 4 Dec 2008 08:30:23 -0600
+From: Bob Tracy <rct@gherkin.frus.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] SCSI fixes for 2.6.28-rc7
+Message-ID: <20081204143023.GA2240@gherkin.frus.com>
+References: <1228237136.3331.17.camel@localhost.localdomain> <20081202192834.GA26259@gherkin.frus.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081202192834.GA26259@gherkin.frus.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 4 Dec 2008, Dave Hansen wrote:
-
-> On Thu, 2008-12-04 at 04:56 -0800, Dave Hansen wrote:
-> > On Thu, 2008-12-04 at 04:42 -0800, Eric W. Biederman wrote:
-> > > 
-> > > > +static void clear_ftrace_pid_task(struct pid **pid)
-> > > > +{
-> > > > +     struct task_struct *p;
-> > > > +
-> > >         rcu_read_lock();
-> > > 
-> > > > +     do_each_pid_task(*pid, PIDTYPE_PID, p) {
-> > > > +             clear_tsk_trace_trace(p);
-> > > > +     } while_each_pid_task(*pid, PIDTYPE_PID, p);
-> > >         rcu_read_unlock()
-> > > 
-> > > > +     put_pid(*pid);
-> > > > +
-> > > > +     *pid = NULL;
-> > > > +}
-> > 
-> > Could we get away with sticking the rcu_read_{un}lock() inside those
-> > macros?  Those are going to get used in pretty high level code and we're
-> > allowed to nest rcu_read_lock().  No danger of deadlocks or lock
-> > inversions.
+On Tue, Dec 02, 2008 at 01:28:34PM -0600, Bob Tracy wrote:
+> On Tue, Dec 02, 2008 at 10:58:56AM -0600, James Bottomley wrote:
+> > This is quite a hefty update for so late. It includes a slew of block
+> > timer related fixes (we moved to using block timers when the 2.6.28
+> > merge window opened).  The bad news is that I still don't think we have
+> > all the block timer related bugs caught and fixed.  There's also a slew
+> > of zfcp (s390 driver) fixes and a few miscellaneous others (including
+> > another regression bugzilla fix, the hang in starved list processing).
 > 
-> Why don't any of the other users of do_each_pid_task() use
-> rcu_read_lock()?  They all seem to be under read_lock(&tasklist_lock)
-> (except one is under a write lock of the same).
+> I'll give this a try.  None of the 2.6.28-rcX versions I've tried have
+> lasted more than a few hours at best before panicing with a block layer
+> timeout.  My test system uses the aic7xxx driver with a 2930U2 adapter.
+> I didn't report the regression relative to 2.6.27 because I figured
+> something this major was going to get caught without another "me too"
+> report that I was too busy to generate and provide the necessary
+> diagnostic and followup on anyway :-).
 
-Well, if the pid hashes are traversal safe (rcu style), then we only worry 
-about a node or task being freed. I'm assuming that the node is protected 
-via RCU as tasks are, then using only rcu_read_lock should be sufficient.
+2.6.28-rc7 without the SCSI update panics as the prior -rcX kernels did.
+With the update applied, life is good (so far).  I can at least type
+"sync" at the command prompt and get away with it :-).  With a current
+uptime of less than 5 minutes, I need to let the patched -rc7 soak a
+bit.  Otherwise, I'm willing to call it "good."
 
--- Steve
-
+-- 
+------------------------------------------------------------------------
+Bob Tracy          |  "I was a beta tester for dirt.  They never did
+rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
+------------------------------------------------------------------------
