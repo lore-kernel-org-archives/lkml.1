@@ -1,93 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759575AbYLDTMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbYLDTM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759575AbYLDTMk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 14:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758261AbYLDTMP
+	id S1759285AbYLDTM5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 14:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759527AbYLDTMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 14:12:15 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:45938 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757572AbYLDTMN (ORCPT
+	Thu, 4 Dec 2008 14:12:34 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:59246 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759504AbYLDTMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 14:12:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=muUjJhAo/6xiZmJLBL0p/itNABlqjo+977q61IkwDex/eD/dElBgAVp8OaVWEMrSHo
-         1O01O4Hc4+ix0CK+qIVUWAroW6q3hH/OCwl1/twxM2gu4Dw+YYdaRjDqSarVIePGyAwS
-         0wf4CYPk1Ybi9Owlt1YjHb2/pEbwSpb+UFTv8=
-Message-ID: <cfd18e0f0812041112u23843f00rad92fba8badb43c6@mail.gmail.com>
-Date: Thu, 4 Dec 2008 14:12:11 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: fsync.2 does not mention error handling
-Cc: linux-doc@vger.kernel.org, "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081202120645.GA5327@elf.ucw.cz>
+	Thu, 4 Dec 2008 14:12:33 -0500
+Message-ID: <49382B85.1020803@zytor.com>
+Date: Thu, 04 Dec 2008 11:12:05 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081202120645.GA5327@elf.ucw.cz>
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Jody McIntyre <scjody@sun.com>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com
+Subject: Re: [PATCH] Fix compile error in arch/x86/kernel/syscall_64.c
+References: <20081202215154.GL29919@clouds> <200812041533.00736.arnd@arndb.de>
+In-Reply-To: <200812041533.00736.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel,
+Arnd Bergmann wrote:
+> On Tuesday 02 December 2008, Jody McIntyre wrote:
+>> 1965aae3c98397aad957412413c07e97b1bd4e64 broke compilation on one of my
+>> systems:
+>>
+>>   CC      arch/x86/kernel/syscall_64.o
+>> arch/x86/kernel/syscall_64.c:27: error: array index in initializer exceeds array bounds
+>> arch/x86/kernel/syscall_64.c:27: error: (near initialization for ‘sys_call_table’)
+>> arch/x86/kernel/syscall_64.c:27: warning: excess elements in array initializer
+>> arch/x86/kernel/syscall_64.c:27: warning: (near initialization for ‘sys_call_table’)
+>> make[1]: *** [arch/x86/kernel/syscall_64.o] Error 1
+>> make: *** [arch/x86/kernel/syscall_64.o] Error 2
+>>
+>> Reverting only the parts of the commit that change ASM_X86__UNISTD_64_H
+>> to _ASM_X86_UNISTD_64_H fixes the problem.  Patch below.
+>>
+>> I have no idea what's going on here.  Compiler bug?
+> 
+> Maybe you have stale header files in include/asm-x86/? That sometimes
+> happens if you git-checkout -f or git-reset --hard.
+> 
 
-On Tue, Dec 2, 2008 at 7:06 AM, Pavel Machek <pavel@suse.cz> wrote:
->
-> fsync() transfers ("flushes") all modified in-core data of (i.e.,
-> modified buffer cache pages for) the file referred to by the file
-> descriptor fd to the disk device (or other permanent storage device)
-> where that file resides.  The call blocks until the device reports
-> that the transfer has completed.  It also flushes metadata information
-> associated with the file (see stat(2)).
->
-> Calling fsync() does not necessarily ensure that the entry in the
-> directory containing the file has also reached disk.  For that an
-> explicit fsync() on a file descriptor for the directory is also
-> needed.
->
-> ...
-> RETURN VALUE         top
->
-> On success, these system calls return zero.  On error, -1 is
-> returned, and errno is set appropriately.
->
->
-> --------------
->
->
-> I guess it should mention that any errors during fsync are only
-> mentioned to the first process calling it... which means that if you
->
-> write file
-> fsync file
-> fsync .
->
-> ... and someone else does "fsync ." in the meantime, you may get
-> success when in fact directory entry of file is not written to the
-> disk.
+"git cleanup" should be used to catch that classes of problems.  I did
+notice that the include file trace used include/asm not
+arch/x86/include/asm, which to me implies something like this.
 
-Could you provide some pointers to supporting information / mail
-threads, relating to this?
+I just tried, and when I make a .i file on a clean tree I get:
 
-Also, I'm still not 100% clear what you are saying above.  Do you mean
-that in this scenario, an error may occur but the first caller above
-won't know of it?  (It would help if you could write a few sentences
-that you think should be in the man page.)
+# 10 "<full path>/arch/x86/include/asm/posix_types_64.h"
 
-Cheers,
+not
 
-Michael
+# 10 "include/asm/posix_types_64.h"
 
+as the posted .i file has.
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+	-hpa
