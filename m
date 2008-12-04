@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYLDMdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYLDMpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbYLDMdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 07:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYLDMdJ
+	id S1754534AbYLDMpJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 07:45:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbYLDMo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 07:33:09 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:29517 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751387AbYLDMdH (ORCPT
+	Thu, 4 Dec 2008 07:44:56 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35713 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751756AbYLDMoz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 07:33:07 -0500
-Subject: Re: RFC: Latency reducing TCP modifications for thin-stream
- interactive applications
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: Andreas Petlund <apetlund@simula.no>
-Cc: linux-kernel@vger.kernel.org,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-In-Reply-To: <492EA31D.8000704@simula.no>
-References: <492EA31D.8000704@simula.no>
-Content-Type: text/plain
-Date: Thu, 04 Dec 2008 04:15:50 -0800
-Message-Id: <1228392950.9704.4.camel@sven.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Dec 2008 07:44:55 -0500
+Message-ID: <44799.10.75.179.61.1228394692.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20081204200037.63ff03c9.nishimura@mxp.nes.nec.co.jp>
+References: <20081203134718.6b60986f.kamezawa.hiroyu@jp.fujitsu.com><20081203141423.6f747990.kamezawa.hiroyu@jp.fujitsu.com>
+    <20081204200037.63ff03c9.nishimura@mxp.nes.nec.co.jp>
+Date: Thu, 4 Dec 2008 21:44:52 +0900 (JST)
+Subject: Re: [Experimental][PATCH  
+     21/21]memcg-new-hierarchical-reclaim.patch
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       nishimura@mxp.nes.nec.co.jp
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
+MIME-Version: 1.0
+Content-Type: text/plain;charset=us-ascii
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-27 at 14:39 +0100, Andreas Petlund wrote:
+Daisuke Nishimura said:
+> On Wed, 3 Dec 2008 14:14:23 +0900, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> Implement hierarchy reclaim by cgroup_id.
 
-Hi -
+>> +	rcu_read_lock();
+>> +	if (!root_mem->use_hierarchy) {
+>> +		spin_lock(&root_mem->reclaim_param_lock);
+>> +		root_mem->scan_age++;
+>> +		spin_unlock(&root_mem->reclaim_param_lock);
+>> +		css_get(&root_mem->css);
+>> +		goto out;
+>>  	}
+>>
+> I think you forgot "ret = root_mem".
+> I got NULL pointer dereference BUG in my test(I've not tested
+> use_hierarchy case yet).
+>
+yes...thank you for catching. will fix.
 
-Just a minor nit (trying your patch on a 2.6.22 Kernel):
-
-These little white space tweaks are to be avoided, adding to the patch
-size unnecessarily.
-
-Do you have a version against 2.6.28, or Linux-tip?
-
-Regards,
-
-Sven
-
->                 }
-> -
-> +               
->                 /* Initial outgoing SYN's get put onto the write_queue
->                  * just like anything else we transmit.  It is not
->                  * true data, and if we misinform our callers that
-> @@ -2479,14 +2585,14 @@
->                         acked |= FLAG_SYN_ACKED;
->                         tp->retrans_stamp = 0;
->                 }
-> -
-> +               
->                 /* MTU probing checks */
->                 if (icsk->icsk_mtup.probe_size) {
->                         if (!after(tp->mtu_probe.probe_seq_end,
-> TCP_SKB_CB(skb)->end_seq)) {
->                                 tcp_mtup_probe_success(sk, skb);
->                         }
->                 }
-> -
-> +               
->                 if (sacked) {
->                         if (sacked & TCPCB_RETRANS) {
->                                 if (sacked & TCPCB_SACKED_RETRANS)
-> @@ -2510,24 +2616,32 @@
+-Kame
 
