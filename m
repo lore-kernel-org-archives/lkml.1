@@ -1,83 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757234AbYLDTWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbYLDT2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757234AbYLDTWa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 14:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754993AbYLDTWT
+	id S1756399AbYLDT2f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 14:28:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbYLDT2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 14:22:19 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53471 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753527AbYLDTWT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 14:22:19 -0500
-Date: Thu, 4 Dec 2008 13:24:12 -0600
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
-Message-ID: <20081204192412.GA22390@hallyn.com>
-References: <cover.1228253618.git.zohar@linux.vnet.ibm.com> <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com> <20081203123021.GA30035@infradead.org> <1228328323.2821.30.camel@localhost.localdomain> <20081203182300.GA31203@infradead.org> <1228342655.2821.64.camel@localhost.localdomain> <20081204130949.GA18196@infradead.org>
+	Thu, 4 Dec 2008 14:28:22 -0500
+Received: from mail.gmx.net ([213.165.64.20]:43330 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753906AbYLDT2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 14:28:21 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+HCTls2dSHyY1tC/gaUkx/9wI/cD5E1yrdEy++CB
+	XfeZ4vqh1sYGMp
+Date: Thu, 4 Dec 2008 20:28:33 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Dan Williams <dan.j.williams@intel.com>
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       maciej.sosnowski@intel.com, hskinnemoen@atmel.com,
+       nicolas.ferre@atmel.com
+Subject: Re: [PATCH 03/13] dmaengine: up-level reference counting to the
+ module level
+In-Reply-To: <e9c3a7c20812041051l44bd8086o97c12d77a116f62@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0812041959530.8851@axis700.grange>
+References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com> 
+ <20081114213432.32354.2427.stgit@dwillia2-linux.ch.intel.com> 
+ <Pine.LNX.4.64.0812041746400.5079@axis700.grange>
+ <e9c3a7c20812041051l44bd8086o97c12d77a116f62@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081204130949.GA18196@infradead.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Christoph Hellwig (hch@infradead.org):
-> On Wed, Dec 03, 2008 at 05:17:35PM -0500, Mimi Zohar wrote:
-> > > I have a bit of a problem parsing the above, and it certainly doesn't
-> > > look like a justification for keeping all that unused code around.
-> > 
-> > The purpose of LIM is to provide an integrity infrastructure to support 
-> > different types of integrity data.  IMA implements both the LIM
-> > API for it's own internal use, and exports it for others to call.
-> > 
-> > As Dave Safford pointed out in http://lkml.org/lkml/2008/11/17/362,
-> > there are other projects that want to add differently structured
-> > measurements to the TPM measurement list.  The template abstraction is
-> > critical to allowing these differently formatted messages to be added to
-> > the list.
+On Thu, 4 Dec 2008, Dan Williams wrote:
+
+> On Thu, Dec 4, 2008 at 9:56 AM, Guennadi Liakhovetski
+> <g.liakhovetski@gmx.de> wrote:
+> >> +
+> >> +     /* try to grab channels */
+> >> +     list_for_each_entry_safe(device, _d, &dma_device_list, global_node)
+> >> +             list_for_each_entry(chan, &device->channels, device_node) {
+> >> +                     err = dma_chan_get(chan);
+> >
+> > Dan, could you please explain this: dma_chan_get() takes a reference on
+> > the channel _and_ calls .device_alloc_chan_resources() on first invocation
+> > for a specific channel. I now see three locations in dmaengine.c, where
+> > dma_chan_get() is called: in dma_request_channel() - logical, but also in
+> > dmaengine_get() and dma_async_device_register(), and these latter two I
+> > don't understand. I do not understand why we have to grab references and
+> > allocate resources for all (public) channels on all controllers in the
+> > system if someone just called dmaengine_get()?
 > 
-> I think we're talking past each other.
+> Consider the case where a subsystem that consumes engines like
+> async_tx or net_dma loads before engines are available in the system.
+> They will have taken a reference against dmaengine, but calls to
+> dma_find_channel will return NULL.  Once a channel driver is loaded
+> dma_find_channel() can start returning results, and it is at this
+> point that resources must be allocated and the backing module pinned.
+> So dmaengine_get() means "I am interested in offloading stuff, if you
+> see an offload resource grab it and prep it so I can discover it with
+> dma_find_channel()".
+
+Ok, but why not postpone calling .device_alloc_chan_resources() until a 
+channel is _found_? Calling it for all channels just because one client 
+has once called dmaengine_get() and _probably_ will poll if any channels 
+become available - doesn't it look like an overkill?
+
+> >> @@ -420,6 +443,19 @@ int dma_async_device_register(struct dma_device *device)
+> >>       }
+> >>
+> >>       mutex_lock(&dma_list_mutex);
+> >> +     list_for_each_entry(chan, &device->channels, device_node) {
+> >> +             /* if clients are already waiting for channels we need to
+> >> +              * take references on their behalf
+> >> +              */
+> >> +             if (dmaengine_ref_count && dma_chan_get(chan) == -ENODEV) {
+> >> +                     /* note we can only get here for the first
+> >> +                      * channel as the remaining channels are
+> >> +                      * guaranteed to get a reference
+> >> +                      */
+> >
+> > This is the second location - where and how are clients waiting for
+> > channels? In the old implementation clients had notification callbacks,
+> > which were called as new channels became available. Now clients are gone,
+> > so, what is meant here?
+> >
 > 
-> In integrity.h there are two operation vectors defines:
-> 
->  - struct integrity_operations delcares the operations called from the
->    VFS.  This one is actually used.  While I don't agree to Dave's
->    argument, because we don't put bloat in just because people might
->    eventually some day use it when they are in the right mood and the
->    sun shines, thisn't isn't the one I'm talking about in this thread.
->  - struct template_operations on the others is not only really badly
->    named for appearing in a global header but also not used in a
->    meaningfull way.  There is one single instace of it,
->    ima_template_ops, and while there are five helpers added in the
->    second patch that use it (integrity_collect_measurement,
->    integrity_appraise_measurement, integrity_store_measurement,
->    integrity_store_template, integrity_must_measure) none of them
->    is used at all during the patch series.  There are two direct
->    uses of these template added in the third path, to implement the
->    show operations for the "binary_runtime_measurements" and
->    "ascii_runtime_measurements" files ins securityfs, but given that
->    those are inside ima there no reason for the indirection at all.
+> The assumption is that mem-to-mem offload clients poll dma_find_channel().
 
-Yeah I can definately see that.
+Hm, interesting, so that's why you want dma_find_channel() as light-weight 
+as possible?
 
-Mimi, you used to have another template (I thought) which just tracked
-security_ops to try and prevent subversion of the LSM hooks.  Or something like
-that.  That was a separate template_ops, right?  Can you post that again?  That
-might answer both Christoph's query about the usefulness of the indirection,
-and Dave's question about "how could I use this, anyway".
-
-If you do repost it, please be very clear about what it is expected
-to do/protect against, and how, using no acronyms which you don't
-define on first use :)
-
-thanks,
--serge
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
