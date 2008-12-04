@@ -1,37 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbYLDBGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbYLDBGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757556AbYLDBGi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 20:06:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbYLDBGJ
+	id S1758142AbYLDBGx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 20:06:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757388AbYLDBGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 20:06:09 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59239 "EHLO mx1.redhat.com"
+	Wed, 3 Dec 2008 20:06:31 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59255 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754259AbYLDBGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 20:06:08 -0500
+	id S1757354AbYLDBG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 20:06:29 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       rnalumasu@gmail.com
-Subject: Re: do_wait() vs do_notify_parent_cldstop() theoretical race?
-In-Reply-To: Oleg Nesterov's message of  Sunday, 23 November 2008 22:55:11 +0100 <20081123215511.GB9097@redhat.com>
-References: <200811212015.mALKFMs4019558@imap1.linux-foundation.org>
-	<20081123213929.GA9097@redhat.com>
-	<20081123215511.GB9097@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: prasad@linux.vnet.ibm.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>, <mingo@elte.hu>,
+       <jason.wessel@windriver.com>, <avi@qumranet.com>,
+       <richardj_moore@uk.ibm.com>
+Subject: Re: [RFC Patch 6/9] Use virtual debug registers in process/thread
+ handling code
+In-Reply-To: Alan Stern's message of  Saturday, 18 October 2008 11:34:56 -0400 <Pine.LNX.4.44L0.0810181123220.1469-100000@netrider.rowland.org>
+References: <20081018000829.519111544CB@magilla.localdomain>
+	<Pine.LNX.4.44L0.0810181123220.1469-100000@netrider.rowland.org>
 X-Fcc: ~/Mail/linus
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20081204010548.90F91FC053@magilla.sf.frob.com>
-Date: Wed,  3 Dec 2008 17:05:48 -0800 (PST)
+X-Windows: simplicity made complex.
+Message-Id: <20081204010559.AAB5DFC053@magilla.sf.frob.com>
+Date: Wed,  3 Dec 2008 17:05:59 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I guess.  There might well be something in there implicitly that's actually
-a memory barrier already.  But sounds like that should use set_current_state().
+> > Hmm.  The 64-bit version of __switch_to does the current change much
+> > earlier, before __switch_to_xtra and math_state_restore.  I wonder if the
+> > 32-bit version could change to match.  I can't see what in __switch_to_xtra
+> > would care either way, though I may be overlooking something.  Ingo?
+> 
+> Would it be better to move __switch_to_xtra down below the change to 
+> current, rather than moving the change to current up above 
+> __switch_to_xtra?
+
+I can't see that anything else in __switch_to_xtra cares either way.
 
 
 Thanks,
 Roland
+
