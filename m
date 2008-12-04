@@ -1,108 +1,332 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbYLDUUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756913AbYLDUWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756926AbYLDUUR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 15:20:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbYLDUUB
+	id S1756913AbYLDUWP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 15:22:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbYLDUV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 15:20:01 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:40984 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752627AbYLDUUA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 15:20:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=JgTB7Ccig81hXFUJ0Ba4KAmfk09ShlVNSnUTzs4QQFjZDhfyWP8pgFyR1B6F9KqASb
-         cWtsj8hfdcnatAJT59Q/XONc2d0m/Lt1ZUeLSROWARPtpR2lks42CK6UaFPBvWSAFT59
-         OWVMFFkuwGjj16IoO/6xUN8RXRXq4CFUoGd9o=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: vanilla kernels hang randomly under Fedora 10 on system with Radeon card
-Date: Thu, 4 Dec 2008 21:18:17 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rc6-next-20081128; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Benny Amorsen <benny+usenet@amorsen.dk>
-References: <200812012342.32575.bzolnier@gmail.com> <200812040107.36616.bzolnier@gmail.com> <200812042055.13731.bzolnier@gmail.com>
-In-Reply-To: <200812042055.13731.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200812042118.17921.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 4 Dec 2008 15:21:58 -0500
+Received: from igw1.br.ibm.com ([32.104.18.24]:44970 "EHLO igw1.br.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753919AbYLDUV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 15:21:56 -0500
+Subject: Re: [PATCH 1/6] integrity: TPM internel kernel interface
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>,
+       Rajiv Andrade <srajiv@br.ibm.com>
+In-Reply-To: <1228256380.2971.176.camel@nimitz>
+References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
+	 <1e02b363572908a21f67ff8abbf2b10190a4f6a6.1228253618.git.zohar@linux.vnet.ibm.com>
+	 <1228256380.2971.176.camel@nimitz>
+Content-Type: text/plain
+Date: Thu, 04 Dec 2008 18:21:33 -0200
+Message-Id: <1228422093.19683.66.camel@blackbox>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 04 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> > On Wednesday 03 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> > > On Tuesday 02 December 2008, Dave Airlie wrote:
-> > > > On Tue, Dec 2, 2008 at 8:42 AM, Bartlomiej Zolnierkiewicz
-> > > > <bzolnier@gmail.com> wrote:
-> > > > >
-> > > > > Hi,
-> > > > >
-> > > > > After Fedora 9 -> Fedora 10 upgrade vanilla kernels which previously
-> > > > > worked fine (next-20081128 and next-20081121) started to hang randomly
-> > > > > on my Pentium M / 855PM / RV350 laptop.  Since (surprisingly) stock
-> > > > > Fedora kernel (2.6.27.5-117.fc10.i686) was not affected I got the idea
-> > > > > that either userspace changes uncovered some kernel regression or some
-> > > > > Fedora specific patch must be fixing the issue.  Unfortunately vanilla
-> > > > > 2.6.27 also freezed so after the usual pain caused by hitting bunch of
-> > > > > unrelated problems [1] it turned out that drm-modesetting-radeon.patch
-> > > > > is the magic patch and CONFIG_DRM_RADEON_KMS is the magic change.  With
-> > > > > the patch and enabling the option next-20081128 works stable again...
-> > > > >
-> > > > > Since the following error gets logged by kernel:
-> > > > >
-> > > > > [drm:drm_buffer_object_validate] *ERROR* Failed moving buffer. cef578c0 1444 4000027 10000a0
-> > > > > [drm:drm_buffer_object_validate] *ERROR* Out of aperture space or DRM memory quota.
-> > > > >
-> > > > > and it also seems that system is more responsive now (it was kind of
-> > > > > sluggish previously) my draft theory is that F9 -> F10 triggered some
-> > > > > AGP memory management bug and CONFIG_DRM_RADEON_KMS happens to fix it
-> > > > > but I'll leave figuring this up to the more knowledgeable people... ;)
-> > > > 
-> > > > Well KMS is a purely Fedora thing, and enabling it completely avoids
-> > > > the old driver codepaths so
-> > > > while it might fix it, its more by accident than design.
-> > > > 
-> > > > I'm trying to track down the rv3xx hangs with hpa at the moment as he
-> > > > sees them also, something in
-> > > >  the 2.6.26->2.6.27 timeframe. I'm hoping running the 2.6.26 drm on
-> > > > the 2.6.27 will help narrow it down.
-> > > > 
-> > > > Bisecting 2.6.26->2.6.27 might also help.
-> > > 
-> > > It could be a different issue.  I tried 2.6.26, 2.6.25 and 2.6.24
-> > > and they all hang (they all worked fine with Fedora 9)...
-> > > 
-> > > I will try some older kernels but I start thinking that the xorg's ati
-> > > driver update is the main cause (xorg-x11-drv-ati-6.8.0-19.fc9.i386.rpm
-> > > -> xorg-x11-drv-ati-6.9.0-54.fc10.i386.rpm).
+On Tue, 2008-12-02 at 14:19 -0800, Dave Hansen wrote:
+> On Tue, 2008-12-02 at 16:47 -0500, Mimi Zohar wrote:
+> > This patch adds internal kernel support for:
+> >   - reading/extending a pcr value
+> >   - looking up the tpm_chip for a given chip number and type
 > > 
-> > I just went straight to trying downgrading the driver and the older driver
-> > indeed works fine.  Then I tried to narrow down the problem and the lucky
-> > winner this time is the cute (== undocumented and unsigned-off) patch
-> > called radeon-6.9.0-remove-limit-heuristics.patch.  The newer driver with
-> > only this patch reverted fixes hangs for vanilla kernels and drm errors
-> > for Fedora kernel.  Also performance problems that I've noticed in the
-> > meantime (slower playback of 720p videos, sluggish window scrolling in
-> > kmail) are completely gone.  That being said I'm not entirely sure whether
+> > Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+> > Signed-off-by: Rajiv Andrade <srajiv@br.ibm.com>
+> > ---
+> > diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
+> > index 9c47dc4..17d2849 100644
+> > --- a/drivers/char/tpm/tpm.c
+> > +++ b/drivers/char/tpm/tpm.c
+> > @@ -1,11 +1,12 @@
+> >  /*
+> > - * Copyright (C) 2004 IBM Corporation
+> > + * Copyright (C) 2004,2007,2008 IBM Corporation
+> >   *
+> >   * Authors:
+> >   * Leendert van Doorn <leendert@watson.ibm.com>
+> >   * Dave Safford <safford@watson.ibm.com>
+> >   * Reiner Sailer <sailer@watson.ibm.com>
+> >   * Kylene Hall <kjhall@us.ibm.com>
+> > + * Debora Velarde <dvelarde@us.ibm.com>
+> >   *
+> >   * Maintained by: <tpmdd-devel@lists.sourceforge.net>
+> >   *
+> > @@ -28,6 +29,14 @@
+> >  #include <linux/spinlock.h>
+> >  #include <linux/smp_lock.h>
+> >  
+> > +#include <linux/mm.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/string.h>
+> > +#include <linux/crypto.h>
+> > +#include <linux/fs.h>
+> > +#include <linux/scatterlist.h>
+> > +#include <linux/rcupdate.h>
+> > +#include <asm/unaligned.h>
+> >  #include "tpm.h"
+> >  
+> >  enum tpm_const {
+> > @@ -50,6 +59,8 @@ enum tpm_duration {
+> >  static LIST_HEAD(tpm_chip_list);
+> >  static DEFINE_SPINLOCK(driver_lock);
+> >  static DECLARE_BITMAP(dev_mask, TPM_NUM_DEVICES);
+> > +#define TPM_CHIP_NUM_MASK       0x0000ffff
+> > +#define TPM_CHIP_TYPE_SHIFT     16
+> >  
+> >  /*
+> >   * Array with one entry per ordinal defining the maximum amount
+> > @@ -366,8 +377,7 @@ EXPORT_SYMBOL_GPL(tpm_calc_ordinal_duration);
+> >  /*
+> >   * Internal kernel interface to transmit TPM commands
+> >   */
+> > -static ssize_t tpm_transmit(struct tpm_chip *chip, const char *buf,
+> > -			    size_t bufsiz)
+> > +ssize_t tpm_transmit(struct tpm_chip *chip, char *buf, size_t bufsiz)
+> >  {
+> >  	ssize_t rc;
+> >  	u32 count, ordinal;
+> > @@ -425,6 +435,7 @@ out:
+> >  	mutex_unlock(&chip->tpm_mutex);
+> >  	return rc;
+> >  }
+> > +EXPORT_SYMBOL_GPL(tpm_transmit);
+> >  
+> >  #define TPM_DIGEST_SIZE 20
+> >  #define TPM_ERROR_SIZE 10
+> > @@ -717,6 +728,7 @@ ssize_t tpm_show_temp_deactivated(struct device * dev,
+> >  }
+> >  EXPORT_SYMBOL_GPL(tpm_show_temp_deactivated);
+> >  
+> > +#define READ_PCR_RESULT_SIZE 30
+> >  static const u8 pcrread[] = {
+> >  	0, 193,			/* TPM_TAG_RQU_COMMAND */
+> >  	0, 0, 0, 14,		/* length */
+> > @@ -772,6 +784,128 @@ out:
+> >  }
+> >  EXPORT_SYMBOL_GPL(tpm_show_pcrs);
+> >  
+> > +/*
+> > + * tpm_chip_lookup - return tpm_chip for given chip number and type
+> > + *
+> > + * Must be called with rcu_read_lock.
+> > + */
+> > +static struct tpm_chip *tpm_chip_lookup(int chip_num, int chip_typ)
+> > +{
+> > +	struct tpm_chip *pos;
+> > +	int rc;
+> > +
+> > +	list_for_each_entry_rcu(pos, &tpm_chip_list, list) {
+> > +		rc = (chip_num == TPM_ANY_NUM || pos->dev_num == chip_num)
+> > +		    && (chip_typ == TPM_ANY_TYPE);
+> > +		if (rc)
+> > +			return pos;
+> > +	}
+> > +	return NULL;
+> > +}
 > 
-> I was too quick here -- performance problems are still present with
-> _Fedora_ kernel.
+> If you have to respin these patches could you consider simplifying that
+> loop?  I find that really hard to read.  I think it's much easier to
+> read if written out something like this:
 > 
-> Reassuming: what I currently need to do to get my gfx working properly
-> with F10 is reverting radeon-6.9.0-remove-limit-heuristics.patch from
-> xorg-x11-drv-ati and using vanilla kernel instead of Fedora's one.
+> 	/* Dunno why they *must* specify TPM_ANY_TYPE, but they do */
+> 	if (chip_typ != TPM_ANY_TYPE)
+> 		continue;
+> 
+> 	if (chip_num == TPM_ANY_NUM)
+> 		return pos;
+> 	if (pos->dev_num == chip_num)
+> 		return pos;
+> 
 
-Heh, and it just hang on me after sending the above mail (it took like
-1h or so for hang to occur) => the patch is just a very good trigger for
-the "real" bug.  I'll now be running vanilla 6.9.0 to see how it goes...
+If that's so confusing, it will be included in the next patchset.
 
-Thanks,
-Bart
+> > +
+> > +/**
+> > + * tpm_pcr_read - read a pcr value
+> > + * @chip_id: 	tpm chip identifier
+> > + * 		Upper 2 bytes: ANY, HW_ONLY or SW_ONLY
+> > + * 		Lower 2 bytes: tpm idx # or AN&
+> > + * @pcr_idx:	pcr idx to retrieve
+> > + * @res_buf: 	TPM_PCR value
+> > + * 		size of res_buf is 20 bytes (or NULL if you don't care)
+> > + *
+> > + * The TPM driver should be built-in, but for whatever reason it
+> > + * isn't, protect against the chip disappearing, by incrementing
+> > + * the module usage count.
+> > + */
+> > +int tpm_pcr_read(u32 chip_id, int pcr_idx, u8 *res_buf)
+> > +{
+> > +	u8 data[READ_PCR_RESULT_SIZE];
+> > +	int rc;
+> > +	__be32 index;
+> > +	int chip_num = chip_id & TPM_CHIP_NUM_MASK;
+> > +	struct tpm_chip *chip;
+> > +
+> > +	rcu_read_lock();
+> > +	chip = tpm_chip_lookup(chip_num, chip_id >> TPM_CHIP_TYPE_SHIFT);
+> > +	if (chip == NULL) {
+> > +		rcu_read_unlock();
+> > +		return -ENODEV;
+> > +	}
+> > +	if (!try_module_get(chip->dev->driver->owner)) {
+> > +		rcu_read_unlock();
+> > +		return -ENODEV;
+> > +	}
+> > +	rcu_read_unlock();
+> 
+> This little bit of lookup, check for NULL, and try_module_get() looks
+> cut-n-pasted in the next two functions.  Should be consolidated.
+> 
+
+Same here.
+
+> Also, if you need to shift down the chip_id every time anyway, why not
+> just do it inside the lookup function?
+
+tpm_chip_lookup() only needs the chip type, not the entire chip_id, so
+its usage is probably clearer if written this way.
+
+> > +	BUILD_BUG_ON(sizeof(pcrread) > READ_PCR_RESULT_SIZE);
+> > +	memcpy(data, pcrread, sizeof(pcrread));
+> > +	index = cpu_to_be32(pcr_idx);
+> > +	memcpy(data + 10, &index, 4);
+> > +	rc = tpm_transmit(chip, data, sizeof(data));
+> > +	if (rc > 0)
+> > +		rc = get_unaligned_be32((__be32 *) (data + 6));
+> > +
+> > +	if (rc == 0 && res_buf)
+> > +		memcpy(res_buf, data + 10, TPM_DIGEST_SIZE);
+> > +
+> > +	module_put(chip->dev->driver->owner);
+> > +	return rc;
+> > +}
+> > +EXPORT_SYMBOL_GPL(tpm_pcr_read);
+> > +
+> > +#define EXTEND_PCR_SIZE 34
+> > +static const u8 pcrextend[] = {
+> > +	0, 193,			/* TPM_TAG_RQU_COMMAND */
+> > +	0, 0, 0, 34,		/* length */
+> > +	0, 0, 0, 20,		/* TPM_ORD_Extend */
+> > +	0, 0, 0, 0		/* PCR index */
+> > +};
+> > +
+> > +/**
+> > + * tpm_pcr_extend - extend pcr value with hash
+> > + * @chip_id: 	tpm chip identifier
+> > + * 		Upper 2 bytes: ANY, HW_ONLY or SW_ONLY
+> > + * 		Lower 2 bytes: tpm idx # or AN&
+> > + * @pcr_idx:	pcr idx to extend
+> > + * @hash: 	hash value used to extend pcr value
+> > + *
+> > + * The TPM driver should be built-in, but for whatever reason it
+> > + * isn't, protect against the chip disappearing, by incrementing
+> > + * the module usage count.
+> > + */
+> > +int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8 *hash)
+> > +{
+> > +	u8 data[EXTEND_PCR_SIZE];
+> > +	int rc;
+> > +	__be32 index;
+> > +	int chip_num = chip_id & TPM_CHIP_NUM_MASK;
+> > +	struct tpm_chip *chip;
+> > +
+> > +	rcu_read_lock();
+> > +	chip = tpm_chip_lookup(chip_num, chip_id >> TPM_CHIP_TYPE_SHIFT);
+> > +	if (chip == NULL) {
+> > +		rcu_read_unlock();
+> > +		return -ENODEV;
+> > +	}
+> > +	if (!try_module_get(chip->dev->driver->owner)) {
+> > +		rcu_read_unlock();
+> > +		return -ENODEV;
+> > +	}
+> > +	rcu_read_unlock();
+> > +
+> > +	BUILD_BUG_ON(sizeof(pcrextend) > EXTEND_PCR_SIZE);
+> > +	memcpy(data, pcrextend, sizeof(pcrextend));
+> > +	index = cpu_to_be32(pcr_idx);
+> > +	memcpy(data + 10, &index, 4);
+> 
+> This bit of code looks duplicated too.  I really wish these 10's and
+> 14's weren't magic numbers, especially since they're used twice.
+> 
+
+10 is pcrextend's size, and 14 is pcrextend's size + pcr_idx's size.
+Probably this little math will be clearer by defining this values
+previously, assigning a meaningful name to them..
+
+> > +	memcpy(data + 14, hash, TPM_DIGEST_SIZE);
+> > +	rc = tpm_transmit(chip, data, sizeof(data));
+> > +	if (rc > 0)
+> > +		rc = get_unaligned_be32((__be32 *) (data + 6));
+> > +
+> > +	module_put(chip->dev->driver->owner);
+> > +	return rc;
+> > +}
+> 
+> Looking at this, I can't help but think a couple of nicely laid out
+> structs with a union or two could make this all look nicer.  For
+> instance, is the return code from the tpm_transmit() function always
+> returned in the 6th byte?
+> 
+> It looks to me like there is a TPM_RET_CODE_IDX in
+> drivers/char/tpm/tpm.c.  Why on earth isn't that being used?  That also
+> makes me question all these other magic numbers.
+> 
+It will be used, replacing the magical 6.
+
+> Why not just integrate that rc tinkering into tpm_transmit(), or a
+> variant of it.  There appear to be at least three or four other users
+> that could benefit from such a function.  If you decide to mess with it
+> further than just exporting it, please break that out into a separate
+> patch, btw.
+> 
+> > +enum tpm_chip_num {
+> > +	TPM_ANY_NUM = 0xFFFF,
+> > +};
+> 
+> Why bother even checking this sucker if there's only one value?
+> 
+> > +#if defined(CONFIG_TCG_TPM) || defined(CONFIG_TCG_TPM_MODULE)
+> > +
+> > +extern int tpm_pcr_read(u32 chip_id, int pcr_idx, u8 *res_buf);
+> > +extern int tpm_pcr_extend(u32 chip_id, int pcr_idx, const u8 *hash);
+> > +#endif
+> > +#endif
+> 
+> The " || defined(CONFIG_TCG_TPM_MODULE)" doesn't do anything.
+> CONFIG_TCG_TPM is still true even when CONFIG_TCG_TPM_MODULE.
+> 
+> I also think so many authors on the header is a bit excessive.  5
+> authors for 2 enums and 2 function declarations. :)
+> 
+
+We just added another 1, Debora Velarde, the new maintainer, and it's
+for the whole tpm.c, not just this patch.
+
+Thanks!
+
+Rajiv
+
+> -- Dave
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Rajiv Andrade <srajiv@br.ibm.com>
+Security Development
+IBM Linux Technology Center
+
+
