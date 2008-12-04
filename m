@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbYLDTHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759321AbYLDTH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758927AbYLDTHb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 14:07:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756642AbYLDTHN
+	id S1759321AbYLDTH4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 14:07:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756925AbYLDTHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 14:07:13 -0500
-Received: from mu-out-0910.google.com ([209.85.134.184]:43378 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756419AbYLDTHL (ORCPT
+	Thu, 4 Dec 2008 14:07:44 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33010 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759052AbYLDTHn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 14:07:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=qTPU+3ftBBolwvSOfcbWWH5dK6t8J49iNk2edtVMX6EMOrAuXh1x0IWIXrrB9bgM+p
-         vKld4JIw0ouKpCJFk9smXZWoCJv4E3PdQ/XaIr4Sq1FthjHAKg76NlLKtVFQpjxtWr+t
-         2w5kbU6raKWEBOBXwHqdIxO4e9XQlS4Vwb1fo=
-Message-ID: <cfd18e0f0812041107tc898a6ej6361612cf15cd1be@mail.gmail.com>
-Date: Thu, 4 Dec 2008 14:07:09 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: clock_gettime not mentioned in time.7
-Cc: linux-doc@vger.kernel.org, "kernel list" <linux-kernel@vger.kernel.org>,
-       gp@novell.com, fnadge@suse.cz
-In-Reply-To: <20081202120223.GA4753@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081202120223.GA4753@elf.ucw.cz>
+	Thu, 4 Dec 2008 14:07:43 -0500
+Date: Thu, 04 Dec 2008 14:07:52 -0500
+From: Jody McIntyre <scjody@sun.com>
+Subject: Re: [PATCH] Fix compile error in arch/x86/kernel/syscall_64.c
+In-reply-to: <200812041533.00736.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       tglx@linutronix.de, mingo@redhat.com
+Message-id: <20081204190751.GD20982@clouds>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <20081202215154.GL29919@clouds> <200812041533.00736.arnd@arndb.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 2, 2008 at 7:02 AM, Pavel Machek <pavel@suse.cz> wrote:
-> Hi!
->
-> man 7 time does not mention clock_gettime() (and concept of monotonic
-> time at all). I guess it should... at least clock_gettime() should be
-> mentioned in "SEE ALSO".
+Hi Arnd,
 
-Hi Pavel,
+On Thu, Dec 04, 2008 at 03:32:59PM +0100, Arnd Bergmann wrote:
 
-I added clock_gettime() to the SEE ALSO list.  (For man-pages-3.15)
+> Maybe you have stale header files in include/asm-x86/? That sometimes
+> happens if you git-checkout -f or git-reset --hard.
 
-Thanks,
+Your suggestion led me to the actual problem: the rsync command I was
+running to get files to my build machine was missing --delete, which
+meant the build machine's tree had all sorts of cruft.
 
-Michael
+With that change, I can successfully build the latest Linus kernel
+without any patches.  Sorry to have wasted everyone's time.
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Jody (crawls back under rock)
+
+> 	Arnd <><
