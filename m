@@ -1,132 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbYLDCpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbYLDCql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758017AbYLDCpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 21:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbYLDCpk
+	id S1754524AbYLDCql (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 21:46:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYLDCqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 21:45:40 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39326 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751666AbYLDCpi (ORCPT
+	Wed, 3 Dec 2008 21:46:32 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:35704 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187AbYLDCqb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 21:45:38 -0500
-Date: Wed, 3 Dec 2008 18:46:52 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
+	Wed, 3 Dec 2008 21:46:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=aViiTPIlPv+zQh0oe4aAKBzqQhaSkrV4RyI26qQovG2qOZdYzFBq63mJrBx1+ik6s6
+         cCCPAGJf3+KRNGwi5wJ9SMQyX/9EoDlJy75yoSeJAXvmiDLUvLpNLMKFSuPspLpKBCSX
+         upw+MBYhNNKFKNCJIXPZYX0sgLcJTVF1qbW6I=
+Message-ID: <4937447F.6070805@gmail.com>
+Date: Thu, 04 Dec 2008 03:46:23 +0100
+From: =?ISO-8859-1?Q?=22Niklas_=5C=22Nille=5C=22_=C5kerstr=F6m=22?= 
+	<nille.kungen@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, linux-pci@vger.kernel.org,
-       netdev@vger.kernel.org, x86@kernel.org, tytso@mit.edu,
-       akpm@linux-foundation.org, alan@redhat.com, airlied@redhat.com,
-       greg@kroah.com
-Subject: Oops/Warning report for the week of December 3rd, 2008
-Message-ID: <20081203184652.0601b86b@linux.intel.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+CC: Robby Workman <rw@rlworkman.net>
+Subject: sony-ericsson W800 cellular doesn't work as an usb mass storage device
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This week, a total of 11349 oopses and warnings have been reported,
-compared to 4327 reports in the previous week.
+Please CC any replies; not subscribed to list
 
+I can't mount my sony-ericsson W800 cellular as an usb mass storage device (it doesn't show up as an device).
+I run slackware-current (slackware 12.2 rc1)
+Using kernel 2.6.27.7
+It doesn't even show up when i run 'fdisk -l'
 
-Per file statistics
-1224	drivers/pci/slot.c
-1029	drivers/net/wireless/iwlwifi/iwl-tx.c
-795	arch/x86/include/asm/mtrr.h
-657	external/virtualbox/module
-634	drivers/net/wireless/iwlwifi/iwl-3945-rs.c
-380	arch/x86/kernel/hpet.c
-356	fs/jbd/journal.c
-349	drivers/net/r8169.c
-287	drivers/ata/libata-sff.c
-225	drivers/gpu/drm/radeon/radeon_cp.c
-212	drivers/net/sis900.c
-199	drivers/staging/at76_usb/at76_usb.c
+How ever running slackware 12.1 using kernel 2.6.24.5 works (used my other box for 12.1 testing)
+I also tried the 12.1 kernel 2.6.24.5 in slackware 12.2 rc1 and then it works.
+So it's seems kernel related. (but i'm not experienced enuff to know)
 
+Kernel config 2.6.27.7 http://pastebin.com/m4ba5debe
+Kernel config 2.6.24.5 http://pastebin.com/m20a78c4f
+dmesg when pluging in the device on 2.6.27.7 http://pastebin.com/m56d5e2e8
+dmesg when pluging in the device on 2.6.24.5 running 12.1 http://pastebin.com/m65e4fd04
+dmesg when pluging in the device on 2.6.24.5 running current http://pastebin.com/m2ac79d09
 
-Rank 1: pci_create_slot (warning)
-	Reported 1224 times (1662 total reports)
-	BIOS provided duplicated slot names, the PCI layer blindly passes to sysfs
-	This warning was last seen in version 2.6.27.5, and first seen in 2.6.27-rc7-git1.
-	More info: http://www.kerneloops.org/searchweek.php?search=pci_create_slot
+My computer is an Compaq Presario 2800
+Phone Sony Ericsson W800i 0fce:d028
+What other information would be useful?
 
-Rank 2: iwl_tx_cmd_complete (warning)
-	Reported 1214 times (1757 total reports)
-	Bug in the IWL wireless driver; partial fix available
-	This warning was last seen in version 2.6.28-rc6, and first seen in 2.6.27-rc9.
-	More info: http://www.kerneloops.org/searchweek.php?search=iwl_tx_cmd_complete
+I searched the mailing list and found http://lkml.org/lkml/2008/9/11/276 which seems releated but there was no answer.
 
-Rank 3: mtrr_trim_uncached_memory (warning)
-	Reported 909 times (3058 total reports)
-	This warning was last seen in version 2.6.28-rc7, and first seen in 2.6.24.
-	More info: http://www.kerneloops.org/searchweek.php?search=mtrr_trim_uncached_memory
+(please cc me on any reply)
+Thanks,
+Nille
 
-Rank 4: rs_get_rate (warning)
-	Reported 811 times (1921 total reports)
-	Bug in the Intel IWL wireless drivers
-	This warning was last seen in version 2.6.27.7, and first seen in 2.6.25-rc2-git5.
-	More info: http://www.kerneloops.org/searchweek.php?search=rs_get_rate
-
-Rank 5: VBoxDrvLinuxIOCtl (warning)
-	Reported 756 times (2332 total reports)
-	[external] bug in the VirtualBox drivers
-	This warning was last seen in version 2.6.28-rc3, and first seen in 2.6.25.11.
-	More info: http://www.kerneloops.org/searchweek.php?search=VBoxDrvLinuxIOCtl
-
-Rank 6: journal_update_superblock (warning)
-	Reported 422 times (6983 total reports)
-	Likely caused by the user removing a USB stick while mounted
-	This warning was last seen in version 2.6.27.7, and first seen in 2.6.24-rc6-git1.
-	More info: http://www.kerneloops.org/searchweek.php?search=journal_update_superblock
-
-Rank 7: hpet_legacy_next_event (warning)
-	Reported 410 times (429 total reports)
-	This warning was last seen in version 2.6.27.5, and first seen in 2.6.26.6.
-	More info: http://www.kerneloops.org/searchweek.php?search=hpet_legacy_next_event
-
-Rank 8: dev_watchdog(r8169) (oops)
-	Reported 402 times (1795 total reports)
-	This oops was last seen in version 2.6.28-rc6, and first seen in 2.6.26.6.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(r8169)
-
-Rank 9: __atapi_pio_bytes (warning)
-	Reported 331 times (555 total reports)
-	This warning was last seen in version 2.6.27.7, and first seen in 2.6.27.4.
-	More info: http://www.kerneloops.org/searchweek.php?search=__atapi_pio_bytes
-
-Rank 10: radeon_cp_init_ring_buffer (oops)
-	Reported 249 times (482 total reports)
-	drm.git bug in the radeon driver
-	This oops was last seen in version 2.6.27.5, and first seen in 2.6.25-rc8-git7.
-	More info: http://www.kerneloops.org/searchweek.php?search=radeon_cp_init_ring_buffer
-
-Rank 11: dev_watchdog(sis900) (oops)
-	Reported 230 times (1801 total reports)
-	This oops was last seen in version 2.6.27.6, and first seen in 2.6.26-rc4-git2.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(sis900)
-
-Rank 12: tcp_recvmsg (warning)
-	Reported 211 times (363 total reports)
-	This warning was last seen in version 2.6.27.5, and first seen in 2.6.25.
-	More info: http://www.kerneloops.org/searchweek.php?search=tcp_recvmsg
-
-Rank 13: rfkill_force_state (oops)
-	Reported 209 times (260 total reports)
-	This oops was last seen in version 2.6.28-rc2, and first seen in 2.6.27.4.
-	More info: http://www.kerneloops.org/searchweek.php?search=rfkill_force_state
-
-Rank 14: sysfs_add_one (oops)
-	Reported 195 times (213 total reports)
-	Duplicate sysfs registration; mostly in USB audio
-	This oops was last seen in version 2.6.27.5, and first seen in 2.6.25.
-	More info: http://www.kerneloops.org/searchweek.php?search=sysfs_add_one
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
