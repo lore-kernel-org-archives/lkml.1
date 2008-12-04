@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYLDKOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbYLDKQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410AbYLDKOU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 05:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbYLDKOK
+	id S1757020AbYLDKQu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 05:16:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbYLDKQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 05:14:10 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50872 "EHLO mx3.mail.elte.hu"
+	Thu, 4 Dec 2008 05:16:40 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51315 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751695AbYLDKOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 05:14:09 -0500
-Date: Thu, 4 Dec 2008 11:13:54 +0100
+	id S1751708AbYLDKQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 05:16:39 -0500
+Date: Thu, 4 Dec 2008 11:16:33 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Jianjun Kong <jianjun@zeuux.org>
-Cc: akpm@linux-foundation.org,
-       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] ipc: fix warning of not used variable
-Message-ID: <20081204101354.GC18708@elte.hu>
-References: <20081204010026.GC17445@ubuntu>
+Cc: mingo@redhat.com, Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] x86: fix warning of uninitialized variable
+Message-ID: <20081204101633.GD18708@elte.hu>
+References: <20081204010013.GA17445@ubuntu> <20081204101023.GA18708@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081204010026.GC17445@ubuntu>
+In-Reply-To: <20081204101023.GA18708@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,74 +35,69 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jianjun Kong <jianjun@zeuux.org> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
 > 
-> fix this warning:
-> ipc/ipc_sysctl.c:39: warning: ‘ipc_auto_callback’ defined but not used
-> ipc_auto_callback() just called when CONFIG_PROC_FS was defined.
+> * Jianjun Kong <jianjun@zeuux.org> wrote:
 > 
+> > fix warning of uninitialized 'base' in arch/x86/kernel/scx200_32.c
+> > 
+> > arch/x86/kernel/scx200_32.c: In function ‘scx200_probe’:
+> > arch/x86/kernel/scx200_32.c:82: warning: ‘base’ may be used
+> > uninitialized in this function
+> > 
+> > Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
+> > ---
+> >  arch/x86/kernel/scx200_32.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
-> ---
->  ipc/ipc_sysctl.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> this patch is wrong, and your analysis-free commit log is wrong as 
+> well!
+> 
+> i fixed this a few weeks ago, and GCC pinpointed a _real_ bug - which 
+> you hacked around instead of fixing. See the real fix below.
 
-NAK.
-
-the proper fix, considering all the possibilities, is below.
+Also, see an example below of the case where GCC is wrong about a 
+warning, and how it is annotated.
 
 	Ingo
 
-------------------->
->From 8f845313ba091a6041e666c611ef9bb751d91723 Mon Sep 17 00:00:00 2001
+------------->
+>From af4d2994e0e8e6e529b0e87f4e436dad062a9c05 Mon Sep 17 00:00:00 2001
 From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 20 Oct 2008 09:19:55 +0200
-Subject: [PATCH] fix warning in ipc/ipc_sysctl.c
+Date: Tue, 25 Nov 2008 13:14:19 +0100
+Subject: [PATCH] fix warning in fs/ocfs2/stack_user.c
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 
-fix this warning:
+this warning:
 
-  ipc/ipc_sysctl.c:39: warning: ‘ipc_auto_callback’ defined but not used
+  fs/ocfs2/stack_user.c: In function ‘user_cluster_connect’:
+  fs/ocfs2/stack_user.c:807: warning: ‘control’ may be used uninitialized in this function
 
-Move the already present #ifdef CONFIG_PROC_FS up by one function.
+triggers because GCC does not recognize the (correct) error flow
+between:
 
-Also prepare get_ipc() for the !PROC_FS && !SYSCTL_SYSCALL case.
+ - ocfs2_live_connection_new() and 'control'
+
+Annotate it.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- ipc/ipc_sysctl.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ fs/ocfs2/stack_user.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/ipc/ipc_sysctl.c b/ipc/ipc_sysctl.c
-index 0dfebc5..010850a 100644
---- a/ipc/ipc_sysctl.c
-+++ b/ipc/ipc_sysctl.c
-@@ -18,6 +18,7 @@
- #include <linux/msg.h>
- #include "util.h"
- 
-+#if defined(CONFIG_PROC_FS) || defined(CONFIG_SYSCTL_SYSCALL)
- static void *get_ipc(ctl_table *table)
+diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
+index faec2d8..55e2cdc 100644
+--- a/fs/ocfs2/stack_user.c
++++ b/fs/ocfs2/stack_user.c
+@@ -804,7 +804,7 @@ static int fs_protocol_compare(struct ocfs2_protocol_version *existing,
+ static int user_cluster_connect(struct ocfs2_cluster_connection *conn)
  {
- 	char *which = table->data;
-@@ -25,7 +26,9 @@ static void *get_ipc(ctl_table *table)
- 	which = (which - (char *)&init_ipc_ns) + (char *)ipc_ns;
- 	return which;
- }
-+#endif
+ 	dlm_lockspace_t *fsdlm;
+-	struct ocfs2_live_connection *control;
++	struct ocfs2_live_connection *uninitialized_var(control);
+ 	int rc = 0;
  
-+#ifdef CONFIG_PROC_FS
- /*
-  * Routine that is called when the file "auto_msgmni" has successfully been
-  * written.
-@@ -49,7 +52,6 @@ static void ipc_auto_callback(int val)
- 	}
- }
- 
--#ifdef CONFIG_PROC_FS
- static int proc_ipc_dointvec(ctl_table *table, int write, struct file *filp,
- 	void __user *buffer, size_t *lenp, loff_t *ppos)
- {
+ 	BUG_ON(conn == NULL);
