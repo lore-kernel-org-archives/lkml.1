@@ -1,168 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbYLDHqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYLDHtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430AbYLDHqU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 02:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYLDHqF
+	id S1754748AbYLDHtW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 02:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbYLDHtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 02:46:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47161 "EHLO mx2.mail.elte.hu"
+	Thu, 4 Dec 2008 02:49:12 -0500
+Received: from nn7.de ([85.214.94.156]:35186 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbYLDHqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 02:46:01 -0500
-Date: Thu, 4 Dec 2008 08:45:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       alexs <alex.shi@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Yanmin Zhang <yanmin_zhang@linux.intel.com>,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: [Bug #11970] gettimeofday return a old time in mmbench
-Message-ID: <20081204074540.GA29151@elte.hu>
-References: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera> <bfPM5B8Tx2B.A.Qi.7pxNJB@chimera>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bfPM5B8Tx2B.A.Qi.7pxNJB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751547AbYLDHtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 02:49:11 -0500
+Subject: Re: ST31500341AS vs ICH10, exception Emask 0x50 SAct 0x1 SErr
+	0x280900 action 0x6 frozen
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Tejun Heo <tj@kernel.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux-ide <linux-ide@vger.kernel.org>
+In-Reply-To: <4935F63C.9080207@kernel.org>
+References: <1228205289.29251.32.camel@localhost>
+	 <4935F63C.9080207@kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 04 Dec 2008 08:48:39 +0100
+Message-Id: <1228376919.3927.72.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-12-03 at 12:00 +0900, Tejun Heo wrote:
+> hello,
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Hi Tejun, Hi list,
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+[...]
+> > - the error(tm)
+> > 
+> > ata3.00: exception Emask 0x50 SAct 0x1 SErr 0x280900 action 0x6 frozen
+> > ata3.00: irq_stat 0x08000000, interface fatal error
+> > ata3: SError: { UnrecovData HostInt 10B8B BadCRC }
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.27.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11970
-> Subject		: gettimeofday return a old time in mmbench
-> Submitter	: alexs <alex.shi@intel.com>
-> Date		: 2008-11-06 23:57 (28 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=99ebcf8285df28f32fd2d1c19a7166e70f00309c
-> Handled-By	: Ingo Molnar <mingo@elte.hu>
-> 		  Thomas Gleixner <tglx@linutronix.de>
-> 		  Yanmin Zhang <yanmin_zhang@linux.intel.com>
+> Your machine seems to be suffering genuine link layer problem.  In
+> most cases, this indicates hardware problem and in my experience
+> common causes are (in the order of ballpark frequency)...
 
-fixed by the patch below from John Stultz, queued up in 
-tip/timers/urgent.
+First of all thanks for your reply! Would be nice to have an FAQ with
+all the errors and the most common causes somewhere...
 
-The bisection-blamed merge commit above likely just causes a random shift 
-in the timings or compiler optimization conditions of this code - making 
-the bug more likely to trigger. The bug/race itself is old.
+> 1. inadequate power supply
 
-	Ingo
+this I would exclude (as I cannot trigger the problem by increasing load
+while writing to the 4 disks in the machine)
 
-------------------------->
->From 6c9bacb41c10ba84ff68f238e234d96f35fb64f7 Mon Sep 17 00:00:00 2001
-From: john stultz <johnstul@us.ibm.com>
-Date: Mon, 1 Dec 2008 18:34:41 -0800
-Subject: [PATCH] time: catch xtime_nsec underflows and fix them
+> 2. device and controller don't like each other on 3Gbps
 
-Impact: fix time warp bug
+possible
 
-Alex Shi, along with Yanmin Zhang have been noticing occasional time
-inconsistencies recently. Through their great diagnosis, they found that
-the xtime_nsec value used in update_wall_time was occasionally going
-negative. After looking through the code for awhile, I realized we have
-the possibility for an underflow when three conditions are met in
-update_wall_time():
+> 3. cable too long or flaky connector (especially w/ eSATA cables or
+>    genders or backplanes)
 
-  1) We have accumulated a second's worth of nanoseconds, so we
-     incremented xtime.tv_sec and appropriately decrement xtime_nsec.
-     (This doesn't cause xtime_nsec to go negative, but it can cause it
-      to be small).
+might have been the problem in this case.
 
-  2) The remaining offset value is large, but just slightly less then
-     cycle_interval.
+> 4. faulty controller or drive
 
-  3) clocksource_adjust() is speeding up the clock, causing a
-     corrective amount (compensating for the increase in the multiplier
-     being multiplied against the unaccumulated offset value) to be
-     subtracted from xtime_nsec.
+the controller should be OK as it was working with another drive.
 
-This can cause xtime_nsec to underflow.
+But as the problem only appeared once and I did all kinds of tests in
+the last two days without this problem to re-appear I guess it must have
+been either:
 
-Unfortunately, since we notify the NTP subsystem via second_overflow()
-whenever we accumulate a full second, and this effects the error
-accumulation that has already occured, we cannot simply revert the
-accumulated second from xtime nor move the second accumulation to after
-the clocksource_adjust call without a change in behavior.
+a) hot plug attempt with first only having a 1.5Gps drive in the
+backplane
+b) the connection was somehow flaky between drive and backplane (drive
+was not inserted properly - still strange that it took >8 hrs to trigger
+the problem).
 
-This leaves us with (at least) two options:
+I will keep an eye on it, but I don't expect the problem to re-appear -
+but having had bad experiences with all kinds of controller/disk setups
+and reading about the seagate firmware bug in earlier firmware revisions
+of this drive made me alert..
 
-1) Simply return from clocksource_adjust() without making a change if we
-   notice the adjustment would cause xtime_nsec to go negative.
-
-This would work, but I'm concerned that if a large adjustment was needed
-(due to the error being large), it may be possible to get stuck with an
-ever increasing error that becomes too large to correct (since it may
-always force xtime_nsec negative). This may just be paranoia on my part.
-
-2) Catch xtime_nsec if it is negative, then add back the amount its
-   negative to both xtime_nsec and the error.
-
-This second method is consistent with how we've handled earlier rounding
-issues, and also has the benefit that the error being added is always in
-the oposite direction also always equal or smaller then the correction
-being applied. So the risk of a corner case where things get out of
-control is lessened.
-
-This patch fixes bug 11970, as tested by Yanmin Zhang
-http://bugzilla.kernel.org/show_bug.cgi?id=11970
-
-Reported-by: alex.shi@intel.com
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Acked-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Tested-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/time/timekeeping.c |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index e7acfb4..fa05e88 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -518,6 +518,28 @@ void update_wall_time(void)
- 	/* correct the clock when NTP error is too big */
- 	clocksource_adjust(offset);
- 
-+	/*
-+	 * Since in the loop above, we accumulate any amount of time
-+	 * in xtime_nsec over a second into xtime.tv_sec, its possible for
-+	 * xtime_nsec to be fairly small after the loop. Further, if we're
-+	 * slightly speeding the clocksource up in clocksource_adjust(),
-+	 * its possible the required corrective factor to xtime_nsec could
-+	 * cause it to underflow.
-+	 *
-+	 * Now, we cannot simply roll the accumulated second back, since
-+	 * the NTP subsystem has been notified via second_overflow. So
-+	 * instead we push xtime_nsec forward by the amount we underflowed,
-+	 * and add that amount into the error.
-+	 *
-+	 * We'll correct this error next time through this function, when
-+	 * xtime_nsec is not as small.
-+	 */
-+	if (unlikely((s64)clock->xtime_nsec < 0)) {
-+		s64 neg = -(s64)clock->xtime_nsec;
-+		clock->xtime_nsec = 0;
-+		clock->error += neg << (NTP_SCALE_SHIFT - clock->shift);
-+	}
-+
- 	/* store full nanoseconds into xtime after rounding it up and
- 	 * add the remainder to the error difference.
- 	 */
+So sorry for the noise and thanks for the helpful response!
+Soeren
