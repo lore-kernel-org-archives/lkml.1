@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYLDVAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbYLDVAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757428AbYLDVAG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 16:00:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbYLDU7x
+	id S1758426AbYLDVAp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 16:00:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYLDVAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 15:59:53 -0500
-Received: from waste.org ([66.93.16.53]:40037 "EHLO waste.org"
+	Thu, 4 Dec 2008 16:00:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44337 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755034AbYLDU7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 15:59:53 -0500
-Subject: [PATCH] random: don't try to look at entropy_count outside the lock
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Theodore Tso <tytso@mit.edu>
-Content-Type: text/plain
-Date: Thu, 04 Dec 2008 14:58:24 -0600
-Message-Id: <1228424304.3255.115.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1755001AbYLDVAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 16:00:35 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       rnalumasu@gmail.com
+Subject: Re: + do_wait-wakeup-optimization.patch added to -mm tree
+In-Reply-To: Oleg Nesterov's message of  Thursday, 4 December 2008 16:26:01 +0100 <20081204152601.GB8816@redhat.com>
+References: <200811212015.mALKFMs4019558@imap1.linux-foundation.org>
+	<20081123213929.GA9097@redhat.com>
+	<20081204005203.C795EFC3AB@magilla.sf.frob.com>
+	<20081204152601.GB8816@redhat.com>
+Emacs: featuring the world's first municipal garbage collector!
+Message-Id: <20081204205942.81079FC32C@magilla.sf.frob.com>
+Date: Thu,  4 Dec 2008 12:59:42 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As a non-atomic value, it's only safe to look at entropy_count when
-the pool lock is held, so we move the BUG_ON inside the lock for
-correctness.
+> > I don't see an exposed __wake_up* variant that both passes a "key" pointer
+> > through and does "sync".  For __wake_up_parent, "sync" is quite desireable.
+> 
+> Well, yes... and __wake_up_common() is static. Perhaps we can make a new
+> helper. 
 
-Also remove the spurious comment. It's ok for entropy_count to
-temporarily exceed POOLBITS so long as it's left in a consistent state
-when the lock is released.
+Right, that's what I was suggesting (and not volunteering to do ;-).
 
-This is a more correct, simple, and idiomatic fix for the bug in 8b76f46a2db.
-I've left the reorderings introduced by that patch in place as they're
-harmless, even though they don't properly deal with potential atomicity issues.
+> I must admit, I don't understand what "sync" actually means nowadays.
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
+I don't claim to know any actual scheduler innards.  But the meaning as I
+understand it is to "make it runnable, but don't try to reschedule right
+now because current will block quite soon anyway.  If this does indeed
+reduce work done to immediately reschedule, then it seems quite desireable
+to avoid that flutter since the dying/stopping thread is very few cycles
+away from yielding, and in the death case it will be for the last time and
+rescheduling earlier just means a later unnecessary switch back and delayed
+put_task_struct processing after the reap.
 
-diff -r 4d01a524fee5 drivers/char/random.c
---- a/drivers/char/random.c	Wed Sep 03 07:30:13 2008 -0700
-+++ b/drivers/char/random.c	Wed Sep 17 17:20:14 2008 -0700
-@@ -407,7 +407,7 @@
- 	/* read-write data: */
- 	spinlock_t lock;
- 	unsigned add_ptr;
--	int entropy_count;	/* Must at no time exceed ->POOLBITS! */
-+	int entropy_count;
- 	int input_rotate;
- };
- 
-@@ -727,11 +727,10 @@
- {
- 	unsigned long flags;
- 
--	BUG_ON(r->entropy_count > r->poolinfo->POOLBITS);
--
- 	/* Hold lock while accounting */
- 	spin_lock_irqsave(&r->lock, flags);
- 
-+	BUG_ON(r->entropy_count > r->poolinfo->POOLBITS);
- 	DEBUG_ENT("trying to extract %d bits from %s\n",
- 		  nbytes * 8, r->name);
- 
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Thanks,
+Roland
 
