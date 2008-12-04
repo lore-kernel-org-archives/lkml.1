@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759005AbYLDAP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYLDARh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759005AbYLDAP1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 19:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758911AbYLDAO6
+	id S1757315AbYLDARh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 19:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYLDARV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 19:14:58 -0500
-Received: from vps1.tull.net ([66.180.172.116]:37230 "HELO vps1.tull.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1759983AbYLDAO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 19:14:57 -0500
-Date: Thu, 4 Dec 2008 11:14:52 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Francis Moreau <francis.moro@gmail.com>,
-       "Renato S. Yamane" <yamane@diamondcut.com.br>,
+	Wed, 3 Dec 2008 19:17:21 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:57282 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751426AbYLDART (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 19:17:19 -0500
+Subject: Re: 2.6.28-rc7-git2: Reported regressions from 2.6.27
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: About git-bisect (defconfigs)
-Message-ID: <20081204001452.GH11807@mail.local.tull.net>
-References: <bEFPF-XO-15@gated-at.bofh.it> <bEFPG-XO-19@gated-at.bofh.it> <bEG8P-1xl-15@gated-at.bofh.it> <bEGiz-1Hw-11@gated-at.bofh.it> <bEGLI-2aS-31@gated-at.bofh.it> <bEGVc-2Bk-11@gated-at.bofh.it> <m2r64q6y8e.fsf@gmail.com> <493681B7.20101@diamondcut.com.br> <38b2ab8a0812030924g5391fdbdy15c472a51ab24aef@mail.gmail.com> <4936C6FB.4020201@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4936C6FB.4020201@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+In-Reply-To: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera>
+References: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera>
+Content-Type: text/plain
+Date: Wed, 03 Dec 2008 18:17:21 -0600
+Message-Id: <1228349841.5551.100.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 09:50:51AM -0800, Randy Dunlap wrote:
-> 2.  There are several security-related config items that default to =y but the
-> kconfig help says:  If unsure, say N here.  Like:
-> 
-> 
-> CONFIG_NETLABEL=y
-> CONFIG_NETWORK_SECMARK=y
-> CONFIG_KEYS=y
-> CONFIG_SECURITY=y
-> CONFIG_SECURITY_NETWORK=y
-> CONFIG_SECURITY_SELINUX=y
-> 
-> Maybe I just don't understand the current meaning/usage of defconfig.  eh?
+On Wed, 2008-12-03 at 22:49 +0100, Rafael J. Wysocki wrote:
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12120
+> Subject         : [Block layer or SCSI] requests aborted too early
+> during check_partition()
+> Submitter       : Stefan Richter <stefan-r-bz@s5r6.in-berlin.de>
+> Date            : 2008-11-29 05:19 (5 days old)
 
-A consistent approach to the Kconfig hints would help. To me,
-"If unsure, say N" implies that turning off the feature won't break
-the kernel nor be anything particularly important. The Kconfig hints
-should follow the defaults (or else why default to 'y'?) for common
-architectures.
+Fixed by this patch:
 
-Perhaps menuconfig can generate the "If unsure" message itself from
-the architecture defaults? That will ensure consistency.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9728c0814ecb505546696a659858fdb761375544
 
-Nick.
+James
+
 
