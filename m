@@ -1,79 +1,475 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYLDEzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbYLDFDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbYLDEzm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 23:55:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYLDEze
+	id S1752717AbYLDFDx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 00:03:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYLDFDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 23:55:34 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58105 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752091AbYLDEzd (ORCPT
+	Thu, 4 Dec 2008 00:03:43 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:50265 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750849AbYLDFDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 23:55:33 -0500
-Date: Thu, 4 Dec 2008 13:54:41 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "wassim dagash" <wassim.dagash@gmail.com>, linux-kernel@vger.kernel.org,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: KSWAPD Algorithm
-Message-Id: <20081204135441.dc95ffc7.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <87prk9xqg0.fsf@basil.nowhere.org>
-References: <cb94e63d0812022302m341fcdf5wffbca0ec12db426b@mail.gmail.com>
-	<87prk9xqg0.fsf@basil.nowhere.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 4 Dec 2008 00:03:42 -0500
+Message-ID: <4937649A.4050503@oracle.com>
+Date: Wed, 03 Dec 2008 21:03:22 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
+Subject: Re: [RFC][mmotm] Documentation update
+References: <20081204132111.63f1b300.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081204132111.63f1b300.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.493764A1.00E4:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Dec 2008 15:51:11 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
-
-> "wassim dagash" <wassim.dagash@gmail.com> writes:
+KAMEZAWA Hiroyuki wrote:
+> mmotm-2008-12-03 includes memcg-explain-details-and-test-document.patch
 > 
-> > Hi All,
-> > Description:
-> > I countered a weird problem with kswapd:
-> > it runs in some infinite loop trying to swap until order 10 of zone
-> > highmem is OK, While zone higmem (as I understand) has nothing to do
-> > with contiguous physical memory (cause there is no 1-1 mapping) which
-> > means kswapd will continue to try to balance order 10 of zone highmem
-> > forever (or until someone release a very large chunk of highmem).
-> > Can anyone please explain me the algorithm of kswapd and why it tries
-> > to balance order 10 of zone higmem ?
+> But it's still rough and not complete.
+> I'd like to update it to be readable becasue memcg is a blackbox for the most
+> of developpers but it has many hooks to global VM.
 > 
-> hugetlbfs requires large continuous mappings even in highmem
-> to map 2MB pages or similar to user space.
-> However order 10 seems pretty high, normally that's only order 8
-> on a i386 system.
+> If you have reuqest as "explain xxx in detail", please tell me.
+> I'll not send this out for a while.
+>  
+> Of course, your own patch is welcome.
 > 
+> -Kame
+> 
+> ==
+>  Documentation/controllers/memcg_test.txt |  216 ++++++++++++++++++++++++++-----
+>  mm/memcontrol.c                          |    4 
+>  2 files changed, 189 insertions(+), 31 deletions(-)
+> 
+> Index: mmotm-2.6.28-Dec03/Documentation/controllers/memcg_test.txt
+> ===================================================================
+> --- mmotm-2.6.28-Dec03.orig/Documentation/controllers/memcg_test.txt
+> +++ mmotm-2.6.28-Dec03/Documentation/controllers/memcg_test.txt
+> @@ -1,59 +1,74 @@
+>  Memory Resource Controller(Memcg)  Implementation Memo.
+> -Last Updated: 2009/12/03
+> +Last Updated: 2009/12/04
 
-Reading Kosaki's explanation, it seems
+It's still 2008 AFAIK.
 
-  - order-10 allocation occurs at ZONE_NORMAL.
+> +Base Kernel Version: 2.6.28-rc7-mm.
+>  
+>  Because VM is getting complex (one of reasons is memcg...), memcg's behavior
+>  is complex. This is a document for memcg's internal behavior and some test
+> -patterns tend to be racy.
+> +patterns tend to be racy. Please note that explanation about implementation
 
-  - kswapd is kicked with order=10.
-	wakeup_kswaps(zone, 10) -> pgdat->kswapd_max_order = 10.
-  
-  - kswapd(balance_pgdat()) does 
-	if (!zone_watermark_ok(zone, order, zone->pages_high, end_zone, 0))
-			all_zones_ok = 0;
-    And this "zone" is all zone, i.e. DMA, NORMAL, HIGHMEM.
+This is a document about ... and ...
 
-    Then, loop again,
+This is awkward.  The two "abouts" should be related or at least have the
+same phrase structure.  Maybe you could just drop the "and some test patterns
+tend to be racy." ??
 
-	if (!all_zones_ok) {
-		cond_resched();
+> +details can be very old.
+>  
+> -1. charges
+> +(*) Topics on API should be in Documentation/controllers/memory.txt)
+> +
+> +0. How to record usage ?
+> +   2 objects are used.
+> +   page_cgroup ....an object per page.
+> +   swap_cgroup ... an entry per swp_entry
+> +   Both of them are allocated at boot.
 
-		try_to_freeze();
+Allocated for all known pages and possible swap pages?
+How are allocations for memory hotplug handled?
 
-		goto loop_again;
-	}
+> +
+> +   The page_cgroup has USED bit and double count against a page_cgroup never
+> +   occurs. swap_cgroup is used only when a charged page is swapped-out.
+> +
+> +1. Charge
+>  
+>     a page/swp_entry may be charged (usage += PAGE_SIZE) at
+>  
+>  	mem_cgroup_newpage_newpage()
 
-Maybe...
+I can't find that function in mmotm-2008-12-03.  Is it there or does the
+function name have a duplicate _newpage ?
 
--Kame
+> -	  called at new page fault and COW.
+> +	  Called at new page fault and Copy-On-Write.
+>  
+>  	mem_cgroup_try_charge_swapin()
+> -	  called at do_swap_page() and swapoff.
+> -	  followed by charge-commit-cancel protocol.
+> -	  (With swap accounting) at commit, charges recorded in swap is removed.
+> +	  Called at do_swap_page() (page fault on swap entry) and swapoff.
+> +	  Followed by charge-commit-cancel protocol. (With swap accounting)
+> +	  At commit, charges recorded in swap_cgroup is removed.
 
+	                                             are removed.
+
+>  
+>  	mem_cgroup_cache_charge()
+> -	  called at add_to_page_cache()
+> +	  Called at add_to_page_cache()
+>  
+> -	mem_cgroup_cache_charge_swapin)()
+> -	  called by shmem's swapin processing.
+> +	mem_cgroup_cache_charge_swapin()
+> +	  Called at shmem's swapin.
+>  
+>  	mem_cgroup_prepare_migration()
+> -	  called before migration. "extra" charge is done
+> -	  followed by charge-commit-cancel protocol.
+> +	  Called before migration. "extra" charge is done and followed by
+> +	  charge-commit-cancel protocol.
+>  	  At commit, charge against oldpage or newpage will be committed.
+>  
+> -2. uncharge
+> +2. Uncharge
+>    a page/swp_entry may be uncharged (usage -= PAGE_SIZE) by
+>  
+>  	mem_cgroup_uncharge_page()
+> -	  called when an anonymous page is unmapped. If the page is SwapCache
+> -	  uncharge is delayed until mem_cgroup_uncharge_swapcache().
+> +	  Called when an anonymous page is fully unmapped .i.e mapcount goes
+
+	                                   fully unmapped.  I.e., mapcount goes
+
+> +	  to 0. If the page is SwapCache, uncharge is delayed until
+> +	  mem_cgroup_uncharge_swapcache().
+>  
+>  	mem_cgroup_uncharge_cache_page()
+> -	  called when a page-cache is deleted from radix-tree. If the page is
+> +	  Called when a page-cache is deleted from radix-tree. If the page is
+>  	  SwapCache, uncharge is delayed until mem_cgroup_uncharge_swapcache()
+
+End with '.' like above description does.
+
+>  
+>  	mem_cgroup_uncharge_swapcache()
+> -	  called when SwapCache is removed from radix-tree. the charge itself
+> +	  Called when SwapCache is removed from radix-tree. The charge itself
+>  	  is moved to swap_cgroup. (If mem+swap controller is disabled, no
+>  	  charge to swap.)
+>  
+>  	mem_cgroup_uncharge_swap()
+> -	  called when swp_entry's refcnt goes down to be 0. charge against swap
+> +	  Called when swp_entry's refcnt goes down to be 0. Charge against swap
+
+	                                      down to 0.
+
+>  	  disappears.
+>  
+>  	mem_cgroup_end_migration(old, new)
+> -	at success of migration -> old is uncharged (if necessary), charge
+> -	to new is committed. at failure, charge to old is committed.
+> +	At success of migration -> old is uncharged (if necessary), a charge
+> +	to new page is committed. at failure, charge to old page is committed.
+
+	                          At
+
+>  
+>  3. charge-commit-cancel
+> -	In some case, we can't know this "charge" is valid or not at charge.
+> +	In some case, we can't know this "charge" is valid or not at charging.
+
+	                                                             charging
+
+> +	(Because of races.)
+
+	(because of races).
+
+>  	To handle such case, there are charge-commit-cancel functions.
+>  		mem_cgroup_try_charge_XXX
+>  		mem_cgroup_commit_charge_XXX
+> @@ -68,23 +83,153 @@ patterns tend to be racy.
+>  
+>  	At cancel(), simply usage -= PAGE_SIZE.
+>  
+> -4. Typical Tests.
+> +Under below explanation, we assume CONFIG_MEM_RES_CTRL_SWAP=y.
+> +
+> +4. Anonymous
+> +	Anonymous page is newly allocated at
+> +		  - page fault into MAP_ANONYMOUS mapping.
+> +		  - Copy-On-Write.
+> + 	It is charged right after it's allocated before doing any page table
+> +	related operations. Of course, it's uncharged when another page is used
+> +	for the fault address.
+> +
+> +	At freeing anonymous page (by exit() or munmap()), zap_pte() is called
+> +	and pages for ptes are freed one by one.(see mm/memory.c). Uncharges
+
+	                                    one (see mm/memory.c). Uncharges
+
+> +	are done at page_remove_rmap() when page_mapcount() goes down to 0.
+> +
+> +	Yet another page freeing is by page-reclaim(vmscan.c) and anonymous
+
+	                               page-reclaim (vmscan.c)
+
+> +	pages are swapped-out. In this case, the page is marked as
+
+	          swapped out.
+
+> +	PageSwapCache(). uncharge() routine doesn't uncharge the page marked
+> +	as SwapCache(). It's delayed until __delete_from_swap_cache().
+> +
+> +	4.1 Swap-in.
+> +	At swap-in, the page is taken from swap-cache.There are 2 cases.
+
+	                                   swap-cache. There
+
+> +
+> +	(a) If the SwapCache is newly allocated and read, it has no charges.
+> +	(b) If the SwapCache have been mapped by some process, it has been
+
+	I would say:         has been
+
+> +	    charged already.
+> +	In case (a), we charge it. In case (b), we don't charge it.
+> +	(But racy state between (a) and (b) exists. We do check it.)
+> +	At charging, a charge recorded in swap_cgroup is moved to page_cgroup.
+> +
+> +	4.2 Swap-out.
+> +	At swap-out, typical state transition is below.
+> +
+> +	(a) add to swap cache. (marked as SwapCache)
+> +	    swp_entry's refcnt += 1.
+> +	(b) fully unmapped.
+> +	    swp_entry's refcnt += # of ptes.
+> +	(c) write back to swap.
+> +	(d) delete from swap cache. (remove from SwapCache)
+> +	    swp_entry's refcnt -= 1.
+> +
+> +
+> +	At (b), the page is marked as SwapCache and not uncharged.
+> +	At (d), the page is removed from SwapCache and a charge in page_cgroup
+> +	is moved to swap_cgroup.
+> +
+> +	Finally, at task exits,
+
+	            task exit,
+
+> +	(e) zap_pte() is called and swp_entry's refcnt -=1 -> 0.
+> +	Here, a charge in swap_cgroup disappears.
+> +
+> +5. Page Cache
+> +   	Page Cache is charged at
+> +	- add_to_page_cache_locked().
+> +
+> +	uncharged at
+> +	- __remove_from_page_cache().
+> +
+> +	The logic is very clear. (About migration, see below)
+> +	Note: __remove_from_page_cache() is called by remove_from_page_cache()
+> +	and __remove_mapping().
+> +
+> +6. Shmem(tmpfs) Page Cache
+> +	Memcg's charge/uncharge have special handlers of shmem. The best way
+> +	to understand shmem's page state transition is to read mm/shmem.c.
+> +	But brief explanation of the behavior of memcg around shmem will be
+> +	helpful to understand the logic.
+> +
+> +	Shmem's page (just leaf page, not direct/indirect block) can be on
+> +		- radix-tree of shmem's inode.
+> +		- SwapCache.
+> +		- Both on radix-tree and SwapCache. This happens at swap-in.
+
+		                                                    swap-in
+
+> +		  and swap-out,
+
+		  and swap-out.
+
+> +
+> +	It's charged when...
+> +	- A new page is added to shmem's radix-tree.
+> +	- A swp page is read. (move a charge from swap_cgroup to page_cgroup)
+> +	It's uncharged when
+> +	- A page is removed from radix-tree and not SwapCache.
+> +	- When SwapCache is removed, a charge is moved to swap_cgroup.
+> +	- When swp_entry's refcnt goes down to 0, a charge in swap_cgroup
+> +	  disappears.
+> +
+> +7. Page Migration
+> +   	One of the most complicated logic is page-migration-handler.
+
+This needs to be "most complicated functions" or "most complicated pieces
+of logic".  or something like that.
+
+> +	memcg have 2 routine. Assume migrate page's contents from OLDPAGE
+
+	      has 2 routines. Assume that we are migrating a page's contents
+	from OLDPAGE to NEWPAGE.
+
+> +	to NEWPAGE.
+> +
+> +	Usual migration logic is..
+> +	(a) remove the page from LRU.
+> +	(b) allocate NEWPAGE (migration target)
+> +	(c) lock by lock_page().
+> +	(d) unmap all mappings.
+> +	(e-1) If necessary, replace entry in radix-tree.
+> +	(e-2) move contents of a page.
+> +	(f) map all mappings again.
+> +	(g) pushback the page to LRU.
+> +	(-) OLDPAGE will be freed.
+> +
+> +	Before (g), memcg should complete the all works.
+
+should complete what??
+
+> +
+> +	The point is....
+> +	- If OLDPAGE is anonymous, all charges will be dropped at (d)
+> +	- If OLDPAGE is SwapCache, charges will be kept at (g)
+> +	- If OLDPAGE is page-cache, charges will be kept at (g)
+> +	At (e-1)(e-2) and (f), there are no hooks of memcg.
+> +
+> +	memcg provides following hooks.
+> +	- mem_cgroup_prepare_migration(OLDPAGE)
+> +	  Called at (b) and account a charge (usage += PAGE_SIZE) against
+
+	                to account a charge
+or	                and accounts a change
+
+> +	  memcg which "OLDPAGE" belongs to.
+> +
+> +        - mem_cgroup_end_migration(OLDPAGE, NEWPAGE)
+> +	  Called after (f) before (g).
+> +	  If OLDPAGE is used, commit OLDPAGE again. If OLDPAGE is already
+> +	  charged, a charge by prepare_migration() is automatically canceled.
+> +	  If NEWPAGE is used, commit NEWPAGE and uncharge OLDPAGE.
+> +
+> +	  But zap_pte()(by exit or munmap) can be called while migration,
+
+	      zap_pte() (by exit or munmap) can be called during migration, so
+
+> +	  we have to check OLDPAGE/NEWPAGE is a valid page after commit().
+
+	             check if OLDPAGE/NEWPAGE
+
+> +
+> +8. LRU
+> +        Each memcg has its own private LRU. Now, it's handling is under global
+> +	VM's control (means that it's handled under global zone->lru_lock).
+> +	Almost all routines around memcg's LRU is called by global LRU's
+
+	                                       are called
+
+> +	list management functions under zone->lru_lock().
+> +
+> +	One special function is mem_cgroup_isolate_pages(). This scans
+> +	memcg's private LRU and call __isolate_lru_page().
+> +	(By __isolate_lru_page(), the page is removed from private LRU, too)
+
+	                                                                too.)
+
+>  
+> -  Tests for racy cases.
+>  
+> -  4.1 small limit to memcg.
+> +9. Typical Tests.
+> +
+> + Tests for racy cases.
+> +
+> + 9.1 Small limit to memcg.
+>  	When you do test to do racy case, it's good test to set memcg's limit
+>  	to be very small rather than GB. Many races found in the test under
+>  	xKB or xxMB limits.
+>  	(Memory behavior under GB and Memory behavior under MB shows very
+>  	 different situation.)
+>  
+> -  4.2 shmem
+> + 9.2 Shmem
+>  	Historically, memcg's shmem handling was poor and we saw some amount
+>  	of troubles here. This is because shmem is page-cache but can be
+>  	SwapCache. Test with shmem/tmpfs is always good test.
+>  
+> -  4.3 migration
+> + 9.3 Migration
+>  	For NUMA, migration is an another special. To do easy test, cpuset
+
+	                          another special {test | case}.
+
+>  	is useful. Following is a sample script to do migration.
+>  
+> @@ -118,20 +263,20 @@ patterns tend to be racy.
+>  	G2_TASK=`cat ${G2}/tasks`
+>  	move_task "${G1_TASK}" ${G2} &
+>  	--
+> -  4.4 memory hotplug.
+> + 9.4 Memory hotplug.
+>  	memory hotplug test is one of good test.
+>  	to offline memory, do following.
+>  	# echo offline > /sys/devices/system/memory/memoryXXX/state
+>  	(XXX is the place of memory)
+>  	This is an easy way to test page migration, too.
+>  
+> - 4.5 mkdir/rmdir
+> + 9.5 mkdir/rmdir
+>  	When using hierarchy, mkdir/rmdir test should be done.
+>  	tests like following.
+
+	Use tests like the following:
+
+>  
+> -	#echo 1 >/opt/cgroup/01/memory/use_hierarchy
+> -	#mkdir /opt/cgroup/01/child_a
+> -	#mkdir /opt/cgroup/01/child_b
+> +	echo 1 >/opt/cgroup/01/memory/use_hierarchy
+> +	mkdir /opt/cgroup/01/child_a
+> +	mkdir /opt/cgroup/01/child_b
+>  
+>  	set limit to 01.
+>  	add limit to 01/child_b
+> @@ -143,3 +288,12 @@ patterns tend to be racy.
+>  	/opt/cgroup/01/child_c
+>  
+>  	running new jobs in new group is also good.
+> +
+> + 9.6 Mount with other subsystems.
+> +	Mounting with other subsystems is a good test because there ia a
+
+	                                                            is a
+
+> +	race and lock dependency with other cgroup subsystems.
+> +
+> +	example)
+> +	# mount -t cgroup none /cgroup -t cpuset,memory,cpu,devices
+> +
+> +	and do task move, mkdir, rmdir etc...under this.
+> Index: mmotm-2.6.28-Dec03/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.28-Dec03.orig/mm/memcontrol.c
+> +++ mmotm-2.6.28-Dec03/mm/memcontrol.c
+> @@ -6,6 +6,10 @@
+>   * Copyright 2007 OpenVZ SWsoft Inc
+>   * Author: Pavel Emelianov <xemul@openvz.org>
+>   *
+> + * Documentations are available at
+
+      Documentation is available at:
+
+> + * 	Documentation/controllers/memory.txt
+> + * 	Documentation/controllers/memcg_test.txt
+> + *
+>   * This program is free software; you can redistribute it and/or modify
+>   * it under the terms of the GNU General Public License as published by
+>   * the Free Software Foundation; either version 2 of the License, or
+
+
+HTH.
+
+~Randy
