@@ -1,51 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYLDARh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYLDAU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757315AbYLDARh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 19:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYLDARV
+	id S1755929AbYLDAU0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 19:20:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbYLDAUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 19:17:21 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:57282 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751426AbYLDART (ORCPT
+	Wed, 3 Dec 2008 19:20:07 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:26848 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbYLDAUG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 19:17:19 -0500
-Subject: Re: 2.6.28-rc7-git2: Reported regressions from 2.6.27
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-In-Reply-To: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera>
-References: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera>
-Content-Type: text/plain
-Date: Wed, 03 Dec 2008 18:17:21 -0600
-Message-Id: <1228349841.5551.100.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Wed, 3 Dec 2008 19:20:06 -0500
+Message-ID: <493721E7.3010603@oracle.com>
+Date: Wed, 03 Dec 2008 16:18:47 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: randy.dunlap@oracle.com, rusty@rustcorp.com.au, akpm@linux-foundation.org,
+       rmk+lkml@arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       sfr@canb.auug.org.au
+Subject: Re: Yet more ARM breakage in linux-next
+References: <20081203124109.79f8f15b.akpm@linux-foundation.org>	<200812040952.44957.rusty@rustcorp.com.au>	<49371848.2080804@oracle.com> <20081203.160144.215210763.davem@davemloft.net>
+In-Reply-To: <20081203.160144.215210763.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020A.493721EB.00A1:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-03 at 22:49 +0100, Rafael J. Wysocki wrote:
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12120
-> Subject         : [Block layer or SCSI] requests aborted too early
-> during check_partition()
-> Submitter       : Stefan Richter <stefan-r-bz@s5r6.in-berlin.de>
-> Date            : 2008-11-29 05:19 (5 days old)
+David Miller wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> Date: Wed, 03 Dec 2008 15:37:44 -0800
+> 
+>> Rusty Russell wrote:
+>>> On Thursday 04 December 2008 07:11:09 Andrew Morton wrote:
+>>>> On Wed, 3 Dec 2008 19:29:05 +0000
+>>>>
+>>>> Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+>>>>> This seems to be causing lots of ARM breakage:
+>>>>>
+>>>>> lib/find_next_bit.c:183: error: implicit declaration of function '__fls'
+>>>>>
+>>>>> Whoever's responsible,
+>>>> git-blame?
+>>> It's me.  Turns out sparc, avr32 and arm all don't define __fls in their
+>>> asm/bitops.h, and I'm the first one to use it in generic code.
+>>>
+>>> But as I prepared this patch, I note that the armv5 __fls/fls is wrong:
+>>>
+>>>   /* Implement fls() in C so that 64-bit args are suitably truncated */
+>>>   static inline int fls(int x)
+>>>   {
+>>>       return __fls(x);
+>>>   }
+>>>
+>>> __fls(x) returns a bit number (0-31).  fls() returns 0 or bitnumber+1.
+>>>
+>>> (Yes, classic useless kerneldoc documentation doesn't actually *say* 
+>>> this clearly).
+>>  
+>> oh fud.  That's not a fault of kernel-doc, just of whoever wrote it.
+>> It's only as good as someone makes it.
+> 
+> That's true, but it is not fud to say that kerneldoc is only any good
+> if people keep it accurate and up to date, and this is what I think
+> Rusty is upset about.
+> 
+> I personally don't like kerneldoc at all, because the truth is that
+> people will work on fixing bugs and other userful things before
+> keeping kerneldoc up to date.
+> 
+> And that's the basic fact which cannot be denied.
+> 
+> I wish it could work, but it doesn't across the board.  So unless
+> we have dedicated monkeys scouring over every single patch that
+> goes into the tree and doing the necessary kerneldoc updates,
+> kerneldoc will be chronically wrong somewhere.
+> 
+> That leads to confusion and lost developer time.  Because if the
+> kerneldoc bits are wrong, it's worthless.
 
-Fixed by this patch:
+That's all independent of kernel-doc.  I.e., if someone just used
+plain comments and they still were not being updated (typical),
+then it's the same problem.  And yes, I agree, the wrong documentation
+is bad and a time sink.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9728c0814ecb505546696a659858fdb761375544
-
-James
-
+~Randy
 
