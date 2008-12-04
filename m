@@ -1,84 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbYLDRcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbYLDRdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758217AbYLDRcV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 12:32:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbYLDR31
+	id S1758404AbYLDRdM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 12:33:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbYLDR3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 12:29:27 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:20640 "EHLO
-	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755594AbYLDR3Q (ORCPT
+	Thu, 4 Dec 2008 12:29:30 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:20877 "EHLO
+	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756265AbYLDR3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 12:29:16 -0500
-X-BigFish: VPS3(zzzzzzz32i43j66h)
-X-Spam-TCS-SCL: 5:0
+	Thu, 4 Dec 2008 12:29:19 -0500
+X-BigFish: VPS3(zzzzzzz32i43j62h)
+X-Spam-TCS-SCL: 1:0
 X-FB-SS: 5,
-X-WSS-ID: 0KBD4K5-03-CR6-01
+X-WSS-ID: 0KBD4K7-03-CRD-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: avi@redhat.com, mingo@redhat.com, dwmw2@infradead.org, gregkh@suse.de,
        weidong.han@intel.com
 CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        kvm@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 04/11] select IOMMU_API when DMAR and/or AMD_IOMMU is selected
-Date: Thu, 4 Dec 2008 18:28:49 +0100
-Message-ID: <1228411736-22644-5-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 06/11] VT-d: adapt domain init and destroy functions for IOMMU API
+Date: Thu, 4 Dec 2008 18:28:51 +0100
+Message-ID: <1228411736-22644-7-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <20081204172142.GH12816@amd.com>
 References: <20081204172142.GH12816@amd.com>
-X-OriginalArrivalTime: 04 Dec 2008 17:28:56.0678 (UTC) FILETIME=[C9453060:01C95635]
+X-OriginalArrivalTime: 04 Dec 2008 17:28:56.0772 (UTC) FILETIME=[C9538840:01C95635]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These two IOMMUs can implement the current version of this API. So
-select the API if one or both of these IOMMU drivers is selected.
-
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/ia64/Kconfig     |    3 +++
- arch/x86/Kconfig      |    3 +++
- drivers/base/Makefile |    1 +
- 3 files changed, 7 insertions(+), 0 deletions(-)
+ drivers/pci/intel-iommu.c   |   33 ++++++++++++++++++---------------
+ include/linux/intel-iommu.h |    2 --
+ 2 files changed, 18 insertions(+), 17 deletions(-)
 
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 6bd91ed..6a7b0c9 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -687,3 +687,6 @@ config IRQ_PER_CPU
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index a8c2e58..c939039 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -35,6 +35,7 @@
+ #include <linux/mempool.h>
+ #include <linux/timer.h>
+ #include <linux/iova.h>
++#include <linux/iommu.h>
+ #include <linux/intel-iommu.h>
+ #include <asm/cacheflush.h>
+ #include <asm/iommu.h>
+@@ -2665,32 +2666,34 @@ static void vm_domain_exit(struct dmar_domain *domain)
+ 	free_domain_mem(domain);
+ }
  
- config IOMMU_HELPER
- 	def_bool (IA64_HP_ZX1 || IA64_HP_ZX1_SWIOTLB || IA64_GENERIC || SWIOTLB)
-+
-+config IOMMU_API
-+	def_bool (DMAR)
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index ac22bb7..b9f7187 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -580,6 +580,9 @@ config SWIOTLB
- config IOMMU_HELPER
- 	def_bool (CALGARY_IOMMU || GART_IOMMU || SWIOTLB || AMD_IOMMU)
+-struct dmar_domain *intel_iommu_alloc_domain(void)
++static int intel_iommu_domain_init(struct iommu_domain *domain)
+ {
+-	struct dmar_domain *domain;
++	struct dmar_domain *dmar_domain;
  
-+config IOMMU_API
-+	def_bool (AMD_IOMMU || DMAR)
+-	domain = iommu_alloc_vm_domain();
+-	if (!domain) {
++	dmar_domain = iommu_alloc_vm_domain();
++	if (!dmar_domain) {
+ 		printk(KERN_ERR
+-			"intel_iommu_domain_alloc: domain == NULL\n");
+-		return NULL;
++			"intel_iommu_domain_init: dmar_domain == NULL\n");
++		return -ENOMEM;
+ 	}
+-	if (vm_domain_init(domain, DEFAULT_DOMAIN_ADDRESS_WIDTH)) {
++	if (vm_domain_init(dmar_domain, DEFAULT_DOMAIN_ADDRESS_WIDTH)) {
+ 		printk(KERN_ERR
+-			"intel_iommu_domain_alloc: domain_init() failed\n");
+-		vm_domain_exit(domain);
+-		return NULL;
++			"intel_iommu_domain_init() failed\n");
++		vm_domain_exit(dmar_domain);
++		return -ENOMEM;
+ 	}
++	domain->priv = dmar_domain;
+ 
+-	return domain;
++	return 0;
+ }
+-EXPORT_SYMBOL_GPL(intel_iommu_alloc_domain);
+ 
+-void intel_iommu_free_domain(struct dmar_domain *domain)
++static void intel_iommu_domain_destroy(struct iommu_domain *domain)
+ {
+-	vm_domain_exit(domain);
++	struct dmar_domain *dmar_domain = domain->priv;
 +
- config MAXSMP
- 	bool "Configure Maximum number of SMP Processors and NUMA Nodes"
- 	depends on X86_64 && SMP && BROKEN
-diff --git a/drivers/base/Makefile b/drivers/base/Makefile
-index c666373..b5b8ba5 100644
---- a/drivers/base/Makefile
-+++ b/drivers/base/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_FW_LOADER)	+= firmware_class.o
- obj-$(CONFIG_NUMA)	+= node.o
- obj-$(CONFIG_MEMORY_HOTPLUG_SPARSE) += memory.o
- obj-$(CONFIG_SMP)	+= topology.o
-+obj-$(CONFIG_IOMMU_API) += iommu.o
- ifeq ($(CONFIG_SYSFS),y)
- obj-$(CONFIG_MODULES)	+= module.o
- endif
++	domain->priv = NULL;
++	vm_domain_exit(dmar_domain);
+ }
+-EXPORT_SYMBOL_GPL(intel_iommu_free_domain);
+ 
+ int intel_iommu_attach_device(struct dmar_domain *domain,
+ 			      struct pci_dev *pdev)
+diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
+index 39a68b3..b4a2c2d 100644
+--- a/include/linux/intel-iommu.h
++++ b/include/linux/intel-iommu.h
+@@ -335,8 +335,6 @@ extern int qi_flush_iotlb(struct intel_iommu *iommu, u16 did, u64 addr,
+ 
+ extern void qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu);
+ 
+-struct dmar_domain *intel_iommu_alloc_domain(void);
+-void intel_iommu_free_domain(struct dmar_domain *domain);
+ int intel_iommu_attach_device(struct dmar_domain *domain,
+ 			      struct pci_dev *pdev);
+ void intel_iommu_detach_device(struct dmar_domain *domain,
 -- 
 1.5.6.4
 
