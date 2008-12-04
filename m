@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYLDSUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbYLDS0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757315AbYLDSUe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 13:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbYLDSUU
+	id S1757194AbYLDS0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 13:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYLDS0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 13:20:20 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:59778 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754982AbYLDSUR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 13:20:17 -0500
-Date: Thu, 4 Dec 2008 12:20:05 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: sds@tycho.nsa.gov, jmorris@namei.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       takedakn@nttdata.co.jp, haradats@nttdata.co.jp
-Subject: Re: [PATCH (mmotm-2008-12-02-17-08)] Introduce
-	security_path_set/clear() hooks.
-Message-ID: <20081204182005.GA14852@us.ibm.com>
-References: <200812021939.FFC05200.OVQJSOMtFFHLFO@I-love.SAKURA.ne.jp> <1228225719.26101.52.camel@moss-spartans.epoch.ncsc.mil> <49364808.1070907@nttdata.co.jp> <493649C5.2060402@nttdata.co.jp> <1228313605.32059.23.camel@moss-spartans.epoch.ncsc.mil> <200812042100.HFE00081.tFFOHMQVOLFOSJ@I-love.SAKURA.ne.jp>
+	Thu, 4 Dec 2008 13:26:03 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42224 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752444AbYLDS0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 13:26:01 -0500
+Date: Thu, 4 Dec 2008 19:24:31 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Jan Kiszka <jan.kiszka@siemens.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: SIGTRAP vs. sys_exit_group race
+Message-ID: <20081204182431.GB17468@redhat.com>
+References: <48EA1BE9.1030707@siemens.com> <20081016165727.GA6442@redhat.com> <20081204005203.7AE1CFC053@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200812042100.HFE00081.tFFOHMQVOLFOSJ@I-love.SAKURA.ne.jp>
+In-Reply-To: <20081204005203.7AE1CFC053@magilla.sf.frob.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
-> Hello.
-> 
-> Stephen Smalley wrote:
-> > On Wed, 2008-12-03 at 17:56 +0900, Kentaro Takeda wrote:
-> > > Stephen, Serge,
-> > > Here is the patch for introducing new security_path_set()/clear() hooks.
-> > > 
-> > > This patch enables LSM module to remember vfsmount's pathname so that it can 
-> > > calculate absolute pathname in security_inode_*(). Since actual MAC can be 
-> > > performed after DAC, there will not be any noise in auditing and learning 
-> > > features. This patch currently assumes that the vfsmount's pathname is stored in 
-> > > hash table in LSM module. (Should I use stack memory?)
-> > > 
-> > > Since security_inode_*() are not always called after security_path_set(), 
-> > > security_path_clear() hook is needed to free the remembered pathname.
-> > 
-> > Your security_path_set()/security_path_clear() pairs look rather similar
-> > to mnt_want_write()/mnt_drop_write() pairs.  What if you were to call
-> > your hooks from those functions, and then you would only need to add
-> > further hook calls in the case of read-only and execute/search checks?
-> 
-> Right. Locations of inserting security_path_set()/security_path_clear() pairs
-> are subset of mnt_want_write()/mnt_drop_write() pairs. Thus, we can insert
-> security_path_set()/security_path_clear() pairs into
-> mnt_want_write()/mnt_drop_write() pairs, if we can tolerate performance
-> regression. According to our rough measurement, there is about 8 - 22% of
-> performance regression.
+On 12/02, Roland McGrath wrote:
+>
+> > Roland, what do you think?
+> >
+> > On 10/06, Jan Kiszka wrote:
+> > >
+> > > --- a/kernel/signal.c
+> > > +++ b/kernel/signal.c
+> > > @@ -1528,10 +1528,11 @@ static void ptrace_stop(int exit_code, i
+> > >  		spin_unlock_irq(&current->sighand->siglock);
+> > >  		arch_ptrace_stop(exit_code, info);
+> > >  		spin_lock_irq(&current->sighand->siglock);
+> > > -		if (sigkill_pending(current))
+> > > -			return;
+> > >  	}
+> > >
+> > > +	if (sigkill_pending(current))
+> > > +		return;
+> > > +
+> >
+> > Personally, I think this change is good anyway. The tracee shouldn't
+> > sleep in TASK_TRACED with the pending SIGKILL.
+>
+> I think this is actually superfluous since TASK_WAKEKILL (2.6.24?).
+> It won't sleep in TASK_TRACED at all, because of signal_pending_state().
 
-... compared to what, exactly?
+Yes. But what if the task was killed by the group-wide SIGKILL, and
+already dequeued SIGKILL from ->pending ? (do_exit path).
 
-If having CONFIG_SECURITY_PATH=y but TOMOYO  disabled has this kind of
-regression against just not having CONFIG_SECURITY_PATH, then no that is
-not acceptable.
+> > I think we need further changes. If the thread group group was killed
+> > by some fatal signal (but not SIGKILL) the tracee will sleep with
+> > SIGNAL_GROUP_EXIT, this is not nice too. But imho the patch makes
+> > sense anyway.
+>
+> When there is no (user-level) SIGKILL and no core dump synchronization, I
+> think it's desireable for each thread to stop in exit tracing so it can be
+> fully examined.
 
--serge
+Yes. But my point was, it is not good the tracee sleeps and can't be
+killed. Yes, the user can use tkill(9) to wake it up, but still.
+
+Oleg.
+
