@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757306AbYLDTTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757234AbYLDTWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757306AbYLDTTe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 14:19:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbYLDTTZ
+	id S1757234AbYLDTWa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 14:22:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754993AbYLDTWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 14:19:25 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:57684 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751646AbYLDTTY (ORCPT
+	Thu, 4 Dec 2008 14:22:19 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53471 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753527AbYLDTWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 14:19:24 -0500
-Date: Fri, 5 Dec 2008 00:47:58 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
-       akpm@linux-foundation.org, mingo@elte.hu, richardj_moore@uk.ibm.com
-Subject: Re: [RFC Patch 0/9] Hardware Breakpoint interfaces - v2
-Message-ID: <20081204191758.GJ20563@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20081204190804.GA15134@in.ibm.com>
+	Thu, 4 Dec 2008 14:22:19 -0500
+Date: Thu, 4 Dec 2008 13:24:12 -0600
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
+Message-ID: <20081204192412.GA22390@hallyn.com>
+References: <cover.1228253618.git.zohar@linux.vnet.ibm.com> <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com> <20081203123021.GA30035@infradead.org> <1228328323.2821.30.camel@localhost.localdomain> <20081203182300.GA31203@infradead.org> <1228342655.2821.64.camel@localhost.localdomain> <20081204130949.GA18196@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081204190804.GA15134@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081204130949.GA18196@infradead.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 05, 2008 at 12:38:05AM +0530, K.Prasad wrote:
-> Hi All,
-> 	Please find the latest set of patches that introduce kernel
-> interfaces to use Hardware Breakpoint registers and an implementation
-> for x86 (and x86_64) architecture.
+Quoting Christoph Hellwig (hch@infradead.org):
+> On Wed, Dec 03, 2008 at 05:17:35PM -0500, Mimi Zohar wrote:
+> > > I have a bit of a problem parsing the above, and it certainly doesn't
+> > > look like a justification for keeping all that unused code around.
+> > 
+> > The purpose of LIM is to provide an integrity infrastructure to support 
+> > different types of integrity data.  IMA implements both the LIM
+> > API for it's own internal use, and exports it for others to call.
+> > 
+> > As Dave Safford pointed out in http://lkml.org/lkml/2008/11/17/362,
+> > there are other projects that want to add differently structured
+> > measurements to the TPM measurement list.  The template abstraction is
+> > critical to allowing these differently formatted messages to be added to
+> > the list.
 > 
-> The patches have undergone changes to incorporate the suggestions for
-> the previous patchset - including removal of support for instruction
-> breakpoint, and are based off 2.6.28-rc7. The patches have been tested
-> on x86 architecture along with kprobes, however they're posted as RFC
-> owing to the many pending tasks (refer
-> http://lkml.org/lkml/2008/10/7/127 for details).
+> I think we're talking past each other.
 > 
-> Thanks,
-> K.Prasad
->
-Oops...the title should have read: [RFC Patch 0/9] Hardware Breakpoint
-interfaces - v3
- 
+> In integrity.h there are two operation vectors defines:
+> 
+>  - struct integrity_operations delcares the operations called from the
+>    VFS.  This one is actually used.  While I don't agree to Dave's
+>    argument, because we don't put bloat in just because people might
+>    eventually some day use it when they are in the right mood and the
+>    sun shines, thisn't isn't the one I'm talking about in this thread.
+>  - struct template_operations on the others is not only really badly
+>    named for appearing in a global header but also not used in a
+>    meaningfull way.  There is one single instace of it,
+>    ima_template_ops, and while there are five helpers added in the
+>    second patch that use it (integrity_collect_measurement,
+>    integrity_appraise_measurement, integrity_store_measurement,
+>    integrity_store_template, integrity_must_measure) none of them
+>    is used at all during the patch series.  There are two direct
+>    uses of these template added in the third path, to implement the
+>    show operations for the "binary_runtime_measurements" and
+>    "ascii_runtime_measurements" files ins securityfs, but given that
+>    those are inside ima there no reason for the indirection at all.
+
+Yeah I can definately see that.
+
+Mimi, you used to have another template (I thought) which just tracked
+security_ops to try and prevent subversion of the LSM hooks.  Or something like
+that.  That was a separate template_ops, right?  Can you post that again?  That
+might answer both Christoph's query about the usefulness of the indirection,
+and Dave's question about "how could I use this, anyway".
+
+If you do repost it, please be very clear about what it is expected
+to do/protect against, and how, using no acronyms which you don't
+define on first use :)
+
+thanks,
+-serge
