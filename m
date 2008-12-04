@@ -1,79 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758992AbYLDPnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbYLDPoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758992AbYLDPnx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 10:43:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755758AbYLDPlj
+	id S1753245AbYLDPoV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 10:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbYLDPmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 10:41:39 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:48786 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757241AbYLDPli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 10:41:38 -0500
-Subject: Re: [PATCH 2/3] ftrace: use struct pid
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Steven Rostedt <srostedt@redhat.com>, containers@lists.osdl.org,
-       Ingo Molnar <mingo@elte.hu>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>
-In-Reply-To: <m1prk8t5xr.fsf@frodo.ebiederm.org>
-References: <20081204052638.425740534@goodmis.org>
-	 <20081204052735.175697908@goodmis.org> <m1d4g8un6b.fsf@frodo.ebiederm.org>
-	 <1228395378.13111.23.camel@nimitz> <1228396022.13111.27.camel@nimitz>
-	 <m1prk8t5xr.fsf@frodo.ebiederm.org>
-Content-Type: text/plain
-Date: Thu, 04 Dec 2008 07:41:31 -0800
-Message-Id: <1228405291.13111.86.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Dec 2008 10:42:38 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:62720 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758736AbYLDPmh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 10:42:37 -0500
+Date: Thu, 4 Dec 2008 16:42:31 +0100
+From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [W1] Added touch block command.
+Message-ID: <20081204154231.GC4864@gambetta>
+References: <12284022104086-git-send-email-zbr@ioremap.net> <122840221468-git-send-email-zbr@ioremap.net> <12284022143564-git-send-email-zbr@ioremap.net> <12284022144105-git-send-email-zbr@ioremap.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <12284022144105-git-send-email-zbr@ioremap.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-04 at 05:40 -0800, Eric W. Biederman wrote:
-> Dave Hansen <dave@linux.vnet.ibm.com> writes:
-> > On Thu, 2008-12-04 at 04:56 -0800, Dave Hansen wrote:
-> >> On Thu, 2008-12-04 at 04:42 -0800, Eric W. Biederman wrote:
-> >> > 
-> >> > > +static void clear_ftrace_pid_task(struct pid **pid)
-> >> > > +{
-> >> > > +     struct task_struct *p;
-> >> > > +
-> >> >         rcu_read_lock();
-> >> > 
-> >> > > +     do_each_pid_task(*pid, PIDTYPE_PID, p) {
-> >> > > +             clear_tsk_trace_trace(p);
-> >> > > +     } while_each_pid_task(*pid, PIDTYPE_PID, p);
-> >> >         rcu_read_unlock()
-> >> > 
-> >> > > +     put_pid(*pid);
-> >> > > +
-> >> > > +     *pid = NULL;
-> >> > > +}
-> >> 
-> >> Could we get away with sticking the rcu_read_{un}lock() inside
-> those
-> >> macros?  Those are going to get used in pretty high level code and
-> we're
-> >> allowed to nest rcu_read_lock().  No danger of deadlocks or lock
-> >> inversions.
-> >
-> > Why don't any of the other users of do_each_pid_task() use
-> > rcu_read_lock()?  They all seem to be under
-> read_lock(&tasklist_lock)
-> > (except one is under a write lock of the same).
-> 
-> We probably should.  Historically read_lock(&tasklist_lock) implies
-> rcu_read_lock().  And the tasklist lock is what we hold when it is
-> safe.
-
-So, Dipankar tells me that you really do need rcu_read_lock/unlock() for
-the guarantee here; the tasklist lock is not sufficient.  The realtime
-kernel will preempt even those sections covered by spinlocks.
-
--- Dave
-
+On Thu, Dec 04, 2008 at 05:50:07PM +0300, Evgeniy Polyakov wrote:
+> -			cn->ack++
+> +			cn->ack++;
+Which we find here, sorry for the noise :-)
