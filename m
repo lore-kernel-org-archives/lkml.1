@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbYLDLOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbYLDLSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757897AbYLDLOn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 06:14:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYLDLOc
+	id S1757813AbYLDLSA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 06:18:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYLDLRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 06:14:32 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48378 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbYLDLOb (ORCPT
+	Thu, 4 Dec 2008 06:17:51 -0500
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:57163 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751283AbYLDLRu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 06:14:31 -0500
-Date: Thu, 4 Dec 2008 12:16:21 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       venkatesh.pallipadi@intel.com, shaohua.li@intel.com
-Subject: Re: 2.6.28-rc6: hpet: object is on stack, but not annotated
-Message-ID: <20081204111621.GA2466@elf.ucw.cz>
-References: <a4423d670811240839q54e6b7afxfc49d28b3ea127cb@mail.gmail.com> <a4423d670811241014n2b2192beh931d374bf063894f@mail.gmail.com> <alpine.LFD.2.00.0811241916560.3301@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0811241916560.3301@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Dec 2008 06:17:50 -0500
+Subject: [PATCH] fs: reorder struct inotify_device on 64bits to remove
+	padding
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: viro@zeniv.linux.org.uk
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 04 Dec 2008 11:17:47 +0000
+Message-Id: <1228389467.2963.21.camel@castor.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-11-24 19:17:44, Thomas Gleixner wrote:
-> On Mon, 24 Nov 2008, Alexander Beregalov wrote:
-> 
-> > 2008/11/24 Alexander Beregalov <a.beregalov@gmail.com>:
-> > > hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
-> > > hpet0: 3 comparators, 64-bit 14.318180 MHz counter
-> > > ODEBUG: object is on stack, but not annotated
-> > > ------------[ cut here ]------------
-> > > WARNING: at lib/debugobjects.c:251 __debug_object_init+0x2a4/0x352()
-> > 
-> > Bisected down to 26afe5f2fbf06ea0765aaa316640c4dd472310c0
-> > (x86: HPET_MSI Initialise per-cpu HPET timers)
-> > 
-> > Revert helps
-> 
-> That's just a warning about a missing annotation. The commit is fine.
+Reorder struct inotify_device to remove 8 bytes of padding on 64bit
+builds, reducing size to 128 bytes . Therefore allocating from a smaller
+slab & using one fewer cachelines.
 
-You must be using very different metric of what "fine" means than rest
-of the world.
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
 
-(No, introducing WARN_ON()s is not fine; it spams kerneloops.org at least...)
+----
+Hi,
+patch against 2.6.28-rc7.
+built & tested on AMDX2 desktop.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I've not been able to send this to the listed inotify maintainers, I
+just get mail failures. So I guessed filesystem was the best home for
+it, hope that's ok. 
+
+regards
+Richard
+
+
+diff --git a/fs/inotify_user.c b/fs/inotify_user.c
+index d367e9b..5554d7f 100644
+--- a/fs/inotify_user.c
++++ b/fs/inotify_user.c
+@@ -76,10 +76,10 @@ struct inotify_device {
+ 	struct mutex		ev_mutex;	/* protects event queue */
+ 	struct mutex		up_mutex;	/* synchronizes watch updates */
+ 	struct list_head 	events;		/* list of queued events */
+-	atomic_t		count;		/* reference count */
+ 	struct user_struct	*user;		/* user who opened this dev */
+ 	struct inotify_handle	*ih;		/* inotify handle */
+ 	struct fasync_struct    *fa;            /* async notification */
++	atomic_t		count;		/* reference count */
+ 	unsigned int		queue_size;	/* size of the queue (bytes) */
+ 	unsigned int		event_count;	/* number of pending events */
+ 	unsigned int		max_events;	/* maximum number of events */
+
+
