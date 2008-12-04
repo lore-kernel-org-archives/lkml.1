@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbYLDJjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbYLDJoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757099AbYLDJjT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 04:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbYLDJjH
+	id S1756792AbYLDJoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 04:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYLDJoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 04:39:07 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:58467 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752328AbYLDJjG (ORCPT
+	Thu, 4 Dec 2008 04:44:05 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48195 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752327AbYLDJoE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 04:39:06 -0500
-Date: Thu, 4 Dec 2008 09:39:04 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [git pull] bdev misc fixes for .28-final
-Message-ID: <20081204093904.GI28946@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 4 Dec 2008 04:44:04 -0500
+Date: Thu, 4 Dec 2008 18:43:09 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>
+Subject: Re: [Experimental][PATCH 19/21] memcg-fix-pre-destroy.patch
+Message-Id: <20081204184309.da8264c0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081204183428.19cbd22d.nishimura@mxp.nes.nec.co.jp>
+References: <20081203134718.6b60986f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081203141117.d3685413.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081204183428.19cbd22d.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	This is basically a sweeping-up after bdev API series merge -
-two bug fixes and cleaning up bits of detritus.  Please, pull from
-git://git.kernel.org/pub/scm/linux/kernel/git/viro/bdev.git/ for-linus
+On Thu, 4 Dec 2008 18:34:28 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-Shortlog:
-Al Viro (2):
-      kill obsolete temporary comment in swsusp_close()
-      fix bogus argument of blkdev_put() in pktcdvd
+> Added CC: Paul Menage <menage@google.com>
+> 
+> > @@ -2096,7 +2112,7 @@ static void mem_cgroup_get(struct mem_cg
+> >  static void mem_cgroup_put(struct mem_cgroup *mem)
+> >  {
+> >  	if (atomic_dec_and_test(&mem->refcnt)) {
+> > -		if (!mem->obsolete)
+> > +		if (!css_under_removal(&mem->css))
+> >  			return;
+> >  		mem_cgroup_free(mem);
+> >  	}
+> I don't think it's safe to check css_under_removal here w/o cgroup_lock.
+> (It's safe *NOW* just because memcg is the only user of css->refcnt.)
+> 
 
-Andreas Schwab (1):
-      Fix block dev compat ioctl handling
+> As Li said before, css_under_removal doesn't necessarily mean
+> this this group has been destroyed, but mem_cgroup will be freed.
+> 
+> But adding cgroup_lock/unlock here causes another dead lock,
+> because mem_cgroup_get_next_node calls mem_cgroup_put.
+> 
+> hmm.. hierarchical reclaim code will be re-written completely by [21/21],
+> so would it be better to change patch order or to take another approach ?
+> 
+Hmm, ok.
 
-Christoph Hellwig (3):
-      clean up blkdev_get a little bit
-      kill FMODE_NDELAY_NOW
-      documnt FMODE_ constants
+How about this ?
+==
+	At initlization, mem_cgroup_create(), set memcg->refcnt to be 1.
 
-Diffstat:
- block/compat_ioctl.c    |   31 ++++++++++++++++++++++++++++++-
- drivers/block/pktcdvd.c |    4 ++--
- drivers/scsi/sd.c       |    2 +-
- drivers/scsi/sr.c       |    2 +-
- fs/block_dev.c          |   21 ++++++++++++++++-----
- include/linux/fs.h      |   33 +++++++++++++++++----------------
- kernel/power/swap.c     |    2 +-
- 7 files changed, 68 insertions(+), 27 deletions(-)
+	At destroy(), put this refcnt by 1.
+
+	remove css_under_removal(&mem->css) check.
+==
+
+-Kame
 
