@@ -1,55 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbYLDVAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbYLDVHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758426AbYLDVAp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 16:00:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYLDVAg
+	id S1757842AbYLDVHP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 16:07:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbYLDVG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 16:00:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44337 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755001AbYLDVAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 16:00:35 -0500
+	Thu, 4 Dec 2008 16:06:59 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:27734 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754240AbYLDVG7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 16:06:59 -0500
+Message-ID: <4938466C.8050704@hp.com>
+Date: Thu, 04 Dec 2008 16:06:52 -0500
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: kernel BUG at block/blk-timeout.c:178!
+References: <4937E888.3060208@hp.com> <20081204155005.GX18255@kernel.dk> <493801AF.8050308@hp.com> <49382201.8030609@hp.com>
+In-Reply-To: <49382201.8030609@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       rnalumasu@gmail.com
-Subject: Re: + do_wait-wakeup-optimization.patch added to -mm tree
-In-Reply-To: Oleg Nesterov's message of  Thursday, 4 December 2008 16:26:01 +0100 <20081204152601.GB8816@redhat.com>
-References: <200811212015.mALKFMs4019558@imap1.linux-foundation.org>
-	<20081123213929.GA9097@redhat.com>
-	<20081204005203.C795EFC3AB@magilla.sf.frob.com>
-	<20081204152601.GB8816@redhat.com>
-Emacs: featuring the world's first municipal garbage collector!
-Message-Id: <20081204205942.81079FC32C@magilla.sf.frob.com>
-Date: Thu,  4 Dec 2008 12:59:42 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I don't see an exposed __wake_up* variant that both passes a "key" pointer
-> > through and does "sync".  For __wake_up_parent, "sync" is quite desireable.
+Alan D. Brunelle wrote:
+> Alan D. Brunelle wrote:
+>> Jens Axboe wrote:
+>>
+>>> Alan, can you try latest -git? feaf3848a813a106f163013af6fcf6c4bfec92d9
+>>> or later.
+>>>
+>> git pull()ed to: feaf3848a813a106f163013af6fcf6c4bfec92d9 and the same
+>> problem occurs.
 > 
-> Well, yes... and __wake_up_common() is static. Perhaps we can make a new
-> helper. 
+> Maybe not - I've not been to reproduce that problem in subsequent
+> reboots. It could be that I booted the wrong kernel first time (rc6
+> instead of rc7). Will keep plugging - any idea as to what might have
+> "fixed" the problem between rc6 & rc7?
+> 
+> Alan
 
-Right, that's what I was suggesting (and not volunteering to do ;-).
+It's back - just not as easily reproduced as before.
 
-> I must admit, I don't understand what "sync" actually means nowadays.
+I'm concerned over this piece of code:
 
-I don't claim to know any actual scheduler innards.  But the meaning as I
-understand it is to "make it runnable, but don't try to reschedule right
-now because current will block quite soon anyway.  If this does indeed
-reduce work done to immediately reschedule, then it seems quite desireable
-to avoid that flutter since the dying/stopping thread is very few cycles
-away from yielding, and in the death case it will be for the last time and
-rescheduling earlier just means a later unnecessary switch back and delayed
-put_task_struct processing after the reap.
+/*
+ * hp_sw_tur - Send TEST UNIT READY
+ * @sdev: sdev command should be sent to
+ *
+ * Use the TEST UNIT READY command to determine
+ * the path state.
+ */
+static int hp_sw_tur(struct scsi_device *sdev, struct hp_sw_dh_data *h)
+{
+        struct request *req;
+        int ret;
 
+        req = blk_get_request(sdev->request_queue, WRITE, GFP_NOIO);
+        if (!req)
+                return SCSI_DH_RES_TEMP_UNAVAIL;
 
-Thanks,
-Roland
+        req->cmd_type = REQ_TYPE_BLOCK_PC;
+        req->cmd_flags |= REQ_FAILFAST_DEV | REQ_FAILFAST_TRANSPORT |
+                          REQ_FAILFAST_DRIVER;
+        req->cmd_len = COMMAND_SIZE(TEST_UNIT_READY);
+        req->cmd[0] = TEST_UNIT_READY;
+        req->timeout = HP_SW_TIMEOUT;
+        req->sense = h->sense;
+        memset(req->sense, 0, SCSI_SENSE_BUFFERSIZE);
+        req->sense_len = 0;
 
+retry:
+        ret = blk_execute_rq(req->q, NULL, req, 1);
+        if (ret == -EIO) {
+                if (req->sense_len > 0) {
+                        ret = tur_done(sdev, h->sense);
+                } else {
+                        sdev_printk(KERN_WARNING, sdev,
+                                    "%s: sending tur failed with %x\n",
+                                    HP_SW_NAME, req->errors);
+                        ret = SCSI_DH_IO;
+                }
+        } else {
+                h->path_state = HP_SW_PATH_ACTIVE;
+                ret = SCSI_DH_OK;
+        }
+        if (ret == SCSI_DH_IMM_RETRY)
+                goto retry;
+        if (ret == SCSI_DH_DEV_OFFLINED) {
+                h->path_state = HP_SW_PATH_PASSIVE;
+                ret = SCSI_DH_OK;
+        }
+
+        blk_put_request(req);
+
+        return ret;
+}
+
+I've pushed the BUG ON check into blk_execute_rq, and it's finding it
+set there. Could we be getting SCSI_DH_IMM_RETRYs and that's causing the
+same request to be used without being re-initialized, and on error the
+bit is not being cleaned up properly?
+
+I'm checking that out next...
+
+Alan
