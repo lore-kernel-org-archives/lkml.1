@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbYLDK1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbYLDKa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756942AbYLDK1V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 05:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbYLDK1F
+	id S1757340AbYLDKa2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 05:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYLDKaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 05:27:05 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:41272 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbYLDK1E (ORCPT
+	Thu, 4 Dec 2008 05:30:18 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54259 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbYLDKaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 05:27:04 -0500
-Date: Thu, 4 Dec 2008 10:27:22 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Peter Zijlstra <peterz@infradead.org>
-cc: edward_estabrook@agilent.com, linux-kernel@vger.kernel.org,
-       hjk@linutronix.de, gregkh@suse.de, edward.estabrook@gmail.com,
-       linux-mm <linux-mm@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
-In-Reply-To: <1228379942.5092.14.camel@twins>
-Message-ID: <Pine.LNX.4.64.0812041026340.6340@blonde.anvils>
-References: <43FC624C55D8C746A914570B66D642610367F29B@cos-us-mb03.cos.agilent.com>
- <1228379942.5092.14.camel@twins>
+	Thu, 4 Dec 2008 05:30:17 -0500
+Date: Thu, 4 Dec 2008 11:32:06 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Theodore Tso <tytso@mit.edu>, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: SD/MMC cards: how crappy they are?
+Message-ID: <20081204103206.GD22396@elf.ucw.cz>
+References: <20081202144830.GB1549@ucw.cz> <493562A5.40308@zytor.com> <20081202165608.GD18162@mit.edu> <4935778E.1020405@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4935778E.1020405@zytor.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Dec 2008, Peter Zijlstra wrote:
-> On Wed, 2008-12-03 at 14:39 -0700, edward_estabrook@agilent.com wrote:
+On Tue 2008-12-02 09:59:42, H. Peter Anvin wrote:
+> Theodore Tso wrote:
 > > 
-> > The gist of this implementation is to overload uio's mmap
-> > functionality to allocate and map a new DMA region on demand.  The
-> > bus-specific DMA address as returned by dma_alloc_coherent is made
-> > available to userspace in the 1st long word of the newly created
-> > region (as well as through the conventional 'addr' file in sysfs).  
+> > If this is your random eject out from your HP laptop problem, note
+> > that random ejects while the card is writing can cause corruption of
+> > the flash translation layer (FTL), which for some really crappy cards,
+> > can permanently damage them; hopefully most of those are gone from the
+> > market, but I wouldn't be positive about that.  The better ones will
+> > have some kind of journalling scheme for their FTL...
 > > 
-> > To allocate a DMA region you use the following:
-> > /* Pass this magic number to mmap as offset to dynamically allocate a
-> > chunk of memory */ #define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
-> > ...
-> > Comments appreciated!
 > 
-> Yuck!
-> 
-> Why not create another special device that will give you DMA memory when
-> you mmap it? That would also allow you to obtain the physical address
-> without this utter horrid hack of writing it in the mmap'ed memory.
-> 
-> /dev/uioN-dma would seem like a fine name for that.
+> I have seen flash cards die permanently from having a partition table it
+> didn't like written to it.  Yes, the microcontroller on the flash card
+> tried to interpret the partition table, assumed to be MS-DOS style, and
+> would crash.
 
-I couldn't agree more.  It sounds fine as a local hack for Edward to
-try out some functionality he needed in a hurry; but as something
-that should enter the mainline kernel in that form - no.
+Aha... that explains why I killed few flashcards by tar xzvf /dev/sdX files
+... hopefully thats fixed in the better/bigger cards now.
 
-Hugh
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
