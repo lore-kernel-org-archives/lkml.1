@@ -1,135 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbYLDQCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbYLDQKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbYLDQCy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 11:02:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYLDQCg
+	id S1754629AbYLDQKb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 11:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYLDQKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 11:02:36 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:4565 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754524AbYLDQCd (ORCPT
+	Thu, 4 Dec 2008 11:10:21 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:23427 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750924AbYLDQKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 11:02:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=V9r2beS4ysFtGPIX7XBjkZvohwF5OAwktrdoMjSgeLgLgL9/bJP8cfrAKcJPEJ/8qg
-         YWkC93hjwXfLtKVUs/C0HzXZ3b3g+VanX05dZFrvMI4xwsfi0xBtSQiVvdQy8TwVJ55x
-         AXkTxulaJigZR16eKQKiWtYjZYJULEA4cTE6o=
-Message-ID: <cfd18e0f0812040802m378ea52of906b4d1bb4401ed@mail.gmail.com>
-Date: Thu, 4 Dec 2008 11:02:31 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [RESEND][PATCH] Add /proc/mempool to display mempool usage
-Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Mackall" <mpm@selenic.com>, randy.dunlap@oracle.com,
-       greg@kroah.com, adobriyan@gmail.com, remi.colinet@gmail.com,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.0812011843340.3256@nehalem.linux-foundation.org>
+	Thu, 4 Dec 2008 11:10:20 -0500
+Message-ID: <493800E8.7070901@ru.mvista.com>
+Date: Thu, 04 Dec 2008 19:10:16 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Shane McDonald <mcdonald.shane@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Resurrect IT8172 IDE controller driver
+References: <E1L4UpB-0007ro-1g@localhost> <492A8306.9000400@ru.mvista.com>	 <492A9A1F.50401@ru.mvista.com>	 <20081124123231.555f2395@lxorguk.ukuu.org.uk>	 <492AAE6C.7000103@ru.mvista.com> <b2b2f2320812031908se18efdft1a94cb2b158f540e@mail.gmail.com>
+In-Reply-To: <b2b2f2320812031908se18efdft1a94cb2b158f540e@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1227980689.6354.24.camel@localhost.localdomain>
-	 <20081129214207.GA6747@x200.localdomain>
-	 <20081129234907.GA2340@kroah.com>
-	 <20081201101245.0a2f3123.randy.dunlap@oracle.com>
-	 <1228158811.3196.88.camel@calx>
-	 <20081201120210.1ed16bd5.akpm@linux-foundation.org>
-	 <84144f020812011207q29fe4b3fq11a9e55f171cf743@mail.gmail.com>
-	 <alpine.LFD.2.00.0812011210030.3256@nehalem.linux-foundation.org>
-	 <84144f020812011402v3cb3ab24pf5cb6310f2d00c5b@mail.gmail.com>
-	 <alpine.LFD.2.00.0812011843340.3256@nehalem.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 1, 2008 at 9:54 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Tue, 2 Dec 2008, Pekka Enberg wrote:
->>
->> OK, but why do we have those different ABI "stages" in
->> Documentation/ABI then? The README file there seems to contradict what
->> you say. Or maybe I'm reading it wrong...
->
-> I think that whole Documentation/ABI stuff is utter tosh, and should just
-> be thrown out, whenever it talks about interfaces that are _not_ ABI's.
->
-> IOW, it's fine to document things that are actually supposed to be stable,
-> but:
->
->  - assuming that non-documentation means that it's not an ABI is bogus
->   and wrong.
+Hello.
 
-Agreed.  (When so much is much is undocumented anyway, there is no way
-that lack of documentation can be used to signal "this is not an ABI.)
+Shane McDonald wrote:
 
->  - explicitly documenting something as "not an ABI" is wrongheaded and
->   stupid, because it's meaningless and only sets people up for being
->   disappointed later.
+>>Alan Cox wrote:
 
-Agreed.
+>>>>> It's 240, not 242 ns as 33 is actually 33.333.
 
-[...]
+>>>> The maximum values give cycle time of 480 ns menaing that the controller
+>>>>doesn't support PIO mode 0. Hm...
 
-> Finally, when it comes to documentation as a bigger issue:
->
->  - wrong documentation is irrelevant. It doesn't matter if the
->   documentation says "X", when the code does "Y".
->
->   If people rely on "Y", then pointing at the docs and saying "but you
->   should never have relied on it, because teh docs say X" is totally and
->   utterly bogus. The _documentation_ was wrong. Don't ever use incorrect
->   documentation as an excuse.
+>>>Even if you clear the enable for the timing register ?
 
-Agreed.
+>>  These fast timing bits are documented as reserved.
 
-> Too many people seem to think that documentation is the "final" argument.
-> It's not. Not even close. It's a hint and a help, but it's _secondary_ to
-> code. Anybody who doesn't understand that should never be allowed to write
-> code (or documentation, for that matte).
+> The spec says that PIO mode 0 is supported, but Sergei is correct --
+> the maximum values give a cycle time of 480 ns.  How can this be?  The
+> old driver appeared to have tried to support PIO mode 0 by setting to
+> the maximum.
 
-While clearly documentation is not the final answer, I think you
-undervalue it somewhat, and I think it's worth mentioning two specific
-points.  Documentation may be secondary to code, but it can help a
-lot, especially if:
+>   Which fast timing bits are documented as reserved?  My spec has the
+> IDE Drive 0/1 Recovery Time and IDE Drive 0/1 Pulse Width bits in it.
+> Are there other timing bits that aren't documented in my spec?
 
-* The documentation is done at the same time as the code (by the
-developer, or by someone working with the developer).  This typically
-makes the developer think more about the code they are writing.  It
-also gives others to more quickly understand the code with the aim of
-reviewing the code and/or API design, and perhaps testing it.  There
-simply isn't enough review and testing going on, and documentation can
-make a real difference there, IMO.
+    Off the top of my head: bits 0, 3, 4, and 7 at offset 0x40 are not 
+reserved in PIIX/ICH -- they enable the programmable timings for PIO and/or 
+DMA. If they were left cleared, 600 ns cycle (PIO mode 0) was used.
 
-*  While the "but you should never have relied on it, because the docs
-say X" argument may not hold, there is one important way that I think
-documentation can still help: explicitly saying that "the behavior is
-unspecified around point X, and other code should not rely on a
-specific behavior".  This legitimately allows developers to change the
-behavior around point X in the future.  (I made the point at LPC, if
-you force users to read the code behind an API, then you end up
-creating a "tight spec", since they will do exactly what the code
-permits.  In this sense, documentation can be used to "loosen" the
-spec.)
+>   Please excuse my dumb question -- I'm a little over my head here.
 
-Cheers,
+>>>Alan
 
-Michael
+> Shane
 
-
-
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+MBR, Sergei
