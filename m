@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbYLDEs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbYLDEsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755569AbYLDEs3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 23:48:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYLDEsR
+	id S1756154AbYLDEsv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 23:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbYLDEs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 23:48:17 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:21198 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784AbYLDEsR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 23:48:17 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:date:message-id:subject:from:to:cc:
-	content-type:content-transfer-encoding;
-	b=VTOSI/uRqQWCV179rwBSDxD0Ru3h0zDAzOu54AYIt/jsHn3pp45dYai9vQEVw2ZTq
-	qozHOdHESlG7Kbg+AFMNw==
+	Wed, 3 Dec 2008 23:48:29 -0500
+Received: from kroah.org ([198.145.64.141]:51881 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755370AbYLDEs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 23:48:26 -0500
+Date: Wed, 3 Dec 2008 20:38:22 -0800
+From: Greg KH <greg@kroah.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 2 (staging)
+Message-ID: <20081204043822.GF18027@kroah.com>
+References: <20081202173101.e2b72437.sfr@canb.auug.org.au> <49357AD0.7090005@oracle.com> <20081202192952.GA2329@kroah.com> <4936F7C8.1000400@oracle.com>
 MIME-Version: 1.0
-Date: Wed, 3 Dec 2008 20:48:13 -0800
-Message-ID: <b040c32a0812032048x4a11dc26k184a4b279b509050@mail.gmail.com>
-Subject: [patch] export percpu cpuacct cgroup stats
-From: Ken Chen <kenchen@google.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4936F7C8.1000400@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch export per-cpu CPU cycle usage for a given cpuacct cgroup.
-There is a need for a user space monitor daemon to track group CPU
-usage on per-cpu base.  It is also useful for monitor CFS load
-balancer behavior by tracking per CPU group usage.
+On Wed, Dec 03, 2008 at 01:19:04PM -0800, Randy Dunlap wrote:
+> Greg KH wrote:
+> > On Tue, Dec 02, 2008 at 10:13:36AM -0800, Randy Dunlap wrote:
+> >> Stephen Rothwell wrote:
+> >>> Hi all,
+> >>>
+> >>> Changes since 20081201:
+> >>>
+> >>> Today's tree fails the powerpc allyesconfig build.
+> >> Greg,
+> >> FYI, the staging drivers still have lots of errors (as reported
+> >> over 1 week ago; yes, I know, holiday time), but I've stopped reporting
+> >> on them until I see some reason to think that fixes have been made.
+> > 
+> > I've fixed the errors that I can in my tree.  The majority of the errors
+> > you are seeing are ones that are caused by api changes in other trees
+> > that I can't fix up now in -staging until those changes go into Linus's
+> > tree.
+> > 
+> > Which is fine, I'll fix them up when I push them to Linus, so you don't
+> > have to worry about them.
+> > 
+> > Some of the other warnings are just due to horrible code, like the
+> > drivers/staging/otus/ driver that has some looney macros that cause lots
+> > of build warnings.  Those will take more work and I'm hoping that the
+> > community of developers that have been helping out with the staging tree
+> > will help there.
+> 
+> So this one is an API change or it's fixed in your tree but not in linux-next
+> of 20081203?
+> 
+> drivers/built-in.o: In function `enable_oled':
+> asus_oled.c:(.text+0x52c38): undefined reference to `usb_bulk_msg'
 
+I thought this was fixed...
 
-Signed-off-by: Ken Chen <kenchen@google.com>
+Ah, tricky, the dependancy is on CONFIG_USB_SUPPORT, not CONFIG_USB,
+wierd that this snuck through.  I'll go fix this up, thanks for letting
+me know.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index b7480fb..cd78948 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -9345,12 +9345,34 @@ out:
- 	return err;
- }
-
-+static int cpuacct_percpu_seq_read(struct cgroup *cgroup, struct cftype *cft,
-+				   struct seq_file *m)
-+{
-+	struct cpuacct *ca = cgroup_ca(cgroup);
-+	u64 percpu;
-+	int i;
-+
-+	for_each_possible_cpu(i) {
-+		spin_lock_irq(&cpu_rq(i)->lock);
-+		percpu = *percpu_ptr(ca->cpuusage, i);
-+		spin_unlock_irq(&cpu_rq(i)->lock);
-+		seq_printf(m, "%lld ", percpu);
-+	}
-+	seq_printf(m, "\n");
-+	return 0;
-+}
-+
- static struct cftype files[] = {
- 	{
- 		.name = "usage",
- 		.read_u64 = cpuusage_read,
- 		.write_u64 = cpuusage_write,
- 	},
-+	{
-+		.name = "percpu",
-+		.read_seq_string = cpuacct_percpu_seq_read,
-+	},
-+
- };
-
- static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
+greg k-h
