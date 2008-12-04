@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbYLDDz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbYLDEMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbYLDDz7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 22:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbYLDDzv
+	id S1754010AbYLDEMq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 23:12:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbYLDEMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 22:55:51 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:60078 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752022AbYLDDzu (ORCPT
+	Wed, 3 Dec 2008 23:12:34 -0500
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:49285 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750758AbYLDEMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 22:55:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=MU18VnpJloujxtaJ4dxk6a0uLdf3h9pgk0wGrdz32A/vYwgmorBBD7jNHh7r0SIhzA
-         WLrTThn0zLbuu9fupsUvui5pMm5NUDY9cBbJpu+Xfw3qnHqbuT7nunLzFHdk2TdVHAiC
-         /A/hqAtaTsE0SgZJ9/sh8FUT+ohBKCPKBcUK0=
-Message-ID: <8bd0f97a0812031955y5ab713baj3e9351816343d33a@mail.gmail.com>
-Date: Wed, 3 Dec 2008 22:55:48 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: Re: Yet more ARM breakage in linux-next
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Russell King" <rmk+lkml@arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org, "Stephen Rothwell" <sfr@canb.auug.org.au>
-In-Reply-To: <200812041245.24568.rusty@rustcorp.com.au>
+	Wed, 3 Dec 2008 23:12:33 -0500
+Date: Wed, 3 Dec 2008 23:10:16 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
+       Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Frederic Bohe <frederic.bohe@bull.net>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [patch 086/104] ext4: fix initialization of UNINIT bitmap
+	blocks
+Message-ID: <20081204041016.GA13887@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Greg KH <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, stable@kernel.org,
+	Justin Forbes <jmforbes@linuxtx.org>,
+	Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+	Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
+	Chuck Wolber <chuckw@quantumlinux.com>,
+	Chris Wedgwood <reviews@ml.cw.f00f.org>,
+	Michael Krufky <mkrufky@linuxtv.org>,
+	Chuck Ebbert <cebbert@redhat.com>,
+	Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+	Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+	Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+	torvalds@linux-foundation.org, akpm@linux-foundation.org,
+	alan@lxorguk.ukuu.org.uk, Frederic Bohe <frederic.bohe@bull.net>,
+	Ext4 Developers List <linux-ext4@vger.kernel.org>
+References: <20081203193901.715896543@mini.kroah.org> <20081203195618.GI8950@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081203192905.GA12502@flint.arm.linux.org.uk>
-	 <200812040952.44957.rusty@rustcorp.com.au>
-	 <8bd0f97a0812031733n18184927m2b4fcfa0ed05cd7b@mail.gmail.com>
-	 <200812041245.24568.rusty@rustcorp.com.au>
+In-Reply-To: <20081203195618.GI8950@kroah.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 3, 2008 at 21:15, Rusty Russell wrote:
-> On Thursday 04 December 2008 12:03:57 Mike Frysinger wrote:
->> On Wed, Dec 3, 2008 at 18:22, Rusty Russell wrote:
->> > On Thursday 04 December 2008 07:11:09 Andrew Morton wrote:
->> >> On Wed, 3 Dec 2008 19:29:05 +0000
->> >>
->> >> Russell King <rmk+lkml@arm.linux.org.uk> wrote:
->> >> > This seems to be causing lots of ARM breakage:
->> >> >
->> >> > lib/find_next_bit.c:183: error: implicit declaration of function
->> >> > '__fls'
->> >> >
->> >> > Whoever's responsible,
->> >>
->> >> git-blame?
->> >
->> > It's me.  Turns out sparc, avr32 and arm all don't define __fls in their
->> > asm/bitops.h, and I'm the first one to use it in generic code.
->>
->> the Blackfin port also does not ... you going to post a change for
->> that since the build breaks for Blackfin atm too ?
->
-> Sure, why not join the party!
->
-> (Hmm, maybe I should change that list to a shorter list of archs which
-> *do* define __fls?)
->
-> blackfin: define __fls
->
-> Like fls, but can't be handed 0 and returns the bit number.
->
-> (I broke this arch in linux-next by using __fls in generic code).
->
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+On Wed, Dec 03, 2008 at 11:56:18AM -0800, Greg KH wrote:
+> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-cheers
-Acked-by: Mike Frysinger <vapier@gentoo.org>
--mike
+Turns out this patch introduces a worse regression than it fixes.  The
+bug that the patches fixes is that on-line resizes of filesystems with
+a 1k blocksize will usually fail.  The regression is that when a
+filesystem with 1k blocksize is stressed, the filesystem can get
+corrupted.  On balance, on-line resizing failing is less of a disaster
+than corrupting the filesystem when its stressed.  Fortunately, it's
+only an issue when the filesystem blocksize is less than the page
+size, which isn't the common case at least for the x86.  
+
+There are patches queued up to address this, but they haven't hit
+mainline yet.  Probably best to pull this from the stable tree for
+now.
+
+						- Ted
