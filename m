@@ -1,21 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbYLDVT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758745AbYLDVUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758362AbYLDVT4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 16:19:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYLDVTr
+	id S1758745AbYLDVUW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 16:20:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYLDVUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 16:19:47 -0500
-Received: from waste.org ([66.93.16.53]:42285 "EHLO waste.org"
+	Thu, 4 Dec 2008 16:20:01 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:56468 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753532AbYLDVTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 16:19:46 -0500
-Subject: [PATCH] shmem: unify regular and tiny shmem
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	id S1758512AbYLDVT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 16:19:59 -0500
+Subject: Re: [RFC][PATCH] Catch xtime_nsec underflows and fix them
+From: john stultz <johnstul@us.ibm.com>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, yanmin_zhang@linux.intel.com,
+       alex.shi@intel.com, Thomas Gleixner <tglx@tglx.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0812022118330.24668@localhost.localdomain>
+References: <1228185281.7176.37.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0812022118330.24668@localhost.localdomain>
 Content-Type: text/plain
-Date: Thu, 04 Dec 2008 15:19:24 -0600
-Message-Id: <1228425564.3255.121.camel@calx>
+Date: Thu, 04 Dec 2008 13:19:52 -0800
+Message-Id: <1228425592.7284.7.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -23,196 +28,91 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tiny-shmem shares most of its 130 lines of code with shmem and tends
-to break when particular bits of shmem get modified. Unifying saves
-code and makes keeping these two in sync much easier.
+On Wed, 2008-12-03 at 03:35 +0100, Roman Zippel wrote:
+> Hi,
+> 
+> On Mon, 1 Dec 2008, john stultz wrote:
+> 
+> > Alex Shi, along with Yanmin Zhang have been noticing occasional time
+> > inconsistencies recently. Through their great diagnosis, they found that
+> > the xtime_nsec value used in update_wall_time was occasionally going
+> > negative. After looking through the code for awhile, I realized we have
+> > the possibility for an underflow when three conditions are met in
+> > update_wall_time():
+> > 
+> > 1) We have accumulated a second's worth of nanoseconds, so we
+> > incremented xtime.tv_sec and appropriately decrement xtime_nsec. (This
+> > doesn't cause xtime_nsec to go negative, but it can cause it to be
+> > small).
+> > 
+> > 2) The remaining offset value is large, but just slightly less then
+> > cycle_interval.
+> > 
+> > 3) clocksource_adjust() is speeding up the clock, causing a corrective
+> > amount (compensating for the increase in the multiplier being multiplied
+> > against the unaccumulated offset value) to be subtracted from
+> > xtime_nsec.
+> > 
+> > This can cause xtime_nsec to underflow.
+> 
+> This doesn't explain the problem entirely, I considered a negative 
+> xtime_nsec before, but xtime_nsec+offset should still be positive and 
+> produce the correct result, at least I can't find anything in 
+> getnstimeofday(). It should also be a very rare event, so it's really 
+> puzzling that it's so easy to reproduce.
+> So there must be more to it than just a negative xtime_nsec, it triggers 
+> the problem, but it's not the actual problem. One possible explanation is 
+> this line:
+> 
+> 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+> 
+> The rounding further increases the problem as the error is adjusted into 
+> the wrong direction and under the right conditions it seems to be possible 
+> to go out of sync as the error increasingly gets worse. I'd like to see 
+> some numbers to confirm this theory, in any case above line is incorrect 
+> for negative numbers.
+> 
+> > +	/* Since in the loop above, we accumulate any amount of time
+> > +	 * in xtime_nsec over a second into xtime.tv_sec, its possible for
+> > +	 * xtime_nsec to be fairly small after the loop. Further, if we're
+> > +	 * slightly speeding the clocksource up in clocksource_adjust(),
+> > +	 * its possible the required corrective factor to xtime_nsec could
+> > +	 * cause it to underflow.
+> > +	 * Now, we cannot simply roll the accumulated second back, since
+> > +	 * the NTP subsystem has been notified via second_overflow. So
+> > +	 * instead we push xtime_nsec forward by the amount we underflowed,
+> > +	 * and add that amount into the error.
+> > +	 * We'll correct this error next time through this function, when
+> > +	 * xtime_nsec is not as small.
+> > +	 */
+> > +	if (unlikely((s64)clock->xtime_nsec < 0)) {
+> > +		s64 neg = -(s64)clock->xtime_nsec;
+> > +		clock->xtime_nsec = 0;
+> > +		clock->error += neg << (NTP_SCALE_SHIFT - clock->shift);
+> > +	}
+> 
+> I don't mind this solution, but to be precise it avoids the problem.
+> My favourite solution would involve improving the xtime handling, as it's 
 
-before:
-  14367	    392	     24	  14783	   39bf	mm/shmem.o
-    396      72       8     476	    1dc	mm/tiny-shmem.o
+Yea, I agree. 
 
-after:
-  14367	    392	     24	  14783	   39bf	mm/shmem.o
-    412	     72       8     492	    1ec	mm/shmem.o tiny
+> not really necessary to copy the nsec value back and forth between xtime 
+> and xtime_nsec, but it requires going through all xtime users, especially 
+> all settimeofday implementations, which also have to set xtime_nsec so 
+> update_wall_time() doesn't has to read it in. Then it's possible to make 
+> xtime_nsec signed and allow it to be negative.
+> So avoiding the negative nsec value is the better shorttime solution, but 
+> I'd prefer you'd drop the second paragraph, instead of suggesting a broken 
+> solution I'd rather see a bit info about how to fix this properly, i.e. 
+> fixing the xtime handling, so it's safe to allow negative values.
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
+So to make sure I understand, you're suggesting we push xtime_nsec to
+effectively replace the xtime.tv_nsec value, right? That would effect
+quite a few places. But mostly for the remaining non-GENERIC_TIME
+arches, which I need to get around to converting at some point.
 
-diff -r 8a9f1e9c46e8 -r 3fd7e399e034 init/Kconfig
---- a/init/Kconfig	Mon Oct 27 17:33:21 2008 -0500
-+++ b/init/Kconfig	Mon Oct 27 17:33:24 2008 -0500
-@@ -830,10 +830,6 @@
- 	boolean
- 	select PLIST
- 
--config TINY_SHMEM
--	default !SHMEM
--	bool
--
- config BASE_SMALL
- 	int
- 	default 0 if BASE_FULL
-diff -r 8a9f1e9c46e8 -r 3fd7e399e034 mm/Makefile
---- a/mm/Makefile	Mon Oct 27 17:33:21 2008 -0500
-+++ b/mm/Makefile	Mon Oct 27 17:33:24 2008 -0500
-@@ -9,7 +9,7 @@
- 
- obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
- 			   maccess.o page_alloc.o page-writeback.o pdflush.o \
--			   readahead.o swap.o truncate.o vmscan.o \
-+			   readahead.o swap.o truncate.o vmscan.o shmem.o \
- 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
- 			   page_isolation.o mm_init.o $(mmu-y)
- 
-@@ -21,9 +21,7 @@
- obj-$(CONFIG_NUMA) 	+= mempolicy.o
- obj-$(CONFIG_SPARSEMEM)	+= sparse.o
- obj-$(CONFIG_SPARSEMEM_VMEMMAP) += sparse-vmemmap.o
--obj-$(CONFIG_SHMEM) += shmem.o
- obj-$(CONFIG_TMPFS_POSIX_ACL) += shmem_acl.o
--obj-$(CONFIG_TINY_SHMEM) += tiny-shmem.o
- obj-$(CONFIG_SLOB) += slob.o
- obj-$(CONFIG_MMU_NOTIFIER) += mmu_notifier.o
- obj-$(CONFIG_SLAB) += slab.o
-diff -r 8a9f1e9c46e8 -r 3fd7e399e034 mm/shmem.c
---- a/mm/shmem.c	Mon Oct 27 17:33:21 2008 -0500
-+++ b/mm/shmem.c	Mon Oct 27 17:33:24 2008 -0500
-@@ -14,31 +14,39 @@
-  * Copyright (c) 2004, Luke Kenneth Casson Leighton <lkcl@lkcl.net>
-  * Copyright (c) 2004 Red Hat, Inc., James Morris <jmorris@redhat.com>
-  *
-+ * tiny-shmem:
-+ * Copyright (c) 2004, 2008 Matt Mackall <mpm@selenic.com>
-+ *
-  * This file is released under the GPL.
-  */
- 
-+#include <linux/fs.h>
-+#include <linux/init.h>
-+#include <linux/vfs.h>
-+#include <linux/mount.h>
-+#include <linux/file.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <linux/swap.h>
-+
-+static struct vfsmount *shm_mnt;
-+
-+#ifdef CONFIG_SHMEM
- /*
-  * This virtual memory filesystem is heavily based on the ramfs. It
-  * extends ramfs by the ability to use swap and honor resource limits
-  * which makes it a completely usable filesystem.
-  */
- 
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/fs.h>
- #include <linux/xattr.h>
- #include <linux/exportfs.h>
- #include <linux/generic_acl.h>
--#include <linux/mm.h>
- #include <linux/mman.h>
--#include <linux/file.h>
--#include <linux/swap.h>
- #include <linux/pagemap.h>
- #include <linux/string.h>
- #include <linux/slab.h>
- #include <linux/backing-dev.h>
- #include <linux/shmem_fs.h>
--#include <linux/mount.h>
- #include <linux/writeback.h>
- #include <linux/vfs.h>
- #include <linux/blkdev.h>
-@@ -2486,7 +2494,6 @@
- 	.get_sb		= shmem_get_sb,
- 	.kill_sb	= kill_litter_super,
- };
--static struct vfsmount *shm_mnt;
- 
- static int __init init_tmpfs(void)
- {
-@@ -2525,7 +2532,51 @@
- 	shm_mnt = ERR_PTR(error);
- 	return error;
- }
--module_init(init_tmpfs)
-+
-+#else /* !CONFIG_SHMEM */
-+
-+/*
-+ * tiny-shmem: simple shmemfs and tmpfs using ramfs code
-+ *
-+ * This is intended for small system where the benefits of the full
-+ * shmem code (swap-backed and resource-limited) are outweighed by
-+ * their complexity. On systems without swap this code should be
-+ * effectively equivalent, but much lighter weight.
-+ */
-+
-+#include <linux/ramfs.h>
-+
-+static struct file_system_type tmpfs_fs_type = {
-+	.name		= "tmpfs",
-+	.get_sb		= ramfs_get_sb,
-+	.kill_sb	= kill_litter_super,
-+};
-+
-+static int __init init_tmpfs(void)
-+{
-+	BUG_ON(register_filesystem(&tmpfs_fs_type) != 0);
-+
-+	shm_mnt = kern_mount(&tmpfs_fs_type);
-+	BUG_ON(IS_ERR(shm_mnt));
-+
-+	return 0;
-+}
-+
-+int shmem_unuse(swp_entry_t entry, struct page *page)
-+{
-+	return 0;
-+}
-+
-+#define shmem_file_operations ramfs_file_operations
-+#define shmem_vm_ops generic_file_vm_ops
-+#define shmem_get_inode ramfs_get_inode
-+#define shmem_acct_size(a, b) 0
-+#define shmem_unacct_size(a, b) do {} while (0)
-+#define SHMEM_MAX_BYTES LLONG_MAX
-+
-+#endif /* CONFIG_SHMEM */
-+
-+/* common code */
- 
- /**
-  * shmem_file_setup - get an unlinked file living in tmpfs
-@@ -2569,12 +2620,20 @@
- 	if (!inode)
- 		goto close_file;
- 
-+#ifdef CONFIG_SHMEM
- 	SHMEM_I(inode)->flags = flags & VM_ACCOUNT;
-+#endif
- 	d_instantiate(dentry, inode);
- 	inode->i_size = size;
- 	inode->i_nlink = 0;	/* It is unlinked */
- 	init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
--			&shmem_file_operations);
-+		  &shmem_file_operations);
-+
-+#ifndef CONFIG_MMU
-+	error = ramfs_nommu_expand_for_mapping(inode, size);
-+	if (error)
-+		goto close_file;
-+#endif
- 	return file;
- 
- close_file:
-@@ -2606,3 +2665,5 @@
- 	vma->vm_ops = &shmem_vm_ops;
- 	return 0;
- }
-+
-+module_init(init_tmpfs)
+thanks
+-john
 
--- 
-Mathematics is the supreme nostalgia of our time.
+
 
