@@ -1,147 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbYLDFHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbYLDFH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753322AbYLDFHn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 00:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbYLDFHd
+	id S1755377AbYLDFH6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 00:07:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbYLDFHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 00:07:33 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:17582 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169AbYLDFHd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 00:07:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=HsEan2BwPMb0pI5k2pVQiVavRt/bHHfiR6Z0yWDR1iERPXoKm/fSRZOpkl6I0rQ5Zw
-         HENeb0O+9FjnlptWAoY+ZEcmAybfmkau54nafXcdhWgSQ4udtfENYGEcy1OuMFTJsDZE
-         uPp3Ryj6BfPeGu/GGrkWeGuyP7IH6mfAE0gKo=
-Message-ID: <483a38b80812032107i761fb9bdkba9b2ce5e998ae6a@mail.gmail.com>
-Date: Thu, 4 Dec 2008 14:07:30 +0900
-From: "Kwangwoo Lee" <kwangwoo.lee@gmail.com>
-To: felipe.balbi@nokia.com
-Subject: Re: [PATCH] Add tsc2007 based touchscreen driver.
-Cc: "ext Trilok Soni" <soni.trilok@gmail.com>, dmitry.torokhov@gmail.com,
-       linux-kernel@vger.kernel.org, "David Brownell" <david-b@pacbell.net>,
-       "linux-omap@vger.kernel.org Mailing List" 
-	<linux-omap@vger.kernel.org>
-In-Reply-To: <20081203120144.GA10123@gandalf.research.nokia.com>
+	Thu, 4 Dec 2008 00:07:46 -0500
+Received: from ozlabs.org ([203.10.76.45]:46640 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753489AbYLDFHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 00:07:44 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <483a38b80812020539v2323a784h7f202749687764db@mail.gmail.com>
-	 <5d5443650812030321p77c4941cj2202418f0b0d44a2@mail.gmail.com>
-	 <20081203120144.GA10123@gandalf.research.nokia.com>
+Message-ID: <18743.25968.602602.875295@drongo.ozlabs.ibm.com>
+Date: Thu, 4 Dec 2008 16:06:56 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, Joakim.Tjernlund@transmode.se
+Subject: [PATCH] Allow times and time system calls to return small
+   negative values
+X-Mailer: VM 8.0.11 under Emacs 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 3, 2008 at 9:01 PM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
-...
->> > +
->> > +static int tsc2007_xfer(void *tsc, unsigned char cmd)
->> > +{
->> > +       struct tsc2007    *ts     = tsc;
->> > +       struct i2c_client *client = ts->client;
->> > +
->> > +       unsigned char  rbuf[2];
->> > +       unsigned short val;
->> > +       int result;
->> > +
->> > +       result = i2c_master_send(client, &cmd, 1);
->> > +       if (result != 1) {
->> > +               dev_err(&client->dev, "send failed, cmd 0x%x\n", cmd);
->> > +               goto cmd_fail;
->> > +       }
->> > +
->> > +       result = i2c_master_recv(client, rbuf, 2);
->> > +       if (result != 2) {
->> > +               dev_err(&client->dev, "recv failed, cmd 0x%x\n", cmd);
->> > +               goto cmd_fail;
->> > +       }
->> > +
->> > +       rbuf[1] = (rbuf[1] >> 4) | ((rbuf[0] & 0x0f) << 4);
->> > +       rbuf[0] = rbuf[0] >> 4;
->> > +
->> > +       val = *((unsigned short *) rbuf);
->> > +       val = be16_to_cpu(val);
->> > +
->> > +       dev_dbg(&client->dev, "cmd [0x%x], rbuf [0x%x, 0x%x] => val [%u]\n",
->> > +               cmd, rbuf[0], rbuf[1], val);
->> > +
->> > +       return (int) val;
->> > +
->> > +cmd_fail:
->> > +       return -EIO;
->> > +}
->
-> so you really need to go that low level ?? Did you try
-> i2c_smbus_write_*() ??
->
+At the moment, the times() system call will appear to fail for a
+period shortly after boot, while the value it want to return is
+between -4095 and -1.  The same thing will also happen for the time()
+system call on 32-bit platforms some time in 2106 or so.
 
-Because the platform which I use did not implement smbus_xfer yet,
-it only implemented  master_xfer in struct i2c_algorithm.
-I can add smbus_xfer for my platform. I have one question and
-I know that smbus is a subset from the I2C protocol.
-Is smbus_xfer method better than master_xfer or is there any
-special reason to use smbus_xfer?
+On some platforms, such as x86, this is unavoidable because of the
+system call ABI, but other platforms such as powerpc have a separate
+error indication from the return value, so system calls can in fact
+return small negative values without indicating an error.  On those
+platforms, force_successful_syscall_return() provides a way to
+indicate that the system call return value should not be treated as an
+error even if it is in the range which would normally be taken as a
+negative error number.
 
->> > +
->> > +static int tsc2007_probe(struct i2c_client *client,
->> > +                       const struct i2c_device_id *id)
->> > +{
->> > +       struct i2c_adapter      *adapter = to_i2c_adapter(client->dev.parent);
->
-> why ??
+This adds a force_successful_syscall_return() call to the time() and
+times() system calls plus their 32-bit compat versions, so that they
+don't erroneously indicate an error on those platforms whose system
+call ABI has a separate error indication.  This will not affect
+anything on other platforms.
 
-It's for i2c_check_functionality(). This function requried struct
-i2c_adapter as an argument.
+Joakim Tjernlund added the fix for time() and the compat versions of
+time() and times(), after I did the fix for times().
 
->> > +       struct tsc2007          *ts;
->> > +       struct tsc2007_platform_data *pdata;
->> > +       struct input_dev        *input_dev;
->> > +       int                     err;
->> > +
->> > +       pdata = client->dev.platform_data;
->> > +       if (pdata == NULL) {
->> > +               dev_err(&client->dev, "platform data is required!\n");
->> > +               return -EINVAL;
->> > +       }
->> > +
->> > +       if (!i2c_check_functionality(adapter,
->> > +                       I2C_FUNC_I2C | I2C_FUNC_SMBUS_WRITE_BYTE_DATA))
->> > +               return -EIO;
->
-> should not be in this driver, I'd say.
+Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+Andrew - since this only touches generic code, will you queue this up
+for 2.6.29?
 
-I saw that some I2C driver uses this function, for example - max6875.c.
-Is i2c_check_functionality() not necessary for a I2C client driver?
-
->> > +       ts->irq = client->irq;
->> > +       if (request_irq(ts->irq, tsc2007_irq, 0,
->> > +                       client->dev.driver->name, ts)) {
->> > +               dev_err(&client->dev, "irq %d busy?\n", ts->irq);
->> > +               err = -EBUSY;
->> > +               goto err_free_mem;
->
-> would be better to:
->
-> err = request_irq(...)
-> if (err < 0) {
->        dev_err(..)
->        ...
-> }
->
-> Then we see the error request_irq() returned, which is more useful.
-
-Thank you very much for your kind comments.
-
-> Would be nice to get comments from Jean Delvare and Ben Dooks as well.
-
-I also want to get more comments. Thank you, again.
-
--- 
-Kwangwoo Lee <kwangwoo.lee@gmail.com>
+diff --git a/kernel/compat.c b/kernel/compat.c
+index 8eafe3e..21a93ce 100644
+--- a/kernel/compat.c
++++ b/kernel/compat.c
+@@ -24,6 +24,7 @@
+ #include <linux/migrate.h>
+ #include <linux/posix-timers.h>
+ #include <linux/times.h>
++#include <linux/ptrace.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -229,6 +230,7 @@ asmlinkage long compat_sys_times(struct compat_tms __user *tbuf)
+ 		if (copy_to_user(tbuf, &tmp, sizeof(tmp)))
+ 			return -EFAULT;
+ 	}
++	force_successful_syscall_return();
+ 	return compat_jiffies_to_clock_t(jiffies);
+ }
+ 
+@@ -883,8 +885,9 @@ asmlinkage long compat_sys_time(compat_time_t __user * tloc)
+ 
+ 	if (tloc) {
+ 		if (put_user(i,tloc))
+-			i = -EFAULT;
++			return -EFAULT;
+ 	}
++	force_successful_syscall_return();
+ 	return i;
+ }
+ 
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 31deba8..1bf8c5c 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -33,6 +33,7 @@
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/seccomp.h>
+ #include <linux/cpu.h>
++#include <linux/ptrace.h>
+ 
+ #include <linux/compat.h>
+ #include <linux/syscalls.h>
+@@ -878,6 +879,7 @@ asmlinkage long sys_times(struct tms __user * tbuf)
+ 		if (copy_to_user(tbuf, &tmp, sizeof(struct tms)))
+ 			return -EFAULT;
+ 	}
++	force_successful_syscall_return();
+ 	return (long) jiffies_64_to_clock_t(get_jiffies_64());
+ }
+ 
+diff --git a/kernel/time.c b/kernel/time.c
+index d63a433..4886e3c 100644
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -37,6 +37,7 @@
+ #include <linux/fs.h>
+ #include <linux/slab.h>
+ #include <linux/math64.h>
++#include <linux/ptrace.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -65,8 +66,9 @@ asmlinkage long sys_time(time_t __user * tloc)
+ 
+ 	if (tloc) {
+ 		if (put_user(i,tloc))
+-			i = -EFAULT;
++			return -EFAULT;
+ 	}
++	force_successful_syscall_return();
+ 	return i;
+ }
+ 
