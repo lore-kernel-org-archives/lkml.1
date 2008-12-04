@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYLDO5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbYLDPHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbYLDO5w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 09:57:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYLDO5n
+	id S1757571AbYLDPHZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 10:07:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbYLDPHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 09:57:43 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52412 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbYLDO5m (ORCPT
+	Thu, 4 Dec 2008 10:07:11 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:33366 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753993AbYLDPHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 09:57:42 -0500
-Date: Thu, 4 Dec 2008 09:57:40 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Steven Rostedt <srostedt@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH 3/3] ftrace: add ability to only trace swapper tasks
-In-Reply-To: <m163m0umml.fsf@frodo.ebiederm.org>
-Message-ID: <alpine.DEB.1.10.0812040953470.5240@gandalf.stny.rr.com>
-References: <20081204052638.425740534@goodmis.org> <20081204052735.362609481@goodmis.org> <m163m0umml.fsf@frodo.ebiederm.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 4 Dec 2008 10:07:10 -0500
+Date: Thu, 4 Dec 2008 10:07:09 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Harvey Harrison <harvey.harrison@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH-mm] usb: file_storage use unaligned endian helpers
+ rather than private versions
+In-Reply-To: <1228343586.5412.115.camel@brick>
+Message-ID: <Pine.LNX.4.44L0.0812040956450.2416-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 3 Dec 2008, Harvey Harrison wrote:
 
-On Thu, 4 Dec 2008, Eric W. Biederman wrote:
-
-> Steven Rostedt <rostedt@goodmis.org> writes:
-> >
-> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> > index 10b1d7c..eb57dc1 100644
-> > --- a/kernel/trace/ftrace.c
-> > +++ b/kernel/trace/ftrace.c
-> > @@ -49,6 +49,7 @@ static int last_ftrace_enabled;
-> >  
-> >  /* set when tracing only a pid */
-> >  struct pid *ftrace_pid_trace;
-> > +static struct pid * const ftrace_swapper_pid = (struct pid *)1;
+> > Suppose instead we do this:
+> > 
+> > #define get_be16(buf)	load_be16_noalign((be16 *) (buf))
+> > #define get_be24(buf)	(load_be32_noalign((be32 *) (buf)) >> 8)
+> > #define get_be32(buf)	load_be32_noalign((be32 *) (buf))
+> > 
+> > #define put_be16(buf, val)	store_be16_noalign((be16 *) (buf), val)
+> > #define put_be32(buf, val)	store_be32_noalign((be32 *) (buf), val)
+> > 
+> > Then almost no more changes would be needed, only the 24-bit
+> > consolidation stuff.
+> > 
 > 
-> The initializer should be spelled &init_struct_pid instead of (struct pid *)1;
+> I'd rather the common functions just get used directly and cast as
+> necessary...but it's your code.  Or define a few generic structs
+> and get a pointer to those and get typechecking for free.
+
+Or use inline routines rather than micros for proper typechecking.  
+(Although that's not tremendously important, since the buffers are all
+unsigned byte arrays.)  Honestly, which is easier to read and
+understand, this:
+
+		lba = load_be32_noalign((__be32 *)&fsg->cmnd[0]) & 0xffffff;
+
+or this:
+
+		lba = get_be24(&fsg->cmnd[1]);
+
+-- especially considering that the value being loaded is defined in the
+spec as a 3-byte field starting in byte 1 of the command buffer?
+
+> Something like (is this really so bad?):
 > 
-> Except for the special case of finding this unhashed pid, by making the
-> attach_pid(p, PIDTYPE_PID, pid) unconditional in copy_process, you can
-> make the rest of the special cases go away.
+> 	store_be32_noalign((__be32 *)&buf[0], curlun->num_sectors - 1);
+> 	store_be32_noalign((__be32 *)&buf[4], 512);
 
-Not that easy. It turns out that all idle tasks share the init_struct_pid, 
-and if you add the attach_pid() outside the if statement, you only change 
-the owner of the init_struct_pid to the last CPU to come on line.
+IMO it's a lot worse than
 
-I tried to allocate the pid, but by doing that it seems that the alloc_pid 
-code will assign a number other than 0.  The changes needed to fork.c to 
-make this work is quickly going beyond a trivial fix, where I do not want 
-to become a pid container developer in order to implement it.
+	put_be32(&buf[0], curlun->num_sectors - 1);
+	put_be32(&buf[4], 512);
 
--- Steve
+> Personally I don't think it's that ugly just using the common functions
+> directly. BTW, note that if you know the alignment, there are aligned versions
+> coming as well.  YMMV.
+
+In the end, it comes down to a matter of taste.
+
+The aligned versions could be used in a few cases, but on the whole the 
+advantage would be negligible.  I say it's not worthwhile to worry 
+about using them -- which is consistent with the behavior of the 
+original code.
+
+Alan Stern
 
