@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756947AbYLDPkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756260AbYLDPkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756947AbYLDPkP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 10:40:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYLDPj5
+	id S1756260AbYLDPkk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 10:40:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbYLDPj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 10:39:57 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:52526 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754566AbYLDPj4 (ORCPT
+	Thu, 4 Dec 2008 10:39:59 -0500
+Received: from 68-112-229-48.dhcp.oxfr.ma.charter.com ([68.112.229.48]:53191
+	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756133AbYLDPj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 10:39:56 -0500
-Date: Thu, 4 Dec 2008 09:34:23 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: mtk.manpages@gmail.com
-Cc: ebiederm@xmission.com, lkml <linux-kernel@vger.kernel.org>,
-       linux-man@vger.kernel.org, clg@fr.ibm.com, herbert@13thfloor.at,
-       dev@sw.ru, Subrata Modak <subrata@linux.vnet.ibm.com>
-Subject: Re: Could you write some CLONE_NEWUSER?
-Message-ID: <20081204153423.GA9233@us.ibm.com>
-References: <cfd18e0f0812040720y5cabd2aarbf3912644dea42c4@mail.gmail.com>
+	Thu, 4 Dec 2008 10:39:58 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH v3 0/4] sched: track next-highest priority
+To: mingo@elte.hu
+Cc: peterz@infradead.org, rostedt@goodmis.org, ghaskins@novell.com,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Date: Thu, 04 Dec 2008 10:43:36 -0500
+Message-ID: <20081204154100.21712.88806.stgit@dev.haskins.net>
+In-Reply-To: <20081203220628.11729.42174.stgit@dev.haskins.net>
+References: <20081203220628.11729.42174.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cfd18e0f0812040720y5cabd2aarbf3912644dea42c4@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michael Kerrisk (mtk.manpages@googlemail.com):
-> Hi Serge,
-> 
-> Thanks for CCing me on recent CLONE_NEWUSER patches.
-> 
-> Would you be will to write some documentation for this flag?  (It's
-> the only remaining undocumented flag in clone(2).)  Plain text would
-> be fine -- I'll integrate it into the man page with suitable macros.
+Hi Ingo,
+  Here is the updated series, per my note about the bug in v2 last night.
 
-Will do, will aim to send it to you by tomorrow.
+Changes since v2
 
--serge
+Fix bug in 2/4 related to recomputing .next in dec_rt_task()
+
+-Greg
+
+---
+
+Gregory Haskins (4):
+      sched: use highest_prio.next to optimize pull operations
+      sched: use highest_prio.curr for pull threshold
+      sched: track the next-highest priority on each runqueue
+      sched: cleanup inc/dec_rt_tasks
+
+
+ kernel/sched.c    |    8 ++-
+ kernel/sched_rt.c |  156 +++++++++++++++++++++++++++++++----------------------
+ 2 files changed, 98 insertions(+), 66 deletions(-)
+
