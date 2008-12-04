@@ -1,88 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbYLDP4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbYLDP5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754526AbYLDP4A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 10:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYLDPzw
+	id S1754711AbYLDP5Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 10:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYLDP5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 10:55:52 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:35477 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbYLDPzv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 10:55:51 -0500
-Date: Thu, 4 Dec 2008 16:55:47 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Greg K-H <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] Make DEBUG take precedence over DYNAMIC_PRINTK_DEBUG (v2)
-Message-ID: <20081204165547.4787d1e9@gondolin>
-In-Reply-To: <20081204144256.GA3130@redhat.com>
-References: <20081202145251.6555d4cc@gondolin>
-	<20081203201203.GA3128@redhat.com>
-	<20081204134845.6c1df66b@gondolin>
-	<20081204135113.6d91efb3@gondolin>
-	<20081204144256.GA3130@redhat.com>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Thu, 4 Dec 2008 10:57:14 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:58132 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751012AbYLDP5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 10:57:13 -0500
+Subject: Re: [PATCH 3/6] integrity: IMA as an integrity service provider
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <alpine.LFD.2.00.0812031359001.3255@localhost.localdomain>
+References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
+	 <5bea2422d059b97475d735feb9feb78b57ec8eca.1228253619.git.zohar@linux.vnet.ibm.com>
+	 <alpine.LFD.2.00.0812031359001.3255@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 04 Dec 2008 10:57:08 -0500
+Message-Id: <1228406228.2540.4.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Statically defined DEBUG should take precedence over
-dynamically enabled debugging; otherwise adding DEBUG
-(like, for example, via CONFIG_DEBUG_KOBJECT) does not
-have the expected result of printing pr_debug() and dev_dbg()
-messages unconditionally.
+On Wed, 2008-12-03 at 14:01 -0500, Len Brown wrote:
+> 
+> On Tue, 2 Dec 2008, Mimi Zohar wrote:
+> 
+> > +config IMA
+> > +	bool "Integrity Measurement Architecture(IMA)"
+> > +	depends on INTEGRITY
+> > +	depends on ACPI
+> 
+> ACPI?  why?
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
----
- include/linux/device.h |    8 ++++----
- include/linux/kernel.h |    8 ++++----
- 2 files changed, 8 insertions(+), 8 deletions(-)
+It's needed for accessing the TPM.
 
---- linux-2.6.orig/include/linux/kernel.h
-+++ linux-2.6/include/linux/kernel.h
-@@ -338,13 +338,13 @@ static inline char *pack_hex_byte(char *
-         printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
- 
- /* If you are writing a driver, please use dev_dbg instead */
--#if defined(CONFIG_DYNAMIC_PRINTK_DEBUG)
-+#if defined(DEBUG)
-+#define pr_debug(fmt, ...) \
-+	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-+#elif defined(CONFIG_DYNAMIC_PRINTK_DEBUG)
- #define pr_debug(fmt, ...) do { \
- 	dynamic_pr_debug(pr_fmt(fmt), ##__VA_ARGS__); \
- 	} while (0)
--#elif defined(DEBUG)
--#define pr_debug(fmt, ...) \
--	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
- #else
- #define pr_debug(fmt, ...) \
- 	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
---- linux-2.6.orig/include/linux/device.h
-+++ linux-2.6/include/linux/device.h
-@@ -553,13 +553,13 @@ extern const char *dev_driver_string(con
- #define dev_info(dev, format, arg...)		\
- 	dev_printk(KERN_INFO , dev , format , ## arg)
- 
--#if defined(CONFIG_DYNAMIC_PRINTK_DEBUG)
-+#if defined(DEBUG)
-+#define dev_dbg(dev, format, arg...)		\
-+	dev_printk(KERN_DEBUG , dev , format , ## arg)
-+#elif defined(CONFIG_DYNAMIC_PRINTK_DEBUG)
- #define dev_dbg(dev, format, ...) do { \
- 	dynamic_dev_dbg(dev, format, ##__VA_ARGS__); \
- 	} while (0)
--#elif defined(DEBUG)
--#define dev_dbg(dev, format, arg...)		\
--	dev_printk(KERN_DEBUG , dev , format , ## arg)
- #else
- #define dev_dbg(dev, format, arg...)		\
- 	({ if (0) dev_printk(KERN_DEBUG, dev, format, ##arg); 0; })
+Mimi
+
