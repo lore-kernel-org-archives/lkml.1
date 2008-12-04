@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbYLDBGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYLDBHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758142AbYLDBGx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 20:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757388AbYLDBGb
+	id S1755454AbYLDBHY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 20:07:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbYLDBGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 20:06:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59255 "EHLO mx1.redhat.com"
+	Wed, 3 Dec 2008 20:06:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59268 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757354AbYLDBG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 20:06:29 -0500
+	id S1757855AbYLDBGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 20:06:50 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: prasad@linux.vnet.ibm.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>, <mingo@elte.hu>,
-       <jason.wessel@windriver.com>, <avi@qumranet.com>,
-       <richardj_moore@uk.ibm.com>
-Subject: Re: [RFC Patch 6/9] Use virtual debug registers in process/thread
- handling code
-In-Reply-To: Alan Stern's message of  Saturday, 18 October 2008 11:34:56 -0400 <Pine.LNX.4.44L0.0810181123220.1469-100000@netrider.rowland.org>
-References: <20081018000829.519111544CB@magilla.localdomain>
-	<Pine.LNX.4.44L0.0810181123220.1469-100000@netrider.rowland.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: oleg@redhat.com, ebiederm@xmission.com, daniel@hozac.com, xemul@openvz.org,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       sukadev@us.ibm.com
+Subject: Re: [RFC][PATCH 3/5] Determine if sender is from ancestor ns
+In-Reply-To: Sukadev Bhattiprolu's message of  Tuesday, 25 November 2008 19:46:11 -0800 <20081126034611.GC23238@us.ibm.com>
+References: <20081126034242.GA23120@us.ibm.com>
+	<20081126034611.GC23238@us.ibm.com>
 X-Fcc: ~/Mail/linus
-X-Windows: simplicity made complex.
-Message-Id: <20081204010559.AAB5DFC053@magilla.sf.frob.com>
-Date: Wed,  3 Dec 2008 17:05:59 -0800 (PST)
+Message-Id: <20081204010636.A8465FC053@magilla.sf.frob.com>
+Date: Wed,  3 Dec 2008 17:06:36 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Hmm.  The 64-bit version of __switch_to does the current change much
-> > earlier, before __switch_to_xtra and math_state_restore.  I wonder if the
-> > 32-bit version could change to match.  I can't see what in __switch_to_xtra
-> > would care either way, though I may be overlooking something.  Ingo?
-> 
-> Would it be better to move __switch_to_xtra down below the change to 
-> current, rather than moving the change to current up above 
-> __switch_to_xtra?
+I don't quarrel with the intent, but I don't like this approach.
+I think we can do it more cleanly.  I don't have it all worked out,
+but a couple of thoughts come to mind.
 
-I can't see that anything else in __switch_to_xtra cares either way.
+Firstly, it's no problem to split SIGNAL_UNKILLABLE out into multiple
+flags.  It's quite noninvasive, only signal.c looks at those flags.  Then
+we can implement the signal magic cleanly keyed on a few separate flags,
+using different flag combinations for global init and container inits.
+
+I don't mind a feature that lets an unprivileged container init magically
+ignore normal exit signals.  That just does something it could do itself
+with sigaction, except its /proc/pid/status "SigIgn:" line will lie.
+That's OK.  Key that on its own flag and set that in both inits.  Just
+check that flag in prepare_signal() and in get_signal_to_deliver().
+
+It's a different story for the signals that cannot be caught, blocked, or
+ignored, SIGKILL and SIGSTOP.  At least when sent from outside the
+container, circumventing either of those would be a privilege escalation
+from what's always been understood by admins and so on.  
+
+It's convenient for the implementation that we can treat these differently
+from other signals, precisely because they can never be caught, blocked, or
+ignored.  That is, when we decide in prepare_signal() to queue a SIGKILL or
+SIGSTOP, it can never turn out that we're later going to drop it because it
+went from caught or ignored or blocked to uncaught, unignored, and
+unblocked.  (It's only because of that possibility that there is any need
+to check for a suppressed exit signal in get_signal_to_deliver() rather
+than only in prepare_signal().)  That means that when the decision hinges
+on the namespace correlation of the sender and receiver, you can check that
+when it's handy (current vs p in prepare_signal) rather than trying to
+reconstruct the answer for a queued signal.
+
+Finally, one more thought.  This may be moot for the problem at hand if you
+take the approach I just suggested, but probably should be fixed anyway.
+It seems to me that the si_pid and si_uid fields of siginfo_t ought to be
+translated to the namespaces of the receiver.  I think it makes most sense
+to do this on the front end, i.e. in the callers that fill in the siginfo_t
+in the first place (sys_kill et al, or maybe a few layers down?).
+Currently it's inconsistent, but mostly wrong.  do_notify_parent() and
+do_notify_parent_cldstop() use the receiver's namespace to compute si_pid,
+but the rest of the signal.c routines do not.  A free side effect of doing
+this is that si_pid for a sender whose PID is not visible to the receiver
+(i.e. outside its container) would be distinctively 0 or -1 or something.
+(-1 might be the best choice, since si_[pu]id=0 already arises now in case
+of signal queue exhaustion and the like.)  Hence, possibly one could simply
+use si_pid>0 as a "sent from inside the container" check on a queued siginfo_t.
 
 
 Thanks,
 Roland
-
