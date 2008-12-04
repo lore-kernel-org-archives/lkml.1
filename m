@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757955AbYLDLMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbYLDLOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757955AbYLDLMr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 06:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756210AbYLDLMV
+	id S1757897AbYLDLOn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 06:14:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYLDLOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 06:12:21 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:3696 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755359AbYLDLMQ (ORCPT
+	Thu, 4 Dec 2008 06:14:32 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48378 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbYLDLOb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 06:12:16 -0500
-Date: Thu, 4 Dec 2008 11:12:12 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: David Brownell <david-b@pacbell.net>, lkml <linux-kernel@vger.kernel.org>,
-       davej@redhat.com
-Subject: Re: [patch 2.6.28-rc7] regulator: catch some registration errors
-Message-ID: <20081204111206.GA8019@sirena.org.uk>
-References: <200812011335.43551.david-b@pacbell.net> <20081201225312.GA6699@sirena.org.uk> <200812012150.36342.david-b@pacbell.net> <1228340921.6529.80.camel@vega.slimlogic.co.uk>
+	Thu, 4 Dec 2008 06:14:31 -0500
+Date: Thu, 4 Dec 2008 12:16:21 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       venkatesh.pallipadi@intel.com, shaohua.li@intel.com
+Subject: Re: 2.6.28-rc6: hpet: object is on stack, but not annotated
+Message-ID: <20081204111621.GA2466@elf.ucw.cz>
+References: <a4423d670811240839q54e6b7afxfc49d28b3ea127cb@mail.gmail.com> <a4423d670811241014n2b2192beh931d374bf063894f@mail.gmail.com> <alpine.LFD.2.00.0811241916560.3301@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1228340921.6529.80.camel@vega.slimlogic.co.uk>
-X-Cookie: NOBODY EXPECTS THE SPANISH INQUISITION!
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <alpine.LFD.2.00.0811241916560.3301@localhost.localdomain>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 09:48:41PM +0000, Liam Girdwood wrote:
+On Mon 2008-11-24 19:17:44, Thomas Gleixner wrote:
+> On Mon, 24 Nov 2008, Alexander Beregalov wrote:
+> 
+> > 2008/11/24 Alexander Beregalov <a.beregalov@gmail.com>:
+> > > hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+> > > hpet0: 3 comparators, 64-bit 14.318180 MHz counter
+> > > ODEBUG: object is on stack, but not annotated
+> > > ------------[ cut here ]------------
+> > > WARNING: at lib/debugobjects.c:251 __debug_object_init+0x2a4/0x352()
+> > 
+> > Bisected down to 26afe5f2fbf06ea0765aaa316640c4dd472310c0
+> > (x86: HPET_MSI Initialise per-cpu HPET timers)
+> > 
+> > Revert helps
+> 
+> That's just a warning about a missing annotation. The commit is fine.
 
-> I wonder if there is another way to approach this as I do agree that
-> passing NULL is probably not the best solution. Alternatives like
-> embedding struct device with the CPUfreq core or adding a regulator_get
-> API call for CPUfreq drivers all involve some work. Fwiw, I'd be happy
-> enough with the latter option.
+You must be using very different metric of what "fine" means than rest
+of the world.
 
-We could also accept the NULL but warn when doing so, perhaps also
-adding a dummy device from the regulator core for the logging.  That'd
-provide some pushback on cpufreq to move to the device model if nobody
-is able to convert it right now.
+(No, introducing WARN_ON()s is not fine; it spams kerneloops.org at least...)
 
-On the bright side, looking at the situation with the clock API there
-don't seem to be any other substantial offenders here.  Most of the
-other users are part of the platform code and get to peer inside the
-clocking structure, so if cpufreq were fixed there shouldn't be much
-problem here.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
