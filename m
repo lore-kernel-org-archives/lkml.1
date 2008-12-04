@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbYLDLSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbYLDLZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757813AbYLDLSA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 06:18:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYLDLRv
+	id S1756755AbYLDLZe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 06:25:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYLDLZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 06:17:51 -0500
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:57163 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751283AbYLDLRu (ORCPT
+	Thu, 4 Dec 2008 06:25:24 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:16086 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751601AbYLDLZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 06:17:50 -0500
-Subject: [PATCH] fs: reorder struct inotify_device on 64bits to remove
-	padding
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: viro@zeniv.linux.org.uk
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 04 Dec 2008 11:17:47 +0000
-Message-Id: <1228389467.2963.21.camel@castor.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 4 Dec 2008 06:25:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vIlmwI/pFevkP79NXBk05PPgqVVaeOLykuWxakhvQeeG8xZLTv6BrrymYIvciLqwq+
+         P/PatfdXvliIHI8Tveye5oR0Dfp+vRK7v92RGSsSpQqfuxO93AbyZy2wS1wyKAftn5YE
+         50rekgMXd6UEbkin6ZUpHvRTN3R+HqSKqnGxs=
+Message-ID: <2375c9f90812040325l6c340d5qbb527bd55c04fa53@mail.gmail.com>
+Date: Thu, 4 Dec 2008 11:25:21 +0000
+From: "=?UTF-8?Q?Am=C3=A9rico_Wang?=" <xiyou.wangcong@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] ipc: fix warning of not used variable
+Cc: "Jianjun Kong" <jianjun@zeuux.org>, akpm@linux-foundation.org,
+       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081204101354.GC18708@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081204010026.GC17445@ubuntu> <20081204101354.GC18708@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reorder struct inotify_device to remove 8 bytes of padding on 64bit
-builds, reducing size to 128 bytes . Therefore allocating from a smaller
-slab & using one fewer cachelines.
+On Thu, Dec 4, 2008 at 10:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Jianjun Kong <jianjun@zeuux.org> wrote:
+>
+>>
+>> fix this warning:
+>> ipc/ipc_sysctl.c:39: warning: 'ipc_auto_callback' defined but not used
+>> ipc_auto_callback() just called when CONFIG_PROC_FS was defined.
+>>
+>>
+>> Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
+>> ---
+>>  ipc/ipc_sysctl.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> NAK.
+>
+> the proper fix, considering all the possibilities, is below.
+>
 
-Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+Already fixed in -mm, please do search lkml archive before posting.
 
-----
-Hi,
-patch against 2.6.28-rc7.
-built & tested on AMDX2 desktop.
-
-I've not been able to send this to the listed inotify maintainers, I
-just get mail failures. So I guessed filesystem was the best home for
-it, hope that's ok. 
-
-regards
-Richard
-
-
-diff --git a/fs/inotify_user.c b/fs/inotify_user.c
-index d367e9b..5554d7f 100644
---- a/fs/inotify_user.c
-+++ b/fs/inotify_user.c
-@@ -76,10 +76,10 @@ struct inotify_device {
- 	struct mutex		ev_mutex;	/* protects event queue */
- 	struct mutex		up_mutex;	/* synchronizes watch updates */
- 	struct list_head 	events;		/* list of queued events */
--	atomic_t		count;		/* reference count */
- 	struct user_struct	*user;		/* user who opened this dev */
- 	struct inotify_handle	*ih;		/* inotify handle */
- 	struct fasync_struct    *fa;            /* async notification */
-+	atomic_t		count;		/* reference count */
- 	unsigned int		queue_size;	/* size of the queue (bytes) */
- 	unsigned int		event_count;	/* number of pending events */
- 	unsigned int		max_events;	/* maximum number of events */
-
-
+Thanks.
