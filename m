@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYLDJ5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbYLDKCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266AbYLDJ5R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 04:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYLDJ47
+	id S1756907AbYLDKCr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 05:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbYLDKCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 04:56:59 -0500
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:46753 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750845AbYLDJ46 (ORCPT
+	Thu, 4 Dec 2008 05:02:38 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52123 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751138AbYLDKCh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 04:56:58 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=lYtC5lOu4ph8i7ZqGR2sSzXI2Rhq+6g4M5EDKbIt29eBshUzSonruRMQ/Gz2OgBkBKRnOa02R1Crx81xYNsag5sVBp6+erqeDnHcvA2Qwz+22EGo3MvSfqYEpZWHsJWDal6kuJM3/W22VTpMsOC1p0NnPHonsUB20Lr9A/s76PE=  ;
-X-YMail-OSG: UkMKNKIVM1k9k4BJOSFMuXPBpXm6vmIyKOudMFEBhGcUFqQeshJ6WYmBPjiqP_bJ3Cy6ILJQnELZaGN78JMzlIkG0zTRftRDR9qRB8v6J.R935QY_9Z0LjKFxOGRdONC6II-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: felipe.balbi@nokia.com, ext Kwangwoo Lee <kwangwoo.lee@gmail.com>
-Subject: Re: [PATCH] Add tsc2007 based touchscreen driver.
-Date: Thu, 4 Dec 2008 01:56:54 -0800
-User-Agent: KMail/1.9.10
-Cc: ext Trilok Soni <soni.trilok@gmail.com>, dmitry.torokhov@gmail.com,
-       linux-kernel@vger.kernel.org,
-       "linux-omap@vger.kernel.org Mailing List" 
-	<linux-omap@vger.kernel.org>
-References: <483a38b80812020539v2323a784h7f202749687764db@mail.gmail.com> <483a38b80812032107i761fb9bdkba9b2ce5e998ae6a@mail.gmail.com> <20081204093715.GH10209@gandalf.research.nokia.com>
-In-Reply-To: <20081204093715.GH10209@gandalf.research.nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Dec 2008 05:02:37 -0500
+Date: Thu, 4 Dec 2008 11:13:43 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.28-rc6: early panic with boot option "nosmp"
+Message-ID: <20081204101343.GO6703@one.firstfloor.org>
+References: <20081204022806.GA29293@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812040156.55943.david-b@pacbell.net>
+In-Reply-To: <20081204022806.GA29293@localhost>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 December 2008, Felipe Balbi wrote:
-> i2c subsystem has smbus emulation. The special reason is just that it's
-> simpler for the driver writer ;-)
+On Thu, Dec 04, 2008 at 10:28:06AM +0800, Wu Fengguang wrote:
+> Hi,
+> 
+> The boot option "maxcpus=0" or "nosmp" makes kernel 2.6.28-rc6 panic
+> immediately after booting:
+> 
+> PANIC: early exception 0e rip 10:ffffffff8176d6ff error 0 cr2 9
 
-I'd have said "more portable", actually.  I2C hosts can
-do pretty much everything an SMBus host can, but the
-converse is not true.
+It would be useful if you could look the ffffffff8176d6ff 
+address up in your System.map or using gdb.
 
-And re i2c_check_functionality() ... yes, use it to make
-sure each I2C or SMBus call the driver makes is supported
-by the underlying controller.
-
-- Dave
-
+-Andi
