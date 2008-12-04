@@ -1,95 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbYLDBYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbYLDB12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbYLDBYg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 20:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYLDBY1
+	id S1756751AbYLDB12 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 20:27:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYLDB1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 20:24:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48975 "EHLO ogre.sisk.pl"
+	Wed, 3 Dec 2008 20:27:20 -0500
+Received: from ozlabs.org ([203.10.76.45]:47806 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753374AbYLDBY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 20:24:26 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Thu, 4 Dec 2008 02:23:53 +0100
-User-Agent: KMail/1.9.9
-Cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812031220.36711.rjw@sisk.pl> <alpine.LFD.2.00.0812030735230.3256@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812030735230.3256@nehalem.linux-foundation.org>
+	id S1751639AbYLDB1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 20:27:19 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: Yet more ARM breakage in linux-next
+Date: Thu, 4 Dec 2008 11:57:14 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <20081203192905.GA12502@flint.arm.linux.org.uk> <200812040952.44957.rusty@rustcorp.com.au> <49371848.2080804@oracle.com>
+In-Reply-To: <49371848.2080804@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812040223.54341.rjw@sisk.pl>
+Message-Id: <200812041157.15355.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 3 of December 2008, Linus Torvalds wrote:
-> 
-> On Wed, 3 Dec 2008, Rafael J. Wysocki wrote:
-> > 
-> > Then, voila!, I'm not able to reproduce the hibernation-resume failure.
-> > 
-> > This appears to mean that:
-> > (1) The sizes of the allocations and the locations of devices in the memory
-> >     address space don't matter here.
-> > (2) The presence and size of the prefetchable memory window don't matter here.
-> > (3) What matters is the presence of non-prefetchable memory window on the
-> >     supposedly transparent bridge.  Namely, if the window is there, resume from
-> >     hibernation occasionally fails (again, the size of the window and the
-> >     location of it in the memory address space doesn't seem to matter).
-> 
-> That is indeed rather odd, and very interesting. 
-> 
-> > So, apparently, on this box (and I guess on Frans' too) we could avoid the
-> > problem if we didn't allocate the non-prefetchable memory window in
-> > pci_bus_size_cardbus(), but I guess that wouldn't be generally correct.
-> 
-> Well, I think that what _would_ be generally correct, and actually pretty 
-> simple, is a rather different approach: just not sizing things behind a 
-> transparent bridge AT ALL, since it really shouldn't matter.
-> 
-> So if the appended patch fixes things for you, I think this might 
-> potentially be the right approach.
-> 
-> NOTE NOTE NOTE! This patch is entirely untested, as usual. I didn't check 
-> that this is necessarily the correct place to test for this, but it 
-> does make sense. IOW, it _feels_ like the rigth thing.
+On Thursday 04 December 2008 10:07:44 Randy Dunlap wrote:
+> Rusty Russell wrote:
+> > (Yes, classic useless kerneldoc documentation doesn't actually *say*
+> > this clearly).
+>
+> oh fud.  That's not a fault of kernel-doc, just of whoever wrote it.
+> It's only as good as someone makes it.
 
-Yes, it _looks_ sane.
+Sorry that this came out wrong.  kernel-doc provides structure, but it can't 
+provide content.  And authors seem unable to think from the POV of someone 
+*using* the API.
 
-> However, even if it fixes things for you, I think we're too late in the
-> 2.6.28 cycle to really apply this.
+With some work, I tracked it back to Stephen Hemminger for this comment in 
+12d9c8420b9daa1da3d9e090640fb24bcd0deba2.  It's since been fixed and moved,
+but it's still:
 
-Absolutely.
+ * __fls: find last set bit in word
+ * @word: The word to search
+ *
+ * Undefined if no set bit exists, so code should check against 0 first.
 
-> So it really does make sense to consider a root bridge and a transparent 
-> one to be equivalent here, since in both cases any bridge windows should 
-> be irrelevant. Which is why I think this patch is interesting.
-> 
-> > Also, I would be happy to actually understand _why_ this happens.
-> 
-> 100% agreed. I do _not_ see why it should ever matter how we set up a PCI 
-> bridging window - whether prefetchable or not - on a bridge that should be 
-> transparent. It sounds really odd. I'm wondering if there is something 
-> we're missing here.
-> 
-> But apart from the existence of the bridging window, the only thing that 
-> it seems to affect is really just a minor layour issue. So it does seem 
-> like it matters. Odd.
+Which would be *fine* if fls() didn't have such confusing bit numbering and 
+the exact same one-line description.
 
-Well, in principle it may be related to the way we handle bridges during
-resume, but I really need to read some docs and compare them with the code
-before I can say anything more about that.  Surely, nothing like this issue has
-ever been reported before.
-
-Anyway, thanks for the patch, I'm going to try it tomorrow.
-
-Best,
-Rafael
+Thanks,
+Rusty.
