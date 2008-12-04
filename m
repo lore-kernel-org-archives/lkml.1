@@ -1,102 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbYLDWbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759236AbYLDWbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758880AbYLDWbU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 17:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbYLDWbK
+	id S1759236AbYLDWbq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 17:31:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbYLDWbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 17:31:10 -0500
-Received: from ivent.com.au ([125.7.48.1]:35721 "EHLO picard.ivent.com.au"
+	Thu, 4 Dec 2008 17:31:35 -0500
+Received: from igw3.br.ibm.com ([32.104.18.26]:33582 "EHLO igw3.br.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756439AbYLDWbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 17:31:09 -0500
-Subject: Re: New Security Features, Please Comment
-From: Geoffrey McRae <geoff@rabidhost.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Peter Teoh <htmldeveloper@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <80413.1228427770@turing-police.cc.vt.edu>
-References: <1228260494.24232.21.camel@compy.ivent.com.au>
-	 <20081203005338.6472db7a@lxorguk.ukuu.org.uk>
-	 <1228268657.6679.4.camel@lappy.spacevs.com>
-	 <20081203124252.GD11807@mail.local.tull.net>
-	 <1228344292.6993.27.camel@lappy.spacevs.com>
-	 <20081203230820.4473a162@lxorguk.ukuu.org.uk>
-	 <804dabb00812031527k3fae11dcnef3b1696c3d136f8@mail.gmail.com>
-	 <1228347656.6993.31.camel@lappy.spacevs.com>
-	 <80413.1228427770@turing-police.cc.vt.edu>
+	id S1756593AbYLDWbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 17:31:34 -0500
+Subject: Re: [PATCH 1/6] integrity: TPM internel kernel interface
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>,
+       Rajiv Andrade <srajiv@br.ibm.com>
+In-Reply-To: <1228422093.19683.66.camel@blackbox>
+References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
+	 <1e02b363572908a21f67ff8abbf2b10190a4f6a6.1228253618.git.zohar@linux.vnet.ibm.com>
+	 <1228256380.2971.176.camel@nimitz>  <1228422093.19683.66.camel@blackbox>
 Content-Type: text/plain
-Date: Fri, 05 Dec 2008 09:30:54 +1100
-Message-Id: <1228429854.7546.6.camel@lappy.spacevs.com>
+Date: Thu, 04 Dec 2008 20:31:14 -0200
+Message-Id: <1228429874.19683.73.camel@blackbox>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - picard.ivent.com.au
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - rabidhost.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-04 at 16:56 -0500, Valdis.Kletnieks@vt.edu wrote:
-> On Thu, 04 Dec 2008 10:40:56 +1100, Geoffrey McRae said:
+> > > +
+> > > +/**
+> > > + * tpm_pcr_read - read a pcr value
+> > > + * @chip_id: 	tpm chip identifier
+> > > + * 		Upper 2 bytes: ANY, HW_ONLY or SW_ONLY
+> > > + * 		Lower 2 bytes: tpm idx # or AN&
+> > > + * @pcr_idx:	pcr idx to retrieve
+> > > + * @res_buf: 	TPM_PCR value
+> > > + * 		size of res_buf is 20 bytes (or NULL if you don't care)
+> > > + *
+> > > + * The TPM driver should be built-in, but for whatever reason it
+> > > + * isn't, protect against the chip disappearing, by incrementing
+> > > + * the module usage count.
+> > > + */
+> > > +int tpm_pcr_read(u32 chip_id, int pcr_idx, u8 *res_buf)
+> > > +{
+> > > +	u8 data[READ_PCR_RESULT_SIZE];
+> > > +	int rc;
+> > > +	__be32 index;
+> > > +	int chip_num = chip_id & TPM_CHIP_NUM_MASK;
+> > > +	struct tpm_chip *chip;
+> > > +
+> > > +	rcu_read_lock();
+> > > +	chip = tpm_chip_lookup(chip_num, chip_id >> TPM_CHIP_TYPE_SHIFT);
+> > > +	if (chip == NULL) {
+> > > +		rcu_read_unlock();
+> > > +		return -ENODEV;
+> > > +	}
+> > > +	if (!try_module_get(chip->dev->driver->owner)) {
+> > > +		rcu_read_unlock();
+> > > +		return -ENODEV;
+> > > +	}
+> > > +	rcu_read_unlock();
+> > 
+> > This little bit of lookup, check for NULL, and try_module_get() looks
+> > cut-n-pasted in the next two functions.  Should be consolidated.
+> > 
 > 
-> > Ok, so this is a pretty major flaw of the idea, thats why I put this
-> > concept out there, any suggestions as to how to get around this?
-> > Possibly add some checking to disable certain functions in the child
-> > when the enable_setpresuid function has been called?.
+> Same here.
 > 
-> Or just deploy SELinux instead.
+> > Also, if you need to shift down the chip_id every time anyway, why not
+> > just do it inside the lookup function?
+> 
+> tpm_chip_lookup() only needs the chip type, not the entire chip_id, so
+> its usage is probably clearer if written this way.
+> 
 
-SELinux is insanely complicated, and is sort of a blanket fix, it does
-not fix the problem at the root, in the target application.
+Wait.. chip_num, the other parameter, depends on chip_id and a
+previously defined constant, so, you are right, it's saner to just pass
+chip_id to it.. sorry, and thanks. This will be included also on the
+next patchset I'm about to send.
 
-> 
-> > Or save the signal handlers the first time setpresuid is called, and the
-> > next time, restore them so if the child has changed them, they get
-> > re-set back to their initial state?
-> 
-> It's not just signal handlers.
-> 
-> 	while (getpid()) msleep(1);
-> 	/* malicious code here */
-> 
-
-This would only be dangerous if the parent did not wait for the child to
-finish its task before changing its uid, which for a FastCGI app, it has
-to as it needs the response to send back to the client. All that would
-happen here is the CGI script would sleep forever, or until the HTTP
-server killed the process.
-
-> Just loop, pop up every few milliseconds and check if you're root,
-> and fall out of the loop and go into attack mode if you are.
-> 
-> If you're using it to toggle between various non-root userids, just adjust
-> the while accordingly: 'while ((me = getpid()) != 497) ...'  or whatever
-> you need.
-
-Same as above, it would just sleep forever.
-
-> 
-> And if you try to disable getpid to prevent that attack, consider something
-> that does this:
-> 
-> 	while (open("only_creatable_by_target_uid",O_CREAT) < 0)
-> 
-> You can hardly take open() away from processes. ;)
-
-I dont exactly like the idea of disabling system functions, its more of
-a hack then a solution, it was just a suggestion.
-
-> 
-> > I know many people are against the idea of adding new functions at will
-> > to the kernel, thats why I am trying to flesh out all the potential
-> > problems and find solutions to them first.
-> 
-> We don't mind adding functions.  We just hate broken-by-design functions.
-
-Thats fine, I dont want to make things less secure, bear in mind that
-this is my first kernel patch, and I am still learning how things are
-written in the kernel.
+Rajiv
 
