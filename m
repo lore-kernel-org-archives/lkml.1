@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbYLDErR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbYLDEs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754696AbYLDErR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 23:47:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbYLDErA
+	id S1755569AbYLDEs3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 23:48:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYLDEsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 23:47:00 -0500
-Received: from mx2.suse.de ([195.135.220.15]:57832 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751121AbYLDEq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 23:46:59 -0500
-Date: Wed, 3 Dec 2008 20:17:39 -0800
-From: Greg KH <gregkh@suse.de>
-To: Edward Estabrook <edward.estabrook.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, hjk@linutronix.de,
-       edward.estabrook@gmail.com, edward_estabrook@agilent.com
-Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
-	(corrected)
-Message-ID: <20081204041739.GA16329@suse.de>
-References: <208aa0f00812031751n27a75d21h8747054651639463@mail.gmail.com>
+	Wed, 3 Dec 2008 23:48:17 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:21198 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751784AbYLDEsR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 23:48:17 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:cc:
+	content-type:content-transfer-encoding;
+	b=VTOSI/uRqQWCV179rwBSDxD0Ru3h0zDAzOu54AYIt/jsHn3pp45dYai9vQEVw2ZTq
+	qozHOdHESlG7Kbg+AFMNw==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <208aa0f00812031751n27a75d21h8747054651639463@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Date: Wed, 3 Dec 2008 20:48:13 -0800
+Message-ID: <b040c32a0812032048x4a11dc26k184a4b279b509050@mail.gmail.com>
+Subject: [patch] export percpu cpuacct cgroup stats
+From: Ken Chen <kenchen@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 05:51:30PM -0800, Edward Estabrook wrote:
-> From: Edward Estabrook <Edward_Estabrook@agilent.com>
-> 
-> Here is a patch that adds the ability to dynamically allocate and use
-> coherent DMA
-> from userspace by extending the Userspace IO driver.  This patch applies against
-> 2.6.28-rc6.
-> 
-> The gist of this implementation is to overload uio's mmap
-> functionality to allocate
-> and map a new DMA region on demand.  The bus-specific DMA address as returned by
-> dma_alloc_coherent is made available to userspace in the 1st long word
-> of the newly
-> created region (as well as through the conventional 'addr' file in sysfs).
-> 
-> The kernel-api change is that passing an offset value of 0xFFFFF000UL
-> to the a uio
-> device's mmap operation will dynamically allocate a DMA region.  This
-> cannot change/
-> break existing behavior as the previous UIO code only allowed a maximum of 5
-> mappings.
+This patch export per-cpu CPU cycle usage for a given cpuacct cgroup.
+There is a need for a user space monitor daemon to track group CPU
+usage on per-cpu base.  It is also useful for monitor CFS load
+balancer behavior by tracking per CPU group usage.
 
-Odd formatting of your paragraphs :(
 
-Anyway, what about 64bit processors?  What happens if they try to use a
-valid address in this range?
+Signed-off-by: Ken Chen <kenchen@google.com>
 
-Is this value always an "invalid" value for all arches that Linux runs
-on?
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b7480fb..cd78948 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -9345,12 +9345,34 @@ out:
+ 	return err;
+ }
 
-thanks,
++static int cpuacct_percpu_seq_read(struct cgroup *cgroup, struct cftype *cft,
++				   struct seq_file *m)
++{
++	struct cpuacct *ca = cgroup_ca(cgroup);
++	u64 percpu;
++	int i;
++
++	for_each_possible_cpu(i) {
++		spin_lock_irq(&cpu_rq(i)->lock);
++		percpu = *percpu_ptr(ca->cpuusage, i);
++		spin_unlock_irq(&cpu_rq(i)->lock);
++		seq_printf(m, "%lld ", percpu);
++	}
++	seq_printf(m, "\n");
++	return 0;
++}
++
+ static struct cftype files[] = {
+ 	{
+ 		.name = "usage",
+ 		.read_u64 = cpuusage_read,
+ 		.write_u64 = cpuusage_write,
+ 	},
++	{
++		.name = "percpu",
++		.read_seq_string = cpuacct_percpu_seq_read,
++	},
++
+ };
 
-greg k-h
+ static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
