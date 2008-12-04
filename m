@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbYLDMpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbYLDMpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbYLDMpJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 07:45:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbYLDMo4
+	id S1755545AbYLDMpj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 07:45:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbYLDMpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 07:44:56 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35713 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751756AbYLDMoz (ORCPT
+	Thu, 4 Dec 2008 07:45:17 -0500
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:36073 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755173AbYLDMpP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 07:44:55 -0500
-Message-ID: <44799.10.75.179.61.1228394692.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <20081204200037.63ff03c9.nishimura@mxp.nes.nec.co.jp>
-References: <20081203134718.6b60986f.kamezawa.hiroyu@jp.fujitsu.com><20081203141423.6f747990.kamezawa.hiroyu@jp.fujitsu.com>
-    <20081204200037.63ff03c9.nishimura@mxp.nes.nec.co.jp>
-Date: Thu, 4 Dec 2008 21:44:52 +0900 (JST)
-Subject: Re: [Experimental][PATCH  
-     21/21]memcg-new-hierarchical-reclaim.patch
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       nishimura@mxp.nes.nec.co.jp
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Thu, 4 Dec 2008 07:45:15 -0500
+Date: Thu, 4 Dec 2008 13:45:11 +0100
+From: Bastian Blank <bastian@waldi.eu.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       xemul@openvz.org
+Subject: Re: [RFC][PATCH 3/5] Determine if sender is from ancestor ns+
+Message-ID: <20081204124511.GA31061@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
+	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, oleg@redhat.com,
+	ebiederm@xmission.com, roland@redhat.com, containers@lists.osdl.org,
+	linux-kernel@vger.kernel.org, xemul@openvz.org
+References: <20081126034242.GA23120@us.ibm.com> <20081126034611.GC23238@us.ibm.com> <20081127010101.GA13545@wavehammer.waldi.eu.org> <20081201201506.GB12493@us.ibm.com> <20081202114833.GA1132@wavehammer.waldi.eu.org> <20081202195904.GA20077@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=us-ascii
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20081202195904.GA20077@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daisuke Nishimura said:
-> On Wed, 3 Dec 2008 14:14:23 +0900, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> Implement hierarchy reclaim by cgroup_id.
+On Tue, Dec 02, 2008 at 11:59:04AM -0800, Sukadev Bhattiprolu wrote:
+> Bastian Blank [bastian@waldi.eu.org] wrote:
+> | sys_rt_sigqueueinfo disallows setting si_code to any value which
+> | describes kernel signals from userspace. So using SI_FROMUSER should be
+> | sufficient.
+> SI_ASYNCIO qualifies as SI_FROMUSER() even when it originates from
+> kernel (usb/core/devio.c async_completed())...
 
->> +	rcu_read_lock();
->> +	if (!root_mem->use_hierarchy) {
->> +		spin_lock(&root_mem->reclaim_param_lock);
->> +		root_mem->scan_age++;
->> +		spin_unlock(&root_mem->reclaim_param_lock);
->> +		css_get(&root_mem->css);
->> +		goto out;
->>  	}
->>
-> I think you forgot "ret = root_mem".
-> I got NULL pointer dereference BUG in my test(I've not tested
-> use_hierarchy case yet).
->
-yes...thank you for catching. will fix.
+SI_ASYNCIO currently qualifies as user signal, it is sent in the context
+of the pid issuing the async io request. It is never used as a kernel
+originated signal in any way. The code sending it even seems to do a
+full permission check.
 
--Kame
+If you think this is wrong, maybe this should be fixed first.
 
+> If we know that it came from rt_sigqueueinfo(), we can safely check
+> the namespace. If it came from driver we should skip the ns check.
+
+If it have a sender pid attached, this should be checked.
+
+> Yes, (Eric Biederman, Dec 2007)
+> 	https://lists.linux-foundation.org/pipermail/containers/2007-December/009152.html
+> Oleg Nesterov, Aug 2007:
+> 	http://marc.info/?l=linux-kernel&m=118753610515859
+> I had sent out a summary of the above attempts to Containers list recently:
+> 	https://lists.linux-foundation.org/pipermail/containers/2008-November/013991.html
+
+Okay.
+
+> | Please add a complete comment to the function which describes the
+> | function. And don't us "it" for not defined entities.
+> Ah, I see the problem now. The 't' refers to the task parameter - how
+> about changing comment to:
+
+No, I meant a real comment, defining the complete behaviour, each
+parameter with constraints and the possible return values.
+
+Bastian
+
+-- 
+Insufficient facts always invite danger.
+		-- Spock, "Space Seed", stardate 3141.9
