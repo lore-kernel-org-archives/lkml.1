@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758812AbYLDTDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759005AbYLDTEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758812AbYLDTDz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 14:03:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755618AbYLDTDq
+	id S1759005AbYLDTEV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 14:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbYLDTEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 14:03:46 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41346 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755554AbYLDTDp (ORCPT
+	Thu, 4 Dec 2008 14:04:04 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57925 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758851AbYLDTEB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 14:03:45 -0500
-Message-ID: <49382973.4000908@zytor.com>
-Date: Thu, 04 Dec 2008 11:03:15 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Theodore Tso <tytso@mit.edu>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: SD/MMC cards: how crappy they are?
-References: <20081202144830.GB1549@ucw.cz> <493562A5.40308@zytor.com> <20081202165608.GD18162@mit.edu> <4935778E.1020405@zytor.com> <20081204103206.GD22396@elf.ucw.cz>
-In-Reply-To: <20081204103206.GD22396@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 4 Dec 2008 14:04:01 -0500
+Date: Thu, 4 Dec 2008 11:03:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH 01/15] kmemleak: Add the base support
+Message-Id: <20081204110312.cd2a1be0.akpm@linux-foundation.org>
+In-Reply-To: <1228416646.19553.117.camel@pc1117.cambridge.arm.com>
+References: <20081129103908.16726.24264.stgit@pc1117.cambridge.arm.com>
+	<20081129104312.16726.36218.stgit@pc1117.cambridge.arm.com>
+	<20081202132828.5c84b815.akpm@linux-foundation.org>
+	<1228416646.19553.117.camel@pc1117.cambridge.arm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
->>>
->> I have seen flash cards die permanently from having a partition table it
->> didn't like written to it.  Yes, the microcontroller on the flash card
->> tried to interpret the partition table, assumed to be MS-DOS style, and
->> would crash.
-> 
-> Aha... that explains why I killed few flashcards by tar xzvf /dev/sdX files
-> ... hopefully thats fixed in the better/bigger cards now.
-> 
+On Thu, 04 Dec 2008 18:50:46 +0000 Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-Also had a batch of cards which would silently "correct" the partition
-table for you to align the partitions to its flash erase blocks.
+> Or, is there a way to tell whether it's in a kernel
+> thread or user process context? Checking current->mm?
 
-	-hpa
+Yup, that'll work.  There might be small windows during process startup
+and termination where a real process can have a NULL ->mm, but those
+are probably benign in this case.
+
