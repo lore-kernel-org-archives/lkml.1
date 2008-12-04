@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbYLDAON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759970AbYLDAOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757603AbYLDAON (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 19:14:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbYLDALD
+	id S1759970AbYLDAOy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 19:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759356AbYLDAOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 19:11:03 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47157 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759426AbYLDALA (ORCPT
+	Wed, 3 Dec 2008 19:14:08 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:50525 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758753AbYLDAOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 19:11:00 -0500
-Date: Thu, 4 Dec 2008 00:10:32 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, rusty@rustcorp.com.au,
-       rmk+lkml@arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       sfr@canb.auug.org.au
-Subject: Re: Yet more ARM breakage in linux-next
-Message-ID: <20081204001032.39d2a281@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081203154629.bba4e5e4.akpm@linux-foundation.org>
-References: <20081203192905.GA12502@flint.arm.linux.org.uk>
-	<20081203124109.79f8f15b.akpm@linux-foundation.org>
-	<200812040952.44957.rusty@rustcorp.com.au>
-	<49371848.2080804@oracle.com>
-	<20081203154629.bba4e5e4.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 3 Dec 2008 19:14:07 -0500
+Subject: Re: [Bug #12020] scsi_times_out NULL pointer dereference
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bernd Schubert <bs@q-leap.de>
+In-Reply-To: <bfPM5B8Tx2B.A.Ia.hpxNJB@chimera>
+References: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera>
+	 <bfPM5B8Tx2B.A.Ia.hpxNJB@chimera>
+Content-Type: text/plain
+Date: Wed, 03 Dec 2008 18:14:08 -0600
+Message-Id: <1228349648.5551.98.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> For some reason, the act of typing in some kerneldoc makes people's
-> brains turn off.  Perhaps it's because "oh, I am supposed to type some
-> documentation here" instead of "gee, I think this code is unclear,
-> let's clarify that".
+On Wed, 2008-12-03 at 22:57 +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.27.  Please verify if it still should be listed and let me know
+> (either way).
 
-Well prior to the kerneldoc stuff they didn't type anything at all to
-clarify or document. Also kerneldoc is meant for documenting the APIs not
-so much the internals of functions. When used sensibly it can be very
-useful, especially if it documents API locking rules.
+That's a hard call.  We think this might be fixed by Tejun's block timer
+patch, but the reporter has been unable to reproduce the problem (with
+or without the timer patch).
 
-Alan
+Perhaps list as closed for now and reopen if we get another problem
+report with kernels containing the block timer patch?
+
+James
+
+
