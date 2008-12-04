@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbYLDWR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbYLDWVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758806AbYLDWR3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 17:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYLDWRV
+	id S1758599AbYLDWVN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 17:21:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbYLDWU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 17:17:21 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38746 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752753AbYLDWRU (ORCPT
+	Thu, 4 Dec 2008 17:20:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34223 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752335AbYLDWU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 17:17:20 -0500
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: linux-kernel@vger.kernel.org
-Cc: Richard Purdie <rpurdie@rpsys.net>, Rodolfo Giometti <giometti@linux.it>
-Date: Mon,  1 Dec 2008 15:28:17 +0100
-Message-Id: <1228141697-20161-1-git-send-email-giometti@enneenne.com>
-X-Mailer: git-send-email 1.5.4.3
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH] leds ledtrig-timer: on deactivation hardware blinking should be disabled.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Thu, 4 Dec 2008 17:20:57 -0500
+Date: Thu, 4 Dec 2008 14:20:21 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
+ on Toshiba R500 (bisected)
+In-Reply-To: <200812042309.11540.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0812041415020.3543@nehalem.linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812030735230.3256@nehalem.linux-foundation.org> <200812041229.45443.elendil@planet.nl> <200812042309.11540.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rodolfo Giometti <giometti@linux.it>
 
-Signed-off-by: Rodolfo Giometti <giometti@linux.it>
----
- drivers/leds/ledtrig-timer.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/leds/ledtrig-timer.c b/drivers/leds/ledtrig-timer.c
-index 5c99f4f..2f8d83f 100644
---- a/drivers/leds/ledtrig-timer.c
-+++ b/drivers/leds/ledtrig-timer.c
-@@ -203,6 +203,7 @@ err_out:
- static void timer_trig_deactivate(struct led_classdev *led_cdev)
- {
- 	struct timer_trig_data *timer_data = led_cdev->trigger_data;
-+	unsigned long on = 0, off = 0;
- 
- 	if (timer_data) {
- 		device_remove_file(led_cdev->dev, &dev_attr_delay_on);
-@@ -210,6 +211,10 @@ static void timer_trig_deactivate(struct led_classdev *led_cdev)
- 		del_timer_sync(&timer_data->timer);
- 		kfree(timer_data);
- 	}
-+
-+	/* If there is hardware support for blinking, stop it */
-+	if (led_cdev->blink_set)
-+		led_cdev->blink_set(led_cdev, &on, &off);
- }
- 
- static struct led_trigger timer_led_trigger = {
--- 
-1.5.4.3
+On Thu, 4 Dec 2008, Rafael J. Wysocki wrote:
+> 
+> However, this one appears to work reliably for me (on top of vanilla current
+> mainline):
 
+Not very interesting. It just does the same thing your previous patches 
+have done - ignores the cardbus slot for sizing. It just does it 
+differently and more explicitly.
+
+Your original patch did it by simply giving the resources invalid 
+alignments (in a very non-obvious way). This one does it by being explicit 
+and saying "we won't care about cardbus resources behind transparent 
+bridges". But it's still a very hacky thing, and thus not really 
+interesting at all as a patch.
+
+IOW, it's not a patch that makes sense - it's just a patch that ON YOUR 
+PARTICULAR MACHINE causes us to get the layout you want in order to hide 
+the bug. And it doesn't really even do anything new - it's just doing the 
+same thing in an old way.
+
+But it's interesting that the "don't size _anything_ behind a transparent 
+bridge" apparently made no difference for you.
+
+Can you send "lspci -vv" and "dmesg" output for that kernel? Even if it 
+failed the suspend/resume, it's interesting, because I would actually have 
+expected that one to have the same layout as the successful ones.
+
+			Linus
