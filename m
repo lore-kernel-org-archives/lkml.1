@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbYLDBBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbYLDBGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757168AbYLDBBH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Dec 2008 20:01:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758101AbYLDBAb
+	id S1756779AbYLDBGS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Dec 2008 20:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYLDBGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Dec 2008 20:00:31 -0500
-Received: from smtp.zeuux.org ([210.51.160.52]:63852 "EHLO z.billxu.com"
+	Wed, 3 Dec 2008 20:06:03 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59235 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758030AbYLDBAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Dec 2008 20:00:30 -0500
-Date: Thu, 4 Dec 2008 09:00:26 +0800
-From: Jianjun Kong <jianjun@zeuux.org>
-To: akpm@linux-foundation.org
-Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] ipc: fix warning of not used variable
-Message-ID: <20081204010026.GC17445@ubuntu>
+	id S1751701AbYLDBGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Dec 2008 20:06:01 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: eranian@googlemail.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, x86@kernel.org, andi@firstfloor.org,
+       eranian@gmail.com, sfr@canb.auug.org.au,
+       Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [patch 20/24] perfmon: system calls interface
+In-Reply-To: Ingo Molnar's message of  Wednesday, 26 November 2008 15:00:27 +0100 <20081126140027.GC6562@elte.hu>
+References: <492d0c0b.170e660a.15ba.ffffdabf@mx.google.com>
+	<20081126140027.GC6562@elte.hu>
+X-Fcc: ~/Mail/linus
+X-Zippy-Says: ALFRED JARRY!  Say something about th' DEATH of DISCO!!
+Message-Id: <20081204010526.9B888FC053@magilla.sf.frob.com>
+Date: Wed,  3 Dec 2008 17:05:26 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > +	/*
+> > +	 * cannot attach to a kernel thread
+> > +	 */
+> > +	if (!task->mm) {
 
-fix this warning:
-ipc/ipc_sysctl.c:39: warning: ‘ipc_auto_callback’ defined but not used
-ipc_auto_callback() just called when CONFIG_PROC_FS was defined.
+This should test (task->flags & PF_KTHREAD).  (But it's superfluous anyway.)
+
+> > +	/*
+> > +	 * cannot attach to a zombie task
+> > +	 */
+> > +	if (task->exit_state == EXIT_ZOMBIE || task->exit_state == EXIT_DEAD) {
+
+The usual test to write here is just "if (task->exit_state)".
+(But it's superfluous anyway.)
+
+> Thirdly, the check for ->exit_state in pfm_task_incompatible() is not 
+> needed: we've just passed ptrace_check_attach() so we know we just 
+> transitioned the task to task->state == TASK_TRACED.
+
+Correct.
+
+> If you _ever_ see a task exit TASK_TRACED and go zombie or dead from 
+> there without this code allowing it that means the whole state machine 
+> with ptrace is borked up by perfmon. 
+
+Is always possible for a TASK_TRACED task to suddenly die via SIGKILL, and
+it's even possible it will be reaped (EXIT_DEAD) despite ptrace, in the
+de_thread() (MT exec) case.  This race is tolerable for everything ptrace
+does (it holds a task ref, and the arch code copes).  It must also be
+tolerated by the perfmon code.
+
+> For example i dont see where the perfmon-control task parents itself as
+> the exclusive debugger (parent) of the debuggee-task.
+
+ptrace_check_attach() ensures that this is so.  
 
 
-Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
----
- ipc/ipc_sysctl.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/ipc/ipc_sysctl.c b/ipc/ipc_sysctl.c
-index 0dfebc5..9e42478 100644
---- a/ipc/ipc_sysctl.c
-+++ b/ipc/ipc_sysctl.c
-@@ -35,6 +35,7 @@ static void *get_ipc(ctl_table *table)
-  *    add/remove or ipc namespace creation/removal.
-  * 1: register back the callback routine.
-  */
-+#ifdef CONFIG_PROC_FS
- static void ipc_auto_callback(int val)
- {
- 	if (!val)
-@@ -49,7 +50,6 @@ static void ipc_auto_callback(int val)
- 	}
- }
- 
--#ifdef CONFIG_PROC_FS
- static int proc_ipc_dointvec(ctl_table *table, int write, struct file *filp,
- 	void __user *buffer, size_t *lenp, loff_t *ppos)
- {
--- 
-1.5.6.3
-
--- 
-Jianjun Kong | Happy Hacking
-HOMEPAGE: http://kongove.cn/
-GTALK: kongjianjun@gmail.com
+Thanks,
+Roland
