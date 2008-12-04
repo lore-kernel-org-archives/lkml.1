@@ -1,40 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbYLDJuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbYLDJuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757244AbYLDJuK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 04:50:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbYLDJty
+	id S1757371AbYLDJuf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 04:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757183AbYLDJuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 04:49:54 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50830 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753106AbYLDJtx (ORCPT
+	Thu, 4 Dec 2008 04:50:04 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48413 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756927AbYLDJuC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 04:49:53 -0500
-Date: Thu, 4 Dec 2008 09:48:42 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Chris Wright <chrisw@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm@vger.kernel.org, aarcange@redhat.com,
-       avi@redhat.com, dlaor@redhat.com, kamezawa.hiroyu@jp.fujitsu.com,
-       cl@linux-foundation.org, corbet@lwn.net
-Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver.
-Message-ID: <20081204094842.7bd832d7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081203143307.GA2068@ucw.cz>
-References: <1226888432-3662-1-git-send-email-ieidus@redhat.com>
-	<1226888432-3662-2-git-send-email-ieidus@redhat.com>
-	<1226888432-3662-3-git-send-email-ieidus@redhat.com>
-	<1226888432-3662-4-git-send-email-ieidus@redhat.com>
-	<20081128165806.172d1026@lxorguk.ukuu.org.uk>
-	<20081202180724.GC17607@acer.localdomain>
-	<20081202181333.38c7b421@lxorguk.ukuu.org.uk>
-	<20081202212411.GG17607@acer.localdomain>
-	<20081202221029.513e8774@lxorguk.ukuu.org.uk>
-	<20081203143307.GA2068@ucw.cz>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 4 Dec 2008 04:50:02 -0500
+Date: Thu, 4 Dec 2008 18:49:08 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>
+Subject: Re: [Experimental][PATCH 19/21] memcg-fix-pre-destroy.patch
+Message-Id: <20081204184908.6be8220c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081204184309.da8264c0.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081203134718.6b60986f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081203141117.d3685413.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081204183428.19cbd22d.nishimura@mxp.nes.nec.co.jp>
+	<20081204184309.da8264c0.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -42,8 +36,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Taken off list 
-> 
-> Hmmm, list would like to know :-).
+On Thu, 4 Dec 2008 18:43:09 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-That would be my choice too but unfortunately I can't do that
+> On Thu, 4 Dec 2008 18:34:28 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> 
+> > Added CC: Paul Menage <menage@google.com>
+> > 
+> > > @@ -2096,7 +2112,7 @@ static void mem_cgroup_get(struct mem_cg
+> > >  static void mem_cgroup_put(struct mem_cgroup *mem)
+> > >  {
+> > >  	if (atomic_dec_and_test(&mem->refcnt)) {
+> > > -		if (!mem->obsolete)
+> > > +		if (!css_under_removal(&mem->css))
+> > >  			return;
+> > >  		mem_cgroup_free(mem);
+> > >  	}
+> > I don't think it's safe to check css_under_removal here w/o cgroup_lock.
+> > (It's safe *NOW* just because memcg is the only user of css->refcnt.)
+> > 
+> 
+> > As Li said before, css_under_removal doesn't necessarily mean
+> > this this group has been destroyed, but mem_cgroup will be freed.
+> > 
+> > But adding cgroup_lock/unlock here causes another dead lock,
+> > because mem_cgroup_get_next_node calls mem_cgroup_put.
+> > 
+> > hmm.. hierarchical reclaim code will be re-written completely by [21/21],
+> > so would it be better to change patch order or to take another approach ?
+> > 
+> Hmm, ok.
+> 
+> How about this ?
+> ==
+> 	At initlization, mem_cgroup_create(), set memcg->refcnt to be 1.
+> 
+> 	At destroy(), put this refcnt by 1.
+> 
+> 	remove css_under_removal(&mem->css) check.
+> ==
+Ah, anyway, I'll remove mem->refcnt when swap-cgroup uses this ID.
+I'll use refcnt-to-ID rather than this.
+
+Thanks,
+-Kame
+
+
+
+
