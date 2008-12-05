@@ -1,59 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbYLEMBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbYLEMCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbYLEMBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 07:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbYLEMBJ
+	id S1756680AbYLEMCd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 07:02:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbYLEMCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 07:01:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55439 "EHLO ogre.sisk.pl"
+	Fri, 5 Dec 2008 07:02:25 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:49164 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbYLEMBI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 07:01:08 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Fri, 5 Dec 2008 13:00:16 +0100
-User-Agent: KMail/1.9.9
-Cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812041845210.3543@nehalem.linux-foundation.org> <alpine.LFD.2.00.0812041917050.3386@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812041917050.3386@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Content-Disposition: inline
-Message-Id: <200812051300.16649.rjw@sisk.pl>
+	id S1750773AbYLEMCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 07:02:24 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200812051858.00246.rusty@rustcorp.com.au>
+References: <200812051858.00246.rusty@rustcorp.com.au> <20081203163207.13965.56517.stgit@warthog.procyon.org.uk> <20081203163212.13965.80352.stgit@warthog.procyon.org.uk>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] [PATCH] param: Stop gcc from inlining empty weak functions
+Date: Fri, 05 Dec 2008 12:02:20 +0000
+Message-ID: <8631.1228478540@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 5 of December 2008, Linus Torvalds wrote:
+Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+> commit 4858874241391aa62b5818781f702883e4ddf4ed
+> Author: Rusty Russell <rusty@rustcorp.com.au>
+> Date:   Fri Dec 5 18:56:34 2008 +1030
 > 
-> On Thu, 4 Dec 2008, Linus Torvalds wrote:
-> > 
-> > Ok, the ICH6 LPC side has something similar, but not the same. Just two 
-> > ranges, and slightly less flexible wrt sizing.
-> > 
-> > And ICH8/9/10 seems to have the same thing as ICH7.
-> 
-> Here's a patch that implements what I think is the correct quirks (apart 
-> from the commented ICH6 lazy detail I didn't do).
-> 
-> It would be very interesting to see if people affected get any printouts 
-> about IO decodes that don't show up in /proc/ioports...
+>     Move arch_get_boot_command_line out of init/main.c for broken gccs.
 
->From my box:
-
-pci 0000:00:1f.0: quirk: region d800-d87f claimed by ICH6 ACPI/GP IO/TCO
-pci 0000:00:1f.0: quirk: region eec0-eeff claimed by ICH6 GPIO
-pci 0000:00:1f.0: ICH7 LPC Generic IO decode 1 PIO at 0680 (mask 007f)
-pci 0000:00:1f.0: ICH7 LPC Generic IO decode 4 PIO at 01e0 (mask 000f)
-
-The second one shows up in /proc/ioports as "01e0-01ef : pnp 00:09", but the
-first one (at 680) doesn't.
-
-Thanks,
-Rafael
+Acked-by: David Howells <dhowells@redhat.com>
