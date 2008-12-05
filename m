@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbYLEBJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbYLEBJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755789AbYLEBJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 20:09:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbYLEBJS
+	id S1753635AbYLEBJp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 20:09:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756478AbYLEBJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 20:09:18 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:53724 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbYLEBJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 20:09:18 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Fri, 5 Dec 2008 02:08:33 +0100
-User-Agent: KMail/1.9.9
-Cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812041545130.3543@nehalem.linux-foundation.org> <alpine.LFD.2.00.0812041645290.3543@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812041645290.3543@nehalem.linux-foundation.org>
+	Thu, 4 Dec 2008 20:09:33 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:11255 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755955AbYLEBJc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 20:09:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=aV1SuSE5f40iiA8DDyzwAFb9JysTU8NbfhmBJPBD/AarFCQZrMeVkfbyOpksL4j3b9
+         xLMjuJ/EdaEWAoXOzgZyPmxG34mKDG3kcley1ZhqoVBdSIDVlh+NZe7DM/suCcpbseCw
+         nOSzDiBWoyOZ5Ud3HMe89HFVsjLwOYXH9QGFA=
+Message-ID: <483a38b80812041709i10abeae4n571355dd1d88b6c2@mail.gmail.com>
+Date: Fri, 5 Dec 2008 10:09:29 +0900
+From: "Kwangwoo Lee" <kwangwoo.lee@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>, felipe.balbi@nokia.com
+Subject: Re: [PATCH] Add tsc2007 based touchscreen driver.
+Cc: "ext Trilok Soni" <soni.trilok@gmail.com>, dmitry.torokhov@gmail.com,
+       linux-kernel@vger.kernel.org,
+       "linux-omap@vger.kernel.org Mailing List" 
+	<linux-omap@vger.kernel.org>
+In-Reply-To: <200812040156.55943.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812050208.33827.rjw@sisk.pl>
+References: <483a38b80812020539v2323a784h7f202749687764db@mail.gmail.com>
+	 <483a38b80812032107i761fb9bdkba9b2ce5e998ae6a@mail.gmail.com>
+	 <20081204093715.GH10209@gandalf.research.nokia.com>
+	 <200812040156.55943.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 5 of December 2008, Linus Torvalds wrote:
-> 
-> On Thu, 4 Dec 2008, Linus Torvalds wrote:
-> > 
-> > On Fri, 5 Dec 2008, Rafael J. Wysocki wrote:
-> > > 
-> > > There's a difference, though.  It doesn't cause the resources flags to be
-> > > cleared for the cardbus bridge and the cardbus bridge gets the correct sizes
-> > > of both prefetchable and non-prefetchable windows (64 MB).
-> > 
-> > Yes, true. In that sense, it minimizes the differences between the 
-> > "working" and "nonworking" case. 
-> 
-> Hmm. 
-> 
-> One other issue: we've been looking mostly at MMIO, but another thing that 
-> differs here is the PIO part.
-> 
-> Your patch only changes pbus_size_mem(), so what happens is that it avoids 
-> allocating the prefetch window. But it still allocates the PIO window, 
-> because pbus_size_io() is still run.
-> 
-> Maybe the PIO window matters? Any magic suspend registers are usually in 
-> PIO space, not in MMIO space. Did /proc/ioports change, and if so, how? 
+On Thu, Dec 4, 2008 at 6:56 PM, David Brownell <david-b@pacbell.net> wrote:
+> On Thursday 04 December 2008, Felipe Balbi wrote:
+>> i2c subsystem has smbus emulation. The special reason is just that it's
+>> simpler for the driver writer ;-)
+>
+> I'd have said "more portable", actually.  I2C hosts can
+> do pretty much everything an SMBus host can, but the
+> converse is not true.
+>
+> And re i2c_check_functionality() ... yes, use it to make
+> sure each I2C or SMBus call the driver makes is supported
+> by the underlying controller.
+>
 
-|18,20c18,19
-|< 1000-1fff : PCI Bus 0000:03
-|<   1000-10ff : PCI CardBus 0000:04
-|<   1400-14ff : PCI CardBus 0000:04
-|---
-|> 1000-10ff : PCI CardBus 0000:04
-|> 1400-14ff : PCI CardBus 0000:04
+Thank you Brownell and Balbi.
+Your comments are very helpful for me. I'll fix some part of the
+driver and send it again later.
 
-where the first one is with my patch and the second one is with the "no sizing
-for transparent bridges" patch.  No difference to my eyes, if the "transparent"
-bridge is really transparent. :-)
-
-Thanks,
-Rafael
+-- 
+Kwangwoo Lee <kwangwoo.lee@gmail.com>
