@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbYLEWJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbYLEWKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292AbYLEWJy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 17:09:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbYLEWJq
+	id S1756385AbYLEWKQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 17:10:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbYLEWJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 17:09:46 -0500
-Received: from rv-out-0506.google.com ([209.85.198.237]:20331 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752291AbYLEWJq (ORCPT
+	Fri, 5 Dec 2008 17:09:58 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:43207 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757423AbYLEWJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 17:09:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=Z46VdusnbU/1oQVTK1agxoFbVhvcw3/YUXd6jVTAyR03Rpd4Qt1da4G4fcnQo0THhZ
-         IN7no/uBYdfMX/FJfe06rXk+ZCdJbtoxtosxqfkc2h/FVqzEa2QzkkIb62jJ0Z7I0CRt
-         9RECkOLoZhZ4vYK+xeztgqi9SAvPk6lBi5oDM=
-Message-ID: <c1e1128f0812051409rf11b30fla2a9937acba8e455@mail.gmail.com>
-Date: Fri, 5 Dec 2008 16:09:45 -0600
-From: "David Teigland" <dteigland@gmail.com>
-Reply-To: teigland@redhat.com
-To: "Peter W. Morreale" <pmorreale@novell.com>
-Subject: Re: DLM configuration documentation?
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1228513968.7264.86.camel@hermosa.site>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 5 Dec 2008 17:09:57 -0500
+Subject: Re: [PATCH 2/2 v4] SGI RTC: add clocksource driver
+From: john stultz <johnstul@us.ibm.com>
+To: Dimitri Sivanich <sivanich@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20081124195810.GB8387@sgi.com>
+References: <20081124195405.GA8339@sgi.com> <20081124195617.GA8387@sgi.com>
+	 <20081124195810.GB8387@sgi.com>
+Content-Type: text/plain
+Date: Fri, 05 Dec 2008 14:09:53 -0800
+Message-Id: <1228514994.21144.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1228513968.7264.86.camel@hermosa.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 5, 2008 at 3:52 PM, Peter W. Morreale <pmorreale@novell.com> wrote:
->
-> Can someone kindly point me to documentation on configuring ...fs/dlm
-> via configfs?
->
-> I have found http://people.redhat.com/ccaulfie/docs/rhdlmbook.pdf
-> however this doc doesn't include configuration info.
+On Mon, 2008-11-24 at 13:58 -0600, Dimitri Sivanich wrote:
+> This patch provides a driver for SGI RTC clocks and timers.
+> 
+> This provides a high resolution clock and timer source using the SGI
+> system-wide synchronized RTC clock/timer hardware.
+> 
+> Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+> 
+> ---
+> 
+> Changed the shift values for clocksource and clockevent.
+> Made other stylistic changes.
+> 
+[snip]
+> +static struct clocksource clocksource_uv = {
+> +	.name		= RTC_NAME,
+> +	.rating		= 400,
+> +	.read		= uv_read_rtc,
+> +	.mask		= (cycle_t)UVH_RTC_REAL_TIME_CLOCK_MASK,
+> +	.shift		= 10,
+> +	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
+> +};
 
-The dlm_controld utility controls the dlm; it's built on the corosync/openais
-clustering framework.
-http://sources.redhat.com/cluster/wiki/
+Hey Dimitri, 
+	Sorry for being slow to catch this. This address my earlier concerns.
+Thanks!
 
-Dave
+Acked-by: John Stultz <johnstul@us.ibm.com>
+
+-john
+
