@@ -1,281 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYLELul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbYLELyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbYLELul (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 06:50:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbYLELud
+	id S1755962AbYLELyP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 06:54:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbYLELyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 06:50:33 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56655 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750773AbYLELuc (ORCPT
+	Fri, 5 Dec 2008 06:54:00 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54934 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750773AbYLELx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 06:50:32 -0500
-Message-ID: <7442.10.75.179.62.1228477828.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <6599ad830812050311m3728ab69v465ed5d032792973@mail.gmail.com>
-References: <20081205172642.565661b1.kamezawa.hiroyu@jp.fujitsu.com><20081205172959.8285271f.kamezawa.hiroyu@jp.fujitsu.com>
-    <6599ad830812050311m3728ab69v465ed5d032792973@mail.gmail.com>
-Date: Fri, 5 Dec 2008 20:50:28 +0900 (JST)
-Subject: Re: [RFC][PATCH 2/4] cgroup ID
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Paul Menage" <menage@google.com>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
-MIME-Version: 1.0
-Content-Type: text/plain;charset=us-ascii
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+	Fri, 5 Dec 2008 06:53:59 -0500
+Date: Fri, 5 Dec 2008 11:52:25 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Mikulas Patocka <mpatocka@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
+       Alasdair G Kergon <agk@redhat.com>,
+       Andi Kleen <andi-suse@firstfloor.org>, Milan Broz <mbroz@redhat.com>
+Subject: Re: Device loses barrier support (was: Fixed patch for simple
+ barriers.)
+Message-ID: <20081205115225.13c277ee@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081205013739.GZ6703@one.firstfloor.org>
+References: <20081204142015.GQ6703@one.firstfloor.org>
+	<Pine.LNX.4.64.0812040913510.6118@hs20-bc2-1.build.redhat.com>
+	<20081204145810.GR6703@one.firstfloor.org>
+	<Pine.LNX.4.64.0812041139200.2434@hs20-bc2-1.build.redhat.com>
+	<20081204174838.GS6703@one.firstfloor.org>
+	<Pine.LNX.4.64.0812041401210.23079@hs20-bc2-1.build.redhat.com>
+	<20081204221551.GV6703@one.firstfloor.org>
+	<Pine.LNX.4.64.0812041756550.29638@hs20-bc2-1.build.redhat.com>
+	<20081205004849.GX6703@one.firstfloor.org>
+	<Pine.LNX.4.64.0812041948400.14114@hs20-bc2-1.build.redhat.com>
+	<20081205013739.GZ6703@one.firstfloor.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage said:
-> Hi Kamezawa,
->
-> I definitely agree with the idea of being able to traverse the cgroup
-> hierarchy without doing a cgroup_lock() and I've included some
-> comments below. But having said that, maybe there's a simpler
-> solution?
->
-> A while ago I posted some patches that added a per-hierarchy lock
-> which could be taken to prevent creation or destruction of cgroups in
-> a given hierarchy; it was lighter-weight than the full cgroup_lock().
-> Is that sufficient to avoid the deadlock that you mentioned in your
-> patch description?
->
-yes, maybe. I just think hierarchy-walk support in cgroup level is
-proper way, I think. currnet cgroup_lock() is too rough.
+On Fri, 5 Dec 2008 02:37:39 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-One concern I have is that ID is very robust to scan things rather than
-list, which can be modified. Can you design hierarchy walk which the caller
-of walker can sleep ? like following,
+> > * barrier support in md-raid1 deviates from the specification at 
+> > Documentation/block/barrier.txt. The specification says that requests 
+> > submitted after the barrier request hit the media after the barrier 
+> > request hits the media. The reality is that the barrier request can be 
+> > randomly aborted and the requests submitted after it hit the media before 
+> > the barrier request.
+> 
+> Yes the spec should be probably updated.
+> 
+> But also see Linus' rant from yesterday about code vs documentation.
+> When in doubt the code wins.
 
-==
-     next = cgroup_get_next(cur, root);
-     .......
-     cur = next;
-     sleep;
-     continue from next
-==
-memcg's code rememver next by its own refcnt of memcg. But it's unclear
-way.
+Not when the fundamental design of the code is broken and trashes
+performance. The documented behaviour is strongly desirable.
 
-Another concern is, css_get() to do above will prevent rmdir() of cgroup
-by "Unknown Reason". I don't want to return -EBUSY at rmdir(next) for
-remembering "next" by css_get().
-
-
-> The idea of having a short id for each cgroup to save space in the
-> swap cgroup sounds sensible - but I'm not sure that we need the RCU
-> support to make the id persist beyond the lifetime of the cgroup
-> itself.
->
-Ah, maybe explaination was not enough.
-
-Now, I don't clear swap_cgroup entry at pre_destroy() because scanning all
-swp_cgroup entry is heavy...so, ID is recorded after removal of cgroup.
-If memcg scans all swap_cgroup entry at destroy(), memcg doesn't require
-such lifetime of ID. Hmm....what difficult here is cost of scanning depends
-on size of swap.
-
-
-> On Fri, Dec 5, 2008 at 12:29 AM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->>
->> +/*
->> + * Cgroup ID for *internal* identification and lookup. For
->> user-land,"path"
->> + * of cgroup works well.
->> + */
->
-> This comment seems misplaced and possibly unnecessary. Should it be
-> with the struct cgroup_id definition in cgroup.c?
->
-yes...
-
->>
->> +/*
->> + * For supporting cgroup lookup and hierarchy management.
->> + */
->
-> A lot more commenting would be useful here.
->
-will do.
-
->> +/* An interface for usual lookup */
->> +struct cgroup *cgroup_lookup(int id);
->> +/* get next cgroup under tree (for scan) */
->> +struct cgroup *
->> +cgroup_get_next(int id, int rootid, int depth, int *foundid);
->> +/* get id and depth of cgroup */
->> +int cgroup_id(struct cgroup *cgroup);
->> +int cgroup_depth(struct cgroup *cgroup);
->> +/* For delayed freeing of IDs */
->> +int cgroup_id_tryget(int id);
->> +void cgroup_id_put(int id);
->> +
->>  #else /* !CONFIG_CGROUPS */
->>
->>  /*
->> + * CGROUP ID
->> + */
->
-> More comments needed about the exact semantics of these fields.
->
-Sure, I will add.
-
->> +struct cgroup_id {
->> +       struct cgroup *myself;
->
-> Can you call this cgroup for consistency with other struct cgroup
-> pointers?
->
-Ok, rename that.
-
->> +       unsigned int  id;
->> +       unsigned int  depth;
->> +       atomic_t      refcnt;
->> +       struct rcu_head rcu_head;
->> +       unsigned int  hierarchy_code[MAX_CGROUP_DEPTH];
->
-> How about "stack" for this array?
->
-Ah, ok. hierarchy_code is too long...
-
->> +};
->> +
->> +void free_cgroupid_cb(struct rcu_head *head)
->> +{
->> +       struct cgroup_id *id;
->> +
->> +       id = container_of(head, struct cgroup_id, rcu_head);
->> +       kfree(id);
->> +}
->> +
->> +void free_cgroupid(struct cgroup_id *id)
->> +{
->> +       call_rcu(&id->rcu_head, free_cgroupid_cb);
->> +}
->> +
->
-> Rather than having a separate RCU callback for the cgroup_id
-> structure, how about marking it as "dead" when you unlink the cgroup
-> from the tree, and freeing it in the cgroup_diput() callback at the
-> same time the struct cgroup is freed? Or is the issue that you need
-> the id to persist longer than the cgroup itself, to prevent re-use?
->
-yes...for swap_cgroup, I'd like to prevent reuse.
-But it depencs on choice of design. If memcg clears all record about
-swap at destroy(), this ID can be freed at with cgroup.
-
-
->> +static DEFINE_IDR(cgroup_idr);
->> +DEFINE_SPINLOCK(cgroup_idr_lock);
->
-> Any reason to not have a separate idr and idr_lock per hierarchy?
->
-That's because checking whether "cgroup_idr" is alive or not makes
-the whole code complex. (because of peristency of ID)
-I tried put this into cgroup_rootfs struct and ...found it's complicated.
-
-
->> +
->> +static int cgrouproot_setup_idr(struct cgroupfs_root *root)
->> +{
->> +       struct cgroup_id *newid;
->> +       int err = -ENOMEM;
->> +       int myid;
->> +
->> +       newid = kzalloc(sizeof(*newid), GFP_KERNEL);
->> +       if (!newid)
->> +               goto out;
->> +       if (!idr_pre_get(&cgroup_idr, GFP_KERNEL))
->> +               goto free_out;
->> +
->> +       spin_lock_irq(&cgroup_idr_lock);
->> +       err = idr_get_new_above(&cgroup_idr, newid, 1, &myid);
->> +       spin_unlock_irq(&cgroup_idr_lock);
->> +
->> +       /* This one is new idr....*/
->> +       BUG_ON(err);
->
-> There's really no way this can fail?
->
-Maybe, unless id over INT_MAX.
-
-
->> +/*
->> + * should be called while "cgrp" is valid.
->> + */
->
-> Can you be more specific here? Clearly calling a function with a
-> pointer to an object that might have been freed is a bad idea; if
-> that's all you mean then I don't think it needs to be called out in a
-> comment.
->
-Hmm, "Should be called when !cgroup_is_removed()" ?
-But removing above comment is maybe sane...
-
->> +static int cgroup_prepare_id(struct cgroup *parent, struct cgroup_id
->> **id)
->> +{
->> +       struct cgroup_id *newid;
->> +       int myid, error;
->> +
->> +       /* check depth */
->> +       if (parent->id->depth + 1 >= MAX_CGROUP_DEPTH)
->> +               return -ENOSPC;
->> +       newid = kzalloc(sizeof(*newid), GFP_KERNEL);
->> +       if (!newid)
->> +               return -ENOMEM;
->> +       /* get id */
->> +       if (unlikely(!idr_pre_get(&cgroup_idr, GFP_KERNEL))) {
->> +               error = -ENOMEM;
->> +               goto err_out;
->> +       }
->> +       spin_lock_irq(&cgroup_idr_lock);
->> +       /* Don't use 0 */
->> +       error = idr_get_new_above(&cgroup_idr, newid, 1, &myid);
->> +       spin_unlock_irq(&cgroup_idr_lock);
->> +       if (error)
->> +               goto err_out;
->
-> This code is pretty similar to a big chunk of cgrouproot_setup_idr() -
-> can they share the common code?
->
-Yes, I'll try.
-
-
->> +static void cgroup_id_attach(struct cgroup_id *cgid,
->> +                            struct cgroup *cg, struct cgroup *parent)
->> +{
->> +       struct cgroup_id *parent_id = rcu_dereference(parent->id);
->
-> It doesn't seem as though it should be necessary to rcu_dereference()
-> parent->id - parent can't be going away in this case.
->
-yes. will fix.
-
->> +       int i;
->> +
->> +       cgid->depth = parent_id->depth + 1;
->> +       /* Inherit hierarchy code from parent */
->> +       for (i = 0; i < cgid->depth; i++) {
->> +               cgid->hierarchy_code[i] =
->> +                       parent_id->hierarchy_code[i];
->> +               cgid->hierarchy_code[cgid->depth] = cgid->id;
->
-> I think this line is supposed to be outside the for() loop.
->
-yes...
-
-Thank you for review.
-
--Kame
-
+Alan
