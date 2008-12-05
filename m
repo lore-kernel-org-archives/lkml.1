@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYLEPOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbYLEPWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756816AbYLEPOW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 10:14:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYLEPON
+	id S1756621AbYLEPWi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 10:22:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbYLEPW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 10:14:13 -0500
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:35048 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753545AbYLEPOM (ORCPT
+	Fri, 5 Dec 2008 10:22:26 -0500
+Received: from stinky.trash.net ([213.144.137.162]:58380 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753644AbYLEPWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 10:14:12 -0500
-Message-ID: <49394541.30404@lwfinger.net>
-Date: Fri, 05 Dec 2008 09:14:09 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Fri, 5 Dec 2008 10:22:25 -0500
+Message-ID: <4939472E.7060804@trash.net>
+Date: Fri, 05 Dec 2008 16:22:22 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-To: Christian Lamparter <chunkeey@web.de>
-CC: linux-wireless@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
-       John W Linville <linville@tuxdriver.com>, linux-usb@vger.kernel.org,
-       gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] p54usb: fix usb_kill_urb hang with slub_debug=P
-References: <200812051547.45790.chunkeey@web.de>
-In-Reply-To: <200812051547.45790.chunkeey@web.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Julia Lawall <julia@diku.dk>
+CC: davem@davemloft.net, kuznet@ms2.inr.ac.ru, pekkas@netcore.fi,
+       jmorris@namei.org, yoshfuji@linux-ipv6.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] net/netfilter: simplify error handling
+References: <Pine.LNX.4.64.0812051234230.9560@pc-004.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0812051234230.9560@pc-004.diku.dk>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Lamparter wrote:
-> This patch fixes a problem identified by Johannes Berg.
+Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> It looks like this is a classic case of "use-after-freed". 
-> A module which should reproduce the problem on
-> any other USB device can be found right here:
-> http://kerneltrap.org/mailarchive/linux-usb/2008/12/4/4317064
+> nf_conntrack_alloc cannot return NULL, so there is no need to check for
+> NULL before using the value.  I have also removed the initialization of ct
+> to NULL in nf_conntrack_alloc, since the value is never used, and since
+> perhaps it might lead one to think that return ct at the end might return
+> NULL.
 
-I didn't find either the code nor a link to it in the above link. What did I miss?
+Applied, thanks.
 
-Larry
