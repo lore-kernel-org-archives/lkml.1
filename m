@@ -1,89 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYLEAeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbYLEAei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbYLEAeW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 19:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYLEAdt
+	id S1756954AbYLEAei (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 19:34:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbYLEAeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 19:33:49 -0500
-Received: from ozlabs.org ([203.10.76.45]:51435 "EHLO ozlabs.org"
+	Thu, 4 Dec 2008 19:34:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53654 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751731AbYLEAdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 19:33:47 -0500
+	id S1755564AbYLEAeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 19:34:04 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [patch 000/104] 2.6.27-stable review
+Date: Fri, 5 Dec 2008 01:33:10 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Pavel Machek <pavel@suse.cz>
+References: <20081203194725.GA8950@kroah.com> <200812032239.14280.rjw@sisk.pl>
+In-Reply-To: <200812032239.14280.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18744.30427.440468.829807@cargo.ozlabs.ibm.com>
-Date: Fri, 5 Dec 2008 11:33:31 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [patch 2/3] performance counters: documentation
-In-Reply-To: <20081204230228.557959174@linutronix.de>
-References: <20081204225345.654705757@linutronix.de>
-	<20081204230228.557959174@linutronix.de>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+Message-Id: <200812050133.11325.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner writes:
+On Wednesday, 3 of December 2008, Rafael J. Wysocki wrote:
+> Hi Greg,
+> 
+> On Wednesday, 3 of December 2008, Greg KH wrote:
+> > This is the start of the stable review cycle for the 2.6.27.8 release.
+> > There are 104 patches in this series, all will be posted as a response
+> > to this one.  If anyone has any issues with these being applied, please
+> > let us know.  If anyone is a maintainer of the proper subsystem, and
+> > wants to add a Signed-off-by: line to the patch, please respond with it.
+> > 
+> > And yes, there are a lot of patches here, the big series are:
+> > 	- cifs data corruption patches
+> > 	- pci hotplug slot patches to fix the most common warning
+> > 	  showing up on kerneloops.org
+> > 	- ext4 bugfixes
+> > 
+> > These patches are sent out with a number of different people on the Cc:
+> > line.  If you wish to be a reviewer, please email stable@kernel.org to
+> > add your name to the list.  If you want to be off the reviewer list,
+> > also email us.
+> > 
+> > Responses should be made by Friday, December 5, 20:00:00 UTC.  Anything
+> > received after that time might be too late.
+> 
+> The following ACPI commits are also -stable material IMO:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=65df78473ffbf3bff5e2034df1638acc4f3ddd50
 
-> + enum hw_event_types {
-> +	PERF_COUNT_CYCLES,
-> +	PERF_COUNT_INSTRUCTIONS,
-> +	PERF_COUNT_CACHE_REFERENCES,
-> +	PERF_COUNT_CACHE_MISSES,
-> +	PERF_COUNT_BRANCH_INSTRUCTIONS,
-> +	PERF_COUNT_BRANCH_MISSES,
-> + };
-> +
-> +These are standardized types of events that work uniformly on all CPUs
-> +that implements Performance Counters support under Linux. If a CPU is
-> +not able to count branch-misses, then the system call will return
-> +-EINVAL.
-> +
-> +[ Note: more hw_event_types are supported as well, but they are CPU
-> +  specific and are enumerated via /sys on a per CPU basis. Raw hw event
-> +  types can be passed in as negative numbers. For example, to count
-> +  "External bus cycles while bus lock signal asserted" events on Intel
-> +  Core CPUs, pass in a -0x4064 event type value. ]
+Argh, the following one is broken:
+ http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=558073dd56707864f09d563b64e7c37c021e89d2
 
-This is going to be a huge problem, at least on powerpc, because it
-means that the kernel will have to know which events can be counted on
-which counters and what values need to be put in the control registers
-to select them.
+so please scratch it and this one is already on your list:
+ http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7b4d469228a92a00e412675817cedd60133de38a
 
-The thing is that not all the counters count the same set of events,
-or use the same select values when they can count the same events.
-For example, on a MPC7450 cpu, you can count L2 cache misses in PMC5
-or PMC6.  If you're counting them on PMC5 you need to put 19 into the
-PCM5 event selector field in the MMCR1 register.  But if you're
-counting them on PMC6 then you need to put 29 in the PMC6 event
-selector field in MMCR1.
+The remaining two, ie.
 
-Since we don't get to say which counter to use in perf_counter_open,
-we would have to pass an abstracted "L2 cache miss" event code and
-have that map to 19 or 29 depending on which PMC register we get to
-use.  But that means that the kernel then has to have the entire table
-of countable events for every supported CPU model - something that
-perfmon3 manages to keep out of the kernel.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=65df78473ffbf3bff5e2034df1638acc4f3ddd50 http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=40599072dca3ec7d4c9ff8271978be169f974638
 
-The situation will be even worse with POWER5 and POWER6, where the
-event selection logic is very complex, with multiple layers of
-multiplexers.  I really really don't want the kernel to have to know
-about all that.
+should still be added into the -stable queue IMO.
 
-Basically, what it boils down to is that treating performance monitor
-counters as independent units is just not feasible, at least on
-powerpc.  We really need to be able to deal with the full set of
-counters as one thing.
-
-Paul.
+Thanks,
+Rafael
