@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbYLEMdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbYLEMdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbYLEMdV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 07:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYLEMdK
+	id S1757994AbYLEMdi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 07:33:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYLEMd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 07:33:10 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:62276 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbYLEMdJ (ORCPT
+	Fri, 5 Dec 2008 07:33:26 -0500
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:41536 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757803AbYLEMdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 07:33:09 -0500
-Date: Fri, 5 Dec 2008 21:25:29 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>, nishimura@mxp.nes.nec.co.jp
-Subject: [RFC][PATCH -mmotm 4/4] memcg: change try_to_free_pages to
- hierarchical_reclaim
-Message-Id: <20081205212529.8d895526.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20081205212208.31d904e0.nishimura@mxp.nes.nec.co.jp>
-References: <20081205212208.31d904e0.nishimura@mxp.nes.nec.co.jp>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 5 Dec 2008 07:33:25 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvoEAKuoOElMROB9/2dsb2JhbACBbc0wgwU
+Date: Fri, 5 Dec 2008 07:28:22 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: prasad@linux.vnet.ibm.com, jan.kiszka@web.de,
+       Gian Lorenzo Meocci <glmeocci@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
+       linux-kernel@vger.kernel.org, mbligh@google.com
+Subject: Re: [ltt-dev] trace a futex
+Message-ID: <20081205122822.GA25816@Krystal>
+References: <8d94e9280812021142j2eb5ca72td730410e97ccd9a1@mail.gmail.com> <20081202195015.GA25792@Krystal> <8d94e9280812021215m6a63d6c2l4e64acd26274953d@mail.gmail.com> <20081202215519.GA734@Krystal> <4935B25F.7010701@web.de> <20081203052640.GA13701@Krystal> <20081203180131.GA2904@in.ibm.com> <1228380784.5092.18.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1228380784.5092.18.camel@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 07:23:54 up 18 days, 13:04,  3 users,  load average: 1.24, 1.07,
+	0.76
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mem_cgroup_hierarchicl_reclaim() works properly even when !use_hierarchy now,
-so, instead of try_to_free_mem_cgroup_pages(), it should be used in many cases.
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> 
+> FWIW, the ftrace infrastructure has on many an occasion (even before it
+> was called ftrace and specific to -rt) helped in debugging and fixing
+> futex races.
+> 
 
-The only exception is force_empty. The group has no children in this case.
+Hrm, I'm not sure futex races is the key aspect of interest here.
+Knowing which amount of pthread mutex lock calls ends up calling the
+scheduler looks a bit more like the topic brought by this particular
+use-case. Therefore, correlating the information from the nptl with the
+kernel information would be useful.
 
+Is lockdep called when a futex is taken ? Should we add instrumentation
+(tracepoints) to futex.c ? If yes, was there specific instrumentation
+you used with ftrace that should be added ?
 
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
----
- mm/memcontrol.c |   12 ++++--------
- 1 files changed, 4 insertions(+), 8 deletions(-)
+Mathieu
 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index ab04725..c0b4f37 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -1399,8 +1399,7 @@ int mem_cgroup_shrink_usage(struct mm_struct *mm, gfp_t gfp_mask)
- 	rcu_read_unlock();
- 
- 	do {
--		progress = try_to_free_mem_cgroup_pages(mem, gfp_mask, true,
--							get_swappiness(mem));
-+		progress = mem_cgroup_hierarchical_reclaim(mem, gfp_mask, true);
- 		progress += mem_cgroup_check_under_limit(mem);
- 	} while (!progress && --retry);
- 
-@@ -1467,10 +1466,8 @@ static int mem_cgroup_resize_limit(struct mem_cgroup *memcg,
- 		if (!ret)
- 			break;
- 
--		progress = try_to_free_mem_cgroup_pages(memcg,
--							GFP_KERNEL,
--							false,
--							get_swappiness(memcg));
-+		progress = mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL,
-+							   false);
-   		if (!progress)			retry_count--;
- 	}
- 
-@@ -1514,8 +1511,7 @@ int mem_cgroup_resize_memsw_limit(struct mem_cgroup *memcg,
- 			break;
- 
- 		oldusage = res_counter_read_u64(&memcg->memsw, RES_USAGE);
--		try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL, true,
--					     get_swappiness(memcg));
-+		mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL, true);
- 		curusage = res_counter_read_u64(&memcg->memsw, RES_USAGE);
- 		if (curusage >= oldusage)
- 			retry_count--;
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
