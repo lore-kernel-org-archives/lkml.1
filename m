@@ -1,70 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbYLEXGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbYLEXNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbYLEXGA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 18:06:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYLEXFv
+	id S1757236AbYLEXNB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 18:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbYLEXMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 18:05:51 -0500
-Received: from gate.compton.nu ([217.169.19.106]:56695 "EHLO
-	gosford.compton.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752815AbYLEXFu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 18:05:50 -0500
-Message-ID: <4939B3C3.8060205@compton.nu>
-Date: Fri, 05 Dec 2008 23:05:39 +0000
-From: Tom Hughes <tom@compton.nu>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Thomas Renninger <trenn@suse.de>
-CC: Cristiano Prisciandaro <cristiano.p@solnet.ch>,
-       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] cpufreq: eeepc 900 frequency scaling driver
-References: <1227454026.7262.59.camel@localhost> <492A7632.4040106@compton.nu> <4936DD78.4090501@compton.nu> <200812040257.09099.trenn@suse.de>
-In-Reply-To: <200812040257.09099.trenn@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -2.6 (--)
-X-Spam-Report: Spam detection software, running on the system "gosford.compton.nu", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  Thomas Renninger wrote: > The biggest problem I see with these
-	"special" ACPI cpufreq interface is: > Can there be Asus/eeepcs which provide
-	these ACPI functions (maybe dummies on > future machines?), but can still
-	be switched via the spec conform and more > efficient acpi-cpufreq driver
-	via PSS tables? [...] 
-	Content analysis details:   (-2.6 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-0.0 NO_RELAYS              Informational: message was not relayed via SMTP
-	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 5 Dec 2008 18:12:52 -0500
+Received: from vena.lwn.net ([206.168.112.25]:43807 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752837AbYLEXMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 18:12:51 -0500
+Date: Fri, 5 Dec 2008 16:12:48 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <ak@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.28] Fix FASYNC race
+Message-ID: <20081205161248.2f52a186@bike.lwn.net>
+In-Reply-To: <20081203154508.3502b365@bike.lwn.net>
+References: <20081128192508.GA21369@redhat.com>
+	<4933CBB0.2060003@linux.intel.com>
+	<20081201191555.GA21385@redhat.com>
+	<20081201123405.51d20d84@bike.lwn.net>
+	<20081202122939.GA3619@redhat.com>
+	<493562B5.5020600@linux.intel.com>
+	<20081203190648.GA23893@redhat.com>
+	<4936F83E.7090506@linux.intel.com>
+	<20081203154508.3502b365@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Renninger wrote:
+Hi, Linus,
 
-> The biggest problem I see with these "special" ACPI cpufreq interface is:
-> Can there be Asus/eeepcs which provide these ACPI functions (maybe dummies on
-> future machines?), but can still be switched via the spec conform and more 
-> efficient acpi-cpufreq driver via PSS tables?
+The following patch closes a race which was introduced by the fasync()
+BKL pushdown patch.  As it turns out, f_flags handling was already
+racy, but that change made it worse.  Here, we fix it (and a
+longer-standing race) minimally by reintroducing the BKL; a better fix
+will be prepared for 2.6.29.
 
-So should we tie this driver to particular DMI signature(s) then? As far 
-as I know it is only useful for the Eee 900 and possibly the 701 when 
-running later BIOSes.
+jon
 
-> BTW: Have you tried out how much power (or at least battery life time) you
-> win?
+---
+Fix a race condition in FASYNC handling
 
-Running with wifi and the screen off, and the CPU busy (doing m5sum of 
-/dev/zero) I get 2:37 run time at 900MHz and 3:09 at 630MHz so the 
-increase in run time is about 20% on that test.
+Changeset a238b790d5f99c7832f9b73ac8847025815b85f7 (Call fasync()
+functions without the BKL) introduced a race which could leave
+file->f_flags in a state inconsistent with what the underlying
+driver/filesystem believes.  Revert that change, and also fix the same
+races in ioctl_fioasync() and ioctl_fionbio().
 
-Tom
+This is a minimal, short-term fix; the real fix will not involve the
+BKL.
 
+Reported-by: Oleg Nesterov <oleg@redhat.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: stable@kernel.org
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+---
+ fs/fcntl.c |    7 +++++++
+ fs/ioctl.c |   12 ++++++++----
+ 2 files changed, 15 insertions(+), 4 deletions(-)
+
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index ac4f7db..549daf8 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -19,6 +19,7 @@
+ #include <linux/signal.h>
+ #include <linux/rcupdate.h>
+ #include <linux/pid_namespace.h>
++#include <linux/smp_lock.h>
+ 
+ #include <asm/poll.h>
+ #include <asm/siginfo.h>
+@@ -175,6 +176,11 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
+ 	if (error)
+ 		return error;
+ 
++	/*
++	 * We still need a lock here for now to keep multiple FASYNC calls
++	 * from racing with each other.
++	 */
++	lock_kernel();
+ 	if ((arg ^ filp->f_flags) & FASYNC) {
+ 		if (filp->f_op && filp->f_op->fasync) {
+ 			error = filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0);
+@@ -185,6 +191,7 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
+ 
+ 	filp->f_flags = (arg & SETFL_MASK) | (filp->f_flags & ~SETFL_MASK);
+  out:
++	unlock_kernel();
+ 	return error;
+ }
+ 
+diff --git a/fs/ioctl.c b/fs/ioctl.c
+index d152856..fc8fcaa 100644
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -400,11 +400,9 @@ static int ioctl_fioasync(unsigned int fd, struct file *filp,
+ 
+ 	/* Did FASYNC state change ? */
+ 	if ((flag ^ filp->f_flags) & FASYNC) {
+-		if (filp->f_op && filp->f_op->fasync) {
+-			lock_kernel();
++		if (filp->f_op && filp->f_op->fasync)
+ 			error = filp->f_op->fasync(fd, filp, on);
+-			unlock_kernel();
+-		} else
++		else
+ 			error = -ENOTTY;
+ 	}
+ 	if (error)
+@@ -440,11 +438,17 @@ int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
+ 		break;
+ 
+ 	case FIONBIO:
++    		/* BKL needed to avoid races tweaking f_flags */
++	        lock_kernel();
+ 		error = ioctl_fionbio(filp, argp);
++		unlock_kernel();
+ 		break;
+ 
+ 	case FIOASYNC:
++    		/* BKL needed to avoid races tweaking f_flags */
++	        lock_kernel();
+ 		error = ioctl_fioasync(fd, filp, argp);
++		unlock_kernel();
+ 		break;
+ 
+ 	case FIOQSIZE:
 -- 
-Tom Hughes (tom@compton.nu)
-http://www.compton.nu/
+1.6.0.4
+
