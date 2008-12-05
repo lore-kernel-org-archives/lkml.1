@@ -1,95 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbYLEMro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYLEMyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757190AbYLEMro (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 07:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYLEMrg
+	id S1756757AbYLEMyp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 07:54:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYLEMyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 07:47:36 -0500
-Received: from hobbit.corpit.ru ([81.13.33.150]:23198 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbYLEMrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 07:47:36 -0500
-Message-ID: <493922E1.4050501@msgid.tls.msk.ru>
-Date: Fri, 05 Dec 2008 15:47:29 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	Fri, 5 Dec 2008 07:54:35 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:37191 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751872AbYLEMye (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 07:54:34 -0500
+Date: Fri, 5 Dec 2008 12:54:53 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Oleg Nesterov <oleg@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Jay Lan <jlan@sgi.com>,
+       Jiri Pirko <jpirko@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] introduce get_mm_hiwater_xxx(), fix taskstats->hiwater_xxx
+ accounting
+In-Reply-To: <20081204135250.GA5448@redhat.com>
+Message-ID: <Pine.LNX.4.64.0812051216020.10157@blonde.anvils>
+References: <20081203181220.GA22918@redhat.com> <Pine.LNX.4.64.0812031957570.19174@blonde.anvils>
+ <20081204135250.GA5448@redhat.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [trivial] fix missing space in printk
-References: <4939139C.8090806@msgid.tls.msk.ru> <20081205121046.GA28662@elte.hu>
-In-Reply-To: <20081205121046.GA28662@elte.hu>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/mixed;
- boundary="------------090100080007080905010901"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090100080007080905010901
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-Ingo Molnar wrote:
-> * Michael Tokarev <mjt@tls.msk.ru> wrote:
+On Thu, 4 Dec 2008, Oleg Nesterov wrote:
+> On 12/03, Hugh Dickins wrote:
+> >
+> > On Wed, 3 Dec 2008, Oleg Nesterov wrote:
+> >
+> > > Unless we are going to decrease rss/vm there is no point to call the
+> > > (racy) update_hiwater_xxx() helpers. Still do_exit() does this, and
+> >
+> > I'm puzzled by this comment.  exit() _is_ about to decrease rss/vm,
+> > so isn't it right to be calling update_hiwater_xxx()?
 > 
->> Just come across this when booting on an old hw.. Looks somewhat ugly, 
->> that single missing space ;)
->>
->> And oh,
->>
->> Signed-Off-By: Michael Tokarev <mjt@tls.msk.ru>
->>
->> ;)
+> Do you mean exit_mm()->...->exit_mmap() ? But this doesn't matter, this
+> ->mm is going away. Nobody can read these counters when ->mm_users == 0,
+> no?
+
+I was conceding that point in my next sentence...
+
+> > There is a question of who's going to be able to see the result from
+> > this point on: I forget whether I was doing it for my own satisfaction,
+> > or for a real observer.
+
+I've looked back at it now: the hiwater fields already existed, their
+updates were slowing things down, and nothing in tree was even looking
+at the results; I changed the way they were updated to minimize the
+slowdown.
+
+So my principal reason for putting the updates in do_exit() was simply
+that there had been an update_mem_hiwater(tsk) there in do_exit(), and
+no examples of how the results would get used, so I thought I'd better
+update them there too.
+
+The /proc VmPeak & VmHWM stuff I added just to give it an intree
+consumer and example of how to handle the counters: an example which
+sadly was ignored when the tsacct.c use came in a few releases later.
+
+> > Even if there isn't a real observer today,
+> > I think I'd prefer do_exit() to continue to update_hiwater_xxx(),
+> > in case an observer is added tomorrow - unless you feel it's
+> > unjustifiably adding code to and slowing down process exit.
 > 
-> applied to tip/x86/cleanups.
+> Please see below,
 > 
->> --- a/arch/x86/kernel/smpboot.c	2008-10-10 02:13:53.000000000 +0400
->> +++ b/arch/x86/kernel/smpboot.c	2008-12-05 14:39:29.608353301 +0300
->> @@ -1084,7 +1084,7 @@ static int __init smp_sanity_check(unsig
->>  #endif
->>  
->>  	if (!physid_isset(hard_smp_processor_id(), phys_cpu_present_map)) {
->> -		printk(KERN_WARNING "weird, boot CPU (#%d) not listed"
->> +		printk(KERN_WARNING "weird, boot CPU (#%d) not listed "
->>  				    "by the BIOS.\n", hard_smp_processor_id());
+> > You say "(racy)": in my view, it was only as racy as whatever might
+> > cause it to be racy.  By that, I mean that if the numbers ended up
+> > slightly wrong, you could reasonably imagine that the races happened
+> > in a different sequence which would have ended up with the numbers
+> > seen.  Have you noticed something more serious we need to fix?
 > 
-> btw., the reason for that bug was the incorrect line break in the middle 
-> of a string - we humans just dont notice a missing space in that context. 
+> But the difference can be huge. Let's suppose the process has 2 threads
+> T1 and T2.
 > 
-> So in the final commit i've moved the string to a single line, see it 
-> attached below.
+> T1 exits, calls update_hiwater_vm(), notices that mm->hiwater_vm must be
+> updated, and preempted right before mm->hiwater_vm = new_value.
+> 
+> T2 does free(malloc(A_LOT)) and exits. It sets the correct value for
+> ->hiwater_vm which takes A_LOT into account and disappears.
+> 
+> T1 resumes, and "reverts" ->hiwater_vm to the "new_value" which was
+> calculated before.
+> 
+> Now, since T1 is the last exiting thread, the whole thread group
+> exits and we report the wrong ->hiwater_vm to the userspace.
 
-Oh well.  Thanks.  There's another very similar thing in
-arch/x86/kernel/pci-dma.c, via_no_dac() (attached).
+Thanks for spelling it out for me, Oleg, yes, I can see that now.
+And indeed, I seem to have been aware of it originally, when I said:
+<quote>
+What locking?  None: if the app is racy then these statistics will be
+racy, it's not worth any overhead to make them exact.  But whenever it
+suits, hiwater_vm is updated under exclusive mmap_sem, and hiwater_rss
+under page_table_lock (for now) or with preemption disabled (later on):
+without going to any trouble, minimize the time between reading current
+values and updating, to minimize those occasions when a racing thread
+bumps a count up and back down in between.
+<unquote>
 
-By the way, where such tiny/trivial things should go?
+Other uses of update_hiwater_vm() are protected by down_write of
+mmap_sem, so by removing the update_hiwater_vm() from do_exit(),
+you're completely fixing its raciness.  update_hiwater_rss()
+remains racy in other places, but it's less of an issue because
+rss can't be raised by large amounts, just by one page increments.
+(We may want to revisit this if we ever get around to doing the
+tlb_gather_mmu stuff without disabling preemption.)
 
-Thanks!
+> 
+> Yes, this race is unlikely. But there is another reason (perhaps
+> not very good) why I tried to remove update_hiwater_xxx() from
+> do_exit().
+> 
+> Imho this code looks as if: from now it is "safe" to use ->hiwater_xxx
+> directly because we already updated it. But it is not. Unless we are
+> the last thread, we can't trust mm->hiwater_xxx anyway, we should
+> re-check get_mm_rss/total_vm.
 
-/mjt
+Okay, you're completely eliminating one race, and we've found out
+why I sited the code there originally: go ahead, I've no objection
+to you removing it now.
 
---------------090100080007080905010901
-Content-Type: text/x-patch;
- name="viadac.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="viadac.diff"
+But with one change: please also change the comment in exit_mmap():
+-	/* Don't update_hiwater_rss(mm) here, do_exit already did */
++	/* update_hiwater_rss(mm) here? but nobody should be looking */
+or reword that if you prefer.
 
---- a/arch/x86/kernel/pci-dma.c	2008-10-10 02:13:53 +0400
-+++ b/arch/x86/kernel/pci-dma.c	2008-12-05 15:45:56 +0300
-@@ -409,8 +409,8 @@ fs_initcall(pci_iommu_init);
- static __devinit void via_no_dac(struct pci_dev *dev)
- {
- 	if ((dev->class >> 8) == PCI_CLASS_BRIDGE_PCI && forbid_dac == 0) {
--		printk(KERN_INFO "PCI: VIA PCI bridge detected."
--				 "Disabling DAC.\n");
-+		printk(KERN_INFO
-+			"PCI: VIA PCI bridge detected. Disabling DAC.\n");
- 		forbid_dac = 1;
- 	}
- }
+Ah, reading further down, I see you spotted that.
 
---------------090100080007080905010901--
+> > > Introduce get_mm_hiwater_rss() and get_mm_hiwater_vm() to use instead,
+> > > and kill the "if (tsk->mm) {}" code in do_exit().
+> >
+> > If you're going to add special helper macros (I don't care myself),
+> > wouldn't it be better to convert fs/proc/task_mmu.c (the original
+> > consumer) to use them too?
+> 
+> Yes, I was going to convert task_mem(), but noticed that it has
+> to read get_mm_rss() and ->total_vm anyway. Still, perhaps it
+> would be more clean to use the new macros anyway, even if this
+> wiil (unlikely) need a couple of extra cpu ticks.
+
+No, that is a good reason to leave fs/proc/task_mmu.c as it is.
+I just wouldn't have added your accessor macros for one use myself;
+but they might help someone to avoid making the same mistake again.
+
+Go ahead, thanks!
+Hugh
