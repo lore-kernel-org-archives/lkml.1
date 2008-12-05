@@ -1,72 +1,375 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbYLEKlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756964AbYLEKm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756518AbYLEKlw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 05:41:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYLEKll
+	id S1756964AbYLEKm2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 05:42:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbYLEKmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 05:41:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54494 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751674AbYLEKlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 05:41:40 -0500
-Date: Fri, 5 Dec 2008 11:41:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: David Miller <davem@davemloft.net>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org, eranian@googlemail.com, dada1@cosmosbay.com,
-       robert.richter@amd.com, arjan@infradead.org, hpa@zytor.com,
-       a.p.zijlstra@chello.nl, rostedt@goodmis.org
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-Message-ID: <20081205104116.GA5747@elte.hu>
-References: <20081204225345.654705757@linutronix.de> <20081204.171233.201039452.davem@davemloft.net> <20081205061012.GA12785@elte.hu> <18744.62865.420502.642345@cargo.ozlabs.ibm.com>
+	Fri, 5 Dec 2008 05:42:20 -0500
+Received: from saturne.octant-fr.com ([91.121.100.211]:33700 "EHLO
+	mail.octant.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751844AbYLEKmR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 05:42:17 -0500
+X-Greylist: delayed 563 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Dec 2008 05:42:16 EST
+X-Spam-Flag: NO
+X-Spam-Score: -0.199
+Message-ID: <4939034C.7040804@octant.org>
+Date: Fri, 05 Dec 2008 11:32:44 +0100
+From: Tobias Oed <tobias.oed@octant.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18744.62865.420502.642345@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org
+Subject: need help parsing BUG
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+We have a few mandriva servers running kernel 2.6.22.12-server-1mdv on
+dell poweredge 2800 that oops every now and then. Networking is still
+alive, but the disk seems to become unavailable.
+We are using XFS on regular partitions (no lvm etc.) on a single block
+device sda, backed by hardware raid on PERC 4e (most machines have raid
+1, one has raid 5). So far we have no repeatable way to crash the
+machines. We are not sure what to blame, even after capturing this with
+netconsole. Any help in parsing this is apreciated!
+Thankks
+Tobias Oed
 
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> Ingo Molnar writes:
-> 
-> > The 'target' task does not have to be stopped to offer counter 
-> > virtualization (counter overcommit or counter scheduling) - or to offer 
-> > any of the other performance counter features. Please let us know why it 
-> > needs the task to be stopped - we asked about that on lkml in the perfmon 
-> > thread and no technical answer was given, and couldnt find any such 
-> > technical reason while implementing it ourselves.
-> 
-> I like this feature of your patchset, in fact, and the code looks 
-> pretty clean (as I would expect :).  What I don't like (as I have 
-> already said) is having to use an API that splits up the PMU into 
-> pieces, plus the requirement that flows from that to have the kernel 
-> know about the event selection logic on every CPU model we support.
-> 
-> One thing I haven't figured out yet is what happens if you have a 
-> counter on a task and the task dies.  Can I still use the counter fd 
-> after the task has died, and read out the total count?
-
-yes, it will work just the way you'd expect it to work: the counter is 
-attached to the fd of the monitoring task, so it does not go away. The 
-counter simply stops counting but otherwise can be read even after the 
-monitored task has exited.
-
-We are also planning a natural 'the task has died' notification: a -EPIPE 
-returned by read(), after the final count has been allowed to be read 
-out. With blocking counters this will behave quite smoothly: instead of 
-blocking indefinitely, we'd get back -EPIPE. Hm?
-
-	Ingo
+Dec  4 12:36:59 master BUG: unable to handle kernel NULL pointer dereference
+Dec  4 12:36:59 master  at virtual address 00000368
+Dec  4 12:36:59 master  printing eip:
+Dec  4 12:36:59 master f8e62a1e
+Dec  4 12:36:59 master BUG: unable to handle kernel NULL pointer
+dereference at virtual address 00000324
+Dec  4 12:36:59 master  printing eip:
+Dec  4 12:36:59 master f8e62c4e
+Dec  4 12:36:59 master *pdpt = 000000001a842001
+Dec  4 12:36:59 master *pde = 0000000000000000
+Dec  4 12:36:59 master Oops: 0000 [#1]
+Dec  4 12:36:59 master SMP
+Dec  4 12:36:59 master Modules linked in: netconsole smbfs nls_iso8859_1
+cifs tun af_packet ipv6 video thermal sbs processor fan container button
+dock battery ac binfmt_misc loop nls_utf8 nls_cp437 vfat fat dm_mirror
+dm_mod ide_cd piix usb_storage ide_core st aic7xxx scsi_transport_spi
+tsdev usbmouse usbhid ff_memless floppy cpufreq_ondemand
+cpufreq_conservative cpufreq_powersave p4_clockmod speedstep_lib
+freq_table ehci_hcd iTCO_wdt iTCO_vendor_support e1000 e752x_edac
+uhci_hcd edac_mc usbcore shpchp pci_hotplug evdev sg xfs scsi_wait_scan
+sd_mod megaraid_mbox megaraid_mm scsi_mod
+Dec  4 12:36:59 master CPU:    0
+Dec  4 12:36:59 master EIP:    0060:[<f8e62c4e>]    Not tainted VLI
+Dec  4 12:36:59 master EFLAGS: 00210246   (2.6.22.12-server-1mdv #1)
+Dec  4 12:36:59 master EIP is at xfs_trans_dup+0x8e/0xb0 [xfs]
+Dec  4 12:36:59 master eax: 00000000   ebx: e27502ac   ecx: 00000000
+edx: 00000000
+Dec  4 12:36:59 master esi: e27502ac   edi: e27502ac   ebp: dd35be48
+esp: dd35be40
+Dec  4 12:36:59 master ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Dec  4 12:36:59 master Process nmbd (pid: 15310, ti=dd35a000
+task=e8622030 task.ti=dd35a000)
+Dec  4 12:36:59 master Stack: 00000000 e27502ac dd35bebc f8e4ce49
+00000006 00000000 fffffffb 00000000
+Dec  4 12:36:59 master        00000040 00000002 dd35bea0 dd35be94
+00000000 dd35beac cbb34c80 dd35bf28
+Dec  4 12:36:59 master        00000006 00000000 fffffffb 00000000
+f785bc00 00000000 00000000 00000000
+Dec  4 12:36:59 master Call Trace:
+Dec  4 12:36:59 master  [<c010527a>] show_trace_log_lvl+0x1a/0x30
+Dec  4 12:36:59 master  [<c010533b>] show_stack_log_lvl+0xab/0xd0
+Dec  4 12:36:59 master  [<c0105531>] show_registers+0x1d1/0x2d0
+Dec  4 12:36:59 master  [<c0105748>] die+0x118/0x240
+Dec  4 12:36:59 master  [<c0121cb1>] do_page_fault+0x1e1/0x870
+Dec  4 12:36:59 master  [<c031847a>] error_code+0x72/0x78
+Dec  4 12:36:59 master  [<f8e4ce49>] xfs_itruncate_finish+0x129/0x3a0 [xfs]
+Dec  4 12:36:59 master  [<f8e68c94>]
+xfs_inactive_free_eofblocks+0x244/0x280 [xfs]
+Dec  4 12:36:59 master  [<f8e6b930>] xfs_release+0x90/0x100 [xfs]
+Dec  4 12:36:59 master  [<f8e74b56>] xfs_file_release+0x16/0x20 [xfs]
+Dec  4 12:36:59 master  [<c01866a1>] __fput+0xa1/0x170
+Dec  4 12:36:59 master  [<c01867d9>] fput+0x19/0x20
+Dec  4 12:36:59 master  [<c0183c87>] filp_close+0x47/0x70
+Dec  4 12:36:59 master  [<c0184ea3>] sys_close+0x63/0xb0
+Dec  4 12:36:59 master  [<c01041a2>] sysenter_past_esp+0x6b/0xa1
+Dec  4 12:36:59 master  =======================
+Dec  4 12:36:59 master Code: 89 43 2c 8b 46 1c 29 d0 89 43 1c 8b 46 24
+89 56 1c 8b 56 28 29 d0 89 43 24 8b 86 74 02 00 00 89 56 24 89 83 74 02
+00 00 8b 46 54 <8b> 88 24 03 00 00 85 c9 74 06 89 da 89 f0 ff 11 8b 46
+54 05 68
+Dec  4 12:36:59 master EIP: [<f8e62c4e>] xfs_trans_dup+0x8e/0xb0 [xfs]
+SS:ESP 0068:dd35be40
+Dec  4 12:36:59 master *pdpt = 000000000f518001
+Dec  4 12:37:00 master *pde = 0000000000000000
+Dec  4 12:37:00 master Oops: 0002 [#2]
+Dec  4 12:37:00 master SMP
+Dec  4 12:37:00 master Modules linked in:
+Dec  4 12:37:00 master  netconsole smbfs nls_iso8859_1 cifs tun
+af_packet ipv6 video thermal sbs processor fan container button dock
+battery ac binfmt_misc loop nls_utf8 nls_cp437 vfat fat dm_mirror dm_mod
+ide_cd piix usb_storage ide_core st aic7xxx scsi_transport_spi tsdev
+usbmouse usbhid ff_memless floppy cpufreq_ondemand cpufreq_conservative
+cpufreq_powersave p4_clockmod speedstep_lib freq_table ehci_hcd iTCO_wdt
+iTCO_vendor_support e1000 e752x_edac uhci_hcd edac_mc usbcore shpchp
+pci_hotplug evdev sg xfs scsi_wait_scan sd_mod megaraid_mbox megaraid_mm
+scsi_mod
+Dec  4 12:37:00 master CPU:    1
+Dec  4 12:37:00 master EIP:    0060:[<f8e62a1e>]    Not tainted VLI
+Dec  4 12:37:00 master EFLAGS: 00010202   (2.6.22.12-server-1mdv #1)
+Dec  4 12:37:00 master EIP is at xfs_trans_free+0xe/0x40 [xfs]
+Dec  4 12:37:00 master eax: 00000368   ebx: e27502ac   ecx: f8e8ec00
+edx: e27502ac
+Dec  4 12:37:00 master esi: 00000000   edi: 00000000   ebp: c21a5eb4
+esp: c21a5eb0
+Dec  4 12:37:00 master ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+Dec  4 12:37:00 master Process xfslogd/1 (pid: 858, ti=c21a4000
+task=f7fc6a90 task.ti=c21a4000)
+Dec  4 12:37:00 master Stack: 00000000 c21a5ed0 f8e631ba 00000000
+e27502ac e27502b0 c21fb4e8 00000024
+Dec  4 12:37:00 master        c21a5f2c f8e55bdb 0000002d 0000002d
+00000000 00000800 00000000 c22e9c60
+Dec  4 12:37:00 master        c21fb4c0 00000000 c22e9bc0 c22e9bf4
+c21fb4c0 c21fb740 00000000 0003c876
+Dec  4 12:37:00 master Call Trace:
+Dec  4 12:37:00 master  [<c010527a>] show_trace_log_lvl+0x1a/0x30
+Dec  4 12:37:00 master  [<c010533b>] show_stack_log_lvl+0xab/0xd0
+Dec  4 12:37:00 master  [<c0105531>] show_registers+0x1d1/0x2d0
+Dec  4 12:37:00 master  [<c0105748>] die+0x118/0x240
+Dec  4 12:37:00 master  [<c0121cb1>] do_page_fault+0x1e1/0x870
+Dec  4 12:37:00 master  [<c031847a>] error_code+0x72/0x78
+Dec  4 12:37:00 master  [<f8e631ba>] xfs_trans_committed+0xca/0xf0 [xfs]
+Dec  4 12:37:00 master  [<f8e55bdb>] xlog_state_do_callback+0x1ab/0x280
+[xfs]
+Dec  4 12:37:00 master  [<f8e55d13>] xlog_state_done_syncing+0x63/0x80
+[xfs]
+Dec  4 12:37:00 master  [<f8e56505>] xlog_iodone+0x45/0xd0 [xfs]
+Dec  4 12:37:00 master  [<f8e736a2>] xfs_buf_iodone_work+0x12/0x40 [xfs]
+Dec  4 12:37:00 master  [<c013c2f2>] run_workqueue+0xd2/0x160
+Dec  4 12:37:00 master  [<c013cdfc>] worker_thread+0x8c/0xf0
+Dec  4 12:37:00 master  [<c013fc82>] kthread+0x42/0x70
+Dec  4 12:37:00 master  [<c0104e53>] kernel_thread_helper+0x7/0x14
+Dec  4 12:37:00 master  =======================
+Dec  4 12:37:00 master Code: 00 00 00 8b 83 d0 00 00 00 8b 93 d4 00 00
+00 89 41 04 89 51 08 83 c1 0c eb b3 8d 76 00 55 89 e5 53 89 c3 8b 40 54
+05 68 03 00 00 <f0> ff 08 8b 43 54 8b 90 24 03 00 00 85 d2 74 05 89 d8
+ff 52 04
+Dec  4 12:37:00 master EIP: [<f8e62a1e>] xfs_trans_free+0xe/0x40 [xfs]
+SS:ESP 0068:c21a5eb0
+Dec  4 12:56:26 master ------------[ cut here ]------------
+Dec  4 12:56:26 master Kernel BUG at c0181cf7 [verbose debug info
+unavailable]
+Dec  4 12:56:26 master invalid opcode: 0000 [#3]
+Dec  4 12:56:26 master SMP
+Dec  4 12:56:26 master
+Dec  4 12:56:26 master Modules linked in:
+Dec  4 12:56:26 master  netconsole
+Dec  4 12:56:26 master  smbfs
+Dec  4 12:56:26 master  nls_iso8859_1
+Dec  4 12:56:26 master  cifs
+Dec  4 12:56:26 master  tun
+Dec  4 12:56:26 master  af_packet
+Dec  4 12:56:26 master  ipv6
+Dec  4 12:56:26 master  video
+Dec  4 12:56:26 master  thermal
+Dec  4 12:56:26 master  sbs
+Dec  4 12:56:26 master  processor
+Dec  4 12:56:26 master  fan
+Dec  4 12:56:26 master  container
+Dec  4 12:56:26 master  button
+Dec  4 12:56:26 master  dock
+Dec  4 12:56:26 master  battery
+Dec  4 12:56:26 master  ac
+Dec  4 12:56:26 master  binfmt_misc
+Dec  4 12:56:26 master  loop
+Dec  4 12:56:26 master  nls_utf8
+Dec  4 12:56:26 master  nls_cp437
+Dec  4 12:56:26 master  vfat
+Dec  4 12:56:26 master  fat
+Dec  4 12:56:26 master  dm_mirror
+Dec  4 12:56:26 master  dm_mod
+Dec  4 12:56:26 master  ide_cd
+Dec  4 12:56:26 master  piix
+Dec  4 12:56:26 master  usb_storage
+Dec  4 12:56:26 master  ide_core
+Dec  4 12:56:26 master  st
+Dec  4 12:56:26 master  aic7xxx
+Dec  4 12:56:26 master  scsi_transport_spi
+Dec  4 12:56:26 master  tsdev
+Dec  4 12:56:26 master  usbmouse
+Dec  4 12:56:26 master  usbhid
+Dec  4 12:56:26 master  ff_memless
+Dec  4 12:56:26 master  floppy
+Dec  4 12:56:26 master  cpufreq_ondemand
+Dec  4 12:56:26 master  cpufreq_conservative
+Dec  4 12:56:26 master  cpufreq_powersave
+Dec  4 12:56:26 master  p4_clockmod
+Dec  4 12:56:26 master  speedstep_lib
+Dec  4 12:56:26 master  freq_table
+Dec  4 12:56:26 master  ehci_hcd
+Dec  4 12:56:26 master  iTCO_wdt
+Dec  4 12:56:26 master  iTCO_vendor_support
+Dec  4 12:56:26 master  e1000
+Dec  4 12:56:26 master  e752x_edac
+Dec  4 12:56:26 master  uhci_hcd
+Dec  4 12:56:26 master  edac_mc
+Dec  4 12:56:26 master  usbcore
+Dec  4 12:56:26 master  shpchp
+Dec  4 12:56:26 master  pci_hotplug
+Dec  4 12:56:26 master  evdev
+Dec  4 12:56:26 master  sg
+Dec  4 12:56:26 master  xfs
+Dec  4 12:56:26 master  scsi_wait_scan
+Dec  4 12:56:26 master  sd_mod
+Dec  4 12:56:26 master  megaraid_mbox
+Dec  4 12:56:26 master  megaraid_mm
+Dec  4 12:56:26 master  scsi_mod
+Dec  4 12:56:26 master
+Dec  4 12:56:26 master CPU:    1
+Dec  4 12:56:26 master EIP:    0060:[<c0181cf7>]    Not tainted VLI
+Dec  4 12:56:26 master EFLAGS: 00010096   (2.6.22.12-server-1mdv #1)
+Dec  4 12:56:26 master EIP is at cache_alloc_refill+0x1d7/0x560
+Dec  4 12:56:26 master eax: 00000006   ebx: 00000010   ecx: f747f840
+edx: f7a0a2c0
+Dec  4 12:56:26 master esi: ffb2a005   edi: e2750000   ebp: d67edd5c
+esp: d67edd0c
+Dec  4 12:56:26 master ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Dec  4 12:56:26 master Process readarkeia (pid: 32292, ti=d67ec000
+task=d49e3030 task.ti=d67ec000)
+Dec  4 12:56:26 master
+Dec  4 12:56:26 master Stack:
+Dec  4 12:56:26 master 000002d0
+Dec  4 12:56:26 master 00000000
+Dec  4 12:56:26 master f747f848
+Dec  4 12:56:26 master f747f850
+Dec  4 12:56:26 master f8e7c599
+Dec  4 12:56:26 master 000002d0
+Dec  4 12:56:26 master f7a0a2c0
+Dec  4 12:56:26 master f7fb5c00
+Dec  4 12:56:26 master
+Dec  4 12:56:26 master
+Dec  4 12:56:26 master f747f840
+Dec  4 12:56:26 master c21834c0
+Dec  4 12:56:26 master 98118557
+Dec  4 12:56:26 master 00000000
+Dec  4 12:56:26 master 00000000
+Dec  4 12:56:26 master f13bc380
+Dec  4 12:56:26 master 00000000
+Dec  4 12:56:26 master 00000000
+Dec  4 12:56:26 master
+Dec  4 12:56:26 master
+Dec  4 12:56:26 master 00000000
+Dec  4 12:56:26 master 00000282
+Dec  4 12:56:26 master f7a0a2c0
+Dec  4 12:56:26 master 00000000
+Dec  4 12:56:26 master d67edd6c
+Dec  4 12:56:26 master c0181b1a
+Dec  4 12:56:26 master 00000000
+Dec  4 12:56:26 master 000002d0
+Dec  4 12:56:26 master
+Dec  4 12:56:26 master Call Trace:
+Dec  4 12:56:26 master  [<c010527a>]
+Dec  4 12:56:26 master show_trace_log_lvl+0x1a/0x30
+Dec  4 12:56:26 master  [<c010533b>]
+Dec  4 12:56:26 master show_stack_log_lvl+0xab/0xd0
+Dec  4 12:56:26 master  [<c0105531>]
+Dec  4 12:56:26 master show_registers+0x1d1/0x2d0
+Dec  4 12:56:26 master  [<c0105748>]
+Dec  4 12:56:26 master die+0x118/0x240
+Dec  4 12:56:26 master  [<c0105901>]
+Dec  4 12:56:26 master do_trap+0x91/0xc0
+Dec  4 12:56:26 master  [<c0105cb8>]
+Dec  4 12:56:26 master do_invalid_op+0x88/0xa0
+Dec  4 12:56:26 master  [<c031847a>]
+Dec  4 12:56:26 master error_code+0x72/0x78
+Dec  4 12:56:26 master  [<c0181b1a>]
+Dec  4 12:56:26 master kmem_cache_alloc+0x6a/0x70
+Dec  4 12:56:26 master  [<f8e6ff25>]
+Dec  4 12:56:26 master kmem_zone_alloc+0x55/0xc0 [xfs]
+Dec  4 12:56:26 master  [<f8e6ffa8>]
+Dec  4 12:56:26 master kmem_zone_zalloc+0x18/0x60 [xfs]
+Dec  4 12:56:26 master  [<f8e62c97>]
+Dec  4 12:56:26 master _xfs_trans_alloc+0x27/0x70 [xfs]
+Dec  4 12:56:26 master  [<f8e63261>]
+Dec  4 12:56:26 master xfs_trans_alloc+0x81/0x90 [xfs]
+Dec  4 12:56:26 master  [<f8e6c9fc>]
+Dec  4 12:56:26 master xfs_mkdir+0x1ac/0x630 [xfs]
+Dec  4 12:56:26 master  [<f8e778e6>]
+Dec  4 12:56:26 master xfs_vn_mknod+0x246/0x320 [xfs]
+Dec  4 12:56:26 master  [<f8e779d5>]
+Dec  4 12:56:26 master xfs_vn_mkdir+0x15/0x20 [xfs]
+Dec  4 12:56:26 master  [<c018d306>]
+Dec  4 12:56:26 master vfs_mkdir+0xc6/0x150
+Dec  4 12:56:26 master  [<c018ffff>]
+Dec  4 12:56:26 master sys_mkdirat+0x8f/0xd0
+Dec  4 12:56:26 master  [<c0190060>]
+Dec  4 12:56:26 master sys_mkdir+0x20/0x30
+Dec  4 12:56:26 master  [<c01041a2>]
+Dec  4 12:56:26 master sysenter_past_esp+0x6b/0xa1
+Dec  4 12:56:26 master  =======================
+Dec  4 12:56:26 master Code:
+Dec  4 12:56:26 master 83
+Dec  4 12:56:26 master c4
+Dec  4 12:56:26 master 44
+Dec  4 12:56:26 master 5b
+Dec  4 12:56:26 master 5e
+Dec  4 12:56:26 master 5f
+Dec  4 12:56:26 master 5d
+Dec  4 12:56:26 master c3
+Dec  4 12:56:26 master 8b
+Dec  4 12:56:26 master 79
+Dec  4 12:56:26 master 10
+Dec  4 12:56:26 master c7
+Dec  4 12:56:26 master 41
+Dec  4 12:56:26 master 34
+Dec  4 12:56:26 master 01
+Dec  4 12:56:26 master 00
+Dec  4 12:56:26 master last message repeated 2 times
+Dec  4 12:56:26 master 39
+Dec  4 12:56:26 master 7d
+Dec  4 12:56:26 master bc
+Dec  4 12:56:26 master 74
+Dec  4 12:56:26 master ae
+Dec  4 12:56:26 master 8b
+Dec  4 12:56:26 master 55
+Dec  4 12:56:26 master c8
+Dec  4 12:56:26 master 8b
+Dec  4 12:56:26 master 77
+Dec  4 12:56:26 master 10
+Dec  4 12:56:26 master 8b
+Dec  4 12:56:26 master 82
+Dec  4 12:56:26 master 98
+Dec  4 12:56:26 master 00
+Dec  4 12:56:26 master last message repeated 2 times
+Dec  4 12:56:26 master 39
+Dec  4 12:56:26 master c6
+Dec  4 12:56:26 master 0f
+Dec  4 12:56:26 master 82
+Dec  4 12:56:26 master 05
+Dec  4 12:56:26 master ff
+Dec  4 12:56:26 master last message repeated 2 times
+Dec  4 12:56:26 master 0b
+Dec  4 12:56:26 master eb
+Dec  4 12:56:26 master fe
+Dec  4 12:56:26 master 90
+Dec  4 12:56:26 master 8d
+Dec  4 12:56:26 master 74
+Dec  4 12:56:26 master 26
+Dec  4 12:56:26 master 00
+Dec  4 12:56:26 master 8b
+Dec  4 12:56:26 master 4d
+Dec  4 12:56:26 master d0
+Dec  4 12:56:26 master 8b
+Dec  4 12:56:26 master 41
+Dec  4 12:56:26 master 08
+Dec  4 12:56:26 master 89
+Dec  4 12:56:26 master 78
+Dec  4 12:56:26 master 04
+Dec  4 12:56:26 master 89
+Dec  4 12:56:26 master 07
+Dec  4 12:56:26 master 8b
+Dec  4 12:56:26 master
+Dec  4 12:56:26 master EIP: [<c0181cf7>]
+Dec  4 12:56:26 master cache_alloc_refill+0x1d7/0x560
+Dec  4 12:56:26 master  SS:ESP 0068:d67edd0c
