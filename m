@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbYLEPbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYLEPfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757509AbYLEPbi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 10:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbYLEPba
+	id S1756846AbYLEPfh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 10:35:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbYLEPf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 10:31:30 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:54952 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754589AbYLEPb3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 10:31:29 -0500
-Date: Fri, 5 Dec 2008 09:23:18 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: david safford <safford@watson.ibm.com>
-Cc: James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
-Message-ID: <20081205152318.GD10037@us.ibm.com>
-References: <cover.1228253618.git.zohar@linux.vnet.ibm.com> <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com> <20081203123021.GA30035@infradead.org> <1228328323.2821.30.camel@localhost.localdomain> <20081203182300.GA31203@infradead.org> <1228342655.2821.64.camel@localhost.localdomain> <20081204130949.GA18196@infradead.org> <1228424014.3014.58.camel@localhost.localdomain> <alpine.LRH.1.10.0812051236420.11818@tundra.namei.org> <1228481810.3005.31.camel@localhost.localdomain>
+	Fri, 5 Dec 2008 10:35:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47051 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752245AbYLEPf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 10:35:28 -0500
+To: Jiaying Zhang <jiayingz@google.com>
+Cc: Steven Rostedt <srostedt@redhat.com>, linux-kernel@vger.kernel.org,
+       Michael Rubin <mrubin@google.com>, Martin Bligh <mbligh@google.com>,
+       Michael Davidson <md@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH 3/3] kernel tracing prototype
+References: <5df78e1d0812021626y68c7241ahfdba4d37c7840e10@mail.gmail.com>
+	<1228278908.4886.49.camel@localhost.localdomain>
+	<5df78e1d0812022130g7c5a004bnd729d0a8454f24ed@mail.gmail.com>
+	<5df78e1d0812050004q505cba8dnee39997a84d67847@mail.gmail.com>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Fri, 05 Dec 2008 10:34:50 -0500
+In-Reply-To: <5df78e1d0812050004q505cba8dnee39997a84d67847@mail.gmail.com> (Jiaying Zhang's message of "Fri, 5 Dec 2008 00:04:54 -0800")
+Message-ID: <y0my6yuocth.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1228481810.3005.31.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting david safford (safford@watson.ibm.com):
-> On Fri, 2008-12-05 at 12:42 +1100, James Morris wrote:
-> > On Thu, 4 Dec 2008, david safford wrote:
-> >
-> > > These hooks were for alternate integrity modules, and since
-> > > no one else has defended them, we have to agree that they
-> > > should be replaced with direct calls.
-> >
-> > If you know of other modules which are planned to be ported to this
-> > framework, merged upstream and supported, then this would be similar to
-> > the situation when LSM was initially developed.
-> >
-> > You've previously mentioned some active projects here:
-> > http://lkml.org/lkml/2008/11/17/362
-> >
-> > Are there any definite commitments to push these upstream when the
-> > integrity framework is merged?
-> 
-> All of the projects listed in that posting were ones depending on
-> IMA, with no requirements for alternate modules. I do hope that there
-> will be other integrity modules in addition to the TPM oriented IMA, 
-> and I do know of several research projects in this space, but I don't 
-> know if/when any of these are planning on submission. If others are 
-> submitted, it would certainly be simple to add the hooks back in.
+Jiaying Zhang <jiayingz@google.com> writes:
 
-Too bad the main trusted knoppix site appears to be dead.  Was it
-actually making use of the templating api?
+> To better answer the question why we want to implement a new kernel
+> tracing prototype, here are some performance results we collected before
+> with the tbench benchmark. 
 
--serge
+Thanks.
+
+> - vanilla 2.6.26 kernel, CONFIG_MARKERS=n
+> Throughput 759.352 MB/sec 4
+> - markers compiled in, tracing disabled
+> Throughput 754.18 MB/sec 4
+
+Is your kernel built with -freorder-blocks?  This option dramatically
+reduces the cost of inactive markers/tracepoints.
+
+> - tracing syscall entry/exit, use markers, not logging data to ring_buffer
+> Throughput 715.68 MB/sec 4
+> - tracing syscall entry/exit, use markers, logging data to ring_buffer
+> Throughput 654.056 MB/sec 4
+
+(By the way, how are you doing syscall entry/exit tracing?)
+
+
+- FChE
