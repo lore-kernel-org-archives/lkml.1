@@ -1,38 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbYLEPMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYLEPOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbYLEPMe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 10:12:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYLEPM0
+	id S1756816AbYLEPOW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 10:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYLEPON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 10:12:26 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55602 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753506AbYLEPM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 10:12:26 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0812051407130.25248@blonde.anvils>
-References: <Pine.LNX.4.64.0812051407130.25248@blonde.anvils> <20081205133014.14725.79974.stgit@warthog.procyon.org.uk>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
-       bfields@fieldses.org, hch@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] EXPORTFS: Don't return NULL from fh_to_dentry()/fh_to_parent() [ver #2]
-Date: Fri, 05 Dec 2008 15:12:15 +0000
-Message-ID: <17271.1228489935@redhat.com>
+	Fri, 5 Dec 2008 10:14:13 -0500
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:35048 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753545AbYLEPOM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 10:14:12 -0500
+Message-ID: <49394541.30404@lwfinger.net>
+Date: Fri, 05 Dec 2008 09:14:09 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Christian Lamparter <chunkeey@web.de>
+CC: linux-wireless@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
+       John W Linville <linville@tuxdriver.com>, linux-usb@vger.kernel.org,
+       gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] p54usb: fix usb_kill_urb hang with slub_debug=P
+References: <200812051547.45790.chunkeey@web.de>
+In-Reply-To: <200812051547.45790.chunkeey@web.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins <hugh@veritas.com> wrote:
+Christian Lamparter wrote:
+> This patch fixes a problem identified by Johannes Berg.
+> 
+> It looks like this is a classic case of "use-after-freed". 
+> A module which should reproduce the problem on
+> any other USB device can be found right here:
+> http://kerneltrap.org/mailarchive/linux-usb/2008/12/4/4317064
 
-> I think it's still wrong in shmem_fh_to_dentry(): you've fixed
-> the early return, but there'd be another return NULL if !inode?
+I didn't find either the code nor a link to it in the above link. What did I miss?
 
-Now that I've fixed that as well, what are the chances of d_find_alias()
-returning NULL, do you think?  I suppose all that's required is for a file to
-be deleted locally while a remote client has a filehandle to it.
-
-David
+Larry
