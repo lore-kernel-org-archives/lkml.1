@@ -1,91 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbYLERnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756419AbYLERuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756946AbYLERnF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 12:43:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYLERmx
+	id S1756419AbYLERuu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 12:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYLERum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 12:42:53 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:33726 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752920AbYLERmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 12:42:51 -0500
-Date: Fri, 5 Dec 2008 12:42:28 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
-       hch@infradead.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] EXPORTFS: Don't return NULL from
-	fh_to_dentry()/fh_to_parent() [ver #4]
-Message-ID: <20081205174228.GC29227@fieldses.org>
-References: <20081205162318.20732.73054.stgit@warthog.procyon.org.uk> <alpine.LFD.2.00.0812050848060.3386@nehalem.linux-foundation.org>
+	Fri, 5 Dec 2008 12:50:42 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:42000 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752320AbYLERul (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 12:50:41 -0500
+Message-ID: <493969B5.3050308@zytor.com>
+Date: Fri, 05 Dec 2008 09:49:41 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0812050848060.3386@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frans Pop <elendil@planet.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>, rjw@sisk.pl,
+       greg@kroah.com, jbarnes@virtuousgeek.org, lenb@kernel.org,
+       linux-kernel@vger.kernel.org, tiwai@suse.de, akpm@linux-foundation.org,
+       ink@jurassic.park.msu.ru, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: MSI changes in .28
+References: <200812020320.31876.rjw@sisk.pl> <200812020629.26714.elendil@planet.nl> <alpine.LFD.2.00.0812020735150.3256@nehalem.linux-foundation.org> <200812050953.12238.elendil@planet.nl> <20081205122005.GC28662@elte.hu>
+In-Reply-To: <20081205122005.GC28662@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 05, 2008 at 08:52:13AM -0800, Linus Torvalds wrote:
+Ingo Molnar wrote:
 > 
+> The MSI IRQ number is a pure software detail that was already non-stable 
+> due to device detection ordering, etc. It's counted back from NR_IRQS, 
+> and the sizing of NR_IRQS changed (upwards) in 2.6.28 - that's what you 
+> see.
 > 
-> On Fri, 5 Dec 2008, David Howells wrote:
-> >
-> > Returning NULL from fh_to_dentry() and fh_to_parent() is not permitted, so
-> > return -ESTALE instead.  exportfs_decode_fh() does not check for NULL, but
-> > will try to dereference it as IS_ERR() does not check for it.
-> > 
-> > The generic_fh_to_dentry() and generic_fh_to_parent() functions also no longer
-> > return NULL, but return -ESTALE instead.
+> The fact that MSI numbers goes back from NR_IRQs i consider a (minor) 
+> misbehavior: it should not count down but should count up - and it should 
+> not go to unreasonably high numbers if possible - that is confusing to 
+> users when the sizing of NR_IRQS changes to to a higher NR_CPUS for 
+> example.
 > 
-> I really don't like this one.
+> A better (because more human-compatible) numbering scheme is to start 
+> counting upwards from the high end of physical interrupt lines. We've 
+> done that in the for-.29 sparseirq tree - there we'll start counting from 
+> 256 upwards in essence. (the first 256 IRQs are GSI interrupts)
 > 
-> So just about every fh_to_dentry() returns NULL for some error case. 
-> Instead of considering that a problem, maybe it should tell us something.
-> 
-> There is _one_ single caller of that function afaik, why shouldn't we just 
-> teach the caller that dammit, lots of people want to just return NULL.
-> 
-> It's not like returning NULL doesn't make sense. Quite frankly, I think it 
-> makes a lot more sense than returning -ESTALE, which is a very unnatural 
-> error for most filesystems.
-> 
-> So quite frankly, I'd much rather just see the simpler patch. Have 
-> exportfs handle the case.
->
-> Are there other callers?
 
-Not of fh_to_dentry(), but it looks like fh_to_parent() is the same.  So
-you'd want the below.
+Although it's kind of broken to limit the number of GSI interrupts to
+256, at least for HyperTransport systems where you can have MSIs that
+look like IOAPICs (although discovered using a slightly different
+mechanism.)
 
-This is partially reverting 440037287c5, which appears to have also do
-some changing of NULLs to ESTALEs which we might also want to reconsider
-at some point.  Maybe Christoph could explain what the rationale was.
+This also means, at least in theory, that IOAPICs could be discovered at
+runtime!
 
---b.
+> Maybe it should be counted starting at 1000? That might be an even more 
+> human-friendly numbering scheme.
 
-diff --git a/fs/exportfs/expfs.c b/fs/exportfs/expfs.c
-index 80246ba..890e018 100644
---- a/fs/exportfs/expfs.c
-+++ b/fs/exportfs/expfs.c
-@@ -367,6 +367,8 @@ struct dentry *exportfs_decode_fh(struct vfsmount *mnt, struct fid *fid,
- 	 * Try to get any dentry for the given file handle from the filesystem.
- 	 */
- 	result = nop->fh_to_dentry(mnt->mnt_sb, fid, fh_len, fileid_type);
-+	if (!result)
-+		result = ERR_PTR(-ESTALE);
- 	if (IS_ERR(result))
- 		return result;
- 
-@@ -420,6 +422,8 @@ struct dentry *exportfs_decode_fh(struct vfsmount *mnt, struct fid *fid,
- 
- 		target_dir = nop->fh_to_parent(mnt->mnt_sb, fid,
- 				fh_len, fileid_type);
-+		if (!target_dir)
-+			goto err_result;
- 		err = PTR_ERR(target_dir);
- 		if (IS_ERR(target_dir))
- 			goto err_result;
+Personally I think we should just fix the legacy PIC and southbridge
+IOAPIC at zero, and let everything grow up from there.  We'll assign
+IOAPIC numbers first just by virtue of them being discovered first, but
+I don't really see a huge need to partition the space.
+
+Assigning them numbers starting with 1000 does stand out, of course;
+however, if we do that then we really need to make sure we don't run
+into ugly surprises on HT systems.  On the other hand, perhaps none will
+ever be built, since newer HT silicon is likely to use MSI-X rather than
+MSI-HT just for compatiblity.
+
+	-hpa
+
