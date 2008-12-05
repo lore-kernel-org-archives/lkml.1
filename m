@@ -1,93 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYLEDrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbYLEDur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414AbYLEDrT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 22:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750781AbYLEDrK
+	id S1752826AbYLEDur (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 22:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbYLEDuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 22:47:10 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:61511 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbYLEDrJ (ORCPT
+	Thu, 4 Dec 2008 22:50:40 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44535 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750781AbYLEDuj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 22:47:09 -0500
-Message-Id: <200812050344.mB53i9BF034723@www262.sakura.ne.jp>
-Subject: [2.6.28-rc7] Define MODULE_SYSTEM_TABLE for mbp_nvidia_bl.o and applesmc.o
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: linux-kernel@vger.kernel.org
-Cc: mjg@redhat.com, nicolas@boichat.ch
-MIME-Version: 1.0
+	Thu, 4 Dec 2008 22:50:39 -0500
+Date: Fri, 5 Dec 2008 12:49:47 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [memcg BUG ?] failed to boot on IA64 with CONFIG_DISCONTIGMEM=y
+Message-Id: <20081205124947.0450a222.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4938A088.1090205@cn.fujitsu.com>
+References: <49389B69.9010902@cn.fujitsu.com>
+	<20081205122024.3fcc1d0e.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081205122458.a37ae8e0.kamezawa.hiroyu@jp.fujitsu.com>
+	<4938A088.1090205@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Fri, 05 Dec 2008 12:44:09 +0900
-Content-Type: text/plain; charset="ISO-2022-JP"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When compiling mbp_nvidia_bl.o and applesmc.o using gcc 3.3.5,
-the below compilation error occurs.
+On Fri, 05 Dec 2008 11:31:20 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-  CC [M]  drivers/video/backlight/mbp_nvidia_bl.o
-  drivers/video/backlight/mbp_nvidia_bl.c:114: error: storage size of `__mod_dmi_device_table' isn't known
-  make[1]: *** [drivers/video/backlight/mbp_nvidia_bl.o] Error 1
-  make: *** [drivers/video/backlight/mbp_nvidia_bl.o] Error 2
+> >> How about this ?
+> > 
+> > Ahhh..sorry.
+> > 
+> > this one please.
+> > ==
+> > 
+> > From: kamezawa.hiroyu@jp.fujitsu.com
+> > 
+> > page_cgroup should ignore empty-nodes.
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> 
+> Now it booted successfully. :)
+> 
+> Tested-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+Thank you!
 
-  CC [M]  drivers/hwmon/applesmc.o
-  drivers/hwmon/applesmc.c:1567: error: storage size of `__mod_dmi_device_table' isn't known
-  make[1]: *** [drivers/hwmon/applesmc.o] Error 1
-  make: *** [drivers/hwmon/applesmc.o] Error 2
+-Kame
 
-Diffs between 2.6.27.7 and 2.6.28-rc7 are shown below.
-
-  # diff linux-2.6.27.7/drivers/video/backlight/mbp_nvidia_bl.c linux-2.6.28-rc7/drivers/video/backlight/mbp_nvidia_bl.c
-  114,116c114
-  < MODULE_ALIAS("svnAppleInc.:pnMacBookPro3,1");
-  < MODULE_ALIAS("svnAppleInc.:pnMacBookPro3,2");
-  < MODULE_ALIAS("svnAppleInc.:pnMacBookPro4,1");
-  ---
-  > MODULE_DEVICE_TABLE(dmi, mbp_device_table);
-
-We can see that MODULE_ALIAS is replaced by MODULE_DEVICE_TABLE.
-
-mbp_nvidia_bl.c and applesmc.c are using MODULE_DEVICE_TABLE(dmi, ...);
-which will extracted to __mod_dmi_device_table, but it seems to me that
-dmi does not define __mod_dmi_device_table.
-
-I don't know why gcc 4.x doesn't trigger this compilation error.
-
-I don't know whether mbp_nvidia_bl.o and applesmc.o compiled with this patch
-work or not. Can somebody who has these hardwares try this patch?
-
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
----
- drivers/hwmon/applesmc.c                |    2 +-
- drivers/video/backlight/mbp_nvidia_bl.c |    2 +-
- include/linux/module.h                  |    2 ++
- 3 files changed, 4 insertions(+), 2 deletions(-)
-
---- linux-2.6.28-rc7.orig/drivers/hwmon/applesmc.c
-+++ linux-2.6.28-rc7/drivers/hwmon/applesmc.c
-@@ -1564,4 +1564,4 @@ module_exit(applesmc_exit);
- MODULE_AUTHOR("Nicolas Boichat");
- MODULE_DESCRIPTION("Apple SMC");
- MODULE_LICENSE("GPL v2");
--MODULE_DEVICE_TABLE(dmi, applesmc_whitelist);
-+MODULE_SYSTEM_TABLE(dmi, applesmc_whitelist);
---- linux-2.6.28-rc7.orig/drivers/video/backlight/mbp_nvidia_bl.c
-+++ linux-2.6.28-rc7/drivers/video/backlight/mbp_nvidia_bl.c
-@@ -111,4 +111,4 @@ module_exit(mbp_exit);
- MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
- MODULE_DESCRIPTION("Nvidia-based Macbook Pro Backlight Driver");
- MODULE_LICENSE("GPL");
--MODULE_DEVICE_TABLE(dmi, mbp_device_table);
-+MODULE_SYSTEM_TABLE(dmi, mbp_device_table);
---- linux-2.6.28-rc7.orig/include/linux/module.h
-+++ linux-2.6.28-rc7/include/linux/module.h
-@@ -139,6 +139,8 @@ extern struct module __this_module;
- 
- #define MODULE_DEVICE_TABLE(type,name)		\
-   MODULE_GENERIC_TABLE(type##_device,name)
-+#define MODULE_SYSTEM_TABLE(type,name)		\
-+  MODULE_GENERIC_TABLE(type##_system,name)
- 
- /* Version of form [<epoch>:]<version>[-<extra-version>].
-    Or for CVS/RCS ID version, everything but the number is stripped.
