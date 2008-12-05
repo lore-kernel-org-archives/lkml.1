@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757787AbYLENHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbYLENHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757787AbYLENHM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 08:07:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbYLENG7
+	id S1758108AbYLENHo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 08:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbYLENHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 08:06:59 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48663 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751138AbYLENG6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 08:06:58 -0500
-Date: Fri, 5 Dec 2008 14:06:49 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 062/104] ACPI: EC: count interrupts only if called from
-	interrupt handler.
-Message-ID: <20081205130649.GB1750@ucw.cz>
-References: <20081203193901.715896543@mini.kroah.org> <20081203195300.GK8950@kroah.com>
+	Fri, 5 Dec 2008 08:07:19 -0500
+Received: from mail.suse.de ([195.135.220.2]:37184 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757190AbYLENHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 08:07:18 -0500
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Linux - Novell
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] PCIe ASPM causes machine (HP Compaq 6735s) to sometimes freeze hard at boot at PCI initialization time
+Date: Fri, 5 Dec 2008 14:07:13 +0100
+User-Agent: KMail/1.9.9
+Cc: jbarnes@virtuousgeek.org, shaohua.li@intel.com,
+       Rafael Wysocki <rwysocki@suse.de>, shemminger@linux-foundation.org,
+       netdev@vger.kernel.org, Stable@kernel.org
+References: <200811281328.55259.trenn@suse.de>
+In-Reply-To: <200811281328.55259.trenn@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081203195300.GK8950@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200812051407.14419.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-12-03 11:53:00, Greg KH wrote:
-> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> From: Alexey Starikovskiy <astarikovskiy@suse.de>
-> 
-> commit 7b4d469228a92a00e412675817cedd60133de38a upstream.
-> 
-> fix 2.6.28 EC interrupt storm regression
-> 
+Hi,
 
-That changelog is pretty useless :-(.
+This is intended for review by someone with more PCI experience, first.
 
-> @@ -219,7 +219,8 @@ static void gpe_transaction(struct acpi_
->  	goto unlock;
->  err:
->  	/* false interrupt, state didn't change */
-> -	++ec->curr->irq_count;
-> +	if (in_interrupt())
-> +		++ec->curr->irq_count;
->  unlock:
->  	spin_unlock_irqrestore(&ec->curr_lock, flags);
->  }
+If it is considered as safe as I think it is :), it would be great if
+this can be picked up ang go into stable kernels as well if the
+feedback is positive (just checked with .25, the patch still
+patches there, even without offset).
 
-Is preempt_count() reliable with !config_preempt, too?
+Thanks,
 
-Using in_interrupt here is quite ugly... definitely worth a comment
-and perhaps gpe_transaction should get explicit 'am I in interrupt'
-parameter.
+    Thomas
 
-At least RT kernels plan on moving interrupt handlers to threads...
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+PCIE: Break out of endless loop waiting for PCI config bits to switch
+
+Makes a Compaq 6735s boot reliably again which hang in the loop
+on some boots.
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+
+---
+ drivers/pci/pcie/aspm.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.27/drivers/pci/pcie/aspm.c
+===================================================================
+--- linux-2.6.27.orig/drivers/pci/pcie/aspm.c
++++ linux-2.6.27/drivers/pci/pcie/aspm.c
+@@ -165,6 +165,7 @@ static void pcie_aspm_configure_common_c
+ 	u16 reg16 = 0;
+ 	struct pci_dev *child_dev;
+ 	int same_clock = 1;
++	int loop_count = 0;
+ 
+ 	/*
+ 	 * all functions of a slot should have the same Slot Clock
+@@ -212,12 +213,15 @@ static void pcie_aspm_configure_common_c
+ 	pci_write_config_word(pdev, pos + PCI_EXP_LNKCTL, reg16);
+ 
+ 	/* Wait for link training end */
+-	while (1) {
++	while (loop_count < 100) {
+ 		pci_read_config_word(pdev, pos + PCI_EXP_LNKSTA, &reg16);
+ 		if (!(reg16 & PCI_EXP_LNKSTA_LT))
+ 			break;
+ 		cpu_relax();
++		loop_count++;
+ 	}
++	if (loop_count == 100) 
++		dev_printk (KERN_WARNING, &pdev->dev, "Could not configure ASPM\n");
+ }
+ 
+ /*
