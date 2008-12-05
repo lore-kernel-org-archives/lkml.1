@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757150AbYLERQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbYLERSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757150AbYLERQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 12:16:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756469AbYLERQg
+	id S1756351AbYLERSk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 12:18:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYLERSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 12:16:36 -0500
-Received: from www.crouse-house.com ([199.45.160.146]:54364 "EHLO
-	mail.crouse-house.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756486AbYLERQe (ORCPT
+	Fri, 5 Dec 2008 12:18:32 -0500
+Received: from bytemail.bytemark.co.uk ([80.68.81.165]:38253 "EHLO
+	bytemail.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbYLERSb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 12:16:34 -0500
-Message-ID: <493961EE.6000002@cosmicpenguin.net>
-Date: Fri, 05 Dec 2008 10:16:30 -0700
-From: Jordan Crouse <jordan@cosmicpenguin.net>
+	Fri, 5 Dec 2008 12:18:31 -0500
+Message-ID: <49396267.8030709@bytemark.co.uk>
+Date: Fri, 05 Dec 2008 17:18:31 +0000
+From: Alex Howells <alex@bytemark.co.uk>
 User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Harald Dunkel <harald.dunkel@t-online.de>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27.7 built for Geode: Clock drift
-References: <49358017.7080009@t-online.de>
-In-Reply-To: <49358017.7080009@t-online.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: sata_svw breakage
+References: <493949B0.6000701@bytemark.co.uk> <49395E0D.4080203@garzik.org>
+In-Reply-To: <49395E0D.4080203@garzik.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harald Dunkel wrote:
-> Hi folks,
+Jeff Garzik wrote:
+> Alex Howells wrote:
+>> Afternoon Gents (and Ladies),
+>>
+>> I'm setting an interesting problem with the sata_svw driver on a fairly
+>> new (in terms of model) blade server from HP, a BL495c.
+>>
+>> [    3.462135] PCI: setting IRQ 14 as level-triggered
+>> [    3.462142] sata_svw 0000:01:0e.0: PCI INT A -> Link[ISF0] -> GSI 14
+>> (level,
+>> low) -> IRQ 14
+>> [    3.465367] sata_svw 0000:01:0e.0: PCI INT A disabled
+>> [    3.467302] sata_svw: probe of 0000:01:0e.0 failed with error -16
+>>
+>> Having trouble tracking down what 'error -16' might imply, any pointers
+>> for what the root cause may be and how to address it?
 > 
-> If I build a kernel for AMD Geode, then I see a clock drift of appr.
-> 30 min. to 1 hour per day. If I build the same kernel for i486, then
-> the clock drift is gone. Running ntp makes no difference.
+> That's the EBUSY error (include/asm-generic/errno-base.h).
 > 
-> Hardware is a Linutop PC. /proc/cpuinfo says
-> 
-> processor       : 0
-> vendor_id       : AuthenticAMD
-> cpu family      : 5
-> model           : 10
-> model name      : Geode(TM) Integrated Processor by AMD PCS
-> stepping        : 2
-> cpu MHz         : 0.000
-> cache size      : 128 KB
-> fdiv_bug        : no
-> hlt_bug         : no
-> f00f_bug        : no
-> coma_bug        : no
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 1
-> wp              : yes
-> flags           : fpu de pse tsc msr cx8 sep pge cmov clflush mmx mmxext 3dnowext 3dnow
-> bogomips        : 429.05
-> clflush size    : 32
-> power management:
-> 
-> BTW, the CPU is running with 500 MHz (AFAIK). 0.000 MHz is surely not
-> correct. /proc/cpuinfo reports the same for both kernels.
+> What kernel?  I don't see a 'probe of ... failed' message in drivers/ata
+> nor drivers/pci.
 
-Hmm - we've heard reports of this before, but nothing came of it.  I 
-would be interested in a chance to debug it this time.
-
-Please try turning off CONFIG_GEODE_MFGPT_TIMER=y and try again.  Also, 
-try something in the 2.6.28 family to rule out fixes in the timer subsystem.
-
-Thanks,
-Jordan
+It's running on 2.6.27.7 at the moment...
