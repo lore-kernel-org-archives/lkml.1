@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbYLEP7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbYLEQBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758242AbYLEP7m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 10:59:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757891AbYLEP64
+	id S1755261AbYLEQBz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 11:01:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbYLEQBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 10:58:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38361 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757968AbYLEP6y (ORCPT
+	Fri, 5 Dec 2008 11:01:47 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35202 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbYLEQBq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 10:58:54 -0500
-Date: Fri, 5 Dec 2008 07:57:59 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
- on Toshiba R500 (bisected)
-In-Reply-To: <200812051300.16649.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0812050754020.3386@nehalem.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812041845210.3543@nehalem.linux-foundation.org> <alpine.LFD.2.00.0812041917050.3386@nehalem.linux-foundation.org> <200812051300.16649.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 5 Dec 2008 11:01:46 -0500
+Subject: Re: [ltt-dev] trace a futex
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: prasad@linux.vnet.ibm.com, jan.kiszka@web.de,
+       Gian Lorenzo Meocci <glmeocci@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
+       linux-kernel@vger.kernel.org, mbligh@google.com,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20081205122822.GA25816@Krystal>
+References: <8d94e9280812021142j2eb5ca72td730410e97ccd9a1@mail.gmail.com>
+	 <20081202195015.GA25792@Krystal>
+	 <8d94e9280812021215m6a63d6c2l4e64acd26274953d@mail.gmail.com>
+	 <20081202215519.GA734@Krystal> <4935B25F.7010701@web.de>
+	 <20081203052640.GA13701@Krystal> <20081203180131.GA2904@in.ibm.com>
+	 <1228380784.5092.18.camel@twins>  <20081205122822.GA25816@Krystal>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 05 Dec 2008 17:01:39 +0100
+Message-Id: <1228492899.20520.4.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[ resend with a real email address for Thomas ]
 
-
-On Fri, 5 Dec 2008, Rafael J. Wysocki wrote:
+On Fri, 2008-12-05 at 07:28 -0500, Mathieu Desnoyers wrote:
+> * Peter Zijlstra (peterz@infradead.org) wrote:
 > > 
-> > It would be very interesting to see if people affected get any printouts 
-> > about IO decodes that don't show up in /proc/ioports...
+> > FWIW, the ftrace infrastructure has on many an occasion (even before it
+> > was called ftrace and specific to -rt) helped in debugging and fixing
+> > futex races.
+> > 
 > 
-> From my box:
-> 
-> pci 0000:00:1f.0: quirk: region d800-d87f claimed by ICH6 ACPI/GP IO/TCO
-> pci 0000:00:1f.0: quirk: region eec0-eeff claimed by ICH6 GPIO
-> pci 0000:00:1f.0: ICH7 LPC Generic IO decode 1 PIO at 0680 (mask 007f)
-> pci 0000:00:1f.0: ICH7 LPC Generic IO decode 4 PIO at 01e0 (mask 000f)
-> 
-> The second one shows up in /proc/ioports as "01e0-01ef : pnp 00:09", but the
-> first one (at 680) doesn't.
+> Hrm, I'm not sure futex races is the key aspect of interest here.
+> Knowing which amount of pthread mutex lock calls ends up calling the
+> scheduler looks a bit more like the topic brought by this particular
+> use-case. Therefore, correlating the information from the nptl with the
+> kernel information would be useful.
 
-Ok, so the patch is interesting and probably worth expanding on (to 
-actually allocate the regions), but at the same time it too doesn't 
-actually explain your problems.
+We already have the scheduler instrucmentation, so correlating that to
+known futex calls (from userspace) shouldn't be too hard. 
 
-While the kernel doesn't know about that magic 0x680 allocation, it also 
-won't be allocating anything over it, since we define PCIBIOS_MIN_IO to 
-0x1000 on x86, and will never allocate new resources under that.
+> Is lockdep called when a futex is taken ? 
 
-		Linus
+lockdep only does kernel-internal locks - so no.
+
+> Should we add instrumentation
+> (tracepoints) to futex.c ? If yes, was there specific instrumentation
+> you used with ftrace that should be added ?
+
+Not sure we should, Thomas did the bulk of that ftrace debugging, Thomas
+do you think it would be worthwhile to add some tracepoints in there?
