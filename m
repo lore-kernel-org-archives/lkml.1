@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbYLEQBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbYLEQDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755261AbYLEQBz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 11:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbYLEQBr
+	id S1754557AbYLEQDu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 11:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYLEQDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 11:01:47 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35202 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbYLEQBq (ORCPT
+	Fri, 5 Dec 2008 11:03:43 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:35021 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750980AbYLEQDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 11:01:46 -0500
-Subject: Re: [ltt-dev] trace a futex
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: prasad@linux.vnet.ibm.com, jan.kiszka@web.de,
-       Gian Lorenzo Meocci <glmeocci@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
-       linux-kernel@vger.kernel.org, mbligh@google.com,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20081205122822.GA25816@Krystal>
-References: <8d94e9280812021142j2eb5ca72td730410e97ccd9a1@mail.gmail.com>
-	 <20081202195015.GA25792@Krystal>
-	 <8d94e9280812021215m6a63d6c2l4e64acd26274953d@mail.gmail.com>
-	 <20081202215519.GA734@Krystal> <4935B25F.7010701@web.de>
-	 <20081203052640.GA13701@Krystal> <20081203180131.GA2904@in.ibm.com>
-	 <1228380784.5092.18.camel@twins>  <20081205122822.GA25816@Krystal>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 05 Dec 2008 17:01:39 +0100
-Message-Id: <1228492899.20520.4.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Fri, 5 Dec 2008 11:03:42 -0500
+Date: Fri, 5 Dec 2008 11:03:41 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Marc Haber <mh+linux-kernel@zugschlus.de>
+cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: pl2303 - pl2303_open - failed submitting interrupt urb, error
+ -28
+In-Reply-To: <20081205121023.GA21963@torres.zugschlus.de>
+Message-ID: <Pine.LNX.4.44L0.0812051100560.2588-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ resend with a real email address for Thomas ]
+On Fri, 5 Dec 2008, Marc Haber wrote:
 
-On Fri, 2008-12-05 at 07:28 -0500, Mathieu Desnoyers wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
-> > 
-> > FWIW, the ftrace infrastructure has on many an occasion (even before it
-> > was called ftrace and specific to -rt) helped in debugging and fixing
-> > futex races.
-> > 
+> On Wed, Dec 03, 2008 at 07:47:25AM -0800, Greg KH wrote:
+> > I would suggest using a USB 1.1 hub instead if you have to use this kind
+> > of hardware set up.
 > 
-> Hrm, I'm not sure futex races is the key aspect of interest here.
-> Knowing which amount of pthread mutex lock calls ends up calling the
-> scheduler looks a bit more like the topic brought by this particular
-> use-case. Therefore, correlating the information from the nptl with the
-> kernel information would be useful.
+> It is nearly impossible to buy that kind of hardware at the current
+> time.
+> 
+> >   I think the core is just not able to schedule so many interrupt urbs
+> >   with such a setup, running USB 1.1 devices behind a USB 2.0 hub like
+> >   this is a very difficult thing to do.
+> > 
+> > Sorry I don't have a better solution.
+> 
+> Is it possible to disable USB 2.0 for selected links?
 
-We already have the scheduler instrucmentation, so correlating that to
-known futex calls (from userspace) shouldn't be too hard. 
+Yes it is.  You can force port P of the EHCI controller on bus B to run 
+at low/full speed by doing:
 
-> Is lockdep called when a futex is taken ? 
+	echo P >/sys/class/usb_host/usb_hostB/companion
 
-lockdep only does kernel-internal locks - so no.
+To allow port P to run at high speed again, use the same command but 
+write -P instead of P.
 
-> Should we add instrumentation
-> (tracepoints) to futex.c ? If yes, was there specific instrumentation
-> you used with ftrace that should be added ?
+Alan Stern
 
-Not sure we should, Thomas did the bulk of that ftrace debugging, Thomas
-do you think it would be worthwhile to add some tracepoints in there?
