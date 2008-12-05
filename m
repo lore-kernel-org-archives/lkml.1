@@ -1,86 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbYLENtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbYLENw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757949AbYLENtr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 08:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbYLENtg
+	id S1758092AbYLENw1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 08:52:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYLENwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 08:49:36 -0500
-Received: from posthamster.phnxsoft.com ([195.227.45.4]:3707 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753222AbYLENtf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 08:49:35 -0500
-Message-ID: <49393160.20606@imap.cc>
-Date: Fri, 05 Dec 2008 14:49:20 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.18) Gecko/20081031 SeaMonkey/1.1.13 Mnenhy/0.7.6.0
+	Fri, 5 Dec 2008 08:52:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49354 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751024AbYLENwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 08:52:18 -0500
+Date: Fri, 5 Dec 2008 14:51:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH] ftrace: use init_struct_pid as swapper pid
+Message-ID: <20081205135150.GD27039@elte.hu>
+References: <20081204052638.425740534@goodmis.org> <20081204052735.362609481@goodmis.org> <20081204001803.598063f5.akpm@linux-foundation.org> <20081204091023.GJ32594@elte.hu> <m1vdu0t7tz.fsf@frodo.ebiederm.org> <alpine.DEB.1.10.0812040946060.5240@gandalf.stny.rr.com> <m11vwnu10b.fsf@frodo.ebiederm.org> <alpine.DEB.1.10.0812041551590.32726@gandalf.stny.rr.com> <m1vdtzr4zn.fsf@frodo.ebiederm.org> <alpine.DEB.1.10.0812042323120.26316@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Use vprintk rather that vsnprintf where possible
-References: <1228423309.3255.109.camel@calx>
-In-Reply-To: <1228423309.3255.109.camel@calx>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigFFEBE2B934329A285B9CFE57"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0812042323120.26316@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigFFEBE2B934329A285B9CFE57
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
 
-A diffstat would have been nice, so that a small driver maintainer
-like me can quickly check whether s/he should have a closer look:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
- drivers/cpufreq/cpufreq.c    |   11 +--------
- drivers/scsi/arm/fas216.c    |    6 +----
- drivers/scsi/nsp32.c         |   29 ++++++++++--------------
- drivers/scsi/pcmcia/nsp_cs.c |   28 ++++++++++--------------
- fs/adfs/super.c              |   12 ++++------
- fs/affs/amigaffs.c           |   22 +++++++-----------
- fs/befs/debug.c              |   47 +++++++-----------------------------=
-----
- fs/hpfs/super.c              |    7 +-----
- fs/jfs/super.c               |    7 ++----
- fs/ntfs/debug.c              |   50 +++++++++++++++++-------------------=
--------
- fs/ocfs2/super.c             |   22 ++++++++----------
- fs/partitions/ldm.c          |    7 ++----
- fs/udf/super.c               |   16 ++++++-------
- fs/ufs/super.c               |   46 +++++++++++++++++++-----------------=
----
- fs/xfs/support/debug.c       |   28 ++++++------------------
- 15 files changed, 127 insertions(+), 211 deletions(-)
+> 
+> Ingo,
+> 
+> Here's a little clean up patch.
+> 
+> Randy Dunlap should be happy that I changed my script to combine the 
+> header and patch in one email if I only have a single patch.
+> 
+> -- Steve
+> 
+> The following patch is in:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>     branch: tip/devel
+> 
+> 
+> Steven Rostedt (1):
+>       ftrace: use init_struct_pid as swapper pid
+> 
+> ----
+>  kernel/trace/ftrace.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> ---------------------------
 
-shows at a glance who's affected by this.
+pulled, thanks Steve!
 
-Also, I'm a big fan of diff's -p option.
-
-Thanks,
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigFFEBE2B934329A285B9CFE57
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFJOTFhQ3+did9BuFsRArPPAKCJoeonIIKwvl7FfuIR6PaK2M5v4wCfaJwM
-E3qKF411lGLA5A/VhbBNLDc=
-=khuj
------END PGP SIGNATURE-----
-
---------------enigFFEBE2B934329A285B9CFE57--
+	Ingo
