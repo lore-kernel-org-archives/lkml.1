@@ -1,126 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbYLEI2J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757753AbYLEI2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbYLEI2J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 03:28:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYLEI1m
+	id S1757753AbYLEI2a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 03:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbYLEI2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 03:27:42 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38969 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751638AbYLEI1k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 03:27:40 -0500
-Date: Fri, 5 Dec 2008 17:26:42 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>
-Subject: [RFC][PATCH 0/4] cgroup ID and css refcnt change and memcg
- hierarchy (2008/12/05)
-Message-Id: <20081205172642.565661b1.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Dec 2008 03:28:08 -0500
+Received: from ozlabs.org ([203.10.76.45]:53731 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752174AbYLEI2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 03:28:06 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 2/3] [PATCH] param: Stop gcc from inlining empty weak functions
+Date: Fri, 5 Dec 2008 18:58:00 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <20081203163207.13965.56517.stgit@warthog.procyon.org.uk> <20081203163212.13965.80352.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20081203163212.13965.80352.stgit@warthog.procyon.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812051858.00246.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a patch set onto mmotm-2.6.28-Dec30.
+On Thursday 04 December 2008 03:02:12 David Howells wrote:
+> Stop gcc from inlining empty weak functions by making them non-empty.  The gcc
+> I have for FRV (4.1.2) will inline empty weak functions that are in the same
+> file, even if those functions are marked 'noinline'.
+> 
+> Without this patch, the default arch_get_boot_command_line() is rolled into
+> start_kernel(), and the arch specific one is not called, thus making the
+> kernel unbootable.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-Still RFC. I'm considering whether I can make this simpler....
+Ouch.  I'd prefer to fix this by moving the weak noop version to
+kernel/params.c.  You may still need to fix the rest.
 
-Major changes from previous one
-	- css->refcnt is unified.
-	  I think distributed refcnt is a crazy idea...
-	- applied comments to previous version.
-	- OOM Kill handler is fixed. (this was broken by hierarchy) 
+Here's what I ended up with (I'll eventually fold it):
 
-I may not be able to reply quickly in weekend, sorry.
+commit 4858874241391aa62b5818781f702883e4ddf4ed
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Fri Dec 5 18:56:34 2008 +1030
 
-After this, memcg's hierarchical reclaim will be
-==
-static struct mem_cgroup *
-mem_cgroup_select_victim(struct mem_cgroup *root_mem)
-{
-        struct cgroup *cgroup, *root_cgroup;
-        struct mem_cgroup *ret;
-        int nextid, rootid, depth, found;
+    Move arch_get_boot_command_line out of init/main.c for broken gccs.
 
-        root_cgroup = root_mem->css.cgroup;
-        rootid = cgroup_id(root_cgroup);
-        depth = cgroup_depth(root_cgroup);
-        found = 0;
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 71cd0f5..8cd1a93 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -150,7 +150,7 @@ extern unsigned int reset_devices;
+ 
+ /* used by init/main.c */
+ void setup_arch(void);
+-void arch_get_cmdline(char *cmdline);
++void arch_get_boot_command_line(void);
+ void prepare_namespace(void);
+ 
+ extern void (*late_time_init)(void);
+diff --git a/init/main.c b/init/main.c
+index 9595dba..f6032ba 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -528,11 +528,6 @@ void __init __weak thread_info_cache_init(void)
+ {
+ }
+ 
+-/* If the arch already sets boot_command_line, we need do nothing. */
+-void __init __weak arch_get_boot_command_line(void)
+-{
+-}
+-
+ /* Ideally, this would take a 'const char *cmdline' param. */
+ asmlinkage void __init start_kernel(void)
+ {
+diff --git a/kernel/params.c b/kernel/params.c
+index 69dd623..7fac630 100644
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -30,6 +30,15 @@
+ #define DEBUGP(fmt, a...)
+ #endif
+ 
++/*
++ * If the arch already sets boot_command_line, we need do nothing. 
++ * This is not in init/main.c because David Howells reports that on FRV
++ * gcc 4.1.2 will inline empty functions, ignoring noinline and weak.
++ */
++void __init __weak arch_get_boot_command_line(void)
++{
++}
++
+ static inline char dash2underscore(char c)
+ {
+ 	if (c == '-')
 
-        rcu_read_lock();
-        if (!root_mem->use_hierarchy) {
-                spin_lock(&root_mem->reclaim_param_lock);
-                root_mem->scan_age++;
-                spin_unlock(&root_mem->reclaim_param_lock);
-                css_get(&root_mem->css);
-                ret = root_mem;
-        }
-
-        while (!ret) {
-                /* ID:0 is not used by cgroup-id */
-                nextid = root_mem->last_scanned_child + 1;
-                cgroup = cgroup_get_next(nextid, rootid, depth, &found);
-                if (cgroup) {
-                        spin_lock(&root_mem->reclaim_param_lock);
-                        root_mem->last_scanned_child = found;
-                        spin_unlock(&root_mem->reclaim_param_lock);
-                        ret = mem_cgroup_from_cont(cgroup);
-                        if (!css_tryget(&ret->css))
-                                ret = NULL;
-                } else {
-                        spin_lock(&root_mem->reclaim_param_lock);
-                        root_mem->scan_age++;
-                        root_mem->last_scanned_child = 0;
-                        spin_unlock(&root_mem->reclaim_param_lock);
-                }
-        }
-        rcu_read_unlock();
-        return ret;
-}
-
-/*
- * root_mem is the original ancestor that we've been reclaim from.
- * root_mem cannot be freed while walking because there are children.
- */
-static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
-                                                gfp_t gfp_mask, bool noswap)
-{
-        struct mem_cgroup *victim;
-        unsigned long start_age;
-        int ret = 0;
-        int total = 0;
-
-        start_age = root_mem->scan_age;
-        /* allows visit twice (under this memcg, ->scan_age is shared.) */
-        while (time_after((start_age + 2UL), root_mem->scan_age)) {
-                victim = mem_cgroup_select_victim(root_mem);
-                ret = try_to_free_mem_cgroup_pages(victim,
-                                gfp_mask, noswap, get_swappiness(victim));
-                css_put(&victim->css);
-                if (mem_cgroup_check_under_limit(root_mem))
-                        return 1;
-                total += ret;
-        }
-
-        ret = total;
-        if (mem_cgroup_check_under_limit(root_mem))
-                ret = 1;
-
-        return ret;
-}
-==
-This can be reused for soft-limit or something fancy featrues.
-
-
-Regards,
--Kame
 
