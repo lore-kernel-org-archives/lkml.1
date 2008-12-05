@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYLEAhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbYLEAiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755925AbYLEAhu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 19:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbYLEAhl
+	id S1753094AbYLEAiM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 19:38:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYLEAhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 19:37:41 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:47403 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbYLEAhk (ORCPT
+	Thu, 4 Dec 2008 19:37:42 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46812
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751953AbYLEAhk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Dec 2008 19:37:40 -0500
-Date: Fri, 5 Dec 2008 01:48:49 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, Alasdair G Kergon <agk@redhat.com>,
-       Andi Kleen <andi-suse@firstfloor.org>, Milan Broz <mbroz@redhat.com>
-Subject: Re: Device loses barrier support (was: Fixed patch for simple barriers.)
-Message-ID: <20081205004849.GX6703@one.firstfloor.org>
-References: <20081204100050.GN6703@one.firstfloor.org> <Pine.LNX.4.64.0812040836480.6118@hs20-bc2-1.build.redhat.com> <20081204142015.GQ6703@one.firstfloor.org> <Pine.LNX.4.64.0812040913510.6118@hs20-bc2-1.build.redhat.com> <20081204145810.GR6703@one.firstfloor.org> <Pine.LNX.4.64.0812041139200.2434@hs20-bc2-1.build.redhat.com> <20081204174838.GS6703@one.firstfloor.org> <Pine.LNX.4.64.0812041401210.23079@hs20-bc2-1.build.redhat.com> <20081204221551.GV6703@one.firstfloor.org> <Pine.LNX.4.64.0812041756550.29638@hs20-bc2-1.build.redhat.com>
+Date: Thu, 04 Dec 2008 16:37:41 -0800 (PST)
+Message-Id: <20081204.163741.48585912.davem@davemloft.net>
+To: paulus@samba.org
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       eranian@googlemail.com, dada1@cosmosbay.com, robert.richter@amd.com,
+       arjan@infradead.org, hpa@zytor.com, a.p.zijlstra@chello.nl,
+       rostedt@goodmis.org
+Subject: Re: [patch 2/3] performance counters: documentation
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18744.30427.440468.829807@cargo.ozlabs.ibm.com>
+References: <20081204225345.654705757@linutronix.de>
+	<20081204230228.557959174@linutronix.de>
+	<18744.30427.440468.829807@cargo.ozlabs.ibm.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812041756550.29638@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And if barriers fail at random points, the user can't turn on disk cache 
-> anyway (he would get data corruption if barrier write failed and hardware 
+From: Paul Mackerras <paulus@samba.org>
+Date: Fri, 5 Dec 2008 11:33:31 +1100
 
-I think we already established earlier in the thread that there is no disk
-corruption
+> This is going to be a huge problem, at least on powerpc, because it
+> means that the kernel will have to know which events can be counted on
+> which counters and what values need to be put in the control registers
+> to select them.
 
-> > > I'm wondering, where in fsync() does Linux wait for hardware disk cache to 
-> > > be flushed? Isn't there a bug that fsync() will return before the cache is 
-> > > flushed? I couldn't really find it. The last thing do_fsync calls is 
-> > > filemap_fdatawait and it doesn't do cache flush (blkdev_issue_flush).
-> > 
-> > At least in fsync() on journaling fs the metadata update should push it.
-> > 
-> > -Andi
-> 
-> And what about fdatasync()?
+Sparc64 is the same.
 
-I don't know. The surest way to find out is to instrument it and try.
+> The situation will be even worse with POWER5 and POWER6, where the
+> event selection logic is very complex, with multiple layers of
+> multiplexers.  I really really don't want the kernel to have to know
+> about all that.
 
--Andi
--- 
-ak@linux.intel.com
+Niagara2 has deep multiplexing and sub-event masking too.
+
+I really appreciated how perfmon kept all of those details
+in userspace.
