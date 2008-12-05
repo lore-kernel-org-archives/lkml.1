@@ -1,73 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbYLENW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757787AbYLENYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757332AbYLENW5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 08:22:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYLENWt
+	id S1757787AbYLENYU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 08:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYLENYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 08:22:49 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37892 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751543AbYLENWt (ORCPT
+	Fri, 5 Dec 2008 08:24:11 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:39437 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751543AbYLENYJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 08:22:49 -0500
-Message-ID: <56250.10.75.179.61.1228483365.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <20081205212304.f7018ea1.nishimura@mxp.nes.nec.co.jp>
-References: <20081205212208.31d904e0.nishimura@mxp.nes.nec.co.jp>
-    <20081205212304.f7018ea1.nishimura@mxp.nes.nec.co.jp>
-Date: Fri, 5 Dec 2008 22:22:45 +0900 (JST)
-Subject: Re: [RFC][PATCH -mmotm 1/4] memcg: don't trigger oom at page 
-     migration
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
-Cc: "LKML" <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Paul Menage" <menage@google.com>, nishimura@mxp.nes.nec.co.jp
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Fri, 5 Dec 2008 08:24:09 -0500
+Date: Fri, 5 Dec 2008 13:24:12 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: David Howells <dhowells@redhat.com>
+cc: torvalds@osdl.org, akpm@linux-foundation.org, bfields@fieldses.org,
+       hch@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] EXPORTFS: Don't return NULL from fh_to_dentry()/fh_to_parent()
+In-Reply-To: <20081205091255.26127.91011.stgit@warthog.procyon.org.uk>
+Message-ID: <Pine.LNX.4.64.0812051321540.10157@blonde.anvils>
+References: <20081205091255.26127.91011.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=us-ascii
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daisuke Nishimura said:
-> I think triggering OOM at mem_cgroup_prepare_migration would be just a bit
-> overkill.
-> Returning -ENOMEM would be enough for mem_cgroup_prepare_migration.
-> The caller would handle the case anyway.
->
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Fri, 5 Dec 2008, David Howells wrote:
 
+> Returning NULL from fh_to_dentry() and fh_to_parent() is not permitted, so
+> return -ESTALE instead.  exportfs_decode_fh() does not check for NULL, but
+> will try to dereference it as IS_ERR() does not check for it.
+> 
+> The generic_fh_to_dentry() and generic_fh_to_parent() functions also no longer
+> return NULL, but return -ESTALE instead.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Acked-by: J. Bruce Fields <bfields@citi.umich.edu>
+
+This patch looks like it ought to be including mm/shmem.c too?
+Which would you prefer, I send a separate patch, or you update this one?
+
+Hugh
 
 > ---
->  mm/memcontrol.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 4dbce1d..50ee1be 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -1330,7 +1330,7 @@ int mem_cgroup_prepare_migration(struct page *page,
-> struct mem_cgroup **ptr)
->  	unlock_page_cgroup(pc);
->
->  	if (mem) {
-> -		ret = mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem);
-> +		ret = __mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem, false);
->  		css_put(&mem->css);
+> 
+>  fs/fat/inode.c                |    2 +-
+>  fs/fuse/inode.c               |    4 ++--
+>  fs/gfs2/ops_export.c          |    4 ++--
+>  fs/isofs/export.c             |    4 ++--
+>  fs/libfs.c                    |    4 ++--
+>  fs/ocfs2/export.c             |    4 ++--
+>  fs/udf/namei.c                |    4 ++--
+>  fs/xfs/linux-2.6/xfs_export.c |    2 +-
+>  8 files changed, 14 insertions(+), 14 deletions(-)
+> 
+> 
+> diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+> index d937aaf..cac84f2 100644
+> --- a/fs/fat/inode.c
+> +++ b/fs/fat/inode.c
+> @@ -657,7 +657,7 @@ static struct dentry *fat_fh_to_dentry(struct super_block *sb,
+>  	u32 *fh = fid->raw;
+>  
+>  	if (fh_len < 5 || fh_type != 3)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	inode = ilookup(sb, fh[0]);
+>  	if (!inode || inode->i_generation != fh[1]) {
+> diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
+> index 2e99f34..0eb8990 100644
+> --- a/fs/fuse/inode.c
+> +++ b/fs/fuse/inode.c
+> @@ -653,7 +653,7 @@ static struct dentry *fuse_fh_to_dentry(struct super_block *sb,
+>  	struct fuse_inode_handle handle;
+>  
+>  	if ((fh_type != 0x81 && fh_type != 0x82) || fh_len < 3)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	handle.nodeid = (u64) fid->raw[0] << 32;
+>  	handle.nodeid |= (u64) fid->raw[1];
+> @@ -667,7 +667,7 @@ static struct dentry *fuse_fh_to_parent(struct super_block *sb,
+>  	struct fuse_inode_handle parent;
+>  
+>  	if (fh_type != 0x82 || fh_len < 6)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	parent.nodeid = (u64) fid->raw[3] << 32;
+>  	parent.nodeid |= (u64) fid->raw[4];
+> diff --git a/fs/gfs2/ops_export.c b/fs/gfs2/ops_export.c
+> index bbb8c36..2864873 100644
+> --- a/fs/gfs2/ops_export.c
+> +++ b/fs/gfs2/ops_export.c
+> @@ -254,7 +254,7 @@ static struct dentry *gfs2_fh_to_dentry(struct super_block *sb, struct fid *fid,
+>  		this.no_addr |= be32_to_cpu(fh[3]);
+>  		return gfs2_get_dentry(sb, &this);
+>  	default:
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
 >  	}
->  	*ptr = mem;
+>  }
+>  
+> @@ -273,7 +273,7 @@ static struct dentry *gfs2_fh_to_parent(struct super_block *sb, struct fid *fid,
+>  		parent.no_addr |= be32_to_cpu(fh[7]);
+>  		return gfs2_get_dentry(sb, &parent);
+>  	default:
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  	}
+>  }
+>  
+> diff --git a/fs/isofs/export.c b/fs/isofs/export.c
+> index e81a305..1b4ee23 100644
+> --- a/fs/isofs/export.c
+> +++ b/fs/isofs/export.c
+> @@ -164,7 +164,7 @@ static struct dentry *isofs_fh_to_dentry(struct super_block *sb,
+>  	struct isofs_fid *ifid = (struct isofs_fid *)fid;
+>  
+>  	if (fh_len < 3 || fh_type > 2)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	return isofs_export_iget(sb, ifid->block, ifid->offset,
+>  			ifid->generation);
+> @@ -176,7 +176,7 @@ static struct dentry *isofs_fh_to_parent(struct super_block *sb,
+>  	struct isofs_fid *ifid = (struct isofs_fid *)fid;
+>  
+>  	if (fh_type != 2)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	return isofs_export_iget(sb,
+>  			fh_len > 2 ? ifid->parent_block : 0,
+> diff --git a/fs/libfs.c b/fs/libfs.c
+> index e960a83..4fe5b5b 100644
+> --- a/fs/libfs.c
+> +++ b/fs/libfs.c
+> @@ -751,7 +751,7 @@ struct dentry *generic_fh_to_dentry(struct super_block *sb, struct fid *fid,
+>  	struct inode *inode = NULL;
+>  
+>  	if (fh_len < 2)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	switch (fh_type) {
+>  	case FILEID_INO32_GEN:
+> @@ -784,7 +784,7 @@ struct dentry *generic_fh_to_parent(struct super_block *sb, struct fid *fid,
+>  	struct inode *inode = NULL;
+>  
+>  	if (fh_len <= 2)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	switch (fh_type) {
+>  	case FILEID_INO32_GEN_PARENT:
+> diff --git a/fs/ocfs2/export.c b/fs/ocfs2/export.c
+> index 2f27b33..0f1c80f 100644
+> --- a/fs/ocfs2/export.c
+> +++ b/fs/ocfs2/export.c
+> @@ -182,7 +182,7 @@ static struct dentry *ocfs2_fh_to_dentry(struct super_block *sb,
+>  	struct ocfs2_inode_handle handle;
+>  
+>  	if (fh_len < 3 || fh_type > 2)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	handle.ih_blkno = (u64)le32_to_cpu(fid->raw[0]) << 32;
+>  	handle.ih_blkno |= (u64)le32_to_cpu(fid->raw[1]);
+> @@ -196,7 +196,7 @@ static struct dentry *ocfs2_fh_to_parent(struct super_block *sb,
+>  	struct ocfs2_inode_handle parent;
+>  
+>  	if (fh_type != 2 || fh_len < 6)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	parent.ih_blkno = (u64)le32_to_cpu(fid->raw[3]) << 32;
+>  	parent.ih_blkno |= (u64)le32_to_cpu(fid->raw[4]);
+> diff --git a/fs/udf/namei.c b/fs/udf/namei.c
+> index f84bfaa..e1a1c16 100644
+> --- a/fs/udf/namei.c
+> +++ b/fs/udf/namei.c
+> @@ -1297,7 +1297,7 @@ static struct dentry *udf_fh_to_dentry(struct super_block *sb,
+>  	if ((fh_len != 3 && fh_len != 5) ||
+>  	    (fh_type != FILEID_UDF_WITH_PARENT &&
+>  	     fh_type != FILEID_UDF_WITHOUT_PARENT))
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	return udf_nfs_get_inode(sb, fid->udf.block, fid->udf.partref,
+>  			fid->udf.generation);
+> @@ -1307,7 +1307,7 @@ static struct dentry *udf_fh_to_parent(struct super_block *sb,
+>  				       struct fid *fid, int fh_len, int fh_type)
+>  {
+>  	if (fh_len != 5 || fh_type != FILEID_UDF_WITH_PARENT)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	return udf_nfs_get_inode(sb, fid->udf.parent_block,
+>  				 fid->udf.parent_partref,
+> diff --git a/fs/xfs/linux-2.6/xfs_export.c b/fs/xfs/linux-2.6/xfs_export.c
+> index 7f7abec..f9a51c4 100644
+> --- a/fs/xfs/linux-2.6/xfs_export.c
+> +++ b/fs/xfs/linux-2.6/xfs_export.c
+> @@ -150,7 +150,7 @@ xfs_fs_fh_to_dentry(struct super_block *sb, struct fid *fid,
+>  	struct inode		*inode = NULL;
+>  
+>  	if (fh_len < xfs_fileid_length(fileid_type))
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	switch (fileid_type) {
+>  	case FILEID_INO32_GEN_PARENT:
+> 
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
+> 
