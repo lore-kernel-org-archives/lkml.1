@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbYLERcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbYLEReb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756166AbYLERcT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 12:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYLERcJ
+	id S1756389AbYLEReb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 12:34:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYLEReY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 12:32:09 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:11110 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382AbYLERcG (ORCPT
+	Fri, 5 Dec 2008 12:34:24 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:38667 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751846AbYLEReX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 12:32:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=kWU+oTF2vPFSc8BmwUihtaHxCjUwnUC4+LYFh6kNGysbsg64kBi+9+Q1b27NRhjIFs
-         dX3xgKdO3zIOOuD7Zz4OFAlZnSjgaSg9RoyTYUTqhltPgOExsihcqFQV8pSmHbEu64li
-         ZXTgqbKTb75+JgNxltfi1FIkFsqXXBYmc/q58=
-Message-ID: <119aab440812050932h9173a4bm79273b7ea8fe9a3a@mail.gmail.com>
-Date: Fri, 5 Dec 2008 12:32:04 -0500
-From: "Carlos O'Donell" <carlos@systemhalted.org>
-To: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: IO space memcpy support for userspace.
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       libc-alpha@sources.redhat.com
-In-Reply-To: <21d7e9970812041940h29994c60w3e7bcf20b96efe04@mail.gmail.com>
+	Fri, 5 Dec 2008 12:34:23 -0500
+Message-ID: <493965F8.6060407@cosmosbay.com>
+Date: Fri, 05 Dec 2008 18:33:44 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux kernel <linux-kernel@vger.kernel.org>
+Subject: [PACH] smp: uninline num_online_cpus() & num_possible_cpus()
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <21d7e9970812041940h29994c60w3e7bcf20b96efe04@mail.gmail.com>
-X-Google-Sender-Auth: cd1df5cae69b2c8f
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 05 Dec 2008 18:33:45 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 4, 2008 at 10:40 PM, Dave Airlie <airlied@gmail.com> wrote:
-> I'm sure this has come up before and I'm sure I'll either wish I never
-> posted this or someone will show me the crisp corpse of the last guy
-> who suggested it.
+num_online_cpus() and num_possible_cpus() are not performance
+critical and are quite large.
 
-Do you plan to prevent the compiler from issuing the same sorts of
-instructions that might appear in an optimized memcpy?
+Unlining them shrinks kernel text size by 7523 bytes on x86,
+if NR_CPUS>32
 
-Isn't it dangerous to have memory that doesn't behave like normal
-memory, and yet try to treat it like normal memory?
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+---
+ include/linux/cpumask.h |    4 ++--
+ init/main.c             |   12 ++++++++++++
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
-This mismatch of abstractions is a warning that must not be ignored.
-
-IMHO you need a thin library with a new API (adding support for HAL
-would be a clever way to check for PCI devices and perhaps even
-mappings).
-
-Cheers,
-Carlos.
+diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
+index 21e1dd4..f9b2b51 100644
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -507,8 +507,8 @@ extern cpumask_t cpu_present_map;
+ extern cpumask_t cpu_active_map;
+ 
+ #if NR_CPUS > 1
+-#define num_online_cpus()	cpus_weight_nr(cpu_online_map)
+-#define num_possible_cpus()	cpus_weight_nr(cpu_possible_map)
++extern int num_online_cpus(void);
++extern int num_possible_cpus(void);
+ #define num_present_cpus()	cpus_weight_nr(cpu_present_map)
+ #define cpu_online(cpu)		cpu_isset((cpu), cpu_online_map)
+ #define cpu_possible(cpu)	cpu_isset((cpu), cpu_possible_map)
+diff --git a/init/main.c b/init/main.c
+index 7e117a2..a1a3e55 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -376,6 +376,18 @@ EXPORT_SYMBOL(cpu_mask_all);
+ int nr_cpu_ids __read_mostly = NR_CPUS;
+ EXPORT_SYMBOL(nr_cpu_ids);
+ 
++int num_online_cpus(void)
++{
++	return cpus_weight_nr(cpu_online_map);
++}
++EXPORT_SYMBOL(num_online_cpus);
++
++int num_possible_cpus(void)
++{
++	return cpus_weight_nr(cpu_possible_map);
++}
++EXPORT_SYMBOL(num_possible_cpus);
++
+ /* An arch may set nr_cpu_ids earlier if needed, so this would be redundant */
+ static void __init setup_nr_cpu_ids(void)
+ {
