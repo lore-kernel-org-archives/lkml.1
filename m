@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758162AbYLENIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbYLENRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758162AbYLENIo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 08:08:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYLENIg
+	id S1757265AbYLENRm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 08:17:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYLENRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 08:08:36 -0500
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:36560 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbYLENIf (ORCPT
+	Fri, 5 Dec 2008 08:17:31 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:5689 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554AbYLENRa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 08:08:35 -0500
-Subject: Re: [PATCH] memory hotplug: run lru_add_drain_all() on each cpu
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Reply-To: gerald.schaefer@de.ibm.com
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com, npiggin@suse.de
-In-Reply-To: <1228342567.13111.11.camel@nimitz>
-References: <1228339524.6598.11.camel@t60p>
-	 <1228342567.13111.11.camel@nimitz>
-Content-Type: text/plain
-Date: Fri, 05 Dec 2008 14:08:20 +0100
-Message-Id: <1228482500.8392.15.camel@t60p>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 5 Dec 2008 08:17:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=kiWyCokRR79bVIcbnf3J2HIg9mFLh0KSPPtgB+vbbuRQxn/ZTpLKywUV24G6jfchPZ
+         gF3IsfnvioYclIB2KaDMM34CyNug6Zcq7m5NW3Z46frZ+rvFpXvkjPB43lpr5TXGOnV2
+         bm8mDq9szT1VAy3nYzJl3TjuaU8U164ZfUgIk=
+Message-ID: <493929D2.4070900@gmail.com>
+Date: Fri, 05 Dec 2008 14:17:06 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Michael Tokarev <mjt@tls.msk.ru>
+CC: Mark McLoughlin <markmc@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>,
+       Anthony Liguori <aliguori@us.ibm.com>
+Subject: Re: [PATCH] virtio: make PCI devices take a virtio_pci module ref
+References: <1228394671.3732.77.camel@blaa> <49385DB7.4060306@gmail.com> <4938EE0B.8020501@msgid.tls.msk.ru>
+In-Reply-To: <4938EE0B.8020501@msgid.tls.msk.ru>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-03 at 14:16 -0800, Dave Hansen wrote:
-> I'm a bit confused why this is.  Is this because the LRUs are per-zone
-> and we expected !CONFIG_NUMA systems to only have LRUs sitting on the
-> same (only) node as the current CPU?
+Michael Tokarev napsal(a):
+> Jiri Slaby wrote:
+>> On 12/04/2008 01:44 PM, Mark McLoughlin wrote:
+>>> Nothing takes a ref on virtio_pci, so even if you have
+>>> devices in use, rmmod will attempt to unload the module.
+>> It unbinds the device properly as any other driver. So what's the problem here?
 > 
-> This doesn't make any sense, though.  The pagevecs that
-> drain_cpu_pagevecs() actually empties out are per-cpu.
-
-Right, the pagevecs are per-cpu, independent from any CONFIG_NUMA
-settings, and this is exactly why I would expect that lru_add_drain_all()
-works on all cpus, as opposed to lru_add_drain() which works only on
-the current cpu.
-
-> This doesn't seem right to me.  CONFIG_MEMORY_HOTREMOVE doesn't change
-> the layout of the LRUs, unlike NUMA or UNEVICTABLE_LRU.  So, I think
-> this bug is more due to the hotremove code mis-expecting behavior out of
-> lru_add_drain_all().
+> Here's what we get when rmmod'ing (a zero-refcounted but
+> in use) virtio_pci (I did it by a chance, cut-n-pasted
+> the wrong line):
 > 
-> Why does this not affect the other lru_add_drain_all() users?
+> WARNING: at drivers/base/core.c:122 device_release+0x5f/0x70()
+> Device 'virtio1' does not have a release() function, it is broken and must be fixed.
+> Modules linked in: ext3 jbd mbcache acpiphp dock pci_hotplug virtio_net virtio_blk virtio_pci(-) virtio_ring virtio
+> 
+> Pid: 361, comm: rmmod Tainted: G S        2.6.27-i686smp #2.6.27.7
+>  [<c012b81f>] warn_slowpath+0x6f/0xa0
+>  [<c0110030>] prepare_set+0x30/0x80
+>  [<c012067e>] __wake_up+0x3e/0x60
+>  [<c01d1d25>] release_sysfs_dirent+0x45/0xb0
+>  ...
 
-Good question, there are only a few other users and most of them were
-added just recently with the unevictable lru patches. The only exception
-is migrate_prep(), but this is only called from sys_move_pages(), which
-is not implemented w/o CONFIG_NUMA afaik.
+So why don't you fix the root cause and add such a crap into the probe
+function (not even counting probe can fail later)?
 
-As explained above, the per-cpu pagevec layout should be independent
-from NUMA or UNEVICTABLE_LRU, so I guess the right thing to do here
-is completely remove the #ifdef as in the patch from Kosaki Motohiro
-(or at least replace it with a CONFIG_SMP as suggested by Kamezawa
-Hiroyuki).
-
-Thanks,
-Gerald
-
-
+Fix the virtio bus instead.
