@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbYLESc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYLESfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755440AbYLESc2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 13:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbYLEScR
+	id S1756516AbYLESfY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 13:35:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYLESfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 13:32:17 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:61511 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756346AbYLEScQ (ORCPT
+	Fri, 5 Dec 2008 13:35:09 -0500
+Received: from web30107.mail.mud.yahoo.com ([209.191.69.39]:38658 "HELO
+	web30107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750991AbYLESfI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 13:32:16 -0500
-Message-ID: <ac3eb2510812051032g6b5ea866q30f097d765854196@mail.gmail.com>
-Date: Fri, 5 Dec 2008 19:32:15 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Runaway loop with the current git.
-Cc: "Evgeniy Polyakov" <zbr@ioremap.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <20081205181610.518ecd13@lxorguk.ukuu.org.uk>
+	Fri, 5 Dec 2008 13:35:08 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Dec 2008 13:35:07 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=ZRa2ut1GADCoq6l+R2zFHKMqjmqw4GEo5nXUWe3AKwHwZaCOa9UOQ2zrObdJ/zjCI9IBmMUXbPjTJ3xAXDvoi7EU+gUo1zR3ctbGT2XcxAcHcj2uah3vBaYY6xRaV2YLzyRHazNHNjs/ZmTrfCNLHAexkxvQp1hbuA8rUXlGTdU=;
+X-YMail-OSG: nqqT9xwVM1mVzaWOAaAH_g0vU5QzuvGcmIfc30bITW3Dbt5IXGjosict.3jfaVavGuQFYVTCW1O7UWP.TQOsWvggaHbcsPlUuJC9IgIq6DukkfITvyPnHv8wbgolJooK0GBdbZJ.Q8zqA.FNt7Nsu5wQ_0dXdBXkrhUq4_w-
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Fri, 5 Dec 2008 10:28:27 -0800 (PST)
+From: Parav Pandit <paravpandit@yahoo.com>
+Reply-To: paravpandit@yahoo.com
+Subject: mechanism to syncronise device access from user and kernel
+To: Linux kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081205180350.GA25236@ioremap.net>
-	 <20081205181610.518ecd13@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <377462.57009.qm@web30107.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 5, 2008 at 19:16, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> On Fri, 5 Dec 2008 21:03:50 +0300
-> Evgeniy Polyakov <zbr@ioremap.net> wrote:
+Hi,
 
->> I've built current (aaad07763) git tree with config, which worked ok
->> with 2.6.27 (pressed enter several times when 'make oldconfig' asked)
->> and now system fails to boot.
->>
->> Attached screen dump and config.
->>
->> I'm not subscribed, please add to copy.
->
-> Your modprobe is for some reason triggering a load of /dev/ttyS* (ie the
-> serial 8250 stuff) from within the module loading scripts. You'll need to
-> debug the user space and work out why the loop is happening then it
-> should be fairly easy to fix.
+I have a device whose registers are accessed by driver as well as user space application via mmap() area.
 
-Why do you think it's serial? 5-1 looks more like /dev/console.
+How to synchronize the access (avoid race condition) between user space driver and kernel mode driver, in single CPU and multi-CPU systems?
 
-This also seems to happen only in initramfs for people who see this.
-People say that compiling-in some modules (unfortunately they don't
-remember which) makes it work again.
+Regards,
+Parav Pandit
 
-Can this be some init order problem, that the /dev/console is not
-initialized but, we fork a process which tries to access it?
 
-Kay
+
+      
