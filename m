@@ -1,38 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbYLEKsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYLEKzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbYLEKsU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 05:48:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYLEKsL
+	id S1753882AbYLEKzg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 05:55:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYLEKz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 05:48:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59359 "EHLO mx2.redhat.com"
+	Fri, 5 Dec 2008 05:55:26 -0500
+Received: from ozlabs.org ([203.10.76.45]:38437 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751748AbYLEKsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 05:48:10 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081205030806.32225.66382.stgit@marcab.local.tull.net>
-References: <20081205030806.32225.66382.stgit@marcab.local.tull.net>
-To: Nick Andrew <nick@nick-andrew.net>
-Cc: dhowells@redhat.com, David Woodhouse <David.Woodhouse@intel.com>,
-       David Woodhouse <dwmw2@infradead.org>, James Morris <jmorris@namei.org>,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix incorrect use of loose in fs.c
-Date: Fri, 05 Dec 2008 10:47:51 +0000
-Message-ID: <16075.1228474071@redhat.com>
+	id S1751252AbYLEKzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 05:55:25 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18745.2198.389098.296393@cargo.ozlabs.ibm.com>
+Date: Fri, 5 Dec 2008 21:55:18 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch 1/3] performance counters: core code
+In-Reply-To: <20081204230228.470613892@linutronix.de>
+References: <20081204225345.654705757@linutronix.de>
+	<20081204230228.470613892@linutronix.de>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Andrew <nick@nick-andrew.net> wrote:
+Thomas Gleixner writes:
 
-> Fix incorrect use of loose in fs.c
-> 
-> It should be 'lose', not 'loose'. Also fix a spelling error.
-> 
-> Signed-off-by: Nick Andrew <nick@nick-andrew.net>
+> +static void
+> +perf_install_in_context(struct perf_counter_context *ctx,
+> +			struct perf_counter *counter,
+> +			int cpu)
+> +{
+> +	struct task_struct *task = ctx->task;
+> +
 
-Acked-by: David Howells <dhowells@redhat.com>
+[...]
+
+> +	if (task) {
+> +		task_oncpu_function_call(task, __perf_install_in_context,
+> +					 counter);
+> +	} else {
+> +		smp_call_function_single(cpu, __perf_install_in_context,
+> +					 counter, 1);
+> +	}
+
+What happens if we send an IPI to the cpu where the task is running,
+but by the time the IPI arrives, the task has been migrated to another
+cpu and is now running there?  Do you chase after it and send another
+IPI to its new cpu, or is there some reason why it can't migrate?
+If it's the former, where is that code?  I haven't seen it so far (at
+least, task_oncpu_function_call doesn't seem to do it).
+
+Paul.
