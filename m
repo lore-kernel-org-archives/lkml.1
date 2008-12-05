@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbYLEGzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYLEHBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755518AbYLEGzf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 01:55:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYLEGz1
+	id S1755309AbYLEHBQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 02:01:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYLEHA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 01:55:27 -0500
-Received: from cpsmtpo-eml06.KPNXCHANGE.COM ([213.75.38.155]:50938 "EHLO
-	cpsmtpo-eml06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751936AbYLEGz1 (ORCPT
+	Fri, 5 Dec 2008 02:00:59 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45524 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751888AbYLEHA6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 01:55:27 -0500
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Fri, 5 Dec 2008 07:55:20 +0100
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812041459120.3543@nehalem.linux-foundation.org> <200812050045.40928.rjw@sisk.pl>
-In-Reply-To: <200812050045.40928.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 5 Dec 2008 02:00:58 -0500
+Date: Thu, 4 Dec 2008 23:02:06 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
+Message-ID: <20081204230206.6e083d51@infradead.org>
+In-Reply-To: <20081205063131.GB12785@elte.hu>
+References: <20081204225345.654705757@linutronix.de>
+	<18744.29747.728320.652642@cargo.ozlabs.ibm.com>
+	<20081205063131.GB12785@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812050755.22183.elendil@planet.nl>
-X-OriginalArrivalTime: 05 Dec 2008 06:55:24.0474 (UTC) FILETIME=[72A4E9A0:01C956A6]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 December 2008, Rafael J. Wysocki wrote:
-> On Friday, 5 of December 2008, Linus Torvalds wrote:
-> > Oh, btw, I thought your and Frans' laptops were identical?
->
-> No, they are from different vendors. :-)  Mine is a Toshiba one and the
-> Frans' one is from HP.
+On Fri, 5 Dec 2008 07:31:31 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Also, the CardBus bridge and what's behind them are quite different
-(and we use different firewire stacks).
+> Btw., i'm curious, why would we want to do that? It skews the results
+> if the task continues executing and counters stop. To get the highest 
+> quality profiling output the counters should follow the true state of
+> the task that is profiled - and events should be passed to the
+> monitoring task asynchronously. The _events_ can contain precise
+> coupled information 
+> - but the counters should continue.
 
-Mine is:
-02:06.0 CardBus bridge [0607]: Ricoh Co Ltd RL5c476 II [1180:0476] (rev ba)
-        Kernel driver in use: yenta_cardbus
-        Kernel modules: yenta_socket
-02:06.1 FireWire (IEEE 1394) [0c00]: Ricoh Co Ltd R5C832 IEEE 1394 Controller [1180:0832] (rev 04)
-        Kernel driver in use: ohci1394
-        Kernel modules: ohci1394
-02:06.2 SD Host controller [0805]: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter [1180:0822] (rev 21)
-        Kernel driver in use: sdhci-pci
-        Kernel modules: sdhci-pci
-02:06.3 System peripheral [0880]: Ricoh Co Ltd R5C843 MMC Host Controller [1180:0843] (rev ff)
-        Kernel driver in use: ricoh-mmc
-        Kernel modules: ricoh_mmc
-(The ricoh_mmc module disables the last one.)
+btw stopping the task on counter overflow is an issue for things that
+want to self profile, like JITs
 
-While Rafael has:
-03:0b.0 CardBus bridge: Texas Instruments PCIxx12 Cardbus Controller
-	Kernel driver in use: yenta_cardbus
-	Kernel modules: yenta_socket
-03:0b.1 FireWire (IEEE 1394): Texas Instruments PCIxx12 OHCI Compliant IEEE 1394 Host Controller (prog-if 10 [OHCI])
-	Kernel driver in use: firewire_ohci
-	Kernel modules: firewire-ohci
-03:0b.3 SD Host controller: Texas Instruments PCIxx12 SDA Standard Compliant SD Host Controller (prog-if 01)
-	Kernel driver in use: sdhci-pci
-	Kernel modules: sdhci-pci
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
