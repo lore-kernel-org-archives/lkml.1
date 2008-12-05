@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756955AbYLETei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbYLETfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756955AbYLETei (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 14:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbYLETeb
+	id S1757388AbYLETfa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 14:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYLETfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 14:34:31 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37290 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752641AbYLETea (ORCPT
+	Fri, 5 Dec 2008 14:35:22 -0500
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:38554 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752641AbYLETfV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 14:34:30 -0500
-Date: Fri, 5 Dec 2008 19:34:32 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
-Subject: Re: Runaway loop with the current git.
-Message-ID: <20081205193432.290a6f1a@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081205192755.GA27712@ioremap.net>
-References: <20081205180350.GA25236@ioremap.net>
-	<20081205181610.518ecd13@lxorguk.ukuu.org.uk>
-	<ac3eb2510812051032g6b5ea866q30f097d765854196@mail.gmail.com>
-	<20081205192755.GA27712@ioremap.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Dec 2008 14:35:21 -0500
+X-Greylist: delayed 570 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Dec 2008 14:35:21 EST
+X-IronPort-AV: E=Sophos;i="4.33,722,1220227200"; 
+   d="scan'208";a="26106827"
+From: Roland Dreier <rdreier@cisco.com>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       "OF-EWG" <ewg@lists.openfabrics.org>,
+       LKML <linux-kernel@vger.kernel.org>, Roland Dreier <rolandd@cisco.com>,
+       raisch@de.ibm.com, hnguyen@de.ibm.com, fenkes@de.ibm.com,
+       alexschm@de.ibm.com, stefan.roscher@de.ibm.com
+Subject: Re: [PATCH] IB/ehca: replace modulus operations in flush error completion path
+References: <200812021631.58810.ossrosch@linux.vnet.ibm.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 05 Dec 2008 11:25:49 -0800
+In-Reply-To: <200812021631.58810.ossrosch@linux.vnet.ibm.com> (Stefan
+	Roscher's message of "Tue, 2 Dec 2008 16:31:56 +0100")
+Message-ID: <adaabba77b6.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 05 Dec 2008 19:25:49.0702 (UTC) FILETIME=[47C57A60:01C9570F]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I can not run bisect, since reboot requires vnc and I'm far from fast
-> channel. Build of the fresh tree with existing config takes almost
-> one hour, but it should not be a major problem.
-> 
-> I can do bisection after the weekend, but can test some changes before
-> machine froze with unsuccessful patch.
-
-I really have no idea what you are seeing so short of a bisect I've
-nothing to suggest.
+thanks, applied
