@@ -1,211 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbYLEJNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752958AbYLEJaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756181AbYLEJNU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 04:13:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbYLEJNI
+	id S1752958AbYLEJaG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 04:30:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYLEJ3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 04:13:08 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44854 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750922AbYLEJNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 04:13:05 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] EXPORTFS: Don't return NULL from fh_to_dentry()/fh_to_parent()
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, bfields@fieldses.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org
-Date: Fri, 05 Dec 2008 09:12:56 +0000
-Message-ID: <20081205091255.26127.91011.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Fri, 5 Dec 2008 04:29:51 -0500
+Received: from 25.mail-out.ovh.net ([91.121.27.228]:36719 "HELO
+	25.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750773AbYLEJ3u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 04:29:50 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Dec 2008 04:29:49 EST
+To: Trilok Soni <soni.trilok@gmail.com>
+Subject: Re: [irda-users] [PATCH] OMAP IrDA driver
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Date: Fri, 05 Dec 2008 10:28:46 +0100
+From: <samuel@sortiz.org>
+X-Webmail-UserID: samuel@sortiz.org
+X-Originating-IP: 90.27.252.254
+Cc: linux-kernel@vger.kernel.org, irda-users@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org
+In-Reply-To: <5d5443650812042234y6301148at6658f4855500b105@mail.gmail.com>
+References: <5d5443650812042234y6301148at6658f4855500b105@mail.gmail.com>
+Message-ID: <ea9ea93a42eaf41cd9ee3ff11ad1a026@localhost>
+User-Agent: RoundCube Webmail/0.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+X-Ovh-Tracer-Id: 17517313700736444439
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Returning NULL from fh_to_dentry() and fh_to_parent() is not permitted, so
-return -ESTALE instead.  exportfs_decode_fh() does not check for NULL, but
-will try to dereference it as IS_ERR() does not check for it.
 
-The generic_fh_to_dentry() and generic_fh_to_parent() functions also no longer
-return NULL, but return -ESTALE instead.
+Hi,
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: J. Bruce Fields <bfields@citi.umich.edu>
----
+On Fri, 5 Dec 2008 12:04:29 +0530, "Trilok Soni" <soni.trilok@gmail.com>
+wrote:
+> This time adding LKML too.
+Could you please inline the patch so that we can have an easier review ?
 
- fs/fat/inode.c                |    2 +-
- fs/fuse/inode.c               |    4 ++--
- fs/gfs2/ops_export.c          |    4 ++--
- fs/isofs/export.c             |    4 ++--
- fs/libfs.c                    |    4 ++--
- fs/ocfs2/export.c             |    4 ++--
- fs/udf/namei.c                |    4 ++--
- fs/xfs/linux-2.6/xfs_export.c |    2 +-
- 8 files changed, 14 insertions(+), 14 deletions(-)
-
-
-diff --git a/fs/fat/inode.c b/fs/fat/inode.c
-index d937aaf..cac84f2 100644
---- a/fs/fat/inode.c
-+++ b/fs/fat/inode.c
-@@ -657,7 +657,7 @@ static struct dentry *fat_fh_to_dentry(struct super_block *sb,
- 	u32 *fh = fid->raw;
- 
- 	if (fh_len < 5 || fh_type != 3)
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	inode = ilookup(sb, fh[0]);
- 	if (!inode || inode->i_generation != fh[1]) {
-diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
-index 2e99f34..0eb8990 100644
---- a/fs/fuse/inode.c
-+++ b/fs/fuse/inode.c
-@@ -653,7 +653,7 @@ static struct dentry *fuse_fh_to_dentry(struct super_block *sb,
- 	struct fuse_inode_handle handle;
- 
- 	if ((fh_type != 0x81 && fh_type != 0x82) || fh_len < 3)
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	handle.nodeid = (u64) fid->raw[0] << 32;
- 	handle.nodeid |= (u64) fid->raw[1];
-@@ -667,7 +667,7 @@ static struct dentry *fuse_fh_to_parent(struct super_block *sb,
- 	struct fuse_inode_handle parent;
- 
- 	if (fh_type != 0x82 || fh_len < 6)
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	parent.nodeid = (u64) fid->raw[3] << 32;
- 	parent.nodeid |= (u64) fid->raw[4];
-diff --git a/fs/gfs2/ops_export.c b/fs/gfs2/ops_export.c
-index bbb8c36..2864873 100644
---- a/fs/gfs2/ops_export.c
-+++ b/fs/gfs2/ops_export.c
-@@ -254,7 +254,7 @@ static struct dentry *gfs2_fh_to_dentry(struct super_block *sb, struct fid *fid,
- 		this.no_addr |= be32_to_cpu(fh[3]);
- 		return gfs2_get_dentry(sb, &this);
- 	default:
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 	}
- }
- 
-@@ -273,7 +273,7 @@ static struct dentry *gfs2_fh_to_parent(struct super_block *sb, struct fid *fid,
- 		parent.no_addr |= be32_to_cpu(fh[7]);
- 		return gfs2_get_dentry(sb, &parent);
- 	default:
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 	}
- }
- 
-diff --git a/fs/isofs/export.c b/fs/isofs/export.c
-index e81a305..1b4ee23 100644
---- a/fs/isofs/export.c
-+++ b/fs/isofs/export.c
-@@ -164,7 +164,7 @@ static struct dentry *isofs_fh_to_dentry(struct super_block *sb,
- 	struct isofs_fid *ifid = (struct isofs_fid *)fid;
- 
- 	if (fh_len < 3 || fh_type > 2)
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	return isofs_export_iget(sb, ifid->block, ifid->offset,
- 			ifid->generation);
-@@ -176,7 +176,7 @@ static struct dentry *isofs_fh_to_parent(struct super_block *sb,
- 	struct isofs_fid *ifid = (struct isofs_fid *)fid;
- 
- 	if (fh_type != 2)
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	return isofs_export_iget(sb,
- 			fh_len > 2 ? ifid->parent_block : 0,
-diff --git a/fs/libfs.c b/fs/libfs.c
-index e960a83..4fe5b5b 100644
---- a/fs/libfs.c
-+++ b/fs/libfs.c
-@@ -751,7 +751,7 @@ struct dentry *generic_fh_to_dentry(struct super_block *sb, struct fid *fid,
- 	struct inode *inode = NULL;
- 
- 	if (fh_len < 2)
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	switch (fh_type) {
- 	case FILEID_INO32_GEN:
-@@ -784,7 +784,7 @@ struct dentry *generic_fh_to_parent(struct super_block *sb, struct fid *fid,
- 	struct inode *inode = NULL;
- 
- 	if (fh_len <= 2)
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	switch (fh_type) {
- 	case FILEID_INO32_GEN_PARENT:
-diff --git a/fs/ocfs2/export.c b/fs/ocfs2/export.c
-index 2f27b33..0f1c80f 100644
---- a/fs/ocfs2/export.c
-+++ b/fs/ocfs2/export.c
-@@ -182,7 +182,7 @@ static struct dentry *ocfs2_fh_to_dentry(struct super_block *sb,
- 	struct ocfs2_inode_handle handle;
- 
- 	if (fh_len < 3 || fh_type > 2)
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	handle.ih_blkno = (u64)le32_to_cpu(fid->raw[0]) << 32;
- 	handle.ih_blkno |= (u64)le32_to_cpu(fid->raw[1]);
-@@ -196,7 +196,7 @@ static struct dentry *ocfs2_fh_to_parent(struct super_block *sb,
- 	struct ocfs2_inode_handle parent;
- 
- 	if (fh_type != 2 || fh_len < 6)
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	parent.ih_blkno = (u64)le32_to_cpu(fid->raw[3]) << 32;
- 	parent.ih_blkno |= (u64)le32_to_cpu(fid->raw[4]);
-diff --git a/fs/udf/namei.c b/fs/udf/namei.c
-index f84bfaa..e1a1c16 100644
---- a/fs/udf/namei.c
-+++ b/fs/udf/namei.c
-@@ -1297,7 +1297,7 @@ static struct dentry *udf_fh_to_dentry(struct super_block *sb,
- 	if ((fh_len != 3 && fh_len != 5) ||
- 	    (fh_type != FILEID_UDF_WITH_PARENT &&
- 	     fh_type != FILEID_UDF_WITHOUT_PARENT))
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	return udf_nfs_get_inode(sb, fid->udf.block, fid->udf.partref,
- 			fid->udf.generation);
-@@ -1307,7 +1307,7 @@ static struct dentry *udf_fh_to_parent(struct super_block *sb,
- 				       struct fid *fid, int fh_len, int fh_type)
- {
- 	if (fh_len != 5 || fh_type != FILEID_UDF_WITH_PARENT)
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	return udf_nfs_get_inode(sb, fid->udf.parent_block,
- 				 fid->udf.parent_partref,
-diff --git a/fs/xfs/linux-2.6/xfs_export.c b/fs/xfs/linux-2.6/xfs_export.c
-index 7f7abec..f9a51c4 100644
---- a/fs/xfs/linux-2.6/xfs_export.c
-+++ b/fs/xfs/linux-2.6/xfs_export.c
-@@ -150,7 +150,7 @@ xfs_fs_fh_to_dentry(struct super_block *sb, struct fid *fid,
- 	struct inode		*inode = NULL;
- 
- 	if (fh_len < xfs_fileid_length(fileid_type))
--		return NULL;
-+		return ERR_PTR(-ESTALE);
- 
- 	switch (fileid_type) {
- 	case FILEID_INO32_GEN_PARENT:
-
+Cheers,
+Samuel.
