@@ -1,97 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbYLENZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbYLEN01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758053AbYLENZs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 08:25:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYLENZj
+	id S1758268AbYLEN01 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 08:26:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbYLEN0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 08:25:39 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52810 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751502AbYLENZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 08:25:38 -0500
-Date: Fri, 5 Dec 2008 14:25:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: paulus@samba.org, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org,
-       eranian@googlemail.com, dada1@cosmosbay.com, robert.richter@amd.com,
-       arjan@infradead.org, hpa@zytor.com, a.p.zijlstra@chello.nl,
-       rostedt@goodmis.org
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-Message-ID: <20081205132512.GA18786@elte.hu>
-References: <20081205063131.GB12785@elte.hu> <18744.56857.259756.129894@cargo.ozlabs.ibm.com> <20081205080813.GA2030@elte.hu> <20081205.001520.79526444.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081205.001520.79526444.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 5 Dec 2008 08:26:04 -0500
+Received: from ti-out-0910.google.com ([209.85.142.189]:49252 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756845AbYLEN0C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 08:26:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=yF82acQ/j2lDyKMFHG07YRBGKoJK5GkMzIkQdOLX3Cpicy9tem/cVz1ClGLcsca677
+         hBrQNksYA1/OeondeUXB/Y5k0OGqVqpdOt3hNRN5+SM97B9D4lGvN/MXt75mDOgLwwzn
+         w187ySRhMEhHMAL3+RJM3zEBHulJ9TsvLk8BI=
+From: crquan@gmail.com
+To: Eric Moore <Eric.Moore@lsi.com>
+Cc: support@lsi.com, DL-MPTFusionLinux@lsi.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] mpt fusion: updated mpt drivers from lsi upstream "4.00.43.00"
+Date: Fri,  5 Dec 2008 21:26:49 +0800
+Message-Id: <1228483610-18502-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.6.0.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Cheng Renquan <crquan@gmail.com>
 
-* David Miller <davem@davemloft.net> wrote:
+Occasionally I'm working with LSI SAS 1068E controllers on 2.6.26.2 kernel,
+it has a nasty bug that some hotplugged disks cannot be auto discovered,
+the detailed description is on bugzilla.kernel:
 
-> > > Isn't it two separate read() calls to read the two counters?  If 
-> > > so, the only way the two values are actually going to correspond to 
-> > > the same point in time is if the task being monitored is stopped.  
-> > > In which case the monitoring task needs to use ptrace or something 
-> > > similar in order to make sure that the monitored task is actually 
-> > > stopped.
-> > 
-> > It doesnt matter in practice.
-> 
-> Yes it DOES!
-> 
-> If I want to know if a code block triggers event X or Y, and your read 
-> call triggers one of those events, I can't figure out the answer to my 
-> profiling problem.
+http://bugzilla.kernel.org/show_bug.cgi?id=12163
 
-( this misunderstanding of yours has been cleared up in a later mail: 
-  reading a counter causes events in the monitoring context, not in the
-  monitored context. )
+After some inspecting the vendor's website, I found there are "4.00.43.00"
+drivers for RHEL5.1, but the drivers in main stream kernel are still "3.04.07",
+and the changelogs of "4.00.43.00" have records on solving that BUG,
 
-> That is completely fundamental to all of this.  And this is why this 
-> proposal is a non-workable solution.
-> 
-> 
-> > Also, look at our code: we buffer notification events and do not have 
-> > to stop the thread for recording the context information.
-> 
-> But that's what monitoring libraries want, they want to stop the task 
-> and inspect it.
-> 
-> Look at the PAPI library.  If you can't implement what that thing 
-> provides, all the real users of profiling information can't use this 
-> stuff.
+but the default "4.00.43.00" downloaded from lsi.com cannot even build on
+kernel-2.6.26.2, and after some work, I get it run on 2.6.26.2, then can build
+with mainstream git kernel (the HEAD currently),
 
-We have looked, and the PAPI library can be implemented on top of our 
-system call as well - just like it was implemented on top of the perfctr 
-driver and like it was implemented ontop of "perfmon-full".
+http://www.lsi.com/storage_home/products_home/standard_product_ics/sas_ics/lsisas1068e/index.html
 
-PAPI is a relatively simple wrapper around OS level performance counter 
-facilities. Both the high level counter abstraction 
-(PAPI_start_counters() & friends) and the low level PAPI abstraction 
-(PAPI event sets, PAPI_attach/detach) can be readily implemented via the 
-use of our performance counter subsystem facilities. (In addition to all 
-the facilities around PAPI event enumeration.)
+   -#define MPT_LINUX_VERSION_COMMON	"3.04.07"
+   +#define MPT_LINUX_VERSION_COMMON	"4.00.43.00"
 
-PAPI has about 100 functions - if you think our design does not fit it 
-for some fundamental reason then please point out exactly which 
-functionality (which PAPI function call) cannot be done.
+This patch is just the upstream "4.00.43.00", it's very big, about 130K after
+bzip2'ed, so I upload it to bugzilla.kernel, can now be downloaded from
 
-Perfmon needlessly complicated their design by exposing user-space to a 
-'performance counter context' and other lowlevel details that should not 
-and must not be handled at the ABI level. The PAPI interfaces do not 
-force that design choice in any way. It's a plain unnecessary 
-complication that permeates the whole perfmon code.
+http://bugzilla.kernel.org/attachment.cgi?id=19155
 
-	Ingo
+You can also download the tarball from the vendor's website and
+extract them into drivers/, instead of applying this patch.
+
+the next one is the adjusting for mainstream git kernel.
+
+Signed-off-by: LSI Corparation <lsi@lsi.com>
+Signed-off-by: Cheng Renquan <crquan@gmail.com>
