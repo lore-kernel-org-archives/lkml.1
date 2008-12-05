@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbYLESWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYLES2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756801AbYLESWM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 13:22:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYLESVz
+	id S1755454AbYLES2Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 13:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbYLES2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 13:21:55 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:56177 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbYLESVy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 13:21:54 -0500
-Date: Fri, 5 Dec 2008 18:21:48 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       shaohua.li@intel.com, Rafael Wysocki <rwysocki@suse.de>,
-       shemminger@linux-foundation.org, netdev@vger.kernel.org,
-       Stable@kernel.org
-Subject: Re: [PATCH] PCIe ASPM causes machine (HP Compaq 6735s) to sometimes freeze hard at boot at PCI initialization time
-Message-ID: <20081205182148.GA28192@srcf.ucam.org>
-References: <200811281328.55259.trenn@suse.de> <200812051407.14419.trenn@suse.de>
+	Fri, 5 Dec 2008 13:28:16 -0500
+Received: from kroah.org ([198.145.64.141]:41997 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750991AbYLES2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 13:28:15 -0500
+Date: Fri, 5 Dec 2008 10:27:37 -0800
+From: Greg KH <greg@kroah.com>
+To: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Jake Edge <jake@lwn.net>, jbarnes@virtuousgeek.org,
+       kristen.c.accardi@intel.com, matthew@wil.cx,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: [stable] [patch 031/104] PCI: prevent duplicate slot names
+Message-ID: <20081205182737.GA2144@kroah.com>
+References: <20081203193901.715896543@mini.kroah.org> <20081203195050.GF8950@kroah.com> <20081204221039.GJ31468@ldl.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200812051407.14419.trenn@suse.de>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20081204221039.GJ31468@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 05, 2008 at 02:07:13PM +0100, Thomas Renninger wrote:
-
-> PCIE: Break out of endless loop waiting for PCI config bits to switch
+On Thu, Dec 04, 2008 at 03:10:39PM -0700, Alex Chiang wrote:
+> Hi Greg,
 > 
-> Makes a Compaq 6735s boot reliably again which hang in the loop
-> on some boots.
+> I found a memory leak that I introduced with the below patch.
+> 
+> I sent the patch to Jesse a few days ago, but he hasn't pushed it
+> upstream yet.
+> 
+> http://article.gmane.org/gmane.linux.kernel.pci/2187/match=stop+leaking
+> 
+> I did Cc: stable@kernel.org on it, but I'm guessing that since
+> it's not upstream yet, you guys never saw it.
+> 
+> Anyhow, please pick it up for this round of .27-stable, else
+> we'll get a memory leak (while trying to work-around the
+> duplicate slot name issue).
 
-Which device does it get stuck on?
+As much as I hate it, I really need to see the patch in Linus's tree
+before I can take it into -stable.
 
-> +	if (loop_count == 100) 
-> +		dev_printk (KERN_WARNING, &pdev->dev, "Could not configure ASPM\n");
+So Jesse, can you please push this to Linus as soon as possible?
 
-"ASPM: Could not configure common clock\n"? ASPM should still work, 
-though with higher latency. It probably also needs to revert the 
-configuration changes.
+Alex, thanks for letting me know about this.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+greg k-h
