@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbYLERSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbYLERXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756351AbYLERSk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 12:18:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYLERSc
+	id S1755864AbYLERXI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 12:23:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbYLERWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 12:18:32 -0500
-Received: from bytemail.bytemark.co.uk ([80.68.81.165]:38253 "EHLO
-	bytemail.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751869AbYLERSb (ORCPT
+	Fri, 5 Dec 2008 12:22:54 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:50076 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752993AbYLERWy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 12:18:31 -0500
-Message-ID: <49396267.8030709@bytemark.co.uk>
-Date: Fri, 05 Dec 2008 17:18:31 +0000
-From: Alex Howells <alex@bytemark.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Fri, 5 Dec 2008 12:22:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=CC+15ihYPf/HMcRksBa0ZuxfIQQnHGygvL2Oa2zuyNb9l5oQsuQG3bQF4bDQ5qgBPD
+         LGZPrutPmak+kUJjsZJFnGGzVEVcZw192Hi5coFN/KgV/FEVrLmAyBQU9FaCwr+M3rq3
+         iopza0JjeyxNzebMQeXXoYJiQPQy8yYeEMrrk=
+Message-ID: <4939635F.5050102@gmail.com>
+Date: Fri, 05 Dec 2008 18:22:39 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: sata_svw breakage
-References: <493949B0.6000701@bytemark.co.uk> <49395E0D.4080203@garzik.org>
-In-Reply-To: <49395E0D.4080203@garzik.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Anthony Liguori <aliguori@us.ibm.com>
+CC: Mark McLoughlin <markmc@redhat.com>, Michael Tokarev <mjt@tls.msk.ru>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>
+Subject: Re: [PATCH] virtio: make PCI devices take a virtio_pci module ref
+References: <1228394671.3732.77.camel@blaa> <49385DB7.4060306@gmail.com> <4938EE0B.8020501@msgid.tls.msk.ru>  <493929D2.4070900@gmail.com> <1228488921.3858.25.camel@blaa> <49394C1B.2010001@us.ibm.com>
+In-Reply-To: <49394C1B.2010001@us.ibm.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Alex Howells wrote:
->> Afternoon Gents (and Ladies),
->>
->> I'm setting an interesting problem with the sata_svw driver on a fairly
->> new (in terms of model) blade server from HP, a BL495c.
->>
->> [    3.462135] PCI: setting IRQ 14 as level-triggered
->> [    3.462142] sata_svw 0000:01:0e.0: PCI INT A -> Link[ISF0] -> GSI 14
->> (level,
->> low) -> IRQ 14
->> [    3.465367] sata_svw 0000:01:0e.0: PCI INT A disabled
->> [    3.467302] sata_svw: probe of 0000:01:0e.0 failed with error -16
->>
->> Having trouble tracking down what 'error -16' might imply, any pointers
->> for what the root cause may be and how to address it?
-> 
-> That's the EBUSY error (include/asm-generic/errno-base.h).
-> 
-> What kernel?  I don't see a 'probe of ... failed' message in drivers/ata
-> nor drivers/pci.
+Anthony Liguori napsal(a):
+> Actually, we should be able to delete this virtio_pci_root entirely. 
+> The device is a dummy one anyway.
 
-It's running on 2.6.27.7 at the moment...
+But the bus is still to be fixed...
