@@ -1,159 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbYLDXxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbYLEADn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754799AbYLDXxz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 18:53:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbYLDXxp
+	id S1753232AbYLEADn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 19:03:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbYLEADd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 18:53:45 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:25956 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbYLDXxo (ORCPT
+	Thu, 4 Dec 2008 19:03:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36331 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750718AbYLEADc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 18:53:44 -0500
-Message-ID: <49386D75.2030302@oracle.com>
-Date: Thu, 04 Dec 2008 15:53:25 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Thu, 4 Dec 2008 19:03:32 -0500
+Date: Thu, 4 Dec 2008 16:03:03 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
+ on Toshiba R500 (bisected)
+In-Reply-To: <200812050031.27287.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0812041545130.3543@nehalem.linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <200812042309.11540.rjw@sisk.pl> <alpine.LFD.2.00.0812041415020.3543@nehalem.linux-foundation.org> <200812050031.27287.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Evgeniy Polyakov <zbr@ioremap.net>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [W1] Updated documentation.
-References: <12284022104086-git-send-email-zbr@ioremap.net> <122840221468-git-send-email-zbr@ioremap.net> <12284022143564-git-send-email-zbr@ioremap.net> <12284022144105-git-send-email-zbr@ioremap.net> <12284022141659-git-send-email-zbr@ioremap.net>
-In-Reply-To: <12284022141659-git-send-email-zbr@ioremap.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.49386D78.029C:SCFSTAT928724,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Evgeniy,
 
-Evgeniy Polyakov wrote:
-> Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
-> ---
->  Documentation/w1/w1.netlink |   34 +++++++++++++++++++++++++---------
->  1 files changed, 25 insertions(+), 9 deletions(-)
+
+On Fri, 5 Dec 2008, Rafael J. Wysocki wrote:
+> > 
+> > Not very interesting. It just does the same thing your previous patches 
+> > have done - ignores the cardbus slot for sizing. It just does it 
+> > differently and more explicitly.
 > 
-> diff --git a/Documentation/w1/w1.netlink b/Documentation/w1/w1.netlink
-> index 3640c7c..eae5c8b 100644
-> --- a/Documentation/w1/w1.netlink
-> +++ b/Documentation/w1/w1.netlink
-> @@ -17,25 +17,27 @@ Protocol.
->  [struct cn_msg] - connector header. It's length field is equal to size of the attached data.
+> There's a difference, though.  It doesn't cause the resources flags to be
+> cleared for the cardbus bridge and the cardbus bridge gets the correct sizes
+> of both prefetchable and non-prefetchable windows (64 MB).
 
-(not in this patch, but:)              Its
+Yes, true. In that sense, it minimizes the differences between the 
+"working" and "nonworking" case. 
 
+Which is interesting in the sense that it makes it even less likely that 
+it's an actual resource clash. 
 
->  [struct w1_netlink_msg] - w1 netlink header.
->  	__u8 type 	- message type.
-> +			W1_LIST_MASTERS - list current bus master list
->  			W1_SLAVE_ADD/W1_SLAVE_REMOVE - slave add/remove events.
->  			W1_MASTER_ADD/W1_MASTER_REMOVE - master add/remove events.
->  			W1_MASTER_CMD - userspace command for bus master device (search/alarm search).
->  			W1_SLAVE_CMD - userspace command for slave device (read/write/ search/alarm search
->  					for bus master device where given slave device found).
->  	__u8 res	- reserved
-> -	__u16 len	- size of attached to this header data.
-> +	__u16 len	- size of data attached to this header data.
->  	union {
-> -		__u8 id;			 - slave unique device id
-> +		__u8 id[8];			 - slave unique device id
->  		struct w1_mst {
->  			__u32		id;	 - master's id.
->  			__u32		res;	 - reserved
->  		} mst;
->  	} id;
->  
-> -[strucrt w1_netlink_cmd] - command for gived master or slave device.
-> +[struct w1_netlink_cmd] - command for given master or slave device.
->  	__u8 cmd	- command opcode.
->  			W1_CMD_READ 	- read command.
->  			W1_CMD_WRITE	- write command.
-> +			W1_CMD_TOUCH	- touch command (write and sample data back to userspace).
->  			W1_CMD_SEARCH	- search command.
->  			W1_CMD_ALARM_SEARCH - alarm search command.
->  	__u8 res	- reserved
-> @@ -44,7 +46,7 @@ Protocol.
->  	__u8 data[0]	- data for this command.
->  
->  
-> -Each connector message can include one or more w1_netlink_msg with zero of more attached w1_netlink_cmd messages.
-> +Each connector message can include one or more w1_netlink_msg with zero or more attached w1_netlink_cmd messages.
+> I know that. :-)  Still, I find it important to notice that the memory windows
+> of the cardbus bridge can be 64 MB-wide and things work in that case too.
+> Also, I like it more than the previous patch. ;-)
+> 
+> Moreover, I _think_ it would work for Frans too, because I _suspect_ the
+> problem is related to a cardbus bridge being located behind that "transparent"
+> thing somehow.
 
-Please limit lines to a maximum of 80 characters.  Around 72 would be Good.
-(here and elsewhere)
+Well, I suspect that on Frans' machine, there will be no difference at all 
+between your patch and my previous patch, since he already had a bridge 
+window allocated by the BIOS. And he also had just that firewire and mmc 
+thing that only needed that memory window, so he'd end up with the exact 
+same resource allocation, methinks.
 
->  For event messages there are no w1_netlink_cmd embedded structures, only connector header
->  and w1_netlink_msg strucutre with "len" field being zero and filled type (one of event types)
+> > Can you send "lspci -vv" and "dmesg" output for that kernel?
+> 
+> No prob, both attached along with the contents of /proc/iomem .
 
-                      structure
+It all looks very sane. Too bad it apparently doesn't work.
 
-> @@ -59,11 +61,25 @@ cn_msg.len = sizeof(struct w1_netlink_msg) + sizeof(struct w1_netlink_cmd) + cmd
->  w1_netlink_msg.len = sizeof(struct w1_netlink_cmd) + cmd->len;
->  w1_netlink_cmd.len = cmd->len;
->  
-> +Replies to W1_LIST_MASTERS should send a message back to the userspace
-> +which will contain list of all registered master ids in the following
-> +format:
-> +	
-> +	cn_msg (CN_W1_IDX.CN_W1_VAL as id, len is equal to sizeof(struct
-> +	w1_netlink_msg) plus number of masters multipled by 4)
+> > Even if it failed the suspend/resume, it's interesting, because I would
+> > actually have expected that one to have the same layout as the successful
+> > ones. 
+> 
+> Well, not exactly.  Actually, with this patch the graphics and "ICH HD audio"
+> get their memory ranges before the ranges of _all_ devices behind the
+> transparent bridge, while in the "working" case their memory ranges are located
+> _after_ the memory ranges of devices behind the transparent bridge _except_
+> for the cardbus bridge's memory windows.
 
-	                                       multiplied
+Yes, however, it shouldn't matter.
 
-> +	w1_netlink_msg (type: W1_LIST_MASTERS, len is equal to number of masters
-> +	multiplied by 4 (u32 size))
-> +	id0 ... idN
-> +	
-> +	Each message is at most 4k in size, so if number of master devices
-> +	exceeds this, it will be split into several messages, cn.seq will be
-> +	increased for each one.
-> +	
->  
->  Operation steps in w1 core when new command is received.
->  =======================================================
->  
-> -When new message (w1_netlink_msg) is received w1 core detects if it is master of slave request,
-> +When new message (w1_netlink_msg) is received w1 core detects if it is master or slave request,
->  according to w1_netlink_msg.type field.
->  Then master or slave device is searched for.
->  When found, master device (requested or those one on where slave device is found) is locked.
-> @@ -82,10 +98,10 @@ Connector [1] specific documentation.
->  Each connector message includes two u32 fields as "address".
->  w1 uses CN_W1_IDX and CN_W1_VAL defined in include/linux/connector.h header.
+Except in cae the audio driver (for example) were to access past its MMIO 
+window, and we'd have a situation where we care what was just before it or 
+after it. That doesn't seem very likely, though.
 
-      uses them for what?
-
->  Each message also includes sequence and acknowledge numbers.
-> -Sequence number for event messages is appropriate bus master sequence number increased with
-> +Sequence number for event messages is appropriate bus master sequence number increased with 
-
-Line ends with space.  Please check for that throughout the file.
-
->  each event message sent "through" this master.
->  Sequence number for userspace requests is set by userspace application.
-> -Sequence number for reply is the same as was in request, and
-> +Sequence number for reply is the same as was in request, and 
->  acknowledge number is set to seq+1.
->  
->  
-> @@ -93,6 +109,6 @@ Additional documantion, source code examples.
-
-                                documentation
-
->  ============================================
->  
->  1. Documentation/connector
-> -2. http://tservice.net.ru/~s0mbre/archive/w1
-> -This archive includes userspace application w1d.c which
-> +2. http://www.ioremap.net/archive/w1
-> +This archive includes userspace application w1d.c which 
->  uses read/write/search commands for all master/slave devices found on the bus.
-
-I'll plan to review the entire doc file.
-
-Thanks,
-~Randy
+		Linus
