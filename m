@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbYLEAIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYLEAIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbYLEAIX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 19:08:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750839AbYLEAIP
+	id S1755575AbYLEAIr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 19:08:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYLEAIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 19:08:15 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43142 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750805AbYLEAIO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 19:08:14 -0500
-Date: Thu, 4 Dec 2008 16:07:47 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
- on Toshiba R500 (bisected)
-In-Reply-To: <200812050045.40928.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0812041604400.3543@nehalem.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812042340.58694.rjw@sisk.pl> <alpine.LFD.2.00.0812041459120.3543@nehalem.linux-foundation.org> <200812050045.40928.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 4 Dec 2008 19:08:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53573 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750931AbYLEAIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 19:08:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: [PATCH -regression fix] ACPI: Fix ACPI battery regression introduced by commit 558073
+Date: Fri, 5 Dec 2008 01:07:51 +0100
+User-Agent: KMail/1.9.9
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812050107.51343.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ACPI: Fix ACPI battery regression introduced by commit 558073
 
+Commit 558073dd56707864f09d563b64e7c37c021e89d2
+"ACPI: battery: Convert discharge energy rate to current properly"
+caused the battery subsystem to report wrong values of the remaining
+time on battery power and the time until fully charged on Toshiba
+Portege R500 (and presumably on other boxes too).
 
-On Fri, 5 Dec 2008, Rafael J. Wysocki wrote:
-> > 
-> > Yes. And in the case of Frans' machine, the e1000e controller was before 
-> > all the bridges too.
-> 
-> Hm.  And unloading it before suspend made things work?  Interesting.
+Fix the issue by correcting the conversion from mW to mA.
 
-Yeah. Frans' workaround was
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/battery.c |   17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
 
- - unloading e1000e before suspend
- - using aggressive powersave setting on snd_hda_intel to ensure that
-   sound controller was already sleeping before entering suspend
-
-and both of those devices are on the root PCI bus and are enumerated (and 
-thus resumed) before the transparent bridge.
-
-So yeah, the whole "resource allocation for that bridge" saga should 
-_really_ not matter. But it clearly does seem to.
-
-			Linus
+Index: linux-2.6/drivers/acpi/battery.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/battery.c
++++ linux-2.6/drivers/acpi/battery.c
+@@ -173,14 +173,17 @@ static int acpi_battery_get_property(str
+ 		val->intval = battery->voltage_now * 1000;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
+-		val->intval = battery->current_now * 1000;
+-		/* if power units are mW, convert to mA by
+-		   dividing by current voltage (mV/1000) */
+-		if (!battery->power_unit) {
+-			if (battery->voltage_now) {
++		val->intval = battery->current_now;
++		if (battery->power_unit) {
++			val->intval *= 1000;
++		} else {
++			/*
++			 * If power units are mW, convert to mA by dividing by
++			 * current voltage.
++			 */
++			if (battery->voltage_now)
+ 				val->intval /= battery->voltage_now;
+-				val->intval *= 1000;
+-			} else
++			else
+ 				val->intval = -1;
+ 		}
+ 		break;
