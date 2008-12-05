@@ -1,77 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbYLEReb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbYLERhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756389AbYLEReb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 12:34:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYLEReY
+	id S1756118AbYLERhS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 12:37:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYLERhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 12:34:24 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:38667 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751846AbYLEReX (ORCPT
+	Fri, 5 Dec 2008 12:37:00 -0500
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:49770 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbYLERg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 12:34:23 -0500
-Message-ID: <493965F8.6060407@cosmosbay.com>
-Date: Fri, 05 Dec 2008 18:33:44 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux kernel <linux-kernel@vger.kernel.org>
-Subject: [PACH] smp: uninline num_online_cpus() & num_possible_cpus()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 05 Dec 2008 18:33:45 +0100 (CET)
+	Fri, 5 Dec 2008 12:36:59 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Linux Torvalds <torvalds@osdl.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       MinChan Kim <minchan.kim@gmail.com>, arnd@arndb.de, jeremy@goop.org,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: [RFC v11][PATCH 11/13] Track in-kernel when we expect checkpoint/restart to work
+Date: Fri,  5 Dec 2008 12:31:20 -0500
+Message-Id: <1228498282-11804-12-git-send-email-orenl@cs.columbia.edu>
+X-Mailer: git-send-email 1.6.0.1
+In-Reply-To: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
+References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-num_online_cpus() and num_possible_cpus() are not performance
-critical and are quite large.
+From: Dave Hansen <dave@linux.vnet.ibm.com>
 
-Unlining them shrinks kernel text size by 7523 bytes on x86,
-if NR_CPUS>32
+Suggested by Ingo.
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Checkpoint/restart is going to be a long effort to get things working.
+We're going to have a lot of things that we know just don't work for
+a long time.  That doesn't mean that it will be useless, it just means
+that there's some complicated features that we are going to have to
+work incrementally to fix.
+
+This patch introduces a new mechanism to help the checkpoint/restart
+developers.  A new function pair: task/process_deny_checkpoint() is
+created.  When called, these tell the kernel that we *know* that the
+process has performed some activity that will keep it from being
+properly checkpointed.
+
+The 'flag' is an atomic_t for now so that we can have some level
+of atomicity and make sure to only warn once.
+
+For now, this is a one-way trip.  Once a process is no longer
+'may_checkpoint' capable, neither it nor its children ever will be.
+This can, of course, be fixed up in the future.  We might want to
+reset the flag when a new pid namespace is created, for instance.
+
+Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- include/linux/cpumask.h |    4 ++--
- init/main.c             |   12 ++++++++++++
- 2 files changed, 14 insertions(+), 2 deletions(-)
+ checkpoint/checkpoint.c    |    6 ++++++
+ include/linux/checkpoint.h |   33 ++++++++++++++++++++++++++++++++-
+ include/linux/sched.h      |    4 ++++
+ kernel/fork.c              |   10 ++++++++++
+ 4 files changed, 52 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 21e1dd4..f9b2b51 100644
---- a/include/linux/cpumask.h
-+++ b/include/linux/cpumask.h
-@@ -507,8 +507,8 @@ extern cpumask_t cpu_present_map;
- extern cpumask_t cpu_active_map;
+diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+index f2d91f8..e8e352f 100644
+--- a/checkpoint/checkpoint.c
++++ b/checkpoint/checkpoint.c
+@@ -233,6 +233,12 @@ static int cr_write_task(struct cr_ctx *ctx, struct task_struct *t)
+ 		return -EAGAIN;
+ 	}
  
- #if NR_CPUS > 1
--#define num_online_cpus()	cpus_weight_nr(cpu_online_map)
--#define num_possible_cpus()	cpus_weight_nr(cpu_possible_map)
-+extern int num_online_cpus(void);
-+extern int num_possible_cpus(void);
- #define num_present_cpus()	cpus_weight_nr(cpu_present_map)
- #define cpu_online(cpu)		cpu_isset((cpu), cpu_online_map)
- #define cpu_possible(cpu)	cpu_isset((cpu), cpu_possible_map)
-diff --git a/init/main.c b/init/main.c
-index 7e117a2..a1a3e55 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -376,6 +376,18 @@ EXPORT_SYMBOL(cpu_mask_all);
- int nr_cpu_ids __read_mostly = NR_CPUS;
- EXPORT_SYMBOL(nr_cpu_ids);
++	if (!atomic_read(&t->may_checkpoint)) {
++		pr_warning("c/r: task %d may not checkpoint\n",
++			   task_pid_vnr(t));
++		return -EBUSY;
++	}
++
+ 	ret = cr_write_task_struct(ctx, t);
+ 	cr_debug("task_struct: ret %d\n", ret);
+ 	if (ret < 0)
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index 3c29f8e..c97f608 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -10,8 +10,11 @@
+  *  distribution for more details.
+  */
  
-+int num_online_cpus(void)
-+{
-+	return cpus_weight_nr(cpu_online_map);
-+}
-+EXPORT_SYMBOL(num_online_cpus);
+-#include <linux/path.h>
+ #include <linux/fs.h>
++#include <linux/path.h>
++#include <linux/sched.h>
 +
-+int num_possible_cpus(void)
++#ifdef CONFIG_CHECKPOINT_RESTART
+ 
+ #define CR_VERSION  2
+ 
+@@ -95,4 +98,32 @@ extern int cr_read_files(struct cr_ctx *ctx);
+ #define cr_debug(fmt, args...)  \
+ 	pr_debug("[%d:c/r:%s] " fmt, task_pid_vnr(current), __func__, ## args)
+ 
++static inline void __task_deny_checkpointing(struct task_struct *task,
++		char *file, int line)
 +{
-+	return cpus_weight_nr(cpu_possible_map);
++	if (!atomic_dec_and_test(&task->may_checkpoint))
++		return;
++	printk(KERN_INFO "process performed an action that can not be "
++			"checkpointed at: %s:%d\n", file, line);
++	WARN_ON(1);
 +}
-+EXPORT_SYMBOL(num_possible_cpus);
++#define process_deny_checkpointing(p)  \
++	__task_deny_checkpointing(p, __FILE__, __LINE__)
 +
- /* An arch may set nr_cpu_ids earlier if needed, so this would be redundant */
- static void __init setup_nr_cpu_ids(void)
- {
++/*
++ * For now, we're not going to have a distinction between
++ * tasks and processes for the purpose of c/r.  But, allow
++ * these two calls anyway to make new users at least think
++ * about it.
++ */
++#define task_deny_checkpointing(p)  \
++	__task_deny_checkpointing(p, __FILE__, __LINE__)
++
++#else
++
++static inline void task_deny_checkpointing(struct task_struct *task) {}
++static inline void process_deny_checkpointing(struct task_struct *task) {}
++
++#endif
++
+ #endif /* _CHECKPOINT_CKPT_H_ */
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 55e30d1..faa2ec6 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1356,6 +1356,10 @@ struct task_struct {
+ 	unsigned long default_timer_slack_ns;
+ 
+ 	struct list_head	*scm_work_list;
++
++#ifdef CONFIG_CHECKPOINT_RESTART
++	atomic_t may_checkpoint;
++#endif
+ };
+ 
+ /*
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 2a372a0..72df853 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -196,6 +196,13 @@ void __init fork_init(unsigned long mempages)
+ 	init_task.signal->rlim[RLIMIT_NPROC].rlim_max = max_threads/2;
+ 	init_task.signal->rlim[RLIMIT_SIGPENDING] =
+ 		init_task.signal->rlim[RLIMIT_NPROC];
++
++#ifdef CONFIG_CHECKPOINT_RESTART
++	/*
++	 * This probably won't stay set for long...
++	 */
++	atomic_set(&init_task.may_checkpoint, 1);
++#endif
+ }
+ 
+ int __attribute__((weak)) arch_dup_task_struct(struct task_struct *dst,
+@@ -246,6 +253,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
+ 	tsk->btrace_seq = 0;
+ #endif
+ 	tsk->splice_pipe = NULL;
++#ifdef CONFIG_CHECKPOINT_RESTART
++	atomic_set(&tsk->may_checkpoint, atomic_read(&orig->may_checkpoint));
++#endif
+ 	return tsk;
+ 
+ out:
+-- 
+1.5.4.3
+
