@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbYLEOEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757835AbYLEONM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757952AbYLEOEV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 09:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYLEOEN
+	id S1757835AbYLEONM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 09:13:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYLEOM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 09:04:13 -0500
-Received: from ag-out-0708.google.com ([72.14.246.250]:23037 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbYLEOEM convert rfc822-to-8bit (ORCPT
+	Fri, 5 Dec 2008 09:12:57 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59622 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbYLEOM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 09:04:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=precedence:mime-version:from:to:reply-to:subject:content-type
-         :content-transfer-encoding:date:message-id;
-        b=TDYdPefBHrqpDvp8VJQwehjSlJFuEBbSUn5MLuz6AFiXsRsA9J3VPh40i14BBJefeS
-         v+E6JLBT+3+7uaRzTbvMz9LvxnfIoTvWgX30EdUOy3uvXPZzfVHBj1UUV5t9E9ALuCTX
-         LTwypF3I8lRpBkLrjEghynfTDJ9FY56MFKWLQ=
-mime-version: 1.0
-from: "Power Mailer" <realvaemailservices29@gmail.com>
-to: Sir/Madam <linux-kernel@vger.kernel.org>
-reply-to: "Power Mailer" <realvaemailservices100@gmail.com>
-subject: Congratulations! You have a lot of PENDING payments...
-content-type: text/plain; charset=us-ascii
-content-transfer-encoding: 8BIT
-Date: Fri, 05 Dec 2008 05:50:55 -0800 (PST)
-Message-ID: <493931bf.0c636e0a.1292.ffffa051@mx.google.com>
+	Fri, 5 Dec 2008 09:12:56 -0500
+Date: Fri, 5 Dec 2008 14:12:31 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: David Howells <dhowells@redhat.com>
+cc: torvalds@osdl.org, akpm@linux-foundation.org, bfields@fieldses.org,
+       hch@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] EXPORTFS: Don't return NULL from fh_to_dentry()/fh_to_parent()
+ [ver #2]
+In-Reply-To: <20081205133014.14725.79974.stgit@warthog.procyon.org.uk>
+Message-ID: <Pine.LNX.4.64.0812051407130.25248@blonde.anvils>
+References: <20081205133014.14725.79974.stgit@warthog.procyon.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Congratulations! You have a lot of PENDING payments...
+On Fri, 5 Dec 2008, David Howells wrote:
+> Returning NULL from fh_to_dentry() and fh_to_parent() is not permitted, so
+> return -ESTALE instead.  exportfs_decode_fh() does not check for NULL, but
+> will try to dereference it as IS_ERR() does not check for it.
+> 
+> The generic_fh_to_dentry() and generic_fh_to_parent() functions also no longer
+> return NULL, but return -ESTALE instead.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Acked-by: J. Bruce Fields <bfields@citi.umich.edu>
 
-Please go to this site and collect them immediately before it expires...
-http://www.dollarsbomb.com/promo.php?from=topsponsor
+I think it's still wrong in shmem_fh_to_dentry(): you've fixed
+the early return, but there'd be another return NULL if !inode?
 
+Hugh
 
-Remove me from this notice:
-http://www.remove-fromlist.com/
-
+> --- a/mm/shmem.c
+> +++ b/mm/shmem.c
+> @@ -2055,7 +2055,7 @@ static struct dentry *shmem_fh_to_dentry(struct super_block *sb,
+>  	inum = (inum << 32) | fid->raw[1];
+>  
+>  	if (fh_len < 3)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	inode = ilookup5(sb, (unsigned long)(inum + fid->raw[0]),
+>  			shmem_match, fid->raw);
+> 
