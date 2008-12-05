@@ -1,93 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbYLEHLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbYLEHNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756265AbYLEHLU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 02:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYLEHLM
+	id S1756406AbYLEHNb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 02:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYLEHNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 02:11:12 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55774 "EHLO
+	Fri, 5 Dec 2008 02:13:24 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55779 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750966AbYLEHLM (ORCPT
+	with ESMTP id S1751073AbYLEHNX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 02:11:12 -0500
-Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
+	Fri, 5 Dec 2008 02:13:23 -0500
+Subject: Re: Page alloc failures under network/disk IO load
 From: Peter Zijlstra <peterz@infradead.org>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: edward_estabrook@agilent.com, linux-kernel@vger.kernel.org, gregkh@suse.de,
-       edward.estabrook@gmail.com, hugh <hugh@veritas.com>,
-       linux-mm <linux-mm@kvack.org>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20081204180809.GB3079@local>
-References: <43FC624C55D8C746A914570B66D642610367F29B@cos-us-mb03.cos.agilent.com>
-	 <1228379942.5092.14.camel@twins>  <20081204180809.GB3079@local>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 05 Dec 2008 08:10:59 +0100
-Message-Id: <1228461060.18899.8.camel@twins>
+To: Dan =?ISO-8859-1?Q?No=E9?= <dpn@isomerica.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081204135443.7c24234a@rockhopper.limebrokerage.com>
+References: <20081203222750.391e8890@tuna> <1228378983.5092.7.camel@twins>
+	 <1228380128.5092.15.camel@twins>
+	 <20081204135443.7c24234a@rockhopper.limebrokerage.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Fri, 05 Dec 2008 08:13:22 +0100
+Message-Id: <1228461202.18899.11.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-04 at 19:08 +0100, Hans J. Koch wrote:
-> On Thu, Dec 04, 2008 at 09:39:02AM +0100, Peter Zijlstra wrote:
-> > On Wed, 2008-12-03 at 14:39 -0700, edward_estabrook@agilent.com wrote:
-> > > From: Edward Estabrook <Edward_Estabrook@agilent.com>
-> > > 
-> > > Here is a patch that adds the ability to dynamically allocate (and
-> > > use) coherent DMA from userspace by extending the userspace IO driver.
-> > > This patch applies against 2.6.28-rc6.
-> > > 
-> > > The gist of this implementation is to overload uio's mmap
-> > > functionality to allocate and map a new DMA region on demand.  The
-> > > bus-specific DMA address as returned by dma_alloc_coherent is made
-> > > available to userspace in the 1st long word of the newly created
-> > > region (as well as through the conventional 'addr' file in sysfs).  
-> > > 
-> > > To allocate a DMA region you use the following:
-> > > /* Pass this magic number to mmap as offset to dynamically allocate a
-> > > chunk of memory */ #define DMA_MEM_ALLOCATE_MMAP_OFFSET 0xFFFFF000UL
-> > > 
-> > > void* memory = mmap (NULL, size, PROT_READ | PROT_WRITE , MAP_SHARED,
-> > > fd, DMA_MEM_ALLOCATE_MMAP_OFFSET); u_int64_t *addr = *(u_int64_t *)
-> > > memory;
-> > > 
-> > > where 'size' is the size in bytes of the region you want and fd is the
-> > > opened /dev/uioN file.
-> > > 
-> > > Allocation occurs in page sized pieces by design to ensure that
-> > > buffers are page-aligned.
-> > > 
-> > > Memory is released when uio_unregister_device() is called.
-> > >
-> > > I have used this extensively on a 2.6.21-based kernel and ported it to
-> > > 2.6.28-rc6 for review / submission here.
-> > > 
-> > > Comments appreciated!
-> > 
-> > Yuck!
-> > 
-> > Why not create another special device that will give you DMA memory when
-> > you mmap it? That would also allow you to obtain the physical address
-> > without this utter horrid hack of writing it in the mmap'ed memory.
-> > 
-> > /dev/uioN-dma would seem like a fine name for that.
+On Thu, 2008-12-04 at 13:54 -0500, Dan Noé wrote:
+> On Thu, 04 Dec 2008 09:42:08 +0100
+> Peter Zijlstra <peterz@infradead.org> wrote:
 > 
-> I don't like to have a separate device for DMA memory. It would completely
-> break the current concept of userspace drivers if you had to get normal
-> memory from one device and DMA memory from another. Note that one driver
-> can have both.
+> > On Thu, 2008-12-04 at 09:23 +0100, Peter Zijlstra wrote:
+> > > On Wed, 2008-12-03 at 22:27 -0500, Dan Noé wrote:
+> > > > This is on Linux 2.6.28-rc7, on a Core 2 Duo.  The system has
+> > > > plenty of memory:
+> > > > 
+> > > >              total       used       free     shared    buffers
+> > > > cached
+> > > > Mem:          1893       1822         70          0          0
+> > > 
+> > > filled to the brim with data
+> > > 
+> > > > 1573
+> > > > -/+ buffers/cache:        249       1644
+> > > > Swap:         1906         37       1868
+> > > > 
+> > > > I am using rsync to transfer data onto this system.  The
+> > > > filesystem is XFS, and the target drive is a 1TB Western Digital
+> > > > on ata_piix.  The system files are on a RAID 1 (Linux md, also on
+> > > > ata_piix).
+> > > > 
+> > > > Periodically I get page allocation failures, from
+> > > > __netdev_alloc_skb. I suppose this causes the driver to drop
+> > > > packets and thus hurts performance.
+> > > 
+> > > There isn't much we can do about that, memory is filled and your
+> > > network card tries to allocate memory in a mode that doesn't allow
+> > > freeing some.
+> > > 
+> > > Looking at the timestamps its not very frequent, so it doesn't hurt
+> > > performance much if anything. If you're really bothered with this,
+> > > you could quiet it by sticking in a __GFP_NOWARN in
+> > > __netdev_alloc_skb() or something..
+> > 
+> > Another thing you can do is increase /proc/sys/vm/min_free_kbytes
+> 
+> I'm a bit confused because on another system (2.6.26.3) I never see
+> messages like this despite having the same amount of physical RAM in
+> each.  The 2.6.26.3 system is also under more active use, and has more
+> userspace memory usage.  On that system:
+> 
+>              total       used       free     shared    buffers
+> cached Mem:          2017       1681        335          0
+> 99        603 -/+ buffers/cache:        979       1037
+> Swap:          972        137        835
+> 
+> dpn@colobus:~$ cat /proc/sys/vm/min_free_kbytes
+> 3816
+> 
+> Yet on the system where I saw the allocation failures:
+> 
+> dpn@trout:~/kernels/linux-2.6$ cat /proc/sys/vm/min_free_kbytes
+> 5711
+> 
+> If I understand it correctly the issue is that __netdev_alloc_skb must
+> make a GFP_ATOMIC allocation, which fails because the page cache must
+> evict pages before there is sufficient memory.  And
+> min_free_kbytes allows tuning of the point where try_to_free_pages is
+> called and thus the "reserve" memory available.  Is that correct?
 
-How would that break anything, the one driver can simply open both
-files.
+yes
 
-> But I agree that it's confusing if the physical address is stored somewhere
-> in the mapped memory. That should simply be omitted, we have that information
-> in sysfs anyway - like for any other memory mappings. But I guess we need
-> some kind of "type" or "flags" attribute for the mappings so that userspace
-> can find out if a mapping is DMA capable or not.
+> Wouldn't a higher min_free_kbytes mean less likelihood of GFP_ATOMIC
+> allocations failing?  Or are these allocations failing on my 2.6.26.3
+> system and I don't know it because of different config options?
+> 
+> Why am I seeing this on the system with the *higher* min_free_kbytes?
 
-We have that, different file.
+Higher burst rate? For the reserve pool to dry out, you need a high rate
+of incoming packets. If one machine has a steady workload and the other
+a bursty one, that could be the full difference.
 
-I'll NAK any attempt that rapes the mmap interface like proposed - that
-is just not an option.
