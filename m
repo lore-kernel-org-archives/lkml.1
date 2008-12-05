@@ -1,39 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbYLEEoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYLEEsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755245AbYLEEoA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 23:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbYLEEnu
+	id S1756230AbYLEEsV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 23:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbYLEEsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 23:43:50 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:57946 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750773AbYLEEnt (ORCPT
-	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 23:43:49 -0500
-Date: Fri, 05 Dec 2008 15:43:39 +1100
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.28
-User-Agent: nail 11.25 7/29/05
+	Thu, 4 Dec 2008 23:48:11 -0500
+Received: from tundra.namei.org ([65.99.196.166]:59401 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751073AbYLEEsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 23:48:09 -0500
+Date: Fri, 5 Dec 2008 15:47:27 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+cc: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
+       sds@tycho.nsa.gov, "Matthew N. Dodd" <matthew.dodd@sparta.com>,
+       trond.myklebust@fys.uio.no, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       labeled-nfs@linux-nfs.org
+Subject: Re: [PATCH 09/14] NFS: Add security_label text mount option and
+ handling code to NFS
+In-Reply-To: <1227733394-1114-10-git-send-email-dpquigl@tycho.nsa.gov>
+Message-ID: <alpine.LRH.1.10.0812051546560.12208@tundra.namei.org>
+References: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov> <1227733394-1114-10-git-send-email-dpquigl@tycho.nsa.gov>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081205044339.65ECC58ADC07@chook.melbourne.sgi.com>
-From: lachlan@sgi.com (Lachlan McIlroy)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit feaf3848a813a106f163013af6fcf6c4bfec92d9:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.dk/linux-2.6-block
+On Wed, 26 Nov 2008, David P. Quigley wrote:
 
-are available in the git repository at:
+> +	{ Opt_security_label, "security_label" },
+> +	{ Opt_nosecurity_label, "nosecurity_label" },
 
-  git://oss.sgi.com/xfs/xfs for-linus
+"seclabel" might be easier for admins to type.
 
-Dave Chinner (1):
-      [XFS] Fix hang after disallowed rename across directory quota domains
 
- fs/xfs/xfs_rename.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+-- 
+James Morris
+<jmorris@namei.org>
