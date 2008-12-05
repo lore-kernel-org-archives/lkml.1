@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbYLEIxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbYLEJCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753156AbYLEIxY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 03:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbYLEIxQ
+	id S1754662AbYLEJCa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 04:02:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbYLEJCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 03:53:16 -0500
-Received: from hpsmtp-eml20.KPNXCHANGE.COM ([213.75.38.85]:45994 "EHLO
-	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750852AbYLEIxP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 03:53:15 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: MSI changes in .28
-Date: Fri, 5 Dec 2008 09:53:10 +0100
-User-Agent: KMail/1.9.9
-Cc: rjw@sisk.pl, greg@kroah.com, mingo@elte.hu, jbarnes@virtuousgeek.org,
-       lenb@kernel.org, linux-kernel@vger.kernel.org, tiwai@suse.de,
-       akpm@linux-foundation.org, ink@jurassic.park.msu.ru
-References: <200812020320.31876.rjw@sisk.pl> <200812020629.26714.elendil@planet.nl> <alpine.LFD.2.00.0812020735150.3256@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812020735150.3256@nehalem.linux-foundation.org>
+	Fri, 5 Dec 2008 04:02:07 -0500
+Received: from hobbit.corpit.ru ([81.13.33.150]:23797 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750831AbYLEJCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 04:02:06 -0500
+Message-ID: <4938EE0B.8020501@msgid.tls.msk.ru>
+Date: Fri, 05 Dec 2008 12:02:03 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Mark McLoughlin <markmc@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>,
+       Anthony Liguori <aliguori@us.ibm.com>
+Subject: Re: [PATCH] virtio: make PCI devices take a virtio_pci module ref
+References: <1228394671.3732.77.camel@blaa> <49385DB7.4060306@gmail.com>
+In-Reply-To: <49385DB7.4060306@gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812050953.12238.elendil@planet.nl>
-X-OriginalArrivalTime: 05 Dec 2008 08:53:12.0863 (UTC) FILETIME=[E7BB7AF0:01C956B6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 December 2008, Linus Torvalds wrote:
-> So, it looks like you have MSI enabled in -rc6, and not in -rc3.
+Jiri Slaby wrote:
+> On 12/04/2008 01:44 PM, Mark McLoughlin wrote:
+>> Nothing takes a ref on virtio_pci, so even if you have
+>> devices in use, rmmod will attempt to unload the module.
+> 
+> It unbinds the device properly as any other driver. So what's the problem here?
 
-I've just compared dmesg for my *desktop* and there I see the following
-between 2.6.28-rc6 and current 2.6.28-rc7:
+Here's what we get when rmmod'ing (a zero-refcounted but
+in use) virtio_pci (I did it by a chance, cut-n-pasted
+the wrong line):
 
- pcieport-driver 0000:00:1c.0: setting latency timer to 64
- pcieport-driver 0000:00:1c.0: found MSI capability
--pcieport-driver 0000:00:1c.0: irq 47 for MSI/MSI-X
-+pcieport-driver 0000:00:1c.0: irq 511 for MSI/MSI-X
- pci_express 0000:00:1c.0:pcie00: allocate port service
- pci_express 0000:00:1c.0:pcie02: allocate port service
- pcieport-driver 0000:00:1c.2: setting latency timer to 64
- pcieport-driver 0000:00:1c.2: found MSI capability
--pcieport-driver 0000:00:1c.2: irq 46 for MSI/MSI-X
-+pcieport-driver 0000:00:1c.2: irq 510 for MSI/MSI-X
- pci_express 0000:00:1c.2:pcie00: allocate port service
- pci_express 0000:00:1c.2:pcie02: allocate port service
- pcieport-driver 0000:00:1c.3: setting latency timer to 64
- pcieport-driver 0000:00:1c.3: found MSI capability
--pcieport-driver 0000:00:1c.3: irq 45 for MSI/MSI-X
-+pcieport-driver 0000:00:1c.3: irq 509 for MSI/MSI-X
- pci_express 0000:00:1c.3:pcie00: allocate port service
- pci_express 0000:00:1c.3:pcie02: allocate port service
- pcieport-driver 0000:00:1c.4: setting latency timer to 64
- pcieport-driver 0000:00:1c.4: found MSI capability
--pcieport-driver 0000:00:1c.4: irq 44 for MSI/MSI-X
-+pcieport-driver 0000:00:1c.4: irq 508 for MSI/MSI-X
- pci_express 0000:00:1c.4:pcie00: allocate port service
- pci_express 0000:00:1c.4:pcie02: allocate port service
- pcieport-driver 0000:00:1c.5: setting latency timer to 64
- pcieport-driver 0000:00:1c.5: found MSI capability
--pcieport-driver 0000:00:1c.5: irq 43 for MSI/MSI-X
-+pcieport-driver 0000:00:1c.5: irq 507 for MSI/MSI-X
-[...]
- ahci 0000:00:1f.2: PCI INT B -> GSI 19 (level, low) -> IRQ 19
--ahci 0000:00:1f.2: irq 42 for MSI/MSI-X
-+ahci 0000:00:1f.2: irq 506 for MSI/MSI-X
- ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 4 ports 3 Gbps 0xf impl SATA mode
-[...]
- e1000e 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
- e1000e 0000:01:00.0: setting latency timer to 64
--e1000e 0000:01:00.0: irq 41 for MSI/MSI-X
-+e1000e 0000:01:00.0: irq 505 for MSI/MSI-X
+WARNING: at drivers/base/core.c:122 device_release+0x5f/0x70()
+Device 'virtio1' does not have a release() function, it is broken and must be fixed.
+Modules linked in: ext3 jbd mbcache acpiphp dock pci_hotplug virtio_net virtio_blk virtio_pci(-) virtio_ring virtio
 
-I.e. very similar to the change between rc-3 and rc-7 you commented on
-for my notebook.
+Pid: 361, comm: rmmod Tainted: G S        2.6.27-i686smp #2.6.27.7
+ [<c012b81f>] warn_slowpath+0x6f/0xa0
+ [<c0110030>] prepare_set+0x30/0x80
+ [<c012067e>] __wake_up+0x3e/0x60
+ [<c01d1d25>] release_sysfs_dirent+0x45/0xb0
+ ...
 
-Is this really MSI being (not) enabled, or just it using much higher
-IRQ numbers?
+>> Reported-by: Michael Tokarev <mjt@tls.msk.ru>
+
+It was in my original report to kvm@vger.
+
+Thanks!
+
+/mjt
