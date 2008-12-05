@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbYLEQct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYLEQd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbYLEQct (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 11:32:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbYLEQci
+	id S1756117AbYLEQd1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 11:33:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYLEQdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 11:32:38 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:50317 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752198AbYLEQci (ORCPT
+	Fri, 5 Dec 2008 11:33:20 -0500
+Received: from aux-209-217-49-36.oklahoma.net ([209.217.49.36]:3758 "EHLO
+	proteus.paralogos.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751845AbYLEQdT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 11:32:38 -0500
-Date: Fri, 5 Dec 2008 11:32:01 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com, adilger@sun.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] ext3, ext4: make i signed in do_split()
-Message-ID: <20081205163201.GG1323@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Roel Kluin <roel.kluin@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
-	adilger@sun.com, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <49310E1A.60105@gmail.com> <20081202120751.8b0226ca.akpm@linux-foundation.org> <4935A21A.60509@gmail.com>
+	Fri, 5 Dec 2008 11:33:19 -0500
+X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Dec 2008 11:33:19 EST
+Message-ID: <4939557F.1000609@paralogos.com>
+Date: Fri, 05 Dec 2008 10:23:27 -0600
+From: "Kevin D. Kissell" <kevink@paralogos.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4935A21A.60509@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Ralf Baechle <ralf@linux-mips.org>
+CC: Nick Andrew <nick@nick-andrew.net>, Jonathan Corbet <corbet@lwn.net>,
+       Lucas Woods <woodzy@gmail.com>, linux-mips@linux-mips.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Fix incorrect use of loose in vpe.c
+References: <S24119814AbYLEAhF/20081205003705Z+5882@ftp.linux-mips.org> <20081205155654.GA2765@linux-mips.org>
+In-Reply-To: <20081205155654.GA2765@linux-mips.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 10:01:14PM +0100, Roel Kluin wrote:
-> Andrew Morton wrote:
-> > On Sat, 29 Nov 2008 04:40:42 -0500
-> > roel kluin <roel.kluin@gmail.com> wrote:
-> > 
-> >> unsigned i >= 0 is always true
-> 
-> >> -	for (i = count-1; i >= 0; i--) {
-> >> +	for (i = count-1; i < count; i--) {
-> 			break;
-> 
-> > A local variable called `i' should always have signed type.  In fact,
-> > it should have `int' type.
-> 
-> You are right. although count is unsigned, dx_make_map() returns int, which is
-> assigned to count, so this should fit in an int. (If you ack this, make sure to
-> get this patch, and not one of the others.)
+Ralf Baechle wrote:
+> On Fri, Dec 05, 2008 at 11:36:54AM +1100, Nick Andrew wrote:
+>   
+>> From: Nick Andrew <nick@nick-andrew.net>
+>> Date: Fri, 05 Dec 2008 11:36:54 +1100
+>> To: Jonathan Corbet <corbet@lwn.net>, "Kevin D. Kissell" <kevink@mips.com>,
+>> 	Lucas Woods <woodzy@gmail.com>, Nick Andrew <nick@nick-andrew.net>,
+>> 	Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org
+>> Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+>> Subject: Fix incorrect use of loose in vpe.c
+>>
+>> Fix incorrect use of loose in vpe.c
+>>
+>> From: Nick Andrew <nick@nick-andrew.net>
+>>
+>> It should be 'lose', not 'loose'.
+>>
+>> Signed-off-by: Nick Andrew <nick@nick-andrew.net>
+>>     
+>
+> Thanks, applied.  Note that the address you used for Kevin Kissel to post
+> your patch is no longer valid.
+>   
+Yeah, but I'm still on the mailing list, so I saw it.  I don't "own" 
+that particular module,
+but for whatever it's worth, I'm OK with fixing the comment - though I'm 
+surprised
+that checkpatch let a non-canonical multi-line comment block like that 
+go by.  ;o)
 
-ACK.  I'll take care of getting this into the patch queue.  I'll
-include both the ext3 and ext4 variants, since this one is simple
-enough that it's highly unlikely to conflict with anything Andrew
-might have in the -mm tree.  This is also much more of a cleanup than
-anything else, so I don't think we need to push it until the merge
-window.  (I *think* it might be possible for a 2k filesystems and
-*very* long filenames we might possibly be able to trigger a
-failure but it would be very hard to do, and it's been around for a
-very long time without anyone complaining about an actual real-life
-problem getting trigger.)
+          Regards,
 
-						- Ted
+          Kevin K.
