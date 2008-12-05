@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbYLEDoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbYLEDrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755643AbYLEDoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 22:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYLEDoJ
+	id S1754414AbYLEDrT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 22:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750781AbYLEDrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 22:44:09 -0500
-Received: from vps1.tull.net ([66.180.172.116]:41585 "HELO vps1.tull.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751161AbYLEDoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 22:44:06 -0500
-Date: Fri, 5 Dec 2008 14:44:02 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: Valdis.Kletnieks@vt.edu
-Cc: Geoffrey McRae <geoff@rabidhost.com>, Peter Teoh <htmldeveloper@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: New Security Features, Please Comment
-Message-ID: <20081205034402.GB1626@mail.local.tull.net>
-References: <20081203005338.6472db7a@lxorguk.ukuu.org.uk> <1228268657.6679.4.camel@lappy.spacevs.com> <20081203124252.GD11807@mail.local.tull.net> <1228344292.6993.27.camel@lappy.spacevs.com> <20081203230820.4473a162@lxorguk.ukuu.org.uk> <804dabb00812031527k3fae11dcnef3b1696c3d136f8@mail.gmail.com> <1228347656.6993.31.camel@lappy.spacevs.com> <80413.1228427770@turing-police.cc.vt.edu> <1228429854.7546.6.camel@lappy.spacevs.com> <95180.1228448127@turing-police.cc.vt.edu>
+	Thu, 4 Dec 2008 22:47:10 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:61511 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbYLEDrJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 22:47:09 -0500
+Message-Id: <200812050344.mB53i9BF034723@www262.sakura.ne.jp>
+Subject: [2.6.28-rc7] Define MODULE_SYSTEM_TABLE for mbp_nvidia_bl.o and applesmc.o
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: linux-kernel@vger.kernel.org
+Cc: mjg@redhat.com, nicolas@boichat.ch
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <95180.1228448127@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+Content-Transfer-Encoding: 7bit
+Date: Fri, 05 Dec 2008 12:44:09 +0900
+Content-Type: text/plain; charset="ISO-2022-JP"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 04, 2008 at 10:35:27PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> You're also overlooking the fact that the malicious code could do something
-> like this:
-> 
-> 	/* send the parent something that makes it *think* the request finished */
-> 	printf("We're all done now\n");
-> 	while (getpid()) msleep (1);
+When compiling mbp_nvidia_bl.o and applesmc.o using gcc 3.3.5,
+the below compilation error occurs.
 
-I think it's pretty basic that setgid/setuid needs to be done _before_
-exec'ing untrusted code.
+  CC [M]  drivers/video/backlight/mbp_nvidia_bl.o
+  drivers/video/backlight/mbp_nvidia_bl.c:114: error: storage size of `__mod_dmi_device_table' isn't known
+  make[1]: *** [drivers/video/backlight/mbp_nvidia_bl.o] Error 1
+  make: *** [drivers/video/backlight/mbp_nvidia_bl.o] Error 2
 
-On the other hand, if a trusted process gets its uid changed _and_
-expects this to happen then I suppose it can be secure. But if a
-process's uid gets changed unexpectedly then nasty things already
-pointed out by Alan and others can occur.
+  CC [M]  drivers/hwmon/applesmc.o
+  drivers/hwmon/applesmc.c:1567: error: storage size of `__mod_dmi_device_table' isn't known
+  make[1]: *** [drivers/hwmon/applesmc.o] Error 1
+  make: *** [drivers/hwmon/applesmc.o] Error 2
 
-Nick.
--- 
-PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
-PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
+Diffs between 2.6.27.7 and 2.6.28-rc7 are shown below.
+
+  # diff linux-2.6.27.7/drivers/video/backlight/mbp_nvidia_bl.c linux-2.6.28-rc7/drivers/video/backlight/mbp_nvidia_bl.c
+  114,116c114
+  < MODULE_ALIAS("svnAppleInc.:pnMacBookPro3,1");
+  < MODULE_ALIAS("svnAppleInc.:pnMacBookPro3,2");
+  < MODULE_ALIAS("svnAppleInc.:pnMacBookPro4,1");
+  ---
+  > MODULE_DEVICE_TABLE(dmi, mbp_device_table);
+
+We can see that MODULE_ALIAS is replaced by MODULE_DEVICE_TABLE.
+
+mbp_nvidia_bl.c and applesmc.c are using MODULE_DEVICE_TABLE(dmi, ...);
+which will extracted to __mod_dmi_device_table, but it seems to me that
+dmi does not define __mod_dmi_device_table.
+
+I don't know why gcc 4.x doesn't trigger this compilation error.
+
+I don't know whether mbp_nvidia_bl.o and applesmc.o compiled with this patch
+work or not. Can somebody who has these hardwares try this patch?
+
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ drivers/hwmon/applesmc.c                |    2 +-
+ drivers/video/backlight/mbp_nvidia_bl.c |    2 +-
+ include/linux/module.h                  |    2 ++
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+
+--- linux-2.6.28-rc7.orig/drivers/hwmon/applesmc.c
++++ linux-2.6.28-rc7/drivers/hwmon/applesmc.c
+@@ -1564,4 +1564,4 @@ module_exit(applesmc_exit);
+ MODULE_AUTHOR("Nicolas Boichat");
+ MODULE_DESCRIPTION("Apple SMC");
+ MODULE_LICENSE("GPL v2");
+-MODULE_DEVICE_TABLE(dmi, applesmc_whitelist);
++MODULE_SYSTEM_TABLE(dmi, applesmc_whitelist);
+--- linux-2.6.28-rc7.orig/drivers/video/backlight/mbp_nvidia_bl.c
++++ linux-2.6.28-rc7/drivers/video/backlight/mbp_nvidia_bl.c
+@@ -111,4 +111,4 @@ module_exit(mbp_exit);
+ MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
+ MODULE_DESCRIPTION("Nvidia-based Macbook Pro Backlight Driver");
+ MODULE_LICENSE("GPL");
+-MODULE_DEVICE_TABLE(dmi, mbp_device_table);
++MODULE_SYSTEM_TABLE(dmi, mbp_device_table);
+--- linux-2.6.28-rc7.orig/include/linux/module.h
++++ linux-2.6.28-rc7/include/linux/module.h
+@@ -139,6 +139,8 @@ extern struct module __this_module;
+ 
+ #define MODULE_DEVICE_TABLE(type,name)		\
+   MODULE_GENERIC_TABLE(type##_device,name)
++#define MODULE_SYSTEM_TABLE(type,name)		\
++  MODULE_GENERIC_TABLE(type##_system,name)
+ 
+ /* Version of form [<epoch>:]<version>[-<extra-version>].
+    Or for CVS/RCS ID version, everything but the number is stripped.
