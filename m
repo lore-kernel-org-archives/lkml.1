@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbYLEWWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbYLEWWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756679AbYLEWWD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 17:22:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYLEWVx
+	id S1757532AbYLEWWZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 17:22:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbYLEWWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 17:21:53 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:41936 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbYLEWVx (ORCPT
+	Fri, 5 Dec 2008 17:22:09 -0500
+Received: from rv-out-0506.google.com ([209.85.198.237]:21345 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754669AbYLEWWI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 17:21:53 -0500
-Date: Fri, 5 Dec 2008 22:21:45 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Matt Mackall <mpm@selenic.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] shmem: unify regular and tiny shmem
-In-Reply-To: <1228500936.3255.210.camel@calx>
-Message-ID: <Pine.LNX.4.64.0812052218120.27321@blonde.anvils>
-References: <1228425564.3255.121.camel@calx>  <Pine.LNX.4.64.0812051311530.10157@blonde.anvils>
- <1228500936.3255.210.camel@calx>
+	Fri, 5 Dec 2008 17:22:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=adrmZCrQM23UGKrcAf7qBXiY+NFGNade95HVubSJ0YCwscSa7zJ6FazpShxlzQuLbe
+         b1NFzPdtvTL2mHdT4cYETfUXo9LeRB1yfOeznvtad406+wT4PqWJU1sH5q8VHNdFfs6K
+         cS+B1bF+UOn77bl734i1vmI3zUlNHpPpfqzA4=
+Date: Sat, 6 Dec 2008 03:51:54 +0530
+From: Balaji Rao <balajirrao@gmail.com>
+To: ben@simtec.co.uk
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [trivial] Fix typo
+Message-ID: <20081205222154.GA24294@cff.thadambail>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Dec 2008, Matt Mackall wrote:
-> On Fri, 2008-12-05 at 13:18 +0000, Hugh Dickins wrote:
-> > I agree with where you're going (surrendering your empire to mine!
-> > or perhaps you don't you see it quite that way?), but I think this
-> > isn't quite the patch you meant to send: it shouldn't contain that
-> > 
-> > > -			&shmem_file_operations);
-> > > +		  &shmem_file_operations);
-> > > +
-> > > +#ifndef CONFIG_MMU
-> > > +	error = ramfs_nommu_expand_for_mapping(inode, size);
-> > > +	if (error)
-> > > +		goto close_file;
-> > > +#endif
-> > 
-> > hunk in mm/shmem.c
-> 
-> I'm staring at the source and I'm at a loss as to why not? SHMEM depends
-> on MMU, so this only gets done when !SHMEM && !MMU, which makes it the
-> same as the tiny-shmem.c code it's unifying, no?
+    Fix typo in license string.
+    
+    Signed-off-by: Balaji Rao <balajirrao@gmail.com>
 
-Sorry for wasting your time puzzling over that, it was just me getting
-confused with the ramfs_nommu_get_unmapped_area() bit which does vanish:
-this part is fine.
-
-Hugh
-
-> 
-> > and it should be deleting mm/tiny-shmem.c?
-> 
-> Not sure how that bit fell off, yes.
+diff --git a/drivers/serial/s3c2440.c b/drivers/serial/s3c2440.c
+index 317d239..29cbb0a 100644
+--- a/drivers/serial/s3c2440.c
++++ b/drivers/serial/s3c2440.c
+@@ -177,5 +177,5 @@ module_exit(s3c2440_serial_exit);
+ 
+ MODULE_DESCRIPTION("Samsung S3C2440,S3C2442 SoC Serial port driver");
+ MODULE_AUTHOR("Ben Dooks <ben@simtec.co.uk>");
+-MODULE_LICENSE("GPLi v2");
++MODULE_LICENSE("GPL v2");
+ MODULE_ALIAS("platform:s3c2440-uart");
