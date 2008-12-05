@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYLEWO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbYLEWWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757428AbYLEWO4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 17:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbYLEWOs
+	id S1756679AbYLEWWD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 17:22:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYLEWVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 17:14:48 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47657 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755764AbYLEWOr (ORCPT
+	Fri, 5 Dec 2008 17:21:53 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:41936 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbYLEWVx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 17:14:47 -0500
-Date: Fri, 5 Dec 2008 14:14:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
- on Toshiba R500 (bisected)
-In-Reply-To: <200812052301.45450.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0812051411400.3386@nehalem.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812041037250.3543@nehalem.linux-foundation.org> <alpine.LFD.2.00.0812051312160.3386@nehalem.linux-foundation.org> <200812052301.45450.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 5 Dec 2008 17:21:53 -0500
+Date: Fri, 5 Dec 2008 22:21:45 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Matt Mackall <mpm@selenic.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] shmem: unify regular and tiny shmem
+In-Reply-To: <1228500936.3255.210.camel@calx>
+Message-ID: <Pine.LNX.4.64.0812052218120.27321@blonde.anvils>
+References: <1228425564.3255.121.camel@calx>  <Pine.LNX.4.64.0812051311530.10157@blonde.anvils>
+ <1228500936.3255.210.camel@calx>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 5 Dec 2008, Rafael J. Wysocki wrote:
+On Fri, 5 Dec 2008, Matt Mackall wrote:
+> On Fri, 2008-12-05 at 13:18 +0000, Hugh Dickins wrote:
+> > I agree with where you're going (surrendering your empire to mine!
+> > or perhaps you don't you see it quite that way?), but I think this
+> > isn't quite the patch you meant to send: it shouldn't contain that
+> > 
+> > > -			&shmem_file_operations);
+> > > +		  &shmem_file_operations);
+> > > +
+> > > +#ifndef CONFIG_MMU
+> > > +	error = ramfs_nommu_expand_for_mapping(inode, size);
+> > > +	if (error)
+> > > +		goto close_file;
+> > > +#endif
+> > 
+> > hunk in mm/shmem.c
 > 
-> Well, actually I think we should go further and save the standard config
-> registers of _all_ PCI devices in the _late() callbacks (ie. with interrupts
-> disabled) and restore them in the _early() callbacks.
+> I'm staring at the source and I'm at a loss as to why not? SHMEM depends
+> on MMU, so this only gets done when !SHMEM && !MMU, which makes it the
+> same as the tiny-shmem.c code it's unifying, no?
 
-That would certainly simplify the code. 
+Sorry for wasting your time puzzling over that, it was just me getting
+confused with the ramfs_nommu_get_unmapped_area() bit which does vanish:
+this part is fine.
 
-> I don't really understand why pci_restore_state() is not called by the core
-> and every single driver calls it by itself.
+Hugh
 
-The idea was to allow PCI drivers to override it if they wanted to.
-
-That said, the ones that do their own state restore generally do it wrong 
-(eg the USB host controllers doing things in the wrong order and enabling 
-the device before having actually written back the BAR values), so it's 
-arguably broken to let drivers override it.
-
-> IOW, I would split the resume of PCI devices into two parts, the first of
-> which will call pci_restore_state() with interrupts disabled and the second
-> will do the remaining stuff.
-
-I would definitely not disagree with that - leave the regular 
-"suspend/resume" callbacks for purely higher-level actions. It would 
-interesting to hear what it does for you.
-
-			Linus
+> 
+> > and it should be deleting mm/tiny-shmem.c?
+> 
+> Not sure how that bit fell off, yes.
