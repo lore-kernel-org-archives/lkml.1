@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbYLEB0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbYLEBnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755789AbYLEB0k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 20:26:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYLEB0b
+	id S1755948AbYLEBnf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 20:43:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbYLEBn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 20:26:31 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:34510 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752117AbYLEB0b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 20:26:31 -0500
-Date: Fri, 5 Dec 2008 02:37:39 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, Alasdair G Kergon <agk@redhat.com>,
-       Andi Kleen <andi-suse@firstfloor.org>, Milan Broz <mbroz@redhat.com>
-Subject: Re: Device loses barrier support (was: Fixed patch for simple barriers.)
-Message-ID: <20081205013739.GZ6703@one.firstfloor.org>
-References: <20081204142015.GQ6703@one.firstfloor.org> <Pine.LNX.4.64.0812040913510.6118@hs20-bc2-1.build.redhat.com> <20081204145810.GR6703@one.firstfloor.org> <Pine.LNX.4.64.0812041139200.2434@hs20-bc2-1.build.redhat.com> <20081204174838.GS6703@one.firstfloor.org> <Pine.LNX.4.64.0812041401210.23079@hs20-bc2-1.build.redhat.com> <20081204221551.GV6703@one.firstfloor.org> <Pine.LNX.4.64.0812041756550.29638@hs20-bc2-1.build.redhat.com> <20081205004849.GX6703@one.firstfloor.org> <Pine.LNX.4.64.0812041948400.14114@hs20-bc2-1.build.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812041948400.14114@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 4 Dec 2008 20:43:26 -0500
+Received: from tundra.namei.org ([65.99.196.166]:48895 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751543AbYLEBnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 20:43:25 -0500
+Date: Fri, 5 Dec 2008 12:42:33 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: david safford <safford@watson.ibm.com>
+cc: Christoph Hellwig <hch@infradead.org>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
+In-Reply-To: <1228424014.3014.58.camel@localhost.localdomain>
+Message-ID: <alpine.LRH.1.10.0812051236420.11818@tundra.namei.org>
+References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>  <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com>  <20081203123021.GA30035@infradead.org>  <1228328323.2821.30.camel@localhost.localdomain>  <20081203182300.GA31203@infradead.org>
+  <1228342655.2821.64.camel@localhost.localdomain>  <20081204130949.GA18196@infradead.org> <1228424014.3014.58.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * barrier support in md-raid1 deviates from the specification at 
-> Documentation/block/barrier.txt. The specification says that requests 
-> submitted after the barrier request hit the media after the barrier 
-> request hits the media. The reality is that the barrier request can be 
-> randomly aborted and the requests submitted after it hit the media before 
-> the barrier request.
+On Thu, 4 Dec 2008, david safford wrote:
 
-Yes the spec should be probably updated.
-
-But also see Linus' rant from yesterday about code vs documentation.
-When in doubt the code wins.
+> > - struct integrity_operations delcares the operations called from the
+> > VFS. This one is actually used. While I don't agree to Dave's
+> > argument, because we don't put bloat in just because people might
+> > eventually some day use it when they are in the right mood and the
+> > sun shines, thisn't isn't the one I'm talking about in this thread.
 > 
-> * the filesystems developed hacks to work around this issue, the hacks 
-> involve not submitting more requests after the barrier request, 
+> These hooks were for alternate integrity modules, and since
+> no one else has defended them, we have to agree that they
+> should be replaced with direct calls.
 
-I suspect the reason the file systems did it this way is that
-it was a much simpler change than to rewrite the transaction
-manager for this.
+If you know of other modules which are planned to be ported to this 
+framework, merged upstream and supported, then this would be similar to 
+the situation when LSM was initially developed.
 
-> synchronously waiting for the barrier request and eventually retrying it. 
-> These hacks suppress any performance advantage barriers could bring.
-> 
-> * you submit a patch that makes barriers even more often deviate from the 
-> specification and you argue that the patch is correct because filesystems 
-> handle this deviation.
+You've previously mentioned some active projects here:
+http://lkml.org/lkml/2008/11/17/362
 
-Sorry what counts is the code behaviour, not the specification.
+Are there any definite committments to push these upstream when the 
+integrity framework is merged?
 
--Andi
 
+- James
 -- 
-ak@linux.intel.com
+James Morris
+<jmorris@namei.org>
