@@ -1,105 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbYLEJJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbYLEJKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756389AbYLEJJY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 04:09:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYLEJJJ
+	id S1756694AbYLEJKo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 04:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYLEJK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 04:09:09 -0500
-Received: from rv-out-0506.google.com ([209.85.198.238]:21832 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbYLEJJE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 04:09:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=JkHAnfunaV4m6AMplrM96Oj/T7wv6Q6UcjAq2BkXHAEhcQ/O9kWmuTTGPRjDQlcUln
-         XxwQy6ac+oP1VoBY7ujzOcJHw5UWJBxQTzmbktKvuKBnWMMaLNUy5wqoJv82j4dSPjOv
-         T00WKcfe2wVKjAVlOMMesRk6+2AWQVmyxXfU0=
-Message-ID: <86802c440812050109t5bbac783o8f5e814dea1905d8@mail.gmail.com>
-Date: Fri, 5 Dec 2008 01:09:03 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Frans Pop" <elendil@planet.nl>
-Subject: Re: MSI changes in .28
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>, rjw@sisk.pl,
-       greg@kroah.com, mingo@elte.hu, jbarnes@virtuousgeek.org,
-       lenb@kernel.org, linux-kernel@vger.kernel.org, tiwai@suse.de,
-       akpm@linux-foundation.org, ink@jurassic.park.msu.ru
-In-Reply-To: <200812050953.12238.elendil@planet.nl>
+	Fri, 5 Dec 2008 04:10:28 -0500
+Received: from ozlabs.org ([203.10.76.45]:41917 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751140AbYLEJKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 04:10:25 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200812020320.31876.rjw@sisk.pl>
-	 <200812020629.26714.elendil@planet.nl>
-	 <alpine.LFD.2.00.0812020735150.3256@nehalem.linux-foundation.org>
-	 <200812050953.12238.elendil@planet.nl>
-X-Google-Sender-Auth: 13c4c92d3c7c9f43
+Message-ID: <18744.61429.548462.667020@cargo.ozlabs.ibm.com>
+Date: Fri, 5 Dec 2008 20:10:13 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
+In-Reply-To: <20081205080813.GA2030@elte.hu>
+References: <20081204225345.654705757@linutronix.de>
+	<18744.29747.728320.652642@cargo.ozlabs.ibm.com>
+	<20081205063131.GB12785@elte.hu>
+	<18744.56857.259756.129894@cargo.ozlabs.ibm.com>
+	<20081205080813.GA2030@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 5, 2008 at 12:53 AM, Frans Pop <elendil@planet.nl> wrote:
-> On Tuesday 02 December 2008, Linus Torvalds wrote:
->> So, it looks like you have MSI enabled in -rc6, and not in -rc3.
->
-> I've just compared dmesg for my *desktop* and there I see the following
-> between 2.6.28-rc6 and current 2.6.28-rc7:
->
->  pcieport-driver 0000:00:1c.0: setting latency timer to 64
->  pcieport-driver 0000:00:1c.0: found MSI capability
-> -pcieport-driver 0000:00:1c.0: irq 47 for MSI/MSI-X
-> +pcieport-driver 0000:00:1c.0: irq 511 for MSI/MSI-X
->  pci_express 0000:00:1c.0:pcie00: allocate port service
->  pci_express 0000:00:1c.0:pcie02: allocate port service
->  pcieport-driver 0000:00:1c.2: setting latency timer to 64
->  pcieport-driver 0000:00:1c.2: found MSI capability
-> -pcieport-driver 0000:00:1c.2: irq 46 for MSI/MSI-X
-> +pcieport-driver 0000:00:1c.2: irq 510 for MSI/MSI-X
->  pci_express 0000:00:1c.2:pcie00: allocate port service
->  pci_express 0000:00:1c.2:pcie02: allocate port service
->  pcieport-driver 0000:00:1c.3: setting latency timer to 64
->  pcieport-driver 0000:00:1c.3: found MSI capability
-> -pcieport-driver 0000:00:1c.3: irq 45 for MSI/MSI-X
-> +pcieport-driver 0000:00:1c.3: irq 509 for MSI/MSI-X
->  pci_express 0000:00:1c.3:pcie00: allocate port service
->  pci_express 0000:00:1c.3:pcie02: allocate port service
->  pcieport-driver 0000:00:1c.4: setting latency timer to 64
->  pcieport-driver 0000:00:1c.4: found MSI capability
-> -pcieport-driver 0000:00:1c.4: irq 44 for MSI/MSI-X
-> +pcieport-driver 0000:00:1c.4: irq 508 for MSI/MSI-X
->  pci_express 0000:00:1c.4:pcie00: allocate port service
->  pci_express 0000:00:1c.4:pcie02: allocate port service
->  pcieport-driver 0000:00:1c.5: setting latency timer to 64
->  pcieport-driver 0000:00:1c.5: found MSI capability
-> -pcieport-driver 0000:00:1c.5: irq 43 for MSI/MSI-X
-> +pcieport-driver 0000:00:1c.5: irq 507 for MSI/MSI-X
-> [...]
->  ahci 0000:00:1f.2: PCI INT B -> GSI 19 (level, low) -> IRQ 19
-> -ahci 0000:00:1f.2: irq 42 for MSI/MSI-X
-> +ahci 0000:00:1f.2: irq 506 for MSI/MSI-X
->  ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 4 ports 3 Gbps 0xf impl SATA mode
-> [...]
->  e1000e 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
->  e1000e 0000:01:00.0: setting latency timer to 64
-> -e1000e 0000:01:00.0: irq 41 for MSI/MSI-X
-> +e1000e 0000:01:00.0: irq 505 for MSI/MSI-X
->
-> I.e. very similar to the change between rc-3 and rc-7 you commented on
-> for my notebook.
->
-> Is this really MSI being (not) enabled, or just it using much higher
-> IRQ numbers?
+Ingo Molnar writes:
 
-because NR_IRQS is increased. and MSI irq is back counting from NR_IRQS - 1.
+> * Paul Mackerras <paulus@samba.org> wrote:
+[...]
+> > Isn't it two separate read() calls to read the two counters?  If so, 
+> > the only way the two values are actually going to correspond to the 
+> > same point in time is if the task being monitored is stopped.  In which 
+> > case the monitoring task needs to use ptrace or something similar in 
+> > order to make sure that the monitored task is actually stopped.
+> 
+> It doesnt matter in practice.
 
-we have patch in sparse_irq, will start dyn irq for MSI from
-nr_irqs_gsi ( the max irq ioapic will use) .. ( according to Thomas)
+Can I ask - and this is a real question, I'm not being sarcastic - is
+that statement made with substantial serious experience in performance
+analysis behind it, or is it just an intuition?
 
-before that reach mainline, the effects for you is wasting some space
-from some big irq_desc[].
-but only 450... that is not bad.
+I will happily admit that I am not a great expert on performance
+analysis with years of experience.  But I have taken a bit of a look
+at what people with that sort of experience do, and I don't think they
+would agree with your "doesn't matter" statement.
 
-YH
+> Such kind of 'group system call facility' has been suggested several 
+> times in the past - but ... never got anywhere because system calls are 
+> cheap enough, it really does not count in practice.
+> 
+> It could be implemented, and note that because our code uses a proper 
+> Linux file descriptor abstraction, such a sys_read_fds() facility would 
+> help _other_ applications as well, not just performance counters.
+> 
+> But it brings complications: demultiplexing of error conditions on 
+> individual counters is a real pain with any compound abstraction. We very 
+> consciously went with the 'one fd, one object, one counter' design.
+
+And I think that is the fundamental flaw.  On the machines I am
+familiar with, the performance counters as not separate things that
+can individually and independently be assigned to count one thing or
+another.
+
+Rather, what the hardware provides is ONE performance monitor unit,
+which the OS can context-switch between tasks.  The performance
+monitor unit has several counters that can be assigned (within limits)
+to count various aspects of the performance of the code being
+executed.  That is why, for instance, if you ask for the counters to
+be frozen when one of them overflows, they all get frozen at that
+point.
+
+And that's how the hardware is designed because that's how the people
+that do performance analysis want to do their measurements.  This idea
+of splitting things up into separate counters that look independent
+but aren't is just going to cause unnecessary complications and
+difficulties.
+
+Paul.
