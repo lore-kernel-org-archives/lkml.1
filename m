@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758491AbYLEN4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbYLEOAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758491AbYLEN4o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 08:56:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYLEN4g
+	id S1758116AbYLEOAL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 09:00:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYLEN7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 08:56:36 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:42350 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751543AbYLEN4g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 08:56:36 -0500
-Date: Fri, 5 Dec 2008 19:09:26 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>
-Subject: Re: [RFC][PATCH -mmotm 1/4] memcg: don't trigger oom at page
-	migration
-Message-ID: <20081205133925.GA10004@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-	LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-	Paul Menage <menage@google.com>
-References: <20081205212208.31d904e0.nishimura@mxp.nes.nec.co.jp> <20081205212304.f7018ea1.nishimura@mxp.nes.nec.co.jp>
+	Fri, 5 Dec 2008 08:59:55 -0500
+Received: from lucidpixels.com ([75.144.35.66]:57140 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751662AbYLEN7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 08:59:55 -0500
+Date: Fri, 5 Dec 2008 08:59:54 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       smartmontools-support@lists.sourceforge.net
+cc: Alan Piszcz <ap@solarrain.com>
+Subject: Re: Velociraptor drive related to the use of NCQ.
+In-Reply-To: <alpine.DEB.1.10.0812050602400.3188@p34.internal.lan>
+Message-ID: <alpine.DEB.1.10.0812050855140.4713@p34.internal.lan>
+References: <alpine.DEB.1.10.0812050602400.3188@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20081205212304.f7018ea1.nishimura@mxp.nes.nec.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2008-12-05 21:23:04]:
 
-> I think triggering OOM at mem_cgroup_prepare_migration would be just a bit
-> overkill.
-> Returning -ENOMEM would be enough for mem_cgroup_prepare_migration.
-> The caller would handle the case anyway.
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> ---
->  mm/memcontrol.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 4dbce1d..50ee1be 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -1330,7 +1330,7 @@ int mem_cgroup_prepare_migration(struct page *page, struct mem_cgroup **ptr)
->  	unlock_page_cgroup(pc);
-> 
->  	if (mem) {
-> -		ret = mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem);
-> +		ret = __mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem, false);
->  		css_put(&mem->css);
->  	}
->  	*ptr = mem;
+
+On Fri, 5 Dec 2008, Justin Piszcz wrote:
+
+> I swapped out my power supply, changed ALL cables and bought a $1000 raid
+> controller with BBU, the drives are still having problems, when writing to
+> them in a RAID10 configuration, it locks up the card:
 >
+> SMART shows the same thing on many of the disks in the RAID10:
+>
+> Error 1 occurred at disk power-on lifetime: 3708 hours (154 days + 12 hours)
+>  When the command that caused the error occurred, the device was active or 
+> idle.
 
-Seems reasonable to me. A comment indicating or adding a noreclaim
-wrapper around __mem_cgroup_try_charge to indicate that no reclaim
-will take place will be nice.
+I spoke to soon, turning off NCQ helped dramatically, it worked three times!
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com> 
+writing to raid10
+dd: writing `file2': No space left on device
+1430328+0 records in
+1430327+0 records out
+1499806973952 bytes (1.5 TB) copied, 3914.51 s, 383 MB/s
+Fri Dec  5 06:00:25 EST 2008
+writing to raid10
+dd: writing `file2': No space left on device
+1430328+0 records in
+1430327+0 records out
+1499806973952 bytes (1.5 TB) copied, 4063.25 s, 369 MB/s
+Fri Dec  5 07:08:11 EST 2008
+writing to raid10
+dd: writing `file2': No space left on device
+1430328+0 records in
+1430327+0 records out
+1499806973952 bytes (1.5 TB) copied, 3926.71 s, 382 MB/s
+Fri Dec  5 08:13:41 EST 2008
 
--- 
-	Balbir
+Then it crashed again, with NCQ enabled, it would not even complete one test,
+So basically a new system, new PSU, new cables, its on a new APC UPS and the 
+problem persists even when all disks are on a RAID card, SW raid, it does not 
+matter, Velociraptors have problems, I think its time for me to get regular
+1TiB disks and be done with it.
+
+Justin.
+
