@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYLEGKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbYLEG3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYLEGKw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 01:10:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYLEGKk
+	id S1754070AbYLEG3O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 01:29:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYLEG25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 01:10:40 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45798 "EHLO mx3.mail.elte.hu"
+	Fri, 5 Dec 2008 01:28:57 -0500
+Received: from kandzendo.ru ([195.178.208.66]:54365 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751303AbYLEGKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 01:10:39 -0500
-Date: Fri, 5 Dec 2008 07:10:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org,
-       eranian@googlemail.com, dada1@cosmosbay.com, robert.richter@amd.com,
-       arjan@infradead.org, hpa@zytor.com, a.p.zijlstra@chello.nl,
-       rostedt@goodmis.org, paulus@samba.org
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-Message-ID: <20081205061012.GA12785@elte.hu>
-References: <20081204225345.654705757@linutronix.de> <20081204.171233.201039452.davem@davemloft.net>
+	id S1751488AbYLEG25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 01:28:57 -0500
+Date: Fri, 5 Dec 2008 09:28:54 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [W1] Updated documentation.
+Message-ID: <20081205062854.GA24227@ioremap.net>
+References: <12284022104086-git-send-email-zbr@ioremap.net> <122840221468-git-send-email-zbr@ioremap.net> <12284022143564-git-send-email-zbr@ioremap.net> <12284022144105-git-send-email-zbr@ioremap.net> <12284022141659-git-send-email-zbr@ioremap.net> <49386D75.2030302@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081204.171233.201039452.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <49386D75.2030302@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Randy.
 
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Thomas Gleixner <tglx@linutronix.de>
-> Date: Thu, 04 Dec 2008 23:44:39 -0000
+On Thu, Dec 04, 2008 at 03:53:25PM -0800, Randy Dunlap (randy.dunlap@oracle.com) wrote:
+> > --- a/Documentation/w1/w1.netlink
+> > +++ b/Documentation/w1/w1.netlink
+> > @@ -17,25 +17,27 @@ Protocol.
+> >  [struct cn_msg] - connector header. It's length field is equal to size of the attached data.
 > 
-> >  - No interaction with ptrace: any task (with sufficient permissions) can
-> >    monitor other tasks, without having to stop that task.
+> (not in this patch, but:)              Its
+
+Yup :)
+ 
+> > -Each connector message can include one or more w1_netlink_msg with zero of more attached w1_netlink_cmd messages.
+> > +Each connector message can include one or more w1_netlink_msg with zero or more attached w1_netlink_cmd messages.
 > 
-> This isn't going to work.
->
-> If you look at the things the perfmon libraries do, you do need to stop 
-> the task.
->
-> Consider counter virtualization as the most direct example. [...]
+> Please limit lines to a maximum of 80 characters.  Around 72 would be Good.
+> (here and elsewhere)
 
-Note that counter virtualization is not offered in the perfmon3 patchset 
-that has been posted to lkml. (It is part of the much larger 'full' 
-perfmon patchset which has not been submitted for integration)
+Will change.
 
-Nevertheless we will offer counter virtualization in -v2 of our patchset 
-and we mentioned it in the TODO list:
+> >  For event messages there are no w1_netlink_cmd embedded structures, only connector header
+> >  and w1_netlink_msg strucutre with "len" field being zero and filled type (one of event types)
+> 
+>                       structure
+ 
+> > +	cn_msg (CN_W1_IDX.CN_W1_VAL as id, len is equal to sizeof(struct
+> > +	w1_netlink_msg) plus number of masters multipled by 4)
+> 
+> 	                                       multiplied
 
-> >  - Round-robin scheduling of counters, when there's more task
-> >    counters than hw counters available.
+Changed.
 
-The 'target' task does not have to be stopped to offer counter 
-virtualization (counter overcommit or counter scheduling) - or to offer 
-any of the other performance counter features. Please let us know why it 
-needs the task to be stopped - we asked about that on lkml in the perfmon 
-thread and no technical answer was given, and couldnt find any such 
-technical reason while implementing it ourselves.
+> > @@ -82,10 +98,10 @@ Connector [1] specific documentation.
+> >  Each connector message includes two u32 fields as "address".
+> >  w1 uses CN_W1_IDX and CN_W1_VAL defined in include/linux/connector.h header.
+> 
+>       uses them for what?
 
-Relying on ptrace machinery can be considered one of the bigger design 
-mistakes of the permon3 patchset.
+They define destination address in connector subsystem.
 
-We pointed that out in review, and now we demonstrate it via this 
-patchset that it can be done much cleaner and much simpler. (Please stay 
-tuned for -v2 if you want to see the proof of the pudding.)
+> >  Each message also includes sequence and acknowledge numbers.
+> > -Sequence number for event messages is appropriate bus master sequence number increased with
+> > +Sequence number for event messages is appropriate bus master sequence number increased with 
+> 
+> Line ends with space.  Please check for that throughout the file.
 
-	Ingo
+Ok.
+
+> > @@ -93,6 +109,6 @@ Additional documantion, source code examples.
+> 
+>                                 documentation
+
+Changed
+
+> I'll plan to review the entire doc file.
+
+Great, thank you!
+I will roll out updated version today with this changes and fixed patch
+mentioned by Frederik.
+
+-- 
+	Evgeniy Polyakov
