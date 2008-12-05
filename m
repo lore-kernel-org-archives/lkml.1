@@ -1,102 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbYLEQgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbYLEQjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755388AbYLEQgl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 11:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYLEQgd
+	id S1755940AbYLEQjc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 11:39:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYLEQjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 11:36:33 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:32768 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751830AbYLEQgb (ORCPT
+	Fri, 5 Dec 2008 11:39:23 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59155 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751845AbYLEQjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 11:36:31 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Steven Rostedt <srostedt@redhat.com>
-References: <20081204052638.425740534@goodmis.org>
-	<20081204052735.362609481@goodmis.org>
-	<20081204001803.598063f5.akpm@linux-foundation.org>
-	<20081204091023.GJ32594@elte.hu> <m1vdu0t7tz.fsf@frodo.ebiederm.org>
-	<alpine.DEB.1.10.0812040946060.5240@gandalf.stny.rr.com>
-	<m11vwnu10b.fsf@frodo.ebiederm.org>
-	<alpine.DEB.1.10.0812041551590.32726@gandalf.stny.rr.com>
-	<m1vdtzr4zn.fsf@frodo.ebiederm.org>
-	<alpine.DEB.1.10.0812041653270.32726@gandalf.stny.rr.com>
-	<m1r64nqd6v.fsf@frodo.ebiederm.org>
-	<alpine.DEB.1.10.0812050715570.26316@gandalf.stny.rr.com>
-Date: Fri, 05 Dec 2008 08:35:26 -0800
-In-Reply-To: <alpine.DEB.1.10.0812050715570.26316@gandalf.stny.rr.com> (Steven
-	Rostedt's message of "Fri, 5 Dec 2008 07:23:07 -0500 (EST)")
-Message-ID: <m1zljapokx.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 5 Dec 2008 11:39:23 -0500
+Date: Fri, 5 Dec 2008 16:39:02 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: David Howells <dhowells@redhat.com>
+cc: torvalds@osdl.org, akpm@linux-foundation.org, bfields@fieldses.org,
+       hch@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] EXPORTFS: Don't return NULL from fh_to_dentry()/fh_to_parent()
+ [ver #4]
+In-Reply-To: <20081205162318.20732.73054.stgit@warthog.procyon.org.uk>
+Message-ID: <Pine.LNX.4.64.0812051637140.6901@blonde.anvils>
+References: <20081205162318.20732.73054.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Steven Rostedt <rostedt@goodmis.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 3/3] ftrace: add ability to only trace swapper tasks
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt <rostedt@goodmis.org> writes:
+On Fri, 5 Dec 2008, David Howells wrote:
 
-> Other pids get allocated per task. In the beginning of copy_process we 
-> have:
->
->         if (pid != &init_struct_pid) {
->                 retval = -ENOMEM;
->                 pid = alloc_pid(task_active_pid_ns(p));
->
-> Where alloc_pid allocates a pid structure. But this is only done if it is
-> not a swapper task.
+> Returning NULL from fh_to_dentry() and fh_to_parent() is not permitted, so
+> return -ESTALE instead.  exportfs_decode_fh() does not check for NULL, but
+> will try to dereference it as IS_ERR() does not check for it.
+> 
+> The generic_fh_to_dentry() and generic_fh_to_parent() functions also no longer
+> return NULL, but return -ESTALE instead.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Acked-by: J. Bruce Fields <bfields@citi.umich.edu>
 
-For PIDTYPE_PID.  For sessions and process groups we don't always allocate them,
-and attach_pid is fine.
+Acked-by: Hugh Dickins <hugh@veritas.com>
 
-There is a bit of oddness in the pid freeing case, in using an unhashed pid,
-so cpu hotunplug might be a problem.  But you certainly shouldn't be running
-into this.
+Phew!  Thanks.
 
->> > When doing the code you suggested, I end up with only marking the last 
->> > idle task to be created.
->> 
->> Odd. It is all a linked list through the task structures.
->> I'm guessing the initialization isn't quite right.
->> 
->> Weird.  
->
-> Do I need to change the loop to do_each_pid_thread?
-
-> I'll try that later today.
-
-I don't think so.  I'm pretty certain we aren't passing the necessary
-clone flags to make that case work for idle threads, and in fact we aren't
-even cloning from the idle task when we create additional idle threads
-so I don't see how do_each_pid_thread could work better.
-
-That said do_each_pid_thread appears to be a proper superset of
-do_each_pid_task so it should not be harmful.
-
-I am all for figuring out how to remove this special case if we can.
-
-Eric
+> ---
+> 
+>  fs/fat/inode.c                |    2 +-
+>  fs/fuse/inode.c               |    4 ++--
+>  fs/gfs2/ops_export.c          |    4 ++--
+>  fs/isofs/export.c             |    4 ++--
+>  fs/libfs.c                    |    4 ++--
+>  fs/ocfs2/export.c             |    4 ++--
+>  fs/udf/namei.c                |    4 ++--
+>  fs/xfs/linux-2.6/xfs_export.c |    2 +-
+>  mm/shmem.c                    |   14 +++++++-------
+>  9 files changed, 21 insertions(+), 21 deletions(-)
+> 
+> 
+> diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+> index d937aaf..cac84f2 100644
+> --- a/fs/fat/inode.c
+> +++ b/fs/fat/inode.c
+> @@ -657,7 +657,7 @@ static struct dentry *fat_fh_to_dentry(struct super_block *sb,
+>  	u32 *fh = fid->raw;
+>  
+>  	if (fh_len < 5 || fh_type != 3)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	inode = ilookup(sb, fh[0]);
+>  	if (!inode || inode->i_generation != fh[1]) {
+> diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
+> index 2e99f34..0eb8990 100644
+> --- a/fs/fuse/inode.c
+> +++ b/fs/fuse/inode.c
+> @@ -653,7 +653,7 @@ static struct dentry *fuse_fh_to_dentry(struct super_block *sb,
+>  	struct fuse_inode_handle handle;
+>  
+>  	if ((fh_type != 0x81 && fh_type != 0x82) || fh_len < 3)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	handle.nodeid = (u64) fid->raw[0] << 32;
+>  	handle.nodeid |= (u64) fid->raw[1];
+> @@ -667,7 +667,7 @@ static struct dentry *fuse_fh_to_parent(struct super_block *sb,
+>  	struct fuse_inode_handle parent;
+>  
+>  	if (fh_type != 0x82 || fh_len < 6)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	parent.nodeid = (u64) fid->raw[3] << 32;
+>  	parent.nodeid |= (u64) fid->raw[4];
+> diff --git a/fs/gfs2/ops_export.c b/fs/gfs2/ops_export.c
+> index bbb8c36..2864873 100644
+> --- a/fs/gfs2/ops_export.c
+> +++ b/fs/gfs2/ops_export.c
+> @@ -254,7 +254,7 @@ static struct dentry *gfs2_fh_to_dentry(struct super_block *sb, struct fid *fid,
+>  		this.no_addr |= be32_to_cpu(fh[3]);
+>  		return gfs2_get_dentry(sb, &this);
+>  	default:
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  	}
+>  }
+>  
+> @@ -273,7 +273,7 @@ static struct dentry *gfs2_fh_to_parent(struct super_block *sb, struct fid *fid,
+>  		parent.no_addr |= be32_to_cpu(fh[7]);
+>  		return gfs2_get_dentry(sb, &parent);
+>  	default:
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  	}
+>  }
+>  
+> diff --git a/fs/isofs/export.c b/fs/isofs/export.c
+> index e81a305..1b4ee23 100644
+> --- a/fs/isofs/export.c
+> +++ b/fs/isofs/export.c
+> @@ -164,7 +164,7 @@ static struct dentry *isofs_fh_to_dentry(struct super_block *sb,
+>  	struct isofs_fid *ifid = (struct isofs_fid *)fid;
+>  
+>  	if (fh_len < 3 || fh_type > 2)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	return isofs_export_iget(sb, ifid->block, ifid->offset,
+>  			ifid->generation);
+> @@ -176,7 +176,7 @@ static struct dentry *isofs_fh_to_parent(struct super_block *sb,
+>  	struct isofs_fid *ifid = (struct isofs_fid *)fid;
+>  
+>  	if (fh_type != 2)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	return isofs_export_iget(sb,
+>  			fh_len > 2 ? ifid->parent_block : 0,
+> diff --git a/fs/libfs.c b/fs/libfs.c
+> index e960a83..4fe5b5b 100644
+> --- a/fs/libfs.c
+> +++ b/fs/libfs.c
+> @@ -751,7 +751,7 @@ struct dentry *generic_fh_to_dentry(struct super_block *sb, struct fid *fid,
+>  	struct inode *inode = NULL;
+>  
+>  	if (fh_len < 2)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	switch (fh_type) {
+>  	case FILEID_INO32_GEN:
+> @@ -784,7 +784,7 @@ struct dentry *generic_fh_to_parent(struct super_block *sb, struct fid *fid,
+>  	struct inode *inode = NULL;
+>  
+>  	if (fh_len <= 2)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	switch (fh_type) {
+>  	case FILEID_INO32_GEN_PARENT:
+> diff --git a/fs/ocfs2/export.c b/fs/ocfs2/export.c
+> index 2f27b33..0f1c80f 100644
+> --- a/fs/ocfs2/export.c
+> +++ b/fs/ocfs2/export.c
+> @@ -182,7 +182,7 @@ static struct dentry *ocfs2_fh_to_dentry(struct super_block *sb,
+>  	struct ocfs2_inode_handle handle;
+>  
+>  	if (fh_len < 3 || fh_type > 2)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	handle.ih_blkno = (u64)le32_to_cpu(fid->raw[0]) << 32;
+>  	handle.ih_blkno |= (u64)le32_to_cpu(fid->raw[1]);
+> @@ -196,7 +196,7 @@ static struct dentry *ocfs2_fh_to_parent(struct super_block *sb,
+>  	struct ocfs2_inode_handle parent;
+>  
+>  	if (fh_type != 2 || fh_len < 6)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	parent.ih_blkno = (u64)le32_to_cpu(fid->raw[3]) << 32;
+>  	parent.ih_blkno |= (u64)le32_to_cpu(fid->raw[4]);
+> diff --git a/fs/udf/namei.c b/fs/udf/namei.c
+> index f84bfaa..e1a1c16 100644
+> --- a/fs/udf/namei.c
+> +++ b/fs/udf/namei.c
+> @@ -1297,7 +1297,7 @@ static struct dentry *udf_fh_to_dentry(struct super_block *sb,
+>  	if ((fh_len != 3 && fh_len != 5) ||
+>  	    (fh_type != FILEID_UDF_WITH_PARENT &&
+>  	     fh_type != FILEID_UDF_WITHOUT_PARENT))
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	return udf_nfs_get_inode(sb, fid->udf.block, fid->udf.partref,
+>  			fid->udf.generation);
+> @@ -1307,7 +1307,7 @@ static struct dentry *udf_fh_to_parent(struct super_block *sb,
+>  				       struct fid *fid, int fh_len, int fh_type)
+>  {
+>  	if (fh_len != 5 || fh_type != FILEID_UDF_WITH_PARENT)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	return udf_nfs_get_inode(sb, fid->udf.parent_block,
+>  				 fid->udf.parent_partref,
+> diff --git a/fs/xfs/linux-2.6/xfs_export.c b/fs/xfs/linux-2.6/xfs_export.c
+> index 7f7abec..f9a51c4 100644
+> --- a/fs/xfs/linux-2.6/xfs_export.c
+> +++ b/fs/xfs/linux-2.6/xfs_export.c
+> @@ -150,7 +150,7 @@ xfs_fs_fh_to_dentry(struct super_block *sb, struct fid *fid,
+>  	struct inode		*inode = NULL;
+>  
+>  	if (fh_len < xfs_fileid_length(fileid_type))
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	switch (fileid_type) {
+>  	case FILEID_INO32_GEN_PARENT:
+> diff --git a/mm/shmem.c b/mm/shmem.c
+> index f1b0d48..c9bdbf7 100644
+> --- a/mm/shmem.c
+> +++ b/mm/shmem.c
+> @@ -2050,21 +2050,21 @@ static struct dentry *shmem_fh_to_dentry(struct super_block *sb,
+>  		struct fid *fid, int fh_len, int fh_type)
+>  {
+>  	struct inode *inode;
+> -	struct dentry *dentry = NULL;
+> +	struct dentry *dentry;
+>  	u64 inum = fid->raw[2];
+>  	inum = (inum << 32) | fid->raw[1];
+>  
+>  	if (fh_len < 3)
+> -		return NULL;
+> +		return ERR_PTR(-ESTALE);
+>  
+>  	inode = ilookup5(sb, (unsigned long)(inum + fid->raw[0]),
+>  			shmem_match, fid->raw);
+> -	if (inode) {
+> -		dentry = d_find_alias(inode);
+> -		iput(inode);
+> -	}
+> +	if (!inode)
+> +		return ERR_PTR(-ESTALE);
+>  
+> -	return dentry;
+> +	dentry = d_find_alias(inode);
+> +	iput(inode);
+> +	return dentry ?: ERR_PTR(-ESTALE);
+>  }
+>  
+>  static int shmem_encode_fh(struct dentry *dentry, __u32 *fh, int *len,
