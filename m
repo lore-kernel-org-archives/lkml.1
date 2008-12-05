@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYLEAIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYLEAVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbYLEAIr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 19:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYLEAIg
+	id S1753457AbYLEAVI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 19:21:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbYLEAUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 19:08:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:53573 "EHLO ogre.sisk.pl"
+	Thu, 4 Dec 2008 19:20:54 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53594 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbYLEAIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 19:08:35 -0500
+	id S1751161AbYLEAUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 19:20:54 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH -regression fix] ACPI: Fix ACPI battery regression introduced by commit 558073
-Date: Fri, 5 Dec 2008 01:07:51 +0100
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
+Date: Fri, 5 Dec 2008 01:20:01 +0100
 User-Agent: KMail/1.9.9
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+Cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <200812050045.40928.rjw@sisk.pl> <alpine.LFD.2.00.0812041604400.3543@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0812041604400.3543@nehalem.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812050107.51343.rjw@sisk.pl>
+Message-Id: <200812050120.02270.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: ACPI: Fix ACPI battery regression introduced by commit 558073
+On Friday, 5 of December 2008, Linus Torvalds wrote:
+> 
+> On Fri, 5 Dec 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > Yes. And in the case of Frans' machine, the e1000e controller was before 
+> > > all the bridges too.
+> > 
+> > Hm.  And unloading it before suspend made things work?  Interesting.
+> 
+> Yeah. Frans' workaround was
+> 
+>  - unloading e1000e before suspend
+>  - using aggressive powersave setting on snd_hda_intel to ensure that
+>    sound controller was already sleeping before entering suspend
+> 
+> and both of those devices are on the root PCI bus and are enumerated (and 
+> thus resumed) before the transparent bridge.
+> 
+> So yeah, the whole "resource allocation for that bridge" saga should 
+> _really_ not matter. But it clearly does seem to.
 
-Commit 558073dd56707864f09d563b64e7c37c021e89d2
-"ACPI: battery: Convert discharge energy rate to current properly"
-caused the battery subsystem to report wrong values of the remaining
-time on battery power and the time until fully charged on Toshiba
-Portege R500 (and presumably on other boxes too).
+Well, I'm going to have a closer look at what we're doing to PCI bridges in the
+resume code path, as this _feels_ relevant in this case.
 
-Fix the issue by correcting the conversion from mW to mA.
+Perhaps we're not doing something we're supposed to do (that already happened
+for regular devices in the past) or we're doing something we're not supposed
+to do.  Unfortunately, I'd have to dig into the PCI bridge spec for this
+purpose and that will take time.  Still, I suspect that's worth doing, as
+potentially the problem may affect a wide range of systems.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/battery.c |   17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+The fact that I have a box on which I can reproduce the problem should help
+here. ;-)
 
-Index: linux-2.6/drivers/acpi/battery.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/battery.c
-+++ linux-2.6/drivers/acpi/battery.c
-@@ -173,14 +173,17 @@ static int acpi_battery_get_property(str
- 		val->intval = battery->voltage_now * 1000;
- 		break;
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
--		val->intval = battery->current_now * 1000;
--		/* if power units are mW, convert to mA by
--		   dividing by current voltage (mV/1000) */
--		if (!battery->power_unit) {
--			if (battery->voltage_now) {
-+		val->intval = battery->current_now;
-+		if (battery->power_unit) {
-+			val->intval *= 1000;
-+		} else {
-+			/*
-+			 * If power units are mW, convert to mA by dividing by
-+			 * current voltage.
-+			 */
-+			if (battery->voltage_now)
- 				val->intval /= battery->voltage_now;
--				val->intval *= 1000;
--			} else
-+			else
- 				val->intval = -1;
- 		}
- 		break;
+Thanks,
+Rafael
