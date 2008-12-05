@@ -1,216 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbYLEMli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbYLEMlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbYLEMli (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 07:41:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYLEMlO
+	id S1757355AbYLEMlz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 07:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbYLEMlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 07:41:14 -0500
-Received: from cavolo.yandex.ru ([87.250.244.45]:21421 "EHLO cavolo.yandex.ru"
+	Fri, 5 Dec 2008 07:41:15 -0500
+Received: from cavolo.yandex.ru ([87.250.244.45]:21429 "EHLO cavolo.yandex.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751884AbYLEMlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 07:41:12 -0500
+	id S1752125AbYLEMlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 07:41:14 -0500
 From: Evgeniy Polyakov <zbr@ioremap.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org,
        Frederik Deweerdt <frederik.deweerdt@xprog.eu>,
        Randy Dunlap <randy.dunlap@oracle.com>,
        Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [W1] Documentation update.
-Date: Fri,  5 Dec 2008 15:41:28 +0300
-Message-Id: <12284808902754-git-send-email-zbr@ioremap.net>
+Subject: [W1] List slaves commands.
+Date: Fri,  5 Dec 2008 15:41:27 +0300
+Message-Id: <12284808903744-git-send-email-zbr@ioremap.net>
 X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <12284808903744-git-send-email-zbr@ioremap.net>
+In-Reply-To: <12284808902058-git-send-email-zbr@ioremap.net>
 References: <1228480888739-git-send-email-zbr@ioremap.net>
  <1228480889246-git-send-email-zbr@ioremap.net>
  <12284808902058-git-send-email-zbr@ioremap.net>
- <12284808903744-git-send-email-zbr@ioremap.net>
 X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
 X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Initiates search (or alarm search) and returns all found devices to userspace.
+Found devices are not added into the system (i.e. they are not attached
+to family devices or bus masters), it will be done via (if was not done yet)
+usual timed searching.
 
 Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 ---
-diff --git a/Documentation/w1/w1.netlink b/Documentation/w1/w1.netlink
-index 3640c7c..4560180 100644
---- a/Documentation/w1/w1.netlink
-+++ b/Documentation/w1/w1.netlink
-@@ -5,69 +5,122 @@ Message types.
- =============
+ drivers/w1/w1_netlink.c |  102 +++++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 85 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/w1/w1_netlink.c b/drivers/w1/w1_netlink.c
+index cae556c..24ad6bb 100644
+--- a/drivers/w1/w1_netlink.c
++++ b/drivers/w1/w1_netlink.c
+@@ -47,19 +47,97 @@ void w1_netlink_send(struct w1_master *dev, struct w1_netlink_msg *msg)
+ 	cn_netlink_send(m, 0, GFP_KERNEL);
+ }
  
- There are three types of messages between w1 core and userspace:
--1. Events. They are generated each time new master or slave device found
--	either due to automatic or requested search.
--2. Userspace commands. Includes read/write and search/alarm search comamnds.
-+1. Events. They are generated each time new master or slave device
-+	found either due to automatic or requested search.
-+2. Userspace commands.
- 3. Replies to userspace commands.
- 
- 
- Protocol.
- ========
- 
--[struct cn_msg] - connector header. It's length field is equal to size of the attached data.
-+[struct cn_msg] - connector header.
-+	Its length field is equal to size of the attached data
- [struct w1_netlink_msg] - w1 netlink header.
- 	__u8 type 	- message type.
--			W1_SLAVE_ADD/W1_SLAVE_REMOVE - slave add/remove events.
--			W1_MASTER_ADD/W1_MASTER_REMOVE - master add/remove events.
--			W1_MASTER_CMD - userspace command for bus master device (search/alarm search).
--			W1_SLAVE_CMD - userspace command for slave device (read/write/ search/alarm search
--					for bus master device where given slave device found).
-+			W1_LIST_MASTERS
-+				list current bus masters
-+			W1_SLAVE_ADD/W1_SLAVE_REMOVE
-+				slave add/remove events
-+			W1_MASTER_ADD/W1_MASTER_REMOVE
-+				master add/remove events
-+			W1_MASTER_CMD
-+				userspace command for bus master
-+				device (search/alarm search)
-+			W1_SLAVE_CMD
-+				userspace command for slave device
-+				(read/write/touch)
- 	__u8 res	- reserved
--	__u16 len	- size of attached to this header data.
-+	__u16 len	- size of data attached to this header data
- 	union {
--		__u8 id;			 - slave unique device id
-+		__u8 id[8];			 - slave unique device id
- 		struct w1_mst {
--			__u32		id;	 - master's id.
-+			__u32		id;	 - master's id
- 			__u32		res;	 - reserved
- 		} mst;
- 	} id;
- 
--[strucrt w1_netlink_cmd] - command for gived master or slave device.
-+[struct w1_netlink_cmd] - command for given master or slave device.
- 	__u8 cmd	- command opcode.
--			W1_CMD_READ 	- read command.
--			W1_CMD_WRITE	- write command.
--			W1_CMD_SEARCH	- search command.
--			W1_CMD_ALARM_SEARCH - alarm search command.
-+			W1_CMD_READ 	- read command
-+			W1_CMD_WRITE	- write command
-+			W1_CMD_TOUCH	- touch command
-+				(write and sample data back to userspace)
-+			W1_CMD_SEARCH	- search command
-+			W1_CMD_ALARM_SEARCH - alarm search command
- 	__u8 res	- reserved
--	__u16 len	- length of data for this command.
--			For read command data must be allocated like for write command.
--	__u8 data[0]	- data for this command.
-+	__u16 len	- length of data for this command
-+		For read command data must be allocated like for write command
-+	__u8 data[0]	- data for this command
- 
- 
--Each connector message can include one or more w1_netlink_msg with zero of more attached w1_netlink_cmd messages.
-+Each connector message can include one or more w1_netlink_msg with
-+zero or more attached w1_netlink_cmd messages.
- 
--For event messages there are no w1_netlink_cmd embedded structures, only connector header
--and w1_netlink_msg strucutre with "len" field being zero and filled type (one of event types)
--and id - either 8 bytes of slave unique id in host order, or master's id, which is assigned
--to bus master device when it is added to w1 core.
-+For event messages there are no w1_netlink_cmd embedded structures,
-+only connector header and w1_netlink_msg strucutre with "len" field
-+being zero and filled type (one of event types) and id:
-+either 8 bytes of slave unique id in host order,
-+or master's id, which is assigned to bus master device
-+when it is added to w1 core.
-+
-+Currently replies to userspace commands are only generated for read
-+command request. One reply is generated exactly for one w1_netlink_cmd
-+read request. Replies are not combined when sent - i.e. typical reply
-+messages looks like the following:
- 
--Currently replies to userspace commands are only generated for read command request.
--One reply is generated exactly for one w1_netlink_cmd read request.
--Replies are not combined when sent - i.e. typical reply messages looks like the following:
- [cn_msg][w1_netlink_msg][w1_netlink_cmd]
--cn_msg.len = sizeof(struct w1_netlink_msg) + sizeof(struct w1_netlink_cmd) + cmd->len;
-+cn_msg.len = sizeof(struct w1_netlink_msg) +
-+	     sizeof(struct w1_netlink_cmd) +
-+	     cmd->len;
- w1_netlink_msg.len = sizeof(struct w1_netlink_cmd) + cmd->len;
- w1_netlink_cmd.len = cmd->len;
- 
-+Replies to W1_LIST_MASTERS should send a message back to the userspace
-+which will contain list of all registered master ids in the following
-+format:
-+
-+	cn_msg (CN_W1_IDX.CN_W1_VAL as id, len is equal to sizeof(struct
-+	w1_netlink_msg) plus number of masters multipled by 4)
-+	w1_netlink_msg (type: W1_LIST_MASTERS, len is equal to
-+		number of masters multiplied by 4 (u32 size))
-+	id0 ... idN
+-static int w1_process_command_master(struct w1_master *dev, struct cn_msg *msg,
+-		struct w1_netlink_msg *hdr, struct w1_netlink_cmd *cmd)
++static void w1_send_slave(struct w1_master *dev, u64 rn)
+ {
+-	dev_dbg(&dev->dev, "%s: %s: cmd=%02x, len=%u.\n",
+-		__func__, dev->name, cmd->cmd, cmd->len);
++	struct cn_msg *msg = dev->priv;
++	struct w1_netlink_msg *hdr = (struct w1_netlink_msg *)(msg + 1);
++	struct w1_netlink_cmd *cmd = (struct w1_netlink_cmd *)(hdr + 1);
++	int avail;
 +	
-+	Each message is at most 4k in size, so if number of master devices
-+	exceeds this, it will be split into several messages,
-+	cn.seq will be increased for each one.
++	avail = dev->priv_size - cmd->len;
 +
-+W1 search and alarm search commands.
-+request:
-+[cn_msg]
-+  [w1_netlink_msg type = W1_MASTER_CMD
-+  	id is equal to the bus master id to use for searching]
-+  [w1_netlink_cmd cmd = W1_CMD_SEARCH or W1_CMD_ALARM_SEARCH]
++	if (avail > 8) {
++		u64 *data = (void *)(cmd + 1) + cmd->len;
 +
-+reply:
-+  [cn_msg, ack = 1 and increasing, 0 means the last message,
-+  	seq is equal to the request seq]
-+  [w1_netlink_msg type = W1_MASTER_CMD]
-+  [w1_netlink_cmd cmd = W1_CMD_SEARCH or W1_CMD_ALARM_SEARCH
-+	len is equal to number of IDs multiplied by 8]
-+  [64bit-id0 ... 64bit-idN]
-+Length in each header corresponds to the size of the data behind it, so
-+w1_netlink_cmd->len = N * 8; where N is number of IDs in this message.
-+	Can be zero.
-+w1_netlink_msg->len = sizeof(struct w1_netlink_cmd) + N * 8;
-+cn_msg->len = sizeof(struct w1_netlink_msg) +
-+	      sizeof(struct w1_netlink_cmd) +
-+	      N*8;
++		*data = rn;
++		cmd->len += 8;
++		hdr->len += 8;
++		msg->len += 8;
++		return;
++	}
++
++	msg->ack++;
++	cn_netlink_send(msg, 0, GFP_KERNEL);
++
++	msg->len = sizeof(struct w1_netlink_msg) + sizeof(struct w1_netlink_cmd);
++	hdr->len = sizeof(struct w1_netlink_cmd);
++	cmd->len = 0;
++}
++
++static int w1_process_search_command(struct w1_master *dev, struct cn_msg *msg,
++		unsigned int avail)
++{
++	struct w1_netlink_msg *hdr = (struct w1_netlink_msg *)(msg + 1);
++	struct w1_netlink_cmd *cmd = (struct w1_netlink_cmd *)(hdr + 1);
++	int search_type = (cmd->cmd == W1_CMD_ALARM_SEARCH)?W1_ALARM_SEARCH:W1_SEARCH;
++
++	dev->priv = msg;
++	dev->priv_size = avail;
++
++	w1_search_devices(dev, search_type, w1_send_slave);
  
- Operation steps in w1 core when new command is received.
- =======================================================
+-	if (cmd->cmd != W1_CMD_SEARCH && cmd->cmd != W1_CMD_ALARM_SEARCH)
+-		return -EINVAL;
++	msg->ack = 0;
++	cn_netlink_send(msg, 0, GFP_KERNEL);
++
++	dev->priv = NULL;
++	dev->priv_size = 0;
  
--When new message (w1_netlink_msg) is received w1 core detects if it is master of slave request,
--according to w1_netlink_msg.type field.
-+When new message (w1_netlink_msg) is received w1 core detects if it is
-+master or slave request, according to w1_netlink_msg.type field.
- Then master or slave device is searched for.
--When found, master device (requested or those one on where slave device is found) is locked.
--If slave command is requested, then reset/select procedure is started to select given device.
-+When found, master device (requested or those one on where slave device
-+is found) is locked. If slave command is requested, then reset/select
-+procedure is started to select given device.
+-	w1_search_process(dev, (cmd->cmd == W1_CMD_ALARM_SEARCH)?W1_ALARM_SEARCH:W1_SEARCH);
+ 	return 0;
+ }
  
- Then all requested in w1_netlink_msg operations are performed one by one.
- If command requires reply (like read command) it is sent on command completion.
-@@ -82,8 +135,8 @@ Connector [1] specific documentation.
- Each connector message includes two u32 fields as "address".
- w1 uses CN_W1_IDX and CN_W1_VAL defined in include/linux/connector.h header.
- Each message also includes sequence and acknowledge numbers.
--Sequence number for event messages is appropriate bus master sequence number increased with
--each event message sent "through" this master.
-+Sequence number for event messages is appropriate bus master sequence number
-+increased with each event message sent "through" this master.
- Sequence number for userspace requests is set by userspace application.
- Sequence number for reply is the same as was in request, and
- acknowledge number is set to seq+1.
-@@ -93,6 +146,6 @@ Additional documantion, source code examples.
- ============================================
++static int w1_process_command_master(struct w1_master *dev, struct cn_msg *req_msg,
++		struct w1_netlink_msg *req_hdr, struct w1_netlink_cmd *req_cmd)
++{
++	int err = -EINVAL;
++	struct cn_msg *msg;
++	struct w1_netlink_msg *hdr;
++	struct w1_netlink_cmd *cmd;
++
++	msg = kzalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!msg)
++		return -ENOMEM;
++
++	msg->id = req_msg->id;
++	msg->seq = req_msg->seq;
++	msg->ack = 0;
++	msg->len = sizeof(struct w1_netlink_msg) + sizeof(struct w1_netlink_cmd);
++
++	hdr = (struct w1_netlink_msg *)(msg + 1);
++	cmd = (struct w1_netlink_cmd *)(hdr + 1);
++
++	hdr->type = W1_MASTER_CMD;
++	hdr->id = req_hdr->id;
++	hdr->len = sizeof(struct w1_netlink_cmd);
++
++	cmd->cmd = req_cmd->cmd;
++	cmd->len = 0;
++
++	switch (cmd->cmd) {
++		case W1_CMD_SEARCH:
++		case W1_CMD_ALARM_SEARCH:
++			err = w1_process_search_command(dev, msg,
++				PAGE_SIZE - msg->len - sizeof(struct cn_msg));
++			break;
++		default:
++			cmd->res = EINVAL;
++			cn_netlink_send(msg, 0, GFP_KERNEL);
++			break;
++	}
++
++	kfree(msg);
++	return err;
++}
++
+ static int w1_send_read_reply(struct w1_slave *sl, struct cn_msg *msg,
+ 		struct w1_netlink_msg *hdr, struct w1_netlink_cmd *cmd)
+ {
+@@ -119,11 +197,6 @@ static int w1_process_command_slave(struct w1_slave *sl, struct cn_msg *msg,
+ 		case W1_CMD_WRITE:
+ 			w1_write_block(sl->master, cmd->data, cmd->len);
+ 			break;
+-		case W1_CMD_SEARCH:
+-		case W1_CMD_ALARM_SEARCH:
+-			w1_search_process(sl->master,
+-					(cmd->cmd == W1_CMD_ALARM_SEARCH)?W1_ALARM_SEARCH:W1_SEARCH);
+-			break;
+ 		default:
+ 			err = -1;
+ 			break;
+@@ -270,11 +343,6 @@ out_cont:
+ 		if (err == -ENODEV)
+ 			err = 0;
+ 	}
+-#if 0
+-	if (err) {
+-		printk("%s: malformed message. Dropping.\n", __func__);
+-	}
+-#endif
+ }
  
- 1. Documentation/connector
--2. http://tservice.net.ru/~s0mbre/archive/w1
--This archive includes userspace application w1d.c which
--uses read/write/search commands for all master/slave devices found on the bus.
-+2. http://www.ioremap.net/archive/w1
-+This archive includes userspace application w1d.c which uses
-+read/write/search commands for all master/slave devices found on the bus.
+ int w1_init_netlink(void)
+-- 
+1.5.2.5
+
