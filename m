@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYLEE1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbYLEEbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbYLEE1k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 23:27:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbYLEE1c
+	id S1755935AbYLEEbQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 23:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYLEEbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 23:27:32 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:46598 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751605AbYLEE1b convert rfc822-to-8bit (ORCPT
+	Thu, 4 Dec 2008 23:31:00 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37146 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751730AbYLEEa7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 23:27:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OW8NrmNSsePxyxUxM+lhKF23uHCC10e9fIMv6Fxd+VMo8XDQHneloPLXCeFbsqu3pc
-         Fa8DY+H+zm3mGrhFDIQacmh5ggrJIyeQQU1HZKQxO/L6x6oyPdpYA+yQcnEjS6x+yq94
-         v6osLyOF5va07bXbHFYv6bK2dQNcWhnu6Wqfg=
-Message-ID: <21d7e9970812042027w13271ceas91ecab87aa60562e@mail.gmail.com>
-Date: Fri, 5 Dec 2008 14:27:29 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "=?ISO-8859-1?Q?C=E9dric_Godin?=" <cedric@belbone.be>
-Subject: Re: Xorg crash at first start
-Cc: "Keith Packard" <keithp@keithp.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4937E87C.6030106@belbone.be>
+	Thu, 4 Dec 2008 23:30:59 -0500
+Date: Thu, 4 Dec 2008 23:30:56 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH] ftrace: use init_struct_pid as swapper pid
+In-Reply-To: <m1vdtzr4zn.fsf@frodo.ebiederm.org>
+Message-ID: <alpine.DEB.1.10.0812042323120.26316@gandalf.stny.rr.com>
+References: <20081204052638.425740534@goodmis.org> <20081204052735.362609481@goodmis.org> <20081204001803.598063f5.akpm@linux-foundation.org> <20081204091023.GJ32594@elte.hu> <m1vdu0t7tz.fsf@frodo.ebiederm.org> <alpine.DEB.1.10.0812040946060.5240@gandalf.stny.rr.com>
+ <m11vwnu10b.fsf@frodo.ebiederm.org> <alpine.DEB.1.10.0812041551590.32726@gandalf.stny.rr.com> <m1vdtzr4zn.fsf@frodo.ebiederm.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <4937E87C.6030106@belbone.be>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 5, 2008 at 12:26 AM, Cédric Godin <cedric@belbone.be> wrote:
-> Hello,
->
-> With the v2.6.28-rc7-105-gfeaf384 kernel, when booting my compaq with
-> attached config, the screen switches in graphical mode but then switches
-> back in textual mode with an 'irq10 nobody cared' error in dmesg (attached).
->
-> If I restart kdm by hand, all is ok (i have my kdm) but the error yet
-> appears in dmesg (at each X start in fact).
->
-> I bisected the problem (git bisect log attached) and found the following
-> commit as "culprit" :
->
-> commit 52440211dcdc52c0b757f8b34d122e11b12cdd50
-> Author: Keith Packard <keithp@keithp.com>
-> Date:   Tue Nov 18 09:30:25 2008 -0800
->
->    drm: move drm vblank initialization/cleanup to driver load/unload
->
->    drm vblank initialization keeps track of the changes in driver-supplied
->    frame counts across vt switch and mode setting, but only if you let
-> it by
->    not tearing down the drm vblank structure.
->
->    Signed-off-by: Keith Packard <keithp@keithp.com>
->    Signed-off-by: Dave Airlie <airlied@redhat.com>
->
-> Reverting it brings back my X screen at first start.
 
-Just for testing, can you try without using vesafb....
+Ingo,
 
-so remove the vga= line from the commandline or build the kernel
-without vesafb support.
+Here's a little clean up patch.
 
-Dave.
+Randy Dunlap should be happy that I changed my script to combine the 
+header and patch in one email if I only have a single patch.
+
+-- Steve
+
+The following patch is in:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: tip/devel
+
+
+Steven Rostedt (1):
+      ftrace: use init_struct_pid as swapper pid
+
+----
+ kernel/trace/ftrace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+---------------------------
+commit 954d6cd672e0e87219f0763f829345518647f293
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Thu Dec 4 23:19:12 2008 -0500
+
+    ftrace: use init_struct_pid as swapper pid
+    
+    Impact: clean up
+    
+    Using (struct pid *)-1 as the pointer for ftrace_swapper_pid is
+    a little confusing for others. This patch uses the address of the
+    actual init pid structure instead. This change is only for
+    clarity. It does not affect the code itself. Hopefully soon the
+    swapper tasks will all have their own pid structure and then
+    we can clean up the code a bit more.
+    
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index d2b1565..2971fe4 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -49,7 +49,7 @@ static int last_ftrace_enabled;
+ 
+ /* set when tracing only a pid */
+ struct pid *ftrace_pid_trace;
+-static struct pid * const ftrace_swapper_pid = (struct pid *)1;
++static struct pid * const ftrace_swapper_pid = &init_struct_pid;
+ 
+ /* Quick disabling of function tracer. */
+ int function_trace_stop;
+
+
