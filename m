@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYLEO7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbYLEPAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbYLEO7r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 09:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYLEO7h
+	id S1756510AbYLEPAn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 10:00:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbYLEPAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 09:59:37 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52273 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752523AbYLEO7h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 09:59:37 -0500
-Date: Fri, 5 Dec 2008 07:00:42 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: a.p.zijlstra@chello.nl, paulus@samba.org, mingo@elte.hu,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org,
-       eranian@googlemail.com, dada1@cosmosbay.com, robert.richter@amd.com,
-       hpa@zytor.com, rostedt@goodmis.org
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-Message-ID: <20081205070042.0b8a3ef5@infradead.org>
-In-Reply-To: <20081205.000716.40104924.davem@davemloft.net>
-References: <1228461385.18899.13.camel@twins>
-	<18744.57057.243817.407691@cargo.ozlabs.ibm.com>
-	<1228464216.18899.18.camel@twins>
-	<20081205.000716.40104924.davem@davemloft.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Dec 2008 10:00:34 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52010 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752815AbYLEPAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 10:00:33 -0500
+Message-ID: <493942D9.6030807@redhat.com>
+Date: Fri, 05 Dec 2008 10:03:53 -0500
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: linux-crypto@vger.kernel.org
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] crypto: des3_ede: permit weak keys unless REQ_WEAK_KEY
+ set
+References: <200812041557.49601.jarod@redhat.com>
+In-Reply-To: <200812041557.49601.jarod@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Dec 2008 00:07:16 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
-
-> These things aren't measuring time, or even just cycles, they
-> are measuring things like L2 cache misses, cpu cycles, and
-> other similar kinds of events.
+Jarod Wilson wrote:
+> While its a slightly insane to bypass the key1 == key2 ||
+> key2 == key3 check in triple-des, since it reduces it to the
+> same strength as des, some folks do need to do this from time
+> to time for backwards compatibility with des.
 > 
-> So these counters are going to measure all of the damn crap
-> assosciated with doing the read() call as well as the real work
-> the task does.
+> My own case is FIPS CAVS test vectors. Many triple-des test
+> vectors use a single key, replicated 3x. In order to get the
+> expected results, des3_ede_setkey() needs to honor the weak
+> key flag.
+> 
+> Also adds a warning when a weak key is rejected, otherwise,
+> you silently get back a bogus result.
+> 
+> Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-as you said before, not if you do the read() from a thread that's
-exempt from the profiling.
+v2: make CRYPTO_TFM_REQ_WEAK_KEY flag usage consistent w/rest of crypto 
+subsystem, per comments from Herbert in Red Hat bugzilla #474394.
+
+---
+  crypto/des_generic.c |    3 ++-
+  1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/crypto/des_generic.c b/crypto/des_generic.c
+index 5d0e458..9002073 100644
+--- a/crypto/des_generic.c
++++ b/crypto/des_generic.c
+@@ -868,7 +868,8 @@ static int des3_ede_setkey(struct crypto_tfm *tfm, 
+const u8 *key,
+  	u32 *flags = &tfm->crt_flags;
+
+  	if (unlikely(!((K[0] ^ K[2]) | (K[1] ^ K[3])) ||
+-		     !((K[2] ^ K[4]) | (K[3] ^ K[5]))))
++		     !((K[2] ^ K[4]) | (K[3] ^ K[5]))) &&
++		     (*flags & CRYPTO_TFM_REQ_WEAK_KEY))
+  	{
+  		*flags |= CRYPTO_TFM_RES_BAD_KEY_SCHED;
+  		return -EINVAL;
+
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Jarod Wilson
+jarod@redhat.com
