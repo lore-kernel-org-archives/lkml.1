@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbYLEU2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYLEUcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703AbYLEU2I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 15:28:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYLEU1y
+	id S1756804AbYLEUcT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 15:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYLEUcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 15:27:54 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:59995 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750852AbYLEU1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 15:27:54 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 5 Dec 2008 15:32:04 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51325
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752478AbYLEUcC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 15:32:02 -0500
+Date: Fri, 05 Dec 2008 12:32:02 -0800 (PST)
+Message-Id: <20081205.123202.98853955.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: akpm@linux-foundation.org, a.p.zijlstra@chello.nl, travis@sgi.com,
+       linux-kernel@vger.kernel.org, cl@linux-foundation.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] percpu_counter: FBC_BATCH might be too big
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4939513C.3090101@cosmosbay.com>
+References: <4939513C.3090101@cosmosbay.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: "Dave Airlie" <airlied@gmail.com>
-X-Fcc: ~/Mail/linus
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       libc-alpha@sources.redhat.com
-Subject: Re: IO space memcpy support for userspace.
-In-Reply-To: Dave Airlie's message of  Friday, 5 December 2008 13:40:43 +1000 <21d7e9970812041940h29994c60w3e7bcf20b96efe04@mail.gmail.com>
-References: <21d7e9970812041940h29994c60w3e7bcf20b96efe04@mail.gmail.com>
-X-Zippy-Says: I know how to get the hostesses released!  Give them their own
-    television series!
-Message-Id: <20081205202746.7DB20FC379@magilla.sf.frob.com>
-Date: Fri,  5 Dec 2008 12:27:46 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is never going to be something in memcpy that makes any magical
-kernel calls to find out about an address.  That's just loony, sorry.
-memcpy is inlined away by the compiler in good cases.  It's like you'd
-asked for "*ptr" to have magical constraints by the compiler generating
-code to ask the kernel if "ptr" is a special address.  Uh, really?
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Fri, 05 Dec 2008 17:05:16 +0100
 
-If you can think of an efficient way to determine it and do what you need,
-then you could write optimized routines that do that in the vDSO perhaps.
+> For NR_CPUS >= 16 values, FBC_BATCH is 2*NR_CPUS
+> 
+> Considering more and more distros are using high NR_CPUS values,
+> it makes sense to use a more sensible value for FBC_BATCH.
+> 
+> A sensible value is 2*num_online_cpus(), with a minimum value of 32
+> (This minimum value helps branch prediction in __percpu_counter_add())
+> 
+> We already have a hotcpu notifier, so we can adjust FBC_BATCH dynamically.
+> 
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 
+The downside is now we must load this value in these common
+routines.  But I think the gain outweights the loss so:
 
-Thanks,
-Roland
+Acked-by: David S. Miller <davem@davemloft.net>
