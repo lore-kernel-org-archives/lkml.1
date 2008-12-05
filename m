@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYLEIR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbYLEISN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbYLEIR0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 03:17:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbYLEIRS
+	id S1756533AbYLEISN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 03:18:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbYLEIRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 03:17:18 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59228
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750773AbYLEIRR (ORCPT
+	Fri, 5 Dec 2008 03:17:53 -0500
+Received: from wf-out-1314.google.com ([209.85.200.172]:26883 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751354AbYLEIRw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 03:17:17 -0500
-Date: Fri, 05 Dec 2008 00:17:17 -0800 (PST)
-Message-Id: <20081205.001717.216522767.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: a.p.zijlstra@chello.nl, paulus@samba.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org, eranian@googlemail.com, dada1@cosmosbay.com,
-       robert.richter@amd.com, arjan@infradead.org, hpa@zytor.com,
-       rostedt@goodmis.org
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081205081137.GB2030@elte.hu>
-References: <1228464216.18899.18.camel@twins>
-	<20081205.000716.40104924.davem@davemloft.net>
-	<20081205081137.GB2030@elte.hu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 5 Dec 2008 03:17:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=IyrsimBOqx56ypzTgqyi3XWlQDI4CY44h1MBIWdcbE9hOYOjVrv6qxHorqHdJ8qVlu
+         IgdlEjAQyhhsrzHwGA9zKuFr4IhYU7P8zJbi67iYVXcBfO8omuCK5y7IYmpG2xKNAJDP
+         SVLB+SOvpyksg9+8SlNFNWdLuSBrgVErW9pdg=
+Message-ID: <35476bd20812050017y70c3c729v450cdc3d0c1188de@mail.gmail.com>
+Date: Fri, 5 Dec 2008 09:17:51 +0100
+From: "m m" <olsajiri@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
+Subject: netlink - notify when the socket gets closed
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 5 Dec 2008 09:11:37 +0100
+Hi,
 
-> 
-> * David Miller <davem@davemloft.net> wrote:
-> 
-> > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Date: Fri, 05 Dec 2008 09:03:36 +0100
-> > 
-> > > On Fri, 2008-12-05 at 18:57 +1100, Paul Mackerras wrote:
-> > > > Peter Zijlstra writes:
-> > > > 
-> > > > > So, while most people would not consider two consecutive read() ops to
-> > > > > be close or near the same time, due to preemption and such, that is
-> > > > > taken away by the fact that the counters are task local time based - so
-> > > > > preemption doesn't affect thing. Right?
-> > > > 
-> > > > I'm sorry, I don't follow the argument here.  What do you mean by
-> > > > "task local time based"?
-> > > 
-> > > time only flows when the task is running.
-> > 
-> > These things aren't measuring time, or even just cycles, they are 
-> > measuring things like L2 cache misses, cpu cycles, and other similar 
-> > kinds of events.
-> > 
-> > So these counters are going to measure all of the damn crap assosciated 
-> > with doing the read() call as well as the real work the task does.
-> 
-> that's wrong, look at the example we posted - see it pasted below.
+I'm using netlink in my module. Based on the communication,
+this module dynamically creates some internal structure, which
+needs to be destroyed when the user level socket is closed (or
+the application dies).
 
-It's still too simple to be useful.
+I found I could use the netlink_register_notifier function to register
+NETLINK_URELEASE callback during the netlink_release function.
+But since my module uses the multicast netlink socket communication,
+it wont be called:
 
-There are so many aspects other than the immediate PC that monitoring
-tasks want to inspect when a counter overflows.
+static int netlink_release(struct socket *sock)
+{
+        ...
+
+        if (nlk->pid && !nlk->subscriptions) {
+                struct netlink_notify n = {
+                                                .net = sock_net(sk),
+                                                .protocol = sk->sk_protocol,
+                                                .pid = nlk->pid,
+                                          };
+                atomic_notifier_call_chain(&netlink_chain,
+                                NETLINK_URELEASE, &n);
+        }
+        ...
+
+Whats the reason this callback is not called for multicast sockets?
+
+To workaround it I created simple misc device which the user application
+opens before creating the netlink socket. This way I get some callbacks
+inside the module when the application dies, at least.. pretty ugly :)
+
+Is there a netlink mechanism to be notified when the netlink socket is
+closed on the user level side? (when using multicast communication)
+
+Or is there any other design I could use, since I think I'm not alone in
+using internal module data which needs to be removed once the application dies.
+
+thanks,
+jirka
