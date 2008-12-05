@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbYLEWbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbYLEWds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757623AbYLEWbZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 17:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbYLEWbG
+	id S1757320AbYLEWds (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 17:33:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbYLEWdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 17:31:06 -0500
-Received: from mail.gmx.net ([213.165.64.20]:58156 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756894AbYLEWbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 17:31:05 -0500
-X-Authenticated: #527675
-X-Provags-ID: V01U2FsdGVkX1/mRuMDPWzmlmPbJwbzugIaELpbMkgvXVHertAQg5
-	WUFCheYvOZ816D
-Message-ID: <4939ABA5.4090402@gmx.de>
-Date: Fri, 05 Dec 2008 23:31:01 +0100
-From: Reinhard Nissl <rnissl@gmx.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.8.1.17) Gecko/20080922 SUSE/2.0.0.17-0.1 Thunderbird/2.0.0.17 Mnenhy/0.7.5.666
+	Fri, 5 Dec 2008 17:33:40 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:50667 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752478AbYLEWdj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 17:33:39 -0500
+Date: Fri, 5 Dec 2008 22:33:35 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 3/6] integrity: IMA as an integrity service provider
+Message-ID: <20081205223335.GJ28946@ZenIV.linux.org.uk>
+References: <cover.1228253618.git.zohar@linux.vnet.ibm.com> <5bea2422d059b97475d735feb9feb78b57ec8eca.1228253619.git.zohar@linux.vnet.ibm.com> <1228260925.2971.240.camel@nimitz>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: ERROR: Unidentified device type 0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1228260925.2971.240.camel@nimitz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Dec 02, 2008 at 03:35:25PM -0800, Dave Hansen wrote:
 
-I've got the ASUS P6T WS Professional mainboard including Marvell
-88SE6320 SAS controller and attached a single Seagate 10k6 SAS
-harddrive to the first SAS port.
+> 
+> > +		int rc;
+> > +
+> > +		mdata.mask = MAY_READ;
+> > +		rc = ima_must_measure(&mdata);
+> > +		if (!rc || rc == -EEXIST) {
+> > +			if (atomic_read(&(path->dentry->d_count)) - 1 >
+> > +			    atomic_read(&(mdata.inode->i_writecount)))
+> > +				ima_add_violation(mdata.inode,
+> > +						  path->dentry->d_name.name,
+> > +						  "invalid_pcr", "ToMToU");
+> > +		}
+> > +		return 0;
+> > +	}
+> 
+> 
+> I have memories of talking about this bit.  I was confused and you
+> explained it to me, but it still isn't explained in the code. :(  Again,
+> I'm not convinced that this works.  Can the code convince me, or should
+> I go digging in my inbox?
 
-Installation of openSUSE 11.1rc1 went well but after rebooting,
-the harddrive doesn't get found. When the initrd script loads the
-mvsas module, the following output appears on screen:
+This bit is crap, plain and simple.  d_count doesn't work as a proxy for
+"how many times had we opened this file".  At all.
 
-sas: phy-10:1 added to port-10:0, phy_mask:0x2 (             0)
-ERROR: Unidentified device type 0
+a) stat(2) and just about anything else that looks funny at the pathname
+will bump d_count.
 
-I first tried to install openSUSE 11.0 but the installer didn't
-find the harddrive. If I recall correctly, it was for the same
-reason as it is now when trying to boot the 11.1rc1 system.
+b) there may be several links to given file; all will share inode and have
+different dentries.
 
-So I think, there exists already a fix for this issue, as the
-11.1rc1 installer sees the drive, which is still missing in the
-initrd environment.
-
-I really would like to help solving this issue, but I need a
-pointer where and how to start digging. I've started a openSUSE
-bug (https://bugzilla.novell.com/show_bug.cgi?id=450302, Bug
-450302 - mvsas doesn't find SAS drive anymore after installation)
-almost a week ago but didn't get much help there.
-
-I'd really appreciate some help to get the new system running.
-Thanks in advance.
-
-Bye.
--- 
-Dipl.-Inform. (FH) Reinhard Nissl
-mailto:rnissl@gmx.de
+In other words, result of that comparison happens to be junk.
