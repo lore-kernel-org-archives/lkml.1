@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbYLEDdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbYLEDfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756445AbYLEDdO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 22:33:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbYLEDc6
+	id S1755558AbYLEDfv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 22:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbYLEDfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 22:32:58 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51540 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbYLEDc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 22:32:57 -0500
-Message-ID: <4938A088.1090205@cn.fujitsu.com>
-Date: Fri, 05 Dec 2008 11:31:20 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [memcg BUG ?] failed to boot on IA64 with CONFIG_DISCONTIGMEM=y
-References: <49389B69.9010902@cn.fujitsu.com>	<20081205122024.3fcc1d0e.kamezawa.hiroyu@jp.fujitsu.com> <20081205122458.a37ae8e0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081205122458.a37ae8e0.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 4 Dec 2008 22:35:43 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:44767 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750931AbYLEDfm (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 22:35:42 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Geoffrey McRae <geoff@rabidhost.com>
+Cc: Peter Teoh <htmldeveloper@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org
+Subject: Re: New Security Features, Please Comment
+In-Reply-To: Your message of "Fri, 05 Dec 2008 09:30:54 +1100."
+             <1228429854.7546.6.camel@lappy.spacevs.com>
+From: Valdis.Kletnieks@vt.edu
+References: <1228260494.24232.21.camel@compy.ivent.com.au> <20081203005338.6472db7a@lxorguk.ukuu.org.uk> <1228268657.6679.4.camel@lappy.spacevs.com> <20081203124252.GD11807@mail.local.tull.net> <1228344292.6993.27.camel@lappy.spacevs.com> <20081203230820.4473a162@lxorguk.ukuu.org.uk> <804dabb00812031527k3fae11dcnef3b1696c3d136f8@mail.gmail.com> <1228347656.6993.31.camel@lappy.spacevs.com> <80413.1228427770@turing-police.cc.vt.edu>
+            <1228429854.7546.6.camel@lappy.spacevs.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1228448127_3727P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Thu, 04 Dec 2008 22:35:27 -0500
+Message-ID: <95180.1228448127@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Fri, 5 Dec 2008 12:20:24 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
->> On Fri, 05 Dec 2008 11:09:29 +0800
->> Li Zefan <lizf@cn.fujitsu.com> wrote:
->>
->>> Kernel version: 2.6.28-rc7
->>> Arch: IA64
->>> Memory model: DISCONTIGMEM
->>>
->>> ELILO boot: Uncompressing Linux... done
->>> Loading file initrd-2.6.28-rc7-lizf.img...done
->>> (frozen)
->>>
->>>
->>> Booted successfully with cgroup_disable=memory, here is the dmesg:
->>>
->> thx, will dig into...Maybe you're the first person using DISCONTIGMEM with
->> empty_node after page_cgroup-alloc-at-boot.
->>
+--==_Exmh_1228448127_3727P
+Content-Type: text/plain; charset=us-ascii
 
-I was reading the code in page_cgroup.c, and It came to my mind that maybe
-no one ever tried DISCONTIGMEM+memcg, so I had it a try..
+On Fri, 05 Dec 2008 09:30:54 +1100, Geoffrey McRae said:
+> On Thu, 2008-12-04 at 16:56 -0500, Valdis.Kletnieks@vt.edu wrote:
 
->> How about this ?
+> > 	while (getpid()) msleep(1);
+> > 	/* malicious code here */
+> > 
 > 
-> Ahhh..sorry.
-> 
-> this one please.
-> ==
-> 
-> From: kamezawa.hiroyu@jp.fujitsu.com
-> 
-> page_cgroup should ignore empty-nodes.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
+> This would only be dangerous if the parent did not wait for the child to
+> finish its task before changing its uid, which for a FastCGI app, it has
+> to as it needs the response to send back to the client. All that would
+> happen here is the CGI script would sleep forever, or until the HTTP
+> server killed the process.
 
-Now it booted successfully. :)
+Thus providing me with a way to DoS your webserver by sticking all your
+server processes into a sleep-forever... :)
 
-Tested-by: Li Zefan <lizf@cn.fujitsu.com>
+You're also overlooking the fact that the malicious code could do something
+like this:
 
-> ---
->  mm/page_cgroup.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> Index: mmotm-2.6.28-Dec03/mm/page_cgroup.c
-> ===================================================================
-> --- mmotm-2.6.28-Dec03.orig/mm/page_cgroup.c
-> +++ mmotm-2.6.28-Dec03/mm/page_cgroup.c
-> @@ -51,6 +51,9 @@ static int __init alloc_node_page_cgroup
->  	start_pfn = NODE_DATA(nid)->node_start_pfn;
->  	nr_pages = NODE_DATA(nid)->node_spanned_pages;
->  
-> +	if (!nr_pages)
-> +		return 0;
-> +
->  	table_size = sizeof(struct page_cgroup) * nr_pages;
->  
->  	base = __alloc_bootmem_node_nopanic(NODE_DATA(nid),
-> 
-> 
+	/* send the parent something that makes it *think* the request finished */
+	printf("We're all done now\n");
+	while (getpid()) msleep (1);
+
+Remember - whatever the child is doing to signal that it's done, can *also*
+be done by the exploit code. There's only one real exception - the child
+can call exit() - if the exploit exits so a SIGCHLD is generated, then
+it can't run anymore.  However, since the whole *point* here is avoiding
+the usual exit/fork/exec overhead...
+
+--==_Exmh_1228448127_3727P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJOKF/cC3lWbTT17ARAgRBAKCaURqGDRB+4D5Nje+q7QJm4MjbtACg+dHI
+ODZ3qpjL1IR+q+3GweQPGmI=
+=T7LV
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1228448127_3727P--
