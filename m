@@ -1,57 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757835AbYLEONM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757867AbYLEOVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757835AbYLEONM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 09:13:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYLEOM5
+	id S1757867AbYLEOVc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 09:21:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYLEOVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 09:12:57 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59622 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbYLEOM4 (ORCPT
+	Fri, 5 Dec 2008 09:21:22 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:33405 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751543AbYLEOVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 09:12:56 -0500
-Date: Fri, 5 Dec 2008 14:12:31 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: David Howells <dhowells@redhat.com>
-cc: torvalds@osdl.org, akpm@linux-foundation.org, bfields@fieldses.org,
-       hch@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] EXPORTFS: Don't return NULL from fh_to_dentry()/fh_to_parent()
- [ver #2]
-In-Reply-To: <20081205133014.14725.79974.stgit@warthog.procyon.org.uk>
-Message-ID: <Pine.LNX.4.64.0812051407130.25248@blonde.anvils>
-References: <20081205133014.14725.79974.stgit@warthog.procyon.org.uk>
+	Fri, 5 Dec 2008 09:21:21 -0500
+Message-ID: <493939B1.40506@novell.com>
+Date: Fri, 05 Dec 2008 09:24:49 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [git pull] RT scheduler updates for tip
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigE1CCFD9537F1241B1101A70C"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Dec 2008, David Howells wrote:
-> Returning NULL from fh_to_dentry() and fh_to_parent() is not permitted, so
-> return -ESTALE instead.  exportfs_decode_fh() does not check for NULL, but
-> will try to dereference it as IS_ERR() does not check for it.
-> 
-> The generic_fh_to_dentry() and generic_fh_to_parent() functions also no longer
-> return NULL, but return -ESTALE instead.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> Acked-by: J. Bruce Fields <bfields@citi.umich.edu>
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE1CCFD9537F1241B1101A70C
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I think it's still wrong in shmem_fh_to_dentry(): you've fixed
-the early return, but there'd be another return NULL if !inode?
+Hi Ingo,
+  FWIW, I have placed all my latest upstream-able scheduler patches into
+a branch in my git tree (against tip/master).
+=20
+=20
+git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.gi=
+t
+sched/latest
 
-Hugh
+Gregory Haskins (11):
+      sched: cleanup inc/dec_rt_tasks
+      sched: track the next-highest priority on each runqueue
+      sched: use highest_prio.curr for pull threshold
+      sched: use highest_prio.next to optimize pull operations
+      sched: only try to push a task on wakeup if it is migratable
+      sched: pull only one task during NEWIDLE balancing to limit
+critical section
+      sched: make double-lock-balance fair
+      sched: add sched_class->needs_post_schedule() member
+      plist: fix PLIST_NODE_INIT to work with debug enabled
+      sched: create "pushable_tasks" list to limit pushing to one attempt=
 
-> --- a/mm/shmem.c
-> +++ b/mm/shmem.c
-> @@ -2055,7 +2055,7 @@ static struct dentry *shmem_fh_to_dentry(struct super_block *sb,
->  	inum = (inum << 32) | fid->raw[1];
->  
->  	if (fh_len < 3)
-> -		return NULL;
-> +		return ERR_PTR(-ESTALE);
->  
->  	inode = ilookup5(sb, (unsigned long)(inum + fid->raw[0]),
->  			shmem_match, fid->raw);
-> 
+      RT: fix push_rt_task() to handle dequeue_pushable properly
+
+ include/linux/init_task.h |    1 +
+ include/linux/plist.h     |    9 +-
+ include/linux/sched.h     |    2 +
+ kernel/sched.c            |   89 +++++++++++--
+ kernel/sched_rt.c         |  324
++++++++++++++++++++++++++++++++--------------
+ 5 files changed, 312 insertions(+), 113 deletions(-)
+
+These are built/booted on my quad-core/x86_64 and look good to me.
+
+1) the first four are the "next-highest" v3 patches that I submitted
+yesterday
+2) the last seven are patches that Steven has carried in 26-rt that have
+not yet been pulled in to tip
+
+I assume there is an implicit ACK from Steven on (2) since he pulled
+them into -rt.  We still await comment from Peter re: (1).
+
+Regards,
+-Greg
+
+
+
+--------------enigE1CCFD9537F1241B1101A70C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkk5ObEACgkQlOSOBdgZUxkK+QCeIYKRaCoVbX/XOIunhNKuKWo+
+wNgAoIAjFjrqMFlZq/HHS6jkbXzxbLum
+=JwYf
+-----END PGP SIGNATURE-----
+
+--------------enigE1CCFD9537F1241B1101A70C--
