@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbYLEHws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbYLEHyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752815AbYLEHws (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 02:52:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbYLEHwi
+	id S1754916AbYLEHyX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 02:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbYLEHyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 02:52:38 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48229
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750720AbYLEHwi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 02:52:38 -0500
-Date: Thu, 04 Dec 2008 23:52:38 -0800 (PST)
-Message-Id: <20081204.235238.229578299.davem@davemloft.net>
-To: arjan@infradead.org
-Cc: mingo@elte.hu, paulus@samba.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org, eranian@googlemail.com, dada1@cosmosbay.com,
-       robert.richter@amd.com, hpa@zytor.com, a.p.zijlstra@chello.nl,
-       rostedt@goodmis.org
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081204230206.6e083d51@infradead.org>
-References: <18744.29747.728320.652642@cargo.ozlabs.ibm.com>
-	<20081205063131.GB12785@elte.hu>
-	<20081204230206.6e083d51@infradead.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 5 Dec 2008 02:54:14 -0500
+Received: from ozlabs.org ([203.10.76.45]:59832 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750773AbYLEHyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 02:54:13 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18744.56857.259756.129894@cargo.ozlabs.ibm.com>
+Date: Fri, 5 Dec 2008 18:54:01 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
+In-Reply-To: <20081205063131.GB12785@elte.hu>
+References: <20081204225345.654705757@linutronix.de>
+	<18744.29747.728320.652642@cargo.ozlabs.ibm.com>
+	<20081205063131.GB12785@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@infradead.org>
-Date: Thu, 4 Dec 2008 23:02:06 -0800
-
-> On Fri, 5 Dec 2008 07:31:31 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
+Ingo Molnar writes:
 > 
-> > Btw., i'm curious, why would we want to do that? It skews the results
-> > if the task continues executing and counters stop. To get the highest 
-> > quality profiling output the counters should follow the true state of
-> > the task that is profiled - and events should be passed to the
-> > monitoring task asynchronously. The _events_ can contain precise
-> > coupled information 
-> > - but the counters should continue.
+> * Paul Mackerras <paulus@samba.org> wrote:
+[snip]
+> > One thing that this sort of thing can't do is to get values from 
+> > multiple counters that correlate with each other.  For instance, we 
+> > would often want to count, say, L2 cache misses and instructions 
+> > completed at the same time, and be able to read both counters at very 
+> > close to the same time, so that we can measure average L2 cache misses 
+> > per instruction completed, which is useful.
 > 
-> btw stopping the task on counter overflow is an issue for things that
-> want to self profile, like JITs
+> This can be done in a very natural way with our abstraction, and the 
+> "hello.c" example happens to do exactly that:
 
-They can fork off a thread to do this.
+Has hello.c been posted?  I can't find it in any of the posts from you
+or Thomas.  Am I just being blind? :)
 
-No blocking on couter overflow leads to inaccurate results.
-This is a pretty fundamental aspect of perf counter usage.
+>   aldebaran:~/perf-counter-test> ./hello
+>   doing perf_counter_open() call:
+>   counter[0]... fd: 3.
+>   counter[1]... fd: 4.
+>   counter[0] delta: 10866 cycles
+>   counter[1] delta: 414 cycles
+>   counter[0] delta: 23640 cycles
+>   counter[1] delta: 3673 cycles
+>   counter[0] delta: 28225 cycles
+>   counter[1] delta: 3695 cycles
+> 
+> This counts cycles executed and instructions executed, and reads the two 
+> counters out at the same time.
+
+Isn't it two separate read() calls to read the two counters?  If so,
+the only way the two values are actually going to correspond to the
+same point in time is if the task being monitored is stopped.  In
+which case the monitoring task needs to use ptrace or something
+similar in order to make sure that the monitored task is actually
+stopped.
+
+If the monitored task is not stopped, then the interval between the
+two reads will be sufficient to render the results useless -
+particularly since the monitoring task could get preempted for an
+arbitrary length of time between the two reads.  But even if it
+doesn't, the hundreds of cycles between the two reads will introduce
+considerable imprecision in the results.
+
+There really is value in being able to read all the counters you're
+using in one system call.
+
+Paul.
