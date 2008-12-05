@@ -1,63 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYLEIgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbYLEIly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbYLEIgy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 03:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYLEIgq
+	id S1755000AbYLEIly (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 03:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbYLEIlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 03:36:46 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:62720 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751638AbYLEIgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 03:36:45 -0500
-Message-ID: <4938E7C1.9040102@cn.fujitsu.com>
-Date: Fri, 05 Dec 2008 16:35:13 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 5 Dec 2008 03:41:46 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:11508 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750773AbYLEIlp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 03:41:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=HmWLyEBe8ntVPmMBeuvQFfmVGzK3L0D8W/jpNHKKbDcrpQnmd2vqqQlUB7kyZyOc86
+         wCjtdha1CbsjWUm/tLPdyPIcWXMiD8+Yn7EOUydQOAdlx4gf5eeMYTuO7b3aLHzTmz24
+         WnBMBWD4NMB/uIXTaAe5DDuxgHrXvOqRSRpyc=
+Date: Fri, 5 Dec 2008 11:45:59 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org, ben-linux@fluff.org
+Cc: linux-kernel@vger.kernel.org
+Subject: sm501: fix section mismatches
+Message-ID: <20081205084559.GA22502@x200.localdomain>
 MIME-Version: 1.0
-To: Ken Chen <kenchen@google.com>
-CC: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] export percpu cpuacct cgroup stats
-References: <b040c32a0812032048x4a11dc26k184a4b279b509050@mail.gmail.com>	 <49376BE3.1040909@cn.fujitsu.com>	 <6599ad830812041502m15f54f0ckd8baa0a1792fc31e@mail.gmail.com>	 <b040c32a0812042344n75117b68x8de975d12dddf594@mail.gmail.com>	 <4938DE1C.6070608@cn.fujitsu.com> <b040c32a0812050030uff5ae65o417c599a792c800c@mail.gmail.com>
-In-Reply-To: <b040c32a0812050030uff5ae65o417c599a792c800c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ken Chen wrote:
-> On Thu, Dec 4, 2008 at 11:54 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->>> +             seq_printf(m, "%llu ", percpu);
->> Should be:
->> +               seq_printf(m, "%llu ", (unsigned long long)percpu);
->>
->> Otherwsise:
->> kernel/sched.c: In function 'cpuacct_percpu_seq_read':
->> kernel/sched.c:9359: warning: format '%llu' expects type 'long long unsigned int',
->> but argument 3 has type 'u64'
-> 
-> huh, I was just wondering about the type case in cgroup_read_u64()
-> when I was looking at it earlier.  That explains it.  Diff patch
-> attached.
-> 
+drv => driver renaming is needed otherwise modpost will spit false positives
+re pointing to __devinit function from regular data.
 
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index e32c094..055c54f 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -9356,7 +9356,7 @@ static int cpuacct_percpu_seq_read
->  		spin_lock_irq(&cpu_rq(i)->lock);
->  		percpu = *percpu_ptr(ca->cpuusage, i);
->  		spin_unlock_irq(&cpu_rq(i)->lock);
-> -		seq_printf(m, "%llu ", percpu);
-> +		seq_printf(m, "%llu ", (unsigned long long) percpu);
->  	}
->  	seq_printf(m, "\n");
->  	return 0;
-> 
-> 
+ drivers/mfd/sm501.c |   24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
+--- a/drivers/mfd/sm501.c
++++ b/drivers/mfd/sm501.c
+@@ -1295,7 +1295,7 @@ static unsigned int sm501_mem_local[] = {
+  * Common init code for an SM501
+ */
+ 
+-static int sm501_init_dev(struct sm501_devdata *sm)
++static int __devinit sm501_init_dev(struct sm501_devdata *sm)
+ {
+ 	struct sm501_initdata *idata;
+ 	struct sm501_platdata *pdata;
+@@ -1371,7 +1371,7 @@ static int sm501_init_dev(struct sm501_devdata *sm)
+ 	return 0;
+ }
+ 
+-static int sm501_plat_probe(struct platform_device *dev)
++static int __devinit sm501_plat_probe(struct platform_device *dev)
+ {
+ 	struct sm501_devdata *sm;
+ 	int ret;
+@@ -1560,8 +1560,8 @@ static struct sm501_platdata sm501_pci_platdata = {
+ 	.gpio_base	= -1,
+ };
+ 
+-static int sm501_pci_probe(struct pci_dev *dev,
+-			   const struct pci_device_id *id)
++static int __devinit sm501_pci_probe(struct pci_dev *dev,
++				     const struct pci_device_id *id)
+ {
+ 	struct sm501_devdata *sm;
+ 	int err;
+@@ -1667,7 +1667,7 @@ static void sm501_dev_remove(struct sm501_devdata *sm)
+ 	sm501_gpio_remove(sm);
+ }
+ 
+-static void sm501_pci_remove(struct pci_dev *dev)
++static void __devexit sm501_pci_remove(struct pci_dev *dev)
+ {
+ 	struct sm501_devdata *sm = pci_get_drvdata(dev);
+ 
+@@ -1701,16 +1701,16 @@ static struct pci_device_id sm501_pci_tbl[] = {
+ 
+ MODULE_DEVICE_TABLE(pci, sm501_pci_tbl);
+ 
+-static struct pci_driver sm501_pci_drv = {
++static struct pci_driver sm501_pci_driver = {
+ 	.name		= "sm501",
+ 	.id_table	= sm501_pci_tbl,
+ 	.probe		= sm501_pci_probe,
+-	.remove		= sm501_pci_remove,
++	.remove		= __devexit_p(sm501_pci_remove),
+ };
+ 
+ MODULE_ALIAS("platform:sm501");
+ 
+-static struct platform_driver sm501_plat_drv = {
++static struct platform_driver sm501_plat_driver = {
+ 	.driver		= {
+ 		.name	= "sm501",
+ 		.owner	= THIS_MODULE,
+@@ -1723,14 +1723,14 @@ static struct platform_driver sm501_plat_drv = {
+ 
+ static int __init sm501_base_init(void)
+ {
+-	platform_driver_register(&sm501_plat_drv);
+-	return pci_register_driver(&sm501_pci_drv);
++	platform_driver_register(&sm501_plat_driver);
++	return pci_register_driver(&sm501_pci_driver);
+ }
+ 
+ static void __exit sm501_base_exit(void)
+ {
+-	platform_driver_unregister(&sm501_plat_drv);
+-	pci_unregister_driver(&sm501_pci_drv);
++	platform_driver_unregister(&sm501_plat_driver);
++	pci_unregister_driver(&sm501_pci_driver);
+ }
+ 
+ module_init(sm501_base_init);
