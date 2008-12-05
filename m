@@ -1,154 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbYLENfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757640AbYLENoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758392AbYLENfo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 08:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbYLENff
+	id S1757640AbYLENoc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 08:44:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYLENoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 08:35:35 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:10579 "EHLO kernel.dk"
+	Fri, 5 Dec 2008 08:44:22 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:34725 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752536AbYLENfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 08:35:34 -0500
-Date: Fri, 5 Dec 2008 14:35:27 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: kernel BUG at block/blk-timeout.c:178!
-Message-ID: <20081205133527.GK18255@kernel.dk>
-References: <4937E888.3060208@hp.com> <20081204155005.GX18255@kernel.dk> <493801AF.8050308@hp.com> <49382201.8030609@hp.com> <4938466C.8050704@hp.com> <20081205094004.GA18255@kernel.dk> <49392D71.10505@hp.com>
+	id S1752125AbYLENoU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 08:44:20 -0500
+From: Nicolas Palix <npalix@diku.dk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH linux-next] hwmon/ams: Add missing of_node_put in ams-core.c
+Date: Fri, 5 Dec 2008 14:44:18 +0100
+User-Agent: KMail/1.9.10
+Cc: Jean Delvare <khali@linux-fr.org>, Paul Mackerras <paulus@samba.org>,
+       Stelian Pop <stelian@popies.net>, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       Julia Lawall <julia@diku.dk>
+References: <200812021448.13543.npalix@diku.dk> <20081203103051.f2f59c9f.sfr@canb.auug.org.au>
+In-Reply-To: <20081203103051.f2f59c9f.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <49392D71.10505@hp.com>
+Message-Id: <200812051444.18611.npalix@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 05 2008, Alan D. Brunelle wrote:
-> Jens Axboe wrote:
-> >>
-> >> I've pushed the BUG ON check into blk_execute_rq, and it's finding it
-> >> set there. Could we be getting SCSI_DH_IMM_RETRYs and that's causing the
-> >> same request to be used without being re-initialized, and on error the
-> >> bit is not being cleaned up properly?
-> >>
-> >> I'm checking that out next...
-> > 
-> > That does indeed look problematic, we only init the timer stuff when
-> > getting the request initially. So you could either make your retry loop
-> > do blk_put_request() and jump to the very beginning again, or this
-> > should fix the current usage.
-> > 
-> > diff --git a/block/elevator.c b/block/elevator.c
-> > index a6951f7..0a2f378 100644
-> > --- a/block/elevator.c
-> > +++ b/block/elevator.c
-> > @@ -590,6 +590,12 @@ void elv_insert(struct request_queue *q, struct request *rq, int where)
-> >  
-> >  	rq->q = q;
-> >  
-> > +	/*
-> > +	 * This could happen on a request requeue, init the timer here as well
-> > +	 */
-> > +	blk_delete_timer(rq);
-> > +	blk_clear_rq_complete(rq);
-> > +
-> >  	switch (where) {
-> >  	case ELEVATOR_INSERT_FRONT:
-> >  		rq->cmd_flags |= REQ_SOFTBARRIER;
-> > 
+On Wednesday 03 December 2008 00:30:51 Stephen Rothwell wrote:
+> On Tue, 2 Dec 2008 14:48:13 +0100 Nicolas Palix <npalix@diku.dk> wrote:
+> This is wrong because if CONFIG_SENSORS_AMS_PMU is set, np is used again
+> below.
 > 
-> Hi Jens -
-> 
-> I was able to determine we were getting retries on TURs, and then right
-> (soon?) thereafter was when we triggered the problem. I put some
-> slightly different code than what you suggest above, and that triggered
-> a problem elsewhere in SCSI. I backed out what I did, inserted your code
-> (after updating my tree to:)
-> 
-> commit bbeba4c35c252b2e961f09ce6ebe76b2cd5e7e3e
-> Merge: 6df944c... 2cbed89...
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Thu Dec 4 21:45:44 2008 -0800
-> 
->     Merge branch 'for-linus' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/vi
-> 
->     * 'for-linus' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/viro/bdev:
->       [PATCH] fix bogus argument of blkdev_put() in pktcdvd
->       [PATCH 2/2] documnt FMODE_ constants
->       [PATCH 1/2] kill FMODE_NDELAY_NOW
->       [PATCH] clean up blkdev_get a little bit
->       [PATCH] Fix block dev compat ioctl handling
->       [PATCH] kill obsolete temporary comment in swsusp_close()
-> 
-> and I get the following SCSI-related problem (the same error I got with
-> code I tried last night - basically just clearing out the atomic value).
-> This has now happened repeatedly 3 times. [I've cc'd linux-scsi as well,
-> just to make sure to cover all the bases...]
-> 
-> ------------[ cut here ]------------
-> kernel BUG at drivers/scsi/scsi.c:347!
-> invalid opcode: 0000 [#1] SMP
-> last sysfs file:
-> CPU 0
-> Pid: 0, comm: swapper Not tainted 2.6.28-rc7 #7
-> RIP: 0010:[<ffffffff80d3df3e>]  [<ffffffff80d3df3e>]
-> scsi_put_command+0x27/0x65
-> RSP: 0018:ffffffff827b3d80  EFLAGS: 00010046
-> RAX: 0000000000000282 RBX: ffff88087b68dec0 RCX: ffff88087b68dec8
-> RDX: ffff88087b68dec8 RSI: 0000000000000282 RDI: ffff88087b35d834
-> RBP: ffffffff827b3d90 R08: ffffffff827b3d30 R09: 00000000827b3d60
-> R10: 0000000000000246 R11: ffff88087b16042c R12: ffff88087b35d800
-> R13: ffff88087b35d920 R14: 0000000000000000 R15: 0000000000000001
-> FS:  0000000000000000(0000) GS:ffffffff82535500(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process swapper (pid: 0, threadinfo ffffffff82548000, task ffffffff82049380)
-> Stack:
->  ffff88087b68dec0 ffff88087b36b230 ffffffff827b3dc0 ffffffff80d43793
->  0000000000000000 ffff88087b68dec0 ffff88087b35b658 0000000000000000
->  ffffffff827b3e00 ffffffff80d43980 ffff88087b36b230 ffff88087b35b658
-> Call Trace:
->  <IRQ> <0> [<ffffffff80d43793>] scsi_next_command+0x2e/0x46
->  [<ffffffff80d43980>] scsi_end_request+0x92/0xa4
->  [<ffffffff80d43fe3>] scsi_io_completion+0x1a7/0x3ad
->  [<ffffffff80d3d926>] scsi_finish_command+0xe9/0xf2
->  [<ffffffff80d444d5>] scsi_softirq_done+0x10c/0x115
->  [<ffffffff8062afeb>] blk_done_softirq+0x77/0x87
->  [<ffffffff802628a0>] ? ktime_get_ts+0x49/0x4e
->  [<ffffffff802514b8>] __do_softirq+0x8a/0x151
->  [<ffffffff8256b140>] ? early_idt_handler+0x0/0x72
->  [<ffffffff8020dbec>] call_softirq+0x1c/0x28
->  [<ffffffff8020f32c>] do_softirq+0x44/0x8b
->  [<ffffffff802511bf>] irq_exit+0x3f/0x82
->  [<ffffffff8020f5f0>] do_IRQ+0xc3/0xe3
->  [<ffffffff8020c983>] ret_from_intr+0x0/0x29
->  <EOI> <0> [<ffffffff80228446>] ? native_safe_halt+0x6/0x8
->  [<ffffffff8021406e>] ? default_idle+0x3c/0x59
->  [<ffffffff802141b0>] ? c1e_idle+0x117/0x11e
->  [<ffffffff8026332d>] ? atomic_notifier_call_chain+0x13/0x15
->  [<ffffffff8020b4ea>] ? cpu_idle+0x51/0x92
->  [<ffffffff815be32d>] ? rest_init+0x61/0x63
->  [<ffffffff8256bd6b>] ? start_kernel+0x39c/0x3a7
->  [<ffffffff8256b29f>] ? x86_64_start_reservations+0xa5/0xa9
->  [<ffffffff8256b3f0>] ? x86_64_start_kernel+0x12a/0x139
-> Code: 41 5e c9 c3 55 48 89 e5 41 54 53 4c 8b 27 48 89 fb 49 8d 7c 24 34
-> e8 69 56 98 00 48 8b 53 08 48 8d 4b 08 48 89 c6 48 39 ca 75 04 <0f> 0b
-> eb fe 48 8b 43 10 48 89 42 08 48 89 10 48 8b 3b 48 89 4b
-> RIP  [<ffffffff80d3df3e>] scsi_put_command+0x27/0x65
->  RSP <ffffffff827b3d80>
-> 
+np is indeed reused in the second #ifdef, but there it is immediately 
+assigned a new value.  So of_node_put is needed in the first #ifdef to 
+decrement the reference count on the value it has there.
 
-I haven't audited everything for that path yet, but I don't think others
-do retries like you suggest here. I'd strongly encourage you to change
-the retry logic to really put and get a new request, instead of relying
-on all state being clean for a reissue.
+> Also, I don't like this code since each of ams_i2c_init and ams_pmu_init
+> keep a reference to np, so they should be doing an of_node_get(np) and
+> this code above should be unconditionally doing an of_node_put(np).  This
+> is not your problem, though.
+> 
+Following your remarks, I changed the patch. ams_i2c_init and ams_pmu_init
+still keep a reference but they're now doing a call to of_node_get in their
+init functions. The reference is then released in the corresponding exit
+function or in error handling code.
 
--- 
-Jens Axboe
+Finally, ams_init releases the np reference for each of the two
+of_find_node_by_name calls.
 
+Regards,
+
+Signed-off-by: Nicolas Palix <npalix@diku.dk>
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+ ams-core.c |   17 +++++++++++++----
+ ams-i2c.c  |    7 ++++++-
+ ams-pmu.c  |   13 ++++++++++---
+ 3 files changed, 29 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/hwmon/ams/ams-core.c b/drivers/hwmon/ams/ams-core.c
+index 6c9ace1..9856c3f 100644
+--- a/drivers/hwmon/ams/ams-core.c
++++ b/drivers/hwmon/ams/ams-core.c
+@@ -192,6 +192,7 @@ release_freefall:
+ int __init ams_init(void)
+ {
+ 	struct device_node *np;
++	int ret;
+ 
+ 	spin_lock_init(&ams_info.irq_lock);
+ 	mutex_init(&ams_info.lock);
+@@ -199,16 +200,24 @@ int __init ams_init(void)
+ 
+ #ifdef CONFIG_SENSORS_AMS_I2C
+ 	np = of_find_node_by_name(NULL, "accelerometer");
+-	if (np && of_device_is_compatible(np, "AAPL,accelerometer_1"))
++	if (np && of_device_is_compatible(np, "AAPL,accelerometer_1")) {
+ 		/* Found I2C motion sensor */
+-		return ams_i2c_init(np);
++		ret = ams_i2c_init(np);
++		of_node_put(np);
++		return ret;
++	}
++	of_node_put(np);
+ #endif
+ 
+ #ifdef CONFIG_SENSORS_AMS_PMU
+ 	np = of_find_node_by_name(NULL, "sms");
+-	if (np && of_device_is_compatible(np, "sms"))
++	if (np && of_device_is_compatible(np, "sms")) {
+ 		/* Found PMU motion sensor */
+-		return ams_pmu_init(np);
++		ret = ams_pmu_init(np);
++		of_node_put(np);
++		return ret;
++	}
++	of_node_put(np);
+ #endif
+ 	return -ENODEV;
+ }
+diff --git a/drivers/hwmon/ams/ams-i2c.c b/drivers/hwmon/ams/ams-i2c.c
+index 2cbf8a6..636db87 100644
+--- a/drivers/hwmon/ams/ams-i2c.c
++++ b/drivers/hwmon/ams/ams-i2c.c
+@@ -255,6 +255,9 @@ static int ams_i2c_remove(struct i2c_client *client)
+ static void ams_i2c_exit(void)
+ {
+ 	i2c_del_driver(&ams_i2c_driver);
++
++	/* Release device node */
++	of_node_put(ams_info.of_node);
+ }
+ 
+ int __init ams_i2c_init(struct device_node *np)
+@@ -262,7 +265,7 @@ int __init ams_i2c_init(struct device_node *np)
+ 	int result;
+ 
+ 	/* Set implementation stuff */
+-	ams_info.of_node = np;
++	ams_info.of_node = of_node_get(np);
+ 	ams_info.exit = ams_i2c_exit;
+ 	ams_info.get_vendor = ams_i2c_get_vendor;
+ 	ams_info.get_xyz = ams_i2c_get_xyz;
+@@ -270,6 +273,8 @@ int __init ams_i2c_init(struct device_node *np)
+ 	ams_info.bustype = BUS_I2C;
+ 
+ 	result = i2c_add_driver(&ams_i2c_driver);
++	if (result < 0)
++		of_node_put(ams_info.of_node);
+ 
+ 	return result;
+ }
+diff --git a/drivers/hwmon/ams/ams-pmu.c b/drivers/hwmon/ams/ams-pmu.c
+index fb18b3d..babf3d5 100644
+--- a/drivers/hwmon/ams/ams-pmu.c
++++ b/drivers/hwmon/ams/ams-pmu.c
+@@ -141,6 +141,9 @@ static void ams_pmu_exit(void)
+ 
+ 	ams_info.has_device = 0;
+ 
++	/* Release device node */
++	of_node_put(ams_info.of_node);
++
+ 	printk(KERN_INFO "ams: Unloading\n");
+ }
+ 
+@@ -150,7 +153,7 @@ int __init ams_pmu_init(struct device_node *np)
+ 	int result;
+ 
+ 	/* Set implementation stuff */
+-	ams_info.of_node = np;
++	ams_info.of_node = of_node_get(np);
+ 	ams_info.exit = ams_pmu_exit;
+ 	ams_info.get_vendor = ams_pmu_get_vendor;
+ 	ams_info.get_xyz = ams_pmu_get_xyz;
+@@ -159,8 +162,10 @@ int __init ams_pmu_init(struct device_node *np)
+ 
+ 	/* Get PMU command, should be 0x4e, but we can never know */
+ 	prop = of_get_property(ams_info.of_node, "reg", NULL);
+-	if (!prop)
++	if (!prop) {
++		of_node_put(ams_info.of_node);
+ 		return -ENODEV;
++	}
+ 
+ 	ams_pmu_cmd = ((*prop) >> 8) & 0xff;
+ 
+@@ -171,8 +176,10 @@ int __init ams_pmu_init(struct device_node *np)
+ 	ams_pmu_clear_irq(AMS_IRQ_ALL);
+ 
+ 	result = ams_sensor_attach();
+-	if (result < 0)
++	if (result < 0) {
++		of_node_put(ams_info.of_node);
+ 		return result;
++	}
+ 
+ 	/* Set default values */
+ 	ams_pmu_set_register(AMS_FF_LOW_LIMIT, 0x15);
