@@ -1,62 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751800AbYLEJer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbYLEJjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751800AbYLEJer (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 04:34:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYLEJeZ
+	id S1755407AbYLEJjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 04:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYLEJjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 04:34:25 -0500
-Received: from ozlabs.org ([203.10.76.45]:35033 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751404AbYLEJeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 04:34:22 -0500
+	Fri, 5 Dec 2008 04:39:08 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:33119 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbYLEJjG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 04:39:06 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=Ksh8y2wNl6jVH27JvLGEyiI5eplXoOSU3KIdgzwt9fLLvkjFsvxfKIJpcoFMb4081
+	cUMzljBMXkAfpZIDVCS9A==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20081205172845.2b9d89a5.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081205172642.565661b1.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20081205172845.2b9d89a5.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Fri, 5 Dec 2008 01:39:00 -0800
+Message-ID: <6599ad830812050139l5797f16kaf511f831b09e8f4@mail.gmail.com>
+Subject: Re: [RFC][PATCH 1/4] New css->refcnt implementation.
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18744.61830.572384.96322@cargo.ozlabs.ibm.com>
-Date: Fri, 5 Dec 2008 20:16:54 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-In-Reply-To: <1228464216.18899.18.camel@twins>
-References: <20081204225345.654705757@linutronix.de>
-	<18744.29747.728320.652642@cargo.ozlabs.ibm.com>
-	<20081205063131.GB12785@elte.hu>
-	<20081205070329.GA30874@elte.hu>
-	<1228461385.18899.13.camel@twins>
-	<18744.57057.243817.407691@cargo.ozlabs.ibm.com>
-	<1228464216.18899.18.camel@twins>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
+On Fri, Dec 5, 2008 at 12:28 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujisu.com>
+>
+> Now, the last check of refcnt is done after pre_destroy(), so rmdir() can fail
+> after pre_destroy(). But memcg set mem->obsolete to be 1 at pre_destroy.
+> This is a bug. So, removing memcg->obsolete flag is sane.
+>
+> But there is no interface to confirm "css" is oboslete or not. I.e. there is
+> no flag to check whether we can increase css_refcnt or not!
 
-> On Fri, 2008-12-05 at 18:57 +1100, Paul Mackerras wrote:
-> > Peter Zijlstra writes:
-> > 
-> > > So, while most people would not consider two consecutive read() ops to
-> > > be close or near the same time, due to preemption and such, that is
-> > > taken away by the fact that the counters are task local time based - so
-> > > preemption doesn't affect thing. Right?
-> > 
-> > I'm sorry, I don't follow the argument here.  What do you mean by
-> > "task local time based"?
-> 
-> time only flows when the task is running.
+The basic rule is that you're only supposed to increment the css
+refcount if you have:
 
-Right - but the monitored task is running while the monitoring task is
-running.  So time is flowing for the monitored task between the two
-reads done by the monitoring task, meaning that you can't actually
-relate the two values you read with any precision.
+- a reference to a task in the cgroup (that is pinned via task_lock()
+so it can't be moved away)
+or
+- an existing reference to the css
 
-Paul.
+>
+> This patch changes this css->refcnt rule as following
+>        - css->refcnt is no longer private counter, just point to
+>          css->cgroup->css_refcnt.
+
+The reason I didn't do this is that I'd like to keep the ref counts
+separate to make it possible to add/remove subsystems from a hiearchy
+- if they're all mingled into a single refcount, it's impossible to
+tell if a particular subsystem has refcounts.
+
+>
+>        - css_put() is changed not to call notify_on_release().
+>
+>          From documentation, notify_on_release() is called when there is no
+>          tasks/children in cgroup. On implementation, notify_on_release is
+>          not called if css->refcnt > 0.
+
+The documentation is a little inaccurate - it's called when the cgroup
+is removable. In the original cpusets this implied that there were no
+tasks or children; in cgroups, a refcount can keep the group alive
+too, so it's right to not call notify_on_release if there are
+remaining refcounts.
+
+>          This is problem. Memcg has css->refcnt by each page even when
+>          there are no tasks. Release handler will be never called.
+
+Right, because it can't remove the dir if there are still refcounts.
+
+Early in the development of cgroups I did have a css refcount scheme
+similar to what you have, with tryget, etc, but still with separate
+refcounts for each subsystem; I got rid of it since it seemed more
+complicated than we needed at the time. But I'll see if I can dig it
+up.
+
+Paul
