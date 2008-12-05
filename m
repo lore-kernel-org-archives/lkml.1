@@ -1,526 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYLEI3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbYLEIag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbYLEI3w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 03:29:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbYLEI3n
+	id S1757501AbYLEIag (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 03:30:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbYLEIa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 03:29:43 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49410 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbYLEI3m (ORCPT
+	Fri, 5 Dec 2008 03:30:28 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:22949 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750922AbYLEIa2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 03:29:42 -0500
-Date: Fri, 5 Dec 2008 17:28:45 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>
-Subject: [RFC][PATCH 1/4] New css->refcnt implementation.
-Message-Id: <20081205172845.2b9d89a5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081205172642.565661b1.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081205172642.565661b1.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Dec 2008 03:30:28 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=S0VrKuOOjs4CFzXgZCCL7+BFaj8QjmSxMVhigZnyD6ZqCCnUTo7HflxP1LHWbAyIi
+	ndNEMqV5BEeXrBWXsCgZQ==
+MIME-Version: 1.0
+In-Reply-To: <4938DE1C.6070608@cn.fujitsu.com>
+References: <b040c32a0812032048x4a11dc26k184a4b279b509050@mail.gmail.com>
+	 <49376BE3.1040909@cn.fujitsu.com>
+	 <6599ad830812041502m15f54f0ckd8baa0a1792fc31e@mail.gmail.com>
+	 <b040c32a0812042344n75117b68x8de975d12dddf594@mail.gmail.com>
+	 <4938DE1C.6070608@cn.fujitsu.com>
+Date: Fri, 5 Dec 2008 00:30:23 -0800
+Message-ID: <b040c32a0812050030uff5ae65o417c599a792c800c@mail.gmail.com>
+Subject: Re: [patch] export percpu cpuacct cgroup stats
+From: Ken Chen <kenchen@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Dec 4, 2008 at 11:54 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>> +             seq_printf(m, "%llu ", percpu);
+>
+> Should be:
+> +               seq_printf(m, "%llu ", (unsigned long long)percpu);
+>
+> Otherwsise:
+> kernel/sched.c: In function 'cpuacct_percpu_seq_read':
+> kernel/sched.c:9359: warning: format '%llu' expects type 'long long unsigned int',
+> but argument 3 has type 'u64'
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujisu.com>
+huh, I was just wondering about the type case in cgroup_read_u64()
+when I was looking at it earlier.  That explains it.  Diff patch
+attached.
 
-Now, the last check of refcnt is done after pre_destroy(), so rmdir() can fail
-after pre_destroy(). But memcg set mem->obsolete to be 1 at pre_destroy.
-This is a bug. So, removing memcg->obsolete flag is sane.
-
-But there is no interface to confirm "css" is oboslete or not. I.e. there is
-no flag to check whether we can increase css_refcnt or not!
-This refcnt is hard to use...
-
-Fortunately, the user of css_get()/css_put() is only memcg, now.
-So influence of changing this usage is minimum.
-
-This patch changes this css->refcnt rule as following
-	- css->refcnt is no longer private counter, just point to
-	  css->cgroup->css_refcnt. 
-          (css can use private counter by its own routine and can have
-	   pre_destroy() handler)
-
-	- css_refcnt is initialized to 1.
-
-	- css_tryget() is added. This only success when css_refcnt > 0.
-
-	- after pre_destroy, before destroy(), try to drop css_refcnt to 0.
-
-	- after css_refcnt goes down to 0, css->refcnt is replaced to
-	  dummy counter. (for tryget())
-
-	- css_is_removed() is added. This checks css_refcnt == 0 and means
-	  this cgroup is under pre_destroy()-> destroy() and no rollback.
-
-	- css_put() is changed not to call notify_on_release().
-
-	  From documentation, notify_on_release() is called when there is no
-	  tasks/children in cgroup. On implementation, notify_on_release is
-	  not called if css->refcnt > 0.
-	  This is problem. Memcg has css->refcnt by each page even when
-	  there are no tasks. Release handler will be never called.
-
-	  But, now, rmdir()/pre_destroy() of memcg works well and checking
-	  checking css->ref is not (and shouldn't be) necessary for notifying.
-
-Changelog: v1 -> v2
- - changed css->refcnt to be pointer.
- - added cgroup->css_refcnt.
- - addec CONFIG_DEBUG_CGROUP_SUBSYS.
- - refreshed memcg's private refcnt handling. we'll revisit this.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujisu.com>
----
- include/linux/cgroup.h |   55 ++++++++++++++++++++++++--------
- kernel/cgroup.c        |   83 ++++++++++++++++++++-----------------------------
- lib/Kconfig.debug      |    8 ++++
- mm/memcontrol.c        |   54 ++++++++++++++++++-------------
- 4 files changed, 116 insertions(+), 84 deletions(-)
-
-Index: mmotm-2.6.28-Dec03/include/linux/cgroup.h
-===================================================================
---- mmotm-2.6.28-Dec03.orig/include/linux/cgroup.h
-+++ mmotm-2.6.28-Dec03/include/linux/cgroup.h
-@@ -51,13 +51,8 @@ struct cgroup_subsys_state {
- 	 * for subsystems that want to know about the cgroup
- 	 * hierarchy structure */
- 	struct cgroup *cgroup;
--
--	/* State maintained by the cgroup system to allow
--	 * subsystems to be "busy". Should be accessed via css_get()
--	 * and css_put() */
--
--	atomic_t refcnt;
--
-+	/* refcnt that all subsys shares to show *cgroup is alive or not. */
-+	atomic_t      *refcnt;
- 	unsigned long flags;
- };
- 
-@@ -66,6 +61,12 @@ enum {
- 	CSS_ROOT, /* This CSS is the root of the subsystem */
- };
- 
-+#ifdef CONFIG_DEBUG_CGROUP_SUBSYS
-+#define CGROUP_SUBSYS_BUG_ON(cond)	BUG_ON(cond)
-+#else
-+#define CGROUP_SUBSYS_BUG_ON(cond)	do {} while (0)
-+#endif
-+
- /*
-  * Call css_get() to hold a reference on the cgroup;
-  *
-@@ -73,20 +74,44 @@ enum {
- 
- static inline void css_get(struct cgroup_subsys_state *css)
- {
-+	atomic_t *ref = css->refcnt;
- 	/* We don't need to reference count the root state */
--	if (!test_bit(CSS_ROOT, &css->flags))
--		atomic_inc(&css->refcnt);
-+	if (test_bit(CSS_ROOT, &css->flags))
-+		return;
-+
-+	CGROUP_SUBSYS_BUG_ON(ref != &css->cgroup->css_refcnt);
-+	atomic_inc(ref);
- }
- /*
-- * css_put() should be called to release a reference taken by
-- * css_get()
-+ * css_put() should be called to release a reference taken by css_get()
-  */
- 
--extern void __css_put(struct cgroup_subsys_state *css);
- static inline void css_put(struct cgroup_subsys_state *css)
- {
--	if (!test_bit(CSS_ROOT, &css->flags))
--		__css_put(css);
-+	atomic_t *ref = css->refcnt;
-+
-+	if (test_bit(CSS_ROOT, &css->flags))
-+		return;
-+
-+	CGROUP_SUBSYS_BUG_ON(ref != &css->cgroup->css_refcnt);
-+	atomic_dec(ref);
-+}
-+
-+/*
-+ * Returns a value other than 0 at success.
-+ */
-+static inline int css_tryget(struct cgroup_subsys_state *css)
-+{
-+	if (test_bit(CSS_ROOT, &css->flags))
-+		return 1;
-+	return atomic_inc_not_zero(css->refcnt);
-+}
-+
-+static inline bool css_under_removal(struct cgroup_subsys_state *css)
-+{
-+	if (test_bit(CSS_ROOT, &css->flags))
-+		return false;
-+	return atomic_read(css->refcnt) == 0;
- }
- 
- /* bits in struct cgroup flags field */
-@@ -145,6 +170,8 @@ struct cgroup {
- 	int pids_use_count;
- 	/* Length of the current tasks_pids array */
- 	int pids_length;
-+	/* for css_get/put */
-+	atomic_t css_refcnt;
- };
- 
- /* A css_set is a structure holding pointers to a set of
-Index: mmotm-2.6.28-Dec03/kernel/cgroup.c
-===================================================================
---- mmotm-2.6.28-Dec03.orig/kernel/cgroup.c
-+++ mmotm-2.6.28-Dec03/kernel/cgroup.c
-@@ -110,6 +110,8 @@ static int root_count;
- /* dummytop is a shorthand for the dummy hierarchy's top cgroup */
- #define dummytop (&rootnode.top_cgroup)
- 
-+static atomic_t	dummy_css_refcnt; /* should be 0 forever. */
-+
- /* This flag indicates whether tasks in the fork and exit paths should
-  * check for fork/exit handlers to call. This avoids us having to do
-  * extra work in the fork/exit path if none of the subsystems need to
-@@ -589,6 +591,27 @@ static void cgroup_call_pre_destroy(stru
- 	return;
- }
- 
-+/*
-+ * Try to set subsys's refcnt to be 0.
-+ */
-+static int cgroup_set_subsys_removed(struct cgroup *cgrp)
-+{
-+	/* can refcnt goes down to 0 ? */
-+	if (atomic_dec_and_test(&cgrp->css_refcnt)) {
-+		struct cgroup_subsys *ss;
-+		struct cgroup_subsys_state *css;
-+		/* replace refcnt with dummy */
-+		for_each_subsys(cgrp->root, ss) {
-+			css = cgrp->subsys[ss->subsys_id];
-+			css->refcnt = &dummy_css_refcnt;
-+		}
-+		return true;
-+	} else
-+		atomic_inc(&cgrp->css_refcnt);
-+
-+	return false;
-+}
-+
- static void cgroup_diput(struct dentry *dentry, struct inode *inode)
- {
- 	/* is dentry a directory ? if so, kfree() associated cgroup */
-@@ -869,6 +892,7 @@ static void init_cgroup_housekeeping(str
- 	INIT_LIST_HEAD(&cgrp->css_sets);
- 	INIT_LIST_HEAD(&cgrp->release_list);
- 	init_rwsem(&cgrp->pids_mutex);
-+	atomic_set(&cgrp->css_refcnt, 1);
- }
- static void init_cgroup_root(struct cgroupfs_root *root)
- {
-@@ -2310,7 +2334,7 @@ static void init_cgroup_css(struct cgrou
- 			       struct cgroup *cgrp)
- {
- 	css->cgroup = cgrp;
--	atomic_set(&css->refcnt, 0);
-+	css->refcnt = &cgrp->css_refcnt;
- 	css->flags = 0;
- 	if (cgrp == dummytop)
- 		set_bit(CSS_ROOT, &css->flags);
-@@ -2413,37 +2437,6 @@ static int cgroup_mkdir(struct inode *di
- 	return cgroup_create(c_parent, dentry, mode | S_IFDIR);
- }
- 
--static int cgroup_has_css_refs(struct cgroup *cgrp)
--{
--	/* Check the reference count on each subsystem. Since we
--	 * already established that there are no tasks in the
--	 * cgroup, if the css refcount is also 0, then there should
--	 * be no outstanding references, so the subsystem is safe to
--	 * destroy. We scan across all subsystems rather than using
--	 * the per-hierarchy linked list of mounted subsystems since
--	 * we can be called via check_for_release() with no
--	 * synchronization other than RCU, and the subsystem linked
--	 * list isn't RCU-safe */
--	int i;
--	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
--		struct cgroup_subsys *ss = subsys[i];
--		struct cgroup_subsys_state *css;
--		/* Skip subsystems not in this hierarchy */
--		if (ss->root != cgrp->root)
--			continue;
--		css = cgrp->subsys[ss->subsys_id];
--		/* When called from check_for_release() it's possible
--		 * that by this point the cgroup has been removed
--		 * and the css deleted. But a false-positive doesn't
--		 * matter, since it can only happen if the cgroup
--		 * has been deleted and hence no longer needs the
--		 * release agent to be called anyway. */
--		if (css && atomic_read(&css->refcnt))
--			return 1;
--	}
--	return 0;
--}
--
- static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
- {
- 	struct cgroup *cgrp = dentry->d_fsdata;
-@@ -2465,16 +2458,21 @@ static int cgroup_rmdir(struct inode *un
- 
- 	/*
- 	 * Call pre_destroy handlers of subsys. Notify subsystems
--	 * that rmdir() request comes.
-+	 * that rmdir() request comes. pre_destroy() is expected to drop all
-+	 * extra refcnt to css. (css->refcnt == 1)
- 	 */
- 	cgroup_call_pre_destroy(cgrp);
- 
- 	mutex_lock(&cgroup_mutex);
- 	parent = cgrp->parent;
- 
--	if (atomic_read(&cgrp->count)
--	    || !list_empty(&cgrp->children)
--	    || cgroup_has_css_refs(cgrp)) {
-+	if (atomic_read(&cgrp->count) || !list_empty(&cgrp->children)) {
-+		mutex_unlock(&cgroup_mutex);
-+		return -EBUSY;
-+	}
-+
-+	/* last check ! */
-+	if (!cgroup_set_subsys_removed(cgrp)) {
- 		mutex_unlock(&cgroup_mutex);
- 		return -EBUSY;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index e32c094..055c54f 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -9356,7 +9356,7 @@ static int cpuacct_percpu_seq_read
+ 		spin_lock_irq(&cpu_rq(i)->lock);
+ 		percpu = *percpu_ptr(ca->cpuusage, i);
+ 		spin_unlock_irq(&cpu_rq(i)->lock);
+-		seq_printf(m, "%llu ", percpu);
++		seq_printf(m, "%llu ", (unsigned long long) percpu);
  	}
-@@ -3003,7 +3001,7 @@ static void check_for_release(struct cgr
- 	/* All of these checks rely on RCU to keep the cgroup
- 	 * structure alive */
- 	if (cgroup_is_releasable(cgrp) && !atomic_read(&cgrp->count)
--	    && list_empty(&cgrp->children) && !cgroup_has_css_refs(cgrp)) {
-+	    && list_empty(&cgrp->children)) {
- 		/* Control Group is currently removeable. If it's not
- 		 * already queued for a userspace notification, queue
- 		 * it now */
-@@ -3020,17 +3018,6 @@ static void check_for_release(struct cgr
- 	}
- }
- 
--void __css_put(struct cgroup_subsys_state *css)
--{
--	struct cgroup *cgrp = css->cgroup;
--	rcu_read_lock();
--	if (atomic_dec_and_test(&css->refcnt) && notify_on_release(cgrp)) {
--		set_bit(CGRP_RELEASABLE, &cgrp->flags);
--		check_for_release(cgrp);
--	}
--	rcu_read_unlock();
--}
--
- /*
-  * Notify userspace when a cgroup is released, by running the
-  * configured release agent with the name of the cgroup (path
-Index: mmotm-2.6.28-Dec03/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.28-Dec03.orig/mm/memcontrol.c
-+++ mmotm-2.6.28-Dec03/mm/memcontrol.c
-@@ -165,7 +165,6 @@ struct mem_cgroup {
- 	 */
- 	bool use_hierarchy;
- 	unsigned long	last_oom_jiffies;
--	int		obsolete;
- 	atomic_t	refcnt;
- 
- 	unsigned int	swappiness;
-@@ -594,8 +593,14 @@ mem_cgroup_get_first_node(struct mem_cgr
- {
- 	struct cgroup *cgroup;
- 	struct mem_cgroup *ret;
--	bool obsolete = (root_mem->last_scanned_child &&
--				root_mem->last_scanned_child->obsolete);
-+	struct mem_cgroup *last_scan = root_mem->last_scanned_child;
-+	bool obsolete = false;
-+
-+	if (last_scan) {
-+		if (css_under_removal(&last_scan->css))
-+			obsolete = true;
-+	} else
-+		obsolete = true;
- 
- 	/*
- 	 * Scan all children under the mem_cgroup mem
-@@ -683,7 +688,7 @@ static int mem_cgroup_hierarchical_recla
- 	next_mem = mem_cgroup_get_first_node(root_mem);
- 
- 	while (next_mem != root_mem) {
--		if (next_mem->obsolete) {
-+		if (css_under_removal(&next_mem->css)) {
- 			mem_cgroup_put(next_mem);
- 			cgroup_lock();
- 			next_mem = mem_cgroup_get_first_node(root_mem);
-@@ -744,14 +749,13 @@ static int __mem_cgroup_try_charge(struc
- 	if (likely(!*memcg)) {
- 		rcu_read_lock();
- 		mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
--		if (unlikely(!mem)) {
-+		if (unlikely(!mem) || !css_tryget(&mem->css)) {
- 			rcu_read_unlock();
- 			return 0;
- 		}
- 		/*
- 		 * For every charge from the cgroup, increment reference count
- 		 */
--		css_get(&mem->css);
- 		*memcg = mem;
- 		rcu_read_unlock();
- 	} else {
-@@ -1067,6 +1071,7 @@ int mem_cgroup_try_charge_swapin(struct 
- {
- 	struct mem_cgroup *mem;
- 	swp_entry_t     ent;
-+	int ret;
- 
- 	if (mem_cgroup_disabled())
- 		return 0;
-@@ -1085,10 +1090,18 @@ int mem_cgroup_try_charge_swapin(struct 
- 	ent.val = page_private(page);
- 
- 	mem = lookup_swap_cgroup(ent);
--	if (!mem || mem->obsolete)
-+	/*
-+	 * Because we can't assume "mem" is alive now, use tryget() and
-+	 * drop extra count later
-+	 */
-+	if (!mem || !css_tryget(&mem->css))
- 		goto charge_cur_mm;
- 	*ptr = mem;
--	return __mem_cgroup_try_charge(NULL, mask, ptr, true);
-+	ret = __mem_cgroup_try_charge(NULL, mask, ptr, true);
-+	/* drop extra count */
-+	css_put(&mem->css);
-+
-+	return ret;
- charge_cur_mm:
- 	if (unlikely(!mm))
- 		mm = &init_mm;
-@@ -1119,14 +1132,16 @@ int mem_cgroup_cache_charge_swapin(struc
- 		ent.val = page_private(page);
- 		if (do_swap_account) {
- 			mem = lookup_swap_cgroup(ent);
--			if (mem && mem->obsolete)
-+			if (mem && !css_tryget(&mem->css))
- 				mem = NULL;
- 			if (mem)
- 				mm = NULL;
- 		}
- 		ret = mem_cgroup_charge_common(page, mm, mask,
- 				MEM_CGROUP_CHARGE_TYPE_SHMEM, mem);
--
-+		/* drop extra ref */
-+		if (mem)
-+			css_put(&mem->css);
- 		if (!ret && do_swap_account) {
- 			/* avoid double counting */
- 			mem = swap_cgroup_record(ent, NULL);
-@@ -1411,11 +1426,10 @@ int mem_cgroup_shrink_usage(struct mm_st
- 
- 	rcu_read_lock();
- 	mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
--	if (unlikely(!mem)) {
-+	if (unlikely(!mem) || !css_tryget(&mem->css)) {
- 		rcu_read_unlock();
- 		return 0;
- 	}
--	css_get(&mem->css);
- 	rcu_read_unlock();
- 
- 	do {
-@@ -2058,6 +2072,7 @@ static struct mem_cgroup *mem_cgroup_all
- 
- 	if (mem)
- 		memset(mem, 0, size);
-+	atomic_set(&mem->refcnt, 1);
- 	return mem;
- }
- 
-@@ -2069,8 +2084,8 @@ static struct mem_cgroup *mem_cgroup_all
-  * the number of reference from swap_cgroup and free mem_cgroup when
-  * it goes down to 0.
-  *
-- * When mem_cgroup is destroyed, mem->obsolete will be set to 0 and
-- * entry which points to this memcg will be ignore at swapin.
-+ * When mem_cgroup is destroyed, css_under_removal() is true and entry which
-+ * points to this memcg will be ignore at swapin.
-  *
-  * Removal of cgroup itself succeeds regardless of refs from swap.
-  */
-@@ -2079,10 +2094,6 @@ static void mem_cgroup_free(struct mem_c
- {
- 	int node;
- 
--	if (atomic_read(&mem->refcnt) > 0)
--		return;
--
--
- 	for_each_node_state(node, N_POSSIBLE)
- 		free_mem_cgroup_per_zone_info(mem, node);
- 
-@@ -2100,8 +2111,7 @@ static void mem_cgroup_get(struct mem_cg
- static void mem_cgroup_put(struct mem_cgroup *mem)
- {
- 	if (atomic_dec_and_test(&mem->refcnt)) {
--		if (!mem->obsolete)
--			return;
-+		BUG(!css_under_removal(&mem->css));
- 		mem_cgroup_free(mem);
- 	}
- }
-@@ -2167,14 +2177,14 @@ static void mem_cgroup_pre_destroy(struc
- 					struct cgroup *cont)
- {
- 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
--	mem->obsolete = 1;
-+	/* dentry's mutex makes this safe. */
- 	mem_cgroup_force_empty(mem, false);
- }
- 
- static void mem_cgroup_destroy(struct cgroup_subsys *ss,
- 				struct cgroup *cont)
- {
--	mem_cgroup_free(mem_cgroup_from_cont(cont));
-+	mem_cgroup_put(mem_cgroup_from_cont(cont));
- }
- 
- static int mem_cgroup_populate(struct cgroup_subsys *ss,
-Index: mmotm-2.6.28-Dec03/lib/Kconfig.debug
-===================================================================
---- mmotm-2.6.28-Dec03.orig/lib/Kconfig.debug
-+++ mmotm-2.6.28-Dec03/lib/Kconfig.debug
-@@ -353,6 +353,14 @@ config DEBUG_LOCK_ALLOC
- 	 spin_lock_init()/mutex_init()/etc., or whether there is any lock
- 	 held during task exit.
- 
-+config DEBUG_CGROUP_SUBSYS
-+	bool "Debugginug Cgroup Subsystems"
-+	depends on DEBUG_KERNEL && CGROUP
-+	help
-+	 This feature will check cgroup_subsys_state behavior. Currently, this
-+	 checks reference count management.
-+
-+
- config PROVE_LOCKING
- 	bool "Lock debugging: prove locking correctness"
- 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
-
+ 	seq_printf(m, "\n");
+ 	return 0;
