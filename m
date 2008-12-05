@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbYLEMzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYLEM5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757415AbYLEMzi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 07:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYLEMza
+	id S1757335AbYLEM5l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 07:57:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYLEM5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 07:55:30 -0500
-Received: from ozlabs.org ([203.10.76.45]:57328 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751949AbYLEMz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 07:55:29 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 1/3] param: Adapt MN10300 to the new parameter handling regime
-Date: Fri, 5 Dec 2008 23:25:22 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <200812051855.07203.rusty@rustcorp.com.au> <20081203163207.13965.56517.stgit@warthog.procyon.org.uk> <2204.1228478296@redhat.com>
-In-Reply-To: <2204.1228478296@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 5 Dec 2008 07:57:33 -0500
+Received: from igw2.watson.ibm.com ([129.34.20.6]:45987 "EHLO
+	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbYLEM5c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 07:57:32 -0500
+Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
+From: david safford <safford@watson.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <alpine.LRH.1.10.0812051236420.11818@tundra.namei.org>
+References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
+	 <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com>
+	 <20081203123021.GA30035@infradead.org>
+	 <1228328323.2821.30.camel@localhost.localdomain>
+	 <20081203182300.GA31203@infradead.org>
+	 <1228342655.2821.64.camel@localhost.localdomain>
+	 <20081204130949.GA18196@infradead.org>
+	 <1228424014.3014.58.camel@localhost.localdomain>
+	 <alpine.LRH.1.10.0812051236420.11818@tundra.namei.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812052325.22974.rusty@rustcorp.com.au>
+Date: Fri, 05 Dec 2008 07:56:50 -0500
+Message-Id: <1228481810.3005.31.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 December 2008 22:28:16 David Howells wrote:
-> I think you're missing:
-> 
-> 	#define param_mem_keeps_reference 0
-> 
-> from the stuff you added.
+On Fri, 2008-12-05 at 12:42 +1100, James Morris wrote:
+> On Thu, 4 Dec 2008, david safford wrote:
+>
+> > These hooks were for alternate integrity modules, and since
+> > no one else has defended them, we have to agree that they
+> > should be replaced with direct calls.
+>
+> If you know of other modules which are planned to be ported to this
+> framework, merged upstream and supported, then this would be similar to
+> the situation when LSM was initially developed.
+>
+> You've previously mentioned some active projects here:
+> http://lkml.org/lkml/2008/11/17/362
+>
+> Are there any definite commitments to push these upstream when the
+> integrity framework is merged?
 
-Ah thanks, I didn't actually *cough* test it.
+All of the projects listed in that posting were ones depending on
+IMA, with no requirements for alternate modules. I do hope that there
+will be other integrity modules in addition to the TPM oriented IMA, 
+and I do know of several research projects in this space, but I don't 
+know if/when any of these are planning on submission. If others are 
+submitted, it would certainly be simple to add the hooks back in.
 
-> With that, the core_param stuff does work for mem=...  But I object to
-> mem_override not being __initdata.  I also don't think the parameter should
-> appear in sysfs - that's just a waste of resources.
+dave
 
-If you set the perm to 0, then it won't appear in sys, and hence can be
-__initdata.
-
-> It should, perhaps,
-> appear in /proc/cmdline, but for some reason it does not.
-
-Hmm, that's more concering.  I'll dig into this in the morning.
-
-> I can live without
-> that, though, since its effect appears in /proc/meminfo.
-> 
-> Also, something else to consider: If CONFIG_MODULES=n and CONFIG_SYSFS=n,
-> should the contents of kernel/params.c be discarded along with the __init
-> sections?
-
-Yes, I think so.  YA __init variant, but it can be local to kernel/params.c
-I think.
-
-Cheers,
-Rusty.
