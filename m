@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757286AbYLEP7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbYLEP7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757286AbYLEP7V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 10:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757099AbYLEP62
+	id S1758242AbYLEP7m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 10:59:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757891AbYLEP64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 10:58:28 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:34690 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756980AbYLEP60 (ORCPT
+	Fri, 5 Dec 2008 10:58:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38361 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757968AbYLEP6y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 10:58:26 -0500
-From: Christian Lamparter <chunkeey@web.de>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [PATCH] p54usb: fix usb_kill_urb hang with slub_debug=P
-Date: Fri, 5 Dec 2008 16:58:22 +0100
-User-Agent: KMail/1.10.0 (Linux/2.6.28-rc6-wl; KDE/4.1.0; x86_64; ; )
-Cc: linux-wireless@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
-       John W Linville <linville@tuxdriver.com>, linux-usb@vger.kernel.org,
-       gregkh@suse.de, linux-kernel@vger.kernel.org
-References: <200812051547.45790.chunkeey@web.de> <49394541.30404@lwfinger.net>
-In-Reply-To: <49394541.30404@lwfinger.net>
+	Fri, 5 Dec 2008 10:58:54 -0500
+Date: Fri, 5 Dec 2008 07:57:59 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken
+ on Toshiba R500 (bisected)
+In-Reply-To: <200812051300.16649.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0812050754020.3386@nehalem.linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812041845210.3543@nehalem.linux-foundation.org> <alpine.LFD.2.00.0812041917050.3386@nehalem.linux-foundation.org> <200812051300.16649.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812051658.23452.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX19szEI4yPkS7f1VckkorKVPxYW3dRF8UTBRmsX4
-	30mObeGCnj+h1dF016WqeKvzQ6vTkbpT8uJhB7RxKt6jAdYm3D
-	q6bPKHcyo=
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 December 2008 16:14:09 Larry Finger wrote:
-> Christian Lamparter wrote:
-> > This patch fixes a problem identified by Johannes Berg.
+
+
+On Fri, 5 Dec 2008, Rafael J. Wysocki wrote:
 > > 
-> > It looks like this is a classic case of "use-after-freed". 
-> > A module which should reproduce the problem on
-> > any other USB device can be found right here:
-> > http://kerneltrap.org/mailarchive/linux-usb/2008/12/4/4317064
- 
-> I didn't find either the code nor a link to it in the above link. What did I miss?
+> > It would be very interesting to see if people affected get any printouts 
+> > about IO decodes that don't show up in /proc/ioports...
 > 
-Sorry... kerneltrap doesn't like attachments.
+> From my box:
+> 
+> pci 0000:00:1f.0: quirk: region d800-d87f claimed by ICH6 ACPI/GP IO/TCO
+> pci 0000:00:1f.0: quirk: region eec0-eeff claimed by ICH6 GPIO
+> pci 0000:00:1f.0: ICH7 LPC Generic IO decode 1 PIO at 0680 (mask 007f)
+> pci 0000:00:1f.0: ICH7 LPC Generic IO decode 4 PIO at 01e0 (mask 000f)
+> 
+> The second one shows up in /proc/ioports as "01e0-01ef : pnp 00:09", but the
+> first one (at 680) doesn't.
 
-http://marc.info/?l=linux-usb&m=122843263217096&w=2
-has it.
+Ok, so the patch is interesting and probably worth expanding on (to 
+actually allocate the regions), but at the same time it too doesn't 
+actually explain your problems.
 
-Regards, 
-	Chr
+While the kernel doesn't know about that magic 0x680 allocation, it also 
+won't be allocating anything over it, since we define PCIBIOS_MIN_IO to 
+0x1000 on x86, and will never allocate new resources under that.
+
+		Linus
