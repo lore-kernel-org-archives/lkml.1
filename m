@@ -1,92 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbYLEJKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbYLEJNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbYLEJKo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 04:10:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYLEJK2
+	id S1756181AbYLEJNU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 04:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbYLEJNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 04:10:28 -0500
-Received: from ozlabs.org ([203.10.76.45]:41917 "EHLO ozlabs.org"
+	Fri, 5 Dec 2008 04:13:08 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:44854 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751140AbYLEJKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 04:10:25 -0500
+	id S1750922AbYLEJNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 04:13:05 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] EXPORTFS: Don't return NULL from fh_to_dentry()/fh_to_parent()
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, bfields@fieldses.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org
+Date: Fri, 05 Dec 2008 09:12:56 +0000
+Message-ID: <20081205091255.26127.91011.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18744.61429.548462.667020@cargo.ozlabs.ibm.com>
-Date: Fri, 5 Dec 2008 20:10:13 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-In-Reply-To: <20081205080813.GA2030@elte.hu>
-References: <20081204225345.654705757@linutronix.de>
-	<18744.29747.728320.652642@cargo.ozlabs.ibm.com>
-	<20081205063131.GB12785@elte.hu>
-	<18744.56857.259756.129894@cargo.ozlabs.ibm.com>
-	<20081205080813.GA2030@elte.hu>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+Returning NULL from fh_to_dentry() and fh_to_parent() is not permitted, so
+return -ESTALE instead.  exportfs_decode_fh() does not check for NULL, but
+will try to dereference it as IS_ERR() does not check for it.
 
-> * Paul Mackerras <paulus@samba.org> wrote:
-[...]
-> > Isn't it two separate read() calls to read the two counters?  If so, 
-> > the only way the two values are actually going to correspond to the 
-> > same point in time is if the task being monitored is stopped.  In which 
-> > case the monitoring task needs to use ptrace or something similar in 
-> > order to make sure that the monitored task is actually stopped.
-> 
-> It doesnt matter in practice.
+The generic_fh_to_dentry() and generic_fh_to_parent() functions also no longer
+return NULL, but return -ESTALE instead.
 
-Can I ask - and this is a real question, I'm not being sarcastic - is
-that statement made with substantial serious experience in performance
-analysis behind it, or is it just an intuition?
+Signed-off-by: David Howells <dhowells@redhat.com>
+Acked-by: J. Bruce Fields <bfields@citi.umich.edu>
+---
 
-I will happily admit that I am not a great expert on performance
-analysis with years of experience.  But I have taken a bit of a look
-at what people with that sort of experience do, and I don't think they
-would agree with your "doesn't matter" statement.
+ fs/fat/inode.c                |    2 +-
+ fs/fuse/inode.c               |    4 ++--
+ fs/gfs2/ops_export.c          |    4 ++--
+ fs/isofs/export.c             |    4 ++--
+ fs/libfs.c                    |    4 ++--
+ fs/ocfs2/export.c             |    4 ++--
+ fs/udf/namei.c                |    4 ++--
+ fs/xfs/linux-2.6/xfs_export.c |    2 +-
+ 8 files changed, 14 insertions(+), 14 deletions(-)
 
-> Such kind of 'group system call facility' has been suggested several 
-> times in the past - but ... never got anywhere because system calls are 
-> cheap enough, it really does not count in practice.
-> 
-> It could be implemented, and note that because our code uses a proper 
-> Linux file descriptor abstraction, such a sys_read_fds() facility would 
-> help _other_ applications as well, not just performance counters.
-> 
-> But it brings complications: demultiplexing of error conditions on 
-> individual counters is a real pain with any compound abstraction. We very 
-> consciously went with the 'one fd, one object, one counter' design.
 
-And I think that is the fundamental flaw.  On the machines I am
-familiar with, the performance counters as not separate things that
-can individually and independently be assigned to count one thing or
-another.
+diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+index d937aaf..cac84f2 100644
+--- a/fs/fat/inode.c
++++ b/fs/fat/inode.c
+@@ -657,7 +657,7 @@ static struct dentry *fat_fh_to_dentry(struct super_block *sb,
+ 	u32 *fh = fid->raw;
+ 
+ 	if (fh_len < 5 || fh_type != 3)
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	inode = ilookup(sb, fh[0]);
+ 	if (!inode || inode->i_generation != fh[1]) {
+diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
+index 2e99f34..0eb8990 100644
+--- a/fs/fuse/inode.c
++++ b/fs/fuse/inode.c
+@@ -653,7 +653,7 @@ static struct dentry *fuse_fh_to_dentry(struct super_block *sb,
+ 	struct fuse_inode_handle handle;
+ 
+ 	if ((fh_type != 0x81 && fh_type != 0x82) || fh_len < 3)
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	handle.nodeid = (u64) fid->raw[0] << 32;
+ 	handle.nodeid |= (u64) fid->raw[1];
+@@ -667,7 +667,7 @@ static struct dentry *fuse_fh_to_parent(struct super_block *sb,
+ 	struct fuse_inode_handle parent;
+ 
+ 	if (fh_type != 0x82 || fh_len < 6)
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	parent.nodeid = (u64) fid->raw[3] << 32;
+ 	parent.nodeid |= (u64) fid->raw[4];
+diff --git a/fs/gfs2/ops_export.c b/fs/gfs2/ops_export.c
+index bbb8c36..2864873 100644
+--- a/fs/gfs2/ops_export.c
++++ b/fs/gfs2/ops_export.c
+@@ -254,7 +254,7 @@ static struct dentry *gfs2_fh_to_dentry(struct super_block *sb, struct fid *fid,
+ 		this.no_addr |= be32_to_cpu(fh[3]);
+ 		return gfs2_get_dentry(sb, &this);
+ 	default:
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 	}
+ }
+ 
+@@ -273,7 +273,7 @@ static struct dentry *gfs2_fh_to_parent(struct super_block *sb, struct fid *fid,
+ 		parent.no_addr |= be32_to_cpu(fh[7]);
+ 		return gfs2_get_dentry(sb, &parent);
+ 	default:
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 	}
+ }
+ 
+diff --git a/fs/isofs/export.c b/fs/isofs/export.c
+index e81a305..1b4ee23 100644
+--- a/fs/isofs/export.c
++++ b/fs/isofs/export.c
+@@ -164,7 +164,7 @@ static struct dentry *isofs_fh_to_dentry(struct super_block *sb,
+ 	struct isofs_fid *ifid = (struct isofs_fid *)fid;
+ 
+ 	if (fh_len < 3 || fh_type > 2)
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	return isofs_export_iget(sb, ifid->block, ifid->offset,
+ 			ifid->generation);
+@@ -176,7 +176,7 @@ static struct dentry *isofs_fh_to_parent(struct super_block *sb,
+ 	struct isofs_fid *ifid = (struct isofs_fid *)fid;
+ 
+ 	if (fh_type != 2)
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	return isofs_export_iget(sb,
+ 			fh_len > 2 ? ifid->parent_block : 0,
+diff --git a/fs/libfs.c b/fs/libfs.c
+index e960a83..4fe5b5b 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -751,7 +751,7 @@ struct dentry *generic_fh_to_dentry(struct super_block *sb, struct fid *fid,
+ 	struct inode *inode = NULL;
+ 
+ 	if (fh_len < 2)
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	switch (fh_type) {
+ 	case FILEID_INO32_GEN:
+@@ -784,7 +784,7 @@ struct dentry *generic_fh_to_parent(struct super_block *sb, struct fid *fid,
+ 	struct inode *inode = NULL;
+ 
+ 	if (fh_len <= 2)
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	switch (fh_type) {
+ 	case FILEID_INO32_GEN_PARENT:
+diff --git a/fs/ocfs2/export.c b/fs/ocfs2/export.c
+index 2f27b33..0f1c80f 100644
+--- a/fs/ocfs2/export.c
++++ b/fs/ocfs2/export.c
+@@ -182,7 +182,7 @@ static struct dentry *ocfs2_fh_to_dentry(struct super_block *sb,
+ 	struct ocfs2_inode_handle handle;
+ 
+ 	if (fh_len < 3 || fh_type > 2)
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	handle.ih_blkno = (u64)le32_to_cpu(fid->raw[0]) << 32;
+ 	handle.ih_blkno |= (u64)le32_to_cpu(fid->raw[1]);
+@@ -196,7 +196,7 @@ static struct dentry *ocfs2_fh_to_parent(struct super_block *sb,
+ 	struct ocfs2_inode_handle parent;
+ 
+ 	if (fh_type != 2 || fh_len < 6)
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	parent.ih_blkno = (u64)le32_to_cpu(fid->raw[3]) << 32;
+ 	parent.ih_blkno |= (u64)le32_to_cpu(fid->raw[4]);
+diff --git a/fs/udf/namei.c b/fs/udf/namei.c
+index f84bfaa..e1a1c16 100644
+--- a/fs/udf/namei.c
++++ b/fs/udf/namei.c
+@@ -1297,7 +1297,7 @@ static struct dentry *udf_fh_to_dentry(struct super_block *sb,
+ 	if ((fh_len != 3 && fh_len != 5) ||
+ 	    (fh_type != FILEID_UDF_WITH_PARENT &&
+ 	     fh_type != FILEID_UDF_WITHOUT_PARENT))
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	return udf_nfs_get_inode(sb, fid->udf.block, fid->udf.partref,
+ 			fid->udf.generation);
+@@ -1307,7 +1307,7 @@ static struct dentry *udf_fh_to_parent(struct super_block *sb,
+ 				       struct fid *fid, int fh_len, int fh_type)
+ {
+ 	if (fh_len != 5 || fh_type != FILEID_UDF_WITH_PARENT)
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	return udf_nfs_get_inode(sb, fid->udf.parent_block,
+ 				 fid->udf.parent_partref,
+diff --git a/fs/xfs/linux-2.6/xfs_export.c b/fs/xfs/linux-2.6/xfs_export.c
+index 7f7abec..f9a51c4 100644
+--- a/fs/xfs/linux-2.6/xfs_export.c
++++ b/fs/xfs/linux-2.6/xfs_export.c
+@@ -150,7 +150,7 @@ xfs_fs_fh_to_dentry(struct super_block *sb, struct fid *fid,
+ 	struct inode		*inode = NULL;
+ 
+ 	if (fh_len < xfs_fileid_length(fileid_type))
+-		return NULL;
++		return ERR_PTR(-ESTALE);
+ 
+ 	switch (fileid_type) {
+ 	case FILEID_INO32_GEN_PARENT:
 
-Rather, what the hardware provides is ONE performance monitor unit,
-which the OS can context-switch between tasks.  The performance
-monitor unit has several counters that can be assigned (within limits)
-to count various aspects of the performance of the code being
-executed.  That is why, for instance, if you ask for the counters to
-be frozen when one of them overflows, they all get frozen at that
-point.
-
-And that's how the hardware is designed because that's how the people
-that do performance analysis want to do their measurements.  This idea
-of splitting things up into separate counters that look independent
-but aren't is just going to cause unnecessary complications and
-difficulties.
-
-Paul.
