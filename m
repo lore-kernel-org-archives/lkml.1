@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbYLEMNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756624AbYLEMS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756697AbYLEMNe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 07:13:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYLEMNZ
+	id S1756624AbYLEMS3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 07:18:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYLEMSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 07:13:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35306 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750895AbYLEMNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 07:13:24 -0500
-Date: Fri, 5 Dec 2008 13:13:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: a.p.zijlstra@chello.nl, paulus@samba.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org, eranian@googlemail.com, dada1@cosmosbay.com,
-       robert.richter@amd.com, arjan@infradead.org, hpa@zytor.com,
-       rostedt@goodmis.org
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-Message-ID: <20081205121308.GB28662@elte.hu>
-References: <20081205082431.GD2030@elte.hu> <20081205.002701.172921476.davem@davemloft.net> <20081205084233.GE2030@elte.hu> <20081205.004922.244597525.davem@davemloft.net>
-MIME-Version: 1.0
+	Fri, 5 Dec 2008 07:18:20 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:48801 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbYLEMSU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 07:18:20 -0500
+Date: Fri, 5 Dec 2008 13:29:30 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>, Mikulas Patocka <mpatocka@redhat.com>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com,
+       Alasdair G Kergon <agk@redhat.com>,
+       Andi Kleen <andi-suse@firstfloor.org>, Milan Broz <mbroz@redhat.com>
+Subject: Re: Device loses barrier support (was: Fixed patch for simple barriers.)
+Message-ID: <20081205122930.GB6703@one.firstfloor.org>
+References: <20081204145810.GR6703@one.firstfloor.org> <Pine.LNX.4.64.0812041139200.2434@hs20-bc2-1.build.redhat.com> <20081204174838.GS6703@one.firstfloor.org> <Pine.LNX.4.64.0812041401210.23079@hs20-bc2-1.build.redhat.com> <20081204221551.GV6703@one.firstfloor.org> <Pine.LNX.4.64.0812041756550.29638@hs20-bc2-1.build.redhat.com> <20081205004849.GX6703@one.firstfloor.org> <Pine.LNX.4.64.0812041948400.14114@hs20-bc2-1.build.redhat.com> <20081205013739.GZ6703@one.firstfloor.org> <20081205115225.13c277ee@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081205.004922.244597525.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20081205115225.13c277ee@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Not when the fundamental design of the code is broken and trashes
+> performance. 
 
-* David Miller <davem@davemloft.net> wrote:
+Sorry but that's just not correct. There's nothing in late failing
+barriers that "trashes performance". The file system writers have
+to be careful to handle it, but at least the current ones all do.
+And also if someone writes a hypothetical fully asynchronously driven 
+barrier based IO transaction system it would be still possible to handle 
+the late failing barrier without too many complications.
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Fri, 5 Dec 2008 09:42:33 +0100
-> 
-> > Please let me repeat: it's a _fundamental_ thesis of performance 
-> > instrumentation to not disturb the monitored context. Your insistence 
-> > on _stopping_ the monitored task breaks that fundamental axiom!
-> 
-> This is only a problem if you make your measurement quantums too small.
+Also late failing barriers is pretty much the only sane way to implement
+barriers in software remapping schemes like DM and MD.
 
-But if you make the measurement long enough - say we make it 100,000 
-usecs, then 0.2 usecs of delay between two read()s is insignificant 
-statistically, right? It's a 1:500,000 ratio.
+-Andi
 
-Scheduling out a task and back is far more drastic of an effect than any 
-new events in 0.2 usecs.
-
-	Ingo
+-- 
+ak@linux.intel.com
