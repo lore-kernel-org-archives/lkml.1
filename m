@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbYLEDfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbYLEDky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755558AbYLEDfv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 22:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbYLEDfn
+	id S1755308AbYLEDky (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 22:40:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbYLEDkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 22:35:43 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:44767 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931AbYLEDfm (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 22:35:42 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Geoffrey McRae <geoff@rabidhost.com>
-Cc: Peter Teoh <htmldeveloper@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Nick Andrew <nick@nick-andrew.net>, linux-kernel@vger.kernel.org
-Subject: Re: New Security Features, Please Comment
-In-Reply-To: Your message of "Fri, 05 Dec 2008 09:30:54 +1100."
-             <1228429854.7546.6.camel@lappy.spacevs.com>
-From: Valdis.Kletnieks@vt.edu
-References: <1228260494.24232.21.camel@compy.ivent.com.au> <20081203005338.6472db7a@lxorguk.ukuu.org.uk> <1228268657.6679.4.camel@lappy.spacevs.com> <20081203124252.GD11807@mail.local.tull.net> <1228344292.6993.27.camel@lappy.spacevs.com> <20081203230820.4473a162@lxorguk.ukuu.org.uk> <804dabb00812031527k3fae11dcnef3b1696c3d136f8@mail.gmail.com> <1228347656.6993.31.camel@lappy.spacevs.com> <80413.1228427770@turing-police.cc.vt.edu>
-            <1228429854.7546.6.camel@lappy.spacevs.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1228448127_3727P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Thu, 4 Dec 2008 22:40:46 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:33979 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751787AbYLEDkp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 22:40:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=YezxhiuvQBtP2dLprRproV17iIW9aIUp2atTzCNYMVRYjsi3JVBnyDn/GWsnMgfQSb
+         zsrcJ0g34egNZePzbVGomo2cRUy8ZO0tor+WY5jMnCezuFTgleMWQqK5graE8xKqd4XR
+         t7Sxz9eTiERoF3alBaACcd+hfu13AvidpnOZM=
+Message-ID: <21d7e9970812041940h29994c60w3e7bcf20b96efe04@mail.gmail.com>
+Date: Fri, 5 Dec 2008 13:40:43 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       libc-alpha@sources.redhat.com
+Subject: IO space memcpy support for userspace.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Thu, 04 Dec 2008 22:35:27 -0500
-Message-ID: <95180.1228448127@turing-police.cc.vt.edu>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1228448127_3727P
-Content-Type: text/plain; charset=us-ascii
+Hi all (glibc + kernel folks).
 
-On Fri, 05 Dec 2008 09:30:54 +1100, Geoffrey McRae said:
-> On Thu, 2008-12-04 at 16:56 -0500, Valdis.Kletnieks@vt.edu wrote:
+So this isn't totally a kernel issue however I'm sure everyone who can
+help is around here somewhere.
 
-> > 	while (getpid()) msleep(1);
-> > 	/* malicious code here */
-> > 
-> 
-> This would only be dangerous if the parent did not wait for the child to
-> finish its task before changing its uid, which for a FastCGI app, it has
-> to as it needs the response to send back to the client. All that would
-> happen here is the CGI script would sleep forever, or until the HTTP
-> server killed the process.
+So in the kernel we have special memcpy_(from,to)io functions that are
+used to copy data in out of PCI space,
+however when we expose PCI device memory to userspace it has no way to
+know the mapping it has been provided
+is suitable for optimised userspace copy operations or not.
 
-Thus providing me with a way to DoS your webserver by sticking all your
-server processes into a sleep-forever... :)
+so eg. on certain IA64 platforms, doing a memcpy on a mmaped PCI
+memory area can cause a hard lock.
 
-You're also overlooking the fact that the malicious code could do something
-like this:
+Now I started to try and fix this in X but I'm wondering if this is
+something glibc/kernel can solve between them.
 
-	/* send the parent something that makes it *think* the request finished */
-	printf("We're all done now\n");
-	while (getpid()) msleep (1);
+I was firstly thinking about adding memcpy_io/memset_io/str*_io
+options to glibc and just have userspace use them.
+however this means code that operates on non-IO space objects gets
+penalised in those cases. e.g. a sw renderer rendering
+to a SW surface vs the same sw renderer rendering to a surface in
+video memory. the renderer really doesn't know where the
+surface is actually underneath the hood.
 
-Remember - whatever the child is doing to signal that it's done, can *also*
-be done by the exploit code. There's only one real exception - the child
-can call exit() - if the exploit exits so a SIGCHLD is generated, then
-it can't run anymore.  However, since the whole *point* here is avoiding
-the usual exit/fork/exec overhead...
+So further thinking about this it would be nice if the standard
+memcpy/memset/str* realised, hey I'm working on a memory address or
+VMA
+that is a IO mapping, I really shouldn't do shiny prefetch stuff on
+this. I'm not 100% sure how this could be implemented, some sort of
+private
+mmap return value or flag like MAP_NO_OPTIMISE (I realise this is
+going the wrong way as the kernel should tell glibc it, do we even
+have a channel for this info?).
+Then when memory op is done it checks the memory dest/src to see if
+the segment is allowed to optimise or not.
 
---==_Exmh_1228448127_3727P
-Content-Type: application/pgp-signature
+I'm sure this has come up before and I'm sure I'll either wish I never
+posted this or someone will show me the crisp corpse of the last guy
+who suggested it.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJOKF/cC3lWbTT17ARAgRBAKCaURqGDRB+4D5Nje+q7QJm4MjbtACg+dHI
-ODZ3qpjL1IR+q+3GweQPGmI=
-=T7LV
------END PGP SIGNATURE-----
-
---==_Exmh_1228448127_3727P--
+Dave.
