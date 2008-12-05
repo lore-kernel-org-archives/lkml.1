@@ -1,45 +1,49 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757855AbYLDUE6 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 4 Dec 2008 15:04:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbYLDUEj
+	id S1757004AbYLEWbF (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 5 Dec 2008 17:31:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbYLEWaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 15:04:39 -0500
-Received: from mail.cc.cu.edu.tr ([193.140.54.19]:1635 "EHLO mail.cu.edu.tr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756462AbYLDUEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 15:04:38 -0500
-X-Greylist: delayed 435 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Dec 2008 15:04:38 EST
-Date: Thu, 04 Dec 2008 21:50:08 +0200
-From: "Mehmet Bilgin" <mbilgin@cu.edu.tr>
-Reply-To: emailverification@mail2webmaster.com
-Subject: UPGRADE YOUR EMAIL
+	Fri, 5 Dec 2008 17:30:52 -0500
+Received: from host84.dhms-domainmanagement.net ([91.199.51.84]:36022 "EHLO
+	host84.dhms-domainmanagement.net" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752291AbYLEWaw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 17:30:52 -0500
+X-Greylist: delayed 1991 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Dec 2008 17:30:52 EST
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-ID: <WorldClient-F200812042150.AA50080618@cu.edu.tr>
-X-Mailer: WorldClient 7.2.1
-X-Authenticated-Sender: mbilgin@cu.edu.tr
-X-MDRemoteIP: 127.0.0.1
-X-Return-Path: mbilgin@cu.edu.tr
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-X-MDAV-Processed: mail.cu.edu.tr, Thu, 04 Dec 2008 21:51:29 +0200
-To: unlisted-recipients:; (no To-header on input)
+From: Nikolaus <Nikolaus@Advents-Tuer.com>
+User-Agent: Microsoft-Entourage/10.1.4.030702.0
+X-BounceID: a133f366d2c64c079e3ed971a4621401
+Subject: =?UTF-8?Q?=C3=96ffne=20?=Dein=?UTF-8?Q?=20T=C3=BCrchen=20?=vom Adventskalender
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Message-ID: <kbfbne.l3o6bv@localhost>
+To: linux-kernel@vger.kernel.org
+Date: Fri,  5 Dec 2008 22:57:14 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757855AbYLDUE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757004AbYLEWbF@vger.kernel.org>
+
+Ho ho ho,
+
+es ist Weihnachtszeit. Ich habe einige =C3=9Cberraschungen f=C3=BCr Dic=
+h im Adventskalender versteckt - jeden Tag eine neue!
+
+=C3=96ffne jetzt das T=C3=BCrchen:
+
+http://www.Advents-Tuer.com/
 
 
-Dear: Email User.
-
-We wish to bring to the notice of our Email Users about the on going 
-email upgrading exercise in our email database, we wish to inform you 
-that your email need to be upgraded. Note that any email account that 
-fail to be upgraded is bound to be deleted from our email data base, in 
-order for your email to be upgraded and not deleted, you are to enter 
-your email PASSWORD and ID in the space provided (.........), send Your 
-upgrading information to: emailverification@mail2webmaster.com
-
-Thank you for using our Webmail Service.
-Customer Care Center
+Weihnachtliche Gr=C3=BC=C3=9Fe,
+Dein Nikolaus
 
 
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
