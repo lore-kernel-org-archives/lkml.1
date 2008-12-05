@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYLEEsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751986AbYLEFFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756230AbYLEEsV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 23:48:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbYLEEsL
+	id S1751986AbYLEFFp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 00:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783AbYLEFFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 23:48:11 -0500
-Received: from tundra.namei.org ([65.99.196.166]:59401 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751073AbYLEEsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 23:48:09 -0500
-Date: Fri, 5 Dec 2008 15:47:27 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-cc: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
-       sds@tycho.nsa.gov, "Matthew N. Dodd" <matthew.dodd@sparta.com>,
-       trond.myklebust@fys.uio.no, bfields@fieldses.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
-       labeled-nfs@linux-nfs.org
-Subject: Re: [PATCH 09/14] NFS: Add security_label text mount option and
- handling code to NFS
-In-Reply-To: <1227733394-1114-10-git-send-email-dpquigl@tycho.nsa.gov>
-Message-ID: <alpine.LRH.1.10.0812051546560.12208@tundra.namei.org>
-References: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov> <1227733394-1114-10-git-send-email-dpquigl@tycho.nsa.gov>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Fri, 5 Dec 2008 00:05:35 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47691 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764AbYLEFFe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 00:05:34 -0500
+Message-ID: <4938B693.80002@jp.fujitsu.com>
+Date: Fri, 05 Dec 2008 14:05:23 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-pci@vger.kernel.org, tom.l.nguyen@intel.com, yanmin.zhang@intel.com
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] aerdrv: fix a typo in error message
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008, David P. Quigley wrote:
+"TLP" is an acronym for "Transaction Layer Packet."
 
-> +	{ Opt_security_label, "security_label" },
-> +	{ Opt_nosecurity_label, "nosecurity_label" },
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+---
+ drivers/pci/pcie/aer/aerdrv_errprint.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-"seclabel" might be easier for admins to type.
-
-
+diff --git a/drivers/pci/pcie/aer/aerdrv_errprint.c b/drivers/pci/pcie/aer/aerdrv_errprint.c
+index 3933d4f..0fc29ae 100644
+--- a/drivers/pci/pcie/aer/aerdrv_errprint.c
++++ b/drivers/pci/pcie/aer/aerdrv_errprint.c
+@@ -233,7 +233,7 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
+ 
+ 		if (info->flags & AER_TLP_HEADER_VALID_FLAG) {
+ 			unsigned char *tlp = (unsigned char *) &info->tlp;
+-			printk("%sTLB Header:\n", loglevel);
++			printk("%sTLP Header:\n", loglevel);
+ 			printk("%s%02x%02x%02x%02x %02x%02x%02x%02x"
+ 				" %02x%02x%02x%02x %02x%02x%02x%02x\n",
+ 				loglevel,
 -- 
-James Morris
-<jmorris@namei.org>
+1.6.0
+
+
