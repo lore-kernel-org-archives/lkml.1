@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYLEUIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbYLEUWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbYLEUIZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 15:08:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbYLEUIP
+	id S1756685AbYLEUWr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 15:22:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYLEUWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 15:08:15 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33248
+	Fri, 5 Dec 2008 15:22:38 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56954
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754052AbYLEUIO (ORCPT
+	by vger.kernel.org with ESMTP id S1750852AbYLEUWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 15:08:14 -0500
-Date: Fri, 05 Dec 2008 12:08:14 -0800 (PST)
-Message-Id: <20081205.120814.51226316.davem@davemloft.net>
-To: andi@firstfloor.org
-Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, paulus@samba.org,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org,
-       eranian@googlemail.com, dada1@cosmosbay.com, robert.richter@amd.com,
-       arjan@infradead.org, hpa@zytor.com, rostedt@goodmis.org
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
+	Fri, 5 Dec 2008 15:22:37 -0500
+Date: Fri, 05 Dec 2008 12:22:38 -0800 (PST)
+Message-Id: <20081205.122238.12303228.davem@davemloft.net>
+To: carlos@systemhalted.org
+Cc: airlied@gmail.com, linux-kernel@vger.kernel.org,
+       libc-alpha@sources.redhat.com
+Subject: Re: IO space memcpy support for userspace.
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <87ej0mx0c0.fsf@basil.nowhere.org>
-References: <20081205.002701.172921476.davem@davemloft.net>
-	<20081205084233.GE2030@elte.hu>
-	<87ej0mx0c0.fsf@basil.nowhere.org>
+In-Reply-To: <119aab440812050932h9173a4bm79273b7ea8fe9a3a@mail.gmail.com>
+References: <21d7e9970812041940h29994c60w3e7bcf20b96efe04@mail.gmail.com>
+	<119aab440812050932h9173a4bm79273b7ea8fe9a3a@mail.gmail.com>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -32,16 +28,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
-Date: Fri, 05 Dec 2008 13:39:43 +0100
+From: "Carlos O'Donell" <carlos@systemhalted.org>
+Date: Fri, 5 Dec 2008 12:32:04 -0500
 
-> Given these are more obscure features, but not being able to fit
-> them easily into your model from the start isn't a very promising sign
-> for the long term extensibility of the design.
+> On Thu, Dec 4, 2008 at 10:40 PM, Dave Airlie <airlied@gmail.com> wrote:
+> > I'm sure this has come up before and I'm sure I'll either wish I never
+> > posted this or someone will show me the crisp corpse of the last guy
+> > who suggested it.
+> 
+> Do you plan to prevent the compiler from issuing the same sorts of
+> instructions that might appear in an optimized memcpy?
+> 
+> Isn't it dangerous to have memory that doesn't behave like normal
+> memory, and yet try to treat it like normal memory?
+> 
+> This mismatch of abstractions is a warning that must not be ignored.
 
-Another thing I'm interested in is if this new stuff will work with
-performance counters that lack an overflow interrupt.
+This is basically my opinion as well.
 
-We have several chips that are like this, and perfmon supported that
-on the kernel side, and also provided overflow emulation for such
-hardware in userspace (where such complexity belongs).
+You'll pretty much need to surround accesses to these places with
+accessor macros that do whatever is necessary on a given platform and
+avoids the "dangerous" instructions in cases like IA64.
+
+Treating them like normal memory isn't going to work on all systems.
+
+BTW, the sunffb xorg driver has special code for "graphics copy"
+which is essentially just a scanline by scanline GCOPY using the
+MMX like stuff sparc64 has.  It also is mindful of avoiding access
+patterns that are known to lock up that chip :)
+
+That's just an aside, since sunffb doesn't provide any offscreen
+pixmap memory and thus shouldn't be susceptible to this problem being
+discussed here.
+
