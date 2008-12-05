@@ -1,225 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbYLEId2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbYLEIgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756540AbYLEId2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 03:33:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbYLEIdU
+	id S1756032AbYLEIgy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 03:36:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYLEIgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 03:33:20 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57139 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbYLEIdU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 03:33:20 -0500
-Date: Fri, 5 Dec 2008 17:32:27 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>
-Subject: [RFC][PATCH 4/4] fix oom kill under hierarchy
-Message-Id: <20081205173227.4df2ee5a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081205172642.565661b1.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081205172642.565661b1.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Dec 2008 03:36:46 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62720 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751638AbYLEIgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 03:36:45 -0500
+Message-ID: <4938E7C1.9040102@cn.fujitsu.com>
+Date: Fri, 05 Dec 2008 16:35:13 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ken Chen <kenchen@google.com>
+CC: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] export percpu cpuacct cgroup stats
+References: <b040c32a0812032048x4a11dc26k184a4b279b509050@mail.gmail.com>	 <49376BE3.1040909@cn.fujitsu.com>	 <6599ad830812041502m15f54f0ckd8baa0a1792fc31e@mail.gmail.com>	 <b040c32a0812042344n75117b68x8de975d12dddf594@mail.gmail.com>	 <4938DE1C.6070608@cn.fujitsu.com> <b040c32a0812050030uff5ae65o417c599a792c800c@mail.gmail.com>
+In-Reply-To: <b040c32a0812050030uff5ae65o417c599a792c800c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyki <kamezawa.hiroyu@jp.fujitsu.com>
+Ken Chen wrote:
+> On Thu, Dec 4, 2008 at 11:54 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>>> +             seq_printf(m, "%llu ", percpu);
+>> Should be:
+>> +               seq_printf(m, "%llu ", (unsigned long long)percpu);
+>>
+>> Otherwsise:
+>> kernel/sched.c: In function 'cpuacct_percpu_seq_read':
+>> kernel/sched.c:9359: warning: format '%llu' expects type 'long long unsigned int',
+>> but argument 3 has type 'u64'
+> 
+> huh, I was just wondering about the type case in cgroup_read_u64()
+> when I was looking at it earlier.  That explains it.  Diff patch
+> attached.
+> 
 
-Current oom-kill by memcg cannot handle hierarchy in correct way.
-This is a trial. please review.
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
 
-After this.
-	- OOM Killer check hierarchy and can Kill badprocess under hierarchy.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- include/linux/cgroup.h     |    1 
- include/linux/memcontrol.h |    7 +++--
- kernel/cgroup.c            |   14 ++++++++++
- mm/memcontrol.c            |   59 ++++++++++++++++++++++++++++++++++++++++++---
- mm/oom_kill.c              |    4 +--
- 5 files changed, 77 insertions(+), 8 deletions(-)
-
-Index: mmotm-2.6.28-Dec03/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.28-Dec03.orig/mm/memcontrol.c
-+++ mmotm-2.6.28-Dec03/mm/memcontrol.c
-@@ -380,12 +380,38 @@ void mem_cgroup_move_lists(struct page *
- 	mem_cgroup_add_lru_list(page, to);
- }
- 
--int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
-+static int mm_under_cgroup(struct mm_struct *mm, struct mem_cgroup *mcg)
-+{
-+	struct cgroup *cg, *check;
-+	int ret = 0;
-+
-+	if (!mm)
-+		return 0;
-+
-+	rcu_read_lock();
-+
-+	VM_BUG_ON(css_under_removal(&mcg->css));
-+
-+	cg = task_cgroup(rcu_dereference(mm->owner), mem_cgroup_subsys_id);
-+	check = mcg->css.cgroup;
-+
-+	if (!mcg->use_hierarchy)
-+		ret = (cg == check);
-+	else
-+		ret = cgroup_check_ancestor(cg, check);
-+	rcu_read_unlock();
-+
-+	return ret;
-+}
-+
-+
-+int task_in_mem_cgroup_hierarchy(struct task_struct *task,
-+				struct mem_cgroup *mem)
- {
- 	int ret;
- 
- 	task_lock(task);
--	ret = task->mm && mm_match_cgroup(task->mm, mem);
-+	ret = mm_under_cgroup(task->mm, mem);
- 	task_unlock(task);
- 	return ret;
- }
-@@ -636,6 +662,33 @@ static int mem_cgroup_hierarchical_recla
- 	return ret;
- }
- 
-+void update_oom_jiffies(struct mem_cgroup *mem)
-+{
-+	struct cgroup *cgroup, *rootcg;
-+	struct mem_cgroup *tmp;
-+	int rootid, nextid, depth, found;
-+
-+	if (!mem->use_hierarchy) {
-+		mem->last_oom_jiffies = jiffies;
-+		return;
-+	}
-+	rootcg = mem->css.cgroup;
-+	rootid = cgroup_id(rootcg);
-+	depth = cgroup_depth(rootcg);
-+	nextid = 0;
-+	rcu_read_lock();
-+	while (1) {
-+		cgroup = cgroup_get_next(nextid, rootid, depth, &found);
-+
-+		if (!cgroup)
-+			break;
-+		tmp = mem_cgroup_from_cont(cgroup);
-+		tmp->last_oom_jiffies = jiffies;
-+		nextid = found + 1;
-+	}
-+	rcu_read_unlock();
-+}
-+
- bool mem_cgroup_oom_called(struct task_struct *task)
- {
- 	bool ret = false;
-@@ -735,7 +788,7 @@ static int __mem_cgroup_try_charge(struc
- 			if (oom) {
- 				mem_cgroup_out_of_memory(mem_over_limit,
- 							gfp_mask);
--				mem_over_limit->last_oom_jiffies = jiffies;
-+				update_oom_jiffies(mem_over_limit);
- 			}
- 			goto nomem;
- 		}
-Index: mmotm-2.6.28-Dec03/mm/oom_kill.c
-===================================================================
---- mmotm-2.6.28-Dec03.orig/mm/oom_kill.c
-+++ mmotm-2.6.28-Dec03/mm/oom_kill.c
-@@ -220,7 +220,7 @@ static struct task_struct *select_bad_pr
- 		/* skip the init task */
- 		if (is_global_init(p))
- 			continue;
--		if (mem && !task_in_mem_cgroup(p, mem))
-+		if (mem && !task_in_mem_cgroup_hierarchy(p, mem))
- 			continue;
- 
- 		/*
-@@ -292,7 +292,7 @@ static void dump_tasks(const struct mem_
- 		 */
- 		if (!p->mm)
- 			continue;
--		if (mem && !task_in_mem_cgroup(p, mem))
-+		if (mem && !task_in_mem_cgroup_hierarchy(p, mem))
- 			continue;
- 		if (!thread_group_leader(p))
- 			continue;
-Index: mmotm-2.6.28-Dec03/include/linux/cgroup.h
-===================================================================
---- mmotm-2.6.28-Dec03.orig/include/linux/cgroup.h
-+++ mmotm-2.6.28-Dec03/include/linux/cgroup.h
-@@ -440,6 +440,7 @@ cgroup_get_next(int id, int rootid, int 
- /* get id and depth of cgroup */
- int cgroup_id(struct cgroup *cgroup);
- int cgroup_depth(struct cgroup *cgroup);
-+int cgroup_check_ancestor(struct cgroup *cur, struct cgroup *ans);
- /* For delayed freeing of IDs */
- int cgroup_id_tryget(int id);
- void cgroup_id_put(int id);
-Index: mmotm-2.6.28-Dec03/kernel/cgroup.c
-===================================================================
---- mmotm-2.6.28-Dec03.orig/kernel/cgroup.c
-+++ mmotm-2.6.28-Dec03/kernel/cgroup.c
-@@ -805,6 +805,20 @@ cgroup_get_next(int id, int rootid, int 
- 	*foundid = tmpid;
- 	return ret;
- }
-+/*
-+ * called under RCU. (or some routine which prevent freeing cgroup)
-+ */
-+int cgroup_check_ancestor(struct cgroup *cur, struct cgroup *ans)
-+{
-+	struct cgroup_id *cid = rcu_dereference(cur->id);
-+	struct cgroup_id *ansid = rcu_dereference(ans->id);
-+
-+	if (!cid || !ansid)
-+		return 0;
-+	if (cid->hierarchy_code[ansid->depth] == ansid->id)
-+		return 1;
-+	return 0;
-+}
- 
- /*
-  * A couple of forward declarations required, due to cyclic reference loop:
-Index: mmotm-2.6.28-Dec03/include/linux/memcontrol.h
-===================================================================
---- mmotm-2.6.28-Dec03.orig/include/linux/memcontrol.h
-+++ mmotm-2.6.28-Dec03/include/linux/memcontrol.h
-@@ -67,7 +67,8 @@ extern unsigned long mem_cgroup_isolate_
- 					struct mem_cgroup *mem_cont,
- 					int active, int file);
- extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask);
--int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
-+int task_in_mem_cgroup_hierarchy(struct task_struct *task,
-+			struct mem_cgroup *mem);
- 
- extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
- 
-@@ -198,8 +199,8 @@ static inline int mm_match_cgroup(struct
- 	return 1;
- }
- 
--static inline int task_in_mem_cgroup(struct task_struct *task,
--				     const struct mem_cgroup *mem)
-+static inline int task_in_mem_cgroup_hierarchy(struct task_struct *task,
-+				     struct mem_cgroup *mem)
- {
- 	return 1;
- }
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index e32c094..055c54f 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -9356,7 +9356,7 @@ static int cpuacct_percpu_seq_read
+>  		spin_lock_irq(&cpu_rq(i)->lock);
+>  		percpu = *percpu_ptr(ca->cpuusage, i);
+>  		spin_unlock_irq(&cpu_rq(i)->lock);
+> -		seq_printf(m, "%llu ", percpu);
+> +		seq_printf(m, "%llu ", (unsigned long long) percpu);
+>  	}
+>  	seq_printf(m, "\n");
+>  	return 0;
+> 
+> 
 
