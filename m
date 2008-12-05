@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbYLEIpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbYLEItc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757072AbYLEIpI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 03:45:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYLEIo4
+	id S1752125AbYLEItc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 03:49:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbYLEItX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 03:44:56 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:24823 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbYLEIoz (ORCPT
+	Fri, 5 Dec 2008 03:49:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49354
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750773AbYLEItW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 03:44:55 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=iyh7Hm7ZNXnnt5apEAXicsCR7ZgCqYgZFzw0aFTSxC9JIEA2U4wHRxFgzbLJVK/yZ
-	F3OLK4PXm3TBlhMhhXNDg==
-MIME-Version: 1.0
-In-Reply-To: <1228463394.18899.17.camel@twins>
-References: <b040c32a0812042337r7bf6282apd53e3412458d415b@mail.gmail.com>
-	 <1228463394.18899.17.camel@twins>
-Date: Fri, 5 Dec 2008 00:44:52 -0800
-Message-ID: <b040c32a0812050044g309eafb7h5b2eb29d9d8840c2@mail.gmail.com>
-Subject: Re: [patch] make wake-affine a sysctl variable
-From: Ken Chen <kenchen@google.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 5 Dec 2008 03:49:22 -0500
+Date: Fri, 05 Dec 2008 00:49:22 -0800 (PST)
+Message-Id: <20081205.004922.244597525.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: a.p.zijlstra@chello.nl, paulus@samba.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org, eranian@googlemail.com, dada1@cosmosbay.com,
+       robert.richter@amd.com, arjan@infradead.org, hpa@zytor.com,
+       rostedt@goodmis.org
+Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081205084233.GE2030@elte.hu>
+References: <20081205082431.GD2030@elte.hu>
+	<20081205.002701.172921476.davem@davemloft.net>
+	<20081205084233.GE2030@elte.hu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 4, 2008 at 11:49 PM, Peter Zijlstra wrote:
-> This patch looks like utter rubbish, sorry.
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 5 Dec 2008 09:42:33 +0100
 
-Yeah, I think turning off wake-affine completely is a lot cleaner and
-is a preferred solution.  I proposed sysctl variable earlier so that
-it can give people a knob to adjust and is more flexible.
+> Please let me repeat: it's a _fundamental_ thesis of performance 
+> instrumentation to not disturb the monitored context. Your insistence on 
+> _stopping_ the monitored task breaks that fundamental axiom!
 
-diff --git a/kernel/sched_features.h b/kernel/sched_features.h
-index da5d93b..c712958 100644
---- a/kernel/sched_features.h
-+++ b/kernel/sched_features.h
-@@ -2,7 +2,7 @@ SCHED_FEAT(NEW_FAIR_SLEEPERS, 1)
- SCHED_FEAT(NORMALIZED_SLEEPER, 1)
- SCHED_FEAT(WAKEUP_PREEMPT, 1)
- SCHED_FEAT(START_DEBIT, 1)
--SCHED_FEAT(AFFINE_WAKEUPS, 1)
-+SCHED_FEAT(AFFINE_WAKEUPS, 0)
- SCHED_FEAT(CACHE_HOT_BUDDY, 1)
- SCHED_FEAT(SYNC_WAKEUPS, 1)
- SCHED_FEAT(HRTICK, 0)
+This is only a problem if you make your measurement quantums too
+small.
+
+Furthermore, there are multiple registers and states to update
+atomically when a perf counter overflows.  You're read/write thing
+just doesn't cut it, especially for certain kinds of hardware.
+
+It's really a utopian view of the world. :)
+
