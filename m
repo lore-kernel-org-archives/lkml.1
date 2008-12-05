@@ -1,125 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbYLEI1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbYLEI2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbYLEI1u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 03:27:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYLEI1k
+	id S1757019AbYLEI2J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 03:28:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYLEI1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 03:27:40 -0500
-Received: from hpsmtp-eml14.KPNXCHANGE.COM ([213.75.38.114]:2850 "EHLO
-	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750953AbYLEI1j (ORCPT
+	Fri, 5 Dec 2008 03:27:42 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38969 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751638AbYLEI1k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 03:27:39 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Fri, 5 Dec 2008 09:27:34 +0100
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812041917050.3386@nehalem.linux-foundation.org> <200812050744.56018.elendil@planet.nl>
-In-Reply-To: <200812050744.56018.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 5 Dec 2008 03:27:40 -0500
+Date: Fri, 5 Dec 2008 17:26:42 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>
+Subject: [RFC][PATCH 0/4] cgroup ID and css refcnt change and memcg
+ hierarchy (2008/12/05)
+Message-Id: <20081205172642.565661b1.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812050927.35737.elendil@planet.nl>
-X-OriginalArrivalTime: 05 Dec 2008 08:27:36.0334 (UTC) FILETIME=[53E3C2E0:01C956B3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 December 2008, Frans Pop wrote:
-> On Friday 05 December 2008, Linus Torvalds wrote:
-> > Here's a patch that implements what I think is the correct quirks
-> > (apart from the commented ICH6 lazy detail I didn't do).
->
-> I get:
-> pci 0000:00:1f.0: quirk: region 1000-107f claimed by ICH6 ACPI/GPIO/TCO
-> pci 0000:00:1f.0: quirk: region 1100-113f claimed by ICH6 GPIO
-> pci 0000:00:1f.0: ICH7 LPC Generic IO decode 1 PIO at 0500 (mask 007f)
-> pci 0000:00:1f.0: ICH7 LPC Generic IO decode 4 PIO at 02e8 (mask 0007)
+This is a patch set onto mmotm-2.6.28-Dec30.
 
-Sorry, I missed:
-> It would be very interesting to see if people affected get any
-> printouts about IO decodes that don't show up in /proc/ioports...
+Still RFC. I'm considering whether I can make this simpler....
 
-Looks like 02e8 is missing (see /proc/ioports below).
+Major changes from previous one
+	- css->refcnt is unified.
+	  I think distributed refcnt is a crazy idea...
+	- applied comments to previous version.
+	- OOM Kill handler is fixed. (this was broken by hierarchy) 
+
+I may not be able to reply quickly in weekend, sorry.
+
+After this, memcg's hierarchical reclaim will be
+==
+static struct mem_cgroup *
+mem_cgroup_select_victim(struct mem_cgroup *root_mem)
+{
+        struct cgroup *cgroup, *root_cgroup;
+        struct mem_cgroup *ret;
+        int nextid, rootid, depth, found;
+
+        root_cgroup = root_mem->css.cgroup;
+        rootid = cgroup_id(root_cgroup);
+        depth = cgroup_depth(root_cgroup);
+        found = 0;
+
+        rcu_read_lock();
+        if (!root_mem->use_hierarchy) {
+                spin_lock(&root_mem->reclaim_param_lock);
+                root_mem->scan_age++;
+                spin_unlock(&root_mem->reclaim_param_lock);
+                css_get(&root_mem->css);
+                ret = root_mem;
+        }
+
+        while (!ret) {
+                /* ID:0 is not used by cgroup-id */
+                nextid = root_mem->last_scanned_child + 1;
+                cgroup = cgroup_get_next(nextid, rootid, depth, &found);
+                if (cgroup) {
+                        spin_lock(&root_mem->reclaim_param_lock);
+                        root_mem->last_scanned_child = found;
+                        spin_unlock(&root_mem->reclaim_param_lock);
+                        ret = mem_cgroup_from_cont(cgroup);
+                        if (!css_tryget(&ret->css))
+                                ret = NULL;
+                } else {
+                        spin_lock(&root_mem->reclaim_param_lock);
+                        root_mem->scan_age++;
+                        root_mem->last_scanned_child = 0;
+                        spin_unlock(&root_mem->reclaim_param_lock);
+                }
+        }
+        rcu_read_unlock();
+        return ret;
+}
+
+/*
+ * root_mem is the original ancestor that we've been reclaim from.
+ * root_mem cannot be freed while walking because there are children.
+ */
+static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+                                                gfp_t gfp_mask, bool noswap)
+{
+        struct mem_cgroup *victim;
+        unsigned long start_age;
+        int ret = 0;
+        int total = 0;
+
+        start_age = root_mem->scan_age;
+        /* allows visit twice (under this memcg, ->scan_age is shared.) */
+        while (time_after((start_age + 2UL), root_mem->scan_age)) {
+                victim = mem_cgroup_select_victim(root_mem);
+                ret = try_to_free_mem_cgroup_pages(victim,
+                                gfp_mask, noswap, get_swappiness(victim));
+                css_put(&victim->css);
+                if (mem_cgroup_check_under_limit(root_mem))
+                        return 1;
+                total += ret;
+        }
+
+        ret = total;
+        if (mem_cgroup_check_under_limit(root_mem))
+                ret = 1;
+
+        return ret;
+}
+==
+This can be reused for soft-limit or something fancy featrues.
 
 
-I also tried the patch on my ICH7 desktop which gives:
-pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
-pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH6 GPIO
-pci 0000:00:1f.0: ICH7 LPC Generic IO decode 1 PIO at 0680 (mask 007f)
-But 0680 is accounted for in /proc/ioports:
-0680-06ff : pnp 00:06
+Regards,
+-Kame
 
-Cheers,
-FJP
-
-/proc/ioports (for notebook):
-0000-001f : dma1
-0020-0021 : pic1
-0040-0043 : timer0
-0050-0053 : timer1
-0060-0060 : keyboard
-0064-0064 : keyboard
-0070-0071 : rtc0
-0080-008f : dma page reg
-00a0-00a1 : pic2
-00c0-00df : dma2
-00f0-00ff : fpu
-0170-0177 : 0000:00:1f.1
-  0170-0177 : ata_piix
-01f0-01f7 : 0000:00:1f.1
-  01f0-01f7 : ata_piix
-02f8-02ff : pnp 00:0c
-0376-0376 : 0000:00:1f.1
-  0376-0376 : ata_piix
-03c0-03df : vesafb
-03f6-03f6 : 0000:00:1f.1
-  03f6-03f6 : ata_piix
-03f8-03ff : pnp 00:0c
-04d0-04d1 : pnp 00:0c
-0500-055f : pnp 00:0a
-0800-080f : pnp 00:0a
-0cf8-0cff : PCI conf1
-1000-107f : 0000:00:1f.0
-  1000-107f : pnp 00:0c
-    1000-1003 : ACPI PM1a_EVT_BLK
-    1004-1005 : ACPI PM1a_CNT_BLK
-    1008-100b : ACPI PM_TMR
-    1010-1015 : ACPI CPU throttle
-    1020-1020 : ACPI PM2_CNT_BLK
-    1028-102f : ACPI GPE0_BLK
-    1060-107f : iTCO_wdt
-1100-113f : 0000:00:1f.0
-  1100-113f : pnp 00:0c
-1200-121f : pnp 00:0c
-2000-2007 : 0000:00:02.0
-2008-200f : 0000:00:03.2
-2010-2013 : 0000:00:03.2
-2018-201f : 0000:00:03.2
-2020-2023 : 0000:00:03.2
-2030-203f : 0000:00:03.2
-2040-2047 : 0000:00:03.3
-  2040-2047 : serial
-2060-207f : 0000:00:19.0
-2080-209f : 0000:00:1a.0
-  2080-209f : uhci_hcd
-20a0-20bf : 0000:00:1a.1
-  20a0-20bf : uhci_hcd
-20c0-20df : 0000:00:1d.0
-  20c0-20df : uhci_hcd
-20e0-20ff : 0000:00:1d.1
-  20e0-20ff : uhci_hcd
-2100-211f : 0000:00:1d.2
-  2100-211f : uhci_hcd
-2120-212f : 0000:00:1f.1
-  2120-212f : ata_piix
-3000-3fff : PCI Bus 0000:02
-  3000-30ff : PCI CardBus 0000:03
-  3400-34ff : PCI CardBus 0000:03
