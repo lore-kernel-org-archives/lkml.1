@@ -1,239 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759124AbYLERmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbYLERnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759124AbYLERmI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 12:42:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757253AbYLERht
+	id S1756946AbYLERnF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 12:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYLERmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 12:37:49 -0500
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:50018 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757216AbYLERhr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 12:37:47 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Linux Torvalds <torvalds@osdl.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       MinChan Kim <minchan.kim@gmail.com>, arnd@arndb.de, jeremy@goop.org,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v11][PATCH 10/13] External checkpoint of a task other than ourself
-Date: Fri,  5 Dec 2008 12:31:19 -0500
-Message-Id: <1228498282-11804-11-git-send-email-orenl@cs.columbia.edu>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
-References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
-X-No-Spam-Score: Local
+	Fri, 5 Dec 2008 12:42:53 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:33726 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752920AbYLERmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 12:42:51 -0500
+Date: Fri, 5 Dec 2008 12:42:28 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       hch@infradead.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] EXPORTFS: Don't return NULL from
+	fh_to_dentry()/fh_to_parent() [ver #4]
+Message-ID: <20081205174228.GC29227@fieldses.org>
+References: <20081205162318.20732.73054.stgit@warthog.procyon.org.uk> <alpine.LFD.2.00.0812050848060.3386@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0812050848060.3386@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now we can do "external" checkpoint, i.e. act on another task.
+On Fri, Dec 05, 2008 at 08:52:13AM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 5 Dec 2008, David Howells wrote:
+> >
+> > Returning NULL from fh_to_dentry() and fh_to_parent() is not permitted, so
+> > return -ESTALE instead.  exportfs_decode_fh() does not check for NULL, but
+> > will try to dereference it as IS_ERR() does not check for it.
+> > 
+> > The generic_fh_to_dentry() and generic_fh_to_parent() functions also no longer
+> > return NULL, but return -ESTALE instead.
+> 
+> I really don't like this one.
+> 
+> So just about every fh_to_dentry() returns NULL for some error case. 
+> Instead of considering that a problem, maybe it should tell us something.
+> 
+> There is _one_ single caller of that function afaik, why shouldn't we just 
+> teach the caller that dammit, lots of people want to just return NULL.
+> 
+> It's not like returning NULL doesn't make sense. Quite frankly, I think it 
+> makes a lot more sense than returning -ESTALE, which is a very unnatural 
+> error for most filesystems.
+> 
+> So quite frankly, I'd much rather just see the simpler patch. Have 
+> exportfs handle the case.
+>
+> Are there other callers?
 
-sys_checkpoint() now looks up the target pid (in our namespace) and
-checkpoints that corresponding task. That task should be the root of
-a container.
+Not of fh_to_dentry(), but it looks like fh_to_parent() is the same.  So
+you'd want the below.
 
-sys_restart() remains the same, as the restart is always done in the
-context of the restarting task.
+This is partially reverting 440037287c5, which appears to have also do
+some changing of NULLs to ESTALEs which we might also want to reconsider
+at some point.  Maybe Christoph could explain what the rationale was.
 
-Changelog[v11]:
-  - Copy contents of 'init->fs->root' instead of pointing to them
+--b.
 
-Changelog[v10]:
-  - Grab vfs root of container init, rather than current process
-
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
----
- checkpoint/checkpoint.c    |   72 ++++++++++++++++++++++++++++++++++++++++++-
- checkpoint/restart.c       |    4 +-
- checkpoint/sys.c           |    6 ++++
- include/linux/checkpoint.h |    2 +
- 4 files changed, 80 insertions(+), 4 deletions(-)
-
-diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index 75c7cd3..f2d91f8 100644
---- a/checkpoint/checkpoint.c
-+++ b/checkpoint/checkpoint.c
-@@ -10,6 +10,7 @@
- 
- #include <linux/version.h>
- #include <linux/sched.h>
-+#include <linux/ptrace.h>
- #include <linux/time.h>
- #include <linux/fs.h>
- #include <linux/file.h>
-@@ -225,6 +226,13 @@ static int cr_write_task(struct cr_ctx *ctx, struct task_struct *t)
- {
- 	int ret;
- 
-+	/* TODO: verity that the task is frozen (unless self) */
-+
-+	if (t->state == TASK_DEAD) {
-+		pr_warning("c/r: task may not be in state TASK_DEAD\n");
-+		return -EAGAIN;
-+	}
-+
- 	ret = cr_write_task_struct(ctx, t);
- 	cr_debug("task_struct: ret %d\n", ret);
- 	if (ret < 0)
-@@ -247,22 +255,82 @@ static int cr_write_task(struct cr_ctx *ctx, struct task_struct *t)
- 	return ret;
- }
- 
-+static int cr_get_container(struct cr_ctx *ctx, pid_t pid)
-+{
-+	struct task_struct *task = NULL;
-+	struct nsproxy *nsproxy = NULL;
-+	int err = -ESRCH;
-+
-+	ctx->root_pid = pid;
-+
-+	read_lock(&tasklist_lock);
-+	task = find_task_by_vpid(pid);
-+	if (task)
-+		get_task_struct(task);
-+	read_unlock(&tasklist_lock);
-+
-+	if (!task)
-+		goto out;
-+
-+#if 0	/* enable to use containers */
-+	if (!is_container_init(task)) {
-+		err = -EINVAL;
-+		goto out;
-+	}
-+#endif
-+
-+	if (!ptrace_may_access(task, PTRACE_MODE_READ)) {
-+		err = -EPERM;
-+		goto out;
-+	}
-+
-+	rcu_read_lock();
-+	if (task_nsproxy(task)) {
-+		nsproxy = task_nsproxy(task);
-+		get_nsproxy(nsproxy);
-+	}
-+	rcu_read_unlock();
-+
-+	if (!nsproxy)
-+		goto out;
-+
-+	/* TODO: verify that the container is frozen */
-+
-+	ctx->root_task = task;
-+	ctx->root_nsproxy = nsproxy;
-+
-+	return 0;
-+
-+ out:
-+	if (task)
-+		put_task_struct(task);
-+	return err;
-+}
-+
-+/* setup checkpoint-specific parts of ctx */
- static int cr_ctx_checkpoint(struct cr_ctx *ctx, pid_t pid)
- {
- 	struct fs_struct *fs;
-+	int ret;
- 
- 	ctx->root_pid = pid;
- 
-+	ret = cr_get_container(ctx, pid);
-+	if (ret < 0)
-+		return ret;
-+
- 	/*
- 	 * assume checkpointer is in container's root vfs
- 	 * FIXME: this works for now, but will change with real containers
+diff --git a/fs/exportfs/expfs.c b/fs/exportfs/expfs.c
+index 80246ba..890e018 100644
+--- a/fs/exportfs/expfs.c
++++ b/fs/exportfs/expfs.c
+@@ -367,6 +367,8 @@ struct dentry *exportfs_decode_fh(struct vfsmount *mnt, struct fid *fid,
+ 	 * Try to get any dentry for the given file handle from the filesystem.
  	 */
+ 	result = nop->fh_to_dentry(mnt->mnt_sb, fid, fh_len, fileid_type);
++	if (!result)
++		result = ERR_PTR(-ESTALE);
+ 	if (IS_ERR(result))
+ 		return result;
  
--	fs = current->fs;
-+	task_lock(ctx->root_task);
-+	fs = ctx->root_task->fs;
- 	read_lock(&fs->lock);
- 	ctx->fs_mnt = fs->root;
- 	path_get(&ctx->fs_mnt);
- 	read_unlock(&fs->lock);
-+	task_unlock(ctx->root_task);
+@@ -420,6 +422,8 @@ struct dentry *exportfs_decode_fh(struct vfsmount *mnt, struct fid *fid,
  
- 	return 0;
- }
-@@ -277,7 +345,7 @@ int do_checkpoint(struct cr_ctx *ctx, pid_t pid)
- 	ret = cr_write_head(ctx);
- 	if (ret < 0)
- 		goto out;
--	ret = cr_write_task(ctx, current);
-+	ret = cr_write_task(ctx, ctx->root_task);
- 	if (ret < 0)
- 		goto out;
- 	ret = cr_write_tail(ctx);
-diff --git a/checkpoint/restart.c b/checkpoint/restart.c
-index 22e7995..f4f737d 100644
---- a/checkpoint/restart.c
-+++ b/checkpoint/restart.c
-@@ -277,7 +277,7 @@ static int cr_read_task(struct cr_ctx *ctx)
- }
- 
- /* setup restart-specific parts of ctx */
--static int cr_ctx_restart(struct cr_ctx *ctx)
-+static int cr_ctx_restart(struct cr_ctx *ctx, pid_t pid)
- {
- 	return 0;
- }
-@@ -286,7 +286,7 @@ int do_restart(struct cr_ctx *ctx, pid_t pid)
- {
- 	int ret;
- 
--	ret = cr_ctx_restart(ctx);
-+	ret = cr_ctx_restart(ctx, pid);
- 	if (ret < 0)
- 		goto out;
- 	ret = cr_read_head(ctx);
-diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-index c077cd9..7083fff 100644
---- a/checkpoint/sys.c
-+++ b/checkpoint/sys.c
-@@ -9,6 +9,7 @@
-  */
- 
- #include <linux/sched.h>
-+#include <linux/nsproxy.h>
- #include <linux/kernel.h>
- #include <linux/fs.h>
- #include <linux/file.h>
-@@ -141,6 +142,11 @@ static void cr_ctx_free(struct cr_ctx *ctx)
- 	cr_pgarr_free(ctx);
- 	cr_objhash_free(ctx);
- 
-+	if (ctx->root_nsproxy)
-+		put_nsproxy(ctx->root_nsproxy);
-+	if (ctx->root_task)
-+		put_task_struct(ctx->root_task);
-+
- 	kfree(ctx);
- }
- 
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 3649f9c..3c29f8e 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -19,6 +19,8 @@ struct cr_ctx {
- 	int crid;		/* unique checkpoint id */
- 
- 	pid_t root_pid;		/* container identifier */
-+	struct task_struct *root_task;	/* container root task */
-+	struct nsproxy *root_nsproxy;	/* container root nsproxy */
- 
- 	unsigned long flags;
- 	unsigned long oflags;	/* restart: old flags */
--- 
-1.5.4.3
-
+ 		target_dir = nop->fh_to_parent(mnt->mnt_sb, fid,
+ 				fh_len, fileid_type);
++		if (!target_dir)
++			goto err_result;
+ 		err = PTR_ERR(target_dir);
+ 		if (IS_ERR(target_dir))
+ 			goto err_result;
