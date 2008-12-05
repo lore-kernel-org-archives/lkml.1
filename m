@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYLEMcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbYLEMcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410AbYLEMcF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 07:32:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYLEMby
+	id S1756535AbYLEMcr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 07:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYLEMci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 07:31:54 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:39389 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750957AbYLEMbx (ORCPT
+	Fri, 5 Dec 2008 07:32:38 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:62192 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbYLEMch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 07:31:53 -0500
-Date: Fri, 5 Dec 2008 21:24:01 +0900
+	Fri, 5 Dec 2008 07:32:37 -0500
+Date: Fri, 5 Dec 2008 21:24:50 +0900
 From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
 Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
        Paul Menage <menage@google.com>, nishimura@mxp.nes.nec.co.jp
-Subject: [RFC][PATCH -mmotm 2/4] memcg: remove mem_cgroup_try_charge
-Message-Id: <20081205212401.1f446c93.nishimura@mxp.nes.nec.co.jp>
+Subject: [RFC][PATCH -mmotm 3/4] memcg: avoid dead lock caused by race
+ between oom and cpuset_attach
+Message-Id: <20081205212450.574f498c.nishimura@mxp.nes.nec.co.jp>
 In-Reply-To: <20081205212208.31d904e0.nishimura@mxp.nes.nec.co.jp>
 References: <20081205212208.31d904e0.nishimura@mxp.nes.nec.co.jp>
 Organization: NEC Soft, Ltd.
@@ -30,70 +31,79 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now, mem_cgroup_try_charge is not used by anyone, so we can remove it.
+mpol_rebind_mm(), which can be called from cpuset_attach(), does down_write(mm->mmap_sem).
+This means down_write(mm->mmap_sem) can be called under cgroup_mutex.
+
+OTOH, page fault path does down_read(mm->mmap_sem) and calls mem_cgroup_try_charge_xxx(), 
+which may eventually calls mem_cgroup_out_of_memory(). And mem_cgroup_out_of_memory()
+calls cgroup_lock().
+This means cgroup_lock() can be called under down_read(mm->mmap_sem).
+
+If those two paths race, dead lock can happen.
+
+This patch avoid this dead lock by:
+  - remove cgroup_lock() from mem_cgroup_out_of_memory().
+  - define new mutex (memcg_tasklist) and serialize mem_cgroup_move_task()
+    (->attach handler of memory cgroup) and mem_cgroup_out_of_memory. 
 
 Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 ---
- include/linux/memcontrol.h |    8 --------
- mm/memcontrol.c            |   21 +--------------------
- 2 files changed, 1 insertions(+), 28 deletions(-)
+ mm/memcontrol.c |    5 +++++
+ mm/oom_kill.c   |    2 --
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index fe82b58..4b35739 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -40,8 +40,6 @@ struct mm_struct;
- extern int mem_cgroup_newpage_charge(struct page *page, struct mm_struct *mm,
- 				gfp_t gfp_mask);
- /* for swap handling */
--extern int mem_cgroup_try_charge(struct mm_struct *mm,
--		gfp_t gfp_mask, struct mem_cgroup **ptr);
- extern int mem_cgroup_try_charge_swapin(struct mm_struct *mm,
- 		struct page *page, gfp_t mask, struct mem_cgroup **ptr);
- extern void mem_cgroup_commit_charge_swapin(struct page *page,
-@@ -135,12 +133,6 @@ static inline int mem_cgroup_cache_charge(struct page *page,
- 	return 0;
- }
- 
--static inline int mem_cgroup_try_charge(struct mm_struct *mm,
--			gfp_t gfp_mask, struct mem_cgroup **ptr)
--{
--	return 0;
--}
--
- static inline int mem_cgroup_try_charge_swapin(struct mm_struct *mm,
- 		struct page *page, gfp_t gfp_mask, struct mem_cgroup **ptr)
- {
 diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 50ee1be..9c5856b 100644
+index 9c5856b..ab04725 100644
 --- a/mm/memcontrol.c
 +++ b/mm/memcontrol.c
-@@ -808,27 +808,8 @@ nomem:
- 	return -ENOMEM;
+@@ -51,6 +51,7 @@ static int really_do_swap_account __initdata = 1; /* for remember boot option*/
+ #define do_swap_account		(0)
+ #endif
+ 
++static DEFINE_MUTEX(memcg_tasklist);	/* can be hold under cgroup_mutex */
+ 
+ /*
+  * Statistics for memory cgroup.
+@@ -796,7 +797,9 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+ 
+ 		if (!nr_retries--) {
+ 			if (oom) {
++				mutex_lock(&memcg_tasklist);
+ 				mem_cgroup_out_of_memory(mem_over_limit, gfp_mask);
++				mutex_unlock(&memcg_tasklist);
+ 				mem_over_limit->last_oom_jiffies = jiffies;
+ 			}
+ 			goto nomem;
+@@ -2172,10 +2175,12 @@ static void mem_cgroup_move_task(struct cgroup_subsys *ss,
+ 				struct cgroup *old_cont,
+ 				struct task_struct *p)
+ {
++	mutex_lock(&memcg_tasklist);
+ 	/*
+ 	 * FIXME: It's better to move charges of this process from old
+ 	 * memcg to new memcg. But it's just on TODO-List now.
+ 	 */
++	mutex_unlock(&memcg_tasklist);
  }
  
--/**
-- * mem_cgroup_try_charge - get charge of PAGE_SIZE.
-- * @mm: an mm_struct which is charged against. (when *memcg is NULL)
-- * @gfp_mask: gfp_mask for reclaim.
-- * @memcg: a pointer to memory cgroup which is charged against.
-- *
-- * charge against memory cgroup pointed by *memcg. if *memcg == NULL, estimated
-- * memory cgroup from @mm is got and stored in *memcg.
-- *
-- * Returns 0 if success. -ENOMEM at failure.
-- * This call can invoke OOM-Killer.
-- */
--
--int mem_cgroup_try_charge(struct mm_struct *mm,
--			  gfp_t mask, struct mem_cgroup **memcg)
--{
--	return __mem_cgroup_try_charge(mm, mask, memcg, true);
--}
--
- /*
-- * commit a charge got by mem_cgroup_try_charge() and makes page_cgroup to be
-+ * commit a charge got by __mem_cgroup_try_charge() and makes page_cgroup to be
-  * USED state. If already USED, uncharge and return.
-  */
+ struct cgroup_subsys mem_cgroup_subsys = {
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index fd150e3..40ba050 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -429,7 +429,6 @@ void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask)
+ 	unsigned long points = 0;
+ 	struct task_struct *p;
+ 
+-	cgroup_lock();
+ 	read_lock(&tasklist_lock);
+ retry:
+ 	p = select_bad_process(&points, mem);
+@@ -444,7 +443,6 @@ retry:
+ 		goto retry;
+ out:
+ 	read_unlock(&tasklist_lock);
+-	cgroup_unlock();
+ }
+ #endif
  
