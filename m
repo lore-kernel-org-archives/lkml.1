@@ -1,77 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYLERP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYLERQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbYLERP6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 12:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYLERPr
+	id S1756204AbYLERQW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 12:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbYLERP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 12:15:47 -0500
-Received: from igw2.watson.ibm.com ([129.34.20.6]:34700 "EHLO
-	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961AbYLERPr (ORCPT
+	Fri, 5 Dec 2008 12:15:57 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:41910 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754603AbYLERP4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 12:15:47 -0500
-Subject: Re: [PATCH 2/6] integrity: Linux Integrity Module(LIM)
-From: david safford <safford@watson.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <20081205152318.GD10037@us.ibm.com>
-References: <cover.1228253618.git.zohar@linux.vnet.ibm.com>
-	 <a9835f10cb3efd9951fa6e9fcc2e29f528ba625b.1228253618.git.zohar@linux.vnet.ibm.com>
-	 <20081203123021.GA30035@infradead.org>
-	 <1228328323.2821.30.camel@localhost.localdomain>
-	 <20081203182300.GA31203@infradead.org>
-	 <1228342655.2821.64.camel@localhost.localdomain>
-	 <20081204130949.GA18196@infradead.org>
-	 <1228424014.3014.58.camel@localhost.localdomain>
-	 <alpine.LRH.1.10.0812051236420.11818@tundra.namei.org>
-	 <1228481810.3005.31.camel@localhost.localdomain>
-	 <20081205152318.GD10037@us.ibm.com>
-Content-Type: text/plain
+	Fri, 5 Dec 2008 12:15:56 -0500
+Message-ID: <493960F2.6070102@oracle.com>
+Date: Fri, 05 Dec 2008 09:12:18 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+MIME-Version: 1.0
+To: Joe Korty <joe.korty@ccur.com>
+CC: "mtk.manpages@gmail.com" <mtk.manpages@gmail.com>,
+       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linux API <linux-api@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ABI Documentation for /proc/timer_list, v2
+References: <20081121221113.GA13566@tsunami.ccur.com> <517f3f820811250806n33850ea8ua8e203347c0f7ba6@mail.gmail.com> <20081125185740.GA21806@tsunami.ccur.com> <20081126164845.GA17394@tsunami.ccur.com> <20081126170715.GA28422@kroah.com> <20081126173410.GA17879@tsunami.ccur.com> <20081126173931.GA1636@kroah.com> <20081126210613.GA20529@tsunami.ccur.com> <cfd18e0f0811281337j57166b4cv54e05296a779252e@mail.gmail.com> <20081201181106.GA18320@tsunami.ccur.com>
+In-Reply-To: <20081201181106.GA18320@tsunami.ccur.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Fri, 05 Dec 2008 12:14:35 -0500
-Message-Id: <1228497275.3041.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.493960F8.003E:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-05 at 09:23 -0600, Serge E. Hallyn wrote:
-> Quoting david safford (safford@watson.ibm.com):
-> > On Fri, 2008-12-05 at 12:42 +1100, James Morris wrote:
-> > > On Thu, 4 Dec 2008, david safford wrote:
-> > >
-> > > > These hooks were for alternate integrity modules, and since
-> > > > no one else has defended them, we have to agree that they
-> > > > should be replaced with direct calls.
-> > >
-> > > If you know of other modules which are planned to be ported to this
-> > > framework, merged upstream and supported, then this would be similar to
-> > > the situation when LSM was initially developed.
-> > >
-> > > You've previously mentioned some active projects here:
-> > > http://lkml.org/lkml/2008/11/17/362
-> > >
-> > > Are there any definite commitments to push these upstream when the
-> > > integrity framework is merged?
-> > 
-> > All of the projects listed in that posting were ones depending on
-> > IMA, with no requirements for alternate modules. I do hope that there
-> > will be other integrity modules in addition to the TPM oriented IMA, 
-> > and I do know of several research projects in this space, but I don't 
-> > know if/when any of these are planning on submission. If others are 
-> > submitted, it would certainly be simple to add the hooks back in.
+Joe Korty wrote:
+> Document /proc/timer_list ABI, version 2.
 > 
-> Too bad the main trusted knoppix site appears to be dead.  Was it
-> actually making use of the templating api?
+> This partially documents /timer_list, including the
+> proposed 'Version 0.5' extensions that add a jiffie timer
+> display.
 > 
-> -serge
+> v2 exists to address some of the concerns Michael Kerrisk
+> brought up.  What was left out: I did not document old
+> versions of /timer_list, I did not document the meaning
+> of the x.y version numbering system (which only Ingo
+> can answer anyway), and I did not document fields of
+> secondary importance that already had adequate 'DocBook'
+> documentation in the kernel sources.
+> 
+> Signed-off-by: Joe Korty <joe.korty@ccur.com>
+> 
+> Index: 2.6.28-rc6/Documentation/ABI/stable/procfs-timer_list
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ 2.6.28-rc6/Documentation/ABI/stable/procfs-timer_list	2008-12-01 13:07:15.000000000 -0500
+> @@ -0,0 +1,129 @@
+> +What:		/proc/timer_list
+> +Date:		November 2008
+> +Contact:	Ingo Molnar <mingo@elte.hu>
+> +		Thomas Gleixner <tglx@linutronix.de>
+> +		Joe Korty <joe.korty@ccur.com>
+> +Revision-Rate:	Moderate
+> +At-Revision:	0.5
+> +Description:
+> +		/proc/timer_list displays most everything about every kind
+> +		of timer, and some things about time too.
+> +
+> +		The contents of this file should be expected to change,
+> +		as the data displayed corresponds directly to various
+> +		kernel-internal data structures.  For this reason, the first
+> +		line contains the file revision.  It is the responsibility
+> +		of this file's maintainers to bump the revision each time a
+> +		kernel is released having incompatible changes in this file.
+> +
+> +		This document covers only the version of /proc/timer_list
+> +		located in the kernel sources to which it is attached.
+> +		Documentation for previous (and later) versions of
+> +		/proc/timer_list is to be found (if they exist) in the
+> +		kernel sources of those earlier (or later) kernels.
+> +
+> +		Section Overview
+> +		----------------
+> +		The file contains several somewhat independent sections.
+> +
+> +		The first section contains a few lines of global info:
+> +		   1 - Timer List Version: File revision.
+> +		   2 - HRTIMER_MAX_CLOCK_BASES: number of clock types that
+> +		       support high resolution timers.
+> +		   3 - now at x nsecs: number of nsecs since boot.
+> +
+> +		The second section is organized per-CPU.  Each CPU subsection
+> +		in turn contains several sub-subsections which are, in order
+> +		of appearance:
+> +
+> +		   The contents of the data structures associated with each
+> +		   clock on this CPU:
+> +		    1 - clock ID: 0 == CLOCK_REALTIME, 1 == CLOCK_MONOTONIC
+> +		    2 - base: kernel address of this clock's
+> +		        hrtimer_clock_base structure.
+> +		    3 - resolution: resolution of this clock.
+> +		    4 - get_time: name of kernel function used to fetch
+> +		        time from this clock.
+> +		    5 - offset: difference, in nsecs, between this clock
+> +		        and the reference clock for this clock.
+> +		   Under each of these clocks is, in turn, a display of all
+> +		   the active high resolution timers queued to that clock.
+> +		   These are the lines beginning with '#' and are described
+> +		   in detail later in this document.
 
-I believe they are using an older version of IMA without templating, 
-but either way really shouldn't affect them.
+Are we supposed to be able to see lines beginning with '#' in this text file,
+or only in /proc/timer_list ?
 
-dave
+> +
+> +		   The contents of per-CPU hrtimer data fields not
+> +		   associated with a particular cpu clock (ie, shared by
+
+Please use "CPU" consistenly (instead of "cpu").
+
+> +		   both clocks or not associated with any clock).  These
+> +		   are: expires_next, hres_active, nr_event, nohz_mode, all
+> +		   things idle_*, tick_stopped, last_jiffies, next_jiffies.
+> +		   The above are field names from 'struct tick_sched' and
+> +		   'struct hrtimer_cpu_base', documentation for these may
+
+		   'struct hrtimer_cpu_base'; documentation for these may
+
+> +		   be found in the kernel DocBook.
+> +
+> +		   A display of low resolution (ie, jiffie) timer wheel
+> +		   data.  These are prefixed by the lines:
+> +		    1 - base: kernel virtual address of the timer wheel
+> +		        data structure (struct tvec_base) for this cpu.
+> +		    2 - running timer: kernel virtual address of the
+> +		        expired timer being processed, NULL if none.
+> +		    3 - timer_jiffies: what this wheel considers to
+> +		        be the current time, will be == jiffies or
+> +			will lag it by a tick or two if it has not
+> +			caught up with the current time.
+> +		   Also under this section is a display, one per line, of
+> +		   each active jiffie timer queued to this CPU.  These are
+> +		   the lines under an 'active jiffie timers' section that
+> +		   begin with a number.
+> +
+> +		The third and final section describes each 'tick device'
+> +		known to the kernel.  A tick device is a piece of hardware
+> +		capable of generating periodic and/or one-shot interrupts
+> +		under software control, and thus is capable of generating
+> +		the interrupts needed to expire the various active timers
+> +		at their given expiration times.  Examples of tick devices:
+> +		hpet, pit, lapic.  All but the first two lines display
+> +		fields corresponding to structure elements from 'struct
+> +		clock_event_device', documentation for which can be found
+> +		in the kernel Docbook. The first two lines are:
+> +		  1 - mode: 0 == periodic timer, 1 == one-shot timer
+> +		  2 - is 'Per CPU device' or is 'Broadcast device'
+> +
+> +		Hires Timer Layout
+> +		------------------
+> +		High-resolution timers are displayed on lines that begin
+> +		with a '#' and always appear under one of the many sections
+> +		labeled 'active timers'.  There is an 'active timers'
+> +		section for every CPU and every clock.
+> +
+> +		The fields of a hrtimer, spread out over two lines, are:
+
+		              an hrtimer,
+> +
+> +		line 1 fields:
+> +		  1 - unique hrtimer index (#0, #1, #2, etc)
+> +		  2 - kernel address of the hrtimer data structure
+> +		      in question
+> +		  3 - function to be called when timer expires
+> +		  4 - timer state (eg, S:01), avail states, OR-able:
+> +		      0 - inactive
+> +		      1 - enqueued
+> +		      2 - callback
+> +		      4 - pending
+> +		      8 - migrate
+> +		  5 - function which created the timer
+> +		  6 - process name & pid which created the timer
+> +
+> +		line 2 fields:
+> +		  1 - absolute expiration time, range format (start - end)
+> +		  2 - relative expiration time, range format (start - end)
+> +
+> +		Lowres Timer Layout
+> +		-------------------
+> +		Low-resolution timers are displayed one-per-line under
+> +		sections labeled 'active jiffie timers'.  There is one such
+> +		section per CPU.  A lowres timer has the following fields:
+> +
+> +		  1 - number of jiffies remaining until timer expires
+> +		  2 - function to be called on expiration
+> +		  3 - data value to be given to the above function on
+> +		      expiration
+> +		  4 - function which created this timer
+> +		  5 - name & pid of the process that created this timer
+
+
+Thanks,
+~Randy
