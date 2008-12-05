@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbYLEC6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbYLEDF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757083AbYLEC6h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 21:58:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYLEC63
+	id S1755430AbYLEDF0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 22:05:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYLEDFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 21:58:29 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:33787 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751428AbYLEC63 (ORCPT
+	Thu, 4 Dec 2008 22:05:09 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:2107 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbYLEDFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 21:58:29 -0500
-Date: Fri, 5 Dec 2008 04:09:38 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, Alasdair G Kergon <agk@redhat.com>,
-       Andi Kleen <andi-suse@firstfloor.org>, Milan Broz <mbroz@redhat.com>
-Subject: Re: Device loses barrier support (was: Fixed patch for simple barriers.)
-Message-ID: <20081205030938.GA6703@one.firstfloor.org>
-References: <20081204145810.GR6703@one.firstfloor.org> <Pine.LNX.4.64.0812041139200.2434@hs20-bc2-1.build.redhat.com> <20081204174838.GS6703@one.firstfloor.org> <Pine.LNX.4.64.0812041401210.23079@hs20-bc2-1.build.redhat.com> <20081204221551.GV6703@one.firstfloor.org> <Pine.LNX.4.64.0812041756550.29638@hs20-bc2-1.build.redhat.com> <20081205004849.GX6703@one.firstfloor.org> <Pine.LNX.4.64.0812041948400.14114@hs20-bc2-1.build.redhat.com> <20081205013739.GZ6703@one.firstfloor.org> <Pine.LNX.4.64.0812042036540.25436@hs20-bc2-1.build.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 4 Dec 2008 22:05:08 -0500
+Message-ID: <ac3eb2510812041905j639ea7d4ybe8e83b0d7c5965e@mail.gmail.com>
+Date: Fri, 5 Dec 2008 04:05:06 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Matt Mackall" <mpm@selenic.com>
+Subject: Re: [PATCH] Use vprintk rather that vsnprintf where possible
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1228423309.3255.109.camel@calx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812042036540.25436@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.4.2.1i
+References: <1228423309.3255.109.camel@calx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The only one offender is "md". 
+On Thu, Dec 4, 2008 at 21:41, Matt Mackall <mpm@selenic.com> wrote:
+> This does away with lots of large static and on-stack buffers as well
+> as a few associated locks.
 
-I'm not sure. It wouldn't surprise me if it can happen with other setups
-too. Perhaps Chris knows more.
+> -               len = snprintf(s, 256, KERN_DEBUG "%s: ", prefix);
+> -
+>                va_start(args, fmt);
+> -               len += vsnprintf(&s[len], (256 - len), fmt, args);
+> +               printk(KERN_DEBUG "%s: ", prefix);
+> +               vprintk(fmt, args);
 
-> It is less overhead to change "md" to play 
-> nice and be reliable than to double-submit requests in all the places that 
-> needs write ordering.
+If we convert to two printk calls for a single line, does that not
+possibly get mixed up with printks from other locations and lead to
+hardly readable log output?
 
-They do that already anyways.
-
-> 
-> > > * the filesystems developed hacks to work around this issue, the hacks 
-> > > involve not submitting more requests after the barrier request, 
-> > 
-> > I suspect the reason the file systems did it this way is that
-> > it was a much simpler change than to rewrite the transaction
-> > manager for this.
-> 
-> It could be initial reason. But this unreliability also disallows any 
-> improvement in filesystems. No one can write asynchronous transaction 
-> manager because of that evil EOPNOTSUPP.
-
-Doesn't seem right. It would be a simple state machine
-to handle it fully asynchronous. Alternatively you could
-always use empty barriers.
-
-But we can worry about that when some in tree file system
-actually tries to do that.
-
--Andi
-
--- 
-ak@linux.intel.com
+Thanks,
+Kay
