@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbYLEEJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYLEEP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755557AbYLEEJS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 23:09:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbYLEEI6
+	id S1754707AbYLEEP0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 23:15:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYLEEPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 23:08:58 -0500
-Received: from main.gmane.org ([80.91.229.2]:38961 "EHLO ciao.gmane.org"
+	Thu, 4 Dec 2008 23:15:13 -0500
+Received: from main.gmane.org ([80.91.229.2]:49547 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750948AbYLEEI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 23:08:57 -0500
+	id S1750953AbYLEEPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 23:15:12 -0500
 X-Injected-Via-Gmane: http://gmane.org/
 To: linux-kernel@vger.kernel.org
 From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Page alloc failures under network/disk IO load
-Date: Thu, 04 Dec 2008 22:08:43 -0600
-Message-ID: <4938A94B.3080801@shaw.ca>
-References: <20081203222750.391e8890@tuna> <1228378983.5092.7.camel@twins> <1228380128.5092.15.camel@twins> <20081204135443.7c24234a@rockhopper.limebrokerage.com> <20081204224021.GA323@electric-eye.fr.zoreil.com> <4938631F.7010004@isomerica.net>
+Subject: Re: sony-ericsson W800 cellular doesn't work as an usb mass storage
+ device
+Date: Thu, 04 Dec 2008 22:10:50 -0600
+Message-ID: <4938A9CA.5000903@shaw.ca>
+References: <4937447F.6070805@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
 X-Complaints-To: usenet@ger.gmane.org
-Cc: Francois Romieu <romieu@fr.zoreil.com>,
-       Peter Zijlstra <peterz@infradead.org>
+Cc: Robby Workman <rw@rlworkman.net>
 X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
 User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-In-Reply-To: <4938631F.7010004@isomerica.net>
+In-Reply-To: <4937447F.6070805@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan No√© wrote:
-> Francois Romieu wrote:
->> Dan No√© <dpn@isomerica.net> :
->> [...]
->>> I'm a bit confused because on another system (2.6.26.3) I never see
->>> messages like this despite having the same amount of physical RAM in
->>> each.  The 2.6.26.3 system is also under more active use, and has more
->>> userspace memory usage.  On that system:
->> Does this system use the same network card ?
+Niklas "Nille" ≈kerstrˆm wrote:
+> Please CC any replies; not subscribed to list
 > 
-> Nope, good point :)  The system experiencing the allocation failures is
-> using an rtl8169 gigabit NIC (at 1gbps), the 2.6.26.3 system is on a
-> 100M connection with a gigabit Broadcom BCM5721 / tg3.
-> 
-> 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
-> RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
-> 
-> 04:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5721
-> Gigabit Ethernet PCI Express (rev 11)
-> 
-> I can see how this could account for different behavior, although
-> presumably both drivers are calling __netdev_alloc_skb.
+> I can't mount my sony-ericsson W800 cellular as an usb mass storage 
+> device (it doesn't show up as an device).
+> I run slackware-current (slackware 12.2 rc1)
+> Using kernel 2.6.27.7
+> It doesn't even show up when i run 'fdisk -l'
 
-The Realtek driver is doing an order 1 allocation (an 8KB chunk). That 
-is more likely to fail than an order 0. Are you using jumbo frames or 
-higher than 1500 byte MTU on the network?
+What do you mean doesn't show up as a device? There doesn't seem to be 
+anything unusual in the kernel log, you should have a /dev/sda1 device 
+available (at least if udev, etc. are doing their job)..
+
+> 
+> How ever running slackware 12.1 using kernel 2.6.24.5 works (used my 
+> other box for 12.1 testing)
+> I also tried the 12.1 kernel 2.6.24.5 in slackware 12.2 rc1 and then it 
+> works.
+> So it's seems kernel related. (but i'm not experienced enuff to know)
+> 
+> Kernel config 2.6.27.7 http://pastebin.com/m4ba5debe
+> Kernel config 2.6.24.5 http://pastebin.com/m20a78c4f
+> dmesg when pluging in the device on 2.6.27.7 http://pastebin.com/m56d5e2e8
+> dmesg when pluging in the device on 2.6.24.5 running 12.1 
+> http://pastebin.com/m65e4fd04
+> dmesg when pluging in the device on 2.6.24.5 running current 
+> http://pastebin.com/m2ac79d09
+> 
+> My computer is an Compaq Presario 2800
+> Phone Sony Ericsson W800i 0fce:d028
+> What other information would be useful?
+> 
+> I searched the mailing list and found http://lkml.org/lkml/2008/9/11/276 
+> which seems releated but there was no answer.
+> 
+> (please cc me on any reply)
+> Thanks,
+> Nille
+> 
 
