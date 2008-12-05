@@ -1,92 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbYLEJjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbYLEJjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbYLEJjS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 04:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYLEJjI
+	id S1756617AbYLEJjz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 04:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYLEJjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 04:39:08 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:33119 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751505AbYLEJjG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 04:39:06 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=Ksh8y2wNl6jVH27JvLGEyiI5eplXoOSU3KIdgzwt9fLLvkjFsvxfKIJpcoFMb4081
-	cUMzljBMXkAfpZIDVCS9A==
+	Fri, 5 Dec 2008 04:39:43 -0500
+Received: from tundra.namei.org ([65.99.196.166]:58073 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751638AbYLEJjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 04:39:41 -0500
+Date: Fri, 5 Dec 2008 20:39:13 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+cc: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
+       sds@tycho.nsa.gov, "Matthew N. Dodd" <matthew.dodd@sparta.com>,
+       trond.myklebust@fys.uio.no, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       labeled-nfs@linux-nfs.org
+Subject: Re: [PATCH 12/14] NFS: Client implementation of Labeled-NFS
+In-Reply-To: <1227733394-1114-13-git-send-email-dpquigl@tycho.nsa.gov>
+Message-ID: <alpine.LRH.1.10.0812052022320.14142@tundra.namei.org>
+References: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov> <1227733394-1114-13-git-send-email-dpquigl@tycho.nsa.gov>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <20081205172845.2b9d89a5.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081205172642.565661b1.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20081205172845.2b9d89a5.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Fri, 5 Dec 2008 01:39:00 -0800
-Message-ID: <6599ad830812050139l5797f16kaf511f831b09e8f4@mail.gmail.com>
-Subject: Re: [RFC][PATCH 1/4] New css->refcnt implementation.
-From: Paul Menage <menage@google.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 5, 2008 at 12:28 AM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujisu.com>
->
-> Now, the last check of refcnt is done after pre_destroy(), so rmdir() can fail
-> after pre_destroy(). But memcg set mem->obsolete to be 1 at pre_destroy.
-> This is a bug. So, removing memcg->obsolete flag is sane.
->
-> But there is no interface to confirm "css" is oboslete or not. I.e. there is
-> no flag to check whether we can increase css_refcnt or not!
+On Wed, 26 Nov 2008, David P. Quigley wrote:
 
-The basic rule is that you're only supposed to increment the css
-refcount if you have:
+> +#ifdef CONFIG_NFS_V4_SECURITY_LABEL
+> +	if (((nd->flags & LOOKUP_CREATE) != 0) &&
+> +	      nfs_server_capable(dir, NFS_CAP_SECURITY_LABEL)) {
+> +		status = security_dentry_init_security(dentry,
+> +				sattr->ia_mode, &l.label, &l.len);
+> +		/* XXX: should this be more fatal? */
+> +		if (status == 0)
+> +			label = &l;
+> +	}
+> +#endif
 
-- a reference to a task in the cgroup (that is pinned via task_lock()
-so it can't be moved away)
-or
-- an existing reference to the css
+Per the comment, it seems this function should fail and propagate an error 
+if status != 0.
 
->
-> This patch changes this css->refcnt rule as following
->        - css->refcnt is no longer private counter, just point to
->          css->cgroup->css_refcnt.
+> +	memset(&fattr, 0, sizeof(struct nfs_fattr));
+> +	nfs_fattr_alloc(&fattr, GFP_KERNEL);
 
-The reason I didn't do this is that I'd like to keep the ref counts
-separate to make it possible to add/remove subsystems from a hiearchy
-- if they're all mingled into a single refcount, it's impossible to
-tell if a particular subsystem has refcounts.
+Need to check the return value.
 
->
->        - css_put() is changed not to call notify_on_release().
->
->          From documentation, notify_on_release() is called when there is no
->          tasks/children in cgroup. On implementation, notify_on_release is
->          not called if css->refcnt > 0.
+> +	nfs_fattr_alloc(&fattr, GFP_KERNEL);
 
-The documentation is a little inaccurate - it's called when the cgroup
-is removable. In the original cpusets this implied that there were no
-tasks or children; in cgroups, a refcount can keep the group alive
-too, so it's right to not call notify_on_release if there are
-remaining refcounts.
+Ditto.
 
->          This is problem. Memcg has css->refcnt by each page even when
->          there are no tasks. Release handler will be never called.
+> +static int decode_attr_security_label(struct xdr_stream *xdr, uint32_t *bitmap, void **ctx, __u32 *ctxlen)
+> +{
+> +	__u32 len;
+> +	__be32 *p;
+> +	int rc = 0;
+> +
+> +	if (unlikely(bitmap[1] & (FATTR4_WORD1_SECURITY_LABEL - 1U)))
+> +		return -EIO;
+> +	if (likely(bitmap[1] & FATTR4_WORD1_SECURITY_LABEL)) {
+> +		READ_BUF(4);
+> +		READ32(len);
+> +		READ_BUF(len);
+> +		if (len < XDR_MAX_NETOBJ) {
+> +			if (*ctx != NULL) {
+> +				if (*ctxlen < len) {
+> +					printk(KERN_ERR
+> +						"%s(): ctxlen %d < len %d\n",
+> +						__func__, *ctxlen, len);
+> +					/* rc = -ENOMEM; */
+> +					*ctx = NULL;	/* leak */
 
-Right, because it can't remove the dir if there are still refcounts.
+Shouldn't the function stop processing and return an error?
 
-Early in the development of cgroups I did have a css refcount scheme
-similar to what you have, with tryget, etc, but still with separate
-refcounts for each subsystem; I got rid of it since it seemed more
-complicated than we needed at the time. But I'll see if I can dig it
-up.
+> +				} else {
+> +					memcpy(*ctx, p, len);
+> +				}
+> +			}
+> +			*ctxlen = len;
+> +		} else
+> +			printk(KERN_WARNING "%s: label too long (%u)!\n",
+> +					__FUNCTION__, len);
+> +		bitmap[1] &= ~FATTR4_WORD1_SECURITY_LABEL;
+> +	}
+> +	return rc;
+> +}
+> +
 
-Paul
+
+
+-- 
+James Morris
+<jmorris@namei.org>
