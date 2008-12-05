@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbYLEQRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbYLEQWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755817AbYLEQRl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 11:17:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYLEQRf
+	id S1755065AbYLEQWA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 11:22:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYLEQVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 11:17:35 -0500
-Received: from bytemail.bytemark.co.uk ([80.68.81.165]:43310 "EHLO
-	bytemail.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751993AbYLEQRe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 11:17:34 -0500
-Message-ID: <493953E0.9070800@bytemark.co.uk>
-Date: Fri, 05 Dec 2008 16:16:32 +0000
-From: Alex Howells <alex@bytemark.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Fri, 5 Dec 2008 11:21:51 -0500
+Received: from ping.pong.ch ([212.103.71.101]:51504 "EHLO ping.pong.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751242AbYLEQVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 11:21:51 -0500
+Date: Fri, 5 Dec 2008 17:21:43 +0100
+From: Gaudenz Steinlin <gaudenz@debian.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [Bug #12158] commit b1ee26b freezes system on switching from X
+	to text console
+Message-ID: <20081205162143.GA6085@soziologie.ch>
+References: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera> <bfPM5B8Tx2B.A.8DH.voxNJB@chimera> <alpine.LFD.2.00.0812031642280.3256@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: jeff@garzik.org, benh@kernel.crashing.org
-Subject: Re: sata_svw breakage
-References: <493949B0.6000701@bytemark.co.uk>
-In-Reply-To: <493949B0.6000701@bytemark.co.uk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0812031642280.3256@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Howells wrote:
-> Afternoon Gents (and Ladies),
+On Wed, Dec 03, 2008 at 04:44:03PM -0800, Linus Torvalds wrote:
+ 
+> I think we're assuming that this already got fixed by commit 
+> c4c6fa9891f3d1bcaae4f39fb751d5302965b566 ("radeonfb: fix problem with 
+> color expansion & alignment").
 > 
-> I'm setting an interesting problem with the sata_svw driver on a fairly
-> new (in terms of model) blade server from HP, a BL495c.
-> 
-> [    3.462135] PCI: setting IRQ 14 as level-triggered
-> [    3.462142] sata_svw 0000:01:0e.0: PCI INT A -> Link[ISF0] -> GSI 14
-> (level,
-> low) -> IRQ 14
-> [    3.465367] sata_svw 0000:01:0e.0: PCI INT A disabled
-> [    3.467302] sata_svw: probe of 0000:01:0e.0 failed with error -16
-> 
-> Having trouble tracking down what 'error -16' might imply, any pointers
-> for what the root cause may be and how to address it?
+> Gaudenz?
 
-I should have noted this happens in the latest -stable and the problem
-appears to persist if I go back a couple of versions to 2.6.25, etc.
+Sorry, no, this commit does not fix my bug. 
 
-Kernel config is over at:
+Gaudenz
 
-    http://havok.aeode.net/~ahowells/2.6.27.7-config
-
-Cheers,
-Alex
+-- 
+Ever tried. Ever failed. No matter.
+Try again. Fail again. Fail better.
+~ Samuel Beckett ~
