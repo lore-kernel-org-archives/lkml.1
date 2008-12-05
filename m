@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbYLEOhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbYLEOqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755488AbYLEOhQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 09:37:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYLEOhB
+	id S1755638AbYLEOqK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 09:46:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbYLEOp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 09:37:01 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:10793 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbYLEOhA (ORCPT
+	Fri, 5 Dec 2008 09:45:56 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:33937 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752794AbYLEOpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 09:37:00 -0500
-Message-ID: <49393C88.8080103@hp.com>
-Date: Fri, 05 Dec 2008 09:36:56 -0500
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Fri, 5 Dec 2008 09:45:11 -0500
+Date: Fri, 5 Dec 2008 08:44:58 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       David Howells <dhowells@redhat.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] user namespaces: let user_ns be cloned with
+	fairsched
+Message-ID: <20081205144458.GB10037@us.ibm.com>
+References: <20081203191706.GA16433@us.ibm.com> <alpine.LRH.1.10.0812052106490.14142@tundra.namei.org>
 MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: [PATCH] Correctly release and allocate a new request on TUR retries
-Content-Type: multipart/mixed;
- boundary="------------040707080809010102050106"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.1.10.0812052106490.14142@tundra.namei.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040707080809010102050106
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Quoting James Morris (jmorris@namei.org):
+> On Wed, 3 Dec 2008, Serge E. Hallyn wrote:
+> 
+> > (These two patches are in the next-unacked branch of
+> > git://git.kernel.org/pub/scm/linux/kernel/git/sergeh/userns-2.6.
+> > If they get some ACKs, then I hope to feed this into security-next.
+> > After these two, I think we're ready to tackle userns+capabilities)
+> 
+> These look ok to me, but no acks so far.  Any reason not to apply them?
 
+Thanks for taking a look, James.  Yes, there were specific acks I
+was looking for.
 
+Dhaval, could you take a look at the first one and tell me if it
+is a problem for fairsched?
 
---------------040707080809010102050106
-Content-Type: text/x-diff;
- name="0001-Correctly-release-and-allocate-a-new-request-on-TUR.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-Correctly-release-and-allocate-a-new-request-on-TUR.pat";
- filename*1="ch"
+Eric, could you take a look at the second one?  Actually, Daniel,
+you've played with file capabilities for liblxc - would
+http://lkml.org/lkml/2008/12/3/277 be a problem for you?
 
-
-Commands needing to be retried (TUR in this case) would result in a block
-I/O request being re-used, without being re-initialized properly. This
-patch ensures that the requests are correctly re-initialized via
-standard allocation means.
-
-Prior to this patch, boots were failing consistently as in:
-http://lkml.org/lkml/2008/12/5/161
-
-With this patch in place, the system is booting reliably.
-
-Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
----
- drivers/scsi/device_handler/scsi_dh_hp_sw.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/scsi/device_handler/scsi_dh_hp_sw.c b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-index 9aec4ca..1f6b6a8 100644
---- a/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-+++ b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-@@ -107,6 +107,7 @@ static int hp_sw_tur(struct scsi_device *sdev, struct hp_sw_dh_data *h)
- 	struct request *req;
- 	int ret;
- 
-+retry:
- 	req = blk_get_request(sdev->request_queue, WRITE, GFP_NOIO);
- 	if (!req)
- 		return SCSI_DH_RES_TEMP_UNAVAIL;
-@@ -121,7 +122,6 @@ static int hp_sw_tur(struct scsi_device *sdev, struct hp_sw_dh_data *h)
- 	memset(req->sense, 0, SCSI_SENSE_BUFFERSIZE);
- 	req->sense_len = 0;
- 
--retry:
- 	ret = blk_execute_rq(req->q, NULL, req, 1);
- 	if (ret == -EIO) {
- 		if (req->sense_len > 0) {
-@@ -136,8 +136,10 @@ retry:
- 		h->path_state = HP_SW_PATH_ACTIVE;
- 		ret = SCSI_DH_OK;
- 	}
--	if (ret == SCSI_DH_IMM_RETRY)
-+	if (ret == SCSI_DH_IMM_RETRY) {
-+		blk_put_request(req);
- 		goto retry;
-+	}
- 	if (ret == SCSI_DH_DEV_OFFLINED) {
- 		h->path_state = HP_SW_PATH_PASSIVE;
- 		ret = SCSI_DH_OK;
--- 
-1.5.6.3
-
-
---------------040707080809010102050106--
+thanks,
+-serge
