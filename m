@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbYLEMLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbYLEMNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbYLEMLT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 07:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYLEMLJ
+	id S1756697AbYLEMNe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 07:13:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYLEMNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 07:11:09 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48155 "EHLO mx3.mail.elte.hu"
+	Fri, 5 Dec 2008 07:13:25 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35306 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750895AbYLEMLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 07:11:07 -0500
-Date: Fri, 5 Dec 2008 13:10:46 +0100
+	id S1750895AbYLEMNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 07:13:24 -0500
+Date: Fri, 5 Dec 2008 13:13:08 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [trivial] fix missing space in printk
-Message-ID: <20081205121046.GA28662@elte.hu>
-References: <4939139C.8090806@msgid.tls.msk.ru>
+To: David Miller <davem@davemloft.net>
+Cc: a.p.zijlstra@chello.nl, paulus@samba.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org, eranian@googlemail.com, dada1@cosmosbay.com,
+       robert.richter@amd.com, arjan@infradead.org, hpa@zytor.com,
+       rostedt@goodmis.org
+Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
+Message-ID: <20081205121308.GB28662@elte.hu>
+References: <20081205082431.GD2030@elte.hu> <20081205.002701.172921476.davem@davemloft.net> <20081205084233.GE2030@elte.hu> <20081205.004922.244597525.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4939139C.8090806@msgid.tls.msk.ru>
+In-Reply-To: <20081205.004922.244597525.davem@davemloft.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,66 +38,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Michael Tokarev <mjt@tls.msk.ru> wrote:
+* David Miller <davem@davemloft.net> wrote:
 
-> Just come across this when booting on an old hw.. Looks somewhat ugly, 
-> that single missing space ;)
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Fri, 5 Dec 2008 09:42:33 +0100
 > 
-> And oh,
+> > Please let me repeat: it's a _fundamental_ thesis of performance 
+> > instrumentation to not disturb the monitored context. Your insistence 
+> > on _stopping_ the monitored task breaks that fundamental axiom!
 > 
-> Signed-Off-By: Michael Tokarev <mjt@tls.msk.ru>
-> 
-> ;)
+> This is only a problem if you make your measurement quantums too small.
 
-applied to tip/x86/cleanups.
+But if you make the measurement long enough - say we make it 100,000 
+usecs, then 0.2 usecs of delay between two read()s is insignificant 
+statistically, right? It's a 1:500,000 ratio.
 
-> --- a/arch/x86/kernel/smpboot.c	2008-10-10 02:13:53.000000000 +0400
-> +++ b/arch/x86/kernel/smpboot.c	2008-12-05 14:39:29.608353301 +0300
-> @@ -1084,7 +1084,7 @@ static int __init smp_sanity_check(unsig
->  #endif
->  
->  	if (!physid_isset(hard_smp_processor_id(), phys_cpu_present_map)) {
-> -		printk(KERN_WARNING "weird, boot CPU (#%d) not listed"
-> +		printk(KERN_WARNING "weird, boot CPU (#%d) not listed "
->  				    "by the BIOS.\n", hard_smp_processor_id());
-
-btw., the reason for that bug was the incorrect line break in the middle 
-of a string - we humans just dont notice a missing space in that context. 
-
-So in the final commit i've moved the string to a single line, see it 
-attached below.
+Scheduling out a task and back is far more drastic of an effect than any 
+new events in 0.2 usecs.
 
 	Ingo
-
---------------->
->From 55c395b47042e12d5c25aa07f271f56ffe44f793 Mon Sep 17 00:00:00 2001
-From: Michael Tokarev <mjt@tls.msk.ru>
-Date: Fri, 5 Dec 2008 14:42:20 +0300
-Subject: [PATCH] x86: fix missing space in printk
-
-Just come across this when booting on an old hw..
-Looks somewhat ugly, that single missing space ;)
-
-Signed-off-by: Michael Tokarev <mjt@tls.msk.ru>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/smpboot.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 7b10933..1a3c325 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -1086,8 +1086,10 @@ static int __init smp_sanity_check(unsigned max_cpus)
- #endif
- 
- 	if (!physid_isset(hard_smp_processor_id(), phys_cpu_present_map)) {
--		printk(KERN_WARNING "weird, boot CPU (#%d) not listed"
--				    "by the BIOS.\n", hard_smp_processor_id());
-+		printk(KERN_WARNING
-+			"weird, boot CPU (#%d) not listed by the BIOS.\n",
-+			hard_smp_processor_id());
-+
- 		physid_set(hard_smp_processor_id(), phys_cpu_present_map);
- 	}
- 
