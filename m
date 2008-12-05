@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbYLECdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757465AbYLECjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757350AbYLECdS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 21:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbYLECdD
+	id S1757465AbYLECjX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 21:39:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbYLECjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 21:33:03 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:54283 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754806AbYLECdA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 21:33:00 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [patch 2/3] performance counters: documentation
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081204225345.654705757@linutronix.de>
-	<20081204230228.557959174@linutronix.de>
-	<18744.30427.440468.829807@cargo.ozlabs.ibm.com>
-Date: Fri, 05 Dec 2008 03:33:13 +0100
-In-Reply-To: <18744.30427.440468.829807@cargo.ozlabs.ibm.com> (Paul Mackerras's message of "Fri, 5 Dec 2008 11:33:31 +1100")
-Message-ID: <87myfbwdue.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Thu, 4 Dec 2008 21:39:07 -0500
+Received: from tundra.namei.org ([65.99.196.166]:54398 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754775AbYLECjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Dec 2008 21:39:04 -0500
+Date: Fri, 5 Dec 2008 13:38:22 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+cc: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
+       sds@tycho.nsa.gov, "Matthew N. Dodd" <matthew.dodd@sparta.com>,
+       trond.myklebust@fys.uio.no, bfields@fieldses.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       labeled-nfs@linux-nfs.org
+Subject: Re: [PATCH 08/14] NFSv4: Add label recommended attribute and NFSv4
+ flags
+In-Reply-To: <1227733394-1114-9-git-send-email-dpquigl@tycho.nsa.gov>
+Message-ID: <alpine.LRH.1.10.0812051337050.12208@tundra.namei.org>
+References: <1227733394-1114-1-git-send-email-dpquigl@tycho.nsa.gov> <1227733394-1114-9-git-send-email-dpquigl@tycho.nsa.gov>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras <paulus@samba.org> writes:
->> +
->> +[ Note: more hw_event_types are supported as well, but they are CPU
->> +  specific and are enumerated via /sys on a per CPU basis. Raw hw event
->> +  types can be passed in as negative numbers. For example, to count
->> +  "External bus cycles while bus lock signal asserted" events on Intel
->> +  Core CPUs, pass in a -0x4064 event type value. ]
->
-> This is going to be a huge problem, at least on powerpc, because it
-> means that the kernel will have to know which events can be counted on
-> which counters and what values need to be put in the control registers
-> to select them.
+On Wed, 26 Nov 2008, David P. Quigley wrote:
 
-P4 has similar problems, and to some extent there's also the same
-problem on newer Intel CPUs (e.g. with fixed counters and if you
-consider PEBS which has some special restrictions)
+> --- a/include/linux/nfs_xdr.h
+> +++ b/include/linux/nfs_xdr.h
+> @@ -57,6 +57,10 @@ struct nfs_fattr {
+>  	__u64			pre_change_attr;/* pre-op NFSv4 change attribute */
+>  	unsigned long		time_start;
+>  	unsigned long		gencount;
+> +#ifdef CONFIG_SECURITY
+> +	void			*label;
+> +	__u32			 label_len;
+> +#endif
 
--Andi
+Should this be CONFIG_NFS_V4_SECURITY_LABEL ?
+
 
 -- 
-ak@linux.intel.com
+James Morris
+<jmorris@namei.org>
