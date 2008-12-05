@@ -1,98 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757867AbYLEOVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbYLEOZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757867AbYLEOVc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 09:21:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYLEOVW
+	id S1758112AbYLEOZo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 09:25:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYLEOZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 09:21:22 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:33405 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751543AbYLEOVV (ORCPT
+	Fri, 5 Dec 2008 09:25:37 -0500
+Received: from [67.210.231.141] ([67.210.231.141]:38611 "EHLO
+	cpanel1.nixspot.com" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751502AbYLEOZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 09:21:21 -0500
-Message-ID: <493939B1.40506@novell.com>
-Date: Fri, 05 Dec 2008 09:24:49 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Fri, 5 Dec 2008 09:25:36 -0500
+X-Greylist: delayed 3128 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Dec 2008 09:25:36 EST
+To: linux-kernel@vger.kernel.org
+Subject: This is the Subject line.
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [git pull] RT scheduler updates for tip
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE1CCFD9537F1241B1101A70C"
+From: Make A Fortune With Google <caroljones301@gmail.com>
+X-Priority: 1
+X-MSMail-Priority: High
+Message-Id: <E1L8VNk-0002zV-Ts@cpanel1.nixspot.com>
+Date: Fri, 05 Dec 2008 02:45:48 -0500
+X-cPanel-MailScanner-Information: Please contact the ISP for more information
+X-MailScanner-ID: 1L8VNk-0002zV-Ts
+X-cPanel-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
+X-cPanel-MailScanner-SpamCheck: 
+X-cPanel-MailScanner-From: nobody@cpanel1.nixspot.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - cpanel1.nixspot.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [99 99] / [47 12]
+X-AntiAbuse: Sender Address Domain - cpanel1.nixspot.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE1CCFD9537F1241B1101A70C
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi Ingo,
-  FWIW, I have placed all my latest upstream-able scheduler patches into
-a branch in my git tree (against tip/master).
-=20
-=20
-git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.gi=
-t
-sched/latest
-
-Gregory Haskins (11):
-      sched: cleanup inc/dec_rt_tasks
-      sched: track the next-highest priority on each runqueue
-      sched: use highest_prio.curr for pull threshold
-      sched: use highest_prio.next to optimize pull operations
-      sched: only try to push a task on wakeup if it is migratable
-      sched: pull only one task during NEWIDLE balancing to limit
-critical section
-      sched: make double-lock-balance fair
-      sched: add sched_class->needs_post_schedule() member
-      plist: fix PLIST_NODE_INIT to work with debug enabled
-      sched: create "pushable_tasks" list to limit pushing to one attempt=
-
-      RT: fix push_rt_task() to handle dequeue_pushable properly
-
- include/linux/init_task.h |    1 +
- include/linux/plist.h     |    9 +-
- include/linux/sched.h     |    2 +
- kernel/sched.c            |   89 +++++++++++--
- kernel/sched_rt.c         |  324
-+++++++++++++++++++++++++++++++--------------
- 5 files changed, 312 insertions(+), 113 deletions(-)
-
-These are built/booted on my quad-core/x86_64 and look good to me.
-
-1) the first four are the "next-highest" v3 patches that I submitted
-yesterday
-2) the last seven are patches that Steven has carried in 26-rt that have
-not yet been pulled in to tip
-
-I assume there is an implicit ACK from Steven on (2) since he pulled
-them into -rt.  We still await comment from Peter re: (1).
-
-Regards,
--Greg
 
 
+Hello. My Name is Carol
 
---------------enigE1CCFD9537F1241B1101A70C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+First, I would like to 
+make something very clear. 
+We are NOT a get-rich-quick company. 
+ 
+We are a legitimate company, 
+offering legitimate work-at-home Jobs 
+that have proven successful 
+and that we stand behind 100%.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+Some members are currently making 
+$300 and more per day, 
+using our program and guidance.
 
-iEYEARECAAYFAkk5ObEACgkQlOSOBdgZUxkK+QCeIYKRaCoVbX/XOIunhNKuKWo+
-wNgAoIAjFjrqMFlZq/HHS6jkbXzxbLum
-=JwYf
------END PGP SIGNATURE-----
+If you have a few minutes, I will explain more.
+Visit:
+http://clipurl.us/0oy
+http://clipurl.us/0oy
 
---------------enigE1CCFD9537F1241B1101A70C--
+Carol Jones
+Opportunity-Seeker
+
+--------------------------------------
+You are receiving this message because 
+you have either signed up to receive 
+information from us or a third-party.
+To be cleared from our records, reply 
+to this e-mail. Subject Line "UNSUBSCRIBE" 
+mailto:output81487@gmail.com
+--------------------------------------
+
+Click below for the full story!
+http://ccridaz.com/news.php?action=fullnews&id=1
