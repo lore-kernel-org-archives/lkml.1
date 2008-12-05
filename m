@@ -1,34 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbYLELFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYLELLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754807AbYLELFl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 06:05:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbYLELFd
+	id S1754717AbYLELLi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 06:11:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbYLELL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 06:05:33 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56915 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750852AbYLELFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 06:05:33 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1228425490.3255.119.camel@calx>
-References: <1228425490.3255.119.camel@calx>
-To: Matt Mackall <mpm@selenic.com>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] shmem: remove unused shmem_get_unmapped_area
-Date: Fri, 05 Dec 2008 11:05:14 +0000
-Message-ID: <24352.1228475114@redhat.com>
+	Fri, 5 Dec 2008 06:11:29 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:47874 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751121AbYLELL2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 06:11:28 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=v9uih08bTGEfHEOLJDYQ1G6dBAakyUzbEC+Otd+Vsus4iZk7LxJJ+Msy6RUoxO3CB
+	f6syohnUjts/3dUjCM+kQ==
+MIME-Version: 1.0
+In-Reply-To: <20081205172959.8285271f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081205172642.565661b1.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20081205172959.8285271f.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Fri, 5 Dec 2008 03:11:23 -0800
+Message-ID: <6599ad830812050311m3728ab69v465ed5d032792973@mail.gmail.com>
+Subject: Re: [RFC][PATCH 2/4] cgroup ID
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall <mpm@selenic.com> wrote:
+Hi Kamezawa,
 
-> Signed-off-by: Matt Mackall <mpm@selenic.com>
+I definitely agree with the idea of being able to traverse the cgroup
+hierarchy without doing a cgroup_lock() and I've included some
+comments below. But having said that, maybe there's a simpler
+solution?
 
-Acked-by: David Howells <dhowells@redhat.com>
+A while ago I posted some patches that added a per-hierarchy lock
+which could be taken to prevent creation or destruction of cgroups in
+a given hierarchy; it was lighter-weight than the full cgroup_lock().
+Is that sufficient to avoid the deadlock that you mentioned in your
+patch description?
+
+The idea of having a short id for each cgroup to save space in the
+swap cgroup sounds sensible - but I'm not sure that we need the RCU
+support to make the id persist beyond the lifetime of the cgroup
+itself.
+
+On Fri, Dec 5, 2008 at 12:29 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>
+> +/*
+> + * Cgroup ID for *internal* identification and lookup. For user-land,"path"
+> + * of cgroup works well.
+> + */
+
+This comment seems misplaced and possibly unnecessary. Should it be
+with the struct cgroup_id definition in cgroup.c?
+
+>
+> +/*
+> + * For supporting cgroup lookup and hierarchy management.
+> + */
+
+A lot more commenting would be useful here.
+
+> +/* An interface for usual lookup */
+> +struct cgroup *cgroup_lookup(int id);
+> +/* get next cgroup under tree (for scan) */
+> +struct cgroup *
+> +cgroup_get_next(int id, int rootid, int depth, int *foundid);
+> +/* get id and depth of cgroup */
+> +int cgroup_id(struct cgroup *cgroup);
+> +int cgroup_depth(struct cgroup *cgroup);
+> +/* For delayed freeing of IDs */
+> +int cgroup_id_tryget(int id);
+> +void cgroup_id_put(int id);
+> +
+>  #else /* !CONFIG_CGROUPS */
+>
+>  /*
+> + * CGROUP ID
+> + */
+
+More comments needed about the exact semantics of these fields.
+
+> +struct cgroup_id {
+> +       struct cgroup *myself;
+
+Can you call this cgroup for consistency with other struct cgroup pointers?
+
+> +       unsigned int  id;
+> +       unsigned int  depth;
+> +       atomic_t      refcnt;
+> +       struct rcu_head rcu_head;
+> +       unsigned int  hierarchy_code[MAX_CGROUP_DEPTH];
+
+How about "stack" for this array?
+
+> +};
+> +
+> +void free_cgroupid_cb(struct rcu_head *head)
+> +{
+> +       struct cgroup_id *id;
+> +
+> +       id = container_of(head, struct cgroup_id, rcu_head);
+> +       kfree(id);
+> +}
+> +
+> +void free_cgroupid(struct cgroup_id *id)
+> +{
+> +       call_rcu(&id->rcu_head, free_cgroupid_cb);
+> +}
+> +
+
+Rather than having a separate RCU callback for the cgroup_id
+structure, how about marking it as "dead" when you unlink the cgroup
+from the tree, and freeing it in the cgroup_diput() callback at the
+same time the struct cgroup is freed? Or is the issue that you need
+the id to persist longer than the cgroup itself, to prevent re-use?
+
+> +static DEFINE_IDR(cgroup_idr);
+> +DEFINE_SPINLOCK(cgroup_idr_lock);
+
+Any reason to not have a separate idr and idr_lock per hierarchy?
+
+> +
+> +static int cgrouproot_setup_idr(struct cgroupfs_root *root)
+> +{
+> +       struct cgroup_id *newid;
+> +       int err = -ENOMEM;
+> +       int myid;
+> +
+> +       newid = kzalloc(sizeof(*newid), GFP_KERNEL);
+> +       if (!newid)
+> +               goto out;
+> +       if (!idr_pre_get(&cgroup_idr, GFP_KERNEL))
+> +               goto free_out;
+> +
+> +       spin_lock_irq(&cgroup_idr_lock);
+> +       err = idr_get_new_above(&cgroup_idr, newid, 1, &myid);
+> +       spin_unlock_irq(&cgroup_idr_lock);
+> +
+> +       /* This one is new idr....*/
+> +       BUG_ON(err);
+
+There's really no way this can fail?
+
+> +/*
+> + * should be called while "cgrp" is valid.
+> + */
+
+Can you be more specific here? Clearly calling a function with a
+pointer to an object that might have been freed is a bad idea; if
+that's all you mean then I don't think it needs to be called out in a
+comment.
+
+> +static int cgroup_prepare_id(struct cgroup *parent, struct cgroup_id **id)
+> +{
+> +       struct cgroup_id *newid;
+> +       int myid, error;
+> +
+> +       /* check depth */
+> +       if (parent->id->depth + 1 >= MAX_CGROUP_DEPTH)
+> +               return -ENOSPC;
+> +       newid = kzalloc(sizeof(*newid), GFP_KERNEL);
+> +       if (!newid)
+> +               return -ENOMEM;
+> +       /* get id */
+> +       if (unlikely(!idr_pre_get(&cgroup_idr, GFP_KERNEL))) {
+> +               error = -ENOMEM;
+> +               goto err_out;
+> +       }
+> +       spin_lock_irq(&cgroup_idr_lock);
+> +       /* Don't use 0 */
+> +       error = idr_get_new_above(&cgroup_idr, newid, 1, &myid);
+> +       spin_unlock_irq(&cgroup_idr_lock);
+> +       if (error)
+> +               goto err_out;
+
+This code is pretty similar to a big chunk of cgrouproot_setup_idr() -
+can they share the common code?
+
+> +static void cgroup_id_attach(struct cgroup_id *cgid,
+> +                            struct cgroup *cg, struct cgroup *parent)
+> +{
+> +       struct cgroup_id *parent_id = rcu_dereference(parent->id);
+
+It doesn't seem as though it should be necessary to rcu_dereference()
+parent->id - parent can't be going away in this case.
+
+> +       int i;
+> +
+> +       cgid->depth = parent_id->depth + 1;
+> +       /* Inherit hierarchy code from parent */
+> +       for (i = 0; i < cgid->depth; i++) {
+> +               cgid->hierarchy_code[i] =
+> +                       parent_id->hierarchy_code[i];
+> +               cgid->hierarchy_code[cgid->depth] = cgid->id;
+
+I think this line is supposed to be outside the for() loop.
+
+Paul
