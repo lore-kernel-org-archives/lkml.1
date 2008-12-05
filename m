@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbYLEC5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbYLEC6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756621AbYLEC5b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Dec 2008 21:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbYLEC5W
+	id S1757083AbYLEC6h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Dec 2008 21:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYLEC63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Dec 2008 21:57:22 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:23307 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbYLEC5W (ORCPT
+	Thu, 4 Dec 2008 21:58:29 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:33787 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbYLEC63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Dec 2008 21:57:22 -0500
-Message-ID: <ac3eb2510812041857j5e49a4ecsfd2f351f572fb350@mail.gmail.com>
-Date: Fri, 5 Dec 2008 03:57:20 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Al Viro" <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH] fix pktcdvd breakage from commit e105b8bfc769b0545b6f0f395179d1e43cbee822
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>, gregkh@suse.de,
-       petero2@telia.com, linux-kernel@vger.kernel.org
-In-Reply-To: <ac3eb2510811300756icbf6fe5x3c41c7fc9f870db1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Dec 2008 21:58:29 -0500
+Date: Fri, 5 Dec 2008 04:09:38 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com, Alasdair G Kergon <agk@redhat.com>,
+       Andi Kleen <andi-suse@firstfloor.org>, Milan Broz <mbroz@redhat.com>
+Subject: Re: Device loses barrier support (was: Fixed patch for simple barriers.)
+Message-ID: <20081205030938.GA6703@one.firstfloor.org>
+References: <20081204145810.GR6703@one.firstfloor.org> <Pine.LNX.4.64.0812041139200.2434@hs20-bc2-1.build.redhat.com> <20081204174838.GS6703@one.firstfloor.org> <Pine.LNX.4.64.0812041401210.23079@hs20-bc2-1.build.redhat.com> <20081204221551.GV6703@one.firstfloor.org> <Pine.LNX.4.64.0812041756550.29638@hs20-bc2-1.build.redhat.com> <20081205004849.GX6703@one.firstfloor.org> <Pine.LNX.4.64.0812041948400.14114@hs20-bc2-1.build.redhat.com> <20081205013739.GZ6703@one.firstfloor.org> <Pine.LNX.4.64.0812042036540.25436@hs20-bc2-1.build.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <ac3eb2510811300441m2a551cc7nec0374bb7a707bb8@mail.gmail.com>
-	 <20081130133229.GZ28946@ZenIV.linux.org.uk>
-	 <20081130134048.GA28946@ZenIV.linux.org.uk>
-	 <ac3eb2510811300544r2b228a85n86553d6657ac5578@mail.gmail.com>
-	 <20081130135031.GB28946@ZenIV.linux.org.uk>
-	 <ac3eb2510811300557u4922699du87a62cfd29020db1@mail.gmail.com>
-	 <20081130141329.GC28946@ZenIV.linux.org.uk>
-	 <ac3eb2510811300628t2bb40427p22e22e2ed671d9a9@mail.gmail.com>
-	 <20081130145221.GD28946@ZenIV.linux.org.uk>
-	 <ac3eb2510811300756icbf6fe5x3c41c7fc9f870db1@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0812042036540.25436@hs20-bc2-1.build.redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 30, 2008 at 16:56, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On Sun, Nov 30, 2008 at 15:52, Al Viro <viro@zeniv.linux.org.uk> wrote:
->> On Sun, Nov 30, 2008 at 03:28:15PM +0100, Kay Sievers wrote:
->>> > So we need to preserve the layout, with the easiest way probably being "add
->>> > one more ktype and use kobject_init_and_add() instead of that device_create()".
->>> > Sigh...
->>>
->>> What do you mean? We just need to replace the bogus "pd->pkt_dev" with
->>> MKDEV(0, 0) and we are fine.
->>
->> Userland-visible change - right now cat /sys/class/pktcdvd/pktcdvd3/dev will
->> give you dev_t of the block device in question.
->
-> True, it's visible, but it's incorrect dead information which should
-> be removed. Subsystem != "block is defined as S_IFCHR, and there is no
-> such char device for pktcdvd. In fact the "dev" file of the pktcdvd
-> class device points in many cases to a USB device, which must be
-> fixed.
->
-> The whole pktcdvd class is not used at all, besides for exporting a
-> few files. The "dev" file at the class device is just a bug, and the
-> MAJOR/MINOR uevent environment variables also. I doubt that there will
-> be any visible breakage in something that isn't already totally
-> broken. In short, I doubt, that anything that works today will stop
-> working if we remove the bugus "dev" file.
->
-> This seem like the simple and correct fix for the issue with /sys/dev/
-> and the broken non-existing but exported pkcdvd char device:
-> -               pd->dev = device_create(class_pktcdvd, NULL, pd->pkt_dev, NULL,
-> +               pd->dev = device_create(class_pktcdvd, NULL, MKDEV(0, 0), NULL,
+> The only one offender is "md". 
 
-Al, this bug still exists, right? Any objections to remove the dead char dev_t?
+I'm not sure. It wouldn't surprise me if it can happen with other setups
+too. Perhaps Chris knows more.
 
-Thanks,
-Kay
+> It is less overhead to change "md" to play 
+> nice and be reliable than to double-submit requests in all the places that 
+> needs write ordering.
+
+They do that already anyways.
+
+> 
+> > > * the filesystems developed hacks to work around this issue, the hacks 
+> > > involve not submitting more requests after the barrier request, 
+> > 
+> > I suspect the reason the file systems did it this way is that
+> > it was a much simpler change than to rewrite the transaction
+> > manager for this.
+> 
+> It could be initial reason. But this unreliability also disallows any 
+> improvement in filesystems. No one can write asynchronous transaction 
+> manager because of that evil EOPNOTSUPP.
+
+Doesn't seem right. It would be a simple state machine
+to handle it fully asynchronous. Alternatively you could
+always use empty barriers.
+
+But we can worry about that when some in tree file system
+actually tries to do that.
+
+-Andi
+
+-- 
+ak@linux.intel.com
