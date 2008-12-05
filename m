@@ -1,119 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbYLESJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYLESKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbYLESJL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 13:09:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbYLESIy
+	id S1756781AbYLESKk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 13:10:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYLESKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 13:08:54 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:52594 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753506AbYLESIx (ORCPT
+	Fri, 5 Dec 2008 13:10:30 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:5674 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753849AbYLESKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 13:08:53 -0500
-Date: Fri, 5 Dec 2008 10:08:51 -0800
-From: Mike Anderson <andmike@linux.vnet.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>,
-       James.Bottomley@HansenPartnership.com
-Subject: Re: [PATCH] Correctly release and allocate a new request on TUR
-	retries
-Message-ID: <20081205180851.GA9671@linux.vnet.ibm.com>
-References: <49393C88.8080103@hp.com> <20081205144954.GO18255@kernel.dk>
+	Fri, 5 Dec 2008 13:10:30 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=W+AXMb4CYBjJ3OZkGj28CS3kyR11OyfTAqxpsHUxzsoc1wY+b8TcI8vrf/862RLAS
+	RcjX3F0X2diz5uUddYF4A==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081205144954.GO18255@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4938DE1C.6070608@cn.fujitsu.com>
+References: <b040c32a0812032048x4a11dc26k184a4b279b509050@mail.gmail.com>
+	 <49376BE3.1040909@cn.fujitsu.com>
+	 <6599ad830812041502m15f54f0ckd8baa0a1792fc31e@mail.gmail.com>
+	 <b040c32a0812042344n75117b68x8de975d12dddf594@mail.gmail.com>
+	 <4938DE1C.6070608@cn.fujitsu.com>
+Date: Fri, 5 Dec 2008 10:10:25 -0800
+Message-ID: <b040c32a0812051010m11e9d376qcd77a3a71a4f42b9@mail.gmail.com>
+Subject: Re: [patch] export percpu cpuacct cgroup stats
+From: Ken Chen <kenchen@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Fri, Dec 05 2008, Alan D. Brunelle wrote:
-> > 
-> 
-> > 
-> > Commands needing to be retried (TUR in this case) would result in a block
-> > I/O request being re-used, without being re-initialized properly. This
-> > patch ensures that the requests are correctly re-initialized via
-> > standard allocation means.
-> > 
-> > Prior to this patch, boots were failing consistently as in:
-> > http://lkml.org/lkml/2008/12/5/161
-> > 
-> > With this patch in place, the system is booting reliably.
-> > 
-> > Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
-> > Cc: Jens Axboe <jens.axboe@oracle.com>
-> 
-> Looks good.
-> 
-> Acked-by: Jens Axboe <jens.axboe@oracle.com>
-> 
-> Perhaps James can push it in, I'm about to shutdown for the day...
-> 
+On Thu, Dec 4, 2008 at 11:54 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>> +             seq_printf(m, "%llu ", percpu);
+>
+> Should be:
+> +               seq_printf(m, "%llu ", (unsigned long long)percpu);
+>
+> Otherwsise:
+> kernel/sched.c: In function 'cpuacct_percpu_seq_read':
+> kernel/sched.c:9359: warning: format '%llu' expects type 'long long unsigned int',
+> but argument 3 has type 'u64'
 
-I know a failure was not detected in the hp_sw_start_stop function, but it
-uses the same retry method as hp_sw_tur we should update this function
-also.
+I'm curious what compiler and CPU arch target are you using that cause
+compiler to spit out this warning message?  On x86_64 u64 is unsigned
+long long and gcc v4.2.4 doesn't give such warning.
 
-I made a quick scope of callers of blk_get_request and I did not see a
-repeated of this retry usage model. I will make another pass to see if I
-missed something.
-
-> 
-> > ---
-> >  drivers/scsi/device_handler/scsi_dh_hp_sw.c |    6 ++++--
-> >  1 files changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/scsi/device_handler/scsi_dh_hp_sw.c b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-> > index 9aec4ca..1f6b6a8 100644
-> > --- a/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-> > +++ b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-> > @@ -107,6 +107,7 @@ static int hp_sw_tur(struct scsi_device *sdev, struct hp_sw_dh_data *h)
-> >  	struct request *req;
-> >  	int ret;
-> >  
-> > +retry:
-> >  	req = blk_get_request(sdev->request_queue, WRITE, GFP_NOIO);
-> >  	if (!req)
-> >  		return SCSI_DH_RES_TEMP_UNAVAIL;
-> > @@ -121,7 +122,6 @@ static int hp_sw_tur(struct scsi_device *sdev, struct hp_sw_dh_data *h)
-> >  	memset(req->sense, 0, SCSI_SENSE_BUFFERSIZE);
-> >  	req->sense_len = 0;
-> >  
-> > -retry:
-> >  	ret = blk_execute_rq(req->q, NULL, req, 1);
-> >  	if (ret == -EIO) {
-> >  		if (req->sense_len > 0) {
-> > @@ -136,8 +136,10 @@ retry:
-> >  		h->path_state = HP_SW_PATH_ACTIVE;
-> >  		ret = SCSI_DH_OK;
-> >  	}
-> > -	if (ret == SCSI_DH_IMM_RETRY)
-> > +	if (ret == SCSI_DH_IMM_RETRY) {
-> > +		blk_put_request(req);
-> >  		goto retry;
-> > +	}
-> >  	if (ret == SCSI_DH_DEV_OFFLINED) {
-> >  		h->path_state = HP_SW_PATH_PASSIVE;
-> >  		ret = SCSI_DH_OK;
-> > -- 
-> > 1.5.6.3
-> > 
-> 
-> 
-> -- 
-> Jens Axboe
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
--andmike
---
-Michael Anderson
-andmike@linux.vnet.ibm.com
+- Ken
