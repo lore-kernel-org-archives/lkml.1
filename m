@@ -1,194 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbYLFCgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbYLFCkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756729AbYLFCgv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 21:36:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYLFCgl
+	id S1756999AbYLFCkU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 21:40:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbYLFCkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 21:36:41 -0500
-Received: from fk-out-0910.google.com ([209.85.128.184]:11321 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752214AbYLFCgk (ORCPT
+	Fri, 5 Dec 2008 21:40:06 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:9535 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752263AbYLFCkF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 21:36:40 -0500
+	Fri, 5 Dec 2008 21:40:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=N8cKd05D/o8QYX4mzRz6OqM2ATdO3xWzq+jL8zv2WwGCSc8illxd9nEPf8z/MvghTy
-         sSd6LiNJh/rBcmizm1j6Z/rRJrc/p1l4vTjU0I2qrv5BlRvak/boH5L3q0e5O5P5HChg
-         q+4YlToGL9cRy2V4CIadhULrzmqVLPm+OgQW4=
-Message-ID: <7c86c4470812051836t37e86565w3b92fd06fc905430@mail.gmail.com>
-Date: Sat, 6 Dec 2008 03:36:37 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Robert Richter" <robert.richter@amd.com>,
-       "Arjan van de Veen" <arjan@infradead.org>,
-       "Peter Anvin" <hpa@zytor.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "David Miller" <davem@davemloft.net>,
-       "Paul Mackerras" <paulus@samba.org>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-In-Reply-To: <20081204225345.654705757@linutronix.de>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=dlXH5E1psnlo9iVtALOeX4t4IThSfj2umIHhlUfqwxOu9OU+UhdavKiw+tIOvC32Jw
+         oxhxLz4OuOBejcvfF9UEwkJnbkI/jRJIxcI8QVtbH+R4XqKyP8uQmHqebgV4ycFi/uVm
+         wAqK41iC/YrPWOEk2Cfd1ZgY2G/F1nWl3OZp4=
+Message-ID: <4939E600.804@gmail.com>
+Date: Sat, 06 Dec 2008 03:40:00 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] tracing/function-graph-tracer: introduce __notrace_funcgraph
+ to filter special functions
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081204225345.654705757@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Impact: trace more functions
 
-I have been reading all the threads after this unexpected announcement
-of a competing proposal for an interface to access the performance counters.
-I would like to respond to some of the things I have seen.
+When the function graph tracer is configured, three more files are not traced to prevent
+only four functions to be traced. And this impacts the normal function tracer too.
 
-* ptrace: as Paul just pointed out, ptrace() is a limitation of the
-  current perfmon implementation. This is not a limitation of the
-  interface as has been insinuated earlier. In my mind, this does
-  not justify starting from scratch. There is nothing that precludes
-  removing ptrace and using the IPI to chase down the PMU state,
-  like you are doing. And in fact I believe we can do it more efficiently
-  because we would potentially collect multiple values in one IPI,
-  something your API cannot allow because it is single event oriented.
+arch/x86/kernel/process_64/32.c:
 
-* There is more to perfmon than what you have looked at on LKML. There
-   is advanced sampling support with a kernel level buffer which is remapped
-   to user space. So there is no such thing as a couple of ptrace() calls per
-   sample. In fact, there is zero copy export to user space. In the
-case of PEBS,
-   there is even zero-copy from HW to user space.
+I had crashes when I let this file traced. After some debugging, I saw that 
+the "current" task point was changed inside__swtich_to(), ie: "write_pda(pcurrent, next_p);" 
+inside process_64.c 
+Since the tracer store the original return address of the function inside current, we had crashes.
+Only __switch_to() has to be traced.
 
-* The proposed API exposes events as individual entities. To measure N
-   events, you need N file descriptors. There is no coordination of actions
-   between the various events. If you want to start/stop all events, it seems
-   you have to close the  file descriptors and start over. That is not
-how people
-   use this, especially people doing self monitoring. They want to start/stop
-   around critical loops or functions and they want this to be fast.
+kernel/module.c and kernel/extable.c:
 
-* To read N events you need N syscalls and potentially N IPIs. There
-   is no guarantee of atomicity between the reads. The argument of raising
-   the priority to prevent preemption is bogus and unrealistic. We want regular
-   users to be able to measure their own applications without having to have
-   special privileges. This is especially unpractical when you want to read from
-   another thread. It is important to get a view of the counters that
-is as consistent
-   as possible and for that you want to read the registers are closely
-as possible
-   from each other.
+Because of a function used internally by the function graph tracer: __kernel_text_address()
 
-* As mentioned by Paul, Corey, the API inevitably forces the kernel to
-know about
-  ALL the events and how they map onto counters. People who have been doing this
-  in userland, and I am one of them, can tell you that this is a very
-hard problem.
-  Looking at it just on the Intel and AMD x86 is misleading. It is not
-the number of
-  events that matters, even it contributes to the kernel bloat, it is
-managing the constraints
-  between events (event A and B cannot be measured together, if event
-A uses counter X
-  then B cannot be measured on counter Y). Sometimes, the value of a
-config register depends
-  on which register you load it on. With the proposed API, all this
-complexity would have to go in
-  the kernel. I don't think it belongs here and it will leads to
-maintenance problems, and longer
-  delays to enable support of new hardware. The argument for doing
-this was that it would
-  facilitate writing tools. But all that complexity does not belong in
-the tools but in a user library.
-  This is what libpfm is designed for and it has worked nicely so far.
-The role of the kernel
-  is to control access to the PMU resource and to make sure incorrect
-programming of the registers
-  cannot crash the kernel. If you do this, then providing support for
-new hardware is for the most part
-  simply exposing the registers. Something which can even be
-discovered automatically on newer
-  processors, e.g., ones supporting Intel architectural perfmon.
+To let the other functions inside these files to be traced, this patch introduces the 
+__notrace_funcgraph function prefix which is __notrace if function graph tracer is 
+configured and nothing if not.
 
-* Tools usually manage monitoring as a session. There was criticism
-   about the perfmon context abstraction and vectors. A context is  merely
-   a synonym for session.  I believe having a file descriptor per session is
-   a natural thing to have. Vectors are used to access multiple registers in
-   one syscall. Vector have variable sizes, it depends on what you want to
-   access. The size is not mandated by the number of registers of the
-   underlying hardware.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 5ee1ba6..3d82c15 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -15,12 +15,6 @@ CFLAGS_REMOVE_ftrace.o = -pg
+ CFLAGS_REMOVE_early_printk.o = -pg
+ endif
+ 
+-ifdef CONFIG_FUNCTION_GRAPH_TRACER
+-# Don't trace __switch_to() but let it for function tracer
+-CFLAGS_REMOVE_process_32.o = -pg
+-CFLAGS_REMOVE_process_64.o = -pg
+-endif
+-
+ #
+ # vsyscalls (which work on the user stack) should have
+ # no stack-protector checks:
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 0a1302f..24c2276 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -38,6 +38,7 @@
+ #include <linux/percpu.h>
+ #include <linux/prctl.h>
+ #include <linux/dmi.h>
++#include <linux/ftrace.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
+@@ -548,7 +549,8 @@ __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+  * the task-switch, and shows up in ret_from_fork in entry.S,
+  * for example.
+  */
+-struct task_struct * __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
++__notrace_funcgraph struct task_struct *
++__switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ {
+ 	struct thread_struct *prev = &prev_p->thread,
+ 				 *next = &next_p->thread;
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index 3180e79..c99a376 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -40,6 +40,7 @@
+ #include <linux/prctl.h>
+ #include <linux/uaccess.h>
+ #include <linux/io.h>
++#include <linux/ftrace.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/system.h>
+@@ -563,8 +564,9 @@ static inline void __switch_to_xtra(struct task_struct *prev_p,
+  * - could test fs/gs bitsliced
+  *
+  * Kprobes not supported here. Set the probe on schedule instead.
++ * Function graph tracer not supported too.
+  */
+-struct task_struct *
++__notrace_funcgraph struct task_struct *
+ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ {
+ 	struct thread_struct *prev = &prev_p->thread;
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index b9b4d0a..449fa8e 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -369,6 +369,14 @@ struct ftrace_graph_ret {
+ };
+ 
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
++
++/*
++ * Sometimes we don't want to trace a function with the function
++ * graph tracer but we want them to keep traced by the usual function
++ * tracer if the function graph tracer is not configured.
++ */
++#define __notrace_funcgraph		notrace
++
+ #define FTRACE_RETFUNC_DEPTH 50
+ #define FTRACE_RETSTACK_ALLOC_SIZE 32
+ /* Type of the callback handlers for tracing function graph*/
+@@ -394,6 +402,9 @@ static inline int task_curr_ret_stack(struct task_struct *t)
+ 	return t->curr_ret_stack;
+ }
+ #else
++
++#define __notrace_funcgraph
++
+ static inline void ftrace_graph_init_task(struct task_struct *t) { }
+ static inline void ftrace_graph_exit_task(struct task_struct *t) { }
+ 
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 86e2d82..6a212b8 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -20,10 +20,6 @@ CFLAGS_REMOVE_rtmutex-debug.o = -pg
+ CFLAGS_REMOVE_cgroup-debug.o = -pg
+ CFLAGS_REMOVE_sched_clock.o = -pg
+ endif
+-ifdef CONFIG_FUNCTION_GRAPH_TRACER
+-CFLAGS_REMOVE_extable.o = -pg # For __kernel_text_address()
+-CFLAGS_REMOVE_module.o = -pg # For __module_text_address()
+-endif
+ 
+ obj-$(CONFIG_FREEZER) += freezer.o
+ obj-$(CONFIG_PROFILING) += profile.o
+diff --git a/kernel/extable.c b/kernel/extable.c
+index adf0cc9..e136ed8 100644
+--- a/kernel/extable.c
++++ b/kernel/extable.c
+@@ -17,6 +17,7 @@
+ */
+ #include <linux/module.h>
+ #include <linux/init.h>
++#include <linux/ftrace.h>
+ #include <asm/uaccess.h>
+ #include <asm/sections.h>
+ 
+@@ -40,7 +41,7 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
+ 	return e;
+ }
+ 
+-int core_kernel_text(unsigned long addr)
++__notrace_funcgraph int core_kernel_text(unsigned long addr)
+ {
+ 	if (addr >= (unsigned long)_stext &&
+ 	    addr <= (unsigned long)_etext)
+@@ -53,7 +54,7 @@ int core_kernel_text(unsigned long addr)
+ 	return 0;
+ }
+ 
+-int __kernel_text_address(unsigned long addr)
++__notrace_funcgraph int __kernel_text_address(unsigned long addr)
+ {
+ 	if (core_kernel_text(addr))
+ 		return 1;
+diff --git a/kernel/module.c b/kernel/module.c
+index f5cd963..9712c52 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2705,7 +2705,7 @@ int is_module_address(unsigned long addr)
+ 
+ 
+ /* Is this a valid kernel address? */
+-struct module *__module_text_address(unsigned long addr)
++__notrace_funcgraph struct module *__module_text_address(unsigned long addr)
+ {
+ 	struct module *mod;
+ 
+-- 
+1.5.6.3
 
-* As mentioned by Paul, with certain PMUs, it is not possible to solve
-  the event -> counter problem without having a global view
-  of all the events. Your API being single-event oriented, it is not
-  clear to me how this can be solved.
-
-* It is not because you run a per thread session, that you should be
-  limited to measuring at priv level 3.
-
-* Modern PMU, including AMD Barcelona. Itanium2, expose more than
-  counters. Any API than assumes PMU export only
-  counters is going to be limited, e.g. Oprofile. Perfmon does not
-  make that mistake, the interface does not know anything
-  about counters nor sampling periods. It sees registers with values
-  you can read or write. That has allowed us to support
-  advanced features such as Itanium2 Opcode filter, Itanium2
-  Code/Data range restrictions (hosted in debug regs), AMD
-  Barcelona IBS which has no event associated with it, Itanium2
-  BranchTraceBuffer, Intel Core 2 LBR, Intel Core i7 uncore PMU.
-  Some of those features have no ties with counters, they do not even
-  overflow (e.g., LBR). They must be used in combination with
-  counters, e.g., LBRs. I don't think you will be able to do this
-  with your API.
-
-* With regards to sampling, advanced users have long been collecting
-  more than just the IP. They want to collect the values of other
-  PMU registers or even values of other non-PMU resources. With your
-  API, it seems for every new need, you'd have to create a new
-  perf_record_type, which translates into a kernel patch. This is not
-  what people want. With perfmon, you have a choice of doing user
-  level sampling (users gets notification for each sample) but you can
-  also use a kernel sampling buffer. In that case, you can express
-  what you want recorded in the buffer using simple bitmasks of PMU
-  registers. There is no predefined set, no kernel patch.
-  To make this even more flexible the buffer format is not part of the
-  interface, you can define your own and record whatever you want
-  in whatever format you want. All is provided by kernel modules. You
-  want double-buffer, cyclic buffer, just add your kernel module. It
-  seems this feature has been overlooked by LKML reviewers but it is
-  really powerful.
-
-* It is not clear to me how you would add a sampling buffer and
-  remapping using your API given the number of file descriptors you will
-  end up using and the fact that you do not have the notion of a session.
-
-* When sampling, you want to freeze the counters on overflow to get an
-  as consistent as possible view. There is no such guarantee in
-  your API nor implementation. On some hardware platforms, e.g.,
-  Itanium, you have no choice this is the behavior.
-
-* Multiple counters can overflow at the same time and generate a
-  single interrupt. With your approach, if two counters overflow
-  simultaneously, then you need to enqueue two messages, yet only
-  one SIGIO wil be generated, it seems. Wonder how that works when
-  self-monitoring.
-
-
-In summary, although the idea of simplifying tools by moving the
-complexity elsewhere is legitimate, pushing it down to the kernel
-is the wrong approach in my opinion, perfmon has avoided that as much
-as possible for good reasons. We have shown , with libpfm,
-that a large part of complexity can easily be encapsulated into a user
-library. I also don't think the approach of managing events
-independently of each others works for all processors. As pointed out
-by others, there are other factors at stake and they may not
-even be on the same core.
-
-S. Eranian
