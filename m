@@ -1,76 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbYLFDf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757770AbYLFDie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbYLFDf2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 22:35:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYLFDfU
+	id S1757770AbYLFDie (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 22:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYLFDi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 22:35:20 -0500
-Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.67]:47469 "EHLO
-	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752744AbYLFDfT (ORCPT
+	Fri, 5 Dec 2008 22:38:26 -0500
+Received: from fk-out-0910.google.com ([209.85.128.186]:18975 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752744AbYLFDiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 22:35:19 -0500
-X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
-Date: Sat, 6 Dec 2008 12:35:03 +0900
-From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "LKML" <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Pavel Emelyanov" <xemul@openvz.org>, "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Paul Menage" <menage@google.com>, d-nishimura@mtf.biglobe.ne.jp,
-       "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH -mmotm 3/4] memcg: avoid dead lock caused by 
- racebetween oom and cpuset_attach
-Message-Id: <20081206123503.4e32c3fb.d-nishimura@mtf.biglobe.ne.jp>
-In-Reply-To: <57801.10.75.179.61.1228483630.squirrel@webmail-b.css.fujitsu.com>
-References: <20081205212208.31d904e0.nishimura@mxp.nes.nec.co.jp>
-	<20081205212450.574f498c.nishimura@mxp.nes.nec.co.jp>
-	<57801.10.75.179.61.1228483630.squirrel@webmail-b.css.fujitsu.com>
-Reply-To: nishimura@mxp.nes.nec.co.jp
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Fri, 5 Dec 2008 22:38:25 -0500
+Subject: Re: [PATCH] fix pktcdvd breakage from commit
+ e105b8bfc769b0545b6f0f395179d1e43cbee822
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, gregkh@suse.de,
+       petero2@telia.com, linux-kernel@vger.kernel.org
+In-Reply-To: <ac3eb2510812041857j5e49a4ecsfd2f351f572fb350@mail.gmail.com>
+References: <ac3eb2510811300441m2a551cc7nec0374bb7a707bb8@mail.gmail.com>
+	 <20081130133229.GZ28946@ZenIV.linux.org.uk>
+	 <20081130134048.GA28946@ZenIV.linux.org.uk>
+	 <ac3eb2510811300544r2b228a85n86553d6657ac5578@mail.gmail.com>
+	 <20081130135031.GB28946@ZenIV.linux.org.uk>
+	 <ac3eb2510811300557u4922699du87a62cfd29020db1@mail.gmail.com>
+	 <20081130141329.GC28946@ZenIV.linux.org.uk>
+	 <ac3eb2510811300628t2bb40427p22e22e2ed671d9a9@mail.gmail.com>
+	 <20081130145221.GD28946@ZenIV.linux.org.uk>
+	 <ac3eb2510811300756icbf6fe5x3c41c7fc9f870db1@mail.gmail.com>
+	 <ac3eb2510812041857j5e49a4ecsfd2f351f572fb350@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 06 Dec 2008 04:38:11 +0100
+Message-Id: <1228534691.3428.1.camel@nga>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Dec 2008 22:27:10 +0900 (JST)
-"KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> Daisuke Nishimura said:
-> > mpol_rebind_mm(), which can be called from cpuset_attach(), does
-> > down_write(mm->mmap_sem).
-> > This means down_write(mm->mmap_sem) can be called under cgroup_mutex.
+On Fri, 2008-12-05 at 03:57 +0100, Kay Sievers wrote:
+> On Sun, Nov 30, 2008 at 16:56, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > On Sun, Nov 30, 2008 at 15:52, Al Viro <viro@zeniv.linux.org.uk> wrote:
+> >> On Sun, Nov 30, 2008 at 03:28:15PM +0100, Kay Sievers wrote:
+> >>> > So we need to preserve the layout, with the easiest way probably being "add
+> >>> > one more ktype and use kobject_init_and_add() instead of that device_create()".
+> >>> > Sigh...
+> >>>
+> >>> What do you mean? We just need to replace the bogus "pd->pkt_dev" with
+> >>> MKDEV(0, 0) and we are fine.
+> >>
+> >> Userland-visible change - right now cat /sys/class/pktcdvd/pktcdvd3/dev will
+> >> give you dev_t of the block device in question.
 > >
-> > OTOH, page fault path does down_read(mm->mmap_sem) and calls
-> > mem_cgroup_try_charge_xxx(),
-> > which may eventually calls mem_cgroup_out_of_memory(). And
-> > mem_cgroup_out_of_memory()
-> > calls cgroup_lock().
-> > This means cgroup_lock() can be called under down_read(mm->mmap_sem).
+> > True, it's visible, but it's incorrect dead information which should
+> > be removed. Subsystem != "block is defined as S_IFCHR, and there is no
+> > such char device for pktcdvd. In fact the "dev" file of the pktcdvd
+> > class device points in many cases to a USB device, which must be
+> > fixed.
 > >
-> good catch.
-> 
-Thanks.
-
-> > If those two paths race, dead lock can happen.
+> > The whole pktcdvd class is not used at all, besides for exporting a
+> > few files. The "dev" file at the class device is just a bug, and the
+> > MAJOR/MINOR uevent environment variables also. I doubt that there will
+> > be any visible breakage in something that isn't already totally
+> > broken. In short, I doubt, that anything that works today will stop
+> > working if we remove the bugus "dev" file.
 > >
-> > This patch avoid this dead lock by:
-> >   - remove cgroup_lock() from mem_cgroup_out_of_memory().
-> agree to this.
+> > This seem like the simple and correct fix for the issue with /sys/dev/
+> > and the broken non-existing but exported pkcdvd char device:
+> > -               pd->dev = device_create(class_pktcdvd, NULL, pd->pkt_dev, NULL,
+> > +               pd->dev = device_create(class_pktcdvd, NULL, MKDEV(0, 0), NULL,
 > 
-> >   - define new mutex (memcg_tasklist) and serialize mem_cgroup_move_task()
-> >     (->attach handler of memory cgroup) and mem_cgroup_out_of_memory.
-> >
-> Hmm...seems temporal fix (and adding new global lock...)
-> But ok, we need fix. revist this later.
-> 
-I agree.
+> Al, this bug still exists, right? Any objections to remove the dead char dev_t?
 
-> Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu,com>
-> 
-Thank you.
+Here is a patch.
+
+Thanks,
+Kay
 
 
-Daisuke Nishimura.
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: pktcdvd: remove broken dev_t export of class devices
+
+The pktcdvd created class devices only export some sysfs files,
+but have no char dev_t registered in the driver.
+
+At class device creation time they copy the dev_t value of the
+block device to the char device, wich will register a new char
+device in the driver core and userspace, with a conflicting dev_t
+value.
+
+In many cases the class devices dev_t just points to a random
+USB device. This fixes the sysfs "duplicate entry" errors.
+
+Cc: petero2@telia.com
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
+ pktcdvd.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -302,7 +302,7 @@ static struct kobj_type kobj_pkt_type_wqueue = {
+ static void pkt_sysfs_dev_new(struct pktcdvd_device *pd)
+ {
+ 	if (class_pktcdvd) {
+-		pd->dev = device_create(class_pktcdvd, NULL, pd->pkt_dev, NULL,
++		pd->dev = device_create(class_pktcdvd, NULL, MKDEV(0, 0), NULL,
+ 					"%s", pd->name);
+ 		if (IS_ERR(pd->dev))
+ 			pd->dev = NULL;
+
+
