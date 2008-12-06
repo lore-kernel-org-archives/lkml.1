@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbYLFPE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbYLFP0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758497AbYLFPE6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 10:04:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbYLFPEu
+	id S1758152AbYLFP0s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 10:26:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756914AbYLFP0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 10:04:50 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:20095 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756761AbYLFPEu (ORCPT
+	Sat, 6 Dec 2008 10:26:39 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:32928 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756865AbYLFP0i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 10:04:50 -0500
+	Sat, 6 Dec 2008 10:26:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=tjh9inCcsiI7O+HpTK9hhW5VXWUyBUAvn3zCasvgbjg3vZXKkXIfaUXdlc/OdE/b06
-         fcuxOl0ALMsrZMgJCpvrltWcyyu/gX/LJ8gU6cuD7wSjIneY8oNaZNlhiHsBCJi+N+H1
-         bCvYOjld3YmjueZzbBniyNta1vJ7k1bKtJxZc=
-Message-ID: <b9df5fa10812060704t1685710aw65f7c1e00e5f98@mail.gmail.com>
-Date: Sat, 6 Dec 2008 21:04:48 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] kernel/freezer.c : Removing extra checking.
-Cc: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <200812061441.15772.rjw@sisk.pl>
+         :references:x-google-sender-auth;
+        b=f/XucHUw6rsMrWJicVA/Z0HeWYJb3DV7MOGghgK1ywCU6xlc7pYsCAiNXRlnEiHai1
+         pJlfTD5mgJPtptLhPah7M1uW5cSQ8EI3gqm0/9crxih4dlaSxQjm8CoAbiGpcTCcRp6a
+         jNwSlK3x3xgB8Q5FOHg49XL6kWcAbYSyRcBZw=
+Message-ID: <2f11576a0812060726m141e1dd0rd2890c2fe3fd5484@mail.gmail.com>
+Date: Sun, 7 Dec 2008 00:26:37 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Oleg Nesterov" <oleg@redhat.com>
+Subject: Re: [PATCH] introduce get_mm_hiwater_xxx(), fix taskstats->hiwater_xxx accounting
+Cc: "Hugh Dickins" <hugh@veritas.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>, "Jay Lan" <jlan@sgi.com>,
+       "Jiri Pirko" <jpirko@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081204135250.GA5448@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <b9df5fa10812060020i40373ed3rdc97812ed46ba959@mail.gmail.com>
-	 <200812061441.15772.rjw@sisk.pl>
+References: <20081203181220.GA22918@redhat.com>
+	 <Pine.LNX.4.64.0812031957570.19174@blonde.anvils>
+	 <20081204135250.GA5448@redhat.com>
+X-Google-Sender-Auth: f5f37364acd3ff16
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/6/08, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday, 6 of December 2008, Rakib Mullick wrote:
->  > Impact: Reduces an extra checking.
->  >
->  > Following patch removes an extra checking. We can remove it since, the
->  > current task is frozen. If the current task is not frozen, then it
->  > will return from __else__ condition of freezing(current) check. So,
->  > the check becames unnecessary. It also reduces 32 bytes of text space
->  > on my x86  (32 bit) system.
->
->
-> What will happen with this patch applied when a task is woken up for some
->  reason other than thawing?
-thawing is usually used for woken up a frozzen process. Would you
-please tell me what are the other ways to woken up a frozzen process?
-Am I missing anything ?
-Thanks,
+Hi Oleg
 
+> But the difference can be huge. Let's suppose the process has 2 threads
+> T1 and T2.
 >
->  > Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
->  >
->  > --- linux-2.6-orig/kernel/freezer.c   2008-12-05 19:53:45.000000000 +0600
->  > +++ linux-2.6/kernel/freezer.c        2008-12-05 19:55:40.000000000 +0600
->  > @@ -46,8 +46,6 @@ void refrigerator(void)
->  >
->  >       for (;;) {
->  >               set_current_state(TASK_UNINTERRUPTIBLE);
->  > -             if (!frozen(current))
->  > -                     break;
->  >               schedule();
->  >       }
->  >       pr_debug("%s left refrigerator\n", current->comm);
+> T1 exits, calls update_hiwater_vm(), notices that mm->hiwater_vm must be
+> updated, and preempted right before mm->hiwater_vm = new_value.
 >
-> > --
+> T2 does free(malloc(A_LOT)) and exits. It sets the correct value for
+> ->hiwater_vm which takes A_LOT into account and disappears.
 >
+> T1 resumes, and "reverts" ->hiwater_vm to the "new_value" which was
+> calculated before.
+>
+> Now, since T1 is the last exiting thread, the whole thread group
+> exits and we report the wrong ->hiwater_vm to the userspace.
+>
+> Yes, this race is unlikely. But there is another reason (perhaps
+> not very good) why I tried to remove update_hiwater_xxx() from
+> do_exit().
+
+This explain is very good clarification than current patch description, IMHO.
+So, if possible, I hope to add it into the patch description.
+
+thanks.
