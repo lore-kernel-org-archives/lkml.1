@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbYLFVrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbYLFVrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619AbYLFVrh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 16:47:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbYLFVr0
+	id S1752937AbYLFVrw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 16:47:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYLFVrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 16:47:26 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:56392 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752819AbYLFVr0 (ORCPT
+	Sat, 6 Dec 2008 16:47:31 -0500
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:56484 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753220AbYLFVra (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 16:47:26 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=fT-vJl8vfb7b7w7MShUA:9 a=-fxi8mJMM5uknHekckUYecqe9mEA:4 a=ybilIN7zEmwA:10 a=6lB08MFujYwA:10
-Message-ID: <493AF2EA.4030601@shaw.ca>
-Date: Sat, 06 Dec 2008 15:47:22 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Sat, 6 Dec 2008 16:47:30 -0500
+Message-ID: <493AF2EE.20605@lwfinger.net>
+Date: Sat, 06 Dec 2008 15:47:26 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-To: Giangiacomo Mariotti <gg.mariotti@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
-References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com> <493AE770.5030507@shaw.ca> <12bfabe40812061343j400f55d8r43571c8bd514adde@mail.gmail.com>
-In-Reply-To: <12bfabe40812061343j400f55d8r43571c8bd514adde@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Christian Lamparter <chunkeey@web.de>
+CC: Greg KH <gregkh@suse.de>, linux-wireless@vger.kernel.org,
+       Johannes Berg <johannes@sipsolutions.net>,
+       John W Linville <linville@tuxdriver.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] p54usb: rewriting rx/tx routines to make use of
+ usb_anchor's facilities
+References: <200812051547.45790.chunkeey@web.de> <4939B6AF.2060901@lwfinger.net> <20081205232321.GA8557@suse.de> <200812062109.40590.chunkeey@web.de>
+In-Reply-To: <200812062109.40590.chunkeey@web.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Giangiacomo Mariotti wrote:
-> On Sat, Dec 6, 2008 at 9:58 PM, Robert Hancock <hancockr@shaw.ca> wrote:
->> Giangiacomo Mariotti wrote:
->>> Hi everyone,
->>> Mcelog just logged on my new Intel I7 920 (on Linux 2.6.27.8) this :
->>> MCE 0
->>> HARDWARE ERROR. This is *NOT* a software problem!
->>> Please contact your hardware vendor
->>> CPU 0 BANK 6 MISC 202d ADDR ffeef740
->>> MCG status:
->>> MCi status:
->>> Error overflow
->>> Uncorrected error
->>> MCi_MISC register valid
->>> MCi_ADDR register valid
->>> Processor context corrupt
->>> MCA: Generic CACHE Level-2 Data-Write Error
->>> STATUS ee0000000100014a MCGSTATUS 0
->>>
->>> I'm reporting this here, because I found in the Intel I7 Technical
->>> Specification November 2008 update that something which seems very
->>> similar is in fact an erratum. So my question is : Is there any way
->>> for me to verify that my problem is due to one of those errata,instead
->>> of a broken hardware(if we don't want to consider all those errata as
->>> broken hardware)? I'm also reporting this because I thought it may be
->>> useful to signal that(if actually due to those errata) these problems
->>> actually occur, so it may be useful to find workarounds in the kernel
->>> to not scare to death poor Linux users!
->> Which erratum are you talking about? I don't see one in that document that
->> would match this case..
->>
-> Well, the first one seems very similar, even if it talks about a dtlb
-> error instead of cache error. But sure,being similar doesn't mean too
-> much. Number 52 seems similar too. I guess I should just give up and
-> admit that my hardware is broken!
+Christian Lamparter wrote:
 > 
+> Alan, I've got a question about:
+> "Create and initialize a usb_anchor structure, and each time you create
+> a new URB, call usb_anchor_urb().  Then you can free the URB as soon as
+> it is submitted; the anchor will keep it pinned until it completes, and
+> it is automatically removed from the anchor when the completion routine
+> is called."
+> 
+> Do we have to call usb_free_urb again, if we're resubmitting the urb in the
+> complete callback? (the code what I'm referring to is p54u_rx_cb in p54usb.c)
 
-The first one is just indicating that if a DTLB error occurs the 
-overflow bit may be set incorrectly. It's not a false error though. The 
-AAJ52 erratum would only occur immediately after powerup or wake from 
-sleep states.
+I am very interested in the answer to this question. My interpretation is that
+you cannot resubmit the urb after it has been posted to usb_anchor_usb() because
+the USB core will have deleted it, and that the callback routine will have to
+allocate a new urb, anchor it, and then free it as well.
+
+Larry
