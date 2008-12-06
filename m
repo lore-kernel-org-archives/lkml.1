@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753021AbYLFQpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753011AbYLFQyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753021AbYLFQpS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 11:45:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYLFQpF
+	id S1753011AbYLFQyF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 11:54:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbYLFQxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 11:45:05 -0500
-Received: from www.crouse-house.com ([199.45.160.146]:51395 "EHLO
-	mail.crouse-house.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbYLFQpF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 11:45:05 -0500
-Message-ID: <493AAC0E.6090005@cosmicpenguin.net>
-Date: Sat, 06 Dec 2008 09:45:02 -0700
-From: Jordan Crouse <jordan@cosmicpenguin.net>
-Reply-To: jordan@cosmicpenguin.net
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Sat, 6 Dec 2008 11:53:53 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60035 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751042AbYLFQxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Dec 2008 11:53:52 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Rakib Mullick" <rakib.mullick@gmail.com>
+Subject: Re: [PATCH] kernel/freezer.c : Removing extra checking.
+Date: Sat, 6 Dec 2008 17:52:57 +0100
+User-Agent: KMail/1.9.9
+Cc: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+References: <b9df5fa10812060020i40373ed3rdc97812ed46ba959@mail.gmail.com> <200812061441.15772.rjw@sisk.pl> <b9df5fa10812060704t1685710aw65f7c1e00e5f98@mail.gmail.com>
+In-Reply-To: <b9df5fa10812060704t1685710aw65f7c1e00e5f98@mail.gmail.com>
 MIME-Version: 1.0
-To: Harald Dunkel <harald.dunkel@t-online.de>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27.7 built for Geode: Clock drift
-References: <49358017.7080009@t-online.de> <493961EE.6000002@cosmicpenguin.net> <493A8A63.2020400@t-online.de>
-In-Reply-To: <493A8A63.2020400@t-online.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812061752.58008.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harald Dunkel wrote:
-> Hi Jordan,
-> 
-> Sorry for the empty reply. I clicked on [Send] by accident.
-> 
-> Jordan Crouse wrote:
->>
->> Hmm - we've heard reports of this before, but nothing came of it.  I 
->> would be interested in a chance to debug it this time.
->>
->> Please try turning off CONFIG_GEODE_MFGPT_TIMER=y and try again.
-> 
-> AFAICS this was already set.
+On Saturday, 6 of December 2008, Rakib Mullick wrote:
+> On 12/6/08, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Saturday, 6 of December 2008, Rakib Mullick wrote:
+> >  > Impact: Reduces an extra checking.
+> >  >
+> >  > Following patch removes an extra checking. We can remove it since, the
+> >  > current task is frozen. If the current task is not frozen, then it
+> >  > will return from __else__ condition of freezing(current) check. So,
+> >  > the check becames unnecessary. It also reduces 32 bytes of text space
+> >  > on my x86  (32 bit) system.
+> >
+> >
+> > What will happen with this patch applied when a task is woken up for some
+> >  reason other than thawing?
+> thawing is usually used for woken up a frozzen process. Would you
+> please tell me what are the other ways to woken up a frozzen process?
+> Am I missing anything ?
 
-You mean set prior to 2.6.27?  I know, but if there is a regression, 
-that would help narrow it down.
+Well, in theory the process can be woken up for another reason.
 
-Jordan
+I don't have any particular examples in mind, but in this case the burden is
+yours to show that it won't happen and to say why exactly you think so in the
+changelog, because this is the very reason why the code has been written this
+way in the first place.
 
+Thanks,
+Rafael
+
+
+> >  > Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+> >  >
+> >  > --- linux-2.6-orig/kernel/freezer.c   2008-12-05 19:53:45.000000000 +0600
+> >  > +++ linux-2.6/kernel/freezer.c        2008-12-05 19:55:40.000000000 +0600
+> >  > @@ -46,8 +46,6 @@ void refrigerator(void)
+> >  >
+> >  >       for (;;) {
+> >  >               set_current_state(TASK_UNINTERRUPTIBLE);
+> >  > -             if (!frozen(current))
+> >  > -                     break;
+> >  >               schedule();
+> >  >       }
+> >  >       pr_debug("%s left refrigerator\n", current->comm);
+> >
+> > > --
