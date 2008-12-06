@@ -1,73 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbYLFSB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbYLFSLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753270AbYLFSB0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 13:01:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbYLFSBQ
+	id S1753151AbYLFSLT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 13:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbYLFSKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 13:01:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59031 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752392AbYLFSBQ (ORCPT
+	Sat, 6 Dec 2008 13:10:54 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:28087 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751385AbYLFSKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 13:01:16 -0500
-Date: Sat, 6 Dec 2008 10:00:35 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend and resume
-In-Reply-To: <200812061843.59495.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0812060952100.3425@nehalem.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812061822.35763.rjw@sisk.pl> <alpine.LFD.2.00.0812060930490.3425@nehalem.linux-foundation.org> <200812061843.59495.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 6 Dec 2008 13:10:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=dHflhtUGSOVYiGXcPQeeJ3rNdkyN88h2WD/Y+hSVrT9sqxZ1hPssU9cJd+G8X+08Mn
+         oMmxilDroPqtfEtPvTksSzusGTDRcM/6BGctdL6uejFRjg4hrVtWYZZZF/hFfhI0ueOE
+         cCycXZar+WiM20dfSTDzDGNRf6sjdf6+1usfI=
+Message-ID: <35476bd20812061010g145b6c19r282ae32a4ebfabb1@mail.gmail.com>
+Date: Sat, 6 Dec 2008 19:10:52 +0100
+From: "m m" <olsajiri@gmail.com>
+To: "Patrick McHardy" <kaber@trash.net>
+Subject: Re: netlink - notify when the socket gets closed
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-net@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <493A92FD.3060302@trash.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <35476bd20812050017y70c3c729v450cdc3d0c1188de@mail.gmail.com>
+	 <20081205195624.95ea1866.akpm@linux-foundation.org>
+	 <493A92FD.3060302@trash.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Dec 6, 2008 at 3:58 PM, Patrick McHardy <kaber@trash.net> wrote:
+> Andrew Morton wrote:
+>>
+>> (cc netdev@vger.kernel.org)
+>>
+>> On Fri, 5 Dec 2008 09:17:51 +0100 "m m" <olsajiri@gmail.com> wrote:
+>>>
+>>> I'm using netlink in my module. Based on the communication,
+>>> this module dynamically creates some internal structure, which
+>>> needs to be destroyed when the user level socket is closed (or
+>>> the application dies).
+>>>
+>>> I found I could use the netlink_register_notifier function to register
+>>> NETLINK_URELEASE callback during the netlink_release function.
+>>> But since my module uses the multicast netlink socket communication,
+>>> it wont be called:
+>>>
+>>> [...]
+>>> Whats the reason this callback is not called for multicast sockets?
+>>>
+>>> To workaround it I created simple misc device which the user application
+>>> opens before creating the netlink socket. This way I get some callbacks
+>>> inside the module when the application dies, at least.. pretty ugly :)
+>>>
+>>> Is there a netlink mechanism to be notified when the netlink socket is
+>>> closed on the user level side? (when using multicast communication)
+>>>
+>>> Or is there any other design I could use, since I think I'm not alone in
+>>> using internal module data which needs to be removed once the application
+>>> dies.
+>
+>
+> That doesn't make sense. When you use multicast, multiple applications
+> can be listening to the messages. If you really need state for a single
+> listener and exchange messages in both directions, it sounds like you
+> should use unicast.
+>
+>
 
+My user app register in kernel for a data. When there is a first
+application request,
+kernel module creates an internal record and ask DATA subsystem for a data,
+which are then passed to the user application.
 
-On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
-> 
-> So, to fix the issue at hand, I'd like the $subject patch to go first.  Then,
-> there is a major update of the new framework waiting for .29 in the Greg's
-> tree (that's the main reason why nobody uses it so far, BTW) and I'd really
-> prefer it to go next.  After it's been merged, I'm going to add the mandatory
-> suspend-resume things (save state and go to a low power state on suspend,
-> restore state on resume) to the new framework in a separete patch.
-> 
-> Is this plan acceptable?
+The data are then delivered to the application as they are comming from
+the DATA subsystem.
 
-Sounds good to me. And assuming Jesse/Greg are all aboard, I'll just wait 
-for the pull requests from Jesse and Greg.
+When there's another application requesting the same data type, kernel module
+just increase reference count in the internal record, and multicast delivers
+data to the other app.
 
-The only thing I'll do right now is to send off my "print out ICH6+ 
-LPC resources" patch again to Jesse, with a changelog etc. It can probably 
-go in as-is (it really just adds printk's), but since it didn't matter 
-anyway we migth as well just do it as a PCI thing for 2.6.29 too.
+Now when one of those applications end, kernel module just decrease
+the reference count in the internal record.
 
-On a similar note, I wonder what we should do about the whole "transparent 
-bridge resource allocation" thing. It also didn't end up really mattering, 
-even if it apparently made a difference for Frans. The question is just 
-whether we would be better off with IO windows for transparent buses (the 
-way we try to set things up now), or with a simpler PCI resource tree that 
-just takes advantage of the transparency.
+When the other application ends, kernel module needs to release the internal
+record and ask the DATA subsystem to stop delivering data.
 
-The bridge windows _may_ result in better PCI throughput behind such a 
-bridge, so there is some argument for keeping them. On the other hand, 
-transparent bridges aren't generally for high-performance stuff anyway, 
-and one advantage of the transparency is the flexibility it allows (ie we 
-don't _need_ to set up the static bridging windows).
+Hope this make sense... I could do some ascii art next time if needed :)
 
-I dunno. I wonder what Windows does. Following Windows in areas like this 
-tends to have the advantage that it's what the firmware and the hardware 
-has generally been tested with most. At the same time, I'm not sure this 
-is necessarily a very bug-prone area for either firmware or hardware. If 
-there's actual bridge bugs wrt the windows, I suspect such a bridge would 
-be broken enough to be unusable regardless.
-
-			Linus
+thanks,
+jirka
