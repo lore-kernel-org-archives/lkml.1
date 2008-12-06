@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbYLFBFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbYLFBKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757728AbYLFBFG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 20:05:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbYLFBEz
+	id S1756993AbYLFBKW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 20:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbYLFBKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 20:04:55 -0500
-Received: from ti-out-0910.google.com ([209.85.142.184]:36875 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754680AbYLFBEy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 20:04:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=jJ3+qJ6tPVUiSiSgp+AlEmseUkPoWbvhm6s5BBa8r5q1XBa3aOwQ6CpbJaIOB8UfnQ
-         LW6TKmqIQV9Y6c2RVX9H4MtG8PLsTdjhFeyTNyGOKeDX18gzKS7jwEpj/HDp8hzc4cfK
-         BtFBmeoReaZokMijJ5b83SzX9UupL5yg43dIc=
-Message-ID: <2375c9f90812051704oa80cafeif17909e332178d6e@mail.gmail.com>
-Date: Sat, 6 Dec 2008 01:04:52 +0000
-From: "=?UTF-8?Q?Am=C3=A9rico_Wang?=" <xiyou.wangcong@gmail.com>
-To: Geralt <usr.gentoo@googlemail.com>
-Subject: Re: Shebang - why are parameters not splitted on whitespace?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <fbdd0e50812030929s2d573981k46757c1b706f4cd5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 5 Dec 2008 20:10:09 -0500
+Received: from main.gmane.org ([80.91.229.2]:41327 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754584AbYLFBKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 20:10:08 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: mechanism to syncronise device access from user and kernel
+Date: Fri, 05 Dec 2008 19:08:39 -0600
+Message-ID: <4939D097.5030305@shaw.ca>
+References: <377462.57009.qm@web30107.mail.mud.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fbdd0e50812030714md7dd899xeb8940798632b08b@mail.gmail.com>
-	 <2375c9f90812030756r5b8840e1u3980ddca8df27a6b@mail.gmail.com>
-	 <fbdd0e50812030929q65d2e805y49094dd67209be7e@mail.gmail.com>
-	 <fbdd0e50812030929s2d573981k46757c1b706f4cd5@mail.gmail.com>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+In-Reply-To: <377462.57009.qm@web30107.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 3, 2008 at 5:29 PM, Geralt <usr.gentoo@googlemail.com> wrote:
-> Hello,
->
-> I should have anticipated this objection :-). I'm aware that this is
-> not consistent among Unix operating systems (you can find more about
-> it here [1]), but I was specifically refering to linux in this case
-> and why it handles the shebang arguments as one big string and not as
-> single arguments for the application.
+Parav Pandit wrote:
+> Hi,
+> 
+> I have a device whose registers are accessed by driver as well as user space application via mmap() area.
+> 
+> How to synchronize the access (avoid race condition) between user space driver and kernel mode driver, in single CPU and multi-CPU systems?
 
-I can't think out any strong reasons, maybe only becasue Linux developers
-prefer that approach.
+This doesn't seem like the best idea in the first place.. certainly not 
+if unprivileged processes can get access to the registers, as there's no 
+way to require them to follow the synchronization process. Generally a 
+given set of registers should be driven by a kernel driver or a 
+userspace process, not both.
 
-Thanks.
