@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbYLFSwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbYLFTJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753270AbYLFSwv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 13:52:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbYLFSwo
+	id S1753208AbYLFTJl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 14:09:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbYLFTJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 13:52:44 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:59760 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751042AbYLFSwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 13:52:43 -0500
-Date: Sat, 6 Dec 2008 19:52:52 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: linux-kernel@vger.kernel.org
-Subject: LibATA error
-Message-ID: <20081206185252.GA4323@ics.muni.cz>
+	Sat, 6 Dec 2008 14:09:32 -0500
+Received: from flock1.newmail.ru ([82.204.219.207]:44463 "HELO
+	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751542AbYLFTJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Dec 2008 14:09:31 -0500
+X-Greylist: delayed 414 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Dec 2008 14:09:30 EST
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: Is vm86old no more implemented?
+Date: Sat, 6 Dec 2008 22:02:29 +0300
+User-Agent: KMail/1.10.90 (Linux/2.6.28-rc7-1avb; KDE/4.1.81; i686; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <200812061043.51438.arvidjaar@mail.ru> <200812061252.51173.arvidjaar@mail.ru> <20081206102047.GG6703@one.firstfloor.org>
+In-Reply-To: <20081206102047.GG6703@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 85.132.163.129
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sat, 06 Dec 2008 19:52:40 +0100 (CET)
+Content-Type: multipart/signed;
+  boundary="nextPart8141827.tHInVu7m4H";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200812062202.30476.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+--nextPart8141827.tHInVu7m4H
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-what does the following error mean? Does it mean that my shiny new SSD is
-buggy?
+On =D0=A1=D1=83=D0=B1=D0=B1=D0=BE=D1=82=D0=B0 06 =D0=B4=D0=B5=D0=BA=D0=B0=
+=D0=B1=D1=80=D1=8F 2008 13:20:47 Andi Kleen wrote:
+> On Sat, Dec 06, 2008 at 12:52:43PM +0300, Andrey Borzenkov wrote:
+> > On =D0=A1=D1=83=D0=B1=D0=B1=D0=BE=D1=82=D0=B0 06 =D0=B4=D0=B5=D0=BA=D0=
+=B0=D0=B1=D1=80=D1=8F 2008 11:56:03 Andi Kleen wrote:
+> > > Andrey Borzenkov <arvidjaar@mail.ru> writes:
+> > > > CONFIG_VM86 is defined; is there anything else that is needed?
+> > > > This fails both in 2.6.27.7 and in 2.6.28-rc7. I attach config
+> > > > from 2.6.28-rc7.
+> > >
+> > > It should still work. Can you double check you're running the
+> > > correct kernel? Perhaps a 64bit kernel (which doesn't implement
+> > > it).
+> >
+> > Linux cooker 2.6.28-rc7-1avb #23 Fri Dec 5 22:42:47 MSK 2008 i686
+> > Pentium III (Coppermine) GNU/Linux
+> >
+> > Anything else I can check?
+>
+> Hmm perhaps place a printk into
+> arch/x86/kernel/vm86_32.c:sys_vm86old() and see if it's reached.
+>
 
-[  461.382432] ata1.00: exception Emask 0x2 SAct 0x1 SErr 0x2000000 action 0x6
-frozen
-[  461.382484] ata1.00: irq_stat 0x00000010, unknown FIS 00000000 00000000
-00000000 00000000
-[  461.382534] ata1: SError: { UnrecFIS }
-[  461.382572] ata1.00: cmd 61/08:00:0f:82:de/00:00:00:00:00/40 tag 0 ncq 4096
-out
-[  461.382574]          res 40/00:00:0f:82:de/00:00:00:00:00/40 Emask 0x2 (HSM
-violation)
-[  461.382666] ata1.00: status: { DRDY }
-[  461.382702] ata1: hard resetting link
-[  461.700087] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+It is:
 
--- 
-Luká¹ Hejtmánek
+[  156.094049] sys_vm86old called by monitor-get-edi
+[  156.243660] sys_vm86old called by monitor-get-edi
+[  285.698333] sys_vm86old called by X
+[  285.699408] sys_vm86old called by X
+[  285.699813] sys_vm86old called by X
+
+any chance the specific function that is invoked is not implemented?=20
+Because at least X apparently does not always fail video BIOS call - how=20
+can I catch which calls were successful and which failed? I understand=20
+return path sys_vm86old is rather non-standard.
+
+--nextPart8141827.tHInVu7m4H
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkk6zEYACgkQR6LMutpd94y2BwCgvaUWkuEVwruJLAlaxvXNf2LO
+1mYAnAjiD0plRbeGKjmmO1jNCJcosvXZ
+=MbbH
+-----END PGP SIGNATURE-----
+
+--nextPart8141827.tHInVu7m4H--
