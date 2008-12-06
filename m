@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbYLFMfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbYLFMkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601AbYLFMfX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 07:35:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbYLFMfG
+	id S1757601AbYLFMkq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 07:40:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbYLFMkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 07:35:06 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60316 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755589AbYLFMfC (ORCPT
+	Sat, 6 Dec 2008 07:40:39 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:57190 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752331AbYLFMki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 07:35:02 -0500
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <18745.49593.567217.277510@cargo.ozlabs.ibm.com>
-References: <20081204225345.654705757@linutronix.de>
-	 <18744.29747.728320.652642@cargo.ozlabs.ibm.com>
-	 <20081205063131.GB12785@elte.hu>
-	 <18744.56857.259756.129894@cargo.ozlabs.ibm.com>
-	 <20081205080813.GA2030@elte.hu>
-	 <18744.61429.548462.667020@cargo.ozlabs.ibm.com>
-	 <20081205120734.GA26244@elte.hu>
-	 <18745.49593.567217.277510@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Sat, 06 Dec 2008 13:34:39 +0100
-Message-Id: <1228566879.16244.4.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 6 Dec 2008 07:40:38 -0500
+Date: Sat, 6 Dec 2008 12:40:31 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Parav Pandit <paravpandit@yahoo.com>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mechanism to syncronise device access from user and kernel
+Message-ID: <20081206124031.GB4821@srcf.ucam.org>
+References: <377462.57009.qm@web30107.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <377462.57009.qm@web30107.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-06 at 11:05 +1100, Paul Mackerras wrote:
-> Now, the tables in perfmon's user-land libpfm that describe the
-> mapping from abstract events to event-selector values and the
-> constraints on what events can be counted together come to nearly
-> 29,000 lines of code just for the IBM 64-bit powerpc processors.
+On Fri, Dec 05, 2008 at 10:28:27AM -0800, Parav Pandit wrote:
+> Hi,
 > 
-> Your API condemns us to adding all that bloat to the kernel, plus the
-> code to use those tables.
+> I have a device whose registers are accessed by driver as well as user space application via mmap() area.
+> 
+> How to synchronize the access (avoid race condition) between user space driver and kernel mode driver, in single CPU and multi-CPU systems?
 
-Since you need those tables and that code anyway, and in a solid
-reliable way, what is the objection of carrying it in the kernel?
+Rewrite userspace to use the kernel driver?
 
-Furthermore, is there a good technical reason these cpus are so
-complicated to use?
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
