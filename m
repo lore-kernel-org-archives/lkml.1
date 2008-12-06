@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbYLFO6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYLFPCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758152AbYLFO6X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 09:58:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbYLFO6K
+	id S1758189AbYLFPCj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 10:02:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756750AbYLFPCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 09:58:10 -0500
-Received: from stinky.trash.net ([213.144.137.162]:49582 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751865AbYLFO6I (ORCPT
+	Sat, 6 Dec 2008 10:02:30 -0500
+Received: from hpsmtp-eml16.KPNXCHANGE.COM ([213.75.38.116]:38812 "EHLO
+	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755964AbYLFPC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 09:58:08 -0500
-Message-ID: <493A92FD.3060302@trash.net>
-Date: Sat, 06 Dec 2008 15:58:05 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Sat, 6 Dec 2008 10:02:29 -0500
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch,rfc] usb: restore config before enabling device on resume
+Date: Sat, 6 Dec 2008 16:02:23 +0100
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>,
+       USB list <linux-usb@vger.kernel.org>
+References: <200812020320.31876.rjw@sisk.pl> <200812061020.19546.elendil@planet.nl> <200812061448.31468.rjw@sisk.pl>
+In-Reply-To: <200812061448.31468.rjw@sisk.pl>
 MIME-Version: 1.0
-To: m m <olsajiri@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-net@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: netlink - notify when the socket gets closed
-References: <35476bd20812050017y70c3c729v450cdc3d0c1188de@mail.gmail.com> <20081205195624.95ea1866.akpm@linux-foundation.org>
-In-Reply-To: <20081205195624.95ea1866.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812061602.26002.elendil@planet.nl>
+X-OriginalArrivalTime: 06 Dec 2008 15:02:26.0775 (UTC) FILETIME=[A6E7EE70:01C957B3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> (cc netdev@vger.kernel.org)
-> 
-> On Fri, 5 Dec 2008 09:17:51 +0100 "m m" <olsajiri@gmail.com> wrote:
->> I'm using netlink in my module. Based on the communication,
->> this module dynamically creates some internal structure, which
->> needs to be destroyed when the user level socket is closed (or
->> the application dies).
->>
->> I found I could use the netlink_register_notifier function to register
->> NETLINK_URELEASE callback during the netlink_release function.
->> But since my module uses the multicast netlink socket communication,
->> it wont be called:
->>
->> [...]
->> Whats the reason this callback is not called for multicast sockets?
->>
->> To workaround it I created simple misc device which the user application
->> opens before creating the netlink socket. This way I get some callbacks
->> inside the module when the application dies, at least.. pretty ugly :)
->>
->> Is there a netlink mechanism to be notified when the netlink socket is
->> closed on the user level side? (when using multicast communication)
->>
->> Or is there any other design I could use, since I think I'm not alone in
->> using internal module data which needs to be removed once the application dies.
+On Saturday 06 December 2008, Rafael J. Wysocki wrote:
+> In fact, I think you could even move the pci_restore_state(dev) into
+> usb_hcd_pci_resume_early() that would be executed with interrupts off
+> and drop the pci_set_power_state(dev, PCI_D0); entirely (the
+> pci_enable_device(dev); would invoke it anyway).
 
+There is quite a lot going on in the resume function that happens before 
+pci_restore_state is called and I'm absolutely not confident with messing 
+with that, so I'll leave anything more invasive to the USB maintainers.
 
-That doesn't make sense. When you use multicast, multiple applications
-can be listening to the messages. If you really need state for a single
-listener and exchange messages in both directions, it sounds like you
-should use unicast.
-
+Cheers,
+FJP
