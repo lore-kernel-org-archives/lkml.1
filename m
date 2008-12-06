@@ -1,280 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbYLFNsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbYLFNtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757991AbYLFNsf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 08:48:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbYLFNs1
+	id S1758244AbYLFNtV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 08:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbYLFNtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 08:48:27 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:26379 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755880AbYLFNsZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 08:48:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=G2yzJvscp3v/IKD0drg4aSjkNa4g0T235fj//feSQAiCalQhWWhd441FEn/A0YLVJ/
-         ZDn53h6QbkDpfq6Unfn9vb1BgrC7YbX00Ok0bfjQhuuFqJ/4KZd29Q+QdwhCQTXLamsZ
-         ZDnEdZFRnLwxAoWA5vlJW2vdyDM4oZB24PXBo=
-Message-ID: <493A82A3.9030003@gmail.com>
-Date: Sat, 06 Dec 2008 14:48:19 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Sat, 6 Dec 2008 08:49:12 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59577 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755880AbYLFNtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Dec 2008 08:49:10 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [patch,rfc] usb: restore config before enabling device on resume
+Date: Sat, 6 Dec 2008 14:48:30 +0100
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>,
+       USB list <linux-usb@vger.kernel.org>
+References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812041037250.3543@nehalem.linux-foundation.org> <200812061020.19546.elendil@planet.nl>
+In-Reply-To: <200812061020.19546.elendil@planet.nl>
 MIME-Version: 1.0
-To: Jason Baron <jbaron@redhat.com>
-CC: mingo@elte.hu, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org
-Subject: Re: [rfc] [patch] hook tracer to dynamic debug
-References: <20081205193928.GA3134@redhat.com>
-In-Reply-To: <20081205193928.GA3134@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812061448.31468.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jason,
-
-
-Jason Baron wrote:
-> hi,
+On Saturday, 6 of December 2008, Frans Pop wrote:
+> On Thursday 04 December 2008, Linus Torvalds wrote:
+> > Greg, Jesse, can you think about and look at the USB PCI resume
+> > ordering?
+> [...]
+> > In many ways the bigger worry is actually in the totally unrelated USB
+> > UHCI and EHCI drivers that resume _before_ the bridge does:
+> >
+> > 	uhci_hcd 0000:00:1d.2: enabling device (0000 -> 0001)
+> > 	uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+> > 	uhci_hcd 0000:00:1d.2: setting latency timer to 64
+> > 	uhci_hcd 0000:00:1d.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
+> >	uhci_hcd 0000:00:1d.2: restoring config space at offset 0x8 (was 0x1, writing 0x2101)
+> >	usb usb7: root hub lost power or was reset
+> > 	ehci_hcd 0000:00:1d.7: enabling device (0000 -> 0002)
+> > 	ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+> > 	ehci_hcd 0000:00:1d.7: setting latency timer to 64
+> > 	ehci_hcd 0000:00:1d.7: restoring config space at offset 0xf (was 0x100, writing 0x10a)
+> >	ehci_hcd 0000:00:1d.7: restoring config space at offset 0x4 (was 0x0, writing 0xe0648000)
+> >
+> > and the worry I have here is that we actually enable the device
+> > _before_ we've restored the BAR information. That sounds very iffy. It
+> > sounds doubly iffy in the 'resume from hibernate' case, where we are
+> > going to have an already-set-up PCI bus and the config space values are
+> > going to all be live as we reprogram them.
+> >
+> > That "restoring config space at offset 0x8" thing is where we restore
+> > the BAR (dword 0x8 = offset 0x20 = PCI_BASE_ADDRESS_4), and we're
+> > changing it from 0x1 to 0x2101, with the IO BAR enabled. In this case,
+> > the old value meant that the BAR started out disabled, but hibernate
+> > would have been different.
+> >
+> > So I'd _much_ rather have seen the sequence have the BAR restore
+> > sequence be something like
+> >
+> > 	uhci_hcd 0000:00:1d.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
+> >	uhci_hcd 0000:00:1d.2: restoring config space at offset 0x8 (was 0x1, writing 0x2101)
+> >	uhci_hcd 0000:00:1d.2: enabling device (0000 -> 0001)
+> > 	uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+> > 	uhci_hcd 0000:00:1d.2: setting latency timer to 64
+> >
+> > instead. Possibly even with an explicit disable of the
+> > memory/IO/busmaster bits before the whole sequence.
 > 
-> Currently, the dynamic debug framework uses 'printk' for output. Here,
-> i've hooked the backend of the dynamic debug framework to the tracing 
-> framework. This allows the dynamic debug output to be seaprated from the
-> system log, and allows for higher performance. I've implemented it as a
-> compile time option, but a user might want to be able to toggle b/w
-> 'printk' and the tracer at run-time...other ideas? Patch is against the -tip 
-> tree...
+> I've taken a very naive look at this, basically by comparing what usb
+> (usb/core/hcd-pci.c) is doing compared to other drivers.
 > 
-> thanks,
+> I used the following command to get an overview:
+> $ git grep -E -n -C5 "pci_(enable_device|set_master|restore_state|power_state.*D0)"
+> (The line numbers give some indication whether work is split over functions.)
 > 
-> -Jason
+> Most drivers seem to do some variation of the following, which looks
+> logical and is in line with Documentation/power/pci.txt:
+> pci_set_power_state(dev, PCI_D0);
+> pci_restore_state(dev);
+> pci_enable_device(dev);
+> pci_set_master(dev);
 > 
+> But quite a lot of drivers (including usb and e.g. ide/setup-pci.c) do
+> something like:
+> pci_enable_device(dev);
+> pci_set_master(dev);
+> pci_restore_state(dev);
 > 
-> diff --git a/include/linux/dynamic_printk.h b/include/linux/dynamic_printk.h
-> index 2d528d0..9d9a38b 100644
-> --- a/include/linux/dynamic_printk.h
-> +++ b/include/linux/dynamic_printk.h
-> @@ -31,6 +31,15 @@ struct mod_debug {
->  int register_dynamic_debug_module(char *mod_name, int type, char *share_name,
->  					char *flags, int hash, int hash2);
->  
-> +
-> +#ifdef CONFIG_DYNAMIC_DEBUG_TRACER
-> +#define dynamic_printk dynamic_debug_trace_printk
-> +extern void dynamic_debug_trace_printk(const char *fmt, ...);
-> +#else
-> +#define dynamic_printk printk
-> +#endif
+> Maybe the whole tree should get a review for this?
 
+I think so.
 
-
-Actually, why not directly defining dynamic_printk to ftrace_printk if CONFIG_DYNAMIC_DEBUG_TRACER
-is defined?
-That would be much simpler than writing a whole tracer for this. I see that one of the pros of this tracer
-would be to enable/disable it dynamically by controlling the tracer but you can already do it through
-the trace_options file by setting the TRACE_ITER_PRINTK flag.
-Unless you just want to get rid of the current ip in the message?
-
-
-> +
-> +
->  #if defined(CONFIG_DYNAMIC_PRINTK_DEBUG)
->  extern int unregister_dynamic_debug_module(char *mod_name);
->  extern int __dynamic_dbg_enabled_helper(char *modname, int type,
-> @@ -54,7 +63,7 @@ extern int __dynamic_dbg_enabled_helper(char *modname, int type,
->  	{ mod_name, mod_name, NULL, TYPE_BOOLEAN, DEBUG_HASH, DEBUG_HASH2 };\
->  	if (__dynamic_dbg_enabled(KBUILD_MODNAME, TYPE_BOOLEAN,		    \
->  						0, 0, DEBUG_HASH))	    \
-> -		printk(KERN_DEBUG KBUILD_MODNAME ":" fmt,		    \
-> +		dynamic_printk(KERN_DEBUG KBUILD_MODNAME ":" fmt,	    \
->  				##__VA_ARGS__);				    \
->  	} while (0)
->  
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index bde6f03..e810912 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -149,6 +149,13 @@ config CONTEXT_SWITCH_TRACER
->  	  This tracer gets called from the context switch and records
->  	  all switching of tasks.
->  
-> +config DYNAMIC_DEBUG_TRACER
-> +	bool "Trace dynamic debug"
-> +	depends on DEBUG_KERNEL
-> +	select TRACING
-> +	help
-> +	  This tracer records all dynamic debug output.
-> +
->  config BOOT_TRACER
->  	bool "Trace boot initcalls"
->  	depends on DEBUG_KERNEL
-> diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-> index 62dc561..b84337e 100644
-> --- a/kernel/trace/Makefile
-> +++ b/kernel/trace/Makefile
-> @@ -33,5 +33,7 @@ obj-$(CONFIG_FUNCTION_GRAPH_TRACER) += trace_functions_graph.o
->  obj-$(CONFIG_TRACE_BRANCH_PROFILING) += trace_branch.o
->  obj-$(CONFIG_BTS_TRACER) += trace_bts.o
->  obj-$(CONFIG_POWER_TRACER) += trace_power.o
-> +obj-$(CONFIG_DYNAMIC_DEBUG_TRACER) += trace_dynamic_debug.o
-> +
->  
->  libftrace-y := ftrace.o
-> diff --git a/kernel/trace/trace_dynamic_debug.c b/kernel/trace/trace_dynamic_debug.c
-> new file mode 100644
-> index 0000000..43eaf8a
-> --- /dev/null
-> +++ b/kernel/trace/trace_dynamic_debug.c
-> @@ -0,0 +1,142 @@
-> +/*
-> + * dynamic_debug tracer
-> + *
-> + * Copyright (C) 2008 Jason Baron <jbaron@redhat.com>
-> + *
-> + */
-> +#include <linux/module.h>
-> +#include <linux/fs.h>
-> +#include <linux/debugfs.h>
-> +#include <linux/kallsyms.h>
-> +#include <linux/uaccess.h>
-> +#include <linux/ftrace.h>
-> +#include <linux/marker.h>
-> +#include <trace/sched.h>
-> +
-> +#include "trace.h"
-> +
-> +static struct trace_array	*ctx_trace;
-> +static int __read_mostly	debug_enabled;
-> +static int			debug_ref;
-> +static DEFINE_MUTEX(debug_register_mutex);
-> +
-> +void dynamic_debug_trace_printk(const char *fmt, ...)
-> +{
-> +	va_list args;
-> +
-> +	if (!debug_enabled)
-> +		return;
-> +
-> +	va_start(args, fmt);
-> +	trace_vprintk(0, -1, fmt, args);
-> +	va_end(args);
-> +}
-> +EXPORT_SYMBOL(dynamic_debug_trace_printk);
-> +
-> +static void dynamic_debug_reset(struct trace_array *tr)
-> +{
-> +	int cpu;
-> +
-> +	tr->time_start = ftrace_now(tr->cpu);
-> +
-> +	for_each_online_cpu(cpu)
-> +		tracing_reset(tr, cpu);
-> +}
-> +
-> +static void tracing_start_dynamic_debug(void)
-> +{
-> +	mutex_lock(&debug_register_mutex);
-> +	debug_ref++;
-> +	mutex_unlock(&debug_register_mutex);
-> +}
-> +
-> +static void tracing_stop_dynamic_debug(void)
-> +{
-> +	mutex_lock(&debug_register_mutex);
-> +	debug_ref--;
-> +	mutex_unlock(&debug_register_mutex);
-> +}
-> +
-> +/**
-> + * tracing_start_sched_switch_record - start tracing context switches
-> + *
-> + * Turns on context switch tracing for a tracer.
-> + */
-> +void tracing_start_dynamic_debug_record(void)
-> +{
-> +	if (unlikely(!ctx_trace)) {
-> +		WARN_ON(1);
-> +		return;
-> +	}
-> +
-> +	tracing_start_dynamic_debug();
-> +
-> +	mutex_lock(&debug_register_mutex);
-> +	debug_enabled++;
-> +	mutex_unlock(&debug_register_mutex);
-> +}
-> +
-> +/**
-> + * tracing_stop_sched_switch_record - start tracing context switches
-> + *
-> + * Turns off context switch tracing for a tracer.
-> + */
-> +void tracing_stop_dynamic_debug_record(void)
-> +{
-> +	mutex_lock(&debug_register_mutex);
-> +	debug_enabled--;
-> +	WARN_ON(debug_enabled < 0);
-> +	mutex_unlock(&debug_register_mutex);
-> +
-> +	tracing_stop_dynamic_debug();
-> +}
-> +
-> +static void start_dynamic_debug_trace(struct trace_array *tr)
-> +{
-> +	dynamic_debug_reset(tr);
-> +	tracing_start_dynamic_debug_record();
-> +}
-> +
-> +static void stop_dynamic_debug_trace(struct trace_array *tr)
-> +{
-> +	tracing_stop_dynamic_debug_record();
-> +}
-> +
-> +static int dynamic_debug_trace_init(struct trace_array *tr)
-> +{
-> +	ctx_trace = tr;
-> +	start_dynamic_debug_trace(tr);
-> +	return 0;
-> +}
-> +
-> +static void dynamic_debug_trace_reset(struct trace_array *tr)
-> +{
-> +	if (debug_ref)
-> +		stop_dynamic_debug_trace(tr);
-> +}
-> +
-> +static void dynamic_debug_trace_start(struct trace_array *tr)
-> +{
-> +	dynamic_debug_reset(tr);
-> +	tracing_start_dynamic_debug();
-> +}
-> +
-> +static void dynamic_debug_trace_stop(struct trace_array *tr)
-> +{
-> +	tracing_stop_dynamic_debug();
-> +}
-> +
-> +static struct tracer dynamic_debug_trace __read_mostly =
-> +{
-> +	.name		= "dynamic_debug",
-> +	.init		= dynamic_debug_trace_init,
-> +	.reset		= dynamic_debug_trace_reset,
-> +	.start		= dynamic_debug_trace_start,
-> +	.stop		= dynamic_debug_trace_stop,
-> +};
-> +
-> +__init static int init_dynamic_debug_trace(void)
-> +{
-> +	return register_tracer(&dynamic_debug_trace);
-> +}
-> +device_initcall(init_dynamic_debug_trace);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Anyway, I gave the patch below a try on both my notebook and desktop.
+> My desktop has USB keyboard and mouse and the notebook has wireless and
+> a fingerprint scanner on USB. Everything still worked after resume.
 > 
+> Diff of the resume dmesg of my motebook attached. Looks better I think?
 
+Yes, to me it does.
+
+In fact, I think you could even move the pci_restore_state(dev) into
+usb_hcd_pci_resume_early() that would be executed with interrupts off and
+drop the pci_set_power_state(dev, PCI_D0); entirely (the
+pci_enable_device(dev); would invoke it anyway).
+
+Thanks,
+Rafael
+
+
+PS
+Please append patches instead of attaching them, they are a lot easier to
+discuss this way.
