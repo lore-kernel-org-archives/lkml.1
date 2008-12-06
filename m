@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbYLFVZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbYLFVht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505AbYLFVZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 16:25:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYLFVZN
+	id S1753500AbYLFVht (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 16:37:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYLFVhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 16:25:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60615 "EHLO ogre.sisk.pl"
+	Sat, 6 Dec 2008 16:37:40 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60641 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752795AbYLFVZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 16:25:11 -0500
+	id S1752792AbYLFVhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Dec 2008 16:37:39 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend and resume
-Date: Sat, 6 Dec 2008 22:24:15 +0100
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [PATCH 1/3] PCI: Rework default handling of suspend and resume
+Date: Sat, 6 Dec 2008 22:36:43 +0100
 User-Agent: KMail/1.9.9
-Cc: Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812061843.59495.rjw@sisk.pl> <alpine.LFD.2.00.0812060952100.3425@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812060952100.3425@nehalem.linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.0812061324260.13426-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0812061324260.13426-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812062224.16266.rjw@sisk.pl>
+Message-Id: <200812062236.44111.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 6 of December 2008, Linus Torvalds wrote:
-> 
+Hi Alan,
+
+On Saturday, 6 of December 2008, Alan Stern wrote:
 > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+> 
+> > On Saturday, 6 of December 2008, Linus Torvalds wrote:
+> > > 
+> > > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+> > > > 
+> > > > USB doesn't use that for PCI suspend-resume, it uses it for suspend-resume of
+> > > > USB devices behind the controller.
+> > > 
+> > > Oh, in that case there are no PCI users of this at all, and what the PCI 
+> > > driver does is immaterial ;)
+> > > 
+> > > > But then we will save the device's registers in the "sleeping" state. 
+> > > 
+> > > No no. The rule would be that a PCI driver - if it uses the new 
+> > > infrastructure, which apparently nobody does _as_ a PCI driver - simply 
+> > > would never do the whole "pci_set_power_state(PCI_D3hot)" etc crud AT ALL.
 > > 
-> > So, to fix the issue at hand, I'd like the $subject patch to go first.  Then,
-> > there is a major update of the new framework waiting for .29 in the Greg's
-> > tree (that's the main reason why nobody uses it so far, BTW) and I'd really
-> > prefer it to go next.  After it's been merged, I'm going to add the mandatory
-> > suspend-resume things (save state and go to a low power state on suspend,
-> > restore state on resume) to the new framework in a separete patch.
+> > Now _that_ sounds good. :-)
 > > 
-> > Is this plan acceptable?
+> > > So a PCI driver would only do higher-level stuff in its suspend/resume 
+> > > code. For example, a USB host controller would initiate the USB bus level 
+> > > stuff, and likely just stop the controller (not suspend it - just stop 
+> > > it).
+> > 
+> > I like this idea very much.
 > 
-> Sounds good to me. And assuming Jesse/Greg are all aboard, I'll just wait 
-> for the pull requests from Jesse and Greg.
-> 
-> The only thing I'll do right now is to send off my "print out ICH6+ 
-> LPC resources" patch again to Jesse, with a changelog etc. It can probably 
-> go in as-is (it really just adds printk's), but since it didn't matter 
-> anyway we migth as well just do it as a PCI thing for 2.6.29 too.
-> 
-> On a similar note, I wonder what we should do about the whole "transparent 
-> bridge resource allocation" thing. It also didn't end up really mattering, 
-> even if it apparently made a difference for Frans. The question is just 
-> whether we would be better off with IO windows for transparent buses (the 
-> way we try to set things up now), or with a simpler PCI resource tree that 
-> just takes advantage of the transparency.
-> 
-> The bridge windows _may_ result in better PCI throughput behind such a 
-> bridge, so there is some argument for keeping them. On the other hand, 
-> transparent bridges aren't generally for high-performance stuff anyway, 
-> and one advantage of the transparency is the flexibility it allows (ie we 
-> don't _need_ to set up the static bridging windows).
+> Rafael, I'd be happy to help with fixing up the USB PCI PM code.  At
+> this point I'm not sure exactly what's needed, though.  For instance,
+> is there any compelling reason to switch over to the new dev_pm_ops
+> approach?
 
-The static bridging windows help understand the system topology a bit IMO,
-because you can just look at /proc/iomem and see what resources are
-behind the bridge.
+Certainly not at the moment.  There will be a reason some time after .29.
 
-> I dunno. I wonder what Windows does. Following Windows in areas like this 
-> tends to have the advantage that it's what the firmware and the hardware 
-> has generally been tested with most. At the same time, I'm not sure this 
-> is necessarily a very bug-prone area for either firmware or hardware. If 
-> there's actual bridge bugs wrt the windows, I suspect such a bridge would 
-> be broken enough to be unusable regardless.
+That said, it apparently is possible to clean up the resume callbacks of PCI
+USB controllers, as mentioned here: http://lkml.org/lkml/2008/12/6/38
 
-I think Intel people should be able to find out what Windows does in this
-area.
+> And what should the correct sequence of calls be?
+
+Well, that's something I'm not exactly sure about myself.  Surely it seems
+reasonable to call pci_restore_state() with interrupts disabled and do the rest
+of resume after that.  Also, I think that the core could execute things like
+pci_enable_device() during resume and pci_set_power_state()/pci_enable_wake()
+on suspend so that the drivers didn't have to.  This way we could reduce code
+duplication quite a bit.
+
+However, I'm not quite sure about the freeing and requesting IRQs during
+suspend and resume.  Many drivers do that, many others don't.  Still,
+apparently some drivers don't work correctly after resume if this is not done.
+So, if that should generally be done, I also think that moving it to the core
+might be a good idea.
 
 Thanks,
 Rafael
