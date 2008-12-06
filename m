@@ -1,109 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbYLFAJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYLFAJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757513AbYLFAJX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 19:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755083AbYLFAJP
+	id S1758100AbYLFAJg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 19:09:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbYLFAJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 19:09:15 -0500
+	Fri, 5 Dec 2008 19:09:16 -0500
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:49436 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754329AbYLFAJO (ORCPT
+	by vger.kernel.org with ESMTP id S1754799AbYLFAJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 19:09:14 -0500
+	Fri, 5 Dec 2008 19:09:15 -0500
 From: Jeff Arnold <jbarnold@MIT.EDU>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>,
        Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
        Waseem Daher <wdaher@MIT.EDU>, Nikanth Karthikesan <knikanth@suse.de>
-Subject: [PATCH 4/7] Ksplice: Add module_data_address (the analogue of module_text_address)
-Date: Fri,  5 Dec 2008 19:03:57 -0500
-Message-Id: <1228521840-3886-5-git-send-email-jbarnold@mit.edu>
+Subject: [PATCH 5/7] Ksplice: Add functions for walking kallsyms symbols
+Date: Fri,  5 Dec 2008 19:03:58 -0500
+Message-Id: <1228521840-3886-6-git-send-email-jbarnold@mit.edu>
 X-Mailer: git-send-email 1.6.0
-In-Reply-To: <1228521840-3886-4-git-send-email-jbarnold@mit.edu>
+In-Reply-To: <1228521840-3886-5-git-send-email-jbarnold@mit.edu>
 References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu>
  <1228521840-3886-2-git-send-email-jbarnold@mit.edu>
  <1228521840-3886-3-git-send-email-jbarnold@mit.edu>
  <1228521840-3886-4-git-send-email-jbarnold@mit.edu>
+ <1228521840-3886-5-git-send-email-jbarnold@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tim Abbott <tabbott@mit.edu>
+From: Anders Kaseorg <andersk@mit.edu>
 
-Ksplice's run-pre matching process needs to be able to determine the module
-that contains a particular text or data address.
+kallsyms_lookup_name only returns the first match that it finds.  Ksplice
+needs information about all symbols with a given name in order to correctly
+resolve local symbols.
 
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
+kallsyms_on_each_symbol provides a generic mechanism for iterating over the
+kallsyms table.
+
+Signed-off-by: Anders Kaseorg <andersk@mit.edu>
 ---
- include/linux/module.h |    2 ++
- kernel/module.c        |   32 ++++++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+), 0 deletions(-)
+ include/linux/kallsyms.h |   13 +++++++++++++
+ include/linux/module.h   |   12 ++++++++++++
+ kernel/kallsyms.c        |   19 +++++++++++++++++++
+ kernel/module.c          |   19 +++++++++++++++++++
+ 4 files changed, 63 insertions(+), 0 deletions(-)
 
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index f3fe343..37746b2 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -17,6 +17,11 @@
+ /* Lookup the address for a symbol. Returns 0 if not found. */
+ unsigned long kallsyms_lookup_name(const char *name);
+ 
++/* Call a function on each kallsyms symbol in the core kernel */
++int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
++				      unsigned long),
++			    void *data);
++
+ extern int kallsyms_lookup_size_offset(unsigned long addr,
+ 				  unsigned long *symbolsize,
+ 				  unsigned long *offset);
+@@ -43,6 +48,14 @@ static inline unsigned long kallsyms_lookup_name(const char *name)
+ 	return 0;
+ }
+ 
++static inline int kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++						    struct module *,
++						    unsigned long),
++					  void *data)
++{
++	return 0;
++}
++
+ static inline int kallsyms_lookup_size_offset(unsigned long addr,
+ 					      unsigned long *symbolsize,
+ 					      unsigned long *offset)
 diff --git a/include/linux/module.h b/include/linux/module.h
-index 3bfed01..2268147 100644
+index 2268147..29972a2 100644
 --- a/include/linux/module.h
 +++ b/include/linux/module.h
-@@ -366,6 +366,8 @@ static inline int module_is_live(struct module *mod)
- /* Is this address in a module? (second is with no locks, for oops) */
- struct module *module_text_address(unsigned long addr);
- struct module *__module_text_address(unsigned long addr);
-+struct module *module_data_address(unsigned long addr);
-+struct module *__module_data_address(unsigned long addr);
- int is_module_address(unsigned long addr);
+@@ -378,6 +378,10 @@ int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
+ /* Look for this name: can be of form module:name. */
+ unsigned long module_kallsyms_lookup_name(const char *name);
  
- /* Returns 0 and fills in value, defined and namebuf, or -ERANGE if
++int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++					     struct module *, unsigned long),
++				   void *data);
++
+ extern void __module_put_and_exit(struct module *mod, long code)
+ 	__attribute__((noreturn));
+ #define module_put_and_exit(code) __module_put_and_exit(THIS_MODULE, code);
+@@ -546,6 +550,14 @@ static inline unsigned long module_kallsyms_lookup_name(const char *name)
+ 	return 0;
+ }
+ 
++static inline int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++							   struct module *,
++							   unsigned long),
++						 void *data)
++{
++	return 0;
++}
++
+ static inline int register_module_notifier(struct notifier_block * nb)
+ {
+ 	/* no events will happen anyway, so this can always succeed */
+diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+index 7b8b0f2..374faf9 100644
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -161,6 +161,25 @@ unsigned long kallsyms_lookup_name(const char *name)
+ 	return module_kallsyms_lookup_name(name);
+ }
+ 
++int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
++				      unsigned long),
++			    void *data)
++{
++	char namebuf[KSYM_NAME_LEN];
++	unsigned long i;
++	unsigned int off;
++	int ret;
++
++	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
++		off = kallsyms_expand_symbol(off, namebuf);
++		ret = fn(data, namebuf, NULL, kallsyms_addresses[i]);
++		if (ret != 0)
++			return ret;
++	}
++	return module_kallsyms_on_each_symbol(fn, data);
++}
++EXPORT_SYMBOL_GPL(kallsyms_on_each_symbol);
++
+ static unsigned long get_symbol_pos(unsigned long addr,
+ 				    unsigned long *symbolsize,
+ 				    unsigned long *offset)
 diff --git a/kernel/module.c b/kernel/module.c
-index 0d361f0..c3cf234 100644
+index c3cf234..8839d40 100644
 --- a/kernel/module.c
 +++ b/kernel/module.c
-@@ -2724,6 +2724,7 @@ struct module *__module_text_address(unsigned long addr)
- 			return mod;
- 	return NULL;
+@@ -2554,6 +2554,25 @@ unsigned long module_kallsyms_lookup_name(const char *name)
+ 	preempt_enable();
+ 	return ret;
  }
-+EXPORT_SYMBOL_GPL(__module_text_address);
- 
- struct module *module_text_address(unsigned long addr)
- {
-@@ -2735,6 +2736,37 @@ struct module *module_text_address(unsigned long addr)
- 
- 	return mod;
- }
-+EXPORT_SYMBOL_GPL(module_text_address);
 +
-+struct module *__module_data_address(unsigned long addr)
++int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++					     struct module *, unsigned long),
++				   void *data)
 +{
 +	struct module *mod;
-+
-+	if (addr < module_addr_min || addr > module_addr_max)
-+		return NULL;
++	unsigned int i;
++	int ret;
 +
 +	list_for_each_entry(mod, &modules, list) {
-+		if (within(addr, mod->module_core + mod->core_text_size,
-+			   mod->core_size - mod->core_text_size) ||
-+		    within(addr, mod->module_init + mod->init_text_size,
-+			   mod->init_size - mod->init_text_size))
-+			return mod;
++		for (i = 0; i < mod->num_symtab; i++) {
++			ret = fn(data, mod->strtab + mod->symtab[i].st_name,
++				 mod, mod->symtab[i].st_value);
++			if (ret != 0)
++				return ret;
++		}
 +	}
-+	return NULL;
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(__module_data_address);
-+
-+struct module *module_data_address(unsigned long addr)
-+{
-+	struct module *mod;
-+
-+	preempt_disable();
-+	mod = __module_data_address(addr);
-+	preempt_enable();
-+
-+	return mod;
-+}
-+EXPORT_SYMBOL_GPL(module_data_address);
+ #endif /* CONFIG_KALLSYMS */
  
- /* Don't grab lock, we're oopsing. */
- void print_modules(void)
+ static char *module_flags(struct module *mod, char *buf)
 -- 
 1.5.6.3
 
