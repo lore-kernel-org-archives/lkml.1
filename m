@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbYLFXZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbYLFXdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbYLFXZj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 18:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYLFXZT
+	id S1753840AbYLFXdo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 18:33:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYLFXdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 18:25:19 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51250 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753886AbYLFXZQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 18:25:16 -0500
-Date: Sat, 6 Dec 2008 15:24:02 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Andrew <nick@nick-andrew.net>
-cc: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Takashi Iwai <tiwai@suse.de>
-Subject: Re: [RFC] Recursive printk
-In-Reply-To: <20081206231626.GK5957@mail.local.tull.net>
-Message-ID: <alpine.LFD.2.00.0812061522120.3425@nehalem.linux-foundation.org>
-References: <20081206065922.29149.63380.stgit@marcab.local.tull.net> <20081205232016.366765e2.akpm@linux-foundation.org> <1228549357.13046.618.camel@localhost> <20081206084038.GG5957@mail.local.tull.net> <1228554693.13046.624.camel@localhost>
- <20081206231626.GK5957@mail.local.tull.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 6 Dec 2008 18:33:33 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:49852 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751374AbYLFXdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Dec 2008 18:33:32 -0500
+Message-ID: <493B0BAD.10004@redhat.com>
+Date: Sat, 06 Dec 2008 17:33:01 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Harald Arnesen <skogtun.harald@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [ext4] Documentation patch
+References: <8763m3u9kv.fsf@basilikum.skogtun.org> <20081201165700.GA26680@infradead.org> <493425DC.1010008@redhat.com> <20081201205828.GA20069@mit.edu> <20081206222534.GJ1323@mit.edu>
+In-Reply-To: <20081206222534.GJ1323@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Theodore Tso wrote:
+> This is what I have added to the ext4 patch queue.
+> 
+> 							- Ted
+> 
+> Update Documentation/filesystems/ext4.txt
+> 
+> Fix paragraph with recommendations on how to tune ext4 for benchmarks.
+> 
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> diff --git a/Documentation/filesystems/ext4.txt b/Documentation/filesystems/ext4.txt
+> index 845e691..19bb93f 100644
+> --- a/Documentation/filesystems/ext4.txt
+> +++ b/Documentation/filesystems/ext4.txt
+> @@ -58,13 +58,18 @@ Note: More extensive information for getting started with ext4 can be
+>  
+>  	# mount -t ext4 /dev/hda1 /wherever
+>  
+> -  - When comparing performance with other filesystems, remember that
+> -    ext3/4 by default offers higher data integrity guarantees than most.
+> -    So when comparing with a metadata-only journalling filesystem, such
+> -    as ext3, use `mount -o data=writeback'.  And you might as well use
+> -    `mount -o nobh' too along with it.  Making the journal larger than
+> -    the mke2fs default often helps performance with metadata-intensive
+> -    workloads.
+> +  - When comparing performance with other filesystems, it's always
+> +    important to try multiple workloads; very often a subtle change in a
+> +    workload parameter can completely change the ranking of which
+> +    filesystems do well compared to others.  When comparing versus ext3,
+> +    note that ext4 enables write barriers by default, while ext3 does
+> +    not enable write barriers by default.  So it is useful to use
+> +    explicitly specify whether barriers are enabled or not when via the
+> +    '-o barriers=[0|1]' mount option.  
 
+That sentence doesn't quite parse...
 
-On Sun, 7 Dec 2008, Nick Andrew wrote:
->
-> I agree completely. I was hoping somebody could tell me how to include
-> '%v' in gcc's acceptable list, but it seems impossible. The alternative
-> then is to use '%pV%s' which gcc _should_ like (I haven't tested it,
-> but it seems reasonable) and reverse the order of the fmt and args
-> in the function call arguments.
+> + When tuning ext3 for best
+> +    benchmark numbers, it is often worthwhile to try changing the data
+> +    journaling mode; '-o data=writeback,nobh' can be faster for some
+> +    workloads.  
 
-Don't do %pV%s, do just %pV, and pass it a pointer to a struct, something 
-like
+It should probably be made obvious that this has a security implication
+(stale data exposed, right?)
 
-	struct va_format {
-		const char *fmt;
-		va_list va;
-	};
+-Eric
 
-and make people who use this just always pass things around like that.
+> + A large journal can also be helpful for
+> +    metadata-intensive workloads.
+>  
+>  2. Features
+>  ===========
 
-(Maybe use "va_list *va" to add another level of indirection if necessary)
-
-		Linus
