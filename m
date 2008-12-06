@@ -1,126 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbYLFJzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbYLFJ4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757460AbYLFJzz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 04:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYLFJzr
+	id S1758132AbYLFJ4Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 04:56:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbYLFJ4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 04:55:47 -0500
-Received: from fk-out-0910.google.com ([209.85.128.191]:11504 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752753AbYLFJzq (ORCPT
+	Sat, 6 Dec 2008 04:56:13 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:41737 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752812AbYLFJ4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 04:55:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=cFSqfADc5vwZa3sB5p4t7aVLV7ZaJxjbqtdpKGCVXdqcqmT+vVIRsX+6QKLMKaYpft
-         1I7zmQVcxQwTfAUYww1+s1pE7tNSUdpjnsS+gTpkj6RQ89IpoMP58vyTsMPtdsUH9B3K
-         zi+wPM1aLxKj+eNBgF4ahkBPbeO4sE/CgRvfs=
-Message-ID: <493A4C1C.3020102@gmail.com>
-Date: Sat, 06 Dec 2008 11:55:40 +0200
-From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Sat, 6 Dec 2008 04:56:12 -0500
+Date: Sat, 6 Dec 2008 09:56:19 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+cc: Jay Lan <jlan@sgi.com>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Pirko <jpirko@redhat.com>, linux-kernel@vger.kernel.org,
+       Jonathan Lim <jlim@sgi.com>
+Subject: Re: [PATCH] introduce get_mm_hiwater_xxx(), fix taskstats->hiwater_xxx
+ accounting
+In-Reply-To: <20081206084223.GA24782@balbir.in.ibm.com>
+Message-ID: <Pine.LNX.4.64.0812060950120.22390@blonde.anvils>
+References: <20081203181220.GA22918@redhat.com> <Pine.LNX.4.64.0812031957570.19174@blonde.anvils>
+ <20081204135250.GA5448@redhat.com> <Pine.LNX.4.64.0812051216020.10157@blonde.anvils>
+ <493975BE.60202@sgi.com> <20081206084223.GA24782@balbir.in.ibm.com>
 MIME-Version: 1.0
-To: Ying Han <yinghan@google.com>
-CC: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Mike Waychison <mikew@google.com>, David Rientjes <rientjes@google.com>,
-       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [RFC v2][PATCH]page_fault retry with NOPAGE_RETRY
-References: <604427e00812051140s67b2a89dm35806c3ee3b6ed7a@mail.gmail.com> <493A4B48.1050706@gmail.com>
-In-Reply-To: <493A4B48.1050706@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-12-06 11:52, Török Edwin wrote:
-> On 2008-12-05 21:40, Ying Han wrote:
->   
->> changelog[v2]:
->> - reduce the runtime overhead by extending the 'write' flag of
->>   handle_mm_fault() to indicate the retry hint.
->> - add another two branches in filemap_fault with retry logic.
->> - replace find_lock_page with find_lock_page_retry to make the code
->>   cleaner.
->>
->> todo:
->> - there is potential a starvation hole with the retry. By the time the
->>   retry returns, the pages might be released. we can make change by holding
->>   page reference as well as remembering what the page "was"(in case the
->>   file was truncated). any suggestion here are welcomed.
->>
->> I also made patches for all other arch. I am posting x86_64 here first and
->> i will post others by the time everyone feels comfortable of this patch.
->>
->> Edwin, please test this patch with your testcase and check if you get any
->> performance improvement of mmap over read. I added another two more places
->> in filemap_fault with retry logic which you might hit in your privous
->> experiment.
->>   
->>     
->
-> I get much better results with this patch than with v1, thanks!
->
-> mmap now scales almost as well as read does (there is a small ~5%
-> overhead), which is a significant improvement over not scaling at all!
->
-> Here are the results when running my testcase:
->
-> Number of threads ->, 1,,, 2,,, 4,,, 8,,, 16
-> Kernel version, read, mmap, mixed, read, mmap, mixed, read, mmap, mixed,
-> read, mmap, mixed, read, mmap, mixed
-> 2.6.28-rc7-tip, 27.55, 26.18, 27.06, 16.18, 16.97, 16.10, 11.06, 11.64,
-> 11.41, 9.38, 9.97, 9.31, 9.37, 9.82, 9.3
->
->
-> Here are the /proc/lock_stat output when running my testcase, contention
-> is lower (34911+10462 vs 58590+7231), and waittime-total is better
-> (57 601 464 vs 234 170 024)
->
-> lock_stat version 0.3
-> -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
->                               class name    con-bounces    contentions  
-> waittime-min   waittime-max waittime-total    acq-bounces  
-> acquisitions   holdtime-min   holdtime-max holdtime-total
-> ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
->                         &mm->mmap_sem-W:          5843         
-> 10462           2.89      138824.72    14217159.52         
-> 18965          84205           1.81        5031.07      725293.65
->                          &mm->mmap_sem-R:         20208         
-> 34911           4.87      136797.26    57601464.49          55797       
-> 1110394           1.89      164918.52    30551371.71
->                          ---------------
->                            &mm->mmap_sem           5341         
-> [<ffffffff802bf9d7>] sys_munmap+0x47/0x80
->                            &mm->mmap_sem          28579         
-> [<ffffffff805d1c62>] do_page_fault+0x172/0xab0
->                            &mm->mmap_sem           5030         
-> [<ffffffff80211161>] sys_mmap+0xf1/0x140
->                            &mm->mmap_sem           6331         
-> [<ffffffff802a675e>] find_lock_page_retry+0xde/0xf0
->                          ---------------
->                            &mm->mmap_sem          13558         
-> [<ffffffff802a675e>] find_lock_page_retry+0xde/0xf0
->                            &mm->mmap_sem           4694         
-> [<ffffffff802bf9d7>] sys_munmap+0x47/0x80
->                            &mm->mmap_sem           3681         
-> [<ffffffff80211161>] sys_mmap+0xf1/0x140
->                            &mm->mmap_sem          23374         
-> [<ffffffff805d1c62>] do_page_fault+0x172/0xab0
->
->
-> On clamd:
->
-> Here holdtime-total is better (1 493 154 + 2 395 987 vs 2 087 538 + 2
-> 514 673), and number of contentions on read
-> (458 052 vs 5851
+On Sat, 6 Dec 2008, Balbir Singh wrote:
+> 
+> Yes, true and getdelays can display all the exported information.
+> 
+> The race does seem concerning, I would vote for keeping the update in
+> there and disabling preemption around the update, so that hiwater
+> cannot swing back and forth.
 
-typo, should have been: 458 052 vs 585 119
+??  Oleg is _fixing_ a race by removing the update from do_exit();
+and he is fixing the way the hiwater info was collected in tsacct.c.
 
+Hugh
