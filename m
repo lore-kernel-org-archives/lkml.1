@@ -1,174 +1,334 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYLFUIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbYLFUJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbYLFUIo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 15:08:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYLFUIf
+	id S1753050AbYLFUJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 15:09:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbYLFUJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 15:08:35 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:46096 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752363AbYLFUIe (ORCPT
+	Sat, 6 Dec 2008 15:09:45 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:55640 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752363AbYLFUJo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 15:08:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qmBr6EIQvRxKBurgMs2j2IsL3yiDoyJ14Cq2dXHQkpVS/KQwPiBTCW6vUKuCsUOdNf
-         P+HE0DnISVQLbs3vahmZV/1/oqjYCG9DP0tKdD3lxX/ThDKz13mZORUEfdBJbzLxQgQe
-         QdyS3KcxtjZoJfsAbjq09/I8QzCRFzqbVWNrY=
-Message-ID: <b637ec0b0812061208i9520bd0tfd404f1a9c8a95ba@mail.gmail.com>
-Date: Sat, 6 Dec 2008 21:08:32 +0100
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #12155] Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>
-In-Reply-To: <b637ec0b0812040050g58f3e28dxba5bca8c77bb5a94@mail.gmail.com>
+	Sat, 6 Dec 2008 15:09:44 -0500
+From: Christian Lamparter <chunkeey@web.de>
+To: Greg KH <gregkh@suse.de>
+Subject: [RFC][PATCH] p54usb: rewriting rx/tx routines to make use of usb_anchor's facilities
+Date: Sat, 6 Dec 2008 21:09:39 +0100
+User-Agent: KMail/1.10.0 (Linux/2.6.28-rc7-wl; KDE/4.1.0; x86_64; ; )
+Cc: Larry Finger <Larry.Finger@lwfinger.net>, linux-wireless@vger.kernel.org,
+       Johannes Berg <johannes@sipsolutions.net>,
+       John W Linville <linville@tuxdriver.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
+References: <200812051547.45790.chunkeey@web.de> <4939B6AF.2060901@lwfinger.net> <20081205232321.GA8557@suse.de>
+In-Reply-To: <20081205232321.GA8557@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera>
-	 <bfPM5B8Tx2B.A.MQH.zoxNJB@chimera>
-	 <b637ec0b0812040050g58f3e28dxba5bca8c77bb5a94@mail.gmail.com>
+Message-Id: <200812062109.40590.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX18SOyQWXaCENVyegqRFt2H64Vut17JPaDMai5rs
+	9T5o3OQMVx+ub6NfEoAYrsY8mNK6X6UDv+5ZclfeB6+JuviWO3
+	LgQVNHPOc=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael.
+Alan Stern found several flaws in p54usb's implementation and annotated: 
+"usb_kill_urb() and similar routines do not expect an URB's completion
+routine to deallocate it.  This is almost obvious -- if the URB is deallocated
+before the completion routine returns then there's no way for usb_kill_urb
+to detect when the URB actually is complete."
 
-On Thu, Dec 4, 2008 at 9:50 AM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
-> Hi.
->
-> I'll try -rc7-git probably tonight and 2.6.27.8 when -stable team releases it.
->
+I really hope this patch addresses all of Alan's comments and fixes the 
+"use-after-freed" hang, when SLUB debug's poisoning option is enabled.
+---
+patch is from wireless-testing. 
+As far as I can see the usb_anchor code works now rather well
+and the skb leak should be gone as well.
 
-2.6.28-rc7 survived 7 suspend/resume cycles and then showed the bug.
-This time I modified my config to use the timed printk's. This is the
-output:
+Alan, I've got a question about:
+"Create and initialize a usb_anchor structure, and each time you create
+a new URB, call usb_anchor_urb().  Then you can free the URB as soon as
+it is submitted; the anchor will keep it pinned until it completes, and
+it is automatically removed from the anchor when the completion routine
+is called."
 
-[ 8831.905901] Syncing filesystems ... done.
-[ 8831.906707] Freezing user space processes ... (elapsed 0.00 seconds) done.
-[ 8831.907860] Freezing remaining freezable tasks ... (elapsed 0.00
-seconds) done.
-[ 8831.909257] PM: Shrinking memory... done (0 pages freed)
-[ 8831.975535] PM: Freed 0 kbytes in 0.06 seconds (0.00 MB/s)
-[ 8831.975558] Suspending console(s) (use no_console_suspend to debug)
-[ 8831.976131] sd 0:0:0:0: [sda] Synchronizing SCSI cache
-[ 8832.041534] pciehp 0000:00:1c.0:pcie02: pciehp_suspend ENTRY
-[ 8832.041755] ACPI handle has no context!
-[ 8832.041765] tifm_7xx1 0000:06:06.3: PCI INT A disabled
-[ 8832.041773] ACPI handle has no context!
-[ 8832.056238] ACPI handle has no context!
-[ 8832.072271] eth1: Going into suspend...
-[ 8832.078493] ipw2200 0000:06:05.0: PCI INT A disabled
-[ 8832.078502] ACPI handle has no context!
-[ 8832.092042] [fglrx] Power down the ASIC .
-[ 8832.144044] fglrx_pci 0000:01:00.0: PCI INT A disabled
-[ 8832.144155] ata2: port disabled. ignoring.
-[ 8832.144211] ata_piix 0000:00:1f.1: PCI INT A disabled
-[ 8832.144606] Intel ICH 0000:00:1e.2: PCI INT A disabled
-[ 8832.144743] ehci_hcd 0000:00:1d.7: PCI INT A disabled
-[ 8832.144783] uhci_hcd 0000:00:1d.3: PCI INT D disabled
-[ 8832.144822] uhci_hcd 0000:00:1d.2: PCI INT C disabled
-[ 8832.144860] uhci_hcd 0000:00:1d.1: PCI INT B disabled
-[ 8832.144899] uhci_hcd 0000:00:1d.0: PCI INT A disabled
-[ 8832.144903] pciehp 0000:00:1c.0:pcie02: pciehp_suspend ENTRY
-[ 8832.145347] ACPI: Preparing to enter system sleep state S4
-[ 8832.147058] PM: Creating hibernation image:
-[ 8832.148005] PM: Need to copy 169684 pages
-[ 8832.148005] Intel machine check architecture supported.
-[ 8832.148005] Intel machine check reporting enabled on CPU#0.
-[ 9073.757209] Force enabled HPET at resume
-[ 9073.757323] ACPI: Waking up from system sleep state S4
-[ 9073.757352] ACPI: EC: non-query interrupt received, switching to
-interrupt mode
-[ 9073.757352] pcieport-driver 0000:00:01.0: setting latency timer to 64
-[ 9073.757352] pcieport-driver 0000:00:1c.0: setting latency timer to 64
-[ 9073.757352] pciehp 0000:00:1c.0:pcie02: pciehp_resume ENTRY
-[ 9073.757352] uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 23 (level, low) -> IRQ 23
-[ 9073.757352] uhci_hcd 0000:00:1d.0: setting latency timer to 64
-[ 9073.757352] uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
-[ 9073.757352] uhci_hcd 0000:00:1d.1: setting latency timer to 64
-[ 9073.757352] uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-[ 9073.757352] uhci_hcd 0000:00:1d.2: setting latency timer to 64
-[ 9073.757352] uhci_hcd 0000:00:1d.3: PCI INT D -> GSI 16 (level, low) -> IRQ 16
-[ 9073.757352] uhci_hcd 0000:00:1d.3: setting latency timer to 64
-[ 9073.757352] ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 23 (level, low) -> IRQ 23
-[ 9073.757352] ehci_hcd 0000:00:1d.7: setting latency timer to 64
-[ 9073.757352] pci 0000:00:1e.0: setting latency timer to 64
-[ 9073.757352] Intel ICH 0000:00:1e.2: PCI INT A -> GSI 17 (level,
-low) -> IRQ 17
-[ 9073.757352] Intel ICH 0000:00:1e.2: setting latency timer to 64
-[ 9073.757352] ata_piix 0000:00:1f.1: restoring config space at offset
-0x1 (was 0x2880001, writing 0x2880005)
-[ 9073.757352] ata_piix 0000:00:1f.1: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-[ 9073.757352] ata_piix 0000:00:1f.1: setting latency timer to 64
-[ 9073.757352] ata2: port disabled. ignoring.
-[ 9073.757352] fglrx_pci 0000:01:00.0: power state changed by ACPI to D0
-[ 9073.757352] fglrx_pci 0000:01:00.0: PCI INT A -> GSI 16 (level,
-low) -> IRQ 16
-[ 9073.757352] fglrx_pci 0000:01:00.0: setting latency timer to 64
-[ 9073.757352] [fglrx] Power up the ASIC
-[ 9073.757352] eth1: Coming out of suspend...
-[ 9073.757352] ipw2200 0000:06:05.0: enabling device (0000 -> 0002)
-[ 9073.757352] ipw2200 0000:06:05.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-[ 9073.757352] ipw2200 0000:06:05.0: restoring config space at offset
-0xf (was 0x18030100, writing 0x1803010b)
-[ 9073.757352] ipw2200 0000:06:05.0: restoring config space at offset
-0x4 (was 0x0, writing 0xc8206000)
-[ 9073.757352] ipw2200 0000:06:05.0: restoring config space at offset
-0x3 (was 0x0, writing 0x8008)
-[ 9073.757352] ipw2200 0000:06:05.0: restoring config space at offset
-0x1 (was 0x2900002, writing 0x2900116)
-[ 9073.757352] ata1.01: ACPI cmd ef/03:0c:00:00:00:b0 filtered out
-[ 9073.757352] ata1.01: ACPI cmd ef/03:22:00:00:00:b0 filtered out
-[ 9073.757352] ata1.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-[ 9073.757352] ata1.00: ACPI cmd ef/03:45:00:00:00:a0 filtered out
-[ 9073.757352] ata1.00: configured for UDMA/100
-[ 9073.757352] ata1.01: configured for MWDMA2
-[ 9073.757352] sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors:
-(80.0 GB/74.5 GiB)
-[ 9073.757352] sd 0:0:0:0: [sda] Write Protect is off
-[ 9073.757352] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[ 9073.757352] sd 0:0:0:0: [sda] Write cache: enabled, read cache:
-enabled, doesn't support DPO or FUA
-[ 9073.757352] sd 0:0:0:0: [sda] 156301488 512-byte hardware sectors:
-(80.0 GB/74.5 GiB)
-[ 9073.757352] sd 0:0:0:0: [sda] Write Protect is off
-[ 9073.757352] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[ 9073.757352] sd 0:0:0:0: [sda] Write cache: enabled, read cache:
-enabled, doesn't support DPO or FUA
-[ 9073.757352] firewire_ohci 0000:06:06.2: restoring config space at
-offset 0xf (was 0x4020300, writing 0x402030b)
-[ 9073.757352] firewire_ohci 0000:06:06.2: restoring config space at
-offset 0x5 (was 0x0, writing 0xc8200000)
-[ 9073.757352] firewire_ohci 0000:06:06.2: restoring config space at
-offset 0x4 (was 0x0, writing 0xc8208000)
-[ 9073.757352] firewire_ohci 0000:06:06.2: restoring config space at
-offset 0x3 (was 0x800000, writing 0x808008)
-[ 9073.757352] firewire_ohci 0000:06:06.2: restoring config space at
-offset 0x1 (was 0x2100000, writing 0x2100116)
-[ 9073.757352] tifm_7xx1 0000:06:06.3: restoring config space at
-offset 0xf (was 0x40701ff, writing 0x407010a)
-[ 9073.757352] tifm_7xx1 0000:06:06.3: restoring config space at
-offset 0x4 (was 0x0, writing 0xc8204000)
-[ 9073.757352] tifm_7xx1 0000:06:06.3: restoring config space at
-offset 0x3 (was 0x800000, writing 0x808008)
-[ 9073.757352] tifm_7xx1 0000:06:06.3: restoring config space at
-offset 0x1 (was 0x2100000, writing 0x2100106)
-[ 9073.757352] tifm_7xx1 0000:06:06.3: PCI INT A -> GSI 22 (level,
-low) -> IRQ 22
-[ 9073.757352] pciehp 0000:00:1c.0:pcie02: pciehp_resume ENTRY
-[ 9073.757352] sd 0:0:0:0: [sda] Starting disk
-[ 9073.757352] Restarting tasks ... done.
-
-Unfortunately I can see nothing wrong in this log, it's basically
-identical to the good resume case.
-
-The hang lasted 3min 57sec, just for the record.
+Do we have to call usb_free_urb again, if we're resubmitting the urb in the
+complete callback? (the code what I'm referring to is p54u_rx_cb in p54usb.c)
 
 Regards,
-Fabio
+	Chr
+---
+diff -Nurp a/drivers/net/wireless/p54/p54usb.c b/drivers/net/wireless/p54/p54usb.c
+--- a/drivers/net/wireless/p54/p54usb.c	2008-12-06 20:06:23.000000000 +0100
++++ b/drivers/net/wireless/p54/p54usb.c	2008-12-06 20:32:58.000000000 +0100
+@@ -86,13 +86,13 @@ static void p54u_rx_cb(struct urb *urb)
+ 	struct ieee80211_hw *dev = info->dev;
+ 	struct p54u_priv *priv = dev->priv;
+ 
++	skb_unlink(skb, &priv->rx_queue);
++
+ 	if (unlikely(urb->status)) {
+-		info->urb = NULL;
+-		usb_free_urb(urb);
++		dev_kfree_skb_irq(skb);
+ 		return;
+ 	}
+ 
+-	skb_unlink(skb, &priv->rx_queue);
+ 	skb_put(skb, urb->actual_length);
+ 
+ 	if (priv->hw_type == P54U_NET2280)
+@@ -105,7 +105,6 @@ static void p54u_rx_cb(struct urb *urb)
+ 	if (p54_rx(dev, skb)) {
+ 		skb = dev_alloc_skb(priv->common.rx_mtu + 32);
+ 		if (unlikely(!skb)) {
+-			usb_free_urb(urb);
+ 			/* TODO check rx queue length and refill *somewhere* */
+ 			return;
+ 		}
+@@ -134,7 +133,11 @@ static void p54u_rx_cb(struct urb *urb)
+ 		skb_queue_tail(&priv->rx_queue, skb);
+ 	}
+ 
+-	usb_submit_urb(urb, GFP_ATOMIC);
++	if (usb_submit_urb(urb, GFP_ATOMIC)) {
++		skb_unlink(skb, &priv->rx_queue);
++		usb_unanchor_urb(urb);
++		dev_kfree_skb_irq(skb);
++	}
+ }
+ 
+ static void p54u_tx_reuse_skb_cb(struct urb *urb)
+@@ -144,18 +147,6 @@ static void p54u_tx_reuse_skb_cb(struct 
+ 		usb_get_intfdata(usb_ifnum_to_if(urb->dev, 0)))->priv;
+ 
+ 	skb_pull(skb, priv->common.tx_hdr_len);
+-	usb_free_urb(urb);
+-}
+-
+-static void p54u_tx_cb(struct urb *urb)
+-{
+-	usb_free_urb(urb);
+-}
+-
+-static void p54u_tx_free_cb(struct urb *urb)
+-{
+-	kfree(urb->transfer_buffer);
+-	usb_free_urb(urb);
+ }
+ 
+ static void p54u_tx_free_skb_cb(struct urb *urb)
+@@ -165,25 +156,36 @@ static void p54u_tx_free_skb_cb(struct u
+ 		usb_get_intfdata(usb_ifnum_to_if(urb->dev, 0));
+ 
+ 	p54_free_skb(dev, skb);
+-	usb_free_urb(urb);
++}
++
++static void p54u_tx_dummy_cb(struct urb *urb) { }
++
++static void p54u_free_urbs(struct ieee80211_hw *dev)
++{
++	struct p54u_priv *priv = dev->priv;
++	usb_kill_anchored_urbs(&priv->submitted);
+ }
+ 
+ static int p54u_init_urbs(struct ieee80211_hw *dev)
+ {
+ 	struct p54u_priv *priv = dev->priv;
+-	struct urb *entry;
++	struct urb *entry = NULL;
+ 	struct sk_buff *skb;
+ 	struct p54u_rx_info *info;
++	int ret = 0;
+ 
+ 	while (skb_queue_len(&priv->rx_queue) < 32) {
+ 		skb = __dev_alloc_skb(priv->common.rx_mtu + 32, GFP_KERNEL);
+-		if (!skb)
+-			break;
++		if (!skb) {
++			ret = -ENOMEM;
++			goto err;
++		}
+ 		entry = usb_alloc_urb(0, GFP_KERNEL);
+ 		if (!entry) {
+-			kfree_skb(skb);
+-			break;
++			ret = -ENOMEM;
++			goto err;
+ 		}
++
+ 		usb_fill_bulk_urb(entry, priv->udev,
+ 				  usb_rcvbulkpipe(priv->udev, P54U_PIPE_DATA),
+ 				  skb_tail_pointer(skb),
+@@ -192,26 +194,25 @@ static int p54u_init_urbs(struct ieee802
+ 		info->urb = entry;
+ 		info->dev = dev;
+ 		skb_queue_tail(&priv->rx_queue, skb);
+-		usb_submit_urb(entry, GFP_KERNEL);
++
++		usb_anchor_urb(entry, &priv->submitted);
++		ret = usb_submit_urb(entry, GFP_KERNEL);
++		if (ret) {
++			skb_unlink(skb, &priv->rx_queue);
++			usb_unanchor_urb(entry);
++			goto err;
++		}
++		usb_free_urb(entry);
++		entry = NULL;
+ 	}
+ 
+ 	return 0;
+-}
+-
+-static void p54u_free_urbs(struct ieee80211_hw *dev)
+-{
+-	struct p54u_priv *priv = dev->priv;
+-	struct p54u_rx_info *info;
+-	struct sk_buff *skb;
+ 
+-	while ((skb = skb_dequeue(&priv->rx_queue))) {
+-		info = (struct p54u_rx_info *) skb->cb;
+-		if (!info->urb)
+-			continue;
+-
+-		usb_kill_urb(info->urb);
+-		kfree_skb(skb);
+-	}
++ err:
++	usb_free_urb(entry);
++	kfree_skb(skb);
++	p54u_free_urbs(dev);
++	return ret;
+ }
+ 
+ static void p54u_tx_3887(struct ieee80211_hw *dev, struct sk_buff *skb,
+@@ -219,6 +220,7 @@ static void p54u_tx_3887(struct ieee8021
+ {
+ 	struct p54u_priv *priv = dev->priv;
+ 	struct urb *addr_urb, *data_urb;
++	int err = 0;
+ 
+ 	addr_urb = usb_alloc_urb(0, GFP_ATOMIC);
+ 	if (!addr_urb)
+@@ -233,15 +235,31 @@ static void p54u_tx_3887(struct ieee8021
+ 	usb_fill_bulk_urb(addr_urb, priv->udev,
+ 			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA),
+ 			  &((struct p54_hdr *)skb->data)->req_id, 4,
+-			  p54u_tx_cb, dev);
++			  p54u_tx_dummy_cb, dev);
+ 	usb_fill_bulk_urb(data_urb, priv->udev,
+ 			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA),
+ 			  skb->data, skb->len,
+ 			  free_on_tx ? p54u_tx_free_skb_cb :
+ 				       p54u_tx_reuse_skb_cb, skb);
+ 
+-	usb_submit_urb(addr_urb, GFP_ATOMIC);
+-	usb_submit_urb(data_urb, GFP_ATOMIC);
++	usb_anchor_urb(addr_urb, &priv->submitted);
++	err = usb_submit_urb(addr_urb, GFP_ATOMIC);
++	if (err) {
++		usb_unanchor_urb(addr_urb);
++		goto out;
++	}
++
++	usb_anchor_urb(addr_urb, &priv->submitted);
++	err = usb_submit_urb(data_urb, GFP_ATOMIC);
++	if (err)
++		usb_unanchor_urb(data_urb);
++
++ out:
++	usb_free_urb(addr_urb);
++	usb_free_urb(data_urb);
++
++	if (err)
++		p54_free_skb(dev, skb);
+ }
+ 
+ static __le32 p54u_lm87_chksum(const __le32 *data, size_t length)
+@@ -281,7 +299,13 @@ static void p54u_tx_lm87(struct ieee8021
+ 			  free_on_tx ? p54u_tx_free_skb_cb :
+ 				       p54u_tx_reuse_skb_cb, skb);
+ 
+-	usb_submit_urb(data_urb, GFP_ATOMIC);
++	usb_anchor_urb(data_urb, &priv->submitted);
++	if (usb_submit_urb(data_urb, GFP_ATOMIC)) {
++		usb_unanchor_urb(data_urb);
++		skb_pull(skb, sizeof(*hdr));
++		p54_free_skb(dev, skb);
++	}
++	usb_free_urb(data_urb);
+ }
+ 
+ static void p54u_tx_net2280(struct ieee80211_hw *dev, struct sk_buff *skb,
+@@ -291,6 +315,7 @@ static void p54u_tx_net2280(struct ieee8
+ 	struct urb *int_urb, *data_urb;
+ 	struct net2280_tx_hdr *hdr;
+ 	struct net2280_reg_write *reg;
++	int err = 0;
+ 
+ 	reg = kmalloc(sizeof(*reg), GFP_ATOMIC);
+ 	if (!reg)
+@@ -318,17 +343,38 @@ static void p54u_tx_net2280(struct ieee8
+ 	hdr->device_addr = ((struct p54_hdr *)skb->data)->req_id;
+ 	hdr->len = cpu_to_le16(skb->len + sizeof(struct p54_hdr));
+ 
++	int_urb->transfer_flags |= URB_FREE_BUFFER;
+ 	usb_fill_bulk_urb(int_urb, priv->udev,
+ 		usb_sndbulkpipe(priv->udev, P54U_PIPE_DEV), reg, sizeof(*reg),
+-		p54u_tx_free_cb, dev);
+-	usb_submit_urb(int_urb, GFP_ATOMIC);
++		p54u_tx_dummy_cb, dev);
+ 
+ 	usb_fill_bulk_urb(data_urb, priv->udev,
+ 			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA),
+ 			  skb->data, skb->len,
+ 			  free_on_tx ? p54u_tx_free_skb_cb :
+ 				       p54u_tx_reuse_skb_cb, skb);
+-	usb_submit_urb(data_urb, GFP_ATOMIC);
++
++	usb_anchor_urb(int_urb, &priv->submitted);
++	err = usb_submit_urb(int_urb, GFP_ATOMIC);
++	if (err) {
++		usb_unanchor_urb(int_urb);
++		goto out;
++	}
++
++	usb_anchor_urb(data_urb, &priv->submitted);
++	err = usb_submit_urb(data_urb, GFP_ATOMIC);
++	if (err) {
++		usb_unanchor_urb(data_urb);
++		goto out;
++	}
++ out:
++	usb_free_urb(int_urb);
++	usb_free_urb(data_urb);
++
++	if (err) {
++		skb_pull(skb, sizeof(*hdr));
++		p54_free_skb(dev, skb);
++	}
+ }
+ 
+ static int p54u_write(struct p54u_priv *priv,
+@@ -886,6 +932,7 @@ static int __devinit p54u_probe(struct u
+ 		goto err_free_dev;
+ 
+ 	skb_queue_head_init(&priv->rx_queue);
++	init_usb_anchor(&priv->submitted);
+ 
+ 	p54u_open(dev);
+ 	err = p54_read_eeprom(dev);
+diff -Nurp a/drivers/net/wireless/p54/p54usb.h b/drivers/net/wireless/p54/p54usb.h
+--- a/drivers/net/wireless/p54/p54usb.h	2008-12-06 20:06:23.000000000 +0100
++++ b/drivers/net/wireless/p54/p54usb.h	2008-12-06 20:16:19.000000000 +0100
+@@ -133,6 +133,7 @@ struct p54u_priv {
+ 
+ 	spinlock_t lock;
+ 	struct sk_buff_head rx_queue;
++	struct usb_anchor submitted;
+ };
+ 
+ #endif /* P54USB_H */
