@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbYLFFo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbYLFFpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755943AbYLFFo5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 00:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750854AbYLFFos
+	id S1756772AbYLFFpZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 00:45:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbYLFFpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 00:44:48 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48402 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750809AbYLFFos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 00:44:48 -0500
-Message-ID: <493A101A.1080500@redhat.com>
-Date: Sat, 06 Dec 2008 00:39:38 -0500
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Sat, 6 Dec 2008 00:45:07 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:50298 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750854AbYLFFpG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Dec 2008 00:45:06 -0500
+Date: Sat, 6 Dec 2008 11:14:59 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: penberg@cs.helsinki.fi, jdike@addtoit.com, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net, stable@kernel.org
+Subject: Re: [PATCH][UML] Boot broken due to buffer overrun
+Message-ID: <20081206054459.GB7582@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	penberg@cs.helsinki.fi, jdike@addtoit.com,
+	linux-kernel@vger.kernel.org,
+	user-mode-linux-devel@lists.sourceforge.net, stable@kernel.org
+References: <20081129100830.GA24128@balbir.in.ibm.com> <84144f020811290221g947f836n4fe3435676425ee@mail.gmail.com> <20081129122039.GA31635@balbir.in.ibm.com> <20081202121707.e1623f89.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: linux-crypto@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] crypto: des3_ede: permit weak keys unless REQ_WEAK_KEY
- set
-References: <200812041557.49601.jarod@redhat.com> <493942D9.6030807@redhat.com> <20081205152427.GA32475@gondor.apana.org.au>
-In-Reply-To: <20081205152427.GA32475@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20081202121707.e1623f89.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarod Wilson wrote:
-> While its a slightly insane to bypass the key1 == key2 ||
-> key2 == key3 check in triple-des, since it reduces it to the
-> same strength as des, some folks do need to do this from time
-> to time for backwards compatibility with des.
->
-> My own case is FIPS CAVS test vectors. Many triple-des test
-> vectors use a single key, replicated 3x. In order to get the
-> expected results, des3_ede_setkey() needs to honor the weak
-> key flag.
+* Andrew Morton <akpm@linux-foundation.org> [2008-12-02 12:17:07]:
 
-v2: make CRYPTO_TFM_REQ_WEAK_KEY flag usage consistent w/rest
-of crypto subsystem, per comments from Herbert in Red Hat
-bugzilla #474394.
+> On Sat, 29 Nov 2008 17:50:39 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > * Pekka Enberg <penberg@cs.helsinki.fi> [2008-11-29 12:21:46]:
+> > 
+> > > Hi Balbir,
+> > > 
+> > > On Sat, Nov 29, 2008 at 12:08 PM, Balbir Singh
+> > > <balbir@linux.vnet.ibm.com> wrote:
+> > > > mconsole_init() passed 256 bytes as length in os_create_unix_socket, while
+> > > > the sizeof UNIX_PATH_MAX is 108. This patch fixes that problem and avoids
+> > > > a big overrun bug reported on UML bootup.
+> > > 
+> > > Maybe mention that ->sun_path in struct sockaddr_un is UNIX_PATH_MAX
+> > > long which causes the problem?
+> > >
+> > 
+> > Yes, the changelog can definitely add that to the changelog, I'll
+> > resend the patch if Jeff asks for it.
+> 
+> Jeff's been quiet lately - I'll merge this one.
+> 
 
-v3: set more appropriate RES flag, also per Herbert.
+Thanks!
 
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
+> I also tagged it for -stable, subject to Jeff's OK.  I'm wondering why
+> this wasn't observed in earlier kernels?
+> 
 
----
-  crypto/des_generic.c |    5 +++--
-  1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/crypto/des_generic.c b/crypto/des_generic.c
-index 5d0e458..5bd3ee3 100644
---- a/crypto/des_generic.c
-+++ b/crypto/des_generic.c
-@@ -868,9 +868,10 @@ static int des3_ede_setkey(struct crypto_tfm *tfm, const 
-u8 *key,
-  	u32 *flags = &tfm->crt_flags;
-
-  	if (unlikely(!((K[0] ^ K[2]) | (K[1] ^ K[3])) ||
--		     !((K[2] ^ K[4]) | (K[3] ^ K[5]))))
-+		     !((K[2] ^ K[4]) | (K[3] ^ K[5]))) &&
-+		     (*flags & CRYPTO_TFM_REQ_WEAK_KEY))
-  	{
--		*flags |= CRYPTO_TFM_RES_BAD_KEY_SCHED;
-+		*flags |= CRYPTO_TFM_RES_WEAK_KEY;
-  		return -EINVAL;
-  	}
+I observed it with the newer toolchain that uses __USE_FORTIFY_LEVEL
+and __FORTIFY_SOURCE
 
 
 -- 
-Jarod Wilson
-jarod@redhat.com
-
+	Balbir
