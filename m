@@ -1,59 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbYLFBRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbYLFBTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758256AbYLFBRt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 20:17:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbYLFBRk
+	id S1757952AbYLFBTN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 20:19:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbYLFBS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 20:17:40 -0500
-Received: from mail-gx0-f29.google.com ([209.85.217.29]:63021 "EHLO
-	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752731AbYLFBRj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 20:17:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:subject:to:content-type:mime-version:content-transfer-encoding
-         :reply-to:date:message-id;
-        b=eNc6sU+9EHgxzRAuImBaRKp7tfidFQQfnuivSMRNkZN3WBcPK+pmeBiZGZQEUx0oSY
-         jsa4B8iild12KpjeFYRufhT3KFq0ZMFXDo9nKhE6WBrSc2Sp/2al0b4L3uGVllHH/dHw
-         B9waBjVCrpmGVA82tuvsQgWsKnmBpB/HaLtMU=
-From: "emily" <wellcom001@gmail.com>
-Subject: GSM wireless terminal supplier
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain;
-	charset="Big5"
+	Fri, 5 Dec 2008 20:18:58 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58015 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754584AbYLFBS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Dec 2008 20:18:57 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
+Date: Sat, 6 Dec 2008 02:18:12 +0100
+User-Agent: KMail/1.9.9
+Cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <200812060104.50050.rjw@sisk.pl> <alpine.LFD.2.00.0812051647130.3425@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0812051647130.3425@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Reply-To: sales@well-com.cn
-Date: Sat, 6 Dec 2008 09:17:36 +0800
-Message-ID: <4939d2ae.0e1b6e0a.5186.ffffe69f@mx.google.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812060218.13030.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mB61Hsdq009513
 
-Dear Sir,
+On Saturday, 6 of December 2008, Linus Torvalds wrote:
+> 
+> On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+> > 
+> > I tested the appended patch with suspend-to-RAM and it just hangs during
+> > resume.
+> 
+> That patch looks bogus. It only changes the "legacy" cases as far as I can 
+> tell, so anybogy who has drv->pm set will now not do any state save at 
+> all.
+> 
+> Or am I misreading it?
 
-How do you do!This is Well-Com Technology Co.,Ltd from China.
+It only affects the legacy handling, but the non-legacy handling was left
+untouched.  IOW, the old "default" functions are still there and are being
+called by the "non-legacy" code (it's only used by USB at the moment, AFAICS).
 
-We are the manufacturer in SZ, supply various GSM wireless termial with best
-price and quality.More details,pls check our website:www.well-com.cn
+Anyway, I did the test doing it only to the devices which don't have any
+non-default suspend-resume handling at all and _that_ apparently fixed the
+problem on my box. :-)
 
-Wish we have chance to cooperate in the future!Any question,pls feel free to 
-contact.
+Appended is a very crude version of the patch (it duplicates some code),
+tomorrow I'll post a cleaned-up version.
 
-Looking forward your repply!
+I'm still thinkig it will be reasonable to save standard config registers for
+all devices with interrupts disabled, but that appears to be more complicated
+that I thought it would be.
 
-Best Regards
+Thanks,
+Rafael
 
-Emily/Marketing
+---
+ drivers/pci/pci-driver.c |   66 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
-Website:www.well-com.cn
-Tel:86-755-88367451
-Email-:sales@well-com.cn
-Factory Address:Baotian Industry Building,Fuyong Village,Baoan District,Shenzhen,China
-
-
-
-
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Index: linux-2.6/drivers/pci/pci-driver.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -300,6 +300,54 @@ static void pci_device_shutdown(struct d
+ 
+ #ifdef CONFIG_PM_SLEEP
+ 
++static void pci_default_suspend_noirq(struct pci_dev *pci_dev)
++{
++	dev_info(&pci_dev->dev, "saving standard PCI config registers\n");
++
++	/* save the PCI config space */
++	pci_save_state(pci_dev);
++	/*
++	 * mark its power state as "unknown", since we don't know if
++	 * e.g. the BIOS will change its device state when we suspend.
++	 */
++	if (pci_dev->current_state == PCI_D0)
++		pci_dev->current_state = PCI_UNKNOWN;
++}
++
++static void pci_default_resume_noirq(struct pci_dev *pci_dev)
++{
++	dev_info(&pci_dev->dev, "restoring standard PCI config registers\n");
++
++	/* restore the PCI config space */
++	pci_restore_state(pci_dev);
++}
++
++static int pci_default_resume(struct pci_dev *pci_dev)
++{
++	int retval = 0;
++
++	dev_info(&pci_dev->dev, "trying to reenable device\n");
++
++	/* if the device was enabled before suspend, reenable */
++	retval = pci_reenable_device(pci_dev);
++	/*
++	 * if the device was busmaster before the suspend, make it busmaster
++	 * again
++	 */
++	if (pci_dev->is_busmaster)
++		pci_set_master(pci_dev);
++
++	return retval;
++}
++
++static bool pci_has_legacy_pm_handling(struct pci_dev *pci_dev)
++{
++	struct pci_driver *drv = pci_dev->driver;
++
++	return drv && (drv->suspend || drv->suspend_late || drv->resume
++		|| drv->resume_early);
++}
++
+ /*
+  * Default "suspend" method for devices that have no driver provided suspend,
+  * or not even a driver at all.
+@@ -343,6 +391,9 @@ static int pci_legacy_suspend(struct dev
+ 	struct pci_driver * drv = pci_dev->driver;
+ 	int i = 0;
+ 
++	if (!pci_has_legacy_pm_handling(pci_dev))
++		return 0;
++
+ 	if (drv && drv->suspend) {
+ 		i = drv->suspend(pci_dev, state);
+ 		suspend_report_result(drv->suspend, i);
+@@ -358,10 +409,16 @@ static int pci_legacy_suspend_late(struc
+ 	struct pci_driver * drv = pci_dev->driver;
+ 	int i = 0;
+ 
++	if (!pci_has_legacy_pm_handling(pci_dev)) {
++		pci_default_suspend_noirq(pci_dev);
++		return 0;
++	}
++
+ 	if (drv && drv->suspend_late) {
+ 		i = drv->suspend_late(pci_dev, state);
+ 		suspend_report_result(drv->suspend_late, i);
+ 	}
++
+ 	return i;
+ }
+ 
+@@ -371,6 +428,9 @@ static int pci_legacy_resume(struct devi
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	struct pci_driver * drv = pci_dev->driver;
+ 
++	if (!pci_has_legacy_pm_handling(pci_dev))
++		return pci_default_resume(pci_dev);
++
+ 	if (drv && drv->resume)
+ 		error = drv->resume(pci_dev);
+ 	else
+@@ -384,8 +444,14 @@ static int pci_legacy_resume_early(struc
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	struct pci_driver * drv = pci_dev->driver;
+ 
++	if (!pci_has_legacy_pm_handling(pci_dev)) {
++		pci_default_resume_noirq(pci_dev);
++		return 0;
++	}
++
+ 	if (drv && drv->resume_early)
+ 		error = drv->resume_early(pci_dev);
++
+ 	return error;
+ }
+ 
