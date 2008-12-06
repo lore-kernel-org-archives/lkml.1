@@ -1,192 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbYLFAKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbYLFAKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757968AbYLFAKQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 19:10:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755083AbYLFAJ6
+	id S1758266AbYLFAKq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 19:10:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbYLFAKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 19:09:58 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:49491 "EHLO
+	Fri, 5 Dec 2008 19:10:38 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:49553 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754329AbYLFAJ5 (ORCPT
+	by vger.kernel.org with ESMTP id S1755083AbYLFAKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 19:09:57 -0500
+	Fri, 5 Dec 2008 19:10:37 -0500
 From: Jeff Arnold <jbarnold@MIT.EDU>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>,
        Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
        Waseem Daher <wdaher@MIT.EDU>, Nikanth Karthikesan <knikanth@suse.de>
-Subject: [PATCH 2/7] x86: Add an option to compile with -ffunction-sections -fdata-sections
-Date: Fri,  5 Dec 2008 19:03:55 -0500
-Message-Id: <1228521840-3886-3-git-send-email-jbarnold@mit.edu>
+Subject: [PATCH 6/7] Ksplice: Export symbols needed for Ksplice
+Date: Fri,  5 Dec 2008 19:03:59 -0500
+Message-Id: <1228521840-3886-7-git-send-email-jbarnold@mit.edu>
 X-Mailer: git-send-email 1.6.0
-In-Reply-To: <1228521840-3886-2-git-send-email-jbarnold@mit.edu>
+In-Reply-To: <1228521840-3886-6-git-send-email-jbarnold@mit.edu>
 References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu>
  <1228521840-3886-2-git-send-email-jbarnold@mit.edu>
+ <1228521840-3886-3-git-send-email-jbarnold@mit.edu>
+ <1228521840-3886-4-git-send-email-jbarnold@mit.edu>
+ <1228521840-3886-5-git-send-email-jbarnold@mit.edu>
+ <1228521840-3886-6-git-send-email-jbarnold@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Waseem Daher <wdaher@mit.edu>
+From: Tim Abbott <tabbott@mit.edu>
 
-This patch makes it possible to link and boot an x86 kernel with
--ffunction-sections and -fdata-sections enabled.
+Ksplice uses several functions from module.c in order to resolve
+symbols and implement dependency handling.  Calling these functions
+requires holding module_mutex, so it is exported.
 
-Modpost currently warns whenever it sees a section with a name
-matching [.][0-9]+$ because they are often caused by section flag
-mismatch errors.  When compiling with -ffunction-sections
--fdata-sections, gcc places various classes of local symbols in
-sections with names such as .rodata.__func__.12345, causing these
-warnings to be printed spuriously.  The simplest fix is to disable the
-warning when CONFIG_FUNCTION_DATA_SECTIONS is enabled.
+Ksplice uses task_curr in order to confirm that no other tasks are
+executing during Ksplice's kernel stack check.
 
-Signed-off-by: Waseem Daher <wdaher@mit.edu>
-[tabbott@mit.edu: modpost support]
+Ksplice uses find_bug and search_exception_tables as part of its
+conservative check that the user provided the correct source code for
+the running kernel.
+
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
 ---
- Makefile                          |    4 ++++
- arch/x86/kernel/vmlinux_32.lds.S  |    1 +
- arch/x86/kernel/vmlinux_64.lds.S  |    1 +
- include/asm-generic/vmlinux.lds.h |    2 ++
- lib/Kconfig.debug                 |    9 +++++++++
- scripts/Makefile.modpost          |    1 +
- scripts/mod/modpost.c             |   10 ++++++++--
- 7 files changed, 26 insertions(+), 2 deletions(-)
+ include/linux/module.h |   28 ++++++++++++++++++++++++++++
+ kernel/extable.c       |    3 +++
+ kernel/module.c        |   41 +++++++++++++++++------------------------
+ kernel/sched.c         |    1 +
+ lib/bug.c              |    1 +
+ 5 files changed, 50 insertions(+), 24 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index 9a49960..d3d6fa4 100644
---- a/Makefile
-+++ b/Makefile
-@@ -540,6 +540,10 @@ ifdef CONFIG_FUNCTION_TRACER
- KBUILD_CFLAGS	+= -pg
- endif
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 29972a2..cc613f6 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -355,6 +355,8 @@ struct module
+ #define MODULE_ARCH_INIT {}
+ #endif
  
-+ifdef CONFIG_FUNCTION_DATA_SECTIONS
-+KBUILD_CFLAGS	+= -ffunction-sections -fdata-sections
-+endif
++extern struct mutex module_mutex;
 +
- # We trigger additional mismatches with less inlining
- ifdef CONFIG_DEBUG_SECTION_MISMATCH
- KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
-diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
-index 454ab4c..c0c4323 100644
---- a/arch/x86/kernel/vmlinux_32.lds.S
-+++ b/arch/x86/kernel/vmlinux_32.lds.S
-@@ -193,6 +193,7 @@ SECTIONS
- 	__bss_start = .;		/* BSS */
- 	*(.bss.kernel.page_aligned)
- 	*(.bss)
-+	*(.bss.*)
- 	. = ALIGN(4);
- 	__bss_stop = .;
-   	_end = . ;
-diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
-index 6fd4547..ccb74b0 100644
---- a/arch/x86/kernel/vmlinux_64.lds.S
-+++ b/arch/x86/kernel/vmlinux_64.lds.S
-@@ -222,6 +222,7 @@ SECTIONS
-   .bss : AT(ADDR(.bss) - LOAD_OFFSET) {
- 	*(.bss.kernel.page_aligned)
- 	*(.bss)
-+	*(.bss.*)
+ /* FIXME: It'd be nice to isolate modules during init, too, so they
+    aren't used before they (may) fail.  But presently too much code
+    (IDE & SCSI) require entry into the module during init.*/
+@@ -370,6 +372,31 @@ struct module *module_data_address(unsigned long addr);
+ struct module *__module_data_address(unsigned long addr);
+ int is_module_address(unsigned long addr);
+ 
++/* Search for module by name: must hold module_mutex. */
++struct module *find_module(const char *name);
++
++struct symsearch {
++	const struct kernel_symbol *start, *stop;
++	const unsigned long *crcs;
++	enum {
++		NOT_GPL_ONLY,
++		GPL_ONLY,
++		WILL_BE_GPL_ONLY,
++	} licence;
++	bool unused;
++};
++
++/* Search for an exported symbol by name. */
++const struct kernel_symbol *find_symbol(const char *name,
++					struct module **owner,
++					const unsigned long **crc,
++					bool gplok,
++					bool warn);
++
++/* Walk the exported symbol table */
++bool each_symbol(bool (*fn)(const struct symsearch *arr, struct module *owner,
++			    unsigned int symnum, void *data), void *data);
++
+ /* Returns 0 and fills in value, defined and namebuf, or -ERANGE if
+    symnum out of range. */
+ int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
+@@ -435,6 +462,7 @@ static inline void __module_get(struct module *module)
+ #define symbol_put_addr(p) do { } while(0)
+ 
+ #endif /* CONFIG_MODULE_UNLOAD */
++int use_module(struct module *a, struct module *b);
+ 
+ /* This is a #define so the string doesn't get put in every .o file */
+ #define module_name(mod)			\
+diff --git a/kernel/extable.c b/kernel/extable.c
+index a26cb2e..f7740b1 100644
+--- a/kernel/extable.c
++++ b/kernel/extable.c
+@@ -39,6 +39,7 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
+ 		e = search_module_extables(addr);
+ 	return e;
+ }
++EXPORT_SYMBOL_GPL(search_exception_tables);
+ 
+ int core_kernel_text(unsigned long addr)
+ {
+@@ -59,6 +60,7 @@ int __kernel_text_address(unsigned long addr)
+ 		return 1;
+ 	return __module_text_address(addr) != NULL;
+ }
++EXPORT_SYMBOL_GPL(__kernel_text_address);
+ 
+ int kernel_text_address(unsigned long addr)
+ {
+@@ -66,3 +68,4 @@ int kernel_text_address(unsigned long addr)
+ 		return 1;
+ 	return module_text_address(addr) != NULL;
+ }
++EXPORT_SYMBOL_GPL(kernel_text_address);
+diff --git a/kernel/module.c b/kernel/module.c
+index 8839d40..b109aae 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -67,7 +67,8 @@
+ 
+ /* List of modules, protected by module_mutex or preempt_disable
+  * (delete uses stop_machine/add uses RCU list operations). */
+-static DEFINE_MUTEX(module_mutex);
++DEFINE_MUTEX(module_mutex);
++EXPORT_SYMBOL_GPL(module_mutex);
+ static LIST_HEAD(modules);
+ 
+ /* Waiting for a module to finish initializing? */
+@@ -185,17 +186,6 @@ extern const unsigned long __start___kcrctab_unused_gpl[];
+ #define symversion(base, idx) ((base != NULL) ? ((base) + (idx)) : NULL)
+ #endif
+ 
+-struct symsearch {
+-	const struct kernel_symbol *start, *stop;
+-	const unsigned long *crcs;
+-	enum {
+-		NOT_GPL_ONLY,
+-		GPL_ONLY,
+-		WILL_BE_GPL_ONLY,
+-	} licence;
+-	bool unused;
+-};
+-
+ static bool each_symbol_in_section(const struct symsearch *arr,
+ 				   unsigned int arrsize,
+ 				   struct module *owner,
+@@ -216,10 +206,8 @@ static bool each_symbol_in_section(const struct symsearch *arr,
+ }
+ 
+ /* Returns true as soon as fn returns true, otherwise false. */
+-static bool each_symbol(bool (*fn)(const struct symsearch *arr,
+-				   struct module *owner,
+-				   unsigned int symnum, void *data),
+-			void *data)
++bool each_symbol(bool (*fn)(const struct symsearch *arr, struct module *owner,
++			    unsigned int symnum, void *data), void *data)
+ {
+ 	struct module *mod;
+ 	const struct symsearch arr[] = {
+@@ -272,6 +260,7 @@ static bool each_symbol(bool (*fn)(const struct symsearch *arr,
  	}
-   __bss_stop = .;
+ 	return false;
+ }
++EXPORT_SYMBOL_GPL(each_symbol);
  
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index e8d1bdd..4b5aea8 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -48,6 +48,7 @@
- /* .data section */
- #define DATA_DATA							\
- 	*(.data)							\
-+	*(.data.*)							\
- 	*(.kernel.data.init.refok)					\
- 	*(.ref.data)							\
- 	DEV_KEEP(init.data)						\
-@@ -235,6 +236,7 @@
- 		ALIGN_FUNCTION();					\
- 		*(.text.hot)						\
- 		*(.text)						\
-+		*(.text.*)						\
- 		*(.ref.text)						\
- 		*(.kernel.text.init.refok)				\
- 		*(.kernel.text.exit.refok)				\
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index b0f239e..e121ab7 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -557,6 +557,15 @@ config FRAME_POINTER
- 	  some architectures or if you use external debuggers.
- 	  If you don't debug the kernel, you can say N.
+ struct find_symbol_arg {
+ 	/* Input */
+@@ -329,11 +318,11 @@ static bool find_symbol_in_section(const struct symsearch *syms,
  
-+config FUNCTION_DATA_SECTIONS
-+	bool "Compile with -ffunction-sections -fdata-sections"
-+	depends on !FTRACE
-+	help
-+	  If you say Y here the compiler will give each function
-+	  and data structure its own ELF section.
-+
-+	  If unsure, say N.
-+
- config BOOT_PRINTK_DELAY
- 	bool "Delay each boot printk message by N milliseconds"
- 	depends on DEBUG_KERNEL && PRINTK && GENERIC_CALIBRATE_DELAY
-diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index f4053dc..a712bb2 100644
---- a/scripts/Makefile.modpost
-+++ b/scripts/Makefile.modpost
-@@ -87,6 +87,7 @@ modpost = scripts/mod/modpost                    \
-  $(if $(CONFIG_DEBUG_SECTION_MISMATCH),,-S)      \
-  $(if $(CONFIG_MARKERS),-K $(kernelmarkersfile)) \
-  $(if $(CONFIG_MARKERS),-M $(markersfile))	 \
-+ $(if $(filter -ffunction-sections -fdata-sections,$(KBUILD_CFLAGS) $(CFLAGS_KERNEL)),-F) \
-  $(if $(KBUILD_EXTMOD)$(KBUILD_MODPOST_WARN),-w) \
-  $(if $(cross_build),-c)
+ /* Find a symbol and return it, along with, (optional) crc and
+  * (optional) module which owns it */
+-static const struct kernel_symbol *find_symbol(const char *name,
+-					       struct module **owner,
+-					       const unsigned long **crc,
+-					       bool gplok,
+-					       bool warn)
++const struct kernel_symbol *find_symbol(const char *name,
++					struct module **owner,
++					const unsigned long **crc,
++					bool gplok,
++					bool warn)
+ {
+ 	struct find_symbol_arg fsa;
  
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index afe9408..68d9e95 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -32,6 +32,8 @@ static int warn_unresolved = 0;
- /* How a symbol is exported */
- static int sec_mismatch_count = 0;
- static int sec_mismatch_verbose = 1;
-+/* Are we using CONFIG_FUNCTION_DATA_SECTIONS? */
-+static int function_data_sections = 0;
+@@ -352,9 +341,10 @@ static const struct kernel_symbol *find_symbol(const char *name,
+ 	DEBUGP("Failed to find symbol %s\n", name);
+ 	return NULL;
+ }
++EXPORT_SYMBOL_GPL(find_symbol);
  
- enum export {
- 	export_plain,      export_unused,     export_gpl,
-@@ -736,7 +738,8 @@ static int check_section(const char *modname, const char *sec)
- 		/* consume all digits */
- 		while (*e && e != sec && isdigit(*e))
- 			e--;
--		if (*e == '.' && !strstr(sec, ".linkonce")) {
-+		if (*e == '.' && !strstr(sec, ".linkonce") &&
-+		    !function_data_sections) {
- 			warn("%s (%s): unexpected section name.\n"
- 			     "The (.[number]+) following section name are "
- 			     "ld generated and not expected.\n"
-@@ -2063,7 +2066,7 @@ int main(int argc, char **argv)
- 	struct ext_sym_list *extsym_iter;
- 	struct ext_sym_list *extsym_start = NULL;
+ /* Search for module by name: must hold module_mutex. */
+-static struct module *find_module(const char *name)
++struct module *find_module(const char *name)
+ {
+ 	struct module *mod;
  
--	while ((opt = getopt(argc, argv, "i:I:e:cmsSo:awM:K:")) != -1) {
-+	while ((opt = getopt(argc, argv, "i:I:e:cFmsSo:awM:K:")) != -1) {
- 		switch (opt) {
- 		case 'i':
- 			kernel_read = optarg;
-@@ -2083,6 +2086,9 @@ int main(int argc, char **argv)
- 			extsym_iter->file = optarg;
- 			extsym_start = extsym_iter;
- 			break;
-+		case 'F':
-+			function_data_sections = 1;
-+			break;
- 		case 'm':
- 			modversions = 1;
- 			break;
+@@ -364,6 +354,7 @@ static struct module *find_module(const char *name)
+ 	}
+ 	return NULL;
+ }
++EXPORT_SYMBOL_GPL(find_module);
+ 
+ #ifdef CONFIG_SMP
+ /* Number of blocks used and allocated. */
+@@ -607,7 +598,7 @@ static int already_uses(struct module *a, struct module *b)
+ }
+ 
+ /* Module a uses b */
+-static int use_module(struct module *a, struct module *b)
++int use_module(struct module *a, struct module *b)
+ {
+ 	struct module_use *use;
+ 	int no_warn, err;
+@@ -640,6 +631,7 @@ static int use_module(struct module *a, struct module *b)
+ 	no_warn = sysfs_create_link(b->holders_dir, &a->mkobj.kobj, a->name);
+ 	return 1;
+ }
++EXPORT_SYMBOL_GPL(use_module);
+ 
+ /* Clear the unload stuff of the module. */
+ static void module_unload_free(struct module *mod)
+@@ -903,10 +895,11 @@ static inline void module_unload_free(struct module *mod)
+ {
+ }
+ 
+-static inline int use_module(struct module *a, struct module *b)
++int use_module(struct module *a, struct module *b)
+ {
+ 	return strong_try_module_get(b) == 0;
+ }
++EXPORT_SYMBOL_GPL(use_module);
+ 
+ static inline void module_unload_init(struct module *mod)
+ {
+diff --git a/kernel/sched.c b/kernel/sched.c
+index b7480fb..970e034 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1770,6 +1770,7 @@ inline int task_curr(const struct task_struct *p)
+ {
+ 	return cpu_curr(task_cpu(p)) == p;
+ }
++EXPORT_SYMBOL_GPL(task_curr);
+ 
+ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
+ {
+diff --git a/lib/bug.c b/lib/bug.c
+index bfeafd6..b5c0659 100644
+--- a/lib/bug.c
++++ b/lib/bug.c
+@@ -113,6 +113,7 @@ const struct bug_entry *find_bug(unsigned long bugaddr)
+ 
+ 	return module_find_bug(bugaddr);
+ }
++EXPORT_SYMBOL_GPL(find_bug);
+ 
+ enum bug_trap_type report_bug(unsigned long bugaddr, struct pt_regs *regs)
+ {
 -- 
 1.5.6.3
 
