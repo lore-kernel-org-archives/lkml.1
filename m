@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbYLFH0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbYLFHdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757274AbYLFH0P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 02:26:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbYLFHZ6
+	id S1757344AbYLFHdf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 02:33:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbYLFHd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 02:25:58 -0500
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1876 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752053AbYLFHZ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 02:25:57 -0500
-Subject: Re: [RFC v11][PATCH 03/13] General infrastructure for checkpoint
- restart
-From: Joe Perches <joe@perches.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Linux Torvalds <torvalds@osdl.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       MinChan Kim <minchan.kim@gmail.com>, arnd@arndb.de, jeremy@goop.org
-In-Reply-To: <1228498282-11804-4-git-send-email-orenl@cs.columbia.edu>
-References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
-	 <1228498282-11804-4-git-send-email-orenl@cs.columbia.edu>
-Content-Type: text/plain
-Date: Fri, 05 Dec 2008 23:26:06 -0800
-Message-Id: <1228548366.13046.614.camel@localhost>
+	Sat, 6 Dec 2008 02:33:26 -0500
+Received: from 1wt.eu ([62.212.114.60]:1589 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750863AbYLFHdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Dec 2008 02:33:25 -0500
+Date: Sat, 6 Dec 2008 08:33:05 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Andrew <nick@nick-andrew.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <tj@kernel.org>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [RFC] Recursive printk
+Message-ID: <20081206073304.GE24654@1wt.eu>
+References: <20081206065922.29149.63380.stgit@marcab.local.tull.net> <20081205232016.366765e2.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081205232016.366765e2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-05 at 12:31 -0500, Oren Laadan wrote:
-> diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-> new file mode 100644
-> index 0000000..63f298f
-> --- /dev/null
-> +++ b/include/linux/checkpoint.h
-[]
-> +#define cr_debug(fmt, args...)  \
-> +	pr_debug("[%d:c/r:%s] " fmt, task_pid_vnr(current), __func__, ## args)
-> +
+On Fri, Dec 05, 2008 at 11:20:16PM -0800, Andrew Morton wrote:
+> > void snd_verbose_printk(const char *file, int line, const char *format, ...)
+> > {
+> >         va_list args;
+> > 
+> >         if (format[0] == '<' && format[1] >= '0' && format[1] <= '7' && format[2] == '>') {
+> >                 char tmp[] = "<0>";
+> >                 tmp[1] = format[1];
+> >                 printk("%sALSA %s:%d: ", tmp, file, line);
+> >                 format += 3;
+> 
+> That's racy.  Two threads can fight over tmp[1].  It should do:
+> 
+> 		printk("<%c>ALSA %s:%d: ", format[1], tmp, file, line);
+> 
+> (I didn't know that you can even modify literal strings - shouldn't
+> they be in read-only storage?)
 
-perhaps:
+no Andrew, this tmp[] is declared on the stack, and gcc emits code to
+copy the constant "<0>" onto the stack every time this code is called
+(which is basically just a 32-bit integer copy). So there's no race
+either.
 
-#define pr_fmt(fmt) "[%d:c/r:%s] " fmt, task_pid_vnr(current), __func__
-
-and use pr_debug instead?
-
+Regards,
+Willy
 
