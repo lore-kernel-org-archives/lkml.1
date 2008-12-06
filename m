@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757580AbYLFAUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbYLFA3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757580AbYLFAUS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 19:20:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbYLFAUE
+	id S1757545AbYLFA3T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 19:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbYLFA3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 19:20:04 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:41310 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755095AbYLFAUB (ORCPT
+	Fri, 5 Dec 2008 19:29:11 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52573 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753291AbYLFA3J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 19:20:01 -0500
-Date: Fri, 5 Dec 2008 18:19:57 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Linux Torvalds <torvalds@osdl.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       MinChan Kim <minchan.kim@gmail.com>, arnd@arndb.de, jeremy@goop.org
-Subject: Re: [RFC v11][PATCH 00/13] Kernel based checkpoint/restart
-Message-ID: <20081206001957.GA29851@us.ibm.com>
-References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 5 Dec 2008 19:29:09 -0500
+Date: Sat, 6 Dec 2008 00:29:12 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
+Subject: Re: Runaway loop with the current git.
+Message-ID: <20081206002912.7ed4defc@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081205211223.GA8075@ioremap.net>
+References: <20081205180350.GA25236@ioremap.net>
+	<20081205181610.518ecd13@lxorguk.ukuu.org.uk>
+	<ac3eb2510812051032g6b5ea866q30f097d765854196@mail.gmail.com>
+	<20081205192755.GA27712@ioremap.net>
+	<20081205193432.290a6f1a@lxorguk.ukuu.org.uk>
+	<20081205211223.GA8075@ioremap.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oren Laadan (orenl@cs.columbia.edu):
-> Checkpoint-restart (c/r): fixed races in file handling (comments from
-> from Al Viro). Updated and tested against v2.6.28-rc7 (feaf384...)
-> 
-> We'd like these to make it into -mm. This version addresses the
-> last of the known bugs. Please pull at least the first 11 patches,
-> as they are similar to before.
-> 
-> Patches 1-11 are stable, providing self- and external- c/r of a
-> single process.
-> Patches 12 and 13 are newer, adding support for c/r of multiple
-> processes.
-> 
-> The git tree tracking v11, branch 'ckpt-v11' (and older versions):
-> 	git://git.ncl.cs.columbia.edu/pub/git/linux-cr.git
-> 
-> Restarting multiple processes requires 'mktree' userspace tool:
-> 	git://git.ncl.cs.columbia.edu/pub/git/user-cr.git
+On Sat, 6 Dec 2008 00:12:23 +0300
+Evgeniy Polyakov <zbr@ioremap.net> wrote:
 
-Thanks Oren, this set is working great for me.  hours of
-(run in container; while (1) { checkpoint; kill; restart in container;}
-went fine.  500 simultaneoush checkpoints of the same task
-went fine.  mktree works great.
+> On Fri, Dec 05, 2008 at 07:34:32PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+> > > I can not run bisect, since reboot requires vnc and I'm far from fast
+> > > channel. Build of the fresh tree with existing config takes almost
+> > > one hour, but it should not be a major problem.
+> > > 
+> > > I can do bisection after the weekend, but can test some changes before
+> > > machine froze with unsuccessful patch.
+> > 
+> > I really have no idea what you are seeing so short of a bisect I've
+> > nothing to suggest.
+> 
+> But if things would be in userspace, then it should be fired long ago
+> with .27 kernel, no?
 
-thanks,
--serge
+I have no idea. A bisection will hopefully provide answers
