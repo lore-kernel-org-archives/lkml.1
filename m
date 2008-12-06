@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758305AbYLFQJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757840AbYLFQMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758305AbYLFQJh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 11:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbYLFQJ3
+	id S1757840AbYLFQMr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 11:12:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbYLFQMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 11:09:29 -0500
-Received: from tservice.ru ([195.178.208.66]:41947 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754701AbYLFQJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 11:09:29 -0500
-Date: Sat, 6 Dec 2008 19:09:27 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Runaway loop with the current git.
-Message-ID: <20081206160927.GA498@ioremap.net>
-References: <20081205180350.GA25236@ioremap.net> <20081205181610.518ecd13@lxorguk.ukuu.org.uk> <ac3eb2510812051032g6b5ea866q30f097d765854196@mail.gmail.com> <20081205192755.GA27712@ioremap.net> <20081205193432.290a6f1a@lxorguk.ukuu.org.uk> <20081205211223.GA8075@ioremap.net> <ac3eb2510812051317q79ca88e9ya876ffb94162eeca@mail.gmail.com> <20081205212428.GB8075@ioremap.net> <ac3eb2510812051810x8cf4256lf9fd31b15b9e0552@mail.gmail.com>
+	Sat, 6 Dec 2008 11:12:39 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54736 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754916AbYLFQMi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Dec 2008 11:12:38 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <493AA46A.30004@s5r6.in-berlin.de>
+Date: Sat, 06 Dec 2008 17:12:26 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081116 SeaMonkey/1.1.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510812051810x8cf4256lf9fd31b15b9e0552@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Frans Pop <elendil@planet.nl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux1394-devel@lists.sourceforge.net,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch] ohci1394: don't leave interrupts enabled during suspend/resume
+References: <200812061316.38460.elendil@planet.nl> <200812061536.47894.elendil@planet.nl>
+In-Reply-To: <200812061536.47894.elendil@planet.nl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 06, 2008 at 03:10:33AM +0100, Kay Sievers (kay.sievers@vrfy.org) wrote:
-> Can you add something like:
->   +++ b/kernel/kmod.c
->   @@ -108,6 +108,7 @@ int request_module(const char *fmt, ...)
->                   return -ENOMEM;
->           }
+Frans Pop wrote:
+> On my HP 2510p I get the following in dmesg during near the end of most
+> resumes from suspend to RAM:
 > 
->   +       printk("XXX call modprobe %s %s[%u]\n", module_name,
-> current->comm, task_pid_nr(current));
+> irq 19: nobody cared (try booting with the "irqpoll" option)
+> Pid: 0, comm: swapper Not tainted 2.6.28-rc7 #67
+> Call Trace:
+>  <IRQ>  [<ffffffffa00ee9e1>] ? ohci_irq_handler+0x60/0x7e9 [ohci1394]
+...
+> There also seems to be an interrupt storm during suspend/resume when this
+> happens:
+>  19:      99968         33   IO-APIC-fasteoi   ohci1394
 > 
-> It may show which process is looking for /dev/console and causes
-> modprobe to run, and maybe we get an idea what's going on. It may at
-> least show if it's a /dev/console problem.
+> This patch gets rid of both issues and makes the resume as a whole
+> significantly faster.
 
-Its a modprobe with different pids tries to load char-major-5 and
-char-major-5-1 in the infinite loop.
+Looks good, thanks.  Committed to linux1394-2.6.git.
 
+...
+> I don't actually use firewire, so I cannot test anything other than
+> checking dmesg and seeing that there are no changes. With the patch
+> I do see a very slow increase of the interrupt count, so the device
+> seems active.
+
+Yes, there should be an interrupt every 64 seconds even if no IO is
+going through the FireWire controller.
+
+> Please review the patch carefully, especially the error handling.
+> The patch is essentially only copy-and-paste work, with checks against
+> other drivers and the ohci1394_pci_probe function.
+
+Error handling in ohci1394's suspend method looked dubious already
+before your patch...
 -- 
-	Evgeniy Polyakov
+Stefan Richter
+-=====-==--- ==-- --==-
+http://arcgraph.de/sr/
