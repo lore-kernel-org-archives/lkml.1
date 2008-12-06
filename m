@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbYLFVrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbYLFVvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752937AbYLFVrw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 16:47:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYLFVrb
+	id S1753715AbYLFVvi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 16:51:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbYLFVva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 16:47:31 -0500
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:56484 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753220AbYLFVra (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 16:47:30 -0500
-Message-ID: <493AF2EE.20605@lwfinger.net>
-Date: Sat, 06 Dec 2008 15:47:26 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Sat, 6 Dec 2008 16:51:30 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60674 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752850AbYLFVva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Dec 2008 16:51:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend and resume
+Date: Sat, 6 Dec 2008 22:50:42 +0100
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <200812061843.59495.rjw@sisk.pl> <20081206210927.445f0bc6@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081206210927.445f0bc6@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Christian Lamparter <chunkeey@web.de>
-CC: Greg KH <gregkh@suse.de>, linux-wireless@vger.kernel.org,
-       Johannes Berg <johannes@sipsolutions.net>,
-       John W Linville <linville@tuxdriver.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] p54usb: rewriting rx/tx routines to make use of
- usb_anchor's facilities
-References: <200812051547.45790.chunkeey@web.de> <4939B6AF.2060901@lwfinger.net> <20081205232321.GA8557@suse.de> <200812062109.40590.chunkeey@web.de>
-In-Reply-To: <200812062109.40590.chunkeey@web.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812062250.43445.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Lamparter wrote:
+On Saturday, 6 of December 2008, Alan Cox wrote:
+> > prefer it to go next.  After it's been merged, I'm going to add the mandatory
+> > suspend-resume things (save state and go to a low power state on suspend,
+> > restore state on resume) to the new framework in a separete patch.
+> > 
+> > Is this plan acceptable?
 > 
-> Alan, I've got a question about:
-> "Create and initialize a usb_anchor structure, and each time you create
-> a new URB, call usb_anchor_urb().  Then you can free the URB as soon as
-> it is submitted; the anchor will keep it pinned until it completes, and
-> it is automatically removed from the anchor when the completion routine
-> is called."
-> 
-> Do we have to call usb_free_urb again, if we're resubmitting the urb in the
-> complete callback? (the code what I'm referring to is p54u_rx_cb in p54usb.c)
+> I have at least two drivers I look after where if you put the device into
+> D3 you lost. We survive because on a successful suspend/resume sequence
+> the BIOS puts it back coming out of suspend but that means we must not
+> put those devices into D3 ourselves ever - including during a suspend
+> before we are 100% comitted to the suspend completing or reboot.
 
-I am very interested in the answer to this question. My interpretation is that
-you cannot resubmit the urb after it has been posted to usb_anchor_usb() because
-the USB core will have deleted it, and that the callback routine will have to
-allocate a new urb, anchor it, and then free it as well.
+We can mark them as devices not to put into D3.  There already is a
+mechanism for that in place.
 
-Larry
+Thanks,
+Rafael
