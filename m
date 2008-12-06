@@ -1,121 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbYLFNtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbYLFNyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758244AbYLFNtV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 08:49:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbYLFNtM
+	id S1758066AbYLFNyU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 08:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbYLFNyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 08:49:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59577 "EHLO ogre.sisk.pl"
+	Sat, 6 Dec 2008 08:54:12 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59610 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755880AbYLFNtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 08:49:10 -0500
+	id S1753062AbYLFNyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Dec 2008 08:54:11 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: [patch,rfc] usb: restore config before enabling device on resume
-Date: Sat, 6 Dec 2008 14:48:30 +0100
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
+Date: Sat, 6 Dec 2008 14:53:23 +0100
 User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
+Cc: Frans Pop <elendil@planet.nl>, Greg KH <greg@kroah.com>,
        Ingo Molnar <mingo@elte.hu>, jbarnes@virtuousgeek.org, lenb@kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>,
-       USB list <linux-usb@vger.kernel.org>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812041037250.3543@nehalem.linux-foundation.org> <200812061020.19546.elendil@planet.nl>
-In-Reply-To: <200812061020.19546.elendil@planet.nl>
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812051750450.3425@nehalem.linux-foundation.org> <200812060318.08532.rjw@sisk.pl>
+In-Reply-To: <200812060318.08532.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812061448.31468.rjw@sisk.pl>
+Message-Id: <200812061453.23898.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 6 of December 2008, Frans Pop wrote:
-> On Thursday 04 December 2008, Linus Torvalds wrote:
-> > Greg, Jesse, can you think about and look at the USB PCI resume
-> > ordering?
-> [...]
-> > In many ways the bigger worry is actually in the totally unrelated USB
-> > UHCI and EHCI drivers that resume _before_ the bridge does:
-> >
-> > 	uhci_hcd 0000:00:1d.2: enabling device (0000 -> 0001)
-> > 	uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-> > 	uhci_hcd 0000:00:1d.2: setting latency timer to 64
-> > 	uhci_hcd 0000:00:1d.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-> >	uhci_hcd 0000:00:1d.2: restoring config space at offset 0x8 (was 0x1, writing 0x2101)
-> >	usb usb7: root hub lost power or was reset
-> > 	ehci_hcd 0000:00:1d.7: enabling device (0000 -> 0002)
-> > 	ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-> > 	ehci_hcd 0000:00:1d.7: setting latency timer to 64
-> > 	ehci_hcd 0000:00:1d.7: restoring config space at offset 0xf (was 0x100, writing 0x10a)
-> >	ehci_hcd 0000:00:1d.7: restoring config space at offset 0x4 (was 0x0, writing 0xe0648000)
-> >
-> > and the worry I have here is that we actually enable the device
-> > _before_ we've restored the BAR information. That sounds very iffy. It
-> > sounds doubly iffy in the 'resume from hibernate' case, where we are
-> > going to have an already-set-up PCI bus and the config space values are
-> > going to all be live as we reprogram them.
-> >
-> > That "restoring config space at offset 0x8" thing is where we restore
-> > the BAR (dword 0x8 = offset 0x20 = PCI_BASE_ADDRESS_4), and we're
-> > changing it from 0x1 to 0x2101, with the IO BAR enabled. In this case,
-> > the old value meant that the BAR started out disabled, but hibernate
-> > would have been different.
-> >
-> > So I'd _much_ rather have seen the sequence have the BAR restore
-> > sequence be something like
-> >
-> > 	uhci_hcd 0000:00:1d.2: restoring config space at offset 0xf (was 0x300, writing 0x30b)
-> >	uhci_hcd 0000:00:1d.2: restoring config space at offset 0x8 (was 0x1, writing 0x2101)
-> >	uhci_hcd 0000:00:1d.2: enabling device (0000 -> 0001)
-> > 	uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-> > 	uhci_hcd 0000:00:1d.2: setting latency timer to 64
-> >
-> > instead. Possibly even with an explicit disable of the
-> > memory/IO/busmaster bits before the whole sequence.
+On Saturday, 6 of December 2008, Rafael J. Wysocki wrote:
+> On Saturday, 6 of December 2008, Linus Torvalds wrote:
+> > 
+> > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+> > >
+> > > It only affects the legacy handling, but the non-legacy handling was left
+> > > untouched.  IOW, the old "default" functions are still there and are being
+> > > called by the "non-legacy" code (it's only used by USB at the moment, AFAICS).
+> > 
+> > Ok.
+> > 
+> > > Anyway, I did the test doing it only to the devices which don't have any
+> > > non-default suspend-resume handling at all and _that_ apparently fixed the
+> > > problem on my box. :-)
+> > 
+> > Which makes sense, btw. Because if you do the pci_save_state() on a device 
+> > that _does_ have a suspend function, you'll be saving the post-suspend 
+> > state - ie the device turned off.
+> > 
+> > So yeah, we really can only do the default suspend if the device has no 
+> > pre-existing suspend function - or we'd need to make sure that all PCI 
+> > drivers that do have suspend functions would only do the higher-level 
+> > functionality.
+> > 
+> > Anyway, what I'm most interested in hearing is whether this actually 
+> > improves your situation.
 > 
-> I've taken a very naive look at this, basically by comparing what usb
-> (usb/core/hcd-pci.c) is doing compared to other drivers.
-> 
-> I used the following command to get an overview:
-> $ git grep -E -n -C5 "pci_(enable_device|set_master|restore_state|power_state.*D0)"
-> (The line numbers give some indication whether work is split over functions.)
-> 
-> Most drivers seem to do some variation of the following, which looks
-> logical and is in line with Documentation/power/pci.txt:
-> pci_set_power_state(dev, PCI_D0);
-> pci_restore_state(dev);
-> pci_enable_device(dev);
-> pci_set_master(dev);
-> 
-> But quite a lot of drivers (including usb and e.g. ide/setup-pci.c) do
-> something like:
-> pci_enable_device(dev);
-> pci_set_master(dev);
-> pci_restore_state(dev);
-> 
-> Maybe the whole tree should get a review for this?
+> Yes, it does, from what I can tell at the moment. :-)
 
-I think so.
+OK, this patch alone doesn't fix the problem, ie. I was able to reproduce it
+with this patch applied, but it decreases the probability of a failure.
 
-> Anyway, I gave the patch below a try on both my notebook and desktop.
-> My desktop has USB keyboard and mouse and the notebook has wireless and
-> a fingerprint scanner on USB. Everything still worked after resume.
-> 
-> Diff of the resume dmesg of my motebook attached. Looks better I think?
+_However_, when I added two more patches to the mix:
+- a patch that moved the PCI Express port suspend and resume to functions
+  executed with interrupts disabled
+- a patch that moves the restoration of the PCI config space in snd_hda_intel
+  to a ->resume_early() callback
+I'm not able to reproduce the problem any more (I did over 20
+hibernation-resume cycles with this combination of patches applied with
+occasional suspend-to-RAM-resume cycles in between and there were no problems
+resuming).
 
-Yes, to me it does.
-
-In fact, I think you could even move the pci_restore_state(dev) into
-usb_hcd_pci_resume_early() that would be executed with interrupts off and
-drop the pci_set_power_state(dev, PCI_D0); entirely (the
-pci_enable_device(dev); would invoke it anyway).
+I'm going to post the three patches in a separate thread for discussion.
 
 Thanks,
 Rafael
-
-
-PS
-Please append patches instead of attaching them, they are a lot easier to
-discuss this way.
