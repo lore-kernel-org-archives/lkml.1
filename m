@@ -1,33 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbYLFCsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757942AbYLFCtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757202AbYLFCsY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 21:48:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYLFCsQ
+	id S1757942AbYLFCtS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 21:49:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYLFCtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 21:48:16 -0500
-Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.66]:38785 "EHLO
-	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751907AbYLFCsP (ORCPT
+	Fri, 5 Dec 2008 21:49:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38350 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751907AbYLFCtF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 21:48:15 -0500
-X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
-Date: Sat, 6 Dec 2008 11:47:57 +0900
-From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
-To: balbir@linux.vnet.ibm.com
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>, d-nishimura@mtf.biglobe.ne.jp,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH -mmotm 1/4] memcg: don't trigger oom at page
- migration
-Message-Id: <20081206114757.c323c63b.d-nishimura@mtf.biglobe.ne.jp>
-In-Reply-To: <20081205133925.GA10004@balbir.in.ibm.com>
-References: <20081205212208.31d904e0.nishimura@mxp.nes.nec.co.jp>
-	<20081205212304.f7018ea1.nishimura@mxp.nes.nec.co.jp>
-	<20081205133925.GA10004@balbir.in.ibm.com>
-Reply-To: nishimura@mxp.nes.nec.co.jp
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Fri, 5 Dec 2008 21:49:05 -0500
+Date: Fri, 5 Dec 2008 18:44:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Clemens Ladisch <clemens@ladisch.de>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [patch 011/104] fbdev: clean the penguins dirty feet
+Message-Id: <20081205184452.b3155408.akpm@linux-foundation.org>
+In-Reply-To: <20081205125855.GA1750@ucw.cz>
+References: <20081203193901.715896543@mini.kroah.org>
+	<20081203194838.GL8950@kroah.com>
+	<20081205125855.GA1750@ucw.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,55 +41,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Dec 2008 19:09:26 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Fri, 5 Dec 2008 13:58:55 +0100 Pavel Machek <pavel@suse.cz> wrote:
 
-> * Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2008-12-05 21:23:04]:
-> 
-> > I think triggering OOM at mem_cgroup_prepare_migration would be just a bit
-> > overkill.
-> > Returning -ENOMEM would be enough for mem_cgroup_prepare_migration.
-> > The caller would handle the case anyway.
+> On Wed 2008-12-03 11:48:38, Greg KH wrote:
+> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 > > 
-> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > ---
-> >  mm/memcontrol.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > ------------------
+> > From: Clemens Ladisch <clemens@ladisch.de>
 > > 
-> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> > index 4dbce1d..50ee1be 100644
-> > --- a/mm/memcontrol.c
-> > +++ b/mm/memcontrol.c
-> > @@ -1330,7 +1330,7 @@ int mem_cgroup_prepare_migration(struct page *page, struct mem_cgroup **ptr)
-> >  	unlock_page_cgroup(pc);
+> > commit cf7ee554f3a324e98181b0ea249d9d5be3a0acb8 upstream.
 > > 
-> >  	if (mem) {
-> > -		ret = mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem);
-> > +		ret = __mem_cgroup_try_charge(NULL, GFP_KERNEL, &mem, false);
-> >  		css_put(&mem->css);
-> >  	}
-> >  	*ptr = mem;
-> >
+> > When booting in a direct color mode, the penguin has dirty feet, i.e.,
+> > some pixels have the wrong color.  This is caused by
+> > fb_set_logo_directpalette() which does not initialize the last 32 palette
+> > entries.
 > 
-> Seems reasonable to me. A comment indicating or adding a noreclaim
-> wrapper around __mem_cgroup_try_charge to indicate that no reclaim
-> will take place will be nice.
-> 
-Ah.. this flag to __mem_cgroup_try_charge doesn't mean "don't reclaim"
-but "don't cause oom after it tried to free memory but couldn't
-free enough memory after all".
+> Heh, funny, but... is this really bad enough bug to go to stable?
 
-Thanks,
-Daisuke Nishimura.
+Borderline.  But the patch was pretty simple.
 
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com> 
-> 
-> -- 
-> 	Balbir
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+Also, there's the question "is this the sort of bug which distro
+customers are likely to report to the distros".  I figure "yes", and I
+figure that the distros would like us to fix it for them.  Of course,
+I might be wrong about one or both of those things ;)
