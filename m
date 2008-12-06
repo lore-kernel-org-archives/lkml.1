@@ -1,3019 +1,3530 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbYLFAL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbYLFALp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758333AbYLFAL3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 19:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbYLFALN
+	id S1758543AbYLFALp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 19:11:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758055AbYLFAL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 19:11:13 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:49617 "EHLO
+	Fri, 5 Dec 2008 19:11:28 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:49667 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754799AbYLFALF (ORCPT
+	by vger.kernel.org with ESMTP id S1756809AbYLFALV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 19:11:05 -0500
+	Fri, 5 Dec 2008 19:11:21 -0500
 From: Jeff Arnold <jbarnold@MIT.EDU>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>,
        Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
-       Waseem Daher <wdaher@MIT.EDU>, Nikanth Karthikesan <knikanth@suse.de>
-Subject: [PATCH 1/7] Make section names compatible with -ffunction-sections -fdata-sections
-Date: Fri,  5 Dec 2008 19:03:54 -0500
-Message-Id: <1228521840-3886-2-git-send-email-jbarnold@mit.edu>
+       Waseem Daher <wdaher@MIT.EDU>, Nikanth Karthikesan <knikanth@suse.de>,
+       Jeff Arnold <jbarnold@MIT.EDU>
+Subject: [PATCH 7/7] Ksplice: Support updating x86-32 and x86-64
+Date: Fri,  5 Dec 2008 19:04:00 -0500
+Message-Id: <1228521840-3886-8-git-send-email-jbarnold@mit.edu>
 X-Mailer: git-send-email 1.6.0
-In-Reply-To: <1228521840-3886-1-git-send-email-jbarnold@mit.edu>
+In-Reply-To: <1228521840-3886-7-git-send-email-jbarnold@mit.edu>
 References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu>
+ <1228521840-3886-2-git-send-email-jbarnold@mit.edu>
+ <1228521840-3886-3-git-send-email-jbarnold@mit.edu>
+ <1228521840-3886-4-git-send-email-jbarnold@mit.edu>
+ <1228521840-3886-5-git-send-email-jbarnold@mit.edu>
+ <1228521840-3886-6-git-send-email-jbarnold@mit.edu>
+ <1228521840-3886-7-git-send-email-jbarnold@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Denys Vlasenko <vda.linux@googlemail.com>
+Ksplice makes it possible to apply patches to the kernel without rebooting.
 
-This patch was originally written by Denys Vlasenko, but it has been
-substantially modified by Anders Kaseorg and Tim Abbott to update it
-to apply to the current kernel and fix bugs.  Any bugs were added by
-Anders Kaseorg and Tim Abbott.
-
-The purpose of this patch is to make it possible to build the kernel
-with "gcc -ffunction-sections -fdata-sections".
-
-The problem is that with -ffunction-sections -fdata-sections, gcc
-creates sections like .text.head and .data.nosave whenever someone has
-innocuous code like this:
-
-static void head(...) {...}
-
-or this:
-
-static int nosave = 1;
-
-somewhere in the kernel.
-
-The kernel linker scripts are confused by such names, and thus put
-these sections in the wrong places.
-
-This patch renames all "magic" section names used by the kernel to not
-have this format, eliminating the possibility of such collisions.
-
-Ksplice's 'run-pre matching' process is much simpler if the original
-kernel was compiled with -ffunction-sections and -fdata-sections.
-
-Changelog since Denys Vlasenko's latest patch:
-* Renamed .kernel.exit.text.refok to .kernel.text.exit.refok, for
-better analogy with .kernel.*.init.refok.
-* Updated from 2.6.27-rc4-git3 to 2.6.28-rc5.
-* Added some missing section flags for some of the .kernel.* sections
-(gcc assumes "ax" for sections with names starting with ".text", but
-does not for sections with names starting with ".kernel.text").
-
-Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
-[andersk@mit.edu] Add missing section flags for .kernel.* sections.
+Signed-off-by: Jeff Arnold <jbarnold@mit.edu>
 Signed-off-by: Anders Kaseorg <andersk@mit.edu>
-[tabbott@mit.edu] Update from 2.6.27-rc4-git3 to 2.6.28-rc5.
-[tabbott@mit.edu] Rename .kernel.exit.text.refok.
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
 Tested-by: Waseem Daher <wdaher@mit.edu>
 ---
- Documentation/mutex-design.txt              |    4 +-
- arch/alpha/kernel/head.S                    |    2 +-
- arch/alpha/kernel/init_task.c               |    2 +-
- arch/alpha/kernel/vmlinux.lds.S             |   14 ++++----
- arch/arm/kernel/head-nommu.S                |    3 +-
- arch/arm/kernel/head.S                      |    3 +-
- arch/arm/kernel/init_task.c                 |    2 +-
- arch/arm/kernel/vmlinux.lds.S               |   14 ++++----
- arch/arm/mm/proc-v6.S                       |    2 +-
- arch/arm/mm/proc-v7.S                       |    2 +-
- arch/arm/mm/tlb-v6.S                        |    2 +-
- arch/arm/mm/tlb-v7.S                        |    2 +-
- arch/avr32/kernel/init_task.c               |    2 +-
- arch/avr32/kernel/vmlinux.lds.S             |    6 ++--
- arch/avr32/mm/init.c                        |    2 +-
- arch/blackfin/kernel/vmlinux.lds.S          |    2 +-
- arch/cris/kernel/process.c                  |    2 +-
- arch/frv/kernel/break.S                     |    4 +-
- arch/frv/kernel/entry.S                     |    2 +-
- arch/frv/kernel/head-mmu-fr451.S            |    2 +-
- arch/frv/kernel/head-uc-fr401.S             |    2 +-
- arch/frv/kernel/head-uc-fr451.S             |    2 +-
- arch/frv/kernel/head-uc-fr555.S             |    2 +-
- arch/frv/kernel/head.S                      |    4 +-
- arch/frv/kernel/init_task.c                 |    2 +-
- arch/frv/kernel/vmlinux.lds.S               |   18 +++++-----
- arch/frv/mm/tlb-miss.S                      |    2 +-
- arch/h8300/boot/compressed/head.S           |    2 +-
- arch/h8300/boot/compressed/vmlinux.lds      |    2 +-
- arch/h8300/kernel/init_task.c               |    2 +-
- arch/h8300/kernel/vmlinux.lds.S             |    2 +-
- arch/ia64/include/asm/asmmacro.h            |   12 +++---
- arch/ia64/include/asm/cache.h               |    2 +-
- arch/ia64/include/asm/percpu.h              |    2 +-
- arch/ia64/kernel/Makefile                   |    2 +-
- arch/ia64/kernel/gate-data.S                |    2 +-
- arch/ia64/kernel/gate.S                     |    8 ++--
- arch/ia64/kernel/gate.lds.S                 |   10 +++---
- arch/ia64/kernel/head.S                     |    2 +-
- arch/ia64/kernel/init_task.c                |    4 +-
- arch/ia64/kernel/ivt.S                      |    2 +-
- arch/ia64/kernel/minstate.h                 |    4 +-
- arch/ia64/kernel/paravirtentry.S            |   12 +++---
- arch/ia64/kernel/vmlinux.lds.S              |   48 +++++++++++++-------------
- arch/ia64/kvm/vmm_ivt.S                     |    2 +-
- arch/ia64/xen/xensetup.S                    |    2 +-
- arch/m32r/kernel/init_task.c                |    2 +-
- arch/m32r/kernel/vmlinux.lds.S              |    6 ++--
- arch/m68k/kernel/head.S                     |    2 +-
- arch/m68k/kernel/process.c                  |    2 +-
- arch/m68k/kernel/sun3-head.S                |    2 +-
- arch/m68k/kernel/vmlinux-std.lds            |    6 ++--
- arch/m68k/kernel/vmlinux-sun3.lds           |    4 +-
- arch/m68knommu/kernel/init_task.c           |    2 +-
- arch/m68knommu/kernel/vmlinux.lds.S         |    6 ++--
- arch/m68knommu/platform/68360/head-ram.S    |    2 +-
- arch/m68knommu/platform/68360/head-rom.S    |    2 +-
- arch/mips/kernel/init_task.c                |    2 +-
- arch/mips/kernel/vmlinux.lds.S              |    8 ++--
- arch/mips/lasat/image/head.S                |    2 +-
- arch/mips/lasat/image/romscript.normal      |    2 +-
- arch/mn10300/kernel/head.S                  |    2 +-
- arch/mn10300/kernel/init_task.c             |    2 +-
- arch/mn10300/kernel/vmlinux.lds.S           |   18 +++++-----
- arch/parisc/include/asm/cache.h             |    2 +-
- arch/parisc/include/asm/system.h            |    2 +-
- arch/parisc/kernel/head.S                   |    2 +-
- arch/parisc/kernel/init_task.c              |    8 ++--
- arch/parisc/kernel/vmlinux.lds.S            |   26 +++++++-------
- arch/powerpc/include/asm/cache.h            |    2 +-
- arch/powerpc/include/asm/page_64.h          |    2 +-
- arch/powerpc/include/asm/ppc_asm.h          |    4 +-
- arch/powerpc/kernel/head_32.S               |    2 +-
- arch/powerpc/kernel/head_40x.S              |    2 +-
- arch/powerpc/kernel/head_44x.S              |    2 +-
- arch/powerpc/kernel/head_8xx.S              |    2 +-
- arch/powerpc/kernel/head_fsl_booke.S        |    2 +-
- arch/powerpc/kernel/init_task.c             |    2 +-
- arch/powerpc/kernel/machine_kexec_64.c      |    2 +-
- arch/powerpc/kernel/vdso.c                  |    2 +-
- arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    2 +-
- arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    2 +-
- arch/powerpc/kernel/vmlinux.lds.S           |   28 ++++++++--------
- arch/s390/include/asm/cache.h               |    2 +-
- arch/s390/kernel/head.S                     |    2 +-
- arch/s390/kernel/init_task.c                |    2 +-
- arch/s390/kernel/vmlinux.lds.S              |   20 +++++-----
- arch/sh/include/asm/cache.h                 |    2 +-
- arch/sh/kernel/cpu/sh5/entry.S              |    4 +-
- arch/sh/kernel/head_32.S                    |    2 +-
- arch/sh/kernel/head_64.S                    |    2 +-
- arch/sh/kernel/init_task.c                  |    2 +-
- arch/sh/kernel/irq.c                        |    4 +-
- arch/sh/kernel/vmlinux_32.lds.S             |   14 ++++----
- arch/sh/kernel/vmlinux_64.lds.S             |   14 ++++----
- arch/sparc/boot/btfixupprep.c               |    4 +-
- arch/sparc/include/asm/cache.h              |    2 +-
- arch/sparc/kernel/head.S                    |    2 +-
- arch/sparc/kernel/vmlinux.lds.S             |    8 ++--
- arch/sparc64/kernel/head.S                  |    2 +-
- arch/sparc64/kernel/vmlinux.lds.S           |    8 ++--
- arch/um/include/asm/common.lds.S            |    4 +-
- arch/um/kernel/dyn.lds.S                    |    4 +-
- arch/um/kernel/init_task.c                  |    4 +-
- arch/um/kernel/uml.lds.S                    |    4 +-
- arch/x86/boot/compressed/head_32.S          |    2 +-
- arch/x86/boot/compressed/head_64.S          |    2 +-
- arch/x86/boot/compressed/vmlinux.scr        |    2 +-
- arch/x86/boot/compressed/vmlinux_32.lds     |   14 +++++--
- arch/x86/boot/compressed/vmlinux_64.lds     |   10 +++--
- arch/x86/include/asm/cache.h                |    4 +-
- arch/x86/kernel/acpi/wakeup_32.S            |    2 +-
- arch/x86/kernel/head_32.S                   |    6 ++--
- arch/x86/kernel/head_64.S                   |    4 +-
- arch/x86/kernel/init_task.c                 |    4 +-
- arch/x86/kernel/traps.c                     |    2 +-
- arch/x86/kernel/vmlinux_32.lds.S            |   36 ++++++++++----------
- arch/x86/kernel/vmlinux_64.lds.S            |   26 +++++++-------
- arch/xtensa/kernel/head.S                   |    2 +-
- arch/xtensa/kernel/init_task.c              |    2 +-
- arch/xtensa/kernel/vmlinux.lds.S            |    6 ++--
- include/asm-frv/init.h                      |    8 ++--
- include/asm-generic/vmlinux.lds.h           |   14 ++++----
- include/linux/cache.h                       |    2 +-
- include/linux/init.h                        |    8 ++--
- include/linux/linkage.h                     |    4 +-
- include/linux/percpu.h                      |   12 +++---
- include/linux/spinlock.h                    |    2 +-
- kernel/module.c                             |    2 +-
- scripts/mod/modpost.c                       |   12 +++---
- scripts/recordmcount.pl                     |    6 ++--
- 131 files changed, 356 insertions(+), 346 deletions(-)
+ Documentation/ksplice.txt      |  282 +++++
+ MAINTAINERS                    |   10 +
+ arch/Kconfig                   |   14 +
+ arch/x86/Kconfig               |    1 +
+ arch/x86/kernel/ksplice-arch.c |  125 ++
+ include/linux/kernel.h         |    1 +
+ include/linux/ksplice.h        |  212 ++++
+ kernel/Makefile                |    3 +
+ kernel/ksplice.c               | 2715 ++++++++++++++++++++++++++++++++++++++++
+ kernel/panic.c                 |    1 +
+ 10 files changed, 3364 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/ksplice.txt
+ create mode 100644 arch/x86/kernel/ksplice-arch.c
+ create mode 100644 include/linux/ksplice.h
+ create mode 100644 kernel/ksplice.c
 
-diff --git a/Documentation/mutex-design.txt b/Documentation/mutex-design.txt
-index aa60d1f..b5f800b 100644
---- a/Documentation/mutex-design.txt
-+++ b/Documentation/mutex-design.txt
-@@ -66,14 +66,14 @@ of advantages of mutexes:
- 
-     c0377ccb <mutex_lock>:
-     c0377ccb:       f0 ff 08                lock decl (%eax)
--    c0377cce:       78 0e                   js     c0377cde <.text.lock.mutex>
-+    c0377cce:       78 0e                   js     c0377cde <.kernel.text.lock.mutex>
-     c0377cd0:       c3                      ret
- 
-    the unlocking fastpath is equally tight:
- 
-     c0377cd1 <mutex_unlock>:
-     c0377cd1:       f0 ff 00                lock incl (%eax)
--    c0377cd4:       7e 0f                   jle    c0377ce5 <.text.lock.mutex+0x7>
-+    c0377cd4:       7e 0f                   jle    c0377ce5 <.kernel.text.lock.mutex+0x7>
-     c0377cd6:       c3                      ret
- 
-  - 'struct mutex' semantics are well-defined and are enforced if
-diff --git a/arch/alpha/kernel/head.S b/arch/alpha/kernel/head.S
-index 7ac1f13..3726d71 100644
---- a/arch/alpha/kernel/head.S
-+++ b/arch/alpha/kernel/head.S
-@@ -10,7 +10,7 @@
- #include <asm/system.h>
- #include <asm/asm-offsets.h>
- 
--.section .text.head, "ax"
-+.section .kernel.text.head, "ax"
- .globl swapper_pg_dir
- .globl _stext
- swapper_pg_dir=SWAPPER_PGD
-diff --git a/arch/alpha/kernel/init_task.c b/arch/alpha/kernel/init_task.c
-index 1f76218..4dfa998 100644
---- a/arch/alpha/kernel/init_task.c
-+++ b/arch/alpha/kernel/init_task.c
-@@ -18,5 +18,5 @@ EXPORT_SYMBOL(init_mm);
- EXPORT_SYMBOL(init_task);
- 
- union thread_union init_thread_union
--	__attribute__((section(".data.init_thread")))
-+	__attribute__((section(".kernel.data.init_thread")))
- 	= { INIT_THREAD_INFO(init_task) };
-diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
-index ef37fc1..e3c637e 100644
---- a/arch/alpha/kernel/vmlinux.lds.S
-+++ b/arch/alpha/kernel/vmlinux.lds.S
-@@ -16,7 +16,7 @@ SECTIONS
- 
- 	_text = .;	/* Text and read-only data */
- 	.text : {
--	*(.text.head)
-+	*(.kernel.text.head)
- 		TEXT_TEXT
- 		SCHED_TEXT
- 		LOCK_TEXT
-@@ -93,18 +93,18 @@ SECTIONS
- 	/* Freed after init ends here */
- 
- 	/* Note 2 page alignment above.  */
--	.data.init_thread : {
--		*(.data.init_thread)
-+	.kernel.data.init_thread : {
-+		*(.kernel.data.init_thread)
- 	}
- 
- 	. = ALIGN(PAGE_SIZE);
--	.data.page_aligned : {
--		*(.data.page_aligned)
-+	.kernel.data.page_aligned : {
-+		*(.kernel.data.page_aligned)
- 	}
- 
- 	. = ALIGN(64);
--	.data.cacheline_aligned : {
--		*(.data.cacheline_aligned)
-+	.kernel.data.cacheline_aligned : {
-+		*(.kernel.data.cacheline_aligned)
- 	}
- 
- 	_data = .;
-diff --git a/arch/arm/kernel/head-nommu.S b/arch/arm/kernel/head-nommu.S
-index cc87e17..8163b2e 100644
---- a/arch/arm/kernel/head-nommu.S
-+++ b/arch/arm/kernel/head-nommu.S
-@@ -32,7 +32,8 @@
-  * numbers for r1.
-  *
-  */
--	.section ".text.head", "ax"
-+	.section ".kernel.text.head", "ax"
-+	.type	stext, %function
- ENTRY(stext)
- 	msr	cpsr_c, #PSR_F_BIT | PSR_I_BIT | SVC_MODE @ ensure svc mode
- 						@ and irqs disabled
-diff --git a/arch/arm/kernel/head.S b/arch/arm/kernel/head.S
-index 21e17dc..42f2d17 100644
---- a/arch/arm/kernel/head.S
-+++ b/arch/arm/kernel/head.S
-@@ -74,7 +74,8 @@
-  * crap here - that's what the boot loader (or in extreme, well justified
-  * circumstances, zImage) is for.
-  */
--	.section ".text.head", "ax"
-+	.section ".kernel.text.head", "ax"
-+	.type	stext, %function
- ENTRY(stext)
- 	msr	cpsr_c, #PSR_F_BIT | PSR_I_BIT | SVC_MODE @ ensure svc mode
- 						@ and irqs disabled
-diff --git a/arch/arm/kernel/init_task.c b/arch/arm/kernel/init_task.c
-index 0bbf806..d64e3ed 100644
---- a/arch/arm/kernel/init_task.c
-+++ b/arch/arm/kernel/init_task.c
-@@ -30,7 +30,7 @@ EXPORT_SYMBOL(init_mm);
-  * The things we do for performance..
-  */
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- /*
-diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
-index 4898bdc..7ec0ff5 100644
---- a/arch/arm/kernel/vmlinux.lds.S
-+++ b/arch/arm/kernel/vmlinux.lds.S
-@@ -23,10 +23,10 @@ SECTIONS
- #else
- 	. = PAGE_OFFSET + TEXT_OFFSET;
- #endif
--	.text.head : {
-+	.kernel.text.head : {
- 		_stext = .;
- 		_sinittext = .;
--		*(.text.head)
-+		*(.kernel.text.head)
- 	}
- 
- 	.init : {			/* Init code and data		*/
-@@ -65,8 +65,8 @@ SECTIONS
- #endif
- 		. = ALIGN(4096);
- 		__per_cpu_start = .;
--			*(.data.percpu)
--			*(.data.percpu.shared_aligned)
-+			*(.kernel.data.percpu)
-+			*(.kernel.data.percpu.shared_aligned)
- 		__per_cpu_end = .;
- #ifndef CONFIG_XIP_KERNEL
- 		__init_begin = _stext;
-@@ -125,7 +125,7 @@ SECTIONS
- 		 * first, the init task union, aligned
- 		 * to an 8192 byte boundary.
- 		 */
--		*(.data.init_task)
-+		*(.kernel.data.init_task)
- 
- #ifdef CONFIG_XIP_KERNEL
- 		. = ALIGN(4096);
-@@ -137,7 +137,7 @@ SECTIONS
- 
- 		. = ALIGN(4096);
- 		__nosave_begin = .;
--		*(.data.nosave)
-+		*(.kernel.data.nosave)
- 		. = ALIGN(4096);
- 		__nosave_end = .;
- 
-@@ -145,7 +145,7 @@ SECTIONS
- 		 * then the cacheline aligned data
- 		 */
- 		. = ALIGN(32);
--		*(.data.cacheline_aligned)
-+		*(.kernel.data.cacheline_aligned)
- 
- 		/*
- 		 * The exception fixup table (might need resorting at runtime)
-diff --git a/arch/arm/mm/proc-v6.S b/arch/arm/mm/proc-v6.S
-index 294943b..90c6d6b 100644
---- a/arch/arm/mm/proc-v6.S
-+++ b/arch/arm/mm/proc-v6.S
-@@ -130,7 +130,7 @@ cpu_v6_name:
- 	.asciz	"ARMv6-compatible processor"
- 	.align
- 
--	.section ".text.init", #alloc, #execinstr
-+	.section ".kernel.text.init", #alloc, #execinstr
- 
- /*
-  *	__v6_setup
-diff --git a/arch/arm/mm/proc-v7.S b/arch/arm/mm/proc-v7.S
-index 4d3c0a7..06a74ff 100644
---- a/arch/arm/mm/proc-v7.S
-+++ b/arch/arm/mm/proc-v7.S
-@@ -144,7 +144,7 @@ cpu_v7_name:
- 	.ascii	"ARMv7 Processor"
- 	.align
- 
--	.section ".text.init", #alloc, #execinstr
-+	.section ".kernel.text.init", #alloc, #execinstr
- 
- /*
-  *	__v7_setup
-diff --git a/arch/arm/mm/tlb-v6.S b/arch/arm/mm/tlb-v6.S
-index 20f84bb..f033268 100644
---- a/arch/arm/mm/tlb-v6.S
-+++ b/arch/arm/mm/tlb-v6.S
-@@ -87,7 +87,7 @@ ENTRY(v6wbi_flush_kern_tlb_range)
- 	mcr	p15, 0, r2, c7, c5, 4		@ prefetch flush
- 	mov	pc, lr
- 
--	.section ".text.init", #alloc, #execinstr
-+	.section ".kernel.text.init", #alloc, #execinstr
- 
- 	.type	v6wbi_tlb_fns, #object
- ENTRY(v6wbi_tlb_fns)
-diff --git a/arch/arm/mm/tlb-v7.S b/arch/arm/mm/tlb-v7.S
-index 24ba510..1b6d40a 100644
---- a/arch/arm/mm/tlb-v7.S
-+++ b/arch/arm/mm/tlb-v7.S
-@@ -80,7 +80,7 @@ ENTRY(v7wbi_flush_kern_tlb_range)
- 	mov	pc, lr
- ENDPROC(v7wbi_flush_kern_tlb_range)
- 
--	.section ".text.init", #alloc, #execinstr
-+	.section ".kernel.text.init", #alloc, #execinstr
- 
- 	.type	v7wbi_tlb_fns, #object
- ENTRY(v7wbi_tlb_fns)
-diff --git a/arch/avr32/kernel/init_task.c b/arch/avr32/kernel/init_task.c
-index 4405846..79954ab 100644
---- a/arch/avr32/kernel/init_task.c
-+++ b/arch/avr32/kernel/init_task.c
-@@ -24,7 +24,7 @@ EXPORT_SYMBOL(init_mm);
-  * Initial thread structure. Must be aligned on an 8192-byte boundary.
-  */
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- /*
-diff --git a/arch/avr32/kernel/vmlinux.lds.S b/arch/avr32/kernel/vmlinux.lds.S
-index 7910d41..1cb0345 100644
---- a/arch/avr32/kernel/vmlinux.lds.S
-+++ b/arch/avr32/kernel/vmlinux.lds.S
-@@ -95,15 +95,15 @@ SECTIONS
- 		/*
- 		 * First, the init task union, aligned to an 8K boundary.
- 		 */
--		*(.data.init_task)
-+		*(.kernel.data.init_task)
- 
- 		/* Then, the page-aligned data */
- 		. = ALIGN(PAGE_SIZE);
--		*(.data.page_aligned)
-+		*(.kernel.data.page_aligned)
- 
- 		/* Then, the cacheline aligned data */
- 		. = ALIGN(L1_CACHE_BYTES);
--		*(.data.cacheline_aligned)
-+		*(.kernel.data.cacheline_aligned)
- 
- 		/* And the rest... */
- 		*(.data.rel*)
-diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
-index fa92ff6..fa5089c 100644
---- a/arch/avr32/mm/init.c
-+++ b/arch/avr32/mm/init.c
-@@ -24,7 +24,7 @@
- #include <asm/setup.h>
- #include <asm/sections.h>
- 
--#define __page_aligned	__attribute__((section(".data.page_aligned")))
-+#define __page_aligned	__attribute__((section(".kernel.data.page_aligned")))
- 
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- 
-diff --git a/arch/blackfin/kernel/vmlinux.lds.S b/arch/blackfin/kernel/vmlinux.lds.S
-index 7d12c66..88e320d 100644
---- a/arch/blackfin/kernel/vmlinux.lds.S
-+++ b/arch/blackfin/kernel/vmlinux.lds.S
-@@ -92,7 +92,7 @@ SECTIONS
- 		__sdata = .;
- 		/* This gets done first, so the glob doesn't suck it in */
- 		. = ALIGN(32);
--		*(.data.cacheline_aligned)
-+		*(.kernel.data.cacheline_aligned)
- 
- #if !L1_DATA_A_LENGTH
- 		. = ALIGN(32);
-diff --git a/arch/cris/kernel/process.c b/arch/cris/kernel/process.c
-index 5933656..d98f18e 100644
---- a/arch/cris/kernel/process.c
-+++ b/arch/cris/kernel/process.c
-@@ -52,7 +52,7 @@ EXPORT_SYMBOL(init_mm);
-  * "init_task" linker map entry..
-  */
- union thread_union init_thread_union 
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- /*
-diff --git a/arch/frv/kernel/break.S b/arch/frv/kernel/break.S
-index bd0bdf9..1b7148a 100644
---- a/arch/frv/kernel/break.S
-+++ b/arch/frv/kernel/break.S
-@@ -21,7 +21,7 @@
- #
- # the break handler has its own stack
- #
--	.section	.bss.stack
-+	.section	.bss.kernel.stack
- 	.globl		__break_user_context
- 	.balign		THREAD_SIZE
- __break_stack:
-@@ -63,7 +63,7 @@ __break_trace_through_exceptions:
- # entry point for Break Exceptions/Interrupts
- #
- ###############################################################################
--	.section	.text.break
-+	.section	.kernel.text.break,"ax",@progbits
- 	.balign		4
- 	.globl		__entry_break
- __entry_break:
-diff --git a/arch/frv/kernel/entry.S b/arch/frv/kernel/entry.S
-index 99060ab..8d54945 100644
---- a/arch/frv/kernel/entry.S
-+++ b/arch/frv/kernel/entry.S
-@@ -38,7 +38,7 @@
- 
- #define nr_syscalls ((syscall_table_size)/4)
- 
--	.section	.text.entry
-+	.section	.kernel.text.entry,"ax",@progbits
- 	.balign		4
- 
- .macro LEDS val
-diff --git a/arch/frv/kernel/head-mmu-fr451.S b/arch/frv/kernel/head-mmu-fr451.S
-index c8f210d..248e557 100644
---- a/arch/frv/kernel/head-mmu-fr451.S
-+++ b/arch/frv/kernel/head-mmu-fr451.S
-@@ -31,7 +31,7 @@
- #define __400_LCR	0xfe000100
- #define __400_LSBR	0xfe000c00
- 
--	.section	.text.init,"ax"
-+	.section	.kernel.text.init,"ax"
- 	.balign		4
- 
- ###############################################################################
-diff --git a/arch/frv/kernel/head-uc-fr401.S b/arch/frv/kernel/head-uc-fr401.S
-index ee282be..282ab8d 100644
---- a/arch/frv/kernel/head-uc-fr401.S
-+++ b/arch/frv/kernel/head-uc-fr401.S
-@@ -30,7 +30,7 @@
- #define __400_LCR	0xfe000100
- #define __400_LSBR	0xfe000c00
- 
--	.section	.text.init,"ax"
-+	.section	.kernel.text.init,"ax"
- 	.balign		4
- 
- ###############################################################################
-diff --git a/arch/frv/kernel/head-uc-fr451.S b/arch/frv/kernel/head-uc-fr451.S
-index b10d9c8..2fcb045 100644
---- a/arch/frv/kernel/head-uc-fr451.S
-+++ b/arch/frv/kernel/head-uc-fr451.S
-@@ -30,7 +30,7 @@
- #define __400_LCR	0xfe000100
- #define __400_LSBR	0xfe000c00
- 
--	.section	.text.init,"ax"
-+	.section	.kernel.text.init,"ax"
- 	.balign		4
- 
- ###############################################################################
-diff --git a/arch/frv/kernel/head-uc-fr555.S b/arch/frv/kernel/head-uc-fr555.S
-index 39937c1..b5758bf 100644
---- a/arch/frv/kernel/head-uc-fr555.S
-+++ b/arch/frv/kernel/head-uc-fr555.S
-@@ -29,7 +29,7 @@
- #define __551_LCR	0xfeff1100
- #define __551_LSBR	0xfeff1c00
- 
--	.section	.text.init,"ax"
-+	.section	.kernel.text.init,"ax"
- 	.balign		4
- 
- ###############################################################################
-diff --git a/arch/frv/kernel/head.S b/arch/frv/kernel/head.S
-index fecf751..8be8976 100644
---- a/arch/frv/kernel/head.S
-+++ b/arch/frv/kernel/head.S
-@@ -27,7 +27,7 @@
- #   command line string
- #
- ###############################################################################
--	.section	.text.head,"ax"
-+	.section	.kernel.text.head,"ax"
- 	.balign		4
- 
- 	.globl		_boot, __head_reference
-@@ -541,7 +541,7 @@ __head_end:
- 	.size		_boot, .-_boot
- 
- 	# provide a point for GDB to place a break
--	.section	.text.start,"ax"
-+	.section	.kernel.text.start,"ax"
- 	.globl		_start
- 	.balign		4
- _start:
-diff --git a/arch/frv/kernel/init_task.c b/arch/frv/kernel/init_task.c
-index e219881..1cad6d0 100644
---- a/arch/frv/kernel/init_task.c
-+++ b/arch/frv/kernel/init_task.c
-@@ -25,7 +25,7 @@ EXPORT_SYMBOL(init_mm);
-  * "init_task" linker map entry..
-  */
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- /*
-diff --git a/arch/frv/kernel/vmlinux.lds.S b/arch/frv/kernel/vmlinux.lds.S
-index b95c4ea..219d286 100644
---- a/arch/frv/kernel/vmlinux.lds.S
-+++ b/arch/frv/kernel/vmlinux.lds.S
-@@ -26,7 +26,7 @@ SECTIONS
- 
-   _sinittext = .;
-   .init.text : {
--	*(.text.head)
-+	*(.kernel.text.head)
- #ifndef CONFIG_DEBUG_INFO
- 	INIT_TEXT
- 	EXIT_TEXT
-@@ -71,13 +71,13 @@ SECTIONS
- 
-   /* put sections together that have massive alignment issues */
-   . = ALIGN(THREAD_SIZE);
--  .data.init_task : {
-+  .kernel.data.init_task : {
- 	  /* init task record & stack */
--	  *(.data.init_task)
-+	  *(.kernel.data.init_task)
-   }
- 
-   . = ALIGN(L1_CACHE_BYTES);
--  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
-+  .kernel.data.cacheline_aligned : { *(.kernel.data.cacheline_aligned) }
- 
-   .trap : {
- 	/* trap table management - read entry-table.S before modifying */
-@@ -94,10 +94,10 @@ SECTIONS
-   _text = .;
-   _stext = .;
-   .text : {
--	*(.text.start)
--	*(.text.entry)
--	*(.text.break)
--	*(.text.tlbmiss)
-+	*(.kernel.text.start)
-+	*(.kernel.text.entry)
-+	*(.kernel.text.break)
-+	*(.kernel.text.tlbmiss)
- 	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
-@@ -152,7 +152,7 @@ SECTIONS
- 
-   .sbss		: { *(.sbss .sbss.*) }
-   .bss		: { *(.bss .bss.*) }
--  .bss.stack	: { *(.bss) }
-+  .bss.kernel.stack	: { *(.bss) }
- 
-   __bss_stop = .;
-   _end = . ;
-diff --git a/arch/frv/mm/tlb-miss.S b/arch/frv/mm/tlb-miss.S
-index 0764348..e361931 100644
---- a/arch/frv/mm/tlb-miss.S
-+++ b/arch/frv/mm/tlb-miss.S
-@@ -16,7 +16,7 @@
- #include <asm/highmem.h>
- #include <asm/spr-regs.h>
- 
--	.section	.text.tlbmiss
-+	.section	.kernel.text.tlbmiss,"ax",@progbits
- 	.balign		4
- 
- 	.globl		__entry_insn_mmu_miss
-diff --git a/arch/h8300/boot/compressed/head.S b/arch/h8300/boot/compressed/head.S
-index 985a81a..c4964f1 100644
---- a/arch/h8300/boot/compressed/head.S
-+++ b/arch/h8300/boot/compressed/head.S
-@@ -9,7 +9,7 @@
- 
- #define SRAM_START 0xff4000
- 
--	.section	.text.startup
-+	.section	.kernel.text.startup,"ax",@progbits
- 	.global	startup
- startup:
- 	mov.l	#SRAM_START+0x8000, sp
-diff --git a/arch/h8300/boot/compressed/vmlinux.lds b/arch/h8300/boot/compressed/vmlinux.lds
-index 65e2a0d..5965521 100644
---- a/arch/h8300/boot/compressed/vmlinux.lds
-+++ b/arch/h8300/boot/compressed/vmlinux.lds
-@@ -4,7 +4,7 @@ SECTIONS
-         {
-         __stext = . ;
- 	__text = .;
--	       *(.text.startup)
-+	       *(.kernel.text.startup)
- 	       *(.text)
-         __etext = . ;
-         }
-diff --git a/arch/h8300/kernel/init_task.c b/arch/h8300/kernel/init_task.c
-index 93a4899..5e76793 100644
---- a/arch/h8300/kernel/init_task.c
-+++ b/arch/h8300/kernel/init_task.c
-@@ -37,6 +37,6 @@ EXPORT_SYMBOL(init_task);
-  * "init_task" linker map entry..
-  */
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
-diff --git a/arch/h8300/kernel/vmlinux.lds.S b/arch/h8300/kernel/vmlinux.lds.S
-index 43a87b9..473e17d 100644
---- a/arch/h8300/kernel/vmlinux.lds.S
-+++ b/arch/h8300/kernel/vmlinux.lds.S
-@@ -101,7 +101,7 @@ SECTIONS
- 	___data_start = . ;
- 
- 	. = ALIGN(0x2000) ;
--		*(.data.init_task)
-+		*(.kernel.data.init_task)
- 	. = ALIGN(0x4) ;
- 		DATA_DATA
- 	. = ALIGN(0x4) ;
-diff --git a/arch/ia64/include/asm/asmmacro.h b/arch/ia64/include/asm/asmmacro.h
-index c1642fd..30c8715 100644
---- a/arch/ia64/include/asm/asmmacro.h
-+++ b/arch/ia64/include/asm/asmmacro.h
-@@ -70,12 +70,12 @@ name:
-  * path (ivt.S - TLB miss processing) or in places where it might not be
-  * safe to use a "tpa" instruction (mca_asm.S - error recovery).
-  */
--	.section ".data.patch.vtop", "a"	// declare section & section attributes
-+	.section ".kernel.data.patch.vtop", "a"	// declare section & section attributes
- 	.previous
- 
- #define	LOAD_PHYSICAL(pr, reg, obj)		\
- [1:](pr)movl reg = obj;				\
--	.xdata4 ".data.patch.vtop", 1b-.
-+	.xdata4 ".kernel.data.patch.vtop", 1b-.
- 
- /*
-  * For now, we always put in the McKinley E9 workaround.  On CPUs that don't need it,
-@@ -84,11 +84,11 @@ name:
- #define DO_MCKINLEY_E9_WORKAROUND
- 
- #ifdef DO_MCKINLEY_E9_WORKAROUND
--	.section ".data.patch.mckinley_e9", "a"
-+	.section ".kernel.data.patch.mckinley_e9", "a"
- 	.previous
- /* workaround for Itanium 2 Errata 9: */
- # define FSYS_RETURN					\
--	.xdata4 ".data.patch.mckinley_e9", 1f-.;	\
-+	.xdata4 ".kernel.data.patch.mckinley_e9", 1f-.;	\
- 1:{ .mib;						\
- 	nop.m 0;					\
- 	mov r16=ar.pfs;					\
-@@ -107,11 +107,11 @@ name:
-  * If physical stack register size is different from DEF_NUM_STACK_REG,
-  * dynamically patch the kernel for correct size.
-  */
--	.section ".data.patch.phys_stack_reg", "a"
-+	.section ".kernel.data.patch.phys_stack_reg", "a"
- 	.previous
- #define LOAD_PHYS_STACK_REG_SIZE(reg)			\
- [1:]	adds reg=IA64_NUM_PHYS_STACK_REG*8+8,r0;	\
--	.xdata4 ".data.patch.phys_stack_reg", 1b-.
-+	.xdata4 ".kernel.data.patch.phys_stack_reg", 1b-.
- 
- /*
-  * Up until early 2004, use of .align within a function caused bad unwind info.
-diff --git a/arch/ia64/include/asm/cache.h b/arch/ia64/include/asm/cache.h
-index e7482bd..7c8d940 100644
---- a/arch/ia64/include/asm/cache.h
-+++ b/arch/ia64/include/asm/cache.h
-@@ -24,6 +24,6 @@
- # define SMP_CACHE_BYTES	(1 << 3)
- #endif
- 
--#define __read_mostly __attribute__((__section__(".data.read_mostly")))
-+#define __read_mostly __attribute__((__section__(".kernel.data.read_mostly")))
- 
- #endif /* _ASM_IA64_CACHE_H */
-diff --git a/arch/ia64/include/asm/percpu.h b/arch/ia64/include/asm/percpu.h
-index 77f30b6..b4a5a2e 100644
---- a/arch/ia64/include/asm/percpu.h
-+++ b/arch/ia64/include/asm/percpu.h
-@@ -27,7 +27,7 @@ extern void *per_cpu_init(void);
- 
- #else /* ! SMP */
- 
--#define PER_CPU_ATTRIBUTES	__attribute__((__section__(".data.percpu")))
-+#define PER_CPU_ATTRIBUTES	__attribute__((__section__(".kernel.data.percpu")))
- 
- #define per_cpu_init()				(__phys_per_cpu_start)
- 
-diff --git a/arch/ia64/kernel/Makefile b/arch/ia64/kernel/Makefile
-index c381ea9..610572a 100644
---- a/arch/ia64/kernel/Makefile
-+++ b/arch/ia64/kernel/Makefile
-@@ -72,7 +72,7 @@ GATECFLAGS_gate-syms.o = -r
- $(obj)/gate-syms.o: $(obj)/gate.lds $(obj)/gate.o FORCE
- 	$(call if_changed,gate)
- 
--# gate-data.o contains the gate DSO image as data in section .data.gate.
-+# gate-data.o contains the gate DSO image as data in section .kernel.data.gate.
- # We must build gate.so before we can assemble it.
- # Note: kbuild does not track this dependency due to usage of .incbin
- $(obj)/gate-data.o: $(obj)/gate.so
-diff --git a/arch/ia64/kernel/gate-data.S b/arch/ia64/kernel/gate-data.S
-index 258c0a3..7cfa6a2 100644
---- a/arch/ia64/kernel/gate-data.S
-+++ b/arch/ia64/kernel/gate-data.S
-@@ -1,3 +1,3 @@
--	.section .data.gate, "aw"
-+	.section .kernel.data.gate, "aw"
- 
- 	.incbin "arch/ia64/kernel/gate.so"
-diff --git a/arch/ia64/kernel/gate.S b/arch/ia64/kernel/gate.S
-index 74b1ccc..eddece2 100644
---- a/arch/ia64/kernel/gate.S
-+++ b/arch/ia64/kernel/gate.S
-@@ -20,18 +20,18 @@
-  * to targets outside the shared object) and to avoid multi-phase kernel builds, we
-  * simply create minimalistic "patch lists" in special ELF sections.
-  */
--	.section ".data.patch.fsyscall_table", "a"
-+	.section ".kernel.data.patch.fsyscall_table", "a"
- 	.previous
- #define LOAD_FSYSCALL_TABLE(reg)			\
- [1:]	movl reg=0;					\
--	.xdata4 ".data.patch.fsyscall_table", 1b-.
-+	.xdata4 ".kernel.data.patch.fsyscall_table", 1b-.
- 
--	.section ".data.patch.brl_fsys_bubble_down", "a"
-+	.section ".kernel.data.patch.brl_fsys_bubble_down", "a"
- 	.previous
- #define BRL_COND_FSYS_BUBBLE_DOWN(pr)			\
- [1:](pr)brl.cond.sptk 0;				\
- 	;;						\
--	.xdata4 ".data.patch.brl_fsys_bubble_down", 1b-.
-+	.xdata4 ".kernel.data.patch.brl_fsys_bubble_down", 1b-.
- 
- GLOBAL_ENTRY(__kernel_syscall_via_break)
- 	.prologue
-diff --git a/arch/ia64/kernel/gate.lds.S b/arch/ia64/kernel/gate.lds.S
-index 3cb1abc..9a41f12 100644
---- a/arch/ia64/kernel/gate.lds.S
-+++ b/arch/ia64/kernel/gate.lds.S
-@@ -32,21 +32,21 @@ SECTIONS
- 	 */
- 	. = GATE_ADDR + 0x600;
- 
--	.data.patch		: {
-+	.kernel.data.patch	: {
- 		__start_gate_mckinley_e9_patchlist = .;
--		*(.data.patch.mckinley_e9)
-+		*(.kernel.data.patch.mckinley_e9)
- 		__end_gate_mckinley_e9_patchlist = .;
- 
- 		__start_gate_vtop_patchlist = .;
--		*(.data.patch.vtop)
-+		*(.kernel.data.patch.vtop)
- 		__end_gate_vtop_patchlist = .;
- 
- 		__start_gate_fsyscall_patchlist = .;
--		*(.data.patch.fsyscall_table)
-+		*(.kernel.data.patch.fsyscall_table)
- 		__end_gate_fsyscall_patchlist = .;
- 
- 		__start_gate_brl_fsys_bubble_down_patchlist = .;
--		*(.data.patch.brl_fsys_bubble_down)
-+		*(.kernel.data.patch.brl_fsys_bubble_down)
- 		__end_gate_brl_fsys_bubble_down_patchlist = .;
- 	}						:readable
- 
-diff --git a/arch/ia64/kernel/head.S b/arch/ia64/kernel/head.S
-index 59301c4..a88dc24 100644
---- a/arch/ia64/kernel/head.S
-+++ b/arch/ia64/kernel/head.S
-@@ -181,7 +181,7 @@ swapper_pg_dir:
- halt_msg:
- 	stringz "Halting kernel\n"
- 
--	.section .text.head,"ax"
-+	.section .kernel.text.head,"ax"
- 
- 	.global start_ap
- 
-diff --git a/arch/ia64/kernel/init_task.c b/arch/ia64/kernel/init_task.c
-index 9d7e1c6..16d7e24 100644
---- a/arch/ia64/kernel/init_task.c
-+++ b/arch/ia64/kernel/init_task.c
-@@ -28,7 +28,7 @@ EXPORT_SYMBOL(init_mm);
-  * Initial task structure.
-  *
-  * We need to make sure that this is properly aligned due to the way process stacks are
-- * handled. This is done by having a special ".data.init_task" section...
-+ * handled. This is done by having a special ".kernel.data.init_task" section...
-  */
- #define init_thread_info	init_task_mem.s.thread_info
- 
-@@ -38,7 +38,7 @@ union {
- 		struct thread_info thread_info;
- 	} s;
- 	unsigned long stack[KERNEL_STACK_SIZE/sizeof (unsigned long)];
--} init_task_mem asm ("init_task") __attribute__((section(".data.init_task"))) = {{
-+} init_task_mem asm ("init_task") __attribute__((section(".kernel.data.init_task"))) = {{
- 	.task =		INIT_TASK(init_task_mem.s.task),
- 	.thread_info =	INIT_THREAD_INFO(init_task_mem.s.task)
- }};
-diff --git a/arch/ia64/kernel/ivt.S b/arch/ia64/kernel/ivt.S
-index f675d8e..5bd4502 100644
---- a/arch/ia64/kernel/ivt.S
-+++ b/arch/ia64/kernel/ivt.S
-@@ -83,7 +83,7 @@
- 	mov r19=n;;			/* prepare to save predicates */		\
- 	br.sptk.many dispatch_to_fault_handler
- 
--	.section .text.ivt,"ax"
-+	.section .kernel.text.ivt,"ax"
- 
- 	.align 32768	// align on 32KB boundary
- 	.global ia64_ivt
-diff --git a/arch/ia64/kernel/minstate.h b/arch/ia64/kernel/minstate.h
-index 292e214..9bcff80 100644
---- a/arch/ia64/kernel/minstate.h
-+++ b/arch/ia64/kernel/minstate.h
-@@ -16,7 +16,7 @@
- #define ACCOUNT_SYS_ENTER
- #endif
- 
--.section ".data.patch.rse", "a"
-+.section ".kernel.data.patch.rse", "a"
- .previous
- 
- /*
-@@ -215,7 +215,7 @@
- (pUStk) extr.u r17=r18,3,6;			\
- (pUStk)	sub r16=r18,r22;			\
- [1:](pKStk)	br.cond.sptk.many 1f;		\
--	.xdata4 ".data.patch.rse",1b-.		\
-+	.xdata4 ".kernel.data.patch.rse",1b-.	\
- 	;;					\
- 	cmp.ge p6,p7 = 33,r17;			\
- 	;;					\
-diff --git a/arch/ia64/kernel/paravirtentry.S b/arch/ia64/kernel/paravirtentry.S
-index 2f42fcb..418a5f4 100644
---- a/arch/ia64/kernel/paravirtentry.S
-+++ b/arch/ia64/kernel/paravirtentry.S
-@@ -24,12 +24,12 @@
- #include <asm/asm-offsets.h>
- #include "entry.h"
- 
--#define DATA8(sym, init_value)			\
--	.pushsection .data.read_mostly ;	\
--	.align 8 ;				\
--	.global sym ;				\
--	sym: ;					\
--	data8 init_value ;			\
-+#define DATA8(sym, init_value)					\
-+	.pushsection .kernel.data.read_mostly,"aw",@progbits ;	\
-+	.align 8 ;						\
-+	.global sym ;						\
-+	sym: ;							\
-+	data8 init_value ;					\
- 	.popsection
- 
- #define BRANCH(targ, reg, breg)		\
-diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index 10a7d47..6e4e8a2 100644
---- a/arch/ia64/kernel/vmlinux.lds.S
-+++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -8,7 +8,7 @@
- 
- #define IVT_TEXT							\
- 		VMLINUX_SYMBOL(__start_ivt_text) = .;			\
--		*(.text.ivt)						\
-+		*(.kernel.text.ivt)					\
- 		VMLINUX_SYMBOL(__end_ivt_text) = .;
- 
- OUTPUT_FORMAT("elf64-ia64-little")
-@@ -51,13 +51,13 @@ SECTIONS
- 	KPROBES_TEXT
- 	*(.gnu.linkonce.t*)
-     }
--  .text.head : AT(ADDR(.text.head) - LOAD_OFFSET)
--	{ *(.text.head) }
-+  .kernel.text.head : AT(ADDR(.kernel.text.head) - LOAD_OFFSET)
-+	{ *(.kernel.text.head) }
-   .text2 : AT(ADDR(.text2) - LOAD_OFFSET)
- 	{ *(.text2) }
- #ifdef CONFIG_SMP
--  .text.lock : AT(ADDR(.text.lock) - LOAD_OFFSET)
--	{ *(.text.lock) }
-+  .kernel.text.lock : AT(ADDR(.kernel.text.lock) - LOAD_OFFSET)
-+	{ *(.kernel.text.lock) }
- #endif
-   _etext = .;
- 
-@@ -84,10 +84,10 @@ SECTIONS
- 	  __stop___mca_table = .;
- 	}
- 
--  .data.patch.phys_stack_reg : AT(ADDR(.data.patch.phys_stack_reg) - LOAD_OFFSET)
-+  .kernel.data.patch.phys_stack_reg : AT(ADDR(.kernel.data.patch.phys_stack_reg) - LOAD_OFFSET)
- 	{
- 	  __start___phys_stack_reg_patchlist = .;
--	  *(.data.patch.phys_stack_reg)
-+	  *(.kernel.data.patch.phys_stack_reg)
- 	  __end___phys_stack_reg_patchlist = .;
- 	}
- 
-@@ -148,24 +148,24 @@ SECTIONS
- 	  __initcall_end = .;
- 	}
- 
--  .data.patch.vtop : AT(ADDR(.data.patch.vtop) - LOAD_OFFSET)
-+  .kernel.data.patch.vtop : AT(ADDR(.kernel.data.patch.vtop) - LOAD_OFFSET)
- 	{
- 	  __start___vtop_patchlist = .;
--	  *(.data.patch.vtop)
-+	  *(.kernel.data.patch.vtop)
- 	  __end___vtop_patchlist = .;
- 	}
- 
--  .data.patch.rse : AT(ADDR(.data.patch.rse) - LOAD_OFFSET)
-+  .kernel.data.patch.rse : AT(ADDR(.kernel.data.patch.rse) - LOAD_OFFSET)
- 	{
- 	  __start___rse_patchlist = .;
--	  *(.data.patch.rse)
-+	  *(.kernel.data.patch.rse)
- 	  __end___rse_patchlist = .;
- 	}
- 
--  .data.patch.mckinley_e9 : AT(ADDR(.data.patch.mckinley_e9) - LOAD_OFFSET)
-+  .kernel.data.patch.mckinley_e9 : AT(ADDR(.kernel.data.patch.mckinley_e9) - LOAD_OFFSET)
- 	{
- 	  __start___mckinley_e9_bundles = .;
--	  *(.data.patch.mckinley_e9)
-+	  *(.kernel.data.patch.mckinley_e9)
- 	  __end___mckinley_e9_bundles = .;
- 	}
- 
-@@ -193,34 +193,34 @@ SECTIONS
-   __init_end = .;
- 
-   /* The initial task and kernel stack */
--  .data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET)
--	{ *(.data.init_task) }
-+  .kernel.data.init_task : AT(ADDR(.kernel.data.init_task) - LOAD_OFFSET)
-+	{ *(.kernel.data.init_task) }
- 
--  .data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET)
-+  .kernel.data.page_aligned : AT(ADDR(.kernel.data.page_aligned) - LOAD_OFFSET)
-         { *(__special_page_section)
- 	  __start_gate_section = .;
--	  *(.data.gate)
-+	  *(.kernel.data.gate)
- 	  __stop_gate_section = .;
- 	}
-   . = ALIGN(PAGE_SIZE);		/* make sure the gate page doesn't expose
-   				 * kernel data
- 				 */
- 
--  .data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET)
--        { *(.data.read_mostly) }
-+  .kernel.data.read_mostly : AT(ADDR(.kernel.data.read_mostly) - LOAD_OFFSET)
-+        { *(.kernel.data.read_mostly) }
- 
--  .data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET)
--        { *(.data.cacheline_aligned) }
-+  .kernel.data.cacheline_aligned : AT(ADDR(.kernel.data.cacheline_aligned) - LOAD_OFFSET)
-+        { *(.kernel.data.cacheline_aligned) }
- 
-   /* Per-cpu data: */
-   percpu : { } :percpu
-   . = ALIGN(PERCPU_PAGE_SIZE);
-   __phys_per_cpu_start = .;
--  .data.percpu PERCPU_ADDR : AT(__phys_per_cpu_start - LOAD_OFFSET)
-+  .kernel.data.percpu PERCPU_ADDR : AT(__phys_per_cpu_start - LOAD_OFFSET)
- 	{
- 		__per_cpu_start = .;
--		*(.data.percpu)
--		*(.data.percpu.shared_aligned)
-+		*(.kernel.data.percpu)
-+		*(.kernel.data.percpu.shared_aligned)
- 		__per_cpu_end = .;
- 	}
-   . = __phys_per_cpu_start + PERCPU_PAGE_SIZE;	/* ensure percpu data fits
-diff --git a/arch/ia64/kvm/vmm_ivt.S b/arch/ia64/kvm/vmm_ivt.S
-index c1d7251..935295e 100644
---- a/arch/ia64/kvm/vmm_ivt.S
-+++ b/arch/ia64/kvm/vmm_ivt.S
-@@ -97,7 +97,7 @@ END(kvm_panic)
- 
- 
- 
--    .section .text.ivt,"ax"
-+    .section .kernel.text.ivt,"ax"
- 
-     .align 32768    // align on 32KB boundary
-     .global kvm_ia64_ivt
-diff --git a/arch/ia64/xen/xensetup.S b/arch/ia64/xen/xensetup.S
-index 28fed1f..ebeadf4 100644
---- a/arch/ia64/xen/xensetup.S
-+++ b/arch/ia64/xen/xensetup.S
-@@ -14,7 +14,7 @@
- #include <linux/init.h>
- #include <xen/interface/elfnote.h>
- 
--	.section .data.read_mostly
-+	.section .kernel.data.read_mostly, "a"
- 	.align 8
- 	.global xen_domain_type
- xen_domain_type:
-diff --git a/arch/m32r/kernel/init_task.c b/arch/m32r/kernel/init_task.c
-index 0d658db..3a97818 100644
---- a/arch/m32r/kernel/init_task.c
-+++ b/arch/m32r/kernel/init_task.c
-@@ -26,7 +26,7 @@ EXPORT_SYMBOL(init_mm);
-  * "init_task" linker map entry..
-  */
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- /*
-diff --git a/arch/m32r/kernel/vmlinux.lds.S b/arch/m32r/kernel/vmlinux.lds.S
-index 9db05df..97e3cec 100644
---- a/arch/m32r/kernel/vmlinux.lds.S
-+++ b/arch/m32r/kernel/vmlinux.lds.S
-@@ -57,17 +57,17 @@ SECTIONS
- 
-   . = ALIGN(4096);
-   __nosave_begin = .;
--  .data_nosave : { *(.data.nosave) }
-+  .data_nosave : { *(.kernel.data.nosave) }
-   . = ALIGN(4096);
-   __nosave_end = .;
- 
-   . = ALIGN(32);
--  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
-+  .kernel.data.cacheline_aligned : { *(.kernel.data.cacheline_aligned) }
- 
-   _edata = .;			/* End of data section */
- 
-   . = ALIGN(8192);		/* init_task */
--  .data.init_task : { *(.data.init_task) }
-+  .kernel.data.init_task : { *(.kernel.data.init_task) }
- 
-   /* will be freed after init */
-   . = ALIGN(4096);		/* Init code and data */
-diff --git a/arch/m68k/kernel/head.S b/arch/m68k/kernel/head.S
-index f513f53..eb51357 100644
---- a/arch/m68k/kernel/head.S
-+++ b/arch/m68k/kernel/head.S
-@@ -577,7 +577,7 @@ func_define	putn,1
- #endif
- .endm
- 
--.section ".text.head","ax"
-+.section ".kernel.text.head","ax"
- ENTRY(_stext)
- /*
-  * Version numbers of the bootinfo interface
-diff --git a/arch/m68k/kernel/process.c b/arch/m68k/kernel/process.c
-index 3042c2b..85b8a14 100644
---- a/arch/m68k/kernel/process.c
-+++ b/arch/m68k/kernel/process.c
-@@ -48,7 +48,7 @@ struct mm_struct init_mm = INIT_MM(init_mm);
- EXPORT_SYMBOL(init_mm);
- 
- union thread_union init_thread_union
--__attribute__((section(".data.init_task"), aligned(THREAD_SIZE)))
-+__attribute__((section(".kernel.data.init_task"), aligned(THREAD_SIZE)))
-        = { INIT_THREAD_INFO(init_task) };
- 
- /* initial task structure */
-diff --git a/arch/m68k/kernel/sun3-head.S b/arch/m68k/kernel/sun3-head.S
-index aad0159..28d3a41 100644
---- a/arch/m68k/kernel/sun3-head.S
-+++ b/arch/m68k/kernel/sun3-head.S
-@@ -29,7 +29,7 @@ kernel_pmd_table:              .skip 0x2000
- .globl kernel_pg_dir
- .equ    kernel_pg_dir,kernel_pmd_table
- 
--	.section .text.head
-+	.section .kernel.text.head, "ax"
- ENTRY(_stext)
- ENTRY(_start)
- 
-diff --git a/arch/m68k/kernel/vmlinux-std.lds b/arch/m68k/kernel/vmlinux-std.lds
-index f846d4e..dc1e630 100644
---- a/arch/m68k/kernel/vmlinux-std.lds
-+++ b/arch/m68k/kernel/vmlinux-std.lds
-@@ -12,7 +12,7 @@ SECTIONS
-   . = 0x1000;
-   _text = .;			/* Text and read-only data */
-   .text : {
--	*(.text.head)
-+	*(.kernel.text.head)
- 	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
-@@ -35,7 +35,7 @@ SECTIONS
- 	}
- 
-   . = ALIGN(16);
--  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
-+  .kernel.data.cacheline_aligned : { *(.kernel.data.cacheline_aligned) } :data
- 
-   .bss : { *(.bss) }		/* BSS */
- 
-@@ -78,7 +78,7 @@ SECTIONS
-   . = ALIGN(8192);
-   __init_end = .;
- 
--  .data.init_task : { *(.data.init_task) }	/* The initial task and kernel stack */
-+  .kernel.data.init_task : { *(.kernel.data.init_task) }	/* The initial task and kernel stack */
- 
-   _end = . ;
- 
-diff --git a/arch/m68k/kernel/vmlinux-sun3.lds b/arch/m68k/kernel/vmlinux-sun3.lds
-index 8a4919e..2c55ffc 100644
---- a/arch/m68k/kernel/vmlinux-sun3.lds
-+++ b/arch/m68k/kernel/vmlinux-sun3.lds
-@@ -12,7 +12,7 @@ SECTIONS
-   . = 0xE002000;
-   _text = .;			/* Text and read-only data */
-   .text : {
--	*(.text.head)
-+	*(.kernel.text.head)
- 	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
-@@ -69,7 +69,7 @@ __init_begin = .;
- #endif
- 	. = ALIGN(PAGE_SIZE);
- 	__init_end = .;
--	.data.init.task : { *(.data.init_task) }
-+	.kernel.data.init.task : { *(.kernel.data.init_task) }
- 
- 
-   .bss : { *(.bss) }		/* BSS */
-diff --git a/arch/m68knommu/kernel/init_task.c b/arch/m68knommu/kernel/init_task.c
-index 344c01a..42ffc74 100644
---- a/arch/m68knommu/kernel/init_task.c
-+++ b/arch/m68knommu/kernel/init_task.c
-@@ -37,6 +37,6 @@ EXPORT_SYMBOL(init_task);
-  * "init_task" linker map entry..
-  */
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
-diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
-index 69ba9b1..d5d617c 100644
---- a/arch/m68knommu/kernel/vmlinux.lds.S
-+++ b/arch/m68knommu/kernel/vmlinux.lds.S
-@@ -55,7 +55,7 @@ SECTIONS {
- 	.romvec : {
- 		__rom_start = . ;
- 		_romvec = .;
--		*(.data.initvect)
-+		*(.kernel.data.initvect)
- 	} > romvec
- #endif
- 
-@@ -66,7 +66,7 @@ SECTIONS {
- 		TEXT_TEXT
- 		SCHED_TEXT
- 		LOCK_TEXT
--        	*(.text.lock)
-+        	*(.kernel.text.lock)
- 
- 		. = ALIGN(16);          /* Exception table              */
- 		__start___ex_table = .;
-@@ -148,7 +148,7 @@ SECTIONS {
- 		_sdata = . ;
- 		DATA_DATA
- 		. = ALIGN(8192) ;
--		*(.data.init_task)
-+		*(.kernel.data.init_task)
- 		_edata = . ;
- 	} > DATA
- 
-diff --git a/arch/m68knommu/platform/68360/head-ram.S b/arch/m68knommu/platform/68360/head-ram.S
-index 2ef0624..88a02ed 100644
---- a/arch/m68knommu/platform/68360/head-ram.S
-+++ b/arch/m68knommu/platform/68360/head-ram.S
-@@ -280,7 +280,7 @@ _dprbase:
-      * and then overwritten as needed.
-      */
-  
--.section ".data.initvect","awx"
-+.section ".kernel.data.initvect","awx"
-     .long   RAMEND	/* Reset: Initial Stack Pointer                 - 0.  */
-     .long   _start      /* Reset: Initial Program Counter               - 1.  */
-     .long   buserr      /* Bus Error                                    - 2.  */
-diff --git a/arch/m68knommu/platform/68360/head-rom.S b/arch/m68knommu/platform/68360/head-rom.S
-index 62ecf41..b4da6af 100644
---- a/arch/m68knommu/platform/68360/head-rom.S
-+++ b/arch/m68knommu/platform/68360/head-rom.S
-@@ -291,7 +291,7 @@ _dprbase:
-      * and then overwritten as needed.
-      */
-  
--.section ".data.initvect","awx"
-+.section ".kernel.data.initvect","awx"
-     .long   RAMEND	/* Reset: Initial Stack Pointer                 - 0.  */
-     .long   _start      /* Reset: Initial Program Counter               - 1.  */
-     .long   buserr      /* Bus Error                                    - 2.  */
-diff --git a/arch/mips/kernel/init_task.c b/arch/mips/kernel/init_task.c
-index d72487a..55ef3f3 100644
---- a/arch/mips/kernel/init_task.c
-+++ b/arch/mips/kernel/init_task.c
-@@ -27,7 +27,7 @@ EXPORT_SYMBOL(init_mm);
-  * The things we do for performance..
-  */
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"),
-+	__attribute__((__section__(".kernel.data.init_task"),
- 	               __aligned__(THREAD_SIZE))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
-diff --git a/arch/mips/kernel/vmlinux.lds.S b/arch/mips/kernel/vmlinux.lds.S
-index 58738c8..c9a89d8 100644
---- a/arch/mips/kernel/vmlinux.lds.S
-+++ b/arch/mips/kernel/vmlinux.lds.S
-@@ -77,7 +77,7 @@ SECTIONS
- 		 * object file alignment.  Using 32768
- 		 */
- 		. = ALIGN(_PAGE_SIZE);
--		*(.data.init_task)
-+		*(.kernel.data.init_task)
- 
- 		DATA_DATA
- 		CONSTRUCTORS
-@@ -99,14 +99,14 @@ SECTIONS
- 	. = ALIGN(_PAGE_SIZE);
- 	.data_nosave : {
- 		__nosave_begin = .;
--		*(.data.nosave)
-+		*(.kernel.data.nosave)
- 	}
- 	. = ALIGN(_PAGE_SIZE);
- 	__nosave_end = .;
- 
- 	. = ALIGN(1 << CONFIG_MIPS_L1_CACHE_SHIFT);
--	.data.cacheline_aligned : {
--		*(.data.cacheline_aligned)
-+	.kernel.data.cacheline_aligned : {
-+		*(.kernel.data.cacheline_aligned)
- 	}
- 	_edata =  .;			/* End of data section */
- 
-diff --git a/arch/mips/lasat/image/head.S b/arch/mips/lasat/image/head.S
-index efb95f2..d2e08b3 100644
---- a/arch/mips/lasat/image/head.S
-+++ b/arch/mips/lasat/image/head.S
-@@ -1,7 +1,7 @@
- #include <asm/lasat/head.h>
- 
- 	.text
--	.section .text.start, "ax"
-+	.section .kernel.text.start, "ax"
- 	.set noreorder
- 	.set mips3
- 
-diff --git a/arch/mips/lasat/image/romscript.normal b/arch/mips/lasat/image/romscript.normal
-index 988f8ad..9429398 100644
---- a/arch/mips/lasat/image/romscript.normal
-+++ b/arch/mips/lasat/image/romscript.normal
-@@ -4,7 +4,7 @@ SECTIONS
- {
-   .text :
-   {
--    *(.text.start)
-+    *(.kernel.text.start)
-   }
- 
-   /* Data in ROM */
-diff --git a/arch/mn10300/kernel/head.S b/arch/mn10300/kernel/head.S
-index 606bd8c..1b4b275 100644
---- a/arch/mn10300/kernel/head.S
-+++ b/arch/mn10300/kernel/head.S
-@@ -19,7 +19,7 @@
- #include <asm/param.h>
- #include <asm/unit/serial.h>
- 
--	.section .text.head,"ax"
-+	.section .kernel.text.head,"ax"
- 
- ###############################################################################
- #
-diff --git a/arch/mn10300/kernel/init_task.c b/arch/mn10300/kernel/init_task.c
-index af16f6e..7c7962d 100644
---- a/arch/mn10300/kernel/init_task.c
-+++ b/arch/mn10300/kernel/init_task.c
-@@ -32,7 +32,7 @@ EXPORT_SYMBOL(init_mm);
-  * "init_task" linker map entry..
-  */
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- /*
-diff --git a/arch/mn10300/kernel/vmlinux.lds.S b/arch/mn10300/kernel/vmlinux.lds.S
-index a3e80f4..4fd3d40 100644
---- a/arch/mn10300/kernel/vmlinux.lds.S
-+++ b/arch/mn10300/kernel/vmlinux.lds.S
-@@ -27,7 +27,7 @@ SECTIONS
-   _text = .;			/* Text and read-only data */
-   .text : {
- 	*(
--	.text.head
-+	.kernel.text.head
- 	.text
- 	)
- 	TEXT_TEXT
-@@ -57,25 +57,25 @@ SECTIONS
- 
-   . = ALIGN(4096);
-   __nosave_begin = .;
--  .data_nosave : { *(.data.nosave) }
-+  .data_nosave : { *(.kernel.data.nosave) }
-   . = ALIGN(4096);
-   __nosave_end = .;
- 
-   . = ALIGN(4096);
--  .data.page_aligned : { *(.data.idt) }
-+  .kernel.data.page_aligned : { *(.kernel.data.idt) }
- 
-   . = ALIGN(32);
--  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
-+  .kernel.data.cacheline_aligned : { *(.kernel.data.cacheline_aligned) }
- 
-   /* rarely changed data like cpu maps */
-   . = ALIGN(32);
--  .data.read_mostly : AT(ADDR(.data.read_mostly)) {
--	*(.data.read_mostly)
-+  .kernel.data.read_mostly : AT(ADDR(.kernel.data.read_mostly)) {
-+	*(.kernel.data.read_mostly)
- 	_edata = .;		/* End of data section */
-   }
- 
-   . = ALIGN(THREAD_SIZE);	/* init_task */
--  .data.init_task : { *(.data.init_task) }
-+  .kernel.data.init_task : { *(.kernel.data.init_task) }
- 
-   /* might get freed after init */
-   . = ALIGN(4096);
-@@ -128,7 +128,7 @@ SECTIONS
- 
-   . = ALIGN(32);
-   __per_cpu_start = .;
--  .data.percpu  : { *(.data.percpu) }
-+  .kernel.data.percpu  : { *(.kernel.data.percpu) }
-   __per_cpu_end = .;
-   . = ALIGN(4096);
-   __init_end = .;
-@@ -136,7 +136,7 @@ SECTIONS
- 
-   __bss_start = .;		/* BSS */
-   .bss : {
--	*(.bss.page_aligned)
-+	*(.bss.kernel.page_aligned)
- 	*(.bss)
-   }
-   . = ALIGN(4);
-diff --git a/arch/parisc/include/asm/cache.h b/arch/parisc/include/asm/cache.h
-index 32c2cca..d1e16aa 100644
---- a/arch/parisc/include/asm/cache.h
-+++ b/arch/parisc/include/asm/cache.h
-@@ -28,7 +28,7 @@
- 
- #define SMP_CACHE_BYTES L1_CACHE_BYTES
- 
--#define __read_mostly __attribute__((__section__(".data.read_mostly")))
-+#define __read_mostly __attribute__((__section__(".kernel.data.read_mostly")))
- 
- void parisc_cache_init(void);	/* initializes cache-flushing */
- void disable_sr_hashing_asm(int); /* low level support for above */
-diff --git a/arch/parisc/include/asm/system.h b/arch/parisc/include/asm/system.h
-index ee80c92..7a6ac0c 100644
---- a/arch/parisc/include/asm/system.h
-+++ b/arch/parisc/include/asm/system.h
-@@ -174,7 +174,7 @@ static inline void set_eiem(unsigned long val)
- })
- 
- #ifdef CONFIG_SMP
--# define __lock_aligned __attribute__((__section__(".data.lock_aligned")))
-+# define __lock_aligned __attribute__((__section__(".kernel.data.lock_aligned")))
- #endif
- 
- #define arch_align_stack(x) (x)
-diff --git a/arch/parisc/kernel/head.S b/arch/parisc/kernel/head.S
-index 0e3d9f9..9112df2 100644
---- a/arch/parisc/kernel/head.S
-+++ b/arch/parisc/kernel/head.S
-@@ -345,7 +345,7 @@ smp_slave_stext:
- ENDPROC(stext)
- 
- #ifndef CONFIG_64BIT
--	.section .data.read_mostly
-+	.section .kernel.data.read_mostly,"aw",@progbits
- 
- 	.align	4
- 	.export	$global$,data
-diff --git a/arch/parisc/kernel/init_task.c b/arch/parisc/kernel/init_task.c
-index f5941c0..dd741b2 100644
---- a/arch/parisc/kernel/init_task.c
-+++ b/arch/parisc/kernel/init_task.c
-@@ -49,7 +49,7 @@ EXPORT_SYMBOL(init_mm);
-  * "init_task" linker map entry..
-  */
- union thread_union init_thread_union
--	__attribute__((aligned(128))) __attribute__((__section__(".data.init_task"))) =
-+	__attribute__((aligned(128))) __attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- #if PT_NLEVELS == 3
-@@ -58,11 +58,11 @@ union thread_union init_thread_union
-  * guarantee that global objects will be laid out in memory in the same order 
-  * as the order of declaration, so put these in different sections and use
-  * the linker script to order them. */
--pmd_t pmd0[PTRS_PER_PMD] __attribute__ ((__section__ (".data.vm0.pmd"), aligned(PAGE_SIZE)));
-+pmd_t pmd0[PTRS_PER_PMD] __attribute__ ((__section__ (".kernel.data.vm0.pmd"), aligned(PAGE_SIZE)));
- #endif
- 
--pgd_t swapper_pg_dir[PTRS_PER_PGD] __attribute__ ((__section__ (".data.vm0.pgd"), aligned(PAGE_SIZE)));
--pte_t pg0[PT_INITIAL * PTRS_PER_PTE] __attribute__ ((__section__ (".data.vm0.pte"), aligned(PAGE_SIZE)));
-+pgd_t swapper_pg_dir[PTRS_PER_PGD] __attribute__ ((__section__ (".kernel.data.vm0.pgd"), aligned(PAGE_SIZE)));
-+pte_t pg0[PT_INITIAL * PTRS_PER_PTE] __attribute__ ((__section__ (".kernel.data.vm0.pte"), aligned(PAGE_SIZE)));
- 
- /*
-  * Initial task structure.
-diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
-index 1a3b6cc..861f15b 100644
---- a/arch/parisc/kernel/vmlinux.lds.S
-+++ b/arch/parisc/kernel/vmlinux.lds.S
-@@ -94,8 +94,8 @@ SECTIONS
- 
- 	/* rarely changed data like cpu maps */
- 	. = ALIGN(16);
--	.data.read_mostly : {
--		*(.data.read_mostly)
-+	.kernel.data.read_mostly : {
-+		*(.kernel.data.read_mostly)
- 	}
- 
- 	. = ALIGN(L1_CACHE_BYTES);
-@@ -106,14 +106,14 @@ SECTIONS
- 	}
- 
- 	. = ALIGN(L1_CACHE_BYTES);
--	.data.cacheline_aligned : {
--		*(.data.cacheline_aligned)
-+	.kernel.data.cacheline_aligned : {
-+		*(.kernel.data.cacheline_aligned)
- 	}
- 
- 	/* PA-RISC locks requires 16-byte alignment */
- 	. = ALIGN(16);
--	.data.lock_aligned : {
--		*(.data.lock_aligned)
-+	.kernel.data.lock_aligned : {
-+		*(.kernel.data.lock_aligned)
- 	}
- 
- 	/* nosave data is really only used for software suspend...it's here
-@@ -122,7 +122,7 @@ SECTIONS
- 	. = ALIGN(PAGE_SIZE);
- 	__nosave_begin = .;
- 	.data_nosave : {
--		*(.data.nosave)
-+		*(.kernel.data.nosave)
- 	}
- 	. = ALIGN(PAGE_SIZE);
- 	__nosave_end = .;
-@@ -134,10 +134,10 @@ SECTIONS
- 	__bss_start = .;
- 	/* page table entries need to be PAGE_SIZE aligned */
- 	. = ALIGN(PAGE_SIZE);
--	.data.vmpages : {
--		*(.data.vm0.pmd)
--		*(.data.vm0.pgd)
--		*(.data.vm0.pte)
-+	.kernel.data.vmpages : {
-+		*(.kernel.data.vm0.pmd)
-+		*(.kernel.data.vm0.pgd)
-+		*(.kernel.data.vm0.pte)
- 	}
- 	.bss : {
- 		*(.bss)
-@@ -149,8 +149,8 @@ SECTIONS
- 	/* assembler code expects init_task to be 16k aligned */
- 	. = ALIGN(16384);
- 	/* init_task */
--	.data.init_task : {
--		*(.data.init_task)
-+	.kernel.data.init_task : {
-+		*(.kernel.data.init_task)
- 	}
- 
- #ifdef CONFIG_64BIT
-diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
-index 81de6eb..69ead95 100644
---- a/arch/powerpc/include/asm/cache.h
-+++ b/arch/powerpc/include/asm/cache.h
-@@ -38,7 +38,7 @@ extern struct ppc64_caches ppc64_caches;
- #endif /* __powerpc64__ && ! __ASSEMBLY__ */
- 
- #if !defined(__ASSEMBLY__)
--#define __read_mostly __attribute__((__section__(".data.read_mostly")))
-+#define __read_mostly __attribute__((__section__(".kernel.data.read_mostly")))
- #endif
- 
- #endif /* __KERNEL__ */
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index 043bfdf..2e5f76b 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -157,7 +157,7 @@ do {						\
- #else
- #define __page_aligned \
- 	__attribute__((__aligned__(PAGE_SIZE), \
--		__section__(".data.page_aligned")))
-+		__section__(".kernel.data.page_aligned")))
- #endif
- 
- #define VM_DATA_DEFAULT_FLAGS \
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index c4a029c..1d1ab01 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -193,7 +193,7 @@ name: \
- GLUE(.,name):
- 
- #define _INIT_GLOBAL(name) \
--	.section ".text.init.refok"; \
-+	.section ".kernel.text.init.refok","ax",@progbits; \
- 	.align 2 ; \
- 	.globl name; \
- 	.globl GLUE(.,name); \
-@@ -233,7 +233,7 @@ name: \
- GLUE(.,name):
- 
- #define _INIT_STATIC(name) \
--	.section ".text.init.refok"; \
-+	.section ".kernel.text.init.refok","ax",@progbits; \
- 	.align 2 ; \
- 	.section ".opd","aw"; \
- name: \
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 0c32682..87299a0 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -49,7 +49,7 @@
- 	mtspr	SPRN_DBAT##n##L,RB;	\
- 1:
- 
--	.section	.text.head, "ax"
-+	.section	.kernel.text.head, "ax"
- 	.stabs	"arch/powerpc/kernel/",N_SO,0,0,0f
- 	.stabs	"head_32.S",N_SO,0,0,0f
- 0:
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 56d8e5d..d18a199 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -52,7 +52,7 @@
-  *
-  * This is all going to change RSN when we add bi_recs.......  -- Dan
-  */
--	.section	.text.head, "ax"
-+	.section	.kernel.text.head, "ax"
- _ENTRY(_stext);
- _ENTRY(_start);
- 
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index f3a1ea9..d843c4a 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -50,7 +50,7 @@
-  *   r7 - End of kernel command line string
-  *
-  */
--	.section	.text.head, "ax"
-+	.section	.kernel.text.head, "ax"
- _ENTRY(_stext);
- _ENTRY(_start);
- 	/*
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 3c9452d..549a236 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -38,7 +38,7 @@
- #else
- #define DO_8xx_CPU6(val, reg)
- #endif
--	.section	.text.head, "ax"
-+	.section	.kernel.text.head, "ax"
- _ENTRY(_stext);
- _ENTRY(_start);
- 
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 590304c..aace79e 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -53,7 +53,7 @@
-  *   r7 - End of kernel command line string
-  *
-  */
--	.section	.text.head, "ax"
-+	.section	.kernel.text.head, "ax"
- _ENTRY(_stext);
- _ENTRY(_start);
- 	/*
-diff --git a/arch/powerpc/kernel/init_task.c b/arch/powerpc/kernel/init_task.c
-index 4c85b8d..d331c22 100644
---- a/arch/powerpc/kernel/init_task.c
-+++ b/arch/powerpc/kernel/init_task.c
-@@ -22,7 +22,7 @@ EXPORT_SYMBOL(init_mm);
-  * "init_task" linker map entry..
-  */
- union thread_union init_thread_union 
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- /*
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 3c4ca04..5140895 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -250,7 +250,7 @@ static void kexec_prepare_cpus(void)
-  * current, but that audit has not been performed.
-  */
- static union thread_union kexec_stack
--	__attribute__((__section__(".data.init_task"))) = { };
-+	__attribute__((__section__(".kernel.data.init_task"))) = { };
- 
- /* Our assembly helper, in kexec_stub.S */
- extern NORET_TYPE void kexec_sequence(void *newstack, unsigned long start,
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index 65639a4..2737099 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -74,7 +74,7 @@ static int vdso_ready;
- static union {
- 	struct vdso_data	data;
- 	u8			page[PAGE_SIZE];
--} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-+} vdso_data_store __attribute__((__section__(".kernel.data.page_aligned")));
- struct vdso_data *vdso_data = &vdso_data_store.data;
- 
- /* Format of the patch table */
-diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-index 556f0ca..e1b3e41 100644
---- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-@@ -1,7 +1,7 @@
- #include <linux/init.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	.section ".kernel.data.page_aligned","aw",@progbits
- 
- 	.globl vdso32_start, vdso32_end
- 	.balign PAGE_SIZE
-diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-index 0529cb9..1d96b15 100644
---- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-+++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-@@ -1,7 +1,7 @@
- #include <linux/init.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	.section ".kernel.data.page_aligned","aw",@progbits
- 
- 	.globl vdso64_start, vdso64_end
- 	.balign PAGE_SIZE
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 2412c05..6cf1aad 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -52,9 +52,9 @@ SECTIONS
- 	/* Text and gots */
- 	.text : AT(ADDR(.text) - LOAD_OFFSET) {
- 		ALIGN_FUNCTION();
--		*(.text.head)
-+		*(.kernel.text.head)
- 		_text = .;
--		*(.text .fixup .text.init.refok .exit.text.refok __ftr_alt_*)
-+		*(.text .fixup .kernel.text.init.refok .kernel.text.exit.refok __ftr_alt_*)
- 		SCHED_TEXT
- 		LOCK_TEXT
- 		KPROBES_TEXT
-@@ -174,10 +174,10 @@ SECTIONS
- 	}
- #endif
- 	. = ALIGN(PAGE_SIZE);
--	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
-+	.kernel.data.percpu  : AT(ADDR(.kernel.data.percpu) - LOAD_OFFSET) {
- 		__per_cpu_start = .;
--		*(.data.percpu)
--		*(.data.percpu.shared_aligned)
-+		*(.kernel.data.percpu)
-+		*(.kernel.data.percpu.shared_aligned)
- 		__per_cpu_end = .;
- 	}
- 
-@@ -251,28 +251,28 @@ SECTIONS
- #else
- 	. = ALIGN(16384);
- #endif
--	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
--		*(.data.init_task)
-+	.kernel.data.init_task : AT(ADDR(.kernel.data.init_task) - LOAD_OFFSET) {
-+		*(.kernel.data.init_task)
- 	}
- 
- 	. = ALIGN(PAGE_SIZE);
--	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
--		*(.data.page_aligned)
-+	.kernel.data.page_aligned : AT(ADDR(.kernel.data.page_aligned) - LOAD_OFFSET) {
-+		*(.kernel.data.page_aligned)
- 	}
- 
--	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
--		*(.data.cacheline_aligned)
-+	.kernel.data.cacheline_aligned : AT(ADDR(.kernel.data.cacheline_aligned) - LOAD_OFFSET) {
-+		*(.kernel.data.cacheline_aligned)
- 	}
- 
- 	. = ALIGN(L1_CACHE_BYTES);
--	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
--		*(.data.read_mostly)
-+	.kernel.data.read_mostly : AT(ADDR(.kernel.data.read_mostly) - LOAD_OFFSET) {
-+		*(.kernel.data.read_mostly)
- 	}
- 
- 	. = ALIGN(PAGE_SIZE);
- 	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
- 		__nosave_begin = .;
--		*(.data.nosave)
-+		*(.kernel.data.nosave)
- 		. = ALIGN(PAGE_SIZE);
- 		__nosave_end = .;
- 	}
-diff --git a/arch/s390/include/asm/cache.h b/arch/s390/include/asm/cache.h
-index 9b86681..2890a0f 100644
---- a/arch/s390/include/asm/cache.h
-+++ b/arch/s390/include/asm/cache.h
-@@ -14,6 +14,6 @@
- #define L1_CACHE_BYTES     256
- #define L1_CACHE_SHIFT     8
- 
--#define __read_mostly __attribute__((__section__(".data.read_mostly")))
-+#define __read_mostly __attribute__((__section__(".kernel.data.read_mostly")))
- 
- #endif
-diff --git a/arch/s390/kernel/head.S b/arch/s390/kernel/head.S
-index 83477c7..b6e58bf 100644
---- a/arch/s390/kernel/head.S
-+++ b/arch/s390/kernel/head.S
-@@ -35,7 +35,7 @@
- #define ARCH_OFFSET	0
- #endif
- 
--.section ".text.head","ax"
-+.section ".kernel.text.head","ax"
- #ifndef CONFIG_IPL
- 	.org   0
- 	.long  0x00080000,0x80000000+startup	# Just a restart PSW
-diff --git a/arch/s390/kernel/init_task.c b/arch/s390/kernel/init_task.c
-index e807168..91e8014 100644
---- a/arch/s390/kernel/init_task.c
-+++ b/arch/s390/kernel/init_task.c
-@@ -31,7 +31,7 @@ EXPORT_SYMBOL(init_mm);
-  * "init_task" linker map entry..
-  */
- union thread_union init_thread_union 
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- /*
-diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index d796d05..873cac2 100644
---- a/arch/s390/kernel/vmlinux.lds.S
-+++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -29,7 +29,7 @@ SECTIONS
- 	. = 0x00000000;
- 	.text : {
- 	_text = .;		/* Text and read-only data */
--		*(.text.head)
-+		*(.kernel.text.head)
- 	TEXT_TEXT
- 		SCHED_TEXT
- 		LOCK_TEXT
-@@ -66,30 +66,30 @@ SECTIONS
- 	. = ALIGN(PAGE_SIZE);
- 	.data_nosave : {
- 	__nosave_begin = .;
--		*(.data.nosave)
-+		*(.kernel.data.nosave)
- 	}
- 	. = ALIGN(PAGE_SIZE);
- 	__nosave_end = .;
- 
- 	. = ALIGN(PAGE_SIZE);
--	.data.page_aligned : {
--		*(.data.idt)
-+	.kernel.data.page_aligned : {
-+		*(.kernel.data.idt)
- 	}
- 
- 	. = ALIGN(0x100);
--	.data.cacheline_aligned : {
--		*(.data.cacheline_aligned)
-+	.kernel.data.cacheline_aligned : {
-+		*(.kernel.data.cacheline_aligned)
- 	}
- 
- 	. = ALIGN(0x100);
--	.data.read_mostly : {
--		*(.data.read_mostly)
-+	.kernel.data.read_mostly : {
-+		*(.kernel.data.read_mostly)
- 	}
- 	_edata = .;		/* End of data section */
- 
- 	. = ALIGN(THREAD_SIZE);	/* init_task */
--	.data.init_task : {
--		*(.data.init_task)
-+	.kernel.data.init_task : {
-+		*(.kernel.data.init_task)
- 	}
- 
- 	/* will be freed after init */
-diff --git a/arch/sh/include/asm/cache.h b/arch/sh/include/asm/cache.h
-index 02df18e..f44fed5 100644
---- a/arch/sh/include/asm/cache.h
-+++ b/arch/sh/include/asm/cache.h
-@@ -14,7 +14,7 @@
- 
- #define L1_CACHE_BYTES		(1 << L1_CACHE_SHIFT)
- 
--#define __read_mostly __attribute__((__section__(".data.read_mostly")))
-+#define __read_mostly __attribute__((__section__(".kernel.data.read_mostly")))
- 
- #ifndef __ASSEMBLY__
- struct cache_info {
-diff --git a/arch/sh/kernel/cpu/sh5/entry.S b/arch/sh/kernel/cpu/sh5/entry.S
-index e640c63..43d031a 100644
---- a/arch/sh/kernel/cpu/sh5/entry.S
-+++ b/arch/sh/kernel/cpu/sh5/entry.S
-@@ -2058,10 +2058,10 @@ asm_uaccess_end:
- 
- 
- /*
-- * --- .text.init Section
-+ * --- .kernel.text.init Section
-  */
- 
--	.section	.text.init, "ax"
-+	.section	.kernel.text.init, "ax"
- 
- /*
-  * void trap_init (void)
-diff --git a/arch/sh/kernel/head_32.S b/arch/sh/kernel/head_32.S
-index ae0a382..c99328e 100644
---- a/arch/sh/kernel/head_32.S
-+++ b/arch/sh/kernel/head_32.S
-@@ -40,7 +40,7 @@ ENTRY(empty_zero_page)
- 1:
- 	.skip	PAGE_SIZE - empty_zero_page - 1b
- 
--	.section	.text.head, "ax"
-+	.section	.kernel.text.head, "ax"
- 
- /*
-  * Condition at the entry of _stext:
-diff --git a/arch/sh/kernel/head_64.S b/arch/sh/kernel/head_64.S
-index 7ccfb99..cf6ca73 100644
---- a/arch/sh/kernel/head_64.S
-+++ b/arch/sh/kernel/head_64.S
-@@ -110,7 +110,7 @@ empty_bad_pte_table:
- fpu_in_use:	.quad	0
- 
- 
--	.section	.text.head, "ax"
-+	.section	.kernel.text.head, "ax"
- 	.balign L1_CACHE_BYTES
- /*
-  * Condition at the entry of __stext:
-diff --git a/arch/sh/kernel/init_task.c b/arch/sh/kernel/init_task.c
-index b151a25..4993b2c 100644
---- a/arch/sh/kernel/init_task.c
-+++ b/arch/sh/kernel/init_task.c
-@@ -22,7 +22,7 @@ EXPORT_SYMBOL(init_mm);
-  * "init_task" linker map entry..
-  */
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- /*
-diff --git a/arch/sh/kernel/irq.c b/arch/sh/kernel/irq.c
-index 64b7690..9df37f6 100644
---- a/arch/sh/kernel/irq.c
-+++ b/arch/sh/kernel/irq.c
-@@ -158,10 +158,10 @@ asmlinkage int do_IRQ(unsigned int irq, struct pt_regs *regs)
- 
- #ifdef CONFIG_IRQSTACKS
- static char softirq_stack[NR_CPUS * THREAD_SIZE]
--		__attribute__((__section__(".bss.page_aligned")));
-+		__attribute__((__section__(".bss.kernel.page_aligned")));
- 
- static char hardirq_stack[NR_CPUS * THREAD_SIZE]
--		__attribute__((__section__(".bss.page_aligned")));
-+		__attribute__((__section__(".bss.kernel.page_aligned")));
- 
- /*
-  * allocate per-cpu stacks for hardirq and for softirq processing
-diff --git a/arch/sh/kernel/vmlinux_32.lds.S b/arch/sh/kernel/vmlinux_32.lds.S
-index 7b4b82b..04dd19f 100644
---- a/arch/sh/kernel/vmlinux_32.lds.S
-+++ b/arch/sh/kernel/vmlinux_32.lds.S
-@@ -28,7 +28,7 @@ SECTIONS
- 	} = 0
- 
- 	.text : {
--		*(.text.head)
-+		*(.kernel.text.head)
- 		TEXT_TEXT
- 		SCHED_TEXT
- 		LOCK_TEXT
-@@ -58,19 +58,19 @@ SECTIONS
- 
- 	. = ALIGN(THREAD_SIZE);
- 	.data : {			/* Data */
--		*(.data.init_task)
-+		*(.kernel.data.init_task)
- 
- 		. = ALIGN(L1_CACHE_BYTES);
--		*(.data.cacheline_aligned)
-+		*(.kernel.data.cacheline_aligned)
- 
- 		. = ALIGN(L1_CACHE_BYTES);
--		*(.data.read_mostly)
-+		*(.kernel.data.read_mostly)
- 
- 		. = ALIGN(PAGE_SIZE);
--		*(.data.page_aligned)
-+		*(.kernel.data.page_aligned)
- 
- 		__nosave_begin = .;
--		*(.data.nosave)
-+		*(.kernel.data.nosave)
- 		. = ALIGN(PAGE_SIZE);
- 		__nosave_end = .;
- 
-@@ -128,7 +128,7 @@ SECTIONS
- 	.bss : {
- 		__init_end = .;
- 		__bss_start = .;		/* BSS */
--		*(.bss.page_aligned)
-+		*(.bss.kernel.page_aligned)
- 		*(.bss)
- 		*(COMMON)
- 		. = ALIGN(4);
-diff --git a/arch/sh/kernel/vmlinux_64.lds.S b/arch/sh/kernel/vmlinux_64.lds.S
-index 33fa464..6059a49 100644
---- a/arch/sh/kernel/vmlinux_64.lds.S
-+++ b/arch/sh/kernel/vmlinux_64.lds.S
-@@ -42,7 +42,7 @@ SECTIONS
- 	} = 0
- 
- 	.text : C_PHYS(.text) {
--		*(.text.head)
-+		*(.kernel.text.head)
- 		TEXT_TEXT
- 		*(.text64)
- 		*(.text..SHmedia32)
-@@ -70,19 +70,19 @@ SECTIONS
- 
- 	. = ALIGN(THREAD_SIZE);
- 	.data : C_PHYS(.data) {			/* Data */
--		*(.data.init_task)
-+		*(.kernel.data.init_task)
- 
- 		. = ALIGN(L1_CACHE_BYTES);
--		*(.data.cacheline_aligned)
-+		*(.kernel.data.cacheline_aligned)
- 
- 		. = ALIGN(L1_CACHE_BYTES);
--		*(.data.read_mostly)
-+		*(.kernel.data.read_mostly)
- 
- 		. = ALIGN(PAGE_SIZE);
--		*(.data.page_aligned)
-+		*(.kernel.data.page_aligned)
- 
- 		__nosave_begin = .;
--		*(.data.nosave)
-+		*(.kernel.data.nosave)
- 		. = ALIGN(PAGE_SIZE);
- 		__nosave_end = .;
- 
-@@ -140,7 +140,7 @@ SECTIONS
- 	.bss : C_PHYS(.bss) {
- 		__init_end = .;
- 		__bss_start = .;		/* BSS */
--		*(.bss.page_aligned)
-+		*(.bss.kernel.page_aligned)
- 		*(.bss)
- 		*(COMMON)
- 		. = ALIGN(4);
-diff --git a/arch/sparc/boot/btfixupprep.c b/arch/sparc/boot/btfixupprep.c
-index 52a4208..5f8472b 100644
---- a/arch/sparc/boot/btfixupprep.c
-+++ b/arch/sparc/boot/btfixupprep.c
-@@ -171,7 +171,7 @@ main1:
- 			}
- 		} else if (buffer[nbase+4] != '_')
- 			continue;
--		if (!strcmp (sect, ".text.exit"))
-+		if (!strcmp (sect, ".kernel.text.exit"))
- 			continue;
- 		if (strcmp (sect, ".text") &&
- 		    strcmp (sect, ".init.text") &&
-@@ -325,7 +325,7 @@ main1:
- 		(*rr)->next = NULL;
- 	}
- 	printf("! Generated by btfixupprep. Do not edit.\n\n");
--	printf("\t.section\t\".data.init\",#alloc,#write\n\t.align\t4\n\n");
-+	printf("\t.section\t\".kernel.data.init\",#alloc,#write\n\t.align\t4\n\n");
- 	printf("\t.global\t___btfixup_start\n___btfixup_start:\n\n");
- 	for (i = 0; i < last; i++) {
- 		f = array + i;
-diff --git a/arch/sparc/include/asm/cache.h b/arch/sparc/include/asm/cache.h
-index 41f85ae..19f1a48 100644
---- a/arch/sparc/include/asm/cache.h
-+++ b/arch/sparc/include/asm/cache.h
-@@ -19,7 +19,7 @@
- 
- #define SMP_CACHE_BYTES (1 << SMP_CACHE_BYTES_SHIFT)
- 
--#define __read_mostly __attribute__((__section__(".data.read_mostly")))
-+#define __read_mostly __attribute__((__section__(".kernel.data.read_mostly")))
- 
- #ifdef CONFIG_SPARC32
- #include <asm/asi.h>
-diff --git a/arch/sparc/kernel/head.S b/arch/sparc/kernel/head.S
-index 51b4042..8e7d300 100644
---- a/arch/sparc/kernel/head.S
-+++ b/arch/sparc/kernel/head.S
-@@ -735,7 +735,7 @@ go_to_highmem:
- 		 nop
- 
- /* The code above should be at beginning and we have to take care about
-- * short jumps, as branching to .text.init section from .text is usually
-+ * short jumps, as branching to .kernel.text.init section from .text is usually
-  * impossible */
- 		__INIT
- /* Acquire boot time privileged register values, this will help debugging.
-diff --git a/arch/sparc/kernel/vmlinux.lds.S b/arch/sparc/kernel/vmlinux.lds.S
-index 5b7e69a..c1b13b0 100644
---- a/arch/sparc/kernel/vmlinux.lds.S
-+++ b/arch/sparc/kernel/vmlinux.lds.S
-@@ -87,12 +87,12 @@ SECTIONS
- 	. = ALIGN(PAGE_SIZE);
- 	__init_end = .;
- 	. = ALIGN(32);
--	.data.cacheline_aligned : {
--		*(.data.cacheline_aligned)
-+	.kernel.data.cacheline_aligned : {
-+		*(.kernel.data.cacheline_aligned)
- 	}
- 	. = ALIGN(32);
--	.data.read_mostly : {
--		*(.data.read_mostly)
-+	.kernel.data.read_mostly : {
-+		*(.kernel.data.read_mostly)
- 	}
- 
- 	__bss_start = .;
-diff --git a/arch/sparc64/kernel/head.S b/arch/sparc64/kernel/head.S
-index 353226f..a5fb164 100644
---- a/arch/sparc64/kernel/head.S
-+++ b/arch/sparc64/kernel/head.S
-@@ -467,7 +467,7 @@ jump_to_sun4u_init:
- 	jmpl    %g2 + %g0, %g0
- 	 nop
- 
--	.section	.text.init.refok
-+	.section	.kernel.text.init.refok,"ax",@progbits
- sun4u_init:
- 	BRANCH_IF_SUN4V(g1, sun4v_init)
- 
-diff --git a/arch/sparc64/kernel/vmlinux.lds.S b/arch/sparc64/kernel/vmlinux.lds.S
-index 01f8096..863dd19 100644
---- a/arch/sparc64/kernel/vmlinux.lds.S
-+++ b/arch/sparc64/kernel/vmlinux.lds.S
-@@ -32,12 +32,12 @@ SECTIONS
- 		*(.data1)
- 	}
- 	. = ALIGN(64);
--	.data.cacheline_aligned : {
--		*(.data.cacheline_aligned)
-+	.kernel.data.cacheline_aligned : {
-+		*(.kernel.data.cacheline_aligned)
- 	}
- 	. = ALIGN(64);
--	.data.read_mostly : {
--		*(.data.read_mostly)
-+	.kernel.data.read_mostly : {
-+		*(.kernel.data.read_mostly)
- 	}
- 	_edata = .;
- 	PROVIDE (edata = .);
-diff --git a/arch/um/include/asm/common.lds.S b/arch/um/include/asm/common.lds.S
-index cb02486..9ac4b36 100644
---- a/arch/um/include/asm/common.lds.S
-+++ b/arch/um/include/asm/common.lds.S
-@@ -49,9 +49,9 @@
-   }
- 
-   . = ALIGN(32);
--  .data.percpu : {
-+  .kernel.data.percpu : {
- 	__per_cpu_start = . ;
--	*(.data.percpu)
-+	*(.kernel.data.percpu)
- 	__per_cpu_end = . ;
-   }
- 	
-diff --git a/arch/um/kernel/dyn.lds.S b/arch/um/kernel/dyn.lds.S
-index 9975e1a..1ee6934 100644
---- a/arch/um/kernel/dyn.lds.S
-+++ b/arch/um/kernel/dyn.lds.S
-@@ -97,9 +97,9 @@ SECTIONS
-   .fini_array     : { *(.fini_array) }
-   .data           : {
-     . = ALIGN(KERNEL_STACK_SIZE);		/* init_task */
--    *(.data.init_task)
-+    *(.kernel.data.init_task)
-     . = ALIGN(KERNEL_STACK_SIZE);
--    *(.data.init_irqstack)
-+    *(.kernel.data.init_irqstack)
-     DATA_DATA
-     *(.data.* .gnu.linkonce.d.*)
-     SORT(CONSTRUCTORS)
-diff --git a/arch/um/kernel/init_task.c b/arch/um/kernel/init_task.c
-index 910eda8..6dd34e6 100644
---- a/arch/um/kernel/init_task.c
-+++ b/arch/um/kernel/init_task.c
-@@ -35,9 +35,9 @@ EXPORT_SYMBOL(init_task);
-  */
- 
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- union thread_union cpu0_irqstack
--	__attribute__((__section__(".data.init_irqstack"))) =
-+	__attribute__((__section__(".kernel.data.init_irqstack"))) =
- 		{ INIT_THREAD_INFO(init_task) };
-diff --git a/arch/um/kernel/uml.lds.S b/arch/um/kernel/uml.lds.S
-index 11b8352..a0b6650 100644
---- a/arch/um/kernel/uml.lds.S
-+++ b/arch/um/kernel/uml.lds.S
-@@ -53,9 +53,9 @@ SECTIONS
-   .data    :
-   {
-     . = ALIGN(KERNEL_STACK_SIZE);		/* init_task */
--    *(.data.init_task)
-+    *(.kernel.data.init_task)
-     . = ALIGN(KERNEL_STACK_SIZE);
--    *(.data.init_irqstack)
-+    *(.kernel.data.init_irqstack)
-     DATA_DATA
-     *(.gnu.linkonce.d*)
-     CONSTRUCTORS
-diff --git a/arch/x86/boot/compressed/head_32.S b/arch/x86/boot/compressed/head_32.S
-index 29c5fbf..2c89079 100644
---- a/arch/x86/boot/compressed/head_32.S
-+++ b/arch/x86/boot/compressed/head_32.S
-@@ -29,7 +29,7 @@
- #include <asm/boot.h>
- #include <asm/asm-offsets.h>
- 
--.section ".text.head","ax",@progbits
-+.section ".kernel.text.head","ax",@progbits
- 	.globl startup_32
- 
- startup_32:
-diff --git a/arch/x86/boot/compressed/head_64.S b/arch/x86/boot/compressed/head_64.S
-index 1d5dff4..87bfcbe 100644
---- a/arch/x86/boot/compressed/head_64.S
-+++ b/arch/x86/boot/compressed/head_64.S
-@@ -33,7 +33,7 @@
- #include <asm/processor-flags.h>
- #include <asm/asm-offsets.h>
- 
--.section ".text.head"
-+.section ".kernel.text.head","ax",@progbits
- 	.code32
- 	.globl startup_32
- 
-diff --git a/arch/x86/boot/compressed/vmlinux.scr b/arch/x86/boot/compressed/vmlinux.scr
-index f02382a..e4dc231 100644
---- a/arch/x86/boot/compressed/vmlinux.scr
-+++ b/arch/x86/boot/compressed/vmlinux.scr
-@@ -1,6 +1,6 @@
- SECTIONS
- {
--  .rodata.compressed : {
-+  .kernel.rodata.compressed : {
- 	input_len = .;
- 	LONG(input_data_end - input_data) input_data = .;
- 	*(.data)
-diff --git a/arch/x86/boot/compressed/vmlinux_32.lds b/arch/x86/boot/compressed/vmlinux_32.lds
-index bb3c483..a24e272 100644
---- a/arch/x86/boot/compressed/vmlinux_32.lds
-+++ b/arch/x86/boot/compressed/vmlinux_32.lds
-@@ -7,13 +7,13 @@ SECTIONS
- 	 * address 0.
- 	 */
- 	. = 0;
--	.text.head : {
-+	.kernel.text.head : {
- 		_head = . ;
--		*(.text.head)
-+		*(.kernel.text.head)
- 		_ehead = . ;
- 	}
--	.rodata.compressed : {
--		*(.rodata.compressed)
-+	.kernel.rodata.compressed : {
-+		*(.kernel.rodata.compressed)
- 	}
- 	.text :	{
- 		_text = .; 	/* Text */
-@@ -21,6 +21,10 @@ SECTIONS
- 		*(.text.*)
- 		_etext = . ;
- 	}
-+	.got : {
-+		*(.got)
-+		*(.got.*)
+diff --git a/Documentation/ksplice.txt b/Documentation/ksplice.txt
+new file mode 100644
+index 0000000..971f03a
+--- /dev/null
++++ b/Documentation/ksplice.txt
+@@ -0,0 +1,282 @@
++Ksplice
++-------
++
++CONTENTS:
++
++1. Concepts: updates, packs, helper modules, primary modules
++2. What changes can Ksplice handle?
++3. Dependency model
++4. Locking model
++5. altinstructions, smplocks, and parainstructions
++6. sysfs interface
++7. debugfs interface
++8. Hooks for running custom code during the update process
++
++0. Design Description
++---------------------
++
++For a description of the Ksplice design, please see the Ksplice technical
++overview document: <http://www.ksplice.com/doc/ksplice.pdf>.  For usage
++examples and the Ksplice man pages, please see <http://www.ksplice.com>.
++
++The document below assumes familiarity with the Ksplice design and describes
++notable implementation details and the interface between the Ksplice kernel
++component and the Ksplice user space component.
++
++1. Concepts: Updates, packs, helper modules, primary modules
++------------------------------------------------------------
++
++A Ksplice update (struct update) contains one or more Ksplice packs, one for
++each target kernel module that should be changed by the update.  Ksplice packs
++are grouped together into a Ksplice update in order to allow multiple
++compilation units to be changed atomically.
++
++The contents of a Ksplice pack are documented via kernel-doc in
++include/linux/ksplice.h.  To construct a new Ksplice update to be performed
++atomically, one needs to:
++  1. Populate the fields of one or more ksplice_pack structures.
++  2. Call the Ksplice function init_ksplice_pack() on each pack to register
++     the packs with the Ksplice kernel component.  When init_ksplice_pack()
++     is called on a pack, that pack will be associated with the other packs
++     that share the same Ksplice identifier (KID) field.
++  3. After all of the packs intended for a particular Ksplice update have
++     been loaded, that update can be applied via the sysfs interface
++     (described in Section 7 below).
++
++In order to save memory, each Ksplice pack has a "helper" module and a "primary"
++module associated with it.
++
++The pack's "helper" module contains materials needed only for preparing for the
++update.  Specifically, the helper module contains a copy of the pre-patch
++version of each of the compilation units changed by the Ksplice pack.  The
++helper module can be unloaded after the update has been applied.
++
++The pack's "primary" module contains the new sections to be inserted by the
++update; it needs to remain loaded for as long as the update is applied.
++
++Here's an example:
++
++Let's say that the Ksplice user space component wants to update the core kernel
++and the isdn module.  The user space component will select a KID for this update
++(let's say 123abc) and generate four modules:
++
++ksplice_123abc_vmlinux (the "primary" module for the vmlinux pack)
++ksplice_123abc_vmlinux_helper (the "helper" module for the vmlinux pack)
++ksplice_123abc_isdn (the "primary" module for the vmlinux pack)
++ksplice_123abc_isdn_helper (the "helper" module for the vmlinux pack)
++
++Once both of the vmlinux modules have been loaded, one of the modules calls
++init_ksplice_pack on a pack corresponding to the desired vmlinux changes.
++
++Similarly, once both of the isdn modules have been loaded, one of the modules
++calls init_ksplice_pack on a pack corresponding to the desired isdn changes.
++
++Once all modules are loaded (in this example, four modules), the update can be
++applied atomically using the Ksplice sysfs interface.  Once the update has been
++applied, the helper modules can be unloaded safely to save memory.
++
++2. What changes can Ksplice handle?
++-----------------------------------
++
++The Ksplice user space component takes a source code patch and uses it to
++construct appropriate Ksplice packs for an update.  Ksplice can handle source
++code patches that add new functions, modify the text or arguments of existing
++functions, delete functions, move functions between compilation units, change
++functions from local to global (or vice versa), add exported symbols, rename
++exported symbols, and delete exported symbols.  Ksplice can handle patches that
++modify either C code or assembly code.
++
++As described in the Ksplice technical overview document, a programmer needs to
++write some new code in order for Ksplice to apply a patch that makes semantic
++changes to kernel data structures.  Some other limitations also apply:
++
++Ksplice does not support changes to __init functions that been unloaded from
++kernel memory.  Ksplice also does not support changes to functions in
++.exit.text sections since Ksplice currently requires that all Ksplice updates
++affecting a module be reversed before that module can be unloaded.
++
++The Ksplice user space implementation does not currently support changes to
++weak symbols and changes to global read-only data structures (changes to
++read-only data structures that are local to a compilation unit are fine).
++
++Exported symbols:
++
++Ksplice can handle arbitrary changes to exported symbols in the source code
++patch.
++
++Ksplice deletes exported symbols by looking up the relevant struct kernel_symbol
++in the kernel's exported symbol table and replacing the name field with a
++pointer to a string that begins with DISABLED.
++
++Ksplice adds new exported symbols through the same mechanism; the relevant
++primary module will have a ksymtab entry containing a symbol with a name
++beginning with DISABLED, and Ksplice will replace that with the name of the
++symbol to be exported when the update is atomically applied.
++
++Because the struct kernel_symbol for a newly exported symbol is contained in the
++Ksplice primary module, if a module using one of the newly exported symbols is
++loaded, that module will correctly depend on the Ksplice primary module that
++exported the symbol.
++
++3. Dependency model
++-------------------
++
++Because Ksplice resolves symbols used in the post code using Ksplice
++relocations, Ksplice must enforce additional dependencies.  Ksplice uses the
++use_module function to directly add dependencies on all the modules that the
++post code references.
++
++4. Locking model
++----------------
++
++From a locking perspective, Ksplice treats applying or removing a Ksplice update
++as analogous to loading or unloading a new version of the kernel modules patched
++by the update.  Ksplice uses module_mutex to protect against a variety of race
++conditions related to modules being loaded or unloaded while Ksplice is applying
++or reversing an update; this approach also protects against race conditions
++involving multiple Ksplice updates being loaded or unloaded simultaneously as
++well.
++
++5. altinstructions, smplocks, and parainstructions
++--------------------------------------------------
++
++There are currently several mechanisms through which the Linux kernel will
++modify executable code at runtime.
++
++These mechanisms sometimes overwrite the storage unit of a relocation, which
++would cause problems if not handled properly by Ksplice.
++
++Ksplice solves this problem by writing "canary" bytes (e.g., 0x77777777) in the
++storage unit of the relocation in user space.  Ksplice then checks whether the
++canary has been overwritten before using a Ksplice relocation to detect symbol
++values or to write a value to the storage unit of a Ksplice relocation.
++
++6. sysfs interface
++------------------
++
++Ksplice exports four sysfs files per Ksplice update in order to communicate with
++user space.  For each update, these four files are located in a directory of the
++form /sys/kernel/ksplice/$kid, with $kid replaced by the KID of the Ksplice
++update.
++
++A.  /sys/kernel/ksplice/$kid/stage (mode 0600)
++
++This file contains one of three strings:
++preparing: Indicates that this update has not yet been applied
++applied:   Indicates that this update has been applied and has not been reversed
++reversed:  Indicates that this update has been reversed
++
++When the stage is "preparing", the superuser can write "applied" to the stage
++file in order to instruct Ksplice to apply the update.  When the stage is
++"applied", the superuser can write "reversed" to the stage file in order to
++instruct Ksplice to reverse the update.  Afterwards, the superuser can
++write "cleanup" to the stage file in order to instruct Ksplice to
++clean up the debugging information and sysfs directory associated with
++the reversed update.  Once an update is reversed, it cannot be re-applied without first
++cleaning up the update.
++
++B.  /sys/kernel/ksplice/$kid/debug (mode 0600)
++
++The file contains a single number: 1 if debugging is enabled for this Ksplice
++update and 0 otherwise.
++
++The superuser can write a new value to this file to enable or disable debugging.
++
++C.  /sys/kernel/ksplice/$kid/partial (mode 0600)
++
++The file contains a single number: 1 if the update should be applied even if
++some of the target modules are not loaded and 0 otherwise.
++
++D.  /sys/kernel/ksplice/$kid/abort_cause (mode 0400)
++
++This file contains a value indicating either 1) that Ksplice successfully
++completed the most recently requested stage transition or 2) why Ksplice aborted
++the most recently requested stage transition.
++
++Each abort_code string is described below, along with the stage transitions that
++might potentially trigger each possible abort code.  The stage transitions are
++abbreviated as follows: preparing->applied (P->A), applied->reversed (A->R).
++
++ok (P->A, A->R): The most recent stage transition succeeded.
++
++no_match (P->A): Ksplice aborted the update because Ksplice was unable to match
++the helper module's object code against the running kernel's object code.
++
++failed_to_find (P->A): Ksplice aborted the update because Ksplice was unable to
++resolve some of the symbols used in the update.
++
++missing_export (P->A): Ksplice aborted the update because the symbols exported
++by the kernel did not match Ksplice's expectations.
++
++already_reversed (P->A): Ksplice aborted the update because once an update has
++been reversed, it cannot be applied again (without first being cleaned up and
++reinitialized).
++
++module_busy (A->R): Ksplice aborted the undo operation because the target
++Ksplice update is in use by another kernel module; specifically, either the
++target Ksplice update exports a symbol that is in use by another module or
++another Ksplice update depends on this Ksplice update.
++
++out_of_memory (P->A, A->R): Ksplice aborted the operation because a call to
++kmalloc or vmalloc failed.
++
++code_busy (P->A, A->R): Ksplice aborted the operation because Ksplice was
++unable to find a moment when one or more of the to-be-patched functions was not
++a thread's kernel stack.
++
++target_not_loaded (P->A): Ksplice aborted the update because one of the target
++modules is not loaded and the partial option (/sys/kernel/ksplice/$kid/partial)
++is not enabled.
++
++call_failed (P->A, A->R): One of the calls included as part of this update
++returned nonzero exit status.
++
++unexpected_running_task (P->A, A->R): Ksplice aborted the operation because
++Ksplice observed a running task during the kernel stack check, at a time when
++Ksplice expected all tasks to be stopped by stop_machine.
++
++unexpected (P->A, A->R): Ksplice aborted the operation because it encountered
++an unspecified internal error.  This condition can only be caused by an invalid
++input to Ksplice or a bug in Ksplice.
++
++E.  /sys/kernel/ksplice/$kid/conflicts (mode 0400)
++
++This file is empty until Ksplice aborts an operation because of a code_busy
++condition (see "abort_code" above).  This conflicts file then contains
++information about the process(es) that caused the stack check failure.
++
++Specifically, each line of this file consists of three space-separated values,
++describing a single conflict:
++
++$program_name $program_pid $conflict_label
++
++$program_name is the name of the program with the conflict.
++$program_pid is the pid of the program with the conflict.
++$conflict_label is the Ksplice label of the function with the conflict.
++
++7. debugfs interface
++--------------------
++
++Ksplice exports a single file to debugfs for each Ksplice update.  The file has
++a name of the form ksplice_KID, where KID is the unique identifier of the
++Ksplice update.  It contains debugging information in a human-readable format.
++
++8. Hooks for running custom code during the update process
++----------------------------------------------------------
++
++Ksplice allows a programmer to write custom code to be called from within the
++kernel during the update process.  The kernel component allows custom code to
++be executed at the following times:
++
++pre_apply: Called before the update has been applied and before the machine has
++been stopped.  Allowed to fail.
++check_apply: Called before the update has been applied but after the machine
++has been stopped.  Allowed to fail.
++apply:  Called when the update is definitely going to be applied and when the
++machine is stopped.  Not allowed to fail.
++post_apply: Called when the update has been applied and the machine is no
++longer stopped.  Not allowed to fail.
++fail_apply: Called when the update failed to apply and the machine is no longer
++stopped.  Not allowed to fail.
++
++Ksplice also provides six analagous xxx_reverse hooks.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 618c1ef..40227d4 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2585,6 +2585,16 @@ W:	http://miguelojeda.es/auxdisplay.htm
+ W:	http://jair.lab.fi.uva.es/~migojed/auxdisplay.htm
+ S:	Maintained
+ 
++KSPLICE:
++P:	Jeff Arnold
++M:	jbarnold@mit.edu
++P:	Anders Kaseorg
++M:	andersk@mit.edu
++P:	Tim Abbott
++M:	tabbott@mit.edu
++W:	http://www.ksplice.com
++S:	Maintained
++
+ LAPB module
+ L:	linux-x25@vger.kernel.org
+ S:	Orphan
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 471e72d..de4b6c8 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -41,6 +41,17 @@ config KPROBES
+ 	  for kernel debugging, non-intrusive instrumentation and testing.
+ 	  If in doubt, say "N".
+ 
++config KSPLICE
++	tristate "Ksplice rebootless kernel updates"
++	depends on KALLSYMS_ALL && MODULE_UNLOAD && SYSFS && \
++		   FUNCTION_DATA_SECTIONS
++	depends on HAVE_KSPLICE
++	help
++          Say Y here if you want to be able to apply certain kinds of
++          patches to your running kernel, without rebooting.
++
++          If unsure, say N.
++
+ config HAVE_EFFICIENT_UNALIGNED_ACCESS
+ 	bool
+ 	help
+@@ -70,6 +81,9 @@ config HAVE_IOREMAP_PROT
+ config HAVE_KPROBES
+ 	bool
+ 
++config HAVE_KSPLICE
++	def_bool n
++
+ config HAVE_KRETPROBES
+ 	bool
+ 
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ac22bb7..0e2c276 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -24,6 +24,7 @@ config X86
+ 	select HAVE_OPROFILE
+ 	select HAVE_IOREMAP_PROT
+ 	select HAVE_KPROBES
++	select HAVE_KSPLICE
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select HAVE_KRETPROBES
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+diff --git a/arch/x86/kernel/ksplice-arch.c b/arch/x86/kernel/ksplice-arch.c
+new file mode 100644
+index 0000000..b04ae17
+--- /dev/null
++++ b/arch/x86/kernel/ksplice-arch.c
+@@ -0,0 +1,125 @@
++/*  Copyright (C) 2007-2008  Jeff Arnold <jbarnold@mit.edu>
++ *  Copyright (C) 2008  Anders Kaseorg <andersk@mit.edu>,
++ *                      Tim Abbott <tabbott@mit.edu>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License, version 2.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA
++ *  02110-1301, USA.
++ */
++
++#define KSPLICE_IP(x) ((x)->thread.ip)
++#define KSPLICE_SP(x) ((x)->thread.sp)
++
++static struct ksplice_symbol trampoline_symbol = {
++	.name = NULL,
++	.label = "<trampoline>",
++};
++
++static const struct ksplice_reloc_howto trampoline_howto = {
++	.type = KSPLICE_HOWTO_RELOC,
++	.pcrel = 1,
++	.size = 4,
++	.dst_mask = 0xffffffffL,
++	.rightshift = 0,
++	.signed_addend = 1,
++};
++
++static const struct ksplice_reloc trampoline_reloc = {
++	.symbol = &trampoline_symbol,
++	.insn_addend = -4,
++	.target_addend = 0,
++	.howto = &trampoline_howto,
++};
++
++static abort_t trampoline_target(struct ksplice_pack *pack, unsigned long addr,
++				 unsigned long *new_addr)
++{
++	abort_t ret;
++	unsigned char byte;
++
++	if (probe_kernel_read(&byte, (void *)addr, sizeof(byte)) == -EFAULT)
++		return NO_MATCH;
++
++	if (byte != 0xe9)
++		return NO_MATCH;
++
++	ret = read_reloc_value(pack, &trampoline_reloc, addr + 1, new_addr);
++	if (ret != OK)
++		return ret;
++
++	*new_addr += addr + 1;
++	return OK;
++}
++
++static abort_t prepare_trampoline(struct ksplice_pack *pack,
++				  struct ksplice_patch *p)
++{
++	p->size = 5;
++	((unsigned char *)p->contents)[0] = 0xe9;
++	return write_reloc_value(pack, &trampoline_reloc,
++				 (unsigned long)p->contents + 1,
++				 p->repladdr - (p->oldaddr + 1));
++}
++
++static abort_t handle_bug(struct ksplice_pack *pack,
++			  const struct ksplice_reloc *r, unsigned long run_addr)
++{
++	const struct bug_entry *run_bug = find_bug(run_addr);
++	struct ksplice_section *bug_sect = symbol_section(pack, r->symbol);
++	if (run_bug == NULL)
++		return NO_MATCH;
++	if (bug_sect == NULL)
++		return UNEXPECTED;
++	return create_labelval(pack, bug_sect->symbol, (unsigned long)run_bug,
++			       TEMP);
++}
++
++static abort_t handle_extable(struct ksplice_pack *pack,
++			      const struct ksplice_reloc *r,
++			      unsigned long run_addr)
++{
++	const struct exception_table_entry *run_ent =
++	    search_exception_tables(run_addr);
++	struct ksplice_section *ex_sect = symbol_section(pack, r->symbol);
++	if (run_ent == NULL)
++		return NO_MATCH;
++	if (ex_sect == NULL)
++		return UNEXPECTED;
++	return create_labelval(pack, ex_sect->symbol, (unsigned long)run_ent,
++			       TEMP);
++}
++
++static abort_t handle_paravirt(struct ksplice_pack *pack,
++			       unsigned long pre_addr, unsigned long run_addr,
++			       int *matched)
++{
++	unsigned char run[5], pre[5];
++	*matched = 0;
++
++	if (probe_kernel_read(&run, (void *)run_addr, sizeof(run)) == -EFAULT ||
++	    probe_kernel_read(&pre, (void *)pre_addr, sizeof(pre)) == -EFAULT)
++		return OK;
++
++	if ((run[0] == 0xe8 && pre[0] == 0xe8) ||
++	    (run[0] == 0xe9 && pre[0] == 0xe9))
++		if (run_addr + 1 + *(int32_t *)&run[1] ==
++		    pre_addr + 1 + *(int32_t *)&pre[1])
++			*matched = 5;
++	return OK;
++}
++
++static bool valid_stack_ptr(const struct thread_info *tinfo, const void *p)
++{
++	return p > (const void *)tinfo
++	    && p <= (const void *)tinfo + THREAD_SIZE - sizeof(long);
++}
++
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index dc7e0d0..15643a5 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -290,6 +290,7 @@ extern enum system_states {
+ #define TAINT_OVERRIDDEN_ACPI_TABLE	8
+ #define TAINT_WARN			9
+ #define TAINT_CRAP			10
++#define TAINT_KSPLICE			11
+ 
+ extern void dump_stack(void) __cold;
+ 
+diff --git a/include/linux/ksplice.h b/include/linux/ksplice.h
+new file mode 100644
+index 0000000..5f59cc5
+--- /dev/null
++++ b/include/linux/ksplice.h
+@@ -0,0 +1,212 @@
++#include <linux/types.h>
++
++/**
++ * struct ksplice_symbol - Ksplice's analogue of an ELF symbol
++ * @name:	The ELF name of the symbol
++ * @label:	A unique Ksplice name for the symbol
++ * @vals:	A linked list of possible values for the symbol, or NULL
++ * @value:	The value of the symbol (valid when vals is NULL)
++ **/
++struct ksplice_symbol {
++	const char *name;
++	const char *label;
++/* private: */
++	struct list_head *vals;
++	unsigned long value;
++};
++
++/**
++ * struct ksplice_reloc - Ksplice's analogue of an ELF relocation
++ * @blank_addr:		The address of the relocation's storage unit
++ * @symbol:		The ksplice_symbol associated with this relocation
++ * @howto:		The information regarding the relocation type
++ * @addend:		The ELF addend of the relocation
++ **/
++struct ksplice_reloc {
++	unsigned long blank_addr;
++	struct ksplice_symbol *symbol;
++	const struct ksplice_reloc_howto *howto;
++	long insn_addend;
++	long target_addend;
++};
++
++enum ksplice_reloc_howto_type {
++	KSPLICE_HOWTO_RELOC,
++	KSPLICE_HOWTO_RELOC_PATCH,
++	KSPLICE_HOWTO_DATE,
++	KSPLICE_HOWTO_TIME,
++	KSPLICE_HOWTO_BUG,
++	KSPLICE_HOWTO_EXTABLE,
++};
++
++/**
++ * struct ksplice_reloc_howto - Ksplice's relocation type information
++ * @type:		The type of the relocation
++ * @pcrel:		Is the relocation PC relative?
++ * @size:		The size, in bytes, of the item to be relocated
++ * @dst_mask:		Bitmask for which parts of the instruction or data are
++ * 			replaced with the relocated value
++ * 			(based on dst_mask from GNU BFD's reloc_howto_struct)
++ * @rightshift:		The value the final relocation is shifted right by;
++ * 			used to drop unwanted data from the relocation
++ * 			(based on rightshift from GNU BFD's reloc_howto_struct)
++ * @signed_addend:	Should the addend be interpreted as a signed value?
++ **/
++struct ksplice_reloc_howto {
++	enum ksplice_reloc_howto_type type;
++	int pcrel;
++	int size;
++	long dst_mask;
++	unsigned int rightshift;
++	int signed_addend;
++};
++
++#if BITS_PER_LONG == 32
++#define KSPLICE_CANARY 0x77777777UL
++#elif BITS_PER_LONG == 64
++#define KSPLICE_CANARY 0x7777777777777777UL
++#endif /* BITS_PER_LONG */
++
++/**
++ * struct ksplice_section - Ksplice's analogue of an ELF section
++ * @symbol:		The ksplice_symbol associated with this section
++ * @size:		The length, in bytes, of this section
++ * @address:		The address of the section
++ * @flags:		Flags indicating the type of the section, whether or
++ *			not it has been matched, etc.
++ **/
++struct ksplice_section {
++	struct ksplice_symbol *symbol;
++	unsigned long address;
++	unsigned long size;
++	unsigned int flags;
++	const unsigned char **match_map;
++};
++#define KSPLICE_SECTION_TEXT 0x00000001
++#define KSPLICE_SECTION_RODATA 0x00000002
++#define KSPLICE_SECTION_DATA 0x00000004
++#define KSPLICE_SECTION_STRING 0x00000008
++#define KSPLICE_SECTION_MATCHED 0x10000000
++
++#define MAX_TRAMPOLINE_SIZE 5
++
++enum ksplice_patch_type {
++	KSPLICE_PATCH_TEXT,
++	KSPLICE_PATCH_BUGLINE,
++	KSPLICE_PATCH_DATA,
++	KSPLICE_PATCH_EXPORT,
++};
++
++/**
++ * struct ksplice_patch - A replacement that Ksplice should perform
++ * @oldaddr:		The address of the obsolete function or structure
++ * @repladdr:		The address of the replacement function
++ * @type:		The type of the ksplice patch
++ * @size:		The size of the patch
++ * @contents:		The bytes to be installed at oldaddr
++ * @vaddr		The address of the page mapping used to write at oldaddr
++ * @saved:		The bytes originally at oldaddr which were
++ * 			overwritten by the patch
++ **/
++struct ksplice_patch {
++	unsigned long oldaddr;
++	unsigned long repladdr;
++	enum ksplice_patch_type type;
++	unsigned int size;
++	void *contents;
++/* private: */
++	void *vaddr;
++	void *saved;
++};
++
++#ifdef __KERNEL__
++#include <linux/module.h>
++#include <linux/stringify.h>
++
++#define _PASTE(x, y) x##y
++#define PASTE(x, y) _PASTE(x, y)
++#define KSPLICE_UNIQ(s) PASTE(s##_, KSPLICE_MID)
++#define KSPLICE_KID_UNIQ(s) PASTE(s##_, KSPLICE_KID)
++
++/**
++ * struct ksplice_module_list_entry - A record of a Ksplice pack's target
++ * @target:	A module that is patched
++ * @primary:	A Ksplice module that patches target
++ **/
++struct ksplice_module_list_entry {
++	struct module *target;
++	struct module *primary;
++/* private: */
++	struct list_head list;
++};
++
++/* List of all ksplice modules and the module they patch */
++extern struct list_head ksplice_module_list;
++
++/**
++ * struct ksplice_pack - Data for one module modified by a Ksplice update
++ * @name:			The name of the primary module for the pack
++ * @kid:			The Ksplice unique identifier for the pack
++ * @target_name:		The name of the module modified by the pack
++ * @primary:			The primary module associated with the pack
++ * @primary_relocs:		The relocations for the primary module
++ * @primary_relocs_end:		The end pointer for primary_relocs
++ * @primary_sections:		The sections in the primary module
++ * @primary_sections_end:	The end pointer for primary_sections array
++ * @helper_relocs:		The relocations for the helper module
++ * @helper_relocs_end:		The end pointer for helper_relocs array
++ * @helper_sections:		The sections in the helper module
++ * @helper_sections_end:	The end pointer for helper_sections array
++ * @patches:			The function replacements in the pack
++ * @patches_end:		The end pointer for patches array
++ * @update:			The atomic update the pack is part of
++ * @target:			The module modified by the pack
++ * @safety_records:		The ranges of addresses that must not be on a
++ *				kernel stack for the patch to apply safely
++ **/
++struct ksplice_pack {
++	const char *name;
++	const char *kid;
++	const char *target_name;
++	struct module *primary;
++	struct ksplice_reloc *primary_relocs, *primary_relocs_end;
++	const struct ksplice_section *primary_sections, *primary_sections_end;
++	struct ksplice_symbol *primary_symbols, *primary_symbols_end;
++	struct ksplice_reloc *helper_relocs, *helper_relocs_end;
++	struct ksplice_section *helper_sections, *helper_sections_end;
++	struct ksplice_symbol *helper_symbols, *helper_symbols_end;
++	struct ksplice_patch *patches, *patches_end;
++	const typeof(int (*)(void)) *pre_apply, *pre_apply_end, *check_apply,
++	    *check_apply_end;
++	const typeof(void (*)(void)) *apply, *apply_end, *post_apply,
++	    *post_apply_end, *fail_apply, *fail_apply_end;
++	const typeof(int (*)(void)) *pre_reverse, *pre_reverse_end,
++	    *check_reverse, *check_reverse_end;
++	const typeof(void (*)(void)) *reverse, *reverse_end, *post_reverse,
++	    *post_reverse_end, *fail_reverse, *fail_reverse_end;
++/* private: */
++	struct ksplice_module_list_entry module_list_entry;
++	struct update *update;
++	struct module *target;
++	struct list_head temp_labelvals;
++	struct list_head safety_records;
++	struct list_head list;
++};
++
++
++/**
++ * init_ksplice_pack() - Initializes a pack
++ * @pack:	The pack to be initialized.  All of the public fields of the
++ * 		pack and its associated data structures should be populated
++ * 		before this function is called.  The values of the private
++ * 		fields will be ignored.
++ **/
++int init_ksplice_pack(struct ksplice_pack *pack);
++
++/**
++ * cleanup_ksplice_pack() - Cleans up a pack
++ * @pack:	The pack to be cleaned up
++ */
++void cleanup_ksplice_pack(struct ksplice_pack *pack);
++
++#endif /* __KERNEL__ */
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 19fad00..e8ecb64 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -11,6 +11,8 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o \
+ 	    hrtimer.o rwsem.o nsproxy.o srcu.o semaphore.o \
+ 	    notifier.o ksysfs.o pm_qos_params.o sched_clock.o
+ 
++CFLAGS_ksplice.o += -Iarch/$(SRCARCH)/kernel
++
+ ifdef CONFIG_FUNCTION_TRACER
+ # Do not trace debug files and internal ftrace files
+ CFLAGS_REMOVE_lockdep.o = -pg
+@@ -68,6 +70,7 @@ obj-$(CONFIG_AUDIT) += audit.o auditfilter.o
+ obj-$(CONFIG_AUDITSYSCALL) += auditsc.o
+ obj-$(CONFIG_AUDIT_TREE) += audit_tree.o
+ obj-$(CONFIG_KPROBES) += kprobes.o
++obj-$(CONFIG_KSPLICE) += ksplice.o
+ obj-$(CONFIG_KGDB) += kgdb.o
+ obj-$(CONFIG_DETECT_SOFTLOCKUP) += softlockup.o
+ obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
+diff --git a/kernel/ksplice.c b/kernel/ksplice.c
+new file mode 100644
+index 0000000..d12a6db
+--- /dev/null
++++ b/kernel/ksplice.c
+@@ -0,0 +1,2715 @@
++/*  Copyright (C) 2007-2008  Jeff Arnold <jbarnold@mit.edu>
++ *  Copyright (C) 2008  Anders Kaseorg <andersk@mit.edu>,
++ *                      Tim Abbott <tabbott@mit.edu>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License, version 2.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA
++ *  02110-1301, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/bug.h>
++#include <linux/ctype.h>
++#include <linux/debugfs.h>
++#include <linux/errno.h>
++#include <linux/kallsyms.h>
++#include <linux/kobject.h>
++#include <linux/kthread.h>
++#include <linux/pagemap.h>
++#include <linux/sched.h>
++#include <linux/sort.h>
++#include <linux/stop_machine.h>
++#include <linux/sysfs.h>
++#include <linux/time.h>
++#include <linux/uaccess.h>
++#include <linux/vmalloc.h>
++#include <linux/ksplice.h>
++
++enum stage {
++	STAGE_PREPARING, STAGE_APPLIED, STAGE_REVERSED
++};
++
++enum run_pre_mode {
++	RUN_PRE_INITIAL, RUN_PRE_DEBUG, RUN_PRE_FINAL, RUN_PRE_SILENT
++};
++
++enum { NOVAL, TEMP, VAL };
++
++typedef int __bitwise__ abort_t;
++
++#define OK ((__force abort_t) 0)
++#define NO_MATCH ((__force abort_t) 1)
++#define CODE_BUSY ((__force abort_t) 2)
++#define MODULE_BUSY ((__force abort_t) 3)
++#define OUT_OF_MEMORY ((__force abort_t) 4)
++#define FAILED_TO_FIND ((__force abort_t) 5)
++#define ALREADY_REVERSED ((__force abort_t) 6)
++#define MISSING_EXPORT ((__force abort_t) 7)
++#define UNEXPECTED_RUNNING_TASK ((__force abort_t) 8)
++#define UNEXPECTED ((__force abort_t) 9)
++#define TARGET_NOT_LOADED ((__force abort_t) 10)
++#define CALL_FAILED ((__force abort_t) 11)
++
++struct update {
++	const char *kid;
++	const char *name;
++	struct kobject kobj;
++	enum stage stage;
++	abort_t abort_cause;
++	int debug;
++#ifdef CONFIG_DEBUG_FS
++	struct debugfs_blob_wrapper debug_blob;
++	struct dentry *debugfs_dentry;
++#else /* !CONFIG_DEBUG_FS */
++	bool debug_continue_line;
++#endif /* CONFIG_DEBUG_FS */
++	bool partial;
++	struct list_head packs;
++	struct list_head unused_packs;
++	struct list_head conflicts;
++	struct list_head list;
++};
++
++struct conflict {
++	const char *process_name;
++	pid_t pid;
++	struct list_head stack;
++	struct list_head list;
++};
++
++struct conflict_addr {
++	unsigned long addr;
++	bool has_conflict;
++	const char *label;
++	struct list_head list;
++};
++
++struct labelval {
++	struct list_head list;
++	struct ksplice_symbol *symbol;
++	struct list_head *saved_vals;
++};
++
++struct safety_record {
++	struct list_head list;
++	const char *label;
++	unsigned long addr;
++	unsigned long size;
++};
++
++struct candidate_val {
++	struct list_head list;
++	unsigned long val;
++};
++
++struct accumulate_struct {
++	struct ksplice_pack *pack;
++	const char *desired_name;
++	struct list_head *vals;
++};
++
++struct ksplice_lookup {
++/* input */
++	struct ksplice_pack *pack;
++	struct ksplice_symbol **arr;
++	size_t size;
++/* output */
++	abort_t ret;
++};
++
++static LIST_HEAD(updates);
++LIST_HEAD(ksplice_module_list);
++EXPORT_SYMBOL_GPL(ksplice_module_list);
++static struct kobject *ksplice_kobj;
++
++static struct kobj_type ksplice_ktype;
++
++static struct update *init_ksplice_update(const char *kid);
++static void cleanup_ksplice_update(struct update *update);
++static void maybe_cleanup_ksplice_update(struct update *update);
++static void add_to_update(struct ksplice_pack *pack, struct update *update);
++static int ksplice_sysfs_init(struct update *update);
++
++/* Preparing the relocations and patches for application */
++static abort_t apply_update(struct update *update);
++static abort_t prepare_pack(struct ksplice_pack *pack);
++static abort_t finalize_pack(struct ksplice_pack *pack);
++static abort_t finalize_patches(struct ksplice_pack *pack);
++static abort_t add_dependency_on_address(struct ksplice_pack *pack,
++					 unsigned long addr);
++static abort_t map_trampoline_pages(struct update *update);
++static void unmap_trampoline_pages(struct update *update);
++static void *map_writable(void *addr, size_t len);
++static abort_t apply_relocs(struct ksplice_pack *pack,
++			    const struct ksplice_reloc *relocs,
++			    const struct ksplice_reloc *relocs_end);
++static abort_t apply_reloc(struct ksplice_pack *pack,
++			   const struct ksplice_reloc *r);
++static abort_t apply_howto_reloc(struct ksplice_pack *pack,
++				 const struct ksplice_reloc *r);
++static abort_t apply_howto_date(struct ksplice_pack *pack,
++				const struct ksplice_reloc *r);
++static abort_t read_reloc_value(struct ksplice_pack *pack,
++				const struct ksplice_reloc *r,
++				unsigned long addr, unsigned long *valp);
++static abort_t write_reloc_value(struct ksplice_pack *pack,
++				 const struct ksplice_reloc *r,
++				 unsigned long addr, unsigned long sym_addr);
++static void __attribute__((noreturn)) ksplice_deleted(void);
++
++/* run-pre matching */
++static abort_t match_pack_sections(struct ksplice_pack *pack,
++				   bool consider_data_sections);
++static abort_t find_section(struct ksplice_pack *pack,
++			    struct ksplice_section *sect);
++static abort_t try_addr(struct ksplice_pack *pack,
++			struct ksplice_section *sect,
++			unsigned long run_addr,
++			struct list_head *safety_records,
++			enum run_pre_mode mode);
++static abort_t run_pre_cmp(struct ksplice_pack *pack,
++			   const struct ksplice_section *sect,
++			   unsigned long run_addr,
++			   struct list_head *safety_records,
++			   enum run_pre_mode mode);
++static void print_bytes(struct ksplice_pack *pack,
++			const unsigned char *run, int runc,
++			const unsigned char *pre, int prec);
++static const struct ksplice_reloc *
++init_reloc_search(struct ksplice_pack *pack,
++		  const struct ksplice_section *sect);
++static const struct ksplice_reloc *find_reloc(const struct ksplice_reloc *start,
++					      const struct ksplice_reloc *end,
++					      unsigned long address,
++					      unsigned long size);
++static abort_t lookup_reloc(struct ksplice_pack *pack,
++			    const struct ksplice_reloc **fingerp,
++			    unsigned long addr,
++			    const struct ksplice_reloc **relocp);
++static abort_t handle_reloc(struct ksplice_pack *pack,
++			    const struct ksplice_section *sect,
++			    const struct ksplice_reloc *r,
++			    unsigned long run_addr, enum run_pre_mode mode);
++static abort_t handle_howto_date(struct ksplice_pack *pack,
++				 const struct ksplice_section *sect,
++				 const struct ksplice_reloc *r,
++				 unsigned long run_addr,
++				 enum run_pre_mode mode);
++static abort_t handle_howto_reloc(struct ksplice_pack *pack,
++				  const struct ksplice_section *sect,
++				  const struct ksplice_reloc *r,
++				  unsigned long run_addr,
++				  enum run_pre_mode mode);
++static struct ksplice_section *symbol_section(struct ksplice_pack *pack,
++					      const struct ksplice_symbol *sym);
++static int compare_section_labels(const void *va, const void *vb);
++static int symbol_section_bsearch_compare(const void *a, const void *b);
++static const struct ksplice_reloc *patch_reloc(struct ksplice_pack *pack,
++					       const struct ksplice_patch *p);
++
++/* Computing possible addresses for symbols */
++static abort_t lookup_symbol(struct ksplice_pack *pack,
++			     const struct ksplice_symbol *ksym,
++			     struct list_head *vals);
++static void cleanup_symbol_arrays(struct ksplice_pack *pack);
++static abort_t init_symbol_arrays(struct ksplice_pack *pack);
++static abort_t init_symbol_array(struct ksplice_pack *pack,
++				 struct ksplice_symbol *start,
++				 struct ksplice_symbol *end);
++static abort_t uniquify_symbols(struct ksplice_pack *pack);
++static abort_t add_matching_values(struct ksplice_lookup *lookup,
++				   const char *sym_name, unsigned long sym_val);
++static bool add_export_values(const struct symsearch *syms,
++			      struct module *owner,
++			      unsigned int symnum, void *data);
++static int symbolp_bsearch_compare(const void *key, const void *elt);
++static int compare_symbolp_names(const void *a, const void *b);
++static int compare_symbolp_labels(const void *a, const void *b);
++static int add_kallsyms_values(void *data, const char *name,
++			       struct module *owner, unsigned long val);
++static abort_t new_export_lookup(struct ksplice_pack *ipack, const char *name,
++				 struct list_head *vals);
++
++/* Atomic update insertion and removal */
++static abort_t apply_patches(struct update *update);
++static abort_t reverse_patches(struct update *update);
++static int __apply_patches(void *update);
++static int __reverse_patches(void *update);
++static abort_t check_each_task(struct update *update);
++static abort_t check_task(struct update *update,
++			  const struct task_struct *t, bool rerun);
++static abort_t check_stack(struct update *update, struct conflict *conf,
++			   const struct thread_info *tinfo,
++			   const unsigned long *stack);
++static abort_t check_address(struct update *update,
++			     struct conflict *conf, unsigned long addr);
++static abort_t check_record(struct conflict_addr *ca,
++			    const struct safety_record *rec,
++			    unsigned long addr);
++static bool is_stop_machine(const struct task_struct *t);
++static void cleanup_conflicts(struct update *update);
++static void print_conflicts(struct update *update);
++static void insert_trampoline(struct ksplice_patch *p);
++static abort_t verify_trampoline(struct ksplice_pack *pack,
++				 const struct ksplice_patch *p);
++static void remove_trampoline(const struct ksplice_patch *p);
++
++static abort_t create_labelval(struct ksplice_pack *pack,
++			       struct ksplice_symbol *ksym,
++			       unsigned long val, int status);
++static abort_t create_safety_record(struct ksplice_pack *pack,
++				    const struct ksplice_section *sect,
++				    struct list_head *record_list,
++				    unsigned long run_addr,
++				    unsigned long run_size);
++static abort_t add_candidate_val(struct ksplice_pack *pack,
++				 struct list_head *vals, unsigned long val);
++static void release_vals(struct list_head *vals);
++static void set_temp_labelvals(struct ksplice_pack *pack, int status_val);
++
++static int contains_canary(struct ksplice_pack *pack, unsigned long blank_addr,
++			   const struct ksplice_reloc_howto *howto);
++static unsigned long follow_trampolines(struct ksplice_pack *pack,
++					unsigned long addr);
++static bool patches_module(const struct module *a, const struct module *b);
++static bool starts_with(const char *str, const char *prefix);
++static bool singular(struct list_head *list);
++static void *bsearch(const void *key, const void *base, size_t n,
++		     size_t size, int (*cmp)(const void *key, const void *elt));
++static int compare_relocs(const void *a, const void *b);
++static int reloc_bsearch_compare(const void *key, const void *elt);
++
++/* Debugging */
++static abort_t init_debug_buf(struct update *update);
++static void clear_debug_buf(struct update *update);
++static int __attribute__((format(printf, 2, 3)))
++_ksdebug(struct update *update, const char *fmt, ...);
++#define ksdebug(pack, fmt, ...) \
++	_ksdebug(pack->update, fmt, ## __VA_ARGS__)
++
++/* Architecture-specific functions defined in arch/ARCH/kernel/ksplice-arch.c */
++static abort_t prepare_trampoline(struct ksplice_pack *pack,
++				  struct ksplice_patch *p);
++static abort_t trampoline_target(struct ksplice_pack *pack, unsigned long addr,
++				 unsigned long *new_addr);
++static abort_t handle_paravirt(struct ksplice_pack *pack, unsigned long pre,
++			       unsigned long run, int *matched);
++static abort_t handle_bug(struct ksplice_pack *pack,
++			  const struct ksplice_reloc *r,
++			  unsigned long run_addr);
++static abort_t handle_extable(struct ksplice_pack *pack,
++			      const struct ksplice_reloc *r,
++			      unsigned long run_addr);
++static bool valid_stack_ptr(const struct thread_info *tinfo, const void *p);
++
++#include "ksplice-arch.c"
++
++#define clear_list(head, type, member)				\
++	do {							\
++		struct list_head *_pos, *_n;			\
++		list_for_each_safe(_pos, _n, head) {		\
++			list_del(_pos);				\
++			kfree(list_entry(_pos, type, member));	\
++		}						\
++	} while (0)
++
++int init_ksplice_pack(struct ksplice_pack *pack)
++{
++	struct update *update;
++	struct ksplice_patch *p;
++	struct ksplice_section *s;
++	int ret = 0;
++
++	INIT_LIST_HEAD(&pack->temp_labelvals);
++	INIT_LIST_HEAD(&pack->safety_records);
++
++	sort(pack->helper_relocs,
++	     pack->helper_relocs_end - pack->helper_relocs,
++	     sizeof(*pack->helper_relocs), compare_relocs, NULL);
++	sort(pack->primary_relocs,
++	     pack->primary_relocs_end - pack->primary_relocs,
++	     sizeof(*pack->primary_relocs), compare_relocs, NULL);
++	sort(pack->helper_sections,
++	     pack->helper_sections_end - pack->helper_sections,
++	     sizeof(*pack->helper_sections), compare_section_labels, NULL);
++
++	mutex_lock(&module_mutex);
++	for (p = pack->patches; p < pack->patches_end; p++)
++		p->vaddr = NULL;
++	for (s = pack->helper_sections; s < pack->helper_sections_end; s++)
++		s->match_map = NULL;
++	for (p = pack->patches; p < pack->patches_end; p++) {
++		const struct ksplice_reloc *r = patch_reloc(pack, p);
++		if (r == NULL) {
++			ret = -ENOENT;
++			goto out;
++		}
++		if (p->type == KSPLICE_PATCH_DATA) {
++			s = symbol_section(pack, r->symbol);
++			if (s == NULL) {
++				ret = -ENOENT;
++				goto out;
++			}
++			if (s->flags & KSPLICE_SECTION_DATA)
++				s->flags = (s->flags & ~KSPLICE_SECTION_DATA) |
++				    KSPLICE_SECTION_RODATA;
++		}
 +	}
- 	.rodata : {
- 		_rodata = . ;
- 		*(.rodata)	 /* read-only data */
-@@ -40,4 +44,6 @@ SECTIONS
- 		*(COMMON)
- 		_end = . ;
- 	}
-+	/* Be bold, and discard everything not explicitly mentioned */
-+	/DISCARD/ : { *(*) }
- }
-diff --git a/arch/x86/boot/compressed/vmlinux_64.lds b/arch/x86/boot/compressed/vmlinux_64.lds
-index bef1ac8..9414e60 100644
---- a/arch/x86/boot/compressed/vmlinux_64.lds
-+++ b/arch/x86/boot/compressed/vmlinux_64.lds
-@@ -7,13 +7,13 @@ SECTIONS
- 	 * address 0.
- 	 */
- 	. = 0;
--	.text.head : {
-+	.kernel.text.head : {
- 		_head = . ;
--		*(.text.head)
-+		*(.kernel.text.head)
- 		_ehead = . ;
- 	}
--	.rodata.compressed : {
--		*(.rodata.compressed)
-+	.kernel.rodata.compressed : {
-+		*(.kernel.rodata.compressed)
- 	}
- 	.text :	{
- 		_text = .; 	/* Text */
-@@ -45,4 +45,6 @@ SECTIONS
- 		. = . + 4096 * 6;
- 		_ebss = .;
- 	}
-+	/* Be bold, and discard everything not explicitly mentioned */
-+	/DISCARD/ : { *(*) }
- }
-diff --git a/arch/x86/include/asm/cache.h b/arch/x86/include/asm/cache.h
-index 5d367ca..980a79f 100644
---- a/arch/x86/include/asm/cache.h
-+++ b/arch/x86/include/asm/cache.h
-@@ -5,7 +5,7 @@
- #define L1_CACHE_SHIFT	(CONFIG_X86_L1_CACHE_SHIFT)
- #define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
- 
--#define __read_mostly __attribute__((__section__(".data.read_mostly")))
-+#define __read_mostly __attribute__((__section__(".kernel.data.read_mostly")))
- 
- #ifdef CONFIG_X86_VSMP
- /* vSMP Internode cacheline shift */
-@@ -13,7 +13,7 @@
- #ifdef CONFIG_SMP
- #define __cacheline_aligned_in_smp					\
- 	__attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))	\
--	__attribute__((__section__(".data.page_aligned")))
-+	__attribute__((__section__(".kernel.data.page_aligned")))
- #endif
- #endif
- 
-diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
-index a12e6a9..1b1beb9 100644
---- a/arch/x86/kernel/acpi/wakeup_32.S
-+++ b/arch/x86/kernel/acpi/wakeup_32.S
-@@ -1,4 +1,4 @@
--	.section .text.page_aligned
-+	.section .kernel.text.page_aligned,"ax",@progbits
- #include <linux/linkage.h>
- #include <asm/segment.h>
- #include <asm/page.h>
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index e835b4e..ae011eb 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -81,7 +81,7 @@ INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE + ALLOCATOR_SLOP)*PAGE_
-  * any particular GDT layout, because we load our own as soon as we
-  * can.
-  */
--.section .text.head,"ax",@progbits
-+.section .kernel.text.head,"ax",@progbits
- ENTRY(startup_32)
- 	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
- 		us to not reload segments */
-@@ -609,7 +609,7 @@ ENTRY(_stext)
- /*
-  * BSS section
-  */
--.section ".bss.page_aligned","wa"
-+.section ".bss.kernel.page_aligned","wa"
- 	.align PAGE_SIZE_asm
- #ifdef CONFIG_X86_PAE
- swapper_pg_pmd:
-@@ -626,7 +626,7 @@ ENTRY(empty_zero_page)
-  * This starts the data section.
-  */
- #ifdef CONFIG_X86_PAE
--.section ".data.page_aligned","wa"
-+.section ".kernel.data.page_aligned","wa"
- 	/* Page-aligned for the benefit of paravirt? */
- 	.align PAGE_SIZE_asm
- ENTRY(swapper_pg_dir)
-diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
-index 26cfdc1..2a9dc1e 100644
---- a/arch/x86/kernel/head_64.S
-+++ b/arch/x86/kernel/head_64.S
-@@ -40,7 +40,7 @@ L4_START_KERNEL = pgd_index(__START_KERNEL_map)
- L3_START_KERNEL = pud_index(__START_KERNEL_map)
- 
- 	.text
--	.section .text.head
-+	.section .kernel.text.head,"ax",@progbits
- 	.code64
- 	.globl startup_64
- startup_64:
-@@ -414,7 +414,7 @@ ENTRY(phys_base)
- ENTRY(idt_table)
- 	.skip 256 * 16
- 
--	.section .bss.page_aligned, "aw", @nobits
-+	.section .bss.kernel.page_aligned, "aw", @nobits
- 	.align PAGE_SIZE
- ENTRY(empty_zero_page)
- 	.skip PAGE_SIZE
-diff --git a/arch/x86/kernel/init_task.c b/arch/x86/kernel/init_task.c
-index a4f93b4..ec4a2fe 100644
---- a/arch/x86/kernel/init_task.c
-+++ b/arch/x86/kernel/init_task.c
-@@ -24,7 +24,7 @@ EXPORT_UNUSED_SYMBOL(init_mm); /* will be removed in 2.6.26 */
-  * "init_task" linker map entry..
-  */
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- /*
-@@ -38,7 +38,7 @@ EXPORT_SYMBOL(init_task);
- /*
-  * per-CPU TSS segments. Threads are completely 'soft' on Linux,
-  * no more per-task TSS's. The TSS size is kept cacheline-aligned
-- * so they are allowed to end up in the .data.cacheline_aligned
-+ * so they are allowed to end up in the .kernel.data.cacheline_aligned
-  * section. Since TSS's are completely CPU-local, we want them
-  * on exact cacheline boundaries, to eliminate cacheline ping-pong.
-  */
-diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-index 04d242a..73b634a 100644
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -86,7 +86,7 @@ char ignore_fpu_irq;
-  * for this.
-  */
- gate_desc idt_table[256]
--	__attribute__((__section__(".data.idt"))) = { { { { 0, 0 } } }, };
-+	__attribute__((__section__(".kernel.data.idt"))) = { { { { 0, 0 } } }, };
- #endif
- 
- static int ignore_nmis;
-diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
-index a9b8560..454ab4c 100644
---- a/arch/x86/kernel/vmlinux_32.lds.S
-+++ b/arch/x86/kernel/vmlinux_32.lds.S
-@@ -31,15 +31,15 @@ SECTIONS
-   . = LOAD_OFFSET + LOAD_PHYSICAL_ADDR;
-   phys_startup_32 = startup_32 - LOAD_OFFSET;
- 
--  .text.head : AT(ADDR(.text.head) - LOAD_OFFSET) {
-+  .kernel.text.head : AT(ADDR(.kernel.text.head) - LOAD_OFFSET) {
-   	_text = .;			/* Text and read-only data */
--	*(.text.head)
-+	*(.kernel.text.head)
-   } :text = 0x9090
- 
-   /* read-only */
-   .text : AT(ADDR(.text) - LOAD_OFFSET) {
- 	. = ALIGN(PAGE_SIZE); /* not really needed, already page aligned */
--	*(.text.page_aligned)
-+	*(.kernel.text.page_aligned)
- 	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
-@@ -70,32 +70,32 @@ SECTIONS
-   . = ALIGN(PAGE_SIZE);
-   .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
-   	__nosave_begin = .;
--	*(.data.nosave)
-+	*(.kernel.data.nosave)
-   	. = ALIGN(PAGE_SIZE);
-   	__nosave_end = .;
-   }
- 
-   . = ALIGN(PAGE_SIZE);
--  .data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
--	*(.data.page_aligned)
--	*(.data.idt)
-+  .kernel.data.page_aligned : AT(ADDR(.kernel.data.page_aligned) - LOAD_OFFSET) {
-+	*(.kernel.data.page_aligned)
-+	*(.kernel.data.idt)
-   }
- 
-   . = ALIGN(32);
--  .data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
--	*(.data.cacheline_aligned)
-+  .kernel.data.cacheline_aligned : AT(ADDR(.kernel.data.cacheline_aligned) - LOAD_OFFSET) {
-+	*(.kernel.data.cacheline_aligned)
-   }
- 
-   /* rarely changed data like cpu maps */
-   . = ALIGN(32);
--  .data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
--	*(.data.read_mostly)
-+  .kernel.data.read_mostly : AT(ADDR(.kernel.data.read_mostly) - LOAD_OFFSET) {
-+	*(.kernel.data.read_mostly)
- 	_edata = .;		/* End of data section */
-   }
- 
-   . = ALIGN(THREAD_SIZE);	/* init_task */
--  .data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
--	*(.data.init_task)
-+  .kernel.data.init_task : AT(ADDR(.kernel.data.init_task) - LOAD_OFFSET) {
-+	*(.kernel.data.init_task)
-   }
- 
-   /* might get freed after init */
-@@ -178,11 +178,11 @@ SECTIONS
-   }
- #endif
-   . = ALIGN(PAGE_SIZE);
--  .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
-+  .kernel.data.percpu  : AT(ADDR(.kernel.data.percpu) - LOAD_OFFSET) {
- 	__per_cpu_start = .;
--	*(.data.percpu.page_aligned)
--	*(.data.percpu)
--	*(.data.percpu.shared_aligned)
-+	*(.kernel.data.percpu.page_aligned)
-+	*(.kernel.data.percpu)
-+	*(.kernel.data.percpu.shared_aligned)
- 	__per_cpu_end = .;
-   }
-   . = ALIGN(PAGE_SIZE);
-@@ -191,7 +191,7 @@ SECTIONS
-   .bss : AT(ADDR(.bss) - LOAD_OFFSET) {
- 	__init_end = .;
- 	__bss_start = .;		/* BSS */
--	*(.bss.page_aligned)
-+	*(.bss.kernel.page_aligned)
- 	*(.bss)
- 	. = ALIGN(4);
- 	__bss_stop = .;
-diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
-index 46e0544..6fd4547 100644
---- a/arch/x86/kernel/vmlinux_64.lds.S
-+++ b/arch/x86/kernel/vmlinux_64.lds.S
-@@ -28,7 +28,7 @@ SECTIONS
-   _text = .;			/* Text and read-only data */
-   .text :  AT(ADDR(.text) - LOAD_OFFSET) {
- 	/* First the code that has to be first for bootstrapping */
--	*(.text.head)
-+	*(.kernel.text.head)
- 	_stext = .;
- 	/* Then the rest */
- 	TEXT_TEXT
-@@ -62,17 +62,17 @@ SECTIONS
- 
-   . = ALIGN(PAGE_SIZE);
-   . = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
--  .data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
--	*(.data.cacheline_aligned)
-+  .kernel.data.cacheline_aligned : AT(ADDR(.kernel.data.cacheline_aligned) - LOAD_OFFSET) {
-+	*(.kernel.data.cacheline_aligned)
-   }
-   . = ALIGN(CONFIG_X86_INTERNODE_CACHE_BYTES);
--  .data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
--  	*(.data.read_mostly)
-+  .kernel.data.read_mostly : AT(ADDR(.kernel.data.read_mostly) - LOAD_OFFSET) {
-+  	*(.kernel.data.read_mostly)
-   }
- 
- #define VSYSCALL_ADDR (-10*1024*1024)
--#define VSYSCALL_PHYS_ADDR ((LOADADDR(.data.read_mostly) + SIZEOF(.data.read_mostly) + 4095) & ~(4095))
--#define VSYSCALL_VIRT_ADDR ((ADDR(.data.read_mostly) + SIZEOF(.data.read_mostly) + 4095) & ~(4095))
-+#define VSYSCALL_PHYS_ADDR ((LOADADDR(.kernel.data.read_mostly) + SIZEOF(.kernel.data.read_mostly) + 4095) & ~(4095))
-+#define VSYSCALL_VIRT_ADDR ((ADDR(.kernel.data.read_mostly) + SIZEOF(.kernel.data.read_mostly) + 4095) & ~(4095))
- 
- #define VLOAD_OFFSET (VSYSCALL_ADDR - VSYSCALL_PHYS_ADDR)
- #define VLOAD(x) (ADDR(x) - VLOAD_OFFSET)
-@@ -121,13 +121,13 @@ SECTIONS
- #undef VVIRT
- 
-   . = ALIGN(THREAD_SIZE);	/* init_task */
--  .data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
--	*(.data.init_task)
-+  .kernel.data.init_task : AT(ADDR(.kernel.data.init_task) - LOAD_OFFSET) {
-+	*(.kernel.data.init_task)
-   }:data.init
- 
-   . = ALIGN(PAGE_SIZE);
--  .data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
--	*(.data.page_aligned)
-+  .kernel.data.page_aligned : AT(ADDR(.kernel.data.page_aligned) - LOAD_OFFSET) {
-+	*(.kernel.data.page_aligned)
-   }
- 
-   /* might get freed after init */
-@@ -214,13 +214,13 @@ SECTIONS
- 
-   . = ALIGN(PAGE_SIZE);
-   __nosave_begin = .;
--  .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) { *(.data.nosave) }
-+  .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) { *(.kernel.data.nosave) }
-   . = ALIGN(PAGE_SIZE);
-   __nosave_end = .;
- 
-   __bss_start = .;		/* BSS */
-   .bss : AT(ADDR(.bss) - LOAD_OFFSET) {
--	*(.bss.page_aligned)
-+	*(.bss.kernel.page_aligned)
- 	*(.bss)
- 	}
-   __bss_stop = .;
-diff --git a/arch/xtensa/kernel/head.S b/arch/xtensa/kernel/head.S
-index 67e6913..581c735 100644
---- a/arch/xtensa/kernel/head.S
-+++ b/arch/xtensa/kernel/head.S
-@@ -234,7 +234,7 @@ should_never_return:
-  * BSS section
-  */
- 	
--.section ".bss.page_aligned", "w"
-+.section ".bss.kernel.page_aligned", "w"
- ENTRY(swapper_pg_dir)
- 	.fill	PAGE_SIZE, 1, 0
- ENTRY(empty_zero_page)
-diff --git a/arch/xtensa/kernel/init_task.c b/arch/xtensa/kernel/init_task.c
-index 3df469d..f24808c 100644
---- a/arch/xtensa/kernel/init_task.c
-+++ b/arch/xtensa/kernel/init_task.c
-@@ -29,7 +29,7 @@ struct mm_struct init_mm = INIT_MM(init_mm);
- EXPORT_SYMBOL(init_mm);
- 
- union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
-+	__attribute__((__section__(".kernel.data.init_task"))) =
- { INIT_THREAD_INFO(init_task) };
- 
- struct task_struct init_task = INIT_TASK(init_task);
-diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
-index 51f4fb6..f43f7f5 100644
---- a/arch/xtensa/kernel/vmlinux.lds.S
-+++ b/arch/xtensa/kernel/vmlinux.lds.S
-@@ -121,14 +121,14 @@ SECTIONS
-     DATA_DATA
-     CONSTRUCTORS
-     . = ALIGN(XCHAL_ICACHE_LINESIZE);
--    *(.data.cacheline_aligned)
-+    *(.kernel.data.cacheline_aligned)
-   }
- 
-   _edata = .;
- 
-   /* The initial task */
-   . = ALIGN(8192);
--  .data.init_task : { *(.data.init_task) }
-+  .kernel.data.init_task : { *(.kernel.data.init_task) }
- 
-   /* Initialization code and data: */
- 
-@@ -259,7 +259,7 @@ SECTIONS
- 
-   /* BSS section */
-   _bss_start = .;
--  .bss : { *(.bss.page_aligned) *(.bss) }
-+  .bss : { *(.bss.kernel.page_aligned) *(.bss) }
-   _bss_end = .;
- 
-   _end = .;
-diff --git a/include/asm-frv/init.h b/include/asm-frv/init.h
-index 8b15838..16bea47 100644
---- a/include/asm-frv/init.h
-+++ b/include/asm-frv/init.h
-@@ -1,12 +1,12 @@
- #ifndef _ASM_INIT_H
- #define _ASM_INIT_H
- 
--#define __init __attribute__ ((__section__ (".text.init")))
--#define __initdata __attribute__ ((__section__ (".data.init")))
-+#define __init __attribute__ ((__section__ (".kernel.text.init")))
-+#define __initdata __attribute__ ((__section__ (".kernel.data.init")))
- /* For assembly routines */
--#define __INIT		.section	".text.init",#alloc,#execinstr
-+#define __INIT		.section	".kernel.text.init",#alloc,#execinstr
- #define __FINIT		.previous
--#define __INITDATA	.section	".data.init",#alloc,#write
-+#define __INITDATA	.section	".kernel.data.init",#alloc,#write
- 
- #endif
- 
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 8074460..e8d1bdd 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -48,7 +48,7 @@
- /* .data section */
- #define DATA_DATA							\
- 	*(.data)							\
--	*(.data.init.refok)						\
-+	*(.kernel.data.init.refok)					\
- 	*(.ref.data)							\
- 	DEV_KEEP(init.data)						\
- 	DEV_KEEP(exit.data)						\
-@@ -236,8 +236,8 @@
- 		*(.text.hot)						\
- 		*(.text)						\
- 		*(.ref.text)						\
--		*(.text.init.refok)					\
--		*(.exit.text.refok)					\
-+		*(.kernel.text.init.refok)				\
-+		*(.kernel.text.exit.refok)				\
- 	DEV_KEEP(init.text)						\
- 	DEV_KEEP(exit.text)						\
- 	CPU_KEEP(init.text)						\
-@@ -404,9 +404,9 @@
- #define PERCPU(align)							\
- 	. = ALIGN(align);						\
- 	VMLINUX_SYMBOL(__per_cpu_start) = .;				\
--	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {		\
--		*(.data.percpu.page_aligned)				\
--		*(.data.percpu)						\
--		*(.data.percpu.shared_aligned)				\
-+	.kernel.data.percpu  : AT(ADDR(.kernel.data.percpu) - LOAD_OFFSET) { \
-+		*(.kernel.data.percpu.page_aligned)				\
-+		*(.kernel.data.percpu)					\
-+		*(.kernel.data.percpu.shared_aligned)			\
- 	}								\
- 	VMLINUX_SYMBOL(__per_cpu_end) = .;
-diff --git a/include/linux/cache.h b/include/linux/cache.h
-index 97e2488..12fb84d 100644
---- a/include/linux/cache.h
-+++ b/include/linux/cache.h
-@@ -31,7 +31,7 @@
- #ifndef __cacheline_aligned
- #define __cacheline_aligned					\
-   __attribute__((__aligned__(SMP_CACHE_BYTES),			\
--		 __section__(".data.cacheline_aligned")))
-+		 __section__(".kernel.data.cacheline_aligned")))
- #endif /* __cacheline_aligned */
- 
- #ifndef __cacheline_aligned_in_smp
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 68cb026..10d256a 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -62,9 +62,9 @@
- 
- /* backward compatibility note
-  *  A few places hardcode the old section names:
-- *  .text.init.refok
-- *  .data.init.refok
-- *  .exit.text.refok
-+ *  .kernel.text.init.refok
-+ *  .kernel.data.init.refok
-+ *  .kernel.text.exit.refok
-  *  They should be converted to use the defines from this file
-  */
- 
-@@ -301,7 +301,7 @@ void __init parse_early_param(void);
- #endif
- 
- /* Data marked not to be saved by software suspend */
--#define __nosavedata __section(.data.nosave)
-+#define __nosavedata __section(.kernel.data.nosave)
- 
- /* This means "can be init if no module support, otherwise module load
-    may call it." */
-diff --git a/include/linux/linkage.h b/include/linux/linkage.h
-index 9fd1f85..914e63c 100644
---- a/include/linux/linkage.h
-+++ b/include/linux/linkage.h
-@@ -18,8 +18,8 @@
- # define asmregparm
- #endif
- 
--#define __page_aligned_data	__section(.data.page_aligned) __aligned(PAGE_SIZE)
--#define __page_aligned_bss	__section(.bss.page_aligned) __aligned(PAGE_SIZE)
-+#define __page_aligned_data	__section(.kernel.data.page_aligned) __aligned(PAGE_SIZE)
-+#define __page_aligned_bss	__section(.bss.kernel.page_aligned) __aligned(PAGE_SIZE)
- 
- /*
-  * This is used by architectures to keep arguments on the stack
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index 9f2a375..55058fe 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -10,13 +10,13 @@
- 
- #ifdef CONFIG_SMP
- #define DEFINE_PER_CPU(type, name)					\
--	__attribute__((__section__(".data.percpu")))			\
-+	__attribute__((__section__(".kernel.data.percpu")))		\
- 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
- 
- #ifdef MODULE
--#define SHARED_ALIGNED_SECTION ".data.percpu"
-+#define SHARED_ALIGNED_SECTION ".kernel.data.percpu"
- #else
--#define SHARED_ALIGNED_SECTION ".data.percpu.shared_aligned"
-+#define SHARED_ALIGNED_SECTION ".kernel.data.percpu.shared_aligned"
- #endif
- 
- #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
-@@ -24,14 +24,14 @@
- 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name		\
- 	____cacheline_aligned_in_smp
- 
--#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)			\
--	__attribute__((__section__(".data.percpu.page_aligned")))	\
-+#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)				\
-+	__attribute__((__section__(".kernel.data.percpu.page_aligned")))\
- 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
- #else
- #define DEFINE_PER_CPU(type, name)					\
- 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
- 
--#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)		      \
-+#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
- 	DEFINE_PER_CPU(type, name)
- 
- #define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)		      \
-diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-index e0c0fcc..b041f4d 100644
---- a/include/linux/spinlock.h
-+++ b/include/linux/spinlock.h
-@@ -60,7 +60,7 @@
- /*
-  * Must define these before including other files, inline functions need them
-  */
--#define LOCK_SECTION_NAME ".text.lock."KBUILD_BASENAME
-+#define LOCK_SECTION_NAME ".kernel.text.lock."KBUILD_BASENAME
- 
- #define LOCK_SECTION_START(extra)               \
-         ".subsection 1\n\t"                     \
-diff --git a/kernel/module.c b/kernel/module.c
-index 1f4cc00..5275d86 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -484,7 +484,7 @@ static unsigned int find_pcpusec(Elf_Ehdr *hdr,
- 				 Elf_Shdr *sechdrs,
- 				 const char *secstrings)
- {
--	return find_sec(hdr, sechdrs, secstrings, ".data.percpu");
-+	return find_sec(hdr, sechdrs, secstrings, ".kernel.data.percpu");
- }
- 
- static void percpu_modcopy(void *pcpudest, const void *from, unsigned long size)
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 8892161..afe9408 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -794,9 +794,9 @@ static const char *data_sections[] = { DATA_SECTIONS, NULL };
- /* sections that may refer to an init/exit section with no warning */
- static const char *initref_sections[] =
- {
--	".text.init.refok*",
--	".exit.text.refok*",
--	".data.init.refok*",
-+	".kernel.text.init.refok*",
-+	".kernel.text.exit.refok*",
-+	".kernel.data.init.refok*",
- 	NULL
++
++	list_for_each_entry(update, &updates, list) {
++		if (strcmp(pack->kid, update->kid) == 0) {
++			if (update->stage != STAGE_PREPARING) {
++				ret = -EPERM;
++				goto out;
++			}
++			add_to_update(pack, update);
++			ret = 0;
++			goto out;
++		}
++	}
++	update = init_ksplice_update(pack->kid);
++	if (update == NULL) {
++		ret = -ENOMEM;
++		goto out;
++	}
++	ret = ksplice_sysfs_init(update);
++	if (ret != 0) {
++		cleanup_ksplice_update(update);
++		goto out;
++	}
++	add_to_update(pack, update);
++out:
++	mutex_unlock(&module_mutex);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(init_ksplice_pack);
++
++void cleanup_ksplice_pack(struct ksplice_pack *pack)
++{
++	if (pack->update == NULL)
++		return;
++	if (pack->update->stage == STAGE_APPLIED) {
++		/* If the pack wasn't actually applied (because we
++		   only applied this update to loaded modules and this
++		   target wasn't loaded), then unregister the pack
++		   from the list of unused packs */
++		struct ksplice_pack *p;
++		bool found = false;
++
++		mutex_lock(&module_mutex);
++		list_for_each_entry(p, &pack->update->unused_packs, list) {
++			if (p == pack)
++				found = true;
++		}
++		if (found)
++			list_del(&pack->list);
++		mutex_unlock(&module_mutex);
++		return;
++	}
++	mutex_lock(&module_mutex);
++	list_del(&pack->list);
++	mutex_unlock(&module_mutex);
++	if (pack->update->stage == STAGE_PREPARING)
++		maybe_cleanup_ksplice_update(pack->update);
++	pack->update = NULL;
++}
++EXPORT_SYMBOL_GPL(cleanup_ksplice_pack);
++
++static struct update *init_ksplice_update(const char *kid)
++{
++	struct update *update;
++	update = kcalloc(1, sizeof(struct update), GFP_KERNEL);
++	if (update == NULL)
++		return NULL;
++	update->name = kasprintf(GFP_KERNEL, "ksplice_%s", kid);
++	if (update->name == NULL) {
++		kfree(update);
++		return NULL;
++	}
++	update->kid = kstrdup(kid, GFP_KERNEL);
++	if (update->kid == NULL) {
++		kfree(update->name);
++		kfree(update);
++		return NULL;
++	}
++	if (try_module_get(THIS_MODULE) != 1) {
++		kfree(update->kid);
++		kfree(update->name);
++		kfree(update);
++		return NULL;
++	}
++	INIT_LIST_HEAD(&update->packs);
++	INIT_LIST_HEAD(&update->unused_packs);
++	if (init_debug_buf(update) != OK) {
++		module_put(THIS_MODULE);
++		kfree(update->kid);
++		kfree(update->name);
++		kfree(update);
++		return NULL;
++	}
++	list_add(&update->list, &updates);
++	update->stage = STAGE_PREPARING;
++	update->abort_cause = OK;
++	update->partial = 0;
++	INIT_LIST_HEAD(&update->conflicts);
++	return update;
++}
++
++static void cleanup_ksplice_update(struct update *update)
++{
++	mutex_lock(&module_mutex);
++	list_del(&update->list);
++	mutex_unlock(&module_mutex);
++	cleanup_conflicts(update);
++	clear_debug_buf(update);
++	kfree(update->kid);
++	kfree(update->name);
++	kfree(update);
++	module_put(THIS_MODULE);
++}
++
++static void maybe_cleanup_ksplice_update(struct update *update)
++{
++	if (list_empty(&update->packs) && list_empty(&update->unused_packs))
++		kobject_put(&update->kobj);
++}
++
++static void add_to_update(struct ksplice_pack *pack, struct update *update)
++{
++	pack->update = update;
++	list_add(&pack->list, &update->unused_packs);
++	pack->module_list_entry.primary = pack->primary;
++}
++
++static int ksplice_sysfs_init(struct update *update)
++{
++	int ret = 0;
++	memset(&update->kobj, 0, sizeof(update->kobj));
++	ret = kobject_init_and_add(&update->kobj, &ksplice_ktype,
++				   ksplice_kobj, "%s", update->kid);
++	if (ret != 0)
++		return ret;
++	kobject_uevent(&update->kobj, KOBJ_ADD);
++	return 0;
++}
++
++static abort_t apply_update(struct update *update)
++{
++	struct ksplice_pack *pack, *n;
++	abort_t ret;
++	int retval;
++
++	mutex_lock(&module_mutex);
++	list_for_each_entry_safe(pack, n, &update->unused_packs, list) {
++		if (strcmp(pack->target_name, "vmlinux") == 0) {
++			pack->target = NULL;
++		} else if (pack->target == NULL) {
++			pack->target = find_module(pack->target_name);
++			if (pack->target == NULL ||
++			    !module_is_live(pack->target)) {
++				if (update->partial) {
++					continue;
++				} else {
++					ret = TARGET_NOT_LOADED;
++					goto out;
++				}
++			}
++			retval = use_module(pack->primary, pack->target);
++			if (retval != 1) {
++				ret = UNEXPECTED;
++				goto out;
++			}
++		}
++		list_del(&pack->list);
++		list_add_tail(&pack->list, &update->packs);
++		pack->module_list_entry.target = pack->target;
++
++	}
++
++	list_for_each_entry(pack, &update->packs, list) {
++		const struct ksplice_section *sect;
++		for (sect = pack->primary_sections;
++		     sect < pack->primary_sections_end; sect++) {
++			struct safety_record *rec = kmalloc(sizeof(*rec),
++							    GFP_KERNEL);
++			if (rec == NULL) {
++				ret = OUT_OF_MEMORY;
++				goto out;
++			}
++			rec->addr = sect->address;
++			rec->size = sect->size;
++			rec->label = sect->symbol->label;
++			list_add(&rec->list, &pack->safety_records);
++		}
++	}
++
++	list_for_each_entry(pack, &update->packs, list) {
++		ret = init_symbol_arrays(pack);
++		if (ret != OK) {
++			cleanup_symbol_arrays(pack);
++			goto out;
++		}
++		ret = prepare_pack(pack);
++		cleanup_symbol_arrays(pack);
++		if (ret != OK)
++			goto out;
++	}
++	ret = apply_patches(update);
++out:
++	list_for_each_entry(pack, &update->packs, list) {
++		struct ksplice_section *s;
++		if (update->stage == STAGE_PREPARING)
++			clear_list(&pack->safety_records, struct safety_record,
++				   list);
++		for (s = pack->helper_sections; s < pack->helper_sections_end;
++		     s++) {
++			if (s->match_map != NULL) {
++				vfree(s->match_map);
++				s->match_map = NULL;
++			}
++		}
++	}
++	mutex_unlock(&module_mutex);
++	return ret;
++}
++
++static int compare_symbolp_names(const void *a, const void *b)
++{
++	const struct ksplice_symbol *const *sympa = a, *const *sympb = b;
++	if ((*sympa)->name == NULL && (*sympb)->name == NULL)
++		return 0;
++	if ((*sympa)->name == NULL)
++		return -1;
++	if ((*sympb)->name == NULL)
++		return 1;
++	return strcmp((*sympa)->name, (*sympb)->name);
++}
++
++static int compare_symbolp_labels(const void *a, const void *b)
++{
++	const struct ksplice_symbol *const *sympa = a, *const *sympb = b;
++	return strcmp((*sympa)->label, (*sympb)->label);
++}
++
++static int symbolp_bsearch_compare(const void *key, const void *elt)
++{
++	const char *name = key;
++	const struct ksplice_symbol *const *symp = elt;
++	const struct ksplice_symbol *sym = *symp;
++	if (sym->name == NULL)
++		return 1;
++	return strcmp(name, sym->name);
++}
++
++static abort_t add_matching_values(struct ksplice_lookup *lookup,
++				   const char *sym_name, unsigned long sym_val)
++{
++	struct ksplice_symbol **symp;
++	abort_t ret;
++
++	symp = bsearch(sym_name, lookup->arr, lookup->size,
++		       sizeof(*lookup->arr), symbolp_bsearch_compare);
++	if (symp == NULL)
++		return OK;
++
++	while (symp > lookup->arr &&
++	       symbolp_bsearch_compare(sym_name, symp - 1) == 0)
++		symp--;
++
++	for (; symp < lookup->arr + lookup->size; symp++) {
++		struct ksplice_symbol *sym = *symp;
++		if (sym->name == NULL || strcmp(sym_name, sym->name) != 0)
++			break;
++		ret = add_candidate_val(lookup->pack, sym->vals, sym_val);
++		if (ret != OK)
++			return ret;
++	}
++	return OK;
++}
++
++static int add_kallsyms_values(void *data, const char *name,
++			       struct module *owner, unsigned long val)
++{
++	struct ksplice_lookup *lookup = data;
++	if (owner == lookup->pack->primary ||
++	    !patches_module(owner, lookup->pack->target))
++		return (__force int)OK;
++	return (__force int)add_matching_values(lookup, name, val);
++}
++
++static bool add_export_values(const struct symsearch *syms,
++			      struct module *owner,
++			      unsigned int symnum, void *data)
++{
++	struct ksplice_lookup *lookup = data;
++	abort_t ret;
++
++	ret = add_matching_values(lookup, syms->start[symnum].name,
++				  syms->start[symnum].value);
++	if (ret != OK) {
++		lookup->ret = ret;
++		return true;
++	}
++	return false;
++}
++
++static void cleanup_symbol_arrays(struct ksplice_pack *pack)
++{
++	struct ksplice_symbol *sym;
++	for (sym = pack->primary_symbols; sym < pack->primary_symbols_end;
++	     sym++) {
++		if (sym->vals != NULL) {
++			clear_list(sym->vals, struct candidate_val, list);
++			kfree(sym->vals);
++			sym->vals = NULL;
++		}
++	}
++	for (sym = pack->helper_symbols; sym < pack->helper_symbols_end; sym++) {
++		if (sym->vals != NULL) {
++			clear_list(sym->vals, struct candidate_val, list);
++			kfree(sym->vals);
++			sym->vals = NULL;
++		}
++	}
++}
++
++static abort_t uniquify_symbols(struct ksplice_pack *pack)
++{
++	struct ksplice_reloc *r;
++	struct ksplice_section *s;
++	struct ksplice_symbol *sym, **sym_arr, **symp;
++	size_t size = pack->primary_symbols_end - pack->primary_symbols;
++
++	if (size == 0)
++		return OK;
++
++	sym_arr = vmalloc(sizeof(*sym_arr) * size);
++	if (sym_arr == NULL)
++		return OUT_OF_MEMORY;
++
++	for (symp = sym_arr, sym = pack->primary_symbols;
++	     symp < sym_arr + size && sym < pack->primary_symbols_end;
++	     sym++, symp++)
++		*symp = sym;
++
++	sort(sym_arr, size, sizeof(*sym_arr), compare_symbolp_labels, NULL);
++
++	for (r = pack->helper_relocs; r < pack->helper_relocs_end; r++) {
++		symp = bsearch(&r->symbol, sym_arr, size, sizeof(*sym_arr),
++			       compare_symbolp_labels);
++		if (symp != NULL) {
++			if ((*symp)->name == NULL)
++				(*symp)->name = r->symbol->name;
++			r->symbol = *symp;
++		}
++	}
++
++	for (s = pack->helper_sections; s < pack->helper_sections_end; s++) {
++		symp = bsearch(&s->symbol, sym_arr, size, sizeof(*sym_arr),
++			       compare_symbolp_labels);
++		if (symp != NULL) {
++			if ((*symp)->name == NULL)
++				(*symp)->name = s->symbol->name;
++			s->symbol = *symp;
++		}
++	}
++
++	vfree(sym_arr);
++	return OK;
++}
++
++static abort_t init_symbol_array(struct ksplice_pack *pack,
++				 struct ksplice_symbol *start,
++				 struct ksplice_symbol *end)
++{
++	struct ksplice_symbol *sym, **sym_arr, **symp;
++	struct ksplice_lookup lookup;
++	size_t size = end - start;
++	abort_t ret;
++
++	if (size == 0)
++		return OK;
++
++	for (sym = start; sym < end; sym++) {
++		if (starts_with(sym->label, "__ksymtab")) {
++			const struct kernel_symbol *ksym;
++			const char *colon = strchr(sym->label, ':');
++			const char *name = colon + 1;
++			if (colon == NULL)
++				continue;
++			ksym = find_symbol(name, NULL, NULL, true, false);
++			if (ksym == NULL) {
++				ksdebug(pack, "Could not find kernel_symbol "
++					"structure for %s\n", name);
++				continue;
++			}
++			sym->value = (unsigned long)ksym;
++			sym->vals = NULL;
++			continue;
++		}
++
++		sym->vals = kmalloc(sizeof(*sym->vals), GFP_KERNEL);
++		if (sym->vals == NULL)
++			return OUT_OF_MEMORY;
++		INIT_LIST_HEAD(sym->vals);
++		sym->value = 0;
++	}
++
++	sym_arr = vmalloc(sizeof(*sym_arr) * size);
++	if (sym_arr == NULL)
++		return OUT_OF_MEMORY;
++
++	for (symp = sym_arr, sym = start; symp < sym_arr + size && sym < end;
++	     sym++, symp++)
++		*symp = sym;
++
++	sort(sym_arr, size, sizeof(*sym_arr), compare_symbolp_names, NULL);
++
++	lookup.pack = pack;
++	lookup.arr = sym_arr;
++	lookup.size = size;
++	lookup.ret = OK;
++
++	each_symbol(add_export_values, &lookup);
++	ret = lookup.ret;
++	if (ret == OK)
++		ret = (__force abort_t)
++		    kallsyms_on_each_symbol(add_kallsyms_values, &lookup);
++	vfree(sym_arr);
++	return ret;
++}
++
++static abort_t init_symbol_arrays(struct ksplice_pack *pack)
++{
++	abort_t ret;
++
++	ret = uniquify_symbols(pack);
++	if (ret != OK)
++		return ret;
++
++	ret = init_symbol_array(pack, pack->helper_symbols,
++				pack->helper_symbols_end);
++	if (ret != OK)
++		return ret;
++
++	ret = init_symbol_array(pack, pack->primary_symbols,
++				pack->primary_symbols_end);
++	if (ret != OK)
++		return ret;
++
++	return OK;
++}
++
++static abort_t prepare_pack(struct ksplice_pack *pack)
++{
++	abort_t ret;
++
++	ksdebug(pack, "Preparing and checking %s\n", pack->name);
++	ret = match_pack_sections(pack, false);
++	if (ret == NO_MATCH) {
++		/* It is possible that by using relocations from .data sections
++		   we can successfully run-pre match the rest of the sections.
++		   To avoid using any symbols obtained from .data sections
++		   (which may be unreliable) in the post code, we first prepare
++		   the post code and then try to run-pre match the remaining
++		   sections with the help of .data sections.
++		 */
++		ksdebug(pack, "Continuing without some sections; we might "
++			"find them later.\n");
++		ret = finalize_pack(pack);
++		if (ret != OK) {
++			ksdebug(pack, "Aborted.  Unable to continue without "
++				"the unmatched sections.\n");
++			return ret;
++		}
++
++		ksdebug(pack, "run-pre: Considering .data sections to find the "
++			"unmatched sections\n");
++		ret = match_pack_sections(pack, true);
++		if (ret != OK)
++			return ret;
++
++		ksdebug(pack, "run-pre: Found all previously unmatched "
++			"sections\n");
++		return OK;
++	} else if (ret != OK) {
++		return ret;
++	}
++
++	return finalize_pack(pack);
++}
++
++static abort_t finalize_pack(struct ksplice_pack *pack)
++{
++	abort_t ret;
++	ret = apply_relocs(pack, pack->primary_relocs,
++			   pack->primary_relocs_end);
++	if (ret != OK)
++		return ret;
++
++	ret = finalize_patches(pack);
++	if (ret != OK)
++		return ret;
++
++	return OK;
++}
++
++static abort_t finalize_patches(struct ksplice_pack *pack)
++{
++	struct ksplice_patch *p;
++	struct safety_record *rec;
++	abort_t ret;
++
++	for (p = pack->patches; p < pack->patches_end; p++) {
++		bool found = false;
++		list_for_each_entry(rec, &pack->safety_records, list) {
++			if (rec->addr <= p->oldaddr &&
++			    p->oldaddr < rec->addr + rec->size) {
++				found = true;
++				break;
++			}
++		}
++		if (!found && p->type != KSPLICE_PATCH_EXPORT) {
++			const struct ksplice_reloc *r = patch_reloc(pack, p);
++			if (r == NULL) {
++				ksdebug(pack, "A patch with no ksplice_reloc at"
++					" its oldaddr has no safety record\n");
++				return NO_MATCH;
++			}
++			ksdebug(pack, "No safety record for patch with oldaddr "
++				"%s+%lx\n", r->symbol->label, r->target_addend);
++			return NO_MATCH;
++		}
++
++		if (p->type == KSPLICE_PATCH_TEXT) {
++			ret = prepare_trampoline(pack, p);
++			if (ret != OK)
++				return ret;
++		}
++
++		if (found && rec->addr + rec->size < p->oldaddr + p->size) {
++			ksdebug(pack, "Safety record %s is too short for "
++				"patch\n", rec->label);
++			return UNEXPECTED;
++		}
++
++		if (p->type == KSPLICE_PATCH_TEXT) {
++			if (p->repladdr == 0)
++				p->repladdr = (unsigned long)ksplice_deleted;
++		}
++
++		ret = add_dependency_on_address(pack, p->oldaddr);
++		if (ret != OK)
++			return ret;
++	}
++	return OK;
++}
++
++static abort_t map_trampoline_pages(struct update *update)
++{
++	struct ksplice_pack *pack;
++	list_for_each_entry(pack, &update->packs, list) {
++		struct ksplice_patch *p;
++		for (p = pack->patches; p < pack->patches_end; p++) {
++			p->vaddr = map_writable((void *)p->oldaddr, p->size);
++			if (p->vaddr == NULL) {
++				ksdebug(pack, "Unable to map oldaddr read/write"
++					"\n");
++				unmap_trampoline_pages(update);
++				return UNEXPECTED;
++			}
++		}
++	}
++	return OK;
++}
++
++static void unmap_trampoline_pages(struct update *update)
++{
++	struct ksplice_pack *pack;
++	list_for_each_entry(pack, &update->packs, list) {
++		struct ksplice_patch *p;
++		for (p = pack->patches; p < pack->patches_end; p++) {
++			vunmap((void *)((unsigned long)p->vaddr & PAGE_MASK));
++			p->vaddr = NULL;
++		}
++	}
++}
++
++/* Based off of linux's text_poke.  */
++static void *map_writable(void *addr, size_t len)
++{
++	void *vaddr;
++	int nr_pages = 2;
++	struct page *pages[2];
++
++	if (__module_text_address((unsigned long)addr) == NULL &&
++	    __module_data_address((unsigned long)addr) == NULL) {
++		pages[0] = virt_to_page(addr);
++		WARN_ON(!PageReserved(pages[0]));
++		pages[1] = virt_to_page(addr + PAGE_SIZE);
++	} else {
++		pages[0] = vmalloc_to_page(addr);
++		pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
++	}
++	if (!pages[0])
++		return NULL;
++	if (!pages[1])
++		nr_pages = 1;
++	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
++	if (vaddr == NULL)
++		return NULL;
++	return vaddr + offset_in_page(addr);
++}
++
++static abort_t add_dependency_on_address(struct ksplice_pack *pack,
++					 unsigned long addr)
++{
++	struct ksplice_pack *p;
++	struct module *m =
++	    __module_text_address(follow_trampolines(pack, addr));
++	if (m == NULL)
++		return OK;
++	list_for_each_entry(p, &pack->update->packs, list) {
++		if (m == p->primary)
++			return OK;
++	}
++	if (use_module(pack->primary, m) != 1)
++		return MODULE_BUSY;
++	return OK;
++}
++
++static abort_t apply_relocs(struct ksplice_pack *pack,
++			    const struct ksplice_reloc *relocs,
++			    const struct ksplice_reloc *relocs_end)
++{
++	const struct ksplice_reloc *r;
++	for (r = relocs; r < relocs_end; r++) {
++		abort_t ret = apply_reloc(pack, r);
++		if (ret != OK)
++			return ret;
++	}
++	return OK;
++}
++
++static abort_t apply_reloc(struct ksplice_pack *pack,
++			   const struct ksplice_reloc *r)
++{
++	switch (r->howto->type) {
++	case KSPLICE_HOWTO_RELOC:
++	case KSPLICE_HOWTO_RELOC_PATCH:
++		return apply_howto_reloc(pack, r);
++	case KSPLICE_HOWTO_DATE:
++	case KSPLICE_HOWTO_TIME:
++		return apply_howto_date(pack, r);
++	default:
++		ksdebug(pack, "Unexpected howto type %d\n", r->howto->type);
++		return UNEXPECTED;
++	}
++}
++
++static abort_t apply_howto_reloc(struct ksplice_pack *pack,
++				 const struct ksplice_reloc *r)
++{
++	abort_t ret;
++	int canary_ret;
++	unsigned long sym_addr;
++	LIST_HEAD(vals);
++
++	canary_ret = contains_canary(pack, r->blank_addr, r->howto);
++	if (canary_ret < 0)
++		return UNEXPECTED;
++	if (canary_ret == 0) {
++		ksdebug(pack, "reloc: skipped %lx to %s+%lx (altinstr)\n",
++			r->blank_addr, r->symbol->label, r->target_addend);
++		return OK;
++	}
++
++	ret = lookup_symbol(pack, r->symbol, &vals);
++	if (ret != OK) {
++		release_vals(&vals);
++		return ret;
++	}
++	if (!singular(&vals) || (r->symbol->vals != NULL &&
++				 r->howto->type == KSPLICE_HOWTO_RELOC_PATCH)) {
++		release_vals(&vals);
++		ksdebug(pack, "Failed to find %s for reloc\n",
++			r->symbol->label);
++		return FAILED_TO_FIND;
++	}
++	sym_addr = list_entry(vals.next, struct candidate_val, list)->val;
++	release_vals(&vals);
++
++	ret = write_reloc_value(pack, r, r->blank_addr,
++				r->howto->pcrel ? sym_addr - r->blank_addr :
++				sym_addr);
++	if (ret != OK)
++		return ret;
++
++	ksdebug(pack, "reloc: %lx to %s+%lx (S=%lx ", r->blank_addr,
++		r->symbol->label, r->target_addend, sym_addr);
++	switch (r->howto->size) {
++	case 1:
++		ksdebug(pack, "aft=%02x)\n", *(uint8_t *)r->blank_addr);
++		break;
++	case 2:
++		ksdebug(pack, "aft=%04x)\n", *(uint16_t *)r->blank_addr);
++		break;
++	case 4:
++		ksdebug(pack, "aft=%08x)\n", *(uint32_t *)r->blank_addr);
++		break;
++#if BITS_PER_LONG >= 64
++	case 8:
++		ksdebug(pack, "aft=%016llx)\n", *(uint64_t *)r->blank_addr);
++		break;
++#endif /* BITS_PER_LONG */
++	default:
++		ksdebug(pack, "Aborted.  Invalid relocation size.\n");
++		return UNEXPECTED;
++	}
++
++	/* Create labelvals so that we can verify our choices in the second
++	   round of run-pre matching that considers data sections. */
++	ret = create_labelval(pack, r->symbol, sym_addr, VAL);
++	if (ret != OK)
++		return ret;
++
++	return add_dependency_on_address(pack, sym_addr);
++}
++
++static abort_t apply_howto_date(struct ksplice_pack *pack,
++				const struct ksplice_reloc *r)
++{
++	if (r->symbol->vals != NULL) {
++		ksdebug(pack, "Failed to find %s for date\n", r->symbol->label);
++		return FAILED_TO_FIND;
++	}
++	memcpy((unsigned char *)r->blank_addr,
++	       (const unsigned char *)r->symbol->value, r->howto->size);
++	return OK;
++}
++
++static abort_t read_reloc_value(struct ksplice_pack *pack,
++				const struct ksplice_reloc *r,
++				unsigned long addr, unsigned long *valp)
++{
++	unsigned char bytes[sizeof(long)];
++	unsigned long val;
++	const struct ksplice_reloc_howto *howto = r->howto;
++
++	if (howto->size <= 0 || howto->size > sizeof(long)) {
++		ksdebug(pack, "Aborted.  Invalid relocation size.\n");
++		return UNEXPECTED;
++	}
++
++	if (probe_kernel_read(bytes, (void *)addr, howto->size) == -EFAULT)
++		return NO_MATCH;
++
++	switch (howto->size) {
++	case 1:
++		val = *(uint8_t *)bytes;
++		break;
++	case 2:
++		val = *(uint16_t *)bytes;
++		break;
++	case 4:
++		val = *(uint32_t *)bytes;
++		break;
++#if BITS_PER_LONG >= 64
++	case 8:
++		val = *(uint64_t *)bytes;
++		break;
++#endif /* BITS_PER_LONG */
++	default:
++		ksdebug(pack, "Aborted.  Invalid relocation size.\n");
++		return UNEXPECTED;
++	}
++
++	val &= howto->dst_mask;
++	if (howto->signed_addend)
++		val |= -(val & (howto->dst_mask & ~(howto->dst_mask >> 1)));
++	val <<= howto->rightshift;
++	val -= r->insn_addend + r->target_addend;
++	*valp = val;
++	return OK;
++}
++
++static abort_t write_reloc_value(struct ksplice_pack *pack,
++				 const struct ksplice_reloc *r,
++				 unsigned long addr, unsigned long sym_addr)
++{
++	unsigned long val = sym_addr + r->target_addend + r->insn_addend;
++	const struct ksplice_reloc_howto *howto = r->howto;
++	val >>= howto->rightshift;
++	switch (howto->size) {
++	case 1:
++		*(uint8_t *)addr = (*(uint8_t *)addr & ~howto->dst_mask) |
++		    (val & howto->dst_mask);
++		break;
++	case 2:
++		*(uint16_t *)addr = (*(uint16_t *)addr & ~howto->dst_mask) |
++		    (val & howto->dst_mask);
++		break;
++	case 4:
++		*(uint32_t *)addr = (*(uint32_t *)addr & ~howto->dst_mask) |
++		    (val & howto->dst_mask);
++		break;
++#if BITS_PER_LONG >= 64
++	case 8:
++		*(uint64_t *)addr = (*(uint64_t *)addr & ~howto->dst_mask) |
++		    (val & howto->dst_mask);
++		break;
++#endif /* BITS_PER_LONG */
++	default:
++		ksdebug(pack, "Aborted.  Invalid relocation size.\n");
++		return UNEXPECTED;
++	}
++
++	if (read_reloc_value(pack, r, addr, &val) != OK || val != sym_addr) {
++		ksdebug(pack, "Aborted.  Relocation overflow.\n");
++		return UNEXPECTED;
++	}
++
++	return OK;
++}
++
++static void __attribute__((noreturn)) ksplice_deleted(void)
++{
++	printk(KERN_CRIT "Called a kernel function deleted by Ksplice!\n");
++	BUG();
++}
++
++static abort_t match_pack_sections(struct ksplice_pack *pack,
++				   bool consider_data_sections)
++{
++	struct ksplice_section *sect;
++	abort_t ret;
++	int remaining = 0;
++	bool progress;
++
++	for (sect = pack->helper_sections; sect < pack->helper_sections_end;
++	     sect++) {
++		if ((sect->flags & KSPLICE_SECTION_DATA) == 0 &&
++		    (sect->flags & KSPLICE_SECTION_STRING) == 0 &&
++		    (sect->flags & KSPLICE_SECTION_MATCHED) == 0)
++			remaining++;
++	}
++
++	while (remaining > 0) {
++		progress = false;
++		for (sect = pack->helper_sections;
++		     sect < pack->helper_sections_end; sect++) {
++			if ((sect->flags & KSPLICE_SECTION_MATCHED) != 0)
++				continue;
++			if ((!consider_data_sections &&
++			     (sect->flags & KSPLICE_SECTION_DATA) != 0) ||
++			    (sect->flags & KSPLICE_SECTION_STRING) != 0)
++				continue;
++			ret = find_section(pack, sect);
++			if (ret == OK) {
++				sect->flags |= KSPLICE_SECTION_MATCHED;
++				if ((sect->flags & KSPLICE_SECTION_DATA) == 0)
++					remaining--;
++				progress = true;
++			} else if (ret != NO_MATCH) {
++				return ret;
++			}
++		}
++
++		if (progress)
++			continue;
++
++		for (sect = pack->helper_sections;
++		     sect < pack->helper_sections_end; sect++) {
++			if ((sect->flags & KSPLICE_SECTION_MATCHED) != 0 ||
++			    (sect->flags & KSPLICE_SECTION_STRING) != 0)
++				continue;
++			ksdebug(pack, "run-pre: could not match %s "
++				"section %s\n",
++				(sect->flags & KSPLICE_SECTION_DATA) != 0 ?
++				"data" :
++				(sect->flags & KSPLICE_SECTION_RODATA) != 0 ?
++				"rodata" : "text", sect->symbol->label);
++		}
++		ksdebug(pack, "Aborted.  run-pre: could not match some "
++			"sections.\n");
++		return NO_MATCH;
++	}
++	return OK;
++}
++
++static abort_t find_section(struct ksplice_pack *pack,
++			    struct ksplice_section *sect)
++{
++	int i;
++	abort_t ret;
++	unsigned long run_addr;
++	LIST_HEAD(vals);
++	struct candidate_val *v, *n;
++
++	ret = lookup_symbol(pack, sect->symbol, &vals);
++	if (ret != OK) {
++		release_vals(&vals);
++		return ret;
++	}
++
++	ksdebug(pack, "run-pre: starting sect search for %s\n",
++		sect->symbol->label);
++
++	list_for_each_entry_safe(v, n, &vals, list) {
++		run_addr = v->val;
++
++		yield();
++		ret = try_addr(pack, sect, run_addr, NULL, RUN_PRE_INITIAL);
++		if (ret == NO_MATCH) {
++			list_del(&v->list);
++			kfree(v);
++		} else if (ret != OK) {
++			release_vals(&vals);
++			return ret;
++		}
++	}
++
++	if (singular(&vals)) {
++		LIST_HEAD(safety_records);
++		run_addr = list_entry(vals.next, struct candidate_val,
++				      list)->val;
++		ret = try_addr(pack, sect, run_addr, &safety_records,
++			       RUN_PRE_FINAL);
++		release_vals(&vals);
++		if (ret != OK) {
++			clear_list(&safety_records, struct safety_record, list);
++			ksdebug(pack, "run-pre: Final run failed for sect "
++				"%s:\n", sect->symbol->label);
++		} else {
++			list_splice(&safety_records, &pack->safety_records);
++		}
++		return ret;
++	} else if (!list_empty(&vals)) {
++		struct candidate_val *val;
++		ksdebug(pack, "run-pre: multiple candidates for sect %s:\n",
++			sect->symbol->label);
++		i = 0;
++		list_for_each_entry(val, &vals, list) {
++			i++;
++			ksdebug(pack, "%lx\n", val->val);
++			if (i > 5) {
++				ksdebug(pack, "...\n");
++				break;
++			}
++		}
++		release_vals(&vals);
++		return NO_MATCH;
++	}
++	release_vals(&vals);
++	return NO_MATCH;
++}
++
++static abort_t try_addr(struct ksplice_pack *pack,
++			struct ksplice_section *sect,
++			unsigned long run_addr,
++			struct list_head *safety_records,
++			enum run_pre_mode mode)
++{
++	abort_t ret;
++	const struct module *run_module;
++
++	if ((sect->flags & KSPLICE_SECTION_RODATA) != 0 ||
++	    (sect->flags & KSPLICE_SECTION_DATA) != 0)
++		run_module = __module_data_address(run_addr);
++	else
++		run_module = __module_text_address(run_addr);
++	if (run_module == pack->primary) {
++		ksdebug(pack, "run-pre: unexpected address %lx in primary "
++			"module %s for sect %s\n", run_addr, run_module->name,
++			sect->symbol->label);
++		return UNEXPECTED;
++	}
++	if (!patches_module(run_module, pack->target)) {
++		ksdebug(pack, "run-pre: ignoring address %lx in other module "
++			"%s for sect %s\n", run_addr, run_module == NULL ?
++			"vmlinux" : run_module->name, sect->symbol->label);
++		return NO_MATCH;
++	}
++
++	ret = create_labelval(pack, sect->symbol, run_addr, TEMP);
++	if (ret != OK)
++		return ret;
++
++	ret = run_pre_cmp(pack, sect, run_addr, safety_records, mode);
++	if (ret == NO_MATCH && mode != RUN_PRE_FINAL) {
++		set_temp_labelvals(pack, NOVAL);
++		ksdebug(pack, "run-pre: %s sect %s does not match (r_a=%lx "
++			"p_a=%lx s=%lx)\n",
++			(sect->flags & KSPLICE_SECTION_RODATA) != 0 ? "rodata" :
++			(sect->flags & KSPLICE_SECTION_DATA) != 0 ? "data" :
++			"text", sect->symbol->label, run_addr, sect->address,
++			sect->size);
++		ksdebug(pack, "run-pre: ");
++		if (pack->update->debug >= 1) {
++			ret = run_pre_cmp(pack, sect, run_addr, safety_records,
++					  RUN_PRE_DEBUG);
++			set_temp_labelvals(pack, NOVAL);
++		}
++		ksdebug(pack, "\n");
++		return ret;
++	} else if (ret != OK) {
++		set_temp_labelvals(pack, NOVAL);
++		return ret;
++	}
++
++	if (mode != RUN_PRE_FINAL) {
++		set_temp_labelvals(pack, NOVAL);
++		ksdebug(pack, "run-pre: candidate for sect %s=%lx\n",
++			sect->symbol->label, run_addr);
++		return OK;
++	}
++
++	set_temp_labelvals(pack, VAL);
++	ksdebug(pack, "run-pre: found sect %s=%lx\n", sect->symbol->label,
++		run_addr);
++	return OK;
++}
++
++static abort_t run_pre_cmp(struct ksplice_pack *pack,
++			   const struct ksplice_section *sect,
++			   unsigned long run_addr,
++			   struct list_head *safety_records,
++			   enum run_pre_mode mode)
++{
++	int matched = 0;
++	abort_t ret;
++	const struct ksplice_reloc *r, *finger;
++	const unsigned char *pre, *run, *pre_start, *run_start;
++	unsigned char runval;
++
++	pre_start = (const unsigned char *)sect->address;
++	run_start = (const unsigned char *)run_addr;
++
++	finger = init_reloc_search(pack, sect);
++
++	pre = pre_start;
++	run = run_start;
++	while (pre < pre_start + sect->size) {
++		unsigned long offset = pre - pre_start;
++		ret = lookup_reloc(pack, &finger, (unsigned long)pre, &r);
++		if (ret == OK) {
++			ret = handle_reloc(pack, sect, r, (unsigned long)run,
++					   mode);
++			if (ret != OK) {
++				if (mode == RUN_PRE_INITIAL)
++					ksdebug(pack, "reloc in sect does not "
++						"match after %lx/%lx bytes\n",
++						offset, sect->size);
++				return ret;
++			}
++			if (mode == RUN_PRE_DEBUG)
++				print_bytes(pack, run, r->howto->size, pre,
++					    r->howto->size);
++			pre += r->howto->size;
++			run += r->howto->size;
++			finger++;
++			continue;
++		} else if (ret != NO_MATCH) {
++			return ret;
++		}
++
++		if ((sect->flags & KSPLICE_SECTION_TEXT) != 0) {
++			ret = handle_paravirt(pack, (unsigned long)pre,
++					      (unsigned long)run, &matched);
++			if (ret != OK)
++				return ret;
++			if (matched != 0) {
++				if (mode == RUN_PRE_DEBUG)
++					print_bytes(pack, run, matched, pre,
++						    matched);
++				pre += matched;
++				run += matched;
++				continue;
++			}
++		}
++
++		if (probe_kernel_read(&runval, (void *)run, 1) == -EFAULT) {
++			if (mode == RUN_PRE_INITIAL)
++				ksdebug(pack, "sect unmapped after %lx/%lx "
++					"bytes\n", offset, sect->size);
++			return NO_MATCH;
++		}
++
++		if (runval != *pre &&
++		    (sect->flags & KSPLICE_SECTION_DATA) == 0) {
++			if (mode == RUN_PRE_INITIAL)
++				ksdebug(pack, "sect does not match after "
++					"%lx/%lx bytes\n", offset, sect->size);
++			if (mode == RUN_PRE_DEBUG) {
++				print_bytes(pack, run, 1, pre, 1);
++				ksdebug(pack, "[p_o=%lx] ! ", offset);
++				print_bytes(pack, run + 1, 2, pre + 1, 2);
++			}
++			return NO_MATCH;
++		}
++		if (mode == RUN_PRE_DEBUG)
++			print_bytes(pack, run, 1, pre, 1);
++		pre++;
++		run++;
++	}
++	return create_safety_record(pack, sect, safety_records, run_addr,
++				    run - run_start);
++}
++
++static void print_bytes(struct ksplice_pack *pack,
++			const unsigned char *run, int runc,
++			const unsigned char *pre, int prec)
++{
++	int o;
++	int matched = min(runc, prec);
++	for (o = 0; o < matched; o++) {
++		if (run[o] == pre[o])
++			ksdebug(pack, "%02x ", run[o]);
++		else
++			ksdebug(pack, "%02x/%02x ", run[o], pre[o]);
++	}
++	for (o = matched; o < runc; o++)
++		ksdebug(pack, "%02x/ ", run[o]);
++	for (o = matched; o < prec; o++)
++		ksdebug(pack, "/%02x ", pre[o]);
++}
++
++struct range {
++	unsigned long address;
++	unsigned long size;
++};
++
++static int reloc_bsearch_compare(const void *key, const void *elt)
++{
++	const struct range *range = key;
++	const struct ksplice_reloc *r = elt;
++	if (range->address + range->size <= r->blank_addr)
++		return -1;
++	if (range->address > r->blank_addr)
++		return 1;
++	return 0;
++}
++
++static const struct ksplice_reloc *find_reloc(const struct ksplice_reloc *start,
++					      const struct ksplice_reloc *end,
++					      unsigned long address,
++					      unsigned long size)
++{
++	const struct ksplice_reloc *r;
++	struct range range = { address, size };
++	r = bsearch((void *)&range, start, end - start, sizeof(*r),
++		    reloc_bsearch_compare);
++	if (r == NULL)
++		return NULL;
++	while (r > start && (r - 1)->blank_addr >= address)
++		r--;
++	return r;
++}
++
++static const struct ksplice_reloc *
++init_reloc_search(struct ksplice_pack *pack, const struct ksplice_section *sect)
++{
++	const struct ksplice_reloc *r;
++	r = find_reloc(pack->helper_relocs, pack->helper_relocs_end,
++		       sect->address, sect->size);
++	if (r == NULL)
++		return pack->helper_relocs_end;
++	return r;
++}
++
++static abort_t lookup_reloc(struct ksplice_pack *pack,
++			    const struct ksplice_reloc **fingerp,
++			    unsigned long addr,
++			    const struct ksplice_reloc **relocp)
++{
++	const struct ksplice_reloc *r = *fingerp;
++	int canary_ret;
++
++	while (r < pack->helper_relocs_end &&
++	       addr >= r->blank_addr + r->howto->size &&
++	       !(addr == r->blank_addr && r->howto->size == 0))
++		r++;
++	*fingerp = r;
++	if (r == pack->helper_relocs_end)
++		return NO_MATCH;
++	if (addr < r->blank_addr)
++		return NO_MATCH;
++	*relocp = r;
++	if (r->howto->type != KSPLICE_HOWTO_RELOC)
++		return OK;
++
++	canary_ret = contains_canary(pack, r->blank_addr, r->howto);
++	if (canary_ret < 0)
++		return UNEXPECTED;
++	if (canary_ret == 0) {
++		ksdebug(pack, "run-pre: reloc skipped at p_a=%lx to %s+%lx "
++			"(altinstr)\n", r->blank_addr, r->symbol->label,
++			r->target_addend);
++		return NO_MATCH;
++	}
++	if (addr != r->blank_addr) {
++		ksdebug(pack, "Invalid nonzero relocation offset\n");
++		return UNEXPECTED;
++	}
++	return OK;
++}
++
++static abort_t handle_reloc(struct ksplice_pack *pack,
++			    const struct ksplice_section *sect,
++			    const struct ksplice_reloc *r,
++			    unsigned long run_addr, enum run_pre_mode mode)
++{
++	switch (r->howto->type) {
++	case KSPLICE_HOWTO_RELOC:
++		return handle_howto_reloc(pack, sect, r, run_addr, mode);
++	case KSPLICE_HOWTO_DATE:
++	case KSPLICE_HOWTO_TIME:
++		return handle_howto_date(pack, sect, r, run_addr, mode);
++	case KSPLICE_HOWTO_BUG:
++		return handle_bug(pack, r, run_addr);
++	case KSPLICE_HOWTO_EXTABLE:
++		return handle_extable(pack, r, run_addr);
++	default:
++		ksdebug(pack, "Unexpected howto type %d\n", r->howto->type);
++		return UNEXPECTED;
++	}
++}
++
++static abort_t handle_howto_date(struct ksplice_pack *pack,
++				 const struct ksplice_section *sect,
++				 const struct ksplice_reloc *r,
++				 unsigned long run_addr, enum run_pre_mode mode)
++{
++	abort_t ret;
++	char *buf = kmalloc(r->howto->size, GFP_KERNEL);
++
++	if (buf == NULL)
++		return OUT_OF_MEMORY;
++	if (probe_kernel_read(buf, (void *)run_addr, r->howto->size) == -EFAULT) {
++		ret = NO_MATCH;
++		goto out;
++	}
++
++	switch (r->howto->type) {
++	case KSPLICE_HOWTO_TIME:
++		if (isdigit(buf[0]) && isdigit(buf[1]) && buf[2] == ':' &&
++		    isdigit(buf[3]) && isdigit(buf[4]) && buf[5] == ':' &&
++		    isdigit(buf[6]) && isdigit(buf[7]))
++			ret = OK;
++		else
++			ret = NO_MATCH;
++		break;
++	case KSPLICE_HOWTO_DATE:
++		if (isalpha(buf[0]) && isalpha(buf[1]) && isalpha(buf[2]) &&
++		    buf[3] == ' ' && (buf[4] == ' ' || isdigit(buf[4])) &&
++		    isdigit(buf[5]) && buf[6] == ' ' && isdigit(buf[7]) &&
++		    isdigit(buf[8]) && isdigit(buf[9]) && isdigit(buf[10]))
++			ret = OK;
++		else
++			ret = NO_MATCH;
++		break;
++	default:
++		ret = UNEXPECTED;
++	}
++	if (ret == NO_MATCH && mode == RUN_PRE_INITIAL)
++		ksdebug(pack, "%s string: \"%.*s\" does not match format\n",
++			r->howto->type == KSPLICE_HOWTO_DATE ? "date" : "time",
++			r->howto->size, buf);
++
++	if (ret != OK)
++		goto out;
++	ret = create_labelval(pack, r->symbol, run_addr, TEMP);
++out:
++	kfree(buf);
++	return ret;
++}
++
++static abort_t handle_howto_reloc(struct ksplice_pack *pack,
++				  const struct ksplice_section *sect,
++				  const struct ksplice_reloc *r,
++				  unsigned long run_addr,
++				  enum run_pre_mode mode)
++{
++	struct ksplice_section *sym_sect = symbol_section(pack, r->symbol);
++	unsigned long offset = r->target_addend;
++	unsigned long val;
++	abort_t ret;
++
++	ret = read_reloc_value(pack, r, run_addr, &val);
++	if (ret != OK)
++		return ret;
++	if (r->howto->pcrel)
++		val += run_addr;
++
++	if (mode == RUN_PRE_INITIAL)
++		ksdebug(pack, "run-pre: reloc at r_a=%lx p_a=%lx to %s+%lx: "
++			"found %s = %lx\n", run_addr, r->blank_addr,
++			r->symbol->label, offset, r->symbol->label, val);
++
++	if (contains_canary(pack, run_addr, r->howto) != 0) {
++		ksdebug(pack, "Aborted.  Unexpected canary in run code at %lx"
++			"\n", run_addr);
++		return UNEXPECTED;
++	}
++
++	if ((sect->flags & KSPLICE_SECTION_DATA) != 0 &&
++	    sect->symbol == r->symbol)
++		return OK;
++	ret = create_labelval(pack, r->symbol, val, TEMP);
++	if (ret == NO_MATCH && mode == RUN_PRE_INITIAL)
++		ksdebug(pack, "run-pre: reloc at r_a=%lx p_a=%lx: labelval %s "
++			"= %lx does not match expected %lx\n", run_addr,
++			r->blank_addr, r->symbol->label, r->symbol->value, val);
++
++	if (ret != OK)
++		return ret;
++	if (sym_sect != NULL && (sym_sect->flags & KSPLICE_SECTION_MATCHED) == 0
++	    && (sym_sect->flags & KSPLICE_SECTION_STRING) != 0) {
++		if (mode == RUN_PRE_INITIAL)
++			ksdebug(pack, "Recursively comparing string section "
++				"%s\n", sym_sect->symbol->label);
++		else if (mode == RUN_PRE_DEBUG)
++			ksdebug(pack, "[str start] ");
++		ret = run_pre_cmp(pack, sym_sect, val, NULL, mode);
++		if (mode == RUN_PRE_DEBUG)
++			ksdebug(pack, "[str end] ");
++		if (ret == OK && mode == RUN_PRE_INITIAL)
++			ksdebug(pack, "Successfully matched string section %s"
++				"\n", sym_sect->symbol->label);
++		else if (mode == RUN_PRE_INITIAL)
++			ksdebug(pack, "Failed to match string section %s\n",
++				sym_sect->symbol->label);
++	}
++	return ret;
++}
++
++static int symbol_section_bsearch_compare(const void *a, const void *b)
++{
++	const struct ksplice_symbol *sym = a;
++	const struct ksplice_section *sect = b;
++	return strcmp(sym->label, sect->symbol->label);
++}
++
++static int compare_section_labels(const void *va, const void *vb)
++{
++	const struct ksplice_section *a = va, *b = vb;
++	return strcmp(a->symbol->label, b->symbol->label);
++}
++
++static struct ksplice_section *symbol_section(struct ksplice_pack *pack,
++					      const struct ksplice_symbol *sym)
++{
++	return bsearch(sym, pack->helper_sections, pack->helper_sections_end -
++		       pack->helper_sections, sizeof(struct ksplice_section),
++		       symbol_section_bsearch_compare);
++}
++
++static const struct ksplice_reloc *patch_reloc(struct ksplice_pack *pack,
++					       const struct ksplice_patch *p)
++{
++	unsigned long addr = (unsigned long)&p->oldaddr;
++	const struct ksplice_reloc *r =
++	    find_reloc(pack->primary_relocs, pack->primary_relocs_end, addr,
++		       sizeof(addr));
++	if (r == NULL || r->blank_addr < addr ||
++	    r->blank_addr >= addr + sizeof(addr))
++		return NULL;
++	return r;
++}
++
++static abort_t lookup_symbol(struct ksplice_pack *pack,
++			     const struct ksplice_symbol *ksym,
++			     struct list_head *vals)
++{
++	abort_t ret;
++
++	if (ksym->vals == NULL) {
++		release_vals(vals);
++		ksdebug(pack, "using detected sym %s=%lx\n", ksym->label,
++			ksym->value);
++		return add_candidate_val(pack, vals, ksym->value);
++	}
++
++	if (strcmp(ksym->label, "cleanup_module") == 0 && pack->target != NULL
++	    && pack->target->exit != NULL) {
++		ret = add_candidate_val(pack, vals,
++					(unsigned long)pack->target->exit);
++		if (ret != OK)
++			return ret;
++	}
++
++	if (ksym->name != NULL) {
++		struct candidate_val *val;
++		list_for_each_entry(val, ksym->vals, list) {
++			ret = add_candidate_val(pack, vals, val->val);
++			if (ret != OK)
++				return ret;
++		}
++
++		ret = new_export_lookup(pack, ksym->name, vals);
++		if (ret != OK)
++			return ret;
++	}
++
++	return OK;
++}
++
++static abort_t new_export_lookup(struct ksplice_pack *ipack, const char *name,
++				 struct list_head *vals)
++{
++	struct ksplice_pack *pack;
++	struct ksplice_patch *p;
++	list_for_each_entry(pack, &ipack->update->packs, list) {
++		for (p = pack->patches; p < pack->patches_end; p++) {
++			const struct kernel_symbol *sym;
++			const struct ksplice_reloc *r;
++			if (p->type != KSPLICE_PATCH_EXPORT ||
++			    strcmp(name, *(const char **)p->contents) != 0)
++				continue;
++
++			/* Check that the p->oldaddr reloc has been resolved */
++			r = patch_reloc(pack, p);
++			if (r == NULL ||
++			    contains_canary(pack, r->blank_addr, r->howto) != 0)
++				continue;
++			sym = (const struct kernel_symbol *)r->symbol->value;
++
++			/* Check that the sym->value reloc has been resolved,
++			   if there is a ksplice relocation there */
++			r = find_reloc(pack->primary_relocs,
++				       pack->primary_relocs_end,
++				       (unsigned long)&sym->value,
++				       sizeof(&sym->value));
++			if (r != NULL &&
++			    r->blank_addr == (unsigned long)&sym->value &&
++			    contains_canary(pack, r->blank_addr, r->howto) != 0)
++				continue;
++			return add_candidate_val(ipack, vals, sym->value);
++		}
++	}
++	return OK;
++}
++
++static abort_t apply_patches(struct update *update)
++{
++	int i;
++	abort_t ret;
++	struct ksplice_pack *pack;
++
++	ret = map_trampoline_pages(update);
++	if (ret != OK)
++		return ret;
++
++	list_for_each_entry(pack, &update->packs, list) {
++		const typeof(int (*)(void)) *f;
++		for (f = pack->pre_apply; f < pack->pre_apply_end; f++) {
++			if ((*f)() != 0) {
++				ret = CALL_FAILED;
++				goto out;
++			}
++		}
++	}
++
++	for (i = 0; i < 5; i++) {
++		cleanup_conflicts(update);
++		ret = (__force abort_t)stop_machine(__apply_patches, update,
++						    NULL);
++		if (ret != CODE_BUSY)
++			break;
++		set_current_state(TASK_INTERRUPTIBLE);
++		schedule_timeout(msecs_to_jiffies(1000));
++	}
++out:
++	unmap_trampoline_pages(update);
++
++	if (ret == CODE_BUSY) {
++		print_conflicts(update);
++		_ksdebug(update, "Aborted %s.  stack check: to-be-replaced "
++			 "code is busy.\n", update->kid);
++	} else if (ret == ALREADY_REVERSED) {
++		_ksdebug(update, "Aborted %s.  Ksplice update %s is already "
++			 "reversed.\n", update->kid, update->kid);
++	}
++
++	if (ret != OK) {
++		list_for_each_entry(pack, &update->packs, list) {
++			const typeof(void (*)(void)) *f;
++			for (f = pack->fail_apply; f < pack->fail_apply_end;
++			     f++)
++				(*f)();
++		}
++
++		return ret;
++	}
++
++	list_for_each_entry(pack, &update->packs, list) {
++		const typeof(void (*)(void)) *f;
++		for (f = pack->post_apply; f < pack->post_apply_end; f++)
++			(*f)();
++	}
++
++	_ksdebug(update, "Atomic patch insertion for %s complete\n",
++		 update->kid);
++	return OK;
++}
++
++static abort_t reverse_patches(struct update *update)
++{
++	int i;
++	abort_t ret;
++	struct ksplice_pack *pack;
++
++	clear_debug_buf(update);
++	ret = init_debug_buf(update);
++	if (ret != OK)
++		return ret;
++
++	_ksdebug(update, "Preparing to reverse %s\n", update->kid);
++
++	ret = map_trampoline_pages(update);
++	if (ret != OK)
++		return ret;
++
++	list_for_each_entry(pack, &update->packs, list) {
++		const typeof(int (*)(void)) *f;
++		for (f = pack->pre_reverse; f < pack->pre_reverse_end; f++) {
++			if ((*f)() != 0) {
++				ret = CALL_FAILED;
++				goto out;
++			}
++		}
++	}
++
++	for (i = 0; i < 5; i++) {
++		cleanup_conflicts(update);
++		clear_list(&update->conflicts, struct conflict, list);
++		ret = (__force abort_t)stop_machine(__reverse_patches, update,
++						    NULL);
++		if (ret != CODE_BUSY)
++			break;
++		set_current_state(TASK_INTERRUPTIBLE);
++		schedule_timeout(msecs_to_jiffies(1000));
++	}
++out:
++	unmap_trampoline_pages(update);
++
++	if (ret == CODE_BUSY) {
++		print_conflicts(update);
++		_ksdebug(update, "Aborted %s.  stack check: to-be-reversed "
++			 "code is busy.\n", update->kid);
++	} else if (ret == MODULE_BUSY) {
++		_ksdebug(update, "Update %s is in use by another module\n",
++			 update->kid);
++	}
++
++	if (ret != OK) {
++		list_for_each_entry(pack, &update->packs, list) {
++			const typeof(void (*)(void)) *f;
++			for (f = pack->fail_reverse; f < pack->fail_reverse_end;
++			     f++)
++				(*f)();
++		}
++
++		return ret;
++	}
++
++	list_for_each_entry(pack, &update->packs, list) {
++		const typeof(void (*)(void)) *f;
++		for (f = pack->post_reverse; f < pack->post_reverse_end; f++)
++			(*f)();
++	}
++
++	list_for_each_entry(pack, &update->packs, list)
++		clear_list(&pack->safety_records, struct safety_record, list);
++
++	_ksdebug(update, "Atomic patch removal for %s complete\n", update->kid);
++	return OK;
++}
++
++static int __apply_patches(void *updateptr)
++{
++	struct update *update = updateptr;
++	struct ksplice_pack *pack;
++	struct ksplice_patch *p;
++	abort_t ret;
++
++	if (update->stage == STAGE_APPLIED)
++		return (__force int)OK;
++
++	if (update->stage != STAGE_PREPARING)
++		return (__force int)UNEXPECTED;
++
++	ret = check_each_task(update);
++	if (ret != OK)
++		return (__force int)ret;
++
++	list_for_each_entry(pack, &update->packs, list) {
++		if (try_module_get(pack->primary) != 1) {
++			struct ksplice_pack *pack1;
++			list_for_each_entry(pack1, &update->packs, list) {
++				if (pack1 == pack)
++					break;
++				module_put(pack1->primary);
++			}
++			module_put(THIS_MODULE);
++			return (__force int)UNEXPECTED;
++		}
++	}
++
++	list_for_each_entry(pack, &update->packs, list) {
++		const typeof(int (*)(void)) *f;
++		for (f = pack->check_apply; f < pack->check_apply_end; f++)
++			if ((*f)() != 0)
++				return (__force int)CALL_FAILED;
++	}
++
++	update->stage = STAGE_APPLIED;
++	add_taint(TAINT_KSPLICE);
++
++	list_for_each_entry(pack, &update->packs, list)
++		list_add(&pack->module_list_entry.list, &ksplice_module_list);
++
++	list_for_each_entry(pack, &update->packs, list) {
++		for (p = pack->patches; p < pack->patches_end; p++)
++			insert_trampoline(p);
++	}
++
++	list_for_each_entry(pack, &update->packs, list) {
++		const typeof(void (*)(void)) *f;
++		for (f = pack->apply; f < pack->apply_end; f++)
++			(*f)();
++	}
++
++	return (__force int)OK;
++}
++
++static int __reverse_patches(void *updateptr)
++{
++	struct update *update = updateptr;
++	struct ksplice_pack *pack;
++	const struct ksplice_patch *p;
++	abort_t ret;
++
++	if (update->stage != STAGE_APPLIED)
++		return (__force int)OK;
++
++	list_for_each_entry(pack, &update->packs, list) {
++		if (module_refcount(pack->primary) != 1)
++			return (__force int)MODULE_BUSY;
++	}
++
++	ret = check_each_task(update);
++	if (ret != OK)
++		return (__force int)ret;
++
++	list_for_each_entry(pack, &update->packs, list) {
++		for (p = pack->patches; p < pack->patches_end; p++) {
++			ret = verify_trampoline(pack, p);
++			if (ret != OK)
++				return (__force int)ret;
++		}
++	}
++
++	list_for_each_entry(pack, &update->packs, list) {
++		const typeof(int (*)(void)) *f;
++		for (f = pack->check_reverse; f < pack->check_reverse_end; f++)
++			if ((*f)() != 0)
++				return (__force int)CALL_FAILED;
++	}
++
++	update->stage = STAGE_REVERSED;
++
++	list_for_each_entry(pack, &update->packs, list)
++		module_put(pack->primary);
++
++	list_for_each_entry(pack, &update->packs, list)
++		list_del(&pack->module_list_entry.list);
++
++	list_for_each_entry(pack, &update->packs, list) {
++		const typeof(void (*)(void)) *f;
++		for (f = pack->reverse; f < pack->reverse_end; f++)
++			(*f)();
++	}
++
++	list_for_each_entry(pack, &update->packs, list) {
++		for (p = pack->patches; p < pack->patches_end; p++)
++			remove_trampoline(p);
++	}
++
++	return (__force int)OK;
++}
++
++static abort_t check_each_task(struct update *update)
++{
++	const struct task_struct *g, *p;
++	abort_t status = OK, ret;
++	do_each_thread(g, p) {
++		/* do_each_thread is a double loop! */
++		ret = check_task(update, p, false);
++		if (ret != OK) {
++			check_task(update, p, true);
++			status = ret;
++		}
++		if (ret != OK && ret != CODE_BUSY)
++			return ret;
++	} while_each_thread(g, p);
++	return status;
++}
++
++static abort_t check_task(struct update *update,
++			  const struct task_struct *t, bool rerun)
++{
++	abort_t status, ret;
++	struct conflict *conf = NULL;
++
++	if (rerun) {
++		conf = kmalloc(sizeof(*conf), GFP_ATOMIC);
++		if (conf == NULL)
++			return OUT_OF_MEMORY;
++		conf->process_name = kstrdup(t->comm, GFP_ATOMIC);
++		if (conf->process_name == NULL) {
++			kfree(conf);
++			return OUT_OF_MEMORY;
++		}
++		conf->pid = t->pid;
++		INIT_LIST_HEAD(&conf->stack);
++		list_add(&conf->list, &update->conflicts);
++	}
++
++	status = check_address(update, conf, KSPLICE_IP(t));
++	if (t == current) {
++		ret = check_stack(update, conf, task_thread_info(t),
++				  (unsigned long *)__builtin_frame_address(0));
++		if (status == OK)
++			status = ret;
++	} else if (!task_curr(t)) {
++		ret = check_stack(update, conf, task_thread_info(t),
++				  (unsigned long *)KSPLICE_SP(t));
++		if (status == OK)
++			status = ret;
++	} else if (!is_stop_machine(t)) {
++		status = UNEXPECTED_RUNNING_TASK;
++	}
++	return status;
++}
++
++static abort_t check_stack(struct update *update, struct conflict *conf,
++			   const struct thread_info *tinfo,
++			   const unsigned long *stack)
++{
++	abort_t status = OK, ret;
++	unsigned long addr;
++
++	while (valid_stack_ptr(tinfo, stack)) {
++		addr = *stack++;
++		ret = check_address(update, conf, addr);
++		if (ret != OK)
++			status = ret;
++	}
++	return status;
++}
++
++static abort_t check_address(struct update *update,
++			     struct conflict *conf, unsigned long addr)
++{
++	abort_t status = OK, ret;
++	const struct safety_record *rec;
++	struct ksplice_pack *pack;
++	struct conflict_addr *ca = NULL;
++
++	if (conf != NULL) {
++		ca = kmalloc(sizeof(*ca), GFP_ATOMIC);
++		if (ca == NULL)
++			return OUT_OF_MEMORY;
++		ca->addr = addr;
++		ca->has_conflict = false;
++		ca->label = NULL;
++		list_add(&ca->list, &conf->stack);
++	}
++
++	list_for_each_entry(pack, &update->packs, list) {
++		unsigned long tramp_addr = follow_trampolines(pack, addr);
++		list_for_each_entry(rec, &pack->safety_records, list) {
++			ret = check_record(ca, rec, tramp_addr);
++			if (ret != OK)
++				status = ret;
++		}
++	}
++	return status;
++}
++
++static abort_t check_record(struct conflict_addr *ca,
++			    const struct safety_record *rec, unsigned long addr)
++{
++	if (addr >= rec->addr && addr < rec->addr + rec->size) {
++		if (ca != NULL) {
++			ca->label = rec->label;
++			ca->has_conflict = true;
++		}
++		return CODE_BUSY;
++	}
++	return OK;
++}
++
++static bool is_stop_machine(const struct task_struct *t)
++{
++	const char *kstop_prefix = "kstop/";
++	const char *num;
++	if (!starts_with(t->comm, kstop_prefix))
++		return false;
++	num = t->comm + strlen(kstop_prefix);
++	return num[strspn(num, "0123456789")] == '\0';
++}
++
++static void cleanup_conflicts(struct update *update)
++{
++	struct conflict *conf;
++	list_for_each_entry(conf, &update->conflicts, list) {
++		clear_list(&conf->stack, struct conflict_addr, list);
++		kfree(conf->process_name);
++	}
++	clear_list(&update->conflicts, struct conflict, list);
++}
++
++static void print_conflicts(struct update *update)
++{
++	const struct conflict *conf;
++	const struct conflict_addr *ca;
++	list_for_each_entry(conf, &update->conflicts, list) {
++		_ksdebug(update, "stack check: pid %d (%s):", conf->pid,
++			 conf->process_name);
++		list_for_each_entry(ca, &conf->stack, list) {
++			_ksdebug(update, " %lx", ca->addr);
++			if (ca->has_conflict)
++				_ksdebug(update, " [<-CONFLICT]");
++		}
++		_ksdebug(update, "\n");
++	}
++}
++
++static void insert_trampoline(struct ksplice_patch *p)
++{
++	mm_segment_t old_fs = get_fs();
++	set_fs(KERNEL_DS);
++	memcpy(p->saved, p->vaddr, p->size);
++	memcpy(p->vaddr, p->contents, p->size);
++	flush_icache_range(p->oldaddr, p->oldaddr + p->size);
++	set_fs(old_fs);
++}
++
++static abort_t verify_trampoline(struct ksplice_pack *pack,
++				 const struct ksplice_patch *p)
++{
++	if (memcmp(p->vaddr, p->contents, p->size) != 0) {
++		ksdebug(pack, "Aborted.  Trampoline at %lx has been "
++			"overwritten.\n", p->oldaddr);
++		return CODE_BUSY;
++	}
++	return OK;
++}
++
++static void remove_trampoline(const struct ksplice_patch *p)
++{
++	mm_segment_t old_fs = get_fs();
++	set_fs(KERNEL_DS);
++	memcpy(p->vaddr, p->saved, p->size);
++	flush_icache_range(p->oldaddr, p->oldaddr + p->size);
++	set_fs(old_fs);
++}
++
++static abort_t create_labelval(struct ksplice_pack *pack,
++			       struct ksplice_symbol *ksym,
++			       unsigned long val, int status)
++{
++	val = follow_trampolines(pack, val);
++	if (ksym->vals == NULL)
++		return ksym->value == val ? OK : NO_MATCH;
++
++	ksym->value = val;
++	if (status == TEMP) {
++		struct labelval *lv = kmalloc(sizeof(*lv), GFP_KERNEL);
++		if (lv == NULL)
++			return OUT_OF_MEMORY;
++		lv->symbol = ksym;
++		lv->saved_vals = ksym->vals;
++		list_add(&lv->list, &pack->temp_labelvals);
++	}
++	ksym->vals = NULL;
++	return OK;
++}
++
++static abort_t create_safety_record(struct ksplice_pack *pack,
++				    const struct ksplice_section *sect,
++				    struct list_head *record_list,
++				    unsigned long run_addr,
++				    unsigned long run_size)
++{
++	struct safety_record *rec;
++	struct ksplice_patch *p;
++
++	if (record_list == NULL)
++		return OK;
++
++	for (p = pack->patches; p < pack->patches_end; p++) {
++		const struct ksplice_reloc *r = patch_reloc(pack, p);
++		if (strcmp(sect->symbol->label, r->symbol->label) == 0)
++			break;
++	}
++	if (p >= pack->patches_end)
++		return OK;
++
++	rec = kmalloc(sizeof(*rec), GFP_KERNEL);
++	if (rec == NULL)
++		return OUT_OF_MEMORY;
++	rec->label = kstrdup(sect->symbol->label, GFP_KERNEL);
++	if (rec->label == NULL) {
++		kfree(rec);
++		return OUT_OF_MEMORY;
++	}
++	rec->addr = run_addr;
++	rec->size = run_size;
++
++	list_add(&rec->list, record_list);
++	return OK;
++}
++
++static abort_t add_candidate_val(struct ksplice_pack *pack,
++				 struct list_head *vals, unsigned long val)
++{
++	struct candidate_val *tmp, *new;
++	val = follow_trampolines(pack, val);
++
++	list_for_each_entry(tmp, vals, list) {
++		if (tmp->val == val)
++			return OK;
++	}
++	new = kmalloc(sizeof(*new), GFP_KERNEL);
++	if (new == NULL)
++		return OUT_OF_MEMORY;
++	new->val = val;
++	list_add(&new->list, vals);
++	return OK;
++}
++
++static void release_vals(struct list_head *vals)
++{
++	clear_list(vals, struct candidate_val, list);
++}
++
++static void set_temp_labelvals(struct ksplice_pack *pack, int status)
++{
++	struct labelval *lv, *n;
++	list_for_each_entry_safe(lv, n, &pack->temp_labelvals, list) {
++		if (status == NOVAL) {
++			lv->symbol->vals = lv->saved_vals;
++		} else {
++			release_vals(lv->saved_vals);
++			kfree(lv->saved_vals);
++		}
++		list_del(&lv->list);
++		kfree(lv);
++	}
++}
++
++static int contains_canary(struct ksplice_pack *pack, unsigned long blank_addr,
++			   const struct ksplice_reloc_howto *howto)
++{
++	switch (howto->size) {
++	case 1:
++		return (*(uint8_t *)blank_addr & howto->dst_mask) ==
++		    (KSPLICE_CANARY & howto->dst_mask);
++	case 2:
++		return (*(uint16_t *)blank_addr & howto->dst_mask) ==
++		    (KSPLICE_CANARY & howto->dst_mask);
++	case 4:
++		return (*(uint32_t *)blank_addr & howto->dst_mask) ==
++		    (KSPLICE_CANARY & howto->dst_mask);
++#if BITS_PER_LONG >= 64
++	case 8:
++		return (*(uint64_t *)blank_addr & howto->dst_mask) ==
++		    (KSPLICE_CANARY & howto->dst_mask);
++#endif /* BITS_PER_LONG */
++	default:
++		ksdebug(pack, "Aborted.  Invalid relocation size.\n");
++		return -1;
++	}
++}
++
++static unsigned long follow_trampolines(struct ksplice_pack *pack,
++					unsigned long addr)
++{
++	unsigned long new_addr;
++	struct module *m;
++
++	while (1) {
++		if (!__kernel_text_address(addr) ||
++		    trampoline_target(pack, addr, &new_addr) != OK)
++			return addr;
++		m = __module_text_address(new_addr);
++		if (m == NULL || m == pack->target ||
++		    !starts_with(m->name, "ksplice"))
++			return addr;
++		addr = new_addr;
++	}
++}
++
++/* Does module a patch module b? */
++static bool patches_module(const struct module *a, const struct module *b)
++{
++	struct ksplice_module_list_entry *entry;
++	if (a == b)
++		return true;
++	list_for_each_entry(entry, &ksplice_module_list, list) {
++		if (entry->target == b && entry->primary == a)
++			return true;
++	}
++	return false;
++}
++
++static bool starts_with(const char *str, const char *prefix)
++{
++	return strncmp(str, prefix, strlen(prefix)) == 0;
++}
++
++static bool singular(struct list_head *list)
++{
++	return !list_empty(list) && list->next->next == list;
++}
++
++static void *bsearch(const void *key, const void *base, size_t n,
++		     size_t size, int (*cmp)(const void *key, const void *elt))
++{
++	int start = 0, end = n - 1, mid, result;
++	if (n == 0)
++		return NULL;
++	while (start <= end) {
++		mid = (start + end) / 2;
++		result = cmp(key, base + mid * size);
++		if (result < 0)
++			end = mid - 1;
++		else if (result > 0)
++			start = mid + 1;
++		else
++			return (void *)base + mid * size;
++	}
++	return NULL;
++}
++
++static int compare_relocs(const void *a, const void *b)
++{
++	const struct ksplice_reloc *ra = a, *rb = b;
++	if (ra->blank_addr > rb->blank_addr)
++		return 1;
++	else if (ra->blank_addr < rb->blank_addr)
++		return -1;
++	else
++		return ra->howto->size - rb->howto->size;
++}
++
++#ifdef CONFIG_DEBUG_FS
++
++static abort_t init_debug_buf(struct update *update)
++{
++	update->debug_blob.size = 0;
++	update->debug_blob.data = NULL;
++	update->debugfs_dentry =
++	    debugfs_create_blob(update->name, S_IFREG | S_IRUSR, NULL,
++				&update->debug_blob);
++	if (update->debugfs_dentry == NULL)
++		return OUT_OF_MEMORY;
++	return OK;
++}
++
++static void clear_debug_buf(struct update *update)
++{
++	if (update->debugfs_dentry == NULL)
++		return;
++	debugfs_remove(update->debugfs_dentry);
++	update->debugfs_dentry = NULL;
++	update->debug_blob.size = 0;
++	vfree(update->debug_blob.data);
++	update->debug_blob.data = NULL;
++}
++
++static int _ksdebug(struct update *update, const char *fmt, ...)
++{
++	va_list args;
++	unsigned long size, old_size, new_size;
++
++	if (update->debug == 0)
++		return 0;
++
++	/* size includes the trailing '\0' */
++	va_start(args, fmt);
++	size = 1 + vsnprintf(update->debug_blob.data, 0, fmt, args);
++	va_end(args);
++	old_size = update->debug_blob.size == 0 ? 0 :
++	    max(PAGE_SIZE, roundup_pow_of_two(update->debug_blob.size));
++	new_size = update->debug_blob.size + size == 0 ? 0 :
++	    max(PAGE_SIZE, roundup_pow_of_two(update->debug_blob.size + size));
++	if (new_size > old_size) {
++		char *buf = vmalloc(new_size);
++		if (buf == NULL)
++			return -ENOMEM;
++		memcpy(buf, update->debug_blob.data, update->debug_blob.size);
++		vfree(update->debug_blob.data);
++		update->debug_blob.data = buf;
++	}
++	va_start(args, fmt);
++	update->debug_blob.size += vsnprintf(update->debug_blob.data +
++					     update->debug_blob.size,
++					     size, fmt, args);
++	va_end(args);
++	return 0;
++}
++#else /* CONFIG_DEBUG_FS */
++static abort_t init_debug_buf(struct update *update)
++{
++	return OK;
++}
++
++static void clear_debug_buf(struct update *update)
++{
++	return;
++}
++
++static int _ksdebug(struct update *update, const char *fmt, ...)
++{
++	va_list args;
++
++	if (update->debug == 0)
++		return 0;
++
++	if (!update->debug_continue_line)
++		printk(KERN_DEBUG "ksplice: ");
++
++	va_start(args, fmt);
++	vprintk(fmt, args);
++	va_end(args);
++
++	update->debug_continue_line =
++	    fmt[0] == '\0' || fmt[strlen(fmt) - 1] != '\n';
++	return 0;
++}
++#endif /* CONFIG_DEBUG_FS */
++
++struct ksplice_attribute {
++	struct attribute attr;
++	ssize_t (*show)(struct update *update, char *buf);
++	ssize_t (*store)(struct update *update, const char *buf, size_t len);
++};
++
++static ssize_t ksplice_attr_show(struct kobject *kobj, struct attribute *attr,
++				 char *buf)
++{
++	struct ksplice_attribute *attribute =
++	    container_of(attr, struct ksplice_attribute, attr);
++	struct update *update = container_of(kobj, struct update, kobj);
++	if (attribute->show == NULL)
++		return -EIO;
++	return attribute->show(update, buf);
++}
++
++static ssize_t ksplice_attr_store(struct kobject *kobj, struct attribute *attr,
++				  const char *buf, size_t len)
++{
++	struct ksplice_attribute *attribute =
++	    container_of(attr, struct ksplice_attribute, attr);
++	struct update *update = container_of(kobj, struct update, kobj);
++	if (attribute->store == NULL)
++		return -EIO;
++	return attribute->store(update, buf, len);
++}
++
++static struct sysfs_ops ksplice_sysfs_ops = {
++	.show = ksplice_attr_show,
++	.store = ksplice_attr_store,
++};
++
++static void ksplice_release(struct kobject *kobj)
++{
++	struct update *update;
++	update = container_of(kobj, struct update, kobj);
++	cleanup_ksplice_update(update);
++}
++
++static ssize_t stage_show(struct update *update, char *buf)
++{
++	switch (update->stage) {
++	case STAGE_PREPARING:
++		return snprintf(buf, PAGE_SIZE, "preparing\n");
++	case STAGE_APPLIED:
++		return snprintf(buf, PAGE_SIZE, "applied\n");
++	case STAGE_REVERSED:
++		return snprintf(buf, PAGE_SIZE, "reversed\n");
++	}
++	return 0;
++}
++
++static ssize_t abort_cause_show(struct update *update, char *buf)
++{
++	switch (update->abort_cause) {
++	case OK:
++		return snprintf(buf, PAGE_SIZE, "ok\n");
++	case NO_MATCH:
++		return snprintf(buf, PAGE_SIZE, "no_match\n");
++	case CODE_BUSY:
++		return snprintf(buf, PAGE_SIZE, "code_busy\n");
++	case MODULE_BUSY:
++		return snprintf(buf, PAGE_SIZE, "module_busy\n");
++	case OUT_OF_MEMORY:
++		return snprintf(buf, PAGE_SIZE, "out_of_memory\n");
++	case FAILED_TO_FIND:
++		return snprintf(buf, PAGE_SIZE, "failed_to_find\n");
++	case ALREADY_REVERSED:
++		return snprintf(buf, PAGE_SIZE, "already_reversed\n");
++	case MISSING_EXPORT:
++		return snprintf(buf, PAGE_SIZE, "missing_export\n");
++	case UNEXPECTED_RUNNING_TASK:
++		return snprintf(buf, PAGE_SIZE, "unexpected_running_task\n");
++	case TARGET_NOT_LOADED:
++		return snprintf(buf, PAGE_SIZE, "target_not_loaded\n");
++	case CALL_FAILED:
++		return snprintf(buf, PAGE_SIZE, "call_failed\n");
++	case UNEXPECTED:
++		return snprintf(buf, PAGE_SIZE, "unexpected\n");
++	default:
++		return snprintf(buf, PAGE_SIZE, "unknown\n");
++	}
++	return 0;
++}
++
++static ssize_t conflict_show(struct update *update, char *buf)
++{
++	const struct conflict *conf;
++	const struct conflict_addr *ca;
++	int used = 0;
++	list_for_each_entry(conf, &update->conflicts, list) {
++		used += snprintf(buf + used, PAGE_SIZE - used, "%s %d",
++				 conf->process_name, conf->pid);
++		list_for_each_entry(ca, &conf->stack, list) {
++			if (!ca->has_conflict)
++				continue;
++			used += snprintf(buf + used, PAGE_SIZE - used, " %s",
++					 ca->label);
++		}
++		used += snprintf(buf + used, PAGE_SIZE - used, "\n");
++	}
++	return used;
++}
++
++static int maybe_cleanup_ksplice_update_wrapper(void *updateptr)
++{
++	struct update *update = updateptr;
++	maybe_cleanup_ksplice_update(update);
++	return 0;
++}
++
++static ssize_t stage_store(struct update *update, const char *buf, size_t len)
++{
++	enum stage old_stage = update->stage;
++	if ((strncmp(buf, "applied", len) == 0 ||
++	     strncmp(buf, "applied\n", len) == 0) &&
++	    update->stage == STAGE_PREPARING)
++		update->abort_cause = apply_update(update);
++	else if ((strncmp(buf, "reversed", len) == 0 ||
++		  strncmp(buf, "reversed\n", len) == 0) &&
++		 update->stage == STAGE_APPLIED)
++		update->abort_cause = reverse_patches(update);
++	else if ((strncmp(buf, "cleanup", len) == 0 ||
++		  strncmp(buf, "cleanup\n", len) == 0) &&
++		 update->stage == STAGE_REVERSED)
++		kthread_run(maybe_cleanup_ksplice_update_wrapper, update,
++			    "ksplice_cleanup_%s", update->kid);
++
++	if (old_stage != STAGE_REVERSED && update->abort_cause == OK)
++		printk(KERN_INFO "ksplice: Update %s %s successfully\n",
++		       update->kid,
++		       update->stage == STAGE_APPLIED ? "applied" : "reversed");
++	return len;
++}
++
++static ssize_t debug_show(struct update *update, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", update->debug);
++}
++
++static ssize_t debug_store(struct update *update, const char *buf, size_t len)
++{
++	unsigned long l;
++	int ret = strict_strtoul(buf, 10, &l);
++	if (ret != 0)
++		return ret;
++	update->debug = l;
++	return len;
++}
++
++static ssize_t partial_show(struct update *update, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", update->partial);
++}
++
++static ssize_t partial_store(struct update *update, const char *buf, size_t len)
++{
++	unsigned long l;
++	int ret = strict_strtoul(buf, 10, &l);
++	if (ret != 0)
++		return ret;
++	update->partial = l;
++	return len;
++}
++
++static struct ksplice_attribute stage_attribute =
++	__ATTR(stage, 0600, stage_show, stage_store);
++static struct ksplice_attribute abort_cause_attribute =
++	__ATTR(abort_cause, 0400, abort_cause_show, NULL);
++static struct ksplice_attribute debug_attribute =
++	__ATTR(debug, 0600, debug_show, debug_store);
++static struct ksplice_attribute partial_attribute =
++	__ATTR(partial, 0600, partial_show, partial_store);
++static struct ksplice_attribute conflict_attribute =
++	__ATTR(conflicts, 0400, conflict_show, NULL);
++
++static struct attribute *ksplice_attrs[] = {
++	&stage_attribute.attr,
++	&abort_cause_attribute.attr,
++	&debug_attribute.attr,
++	&partial_attribute.attr,
++	&conflict_attribute.attr,
++	NULL
++};
++
++static struct kobj_type ksplice_ktype = {
++	.sysfs_ops = &ksplice_sysfs_ops,
++	.release = ksplice_release,
++	.default_attrs = ksplice_attrs,
++};
++
++static int init_ksplice(void)
++{
++	ksplice_kobj = kobject_create_and_add("ksplice", kernel_kobj);
++	if (ksplice_kobj == NULL)
++		return -ENOMEM;
++	return 0;
++}
++
++static void cleanup_ksplice(void)
++{
++	kobject_put(ksplice_kobj);
++}
++
++module_init(init_ksplice);
++module_exit(cleanup_ksplice);
++
++MODULE_AUTHOR("Jeff Arnold <jbarnold@mit.edu>");
++MODULE_DESCRIPTION("Ksplice rebootless update system");
++MODULE_LICENSE("GPL v2");
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 4d50883..f2ca7bf 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -155,6 +155,7 @@ static const struct tnt tnts[] = {
+ 	{ TAINT_OVERRIDDEN_ACPI_TABLE, 'A', ' ' },
+ 	{ TAINT_WARN, 'W', ' ' },
+ 	{ TAINT_CRAP, 'C', ' ' },
++	{ TAINT_KSPLICE, 'K', ' ' },
  };
  
-@@ -915,7 +915,7 @@ static int section_mismatch(const char *fromsec, const char *tosec)
-  * Pattern 0:
-  *   Do not warn if funtion/data are marked with __init_refok/__initdata_refok.
-  *   The pattern is identified by:
-- *   fromsec = .text.init.refok* | .data.init.refok*
-+ *   fromsec = .kernel.text.init.refok* | .kernel.data.init.refok*
-  *
-  * Pattern 1:
-  *   If a module parameter is declared __initdata and permissions=0
-@@ -939,8 +939,8 @@ static int section_mismatch(const char *fromsec, const char *tosec)
-  *           *probe_one, *_console, *_timer
-  *
-  * Pattern 3:
-- *   Whitelist all refereces from .text.head to .init.data
-- *   Whitelist all refereces from .text.head to .init.text
-+ *   Whitelist all refereces from .kernel.text.head to .init.data
-+ *   Whitelist all refereces from .kernel.text.head to .init.text
-  *
-  * Pattern 4:
-  *   Some symbols belong to init section but still it is ok to reference
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 6b9fe3e..41f733b 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -26,7 +26,7 @@
- # which will also be the location of that section after final link.
- # e.g.
- #
--#  .section ".text.sched"
-+#  .section ".sched.text"
- #  .globl my_func
- #  my_func:
- #        [...]
-@@ -39,7 +39,7 @@
- #        [...]
- #
- # Both relocation offsets for the mcounts in the above example will be
--# offset from .text.sched. If we make another file called tmp.s with:
-+# offset from .sched.text. If we make another file called tmp.s with:
- #
- #  .section __mcount_loc
- #  .quad  my_func + 0x5
-@@ -51,7 +51,7 @@
- # But this gets hard if my_func is not globl (a static function).
- # In such a case we have:
- #
--#  .section ".text.sched"
-+#  .section ".sched.text"
- #  my_func:
- #        [...]
- #        call mcount  (offset: 0x5)
+ /**
 -- 
 1.5.6.3
 
