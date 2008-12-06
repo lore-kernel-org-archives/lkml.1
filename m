@@ -1,174 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYLFAJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbYLFAKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100AbYLFAJg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Dec 2008 19:09:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbYLFAJQ
+	id S1757968AbYLFAKQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Dec 2008 19:10:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755083AbYLFAJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Dec 2008 19:09:16 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:49436 "EHLO
+	Fri, 5 Dec 2008 19:09:58 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:49491 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754799AbYLFAJP (ORCPT
+	by vger.kernel.org with ESMTP id S1754329AbYLFAJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Dec 2008 19:09:15 -0500
+	Fri, 5 Dec 2008 19:09:57 -0500
 From: Jeff Arnold <jbarnold@MIT.EDU>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>,
        Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
        Waseem Daher <wdaher@MIT.EDU>, Nikanth Karthikesan <knikanth@suse.de>
-Subject: [PATCH 5/7] Ksplice: Add functions for walking kallsyms symbols
-Date: Fri,  5 Dec 2008 19:03:58 -0500
-Message-Id: <1228521840-3886-6-git-send-email-jbarnold@mit.edu>
+Subject: [PATCH 2/7] x86: Add an option to compile with -ffunction-sections -fdata-sections
+Date: Fri,  5 Dec 2008 19:03:55 -0500
+Message-Id: <1228521840-3886-3-git-send-email-jbarnold@mit.edu>
 X-Mailer: git-send-email 1.6.0
-In-Reply-To: <1228521840-3886-5-git-send-email-jbarnold@mit.edu>
+In-Reply-To: <1228521840-3886-2-git-send-email-jbarnold@mit.edu>
 References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu>
  <1228521840-3886-2-git-send-email-jbarnold@mit.edu>
- <1228521840-3886-3-git-send-email-jbarnold@mit.edu>
- <1228521840-3886-4-git-send-email-jbarnold@mit.edu>
- <1228521840-3886-5-git-send-email-jbarnold@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Anders Kaseorg <andersk@mit.edu>
+From: Waseem Daher <wdaher@mit.edu>
 
-kallsyms_lookup_name only returns the first match that it finds.  Ksplice
-needs information about all symbols with a given name in order to correctly
-resolve local symbols.
+This patch makes it possible to link and boot an x86 kernel with
+-ffunction-sections and -fdata-sections enabled.
 
-kallsyms_on_each_symbol provides a generic mechanism for iterating over the
-kallsyms table.
+Modpost currently warns whenever it sees a section with a name
+matching [.][0-9]+$ because they are often caused by section flag
+mismatch errors.  When compiling with -ffunction-sections
+-fdata-sections, gcc places various classes of local symbols in
+sections with names such as .rodata.__func__.12345, causing these
+warnings to be printed spuriously.  The simplest fix is to disable the
+warning when CONFIG_FUNCTION_DATA_SECTIONS is enabled.
 
-Signed-off-by: Anders Kaseorg <andersk@mit.edu>
+Signed-off-by: Waseem Daher <wdaher@mit.edu>
+[tabbott@mit.edu: modpost support]
+Signed-off-by: Tim Abbott <tabbott@mit.edu>
 ---
- include/linux/kallsyms.h |   13 +++++++++++++
- include/linux/module.h   |   12 ++++++++++++
- kernel/kallsyms.c        |   19 +++++++++++++++++++
- kernel/module.c          |   19 +++++++++++++++++++
- 4 files changed, 63 insertions(+), 0 deletions(-)
+ Makefile                          |    4 ++++
+ arch/x86/kernel/vmlinux_32.lds.S  |    1 +
+ arch/x86/kernel/vmlinux_64.lds.S  |    1 +
+ include/asm-generic/vmlinux.lds.h |    2 ++
+ lib/Kconfig.debug                 |    9 +++++++++
+ scripts/Makefile.modpost          |    1 +
+ scripts/mod/modpost.c             |   10 ++++++++--
+ 7 files changed, 26 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index f3fe343..37746b2 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -17,6 +17,11 @@
- /* Lookup the address for a symbol. Returns 0 if not found. */
- unsigned long kallsyms_lookup_name(const char *name);
+diff --git a/Makefile b/Makefile
+index 9a49960..d3d6fa4 100644
+--- a/Makefile
++++ b/Makefile
+@@ -540,6 +540,10 @@ ifdef CONFIG_FUNCTION_TRACER
+ KBUILD_CFLAGS	+= -pg
+ endif
  
-+/* Call a function on each kallsyms symbol in the core kernel */
-+int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
-+				      unsigned long),
-+			    void *data);
++ifdef CONFIG_FUNCTION_DATA_SECTIONS
++KBUILD_CFLAGS	+= -ffunction-sections -fdata-sections
++endif
 +
- extern int kallsyms_lookup_size_offset(unsigned long addr,
- 				  unsigned long *symbolsize,
- 				  unsigned long *offset);
-@@ -43,6 +48,14 @@ static inline unsigned long kallsyms_lookup_name(const char *name)
- 	return 0;
- }
+ # We trigger additional mismatches with less inlining
+ ifdef CONFIG_DEBUG_SECTION_MISMATCH
+ KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
+diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
+index 454ab4c..c0c4323 100644
+--- a/arch/x86/kernel/vmlinux_32.lds.S
++++ b/arch/x86/kernel/vmlinux_32.lds.S
+@@ -193,6 +193,7 @@ SECTIONS
+ 	__bss_start = .;		/* BSS */
+ 	*(.bss.kernel.page_aligned)
+ 	*(.bss)
++	*(.bss.*)
+ 	. = ALIGN(4);
+ 	__bss_stop = .;
+   	_end = . ;
+diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
+index 6fd4547..ccb74b0 100644
+--- a/arch/x86/kernel/vmlinux_64.lds.S
++++ b/arch/x86/kernel/vmlinux_64.lds.S
+@@ -222,6 +222,7 @@ SECTIONS
+   .bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+ 	*(.bss.kernel.page_aligned)
+ 	*(.bss)
++	*(.bss.*)
+ 	}
+   __bss_stop = .;
  
-+static inline int kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-+						    struct module *,
-+						    unsigned long),
-+					  void *data)
-+{
-+	return 0;
-+}
-+
- static inline int kallsyms_lookup_size_offset(unsigned long addr,
- 					      unsigned long *symbolsize,
- 					      unsigned long *offset)
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 2268147..29972a2 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -378,6 +378,10 @@ int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
- /* Look for this name: can be of form module:name. */
- unsigned long module_kallsyms_lookup_name(const char *name);
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index e8d1bdd..4b5aea8 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -48,6 +48,7 @@
+ /* .data section */
+ #define DATA_DATA							\
+ 	*(.data)							\
++	*(.data.*)							\
+ 	*(.kernel.data.init.refok)					\
+ 	*(.ref.data)							\
+ 	DEV_KEEP(init.data)						\
+@@ -235,6 +236,7 @@
+ 		ALIGN_FUNCTION();					\
+ 		*(.text.hot)						\
+ 		*(.text)						\
++		*(.text.*)						\
+ 		*(.ref.text)						\
+ 		*(.kernel.text.init.refok)				\
+ 		*(.kernel.text.exit.refok)				\
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index b0f239e..e121ab7 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -557,6 +557,15 @@ config FRAME_POINTER
+ 	  some architectures or if you use external debuggers.
+ 	  If you don't debug the kernel, you can say N.
  
-+int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-+					     struct module *, unsigned long),
-+				   void *data);
++config FUNCTION_DATA_SECTIONS
++	bool "Compile with -ffunction-sections -fdata-sections"
++	depends on !FTRACE
++	help
++	  If you say Y here the compiler will give each function
++	  and data structure its own ELF section.
 +
- extern void __module_put_and_exit(struct module *mod, long code)
- 	__attribute__((noreturn));
- #define module_put_and_exit(code) __module_put_and_exit(THIS_MODULE, code);
-@@ -546,6 +550,14 @@ static inline unsigned long module_kallsyms_lookup_name(const char *name)
- 	return 0;
- }
++	  If unsure, say N.
++
+ config BOOT_PRINTK_DELAY
+ 	bool "Delay each boot printk message by N milliseconds"
+ 	depends on DEBUG_KERNEL && PRINTK && GENERIC_CALIBRATE_DELAY
+diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
+index f4053dc..a712bb2 100644
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -87,6 +87,7 @@ modpost = scripts/mod/modpost                    \
+  $(if $(CONFIG_DEBUG_SECTION_MISMATCH),,-S)      \
+  $(if $(CONFIG_MARKERS),-K $(kernelmarkersfile)) \
+  $(if $(CONFIG_MARKERS),-M $(markersfile))	 \
++ $(if $(filter -ffunction-sections -fdata-sections,$(KBUILD_CFLAGS) $(CFLAGS_KERNEL)),-F) \
+  $(if $(KBUILD_EXTMOD)$(KBUILD_MODPOST_WARN),-w) \
+  $(if $(cross_build),-c)
  
-+static inline int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-+							   struct module *,
-+							   unsigned long),
-+						 void *data)
-+{
-+	return 0;
-+}
-+
- static inline int register_module_notifier(struct notifier_block * nb)
- {
- 	/* no events will happen anyway, so this can always succeed */
-diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-index 7b8b0f2..374faf9 100644
---- a/kernel/kallsyms.c
-+++ b/kernel/kallsyms.c
-@@ -161,6 +161,25 @@ unsigned long kallsyms_lookup_name(const char *name)
- 	return module_kallsyms_lookup_name(name);
- }
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index afe9408..68d9e95 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -32,6 +32,8 @@ static int warn_unresolved = 0;
+ /* How a symbol is exported */
+ static int sec_mismatch_count = 0;
+ static int sec_mismatch_verbose = 1;
++/* Are we using CONFIG_FUNCTION_DATA_SECTIONS? */
++static int function_data_sections = 0;
  
-+int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
-+				      unsigned long),
-+			    void *data)
-+{
-+	char namebuf[KSYM_NAME_LEN];
-+	unsigned long i;
-+	unsigned int off;
-+	int ret;
-+
-+	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
-+		off = kallsyms_expand_symbol(off, namebuf);
-+		ret = fn(data, namebuf, NULL, kallsyms_addresses[i]);
-+		if (ret != 0)
-+			return ret;
-+	}
-+	return module_kallsyms_on_each_symbol(fn, data);
-+}
-+EXPORT_SYMBOL_GPL(kallsyms_on_each_symbol);
-+
- static unsigned long get_symbol_pos(unsigned long addr,
- 				    unsigned long *symbolsize,
- 				    unsigned long *offset)
-diff --git a/kernel/module.c b/kernel/module.c
-index c3cf234..8839d40 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2554,6 +2554,25 @@ unsigned long module_kallsyms_lookup_name(const char *name)
- 	preempt_enable();
- 	return ret;
- }
-+
-+int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-+					     struct module *, unsigned long),
-+				   void *data)
-+{
-+	struct module *mod;
-+	unsigned int i;
-+	int ret;
-+
-+	list_for_each_entry(mod, &modules, list) {
-+		for (i = 0; i < mod->num_symtab; i++) {
-+			ret = fn(data, mod->strtab + mod->symtab[i].st_name,
-+				 mod, mod->symtab[i].st_value);
-+			if (ret != 0)
-+				return ret;
-+		}
-+	}
-+	return 0;
-+}
- #endif /* CONFIG_KALLSYMS */
+ enum export {
+ 	export_plain,      export_unused,     export_gpl,
+@@ -736,7 +738,8 @@ static int check_section(const char *modname, const char *sec)
+ 		/* consume all digits */
+ 		while (*e && e != sec && isdigit(*e))
+ 			e--;
+-		if (*e == '.' && !strstr(sec, ".linkonce")) {
++		if (*e == '.' && !strstr(sec, ".linkonce") &&
++		    !function_data_sections) {
+ 			warn("%s (%s): unexpected section name.\n"
+ 			     "The (.[number]+) following section name are "
+ 			     "ld generated and not expected.\n"
+@@ -2063,7 +2066,7 @@ int main(int argc, char **argv)
+ 	struct ext_sym_list *extsym_iter;
+ 	struct ext_sym_list *extsym_start = NULL;
  
- static char *module_flags(struct module *mod, char *buf)
+-	while ((opt = getopt(argc, argv, "i:I:e:cmsSo:awM:K:")) != -1) {
++	while ((opt = getopt(argc, argv, "i:I:e:cFmsSo:awM:K:")) != -1) {
+ 		switch (opt) {
+ 		case 'i':
+ 			kernel_read = optarg;
+@@ -2083,6 +2086,9 @@ int main(int argc, char **argv)
+ 			extsym_iter->file = optarg;
+ 			extsym_start = extsym_iter;
+ 			break;
++		case 'F':
++			function_data_sections = 1;
++			break;
+ 		case 'm':
+ 			modversions = 1;
+ 			break;
 -- 
 1.5.6.3
 
