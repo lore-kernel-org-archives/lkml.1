@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbYLFSMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYLFSau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753426AbYLFSMB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 13:12:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbYLFSLx
+	id S1753203AbYLFSau (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 13:30:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbYLFSal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 13:11:53 -0500
-Received: from ik-out-1112.google.com ([66.249.90.182]:38437 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbYLFSLw (ORCPT
+	Sat, 6 Dec 2008 13:30:41 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:4632 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751464AbYLFSak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 13:11:52 -0500
-Message-ID: <ac3eb2510812061011u7a7f0fbdtc46b95a9c642f9c7@mail.gmail.com>
-Date: Sat, 6 Dec 2008 19:11:50 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Evgeniy Polyakov" <zbr@ioremap.net>
-Subject: Re: Runaway loop with the current git.
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-In-Reply-To: <20081206165634.GA2516@ioremap.net>
+	Sat, 6 Dec 2008 13:30:40 -0500
+Date: Sat, 6 Dec 2008 13:30:37 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] [PATCH 1/3] PCI: Rework default handling of suspend
+ and resume
+In-Reply-To: <200812061843.59495.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0812061324260.13426-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081205181610.518ecd13@lxorguk.ukuu.org.uk>
-	 <20081205192755.GA27712@ioremap.net>
-	 <20081205193432.290a6f1a@lxorguk.ukuu.org.uk>
-	 <20081205211223.GA8075@ioremap.net>
-	 <ac3eb2510812051317q79ca88e9ya876ffb94162eeca@mail.gmail.com>
-	 <20081205212428.GB8075@ioremap.net>
-	 <ac3eb2510812051810x8cf4256lf9fd31b15b9e0552@mail.gmail.com>
-	 <20081206160927.GA498@ioremap.net>
-	 <ac3eb2510812060816h4401c78bj6d656d0d5721024@mail.gmail.com>
-	 <20081206165634.GA2516@ioremap.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 6, 2008 at 17:56, Evgeniy Polyakov <zbr@ioremap.net> wrote:
-> On Sat, Dec 06, 2008 at 05:16:06PM +0100, Kay Sievers (kay.sievers@vrfy.org) wrote:
->> So the loop is probably a modprobe itself that tries to access
->> /dev/console. Is there a different argument for the very first
->> modprobe which is called? Which may be the one that triggers the loop.
->
-> Hard to tell, I did not see anything but modprobe before and after
-> runaway loop message, but it could be missed though, I will tell
-> for sure only this Monday.
+On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
 
-Sounds good.
+> On Saturday, 6 of December 2008, Linus Torvalds wrote:
+> > 
+> > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+> > > 
+> > > USB doesn't use that for PCI suspend-resume, it uses it for suspend-resume of
+> > > USB devices behind the controller.
+> > 
+> > Oh, in that case there are no PCI users of this at all, and what the PCI 
+> > driver does is immaterial ;)
+> > 
+> > > But then we will save the device's registers in the "sleeping" state. 
+> > 
+> > No no. The rule would be that a PCI driver - if it uses the new 
+> > infrastructure, which apparently nobody does _as_ a PCI driver - simply 
+> > would never do the whole "pci_set_power_state(PCI_D3hot)" etc crud AT ALL.
+> 
+> Now _that_ sounds good. :-)
+> 
+> > So a PCI driver would only do higher-level stuff in its suspend/resume 
+> > code. For example, a USB host controller would initiate the USB bus level 
+> > stuff, and likely just stop the controller (not suspend it - just stop 
+> > it).
+> 
+> I like this idea very much.
 
-It seems the /dev/console driver is registered only after all the pci,
-video, acpi, ... drivers, so it's not surprising, that if any of these
-driver in these subsystems calls request_module(), or a process in
-initramfs tries to access the "dead" /dev/console node, things will go
-wrong.
+Rafael, I'd be happy to help with fixing up the USB PCI PM code.  At
+this point I'm not sure exactly what's needed, though.  For instance,
+is there any compelling reason to switch over to the new dev_pm_ops
+approach?  And what should the correct sequence of calls be?
 
-Thanks,
-Kay
+Alan Stern
+
