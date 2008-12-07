@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbYLGWmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbYLGWml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756641AbYLGWmT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 17:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbYLGWjC
+	id S1757391AbYLGWml (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 17:42:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbYLGWjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 17:39:02 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34990 "EHLO ogre.sisk.pl"
+	Sun, 7 Dec 2008 17:39:04 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34987 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754159AbYLGWjA convert rfc822-to-8bit (ORCPT
+	id S1753382AbYLGWjA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 7 Dec 2008 17:39:00 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Fabio Comolli" <fabio.comolli@gmail.com>
+       "Miles Lane" <miles.lane@gmail.com>, "Takashi Iwai" <tiwai@suse.de>
 References: <6VnlupFpCsN.A.2rE.MsEPJB@chimera>
 In-Reply-To: <6VnlupFpCsN.A.2rE.MsEPJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <07Xes05z25M.A.YoF.hsEPJB@chimera>
-Subject: [Bug #12155] Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
+Message-ID: <07Xes05z25M.A.zPF.ZsEPJB@chimera>
+Subject: [Bug #12159] 2.6.28-rc6-git1 -- No sound produced from Intel HDA ALSA driver
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  7 Dec 2008 21:32:55 +0100 (CET)
+Date: Sun,  7 Dec 2008 21:32:56 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +35,11 @@ from 2.6.27.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12155
-Subject		: Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
-Submitter	: Fabio Comolli <fabio.comolli@gmail.com>
-Date		: 2008-11-23 16:17 (15 days old)
-References	: http://marc.info/?l=linux-kernel&m=122745709926361&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12159
+Subject		: 2.6.28-rc6-git1 -- No sound produced from Intel HDA ALSA driver
+Submitter	: Miles Lane <miles.lane@gmail.com>
+Date		: 2008-11-27 20:33 (11 days old)
+References	: http://marc.info/?l=linux-kernel&m=122781805620212&w=4
+Handled-By	: Takashi Iwai <tiwai@suse.de>
 
 
