@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYLGNjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbYLGNk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbYLGNjR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 08:39:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbYLGNjE
+	id S1754727AbYLGNk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 08:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbYLGNkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 08:39:04 -0500
-Received: from mail-gx0-f18.google.com ([209.85.217.18]:56071 "EHLO
-	mail-gx0-f18.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753907AbYLGNjD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 08:39:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NYGDDovJhPWdM8yNBK2oetVLIHxtyknTTnKsG2EQaqe6WqrHfWya6tV/aVQspF4Z9g
-         zhDQ9o7dHQQpU3RE0A3HPcQQSv5/wiMPmtAc7z7nlnDjV2RzHwUD15+3FySkJCEzfbt9
-         C7xd0a5d41A5rnFN4NcWsjcM9m/EyLdh8G9Zw=
-Message-ID: <b637ec0b0812070539i20684ec2tfc6748f01d99fff9@mail.gmail.com>
-Date: Sun, 7 Dec 2008 14:39:00 +0100
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #12155] Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>
-In-Reply-To: <b637ec0b0812061208i9520bd0tfd404f1a9c8a95ba@mail.gmail.com>
+	Sun, 7 Dec 2008 08:40:15 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33701 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753803AbYLGNkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 08:40:14 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [linux-pm] [PATCH 1/3] PCI: Rework default handling of suspend and resume
+Date: Sun, 7 Dec 2008 14:39:27 +0100
+User-Agent: KMail/1.9.9
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Takashi Iwai <tiwai@suse.de>,
+       Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.0812061324260.13426-100000@netrider.rowland.org> <alpine.LFD.2.00.0812062157590.3425@nehalem.linux-foundation.org> <alpine.LFD.2.00.0812062201230.3425@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0812062201230.3425@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera>
-	 <bfPM5B8Tx2B.A.MQH.zoxNJB@chimera>
-	 <b637ec0b0812040050g58f3e28dxba5bca8c77bb5a94@mail.gmail.com>
-	 <b637ec0b0812061208i9520bd0tfd404f1a9c8a95ba@mail.gmail.com>
+Message-Id: <200812071439.27712.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Sunday, 7 of December 2008, Linus Torvalds wrote:
+> 
+> On Sat, 6 Dec 2008, Linus Torvalds wrote:
+> > 
+> > And btw, I'm talking suspend, not hibernate. 
 
-On Sat, Dec 6, 2008 at 9:08 PM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
-> Hi Rafael.
->
-> On Thu, Dec 4, 2008 at 9:50 AM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
->> Hi.
->>
->> I'll try -rc7-git probably tonight and 2.6.27.8 when -stable team releases it.
->>
->
-> 2.6.28-rc7 survived 7 suspend/resume cycles and then showed the bug.
+Even as far as hibernation is concerned, I wouldn't _expect_ any BIOS to do
+anything like this as long as we use the ACPI facility to enter S4.
 
-2.6.27.8 got me really scared. After the resume and the usual hang, my
-hard disk did not recover and my rootfilesystem's journal aborted. Of
-course I don't have messages to post as the rootfs was at this point
-mounted readonly. I read those info from dmesg.
+> And, btw, even if anybody actually does this, it should be up to the 
+> interrupt controller logic to re-initialize the interrupts so that they 
+> are back where they belong. IOW, we should never show such _idiotic_ 
+> brokenness to any actual driver, it should all be remapped and handled 
+> below them.
+> 
+> And I still have never heard any valid reason to do it in the first place, 
+> so until somebody actually gives a real example and an explanation, I 
+> would suggest ignoring the whole issue as some insane rumblings from crazy 
+> hw/firmare people doing idiotic things.
 
-I went back to my dear 2.6.27.4 which is stable and never caused me
-any problems.
+While I'd really like to do that, I also think that we should make all drivers
+behave in the same way in this area.
 
-Unless someone jumps in with some ideas, I'm not going to do testings
-anymore. I can't lose my only machine because of this.
+Also, we need to state clearly what the _recommended_way of doing that is,
+at least as a guidance for driver writers if not for anything else.
 
-Regards,
-Fabio
+So, can we just say that PCI drivers shouldn't free IRQs during suspend and
+request them during resume, and if there's any problem that leads to, then it
+should be solved differently?
+
+Rafael
