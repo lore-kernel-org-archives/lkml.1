@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbYLGQOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbYLGQPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755028AbYLGQOU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 11:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbYLGQOI
+	id S1755170AbYLGQPv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 11:15:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbYLGQPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 11:14:08 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44668 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753725AbYLGQOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 11:14:07 -0500
-Message-ID: <493BF648.6060504@redhat.com>
-Date: Sun, 07 Dec 2008 18:14:00 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Sun, 7 Dec 2008 11:15:42 -0500
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:61588 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754206AbYLGQPl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 11:15:41 -0500
+Message-ID: <493BF6AA.7030602@lwfinger.net>
+Date: Sun, 07 Dec 2008 10:15:38 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: kvm-devel <kvm@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH 1/2] kvm: use modern cpumask primitives, no cpumask_t
- on stack
-References: <200812072125.14416.rusty@rustcorp.com.au> <493BF144.9080106@redhat.com>
-In-Reply-To: <493BF144.9080106@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Yuval Hager <yuval@avramzon.net>
+CC: Peter Stuge <peter@stuge.se>, wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Michael Buesch <mb@bu3sch.de>,
+       bcm43xx-dev@lists.berlios.de
+Subject: Re: BCM4312 Fails when xdm is started
+References: <200811151801.02369.yuval@avramzon.net> <200811250745.22487.yuval@avramzon.net> <20081125071818.9256.qmail@stuge.se> <200812071129.32113.yuval@avramzon.net>
+In-Reply-To: <200812071129.32113.yuval@avramzon.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Rusty Russell wrote:
->> We're getting rid on on-stack cpumasks for large NR_CPUS.
->>
->> 1) Use cpumask_var_t and alloc_cpumask_var (a noop normally).  Fallback
->>    code is inefficient but never happens in practice.
->
-> Wow, code duplication from Rusty. Things must be bad.
->
-> Since we're in a get_cpu() here, how about a per_cpu static cpumask 
-> instead? I don't mind the inefficient fallback, just the duplication.
->
+Yuval Hager wrote:
+> 
+> This issue has been tracked down to be at the openchrome driver. It appears 
+> that somehow it corrupted the PCI bus, and damaged the device right after the 
+> video card - the wireless card. 
+> 
+> The current workaround for this is here - 
+> http://wiki.openchrome.org/pipermail/openchrome-devel/2008-November/000139.html - 
+> but this is just a quick hack, not a fix, although it works great for me. The 
+> openchrome team is working on a patch based on this.
+> 
+> Thanks for all the help - I am a very happy HP2133 user, and a very happy 
+> community member. This was an amazing opensource support experience, which 
+> I'll remember for a long time. Thank you all!
 
-Btw, for the general case, instead of forcing everyone to duplicate, how 
-about:
+Thanks for the feedback. The community may struggle a bit on some problems, and
+the approach to a solution may look like a drunken sailor's walk, but we usually
+get there.
 
-cpumask_var_t cpus;
-
-with_cpumask(cpus) {
-   ... code to populate cpus
-   smp_call_function_some(...);
-} end_with_cpumask(cpus);
-
-Where with_cpumask() allocates cpus, and uses a mutex + static fallback 
-on failure.
-
-May need a couple of variants (spinlock + GFP_NOWAIT, mutex with 
-sleeping allocation).
-
--- 
-error compiling committee.c: too many arguments to function
+Larry
 
