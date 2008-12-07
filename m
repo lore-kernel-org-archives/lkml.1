@@ -1,68 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbYLGIao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbYLGIb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbYLGIao (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 03:30:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbYLGIaT
+	id S1754640AbYLGIb7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 03:31:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbYLGIbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 03:30:19 -0500
-Received: from ozlabs.org ([203.10.76.45]:37055 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753474AbYLGIaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 03:30:16 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] virtio: make PCI devices take a virtio_pci module ref
-Date: Sun, 7 Dec 2008 19:00:08 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
-Cc: Michael Tokarev <mjt@tls.msk.ru>, Mark McLoughlin <markmc@redhat.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       kvm <kvm@vger.kernel.org>, Anthony Liguori <aliguori@us.ibm.com>,
-       Greg KH <gregkh@suse.de>
-References: <1228394671.3732.77.camel@blaa> <4938EE0B.8020501@msgid.tls.msk.ru> <493929D2.4070900@gmail.com>
-In-Reply-To: <493929D2.4070900@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sun, 7 Dec 2008 03:31:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37918 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753474AbYLGIbu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 03:31:50 -0500
+Date: Sun, 7 Dec 2008 00:31:38 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [memcg BUG ?] failed to boot on IA64 with CONFIG_DISCONTIGMEM=y
+Message-Id: <20081207003138.2651f14b.akpm@linux-foundation.org>
+In-Reply-To: <20081205122458.a37ae8e0.kamezawa.hiroyu@jp.fujitsu.com>
+References: <49389B69.9010902@cn.fujitsu.com>
+	<20081205122024.3fcc1d0e.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081205122458.a37ae8e0.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812071900.08987.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 December 2008 23:47:06 Jiri Slaby wrote:
-> Michael Tokarev napsal(a):
-> > Jiri Slaby wrote:
-> >> On 12/04/2008 01:44 PM, Mark McLoughlin wrote:
-> >>> Nothing takes a ref on virtio_pci, so even if you have
-> >>> devices in use, rmmod will attempt to unload the module.
-> >> It unbinds the device properly as any other driver. So what's the problem here?
-> > 
-> > Here's what we get when rmmod'ing (a zero-refcounted but
-> > in use) virtio_pci (I did it by a chance, cut-n-pasted
-> > the wrong line):
-> > 
-> > WARNING: at drivers/base/core.c:122 device_release+0x5f/0x70()
-> > Device 'virtio1' does not have a release() function, it is broken and must be fixed.
-> > Modules linked in: ext3 jbd mbcache acpiphp dock pci_hotplug virtio_net virtio_blk virtio_pci(-) virtio_ring virtio
-> > 
-> > Pid: 361, comm: rmmod Tainted: G S        2.6.27-i686smp #2.6.27.7
-> >  [<c012b81f>] warn_slowpath+0x6f/0xa0
-> >  [<c0110030>] prepare_set+0x30/0x80
-> >  [<c012067e>] __wake_up+0x3e/0x60
-> >  [<c01d1d25>] release_sysfs_dirent+0x45/0xb0
-> >  ...
+On Fri, 5 Dec 2008 12:24:58 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> On Fri, 5 Dec 2008 12:20:24 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> So why don't you fix the root cause and add such a crap into the probe
-> function (not even counting probe can fail later)?
+> > On Fri, 05 Dec 2008 11:09:29 +0800
+> > Li Zefan <lizf@cn.fujitsu.com> wrote:
+> > 
+> > > Kernel version: 2.6.28-rc7
+> > > Arch: IA64
+> > > Memory model: DISCONTIGMEM
+> > > 
+> > > ELILO boot: Uncompressing Linux... done
+> > > Loading file initrd-2.6.28-rc7-lizf.img...done
+> > > (frozen)
+> > > 
+> > > 
+> > > Booted successfully with cgroup_disable=memory, here is the dmesg:
+> > > 
+> > 
+> > thx, will dig into...Maybe you're the first person using DISCONTIGMEM with
+> > empty_node after page_cgroup-alloc-at-boot.
+> > 
+> > How about this ?
 > 
-> Fix the virtio bus instead.
+> Ahhh..sorry.
+> 
+> this one please.
+> ==
+> 
+> From: kamezawa.hiroyu@jp.fujitsu.com
+> 
+> page_cgroup should ignore empty-nodes.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> ---
+>  mm/page_cgroup.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: mmotm-2.6.28-Dec03/mm/page_cgroup.c
+> ===================================================================
+> --- mmotm-2.6.28-Dec03.orig/mm/page_cgroup.c
+> +++ mmotm-2.6.28-Dec03/mm/page_cgroup.c
+> @@ -51,6 +51,9 @@ static int __init alloc_node_page_cgroup
+>  	start_pfn = NODE_DATA(nid)->node_start_pfn;
+>  	nr_pages = NODE_DATA(nid)->node_spanned_pages;
+>  
+> +	if (!nr_pages)
+> +		return 0;
+> +
+>  	table_size = sizeof(struct page_cgroup) * nr_pages;
+>  
+>  	base = __alloc_bootmem_node_nopanic(NODE_DATA(nid),
 
-Incoherent? CHECK
-Rude to bug reporter? CHECK
-Unhelpful? CHECK
+Why did the kernel fail?
 
-Wow, you must be a *great* kernel maintainer!
+Either __alloc_bootmem_node_nopanic() succeeds, in which case the code
+looks like it handles that OK.
 
-Thanks for making us all so very, very proud.
-Rusty.
+Or __alloc_bootmem_node_nopanic() fails this zero-sized allocation, and
+the code attempts to handle that, but fails to do so, which might be a
+bug, and the above patch just papers over it.
+
+Of course, a full description of the problem will clear all this up.
+Better changelogs, please.
