@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759229AbYLGWv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759299AbYLGWwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759229AbYLGWv6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 17:51:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758300AbYLGWrh
+	id S1759299AbYLGWwr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 17:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758928AbYLGWuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 17:47:37 -0500
-Received: from tundra.namei.org ([65.99.196.166]:46196 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758281AbYLGWrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 17:47:36 -0500
-Date: Mon, 8 Dec 2008 09:47:21 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] user namespaces: require cap_set{ug}id for
- CLONE_NEWUSER
-In-Reply-To: <m1r64mpmsi.fsf@frodo.ebiederm.org>
-Message-ID: <alpine.LRH.1.10.0812080947050.23851@tundra.namei.org>
-References: <20081203191706.GA16433@us.ibm.com> <20081203191733.GA16652@us.ibm.com> <m1r64mpmsi.fsf@frodo.ebiederm.org>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 7 Dec 2008 17:50:44 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55651 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758382AbYLGWum (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 17:50:42 -0500
+Date: Sun, 7 Dec 2008 14:52:03 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Yves-Alexis Perez" <corsac@debian.org>
+Subject: Re: [Bug #12152] Huge wakeups number from i1915
+Message-ID: <20081207145203.0f998d5b@infradead.org>
+In-Reply-To: <07Xes05z25M.A.VtF.ksEPJB@chimera>
+References: <6VnlupFpCsN.A.2rE.MsEPJB@chimera>
+	<07Xes05z25M.A.VtF.ksEPJB@chimera>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Dec 2008, Eric W. Biederman wrote:
+On Sun,  7 Dec 2008 21:32:54 +0100 (CET)
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> > While ideally CLONE_NEWUSER will eventually require no
-> > privilege, the required permission checks are currently
-> > not there.  As a result, CLONE_NEWUSER has the same effect
-> > as a setuid(0)+setgroups(1,"0").  While we already require
-> > CAP_SYS_ADMIN, requiring CAP_SETUID and CAP_SETGID seems
-> > appropriate.
+> The following bug entry is on the current list of known regressions
+> from 2.6.27.  Please verify if it still should be listed and let me
+> know (either way).
 > 
-> Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 > 
-> The patch looks good, and we are likely to need more caps to
-> actually use it.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12152
+> Subject		: Huge wakeups number from i1915
+> Submitter	: Yves-Alexis Perez <corsac@debian.org>
+> Date		: 2008-12-02 16:48 (6 days old)
+> References	:
+> http://marc.info/?l=linux-acpi&m=122823656702994&w=4
+> 
 
-Applied to 
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+at least in some of the cases where this has been seen the cause is the
+following:
+The i915 DRM driver used to do polling for completion, busy waiting. It
+moved to be interrupt driven, which is usually better for power, but it
+will show up as more wakeups in powertop....
 
 
 -- 
-James Morris
-<jmorris@namei.org>
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
