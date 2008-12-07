@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759098AbYLGWvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759229AbYLGWv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759098AbYLGWvo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 17:51:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757819AbYLGWr3
+	id S1759229AbYLGWv6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 17:51:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758300AbYLGWrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 17:47:29 -0500
-Received: from tundra.namei.org ([65.99.196.166]:46192 "EHLO tundra.namei.org"
+	Sun, 7 Dec 2008 17:47:37 -0500
+Received: from tundra.namei.org ([65.99.196.166]:46196 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755916AbYLGWrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 17:47:24 -0500
-Date: Mon, 8 Dec 2008 09:46:51 +1100 (EST)
+	id S1758281AbYLGWrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 17:47:36 -0500
+Date: Mon, 8 Dec 2008 09:47:21 +1100 (EST)
 From: James Morris <jmorris@namei.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-cc: lkml <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
        David Howells <dhowells@redhat.com>,
        Michael Kerrisk <mtk.manpages@gmail.com>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] user namespaces: let user_ns be cloned with
- fairsched
-In-Reply-To: <20081203191706.GA16433@us.ibm.com>
-Message-ID: <alpine.LRH.1.10.0812080946360.23851@tundra.namei.org>
-References: <20081203191706.GA16433@us.ibm.com>
+Subject: Re: [PATCH 2/2] user namespaces: require cap_set{ug}id for
+ CLONE_NEWUSER
+In-Reply-To: <m1r64mpmsi.fsf@frodo.ebiederm.org>
+Message-ID: <alpine.LRH.1.10.0812080947050.23851@tundra.namei.org>
+References: <20081203191706.GA16433@us.ibm.com> <20081203191733.GA16652@us.ibm.com> <m1r64mpmsi.fsf@frodo.ebiederm.org>
 User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,24 +28,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Dec 2008, Serge E. Hallyn wrote:
+On Fri, 5 Dec 2008, Eric W. Biederman wrote:
 
-> (These two patches are in the next-unacked branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/sergeh/userns-2.6.
-> If they get some ACKs, then I hope to feed this into security-next.
-> After these two, I think we're ready to tackle userns+capabilities)
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
 > 
-> Fairsched creates a per-uid directory under /sys/kernel/uids/.
-> So when you clone(CLONE_NEWUSER), it tries to create
-> /sys/kernel/uids/0, which already exists, and you get back
-> -ENOMEM.
+> > While ideally CLONE_NEWUSER will eventually require no
+> > privilege, the required permission checks are currently
+> > not there.  As a result, CLONE_NEWUSER has the same effect
+> > as a setuid(0)+setgroups(1,"0").  While we already require
+> > CAP_SYS_ADMIN, requiring CAP_SETUID and CAP_SETGID seems
+> > appropriate.
 > 
-> This was supposed to be fixed by sysfs tagging, but that
-> was postponed (ok, rejected until sysfs locking is fixed).
-> So, just as with network namespaces, we just don't create
-> those directories for user namespaces other than the init.
+> Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 > 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> The patch looks good, and we are likely to need more caps to
+> actually use it.
 
 Applied to 
 git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
