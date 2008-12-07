@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbYLGRVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbYLGRWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754645AbYLGRVr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 12:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbYLGRVU
+	id S1755441AbYLGRWB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 12:22:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYLGRVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 12:21:20 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:22737 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbYLGRVS (ORCPT
+	Sun, 7 Dec 2008 12:21:22 -0500
+Received: from mu-out-0910.google.com ([209.85.134.184]:63854 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751354AbYLGRVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 7 Dec 2008 12:21:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=ELni7xMlPJD7VB0Z7Pyi2fM4W5rYOyCz8zCmS1Rli0Er16a+DvXFjfKGNNl4PIWsU8
-         jw7SbHwLMAfJFzPccflt3wokkMA4dJZCDG9gi8OGUS11kIw9o010s1PPBXrZsWMt1az0
-         aLFHhmIV3OSaE/+XiGA8hxuMRYQs++E6sNVdc=
+        b=xAmi1I3aeESBkOONrKPlcx9VT7ERJCqkJpUBfhx+Fmo7hs+tR4vAf7/Kliqw7Z45Ur
+         YpZZ2yK+dCOIwqXJERQEBWzyREZ1FJBUR0Ou433YJY1zwbfU8zKmZxgXIp4es3bgNjre
+         CFyOUcigzasAsNFvvdq+Nd4Y4V7jVcGLghXO8=
 To: <bzolnier@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 1/4] ide-atapi: remove ide-scsi remnants from ide_issue_pc
-Date: Sun,  7 Dec 2008 18:21:08 +0100
-Message-Id: <1228670471-3435-2-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 2/4] ide-atapi: remove ide-scsi remnants from ide_transfer_pc()
+Date: Sun,  7 Dec 2008 18:21:09 +0100
+Message-Id: <1228670471-3435-3-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1228670471-3435-1-git-send-email-petkovbb@gmail.com>
 References: <1228670471-3435-1-git-send-email-petkovbb@gmail.com>
@@ -32,47 +32,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-atapi.c |   12 +-----------
- 1 files changed, 1 insertions(+), 11 deletions(-)
+ drivers/ide/ide-atapi.c |   14 ++++----------
+ 1 files changed, 4 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index c110329..ff6b567 100644
+index ff6b567..f5bf405 100644
 --- a/drivers/ide/ide-atapi.c
 +++ b/drivers/ide/ide-atapi.c
-@@ -602,7 +602,6 @@ ide_startstop_t ide_issue_pc(ide_drive_t *drive, unsigned int timeout)
- 	ide_expiry_t *expiry = NULL;
- 	u32 tf_flags;
- 	u16 bcount;
--	u8 scsi = !!(drive->dev_flags & IDE_DFLAG_SCSI);
+@@ -550,8 +550,7 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
+ 	}
  
- 	/* We haven't transferred any data yet */
- 	pc->xferred = 0;
-@@ -612,10 +611,6 @@ ide_startstop_t ide_issue_pc(ide_drive_t *drive, unsigned int timeout)
- 		tf_flags = IDE_TFLAG_OUT_NSECT | IDE_TFLAG_OUT_LBAL;
- 		bcount = ide_cd_get_xferlen(hwif->hwgroup->rq);
- 		expiry = ide_cd_expiry;
--	} else if (scsi) {
--		tf_flags = 0;
--		bcount = min(pc->req_xfer, 63 * 1024);
--		expiry = ide_scsi_expiry;
+ 	ireason = ide_read_ireason(drive);
+-	if (drive->media == ide_tape &&
+-	    (drive->dev_flags & IDE_DFLAG_SCSI) == 0)
++	if (drive->media == ide_tape)
+ 		ireason = ide_wait_ireason(drive, ireason);
+ 
+ 	if ((ireason & ATAPI_COD) == 0 || (ireason & ATAPI_IO)) {
+@@ -569,14 +568,9 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
+ 		timeout = drive->pc_delay;
+ 		expiry = &ide_delayed_transfer_pc;
  	} else {
- 		tf_flags = IDE_TFLAG_OUT_DEVICE;
- 		bcount = ((drive->media == ide_tape) ?
-@@ -630,13 +625,8 @@ ide_startstop_t ide_issue_pc(ide_drive_t *drive, unsigned int timeout)
+-		if (drive->dev_flags & IDE_DFLAG_SCSI) {
+-			timeout = ide_scsi_get_timeout(pc);
+-			expiry = ide_scsi_expiry;
+-		} else {
+-			timeout = (drive->media == ide_floppy) ? WAIT_FLOPPY_CMD
+-							       : WAIT_TAPE_CMD;
+-			expiry = NULL;
+-		}
++		timeout = (drive->media == ide_floppy) ? WAIT_FLOPPY_CMD
++						       : WAIT_TAPE_CMD;
++		expiry = NULL;
+ 	}
  
- 	if (((pc->flags & PC_FLAG_DMA_OK) &&
- 		(drive->dev_flags & IDE_DFLAG_USING_DMA)) ||
--	    drive->dma) {
--		if (scsi)
--			hwif->sg_mapped = 1;
-+	    drive->dma)
- 		drive->dma = !hwif->dma_ops->dma_setup(drive);
--		if (scsi)
--			hwif->sg_mapped = 0;
--	}
- 
- 	if (!drive->dma)
- 		pc->flags &= ~PC_FLAG_DMA_OK;
+ 	/* Set the interrupt routine */
 -- 
 1.6.0.4
 
