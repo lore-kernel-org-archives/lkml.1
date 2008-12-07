@@ -1,46 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbYLGR3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbYLGR3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754915AbYLGR3Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 12:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbYLGR3I
+	id S1755606AbYLGR3p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 12:29:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbYLGR3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 12:29:08 -0500
-Received: from tservice.ru ([195.178.208.66]:52876 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754802AbYLGR3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 12:29:06 -0500
-Date: Sun, 7 Dec 2008 20:29:05 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Runaway loop with the current git.
-Message-ID: <20081207172904.GA1687@ioremap.net>
-References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk> <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au> <20081207155507.GA15355@gondor.apana.org.au> <ac3eb2510812070803i150d91e7led58128796e8045e@mail.gmail.com> <20081207160921.693f637a@lxorguk.ukuu.org.uk> <ac3eb2510812070821w53ffccfbn73ac40d6a1380553@mail.gmail.com> <20081207165740.2c4bbb0d@lxorguk.ukuu.org.uk> <20081207170349.GA472@ioremap.net> <20081207172447.3ff2d58f@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081207172447.3ff2d58f@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 7 Dec 2008 12:29:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34336 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752656AbYLGR3c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 12:29:32 -0500
+Date: Sun, 7 Dec 2008 09:28:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mingming Cao <cmm@us.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] percpu_counter: Fix __percpu_counter_sum()
+Message-Id: <20081207092854.f6bcbfae.akpm@linux-foundation.org>
+In-Reply-To: <493BCF60.1080409@cosmosbay.com>
+References: <4936D287.6090206@cosmosbay.com>
+	<4936EB04.8000609@cosmosbay.com>
+	<20081206202233.3b74febc.akpm@linux-foundation.org>
+	<493BCF60.1080409@cosmosbay.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 07, 2008 at 05:24:47PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > Heh, init is not allowed to write something to the console or any other
-> > tty?
+On Sun, 07 Dec 2008 14:28:00 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
+
+> Andrew Morton a __crit :
+> > On Wed, 03 Dec 2008 21:24:36 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
+> > 
+> >> Eric Dumazet a __crit :
+> >>
+> >> 1) __percpu_counter_sum() is buggy, it should not write
+> >> on per_cpu_ptr(fbc->counters, cpu), or another cpu
+> >> could get its changes lost.
+> >>
+> >> __percpu_counter_sum should be read only (const struct percpu_counter *fbc),
+> >> and no locking needed.
+> > 
+> > No, we can't do this - it will break ext4.
+> > 
+> > Take a closer look at 1f7c14c62ce63805f9574664a6c6de3633d4a354 and at
+> > e8ced39d5e8911c662d4d69a342b9d053eaaac4e.
+> > 
+> > I suggest that what we do is to revert both those changes.  We can
+> > worry about the possibly-unneeded spin_lock later, in a separate patch.
+> > 
+> > It should have been a separate patch anyway.  It's conceptually
+> > unrelated and is not a bugfix, but it was mixed in with a bugfix.
+> > 
+> > Mingming, this needs urgent consideration, please.  Note that I had to
+> > make additional changes to ext4 due to the subsequent introduction of
+> > the dirty_blocks counter.
+> > 
+> > 
+> > Please read the below changelogs carefully and check that I have got my
+> > head around this correctly - I may not have done.
+> > 
 > 
-> init is not run as the helper of a modprobe.
+> 
+> Hum... e8ced39d5e8911c662d4d69a342b9d053eaaac4e is probably following
+> the wrong path, but I see the intent. Even in the 'nr_files' case, it could
+> help to reduce excessive calls to percpu_counter_sum()
+> 
 
-I hope it is not another limitation for the early userspace? :)
-I worked with systems where init made everything. Not showing that as an
-example of particulary good design, but still there may be situations
-when userspace code does something, which kernel is not ready for. And
-it is a kernel problem that it is not ready for some usespace behaviour.
+We should fix this in 2.6.28 - right now percpu_counter_sum() is subtly
+corrupting the counter's value.
 
-Btw, modprobe can not print error message to the console, that's the
-rule ;)
+I sent two revert patches which I hope to merge into 2.6.28.  Could you
+guys please read/review/maybe-test them?
 
--- 
-	Evgeniy Polyakov
+They will make ext4 as slow as it was in 2.6.26, but presumably that's
+not a catastrophe.
+
+> What we can do is to use two s64 counters (only in SMP):
+
+We can do lots of things in 2.6.29.  Including just making ->counters
+an array of atomic_t.
+
