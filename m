@@ -1,92 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbYLGX6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755420AbYLHACv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755543AbYLGX6d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 18:58:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbYLGX6Y
+	id S1755420AbYLHACv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 19:02:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbYLHACn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 18:58:24 -0500
-Received: from ozlabs.org ([203.10.76.45]:37633 "EHLO ozlabs.org"
+	Sun, 7 Dec 2008 19:02:43 -0500
+Received: from mail.fuw.edu.pl ([193.0.80.14]:57994 "EHLO mail.fuw.edu.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752696AbYLGX6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 18:58:23 -0500
-Subject: Re: [PATCH linux-next] powerpc/powermac: Add missing of_node_put
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Paul Mackerras <paulus@samba.org>, Nicolas Palix <npalix@diku.dk>,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Julia Lawall <julia@diku.dk>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20081207164333.78b69d16.sfr@canb.auug.org.au>
-References: <200812021445.18670.npalix@diku.dk>
-	 <20081206163449.60757c4a.akpm@linux-foundation.org>
-	 <18747.13668.304923.709761@cargo.ozlabs.ibm.com>
-	 <20081207164333.78b69d16.sfr@canb.auug.org.au>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-sShMn4szOhljCE+rqAJ6"
-Date: Mon, 08 Dec 2008 10:58:18 +1100
-Message-Id: <1228694298.21407.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	id S1750919AbYLHACn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 19:02:43 -0500
+X-Greylist: delayed 1405 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Dec 2008 19:02:42 EST
+From: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
+Organization: FUW
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH] nohz: add missing handling of clocksource watchdog
+Date: Mon, 8 Dec 2008 00:36:59 +0100
+User-Agent: KMail/1.9.9
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Lars Winterfeld <lars.winterfeld@tu-ilmenau.de>,
+       linux-kernel@vger.kernel.org
+References: <200812080015.22793.bzolnier@gmail.com>
+In-Reply-To: <200812080015.22793.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812080036.59506.Rafal.Wysocki@fuw.edu.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday, 8 of December 2008, Bartlomiej Zolnierkiewicz wrote:
+> 
+> Fixes "Clocksource tsc unstable (delta = -974982308 ns)" problem.
 
---=-sShMn4szOhljCE+rqAJ6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Where can I find the description of the problem?
 
-On Sun, 2008-12-07 at 16:43 +1100, Stephen Rothwell wrote:
-> Hi Paul,
->=20
-> On Sun, 7 Dec 2008 13:31:00 +1100 Paul Mackerras <paulus@samba.org> wrote=
-:
-> >
-> > I'm really in two minds about applying any of the of_node_put patches
-> > that only affect powermacs.  The reference counts only matter on
-> > platforms where we update the OF device tree at runtime, which is
-> > currently only IBM pSeries machines.  Since we don't have any hotplug
-> > on powermacs, and never will have, the OF device tree is completely
-> > static and we don't actually need refcounts on the nodes at all, so
-> > who cares if they're a bit higher than they might be?
-> >=20
-> > In particular, the VIA whose node we're looking for here is built-in
-> > on the motherboard, and there can never be more than one, and it can
-> > never be removed.
->=20
-> I my mind it is about consistent use of the API and good examples for
-> people to copy.  Also, in about a year you will be presented with the
-> same set of patches when a new pair of eyes looks at the same code and
-> notices the discrepancy ...
+Rafael
 
-what-he-said++
+> [ IDE was unlucky to be initialized at the same time that
+>   clocksource watchdog triggers and was blamed for the issue. ]
+> 
+> Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> Cc: Lars Winterfeld <lars.winterfeld@tu-ilmenau.de>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+>  kernel/time/tick-sched.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> Index: b/kernel/time/tick-sched.c
+> ===================================================================
+> --- a/kernel/time/tick-sched.c
+> +++ b/kernel/time/tick-sched.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/sched.h>
+>  #include <linux/tick.h>
+>  #include <linux/module.h>
+> +#include <linux/clocksource.h>
+>  
+>  #include <asm/irq_regs.h>
+>  
+> @@ -153,6 +154,7 @@ void tick_nohz_update_jiffies(void)
+>  	local_irq_restore(flags);
+>  
+>  	touch_softlockup_watchdog();
+> +	clocksource_touch_watchdog();
+>  }
+>  
+>  static void tick_nohz_stop_idle(int cpu)
+> 
 
-Allowing the ref counting to be broken in one part of the code is just
-asking for it to be broken everywhere.
 
-cheers
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-sShMn4szOhljCE+rqAJ6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkk8YxoACgkQdSjSd0sB4dLZNQCgyF3wpfe6bGtBVSwpMA+aeuHZ
-fPYAoIcOJVfxjbYD+Y2o+zFlXfymVLTz
-=g47Z
------END PGP SIGNATURE-----
-
---=-sShMn4szOhljCE+rqAJ6--
-
+-- 
+Rafael J. Wysocki, Ph.D.
+Institute of Theoretical Physics
+Faculty of Physics of Warsaw University
+ul. Hoza 69, 00-681 Warsaw
+[tel: +48 22 55 32 263]
+[mob: +48 60 50 53 693]
+----------------------------
+One should not increase, beyond what is necessary,
+the number of entities required to explain anything.
+			-- William of Ockham
