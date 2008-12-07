@@ -1,50 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbYLGS5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbYLGTC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbYLGS5a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 13:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbYLGS5U
+	id S1755319AbYLGTC0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 14:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbYLGTCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 13:57:20 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:7310 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752969AbYLGS5T (ORCPT
+	Sun, 7 Dec 2008 14:02:17 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:18325 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753698AbYLGTCP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 13:57:19 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=YgUFFZ79AAAA:8 a=-kRHijCJ5Q3qL_3XY7cA:9 a=q0g5g2MXn4dlLtandWxHQR6JrXYA:4 a=eIAGP7Fk3jIA:10 a=21q54A0nAXQA:10
-Message-ID: <493C1C8F.5070003@shaw.ca>
-Date: Sun, 07 Dec 2008 12:57:19 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Sun, 7 Dec 2008 14:02:15 -0500
+Message-ID: <ac3eb2510812071102s40ed4704we2221b2e53e4c099@mail.gmail.com>
+Date: Sun, 7 Dec 2008 20:02:13 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Runaway loop with the current git.
+Cc: "Evgeniy Polyakov" <zbr@ioremap.net>,
+       "Herbert Xu" <herbert@gondor.apana.org.au>,
+       linux-kernel@vger.kernel.org,
+       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20081207183112.3ef31caa@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] ohci1394: don't leave interrupts enabled during suspend/resume
-References: <200812061316.38460.elendil@planet.nl> <200812061536.47894.elendil@planet.nl> <493AE8B3.7090000@shaw.ca> <tkrat.fd592eed61e41b8f@s5r6.in-berlin.de> <493B42D1.7090600@shaw.ca> <493B953F.3070504@s5r6.in-berlin.de>
-In-Reply-To: <493B953F.3070504@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au>
+	 <20081207172855.55fee78f@lxorguk.ukuu.org.uk>
+	 <20081207174435.GB1687@ioremap.net>
+	 <20081207175245.2d074299@lxorguk.ukuu.org.uk>
+	 <20081207175438.GA3181@ioremap.net>
+	 <20081207180302.339bf58d@lxorguk.ukuu.org.uk>
+	 <ac3eb2510812071013o5d9f3319i44fb7f54b17025ca@mail.gmail.com>
+	 <20081207181559.63549cfc@lxorguk.ukuu.org.uk>
+	 <ac3eb2510812071021g44207efftb1e74f21578433be@mail.gmail.com>
+	 <20081207183112.3ef31caa@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Robert Hancock wrote:
->> Stefan Richter wrote:
->>>     reg_write(ohci, OHCI1394_IntMaskClear, 0xffffffff);
->>>
->>> in ohci1394's .suspend() switches interrupts off.
->> Presumably it should.. but the fact remains that if free_irq helps
->> anything, then the device must be generating interrupts for some reason,
-> 
-> Or another device:
-> http://www.gossamer-threads.com/lists/linux/kernel/896053
-> 
-> Questions for Frans, quoting tglx:
-> Do you have CONFIG_NET_POLL_CONTROLLER enabled in your .config?  If yes,
-> can you please disable it and check whether the problem persists?
+On Sun, Dec 7, 2008 at 19:31, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> > The loop is detected and terminated.
+>>
+>> No. Please back up what you are trying to talk about.
+>
+> Let me introduce you to.. drum roll.. the source code. Its a useful
+> resource, why don't you use it for once.
+>
+>
+>        max_modprobes = min(max_threads/2, MAX_KMOD_CONCURRENT);
+>        atomic_inc(&kmod_concurrent);
+>        if (atomic_read(&kmod_concurrent) > max_modprobes) {
+>                /* We may be blaming an innocent here, but unlikely */
+>                if (kmod_loop_msg++ < 5)
+>                        printk(KERN_ERR
+>                               "request_module: runaway loop modprobe
+> %s\n", module_name);
+>                atomic_dec(&kmod_concurrent);
+>                return -ENOMEM;
+>        }
+>
+> Happy now. Print it out, share it with friends, find someone who can read
+> C if you are stuck.
 
-Hmm, that case sounds like disable_irq on an MSI device redirecting the 
-interrupts to the legacy INTx interrupt instead of actually disabling 
-them? If this is what's happening here, then that's the bug..
+It does not work, that's all. Reproduce the bug and look at it for yourself.
+
+It's still a bug, regardless of all the childish stuff you wrap around it.
+
+>> The boxes of the reporters hang! Read the bug! Please!
+>
+> They would still hang. As I repeatedly said for the benefit of two people
+> who don't seem to be able to read source code, the loop is detected and
+> terminated. So it already fails the open when it sees it has gotten five
+> layers deep.
+>
+>> There is no cheap way out of the problem, it's a kernel bug, and we
+>> will fix it - you may just delay it with your zero arguments.
+>
+> Oh I see. Allow me to explain your position in the words of some small
+> children I know
+>
+>        "ME!! ME!! ME!! ME!! ME!!"
+>
+> I don't care about your obscure corner-case non bug that in fact was a
+> crypto bug combined with a modprobe bug and where the crypto bug is
+> now fixed. I do care about not breaking existing users systems. The fact
+> we do this is why Linux doesn't suck.
+
+It's not obscure, it's obviously broken. And it currently sucks.
+
+I have no idea why are you repeatedly, with completely wrong arguments
+trying, to explain "hotplug" stuff to me. I maintain it by the way,
+and I didn't see you involved here in the last years, so I guess you
+miss the background to understand the problem.
+
+Kay
