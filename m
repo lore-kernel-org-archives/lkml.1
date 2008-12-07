@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751667AbYLGRSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbYLGRVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751667AbYLGRSB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 12:18:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbYLGRRt
+	id S1754645AbYLGRVd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 12:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYLGRVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 12:17:49 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:63190 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751265AbYLGRRs (ORCPT
+	Sun, 7 Dec 2008 12:21:18 -0500
+Received: from fk-out-0910.google.com ([209.85.128.186]:23256 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbYLGRVR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 12:17:48 -0500
-Message-ID: <ac3eb2510812070917g28874a3bm757d89856ee1fb28@mail.gmail.com>
-Date: Sun, 7 Dec 2008 18:17:46 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Runaway loop with the current git.
-Cc: "Evgeniy Polyakov" <zbr@ioremap.net>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       linux-kernel@vger.kernel.org,
-       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20081207170108.39dfd93f@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk>
-	 <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au>
-	 <20081207155507.GA15355@gondor.apana.org.au>
-	 <ac3eb2510812070803i150d91e7led58128796e8045e@mail.gmail.com>
-	 <20081207160921.693f637a@lxorguk.ukuu.org.uk>
-	 <20081207163151.GA31838@ioremap.net>
-	 <20081207170108.39dfd93f@lxorguk.ukuu.org.uk>
+	Sun, 7 Dec 2008 12:21:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=to:cc:subject:date:message-id:x-mailer:from;
+        b=vxAO8QS/uhLJjAPrFp2wcPrzZbr3cWZA0z/9tg3sEf9gLOf9X2BRrwztYkBQvGk0mV
+         UHUvAyvIJ01GxZpgjijOAo95O1lPkP+d6auv7kiu2FMSWUVQ+Hl0bWboW7l5sIfcBZ7h
+         4ESZSMb8yrQHUF2gQf5wV9aOA3PpuOEHn892Y=
+To: <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>
+Subject: [PATCH 0/4] ide: remove ide-scsi remnants
+Date: Sun,  7 Dec 2008 18:21:07 +0100
+Message-Id: <1228670471-3435-1-git-send-email-petkovbb@gmail.com>
+X-Mailer: git-send-email 1.6.0.4
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 7, 2008 at 18:01, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> Wrong. First at least because tty/console stuff is built in.
->
-> Are you two people or just two names and email addresses for
-> the same ?
+Hi Bart,
 
-Damn, now you found that out.
+here are the patches removing bits and pieces belonging to the late ide-scsi :).
 
-I suggest you get a few more mail addresses too, to back your
-non-sensical claims, and try to establish silly userspace rules to
-work around an obvious kernel bug. :)
-
-Good luck, looking forward to your creativity,
-Kay
+ drivers/ide/ide-atapi.c  |   97 +++++++++++++++++++++++++++++++++++++---------
+ drivers/ide/ide-io.c     |    3 +
+ drivers/ide/ide-ioctls.c |    3 +-
+ drivers/ide/ide-probe.c  |    2 +
+ include/linux/ide.h      |   34 ++++++++++------
+ 5 files changed, 106 insertions(+), 33 deletions(-)
