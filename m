@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbYLGSf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbYLGSgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637AbYLGSf7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 13:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbYLGSbh
+	id S1756876AbYLGSgt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 13:36:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbYLGSgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 13:31:37 -0500
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:55731 "EHLO
-	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754470AbYLGSbe (ORCPT
+	Sun, 7 Dec 2008 13:36:39 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39240 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754104AbYLGSgi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 13:31:34 -0500
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH 11/13] checkpatch: struct file_operations should normally be const
-Date: Sun,  7 Dec 2008 18:30:48 +0000
-Message-Id: <1228674650-24392-12-git-send-email-apw@shadowen.org>
-X-Mailer: git-send-email 1.6.0.4.911.gc990
-In-Reply-To: <1228674650-24392-1-git-send-email-apw@shadowen.org>
-References: <1228674650-24392-1-git-send-email-apw@shadowen.org>
+	Sun, 7 Dec 2008 13:36:38 -0500
+Date: Sun, 7 Dec 2008 18:36:47 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+Subject: Re: LibATA error
+Message-ID: <20081207183647.3ba03750@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081207153757.GA5761@ics.muni.cz>
+References: <20081206185252.GA4323@ics.muni.cz>
+	<493AE09F.5010108@shaw.ca>
+	<20081207153757.GA5761@ics.muni.cz>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andy Whitcroft <apw@canonical.com>
+> > It could be.. it means the drive sent the controller a SATA FIS (frame  
+> > information structure) it didn't recognize.
+> 
+> hm, if I disable NCQ, I do not get these errors. Maybe OCZ SSD disks should be
+> blacklisted for NCQ?
 
-In the general use case struct file_operations should be a const object.
-Check for and warn where it is not.  As suggested by Steven and Ingo.
+They shouldn't be claiming they can do NCQ if so. Can you dump out the
+identify data in full (with hdparm) and if possible (or if someone else
+with one can comment..) find out whether the same occurs with different
+controller types.
 
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andy Whitcroft <apw@canonical.com>
----
- scripts/checkpatch.pl |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index c39ce0b..94371f6 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -2509,6 +2509,11 @@ sub process {
- 		if ($line =~ /^.\s*__initcall\s*\(/) {
- 			WARN("please use device_initcall() instead of __initcall()\n" . $herecurr);
- 		}
-+# check for struct file_operations, ensure they are const.
-+		if ($line =~ /\bstruct\s+file_operations\b/ &&
-+		    $line !~ /\bconst\b/) {
-+			WARN("struct file_operations should normally be const\n" . $herecurr);
-+		}
- 
- # use of NR_CPUS is usually wrong
- # ignore definitions of NR_CPUS and usage to define arrays as likely right
--- 
-1.6.0.4.911.gc990
-
+Alan
