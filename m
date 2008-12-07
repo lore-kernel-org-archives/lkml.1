@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYLGLWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYLGLXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221AbYLGLWj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 06:22:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbYLGLWb
+	id S1754556AbYLGLXm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 06:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbYLGLXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 06:22:31 -0500
-Received: from mo-p00-ob.rzone.de ([81.169.146.160]:16545 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753455AbYLGLWb (ORCPT
+	Sun, 7 Dec 2008 06:23:33 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55930 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753481AbYLGLXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 06:22:31 -0500
-X-RZG-CLASS-ID: mo00
-X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW226lDNJVyuUOJDI/MLAx
-Message-ID: <493BB1EB.5000004@hartkopp.net>
-Date: Sun, 07 Dec 2008 12:22:19 +0100
-From: Oliver Hartkopp <oliver@hartkopp.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC PATCH] hrtimer: removing all ur callback modes
-References: <1227613431.4259.1537.camel@twins> <1228385830.5092.43.camel@twins>
-In-Reply-To: <1228385830.5092.43.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 7 Dec 2008 06:23:33 -0500
+Date: Sun, 7 Dec 2008 11:23:35 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Cc: "Evgeniy Polyakov" <zbr@ioremap.net>, linux-kernel@vger.kernel.org
+Subject: Re: Runaway loop with the current git.
+Message-ID: <20081207112335.0afd5192@lxorguk.ukuu.org.uk>
+In-Reply-To: <ac3eb2510812061956g6bb422d9r7c8032fb68552b4c@mail.gmail.com>
+References: <20081205193432.290a6f1a@lxorguk.ukuu.org.uk>
+	<ac3eb2510812051317q79ca88e9ya876ffb94162eeca@mail.gmail.com>
+	<20081205212428.GB8075@ioremap.net>
+	<ac3eb2510812051810x8cf4256lf9fd31b15b9e0552@mail.gmail.com>
+	<20081206160927.GA498@ioremap.net>
+	<ac3eb2510812060816h4401c78bj6d656d0d5721024@mail.gmail.com>
+	<20081206165634.GA2516@ioremap.net>
+	<ac3eb2510812061011u7a7f0fbdtc46b95a9c642f9c7@mail.gmail.com>
+	<1228591926.3808.6.camel@nga>
+	<20081206202620.GA9470@ioremap.net>
+	<ac3eb2510812061956g6bb422d9r7c8032fb68552b4c@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-11-25 at 12:43 +0100, Peter Zijlstra wrote:
->   
->> Hi,
->>
->> This is an attempt at removing some of the hrtimer complexity by
->> reducing the number of callback modes to 1.
->>
->> This means that all hrtimer callback functions will be ran from HARD-irq
->> context.
->>
->> I went through all the 30 odd hrtimer callback functions in the kernel
->> and saw only one that I'm not quite sure of, which is the one in
->> net/can/bcm.c - hence I'm CC-ing the folks responsible for that code.
->>     
+> This modprobe process does try to log an error, accesses /dev/console,
+> which is not initialized in the kernel at that time, and the kernel
+> module loader tries the load a module to support dev_t 5:1, which
+> again runs modprobe, and ...
 
-Thanks Peter.
+So we have a buggy modprobe... 
 
-Indeed i assumed my hrtimer callbacks to run in soft-irq. I tried the 
-can-bcm protocol with Ingos current linux-2.6-sched-devel.git including 
-your patches and i did not see any issues so far. And i do not expect 
-any (recursion) problems with hrtimer_forward() in my code either.
+> 
+> Setting CONFIG_CRYPTO_MANAGER=y makes it disapper. The patch I sent
+> seems to fix it.
+> 
+> The bug is handled here: http://bugzilla.kernel.org/show_bug.cgi?id=12153
 
-But i'm not that familiar with the timer context's stuff, that i would 
-like guaranty that the functions i use in bcm_send_user() and in 
-bcm_can_tx() are always safe to be used in hard-irq context.
+We cannot go re-ordering random chunks of kernel init with unpredictable
+effects including possibly making other stuff less reliable (because you
+set up the console device before the console driver is loaded on a PCI
+bus device). And we certainly can't do it this close to a release.
 
-It would be nice, if you could give me some support by double checking 
-the correctness of the hard-irq context in the given functions.
-
-Best regards,
-Oliver
-
+Alan
