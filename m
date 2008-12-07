@@ -1,98 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYLGF5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbYLGF6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbYLGF5p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 00:57:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbYLGF5T
+	id S1754469AbYLGF6A (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 00:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYLGF52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 00:57:19 -0500
-Received: from kroah.org ([198.145.64.141]:38450 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751292AbYLGF5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 00:57:17 -0500
-Date: Sat, 6 Dec 2008 21:44:57 -0800
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: adobriyan@gmail.com, mingo@elte.hu, viro@ZenIV.linux.org.uk,
-       vegard.nossum@gmail.com, ebiederm@xmission.com, Yoshiya.Koyama@hp.com,
-       rjw@sisk.pl, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
-       kay.sievers@vrfy.org, linux-fsdevel@vger.kernel.org
-Subject: Re: v2.6.28-rc1: readlink /proc/*/exe returns uninitialized data
-	to userspace
-Message-ID: <20081207054457.GC20415@kroah.com>
-References: <m163nggvhq.fsf@frodo.ebiederm.org> <19f34abd0810261408w61b1e2dbvb9a0e16ce5a10022@mail.gmail.com> <19f34abd0811040139t8334502i7a5d8501c5fe95ac@mail.gmail.com> <20081104151234.GH28946@ZenIV.linux.org.uk> <20081106100410.GN4890@elte.hu> <20081107190544.GA1551@kroah.com> <20081107231205.GA2528@x200.localdomain> <20081111141412.b52469d2.akpm@linux-foundation.org> <20081203171854.GC17014@kroah.com> <20081203122048.b46f9fda.akpm@linux-foundation.org>
+	Sun, 7 Dec 2008 00:57:28 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:46845 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752656AbYLGF5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 00:57:24 -0500
+Date: Sat, 6 Dec 2008 21:48:40 -0800
+From: Greg KH <gregkh@suse.de>
+To: Jason Baron <jbaron@redhat.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rostedt@goodmis.org
+Subject: Re: [rfc] [patch] hook tracer to dynamic debug
+Message-ID: <20081207054840.GA20541@suse.de>
+References: <20081205193928.GA3134@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081203122048.b46f9fda.akpm@linux-foundation.org>
+In-Reply-To: <20081205193928.GA3134@redhat.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 12:20:48PM -0800, Andrew Morton wrote:
-> On Wed, 3 Dec 2008 09:18:54 -0800
-> Greg KH <greg@kroah.com> wrote:
+On Fri, Dec 05, 2008 at 02:39:28PM -0500, Jason Baron wrote:
+> hi,
 > 
-> > On Tue, Nov 11, 2008 at 02:14:12PM -0800, Andrew Morton wrote:
-> > > On Sat, 8 Nov 2008 02:12:05 +0300
-> > > Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > > 
-> > > > On Fri, Nov 07, 2008 at 11:05:44AM -0800, Greg KH wrote:
-> > > > > On Thu, Nov 06, 2008 at 11:04:10AM +0100, Ingo Molnar wrote:
-> > > > > > 
-> > > > > > * Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> > > > > > 
-> > > > > > > On Tue, Nov 04, 2008 at 10:39:19AM +0100, Vegard Nossum wrote:
-> > > > > > > > On Sun, Oct 26, 2008 at 10:08 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> > > > > > > > # uname -a
-> > > > > > > > Linux localhost.localdomain 2.6.25.11-97.fc9.i686 #1 SMP Mon Jul 21
-> > > > > > > > 01:31:09 EDT 2008 i686 i686 i386 GNU/Linux
-> > > > > > > > # prelink -mRf /sbin/udevd
-> > > > > > > > # ./a.out /proc/564/exe
-> > > > > > > > warning: /proc/564/exe: got return value 38, expected 11
-> > > > > > > > 2f7362696e2f7564657664005f47387942426e5952446e566f306868202864656c6574656429
-> > > > > > > > /sbin/udevd _G8yBBnYRDnVo0hh (deleted)
-> > > > > > > > 
-> > > > > > > > Yoshiya Koyama reports that the problem exists on RHEL 2.6.9-42.ELsmp too.
-> > > > > > > > 
-> > > > > > > > I don't think it's exactly the same problem as originally reported,
-> > > > > > > > because I definitely wasn't using prelinking (the prelink binary
-> > > > > > > > wasn't even installed on the machine until today). But finding the
-> > > > > > > > root cause of this may solve both problems.
-> > > > > > > 
-> > > > > > > switch_names() buggered in case of short names on both sides.  That should
-> > > > > > > help:
-> > > > > > > 
-> > > > > > > >From 2acda856910b774717e0290bbf948c7dee0f2e1a Mon Sep 17 00:00:00 2001
-> > > > > > > From: Al Viro <viro@zeniv.linux.org.uk>
-> > > > > > > Date: Mon, 3 Nov 2008 15:03:50 -0500
-> > > > > > > Subject: [PATCH] fix switch_names() breakage in short-to-short case
-> > > > > > > 
-> > > > > > > We want ->name.len to match the resulting name on *both*
-> > > > > > > source and target
-> > > > > > > 
-> > > > > > > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> > > > > > 
-> > > > > > please credit kmemcheck in the commit message and use an appropriate 
-> > > > > > Reported-by line as well. Thanks,
-> > > > > 
-> > > > > Did this fix ever get merged into Linus's tree?
-> > > > 
-> > > > So far no.
-> > > 
-> > > I queued the below for 2.6.28 inclusion and tagged for -stable
-> > > backporting.  
-> > 
-> > 
-> > What ever happened to this patch?  Did it not make it into Linus's tree
-> > somehow?
-> > 
-> 
-> Stuck in -mm.  Sent to Al on Dec 1, ignored.  As usual.
-> 
-> Al, what's going on?  Are you thinking that I'm planning on merging
-> these myself?  Because if you're on the To: then my intention is that the
-> patch be processed by yourself.
-> 
+> Currently, the dynamic debug framework uses 'printk' for output. Here,
+> i've hooked the backend of the dynamic debug framework to the tracing 
+> framework. This allows the dynamic debug output to be seaprated from the
+> system log, and allows for higher performance.
 
-Ping?
+Is this really an issue most of the time?
+
+I know logs can get full, but this seems like a bit of an overkill :)
+
+> I've implemented it as a compile time option, but a user might want to
+> be able to toggle b/w 'printk' and the tracer at run-time...other
+> ideas? Patch is against the -tip tree...
+
+It would have to be a run-time option if you want any distro to ever be
+able to enable this in their kernels.
+
+thanks,
+
+greg k-h
