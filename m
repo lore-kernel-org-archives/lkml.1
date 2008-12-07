@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbYLGP4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbYLGQCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755226AbYLGP4S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 10:56:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYLGPz7
+	id S1754727AbYLGQCz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 11:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbYLGQCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 10:55:59 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:57612 "EHLO mx2.redhat.com"
+	Sun, 7 Dec 2008 11:02:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48572 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754139AbYLGPz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 10:55:58 -0500
-Message-ID: <493BF206.4070007@redhat.com>
-Date: Sun, 07 Dec 2008 17:55:50 +0200
+	id S1753382AbYLGQCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 11:02:44 -0500
+Message-ID: <493BF144.9080106@redhat.com>
+Date: Sun, 07 Dec 2008 17:52:36 +0200
 From: Avi Kivity <avi@redhat.com>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
 To: Rusty Russell <rusty@rustcorp.com.au>
 CC: kvm-devel <kvm@vger.kernel.org>, linux-kernel@vger.kernel.org,
        Mike Travis <travis@sgi.com>, Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH 2/2] kvm: use cpumask_var_t for cpus_hardware_enabled
-References: <200812072125.45757.rusty@rustcorp.com.au>
-In-Reply-To: <200812072125.45757.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: [PATCH 1/2] kvm: use modern cpumask primitives, no cpumask_t
+ on stack
+References: <200812072125.14416.rusty@rustcorp.com.au>
+In-Reply-To: <200812072125.14416.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Rusty Russell wrote:
-> This changes cpus_hardware_enabled from a cpumask_t to a cpumask_var_t:
-> equivalent for CONFIG_CPUMASKS_OFFSTACK=n, otherwise dynamically allocated.
+> We're getting rid on on-stack cpumasks for large NR_CPUS.
 >
+> 1) Use cpumask_var_t and alloc_cpumask_var (a noop normally).  Fallback
+>    code is inefficient but never happens in practice.
+> 2) smp_call_function_mask -> smp_call_function_many
+> 3) cpus_clear, cpus_empty, cpu_set -> cpumask_clear, cpumask_empty,
+>    cpumask_set_cpu.
+>
+> --- linux-2.6.orig/virt/kvm/kvm_main.c
+> +++ linux-2.6/virt/kvm/kvm_main.c
+> @@ -358,11 +358,23 @@ static void ack_flush(void *_completed)
+>  void kvm_flush_remote_tlbs(struct kvm *kvm)
+>  {
+>  	int i, cpu, me;
+> -	cpumask_t cpus;
+> +	cpumask_var_t cpus;
+>  	struct kvm_vcpu *vcpu;
 >  
-> -static cpumask_t cpus_hardware_enabled;
-> +static cpumask_var_t cpus_hardware_enabled
+>  	me = get_cpu();
+> -	cpus_clear(cpus);
+> +	if (!alloc_cpumask_var(&cpus, GFP_ATOMIC)) {
+> +		/* Slow path on failure.  Call everyone. */
+> +		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+> +			vcpu = kvm->vcpus[i];
+> +			if (vcpu)
+> +				set_bit(KVM_REQ_TLB_FLUSH, &vcpu->requests);
+> +		}
+> +		++kvm->stat.remote_tlb_flush;
+> +		smp_call_function_many(cpu_online_mask, ack_flush, NULL, 1);
+> +		put_cpu();
+> +		return;
+> +	}
+> +
+>   
 
-This isn't on stack, so it isn't buying us anything.
+Wow, code duplication from Rusty. Things must be bad.
 
-Is the plan to drop cpumask_t?  If so, we're penalizing non-stack users 
-by forcing them to go through another pointer (and cacheline).
-
-
+Since we're in a get_cpu() here, how about a per_cpu static cpumask 
+instead? I don't mind the inefficient fallback, just the duplication.
 
 -- 
 error compiling committee.c: too many arguments to function
