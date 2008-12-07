@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbYLGTvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbYLGTz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753174AbYLGTvk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 14:51:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbYLGTva
+	id S1753355AbYLGTz7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 14:55:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbYLGTzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 14:51:30 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:48081 "EHLO minas.ics.muni.cz"
+	Sun, 7 Dec 2008 14:55:50 -0500
+Received: from cmpxchg.org ([85.214.51.133]:53373 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbYLGTv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 14:51:29 -0500
-Date: Sun, 7 Dec 2008 20:51:38 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: LibATA error
-Message-ID: <20081207195138.GB5761@ics.muni.cz>
-References: <20081206185252.GA4323@ics.muni.cz> <493AE09F.5010108@shaw.ca> <20081207153757.GA5761@ics.muni.cz> <20081207183647.3ba03750@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+	id S1750826AbYLGTzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 14:55:49 -0500
+Date: Sun, 7 Dec 2008 20:55:38 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [Patch] uml: drop const qualifier for kernel_execve()
+Message-ID: <20081207195537.GA24808@cmpxchg.org>
+References: <2375c9f90812021451hfd77292yf2463ca99d07b88e@mail.gmail.com> <20081203012051.GA8953@cmpxchg.org> <2375c9f90812030432m771984edkdd0c599bbae9bb3c@mail.gmail.com> <20081203134035.GA17560@cmpxchg.org> <2375c9f90812051702m217ee049i79ce2f9cc8280fb1@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081207183647.3ba03750@lxorguk.ukuu.org.uk>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sun, 07 Dec 2008 20:51:19 +0100 (CET)
+In-Reply-To: <2375c9f90812051702m217ee049i79ce2f9cc8280fb1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 07, 2008 at 06:36:47PM +0000, Alan Cox wrote:
-> They shouldn't be claiming they can do NCQ if so. Can you dump out the
-> identify data in full (with hdparm) and if possible (or if someone else
-> with one can comment..) find out whether the same occurs with different
-> controller types.
+On Sat, Dec 06, 2008 at 01:02:16AM +0000, Américo Wang wrote:
+> On Wed, Dec 3, 2008 at 1:40 PM, Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > On Wed, Dec 03, 2008 at 12:32:02PM +0000, Américo Wang wrote:
+> >> On Wed, Dec 3, 2008 at 1:20 AM, Johannes Weiner <hannes@cmpxchg.org> wrote:
+> >> > On Tue, Dec 02, 2008 at 10:51:09PM +0000, Américo Wang wrote:
+> >> >> UML implementation of kernel_execve() should not have const qualifier,
+> >> >> because it will finally call do_execve() which doesn't have.
+> >> >
+> >> > And you made sure that do_execve() is correctly annotated?
+> >> >
+> >>
+> >> Yes, I checked that.
+> >
+> > Good.  Then please fix up do_execve() or let the warning stand out as
+> > a reminder.
+> 
+> ??
+> Confused...
+> 
+> do_execve() is OK, we don't need to fix it.
 
-Controller reports NCQ queue depth 1.
+I don't see where it writes through @filename.  So it seems the right
+fix would be to make do_execve()s parameter const (and as it seems, a
+lot more adjustments down this call graph) and not remove a correct
+const from a callsite.
 
-Did you mean this one?
-
- hdparm -i /dev/sda
-
-/dev/sda:
-
- Model=OCZ CORE_SSD                            , FwRev=02.10104,
-SerialNo=DC030849085600010   
- Config={ Fixed }
- RawCHS=16383/16/63, TrkSize=0, SectSize=0, ECCbytes=63
- BuffType=unknown, BuffSize=0kB, MaxMultSect=1, MultSect=?1?
- CurCHS=16383/16/63, CurSects=16514064, LBA=yes, LBAsects=504856576
- IORDY=on/off, tPIO={min:120,w/IORDY:120}, tDMA={min:120,rec:120}
- PIO modes:  pio0 pio1 pio2 pio3 pio4 
- DMA modes:  mdma0 mdma1 mdma2 
- UDMA modes: udma0 udma1 udma2 udma3 udma4 *udma5 
- AdvancedPM=no WriteCache=enabled
- Drive conforms to: unknown:  ATA/ATAPI-1,2,3,4,5,6,7
-
- * signifies the current active mode
-
--- 
-Luká¹ Hejtmánek
+	Hannes
