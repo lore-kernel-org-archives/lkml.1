@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbYLGF6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbYLGGCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754469AbYLGF6A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 00:58:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYLGF52
+	id S1753886AbYLGGCT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 01:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbYLGGCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 00:57:28 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:46845 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752656AbYLGF5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 00:57:24 -0500
-Date: Sat, 6 Dec 2008 21:48:40 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jason Baron <jbaron@redhat.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rostedt@goodmis.org
-Subject: Re: [rfc] [patch] hook tracer to dynamic debug
-Message-ID: <20081207054840.GA20541@suse.de>
-References: <20081205193928.GA3134@redhat.com>
+	Sun, 7 Dec 2008 01:02:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37649 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751483AbYLGGCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 01:02:09 -0500
+Date: Sat, 6 Dec 2008 22:00:59 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] [PATCH 1/3] PCI: Rework default handling of suspend
+ and resume
+In-Reply-To: <20081206152545.326c8b67@infradead.org>
+Message-ID: <alpine.LFD.2.00.0812062157590.3425@nehalem.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0812061324260.13426-100000@netrider.rowland.org> <200812062236.44111.rjw@sisk.pl> <alpine.LFD.2.00.0812061420190.3425@nehalem.linux-foundation.org> <20081206152545.326c8b67@infradead.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081205193928.GA3134@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 05, 2008 at 02:39:28PM -0500, Jason Baron wrote:
-> hi,
+
+
+On Sat, 6 Dec 2008, Arjan van de Ven wrote:
 > 
-> Currently, the dynamic debug framework uses 'printk' for output. Here,
-> i've hooked the backend of the dynamic debug framework to the tracing 
-> framework. This allows the dynamic debug output to be seaprated from the
-> system log, and allows for higher performance.
+> the problem is that the system bios can have reassigned interrupts
+> after resume, and afaik we need to re-evaluate the ACPI methods to
+> get the new mapping.
+> So we need to unregister + re-register to make that happen
 
-Is this really an issue most of the time?
+Can you give actual examples of real life situations?
 
-I know logs can get full, but this seems like a bit of an overkill :)
+Because quite frankly, it sounds less and less likely for any relevant 
+hardware. It's a non-issue for MSI, for example. And it's a non-issue for 
+any sane interrupt source I can think of.
 
-> I've implemented it as a compile time option, but a user might want to
-> be able to toggle b/w 'printk' and the tracer at run-time...other
-> ideas? Patch is against the -tip tree...
+In other words, I've heard that claim before - and I just don't believe 
+it. I've never heard a realistic explanation of why it would happen for a 
+normal PCI driver. And I still claim that it's a very odd and special case 
+if it does.
 
-It would have to be a run-time option if you want any distro to ever be
-able to enable this in their kernels.
+And btw, I'm talking suspend, not hibernate. 
 
-thanks,
-
-greg k-h
+			Linus
