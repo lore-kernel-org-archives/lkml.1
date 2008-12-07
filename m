@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYLGUUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbYLGUXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbYLGUUb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 15:20:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbYLGUUV
+	id S1754253AbYLGUXS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 15:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbYLGUXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 15:20:21 -0500
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:54362 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846AbYLGUUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 15:20:21 -0500
-Date: Sun, 7 Dec 2008 21:22:49 +0100
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: linux-next: Tree for December 3 (MFD)
-Message-ID: <20081207202248.GA3928@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <20081203183602.c06f8c39.sfr@canb.auug.org.au> <49373373.2080901@oracle.com>
+	Sun, 7 Dec 2008 15:23:07 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34538 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750846AbYLGUXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 15:23:06 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: [Bug #12020] scsi_times_out NULL pointer dereference
+Date: Sun, 7 Dec 2008 21:22:20 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bernd Schubert <bs@q-leap.de>
+References: <QFIA5HSHV8B.A.2aG.hoxNJB@chimera> <bfPM5B8Tx2B.A.Ia.hpxNJB@chimera> <1228349648.5551.98.camel@localhost.localdomain>
+In-Reply-To: <1228349648.5551.98.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49373373.2080901@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200812072122.20828.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 05:33:39PM -0800, Randy Dunlap wrote:
-> Stephen Rothwell wrote:
-> > Hi all,
+On Thursday, 4 of December 2008, James Bottomley wrote:
+> On Wed, 2008-12-03 at 22:57 +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
 > > 
-> > Changes since 20081202:
-> > 
-> > Today's tree fails the powerpc allyesconfig build.
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.27.  Please verify if it still should be listed and let me know
+> > (either way).
 > 
+> That's a hard call.  We think this might be fixed by Tejun's block timer
+> patch, but the reporter has been unable to reproduce the problem (with
+> or without the timer patch).
 > 
-> drivers/mfd/twl4030-core.c uses clk_get_rate() and clk_put(),
-> but they don't seem to exist for x86, so I'm getting build errors:
-> 
-> twl4030-core.c:(.text+0x16a797): undefined reference to `clk_get_rate'
-> twl4030-core.c:(.text+0x16a7a6): undefined reference to `clk_put'
-On my build system, I can't trigger this build error until I remove the osc =
-ERR_PTR(-EIO); line. I assume gcc is smart enough to compile the rest of the
-code out when osc is set to ERR_PTR().
-Anyway, the fix is now part of my for-next branch.
+> Perhaps list as closed for now and reopen if we get another problem
+> report with kernels containing the block timer patch?
 
-Cheers,
-Samuel.
+I closed it as unreproducible on the basis of the last Bugzilla comment.
 
- 
-> 
-> ~Randy
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Thanks,
+Rafael
