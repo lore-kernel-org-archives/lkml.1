@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbYLGQCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755140AbYLGQD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754727AbYLGQCz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 11:02:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbYLGQCp
+	id S1755140AbYLGQD3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 11:03:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbYLGQDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 11:02:45 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48572 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753382AbYLGQCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 11:02:44 -0500
-Message-ID: <493BF144.9080106@redhat.com>
-Date: Sun, 07 Dec 2008 17:52:36 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Sun, 7 Dec 2008 11:03:20 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:38888 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753523AbYLGQDT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 11:03:19 -0500
+Message-ID: <ac3eb2510812070803i150d91e7led58128796e8045e@mail.gmail.com>
+Date: Sun, 7 Dec 2008 17:03:17 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Herbert Xu" <herbert@gondor.apana.org.au>
+Subject: Re: Runaway loop with the current git.
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, zbr@ioremap.net,
+       linux-kernel@vger.kernel.org,
+       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20081207155507.GA15355@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: kvm-devel <kvm@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>, Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH 1/2] kvm: use modern cpumask primitives, no cpumask_t
- on stack
-References: <200812072125.14416.rusty@rustcorp.com.au>
-In-Reply-To: <200812072125.14416.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk>
+	 <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au>
+	 <20081207155507.GA15355@gondor.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> We're getting rid on on-stack cpumasks for large NR_CPUS.
+On Sun, Dec 7, 2008 at 16:55, Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> On Sun, Dec 07, 2008 at 10:49:27PM +0800, Herbert Xu wrote:
+>>
+>> In any case the loop itself does not involve any crypto components
+>> so I don't think making changes in the crypto layer is going to
+>> make this go away forever as anyone calling request_module early
+>> enough will get into this loop.
 >
-> 1) Use cpumask_var_t and alloc_cpumask_var (a noop normally).  Fallback
->    code is inefficient but never happens in practice.
-> 2) smp_call_function_mask -> smp_call_function_many
-> 3) cpus_clear, cpus_empty, cpu_set -> cpumask_clear, cpumask_empty,
->    cpumask_set_cpu.
+> Having said that I think this patch should remove this particular
+> trigger.  Unfortunately I couldn't find a more succinct way of
+> expressing this relationship: if ALGAPI is built-in because it's
+> selected by an algorithm, and CRYPTO_MANAGER is enabled then we
+> require CRYPTO_MANAGER to be built-in as well.
 >
-> --- linux-2.6.orig/virt/kvm/kvm_main.c
-> +++ linux-2.6/virt/kvm/kvm_main.c
-> @@ -358,11 +358,23 @@ static void ack_flush(void *_completed)
->  void kvm_flush_remote_tlbs(struct kvm *kvm)
->  {
->  	int i, cpu, me;
-> -	cpumask_t cpus;
-> +	cpumask_var_t cpus;
->  	struct kvm_vcpu *vcpu;
->  
->  	me = get_cpu();
-> -	cpus_clear(cpus);
-> +	if (!alloc_cpumask_var(&cpus, GFP_ATOMIC)) {
-> +		/* Slow path on failure.  Call everyone. */
-> +		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
-> +			vcpu = kvm->vcpus[i];
-> +			if (vcpu)
-> +				set_bit(KVM_REQ_TLB_FLUSH, &vcpu->requests);
-> +		}
-> +		++kvm->stat.remote_tlb_flush;
-> +		smp_call_function_many(cpu_online_mask, ack_flush, NULL, 1);
-> +		put_cpu();
-> +		return;
-> +	}
-> +
->   
+> Evgeniy, please let me know whether this fixes the problem.
 
-Wow, code duplication from Rusty. Things must be bad.
+Even when this works around it, the problem that the kernel triggers
+module loading on /dev/console access stays and needs to be fixed
+instead.
 
-Since we're in a get_cpu() here, how about a per_cpu static cpumask 
-instead? I don't mind the inefficient fallback, just the duplication.
+It's a pure kernel bug, regardless of how many times Alan likes to
+establish non-sensical hotplug rules to prevent this. The next
+innocent driver change, like yours is, will run into the same problem.
 
--- 
-error compiling committee.c: too many arguments to function
-
+Thanks,
+Kay
