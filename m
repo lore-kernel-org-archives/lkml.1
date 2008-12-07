@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbYLGMsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYLGMyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754850AbYLGMsV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 07:48:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbYLGMsH
+	id S1754692AbYLGMyh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 07:54:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYLGMy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 07:48:07 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33584 "EHLO ogre.sisk.pl"
+	Sun, 7 Dec 2008 07:54:28 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33605 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753817AbYLGMsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 07:48:04 -0500
+	id S1753872AbYLGMy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 07:54:27 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend and resume
-Date: Sun, 7 Dec 2008 13:47:18 +0100
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 2/3] PCI: Suspend and resume PCI Express ports with interrupts disabled
+Date: Sun, 7 Dec 2008 13:53:48 +0100
 User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
        pm list <linux-pm@lists.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812060952100.3425@nehalem.linux-foundation.org> <20081207054149.GA20415@kroah.com>
-In-Reply-To: <20081207054149.GA20415@kroah.com>
+References: <200812020320.31876.rjw@sisk.pl> <200812061846.12167.rjw@sisk.pl> <200812061818.55115.jbarnes@virtuousgeek.org>
+In-Reply-To: <200812061818.55115.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812071347.18608.rjw@sisk.pl>
+Message-Id: <200812071353.49258.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 7 of December 2008, Greg KH wrote:
-> On Sat, Dec 06, 2008 at 10:00:35AM -0800, Linus Torvalds wrote:
-> > 
-> > 
-> > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
-> > > 
-> > > So, to fix the issue at hand, I'd like the $subject patch to go first.  Then,
-> > > there is a major update of the new framework waiting for .29 in the Greg's
-> > > tree (that's the main reason why nobody uses it so far, BTW) and I'd really
-> > > prefer it to go next.  After it's been merged, I'm going to add the mandatory
-> > > suspend-resume things (save state and go to a low power state on suspend,
-> > > restore state on resume) to the new framework in a separete patch.
-> > > 
-> > > Is this plan acceptable?
-> > 
-> > Sounds good to me. And assuming Jesse/Greg are all aboard, I'll just wait 
-> > for the pull requests from Jesse and Greg.
+On Sunday, 7 of December 2008, Jesse Barnes wrote:
+> On Saturday, December 6, 2008 9:46 am Rafael J. Wysocki wrote:
+> > On Saturday, 6 of December 2008, Linus Torvalds wrote:
+> > > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
+> > > > I think it should go through Jesse?
+> > >
+> > > Probably correct. And we want it in -next, so that it can get some
+> > > testing even before I open the merge window. Because I hope everybody
+> > > realizes that there's no way we're doing this in 2.6.28, and we'll leave
+> > > the broken and unreliable suspend.
+> > >
+> > > Because afaik this is not a new bug (I tried to push a patch to do
+> > > suspend_late/resume_early for the PCI code a _loong_ time ago, but it
+> > > never got merged), and the only reason it showed up as a regression was
+> > > almost certainly simply that we've always had this.
+> > >
+> > > IOW, suspend/resume has always been dodgy wrt interrupts, and there's
+> > > some luck involved. And your machine just happened to get unlucky.
+> > >
+> > > I'd love to fix this in 2.6.28, but it's just not reasonable - it needs
+> > > widespread testing with an early -rc merge. And if it turns out to fix a
+> > > lot of machines, and there are no regressions, we can always back-port it
+> > > later.
+> >
+> > I agree.
 > 
-> No objection from me, I'll wait for Jesse to "go first" in the .29 merge
-> window.
+> I'll stuff it into my -next branch tonight.
 
-Unfortunately, the merge of the $subject patch with the one in your tree
-results in code that doesn't compile.  Namely, some lines of code that the
-$subject patch relies on are removed by the patch in your tree.
+Well, if the [1/3] patch goes into your tree as is, there will be a bad merge
+conflict between your tree and the Greg's one.  I think it's better if I rebase
+that patch on top of the Greg's tree and push it to him (please see my last
+message to Greg, http://lkml.org/lkml/2008/12/7/58).
 
-If there is no objection from Jesse and if you don't mind, I'll prepare a
-version of the $subject patch on top of the patch in your tree and send it to
-you.
+The $subject patch is safe to pick up, though.
 
 Thanks,
 Rafael
+
