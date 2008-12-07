@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753649AbYLGFP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721AbYLGFnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753649AbYLGFP0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 00:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbYLGFPM
+	id S1753721AbYLGFnx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 00:43:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbYLGFnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 00:15:12 -0500
-Received: from ozlabs.org ([203.10.76.45]:40151 "EHLO ozlabs.org"
+	Sun, 7 Dec 2008 00:43:42 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41239 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750707AbYLGFPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 00:15:11 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18747.23509.977047.540995@cargo.ozlabs.ibm.com>
-Date: Sun, 7 Dec 2008 16:15:01 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-In-Reply-To: <1228566879.16244.4.camel@lappy.programming.kicks-ass.net>
-References: <20081204225345.654705757@linutronix.de>
-	<18744.29747.728320.652642@cargo.ozlabs.ibm.com>
-	<20081205063131.GB12785@elte.hu>
-	<18744.56857.259756.129894@cargo.ozlabs.ibm.com>
-	<20081205080813.GA2030@elte.hu>
-	<18744.61429.548462.667020@cargo.ozlabs.ibm.com>
-	<20081205120734.GA26244@elte.hu>
-	<18745.49593.567217.277510@cargo.ozlabs.ibm.com>
-	<1228566879.16244.4.camel@lappy.programming.kicks-ass.net>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+	id S1751151AbYLGFnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 00:43:41 -0500
+Date: Sun, 7 Dec 2008 16:43:33 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nicolas Palix <npalix@diku.dk>,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH linux-next] powerpc/powermac: Add missing of_node_put
+Message-Id: <20081207164333.78b69d16.sfr@canb.auug.org.au>
+In-Reply-To: <18747.13668.304923.709761@cargo.ozlabs.ibm.com>
+References: <200812021445.18670.npalix@diku.dk>
+	<20081206163449.60757c4a.akpm@linux-foundation.org>
+	<18747.13668.304923.709761@cargo.ozlabs.ibm.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__7_Dec_2008_16_43_33_+1100_9cAgL=Z0Rx4qNG1v"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
+--Signature=_Sun__7_Dec_2008_16_43_33_+1100_9cAgL=Z0Rx4qNG1v
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Sat, 2008-12-06 at 11:05 +1100, Paul Mackerras wrote:
-> > Now, the tables in perfmon's user-land libpfm that describe the
-> > mapping from abstract events to event-selector values and the
-> > constraints on what events can be counted together come to nearly
-> > 29,000 lines of code just for the IBM 64-bit powerpc processors.
-> > 
-> > Your API condemns us to adding all that bloat to the kernel, plus the
-> > code to use those tables.
-> 
-> Since you need those tables and that code anyway, and in a solid
-> reliable way, what is the objection of carrying it in the kernel?
+Hi Paul,
 
-Because it's about 320kB of unpageable kernel memory, and it doesn't
-need to be in the kernel.
+On Sun, 7 Dec 2008 13:31:00 +1100 Paul Mackerras <paulus@samba.org> wrote:
+>
+> I'm really in two minds about applying any of the of_node_put patches
+> that only affect powermacs.  The reference counts only matter on
+> platforms where we update the OF device tree at runtime, which is
+> currently only IBM pSeries machines.  Since we don't have any hotplug
+> on powermacs, and never will have, the OF device tree is completely
+> static and we don't actually need refcounts on the nodes at all, so
+> who cares if they're a bit higher than they might be?
+>=20
+> In particular, the VIA whose node we're looking for here is built-in
+> on the motherboard, and there can never be more than one, and it can
+> never be removed.
 
-The fundamental problem with Ingo and Thomas's proposal is that the
-abstraction is at the wrong level.  It makes individual counters the
-central idea, when the central idea should be a set of counters that
-all start and stop counting at the same times.  People doing
-performance analysis want to be able to compare counts of different
-events and get ratios, and you can't do that meaningfully if the
-counts correspond to different stretches of code.
+I my mind it is about consistent use of the API and good examples for
+people to copy.  Also, in about a year you will be presented with the
+same set of patches when a new pair of eyes looks at the same code and
+notices the discrepancy ...
 
-Once you make the abstraction a set of counters, then you also make it
-possible to have a counter-set that is the whole PMU.  Then you don't
-have to have the kernel knowing all the possible settings for the PMU;
-it only needs to know the simple ones, and if you want to do something
-more sophisticated, you can have userspace specifying the bits to
-select the more sophisticated setting.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> Furthermore, is there a good technical reason these cpus are so
-> complicated to use?
+--Signature=_Sun__7_Dec_2008_16_43_33_+1100_9cAgL=Z0Rx4qNG1v
+Content-Type: application/pgp-signature
 
-That question is a bit ambiguous.  If you mean, why did the hardware
-designers make it so complex? then I don't really know, but it doesn't
-matter because the CPU hardware is what it is.  At best I might be
-able to influence future designs to be a bit simpler.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-If you mean, could the software description of the hardware be
-simpler? then maybe - I'm just reading up on the details of the
-hardware, and it is pretty complex, with multiple layers of
-multiplexers and event buses.
+iEYEARECAAYFAkk7YoUACgkQjjKRsyhoI8yITgCgqhiy2EiAy7rT/UeREir6DnDl
+DFQAoJazqJL2ZCW+NMAj8s8iWyhmdOPV
+=p+Ht
+-----END PGP SIGNATURE-----
 
-Paul.
+--Signature=_Sun__7_Dec_2008_16_43_33_+1100_9cAgL=Z0Rx4qNG1v--
