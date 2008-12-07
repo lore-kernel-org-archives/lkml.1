@@ -1,178 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbYLGD2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYLGDm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754211AbYLGD2v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 22:28:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYLGD2k
+	id S1754002AbYLGDm3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 22:42:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbYLGDmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 22:28:40 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54513 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753355AbYLGD2i (ORCPT
+	Sat, 6 Dec 2008 22:42:19 -0500
+Received: from rn-out-0910.google.com ([64.233.170.191]:35716 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753453AbYLGDmS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 22:28:38 -0500
-Date: Sat, 6 Dec 2008 19:28:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: "Rik van Riel" <riel@redhat.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, mel@csn.ul.ie
-Subject: Re: [PATCH] vmscan: improve reclaim throuput to bail out patch
- take2
-Message-Id: <20081206192806.7bfba95b.akpm@linux-foundation.org>
-In-Reply-To: <20081204102729.1D5C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <49368DAF.9060206@redhat.com>
-	<2f11576a0812030712t1131c9d2x4dd0fd32eafa66ae@mail.gmail.com>
-	<20081204102729.1D5C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 6 Dec 2008 22:42:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Ez13wnrxJRlBUsZTOa8gQ36Lj9uVORFsxYzPkjTmF8EuWWwMrw+qLcMe7MGYlWgpIC
+         1Hu885aADGf5tBaMAM8fxqmVtquy/iwzooYGaV02cU9FXhbzUTDjJpl8E8p1r/usv67x
+         4cHNGmayZGu2BRUCocWgmj47X9ujehQOWkPzc=
+Message-ID: <12bfabe40812061942q347259f3kb1bade8840d1ca1d@mail.gmail.com>
+Date: Sun, 7 Dec 2008 04:42:17 +0100
+From: "Giangiacomo Mariotti" <gg.mariotti@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <493B4242.1040202@shaw.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>
+	 <493AE770.5030507@shaw.ca>
+	 <12bfabe40812061343j400f55d8r43571c8bd514adde@mail.gmail.com>
+	 <493AF2EA.4030601@shaw.ca>
+	 <12bfabe40812061416u1b6f800dn7261beae5ce36b2f@mail.gmail.com>
+	 <493B4242.1040202@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  4 Dec 2008 10:28:39 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> The vmscan bail out patch move nr_reclaimed variable to struct scan_control.
-> Unfortunately, indirect access can easily happen cache miss.
-> 
-> if heavy memory pressure happend, that's ok.
-> cache miss already plenty. it is not observable.
-> 
-> but, if memory pressure is lite, performance degression is obserbable.
-> 
-> 
-> I compared following three pattern (it was mesured 10 times each)
-> 
-> hackbench 125 process 3000
-> hackbench 130 process 3000
-> hackbench 135 process 3000
-> 
->             2.6.28-rc6                       bail-out
-> 
-> 	125	130	135		125	130	135  
->       ==============================================================
-> 	71.866	75.86	81.274		93.414	73.254	193.382
-> 	74.145	78.295	77.27		74.897	75.021	80.17
-> 	70.305	77.643	75.855		70.134	77.571	79.896
-> 	74.288	73.986	75.955		77.222	78.48	80.619
-> 	72.029	79.947	78.312		75.128	82.172	79.708
-> 	71.499	77.615	77.042		74.177	76.532	77.306
-> 	76.188	74.471	83.562		73.839	72.43	79.833
-> 	73.236	75.606	78.743		76.001	76.557	82.726
-> 	69.427	77.271	76.691		76.236	79.371	103.189
-> 	72.473	76.978	80.643		69.128	78.932	75.736
-> 
-> avg	72.545	76.767	78.534		76.017	77.03	93.256
-> std	1.89	1.71	2.41		6.29	2.79	34.16
-> min	69.427	73.986	75.855		69.128	72.43	75.736
-> max	76.188	79.947	83.562		93.414	82.172	193.382
-> 
-> 
-> about 4-5% degression.
-> 
-> Then, this patch introduce temporal local variable.
-> 
-> result:
-> 
->             2.6.28-rc6                       this patch
-> 
-> num	125	130	135		125	130	135  
->       ==============================================================
-> 	71.866	75.86	81.274		67.302	68.269	77.161
-> 	74.145	78.295	77.27   	72.616	72.712	79.06
-> 	70.305	77.643	75.855  	72.475	75.712	77.735
-> 	74.288	73.986	75.955  	69.229	73.062	78.814
-> 	72.029	79.947	78.312  	71.551	74.392	78.564
-> 	71.499	77.615	77.042  	69.227	74.31	78.837
-> 	76.188	74.471	83.562  	70.759	75.256	76.6
-> 	73.236	75.606	78.743  	69.966	76.001	78.464
-> 	69.427	77.271	76.691  	69.068	75.218	80.321
-> 	72.473	76.978	80.643  	72.057	77.151	79.068
->                         
-> avg	72.545	76.767	78.534 		70.425	74.2083	78.462
-> std 	1.89	1.71	2.41    	1.66	2.34	1.00
-> min 	69.427	73.986	75.855  	67.302	68.269	76.6
-> max 	76.188	79.947	83.562  	72.616	77.151	80.321
-> 
-> 
-> OK. the degression is disappeared.
-> 
-
-Yes, this is a very surprising result.  Suspicious, in fact.
-
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Acked-by: Rik van Riel <riel@redhat.com>
-> ---
->  mm/vmscan.c |   15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
-> 
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1418,6 +1418,8 @@ static void shrink_zone(int priority, st
->  	unsigned long nr_to_scan;
->  	unsigned long percent[2];	/* anon @ 0; file @ 1 */
->  	enum lru_list l;
-> +	unsigned long nr_reclaimed = sc->nr_reclaimed;
-> +	unsigned long swap_cluster_max = sc->swap_cluster_max;
->  
->  	get_scan_ratio(zone, sc, percent);
->  
-> @@ -1433,7 +1435,7 @@ static void shrink_zone(int priority, st
->  			}
->  			zone->lru[l].nr_scan += scan;
->  			nr[l] = zone->lru[l].nr_scan;
-> -			if (nr[l] >= sc->swap_cluster_max)
-> +			if (nr[l] >= swap_cluster_max)
->  				zone->lru[l].nr_scan = 0;
->  			else
->  				nr[l] = 0;
-> @@ -1452,12 +1454,11 @@ static void shrink_zone(int priority, st
->  					nr[LRU_INACTIVE_FILE]) {
->  		for_each_evictable_lru(l) {
->  			if (nr[l]) {
-> -				nr_to_scan = min(nr[l],
-> -					(unsigned long)sc->swap_cluster_max);
-> +				nr_to_scan = min(nr[l], swap_cluster_max);
->  				nr[l] -= nr_to_scan;
->  
-> -				sc->nr_reclaimed += shrink_list(l, nr_to_scan,
-> -							zone, sc, priority);
-> +				nr_reclaimed += shrink_list(l, nr_to_scan,
-> +							    zone, sc, priority);
->  			}
->  		}
->  		/*
-> @@ -1468,11 +1469,13 @@ static void shrink_zone(int priority, st
->  		 * with multiple processes reclaiming pages, the total
->  		 * freeing target can get unreasonably large.
->  		 */
-> -		if (sc->nr_reclaimed > sc->swap_cluster_max &&
-> +		if (nr_reclaimed > swap_cluster_max &&
->  		    priority < DEF_PRIORITY && !current_is_kswapd())
->  			break;
->  	}
->  
-> +	sc->nr_reclaimed = nr_reclaimed;
-> +
->  	/*
->  	 * Even if we did not try to evict anon pages at all, we want to
->  	 * rebalance the anon lru active/inactive ratio.
-
-If this improved the throughput of direct-reclaim callers then one
-would expect it to make larger improvements for kswapd (assuming 
-that all other things are equal for those tasks, which they are not).
-
-What is your direct-reclaim to kswapd-reclaim ratio for that workload?
-(grep pgscan /proc/vmstat)
-
-Does that patch make any change to the amount of CPU time which kswapd
-consumed?
-
-
-Or you can not bother doing this work ;) The patch looks sensible
-anyway.  It's just that the numbers look whacky.
-
+On Sun, Dec 7, 2008 at 4:25 AM, Robert Hancock <hancockr@shaw.ca> wrote:
+> Giangiacomo Mariotti wrote:
+>>
+>> On Sat, Dec 6, 2008 at 10:47 PM, Robert Hancock <hancockr@shaw.ca> wrote:
+>>>
+>>> Giangiacomo Mariotti wrote:
+>>>>
+>>>> On Sat, Dec 6, 2008 at 9:58 PM, Robert Hancock <hancockr@shaw.ca> wrote:
+>>>>>
+>>>>> Giangiacomo Mariotti wrote:
+>>>>>>
+>>>>>> Hi everyone,
+>>>>>> Mcelog just logged on my new Intel I7 920 (on Linux 2.6.27.8) this :
+>>>>>> MCE 0
+>>>>>> HARDWARE ERROR. This is *NOT* a software problem!
+>>>>>> Please contact your hardware vendor
+>>>>>> CPU 0 BANK 6 MISC 202d ADDR ffeef740
+>>>>>> MCG status:
+>>>>>> MCi status:
+>>>>>> Error overflow
+>>>>>> Uncorrected error
+>>>>>> MCi_MISC register valid
+>>>>>> MCi_ADDR register valid
+>>>>>> Processor context corrupt
+>>>>>> MCA: Generic CACHE Level-2 Data-Write Error
+>>>>>> STATUS ee0000000100014a MCGSTATUS 0
+>>>>>>
+>>>>>> I'm reporting this here, because I found in the Intel I7 Technical
+>>>>>> Specification November 2008 update that something which seems very
+>>>>>> similar is in fact an erratum. So my question is : Is there any way
+>>>>>> for me to verify that my problem is due to one of those errata,instead
+>>>>>> of a broken hardware(if we don't want to consider all those errata as
+>>>>>> broken hardware)? I'm also reporting this because I thought it may be
+>>>>>> useful to signal that(if actually due to those errata) these problems
+>>>>>> actually occur, so it may be useful to find workarounds in the kernel
+>>>>>> to not scare to death poor Linux users!
+>>>>>
+>>>>> Which erratum are you talking about? I don't see one in that document
+>>>>> that
+>>>>> would match this case..
+>>>>>
+>>>> Well, the first one seems very similar, even if it talks about a dtlb
+>>>> error instead of cache error. But sure,being similar doesn't mean too
+>>>> much. Number 52 seems similar too. I guess I should just give up and
+>>>> admit that my hardware is broken!
+>>>>
+>>> The first one is just indicating that if a DTLB error occurs the overflow
+>>> bit may be set incorrectly. It's not a false error though. The AAJ52
+>>> erratum
+>>> would only occur immediately after powerup or wake from sleep states.
+>>>
+>> The mce actually got logged once immediately after powerup and never
+>> more. Is that reasonable? A cache error which happens just once after
+>> boot?
+>
+> The erratum refers to an internal parity error, not an L2 cache write error.
+>
+> If it only happened once then who knows, could be a cosmic ray or
+> something.. but if it happens again it sounds like you likely have a bad
+> CPU.
+>
+It happens once every time I boot kernel 2.6.27.8, right after the
+boot. If I boot kernel 2.6.26 in debian/unstable(based on 2.6.26.8)
+though, I never get the mce log message. Also now I got another really
+bad problem with 2.6.27.8 which corrupted most of my partitions. I'm
+gonna post about it now.
