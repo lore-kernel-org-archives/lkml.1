@@ -1,50 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbYLGREA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYLGRKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755057AbYLGREA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 12:04:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbYLGRDv
+	id S1754865AbYLGRKY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 12:10:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYLGRKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 12:03:51 -0500
-Received: from tservice.net.ru ([195.178.208.66]:35945 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753525AbYLGRDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 12:03:51 -0500
-Date: Sun, 7 Dec 2008 20:03:49 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Runaway loop with the current git.
-Message-ID: <20081207170349.GA472@ioremap.net>
-References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk> <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au> <20081207155507.GA15355@gondor.apana.org.au> <ac3eb2510812070803i150d91e7led58128796e8045e@mail.gmail.com> <20081207160921.693f637a@lxorguk.ukuu.org.uk> <ac3eb2510812070821w53ffccfbn73ac40d6a1380553@mail.gmail.com> <20081207165740.2c4bbb0d@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081207165740.2c4bbb0d@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 7 Dec 2008 12:10:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48520 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754172AbYLGRKD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 12:10:03 -0500
+Date: Sun, 7 Dec 2008 09:09:18 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH, take2] percpu_counter: FBC_BATCH might be too big
+Message-Id: <20081207090918.595627b2.akpm@linux-foundation.org>
+In-Reply-To: <493B9699.8080603@cosmosbay.com>
+References: <4939513C.3090101@cosmosbay.com>
+	<493B9699.8080603@cosmosbay.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 07, 2008 at 04:57:40PM +0000, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> The userspace opens major 5 minor 1. The kernel has no driver mapped to
-> that so the kernel asks user space to load a module of its choice for
+On Sun, 07 Dec 2008 10:25:45 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-It has. It really has it. It was not yet initialized though because,
-because, because... Hmm, userspace code started and built-in kernel
-subsystem was not yet initialized.
-
-> major 5 minor 1. What user space does with that is and has always been a
-> problem for user space.
+> In this second version I guarded hotcpu_notifier() call by
+> a #ifdef CONFIG_HOTPLUG_CPU
 > 
-> User space is quite at liberty to go .. 5,1  and I have a serial console
-> I want to load 8250_pci please.
+> I wonder why hotcpu_notifier() is not a null op if !CONFIG_HOTPLUG_CPU
 > 
-> What it must not do is try and re-open it again and again and again.
+> Thank you
+> 
+> [PATCH] percpu_counter: FBC_BATCH might be too big
+> 
+> For NR_CPUS >= 16 values, FBC_BATCH is 2*NR_CPUS
+> 
+> Considering more and more distros are using high NR_CPUS values,
+> it makes sense to use a more sensible value for FBC_BATCH.
+> 
+> A sensible value is 2*num_online_cpus(), with a minimum value of 32
+> (This minimum value helps branch prediction in __percpu_counter_add())
+> 
+> We already have a hotcpu notifier, so we can adjust FBC_BATCH dynamically.
 
-Heh, init is not allowed to write something to the console or any other
-tty?
+Yup, anything using NR_CPUS is probably wrong.
 
--- 
-	Evgeniy Polyakov
+> diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
+> index 9007ccd..c42a184 100644
+> --- a/include/linux/percpu_counter.h
+> +++ b/include/linux/percpu_counter.h
+> @@ -24,11 +24,7 @@ struct percpu_counter {
+>  	s32 *counters;
+>  };
+>  
+> -#if NR_CPUS >= 16
+> -#define FBC_BATCH	(NR_CPUS*2)
+> -#else
+> -#define FBC_BATCH	(NR_CPUS*4)
+> -#endif
+> +extern int FBC_BATCH;
+
+y:/usr/src/linux-2.6.28-rc7> grep -r FBC_BATCH . | wc -l
+7
+
+Can we fix this properly please?  It should now become lower case, and
+it was a pretty dopey name anyway - now would be a good time to improve
+it. `percpu_counter_batch'?
+
+>  int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
+>  int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
+> diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
+> index a866389..e21ce7c 100644
+> --- a/lib/percpu_counter.c
+> +++ b/lib/percpu_counter.c
+> @@ -114,6 +114,16 @@ void percpu_counter_destroy(struct percpu_counter *fbc)
+>  }
+>  EXPORT_SYMBOL(percpu_counter_destroy);
+>  
+> +int FBC_BATCH __read_mostly = 32;
+> +EXPORT_SYMBOL(FBC_BATCH);
+> +
+> +static void compute_batch_value(void)
+> +{
+> +	int nr = num_online_cpus();
+> +
+> +	FBC_BATCH = max(32, nr*2);
+> +}
+> +
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+>  					unsigned long action, void *hcpu)
+> @@ -121,6 +131,7 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+>  	unsigned int cpu;
+>  	struct percpu_counter *fbc;
+>  
+> +	compute_batch_value();
+>  	if (action != CPU_DEAD)
+>  		return NOTIFY_OK;
+>  
+> @@ -139,11 +150,14 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+>  	mutex_unlock(&percpu_counters_lock);
+>  	return NOTIFY_OK;
+>  }
+> +#endif
+>  
+>  static int __init percpu_counter_startup(void)
+>  {
+> +	compute_batch_value();
+> +#ifdef CONFIG_HOTPLUG_CPU
+>  	hotcpu_notifier(percpu_counter_hotcpu_callback, 0);
+> +#endif
+>  	return 0;
+>  }
+>  module_init(percpu_counter_startup);
+> -#endif
+
+hm, now what's going on in there?  We should be able to drop the #ifdef
+CONFIG_HOTPLUG_CPU from lib/percpu_counter.c altogether. 
+hotcpu_notifier() will do the right thing, and the compiler should
+generate no code for percpu_counter_hotcpu_callback() if
+CONFIG_HOTPLUG_CPU=n.  
+
+Do
+
+	$EDITOR  $(grep -l hotcpu_notifier */*.c)
+
+and you'll see lots of code gets it right, and lots of code gets it wrong.
