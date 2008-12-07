@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYLGXsC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbYLGXtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754716AbYLGXsC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 18:48:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbYLGXru
+	id S1755333AbYLGXtP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 18:49:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYLGXs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 18:47:50 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35348 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750919AbYLGXrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 18:47:49 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michael Chan <mchan@broadcom.com>
-Subject: net (tg3): Fix failure to enable WoL by default when possible
-Date: Mon, 8 Dec 2008 00:46:55 +0100
-User-Agent: KMail/1.9.9
-Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Sun, 7 Dec 2008 18:48:59 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:21880 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750931AbYLGXs7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 18:48:59 -0500
+Message-ID: <493C60E3.7070303@ru.mvista.com>
+Date: Mon, 08 Dec 2008 02:48:51 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Lars Winterfeld <lars.winterfeld@tu-ilmenau.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] nohz: add missing handling of clocksource watchdog
+References: <200812080015.22793.bzolnier@gmail.com> <200812080036.59506.Rafal.Wysocki@fuw.edu.pl>
+In-Reply-To: <200812080036.59506.Rafal.Wysocki@fuw.edu.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812080046.56119.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: net (tg3): Fix failure to enable WoL by default when possible
+Hello.
 
-tg3 is supposed to enable WoL by default on adapters which support
-that, but it fails to do so unless the adapter's
-/sys/devices/.../power/wakeup file contains 'enabled' during the
-initialization of the adapter.  Fix that by making tg3 update the
-device's 'should_wakeup' bit automatically whenever WoL should be
-enabled by default.
+R. J. Wysocki wrote:
+> On Monday, 8 of December 2008, Bartlomiej Zolnierkiewicz wrote:
+>   
+>> Fixes "Clocksource tsc unstable (delta = -974982308 ns)" problem.
+>>     
+>
+> Where can I find the description of the problem?
+>   
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/tg3.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+   Kernel.org bug #10216 (it's not about this issue though).
 
-Index: linux-2.6/drivers/net/tg3.c
-===================================================================
---- linux-2.6.orig/drivers/net/tg3.c
-+++ linux-2.6/drivers/net/tg3.c
-@@ -11296,9 +11296,10 @@ static void __devinit tg3_get_eeprom_hw_
- 		if (val & VCPU_CFGSHDW_ASPM_DBNC)
- 			tp->tg3_flags |= TG3_FLAG_ASPM_WORKAROUND;
- 		if ((val & VCPU_CFGSHDW_WOL_ENABLE) &&
--		    (val & VCPU_CFGSHDW_WOL_MAGPKT) &&
--		    device_may_wakeup(&tp->pdev->dev))
-+		    (val & VCPU_CFGSHDW_WOL_MAGPKT)) {
- 			tp->tg3_flags |= TG3_FLAG_WOL_ENABLE;
-+			device_set_wakeup_enable(&tp->pdev->dev, true);
-+		}
- 		return;
- 	}
- 
+> Rafael
+>
+>   
+>> [ IDE was unlucky to be initialized at the same time that
+>>   clocksource watchdog triggers and was blamed for the issue. ]
+>>     
+
+   I think it might well have been blamed correctly -- the clocksource 
+watchdog timer gets run every half second.
+
+MBR, Sergei
+
+
