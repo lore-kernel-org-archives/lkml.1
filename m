@@ -1,17 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbYLGWqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757805AbYLGWrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757597AbYLGWqv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 17:46:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbYLGWqj
+	id S1757805AbYLGWrN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 17:47:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYLGWqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 17:46:39 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35116 "EHLO ogre.sisk.pl"
+	Sun, 7 Dec 2008 17:46:40 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35125 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753549AbYLGWqi convert rfc822-to-8bit (ORCPT
+	id S1753778AbYLGWqj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 17:46:38 -0500
+	Sun, 7 Dec 2008 17:46:39 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+       "Cyrill Gorcunov" <gorcunov@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Joshua Hoblitt" <j_kernel@hoblitt.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
 References: <SeAiKqCewiJ.A.VBH.CAFPJB@chimera>
 In-Reply-To: <SeAiKqCewiJ.A.VBH.CAFPJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +21,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <XUKIyYFWoBG.A.21.tEFPJB@chimera>
-Subject: [Bug #11215] INFO: possible recursive locking detected ps2_command
+Message-ID: <XUKIyYFWoBG.A.Ih.nBFPJB@chimera>
+Subject: [Bug #11543] kernel panic: softlockup in tick_periodic() ???
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun,  7 Dec 2008 21:41:16 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +37,14 @@ introduced between 2.6.26 and 2.6.27.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11215
-Subject		: INFO: possible recursive locking detected ps2_command
-Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Date		: 2008-07-31 9:41 (130 days old)
-References	: http://marc.info/?l=linux-kernel&m=121749737011637&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11543
+Subject		: kernel panic: softlockup in tick_periodic() ???
+Submitter	: Joshua Hoblitt <j_kernel@hoblitt.com>
+Date		: 2008-09-11 16:46 (88 days old)
+References	: http://marc.info/?l=linux-kernel&m=122117786124326&w=4
+Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+		  Cyrill Gorcunov <gorcunov@gmail.com>
+		  Ingo Molnar <mingo@elte.hu>
+		  Cyrill Gorcunov <gorcunov@gmail.com>
 
 
