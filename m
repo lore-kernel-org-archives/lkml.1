@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbYLGSeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbYLGSey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757038AbYLGSeh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 13:34:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbYLGSbS
+	id S1757225AbYLGSey (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 13:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbYLGSbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 13:31:18 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40957 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754952AbYLGSbP (ORCPT
+	Sun, 7 Dec 2008 13:31:35 -0500
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:55728 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755509AbYLGSbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 13:31:15 -0500
-Date: Sun, 7 Dec 2008 18:31:12 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Cc: "Evgeniy Polyakov" <zbr@ioremap.net>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       linux-kernel@vger.kernel.org,
-       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
-Subject: Re: Runaway loop with the current git.
-Message-ID: <20081207183112.3ef31caa@lxorguk.ukuu.org.uk>
-In-Reply-To: <ac3eb2510812071021g44207efftb1e74f21578433be@mail.gmail.com>
-References: <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au>
-	<20081207170108.39dfd93f@lxorguk.ukuu.org.uk>
-	<ac3eb2510812070922q2531a188v37874a042b259ac9@mail.gmail.com>
-	<20081207172855.55fee78f@lxorguk.ukuu.org.uk>
-	<20081207174435.GB1687@ioremap.net>
-	<20081207175245.2d074299@lxorguk.ukuu.org.uk>
-	<20081207175438.GA3181@ioremap.net>
-	<20081207180302.339bf58d@lxorguk.ukuu.org.uk>
-	<ac3eb2510812071013o5d9f3319i44fb7f54b17025ca@mail.gmail.com>
-	<20081207181559.63549cfc@lxorguk.ukuu.org.uk>
-	<ac3eb2510812071021g44207efftb1e74f21578433be@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Dec 2008 13:31:34 -0500
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 10/13] checkpatch: ensure we actually detect if assignments split across lines
+Date: Sun,  7 Dec 2008 18:30:47 +0000
+Message-Id: <1228674650-24392-11-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.6.0.4.911.gc990
+In-Reply-To: <1228674650-24392-1-git-send-email-apw@shadowen.org>
+References: <1228674650-24392-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The loop is detected and terminated.
-> 
-> No. Please back up what you are trying to talk about.
+From: Andy Whitcroft <apw@canonical.com>
 
-Let me introduce you to.. drum roll.. the source code. Its a useful
-resource, why don't you use it for once.
+When checking for assignments within if conditionals we check the whole
+of the condition, but the match is performed using a line constrained
+regular expression.  This means we can miss split conditionals or those
+on the second line.  Allow the check to span lines.
 
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+---
+ scripts/checkpatch.pl |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-        max_modprobes = min(max_threads/2, MAX_KMOD_CONCURRENT);
-        atomic_inc(&kmod_concurrent);
-        if (atomic_read(&kmod_concurrent) > max_modprobes) {
-                /* We may be blaming an innocent here, but unlikely */
-                if (kmod_loop_msg++ < 5)
-                        printk(KERN_ERR
-                               "request_module: runaway loop modprobe
-%s\n", module_name);
-                atomic_dec(&kmod_concurrent);
-                return -ENOMEM;
-        }
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index a521d49..c39ce0b 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -2048,7 +2048,7 @@ sub process {
+ 		    $line =~ /\b(?:if|while|for)\s*\(/ && $line !~ /^.\s*#/) {
+ 			my ($s, $c) = ($stat, $cond);
+ 
+-			if ($c =~ /\bif\s*\(.*[^<>!=]=[^=].*/) {
++			if ($c =~ /\bif\s*\(.*[^<>!=]=[^=].*/s) {
+ 				ERROR("do not use assignment in if condition\n" . $herecurr);
+ 			}
+ 
+-- 
+1.6.0.4.911.gc990
 
-Happy now. Print it out, share it with friends, find someone who can read
-C if you are stuck.
-
-> The boxes of the reporters hang! Read the bug! Please!
-
-They would still hang. As I repeatedly said for the benefit of two people
-who don't seem to be able to read source code, the loop is detected and
-terminated. So it already fails the open when it sees it has gotten five
-layers deep.
-
-> There is no cheap way out of the problem, it's a kernel bug, and we
-> will fix it - you may just delay it with your zero arguments.
-
-Oh I see. Allow me to explain your position in the words of some small
-children I know
-
-	"ME!! ME!! ME!! ME!! ME!!"
-
-I don't care about your obscure corner-case non bug that in fact was a
-crypto bug combined with a modprobe bug and where the crypto bug is
-now fixed. I do care about not breaking existing users systems. The fact
-we do this is why Linux doesn't suck.
-
-Alan
