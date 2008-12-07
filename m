@@ -1,86 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbYLGWPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbYLGWZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755373AbYLGWPs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 17:15:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYLGWPh
+	id S1754682AbYLGWZU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 17:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYLGWZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 17:15:37 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:47200 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752690AbYLGWPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 17:15:36 -0500
-Date: Sun, 7 Dec 2008 23:15:33 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: vapier.adi@gmail.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2] drivers/rtc: correct an error test
-Message-ID: <Pine.LNX.4.64.0812072314590.7130@ask.diku.dk>
+	Sun, 7 Dec 2008 17:25:05 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:32957 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753006AbYLGWZD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 17:25:03 -0500
+Message-ID: <493C4D1D.3000300@cosmosbay.com>
+Date: Sun, 07 Dec 2008 23:24:29 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux kernel <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mingming Cao <cmm@us.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org
+Subject: [PATCH] atomic: fix a typo in atomic_long_xchg()
+References: <4936D287.6090206@cosmosbay.com>	<4936EB04.8000609@cosmosbay.com>	<20081206202233.3b74febc.akpm@linux-foundation.org>	<493BCF60.1080409@cosmosbay.com> <20081207092854.f6bcbfae.akpm@linux-foundation.org>
+In-Reply-To: <20081207092854.f6bcbfae.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 07 Dec 2008 23:24:30 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Andrew Morton a écrit :
+> We can do lots of things in 2.6.29.  Including just making ->counters
+> an array of atomic_t.
 
-rtc is clearly does not satisfy IS_ERR at the point where it is tested, so
-I have changed the test to consider the just initialized rtc->rtc_dev.
+I was playing with this idea this week (but using atomic_long_t),
+and this is why I bother you with all this stuff : cleanup patches
+before work for 2.6.29
 
-The semantic match that finds the problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+My idea was using atomic_long_t so that 64bit arches dont need 
+a spinlock any more, and new percpu_lcounter would be ok for
+counters that dont need s64 but a plain long (nr_files, network
+counters...)
 
-// <smpl>
-@match exists@
-expression x, E;
-identifier fld;
-position p1,p2;
-@@
+struct percpu_lcounter {
+        atomic_long_t count;
+#ifdef CONFIG_SMP
+#ifdef CONFIG_HOTPLUG_CPU
+        struct list_head list;  /* All percpu_counters are on a list */
+#endif
+        atomic_long_t *counters;
+#endif
+};
 
-(
-x = E;
-|
-x = E
-|
-x@p1->fld
-... when != x = E
-IS_ERR(x@p2)
-... when any
-)
+void __percpu_lcounter_add(struct percpu_lcounter *fbc, long amount, s32 batch)
+{
+        long count;
+        atomic_long_t *pcount;
 
-@other_match exists@
-expression match.x, E1, E2;
-position match.p1,match.p2;
-@@
+        pcount = per_cpu_ptr(fbc->counters, get_cpu());
+        count = atomic_long_add_return(amount, pcount);
+        if (unlikely(count >= batch || count <= -batch)) {
+                atomic_long_add(count, &fbc->count);
+                atomic_long_sub(count, pcount);
+        }
+        put_cpu();
+}
 
-x = E1
-... when != x = E2
-    when != x@p1
-x@p2
 
-@ script:python depends on !other_match@
-p1 << match.p1;
-p2 << match.p2;
-@@
+long percpu_lcounter_sum(struct percpu_lcounter *fbc)
+{
+        long accumulator = 0, val;
+        int cpu;
 
-print "* file %s dereference %s test %s" % (p1[0].file,p1[0].line,p2[0].line)
-// </smpl>
+        for_each_online_cpu(cpu) {
+                atomic_long_t *pcount = per_cpu_ptr(fbc->counters, cpu);
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+                val = atomic_long_xchg(pcount, 0);
+                accumulator += val;
+        }
+        return atomic_long_add_return(accumulator, &fbc->count);
+}
 
+Then I found the following typo :
+
+[PATCH] atomic: fix a typo in atomic_long_xchg()
+
+atomic_long_xchg() not correctly defined for 32bit arches.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 ---
- drivers/rtc/rtc-bfin.c              |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/rtc/rtc-bfin.c b/drivers/rtc/rtc-bfin.c
-index 34439ce..aafd3e6 100644
---- a/drivers/rtc/rtc-bfin.c
-+++ b/drivers/rtc/rtc-bfin.c
-@@ -390,7 +390,7 @@ static int __devinit bfin_rtc_probe(struct platform_device *pdev)
+diff --git a/include/asm-generic/atomic.h b/include/asm-generic/atomic.h
+index 4ec0a29..7abdaa9 100644
+--- a/include/asm-generic/atomic.h
++++ b/include/asm-generic/atomic.h
+@@ -251,7 +251,7 @@ static inline long atomic_long_add_unless(atomic_long_t *l, long a, long u)
+ #define atomic_long_cmpxchg(l, old, new) \
+ 	(atomic_cmpxchg((atomic_t *)(l), (old), (new)))
+ #define atomic_long_xchg(v, new) \
+-	(atomic_xchg((atomic_t *)(l), (new)))
++	(atomic_xchg((atomic_t *)(v), (new)))
  
- 	/* Register our RTC with the RTC framework */
- 	rtc->rtc_dev = rtc_device_register(pdev->name, dev, &bfin_rtc_ops, THIS_MODULE);
--	if (unlikely(IS_ERR(rtc))) {
-+	if (unlikely(IS_ERR(rtc->rtc_dev))) {
- 		ret = PTR_ERR(rtc->rtc_dev);
- 		goto err_irq;
- 	}
+ #endif  /*  BITS_PER_LONG == 64  */
+ 
+
