@@ -1,155 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbYLGVue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbYLGVvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754974AbYLGVue (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 16:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYLGVuZ
+	id S1755319AbYLGVvT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 16:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbYLGVvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 16:50:25 -0500
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:60616 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbYLGVuY (ORCPT
+	Sun, 7 Dec 2008 16:51:08 -0500
+Received: from harold.telenet-ops.be ([195.130.133.65]:56718 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbYLGVvG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 16:50:24 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 69.181.40.92
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19+zIv/xjt5GXuRf3Y8fnd9
-Subject: [PATCH 4/5] omap mmc: force MMC module reset on boot
-To: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-From: Tony Lindgren <tony@atomide.com>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>, linux-omap@vger.kernel.org
-Date: Sun, 07 Dec 2008 13:50:22 -0800
-Message-ID: <20081207215022.10456.9800.stgit@localhost>
-In-Reply-To: <20081207213617.10456.43951.stgit@localhost>
-References: <20081207213617.10456.43951.stgit@localhost>
-User-Agent: Whatever/0.14.3.285.g62874
+	Sun, 7 Dec 2008 16:51:06 -0500
+Date: Sun, 7 Dec 2008 22:50:59 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: Yet more ARM breakage in linux-next
+In-Reply-To: <200812050042.28222.rusty@rustcorp.com.au>
+Message-ID: <Pine.LNX.4.64.0812072248430.14941@anakin>
+References: <20081203192905.GA12502@flint.arm.linux.org.uk>
+ <20081203124109.79f8f15b.akpm@linux-foundation.org> <Pine.LNX.4.64.0812041017470.10635@anakin>
+ <200812050042.28222.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kevin Hilman <khilman@deeprootsystems.com>
+On Fri, 5 Dec 2008, Rusty Russell wrote:
+> On Thursday 04 December 2008 19:48:06 Geert Uytterhoeven wrote:
+> > Also broke m68k (a bit more hidden due to other build failures).
+> 
+> And m68knommu has similar issues.
+> 
+> Here's what I have for m68k for tomorrow's linux-next.  Please steal.
+> 
+> m68k: define __fls
+> 
+> Like fls, but can't be handed 0 and returns the bit number.
+> 
+> (I broke this arch in linux-next by using __fls in generic code).
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff --git a/include/asm-m68k/bitops.h b/include/asm-m68k/bitops.h
+> --- a/include/asm-m68k/bitops.h
+> +++ b/include/asm-m68k/bitops.h
+> @@ -315,6 +315,11 @@ static inline int fls(int x)
+>  	return 32 - cnt;
+>  }
+>  
+> +static inline int __fls(int x)
+                 ^^^       ^^^
+Other implementations take `unsigned long' and return `unsigned long'...
 
-The bootloader may leave the MMC in a state which prevents hitting
-retention.  Even when MMC is not compiled in, each MMC module needs to
-be forced into reset.
+> +{
+> +	return fls(x) - 1;
+> +}
+> +
 
-Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
----
- arch/arm/mach-omap2/devices.c |   85 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 85 insertions(+), 0 deletions(-)
+On Thu, 4 Dec 2008, Rusty Russell wrote:
+> Like fls, but can't be handed 0 and returns the bit number.
+> 
+> (I added find_last_bit() to bitmap.h which broke archs which didn't
+>  define this)
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> ---
+>  arch/avr32/include/asm/bitops.h |    5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/arch/avr32/include/asm/bitops.h b/arch/avr32/include/asm/bitops.h
+> --- a/arch/avr32/include/asm/bitops.h
+> +++ b/arch/avr32/include/asm/bitops.h
+> @@ -263,6 +263,11 @@ static inline int fls(unsigned long word
+>  	return 32 - result;
+>  }
+>  
+> +static inline int __fls(unsigned long word)
+                 ^^^       ^^^^^^^^^^^^^
+> +{
+> +	return fls(word) - 1;
+> +}
+> +
 
-diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
-index 6e03272..9d7216f 100644
---- a/arch/arm/mach-omap2/devices.c
-+++ b/arch/arm/mach-omap2/devices.c
-@@ -14,6 +14,7 @@
- #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/io.h>
-+#include <linux/clk.h>
- 
- #include <mach/hardware.h>
- #include <asm/mach-types.h>
-@@ -299,6 +300,89 @@ static inline void omap_init_sha1_md5(void) { }
- 
- /*-------------------------------------------------------------------------*/
- 
-+#ifdef CONFIG_ARCH_OMAP3
-+
-+#define MMCHS_SYSCONFIG			0x0010
-+#define MMCHS_SYSCONFIG_SWRESET		(1 << 1)
-+#define MMCHS_SYSSTATUS			0x0014
-+#define MMCHS_SYSSTATUS_RESETDONE	(1 << 0)
-+
-+static struct platform_device dummy_pdev = {
-+	.dev = {
-+		.bus = &platform_bus_type,
-+	},
-+};
-+
-+/**
-+ * omap_hsmmc_reset() - Full reset of each HS-MMC controller
-+ *
-+ * Ensure that each MMC controller is fully reset.  Controllers
-+ * left in an unknown state (by bootloader) may prevent retention
-+ * or OFF-mode.  This is especially important in cases where the
-+ * MMC driver is not enabled, _or_ built as a module.
-+ *
-+ * In order for reset to work, interface, functional and debounce
-+ * clocks must be enabled.  The debounce clock comes from func_32k_clk
-+ * and is not under SW control, so we only enable i- and f-clocks.
-+ **/
-+static void __init omap_hsmmc_reset(void)
-+{
-+	u32 i, nr_controllers = cpu_is_omap34xx() ? OMAP34XX_NR_MMC :
-+		OMAP24XX_NR_MMC;
-+
-+	for (i = 0; i < nr_controllers; i++) {
-+		u32 v, base = 0;
-+		struct clk *iclk, *fclk;
-+		struct device *dev = &dummy_pdev.dev;
-+
-+		switch (i) {
-+		case 0:
-+			base = OMAP2_MMC1_BASE;
-+			break;
-+		case 1:
-+			base = OMAP2_MMC2_BASE;
-+			break;
-+		case 2:
-+			base = OMAP3_MMC3_BASE;
-+			break;
-+		}
-+
-+		dummy_pdev.id = i;
-+		iclk = clk_get(dev, "mmchs_ick");
-+		if (iclk && clk_enable(iclk))
-+			iclk = NULL;
-+
-+		fclk = clk_get(dev, "mmchs_fck");
-+		if (fclk && clk_enable(fclk))
-+			fclk = NULL;
-+
-+		if (!iclk || !fclk) {
-+			printk(KERN_WARNING
-+			       "%s: Unable to enable clocks for MMC%d, "
-+			       "cannot reset.\n",  __func__, i);
-+			break;
-+		}
-+
-+		omap_writel(MMCHS_SYSCONFIG_SWRESET, base + MMCHS_SYSCONFIG);
-+		v = omap_readl(base + MMCHS_SYSSTATUS);
-+		while (!(omap_readl(base + MMCHS_SYSSTATUS) &
-+			 MMCHS_SYSSTATUS_RESETDONE))
-+			cpu_relax();
-+
-+		if (fclk) {
-+			clk_disable(fclk);
-+			clk_put(fclk);
-+		}
-+		if (iclk) {
-+			clk_disable(iclk);
-+			clk_put(iclk);
-+		}
-+	}
-+}
-+#else
-+static inline void omap_hsmmc_reset(void) {}
-+#endif
-+
- #if defined(CONFIG_MMC_OMAP) || defined(CONFIG_MMC_OMAP_MODULE) || \
- 	defined(CONFIG_MMC_OMAP_HS) || defined(CONFIG_MMC_OMAP_HS_MODULE)
- 
-@@ -418,6 +502,7 @@ static int __init omap2_init_devices(void)
- 	/* please keep these calls, and their implementations above,
- 	 * in alphabetical order so they're easier to sort through.
- 	 */
-+	omap_hsmmc_reset();
- 	omap_init_mbox();
- 	omap_init_mcspi();
- 	omap_hdq_init();
+... but this one uses mixed types?
 
+What are the official semantics of __fls()?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
