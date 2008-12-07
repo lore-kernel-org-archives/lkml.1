@@ -1,68 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbYLGCTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbYLGCbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753874AbYLGCTP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 21:19:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbYLGCS6
+	id S1753927AbYLGCbp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 21:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbYLGCbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 21:18:58 -0500
-Received: from outbound-mail-159.bluehost.com ([67.222.39.39]:47952 "HELO
-	outbound-mail-159.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753000AbYLGCS6 (ORCPT
+	Sat, 6 Dec 2008 21:31:33 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:18339 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753031AbYLGCbc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 21:18:58 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=QqHLseAL74BlgqSLTsJCdAnhItQGPYFsfsABtNUV942LYPWB6y+Zfx98ijj91WqED77xIg0q2UlcAiuWEjnehBfNN3gouGdnBQ6BwgBuUE7jYyXIB2wRk4fv5M/XmHik;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/3] PCI: Suspend and resume PCI Express ports with interrupts disabled
-Date: Sat, 6 Dec 2008 18:18:54 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812060933430.3425@nehalem.linux-foundation.org> <200812061846.12167.rjw@sisk.pl>
-In-Reply-To: <200812061846.12167.rjw@sisk.pl>
+	Sat, 6 Dec 2008 21:31:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=xEKz34C22W/W9KFEy1BcoBvqpeQXJmEmn/yLo99xMg+NHSy0zqfLe/Sp0rajDkT7HE
+         ZedyAT0BHSd7u0rgZEMMkLjPrSJ5HkgL2dn05t0763VwJ6Xrvi5qOBzQS+capJbJlSbq
+         cFGpwcBh3uI6OXLtYO9EF75qsmZ1pW/mgPgWw=
+Date: Sun, 7 Dec 2008 05:31:19 +0300
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: gregkh@suse.de, adobriyan@gmail.com, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] Staging/me4000: switch to list_for_each*()
+Message-ID: <20081207023119.GA21294@orion>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812061818.55115.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, December 6, 2008 9:46 am Rafael J. Wysocki wrote:
-> On Saturday, 6 of December 2008, Linus Torvalds wrote:
-> > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
-> > > I think it should go through Jesse?
-> >
-> > Probably correct. And we want it in -next, so that it can get some
-> > testing even before I open the merge window. Because I hope everybody
-> > realizes that there's no way we're doing this in 2.6.28, and we'll leave
-> > the broken and unreliable suspend.
-> >
-> > Because afaik this is not a new bug (I tried to push a patch to do
-> > suspend_late/resume_early for the PCI code a _loong_ time ago, but it
-> > never got merged), and the only reason it showed up as a regression was
-> > almost certainly simply that we've always had this.
-> >
-> > IOW, suspend/resume has always been dodgy wrt interrupts, and there's
-> > some luck involved. And your machine just happened to get unlucky.
-> >
-> > I'd love to fix this in 2.6.28, but it's just not reasonable - it needs
-> > widespread testing with an early -rc merge. And if it turns out to fix a
-> > lot of machines, and there are no regressions, we can always back-port it
-> > later.
->
-> I agree.
 
-I'll stuff it into my -next branch tonight.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
+ drivers/staging/me4000/me4000.c |   97 ++++++++++++++++-----------------------
+ 1 files changed, 39 insertions(+), 58 deletions(-)
+
+diff --git a/drivers/staging/me4000/me4000.c b/drivers/staging/me4000/me4000.c
+index 0ac04b7..e1c4a80 100644
+--- a/drivers/staging/me4000/me4000.c
++++ b/drivers/staging/me4000/me4000.c
+@@ -536,25 +536,19 @@ module_init(me4000_init_module);
+ 
+ static void clear_board_info_list(void)
+ {
+-	struct list_head *board_p;
+-	struct list_head *dac_p;
+-	struct me4000_info *board_info;
+-	struct me4000_ao_context *ao_context;
++	struct me4000_info *board_info, *board_info_safe;
++	struct me4000_ao_context *ao_context, *ao_context_safe;
+ 
+ 	/* Clear context lists */
+-	for (board_p = me4000_board_info_list.next;
+-	     board_p != &me4000_board_info_list; board_p = board_p->next) {
+-		board_info = list_entry(board_p, struct me4000_info, list);
++	list_for_each_entry(board_info, &me4000_board_info_list, list) {
+ 		/* Clear analog output context list */
+-		while (!list_empty(&board_info->ao_context_list)) {
+-			dac_p = board_info->ao_context_list.next;
+-			ao_context =
+-			    list_entry(dac_p, struct me4000_ao_context, list);
++		list_for_each_entry_safe(ao_context, ao_context_safe,
++				&board_info->ao_context_list, list) {
+ 			me4000_ao_reset(ao_context);
+ 			free_irq(ao_context->irq, ao_context);
+ 			if (ao_context->circ_buf.buf)
+ 				kfree(ao_context->circ_buf.buf);
+-			list_del(dac_p);
++			list_del(&ao_context->list);
+ 			kfree(ao_context);
+ 		}
+ 
+@@ -574,11 +568,10 @@ static void clear_board_info_list(void)
+ 	}
+ 
+ 	/* Clear the board info list */
+-	while (!list_empty(&me4000_board_info_list)) {
+-		board_p = me4000_board_info_list.next;
+-		board_info = list_entry(board_p, struct me4000_info, list);
++	list_for_each_entry_safe(board_info, board_info_safe,
++			&me4000_board_info_list, list) {
+ 		pci_release_regions(board_info->pci_dev_p);
+-		list_del(board_p);
++		list_del(&board_info->list);
+ 		kfree(board_info);
+ 	}
+ }
+@@ -663,16 +656,17 @@ static int init_board_info(struct pci_dev *pci_dev_p,
+ 	}
+ 
+ 	/* Get the index of the board in the global list */
+-	for (board_p = me4000_board_info_list.next, i = 0;
+-	     board_p != &me4000_board_info_list; board_p = board_p->next, i++) {
++	i = 0;
++	list_for_each(board_p, &me4000_board_info_list) {
+ 		if (board_p == &board_info->list) {
+ 			board_info->board_count = i;
+ 			break;
+ 		}
++		i++;
+ 	}
+ 	if (board_p == &me4000_board_info_list) {
+ 		printk(KERN_ERR
+-		       "ME4000:init_board_info():Cannot get index of baord\n");
++		       "ME4000:init_board_info():Cannot get index of board\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -863,16 +857,14 @@ static int alloc_ao_contexts(struct me4000_info *info)
+ 
+ static void release_ao_contexts(struct me4000_info *board_info)
+ {
+-	struct list_head *dac_p;
+-	struct me4000_ao_context *ao_context;
++	struct me4000_ao_context *ao_context, *ao_context_safe;
+ 
+ 	/* Clear analog output context list */
+-	while (!list_empty(&board_info->ao_context_list)) {
+-		dac_p = board_info->ao_context_list.next;
+-		ao_context = list_entry(dac_p, struct me4000_ao_context, list);
++	list_for_each_entry_safe(ao_context, ao_context_safe,
++			&board_info->ao_context_list, list) {
+ 		free_irq(ao_context->irq, ao_context);
+ 		kfree(ao_context->circ_buf.buf);
+-		list_del(dac_p);
++		list_del(&ao_context->list);
+ 		kfree(ao_context);
+ 	}
+ }
+@@ -1303,12 +1295,13 @@ static int me4000_open(struct inode *inode_p, struct file *file_p)
+ 		       dev, mode);
+ 
+ 		/* Search for the board context */
+-		for (ptr = me4000_board_info_list.next, i = 0;
+-		     ptr != &me4000_board_info_list; ptr = ptr->next, i++) {
+-			board_info = list_entry(ptr, struct me4000_info, list);
++		i = 0;
++		list_for_each(ptr, &me4000_board_info_list) {
+ 			if (i == board)
+ 				break;
++			i++;
+ 		}
++		board_info = list_entry(ptr, struct me4000_info, list);
+ 
+ 		if (ptr == &me4000_board_info_list) {
+ 			printk(KERN_ERR
+@@ -1318,14 +1311,13 @@ static int me4000_open(struct inode *inode_p, struct file *file_p)
+ 		}
+ 
+ 		/* Search for the dac context */
+-		for (ptr = board_info->ao_context_list.next, i = 0;
+-		     ptr != &board_info->ao_context_list;
+-		     ptr = ptr->next, i++) {
+-			ao_context = list_entry(ptr, struct me4000_ao_context,
+-									list);
++		i = 0;
++		list_for_each(ptr, &board_info->ao_context_list) {
+ 			if (i == dev)
+ 				break;
++			i++;
+ 		}
++		ao_context = list_entry(ptr, struct me4000_ao_context, list);
+ 
+ 		if (ptr == &board_info->ao_context_list) {
+ 			printk(KERN_ERR
+@@ -1384,12 +1376,13 @@ static int me4000_open(struct inode *inode_p, struct file *file_p)
+ 		PDEBUG("me4000_open():ai board = %d mode = %d\n", board, mode);
+ 
+ 		/* Search for the board context */
+-		for (ptr = me4000_board_info_list.next, i = 0;
+-		     ptr != &me4000_board_info_list; ptr = ptr->next, i++) {
+-			board_info = list_entry(ptr, struct me4000_info, list);
++		i = 0;
++		list_for_each(ptr, &me4000_board_info_list) {
+ 			if (i == board)
+ 				break;
++			i++;
+ 		}
++		board_info = list_entry(ptr, struct me4000_info, list);
+ 
+ 		if (ptr == &me4000_board_info_list) {
+ 			printk(KERN_ERR
+@@ -1438,14 +1431,12 @@ static int me4000_open(struct inode *inode_p, struct file *file_p)
+ 		PDEBUG("me4000_open():board = %d\n", board);
+ 
+ 		/* Search for the board context */
+-		for (ptr = me4000_board_info_list.next;
+-		     ptr != &me4000_board_info_list; ptr = ptr->next) {
+-			board_info = list_entry(ptr, struct me4000_info, list);
++		list_for_each_entry(board_info, &me4000_board_info_list, list) {
+ 			if (board_info->board_count == board)
+ 				break;
+ 		}
+ 
+-		if (ptr == &me4000_board_info_list) {
++		if (&board_info->list == &me4000_board_info_list) {
+ 			printk(KERN_ERR
+ 			       "ME4000:me4000_open():Board %d not in device list\n",
+ 			       board);
+@@ -1483,14 +1474,12 @@ static int me4000_open(struct inode *inode_p, struct file *file_p)
+ 		PDEBUG("me4000_open():board = %d\n", board);
+ 
+ 		/* Search for the board context */
+-		for (ptr = me4000_board_info_list.next;
+-		     ptr != &me4000_board_info_list; ptr = ptr->next) {
+-			board_info = list_entry(ptr, struct me4000_info, list);
++		list_for_each_entry(board_info, &me4000_board_info_list, list) {
+ 			if (board_info->board_count == board)
+ 				break;
+ 		}
+ 
+-		if (ptr == &me4000_board_info_list) {
++		if (&board_info->list == &me4000_board_info_list) {
+ 			printk(KERN_ERR
+ 			       "ME4000:me4000_open():Board %d not in device list\n",
+ 			       board);
+@@ -1526,14 +1515,12 @@ static int me4000_open(struct inode *inode_p, struct file *file_p)
+ 		PDEBUG("me4000_open():board = %d\n", board);
+ 
+ 		/* Search for the board context */
+-		for (ptr = me4000_board_info_list.next;
+-		     ptr != &me4000_board_info_list; ptr = ptr->next) {
+-			board_info = list_entry(ptr, struct me4000_info, list);
++		list_for_each_entry(board_info, &me4000_board_info_list, list) {
+ 			if (board_info->board_count == board)
+ 				break;
+ 		}
+ 
+-		if (ptr == &me4000_board_info_list) {
++		if (&board_info->list == &me4000_board_info_list) {
+ 			printk(KERN_ERR
+ 			       "ME4000:me4000_open():Board %d not in device list\n",
+ 			       board);
+@@ -5955,7 +5942,6 @@ static irqreturn_t me4000_ext_int_isr(int irq, void *dev_id)
+ 
+ static void __exit me4000_module_exit(void)
+ {
+-	struct list_head *board_p;
+ 	struct me4000_info *board_info;
+ 
+ 	CALL_PDEBUG("cleanup_module() is executed\n");
+@@ -5975,9 +5961,7 @@ static void __exit me4000_module_exit(void)
+ 	pci_unregister_driver(&me4000_driver);
+ 
+ 	/* Reset the boards */
+-	for (board_p = me4000_board_info_list.next;
+-	     board_p != &me4000_board_info_list; board_p = board_p->next) {
+-		board_info = list_entry(board_p, struct me4000_info, list);
++	list_for_each_entry(board_info, &me4000_board_info_list, list) {
+ 		me4000_reset_board(board_info);
+ 	}
+ 
+@@ -5992,7 +5976,6 @@ static int me4000_read_procmem(char *buf, char **start, off_t offset, int count,
+ 	int len = 0;
+ 	int limit = count - 1000;
+ 	struct me4000_info *board_info;
+-	struct list_head *ptr;
+ 
+ 	len += sprintf(buf + len, "\nME4000 DRIVER VERSION %X.%X.%X\n\n",
+ 		       (ME4000_DRIVER_VERSION & 0xFF0000) >> 16,
+@@ -6000,11 +5983,7 @@ static int me4000_read_procmem(char *buf, char **start, off_t offset, int count,
+ 		       (ME4000_DRIVER_VERSION & 0xFF));
+ 
+ 	/* Search for the board context */
+-	for (ptr = me4000_board_info_list.next;
+-	     (ptr != &me4000_board_info_list) && (len < limit);
+-	     ptr = ptr->next) {
+-		board_info = list_entry(ptr, struct me4000_info, list);
+-
++	list_for_each_entry(board_info, &me4000_board_info_list, list) {
+ 		len +=
+ 		    sprintf(buf + len, "Board number %d:\n",
+ 			    board_info->board_count);
+@@ -6110,6 +6089,8 @@ static int me4000_read_procmem(char *buf, char **start, off_t offset, int count,
+ 		    sprintf(buf + len, "AO 3 status register = 0x%08X\n",
+ 			    inl(board_info->me4000_regbase +
+ 				ME4000_AO_03_STATUS_REG));
++		if (len >= limit)
++			break;
+ 	}
+ 
+ 	*eof = 1;
