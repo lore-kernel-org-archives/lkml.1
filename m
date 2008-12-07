@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbYLGXCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYLGXCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755474AbYLGXCP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 18:02:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbYLGXB6
+	id S1755952AbYLGXCk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 18:02:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYLGXCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 18:01:58 -0500
-Received: from fwc.sitour.cz ([62.209.212.18]:3455 "EHLO kali.sitour.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbYLGXB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 18:01:57 -0500
-Message-ID: <493C55DE.3040305@mydatex.cz>
-Date: Mon, 08 Dec 2008 00:01:50 +0100
-From: Daniel Smolik <marvin@mydatex.cz>
-Organization: Mydatex s.r.o.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; cs-CZ; rv:1.8.0.14eol) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.13~pre080323b-0etch3)
+	Sun, 7 Dec 2008 18:02:30 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:45031 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753017AbYLGXC2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 18:02:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:cc:content-disposition:from:date:mime-version
+         :content-type:content-transfer-encoding:message-id;
+        b=djZQFk83Tj8dWEB3e83SI28/5wTcIYB/C5wS68ATaxeMQC6q5NCTvV4WLhG7trcjP5
+         RR1Mwx7Hfx5GJVjMm76Fd1NumHx7ENSUWzndcx7c+fNaXhO277uC3+lu1hz3/7lzve6u
+         DPeFM1vH6BKPL8TK35vic/iCF/UnaZyb6EDB0=
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [x86] do_arch_prctl
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Content-Disposition: inline
+From: Eric Lacombe <goretux@gmail.com>
+Date: Mon, 8 Dec 2008 00:02:20 +0100
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #11886] without serial console system doesn't  poweroff
-References: <SeAiKqCewiJ.A.VBH.CAFPJB@chimera> <XUKIyYFWoBG.A.nrH.TAFPJB@chimera>
-In-Reply-To: <XUKIyYFWoBG.A.nrH.TAFPJB@chimera>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200812080002.21192.goretux@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki napsal(a):
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.26 and 2.6.27.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11886
-> Subject		: without serial console system doesn't  poweroff
-> Submitter	: Daniel Smolik <marvin@mydatex.cz>
-> Date		: 2008-10-29 04:06 (40 days old)
-> 
-> 
-Sorry I now have lot of work and cann't verify it now.
+Hi,
 
-		Dan
+I'm sorry to insist, but I really want to understand what occurs in this 
+portion of kernel code. And that's why I resend my previous message with the 
+hope that someone could enlighten my mind.
+
+Thanks in advance,
+
+	Eric
+
+Le lundi 24 novembre 2008 19:22:18 Jeremy Fitzhardinge, vous avez écrit :
+> Eric Lacombe wrote:
+> > Hello,
+> >
+> > Does the "doit case" (line 822 in ARCH_GET_FS, function do_arch_prctl)
+> > exist for performance reasons? Else, why "task->thread.fs" (line 824)
+> > does not contain the fs base in the "doit case"?
+>
+> "doit" gets set when you're operating on yourself.  If you're operating
+> on another process, then you need to use their task structure values
+> rather than the current process's values.  If you're doing it to
+> yourself, then the task structure may be out of date because its only
+> updated on a context switch.
+
+The task_struct is also updated in sys_arch_prctl (ARCH_SET_FS and 
+ARCH_SET_GS), so not just on a context switch.
+How the task structure could be out of date wrt thread.gs and thread.fs?
+What could be a typical scenario that could induced gs or fs to be modified and 
+not thread.gs and thread.fs?
+
+Why we have a difference between ARCH_GET_GS :
+
+> 833                 else if (doit) {
+> 834                         asm("movl %%gs,%0" : "=r" (gsindex));
+> 835                         if (gsindex)
+> 836                                 rdmsrl(MSR_KERNEL_GS_BASE, base);
+> 837                         else
+> 838                                 base = task->thread.gs;
+> 839                 }
+
+and ARCH_GET_FS :
+
+> 821                 else if (doit)
+> 822                         rdmsrl(MSR_FS_BASE, base);
+
+If I follow what you say, why can't we have the same optimization in 
+ARCH_GET_FS?
+
+thanks,
+
+	Eric
 
 
--- 
-Mydatex s r.o.
-http://www.mydatex.cz
-email: smolik@mydatex.cz
-mob: 604200362
-tel: 226210085
+
