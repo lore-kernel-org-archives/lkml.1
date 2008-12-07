@@ -1,317 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbYLGXUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYLGXVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbYLGXUE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 18:20:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbYLGXTy
+	id S1755865AbYLGXVR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 18:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbYLGXVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 18:19:54 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:55112 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752878AbYLGXTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 18:19:53 -0500
-Date: Sun, 7 Dec 2008 15:19:59 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.28-rc5 01/11] kmemleak: Add the base support
-Message-ID: <20081207231959.GK6897@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081120112903.16607.68902.stgit@pc1117.cambridge.arm.com> <20081120113033.16607.19928.stgit@pc1117.cambridge.arm.com> <20081203181202.GA10031@linux.vnet.ibm.com> <1228392866.19553.36.camel@pc1117.cambridge.arm.com> <20081204165536.GA6753@linux.vnet.ibm.com> <1228604850.8621.42.camel@localhost.localdomain>
+	Sun, 7 Dec 2008 18:21:06 -0500
+Received: from mail-gx0-f29.google.com ([209.85.217.29]:54741 "EHLO
+	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752878AbYLGXVF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 18:21:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ExwD+pTJw5GvFCwm5Z9t7YOAZ8lYIvWslZhsoO4bU6Kr7/IkewkUQPVavjJrwBAP1U
+         Zu5HXJkGIjHiQj4D50EQhXAYDuYzz/8yu7GmRfswI3yT/kJDh8COL8LWRXsu5WLtTEve
+         fboBwDFo0Pad4ErGMo+5jOcwDd/mVKWqZyCMc=
+Message-ID: <12bfabe40812071521j2f668cf8v96655e572af5c514@mail.gmail.com>
+Date: Mon, 8 Dec 2008 00:21:02 +0100
+From: "Giangiacomo Mariotti" <gg.mariotti@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
+Cc: "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081207141337.588aede5@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1228604850.8621.42.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>
+	 <493AE770.5030507@shaw.ca>
+	 <12bfabe40812061343j400f55d8r43571c8bd514adde@mail.gmail.com>
+	 <493AF2EA.4030601@shaw.ca>
+	 <12bfabe40812061416u1b6f800dn7261beae5ce36b2f@mail.gmail.com>
+	 <493B4242.1040202@shaw.ca>
+	 <12bfabe40812071355r65c13e52g5f3d94d3b060c939@mail.gmail.com>
+	 <20081207141337.588aede5@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 06, 2008 at 11:07:30PM +0000, Catalin Marinas wrote:
-> On Thu, 2008-12-04 at 08:55 -0800, Paul E. McKenney wrote:
-> > On Thu, Dec 04, 2008 at 12:14:26PM +0000, Catalin Marinas wrote:
-> > > On Wed, 2008-12-03 at 10:12 -0800, Paul E. McKenney wrote:
-> > > > On Thu, Nov 20, 2008 at 11:30:34AM +0000, Catalin Marinas wrote:
-> > > > > This patch adds the base support for the kernel memory leak
-> > > > > detector. It traces the memory allocation/freeing in a way similar to
-> > > > > the Boehm's conservative garbage collector, the difference being that
-> > > > > the unreferenced objects are not freed but only shown in
-> > > > > /sys/kernel/debug/memleak. Enabling this feature introduces an
-> > > > > overhead to memory allocations.
-> > > > 
-> > > > I have some concerns about your locking/RCU design, please see
-> > > > interspersed questions and comments.
-> [...]
-> > > I'll comment below as well but I'll first show my logic which I added as
-> > > comment at the top of the memleak.c file:
-> > 
-> > This is very helpful, thank you!  (And please accept my apologies if I
-> > missed seeing it in my earlier review.)
-> 
-> You haven't missed it, that's the first time I posted this text.
+On Sun, Dec 7, 2008 at 11:13 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Sun, 7 Dec 2008 22:55:10 +0100
+> "Giangiacomo Mariotti" <gg.mariotti@gmail.com> wrote:
+>
+>> On Sun, Dec 7, 2008 at 4:25 AM, Robert Hancock <hancockr@shaw.ca>
+>> wrote:
+>> >
+>> > If it only happened once then who knows, could be a cosmic ray or
+>> > something.. but if it happens again it sounds like you likely have
+>> > a bad CPU.
+>> >
+>> This same MCE happens every time I boot the 2.6.27.8 kernel, but it
+>> never happens with kernel 2.6.26.8. It appears every time at log time
+>> [  301.7320xx](where the x represent the scale of the approximation).
+>> In the previous log it appeared at [  301.732037], now it appeared at
+>> [  301.732042]. It happens just once at that moment and then never
+>> more until I reboot. No MCE gets logged with kernel 2.6.26.8 nor with
+>> Windows Vista 32bit, not even under very heavy load on memory and
+>> cpu(like 3d games or 3d mark vintage). Is this really an hardware
+>> problem? Why does it get logged only on kernel 2.6.27.8 at that exact
+>> moment? Now I'm gonna compile kernel 2.6.28-rc7 and see if there it
+>> happens too. Any suggestion? It would be appreciated, because,
+>> depending on the final result, I may be forced to change the
+>> hardware(It's still guaranteed, but it'd mean some months without a
+>> pc).
+>
+> which video driver are you using?
+> While your HW might be defective (MCE's tend to indicate that), if it's
+> software dependent it might also indicate that something, usually a
+> video driver, gets the system in a really bad state.
+> Also, make sure that you have MCE enabled in both kernels (I'm sure you
+> do, but it's one of those things worth double checking)
+>
+> Arjan van de Ven        Intel Open Source Technology Centre
+> For development, discussion and tips for power savings,
+> visit http://www.lesswatts.org
+>
 
-Whew!  ;-)
+About the .config file :
+cat config-2.6.26-1-amd64(unaffected/silent debian unstable based on
+2.6.26.8) | grep MCE
+CONFIG_X86_MCE=y
+CONFIG_X86_MCE_INTEL=y
+CONFIG_X86_MCE_AMD=y
 
-> > >  * The following locks are used by kmemleak:
-> > >  * 
-> > >  * - object_list_lock (spinlock): protects the object_list. This is the main
-> > >  *   list holding the metadata (struct memleak_object) for the allocated
-> > >  *   objects. The memleak_object structures are added to the list in the
-> > >  *   create_object() function called from the memleak_alloc() callback. They
-> > >  *   are removed from the list in put_object() if the object->use_count is 0
-> > 
-> > This part sounds good.  I would also add that once object->use_count is
-> > zero, no one is allowed to increment it.  Also, attempts to increment
-> > object->use_count must be under the protection of rcu_read_lock(),
-> > correct?
-> 
-> So, to make sure I understand it correctly, the rcu_read_lock() is
-> needed to protect between the point where the object pointer was
-> obtained to the get_object() point.
+cat config-2.6.27.8-nodbg001(affected, built by me) | grep MCE
+CONFIG_X86_MCE=y
+CONFIG_X86_MCE_INTEL=y
+CONFIG_X86_MCE_AMD=y
 
-More generally, it ensures that an RCU-protected object stays around
-until the matching rcu_read_unlock() is reached.  The guarantee call_rcu()
-provides is to invoke the specified function only after all pre-existing
-RCU read-side critical sections have completed, in other words, only
-after any task that previously executed rcu_read_lock() has executed
-the matching rcu_read_unlock().
+I have an ati hd4850 1GB. It's not supported by the current x.org
+server on my distro(7.3(I tried 7.4 in experimental, but hard lock
+up)), so x uses the vesa driver. On 2.6.27.8(affected) I get this :
+cat config-2.6.27.8-nodbg001 | grep RADEON
+CONFIG_DRM_RADEON=m
+CONFIG_FB_RADEON=m
+CONFIG_FB_RADEON_I2C=y
+CONFIG_FB_RADEON_BACKLIGHT=y
+# CONFIG_FB_RADEON_DEBUG is not set
 
->                                     Would it also work if
-> spin_lock_irqsave(object_list_lock) is used instead of rcu_read_lock()?
-> The call_rcu() in put_object is bracketed with object_list_lock.
+But lsmod gives this :
+Module                  Size  Used by
+binfmt_misc            13836  1
+kvm_intel              51136  0
+kvm                   149272  1 kvm_intel
+acpi_cpufreq           12176  0
+cpufreq_userspace       8324  0
+cpufreq_stats           9160  0
+fuse                   57552  3
+loop                   20124  0
+snd_pcm_oss            41648  0
+snd_mixer_oss          18952  1 snd_pcm_oss
+snd_seq_dummy           7300  0
+snd_seq_oss            34640  0
+snd_seq_midi_event     12168  1 snd_seq_oss
+snd_hda_intel         447988  1
+snd_seq                57400  5 snd_seq_dummy,snd_seq_oss,snd_seq_midi_event
+i2c_i801               14492  0
+i2c_core               29592  1 i2c_i801
+snd_seq_device         12188  3 snd_seq_dummy,snd_seq_oss,snd_seq
+pcspkr                  7040  0
+evdev                  15520  3
+snd_pcm                84016  2 snd_pcm_oss,snd_hda_intel
+snd_timer              26784  2 snd_seq,snd_pcm
+snd                    67240  10
+snd_pcm_oss,snd_mixer_oss,snd_seq_oss,snd_hda_intel,snd_seq,snd_seq_device,snd_pcm,snd_timer
+wmi                    11712  0
+button                 11680  0
+soundcore              12176  1 snd
+snd_page_alloc         13328  2 snd_hda_intel,snd_pcm
+firewire_sbp2          20144  7
+sg                     37304  0
+sr_mod                 20004  0
+cdrom                  37928  1 sr_mod
+jmicron                 7040  0
+ide_pci_generic         8708  0
+ide_core              101336  2 jmicron,ide_pci_generic
+pata_acpi               9344  0
+pata_jmicron            8192  0
+sd_mod                 31368  14
+usbhid                 47488  0
+hid                    44320  1 usbhid
+ff_memless              9488  1 usbhid
+usb_storage           100000  0
+ata_generic            10116  0
+firewire_ohci          25996  0
+ahci                   36620  5
+firewire_core          44976  2 firewire_sbp2,firewire_ohci
+crc_itu_t               6400  1 firewire_core
+libata                176352  4 pata_acpi,pata_jmicron,ata_generic,ahci
+r8169                  33436  0
+mii                     9984  1 r8169
+scsi_mod              166184  6
+firewire_sbp2,sg,sr_mod,sd_mod,usb_storage,libata
+dock                   14576  1 libata
+ehci_hcd               38552  0
+uhci_hcd               26408  0
+thermal                23208  0
+processor              44468  2 acpi_cpufreq,thermal
+fan                     8192  0
+thermal_sys            18064  3 thermal,processor,fan
 
-For some RCU implementations, but only by accident.
+I can't find anything related to radeon or ati in here, so I guess
+that the kernel too has loaded a vesa driver?
 
-Just please don't do this!
-
-Instead, consider wrapping rcu_read_lock() and rcu_read_unlock() around
-the region of interest, if need be.  The RCU read-side primitives are
-quite cheap, so you are losing almost nothing (and in some cases exactly
-nothing) by using them.
-
-> BTW, I'll have a look if I could remove an object from the object_list
-> in delete_object() rather than waiting until put_object().
-
-If by doing this, you exclude all readers while removing, you are set.
-
-> > >  * - object_tree_lock (rwlock): protects the object_tree_root. When the
-> > >  *   metadata is created in create_object(), it is added to the object prio
-> > >  *   search tree and removed in delete_object() with this lock held
-> > >  *   (write_lock). This lock is also acquired (read_lock) in
-> > >  *   find_and_get_object() when an object needs to be looked up by a pointer
-> > >  *   value (either during scanning or when changing its properties like
-> > >  *   marking as false positive)
-> > 
-> > Looks OK.  I must confess that I am a bit fuzzy on the purpose of
-> > object_tree_root vs. object_list.
-> 
-> object_list holds all the memleak_objects in the system and it is
-> traversed when preparing the scanning and also when reporting the leaks.
-> 
-> object_tree_root is used to look-up memleak_objects by the allocated
-> memory block. In the past, this used to be a radix tree (with some
-> lockdep problems) and later a hash. I now use a prio tree because it
-> allows pointer ranges.
-> 
-> Kmemleak could probably iterate over the object_tree_root when reporting
-> but it is more convenient to report the leaks in the order they were
-> allocated (preserved by object_list) since one leak may trigger many
-> subsequent reports but they disappear once the first one is solved.
-
-Very helpful, thank you!
-
-> > >  * - memleak_object.lock (spinlock): protects a memleak_object. Modifications
-> > >  *   of the metadata (e.g. count) are protected by this lock. Note that some
-> > >  *   members of this structure may be protected by other means (atomic or
-> > >  *   object_list lock). This lock is also held when scanning the corresponding
-> > >  *   object to avoid the kernel freeing it via the memleak_free() callback.
-> > >  *   This is less heavyweight than holding a global lock like object_list_lock
-> > >  *   during scanning
-> > 
-> > OK, holding an object's lock can protect that object from deletion,
-> > but only after you actually acquire the lock.  There must be some other
-> > mechanism preventing the object from being freed during the actual
-> > acquisition of the lock.
-> > 
-> > Now this might be the object_list_lock, object_tree_lock, RCU, or some
-> > combination of the three, for example it might depend on how that object
-> > is looked up.
-> 
-> Correct. I'll have to review this again.
-
-Fair enough!
-
-> > >  * Freeing a memleak_object is done via an RCU callback invoked from
-> > >  * put_object() when its use_count is 0 and after removing it from the
-> > >  * object_list. One of the reasons for the RCU is to delay the freeing and
-> > >  * avoid a recursive call into the allocator via kmem_cache_free(). Another
-> > >  * reason is to allow lock-less object_list traversal during memleak_scan().
-> > 
-> > I did figure out the lock-less object_list traversal, but totally missed
-> > the fact that you were using RCU to prevent infinite recursion.  Cute!
-> 
-> It wasn't documented, so pretty hard to guess.
-
-I guess I don't feel quite so bad, then.  ;-)
-
-> > Also, the memleak_object must have been removed from object_tree before
-> > its use_count can possibly go to 0, correct?
-> 
-> Yes.
-
-Good!
-
-> > > > > +static void free_object_rcu(struct rcu_head *rcu)
-> > > > > +{
-> > > > > +	struct hlist_node *elem, *tmp;
-> > > > > +	struct memleak_scan_area *area;
-> > > > > +	struct memleak_object *object =
-> > > > > +		container_of(rcu, struct memleak_object, rcu);
-> > > > > +
-> > > > > +	/* once use_count is 0, there is no code accessing the object */
-> > > > 
-> > > > OK, so we won't pass free_object_rcu() to call_rcu() until use_count
-> > > > is equal to zero.  And once use_count is zero, it is never incremented.
-> > > > So the point of the RCU grace period is to ensure that all tasks
-> > > > who didn't quite call get_object() soon enough get done failing
-> > > > before we free up the object, correct?
-> > > > 
-> > > > Which means that get_object() needs to be under rcu_read_lock()...
-> > > 
-> > > My view here is that if use_count is 0, no other thread would be able to
-> > > use this object. It will also be removed from the object_list and hence
-> > > no other way to get this this object.
-> > 
-> > What if some other CPU picked up a pointer to the object just before it
-> > was removed from the list?  If that CPU was not under the protection of
-> > rcu_read_lock(), and if that CPU was delayed, then the object could be
-> > freed (and possibly re-allocated as something else) before the CPU got
-> > around to doing the atomic_inc_not_zero().
-> 
-> OK, I got it now.
-
-It can indeed be a bit subtle, to be sure.
-
-> > It looks to me that the code currently does the right thing here, just
-> > want to make sure I understand the locking and that we don't end up
-> > tempting someone later to break it.  ;-)
-> 
-> I'll document it better and make sure it's clear for me as well.
-
-Sounds good, look forward to seeing the next version!
-
-> > > > > +static void put_object(struct memleak_object *object)
-> > > > > +{
-> > > > > +	unsigned long flags;
-> > > > > +
-> > > > > +	if (!atomic_dec_and_test(&object->use_count))
-> > > > > +		return;
-> > > > > +
-> > > > > +	/* should only get here after delete_object was called */
-> > > > > +	BUG_ON(object->flags & OBJECT_ALLOCATED);
-> > > > > +
-> > > > > +	spin_lock_irqsave(&object_list_lock, flags);
-> > > > 
-> > > > We also need to write-hold the object_tree_lock, not?
-> > > 
-> > > Not here, the memleak_object is removed from the object_tree in the
-> > > delete_object() function (via from the memleak_free callback). If it is
-> > > in the object_tree, it should have a use_count >= 1.
-> > 
-> > So the code never calls the last put_object() without first having
-> > called delete_object() to remove it from the object_tree?  The "last"
-> > put_object() being the one that decrements object->use_count to zero.
-> 
-> Yes.
-
-Good!
-
-> > > > > +static void *memleak_seq_next(struct seq_file *seq, void *v, loff_t *pos)
-> > > > > +{
-> > > > > +	struct list_head *n;
-> > > > > +	struct memleak_object *next = NULL;
-> > > > > +	unsigned long flags;
-> > > > > +
-> > > > > +	++(*pos);
-> > > > > +	if (reported_leaks >= REPORTS_NR)
-> > > > > +		goto out;
-> > > > > +
-> > > > > +	spin_lock_irqsave(&object_list_lock, flags);
-> > > > 
-> > > > Using a spinlock instead of rcu_read_lock() is OK, but only if all
-> > > > updates are also protected by this same spinlock.  Which means that,
-> > > > given that find_and_get_object read-acquires object_tree_lock, deletions
-> > > > must be projected both by object_list_lock and by write-acquiring
-> > > > object_tree_lock.  Or all calls to memleak_seq_next need to be covered
-> > > > by rcu_read_lock().
-> > > 
-> > > The spin_lock here is only to retrieve the next object in the list but I
-> > > agree that even if the object_list modifications are protected by
-> > > object_list_lock, put_object could actually set the use_count to 0 and
-> > > get_object return in this function isn't checked. If get_object returns
-> > > successfully, I don't think an rcu_read_lock() is needed since
-> > > put_object() can no longer invoke free_object_rcu().
-> > 
-> > OK, so let me see if I understand:
-> > 
-> > 	The memleak_object passed in via the "v" argument to
-> > 	memleak_seq_next() was get_object()-ed by some prior
-> > 	call, either an earlier memleak_seq_next() or presumably
-> > 	by memleak_seq_start().
-> 
-> Yes.
-
-OK, good!  I might be (slowly) catching on here.
-
-> > 	memleak_seq_start() -does- do its scan under RCU protection,
-> > 	so looks OK.
-> > 
-> > 	I believe you also need RCU protection in memleak_seq_next()
-> > 	to prevent the next memleak_object from disappearing
-> > 	during the traversal.  Yes, you do greatly decrease the
-> > 	odds of this happening by having irqs disabled, but the
-> > 	fact is that RCU is within its rights to end a grace
-> > 	period during this time.
-> 
-> I'll try to make the memleak_seq_next() function use rcu_dereference()
-> and rcu_read_lock(). ATM, the "v" object has use_count >= 1 (from a
-> previous get_object) and the next pointer is accessed under
-> object_list_lock, so no modifications to the list (even put_object
-> acquires this lock when invoking call_rcu). There is still the bug with
-> not checking the get_object() return.
-
-Fair enough!
-
-> > Assuming that I do understand, as you say, if the get_object() in
-> > memleak_seq_next() fails, we could end up accessing freed-up memory on
-> > the next call to memleak_seq_next(), or even during the current one,
-> > assuming an aggressive RCU or an extended NMI, SMI, burst of ECC errors
-> > or some other delay.  So I agree that it is necessary to check the return
-> > value of get_object().
-> 
-> Yes
-
-Whew!
-
-> > Also, I do see the put_object() call in memleak_seq_stop(), but it looks
-> > to me that this only does a put_object() on the last memleak_object.
-> > What does the put_object() on the earlier memleak_object structures that
-> > were scanned by memleak_seq_next?  Or is there never more than one
-> > such object in a given list?
-> 
-> The previous objects' use_count are decremented in memleak_seq_next()
-> just before returning "next", so between seq_start-seq_next and
-> seq_next-seq_stop, there is only one object with an incremented
-> use_count. The memleak_seq_next() function may have two such objects for
-> a small period of time.
-> 
-> I actually added a test for this in memleak_scan() (if DEBUG is defined)
-> and I've never got any reports. There may be some situations when for
-> very short periods of time the use_count is > 1 at the beginning of a
-> scan, usually when one of the memleak_scan_area or memleak_ignore
-> callbacks are invoked.
-> 
-> I'll revise the locking a bit and re-post the patches this week.
-
-I look forward to seeing them!
-
-							Thanx, Paul
+Giangiacomo
