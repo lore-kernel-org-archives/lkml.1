@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbYLGIW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754663AbYLGIXE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754454AbYLGIW3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 03:22:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbYLGIWU
+	id S1754663AbYLGIXE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 03:23:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbYLGIWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 03:22:20 -0500
-Received: from ozlabs.org ([203.10.76.45]:56745 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbYLGIWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 03:22:19 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [PATCH] virtio: make PCI devices take a virtio_pci module ref
-Date: Sun, 7 Dec 2008 18:52:08 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>,
-       Anthony Liguori <aliguori@us.ibm.com>, Michael Tokarev <mjt@tls.msk.ru>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <1228394671.3732.77.camel@blaa> <200812051043.51417.rusty@rustcorp.com.au> <1228489626.3858.37.camel@blaa>
-In-Reply-To: <1228489626.3858.37.camel@blaa>
+	Sun, 7 Dec 2008 03:22:53 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46934 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753585AbYLGIWw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 03:22:52 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into pcp
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20081205154006.GA19366@csn.ul.ie>
+References: <Pine.LNX.4.64.0811071244330.5387@quilx.com> <20081205154006.GA19366@csn.ul.ie>
+Message-Id: <20081207172115.53E1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812071852.08962.rusty@rustcorp.com.au>
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Sun,  7 Dec 2008 17:22:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 06 December 2008 01:37:06 Mark McLoughlin wrote:
-> Another example of a lack of an explicit dependency causing problems is
-> Fedora's mkinitrd having this hack:
 > 
->     if echo $PWD | grep -q /virtio-pci/ ; then
->         findmodule virtio_pci
->     fi
->
-> which basically says "if this is a virtio device, don't forget to
-> include virtio_pci in the initrd too!". Now, mkinitrd is full of hacks,
-> but this is a particularly unusual one.
+> ====== CUT HERE ======
+> From: Mel Gorman <mel@csn.ul.ie>
+> Subject: [RFC] Split per-cpu list into one-list-per-migrate-type
+> 
+> Currently the per-cpu page allocator searches the PCP list for pages of the
+> correct migrate-type to reduce the possibility of pages being inappropriate
+> placed from a fragmentation perspective. This search is potentially expensive
+> in a fast-path and undesirable. Splitting the per-cpu list into multiple lists
+> increases the size of a per-cpu structure and this was potentially a major
+> problem at the time the search was introduced. These problem has been
+> mitigated as now only the necessary number of structures is allocated for the
+> running system.
+> 
+> This patch replaces a list search in the per-cpu allocator with one list
+> per migrate type that should be in use by the per-cpu allocator - namely
+> unmovable, reclaimable and movable.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-Um, I don't know what this does, sorry.
+Great.
 
-I have no idea how Fedora chooses what to put in an initrd; I can't think
-of a sensible way of deciding what goes in and what doesn't other than
-lists and heuristics.
+this patch works well on my box too.
+and my review didn't find any bug.
 
-But there really is no explicit dependency between virtio modules and
-virtio_pci.  There just is for kvm/x86 at the moment, since that is how
-they use virtio.  Running over another bus is certainly possible,
-though may never happen for x86 (happens today for s390).
+very thanks.
 
-Cheers,
-Rusty.
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+
+
+
