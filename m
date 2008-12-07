@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbYLGWya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbYLGXCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756580AbYLGWya (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 17:54:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbYLGWyU
+	id S1755474AbYLGXCP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 18:02:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbYLGXB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 17:54:20 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35231 "EHLO ogre.sisk.pl"
+	Sun, 7 Dec 2008 18:01:58 -0500
+Received: from fwc.sitour.cz ([62.209.212.18]:3455 "EHLO kali.sitour.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753310AbYLGWyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 17:54:19 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [Bug #12152] Huge wakeups number from i1915
-Date: Sun, 7 Dec 2008 23:52:06 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Yves-Alexis Perez" <corsac@debian.org>
-References: <6VnlupFpCsN.A.2rE.MsEPJB@chimera> <07Xes05z25M.A.VtF.ksEPJB@chimera> <20081207145203.0f998d5b@infradead.org>
-In-Reply-To: <20081207145203.0f998d5b@infradead.org>
+	id S1750931AbYLGXB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 18:01:57 -0500
+Message-ID: <493C55DE.3040305@mydatex.cz>
+Date: Mon, 08 Dec 2008 00:01:50 +0100
+From: Daniel Smolik <marvin@mydatex.cz>
+Organization: Mydatex s.r.o.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; cs-CZ; rv:1.8.0.14eol) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.13~pre080323b-0etch3)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #11886] without serial console system doesn't  poweroff
+References: <SeAiKqCewiJ.A.VBH.CAFPJB@chimera> <XUKIyYFWoBG.A.nrH.TAFPJB@chimera>
+In-Reply-To: <XUKIyYFWoBG.A.nrH.TAFPJB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812072352.07151.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 7 of December 2008, Arjan van de Ven wrote:
-> On Sun,  7 Dec 2008 21:32:54 +0100 (CET)
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Rafael J. Wysocki napsal(a):
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.26 and 2.6.27.
 > 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.27.  Please verify if it still should be listed and let me
-> > know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12152
-> > Subject		: Huge wakeups number from i1915
-> > Submitter	: Yves-Alexis Perez <corsac@debian.org>
-> > Date		: 2008-12-02 16:48 (6 days old)
-> > References	:
-> > http://marc.info/?l=linux-acpi&m=122823656702994&w=4
-> > 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+> be listed and let me know (either way).
 > 
-> at least in some of the cases where this has been seen the cause is the
-> following:
-> The i915 DRM driver used to do polling for completion, busy waiting. It
-> moved to be interrupt driven, which is usually better for power, but it
-> will show up as more wakeups in powertop....
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11886
+> Subject		: without serial console system doesn't  poweroff
+> Submitter	: Daniel Smolik <marvin@mydatex.cz>
+> Date		: 2008-10-29 04:06 (40 days old)
+> 
+> 
+Sorry I now have lot of work and cann't verify it now.
 
-IOW, this is not a regression?
+		Dan
 
-Rafael
+
+-- 
+Mydatex s r.o.
+http://www.mydatex.cz
+email: smolik@mydatex.cz
+mob: 604200362
+tel: 226210085
