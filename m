@@ -1,83 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbYLGIU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbYLGIW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbYLGIU2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 03:20:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYLGIUQ
+	id S1754454AbYLGIW3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 03:22:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbYLGIWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 03:20:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51718 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752836AbYLGIUP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 03:20:15 -0500
-Date: Sun, 7 Dec 2008 00:19:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Luca Santarelli <hrk@users.sourceforge.net>
-Cc: marcel@holtmann.org, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bluetooth usb hci: ISSC usb dongle with buggy SCO
- support
-Message-Id: <20081207001953.c04b9357.akpm@linux-foundation.org>
-In-Reply-To: <200812050002.13560.hrk@users.sourceforge.net>
-References: <200812050002.13560.hrk@users.sourceforge.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 7 Dec 2008 03:22:20 -0500
+Received: from ozlabs.org ([203.10.76.45]:56745 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752755AbYLGIWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 03:22:19 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mark McLoughlin <markmc@redhat.com>
+Subject: Re: [PATCH] virtio: make PCI devices take a virtio_pci module ref
+Date: Sun, 7 Dec 2008 18:52:08 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>,
+       Anthony Liguori <aliguori@us.ibm.com>, Michael Tokarev <mjt@tls.msk.ru>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <1228394671.3732.77.camel@blaa> <200812051043.51417.rusty@rustcorp.com.au> <1228489626.3858.37.camel@blaa>
+In-Reply-To: <1228489626.3858.37.camel@blaa>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812071852.08962.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Dec 2008 00:02:13 +0100 Luca Santarelli <hrk@users.sourceforge.net> wrote:
+On Saturday 06 December 2008 01:37:06 Mark McLoughlin wrote:
+> Another example of a lack of an explicit dependency causing problems is
+> Fedora's mkinitrd having this hack:
+> 
+>     if echo $PWD | grep -q /virtio-pci/ ; then
+>         findmodule virtio_pci
+>     fi
+>
+> which basically says "if this is a virtio device, don't forget to
+> include virtio_pci in the initrd too!". Now, mkinitrd is full of hacks,
+> but this is a particularly unusual one.
 
-> From: Luca Santarelli <hrk <t> users.sourceforge.net>
-> 
-> As reported at:
-> http://bugs.gentoo.org/show_bug.cgi?id=249523
-> and in reference of similar patches such as:
-> http://thread.gmane.org/gmane.linux.bluez.devel/15067
-> 
-> This patch changes the blacklist entry for the ISSC bluetooth USB
-> dongle fixing the issue of the repeatedly appearing message
-> 
->   hci_scodata_packet: hci0 SCO packet for unknown connection handle 92
-> 
-> in the kernel logs.
-> 
-> Sighed-off-by: Luca Santarelli <hrk <at> users.sourceforge.net>
-> ---
-> This is my first kernel patch ever, I read the docs, but please notify
-> me if I made any mistake. Thank you all for your work, I'm happy to have
-> been able to contribute to this!
-> 
-> The patch has been run against 2.6.27.7 and has been tested on three x86
-> machines, showing no issues. In my own tests, the dongle has been then
-> used to connect to devices and everything worked fine.
-> 
-> --- linux-2.6.27.7/drivers/bluetooth/hci_usb.c.orig	2008-12-04 20:18:38.000000000 +0100
-> +++ linux-2.6.27.7/drivers/bluetooth/hci_usb.c	2008-12-04 20:19:37.000000000 +0100
-> @@ -148,8 +148,8 @@ static struct usb_device_id blacklist_id
->  	{ USB_DEVICE(0x047d, 0x105d), .driver_info = HCI_RESET },
->  	{ USB_DEVICE(0x047d, 0x105e), .driver_info = HCI_RESET | HCI_WRONG_SCO_MTU },
->  
-> -	/* ISSC Bluetooth Adapter v3.1 */
-> -	{ USB_DEVICE(0x1131, 0x1001), .driver_info = HCI_RESET },
-> +	/* ISSC Bluetooth Adapter v3.1 with buggy SCO support */
-> +	{ USB_DEVICE(0x1131, 0x1001), .driver_info = HCI_RESET | HCI_BROKEN_ISOC },
->  
->  	/* RTX Telecom based adapters with buggy SCO support */
->  	{ USB_DEVICE(0x0400, 0x0807), .driver_info = HCI_BROKEN_ISOC },
+Um, I don't know what this does, sorry.
 
-linux-next has:
+I have no idea how Fedora chooses what to put in an initrd; I can't think
+of a sensible way of deciding what goes in and what doesn't other than
+lists and heuristics.
 
-commit 12421b40b81d101d7535e03f1af197365adc932b
-Author: Marcel Holtmann <marcel@holtmann.org>
-Date:   Sun Nov 30 12:17:21 2008 +0100
+But there really is no explicit dependency between virtio modules and
+virtio_pci.  There just is for kvm/x86 at the moment, since that is how
+they use virtio.  Running over another bus is certainly possible,
+though may never happen for x86 (happens today for s390).
 
-    Bluetooth: Remove deprecated hci_usb driver
-    
-    The old hci_usb driver has been fully replaced with the new btusb driver
-    and all major distributions switched to the new driver now. This removes
-    it since it should not be used at all anymore.
-
-so please confirm that btusb correctly supports that hardware?
+Cheers,
+Rusty.
