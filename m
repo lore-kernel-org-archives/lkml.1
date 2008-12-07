@@ -1,54 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbYLGQVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYLGQVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754958AbYLGQVT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 11:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbYLGQVF
+	id S1754387AbYLGQVe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 11:21:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbYLGQVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 11:21:05 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:46950 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754206AbYLGQVD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 11:21:03 -0500
-Message-ID: <ac3eb2510812070821w53ffccfbn73ac40d6a1380553@mail.gmail.com>
-Date: Sun, 7 Dec 2008 17:21:01 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Runaway loop with the current git.
-Cc: "Herbert Xu" <herbert@gondor.apana.org.au>, zbr@ioremap.net,
-       linux-kernel@vger.kernel.org,
-       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20081207160921.693f637a@lxorguk.ukuu.org.uk>
+	Sun, 7 Dec 2008 11:21:06 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48827 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754234AbYLGQVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 11:21:04 -0500
+Date: Sun, 7 Dec 2008 17:17:50 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Jay Lan <jlan@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Pirko <jpirko@redhat.com>, linux-kernel@vger.kernel.org,
+       Jonathan Lim <jlim@sgi.com>
+Subject: Re: [PATCH] introduce get_mm_hiwater_xxx(), fix
+	taskstats->hiwater_xxx accounting
+Message-ID: <20081207161750.GA25966@redhat.com>
+References: <20081203181220.GA22918@redhat.com> <Pine.LNX.4.64.0812031957570.19174@blonde.anvils> <20081204135250.GA5448@redhat.com> <Pine.LNX.4.64.0812051216020.10157@blonde.anvils> <493975BE.60202@sgi.com> <20081206084223.GA24782@balbir.in.ibm.com> <Pine.LNX.4.64.0812060950120.22390@blonde.anvils> <20081206103904.GC24782@balbir.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk>
-	 <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au>
-	 <20081207155507.GA15355@gondor.apana.org.au>
-	 <ac3eb2510812070803i150d91e7led58128796e8045e@mail.gmail.com>
-	 <20081207160921.693f637a@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081206103904.GC24782@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 7, 2008 at 17:09, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> Even when this works around it, the problem that the kernel triggers
->> module loading on /dev/console access stays and needs to be fixed
->> instead.
+(sorry for delay, I am travelling till 11 Dec)
+
+On 12/06, Balbir Singh wrote:
 >
-> It isn't a problem. It is trying to have hotplug load a suitable driver.
-> This is what is supposed to happen.
+> * Hugh Dickins <hugh@veritas.com> [2008-12-06 09:56:19]:
+>
+> > On Sat, 6 Dec 2008, Balbir Singh wrote:
+> > >
+> > > Yes, true and getdelays can display all the exported information.
+> > >
+> > > The race does seem concerning, I would vote for keeping the update in
+> > > there and disabling preemption around the update, so that hiwater
+> > > cannot swing back and forth.
+> >
+> > ??  Oleg is _fixing_ a race by removing the update from do_exit();
+> > and he is fixing the way the hiwater info was collected in tsacct.c.
+>
+> I see that change and the reasoning seems accurate that we can query
+> the task at anytime, but I worry that if taskstats is not enabled, we'll
+> never call update_hiwater.* on the exiting task.
 
-No, it's not. 5:1 is _in_ the kernel, and must not be tried to be
-loaded by the kernel. We need to make /dev/console access return
--ENODEV if not available, not try to load a module for it.
+With this patch, even if taskstats _is_ enabled, we never call update_
+on do_exit() path. Because there is no point to do this.
 
-It is a problem. It's broken behavior, and it breaks shipped products
-with any innocent future driver change like Herbert's.
+> I wonder if a thread came in and like Oleg said, did (without taskstats
+> enabled)
+>
+> free(malloc(some size)), followed by exit()
+>
+> whether task_mem() would show the correct results for hiwater.*.
 
-Please start to think about the problem, and don't repeat things that
-do not make sense, and never made any sense.
+unlike taskstats, task_mem() doesn't rely on update_hiwater_xxx(),
+it reads the current values and calculates the maximum. And this is
+the "right thing".
 
-Thanks,
-Kay
+update_hiwater_xxx() is only needed when we are going to decrease
+the current value, so we can lose the info if we don't calculate
+the maximum right now.
+
+We can disable preemption around update_ in do_exit(), but this
+doesn't close the race. We can even disable irqs but this (in
+theory) is not enough either. But the main point we do not need
+to update.
+
+And please note that taskstats was wrong even if update_ was not
+racy. Exactly because it relies on update_ in do_exit(), but it
+should not.
+
+As for ru_maxrss accounting, we can keep these update_hiwater_xxx()
+calls in do_exit() and then use mm->hiwater_xxx directly, but we
+should check group_dead in that case. I don't really think this
+would be cleaner/better, and then we have the similar problems with
+CLONE_VM tasks.
+
+Oleg.
+
