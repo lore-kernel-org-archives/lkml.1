@@ -1,135 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbYLGNPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbYLGN2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbYLGNPx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 08:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYLGNPb
+	id S1754523AbYLGN2t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 08:28:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbYLGN2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 08:15:31 -0500
-Received: from mga14.intel.com ([143.182.124.37]:28533 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754720AbYLGNP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 08:15:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,729,1220252400"; 
-   d="scan'208";a="87435766"
-Date: Sat, 6 Dec 2008 21:20:24 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: David Chinner <dgc@sgi.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       xfs@oss.sgi.com
-Subject: xfs: possible circular locking dependency detected
-Message-ID: <20081206132023.GA21235@localhost>
+	Sun, 7 Dec 2008 08:28:38 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:43910 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753493AbYLGN2h convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 08:28:37 -0500
+Message-ID: <493BCF60.1080409@cosmosbay.com>
+Date: Sun, 07 Dec 2008 14:28:00 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux kernel <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mingming Cao <cmm@us.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] percpu_counter: Fix __percpu_counter_sum()
+References: <4936D287.6090206@cosmosbay.com>	<4936EB04.8000609@cosmosbay.com> <20081206202233.3b74febc.akpm@linux-foundation.org>
+In-Reply-To: <20081206202233.3b74febc.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 07 Dec 2008 14:28:03 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+Andrew Morton a écrit :
+> On Wed, 03 Dec 2008 21:24:36 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
+> 
+>> Eric Dumazet a __crit :
+>>
+>> 1) __percpu_counter_sum() is buggy, it should not write
+>> on per_cpu_ptr(fbc->counters, cpu), or another cpu
+>> could get its changes lost.
+>>
+>> __percpu_counter_sum should be read only (const struct percpu_counter *fbc),
+>> and no locking needed.
+> 
+> No, we can't do this - it will break ext4.
+> 
+> Take a closer look at 1f7c14c62ce63805f9574664a6c6de3633d4a354 and at
+> e8ced39d5e8911c662d4d69a342b9d053eaaac4e.
+> 
+> I suggest that what we do is to revert both those changes.  We can
+> worry about the possibly-unneeded spin_lock later, in a separate patch.
+> 
+> It should have been a separate patch anyway.  It's conceptually
+> unrelated and is not a bugfix, but it was mixed in with a bugfix.
+> 
+> Mingming, this needs urgent consideration, please.  Note that I had to
+> make additional changes to ext4 due to the subsequent introduction of
+> the dirty_blocks counter.
+> 
+> 
+> Please read the below changelogs carefully and check that I have got my
+> head around this correctly - I may not have done.
+> 
 
-I got this warning while accessing xfs on usb storage.
-Is this a real problem?
 
-Thanks,
-Fengguang
+Hum... e8ced39d5e8911c662d4d69a342b9d053eaaac4e is probably following
+the wrong path, but I see the intent. Even in the 'nr_files' case, it could
+help to reduce excessive calls to percpu_counter_sum()
 
- =======================================================
- [ INFO: possible circular locking dependency detected ]
- 2.6.28-rc7 #85
- -------------------------------------------------------
- rsync/20106 is trying to acquire lock:
-  (iprune_mutex){--..}, at: [<ffffffff811070a4>] shrink_icache_memory+0x84/0x290
+What we can do is to use two s64 counters (only in SMP):
 
- but task is already holding lock:
-  (&(&ip->i_iolock)->mr_lock){----}, at: [<ffffffffa030fcc5>] xfs_ilock+0x75/0xb0 [xfs]
+s64 reference_count
+s64 shadow_count
 
- which lock already depends on the new lock.
+One that is guaranteed to be touched with appropriate locking
+in __percpu_counter_add()
 
+Another one that might be changed by percpu_counter_sum(), without
+any locking, acting as a shadow.
 
- the existing dependency chain (in reverse order) is:
+Thanks
 
- -> #1 (&(&ip->i_iolock)->mr_lock){----}:
-        [<ffffffff810799b2>] __lock_acquire+0x12e2/0x18c0
-        [<ffffffff8107a029>] lock_acquire+0x99/0xd0
-        [<ffffffff8106a937>] down_write_nested+0x57/0x90
-        [<ffffffffa030fcf5>] xfs_ilock+0xa5/0xb0 [xfs]
-        [<ffffffffa030fea6>] xfs_ireclaim+0x46/0x90 [xfs]
-        [<ffffffffa032d8de>] xfs_finish_reclaim+0x5e/0x1a0 [xfs]
-        [<ffffffffa032dc3b>] xfs_reclaim+0x11b/0x120 [xfs]
-        [<ffffffffa033cd4e>] xfs_fs_clear_inode+0xee/0x120 [xfs]
-        [<ffffffff81106e50>] clear_inode+0x90/0x140
-        [<ffffffff81106f38>] dispose_list+0x38/0x120
-        [<ffffffff81107263>] shrink_icache_memory+0x243/0x290
-        [<ffffffff810c3ae5>] shrink_slab+0x125/0x180
-        [<ffffffff810c4362>] kswapd+0x542/0x6a0
-        [<ffffffff8106610e>] kthread+0x4e/0x90
-        [<ffffffff8100dc99>] child_rip+0xa/0x11
-        [<ffffffffffffffff>] 0xffffffffffffffff
+[PATCH] percpu_counter: Fix __percpu_counter_sum()
 
- -> #0 (iprune_mutex){--..}:
-        [<ffffffff81079aff>] __lock_acquire+0x142f/0x18c0
-        [<ffffffff8107a029>] lock_acquire+0x99/0xd0
-        [<ffffffff8148220e>] mutex_lock_nested+0xce/0x320
-        [<ffffffff811070a4>] shrink_icache_memory+0x84/0x290
-        [<ffffffff810c3ae5>] shrink_slab+0x125/0x180
-        [<ffffffff810c4b46>] try_to_free_pages+0x286/0x3f0
-        [<ffffffff810bcba5>] __alloc_pages_internal+0x255/0x5b0
-        [<ffffffff810e275b>] alloc_pages_current+0x7b/0x100
-        [<ffffffff810b5340>] __page_cache_alloc+0x10/0x20
-        [<ffffffff810bf0e8>] __do_page_cache_readahead+0x138/0x250
-        [<ffffffff810bf2df>] ondemand_readahead+0xdf/0x3c0
-        [<ffffffff810bf669>] page_cache_async_readahead+0xa9/0xc0
-        [<ffffffff810b5e39>] do_generic_file_read+0x259/0x4d0
-        [<ffffffff810b6ff0>] generic_file_aio_read+0xd0/0x1c0
-        [<ffffffffa033c5ea>] xfs_read+0x12a/0x280 [xfs]
-        [<ffffffffa0337c46>] xfs_file_aio_read+0x56/0x60 [xfs]
-        [<ffffffff810f1459>] do_sync_read+0xf9/0x140
-        [<ffffffff810f20c8>] vfs_read+0xc8/0x180
-        [<ffffffff810f2285>] sys_read+0x55/0x90
-        [<ffffffff8100c62a>] system_call_fastpath+0x16/0x1b
-        [<ffffffffffffffff>] 0xffffffffffffffff
+commit e8ced39d5e8911c662d4d69a342b9d053eaaac4e (percpu_counter: 
+new function percpu_counter_sum_and_set) was to make __percpu_counter_sum()
+being able to recompute the estimate of a percpu_counter value.
 
- other info that might help us debug this:
+Problem is that we cannot write on other cpus counters without racing.
 
- 2 locks held by rsync/20106:
-  #0:  (&(&ip->i_iolock)->mr_lock){----}, at: [<ffffffffa030fcc5>] xfs_ilock+0x75/0xb0 [xfs]
-  #1:  (shrinker_rwsem){----}, at: [<ffffffff810c39f7>] shrink_slab+0x37/0x180
+What we can do is to use two s64 counter, one acting as a reference
+that we should not change in __percpu_counter_sum(), another one, shadowing
+the reference.
 
- stack backtrace:
- Pid: 20106, comm: rsync Not tainted 2.6.28-rc7 #85
- Call Trace:
-  [<ffffffff81078298>] print_circular_bug_tail+0xd8/0xe0
-  [<ffffffff81079aff>] __lock_acquire+0x142f/0x18c0
-  [<ffffffff810c0576>] ? __pagevec_release+0x26/0x40
-  [<ffffffff8107a029>] lock_acquire+0x99/0xd0
-  [<ffffffff811070a4>] ? shrink_icache_memory+0x84/0x290
-  [<ffffffff8148220e>] mutex_lock_nested+0xce/0x320
-  [<ffffffff811070a4>] ? shrink_icache_memory+0x84/0x290
-  [<ffffffff811070a4>] ? shrink_icache_memory+0x84/0x290
-  [<ffffffff811070a4>] shrink_icache_memory+0x84/0x290
-  [<ffffffff810c3ae5>] shrink_slab+0x125/0x180
-  [<ffffffff810c4b46>] try_to_free_pages+0x286/0x3f0
-  [<ffffffff810c1640>] ? isolate_pages_global+0x0/0x260
-  [<ffffffff810bcba5>] __alloc_pages_internal+0x255/0x5b0
-  [<ffffffff810e275b>] alloc_pages_current+0x7b/0x100
-  [<ffffffff810b5340>] __page_cache_alloc+0x10/0x20
-  [<ffffffff810bf0e8>] __do_page_cache_readahead+0x138/0x250
-  [<ffffffff810bf07a>] ? __do_page_cache_readahead+0xca/0x250
-  [<ffffffff810bf2df>] ondemand_readahead+0xdf/0x3c0
-  [<ffffffff81013e49>] ? sched_clock+0x9/0x10
-  [<ffffffff810bf669>] page_cache_async_readahead+0xa9/0xc0
-  [<ffffffff810b5e39>] do_generic_file_read+0x259/0x4d0
-  [<ffffffff810b47a0>] ? file_read_actor+0x0/0x190
-  [<ffffffff810b6ff0>] generic_file_aio_read+0xd0/0x1c0
-  [<ffffffffa030fcc5>] ? xfs_ilock+0x75/0xb0 [xfs]
-  [<ffffffffa033c5ea>] xfs_read+0x12a/0x280 [xfs]
-  [<ffffffffa0337c46>] xfs_file_aio_read+0x56/0x60 [xfs]
-  [<ffffffff810f1459>] do_sync_read+0xf9/0x140
-  [<ffffffff81066560>] ? autoremove_wake_function+0x0/0x40
-  [<ffffffff811ecdaf>] ? _raw_spin_unlock+0x7f/0xb0
-  [<ffffffff81483f9d>] ? trace_hardirqs_off_thunk+0x3a/0x3c
-  [<ffffffff810f20c8>] vfs_read+0xc8/0x180
-  [<ffffffff810f2285>] sys_read+0x55/0x90
-  [<ffffffff8100c62a>] system_call_fastpath+0x16/0x1b
+percpu_counter_read() is reading the shadow
+percpu_counter_sum() reads the reference and recompute the shadow.
+
+If a given percpu_counter is never 'summed', then its shadow_counter
+is always equal to its reference.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+---
+ include/linux/percpu_counter.h |    9 +++++----
+ lib/percpu_counter.c           |   27 +++++++++++++++++----------
+ 2 files changed, 22 insertions(+), 14 deletions(-)
+
+diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
+index 9007ccd..71b5c5d 100644
+--- a/include/linux/percpu_counter.h
++++ b/include/linux/percpu_counter.h
+@@ -17,7 +17,8 @@
+ 
+ struct percpu_counter {
+ 	spinlock_t lock;
+-	s64 count;
++	s64	   reference_count;
++	s64	   shadow_count;
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	struct list_head list;	/* All percpu_counters are on a list */
+ #endif
+@@ -55,7 +56,7 @@ static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
+ 
+ static inline s64 percpu_counter_read(struct percpu_counter *fbc)
+ {
+-	return fbc->count;
++	return fbc->shadow_count;
+ }
+ 
+ /*
+@@ -65,9 +66,9 @@ static inline s64 percpu_counter_read(struct percpu_counter *fbc)
+  */
+ static inline s64 percpu_counter_read_positive(struct percpu_counter *fbc)
+ {
+-	s64 ret = fbc->count;
++	s64 ret = percpu_counter_read(fbc);
+ 
+-	barrier();		/* Prevent reloads of fbc->count */
++	barrier();		/* Prevent reloads of fbc->shadow_count */
+ 	if (ret >= 0)
+ 		return ret;
+ 	return 1;
+diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
+index a866389..44ec857 100644
+--- a/lib/percpu_counter.c
++++ b/lib/percpu_counter.c
+@@ -14,6 +14,9 @@ static LIST_HEAD(percpu_counters);
+ static DEFINE_MUTEX(percpu_counters_lock);
+ #endif
+ 
++/*
++ * Note : This function is racy
++ */
+ void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
+ {
+ 	int cpu;
+@@ -23,7 +26,8 @@ void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
+ 		s32 *pcount = per_cpu_ptr(fbc->counters, cpu);
+ 		*pcount = 0;
+ 	}
+-	fbc->count = amount;
++	fbc->reference_count = amount;
++	fbc->shadow_count = amount;
+ 	spin_unlock(&fbc->lock);
+ }
+ EXPORT_SYMBOL(percpu_counter_set);
+@@ -38,7 +42,8 @@ void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
+ 	count = *pcount + amount;
+ 	if (count >= batch || count <= -batch) {
+ 		spin_lock(&fbc->lock);
+-		fbc->count += count;
++		fbc->reference_count += count;
++		fbc->shadow_count += count;
+ 		*pcount = 0;
+ 		spin_unlock(&fbc->lock);
+ 	} else {
+@@ -57,16 +62,16 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc)
+ 	s64 ret;
+ 	int cpu;
+ 
+-	spin_lock(&fbc->lock);
+-	ret = fbc->count;
++	ret = fbc->reference_count;
+ 	for_each_online_cpu(cpu) {
+ 		s32 *pcount = per_cpu_ptr(fbc->counters, cpu);
+ 		ret += *pcount;
+-		*pcount = 0;
+ 	}
+-	fbc->count = ret;
+-
+-	spin_unlock(&fbc->lock);
++	/*
++	 * Update fbc->shadow_count so that percpu_counter_read()
++	 * can have a better idea of this counter 'value'
++	 */
++	fbc->shadow_count = ret;
+ 	return ret;
+ }
+ EXPORT_SYMBOL(__percpu_counter_sum);
+@@ -76,7 +81,8 @@ static struct lock_class_key percpu_counter_irqsafe;
+ int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+ {
+ 	spin_lock_init(&fbc->lock);
+-	fbc->count = amount;
++	fbc->shadow_count = amount;
++	fbc->reference_count = amount;
+ 	fbc->counters = alloc_percpu(s32);
+ 	if (!fbc->counters)
+ 		return -ENOMEM;
+@@ -132,7 +138,8 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+ 
+ 		spin_lock_irqsave(&fbc->lock, flags);
+ 		pcount = per_cpu_ptr(fbc->counters, cpu);
+-		fbc->count += *pcount;
++		fbc->reference_count += *pcount;
++		fbc->shadow_count += *pcount;
+ 		*pcount = 0;
+ 		spin_unlock_irqrestore(&fbc->lock, flags);
+ 	}
+
