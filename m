@@ -1,160 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYLGPzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbYLGPzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbYLGPzc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 10:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYLGPzU
+	id S1755088AbYLGPzr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 10:55:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbYLGPz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 10:55:20 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:43912 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753233AbYLGPzT (ORCPT
+	Sun, 7 Dec 2008 10:55:27 -0500
+Received: from gate.compton.nu ([217.169.19.106]:52366 "EHLO
+	gosford.compton.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754147AbYLGPzY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 10:55:19 -0500
-Date: Sun, 7 Dec 2008 23:55:07 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: kay.sievers@vrfy.org, zbr@ioremap.net, linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Runaway loop with the current git.
-Message-ID: <20081207155507.GA15355@gondor.apana.org.au>
-References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk> <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au>
+	Sun, 7 Dec 2008 10:55:24 -0500
+Message-ID: <493BF1D4.7090602@compton.nu>
+Date: Sun, 07 Dec 2008 15:55:00 +0000
+From: Tom Hughes <tom@compton.nu>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Matthew Garrett <mjg@redhat.com>
+CC: Thomas Renninger <trenn@suse.de>,
+       Cristiano Prisciandaro <cristiano.p@solnet.ch>,
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] cpufreq: eeepc 900 frequency scaling driver
+References: <1227454026.7262.59.camel@localhost> <492A7632.4040106@compton.nu> <4936DD78.4090501@compton.nu> <200812040257.09099.trenn@suse.de> <4939B3C3.8060205@compton.nu> <20081206163539.GB7623@srcf.ucam.org>
+In-Reply-To: <20081206163539.GB7623@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -2.6 (--)
+X-Spam-Report: Spam detection software, running on the system "gosford.compton.nu", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  Matthew Garrett wrote: > It appears to be implemented in the
+	900 and 901 BIOSes as well, so some > kind of limitation is probably needed.
+	The best approach would probably > to check whether the CPU has the EST flag.
+	Just do something like: > > struct cpuinfo_x86 *cpu = &cpu_data(policy->cpu);
+	> > if (cpu->x86_vendor != X86_VENDOR_INTEL || cpu_has(cpu, X86_FEATURE_EST))
+	> return -ENODEV > > at the top of the cpufreq init code. That way you'll
+	refuse to bind on > anything that implements speedstep and acpi-cpufreq can
+	be used instead. [...] 
+	Content analysis details:   (-2.6 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-0.0 NO_RELAYS              Informational: message was not relayed via SMTP
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 07, 2008 at 10:49:27PM +0800, Herbert Xu wrote:
->
-> In any case the loop itself does not involve any crypto components
-> so I don't think making changes in the crypto layer is going to
-> make this go away forever as anyone calling request_module early
-> enough will get into this loop.
+Matthew Garrett wrote:
 
-Having said that I think this patch should remove this particular
-trigger.  Unfortunately I couldn't find a more succinct way of
-expressing this relationship: if ALGAPI is built-in because it's
-selected by an algorithm, and CRYPTO_MANAGER is enabled then we
-require CRYPTO_MANAGER to be built-in as well.
+> It appears to be implemented in the 900 and 901 BIOSes as well, so some 
+> kind of limitation is probably needed. The best approach would probably 
+> to check whether the CPU has the EST flag. Just do something like:
+> 
+> struct cpuinfo_x86 *cpu = &cpu_data(policy->cpu);
+> 
+> if (cpu->x86_vendor != X86_VENDOR_INTEL || cpu_has(cpu, X86_FEATURE_EST))
+> 	return -ENODEV
+> 
+> at the top of the cpufreq init code. That way you'll refuse to bind on 
+> anything that implements speedstep and acpi-cpufreq can be used instead.
 
-Evgeniy, please let me know whether this fixes the problem.
+Sounds like a good idea - here's a new version with that check added:
 
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 6593b5a..3f88a52 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -31,35 +31,63 @@ config CRYPTO_FIPS
+--- kmod-eeepc-laptop-2.6.28rc5/eeepc-laptop.c	2008-11-20 09:24:41.000000000 +0000
++++ kmod-eeepc-laptop-cpufreq/eeepc-laptop.c	2008-12-07 15:54:07.000000000 +0000
+@@ -25,6 +25,7 @@
+ #include <linux/fb.h>
+ #include <linux/hwmon.h>
+ #include <linux/hwmon-sysfs.h>
++#include <linux/cpufreq.h>
+ #include <acpi/acpi_drivers.h>
+ #include <acpi/acpi_bus.h>
+ #include <linux/uaccess.h>
+@@ -731,6 +732,118 @@
+ };
  
- config CRYPTO_ALGAPI
- 	tristate
-+	select CRYPTO_ALGAPI2
- 	help
- 	  This option provides the API for cryptographic algorithms.
- 
-+config CRYPTO_ALGAPI2
-+	tristate
+ /*
++ * Cpufreq
++ *
++ * Based on work by Cristiano P. <cris69@solnet.ch>
++ */
++static struct cpufreq_frequency_table eeepc_cpufreq_table[] = {
++       {0, 630000},
++       {1, 900000},
++       {0, CPUFREQ_TABLE_END}
++};
 +
- config CRYPTO_AEAD
- 	tristate
-+	select CRYPTO_AEAD2
- 	select CRYPTO_ALGAPI
- 
-+config CRYPTO_AEAD2
-+	tristate
-+	select CRYPTO_ALGAPI2
++static unsigned int eeepc_cpufreq_get(unsigned int cpu)
++{
++	switch (get_acpi(CM_ASL_CPUFV)) {
++	case 0x200:
++		return 900000;
++	case 0x201:
++		return 630000;
++	}
 +
- config CRYPTO_BLKCIPHER
- 	tristate
-+	select CRYPTO_BLKCIPHER2
- 	select CRYPTO_ALGAPI
--	select CRYPTO_RNG
++	return 0;
++}
 +
-+config CRYPTO_BLKCIPHER2
-+	tristate
-+	select CRYPTO_ALGAPI2
-+	select CRYPTO_RNG2
- 
- config CRYPTO_HASH
- 	tristate
-+	select CRYPTO_HASH2
- 	select CRYPTO_ALGAPI
- 
-+config CRYPTO_HASH2
-+	tristate
-+	select CRYPTO_ALGAPI2
++static void eeepc_cpufreq_set(unsigned int frequency)
++{
++	struct cpufreq_freqs freqs;
 +
- config CRYPTO_RNG
- 	tristate
-+	select CRYPTO_RNG2
- 	select CRYPTO_ALGAPI
- 
-+config CRYPTO_RNG2
-+	tristate
-+	select CRYPTO_ALGAPI2
++	freqs.cpu = 0;
++	freqs.old = eeepc_cpufreq_get(0);
++	freqs.new = frequency;
 +
- config CRYPTO_MANAGER
- 	tristate "Cryptographic algorithm manager"
--	select CRYPTO_AEAD
--	select CRYPTO_HASH
--	select CRYPTO_BLKCIPHER
-+	select CRYPTO_MANAGER2
- 	help
- 	  Create default cryptographic template instantiations such as
- 	  cbc(aes).
- 
-+config CRYPTO_MANAGER2
-+	def_tristate CRYPTO_MANAGER || (CRYPTO_MANAGER!=n && CRYPTO_ALGAPI=y)
-+	select CRYPTO_AEAD2
-+	select CRYPTO_HASH2
-+	select CRYPTO_BLKCIPHER2
++	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
 +
- config CRYPTO_GF128MUL
- 	tristate "GF(2^128) multiplication functions (EXPERIMENTAL)"
- 	depends on EXPERIMENTAL
-diff --git a/crypto/Makefile b/crypto/Makefile
-index 0e93f32..73e7c30 100644
---- a/crypto/Makefile
-+++ b/crypto/Makefile
-@@ -9,25 +9,25 @@ obj-$(CONFIG_CRYPTO_FIPS) += fips.o
++	switch (frequency) {
++	case 900000:
++		set_acpi(CM_ASL_CPUFV, 0);
++		break;
++	case 630000:
++		set_acpi(CM_ASL_CPUFV, 1);
++		break;
++	}
++
++	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++
++	return;
++}
++
++static int eeepc_cpufreq_verify(struct cpufreq_policy *policy)
++{
++	return cpufreq_frequency_table_verify(policy, eeepc_cpufreq_table);
++}
++
++static int eeepc_cpufreq_target (struct cpufreq_policy *policy,
++				 unsigned int target_freq,
++				 unsigned int relation)
++{
++	unsigned int newstate = 0;
++
++	if (cpufreq_frequency_table_target(policy, eeepc_cpufreq_table,
++					   target_freq, relation, &newstate))
++		return -EINVAL;
++
++	eeepc_cpufreq_set(eeepc_cpufreq_table[newstate].frequency);
++
++	return 0;
++}
++
++static int eeepc_cpufreq_cpu_init(struct cpufreq_policy *policy)
++{
++	struct cpuinfo_x86 *cpu = &cpu_data(policy->cpu);
++
++	/* Defer to acpi-cpufreq if this CPU has SpeedStep support */
++	if (cpu->x86_vendor != X86_VENDOR_INTEL || cpu_has(cpu, X86_FEATURE_EST))
++		return -ENODEV;
++
++	if (get_acpi(CM_ASL_CPUFV) < 0)
++		return -ENODEV;
++
++	policy->cpuinfo.transition_latency = 1000000;
++	policy->cur = eeepc_cpufreq_get(policy->cpu);
++
++	if (cpufreq_frequency_table_cpuinfo(policy, eeepc_cpufreq_table))
++		return -EINVAL;
++
++	cpufreq_frequency_table_get_attr(eeepc_cpufreq_table, policy->cpu);
++
++	return 0;
++}
++
++static int eeepc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
++{
++	cpufreq_frequency_table_put_attr(policy->cpu);
++
++	return 0;
++}
++
++static struct freq_attr *eeepc_cpufreq_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	NULL,
++};
++
++static struct cpufreq_driver eeepc_cpufreq_driver = {
++	.verify         = eeepc_cpufreq_verify,
++	.target         = eeepc_cpufreq_target,
++	.init           = eeepc_cpufreq_cpu_init,
++	.exit           = eeepc_cpufreq_cpu_exit,
++	.get            = eeepc_cpufreq_get,
++	.name           = "eeepc",
++	.owner          = THIS_MODULE,
++	.attr           = eeepc_cpufreq_attr,
++};
++
++/*
+  * exit/init
+  */
+ static void eeepc_backlight_exit(void)
+@@ -759,10 +872,16 @@
+ 	eeepc_hwmon_device = NULL;
+ }
  
- crypto_algapi-$(CONFIG_PROC_FS) += proc.o
- crypto_algapi-objs := algapi.o scatterwalk.o $(crypto_algapi-y)
--obj-$(CONFIG_CRYPTO_ALGAPI) += crypto_algapi.o
-+obj-$(CONFIG_CRYPTO_ALGAPI2) += crypto_algapi.o
++static void eeepc_cpufreq_exit(void)
++{
++	cpufreq_unregister_driver(&eeepc_cpufreq_driver);
++}
++
+ static void __exit eeepc_laptop_exit(void)
+ {
+ 	eeepc_backlight_exit();
+ 	eeepc_hwmon_exit();
++	eeepc_cpufreq_exit();
+ 	acpi_bus_unregister_driver(&eeepc_hotk_driver);
+ 	sysfs_remove_group(&platform_device->dev.kobj,
+ 			   &platform_attribute_group);
+@@ -810,6 +929,11 @@
+ 	return result;
+ }
  
--obj-$(CONFIG_CRYPTO_AEAD) += aead.o
-+obj-$(CONFIG_CRYPTO_AEAD2) += aead.o
- 
- crypto_blkcipher-objs := ablkcipher.o
- crypto_blkcipher-objs += blkcipher.o
--obj-$(CONFIG_CRYPTO_BLKCIPHER) += crypto_blkcipher.o
--obj-$(CONFIG_CRYPTO_BLKCIPHER) += chainiv.o
--obj-$(CONFIG_CRYPTO_BLKCIPHER) += eseqiv.o
-+obj-$(CONFIG_CRYPTO_BLKCIPHER2) += crypto_blkcipher.o
-+obj-$(CONFIG_CRYPTO_BLKCIPHER2) += chainiv.o
-+obj-$(CONFIG_CRYPTO_BLKCIPHER2) += eseqiv.o
- obj-$(CONFIG_CRYPTO_SEQIV) += seqiv.o
- 
- crypto_hash-objs := hash.o
- crypto_hash-objs += ahash.o
- crypto_hash-objs += shash.o
--obj-$(CONFIG_CRYPTO_HASH) += crypto_hash.o
-+obj-$(CONFIG_CRYPTO_HASH2) += crypto_hash.o
- 
- cryptomgr-objs := algboss.o testmgr.o
- 
--obj-$(CONFIG_CRYPTO_MANAGER) += cryptomgr.o
-+obj-$(CONFIG_CRYPTO_MANAGER2) += cryptomgr.o
- obj-$(CONFIG_CRYPTO_HMAC) += hmac.o
- obj-$(CONFIG_CRYPTO_XCBC) += xcbc.o
- obj-$(CONFIG_CRYPTO_NULL) += crypto_null.o
++static int eeepc_cpufreq_init(struct device *dev)
++{
++	return cpufreq_register_driver(&eeepc_cpufreq_driver);
++}
++
+ static int __init eeepc_laptop_init(void)
+ {
+ 	struct device *dev;
+@@ -837,6 +961,9 @@
+ 	result = eeepc_hwmon_init(dev);
+ 	if (result)
+ 		goto fail_hwmon;
++	result = eeepc_cpufreq_init(dev);
++	if (result)
++		goto fail_cpufreq;
+ 	/* Register platform stuff */
+ 	result = platform_driver_register(&platform_driver);
+ 	if (result)
+@@ -861,6 +988,8 @@
+ fail_platform_device1:
+ 	platform_driver_unregister(&platform_driver);
+ fail_platform_driver:
++	eeepc_cpufreq_exit();
++fail_cpufreq:
+ 	eeepc_hwmon_exit();
+ fail_hwmon:
+ 	eeepc_backlight_exit();
 
-Cheers,
+
+Tom
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Tom Hughes (tom@compton.nu)
+http://www.compton.nu/
