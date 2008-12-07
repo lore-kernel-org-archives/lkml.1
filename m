@@ -1,137 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbYLGTXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbYLGTvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbYLGTXT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 14:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbYLGTXK
+	id S1753174AbYLGTvk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 14:51:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbYLGTva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 14:23:10 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:25767 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753209AbYLGTXJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 14:23:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=XWroDBxh/mGPkiEq1TcXCshspetxwhqzdVbWrr9X50EkM5L5XVqfOyyqSR8qlkiidG
-         yeYXirUOAdUNN53O7AT3mt3pqLWJHPKgMbmiG6gNLGci6Q/7G3UAn8wf1qjpJRIm8w80
-         QY3wyXer7Gx27mf2UWhxFuO8nHoO7dCyjUiRc=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: vanilla kernels hang randomly under Fedora 10 on system with Radeon card
-Date: Sun, 7 Dec 2008 20:21:38 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rc6-next-20081128; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Benny Amorsen <benny+usenet@amorsen.dk>
-References: <200812012342.32575.bzolnier@gmail.com> <200812042055.13731.bzolnier@gmail.com> <200812042118.17921.bzolnier@gmail.com>
-In-Reply-To: <200812042118.17921.bzolnier@gmail.com>
+	Sun, 7 Dec 2008 14:51:30 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:48081 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750720AbYLGTv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 14:51:29 -0500
+Date: Sun, 7 Dec 2008 20:51:38 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+Subject: Re: LibATA error
+Message-ID: <20081207195138.GB5761@ics.muni.cz>
+References: <20081206185252.GA4323@ics.muni.cz> <493AE09F.5010108@shaw.ca> <20081207153757.GA5761@ics.muni.cz> <20081207183647.3ba03750@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-Message-Id: <200812072021.38931.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081207183647.3ba03750@lxorguk.ukuu.org.uk>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sun, 07 Dec 2008 20:51:19 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 04 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> > On Thursday 04 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> > > On Wednesday 03 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> > > > On Tuesday 02 December 2008, Dave Airlie wrote:
-> > > > > On Tue, Dec 2, 2008 at 8:42 AM, Bartlomiej Zolnierkiewicz
-> > > > > <bzolnier@gmail.com> wrote:
-> > > > > >
-> > > > > > Hi,
-> > > > > >
-> > > > > > After Fedora 9 -> Fedora 10 upgrade vanilla kernels which previously
-> > > > > > worked fine (next-20081128 and next-20081121) started to hang randomly
-> > > > > > on my Pentium M / 855PM / RV350 laptop.  Since (surprisingly) stock
-> > > > > > Fedora kernel (2.6.27.5-117.fc10.i686) was not affected I got the idea
-> > > > > > that either userspace changes uncovered some kernel regression or some
-> > > > > > Fedora specific patch must be fixing the issue.  Unfortunately vanilla
-> > > > > > 2.6.27 also freezed so after the usual pain caused by hitting bunch of
-> > > > > > unrelated problems [1] it turned out that drm-modesetting-radeon.patch
-> > > > > > is the magic patch and CONFIG_DRM_RADEON_KMS is the magic change.  With
-> > > > > > the patch and enabling the option next-20081128 works stable again...
-> > > > > >
-> > > > > > Since the following error gets logged by kernel:
-> > > > > >
-> > > > > > [drm:drm_buffer_object_validate] *ERROR* Failed moving buffer. cef578c0 1444 4000027 10000a0
-> > > > > > [drm:drm_buffer_object_validate] *ERROR* Out of aperture space or DRM memory quota.
-> > > > > >
-> > > > > > and it also seems that system is more responsive now (it was kind of
-> > > > > > sluggish previously) my draft theory is that F9 -> F10 triggered some
-> > > > > > AGP memory management bug and CONFIG_DRM_RADEON_KMS happens to fix it
-> > > > > > but I'll leave figuring this up to the more knowledgeable people... ;)
-> > > > > 
-> > > > > Well KMS is a purely Fedora thing, and enabling it completely avoids
-> > > > > the old driver codepaths so
-> > > > > while it might fix it, its more by accident than design.
-> > > > > 
-> > > > > I'm trying to track down the rv3xx hangs with hpa at the moment as he
-> > > > > sees them also, something in
-> > > > >  the 2.6.26->2.6.27 timeframe. I'm hoping running the 2.6.26 drm on
-> > > > > the 2.6.27 will help narrow it down.
-> > > > > 
-> > > > > Bisecting 2.6.26->2.6.27 might also help.
-> > > > 
-> > > > It could be a different issue.  I tried 2.6.26, 2.6.25 and 2.6.24
-> > > > and they all hang (they all worked fine with Fedora 9)...
-> > > > 
-> > > > I will try some older kernels but I start thinking that the xorg's ati
-> > > > driver update is the main cause (xorg-x11-drv-ati-6.8.0-19.fc9.i386.rpm
-> > > > -> xorg-x11-drv-ati-6.9.0-54.fc10.i386.rpm).
-> > > 
-> > > I just went straight to trying downgrading the driver and the older driver
-> > > indeed works fine.  Then I tried to narrow down the problem and the lucky
-> > > winner this time is the cute (== undocumented and unsigned-off) patch
-> > > called radeon-6.9.0-remove-limit-heuristics.patch.  The newer driver with
-> > > only this patch reverted fixes hangs for vanilla kernels and drm errors
-> > > for Fedora kernel.  Also performance problems that I've noticed in the
-> > > meantime (slower playback of 720p videos, sluggish window scrolling in
-> > > kmail) are completely gone.  That being said I'm not entirely sure whether
-> > 
-> > I was too quick here -- performance problems are still present with
-> > _Fedora_ kernel.
-> > 
-> > Reassuming: what I currently need to do to get my gfx working properly
-> > with F10 is reverting radeon-6.9.0-remove-limit-heuristics.patch from
-> > xorg-x11-drv-ati and using vanilla kernel instead of Fedora's one.
-> 
-> Heh, and it just hang on me after sending the above mail (it took like
-> 1h or so for hang to occur) => the patch is just a very good trigger for
-> the "real" bug.  I'll now be running vanilla 6.9.0 to see how it goes...
+On Sun, Dec 07, 2008 at 06:36:47PM +0000, Alan Cox wrote:
+> They shouldn't be claiming they can do NCQ if so. Can you dump out the
+> identify data in full (with hdparm) and if possible (or if someone else
+> with one can comment..) find out whether the same occurs with different
+> controller types.
 
-It went well, "vanilla" in this case was xorg-x11-drv-ati-6.9.0-54.fc10
-content _without_ radeon-modeset.patch and _with_ patch containing commit
-da021c36bbdf3bca31ee50ebe01cdb9495c09b36 ("radeon_drm.h: remove kernel
-defines") from xf86-video-ati git tree (needed to make things compile).
+Controller reports NCQ queue depth 1.
 
-I tried to bisect it futher using radeon-gem-cs branch (using edge commit
-deduced from radeon-modeset.patch) and managed to narrow it down further to
-somewhere between
+Did you mean this one?
 
-commit 44fb767aa95e5f0725386106b89d0782fd53b768
-("radeon: fixup modesetting code after rebasing to master")
+ hdparm -i /dev/sda
 
-and 
+/dev/sda:
 
-commit 12e71eaf7999520d23d50cfbcfc0299b2bdf7a9d
-("port to using drm header files")
+ Model=OCZ CORE_SSD                            , FwRev=02.10104,
+SerialNo=DC030849085600010   
+ Config={ Fixed }
+ RawCHS=16383/16/63, TrkSize=0, SectSize=0, ECCbytes=63
+ BuffType=unknown, BuffSize=0kB, MaxMultSect=1, MultSect=?1?
+ CurCHS=16383/16/63, CurSects=16514064, LBA=yes, LBAsects=504856576
+ IORDY=on/off, tPIO={min:120,w/IORDY:120}, tDMA={min:120,rec:120}
+ PIO modes:  pio0 pio1 pio2 pio3 pio4 
+ DMA modes:  mdma0 mdma1 mdma2 
+ UDMA modes: udma0 udma1 udma2 udma3 udma4 *udma5 
+ AdvancedPM=no WriteCache=enabled
+ Drive conforms to: unknown:  ATA/ATAPI-1,2,3,4,5,6,7
 
-which left 66 commits which are completely unbisectable because of build
-problems and bugfixes.   I tried continuing with exporting commits from git
-to patches, importing patches to quilt and shuffling them around to make
-things bisectable again...  Unfortunately this turned out to be more time
-consuming than expected and I run out of time for this exercise...
+ * signifies the current active mode
 
-Dave, do you have some ideas how can this be debugged further?
-(i.e. rebuilding radeon-gem-cs tree would greatly help)
-
-Or maybe it is not worth it until trying some updates/fixes first?
-
-Thanks,
-Bart
+-- 
+Luká¹ Hejtmánek
