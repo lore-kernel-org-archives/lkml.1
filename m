@@ -1,182 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYLGMFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754179AbYLGMQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbYLGMFP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 07:05:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYLGMFA
+	id S1754179AbYLGMQT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 07:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYLGMQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 07:05:00 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:47574 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424AbYLGME7 (ORCPT
+	Sun, 7 Dec 2008 07:16:06 -0500
+Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:4890 "EHLO
+	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753475AbYLGMQF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 07:04:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GWaf0vj3NZnlc1Izhp8/ztuLn9LbbMjm3NISLVypoYsp2eaXK7cxkV/q9EEe78U4VC
-         ErWhrMVyGYPe86ooXdsm6lzGgtR7Tv8S9rY/pF5XPxI1Ruf0lQBUn3czVw/ZZwAn68Fu
-         NIbpAsEdO6IUnTvnUjuh75arCSznlp2NTgHkk=
-Message-ID: <7b9198260812070404i6d4f25fpce4264c8ad518218@mail.gmail.com>
-Date: Sun, 7 Dec 2008 12:04:58 +0000
-From: "Tom Spink" <tspink@gmail.com>
-To: "Anders Kaseorg" <andersk@mit.edu>
-Subject: Re: [PATCH] Don't call sprintf() with overlapping input and output.
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0812070628001.13666@vinegar-pot.mit.edu>
+	Sun, 7 Dec 2008 07:16:05 -0500
+Date: Sun, 7 Dec 2008 13:16:01 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: linux-kernel@vger.kernel.org
+Subject: Fw: Re: [2.6.27] filesystem (ext3) corruption (access beyond end)
+Message-ID: <20081207121601.GN30807@vanheusden.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <alpine.DEB.2.00.0812070628001.13666@vinegar-pot.mit.edu>
+Content-Transfer-Encoding: 8bit
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Reply-By: Fri Dec  5 18:18:31 CET 2008
+X-Message-Flag: www.vanheusden.com
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/7 Anders Kaseorg <andersk@mit.edu>:
-> The use of sprintf() to append to a buffer, as in
->  sprintf(buf, "%sEntry: %d\n", buf, i)
-> is not valid according to C99 ("If copying takes place between objects
-> that overlap, the behavior is undefined.").  It breaks at least in
-> userspace under gcc -D_FORTIFY_SOURCE.  Replace this construct with
->  sprintf(buf + strlen(buf), "Entry: %d\n", i)
->
-> Signed-off-by: Anders Kaseorg <andersk@mit.edu>
-> ---
->  Documentation/ia64/err_inject.txt     |    2 +-
->  arch/ia64/sn/kernel/io_common.c       |    2 +-
->  arch/s390/kernel/early.c              |    6 +++---
->  arch/x86/kernel/cpu/intel_cacheinfo.c |    9 ++++-----
->  drivers/media/video/se401.c           |    2 +-
->  drivers/scsi/gdth_proc.c              |    2 +-
->  drivers/usb/atm/usbatm.c              |    2 +-
->  7 files changed, 12 insertions(+), 13 deletions(-)
->
-> diff --git a/Documentation/ia64/err_inject.txt b/Documentation/ia64/err_inject.txt
-> index 223e4f0..62d0028 100644
-> --- a/Documentation/ia64/err_inject.txt
-> +++ b/Documentation/ia64/err_inject.txt
-> @@ -376,7 +376,7 @@ int create_sem(int cpu)
->        int sid;
->
->        sprintf(fn, PATH_FORMAT, cpu);
-> -       sprintf(fn, "%s/%s", fn, "err_type_info");
-> +       sprintf(fn + strlen(fn), "/%s", "err_type_info");
->        if ((key[cpu] = ftok(fn, 'e')) == -1) {
->                perror("ftok");
->                return -1;
-> diff --git a/arch/ia64/sn/kernel/io_common.c b/arch/ia64/sn/kernel/io_common.c
-> index 8a924a5..656e201 100644
-> --- a/arch/ia64/sn/kernel/io_common.c
-> +++ b/arch/ia64/sn/kernel/io_common.c
-> @@ -441,7 +441,7 @@ void sn_generate_path(struct pci_bus *pci_bus, char *address)
->        bricktype = MODULE_GET_BTYPE(moduleid);
->        if ((bricktype == L1_BRICKTYPE_191010) ||
->            (bricktype == L1_BRICKTYPE_1932))
-> -                       sprintf(address, "%s^%d", address, geo_slot(geoid));
-> +               sprintf(address + strlen(address), "^%d", geo_slot(geoid));
->  }
->
->  void __devinit
-> diff --git a/arch/s390/kernel/early.c b/arch/s390/kernel/early.c
-> index 2a2ca26..addee93 100644
-> --- a/arch/s390/kernel/early.c
-> +++ b/arch/s390/kernel/early.c
-> @@ -108,13 +108,13 @@ static noinline __init void create_kernel_nss(void)
->                sinitrd_pfn = PFN_DOWN(__pa(INITRD_START));
->                einitrd_pfn = PFN_UP(__pa(INITRD_START + INITRD_SIZE));
->                min_size = einitrd_pfn << 2;
-> -               sprintf(defsys_cmd, "%s EW %.5X-%.5X", defsys_cmd,
-> +               sprintf(defsys_cmd + strlen(defsys_cmd), " EW %.5X-%.5X",
->                sinitrd_pfn, einitrd_pfn);
->        }
->  #endif
->
-> -       sprintf(defsys_cmd, "%s EW MINSIZE=%.7iK PARMREGS=0-13",
-> -               defsys_cmd, min_size);
-> +       sprintf(defsys_cmd + strlen(defsys_cmd),
-> +               " EW MINSIZE=%.7iK PARMREGS=0-13", min_size);
->        sprintf(savesys_cmd, "SAVESYS %s \n IPL %s",
->                kernel_nss_name, kernel_nss_name);
->
-> diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-> index 3f46afb..396b720 100644
-> --- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-> +++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-> @@ -709,13 +709,12 @@ static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
->
->                pci_read_config_dword(dev, 0x1BC + i * 4, &reg);
->
-> -               ret += sprintf(buf, "%sEntry: %d\n", buf, i);
-> -               ret += sprintf(buf, "%sReads:  %s\tNew Entries: %s\n",
-> -                       buf,
-> +               ret += sprintf(buf + strlen(buf), "Entry: %d\n", i);
-> +               ret += sprintf(buf + strlen(buf), "Reads:  %s\tNew Entries: %s\n",
->                        reg & 0x80000000 ? "Disabled" : "Allowed",
->                        reg & 0x40000000 ? "Disabled" : "Allowed");
-> -               ret += sprintf(buf, "%sSubCache: %x\tIndex: %x\n",
-> -                       buf, (reg & 0x30000) >> 16, reg & 0xfff);
-> +               ret += sprintf(buf + strlen(buf), "SubCache: %x\tIndex: %x\n",
-> +                       (reg & 0x30000) >> 16, reg & 0xfff);
->        }
->        return ret;
->  }
-> diff --git a/drivers/media/video/se401.c b/drivers/media/video/se401.c
-> index 044a2e9..b8d2f03 100644
-> --- a/drivers/media/video/se401.c
-> +++ b/drivers/media/video/se401.c
-> @@ -1276,7 +1276,7 @@ static int se401_init(struct usb_se401 *se401, int button)
->        }
->        sprintf (temp, "%s Sizes:", temp);
->        for (i=0; i<se401->sizes; i++) {
-> -               sprintf(temp, "%s %dx%d", temp, se401->width[i], se401->height[i]);
-> +               sprintf(temp + strlen(temp), " %dx%d", se401->width[i], se401->height[i]);
->        }
->        dev_info(&se401->dev->dev, "%s\n", temp);
->        se401->maxframesize=se401->width[se401->sizes-1]*se401->height[se401->sizes-1]*3;
-> diff --git a/drivers/scsi/gdth_proc.c b/drivers/scsi/gdth_proc.c
-> index 59349a3..5748198 100644
-> --- a/drivers/scsi/gdth_proc.c
-> +++ b/drivers/scsi/gdth_proc.c
-> @@ -196,7 +196,7 @@ static int gdth_get_info(char *buffer,char **start,off_t offset,int length,
->         for (i = 1;  i < MAX_RES_ARGS; i++) {
->             if (reserve_list[i] == 0xff)
->                 break;
-> -            sprintf(hrec,"%s,%d", hrec, reserve_list[i]);
-> +            sprintf(hrec + strlen(hrec), ",%d", reserve_list[i]);
->         }
->     }
->     size = sprintf(buffer+len,
-> diff --git a/drivers/usb/atm/usbatm.c b/drivers/usb/atm/usbatm.c
-> index 06dd114..f52cfa5 100644
-> --- a/drivers/usb/atm/usbatm.c
-> +++ b/drivers/usb/atm/usbatm.c
-> @@ -1393,7 +1393,7 @@ static int usbatm_print_packet(const unsigned char *data, int len)
->                buffer[0] = '\0';
->                sprintf(buffer, "%.3d :", i);
->                for (j = 0; (j < 16) && (i < len); j++, i++) {
-> -                       sprintf(buffer, "%s %2.2x", buffer, data[i]);
-> +                       sprintf(buffer + strlen(buffer), " %2.2x", data[i]);
->                }
->                dbg("%s", buffer);
->        }
-> --
-> 1.6.0.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Ok I ran several disk-intensive jobs (git clone, kernel build, apt-get dist-upgrade)
+but none of those could trigger any bugs.
+BUT, running my http://vanheusden.com/pyk/ script, I definately can trigger the
+problem:
+[85202.195563] rtc0: alarms up to one month, y3k, hpet irqs
+[85204.035802] journal_bmap: journal block not found at offset 2060 on dm-0
+[85204.035818] Aborting journal on device dm-0.
+[85311.242093] ext3_abort called.
+[85311.242120] EXT3-fs error (device dm-0): ext3_journal_start_sb: Detected aborted journal
+[85311.242154] Remounting filesystem read-only
+[86331.285847] EXT3-fs error (device dm-0): htree_dirblock_to_tree: bad entry in directory #24568: rec_len % 4 != 0 - offset=0, inode=4098364138, rec_len=59542, name_len=76
+[89931.353863] EXT3-fs error (device dm-0): htree_dirblock_to_tree: bad entry in directory #24568: rec_len % 4 != 0 - offset=0, inode=4098364138, rec_len=59542, name_len=76
 
-Hi,
+[92499.263276] attempt to access beyond end of device
+[92499.263296] dm-2: rw=17, want=4177066240, limit=6004736
+[92499.263311] Buffer I/O error on device dm-2, logical block 522133279
+[92499.263333] lost page write due to I/O error on dm-2
+[92499.263341] Aborting journal on device dm-2.
+[92499.263504] ext3_abort called.
+[92499.263515] EXT3-fs error (device dm-2): ext3_journal_start_sb: Detected aborted journal
+[92499.263543] Remounting filesystem read-only
 
-That to me looks like it's begging for 'strcatf'... :)
+[93531.419902] EXT3-fs error (device dm-0): htree_dirblock_to_tree: bad entry in directory #24568: rec_len % 4 != 0 - offset=0, inode=4098364138, rec_len=59542, name_len=76
+
+Very odd since the script only rmmod/insmods modules and trying to
+rmmod for example ext3-module shouldn';t be a problem since it is
+in use.
+
+On Fri, Dec 05, 2008 at 10:46:39AM +0100, Randolf Pohl wrote:
+> I think, stable and gregkh should be CCed on this,
+> and yes, I guess this deserves some investigation.
+> 
+> Regards,
+> 
+> Randolf
+> 
+> http://lkml.org/lkml/2008/12/4/246
+> 
+> Folkert van Heusden wrote:
+> 
+> > Hi,
+> > 
+> > With 2.6.26 and 2.6.27 a system of mine (a P4 with HT and IDE disk)
+> > gets massive disk-corruption: in dmesg warnings for access beyond
+> > drive end.
+> > Now this bug did not happen in 2.6.18 (debian kernel) and it seems to
+> > be gone in 2.6.28-rc* as well.
+> > My question now is: should it still be investigated?
+
+
+Folkert van Heusden
 
 -- 
-Tom Spink
-Zsa Zsa Gabor  - "A man in love is incomplete until he has married.
-Then he's finished."
+Multitail est un outil permettant la visualisation de fichiers de
+journalisation et/ou le suivi de l'exécution de commandes. Filtrage,
+mise en couleur de mot-clé, fusions, visualisation de différences
+(diff-view), etc.  http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
