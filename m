@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbYLGNPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYLGNPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754720AbYLGNPO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 08:15:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYLGNO7
+	id S1754080AbYLGNPj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 08:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbYLGNPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 7 Dec 2008 08:15:00 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33648 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753754AbYLGNO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 7 Dec 2008 08:14:59 -0500
-Received: from queueout02-winn.ispmail.ntl.com ([81.103.221.56]:29627 "EHLO
-	queueout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753716AbYLGNO6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 08:14:58 -0500
-X-Greylist: delayed 855 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Dec 2008 08:14:53 EST
-Message-ID: <493BC885.5030303@gentoo.org>
-Date: Sun, 07 Dec 2008 12:58:45 +0000
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081121)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [PATCH 1/3] PCI: Rework default handling of suspend and resume
+Date: Sun, 7 Dec 2008 14:14:12 +0100
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.44L0.0812061858160.16554-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0812061858160.16554-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Luca Santarelli <hrk@users.sourceforge.net>, marcel@holtmann.org,
-       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bluetooth usb hci: ISSC usb dongle with buggy SCO  support
-References: <200812050002.13560.hrk@users.sourceforge.net> <20081207001953.c04b9357.akpm@linux-foundation.org>
-In-Reply-To: <20081207001953.c04b9357.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Cloudmark-Analysis: v=1.0 c=1 a=WaEaZwtaEUEA:10 a=ZJJWXgA7zaAA:10 a=CA_98U1x7jVTNyy4ClYA:9 a=oGLi0UGOv9h41VJa3RAA:7 a=Q7mRd7eBB0-3o7eGobZjc7WaLrkA:4 a=kJVaTwQnZmMA:10
+Content-Disposition: inline
+Message-Id: <200812071414.13143.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> commit 12421b40b81d101d7535e03f1af197365adc932b
-> Author: Marcel Holtmann <marcel@holtmann.org>
-> Date:   Sun Nov 30 12:17:21 2008 +0100
+On Sunday, 7 of December 2008, Alan Stern wrote:
+> On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
 > 
->     Bluetooth: Remove deprecated hci_usb driver
->     
->     The old hci_usb driver has been fully replaced with the new btusb driver
->     and all major distributions switched to the new driver now. This removes
->     it since it should not be used at all anymore.
+> > > Rafael, I'd be happy to help with fixing up the USB PCI PM code.  At
+> > > this point I'm not sure exactly what's needed, though.  For instance,
+> > > is there any compelling reason to switch over to the new dev_pm_ops
+> > > approach?
+> > 
+> > Certainly not at the moment.  There will be a reason some time after .29.
+> > 
+> > That said, it apparently is possible to clean up the resume callbacks of PCI
+> > USB controllers, as mentioned here: http://lkml.org/lkml/2008/12/6/38
+> > 
+> > > And what should the correct sequence of calls be?
+> > 
+> > Well, that's something I'm not exactly sure about myself.  Surely it seems
+> > reasonable to call pci_restore_state() with interrupts disabled and do the rest
+> > of resume after that.  Also, I think that the core could execute things like
+> > pci_enable_device() during resume and pci_set_power_state()/pci_enable_wake()
+> > on suspend so that the drivers didn't have to.  This way we could reduce code
+> > duplication quite a bit.
 > 
-> so please confirm that btusb correctly supports that hardware?
+> Do you plan to change the PCI core to do these things any time soon?  
 
-And if it doesn't, it should be trivial to come up with an equivalent 
-patch to modify blacklist_table in btusb.
+I'm going to do that after the patches from this series are merged.
 
-Daniel
+> Wouldn't that require changing a whole bunch of PCI drivers too?
 
+Only those that start to use the new framework before this happens
+(which probably is only MMC at this point).
+
+> I tend to agree that having the core take care of these choreographed
+> activities would be good -- it would leave less room for drivers to
+> make mistakes.
+> 
+> So for now maybe it would be best just to rearrange the existing calls
+> in USB, and wait for the core changes before doing anything more
+> ambitious.
+
+Sounds good.
+
+Thanks,
+Rafael
