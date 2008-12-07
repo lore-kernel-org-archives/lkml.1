@@ -1,103 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYLGKZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYLGKza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbYLGKZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 05:25:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbYLGKZp
+	id S1753907AbYLGKza (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 05:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYLGKzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 05:25:45 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:63766 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753235AbYLGKZo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 05:25:44 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH] percpu_counter: Fix __percpu_counter_sum()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, Mingming Cao <cmm@us.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org
-In-Reply-To: <20081206202233.3b74febc.akpm@linux-foundation.org>
-References: <4936D287.6090206@cosmosbay.com>
-	 <4936EB04.8000609@cosmosbay.com>
-	 <20081206202233.3b74febc.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 07 Dec 2008 11:25:30 +0100
-Message-Id: <1228645530.24126.2234.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Sun, 7 Dec 2008 05:55:21 -0500
+Received: from ozlabs.org ([203.10.76.45]:52301 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753345AbYLGKzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 05:55:20 -0500
+To: "kvm-devel" <kvm-devel@lists.sourceforge.net>
+Cc: linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
+       Avi Kivity <avi@qumranet.com>
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Sun, 7 Dec 2008 21:25:14 +1030
+Subject: [PATCH 1/2] kvm: use modern cpumask primitives, no cpumask_t on stack
+Cc: Mike Travis <travis@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812072125.14416.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-06 at 20:22 -0800, Andrew Morton wrote:
-> On Wed, 03 Dec 2008 21:24:36 +0100 Eric Dumazet <dada1@cosmosbay.com>
-> wrote:
-> 
-> > Eric Dumazet a __crit :
-> > > Hi Andrew
-> > > 
-> > > While working on percpu_counter on net-next-2.6, I found
-> > > a CPU unplug race in percpu_counter_destroy()
-> > > 
-> > > (Very unlikely of course)
-> > > 
-> > > Thank you
-> > > 
-> > > [PATCH] percpu_counter: fix CPU unplug race in
-> percpu_counter_destroy()
-> > > 
-> > > We should first delete the counter from percpu_counters list
-> > > before freeing memory, or a percpu_counter_hotcpu_callback()
-> > > could dereference a NULL pointer.
-> > > 
-> > > Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> > > ---
-> > > lib/percpu_counter.c |    4 ++--
-> > > 1 files changed, 2 insertions(+), 2 deletions(-)
-> > > 
-> > 
-> > Well, this percpu_counter stuff is simply not working at all.
-> > 
-> > We added some percpu_counters to network tree for 2.6.29 and we get
-> > drift bugs if calling __percpu_counter_sum() while some heavy duty
-> > benches are running, on a 8 cpus machine
-> > 
-> > 1) __percpu_counter_sum() is buggy, it should not write
-> > on per_cpu_ptr(fbc->counters, cpu), or another cpu
-> > could get its changes lost.
-> > 
-> > __percpu_counter_sum should be read only (const struct
-> percpu_counter *fbc),
-> > and no locking needed.
-> 
-> No, we can't do this - it will break ext4.
-> 
-> Take a closer look at 1f7c14c62ce63805f9574664a6c6de3633d4a354 and at
-> e8ced39d5e8911c662d4d69a342b9d053eaaac4e.
-> 
-> I suggest that what we do is to revert both those changes.  We can
-> worry about the possibly-unneeded spin_lock later, in a separate
-> patch.
-> 
-> It should have been a separate patch anyway.  It's conceptually
-> unrelated and is not a bugfix, but it was mixed in with a bugfix.
-> 
-> Mingming, this needs urgent consideration, please.  Note that I had to
-> make additional changes to ext4 due to the subsequent introduction of
-> the dirty_blocks counter.
-> 
-> 
-> Please read the below changelogs carefully and check that I have got
-> my
-> head around this correctly - I may not have done.
-> 
-> What a mess.
+We're getting rid on on-stack cpumasks for large NR_CPUS.
 
-Thing is, as Eric pointed out, the sum_and_set() thing is fundamentally
-broken. It's impossible to _set a percpu_counter.
+1) Use cpumask_var_t and alloc_cpumask_var (a noop normally).  Fallback
+   code is inefficient but never happens in practice.
+2) smp_call_function_mask -> smp_call_function_many
+3) cpus_clear, cpus_empty, cpu_set -> cpumask_clear, cpumask_empty,
+   cpumask_set_cpu.
 
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ virt/kvm/kvm_main.c |   45 +++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 35 insertions(+), 10 deletions(-)
 
+--- linux-2.6.orig/virt/kvm/kvm_main.c
++++ linux-2.6/virt/kvm/kvm_main.c
+@@ -358,11 +358,23 @@ static void ack_flush(void *_completed)
+ void kvm_flush_remote_tlbs(struct kvm *kvm)
+ {
+ 	int i, cpu, me;
+-	cpumask_t cpus;
++	cpumask_var_t cpus;
+ 	struct kvm_vcpu *vcpu;
+ 
+ 	me = get_cpu();
+-	cpus_clear(cpus);
++	if (!alloc_cpumask_var(&cpus, GFP_ATOMIC)) {
++		/* Slow path on failure.  Call everyone. */
++		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
++			vcpu = kvm->vcpus[i];
++			if (vcpu)
++				set_bit(KVM_REQ_TLB_FLUSH, &vcpu->requests);
++		}
++		++kvm->stat.remote_tlb_flush;
++		smp_call_function_many(cpu_online_mask, ack_flush, NULL, 1);
++		put_cpu();
++		return;
++	}
++
+ 	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+ 		vcpu = kvm->vcpus[i];
+ 		if (!vcpu)
+@@ -371,24 +383,36 @@ void kvm_flush_remote_tlbs(struct kvm *k
+ 			continue;
+ 		cpu = vcpu->cpu;
+ 		if (cpu != -1 && cpu != me)
+-			cpu_set(cpu, cpus);
++			cpumask_set_cpu(cpu, cpus);
+ 	}
+-	if (cpus_empty(cpus))
++	if (cpumask_empty(cpus))
+ 		goto out;
+ 	++kvm->stat.remote_tlb_flush;
+-	smp_call_function_mask(cpus, ack_flush, NULL, 1);
++	smp_call_function_many(cpus, ack_flush, NULL, 1);
+ out:
+ 	put_cpu();
++	free_cpumask_var(cpus);
+ }
+ 
+ void kvm_reload_remote_mmus(struct kvm *kvm)
+ {
+ 	int i, cpu, me;
+-	cpumask_t cpus;
++	cpumask_var_t cpus;
+ 	struct kvm_vcpu *vcpu;
+ 
+ 	me = get_cpu();
+-	cpus_clear(cpus);
++	if (!alloc_cpumask_var(&cpus, GFP_ATOMIC)) {
++		/* Slow path on failure.  Call everyone. */
++		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
++			vcpu = kvm->vcpus[i];
++			if (vcpu)
++				set_bit(KVM_REQ_MMU_RELOAD, &vcpu->requests);
++		}
++		smp_call_function_many(cpu_online_mask, ack_flush, NULL, 1);
++		put_cpu();
++		return;
++	}
++
+ 	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+ 		vcpu = kvm->vcpus[i];
+ 		if (!vcpu)
+@@ -397,13 +421,14 @@ void kvm_reload_remote_mmus(struct kvm *
+ 			continue;
+ 		cpu = vcpu->cpu;
+ 		if (cpu != -1 && cpu != me)
+-			cpu_set(cpu, cpus);
++			cpumask_set_cpu(cpu, cpus);
+ 	}
+-	if (cpus_empty(cpus))
++	if (cpumask_empty(cpus))
+ 		goto out;
+-	smp_call_function_mask(cpus, ack_flush, NULL, 1);
++	smp_call_function_many(cpus, ack_flush, NULL, 1);
+ out:
+ 	put_cpu();
++	free_cpumask_var(cpus);
+ }
+ 
+ 
 
