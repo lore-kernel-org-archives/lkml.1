@@ -1,96 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYLGRkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYLGRkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbYLGRkA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 12:40:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYLGRjv
+	id S1755355AbYLGRkZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 12:40:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbYLGRkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 12:39:51 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:50553 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752481AbYLGRju (ORCPT
+	Sun, 7 Dec 2008 12:40:05 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:45384 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754830AbYLGRkC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 12:39:50 -0500
-X-Greylist: delayed 91421 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Dec 2008 12:39:49 EST
-Message-ID: <ac3eb2510812070939h17ef6316hea96fe89f01207a6@mail.gmail.com>
-Date: Sun, 7 Dec 2008 18:39:48 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Runaway loop with the current git.
-Cc: "Evgeniy Polyakov" <zbr@ioremap.net>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       linux-kernel@vger.kernel.org,
-       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20081207172855.55fee78f@lxorguk.ukuu.org.uk>
+	Sun, 7 Dec 2008 12:40:02 -0500
+Date: Sun, 7 Dec 2008 23:09:58 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Jay Lan <jlan@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Pirko <jpirko@redhat.com>, linux-kernel@vger.kernel.org,
+       Jonathan Lim <jlim@sgi.com>
+Subject: Re: [PATCH] introduce get_mm_hiwater_xxx(), fix
+	taskstats->hiwater_xxx accounting
+Message-ID: <20081207173958.GC13333@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Oleg Nesterov <oleg@redhat.com>,
+	Hugh Dickins <hugh@veritas.com>, Jay Lan <jlan@sgi.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Jiri Pirko <jpirko@redhat.com>, linux-kernel@vger.kernel.org,
+	Jonathan Lim <jlim@sgi.com>
+References: <Pine.LNX.4.64.0812031957570.19174@blonde.anvils> <20081204135250.GA5448@redhat.com> <Pine.LNX.4.64.0812051216020.10157@blonde.anvils> <493975BE.60202@sgi.com> <20081206084223.GA24782@balbir.in.ibm.com> <Pine.LNX.4.64.0812060950120.22390@blonde.anvils> <20081206103904.GC24782@balbir.in.ibm.com> <20081207161750.GA25966@redhat.com> <20081207165828.GA13333@balbir.in.ibm.com> <20081207172845.GA28520@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk>
-	 <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au>
-	 <20081207155507.GA15355@gondor.apana.org.au>
-	 <ac3eb2510812070803i150d91e7led58128796e8045e@mail.gmail.com>
-	 <20081207160921.693f637a@lxorguk.ukuu.org.uk>
-	 <20081207163151.GA31838@ioremap.net>
-	 <20081207170108.39dfd93f@lxorguk.ukuu.org.uk>
-	 <ac3eb2510812070922q2531a188v37874a042b259ac9@mail.gmail.com>
-	 <20081207172855.55fee78f@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081207172845.GA28520@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 7, 2008 at 18:28, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> > /dev/console is a logical mapping to a device which may well be
->> > different, loaded after PCI is initialised and dependant on PCI.
->>
->> So wrong. If no driver is associated, like early, in that case, we
->> must return -ENODEV, instead of calling modprobe in a loop. It's a
->> built-in device, and it's easy to fix.
+* Oleg Nesterov <oleg@redhat.com> [2008-12-07 18:28:45]:
+
+[snip]
+
+> No. When the task does unmap, vm does update_hiwater_vm() "internally",
+> it does not need the help from do_exit(). And do_exit() can't help,
+> it is to late to calculate the maximum, ->total_vm was already decreased.
+> 
+> do_exit() itself does not affect rss/vm. Until we call exit_mmap(),
+> but at this point ->mm is dead, nobody can look at it, its ->mm_users
+> is zero.
 >
-> You've clearly no idea how initrd even works have you ?
 
-Not sure, if you understand the real problem. A kernel forked binary
-is allowed to access /dev/console, but it triggers a kernel bug.
+OK, I think that makes sense, since free would have cleaned up the
+memory before entering the exit system call.
 
-> If it just
-> returned -ENODEV you wouldn't be able to open the console and you
-> wouldn't trigger the loading of the module to get the console running. So
-> you've now completely buggered the boot process.
+[snip] 
 
-Utter nonsense. Exactly when the driver is available shortly later,
-the console will work. If it's not backed by a driver, it should not
-try to load it, it will never get any driver loaded by opening it. The
-kernel must handle that.
-
-> The correct sequence is
->
->        Open device
->                Kernel issues hotplug message
->                        Hotplug script loads drivers to policy
-
-Nonsense. The kernel calls /sbin/modprobe directly, no hotplug involved.
-
-> The problem case you have due to initrd bugs is
->
->        Open device
->                Kernel issues hotplug message
->                        Hotplug script opens same device (BUG)
-
-The kernel calls modprobe for something, modprobe tries to log an
-error, and the kernel calls modprobe again. Bug! No hotplug involved.
-
->                                Kernel issues hotplug message
->                                .....
->                                Kernel detects this is stuck
->                                Kernel replies with -ENODEV/-ENXIO to try
-> and rescue itself from buggy initrd scripts
-
-Totally wrong, It never was that way.
-
-> That is how it has worked since we first had script based module
-> requesting which is some years now.
-
-Please update your idea of hotplug and the kernel module loader, you
-are on the totally wrong track.
-
-Thanks,
-Kay
+-- 
+	Balbir
