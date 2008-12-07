@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbYLGOC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYLGOJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754920AbYLGOC6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 09:02:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbYLGOCu
+	id S1754745AbYLGOJV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 09:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbYLGOJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 09:02:50 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:24196 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754087AbYLGOCt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 09:02:49 -0500
-Message-ID: <ac3eb2510812070602rdc62343q8d11471f71748595@mail.gmail.com>
-Date: Sun, 7 Dec 2008 15:02:47 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Runaway loop with the current git.
-Cc: "Evgeniy Polyakov" <zbr@ioremap.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <20081207112335.0afd5192@lxorguk.ukuu.org.uk>
+	Sun, 7 Dec 2008 09:09:07 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:33272 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753939AbYLGOJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 09:09:06 -0500
+From: Nicolas Palix <npalix@diku.dk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH linux-next] powerpc/powermac: Add missing of_node_put
+Date: Sun, 7 Dec 2008 15:09:08 +0100
+User-Agent: KMail/1.9.10
+Cc: Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Julia Lawall <julia@diku.dk>
+References: <200812021445.18670.npalix@diku.dk> <18747.13668.304923.709761@cargo.ozlabs.ibm.com> <20081207164333.78b69d16.sfr@canb.auug.org.au>
+In-Reply-To: <20081207164333.78b69d16.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081205193432.290a6f1a@lxorguk.ukuu.org.uk>
-	 <ac3eb2510812051810x8cf4256lf9fd31b15b9e0552@mail.gmail.com>
-	 <20081206160927.GA498@ioremap.net>
-	 <ac3eb2510812060816h4401c78bj6d656d0d5721024@mail.gmail.com>
-	 <20081206165634.GA2516@ioremap.net>
-	 <ac3eb2510812061011u7a7f0fbdtc46b95a9c642f9c7@mail.gmail.com>
-	 <1228591926.3808.6.camel@nga> <20081206202620.GA9470@ioremap.net>
-	 <ac3eb2510812061956g6bb422d9r7c8032fb68552b4c@mail.gmail.com>
-	 <20081207112335.0afd5192@lxorguk.ukuu.org.uk>
+Message-Id: <200812071509.09091.npalix@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 7, 2008 at 12:23, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> This modprobe process does try to log an error, accesses /dev/console,
->> which is not initialized in the kernel at that time, and the kernel
->> module loader tries the load a module to support dev_t 5:1, which
->> again runs modprobe, and ...
->
-> So we have a buggy modprobe...
+On Sunday 07 December 2008 06:43:33 Stephen Rothwell wrote:
+> Hi Paul,
+> 
+> On Sun, 7 Dec 2008 13:31:00 +1100 Paul Mackerras <paulus@samba.org> wrote:
+> >
+> > I'm really in two minds about applying any of the of_node_put patches
+> > that only affect powermacs.  The reference counts only matter on
+> > platforms where we update the OF device tree at runtime, which is
+> > currently only IBM pSeries machines.  Since we don't have any hotplug
+> > on powermacs, and never will have, the OF device tree is completely
+> > static and we don't actually need refcounts on the nodes at all, so
+> > who cares if they're a bit higher than they might be?
+> > 
+> > In particular, the VIA whose node we're looking for here is built-in
+> > on the motherboard, and there can never be more than one, and it can
+> > never be removed.
+> 
+> I my mind it is about consistent use of the API and good examples for
+> people to copy.  Also, in about a year you will be presented with the
+> same set of patches when a new pair of eyes looks at the same code and
+> notices the discrepancy ...
+> 
+Hi Andrew,
 
-No, we have not. It is fine for modprobe doing that, as it is for any
-other binary too. It's also the usual glibc behavior for syslog(). Any
-userspace binary can access /dev/console any time. The kernel is not
-supposed to call modprobe to make /dev/console availabe.
+Indeed, there is an updated version of this patch in my second mail
+which fixes this issue.
+ 
+http://lkml.org/lkml/2008/12/3/88
+ 
+Moreover, there is still a reference count unbalanced with your patch in the
+case where the function returns 1.
 
->> Setting CONFIG_CRYPTO_MANAGER=y makes it disapper. The patch I sent
->> seems to fix it.
->>
->> The bug is handled here: http://bugzilla.kernel.org/show_bug.cgi?id=12153
->
-> We cannot go re-ordering random chunks of kernel init with unpredictable
-> effects including possibly making other stuff less reliable (because you
-> set up the console device before the console driver is loaded on a PCI
-> bus device).
-
-We are not reordering, we provide a registered /dev/console driver
-core device, not touching any driver, just to prevent the kernel
-module loader from going crazy.
-
-> And we certainly can't do it this close to a release.
-
-We can do the real fix any time it is the proper time. It is still an
-obvious kernel bug which needs to be fixed, and not some obscure
-userspace rule, we suddenly need to establish to work around some dumb
-module loader/console logic.
-
-Thanks,
-Kay
+Regards,
+-- 
+Nicolas Palix
