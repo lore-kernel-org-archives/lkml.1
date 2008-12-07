@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYLGWPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbYLGWPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbYLGWPU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 17:15:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbYLGWPG
+	id S1755373AbYLGWPs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 17:15:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbYLGWPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 17:15:06 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:47191 "EHLO mgw2.diku.dk"
+	Sun, 7 Dec 2008 17:15:37 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:47200 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752179AbYLGWPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 17:15:04 -0500
-Date: Sun, 7 Dec 2008 23:14:57 +0100 (CET)
+	id S1752690AbYLGWPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 17:15:36 -0500
+Date: Sun, 7 Dec 2008 23:15:33 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: vapier.adi@gmail.com, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/2] drivers/s390/crypto: Move dereference to after IS_ERR
- test
-Message-ID: <Pine.LNX.4.64.0812072314270.7130@ask.diku.dk>
+Subject: [PATCH 2/2] drivers/rtc: correct an error test
+Message-ID: <Pine.LNX.4.64.0812072314590.7130@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -25,8 +23,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-If reply is ERR_PTR(...), then it should not be dereferenced, so I have
-moved the dereference from the declaration to after the IS_ERR test.
+rtc is clearly does not satisfy IS_ERR at the point where it is tested, so
+I have changed the test to consider the just initialized rtc->rtc_dev.
 
 The semantic match that finds the problem is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -70,130 +68,19 @@ print "* file %s dereference %s test %s" % (p1[0].file,p1[0].line,p2[0].line)
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/s390/crypto/zcrypt_cex2a.c  |   10 +++++++---
- drivers/s390/crypto/zcrypt_pcica.c  |   10 +++++++---
- drivers/s390/crypto/zcrypt_pcicc.c  |   10 +++++++---
- drivers/s390/crypto/zcrypt_pcixcc.c |   10 +++++++---
- 4 files changed, 28 insertions(+), 12 deletions(-)
+ drivers/rtc/rtc-bfin.c              |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/s390/crypto/zcrypt_pcixcc.c b/drivers/s390/crypto/zcrypt_pcixcc.c
-index d8ad36f..e7a1e22 100644
---- a/drivers/s390/crypto/zcrypt_pcixcc.c
-+++ b/drivers/s390/crypto/zcrypt_pcixcc.c
-@@ -635,13 +635,16 @@ static void zcrypt_pcixcc_receive(struct ap_device *ap_dev,
- 	};
- 	struct response_type *resp_type =
- 		(struct response_type *) msg->private;
--	struct type86x_reply *t86r = reply->message;
-+	struct type86x_reply *t86r;
- 	int length;
+diff --git a/drivers/rtc/rtc-bfin.c b/drivers/rtc/rtc-bfin.c
+index 34439ce..aafd3e6 100644
+--- a/drivers/rtc/rtc-bfin.c
++++ b/drivers/rtc/rtc-bfin.c
+@@ -390,7 +390,7 @@ static int __devinit bfin_rtc_probe(struct platform_device *pdev)
  
- 	/* Copy the reply message to the request message buffer. */
--	if (IS_ERR(reply))
-+	if (IS_ERR(reply)) {
- 		memcpy(msg->message, &error_reply, sizeof(error_reply));
--	else if (t86r->hdr.type == TYPE86_RSP_CODE &&
-+		goto out;
-+	}
-+	t86r = reply->message;
-+	if (t86r->hdr.type == TYPE86_RSP_CODE &&
- 		 t86r->cprbx.cprb_ver_id == 0x02) {
- 		switch (resp_type->type) {
- 		case PCIXCC_RESPONSE_TYPE_ICA:
-@@ -660,6 +663,7 @@ static void zcrypt_pcixcc_receive(struct ap_device *ap_dev,
- 		}
- 	} else
- 		memcpy(msg->message, reply->message, sizeof error_reply);
-+out:
- 	complete(&(resp_type->work));
- }
- 
-diff --git a/drivers/s390/crypto/zcrypt_pcica.c b/drivers/s390/crypto/zcrypt_pcica.c
-index 12da481..17ba81b 100644
---- a/drivers/s390/crypto/zcrypt_pcica.c
-+++ b/drivers/s390/crypto/zcrypt_pcica.c
-@@ -247,17 +247,21 @@ static void zcrypt_pcica_receive(struct ap_device *ap_dev,
- 		.type = TYPE82_RSP_CODE,
- 		.reply_code = REP82_ERROR_MACHINE_FAILURE,
- 	};
--	struct type84_hdr *t84h = reply->message;
-+	struct type84_hdr *t84h;
- 	int length;
- 
- 	/* Copy the reply message to the request message buffer. */
--	if (IS_ERR(reply))
-+	if (IS_ERR(reply)) {
- 		memcpy(msg->message, &error_reply, sizeof(error_reply));
--	else if (t84h->code == TYPE84_RSP_CODE) {
-+		goto out;
-+	}
-+	t84h = reply->message;
-+	if (t84h->code == TYPE84_RSP_CODE) {
- 		length = min(PCICA_MAX_RESPONSE_SIZE, (int) t84h->len);
- 		memcpy(msg->message, reply->message, length);
- 	} else
- 		memcpy(msg->message, reply->message, sizeof error_reply);
-+out:
- 	complete((struct completion *) msg->private);
- }
- 
-diff --git a/drivers/s390/crypto/zcrypt_cex2a.c b/drivers/s390/crypto/zcrypt_cex2a.c
-index 54f4cbc..286dd02 100644
---- a/drivers/s390/crypto/zcrypt_cex2a.c
-+++ b/drivers/s390/crypto/zcrypt_cex2a.c
-@@ -264,17 +264,21 @@ static void zcrypt_cex2a_receive(struct ap_device *ap_dev,
- 		.type = TYPE82_RSP_CODE,
- 		.reply_code = REP82_ERROR_MACHINE_FAILURE,
- 	};
--	struct type80_hdr *t80h = reply->message;
-+	struct type80_hdr *t80h;
- 	int length;
- 
- 	/* Copy the reply message to the request message buffer. */
--	if (IS_ERR(reply))
-+	if (IS_ERR(reply)) {
- 		memcpy(msg->message, &error_reply, sizeof(error_reply));
--	else if (t80h->type == TYPE80_RSP_CODE) {
-+		goto out;
-+	}
-+	t80h = reply->message;
-+	if (t80h->type == TYPE80_RSP_CODE) {
- 		length = min(CEX2A_MAX_RESPONSE_SIZE, (int) t80h->len);
- 		memcpy(msg->message, reply->message, length);
- 	} else
- 		memcpy(msg->message, reply->message, sizeof error_reply);
-+out:
- 	complete((struct completion *) msg->private);
- }
- 
-diff --git a/drivers/s390/crypto/zcrypt_pcicc.c b/drivers/s390/crypto/zcrypt_pcicc.c
-index 779952c..f4b0c47 100644
---- a/drivers/s390/crypto/zcrypt_pcicc.c
-+++ b/drivers/s390/crypto/zcrypt_pcicc.c
-@@ -447,19 +447,23 @@ static void zcrypt_pcicc_receive(struct ap_device *ap_dev,
- 		.type = TYPE82_RSP_CODE,
- 		.reply_code = REP82_ERROR_MACHINE_FAILURE,
- 	};
--	struct type86_reply *t86r = reply->message;
-+	struct type86_reply *t86r;
- 	int length;
- 
- 	/* Copy the reply message to the request message buffer. */
--	if (IS_ERR(reply))
-+	if (IS_ERR(reply)) {
- 		memcpy(msg->message, &error_reply, sizeof(error_reply));
--	else if (t86r->hdr.type == TYPE86_RSP_CODE &&
-+		goto out;
-+	}
-+	t86r = reply->message;
-+	if (t86r->hdr.type == TYPE86_RSP_CODE &&
- 		 t86r->cprb.cprb_ver_id == 0x01) {
- 		length = sizeof(struct type86_reply) + t86r->length - 2;
- 		length = min(PCICC_MAX_RESPONSE_SIZE, length);
- 		memcpy(msg->message, reply->message, length);
- 	} else
- 		memcpy(msg->message, reply->message, sizeof error_reply);
-+out:
- 	complete((struct completion *) msg->private);
- }
- 
+ 	/* Register our RTC with the RTC framework */
+ 	rtc->rtc_dev = rtc_device_register(pdev->name, dev, &bfin_rtc_ops, THIS_MODULE);
+-	if (unlikely(IS_ERR(rtc))) {
++	if (unlikely(IS_ERR(rtc->rtc_dev))) {
+ 		ret = PTR_ERR(rtc->rtc_dev);
+ 		goto err_irq;
+ 	}
