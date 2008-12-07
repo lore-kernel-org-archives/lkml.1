@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYLGRcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYLGRkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249AbYLGRcY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 12:32:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYLGRcQ
+	id S1754730AbYLGRkA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 12:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYLGRjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 12:32:16 -0500
-Received: from kroah.org ([198.145.64.141]:44640 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751202AbYLGRcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 12:32:15 -0500
-Date: Sun, 7 Dec 2008 09:26:42 -0800
-From: Greg KH <greg@kroah.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH 1/3] PCI: Rework default handling of suspend and resume
-Message-ID: <20081207172642.GC23744@kroah.com>
-References: <200812020320.31876.rjw@sisk.pl> <alpine.LFD.2.00.0812060952100.3425@nehalem.linux-foundation.org> <20081207054149.GA20415@kroah.com> <200812071347.18608.rjw@sisk.pl>
+	Sun, 7 Dec 2008 12:39:51 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:50553 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752481AbYLGRju (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 12:39:50 -0500
+X-Greylist: delayed 91421 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Dec 2008 12:39:49 EST
+Message-ID: <ac3eb2510812070939h17ef6316hea96fe89f01207a6@mail.gmail.com>
+Date: Sun, 7 Dec 2008 18:39:48 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Runaway loop with the current git.
+Cc: "Evgeniy Polyakov" <zbr@ioremap.net>,
+       "Herbert Xu" <herbert@gondor.apana.org.au>,
+       linux-kernel@vger.kernel.org,
+       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20081207172855.55fee78f@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200812071347.18608.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk>
+	 <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au>
+	 <20081207155507.GA15355@gondor.apana.org.au>
+	 <ac3eb2510812070803i150d91e7led58128796e8045e@mail.gmail.com>
+	 <20081207160921.693f637a@lxorguk.ukuu.org.uk>
+	 <20081207163151.GA31838@ioremap.net>
+	 <20081207170108.39dfd93f@lxorguk.ukuu.org.uk>
+	 <ac3eb2510812070922q2531a188v37874a042b259ac9@mail.gmail.com>
+	 <20081207172855.55fee78f@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 07, 2008 at 01:47:18PM +0100, Rafael J. Wysocki wrote:
-> On Sunday, 7 of December 2008, Greg KH wrote:
-> > On Sat, Dec 06, 2008 at 10:00:35AM -0800, Linus Torvalds wrote:
-> > > 
-> > > 
-> > > On Sat, 6 Dec 2008, Rafael J. Wysocki wrote:
-> > > > 
-> > > > So, to fix the issue at hand, I'd like the $subject patch to go first.  Then,
-> > > > there is a major update of the new framework waiting for .29 in the Greg's
-> > > > tree (that's the main reason why nobody uses it so far, BTW) and I'd really
-> > > > prefer it to go next.  After it's been merged, I'm going to add the mandatory
-> > > > suspend-resume things (save state and go to a low power state on suspend,
-> > > > restore state on resume) to the new framework in a separete patch.
-> > > > 
-> > > > Is this plan acceptable?
-> > > 
-> > > Sounds good to me. And assuming Jesse/Greg are all aboard, I'll just wait 
-> > > for the pull requests from Jesse and Greg.
-> > 
-> > No objection from me, I'll wait for Jesse to "go first" in the .29 merge
-> > window.
-> 
-> Unfortunately, the merge of the $subject patch with the one in your tree
-> results in code that doesn't compile.  Namely, some lines of code that the
-> $subject patch relies on are removed by the patch in your tree.
-> 
-> If there is no objection from Jesse and if you don't mind, I'll prepare a
-> version of the $subject patch on top of the patch in your tree and send it to
-> you.
+On Sun, Dec 7, 2008 at 18:28, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> > /dev/console is a logical mapping to a device which may well be
+>> > different, loaded after PCI is initialised and dependant on PCI.
+>>
+>> So wrong. If no driver is associated, like early, in that case, we
+>> must return -ENODEV, instead of calling modprobe in a loop. It's a
+>> built-in device, and it's easy to fix.
+>
+> You've clearly no idea how initrd even works have you ?
 
-I sure don't mind.
+Not sure, if you understand the real problem. A kernel forked binary
+is allowed to access /dev/console, but it triggers a kernel bug.
 
-thanks,
+> If it just
+> returned -ENODEV you wouldn't be able to open the console and you
+> wouldn't trigger the loading of the module to get the console running. So
+> you've now completely buggered the boot process.
 
-greg k-h
+Utter nonsense. Exactly when the driver is available shortly later,
+the console will work. If it's not backed by a driver, it should not
+try to load it, it will never get any driver loaded by opening it. The
+kernel must handle that.
+
+> The correct sequence is
+>
+>        Open device
+>                Kernel issues hotplug message
+>                        Hotplug script loads drivers to policy
+
+Nonsense. The kernel calls /sbin/modprobe directly, no hotplug involved.
+
+> The problem case you have due to initrd bugs is
+>
+>        Open device
+>                Kernel issues hotplug message
+>                        Hotplug script opens same device (BUG)
+
+The kernel calls modprobe for something, modprobe tries to log an
+error, and the kernel calls modprobe again. Bug! No hotplug involved.
+
+>                                Kernel issues hotplug message
+>                                .....
+>                                Kernel detects this is stuck
+>                                Kernel replies with -ENODEV/-ENXIO to try
+> and rescue itself from buggy initrd scripts
+
+Totally wrong, It never was that way.
+
+> That is how it has worked since we first had script based module
+> requesting which is some years now.
+
+Please update your idea of hotplug and the kernel module loader, you
+are on the totally wrong track.
+
+Thanks,
+Kay
