@@ -1,145 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYLGRWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbYLGRXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbYLGRWp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 12:22:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbYLGRV0
+	id S1752999AbYLGRXI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 12:23:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYLGRWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 12:21:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:38089 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbYLGRVS (ORCPT
+	Sun, 7 Dec 2008 12:22:35 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:50021 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755632AbYLGRWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 12:21:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=YyEQP848PgXdju348im69cbi2hDMKsQTX0SaWmJ0H5tr4M00Ct5reDwiLHx25eoZhV
-         TqCbqpRpoQ3ygIoIe3OM143cQi8iuW5QDZ0YojLOUB9giUQHXhcDyFTl/grKhFIQLy7h
-         XrwVD7f3I3dvdJuxWqvj+TnfY2H+n8mJUFU3k=
-To: <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 4/4] ide: remove the last ide-scsi remnants
-Date: Sun,  7 Dec 2008 18:21:11 +0100
-Message-Id: <1228670471-3435-5-git-send-email-petkovbb@gmail.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1228670471-3435-1-git-send-email-petkovbb@gmail.com>
-References: <1228670471-3435-1-git-send-email-petkovbb@gmail.com>
-From: Borislav Petkov <petkovbb@googlemail.com>
+	Sun, 7 Dec 2008 12:22:34 -0500
+Message-ID: <ac3eb2510812070922q2531a188v37874a042b259ac9@mail.gmail.com>
+Date: Sun, 7 Dec 2008 18:22:31 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Runaway loop with the current git.
+Cc: "Evgeniy Polyakov" <zbr@ioremap.net>,
+       "Herbert Xu" <herbert@gondor.apana.org.au>,
+       linux-kernel@vger.kernel.org,
+       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20081207170108.39dfd93f@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk>
+	 <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au>
+	 <20081207155507.GA15355@gondor.apana.org.au>
+	 <ac3eb2510812070803i150d91e7led58128796e8045e@mail.gmail.com>
+	 <20081207160921.693f637a@lxorguk.ukuu.org.uk>
+	 <20081207163151.GA31838@ioremap.net>
+	 <20081207170108.39dfd93f@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
----
- drivers/ide/ide-atapi.c  |    3 +--
- drivers/ide/ide-io.c     |    3 ---
- drivers/ide/ide-ioctls.c |    3 +--
- drivers/ide/ide-probe.c  |    2 --
- include/linux/ide.h      |   28 +++++++++++++---------------
- 5 files changed, 15 insertions(+), 24 deletions(-)
+On Sun, Dec 7, 2008 at 18:01, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> Wrong. First at least because tty/console stuff is built in.
+>
+> Are you two people or just two names and email addresses for
+> the same ?
+>
+> /dev/console is a logical mapping to a device which may well be
+> different, loaded after PCI is initialised and dependant on PCI.
 
-diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index 7a04509..d412bd2 100644
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -17,8 +17,7 @@
- 
- static inline int dev_is_idecd(ide_drive_t *drive)
- {
--	return (drive->media == ide_cdrom || drive->media == ide_optical) &&
--		!(drive->dev_flags & IDE_DFLAG_SCSI);
-+	return drive->media == ide_cdrom || drive->media == ide_optical;
- }
- 
- /*
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index 7743b0f..4136164 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -426,9 +426,6 @@ void ide_map_sg(ide_drive_t *drive, struct request *rq)
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct scatterlist *sg = hwif->sg_table;
- 
--	if (hwif->sg_mapped)	/* needed by ide-scsi */
--		return;
--
- 	if (rq->cmd_type != REQ_TYPE_ATA_TASKFILE) {
- 		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
- 	} else {
-diff --git a/drivers/ide/ide-ioctls.c b/drivers/ide/ide-ioctls.c
-index 28232c6..1be263e 100644
---- a/drivers/ide/ide-ioctls.c
-+++ b/drivers/ide/ide-ioctls.c
-@@ -95,8 +95,7 @@ static int ide_set_nice_ioctl(ide_drive_t *drive, unsigned long arg)
- 		return -EPERM;
- 
- 	if (((arg >> IDE_NICE_DSC_OVERLAP) & 1) &&
--	    (drive->media != ide_tape ||
--	     (drive->dev_flags & IDE_DFLAG_SCSI)))
-+	    (drive->media != ide_tape))
- 		return -EPERM;
- 
- 	if ((arg >> IDE_NICE_DSC_OVERLAP) & 1)
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index 966b74c..c5adb7b 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1141,8 +1141,6 @@ static struct kobject *ata_probe(dev_t dev, int *part, void *data)
- 
- 	if (drive->media == ide_disk)
- 		request_module("ide-disk");
--	if (drive->dev_flags & IDE_DFLAG_SCSI)
--		request_module("ide-scsi");
- 	if (drive->media == ide_cdrom || drive->media == ide_optical)
- 		request_module("ide-cd");
- 	if (drive->media == ide_tape)
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 257524e..ad57a44 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -559,28 +559,26 @@ enum {
- 	IDE_DFLAG_NODMA			= (1 << 16),
- 	/* powermanagment told us not to do anything, so sleep nicely */
- 	IDE_DFLAG_BLOCKED		= (1 << 17),
--	/* ide-scsi emulation */
--	IDE_DFLAG_SCSI			= (1 << 18),
- 	/* sleeping & sleep field valid */
--	IDE_DFLAG_SLEEPING		= (1 << 19),
--	IDE_DFLAG_POST_RESET		= (1 << 20),
--	IDE_DFLAG_UDMA33_WARNED		= (1 << 21),
--	IDE_DFLAG_LBA48			= (1 << 22),
-+	IDE_DFLAG_SLEEPING		= (1 << 18),
-+	IDE_DFLAG_POST_RESET		= (1 << 19),
-+	IDE_DFLAG_UDMA33_WARNED		= (1 << 20),
-+	IDE_DFLAG_LBA48			= (1 << 21),
- 	/* status of write cache */
--	IDE_DFLAG_WCACHE		= (1 << 23),
-+	IDE_DFLAG_WCACHE		= (1 << 22),
- 	/* used for ignoring ATA_DF */
--	IDE_DFLAG_NOWERR		= (1 << 24),
-+	IDE_DFLAG_NOWERR		= (1 << 23),
- 	/* retrying in PIO */
--	IDE_DFLAG_DMA_PIO_RETRY		= (1 << 25),
--	IDE_DFLAG_LBA			= (1 << 26),
-+	IDE_DFLAG_DMA_PIO_RETRY		= (1 << 24),
-+	IDE_DFLAG_LBA			= (1 << 25),
- 	/* don't unload heads */
--	IDE_DFLAG_NO_UNLOAD		= (1 << 27),
-+	IDE_DFLAG_NO_UNLOAD		= (1 << 26),
- 	/* heads unloaded, please don't reset port */
--	IDE_DFLAG_PARKED		= (1 << 28),
--	IDE_DFLAG_MEDIA_CHANGED		= (1 << 29),
-+	IDE_DFLAG_PARKED		= (1 << 27),
-+	IDE_DFLAG_MEDIA_CHANGED		= (1 << 28),
- 	/* write protect */
--	IDE_DFLAG_WP			= (1 << 30),
--	IDE_DFLAG_FORMAT_IN_PROGRESS	= (1 << 31),
-+	IDE_DFLAG_WP			= (1 << 29),
-+	IDE_DFLAG_FORMAT_IN_PROGRESS	= (1 << 30),
- };
- 
- struct ide_drive_s {
--- 
-1.6.0.4
+So wrong. If no driver is associated, like early, in that case, we
+must return -ENODEV, instead of calling modprobe in a loop. It's a
+built-in device, and it's easy to fix.
 
+Again, please start to think about, it's all contained in the kernel,
+and the kernel is wrong. Claiming userspace is guilty to triggering
+this kernel bug does not help anything.
+
+Kay
