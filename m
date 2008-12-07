@@ -1,136 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYLGRKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYLGROM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbYLGRKY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 12:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYLGRKF
+	id S1753951AbYLGROM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 12:14:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbYLGRN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 12:10:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48520 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754172AbYLGRKD (ORCPT
+	Sun, 7 Dec 2008 12:13:56 -0500
+Received: from fmmailgate05.web.de ([217.72.192.243]:33341 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750720AbYLGRNz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 12:10:03 -0500
-Date: Sun, 7 Dec 2008 09:09:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH, take2] percpu_counter: FBC_BATCH might be too big
-Message-Id: <20081207090918.595627b2.akpm@linux-foundation.org>
-In-Reply-To: <493B9699.8080603@cosmosbay.com>
-References: <4939513C.3090101@cosmosbay.com>
-	<493B9699.8080603@cosmosbay.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Dec 2008 12:13:55 -0500
+Date: Sun, 07 Dec 2008 18:13:52 +0100
+Message-Id: <534120846@web.de>
+MIME-Version: 1.0
+From: devzero@web.de
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: odd habits with binary blobs.....
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX18P4q/7nH/rk5fWsMefC/ukenrd4ZFqq0BMEjvxWnLGwzgbS
+ z12S4ZSIIVXgCribeNc2U3fM/InDUx0cUTF5OB/EtGpNpSmlhI=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 07 Dec 2008 10:25:45 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
+>>On Wed 2008-12-03 22:40:51, devzero@web.de wrote:
+>> hello, 
+>> 
+>> i gave r1soft`s new/free "hot copy" a try today and .... failed:
+>> 
+>> vserver2:/tmp/usr/sbin # ./hcp-setup
+>> Gathering kernel information
+>> Gathering kernel information complete.
+>> Error: A network error occurred connecting to 'kmod32.r1soft.com'
+>> 
+>> what a pain....trying to setup a linux kernel module, the installer wants to phone \
+>> home - and fails. 
+>> but it`s even worse - http://wiki.r1soft.com/display/LTR1D/hcp-setup tells:
+>> 
+>> BUILDING HOT COPY DRIVER FROM SOURCE
+>> 
+>> hcp-setup will tar up your kernel source tree or headers and upload them to an \
+>> R1Soft build server over HTTPS using XML-RPC. Once your system's kernel headers or \
+>> source have been uploaded the R1Soft build server will compile a Hot Copy device \
+>> driver as a kernel module and hcp-setup will automatically download it to your \
+>> system. 
+>> In order for hcp-setup to work your Linux server must have HTTPS Internet access to \
+>> kmod32.r1soft.com (32-bit systems) and kmod64.r1soft.com (64-bit systems) 
+>> 
+>> how weird is THAT?
+>> 
+>> did anybody ever come across such "build binary blobs remotely" system ?
+>> 
+>> 
+>> ok, disqualified.  won`t touch it again, as i also don`t know what REALLY is \
+>> transferred to the vendor - but i wonder what kernel devs think about such build \
+>> system and what in-kernel alternative exists for this. (i think it doesn`t exist - \
+>> but maybe somebody working on that ?) 
 
-> In this second version I guarded hotcpu_notifier() call by
-> a #ifdef CONFIG_HOTPLUG_CPU
-> 
-> I wonder why hotcpu_notifier() is not a null op if !CONFIG_HOTPLUG_CPU
-> 
-> Thank you
-> 
-> [PATCH] percpu_counter: FBC_BATCH might be too big
-> 
-> For NR_CPUS >= 16 values, FBC_BATCH is 2*NR_CPUS
-> 
-> Considering more and more distros are using high NR_CPUS values,
-> it makes sense to use a more sensible value for FBC_BATCH.
-> 
-> A sensible value is 2*num_online_cpus(), with a minimum value of 32
-> (This minimum value helps branch prediction in __percpu_counter_add())
-> 
-> We already have a hotcpu notifier, so we can adjust FBC_BATCH dynamically.
+>Hmm. Gcc was not really designed to prevent .c source from exploiting
+>it.
+>
+>So I guess you could have some phun :-).
+>
+>									Pavel
 
-Yup, anything using NR_CPUS is probably wrong.
+I already thought of that.
+but isn`t it that not just a matter of gcc exploitability ?
+what about uploading specially crafted makefiles, setup-scripts or kernel-source 
+containing backdoors.....?
 
-> diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
-> index 9007ccd..c42a184 100644
-> --- a/include/linux/percpu_counter.h
-> +++ b/include/linux/percpu_counter.h
-> @@ -24,11 +24,7 @@ struct percpu_counter {
->  	s32 *counters;
->  };
->  
-> -#if NR_CPUS >= 16
-> -#define FBC_BATCH	(NR_CPUS*2)
-> -#else
-> -#define FBC_BATCH	(NR_CPUS*4)
-> -#endif
-> +extern int FBC_BATCH;
+besides hacking into the build servers - the problem i see is that other users download 
+binary code from a such potentially compromised system and/or may download kernel-
+modules which could (!?) contain binary code compiled from untrusted sourcecode....
+maybe BugTraq ML is a better place to discuss.....
 
-y:/usr/src/linux-2.6.28-rc7> grep -r FBC_BATCH . | wc -l
-7
+roland
+_______________________________________________________________________
+Sensationsangebot verlängert: WEB.DE FreeDSL - Telefonanschluss + DSL
+für nur 16,37 Euro/mtl.!* http://dsl.web.de/?ac=OM.AD.AD008K13805B7069a
 
-Can we fix this properly please?  It should now become lower case, and
-it was a pretty dopey name anyway - now would be a good time to improve
-it. `percpu_counter_batch'?
-
->  int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
->  int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
-> diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
-> index a866389..e21ce7c 100644
-> --- a/lib/percpu_counter.c
-> +++ b/lib/percpu_counter.c
-> @@ -114,6 +114,16 @@ void percpu_counter_destroy(struct percpu_counter *fbc)
->  }
->  EXPORT_SYMBOL(percpu_counter_destroy);
->  
-> +int FBC_BATCH __read_mostly = 32;
-> +EXPORT_SYMBOL(FBC_BATCH);
-> +
-> +static void compute_batch_value(void)
-> +{
-> +	int nr = num_online_cpus();
-> +
-> +	FBC_BATCH = max(32, nr*2);
-> +}
-> +
->  #ifdef CONFIG_HOTPLUG_CPU
->  static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
->  					unsigned long action, void *hcpu)
-> @@ -121,6 +131,7 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
->  	unsigned int cpu;
->  	struct percpu_counter *fbc;
->  
-> +	compute_batch_value();
->  	if (action != CPU_DEAD)
->  		return NOTIFY_OK;
->  
-> @@ -139,11 +150,14 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
->  	mutex_unlock(&percpu_counters_lock);
->  	return NOTIFY_OK;
->  }
-> +#endif
->  
->  static int __init percpu_counter_startup(void)
->  {
-> +	compute_batch_value();
-> +#ifdef CONFIG_HOTPLUG_CPU
->  	hotcpu_notifier(percpu_counter_hotcpu_callback, 0);
-> +#endif
->  	return 0;
->  }
->  module_init(percpu_counter_startup);
-> -#endif
-
-hm, now what's going on in there?  We should be able to drop the #ifdef
-CONFIG_HOTPLUG_CPU from lib/percpu_counter.c altogether. 
-hotcpu_notifier() will do the right thing, and the compiler should
-generate no code for percpu_counter_hotcpu_callback() if
-CONFIG_HOTPLUG_CPU=n.  
-
-Do
-
-	$EDITOR  $(grep -l hotcpu_notifier */*.c)
-
-and you'll see lots of code gets it right, and lots of code gets it wrong.
