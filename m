@@ -1,98 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923AbYLGJa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbYLGJgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753923AbYLGJa0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 04:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYLGJaN
+	id S1753803AbYLGJgU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 04:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYLGJgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 04:30:13 -0500
-Received: from balanced.mail.policyd.dreamhost.com ([208.97.132.119]:55720
-	"EHLO spunkymail-a12.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752443AbYLGJaL (ORCPT
+	Sun, 7 Dec 2008 04:36:03 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:44528 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752398AbYLGJgA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 04:30:11 -0500
-From: Yuval Hager <yuval@avramzon.net>
-To: Peter Stuge <peter@stuge.se>
-Subject: Re: BCM4312 Fails when xdm is started
-Date: Sun, 7 Dec 2008 11:29:27 +0200
-User-Agent: KMail/1.9.9
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Michael Buesch <mb@bu3sch.de>,
-       bcm43xx-dev@lists.berlios.de
-References: <200811151801.02369.yuval@avramzon.net> <200811250745.22487.yuval@avramzon.net> <20081125071818.9256.qmail@stuge.se>
-In-Reply-To: <20081125071818.9256.qmail@stuge.se>
+	Sun, 7 Dec 2008 04:36:00 -0500
+Message-ID: <493B9699.8080603@cosmosbay.com>
+Date: Sun, 07 Dec 2008 10:25:45 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4664892.LXOuEnOpdx";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>, linux-ext4@vger.kernel.org
+Subject: [PATCH, take2] percpu_counter: FBC_BATCH might be too big
+References: <4939513C.3090101@cosmosbay.com>
+In-Reply-To: <4939513C.3090101@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812071129.32113.yuval@avramzon.net>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 07 Dec 2008 10:25:48 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4664892.LXOuEnOpdx
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+In this second version I guarded hotcpu_notifier() call by
+a #ifdef CONFIG_HOTPLUG_CPU
 
-On Tuesday 25 November 2008, Peter Stuge wrote:
-> Yuval Hager wrote:
-> > I played around with different video drivers and the results are:
-> > * If using the 'via' driver, I lose the PCIe card immediately upon
-> >   initialization
-> > * Using the 'openchrome' (trunk version), It works well in the
-> >   beginning.
-> >   After first blanking the register reads are all 1's, and then
-> >   when the screen is blank I get a different read (some registers
-> >   are correct, some are wrong), and when the screen is unblanked, I
-> >   get 0xff's again. Very consistent and predictabe (same read every
-> >   time).
-> > * Using the 'vesa' driver I could not recreate the problem. I could
-> >   not get the screen to blank for some reason, but closing the lid,
-> >   going on standby/hibernate, restarting X - all didn't matter much
-> >   to the PCI and the wireless card kept on working.
->
-> Good work! You have beyond any doubt established that the X graphics
-> driver can cause this problem.
->
+I wonder why hotcpu_notifier() is not a null op if !CONFIG_HOTPLUG_CPU
 
-This issue has been tracked down to be at the openchrome driver. It appears=
-=20
-that somehow it corrupted the PCI bus, and damaged the device right after t=
-he=20
-video card - the wireless card.=20
+Thank you
 
-The current workaround for this is here -=20
-http://wiki.openchrome.org/pipermail/openchrome-devel/2008-November/000139.=
-html -=20
-but this is just a quick hack, not a fix, although it works great for me. T=
-he=20
-openchrome team is working on a patch based on this.
+[PATCH] percpu_counter: FBC_BATCH might be too big
 
-Thanks for all the help - I am a very happy HP2133 user, and a very happy=20
-community member. This was an amazing opensource support experience, which=
-=20
-I'll remember for a long time. Thank you all!
+For NR_CPUS >= 16 values, FBC_BATCH is 2*NR_CPUS
 
-Cheers,
+Considering more and more distros are using high NR_CPUS values,
+it makes sense to use a more sensible value for FBC_BATCH.
 
-=2D-=20
-Yuval Hager
-[@] yuval@avramzon.net
+A sensible value is 2*num_online_cpus(), with a minimum value of 32
+(This minimum value helps branch prediction in __percpu_counter_add())
 
---nextPart4664892.LXOuEnOpdx
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+We already have a hotcpu notifier, so we can adjust FBC_BATCH dynamically.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/percpu_counter.h |    6 +-----
+ lib/percpu_counter.c           |   16 +++++++++++++++-
+ 2 files changed, 16 insertions(+), 6 deletions(-)
 
-iEYEABECAAYFAkk7l3wACgkQl7qmwPqEj9/YZgCaA52S5eURCyNoRQZWKSgL4dXD
-1M4AnR1Dcr/XB0c2qfLRZR0anmb9r7K4
-=Y056
------END PGP SIGNATURE-----
-
---nextPart4664892.LXOuEnOpdx--
+diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
+index 9007ccd..c42a184 100644
+--- a/include/linux/percpu_counter.h
++++ b/include/linux/percpu_counter.h
+@@ -24,11 +24,7 @@ struct percpu_counter {
+ 	s32 *counters;
+ };
+ 
+-#if NR_CPUS >= 16
+-#define FBC_BATCH	(NR_CPUS*2)
+-#else
+-#define FBC_BATCH	(NR_CPUS*4)
+-#endif
++extern int FBC_BATCH;
+ 
+ int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
+ int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
+diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
+index a866389..e21ce7c 100644
+--- a/lib/percpu_counter.c
++++ b/lib/percpu_counter.c
+@@ -114,6 +114,16 @@ void percpu_counter_destroy(struct percpu_counter *fbc)
+ }
+ EXPORT_SYMBOL(percpu_counter_destroy);
+ 
++int FBC_BATCH __read_mostly = 32;
++EXPORT_SYMBOL(FBC_BATCH);
++
++static void compute_batch_value(void)
++{
++	int nr = num_online_cpus();
++
++	FBC_BATCH = max(32, nr*2);
++}
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+ 					unsigned long action, void *hcpu)
+@@ -121,6 +131,7 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+ 	unsigned int cpu;
+ 	struct percpu_counter *fbc;
+ 
++	compute_batch_value();
+ 	if (action != CPU_DEAD)
+ 		return NOTIFY_OK;
+ 
+@@ -139,11 +150,14 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+ 	mutex_unlock(&percpu_counters_lock);
+ 	return NOTIFY_OK;
+ }
++#endif
+ 
+ static int __init percpu_counter_startup(void)
+ {
++	compute_batch_value();
++#ifdef CONFIG_HOTPLUG_CPU
+ 	hotcpu_notifier(percpu_counter_hotcpu_callback, 0);
++#endif
+ 	return 0;
+ }
+ module_init(percpu_counter_startup);
+-#endif
