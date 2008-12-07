@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbYLGCcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbYLGCdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754157AbYLGCcA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Dec 2008 21:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbYLGCbk
+	id S1754041AbYLGCdE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Dec 2008 21:33:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYLGCcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Dec 2008 21:31:40 -0500
-Received: from ozlabs.org ([203.10.76.45]:52175 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753257AbYLGCbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Dec 2008 21:31:34 -0500
+	Sat, 6 Dec 2008 21:32:54 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:7476 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753163AbYLGCcw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Dec 2008 21:32:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=VjredgoJ/YI6ZIBaXBB+PupiOeDN7bbZrqnarYhaLNWPtJ6FCO0Rx7+DGYoxK7m3dd
+         GkrngrYHrLqvtBDxZU60SzJ+QCdpcl96PNcUKoTfXOoZiVzs6z8xTMogVnpewaEu6i7/
+         7ApdXdi2XHThOFaG/DcqC5tJuN7YU+iYey1Ug=
+Date: Sun, 7 Dec 2008 05:32:46 +0300
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: gregkh@suse.de, adobriyan@gmail.com, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] Staging/usbip: switch to list_for_each_entry()
+Message-ID: <20081207023246.GB21294@orion>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18747.13668.304923.709761@cargo.ozlabs.ibm.com>
-Date: Sun, 7 Dec 2008 13:31:00 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nicolas Palix <npalix@diku.dk>, benh@kernel.crashing.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH linux-next] powerpc/powermac: Add missing of_node_put
-In-Reply-To: <20081206163449.60757c4a.akpm@linux-foundation.org>
-References: <200812021445.18670.npalix@diku.dk>
-	<20081206163449.60757c4a.akpm@linux-foundation.org>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton writes:
 
-> This still misses a path - if that `return 0' is taken, we still leak
-> the reference.
-> 
-> This is reason #345 why sprinkling return statements all over your code
-> is bad.
-> 
-> I fixed it up thusly.  Please check.
 
-I'm really in two minds about applying any of the of_node_put patches
-that only affect powermacs.  The reference counts only matter on
-platforms where we update the OF device tree at runtime, which is
-currently only IBM pSeries machines.  Since we don't have any hotplug
-on powermacs, and never will have, the OF device tree is completely
-static and we don't actually need refcounts on the nodes at all, so
-who cares if they're a bit higher than they might be?
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-In particular, the VIA whose node we're looking for here is built-in
-on the motherboard, and there can never be more than one, and it can
-never be removed.
+ drivers/staging/usbip/stub_rx.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-Paul.
+diff --git a/drivers/staging/usbip/stub_rx.c b/drivers/staging/usbip/stub_rx.c
+index 2a2cc0f..2eb6137 100644
+--- a/drivers/staging/usbip/stub_rx.c
++++ b/drivers/staging/usbip/stub_rx.c
+@@ -234,8 +234,6 @@ static void tweak_special_requests(struct urb *urb)
+ static int stub_recv_cmd_unlink(struct stub_device *sdev,
+ 						struct usbip_header *pdu)
+ {
+-	struct list_head *listhead = &sdev->priv_init;
+-	struct list_head *ptr;
+ 	unsigned long flags;
+ 
+ 	struct stub_priv *priv;
+@@ -243,8 +241,7 @@ static int stub_recv_cmd_unlink(struct stub_device *sdev,
+ 
+ 	spin_lock_irqsave(&sdev->priv_lock, flags);
+ 
+-	for (ptr = listhead->next; ptr != listhead; ptr = ptr->next) {
+-		priv = list_entry(ptr, struct stub_priv, list);
++	list_for_each_entry(priv, &sdev->priv_init, list) {
+ 		if (priv->seqnum == pdu->u.cmd_unlink.seqnum) {
+ 			int ret;
+ 
