@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYLGH1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbYLGH5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbYLGH1t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 02:27:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYLGH1j
+	id S1754116AbYLGH5I (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 02:57:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYLGH4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 02:27:39 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50730 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752506AbYLGH1i (ORCPT
+	Sun, 7 Dec 2008 02:56:55 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59399
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752767AbYLGH4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 02:27:38 -0500
-Date: Sat, 6 Dec 2008 23:27:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ken Chen <kenchen@google.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] export percpu cpuacct cgroup stats
-Message-Id: <20081206232714.4b34b2fc.akpm@linux-foundation.org>
-In-Reply-To: <b040c32a0812051016q7912688dw2c663a77121a8f18@mail.gmail.com>
-References: <b040c32a0812032048x4a11dc26k184a4b279b509050@mail.gmail.com>
-	<49376BE3.1040909@cn.fujitsu.com>
-	<6599ad830812041502m15f54f0ckd8baa0a1792fc31e@mail.gmail.com>
-	<b040c32a0812042344n75117b68x8de975d12dddf594@mail.gmail.com>
-	<4938DE1C.6070608@cn.fujitsu.com>
-	<b040c32a0812050030uff5ae65o417c599a792c800c@mail.gmail.com>
-	<4938E7C1.9040102@cn.fujitsu.com>
-	<20081205135253.GE27039@elte.hu>
-	<b040c32a0812051016q7912688dw2c663a77121a8f18@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Sun, 7 Dec 2008 02:56:54 -0500
+Date: Sat, 06 Dec 2008 23:56:55 -0800 (PST)
+Message-Id: <20081206.235655.61233030.davem@davemloft.net>
+To: nick@nick-andrew.net
+Cc: den@openvz.org, xemul@openvz.org, yoshfuji@linux-ipv6.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix incorrect use of loose in wext.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081205030809.32393.55419.stgit@marcab.local.tull.net>
+References: <20081205030809.32393.55419.stgit@marcab.local.tull.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Dec 2008 10:16:30 -0800 Ken Chen <kenchen@google.com> wrote:
+From: Nick Andrew <nick@nick-andrew.net>
+Date: Fri, 05 Dec 2008 14:08:09 +1100
 
-> +static int cpuacct_percpu_seq_read(struct cgroup *cgroup, struct cftype *cft,
-> +				   struct seq_file *m)
-> +{
-> +	struct cpuacct *ca = cgroup_ca(cgroup);
-> +	u64 percpu;
-> +	int i;
-> +
-> +	for_each_possible_cpu(i) {
-> +		spin_lock_irq(&cpu_rq(i)->lock);
-> +		percpu = *percpu_ptr(ca->cpuusage, i);
-> +		spin_unlock_irq(&cpu_rq(i)->lock);
-> +		seq_printf(m, "%llu ", (unsigned long long) percpu);
-> +	}
-> +	seq_printf(m, "\n");
-> +	return 0;
-> +}
+> Fix incorrect use of loose in wext.c
+> 
+> It should be 'lose', not 'loose'.
+> 
+> Signed-off-by: Nick Andrew <nick@nick-andrew.net>
 
-The locking is only needed for 32-bit, I assume?
+Applied to net-next-2.6, thanks Nick.
 
-The iteration across all possible CPUs seems a bit lame - that code
-looks pretty easy to convert to hotplug goodness.
+BTW, your original posting of this patch didn't make it to the mailing
+lists because there were people's names on the CC: list which had a
+"." character in them, and in such cases these names must be fully
+surrounded by double quotes, otherwise it is an SMTP syntax error.
 
-(All of which pertains to existing code, not to this patch).
+Please be mindful of this in the future.
+
+> ---
+> 
+>  net/wireless/wext.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/net/wireless/wext.c b/net/wireless/wext.c
+> index d98ffb7..e49a2d1 100644
+> --- a/net/wireless/wext.c
+> +++ b/net/wireless/wext.c
+> @@ -64,7 +64,7 @@
+>   *	o Remove spy_offset from struct iw_handler_def
+>   *	o Start deprecating dev->get_wireless_stats, output a warning
+>   *	o If IW_QUAL_DBM is set, show dBm values in /proc/net/wireless
+> - *	o Don't loose INVALID/DBM flags when clearing UPDATED flags (iwstats)
+> + *	o Don't lose INVALID/DBM flags when clearing UPDATED flags (iwstats)
+>   *
+>   * v8 - 17.02.06 - Jean II
+>   *	o RtNetlink requests support (SET/GET)
+> 
+> 
