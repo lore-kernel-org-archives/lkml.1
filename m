@@ -1,45 +1,317 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbYLGSgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbYLGSkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756876AbYLGSgt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 13:36:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbYLGSgj
+	id S1755664AbYLGSkg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 13:40:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbYLGSk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 13:36:39 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39240 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754104AbYLGSgi (ORCPT
+	Sun, 7 Dec 2008 13:40:26 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:40738 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754384AbYLGSkZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 13:36:38 -0500
-Date: Sun, 7 Dec 2008 18:36:47 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: LibATA error
-Message-ID: <20081207183647.3ba03750@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081207153757.GA5761@ics.muni.cz>
-References: <20081206185252.GA4323@ics.muni.cz>
-	<493AE09F.5010108@shaw.ca>
-	<20081207153757.GA5761@ics.muni.cz>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Dec 2008 13:40:25 -0500
+Message-ID: <493C1632.2000901@cosmosbay.com>
+Date: Sun, 07 Dec 2008 19:30:10 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH, take2] percpu_counter: FBC_BATCH might be too big
+References: <4939513C.3090101@cosmosbay.com>	<493B9699.8080603@cosmosbay.com> <20081207090918.595627b2.akpm@linux-foundation.org>
+In-Reply-To: <20081207090918.595627b2.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 07 Dec 2008 19:30:12 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > It could be.. it means the drive sent the controller a SATA FIS (frame  
-> > information structure) it didn't recognize.
+Andrew Morton a écrit :
+> On Sun, 07 Dec 2008 10:25:45 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
 > 
-> hm, if I disable NCQ, I do not get these errors. Maybe OCZ SSD disks should be
-> blacklisted for NCQ?
+>> In this second version I guarded hotcpu_notifier() call by
+>> a #ifdef CONFIG_HOTPLUG_CPU
+>>
+>> I wonder why hotcpu_notifier() is not a null op if !CONFIG_HOTPLUG_CPU
+>>
+>> Thank you
+>>
+>> [PATCH] percpu_counter: FBC_BATCH might be too big
+>>
+>> For NR_CPUS >= 16 values, FBC_BATCH is 2*NR_CPUS
+>>
+>> Considering more and more distros are using high NR_CPUS values,
+>> it makes sense to use a more sensible value for FBC_BATCH.
+>>
+>> A sensible value is 2*num_online_cpus(), with a minimum value of 32
+>> (This minimum value helps branch prediction in __percpu_counter_add())
+>>
+>> We already have a hotcpu notifier, so we can adjust FBC_BATCH dynamically.
+> 
+> Yup, anything using NR_CPUS is probably wrong.
+> 
+>> diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
+>> index 9007ccd..c42a184 100644
+>> --- a/include/linux/percpu_counter.h
+>> +++ b/include/linux/percpu_counter.h
+>> @@ -24,11 +24,7 @@ struct percpu_counter {
+>>  	s32 *counters;
+>>  };
+>>  
+>> -#if NR_CPUS >= 16
+>> -#define FBC_BATCH	(NR_CPUS*2)
+>> -#else
+>> -#define FBC_BATCH	(NR_CPUS*4)
+>> -#endif
+>> +extern int FBC_BATCH;
+> 
+> y:/usr/src/linux-2.6.28-rc7> grep -r FBC_BATCH . | wc -l
+> 7
+> 
+> Can we fix this properly please?  It should now become lower case, and
+> it was a pretty dopey name anyway - now would be a good time to improve
+> it. `percpu_counter_batch'?
 
-They shouldn't be claiming they can do NCQ if so. Can you dump out the
-identify data in full (with hdparm) and if possible (or if someone else
-with one can comment..) find out whether the same occurs with different
-controller types.
+Yes
 
-Alan
+> 
+>>  int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
+>>  int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
+>> diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
+>> index a866389..e21ce7c 100644
+>> --- a/lib/percpu_counter.c
+>> +++ b/lib/percpu_counter.c
+>> @@ -114,6 +114,16 @@ void percpu_counter_destroy(struct percpu_counter *fbc)
+>>  }
+>>  EXPORT_SYMBOL(percpu_counter_destroy);
+>>  
+>> +int FBC_BATCH __read_mostly = 32;
+>> +EXPORT_SYMBOL(FBC_BATCH);
+>> +
+>> +static void compute_batch_value(void)
+>> +{
+>> +	int nr = num_online_cpus();
+>> +
+>> +	FBC_BATCH = max(32, nr*2);
+>> +}
+>> +
+>>  #ifdef CONFIG_HOTPLUG_CPU
+>>  static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+>>  					unsigned long action, void *hcpu)
+>> @@ -121,6 +131,7 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+>>  	unsigned int cpu;
+>>  	struct percpu_counter *fbc;
+>>  
+>> +	compute_batch_value();
+>>  	if (action != CPU_DEAD)
+>>  		return NOTIFY_OK;
+>>  
+>> @@ -139,11 +150,14 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+>>  	mutex_unlock(&percpu_counters_lock);
+>>  	return NOTIFY_OK;
+>>  }
+>> +#endif
+>>  
+>>  static int __init percpu_counter_startup(void)
+>>  {
+>> +	compute_batch_value();
+>> +#ifdef CONFIG_HOTPLUG_CPU
+>>  	hotcpu_notifier(percpu_counter_hotcpu_callback, 0);
+>> +#endif
+>>  	return 0;
+>>  }
+>>  module_init(percpu_counter_startup);
+>> -#endif
+> 
+> hm, now what's going on in there?  We should be able to drop the #ifdef
+> CONFIG_HOTPLUG_CPU from lib/percpu_counter.c altogether. 
+> hotcpu_notifier() will do the right thing, and the compiler should
+> generate no code for percpu_counter_hotcpu_callback() if
+> CONFIG_HOTPLUG_CPU=n.  
+> 
+> Do
+> 
+> 	$EDITOR  $(grep -l hotcpu_notifier */*.c)
+> 
+> and you'll see lots of code gets it right, and lots of code gets it wrong.
+
+I see nothing interesting, I must be blind.
+
+lib/percpu_counter.c: In function 'percpu_counter_startup':
+lib/percpu_counter.c:158: error: 'percpu_counter_hotcpu_callback' undeclared (first use in this function)
+lib/percpu_counter.c:158: error: (Each undeclared identifier is reported only once
+lib/percpu_counter.c:158: error: for each function it appears in.)
+make[1]: *** [lib/percpu_counter.o] Error 1
+
+static int __init percpu_counter_startup(void)
+{
+        compute_batch_value();
+        hotcpu_notifier(percpu_counter_hotcpu_callback, 0); << ERROR >>
+        return 0;
+}
+module_init(percpu_counter_startup);
+
+# grep hotcpu_notifier include/linux/cpu.h
+#define hotcpu_notifier(fn, pri) {                          \
+#define hotcpu_notifier(fn, pri)    do { (void)(fn); } while (0)  << ERROR >>
+
+
+If changed to :
+
+static struct notifier_block __cpuinitdata percpu_counter_cpu_notifier = {
+        .notifier_call  = percpu_counter_hotcpu_callback,
+};
+static int __init percpu_counter_startup(void)
+{
+        compute_batch_value();
+        register_hotcpu_notifier(&percpu_counter_cpu_notifier);
+        return 0;
+}
+module_init(percpu_counter_startup);
+
+Then error is :
+lib/percpu_counter.c:156: error: 'percpu_counter_hotcpu_callback' undeclared here (not in a function)
+make[1]: *** [lib/percpu_counter.o] Error 1
+
+
+So the only way seems to add an ugly
+
+#define percpu_counter_hotcpu_callback NULL
+
+Is is what you name "the right thing" ?
+
+Thanks
+
+[PATCH] percpu_counter: FBC_BATCH should be a variable
+
+For NR_CPUS >= 16 values, FBC_BATCH is 2*NR_CPUS
+
+Considering more and more distros are using high NR_CPUS values,
+it makes sense to use a more sensible value for FBC_BATCH.
+
+A sensible value is 2*num_online_cpus(), with a minimum value of 32
+(This minimum value helps branch prediction in __percpu_counter_add())
+
+We already have a hotcpu notifier, so we can adjust FBC_BATCH dynamically.
+
+We rename FBC_BATCH to percpu_counter_batch since its not a constant
+anymore.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/ext4/ext4.h                 |    6 +++---
+ fs/ext4/inode.c                |    2 +-
+ include/linux/percpu_counter.h |    8 ++------
+ lib/percpu_counter.c           |   16 +++++++++++++++-
+ 4 files changed, 21 insertions(+), 11 deletions(-)
+
+diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+index b0537c8..6c46c64 100644
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -1225,11 +1225,11 @@ do {								\
+ } while (0)
+ 
+ #ifdef CONFIG_SMP
+-/* Each CPU can accumulate FBC_BATCH blocks in their local
++/* Each CPU can accumulate percpu_counter_batch blocks in their local
+  * counters. So we need to make sure we have free blocks more
+- * than FBC_BATCH  * nr_cpu_ids. Also add a window of 4 times.
++ * than percpu_counter_batch  * nr_cpu_ids. Also add a window of 4 times.
+  */
+-#define EXT4_FREEBLOCKS_WATERMARK (4 * (FBC_BATCH * nr_cpu_ids))
++#define EXT4_FREEBLOCKS_WATERMARK (4 * (percpu_counter_batch * nr_cpu_ids))
+ #else
+ #define EXT4_FREEBLOCKS_WATERMARK 0
+ #endif
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index be21a5a..db661e7 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -2497,7 +2497,7 @@ static int ext4_nonda_switch(struct super_block *sb)
+ 	/*
+ 	 * switch to non delalloc mode if we are running low
+ 	 * on free block. The free block accounting via percpu
+-	 * counters can get slightly wrong with FBC_BATCH getting
++	 * counters can get slightly wrong with percpu_counter_batch getting
+ 	 * accumulated on each CPU without updating global counters
+ 	 * Delalloc need an accurate free block accounting. So switch
+ 	 * to non delalloc when we are near to error range.
+diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
+index 9007ccd..99de7a3 100644
+--- a/include/linux/percpu_counter.h
++++ b/include/linux/percpu_counter.h
+@@ -24,11 +24,7 @@ struct percpu_counter {
+ 	s32 *counters;
+ };
+ 
+-#if NR_CPUS >= 16
+-#define FBC_BATCH	(NR_CPUS*2)
+-#else
+-#define FBC_BATCH	(NR_CPUS*4)
+-#endif
++extern int percpu_counter_batch;
+ 
+ int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
+ int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
+@@ -39,7 +35,7 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc);
+ 
+ static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
+ {
+-	__percpu_counter_add(fbc, amount, FBC_BATCH);
++	__percpu_counter_add(fbc, amount, percpu_counter_batch);
+ }
+ 
+ static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
+diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
+index a866389..519b877 100644
+--- a/lib/percpu_counter.c
++++ b/lib/percpu_counter.c
+@@ -114,6 +114,16 @@ void percpu_counter_destroy(struct percpu_counter *fbc)
+ }
+ EXPORT_SYMBOL(percpu_counter_destroy);
+ 
++int percpu_counter_batch __read_mostly = 32;
++EXPORT_SYMBOL(percpu_counter_batch);
++
++static void compute_batch_value(void)
++{
++	int nr = num_online_cpus();
++
++	percpu_counter_batch = max(32, nr*2);
++}
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+ 					unsigned long action, void *hcpu)
+@@ -121,6 +131,7 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+ 	unsigned int cpu;
+ 	struct percpu_counter *fbc;
+ 
++	compute_batch_value();
+ 	if (action != CPU_DEAD)
+ 		return NOTIFY_OK;
+ 
+@@ -139,11 +150,14 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
+ 	mutex_unlock(&percpu_counters_lock);
+ 	return NOTIFY_OK;
+ }
++#else
++#define percpu_counter_hotcpu_callback NULL
++#endif /* CONFIG_HOTPLUG_CPU */
+ 
+ static int __init percpu_counter_startup(void)
+ {
++	compute_batch_value();
+ 	hotcpu_notifier(percpu_counter_hotcpu_callback, 0);
+ 	return 0;
+ }
+ module_init(percpu_counter_startup);
+-#endif
+
