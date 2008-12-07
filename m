@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbYLGJpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbYLGJsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753835AbYLGJpS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 04:45:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYLGJpF
+	id S1753994AbYLGJsN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 04:48:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYLGJr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 04:45:05 -0500
-Received: from mx1.suse.de ([195.135.220.2]:51481 "EHLO mx1.suse.de"
+	Sun, 7 Dec 2008 04:47:58 -0500
+Received: from cantor.suse.de ([195.135.220.2]:51607 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbYLGJpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 04:45:03 -0500
-Date: Sun, 07 Dec 2008 10:44:55 +0100
-Message-ID: <s5hd4g4xqso.wl%tiwai@suse.de>
+	id S1751069AbYLGJr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 04:47:57 -0500
+Date: Sun, 07 Dec 2008 10:47:56 +0100
+Message-ID: <s5hbpvoxqnn.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH 1/3] PCI: Rework default handling of suspend and resume
-In-Reply-To: <alpine.LFD.2.00.0812062157590.3425@nehalem.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0812061324260.13426-100000@netrider.rowland.org>
-	<200812062236.44111.rjw@sisk.pl>
-	<alpine.LFD.2.00.0812061420190.3425@nehalem.linux-foundation.org>
-	<20081206152545.326c8b67@infradead.org>
-	<alpine.LFD.2.00.0812062157590.3425@nehalem.linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH 3/3] Sound (HDA Intel): Restore PCI configuration space with interrupts off
+In-Reply-To: <200812062045.35689.jbarnes@virtuousgeek.org>
+References: <200812020320.31876.rjw@sisk.pl>
+	<200812061505.33815.rjw@sisk.pl>
+	<200812061509.08994.rjw@sisk.pl>
+	<200812062045.35689.jbarnes@virtuousgeek.org>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -35,24 +34,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sat, 6 Dec 2008 22:00:59 -0800 (PST),
-Linus Torvalds wrote:
+At Sat, 6 Dec 2008 20:45:35 -0800,
+Jesse Barnes wrote:
 > 
+> On Saturday, December 6, 2008 6:09 am Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Subject: Sound (HDA Intel): Restore PCI configuration space with interrupts
+> > off
+> >
+> > Move the restoration of the standard PCI configuration registers
+> > in the snd_hda_intel driver to a ->resume_early() callback executed
+> > with interrupts disabled, since doing that with interrupts enabled
+> > may lead to problems in some cases.
+> >
+> > This patch addresses the regression from 2.6.26 tracked as
+> > http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
 > 
-> 
-> On Sat, 6 Dec 2008, Arjan van de Ven wrote:
-> > 
-> > the problem is that the system bios can have reassigned interrupts
-> > after resume, and afaik we need to re-evaluate the ACPI methods to
-> > get the new mapping.
-> > So we need to unregister + re-register to make that happen
-> 
-> Can you give actual examples of real life situations?
+> Since I only applied 1 and 2 you'll need to send this one through Takashi.
 
-There were such cases on intel8x0 and maestro3 on-board sound devices,
-but all they were about hibernate, IIRC.  Just though a quick git 
-log search, I found the following:
-	http://bugzilla.kernel.org/show_bug.cgi?id=4416
+OK, I merged it to for-next branch now.
+It should appear in the linux-next tree of tomorrow.
 
+
+thanks,
 
 Takashi
