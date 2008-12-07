@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755140AbYLGQD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbYLGQEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755140AbYLGQD3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 11:03:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbYLGQDU
+	id S1754972AbYLGQEu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 11:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbYLGQEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 11:03:20 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:38888 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753523AbYLGQDT (ORCPT
+	Sun, 7 Dec 2008 11:04:36 -0500
+Received: from stinky.trash.net ([213.144.137.162]:43893 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753679AbYLGQEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 11:03:19 -0500
-Message-ID: <ac3eb2510812070803i150d91e7led58128796e8045e@mail.gmail.com>
-Date: Sun, 7 Dec 2008 17:03:17 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Subject: Re: Runaway loop with the current git.
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, zbr@ioremap.net,
-       linux-kernel@vger.kernel.org,
-       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20081207155507.GA15355@gondor.apana.org.au>
+	Sun, 7 Dec 2008 11:04:35 -0500
+Message-ID: <493BF40F.6050307@trash.net>
+Date: Sun, 07 Dec 2008 17:04:31 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: m m <olsajiri@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-net@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: netlink - notify when the socket gets closed
+References: <35476bd20812050017y70c3c729v450cdc3d0c1188de@mail.gmail.com>	 <20081205195624.95ea1866.akpm@linux-foundation.org>	 <493A92FD.3060302@trash.net> <35476bd20812061010g145b6c19r282ae32a4ebfabb1@mail.gmail.com>
+In-Reply-To: <35476bd20812061010g145b6c19r282ae32a4ebfabb1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk>
-	 <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au>
-	 <20081207155507.GA15355@gondor.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 7, 2008 at 16:55, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> On Sun, Dec 07, 2008 at 10:49:27PM +0800, Herbert Xu wrote:
+m m wrote:
+> On Sat, Dec 6, 2008 at 3:58 PM, Patrick McHardy <kaber@trash.net> wrote:
+>> That doesn't make sense. When you use multicast, multiple applications
+>> can be listening to the messages. If you really need state for a single
+>> listener and exchange messages in both directions, it sounds like you
+>> should use unicast.
 >>
->> In any case the loop itself does not involve any crypto components
->> so I don't think making changes in the crypto layer is going to
->> make this go away forever as anyone calling request_module early
->> enough will get into this loop.
->
-> Having said that I think this patch should remove this particular
-> trigger.  Unfortunately I couldn't find a more succinct way of
-> expressing this relationship: if ALGAPI is built-in because it's
-> selected by an algorithm, and CRYPTO_MANAGER is enabled then we
-> require CRYPTO_MANAGER to be built-in as well.
->
-> Evgeniy, please let me know whether this fixes the problem.
+>>
+> My user app register in kernel for a data. When there is a first
+> application request,
+> kernel module creates an internal record and ask DATA subsystem for a data,
+> which are then passed to the user application.
+> 
+> The data are then delivered to the application as they are comming from
+> the DATA subsystem.
+> 
+> When there's another application requesting the same data type, kernel module
+> just increase reference count in the internal record, and multicast delivers
+> data to the other app.
+> 
+> Now when one of those applications end, kernel module just decrease
+> the reference count in the internal record.
+> 
+> When the other application ends, kernel module needs to release the internal
+> record and ask the DATA subsystem to stop delivering data.
+> 
+> Hope this make sense... I could do some ascii art next time if needed :)
 
-Even when this works around it, the problem that the kernel triggers
-module loading on /dev/console access stays and needs to be fixed
-instead.
+Thats an unusual way to use netlink, but it sounds reasonable.
 
-It's a pure kernel bug, regardless of how many times Alan likes to
-establish non-sensical hotplug rules to prevent this. The next
-innocent driver change, like yours is, will run into the same problem.
-
-Thanks,
-Kay
+Adding a notifier for multicast unsubscriptions should be easy.
+Nothing in the kernel needs it though, so you need to carry the
+patch to do this yourself until you submit your module.
