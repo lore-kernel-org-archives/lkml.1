@@ -1,89 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYLGXCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbYLGXKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbYLGXCk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 18:02:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYLGXCa
+	id S1755429AbYLGXKx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 18:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYLGXKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 18:02:30 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:45031 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753017AbYLGXC2 convert rfc822-to-8bit (ORCPT
+	Sun, 7 Dec 2008 18:10:42 -0500
+Received: from casper.infradead.org ([85.118.1.10]:33044 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752542AbYLGXKm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 18:02:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:cc:content-disposition:from:date:mime-version
-         :content-type:content-transfer-encoding:message-id;
-        b=djZQFk83Tj8dWEB3e83SI28/5wTcIYB/C5wS68ATaxeMQC6q5NCTvV4WLhG7trcjP5
-         RR1Mwx7Hfx5GJVjMm76Fd1NumHx7ENSUWzndcx7c+fNaXhO277uC3+lu1hz3/7lzve6u
-         DPeFM1vH6BKPL8TK35vic/iCF/UnaZyb6EDB0=
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [x86] do_arch_prctl
-Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Content-Disposition: inline
-From: Eric Lacombe <goretux@gmail.com>
-Date: Mon, 8 Dec 2008 00:02:20 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200812080002.21192.goretux@gmail.com>
+	Sun, 7 Dec 2008 18:10:42 -0500
+Date: Sun, 7 Dec 2008 15:12:03 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Yves-Alexis Perez" <corsac@debian.org>
+Subject: Re: [Bug #12152] Huge wakeups number from i1915
+Message-ID: <20081207151203.46c01a0d@infradead.org>
+In-Reply-To: <200812072352.07151.rjw@sisk.pl>
+References: <6VnlupFpCsN.A.2rE.MsEPJB@chimera>
+	<07Xes05z25M.A.VtF.ksEPJB@chimera>
+	<20081207145203.0f998d5b@infradead.org>
+	<200812072352.07151.rjw@sisk.pl>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 7 Dec 2008 23:52:06 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-I'm sorry to insist, but I really want to understand what occurs in this 
-portion of kernel code. And that's why I resend my previous message with the 
-hope that someone could enlighten my mind.
+> On Sunday, 7 of December 2008, Arjan van de Ven wrote:
+> > On Sun,  7 Dec 2008 21:32:54 +0100 (CET)
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > This message has been generated automatically as a part of a
+> > > report of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known
+> > > regressions from 2.6.27.  Please verify if it still should be
+> > > listed and let me know (either way).
+> > > 
+> > > 
+> > > Bug-Entry	:
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=12152
+> > > Subject		: Huge wakeups number from i1915
+> > > Submitter	: Yves-Alexis Perez <corsac@debian.org>
+> > > Date		: 2008-12-02 16:48 (6 days old)
+> > > References	:
+> > > http://marc.info/?l=linux-acpi&m=122823656702994&w=4
+> > > 
+> > 
+> > at least in some of the cases where this has been seen the cause is
+> > the following:
+> > The i915 DRM driver used to do polling for completion, busy
+> > waiting. It moved to be interrupt driven, which is usually better
+> > for power, but it will show up as more wakeups in powertop....
+> 
+> IOW, this is not a regression?
 
-Thanks in advance,
+I don't know about this specifc case (not enough information) but for
+the case I described it's not a regression. Going to interrupt driven
+from busy waiting is an improvement not a regression :)
 
-	Eric
-
-Le lundi 24 novembre 2008 19:22:18 Jeremy Fitzhardinge, vous avez écrit :
-> Eric Lacombe wrote:
-> > Hello,
-> >
-> > Does the "doit case" (line 822 in ARCH_GET_FS, function do_arch_prctl)
-> > exist for performance reasons? Else, why "task->thread.fs" (line 824)
-> > does not contain the fs base in the "doit case"?
->
-> "doit" gets set when you're operating on yourself.  If you're operating
-> on another process, then you need to use their task structure values
-> rather than the current process's values.  If you're doing it to
-> yourself, then the task structure may be out of date because its only
-> updated on a context switch.
-
-The task_struct is also updated in sys_arch_prctl (ARCH_SET_FS and 
-ARCH_SET_GS), so not just on a context switch.
-How the task structure could be out of date wrt thread.gs and thread.fs?
-What could be a typical scenario that could induced gs or fs to be modified and 
-not thread.gs and thread.fs?
-
-Why we have a difference between ARCH_GET_GS :
-
-> 833                 else if (doit) {
-> 834                         asm("movl %%gs,%0" : "=r" (gsindex));
-> 835                         if (gsindex)
-> 836                                 rdmsrl(MSR_KERNEL_GS_BASE, base);
-> 837                         else
-> 838                                 base = task->thread.gs;
-> 839                 }
-
-and ARCH_GET_FS :
-
-> 821                 else if (doit)
-> 822                         rdmsrl(MSR_FS_BASE, base);
-
-If I follow what you say, why can't we have the same optimization in 
-ARCH_GET_FS?
-
-thanks,
-
-	Eric
-
-
-
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
