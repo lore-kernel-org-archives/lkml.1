@@ -1,131 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYLGKza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbYLGK4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbYLGKza (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 05:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYLGKzV
+	id S1754132AbYLGK4A (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 05:56:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYLGKzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 05:55:21 -0500
-Received: from ozlabs.org ([203.10.76.45]:52301 "EHLO ozlabs.org"
+	Sun, 7 Dec 2008 05:55:50 -0500
+Received: from ozlabs.org ([203.10.76.45]:52308 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753345AbYLGKzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 05:55:20 -0500
+	id S1753371AbYLGKzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 05:55:50 -0500
 To: "kvm-devel" <kvm-devel@lists.sourceforge.net>
 Cc: linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
        Avi Kivity <avi@qumranet.com>
 From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Sun, 7 Dec 2008 21:25:14 +1030
-Subject: [PATCH 1/2] kvm: use modern cpumask primitives, no cpumask_t on stack
-Cc: Mike Travis <travis@sgi.com>
+Date: Sun, 7 Dec 2008 21:25:45 +1030
+Subject: [PATCH 2/2] kvm: use cpumask_var_t for cpus_hardware_enabled
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812072125.14416.rusty@rustcorp.com.au>
+Message-Id: <200812072125.45757.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We're getting rid on on-stack cpumasks for large NR_CPUS.
-
-1) Use cpumask_var_t and alloc_cpumask_var (a noop normally).  Fallback
-   code is inefficient but never happens in practice.
-2) smp_call_function_mask -> smp_call_function_many
-3) cpus_clear, cpus_empty, cpu_set -> cpumask_clear, cpumask_empty,
-   cpumask_set_cpu.
+This changes cpus_hardware_enabled from a cpumask_t to a cpumask_var_t:
+equivalent for CONFIG_CPUMASKS_OFFSTACK=n, otherwise dynamically allocated.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- virt/kvm/kvm_main.c |   45 +++++++++++++++++++++++++++++++++++----------
- 1 file changed, 35 insertions(+), 10 deletions(-)
+ virt/kvm/kvm_main.c |   20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
---- linux-2.6.orig/virt/kvm/kvm_main.c
-+++ linux-2.6/virt/kvm/kvm_main.c
-@@ -358,11 +358,23 @@ static void ack_flush(void *_completed)
- void kvm_flush_remote_tlbs(struct kvm *kvm)
- {
- 	int i, cpu, me;
--	cpumask_t cpus;
-+	cpumask_var_t cpus;
- 	struct kvm_vcpu *vcpu;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -63,7 +63,7 @@ DEFINE_SPINLOCK(kvm_lock);
+ DEFINE_SPINLOCK(kvm_lock);
+ LIST_HEAD(vm_list);
  
- 	me = get_cpu();
--	cpus_clear(cpus);
-+	if (!alloc_cpumask_var(&cpus, GFP_ATOMIC)) {
-+		/* Slow path on failure.  Call everyone. */
-+		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
-+			vcpu = kvm->vcpus[i];
-+			if (vcpu)
-+				set_bit(KVM_REQ_TLB_FLUSH, &vcpu->requests);
-+		}
-+		++kvm->stat.remote_tlb_flush;
-+		smp_call_function_many(cpu_online_mask, ack_flush, NULL, 1);
-+		put_cpu();
-+		return;
-+	}
-+
- 	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
- 		vcpu = kvm->vcpus[i];
- 		if (!vcpu)
-@@ -371,24 +383,36 @@ void kvm_flush_remote_tlbs(struct kvm *k
- 			continue;
- 		cpu = vcpu->cpu;
- 		if (cpu != -1 && cpu != me)
--			cpu_set(cpu, cpus);
-+			cpumask_set_cpu(cpu, cpus);
- 	}
--	if (cpus_empty(cpus))
-+	if (cpumask_empty(cpus))
- 		goto out;
- 	++kvm->stat.remote_tlb_flush;
--	smp_call_function_mask(cpus, ack_flush, NULL, 1);
-+	smp_call_function_many(cpus, ack_flush, NULL, 1);
- out:
- 	put_cpu();
-+	free_cpumask_var(cpus);
+-static cpumask_t cpus_hardware_enabled;
++static cpumask_var_t cpus_hardware_enabled;
+ 
+ struct kmem_cache *kvm_vcpu_cache;
+ EXPORT_SYMBOL_GPL(kvm_vcpu_cache);
+@@ -1796,9 +1796,9 @@ static void hardware_enable(void *junk)
+ {
+ 	int cpu = raw_smp_processor_id();
+ 
+-	if (cpu_isset(cpu, cpus_hardware_enabled))
++	if (cpumask_test_cpu(cpu, cpus_hardware_enabled))
+ 		return;
+-	cpu_set(cpu, cpus_hardware_enabled);
++	cpumask_set_cpu(cpu, cpus_hardware_enabled);
+ 	kvm_arch_hardware_enable(NULL);
  }
  
- void kvm_reload_remote_mmus(struct kvm *kvm)
+@@ -1806,9 +1806,9 @@ static void hardware_disable(void *junk)
  {
- 	int i, cpu, me;
--	cpumask_t cpus;
-+	cpumask_var_t cpus;
- 	struct kvm_vcpu *vcpu;
+ 	int cpu = raw_smp_processor_id();
  
- 	me = get_cpu();
--	cpus_clear(cpus);
-+	if (!alloc_cpumask_var(&cpus, GFP_ATOMIC)) {
-+		/* Slow path on failure.  Call everyone. */
-+		for (i = 0; i < KVM_MAX_VCPUS; ++i) {
-+			vcpu = kvm->vcpus[i];
-+			if (vcpu)
-+				set_bit(KVM_REQ_MMU_RELOAD, &vcpu->requests);
-+		}
-+		smp_call_function_many(cpu_online_mask, ack_flush, NULL, 1);
-+		put_cpu();
-+		return;
-+	}
-+
- 	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
- 		vcpu = kvm->vcpus[i];
- 		if (!vcpu)
-@@ -397,13 +421,14 @@ void kvm_reload_remote_mmus(struct kvm *
- 			continue;
- 		cpu = vcpu->cpu;
- 		if (cpu != -1 && cpu != me)
--			cpu_set(cpu, cpus);
-+			cpumask_set_cpu(cpu, cpus);
- 	}
--	if (cpus_empty(cpus))
-+	if (cpumask_empty(cpus))
- 		goto out;
--	smp_call_function_mask(cpus, ack_flush, NULL, 1);
-+	smp_call_function_many(cpus, ack_flush, NULL, 1);
- out:
- 	put_cpu();
-+	free_cpumask_var(cpus);
+-	if (!cpu_isset(cpu, cpus_hardware_enabled))
++	if (!cpumask_test_cpu(cpu, cpus_hardware_enabled))
+ 		return;
+-	cpu_clear(cpu, cpus_hardware_enabled);
++	cpumask_clear_cpu(cpu, cpus_hardware_enabled);
+ 	kvm_arch_hardware_disable(NULL);
  }
  
+@@ -2042,9 +2042,14 @@ int kvm_init(void *opaque, unsigned int 
  
+ 	bad_pfn = page_to_pfn(bad_page);
+ 
++	if (!alloc_cpumask_var(&cpus_hardware_enabled, GFP_KERNEL)) {
++		r = -ENOMEM;
++		goto out_free_0;
++	}
++
+ 	r = kvm_arch_hardware_setup();
+ 	if (r < 0)
+-		goto out_free_0;
++		goto out_free_0a;
+ 
+ 	for_each_online_cpu(cpu) {
+ 		smp_call_function_single(cpu,
+@@ -2103,6 +2108,8 @@ out_free_2:
+ 	on_each_cpu(hardware_disable, NULL, 1);
+ out_free_1:
+ 	kvm_arch_hardware_unsetup();
++out_free_0a:
++	free_cpumask_var(cpus_hardware_enabled);
+ out_free_0:
+ 	__free_page(bad_page);
+ out:
+@@ -2126,6 +2133,7 @@ void kvm_exit(void)
+ 	kvm_arch_hardware_unsetup();
+ 	kvm_arch_exit();
+ 	kvm_exit_debug();
++	free_cpumask_var(cpus_hardware_enabled);
+ 	__free_page(bad_page);
+ }
+ EXPORT_SYMBOL_GPL(kvm_exit);
 
