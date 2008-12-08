@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbYLHD4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYLHE3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756021AbYLHD4X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 22:56:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbYLHD4N
+	id S1756020AbYLHE3c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 23:29:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYLHE3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 22:56:13 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:57536 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754678AbYLHD4M (ORCPT
+	Sun, 7 Dec 2008 23:29:22 -0500
+Received: from rn-out-0910.google.com ([64.233.170.184]:13746 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754875AbYLHE3V convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 22:56:12 -0500
-Message-ID: <ac3eb2510812071956i3630476esf9e95a0bb7f9ca8e@mail.gmail.com>
-Date: Mon, 8 Dec 2008 04:56:10 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: Runaway loop with the current git.
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Evgeniy Polyakov" <zbr@ioremap.net>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       linux-kernel@vger.kernel.org,
-       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
-In-Reply-To: <34909.1228706592@turing-police.cc.vt.edu>
+	Sun, 7 Dec 2008 23:29:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=acHujL+PfJY4pJwFf8FWsZ260zy6TUyBjSd4KcT6m4hcp7FpGCB2+zxIbbizqWyGHs
+         7phxcIyxGllENAWE2nOuZKZ0rbAOnmwABxCkNU9vFaSrsWgwnL9XzGrKlTAjJj+k+aVi
+         uvE0eRVbFZzeb80N8/X4Gxikc4JHkPQF9+sdo=
+Message-ID: <21d7e9970812072029w2b5f47ecoeb1d042880e4bff1@mail.gmail.com>
+Date: Mon, 8 Dec 2008 14:29:20 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "=?ISO-8859-1?Q?C=E9dric_Godin?=" <cedric@belbone.be>
+Subject: Re: Xorg crash at first start
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <49391512.4000604@belbone.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk>
-	 <20081207160921.693f637a@lxorguk.ukuu.org.uk>
-	 <20081207163151.GA31838@ioremap.net>
-	 <20081207170108.39dfd93f@lxorguk.ukuu.org.uk>
-	 <ac3eb2510812070922q2531a188v37874a042b259ac9@mail.gmail.com>
-	 <20081207172855.55fee78f@lxorguk.ukuu.org.uk>
-	 <ac3eb2510812070939h17ef6316hea96fe89f01207a6@mail.gmail.com>
-	 <20081207175118.09c633e8@lxorguk.ukuu.org.uk>
-	 <ac3eb2510812071022le85080aiea301609fa8a50b1@mail.gmail.com>
-	 <34909.1228706592@turing-police.cc.vt.edu>
+References: <4937E87C.6030106@belbone.be>
+	 <21d7e9970812042027w13271ceas91ecab87aa60562e@mail.gmail.com>
+	 <49391512.4000604@belbone.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 8, 2008 at 04:23,  <Valdis.Kletnieks@vt.edu> wrote:
-> On Sun, 07 Dec 2008 19:22:41 +0100, Kay Sievers said:
->
->> We are _not_ loading a console driver that way, we try to load the
->> console device itself, not the driver. There is no driver for 5:1 in
->> any module.
+On Fri, Dec 5, 2008 at 9:48 PM, Cédric Godin <cedric@belbone.be> wrote:
+> Dave Airlie wrote:
+>> On Fri, Dec 5, 2008 at 12:26 AM, Cédric Godin <cedric@belbone.be> wrote:
+>>
+>>> Hello,
+>>>
+>>> With the v2.6.28-rc7-105-gfeaf384 kernel, when booting my compaq with
+>>> attached config, the screen switches in graphical mode but then switches
+>>> back in textual mode with an 'irq10 nobody cared' error in dmesg (attached).
+>>>
+>>> If I restart kdm by hand, all is ok (i have my kdm) but the error yet
+>>> appears in dmesg (at each X start in fact).
+>>>
+>>> I bisected the problem (git bisect log attached) and found the following
+>>> commit as "culprit" :
+>>>
+>>> commit 52440211dcdc52c0b757f8b34d122e11b12cdd50
+>>> Author: Keith Packard <keithp@keithp.com>
+>>> Date:   Tue Nov 18 09:30:25 2008 -0800
+>>>
+>>>    drm: move drm vblank initialization/cleanup to driver load/unload
+>>>
+>>>    drm vblank initialization keeps track of the changes in driver-supplied
+>>>    frame counts across vt switch and mode setting, but only if you let
+>>> it by
+>>>    not tearing down the drm vblank structure.
+>>>
+>>>    Signed-off-by: Keith Packard <keithp@keithp.com>
+>>>    Signed-off-by: Dave Airlie <airlied@redhat.com>
+>>>
+>>> Reverting it brings back my X screen at first start.
+>>>
+>>
+>> Just for testing, can you try without using vesafb....
+>>
+>> so remove the vga= line from the commandline or build the kernel
+>> without vesafb support.
+>>
+> I can confirm the problem without vesafb
 
-[childish blurb removed]
+Can you boot to a runlevel with no X running
+do
+modprobe drm debug=1
+or if drm is loaded
+echo 1 > /sys/module/drm/parameters/debug
+and then start X
 
-> It doesn't really matter if it's a "console driver" or "the console device
-> itself".  If you're in modprobe loading *any* piece of "all the stuff needed
-> to make open("/dev/console") work", the last thing you want to be doing
-> is opening /dev/console to complain about something not working.
+and attach the dmesg here.
 
-Nothing in initramfs or userspace tries to load "all the stuff needed
-to make open("/dev/console") work". It's the kernel itself, that tries
-to resolve its own requirements.
+I've some ideas but no concrete reason for what might be going wrong.
 
-The kernel forked binary _writes_ to /dev/console, if we like it or
-not, it seems to do that, and it's arguable why it should not, or how
-it should detect that it is not allowed to do that. You may just
-depend on the logging of binaries to find other bugs.
-
-The helper was called in the first place for something else, in this
-case the "cryptomgr". The loop is caused entirely by the kernel
-itself, if /dev/console is just accessed. There is no intentional
-loading of any console driver from userspace happening here.
-
-Kay
+Dave.
