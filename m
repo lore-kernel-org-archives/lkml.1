@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbYLHLje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbYLHLkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199AbYLHLje (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 06:39:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYLHLhU
+	id S1754038AbYLHLkS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 06:40:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbYLHLhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 06:37:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48263 "EHLO mx2.redhat.com"
+	Mon, 8 Dec 2008 06:37:17 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48264 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753312AbYLHLhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753313AbYLHLhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Dec 2008 06:37:04 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng@linux.intel.com>
-Subject: [PATCH 28/45] KVM: IRQ ACK notifier should be used with in-kernel irqchip
-Date: Mon,  8 Dec 2008 13:36:39 +0200
-Message-Id: <1228736216-15787-29-git-send-email-avi@redhat.com>
+Subject: [PATCH 17/45] x86: Export some definition of MTRR
+Date: Mon,  8 Dec 2008 13:36:28 +0200
+Message-Id: <1228736216-15787-18-git-send-email-avi@redhat.com>
 In-Reply-To: <1228736216-15787-1-git-send-email-avi@redhat.com>
 References: <1228736216-15787-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,66 +23,127 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sheng Yang <sheng@linux.intel.com>
 
-Also remove unnecessary parameter of unregister irq ack notifier.
+For KVM can reuse the type define, and need them to support shadow MTRR.
 
 Signed-off-by: Sheng Yang <sheng@linux.intel.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- include/linux/kvm_host.h |    3 +--
- virt/kvm/irq_comm.c      |    8 ++++++--
- virt/kvm/kvm_main.c      |    2 +-
- 3 files changed, 8 insertions(+), 5 deletions(-)
+ arch/x86/include/asm/mtrr.h        |   25 +++++++++++++++++++++++++
+ arch/x86/kernel/cpu/mtrr/generic.c |   12 +++---------
+ arch/x86/kernel/cpu/mtrr/mtrr.h    |   17 -----------------
+ 3 files changed, 28 insertions(+), 26 deletions(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index bb92be2..3a0fb77 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -316,8 +316,7 @@ void kvm_set_irq(struct kvm *kvm, int irq_source_id, int irq, int level);
- void kvm_notify_acked_irq(struct kvm *kvm, unsigned gsi);
- void kvm_register_irq_ack_notifier(struct kvm *kvm,
- 				   struct kvm_irq_ack_notifier *kian);
--void kvm_unregister_irq_ack_notifier(struct kvm *kvm,
--				     struct kvm_irq_ack_notifier *kian);
-+void kvm_unregister_irq_ack_notifier(struct kvm_irq_ack_notifier *kian);
- int kvm_request_irq_source_id(struct kvm *kvm);
- void kvm_free_irq_source_id(struct kvm *kvm, int irq_source_id);
+diff --git a/arch/x86/include/asm/mtrr.h b/arch/x86/include/asm/mtrr.h
+index 7c1e425..cb988aa 100644
+--- a/arch/x86/include/asm/mtrr.h
++++ b/arch/x86/include/asm/mtrr.h
+@@ -57,6 +57,31 @@ struct mtrr_gentry {
+ };
+ #endif /* !__i386__ */
  
-diff --git a/virt/kvm/irq_comm.c b/virt/kvm/irq_comm.c
-index 55ad76e..9fbbdea 100644
---- a/virt/kvm/irq_comm.c
-+++ b/virt/kvm/irq_comm.c
-@@ -58,12 +58,16 @@ void kvm_notify_acked_irq(struct kvm *kvm, unsigned gsi)
- void kvm_register_irq_ack_notifier(struct kvm *kvm,
- 				   struct kvm_irq_ack_notifier *kian)
- {
-+	/* Must be called with in-kernel IRQ chip, otherwise it's nonsense */
-+	ASSERT(irqchip_in_kernel(kvm));
-+	ASSERT(kian);
- 	hlist_add_head(&kian->link, &kvm->arch.irq_ack_notifier_list);
- }
++struct mtrr_var_range {
++	u32 base_lo;
++	u32 base_hi;
++	u32 mask_lo;
++	u32 mask_hi;
++};
++
++/* In the Intel processor's MTRR interface, the MTRR type is always held in
++   an 8 bit field: */
++typedef u8 mtrr_type;
++
++#define MTRR_NUM_FIXED_RANGES 88
++#define MTRR_MAX_VAR_RANGES 256
++
++struct mtrr_state_type {
++	struct mtrr_var_range var_ranges[MTRR_MAX_VAR_RANGES];
++	mtrr_type fixed_ranges[MTRR_NUM_FIXED_RANGES];
++	unsigned char enabled;
++	unsigned char have_fixed;
++	mtrr_type def_type;
++};
++
++#define MTRRphysBase_MSR(reg) (0x200 + 2 * (reg))
++#define MTRRphysMask_MSR(reg) (0x200 + 2 * (reg) + 1)
++
+ /*  These are the various ioctls  */
+ #define MTRRIOC_ADD_ENTRY        _IOW(MTRR_IOCTL_BASE,  0, struct mtrr_sentry)
+ #define MTRRIOC_SET_ENTRY        _IOW(MTRR_IOCTL_BASE,  1, struct mtrr_sentry)
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index 90db91e..b59ddcc 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -14,14 +14,6 @@
+ #include <asm/pat.h>
+ #include "mtrr.h"
  
--void kvm_unregister_irq_ack_notifier(struct kvm *kvm,
--				     struct kvm_irq_ack_notifier *kian)
-+void kvm_unregister_irq_ack_notifier(struct kvm_irq_ack_notifier *kian)
- {
-+	if (!kian)
-+		return;
- 	hlist_del(&kian->link);
- }
+-struct mtrr_state_type {
+-	struct mtrr_var_range var_ranges[MTRR_MAX_VAR_RANGES];
+-	mtrr_type fixed_ranges[MTRR_NUM_FIXED_RANGES];
+-	unsigned char enabled;
+-	unsigned char have_fixed;
+-	mtrr_type def_type;
+-};
+-
+ struct fixed_range_block {
+ 	int base_msr; /* start address of an MTRR block */
+ 	int ranges;   /* number of MTRRs in this block  */
+@@ -35,10 +27,12 @@ static struct fixed_range_block fixed_range_blocks[] = {
+ };
  
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index a87f45e..4f43abe 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -143,7 +143,7 @@ static void kvm_free_assigned_device(struct kvm *kvm,
- 	if (irqchip_in_kernel(kvm) && assigned_dev->irq_requested)
- 		free_irq(assigned_dev->host_irq, (void *)assigned_dev);
+ static unsigned long smp_changes_mask;
+-static struct mtrr_state_type mtrr_state = {};
+ static int mtrr_state_set;
+ u64 mtrr_tom2;
  
--	kvm_unregister_irq_ack_notifier(kvm, &assigned_dev->ack_notifier);
-+	kvm_unregister_irq_ack_notifier(&assigned_dev->ack_notifier);
- 	kvm_free_irq_source_id(kvm, assigned_dev->irq_source_id);
++struct mtrr_state_type mtrr_state = {};
++EXPORT_SYMBOL_GPL(mtrr_state);
++
+ #undef MODULE_PARAM_PREFIX
+ #define MODULE_PARAM_PREFIX "mtrr."
  
- 	if (cancel_work_sync(&assigned_dev->interrupt_work))
+diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
+index 9885382..ffd6040 100644
+--- a/arch/x86/kernel/cpu/mtrr/mtrr.h
++++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
+@@ -8,12 +8,6 @@
+ #define MTRRcap_MSR     0x0fe
+ #define MTRRdefType_MSR 0x2ff
+ 
+-#define MTRRphysBase_MSR(reg) (0x200 + 2 * (reg))
+-#define MTRRphysMask_MSR(reg) (0x200 + 2 * (reg) + 1)
+-
+-#define MTRR_NUM_FIXED_RANGES 88
+-#define MTRR_MAX_VAR_RANGES 256
+-
+ #define MTRRfix64K_00000_MSR 0x250
+ #define MTRRfix16K_80000_MSR 0x258
+ #define MTRRfix16K_A0000_MSR 0x259
+@@ -30,10 +24,6 @@
+ #define MTRR_CHANGE_MASK_VARIABLE  0x02
+ #define MTRR_CHANGE_MASK_DEFTYPE   0x04
+ 
+-/* In the Intel processor's MTRR interface, the MTRR type is always held in
+-   an 8 bit field: */
+-typedef u8 mtrr_type;
+-
+ extern unsigned int mtrr_usage_table[MTRR_MAX_VAR_RANGES];
+ 
+ struct mtrr_ops {
+@@ -71,13 +61,6 @@ struct set_mtrr_context {
+ 	u32 ccr3;
+ };
+ 
+-struct mtrr_var_range {
+-	u32 base_lo;
+-	u32 base_hi;
+-	u32 mask_lo;
+-	u32 mask_hi;
+-};
+-
+ void set_mtrr_done(struct set_mtrr_context *ctxt);
+ void set_mtrr_cache_disable(struct set_mtrr_context *ctxt);
+ void set_mtrr_prepare_save(struct set_mtrr_context *ctxt);
 -- 
 1.6.0.3
 
