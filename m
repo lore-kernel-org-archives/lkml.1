@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbYLHUZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbYLHU0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752640AbYLHUZq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 15:25:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYLHUZg
+	id S1752833AbYLHU0s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 15:26:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYLHU0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 15:25:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37023 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751936AbYLHUZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 15:25:36 -0500
-Message-ID: <493D82A6.9070104@redhat.com>
-Date: Mon, 08 Dec 2008 15:25:10 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
-References: <20081129195357.813D.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081208205842.53F8.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081208220016.53FB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20081208220016.53FB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Dec 2008 15:26:39 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:51347 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751936AbYLHU0j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 15:26:39 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: mchehab@infradead.org
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-uvc-devel@lists.berlios.de,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] V4L: usbvideo, fix module ref count check
+Date: Mon,  8 Dec 2008 21:25:34 +0100
+Message-Id: <1228767934-14193-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
+usbvideo_ClientIncModCount may return value < 0 in the case of error, not > 0.
 
-> +	for (o = order; o < MAX_ORDER; o++) {
-> +		if (z->free_area[o].nr_free)
-> +			return 1;
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/media/video/usbvideo/usbvideo.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Since page breakup and coalescing always manipulates .nr_free,
-I wonder if it would make sense to pack the nr_free variables
-in their own cache line(s), so we have fewer cache misses when
-going through zone_watermark_ok() ?
-
-That would end up looking something like this:
-
-(whitespace mangled because it doesn't make sense to apply
-just this thing, anyway)
-
-Index: linux-2.6.28-rc7/include/linux/mmzone.h
-===================================================================
---- linux-2.6.28-rc7.orig/include/linux/mmzone.h        2008-12-02 
-15:04:33.000000000 -0500
-+++ linux-2.6.28-rc7/include/linux/mmzone.h     2008-12-08 
-15:24:25.000000000 -0500
-@@ -58,7 +58,6 @@ static inline int get_pageblock_migratet
-
-  struct free_area {
-         struct list_head        free_list[MIGRATE_TYPES];
--       unsigned long           nr_free;
-  };
-
-  struct pglist_data;
-@@ -296,6 +295,7 @@ struct zone {
-         seqlock_t               span_seqlock;
-  #endif
-         struct free_area        free_area[MAX_ORDER];
-+       struct nr_free          [MAX_ORDER];
-
-  #ifndef CONFIG_SPARSEMEM
-         /*
-
-
+diff --git a/drivers/media/video/usbvideo/usbvideo.c b/drivers/media/video/usbvideo/usbvideo.c
+index 7c575bb..6ace064 100644
+--- a/drivers/media/video/usbvideo/usbvideo.c
++++ b/drivers/media/video/usbvideo/usbvideo.c
+@@ -1123,7 +1123,7 @@ static int usbvideo_v4l_open(struct inode *inode, struct file *file)
+ 	if (uvd->debug > 1)
+ 		dev_info(&uvd->dev->dev, "%s($%p)\n", __func__, dev);
+ 
+-	if (0 < usbvideo_ClientIncModCount(uvd))
++	if (usbvideo_ClientIncModCount(uvd) < 0)
+ 		return -ENODEV;
+ 	mutex_lock(&uvd->lock);
+ 
 -- 
-All rights reversed.
+1.6.0.5
+
