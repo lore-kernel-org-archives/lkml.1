@@ -1,175 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbYLHOYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbYLHO3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753436AbYLHOYW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 09:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYLHOYM
+	id S1753456AbYLHO3h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 09:29:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYLHO32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 09:24:12 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:9038 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751736AbYLHOYL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 09:24:11 -0500
-Message-ID: <493D2E05.3070108@hp.com>
-Date: Mon, 08 Dec 2008 09:24:05 -0500
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Mon, 8 Dec 2008 09:29:28 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:60643 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751945AbYLHO31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 09:29:27 -0500
+Message-ID: <493D2F4D.3090702@sgi.com>
+Date: Mon, 08 Dec 2008 06:29:33 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Mike Anderson <andmike@linux.vnet.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: [PATCH] Correctly release and allocate a new request upon retries
-Content-Type: multipart/mixed;
- boundary="------------020003000404040604010308"
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Avi Kivity <avi@redhat.com>, kvm-devel <kvm@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] kvm: use cpumask_var_t for cpus_hardware_enabled
+References: <200812072125.45757.rusty@rustcorp.com.au> <200812081635.35166.rusty@rustcorp.com.au> <493CED04.6020209@redhat.com> <200812082220.42790.rusty@rustcorp.com.au>
+In-Reply-To: <200812082220.42790.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020003000404040604010308
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Rusty Russell wrote:
+> On Monday 08 December 2008 20:16:44 Avi Kivity wrote:
+>> Rusty Russell wrote:
+>>>> This isn't on stack, so it isn't buying us anything.
+>>>>     
+>>> It's the CONFIG_NR_CPUS=4096 but nr_cpu_ids=4 case which we win using
+>>> dynamic allocation.  Gotta love distribution kernels.
+>>>
+>>>   
+>> What does it buy? 4096/8 = 512 bytes statically allocated?
+> 
+> It adds up, and 4096 seems to be only the start of the insanityH^H^Hfun.
 
+The real win though is when cpumask_size represents the actual size of the
+cpumask (based on # of possible cpus) instead of the pre-configured size
+of NR_CPUS.  So for 99.9% of the systems (having 64 or fewer cpus), the
+savings will be 504 bytes not allocated.
 
---------------020003000404040604010308
-Content-Type: text/x-diff;
- name="0001-Correctly-release-and-allocate-a-new-request-upon-re.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-Correctly-release-and-allocate-a-new-request-upon-re.pa";
- filename*1="tch"
+> 
+>>> Not quite.  If !CONFIG_CPUMASK_OFFSTACK, cpumask_var_t == cpumask_t[1].
+>>> Blame Linus :)
+>>>   
+>> Hm, is there a C trick which will error out when allocating something on 
+>> the stack, but work when allocating statically?  I can think of 
+>> something to do the reverse, but that doesn't help.
+> 
+> We also need to prevent assignment, eg:
+> 
+> 	*foo = *bar;
+> 
+> Because when we allocate them, we'll cut them to size.
+> 
+> Cheers,
+> Rusty.
 
-Commands needing to be retried require a complete re-initialization.
-
-The test-unit-ready portion of this patch was causing boots to fail on
-my test machine (as in http://lkml.org/lkml/2008/12/5/161). With this
-patch in place, the system is booting reliably.
-
-Mike Anderson found the same problem in the hp_hw_start_stop code,
-and I applied the same solution in cdrom_read_cdda_bpc.
-
-Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Mike Anderson <andmike@linux.vnet.ibm.com>
----
- drivers/cdrom/cdrom.c                       |   16 ++++++++++------
- drivers/scsi/device_handler/scsi_dh_hp_sw.c |   12 ++++++++----
- 2 files changed, 18 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
-index d16b024..7d2e91c 100644
---- a/drivers/cdrom/cdrom.c
-+++ b/drivers/cdrom/cdrom.c
-@@ -2081,10 +2081,6 @@ static int cdrom_read_cdda_bpc(struct cdrom_device_info *cdi, __u8 __user *ubuf,
- 	if (!q)
- 		return -ENXIO;
- 
--	rq = blk_get_request(q, READ, GFP_KERNEL);
--	if (!rq)
--		return -ENOMEM;
--
- 	cdi->last_sense = 0;
- 
- 	while (nframes) {
-@@ -2096,9 +2092,17 @@ static int cdrom_read_cdda_bpc(struct cdrom_device_info *cdi, __u8 __user *ubuf,
- 
- 		len = nr * CD_FRAMESIZE_RAW;
- 
-+		rq = blk_get_request(q, READ, GFP_KERNEL);
-+		if (!rq) {
-+			ret = -ENOMEM;
-+			break;
-+		}
-+
- 		ret = blk_rq_map_user(q, rq, NULL, ubuf, len, GFP_KERNEL);
--		if (ret)
-+		if (ret) {
-+			blk_put_request(rq);
- 			break;
-+		}
- 
- 		rq->cmd[0] = GPCMD_READ_CD;
- 		rq->cmd[1] = 1 << 2;
-@@ -2124,6 +2128,7 @@ static int cdrom_read_cdda_bpc(struct cdrom_device_info *cdi, __u8 __user *ubuf,
- 
- 		if (blk_rq_unmap_user(bio))
- 			ret = -EFAULT;
-+		blk_put_request(rq);
- 
- 		if (ret)
- 			break;
-@@ -2133,7 +2138,6 @@ static int cdrom_read_cdda_bpc(struct cdrom_device_info *cdi, __u8 __user *ubuf,
- 		ubuf += len;
- 	}
- 
--	blk_put_request(rq);
- 	return ret;
- }
- 
-diff --git a/drivers/scsi/device_handler/scsi_dh_hp_sw.c b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-index 9aec4ca..f7da753 100644
---- a/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-+++ b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
-@@ -107,6 +107,7 @@ static int hp_sw_tur(struct scsi_device *sdev, struct hp_sw_dh_data *h)
- 	struct request *req;
- 	int ret;
- 
-+retry:
- 	req = blk_get_request(sdev->request_queue, WRITE, GFP_NOIO);
- 	if (!req)
- 		return SCSI_DH_RES_TEMP_UNAVAIL;
-@@ -121,7 +122,6 @@ static int hp_sw_tur(struct scsi_device *sdev, struct hp_sw_dh_data *h)
- 	memset(req->sense, 0, SCSI_SENSE_BUFFERSIZE);
- 	req->sense_len = 0;
- 
--retry:
- 	ret = blk_execute_rq(req->q, NULL, req, 1);
- 	if (ret == -EIO) {
- 		if (req->sense_len > 0) {
-@@ -136,8 +136,10 @@ retry:
- 		h->path_state = HP_SW_PATH_ACTIVE;
- 		ret = SCSI_DH_OK;
- 	}
--	if (ret == SCSI_DH_IMM_RETRY)
-+	if (ret == SCSI_DH_IMM_RETRY) {
-+		blk_put_request(req);
- 		goto retry;
-+	}
- 	if (ret == SCSI_DH_DEV_OFFLINED) {
- 		h->path_state = HP_SW_PATH_PASSIVE;
- 		ret = SCSI_DH_OK;
-@@ -200,6 +202,7 @@ static int hp_sw_start_stop(struct scsi_device *sdev, struct hp_sw_dh_data *h)
- 	struct request *req;
- 	int ret, retry;
- 
-+retry:
- 	req = blk_get_request(sdev->request_queue, WRITE, GFP_NOIO);
- 	if (!req)
- 		return SCSI_DH_RES_TEMP_UNAVAIL;
-@@ -216,7 +219,6 @@ static int hp_sw_start_stop(struct scsi_device *sdev, struct hp_sw_dh_data *h)
- 	req->sense_len = 0;
- 	retry = h->retries;
- 
--retry:
- 	ret = blk_execute_rq(req->q, NULL, req, 1);
- 	if (ret == -EIO) {
- 		if (req->sense_len > 0) {
-@@ -231,8 +233,10 @@ retry:
- 		ret = SCSI_DH_OK;
- 
- 	if (ret == SCSI_DH_RETRY) {
--		if (--retry)
-+		if (--retry) {
-+			blk_put_request(req);
- 			goto retry;
-+		}
- 		ret = SCSI_DH_IO;
- 	}
- 
--- 
-1.5.6.3
-
-
---------------020003000404040604010308--
