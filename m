@@ -1,48 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbYLHMyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYLHMy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753656AbYLHMyg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 07:54:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYLHMy2
+	id S1753880AbYLHMy7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 07:54:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbYLHMyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 07:54:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57982 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751953AbYLHMy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 07:54:27 -0500
-Date: Mon, 8 Dec 2008 13:54:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ring_buffer: fix comments
-Message-ID: <20081208125419.GE16560@elte.hu>
-References: <493C8D40.9000203@cn.fujitsu.com>
+	Mon, 8 Dec 2008 07:54:47 -0500
+Received: from nelson.telenet-ops.be ([195.130.133.66]:48933 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752030AbYLHMyq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 07:54:46 -0500
+Date: Mon, 8 Dec 2008 13:54:42 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Mark Jackson <mpfj@mimc.co.uk>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: Badness at mm/backing-dev.c:179
+In-Reply-To: <ac3eb2510812080442u749eb997o1ad6d6036b6d7c5c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0812081353540.21492@anakin>
+References: <49367691.5060007@mimc.co.uk> <ac3eb2510812030422n15f1be2cn77aa5f66f1046933@mail.gmail.com>
+ <Pine.LNX.4.64.0812080915120.14941@anakin> <ac3eb2510812080442u749eb997o1ad6d6036b6d7c5c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <493C8D40.9000203@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0428]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-
-> Impact: comments cleanup
+On Mon, 8 Dec 2008, Kay Sievers wrote:
+> On Mon, Dec 8, 2008 at 09:16, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Wed, 3 Dec 2008, Kay Sievers wrote:
+> >> On Wed, Dec 3, 2008 at 13:07, Mark Jackson <mpfj@mimc.co.uk> wrote:
+> >> > The following commit causes a "Badness at mm/backing-dev.c:179":-
+> >> >
+> >> > f1d0b063d993527754f062c589b73f125024d216 is first bad commit
+> >> > commit f1d0b063d993527754f062c589b73f125024d216
+> >> > Author: Kay Sievers <kay.sievers@vrfy.org>
+> >> > Date:   Tue Dec 2 10:31:50 2008 -0800
+> >> >
+> >> >    bdi: register sysfs bdi device only once per queue
+> >>
+> >> > Below is the extract from dmesg:-
+> >> >
+> >> > ------------[ cut here ]------------
+> >> > Badness at mm/backing-dev.c:179
+> >>
+> >> That's a known issue, and will not cause any harm besides printing
+> >> this warning. Andrew added the warning to catch drivers who use one
+> >> single request queue for multiple devices. Currently known are mtd and
+> >> floppy (triggers only if you have more than one device per driver).
+> >> The drivers need to be changed to use a separate queue per device, to
+> >> get rid of this warning.
+> >
+> > I guess this one (introduced after 2.6.28-rc7) is an incarnation of the same
+> > issue?
 > 
-> fix incorrect comments for enum ring_buffer_type
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> You have more than one floppy device registered at the same time,
+> right? Then it's very likely the same issue, that both devices share
+> the same request queue, like the x86 floppy.c.
 
-applied to tip/tracing/ring-buffer, thanks!
+Yep, ataflop.c (and amiflop.c) forked from floppy.c a long time ago...
 
-	Ingo
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
