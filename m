@@ -1,72 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbYLHBnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbYLHBoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755595AbYLHBnB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 20:43:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYLHBmv
+	id S1755994AbYLHBoA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 20:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYLHBnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 20:42:51 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36164 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202AbYLHBmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 20:42:50 -0500
-Message-ID: <493C7B70.4090307@kernel.org>
-Date: Mon, 08 Dec 2008 10:42:08 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Sun, 7 Dec 2008 20:43:51 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:56603 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753907AbYLHBnu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 20:43:50 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=LZlIhe50+Jg4969Exh9E1qOP9x6LygURRytsMUoPvN3km+U7alPFPVkmEcTauzeUA
+	1Qc701UA1Hb1hKuY+Vqmg==
 MIME-Version: 1.0
-To: Nick Andrew <nick@nick-andrew.net>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: Re: [RFC] Recursive printk
-References: <20081206065922.29149.63380.stgit@marcab.local.tull.net> <20081205232016.366765e2.akpm@linux-foundation.org> <20081206083030.GF5957@mail.local.tull.net>
-In-Reply-To: <20081206083030.GF5957@mail.local.tull.net>
-X-Enigmail-Version: 0.95.7
+In-Reply-To: <493A4C1C.3020102@gmail.com>
+References: <604427e00812051140s67b2a89dm35806c3ee3b6ed7a@mail.gmail.com>
+	 <493A4B48.1050706@gmail.com> <493A4C1C.3020102@gmail.com>
+Date: Sun, 7 Dec 2008 17:43:44 -0800
+Message-ID: <604427e00812071743u79e6d1d3y7ba510a7ff3052ec@mail.gmail.com>
+Subject: Re: [RFC v2][PATCH]page_fault retry with NOPAGE_RETRY
+From: Ying Han <yinghan@google.com>
+To: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Waychison <mikew@google.com>, David Rientjes <rientjes@google.com>,
+       Rohit Seth <rohitseth@google.com>, Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 08 Dec 2008 01:42:14 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Thanks Török for your experiment and that sounds great !
 
-Nick Andrew wrote:
->> Tejun had a thing a while ago which was kinda intended to solve the
->> same problem.  iirc his approach added a lot more code (bad), but
->> didn't go and add strange new semantics to printk.
-> 
-> I'm not trying to solve a huge problem (e.g. as Jason Baron's dynamic
-> debug does), just a small problem. Why do tasks have to choose
-> between double-buffering their messages and making multiple calls
-> to printk?
+--Ying
 
-Yeah, my patch happened to solve about the same problem (and mprintk
-proper was ~370 lines, so it wasn't too bad).  Mine went the way of
-assembling messages piece-by-piece and most of the complexities came
-from buffer management and fallback (e.g. even if kmalloc fails to
-allocate messages, messages still get printed out, albeit a bit
-uglier).
-
->> IOW, for this to be halfway as useful as you expect, we need a
->> look-out-for-local-printk-hacks maintainer.
-> 
-> If my patch makes it in, it will be followed by fixes to all
-> those local hacks. We might discover some common element so they
-> can be made non-local. Once a better way to interface to printk
-> becomes prevalent, it will probably be reused. And if it's not,
-> then it affects only the one subsystem.
-
-No matter which mechanism, I'd love to have something to solve this in
-kernel.  I face this problem quite often and each and every time I
-have to come up with some custom hack to work around it.
-
-FWIW, this was the last take of the mprintk patchset.
-
-  http://thread.gmane.org/gmane.linux.ide/28415
-
-Thanks.
-
--- 
-tejun
+On Sat, Dec 6, 2008 at 1:55 AM, Török Edwin <edwintorok@gmail.com> wrote:
+> On 2008-12-06 11:52, Török Edwin wrote:
+>> On 2008-12-05 21:40, Ying Han wrote:
+>>
+>>> changelog[v2]:
+>>> - reduce the runtime overhead by extending the 'write' flag of
+>>>   handle_mm_fault() to indicate the retry hint.
+>>> - add another two branches in filemap_fault with retry logic.
+>>> - replace find_lock_page with find_lock_page_retry to make the code
+>>>   cleaner.
+>>>
+>>> todo:
+>>> - there is potential a starvation hole with the retry. By the time the
+>>>   retry returns, the pages might be released. we can make change by holding
+>>>   page reference as well as remembering what the page "was"(in case the
+>>>   file was truncated). any suggestion here are welcomed.
+>>>
+>>> I also made patches for all other arch. I am posting x86_64 here first and
+>>> i will post others by the time everyone feels comfortable of this patch.
+>>>
+>>> Edwin, please test this patch with your testcase and check if you get any
+>>> performance improvement of mmap over read. I added another two more places
+>>> in filemap_fault with retry logic which you might hit in your privous
+>>> experiment.
+>>>
+>>>
+>>
+>> I get much better results with this patch than with v1, thanks!
+>>
+>> mmap now scales almost as well as read does (there is a small ~5%
+>> overhead), which is a significant improvement over not scaling at all!
+>>
+>> Here are the results when running my testcase:
+>>
+>> Number of threads ->, 1,,, 2,,, 4,,, 8,,, 16
+>> Kernel version, read, mmap, mixed, read, mmap, mixed, read, mmap, mixed,
+>> read, mmap, mixed, read, mmap, mixed
+>> 2.6.28-rc7-tip, 27.55, 26.18, 27.06, 16.18, 16.97, 16.10, 11.06, 11.64,
+>> 11.41, 9.38, 9.97, 9.31, 9.37, 9.82, 9.3
+>>
+>>
+>> Here are the /proc/lock_stat output when running my testcase, contention
+>> is lower (34911+10462 vs 58590+7231), and waittime-total is better
+>> (57 601 464 vs 234 170 024)
+>>
+>> lock_stat version 0.3
+>> -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+>>                               class name    con-bounces    contentions
+>> waittime-min   waittime-max waittime-total    acq-bounces
+>> acquisitions   holdtime-min   holdtime-max holdtime-total
+>> ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+>>                         &mm->mmap_sem-W:          5843
+>> 10462           2.89      138824.72    14217159.52
+>> 18965          84205           1.81        5031.07      725293.65
+>>                          &mm->mmap_sem-R:         20208
+>> 34911           4.87      136797.26    57601464.49          55797
+>> 1110394           1.89      164918.52    30551371.71
+>>                          ---------------
+>>                            &mm->mmap_sem           5341
+>> [<ffffffff802bf9d7>] sys_munmap+0x47/0x80
+>>                            &mm->mmap_sem          28579
+>> [<ffffffff805d1c62>] do_page_fault+0x172/0xab0
+>>                            &mm->mmap_sem           5030
+>> [<ffffffff80211161>] sys_mmap+0xf1/0x140
+>>                            &mm->mmap_sem           6331
+>> [<ffffffff802a675e>] find_lock_page_retry+0xde/0xf0
+>>                          ---------------
+>>                            &mm->mmap_sem          13558
+>> [<ffffffff802a675e>] find_lock_page_retry+0xde/0xf0
+>>                            &mm->mmap_sem           4694
+>> [<ffffffff802bf9d7>] sys_munmap+0x47/0x80
+>>                            &mm->mmap_sem           3681
+>> [<ffffffff80211161>] sys_mmap+0xf1/0x140
+>>                            &mm->mmap_sem          23374
+>> [<ffffffff805d1c62>] do_page_fault+0x172/0xab0
+>>
+>>
+>> On clamd:
+>>
+>> Here holdtime-total is better (1 493 154 + 2 395 987 vs 2 087 538 + 2
+>> 514 673), and number of contentions on read
+>> (458 052 vs 5851
+>
+> typo, should have been: 458 052 vs 585 119
+>
+>
