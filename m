@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbYLHQgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbYLHQmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbYLHQgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 11:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYLHQgG
+	id S1753813AbYLHQmV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 11:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbYLHQmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 11:36:06 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:55252 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753269AbYLHQgF (ORCPT
+	Mon, 8 Dec 2008 11:42:11 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:65429 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753212AbYLHQmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 11:36:05 -0500
-Message-ID: <493D4C63.5040502@yandex.ru>
-Date: Mon, 08 Dec 2008 18:33:39 +0200
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 8 Dec 2008 11:42:10 -0500
+Date: Mon, 8 Dec 2008 11:42:06 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Tim Blechmann <tim@klingt.org>
+cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] [RT] avoid preemption in memory controller code
+In-Reply-To: <1228746854-23875-1-git-send-email-tim@klingt.org>
+Message-ID: <alpine.DEB.1.10.0812081138470.26257@gandalf.stny.rr.com>
+References: <1228746854-23875-1-git-send-email-tim@klingt.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: dedekind@infradead.org, Laurent Pinchart <laurentp@cse-semaphore.com>,
-       linux-mtd@lists.infradead.org, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       v4l-dvb-maintainer@linuxtv.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: UBI/DVB ioctl conflict?
-References: <20081207095811.13b51cca@zod.rchland.ibm.com> <200812081041.14178.laurentp@cse-semaphore.com> <1228729915.13686.95.camel@sauron> <200812081650.54346.arnd@arndb.de>
-In-Reply-To: <200812081650.54346.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 08 Dec 2008 16:35:40.0049 (UTC) FILETIME=[01955010:01C95953]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Monday 08 December 2008, Artem Bityutskiy wrote:
->> On Mon, 2008-12-08 at 10:41 +0100, Laurent Pinchart wrote:
->>> Correct me if I'm wrong, but doesn't this only matters for devices that would 
->>> implement both the UBI and DVB API on the same inode ? That would be quite 
->>> unlikely.
->> Yeah, I guess. But this anyway makes sense to keep ioctls
->> non-overlapping.
+
+Hi Tim,
+
+On Mon, 8 Dec 2008, Tim Blechmann wrote:
+
+> the lru_lock of struct mem_group_per_zone is used to avoid preemption
+> during the __mem_cgroup_stat_add_safe function.
+> therefore, a raw_spinlock_t should be used.
+
+What is the reason that this must avoid preemption? Is there another
+way to solve this? I rather not just add a raw spinlock if we can
+help it.
+
+-- Steve
+
 > 
-> We try hard (but sometimes fail) to keep every ioctl number unique.
-> The reason for this is that the device drivers are not the only
-> pieces of code that look at them. Specifically, three other things
-> frequently cause problems here:
-
-Thanks for the reply. Do you know the status of the
-Documentation/ioctl/ioctl-number.txt file - it does not seem to be up-to-date.
-Should I document add UBI ioctls there?
-
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+> Signed-off-by: Tim Blechmann <tim@klingt.org>
+> ---
+>  mm/memcontrol.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 517f945..8661732 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -95,9 +95,9 @@ enum mem_cgroup_zstat_index {
+>  
+>  struct mem_cgroup_per_zone {
+>  	/*
+> -	 * spin_lock to protect the per cgroup LRU
+> +	 * raw_spin_lock to protect the per cgroup LRU
+>  	 */
+> -	spinlock_t		lru_lock;
+> +	raw_spinlock_t		lru_lock;
+>  	struct list_head	active_list;
+>  	struct list_head	inactive_list;
+>  	unsigned long count[NR_MEM_CGROUP_ZSTAT];
+> -- 
+> 1.5.6.3
+> 
+> 
+> 
