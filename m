@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbYLHDBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbYLHDYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756136AbYLHDBo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 22:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbYLHDBf
+	id S1755943AbYLHDYk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 22:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbYLHDY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 22:01:35 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58468 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754589AbYLHDBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 22:01:34 -0500
-Message-ID: <493C8D40.9000203@cn.fujitsu.com>
-Date: Mon, 08 Dec 2008 10:58:08 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ring_buffer: fix comments
-Content-Type: text/plain; charset=UTF-8
+	Sun, 7 Dec 2008 22:24:28 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:41692 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754226AbYLHDY1 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 22:24:27 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Evgeniy Polyakov <zbr@ioremap.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: Runaway loop with the current git.
+In-Reply-To: Your message of "Sun, 07 Dec 2008 19:22:41 +0100."
+             <ac3eb2510812071022le85080aiea301609fa8a50b1@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk> <20081207155507.GA15355@gondor.apana.org.au> <ac3eb2510812070803i150d91e7led58128796e8045e@mail.gmail.com> <20081207160921.693f637a@lxorguk.ukuu.org.uk> <20081207163151.GA31838@ioremap.net> <20081207170108.39dfd93f@lxorguk.ukuu.org.uk> <ac3eb2510812070922q2531a188v37874a042b259ac9@mail.gmail.com> <20081207172855.55fee78f@lxorguk.ukuu.org.uk> <ac3eb2510812070939h17ef6316hea96fe89f01207a6@mail.gmail.com> <20081207175118.09c633e8@lxorguk.ukuu.org.uk>
+            <ac3eb2510812071022le85080aiea301609fa8a50b1@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1228706592_4679P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sun, 07 Dec 2008 22:23:12 -0500
+Message-ID: <34909.1228706592@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1228706592_4679P
+Content-Type: text/plain; charset=us-ascii
 
-Impact: comments cleanup
+On Sun, 07 Dec 2008 19:22:41 +0100, Kay Sievers said:
 
-fix incorrect comments for enum ring_buffer_type
+> We are _not_ loading a console driver that way, we try to load the
+> console device itself, not the driver. There is no driver for 5:1 in
+> any module.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index e097c2e..4981a9a 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -28,17 +28,19 @@ struct ring_buffer_event {
-  *				 size = 8 bytes
-  *
-  * @RINGBUF_TYPE_TIME_STAMP:	Sync time stamp with external clock
-- *				 array[0] = tv_nsec
-- *				 array[1] = tv_sec
-+ *				 array[0]    = tv_nsec
-+ *				 array[1..2] = tv_sec
-  *				 size = 16 bytes
-  *
-  * @RINGBUF_TYPE_DATA:		Data record
-  *				 If len is zero:
-  *				  array[0] holds the actual length
-- *				  array[1..(length+3)/4-1] holds data
-+ *				  array[1..(length+3)/4] holds data
-+ *				  size = 4 + 4 + length (bytes)
-  *				 else
-  *				  length = len << 2
-- *				  array[0..(length+3)/4] holds data
-+ *				  array[0..(length+3)/4-1] holds data
-+ *				  size = 4 + length (bytes)
-  */
- enum ring_buffer_type {
- 	RINGBUF_TYPE_PADDING,
+Semantic quibbling, trying to paper over stupidity.
 
+It doesn't really matter if it's a "console driver" or "the console device
+itself".  If you're in modprobe loading *any* piece of "all the stuff needed
+to make open("/dev/console") work", the last thing you want to be doing
+is opening /dev/console to complain about something not working.
 
+As Alan said several times now, there really *is* a requirement that early
+userspace has its act together.
+
+--==_Exmh_1228706592_4679P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJPJMgcC3lWbTT17ARAj8ZAJ0aSsSs4GmyNUjCJjyefIvfpp2CRQCgzDnR
+OZit34V9O9KpEAj/gpldVoE=
+=WB9/
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1228706592_4679P--
