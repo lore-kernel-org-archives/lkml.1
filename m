@@ -1,90 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbYLHA4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYLHBTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbYLHA4V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 19:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYLHA4M
+	id S1755209AbYLHBTQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 20:19:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYLHBTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 19:56:12 -0500
-Received: from mu-out-0910.google.com ([209.85.134.184]:23131 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752711AbYLHA4L (ORCPT
+	Sun, 7 Dec 2008 20:19:05 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:56027 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751066AbYLHBTE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 19:56:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=JaL+sptFOyO+SgB1V0gQrydn5/fZdPBEXggXL92SrTwFc13AdfVeaxHR1JlELcpDVy
-         yKcOQtygKtEAohUO//QegDRkbovSLGVlnBpXxsl2uDQeYchN4zj9X26Oe0sKQJAXko+s
-         XNcAfmro+qC0bLapBEsyLpx5AXNyk+nU/S/d0=
-Message-ID: <493C70A6.70905@gmail.com>
-Date: Mon, 08 Dec 2008 01:56:06 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Sun, 7 Dec 2008 20:19:04 -0500
+Date: Sun, 7 Dec 2008 20:18:51 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Evgeniy Polyakov <zbr@ioremap.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: Runaway loop with the current git.
+Message-ID: <20081208011850.GA10289@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Kay Sievers <kay.sievers@vrfy.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Evgeniy Polyakov <zbr@ioremap.net>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	linux-kernel@vger.kernel.org,
+	Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+References: <20081207175245.2d074299@lxorguk.ukuu.org.uk> <20081207175438.GA3181@ioremap.net> <20081207180302.339bf58d@lxorguk.ukuu.org.uk> <ac3eb2510812071013o5d9f3319i44fb7f54b17025ca@mail.gmail.com> <20081207181559.63549cfc@lxorguk.ukuu.org.uk> <ac3eb2510812071021g44207efftb1e74f21578433be@mail.gmail.com> <20081207183112.3ef31caa@lxorguk.ukuu.org.uk> <ac3eb2510812071102s40ed4704we2221b2e53e4c099@mail.gmail.com> <20081207200008.5af2d1e9@lxorguk.ukuu.org.uk> <ac3eb2510812071426n2bd1bbefjd4fcdcd0e2efff80@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] tracing/function-graph-tracer: implement a print_headers
- function
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510812071426n2bd1bbefjd4fcdcd0e2efff80@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: provide headers to explain a bit the output
+Let's take a step back, shall we?  Fundamentally, what's going on here
+is that a particular distribution's initrd (Debian's, to be precise)
+is running into an error in response to a modprobe request for
+char-major-5-1, and it is attempting to write to the console, which is
+resulting in another modprobe request.... ad infinitum.
 
-This patch implements the print_headers callback for the function graph
-tracer. These headers are output according to the current trace options.
+There is a dispute about whether it is looping forever, or whether it
+should be getting caught by kernel/kmod.c's modprobe recursion
+detector.  Alan has checked the recursion detector and reports that it
+works just fine; Evgeniy and Kay are claiming that it in fact loops
+forever, and the recursion detector is not working.  I'm going to
+guess that Alan tested on Fedora, where it did work just fine, and
+reason why people using a Debian-derived initrd is seeing a recursive
+loop is because the recursive loop detector works by detecting up to
+five concurrent calls to modprobe.  That is, while the userspace
+helper process is running, another userspace helper is invoked, and so
+on, so that there are five userspace helpers piled up on one another,
+this will trigger the automatic recursion detector.  I'm guessing why
+it isn't working given Debian's initrd setup is that whatever is
+ultimately opening /dev/console isn't being called until after the
+helper script has exited.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index 7ea446d..4434e4e 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -606,11 +606,36 @@ print_graph_function(struct trace_iterator *iter)
- 	}
- }
- 
-+static void print_graph_headers(struct seq_file *s)
-+{
-+	/* 1st line */
-+	seq_printf(s, "# ");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
-+		seq_printf(s, "CPU ");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
-+		seq_printf(s, "TASK/PID     ");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD)
-+		seq_printf(s, "OVERHEAD/");
-+	seq_printf(s, "DURATION            FUNCTION CALLS\n");
-+
-+	/* 2nd line */
-+	seq_printf(s, "# ");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
-+		seq_printf(s, "|   ");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
-+		seq_printf(s, "|      |     ");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD) {
-+		seq_printf(s, "|        ");
-+		seq_printf(s, "|                   |   |   |   |\n");
-+	} else
-+		seq_printf(s, "    |               |   |   |   |\n");
-+}
- static struct tracer graph_trace __read_mostly = {
--	.name	     = "function_graph",
--	.init	     = graph_trace_init,
--	.reset	     = graph_trace_reset,
--	.print_line = print_graph_function,
-+	.name	     	= "function_graph",
-+	.init	     	= graph_trace_init,
-+	.reset	     	= graph_trace_reset,
-+	.print_line	= print_graph_function,
-+	.print_header	= print_graph_headers,
- 	.flags		= &tracer_flags,
- };
- 
--- 
-1.6.0.4
+Given that the general purpose recursion detector is apparently not
+working at least in this case, Kay has proposed that we special case a
+kludge wihch prevents the userspace helper be called in the case of
+5:1.  His argument in favor of doing this is that /dev/console is
+never a module, so requesting char-major-5-1 will never be helpful,
+and this error can only happen in early userspace, when the tty
+subsystem hasn't been initialized yet.  Alan claims this could also
+happen if the appropriate low-level console driver hasn't been loaded,
+and so perhaps the right thing in response to the request for
+char-major-5-1 is to load 8250_pci.  Here, I think Alan is wrong, and
+Kay is right.  From looking at the source, if there is no low-level
+console driver loaded, there is no call to request_module(); the only
+time this can happen is when tty driver hasn't been initialized in
+early startup.
 
+On the other hand, Alan is right that in general it is the usermode
+helper and initrd's responsibility not create a recursive dependency.
+This is in general true, not just for /dev/console.  So based on that,
+it can be argued that the recursion kludge checking for 5:1 should
+just as much be put in userspace.  In addition, the fact that
+recursion detection isn't working also seems to indicate that initrd
+in question is also doing something very wrong.
+
+So I would think the best thing to do is to figure out what Debian's
+initrd is doing that is evading the recursion detection.  Fixing that
+is going to make things much more robust.
+
+Regards,
+
+						- Ted
