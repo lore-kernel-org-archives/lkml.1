@@ -1,41 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbYLHRHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbYLHRIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754064AbYLHRHv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 12:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbYLHRHn
+	id S1754536AbYLHRIS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 12:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbYLHRH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 12:07:43 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:54614 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319AbYLHRHm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 12:07:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=cZnf8GsubASowitao+QdpzHCDf5Pi4oRN790iM3TG3/zvqPBV/2bwMMO8/s2PbJ5aB
-         Dd2Iv1Zafsfr0AhzwhbYKIFqUzz2Q9hxSB6et0NdGNhGFhgGUaWQmC/y11o03M9xN6yG
-         Mv1DK9BZCFjYNX4m7fHGrd0puyrqpGBYeUKGk=
-Date: Mon, 8 Dec 2008 20:06:28 +0300
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Surname change, how to proceed?
-Message-ID: <20081208170627.GA18196@doriath.ww600.siemens.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 8 Dec 2008 12:07:59 -0500
+Received: from mail.klingt.org ([86.59.21.178]:48320 "EHLO klingt.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753446AbYLHRH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 12:07:58 -0500
+Subject: Re: [PATCH] [RT] avoid preemption in memory controller code
+From: Tim Blechmann <tim@klingt.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.DEB.1.10.0812081138470.26257@gandalf.stny.rr.com>
+References: <1228746854-23875-1-git-send-email-tim@klingt.org>
+	 <alpine.DEB.1.10.0812081138470.26257@gandalf.stny.rr.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MUR0zWqfO8LZinAN8o6L"
+Date: Mon, 08 Dec 2008 18:07:36 +0100
+Message-Id: <1228756056.7862.8.camel@thinkpad>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (klingt.org [127.0.0.1]); Mon, 08 Dec 2008 18:07:37 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-My surname has recently changed due to marriage. How should I proceed in
-respect to Signed-off-by's, copyrights, etc?
+--=-MUR0zWqfO8LZinAN8o6L
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-With best wishes
-Dmitry
+> > the lru_lock of struct mem_group_per_zone is used to avoid preemption
+> > during the __mem_cgroup_stat_add_safe function.
+> > therefore, a raw_spinlock_t should be used.
+>=20
+> What is the reason that this must avoid preemption?=20
+
+it guards a call to smp_processor_id() in __mem_cgroup_stat_add_safe().
+see http://article.gmane.org/gmane.linux.rt.user/3690
+
+> Is there another
+> way to solve this? I rather not just add a raw spinlock if we can
+> help it.
+
+not sure, maybe one can disable preemption for that specific function?
+
+tim
+
+--
+tim@klingt.org
+http://tim.klingt.org
+
+Art is either a complaint or do something else
+  John Cage quoting Jasper Johns
+
+--=-MUR0zWqfO8LZinAN8o6L
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkk9VFMACgkQFz+XezW6HD4eqQCgxBvOMt6an7l+8z5D9oBB8jta
+F/0Anj3ab0Y4xJzIbR/GwbYPgczkty9T
+=6g9o
+-----END PGP SIGNATURE-----
+
+--=-MUR0zWqfO8LZinAN8o6L--
 
