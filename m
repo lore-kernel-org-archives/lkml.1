@@ -1,81 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbYLHGcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbYLHGfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756297AbYLHGcq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 01:32:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYLHGci
+	id S1756430AbYLHGfH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 01:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYLHGe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 01:32:38 -0500
-Received: from molly.corsac.net ([81.57.48.219]:52338 "EHLO molly.corsac.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752382AbYLHGch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 01:32:37 -0500
-X-Greylist: delayed 517 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Dec 2008 01:32:37 EST
-Subject: Re: [Bug #12152] Huge wakeups number from i1915
-From: Yves-Alexis Perez <corsac@debian.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <1228717448.9677.3.camel@hidalgo>
-References: <6VnlupFpCsN.A.2rE.MsEPJB@chimera>
-	 <07Xes05z25M.A.VtF.ksEPJB@chimera> <20081207145203.0f998d5b@infradead.org>
-	 <200812072352.07151.rjw@sisk.pl>  <20081207151203.46c01a0d@infradead.org>
-	 <1228717448.9677.3.camel@hidalgo>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-N7OvyR/HkP2IoUFv5dAc"
-Date: Mon, 08 Dec 2008 07:32:49 +0100
-Message-Id: <1228717969.9677.9.camel@hidalgo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 8 Dec 2008 01:34:56 -0500
+Received: from igw03.unisys.co.jp ([202.233.47.13]:52961 "EHLO
+	igw03.unisys.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751266AbYLHGey (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 01:34:54 -0500
+X-Greylist: delayed 1804 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Dec 2008 01:34:54 EST
+Message-ID: <493CB8FA.3050308@uniadex.co.jp>
+Date: Mon, 8 Dec 2008 15:04:42 +0900
+From: "Takahashi, Hideki" <hideki.takahashi@uniadex.co.jp>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+       "lf_kernel_messages@lists.linux-foundation.org" 
+	<lf_kernel_messages@lists.linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Greg KH <gregkh@suse.de>,
+       Kay Sievers <kay.sievers@vrfy.org>, Joe Perches <joe@perches.com>,
+       Tim Hockin <thockin@hockin.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       =?windows-1252?Q?Jochen_Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>, Jan Blunck <jblunck@suse.de>,
+       Rick Troth <rmt@casita.net>, Utz Bacher <utz.bacher@de.ibm.com>,
+       "Klaus-D. Wacker" <kdwacker@de.ibm.com>,
+       "server-messagedb-tf@ipa.go.jp" <server-messagedb-tf@ipa.go.jp>
+Subject: kprintk patch and OSS Message Pedia
+References: <20080925162827.818261893@de.ibm.com> <20080925163020.899754085@de.ibm.com>
+In-Reply-To: <20080925163020.899754085@de.ibm.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Mr. Martin schwidefsky,
+   I expect your patch will be merged into the kernel tree soon.
+   My friends and I have been working for providing a kernel
+   message online manual called "OSS Message Pedia" (mPedia) in
+   Japan.
+   I’d like to introduce mPedia briefly here because the kprintk
+   patch will affect our mPedia activities in Japan.
 
---=-N7OvyR/HkP2IoUFv5dAc
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+   Development of OSS Message Pedia was partly supported by IPA
+   (Information-Technology Promotion Agency) Japan and it has
+   been opened to the public.
+   mPedia has internationalization function inside but currently
+   it has only Japanese contents except some sample English contents.
+   For example, you can find English contents with the following URL:
 
-On lun, 2008-12-08 at 07:24 +0100, Yves-Alexis Perez wrote:
-> On dim, 2008-12-07 at 15:12 -0800, Arjan van de Ven wrote:
-> >=20
-> > > > at least in some of the cases where this has been seen the cause
-> > is
-> > > > the following:
-> > > > The i915 DRM driver used to do polling for completion, busy
-> > > > waiting. It moved to be interrupt driven, which is usually better
-> > > > for power, but it will show up as more wakeups in powertop....
-> > >=20
-> > > IOW, this is not a regression?
-> >=20
-> > I don't know about this specifc case (not enough information) but for
-> > the case I described it's not a regression. Going to interrupt driven
-> > from busy waiting is an improvement not a regression :)
->=20
-> Well, several thousand or more interrupts really seems like a
-> regression :). But it seems that's the same thing as the =E2=80=9CIRQ
-> spinning=E2=80=9D (there was a thread on dri-devel about that).
->=20
-> It seems fixed with a patch from Matthew Garrett applied to
-> drm-intel/for-airlied but I don't think this has been applied to Linus
-> master.
+      http://ossmpedia.org/messages/linux/2.6.9-34.EL/297.en
 
-And it seems the same thing as
-https://bugs.freedesktop.org/show_bug.cgi?id=3D18609
+   (You can change the tag 'languages' to "ja" to get Japanese
+    contents.)
 
-Cheers,
---=20
-Yves-Alexis
+   Also you can find some English documentation about mPedia by
+   visiting the following URL:
 
---=-N7OvyR/HkP2IoUFv5dAc
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+       http://ossmpedia.wiki.sourceforge.net/
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+   We hope we could have some contribution to the kernel messaging
+   with the mPedia activities in Japan. Though we don't have a
+   particular solution about how to tie-up the kernel messaging at
+   this moment, we think some difficulties in the mPedia maintenance
+   and enhancements could be reduced with the kprintk patch.
 
-iEYEABECAAYFAkk8v5EACgkQTUTAIMXAW65VPACgjy4sTQKfUdrovAB0Gl85du7e
-upwAoLDQfHNRZBvuIgE7W5ZHmvxPS2Uj
-=UzHe
------END PGP SIGNATURE-----
+   (1) We have about 850 kernel message explanation contents in
+       Japanese. The each content includes meaning, actions, etc.
 
---=-N7OvyR/HkP2IoUFv5dAc--
+   (2) We're now considering how to translate Japanese contents
+       into English. (No bright idea came yet.)
+
+   We appreciate your efforts for improving kernel messaging and
+   the patch integration.
+
+   (I added "server-messagedb-tf@ipa.go.jp" in CC.)
+
+   Thank you.
+
+Best Regards,
+Hideki Takahashi
