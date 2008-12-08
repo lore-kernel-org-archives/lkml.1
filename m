@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbYLHCfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYLHCgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbYLHCfk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 21:35:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbYLHCfW
+	id S1756170AbYLHCgv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 21:36:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbYLHCgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 21:35:22 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:41264 "EHLO
+	Sun, 7 Dec 2008 21:36:42 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:41623 "EHLO
 	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756545AbYLHCfU (ORCPT
+	with ESMTP id S1754066AbYLHCgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 21:35:20 -0500
-Date: Mon, 8 Dec 2008 11:08:10 +0900
+	Sun, 7 Dec 2008 21:36:42 -0500
+Date: Mon, 8 Dec 2008 10:58:24 +0900
 From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
@@ -18,11 +18,8 @@ Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
        Paul Menage <menage@google.com>, nishimura@mxp.nes.nec.co.jp
-Subject: [PATCH -mmotm 4/4] memcg: change try_to_free_pages to
- hierarchical_reclaim
-Message-Id: <20081208110810.a60d1810.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20081208105824.f8f5d67b.nishimura@mxp.nes.nec.co.jp>
-References: <20081208105824.f8f5d67b.nishimura@mxp.nes.nec.co.jp>
+Subject: [PATCH -mmotm 0/4] cleanups/fixes for memory cgroup
+Message-Id: <20081208105824.f8f5d67b.nishimura@mxp.nes.nec.co.jp>
 Organization: NEC Soft, Ltd.
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -32,54 +29,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mem_cgroup_hierarchicl_reclaim() works properly even when !use_hierarchy now
-(by memcg-hierarchy-avoid-unnecessary-reclaim.patch), so, instead of
-try_to_free_mem_cgroup_pages(), it should be used in many cases.
+Hi.
 
-The only exception is force_empty. The group has no children in this case.
+These are some cleanup/bug fix patches that I have now for memory cgroup.
+
+Patches:
+  [1/4] memcg: don't trigger oom at page migration
+  [2/4] memcg: remove mem_cgroup_try_charge
+  [3/4] memcg: avoid deadlock caused by race between oom and cpuset_attach
+  [4/4] memcg: change try_to_free_pages to hierarchical_reclaim
+
+There is no special meaning in patch order except for 1 and 2.
 
 
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
- mm/memcontrol.c |   12 ++++--------
- 1 files changed, 4 insertions(+), 8 deletions(-)
-
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index fec4fc3..b2b5c57 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -1400,8 +1400,7 @@ int mem_cgroup_shrink_usage(struct mm_struct *mm, gfp_t gfp_mask)
- 	rcu_read_unlock();
- 
- 	do {
--		progress = try_to_free_mem_cgroup_pages(mem, gfp_mask, true,
--							get_swappiness(mem));
-+		progress = mem_cgroup_hierarchical_reclaim(mem, gfp_mask, true);
- 		progress += mem_cgroup_check_under_limit(mem);
- 	} while (!progress && --retry);
- 
-@@ -1468,10 +1467,8 @@ static int mem_cgroup_resize_limit(struct mem_cgroup *memcg,
- 		if (!ret)
- 			break;
- 
--		progress = try_to_free_mem_cgroup_pages(memcg,
--							GFP_KERNEL,
--							false,
--							get_swappiness(memcg));
-+		progress = mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL,
-+							   false);
-   		if (!progress)			retry_count--;
- 	}
- 
-@@ -1515,8 +1512,7 @@ int mem_cgroup_resize_memsw_limit(struct mem_cgroup *memcg,
- 			break;
- 
- 		oldusage = res_counter_read_u64(&memcg->memsw, RES_USAGE);
--		try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL, true,
--					     get_swappiness(memcg));
-+		mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL, true);
- 		curusage = res_counter_read_u64(&memcg->memsw, RES_USAGE);
- 		if (curusage >= oldusage)
- 			retry_count--;
+Thanks,
+Daisuke Nishimura.
