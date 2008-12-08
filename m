@@ -1,322 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYLHPBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbYLHPEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498AbYLHPBz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 10:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYLHPBq
+	id S1754491AbYLHPEZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 10:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYLHPEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 10:01:46 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:6794 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752466AbYLHPBp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 10:01:45 -0500
-Subject: Re: [PATCH] - support inheritance of mlocks across fork/exec V2
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       riel@redhat.com, hugh@veritas.com, kosaki.motohiro@jp.fujitsu.com,
-       linux-abi@vger.kernel.org
-In-Reply-To: <20081206220729.042a926e.akpm@linux-foundation.org>
-References: <1227561707.6937.61.camel@lts-notebook>
-	 <20081125152651.b4c3c18f.akpm@linux-foundation.org>
-	 <1228331069.6693.73.camel@lts-notebook>
-	 <20081206220729.042a926e.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Mon, 08 Dec 2008 10:01:05 -0500
-Message-Id: <1228748465.22647.85.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 8 Dec 2008 10:04:14 -0500
+Received: from ns2.suse.de ([195.135.220.15]:36228 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbYLHPEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 10:04:13 -0500
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Linux - Novell
+To: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: [PATCH] PCIe ASPM causes machine (HP Compaq 6735s) to sometimes freeze hard at boot at PCI initialization time
+Date: Mon, 8 Dec 2008 16:04:09 +0100
+User-Agent: KMail/1.9.9
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       Rafael Wysocki <rwysocki@suse.de>,
+       "shemminger@linux-foundation.org" <shemminger@linux-foundation.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Stable@kernel.org" <Stable@kernel.org>
+References: <200811281328.55259.trenn@suse.de> <20081205182148.GA28192@srcf.ucam.org> <1228699962.13024.2.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <1228699962.13024.2.camel@sli10-desk.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812081604.09996.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-06 at 22:07 -0800, Andrew Morton wrote:
-> (cc linux-abi.  Again.)
-
-Sorry.
-
-> 
-> On Wed, 03 Dec 2008 14:04:29 -0500 Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
-> 
-> > 
-> > 
-> > Against;  2.6.28-rc7-mmotm-081203
-> > 
-> > V02:	rework vetting of flags argument as suggested by
-> > 	Kosaki Motohiro.
-> > 	enhance description as requested by Andrew Morton.
-> > 
-> > Add support for mlockall(MCL_INHERIT|MCL_RECURSIVE):
-> > 
-> > 	MCL_CURRENT[|MCL_FUTURE]|MCL_INHERIT - inherit memory locks
-> > 		[vmas' VM_LOCKED flags] across fork(), and inherit
-> > 		MCL_FUTURE behavior [mm's def_flags] across fork()
-> > 		and exec().  Behaves as if child and/or new task
-> > 		called mlockall(MCL_CURRENT|MCL_FUTURE) as first
-> > 		instruction.
-> > 
-> > 	MCL_RECURSIVE - inherit MCL_CURRENT|MCL_FUTURE|MCL_INHERIT
-> > 		[vmas' VM_LOCKED flags for fork() and mm's def_flags
-> > 		and mcl_inherit across fork() and exec()] for all
-> > 		future generations of calling process's descendants.
-> > 		Behaves as if child and/or new task called
-> > 		mlockall(MCL_CURRENT|MCL_FUTURE|MCL_INHERIT|MCL_RECURSIVE)
-> > 		as the first instruction.
-> > 
-> > In support of a "lock prefix command"--e.g., mlock <cmd> <args> ...
-> > Analogous to taskset(1) for cpu affinity or numactl(8) for numa memory
-> > policy.
-> > 
-> > Together with patches to keep mlocked pages off the LRU, this will
-> > allow users/admins to lock down applications without modifying them,
-> > if their RLIMIT_MEMLOCK is sufficiently large, keeping their pages
-> > off the LRU and out of consideration for reclaim.
-> > 
-> > Potentially useful, as well, in real-time environments to force
-> > prefaulting and residency for applications that don't mlock themselves.
-> > 
-> > Jeff Sharkey at Montana State developed a similar patch for Linux
-> > [link no longer accessible], but apparently he never submitted the patch.
-> > 
-> > I submitted an earlier version of this patch around a year ago.  I
-> > resurrected it to test the unevictable lru/mlocked pages patches--
-> > e.g., by "mlock -r make -j<N*nr_cpus> all".  This did shake out a few
-> > races and vmstat accounting bugs, but NOT something I'd recommend as
-> > general practice--for kernel builds, that is.
-> > 
-> > ----
-> > 
-> > Define MCL_INHERIT, MCL_RECURSIVE in <asm-*/mman.h>.
-> > + x86 and  ia64 versions included.
-> > + other arch can/will be created, if this patch deemed merge-worthy.
-> > 
-> > Similarly, I'll provide kernel man page update if/when needed.
-> > 
-> > Example "lock prefix command" in Documentation/vm/mlock.c
-> > 
+On Monday 08 December 2008 02:32:42 Shaohua Li wrote:
+> On Sat, 2008-12-06 at 02:21 +0800, Matthew Garrett wrote:
+> > On Fri, Dec 05, 2008 at 02:07:13PM +0100, Thomas Renninger wrote:
+> > > PCIE: Break out of endless loop waiting for PCI config bits to switch
+> > >
+> > > Makes a Compaq 6735s boot reliably again which hang in the loop
+> > > on some boots.
 > >
-> > ...
+> > Which device does it get stuck on?
 > >
-> > --- linux-2.6.28-rc7-mmotm-081203.orig/mm/mlock.c	2008-12-03 10:33:11.000000000 -0500
-> > +++ linux-2.6.28-rc7-mmotm-081203/mm/mlock.c	2008-12-03 10:33:29.000000000 -0500
-> > @@ -573,15 +573,18 @@ asmlinkage long sys_munlock(unsigned lon
-> >  static int do_mlockall(int flags)
-> >  {
-> >  	struct vm_area_struct * vma, * prev = NULL;
-> > +	struct mm_struct *mm = current->mm;
-> >  	unsigned int def_flags = 0;
-> >  
-> >  	if (flags & MCL_FUTURE)
-> > -		def_flags = VM_LOCKED;
-> > -	current->mm->def_flags = def_flags;
-> > -	if (flags == MCL_FUTURE)
-> > +		def_flags = VM_LOCKED;;
-> 
-> You get paid by the semicolon?
-
-Nope.  Interestingly, ckeckpatch was fine with this.  [It did warn about
->80 char line in x86 mman.h, but there was already a much longer line,
-so I left it.  Fixed now so that patch is squeaky clean, as far as
-checkpatch is concerned.]
-
-> 
-> > +	mm->def_flags = def_flags;
-> > +	if (flags & MCL_INHERIT)
-> > +		mm->mcl_inherit = flags & (MCL_INHERIT | MCL_RECURSIVE);
-> 
-> aaaaaaarrrrrrggggggghhhhhhh!
-> 
-> So mm->mcl_inherit is _not_ a boolean meaning "this mm has MCL_INHERIT
-> set", as I naively believed when I saw it.  Is it in fact a composite
-> of both MCL_INHERIT and MCL_RECURSIVE, given a badly misleading name
-> and a waffly comment.
-> 
-> Can we please make this clearer?
-
-How about "mcl_inherit_mlocks_possibly_recursively" ?
-
-Seriously, it made/makes sense to me.  If mcl_inherit is non-zero, it
-WILL contain MCL_INHERIT, meaning that existing mlocks and any VM_LOCKED
-in def_flags will be inherited across the next fork or exec [of course,
-existing mlocks can't be inherited across exec as we discard the address
-space].  It may also contain MCL_RECURSIVE--tested separately--meaning
-that the contents of mcl_inherit, itself, will also be inherited across
-the next and future forks/execs, until/unless a descendant invokes
-mlockall() w/o MCL_INHERIT or MCL_RECURSIVE to clear out mcl_inherit.
-
-This seemed a bit much to try to explain on line where mcl_inherit is
-declared in mm_types.  More appropriate to a man page, I would have
-thought.   How about a Documentation/vm doc?
-
-Meanwhile, perhaps:  "mcl_inherit" -> "mcl_inherit_flags" or "mcl_flags"
-or "mlock_flags", or such?
-
-> 
+> > > +	if (loop_count == 100)
+> > > +		dev_printk (KERN_WARNING, &pdev->dev, "Could not configure ASPM\n");
 > >
-> > ...
-> >
-> > --- linux-2.6.28-rc7-mmotm-081203.orig/kernel/fork.c	2008-12-03 10:18:15.000000000 -0500
-> > +++ linux-2.6.28-rc7-mmotm-081203/kernel/fork.c	2008-12-03 10:33:29.000000000 -0500
-> > @@ -278,7 +278,8 @@ static int dup_mmap(struct mm_struct *mm
-> >  	 */
-> >  	down_write_nested(&mm->mmap_sem, SINGLE_DEPTH_NESTING);
-> >  
-> > -	mm->locked_vm = 0;
-> > +	if (!mm->mcl_inherit)
-> > +		mm->locked_vm = 0;
-> >  	mm->mmap = NULL;
-> >  	mm->mmap_cache = NULL;
-> >  	mm->free_area_cache = oldmm->mmap_base;
-> > @@ -316,7 +317,8 @@ static int dup_mmap(struct mm_struct *mm
-> >  		if (IS_ERR(pol))
-> >  			goto fail_nomem_policy;
-> >  		vma_set_policy(tmp, pol);
-> > -		tmp->vm_flags &= ~VM_LOCKED;
-> > +		if (!mm->mcl_inherit)
-> > +			tmp->vm_flags &= ~VM_LOCKED;
-> >  		tmp->vm_mm = mm;
-> >  		tmp->vm_next = NULL;
-> >  		anon_vma_link(tmp);
-> > @@ -406,6 +408,8 @@ __cacheline_aligned_in_smp DEFINE_SPINLO
-> >  
-> >  static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
-> >  {
-> > +	unsigned long def_flags = 0;
-> > +
-> >  	atomic_set(&mm->mm_users, 1);
-> >  	atomic_set(&mm->mm_count, 1);
-> >  	init_rwsem(&mm->mmap_sem);
-> > @@ -422,9 +426,14 @@ static struct mm_struct * mm_init(struct
-> >  	mm->free_area_cache = TASK_UNMAPPED_BASE;
-> >  	mm->cached_hole_size = ~0UL;
-> >  	mm_init_owner(mm, p);
-> > +	if (current->mm && current->mm->mcl_inherit) {
-> > +		def_flags = current->mm->def_flags & VM_LOCKED;
-> > +		if (mm->mcl_inherit & MCL_RECURSIVE)
-> > +			mm->mcl_inherit  = current->mm->mcl_inherit;
-> > +	}
-> 
-> hm.  That code looks familiar.  Not worth a helper function?
+> > "ASPM: Could not configure common clock\n"? ASPM should still work,
+> > though with higher latency. It probably also needs to revert the
+> > configuration changes.
+>
+> Yep, Just undo the pci config writes of pcie_aspm_configure_common_clock
+> should be fine to me. Maybe an expiration time is ok here.
+> Does the device work after this?
 
-If we could remove the copy in load_elf_binary(), point would be moot.
+After not writing back the pci values as done with this patch?
+Yes, I think it did, it's the network card behind the bridge.
 
-More below.
+It definitely does with this patch.
 
-> 
-> >  	if (likely(!mm_alloc_pgd(mm))) {
-> > -		mm->def_flags = 0;
-> > +		mm->def_flags = def_flags;
-> >  		mmu_notifier_mm_init(mm);
-> >  		return mm;
-> >  	}
-> > Index: linux-2.6.28-rc7-mmotm-081203/fs/binfmt_elf.c
-> > ===================================================================
-> > --- linux-2.6.28-rc7-mmotm-081203.orig/fs/binfmt_elf.c	2008-12-03 10:19:21.000000000 -0500
-> > +++ linux-2.6.28-rc7-mmotm-081203/fs/binfmt_elf.c	2008-12-03 10:33:29.000000000 -0500
-> > @@ -585,6 +585,7 @@ static int load_elf_binary(struct linux_
-> >  	unsigned long reloc_func_desc = 0;
-> >  	int executable_stack = EXSTACK_DEFAULT;
-> >  	unsigned long def_flags = 0;
-> > +	int mcl_inherit = 0;
-> >  	struct {
-> >  		struct elfhdr elf_ex;
-> >  		struct elfhdr interp_elf_ex;
-> > @@ -749,6 +750,13 @@ static int load_elf_binary(struct linux_
-> >  		SET_PERSONALITY(loc->elf_ex);
-> >  	}
-> >  
-> > +	/* Optionally inherit MCL_FUTURE state before destroying old mm */
-> > +	if (current->mm && current->mm->mcl_inherit) {
-> 
-> umm, OK, it looks like current->mm can be null here.
+Thanks,
 
-Probably not here.  IIRC, it can be NULL [for init] up in mm_init() and
-I probably just cut and pasted, instead of a helper function...
+  Thomas
 
-> 
-> > +		def_flags = current->mm->def_flags & VM_LOCKED;
-> 
-> ooh, we finally used local variable def_flags for something.  That's
-> been wasting space since 2.2.26 (or earlier).
+What about this one. (I assume there cannot be more than 256
+functions in a slot. There might be a better value):
 
-def_flags was being used to clear out the current->mm->def_flags.  Don't
-know why, tho'.  See below...
-> 
-> > +		if (current->mm->mcl_inherit & MCL_RECURSIVE)
-> > +			mcl_inherit  = current->mm->mcl_inherit;
-> > +	}
-> > +
-> >  	/* Flush all traces of the currently running executable */
-> >  	retval = flush_old_exec(bprm);
-> >  	if (retval)
-> > @@ -757,6 +765,7 @@ static int load_elf_binary(struct linux_
-> >  	/* OK, This is the point of no return */
-> >  	current->flags &= ~PF_FORKNOEXEC;
-> >  	current->mm->def_flags = def_flags;
-> > +	current->mm->mcl_inherit = mcl_inherit;
-> >  
-> >  	/* Do this immediately, since STACK_TOP as used in setup_arg_pages
-> >  	   may depend on the personality.  */
-> 
-> Why is this done in binfmt_elf.c?  Doesn't this preclude the operation
-> of these new flags for other binary formats?
+PCIe: ASPM: Break out of endless loop waiting for PCI config bits to switch
 
-Because binfmt_elf.c is the only binary format loader [that I can see]
-that takes it upon itself to reinitialize mm->def_flags, which has
-already been set up in mm_init().  I wondered, myself, why this is the
-case, but I didn't dare just remove it, lest it reintroduce some obscure
-bug.  So, I duplicated my version of def_flags [and mcl_inherit]
-initialization here. 
+Makes a Compaq 6735s boot reliably again which hang in the loop
+on some boots.
+Also correctly recover PCI bits if link trainig timed out.
 
-Now that you've raised the question:  why, indeed, does the elf format
-loader reinit def_flags?  Can we just remove this?
+Signed-off-by: Thomas Renninger <trenn@suse.de>
 
-> 
-> > Index: linux-2.6.28-rc7-mmotm-081203/arch/x86/include/asm/mman.h
-> > ===================================================================
-> > --- linux-2.6.28-rc7-mmotm-081203.orig/arch/x86/include/asm/mman.h	2008-12-03 10:16:26.000000000 -0500
-> > +++ linux-2.6.28-rc7-mmotm-081203/arch/x86/include/asm/mman.h	2008-12-03 10:33:29.000000000 -0500
-> > @@ -16,5 +16,8 @@
-> >  
-> >  #define MCL_CURRENT	1		/* lock all current mappings */
-> >  #define MCL_FUTURE	2		/* lock all future mappings */
-> > +#define MCL_INHERIT	4		/* inherit mlocks across fork */
-> > +					/* inherit '_FUTURE flag across fork/exec */
-> > +#define MCL_RECURSIVE	8		/* inherit mlocks recursively */
-> >  
-> >  #endif /* _ASM_X86_MMAN_H */
-> > Index: linux-2.6.28-rc7-mmotm-081203/include/linux/mm_types.h
-> > ===================================================================
-> > --- linux-2.6.28-rc7-mmotm-081203.orig/include/linux/mm_types.h	2008-12-03 10:18:01.000000000 -0500
-> > +++ linux-2.6.28-rc7-mmotm-081203/include/linux/mm_types.h	2008-12-03 10:33:29.000000000 -0500
-> > @@ -235,6 +235,8 @@ struct mm_struct {
-> >  	unsigned int token_priority;
-> >  	unsigned int last_interval;
-> >  
-> > +	int mcl_inherit;		/* inherit current/future locks */
-> > +
-> >  	unsigned long flags; /* Must use atomic bitops to access the bits */
-> 
-> I was thinking that the boolean mcl_inherit could become a bit in
-> mm.flags.  That was before I unmisled myself about it.
-> 
-> Perhaps we could use two bits.  That might get a bit nasty.
+---
+ drivers/pci/pcie/aspm.c |   29 +++++++++++++++++++++++++----
+ 1 file changed, 25 insertions(+), 4 deletions(-)
 
-I did look for someplace to add these flags, before deciding on a new
-member.  The "Must use atomic bitops", and the fact that mm->flags seems
-used soley for controlling core dumping [and defined in sched.h, no
-less!], put me off from going that route.  Similarly, because def_flags
-is an initializer for the vma's vm_flags, I didn't want to pollute that.
-I figured the 'int' would fill a padding slot on 64-bit archs, but does
-add to mm size for 32-bit archs.
-
-Suggestions?
-I'll hold off on a re-spin, pending resolution of some of these issues.
-
-Thanks for the thorough review.
-
-Lee
-
-
+Index: linux-2.6.27/drivers/pci/pcie/aspm.c
+===================================================================
+--- linux-2.6.27.orig/drivers/pci/pcie/aspm.c
++++ linux-2.6.27/drivers/pci/pcie/aspm.c
+@@ -16,6 +16,7 @@
+ #include <linux/pm.h>
+ #include <linux/init.h>
+ #include <linux/slab.h>
++#include <linux/jiffies.h>
+ #include <linux/pci-aspm.h>
+ #include "../pci.h"
+ 
+@@ -161,11 +162,12 @@ static void pcie_check_clock_pm(struct p
+  */
+ static void pcie_aspm_configure_common_clock(struct pci_dev *pdev)
+ {
+-	int pos, child_pos;
++	int pos, child_pos, i = 0;
+ 	u16 reg16 = 0;
+ 	struct pci_dev *child_dev;
+ 	int same_clock = 1;
+-
++	unsigned long start_jiffies = jiffies;
++	u16 child_regs[256], parent_reg;
+ 	/*
+ 	 * all functions of a slot should have the same Slot Clock
+ 	 * Configuration, so just check one function
+@@ -191,16 +193,18 @@ static void pcie_aspm_configure_common_c
+ 		child_pos = pci_find_capability(child_dev, PCI_CAP_ID_EXP);
+ 		pci_read_config_word(child_dev, child_pos + PCI_EXP_LNKCTL,
+ 			&reg16);
++		child_regs[i] = reg16;
+ 		if (same_clock)
+ 			reg16 |= PCI_EXP_LNKCTL_CCC;
+ 		else
+ 			reg16 &= ~PCI_EXP_LNKCTL_CCC;
+ 		pci_write_config_word(child_dev, child_pos + PCI_EXP_LNKCTL,
+ 			reg16);
++		i++;
+ 	}
+ 
+ 	/* Configure upstream component */
+-	pci_read_config_word(pdev, pos + PCI_EXP_LNKCTL, &reg16);
++	parent_reg = pci_read_config_word(pdev, pos + PCI_EXP_LNKCTL, &reg16);
+ 	if (same_clock)
+ 		reg16 |= PCI_EXP_LNKCTL_CCC;
+ 	else
+@@ -212,12 +216,29 @@ static void pcie_aspm_configure_common_c
+ 	pci_write_config_word(pdev, pos + PCI_EXP_LNKCTL, reg16);
+ 
+ 	/* Wait for link training end */
+-	while (1) {
++	/* break out after waiting for 1 second */
++	while ((jiffies - start_jiffies) < HZ) {
+ 		pci_read_config_word(pdev, pos + PCI_EXP_LNKSTA, &reg16);
+ 		if (!(reg16 & PCI_EXP_LNKSTA_LT))
+ 			break;
+ 		cpu_relax();
+ 	}
++	/* training failed -> recover */
++	if ((jiffies - start_jiffies) >= HZ) {
++		dev_printk (KERN_ERR, &pdev->dev, "ASPM: Could not configure"
++			    " common clock\n");
++		i = 0;
++		list_for_each_entry(child_dev, &pdev->subordinate->devices,
++				    bus_list) {
++			child_pos = pci_find_capability(child_dev,
++							PCI_CAP_ID_EXP);
++			pci_write_config_word(child_dev,
++					      child_pos + PCI_EXP_LNKCTL,
++					      child_regs[i]);
++			i++;
++		}
++		pci_write_config_word(pdev, pos + PCI_EXP_LNKCTL, parent_reg);
++	}
+ }
+ 
+ /*
