@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYLHOau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbYLHOcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbYLHOau (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 09:30:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYLHOam
+	id S1753833AbYLHOcr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 09:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYLHOch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 09:30:42 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:9440 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbYLHOal (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 09:30:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=E3VB8GXAjqiWTEtKY/YQYDSrI5phjI9K/sb10p/ETRfVNb6oXT0NuafH4Djp9JdzYa
-         cUmpM7bg6t6a40pulzkbsgmXh96TfVvAyFaLPMFyHoP7uHCZ2UsQ8VcX32BR25h0+Y0A
-         ETGIaRNx8/Q6DcduM+l46GENVl210sLtk1RF4=
-Message-ID: <2f11576a0812080630j4327dbbgf0aa0e332156d229@mail.gmail.com>
-Date: Mon, 8 Dec 2008 23:30:40 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>
-Subject: Re: [PATCH] memory hotplug: run lru_add_drain_all() on each cpu
-Cc: "Dave Hansen" <dave@linux.vnet.ibm.com>, gerald.schaefer@de.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com, npiggin@suse.de
-In-Reply-To: <1228744588.22647.32.camel@lts-notebook>
+	Mon, 8 Dec 2008 09:32:37 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:40859 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751945AbYLHOcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 09:32:36 -0500
+Message-ID: <493D300A.6080805@sgi.com>
+Date: Mon, 08 Dec 2008 06:32:42 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, kvm-devel <kvm@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] kvm: use modern cpumask primitives, no cpumask_t
+ on stack
+References: <200812072125.14416.rusty@rustcorp.com.au> <493BF144.9080106@redhat.com>
+In-Reply-To: <493BF144.9080106@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1228482500.8392.15.camel@t60p> <1228509818.12681.21.camel@nimitz>
-	 <20081207133450.53D8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <1228744588.22647.32.camel@lts-notebook>
-X-Google-Sender-Auth: 0be335245c5e8e18
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Lee, Could you read this thread and explain why you add ifdef CONFIG_UNEVICTABLE_LRU?
->> I am not sure about that Dave's proposal is safe change. (but I guess he is right)
->
-> I added that back in Patch 17/25 "Mlocked Pages are
-> non-reclaimable" [before nonreclaimable became unevictable".  I did this
-> because "lru_add_drain_all()" was only used by numa code prior to this,
-> and was under #ifdef CONFIG_NUMA".  I called lru_add_drain_all() from
-> __mlock_vma_pages_range() [since removed] and I wanted the
-> nonreclaimable/unevictable mlocked pages feature to be independent of
-> numa.  So, I had to ensure that we defined the function for
-> nonreclaimable/unevictable lru as well as numa.
->
-> Now it appears that hotplug and memcg also depend on
-> lru_add_drain_all(), so making it depend on 'SMP looks reasonable to me.
+Avi Kivity wrote:
+> Rusty Russell wrote:
+>> We're getting rid on on-stack cpumasks for large NR_CPUS.
+>>
+>> 1) Use cpumask_var_t and alloc_cpumask_var (a noop normally).  Fallback
+>>    code is inefficient but never happens in practice.
+>> 2) smp_call_function_mask -> smp_call_function_many
+>> 3) cpus_clear, cpus_empty, cpu_set -> cpumask_clear, cpumask_empty,
+>>    cpumask_set_cpu.
+>>
+>> --- linux-2.6.orig/virt/kvm/kvm_main.c
+>> +++ linux-2.6/virt/kvm/kvm_main.c
+>> @@ -358,11 +358,23 @@ static void ack_flush(void *_completed)
+>>  void kvm_flush_remote_tlbs(struct kvm *kvm)
+>>  {
+>>      int i, cpu, me;
+>> -    cpumask_t cpus;
+>> +    cpumask_var_t cpus;
+>>      struct kvm_vcpu *vcpu;
+>>  
+>>      me = get_cpu();
+>> -    cpus_clear(cpus);
+>> +    if (!alloc_cpumask_var(&cpus, GFP_ATOMIC)) {
+>> +        /* Slow path on failure.  Call everyone. */
+>> +        for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+>> +            vcpu = kvm->vcpus[i];
+>> +            if (vcpu)
+>> +                set_bit(KVM_REQ_TLB_FLUSH, &vcpu->requests);
+>> +        }
+>> +        ++kvm->stat.remote_tlb_flush;
+>> +        smp_call_function_many(cpu_online_mask, ack_flush, NULL, 1);
+>> +        put_cpu();
+>> +        return;
+>> +    }
+>> +
+>>   
+> 
+> Wow, code duplication from Rusty. Things must be bad.
+> 
+> Since we're in a get_cpu() here, how about a per_cpu static cpumask
+> instead? I don't mind the inefficient fallback, just the duplication.
+> 
 
-Thanks a lot.
+One thing to note is that when CPUMASK_OFFSTACK=n, then alloc_cpumask_var
+returns a constant 1 and the duplicate code is not even compiled.
 
-I'll make that patch.
