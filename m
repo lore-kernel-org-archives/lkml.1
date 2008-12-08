@@ -1,163 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbYLHNHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbYLHNOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754011AbYLHNHA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 08:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbYLHNGv
+	id S1753820AbYLHNOu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 08:14:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYLHNOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 08:06:51 -0500
-Received: from matrixpower.ru ([195.178.208.66]:32788 "EHLO tservice.net.ru"
+	Mon, 8 Dec 2008 08:14:41 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:27281 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751948AbYLHNGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 08:06:50 -0500
-Date: Mon, 8 Dec 2008 16:06:46 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Runaway loop with the current git.
-Message-ID: <20081208130646.GB15381@ioremap.net>
-References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk> <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au> <20081207155507.GA15355@gondor.apana.org.au>
+	id S1752049AbYLHNOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 08:14:40 -0500
+To: linux-kernel@vger.kernel.org
+cc: linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] initify: fix IN_ONESHOT unmount event watcher.
+From: Dmitri Monakhov <dmonakhov@openvz.org>
+Date: Mon, 08 Dec 2008 16:13:20 +0300
+Message-ID: <m31vwiizdb.fsf@openvz.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081207155507.GA15355@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 07, 2008 at 11:55:07PM +0800, Herbert Xu (herbert@gondor.apana.org.au) wrote:
-> Having said that I think this patch should remove this particular
-> trigger.  Unfortunately I couldn't find a more succinct way of
-> expressing this relationship: if ALGAPI is built-in because it's
-> selected by an algorithm, and CRYPTO_MANAGER is enabled then we
-> require CRYPTO_MANAGER to be built-in as well.
-> 
-> Evgeniy, please let me know whether this fixes the problem.
+Two weeks ago i've send the patch to lkml http://lkml.org/lkml/2008/11/26/229,
+but unfortunately without response. Seems the issue wasn't fixed yet.
+Who currently are responsible for inotify interface.
 
-Your patch does not apply cleanly to the latest git and missed
-rng dependency to rng2.
-Attached patch fixes problem with module loading for me.
+On umount two event will be dispatched to watcher:
+1: inotify_dev_queue_event(.., IN_UNMOUNT,..)
+2: remove_watch(watch, dev)
+    ->inotify_dev_queue_event(.., IN_IGNORED, ..)
+But if watcher has IN_ONESHOT bit set then the watcher will be released
+inside first event. Which result in accessing invalid object later.
+IMHO it is not pure regression. This bug wasn't triggered while initial
+inotify interface testing phase because of another bug in IN_ONESHOT
+handling logic :)
+  commit ac74c00e499ed276a965e5b5600667d5dc04a84a
+  Author: Ulisses Furquim <ulissesf@gmail.com>
+  Date:   Fri Feb 8 04:18:16 2008 -0800
+    inotify: fix check for one-shot watches before destroying them
+    As the IN_ONESHOT bit is never set when an event is sent we must check it
+    in the watch's mask and not in the event's mask.
 
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 39dbd8e..dc20a34 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -31,35 +31,63 @@ config CRYPTO_FIPS
- 
- config CRYPTO_ALGAPI
- 	tristate
-+	select CRYPTO_ALGAPI2
- 	help
- 	  This option provides the API for cryptographic algorithms.
- 
-+config CRYPTO_ALGAPI2
-+	tristate
-+
- config CRYPTO_AEAD
- 	tristate
-+	select CRYPTO_AEAD2
- 	select CRYPTO_ALGAPI
- 
-+config CRYPTO_AEAD2
-+	tristate
-+	select CRYPTO_ALGAPI2
-+
- config CRYPTO_BLKCIPHER
- 	tristate
-+	select CRYPTO_BLKCIPHER2
- 	select CRYPTO_ALGAPI
--	select CRYPTO_RNG
-+
-+config CRYPTO_BLKCIPHER2
-+	tristate
-+	select CRYPTO_ALGAPI2
-+	select CRYPTO_RNG2
- 
- config CRYPTO_HASH
- 	tristate
-+	select CRYPTO_HASH2
- 	select CRYPTO_ALGAPI
- 
-+config CRYPTO_HASH2
-+	tristate
-+	select CRYPTO_ALGAPI2
-+
- config CRYPTO_RNG
- 	tristate
-+	select CRYPTO_RNG2
- 	select CRYPTO_ALGAPI
- 
-+config CRYPTO_RNG2
-+	tristate
-+	select CRYPTO_ALGAPI2
-+
- config CRYPTO_MANAGER
- 	tristate "Cryptographic algorithm manager"
--	select CRYPTO_AEAD
--	select CRYPTO_HASH
--	select CRYPTO_BLKCIPHER
-+	select CRYPTO_MANAGER2
- 	help
- 	  Create default cryptographic template instantiations such as
- 	  cbc(aes).
- 
-+config CRYPTO_MANAGER2
-+	def_tristate CRYPTO_MANAGER || (CRYPTO_MANAGER!=n && CRYPTO_ALGAPI=y)
-+	select CRYPTO_AEAD2
-+	select CRYPTO_HASH2
-+	select CRYPTO_BLKCIPHER2
-+
- config CRYPTO_GF128MUL
- 	tristate "GF(2^128) multiplication functions (EXPERIMENTAL)"
- 	depends on EXPERIMENTAL
-diff --git a/crypto/Makefile b/crypto/Makefile
-index 5862b80..cd4a4ed 100644
---- a/crypto/Makefile
-+++ b/crypto/Makefile
-@@ -9,24 +9,24 @@ obj-$(CONFIG_CRYPTO_FIPS) += fips.o
- 
- crypto_algapi-$(CONFIG_PROC_FS) += proc.o
- crypto_algapi-objs := algapi.o scatterwalk.o $(crypto_algapi-y)
--obj-$(CONFIG_CRYPTO_ALGAPI) += crypto_algapi.o
-+obj-$(CONFIG_CRYPTO_ALGAPI2) += crypto_algapi.o
- 
--obj-$(CONFIG_CRYPTO_AEAD) += aead.o
-+obj-$(CONFIG_CRYPTO_AEAD2) += aead.o
- 
- crypto_blkcipher-objs := ablkcipher.o
- crypto_blkcipher-objs += blkcipher.o
--obj-$(CONFIG_CRYPTO_BLKCIPHER) += crypto_blkcipher.o
--obj-$(CONFIG_CRYPTO_BLKCIPHER) += chainiv.o
--obj-$(CONFIG_CRYPTO_BLKCIPHER) += eseqiv.o
-+obj-$(CONFIG_CRYPTO_BLKCIPHER2) += crypto_blkcipher.o
-+obj-$(CONFIG_CRYPTO_BLKCIPHER2) += chainiv.o
-+obj-$(CONFIG_CRYPTO_BLKCIPHER2) += eseqiv.o
- obj-$(CONFIG_CRYPTO_SEQIV) += seqiv.o
- 
- crypto_hash-objs := hash.o
- crypto_hash-objs += ahash.o
--obj-$(CONFIG_CRYPTO_HASH) += crypto_hash.o
-+obj-$(CONFIG_CRYPTO_HASH2) += crypto_hash.o
- 
- cryptomgr-objs := algboss.o testmgr.o
- 
--obj-$(CONFIG_CRYPTO_MANAGER) += cryptomgr.o
-+obj-$(CONFIG_CRYPTO_MANAGER2) += cryptomgr.o
- obj-$(CONFIG_CRYPTO_HMAC) += hmac.o
- obj-$(CONFIG_CRYPTO_XCBC) += xcbc.o
- obj-$(CONFIG_CRYPTO_NULL) += crypto_null.o
-@@ -73,8 +73,8 @@ obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += michael_mic.o
- obj-$(CONFIG_CRYPTO_CRC32C) += crc32c.o
- obj-$(CONFIG_CRYPTO_AUTHENC) += authenc.o
- obj-$(CONFIG_CRYPTO_LZO) += lzo.o
--obj-$(CONFIG_CRYPTO_RNG) += rng.o
--obj-$(CONFIG_CRYPTO_RNG) += krng.o
-+obj-$(CONFIG_CRYPTO_RNG2) += rng.o
-+obj-$(CONFIG_CRYPTO_RNG2) += krng.o
- obj-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
- obj-$(CONFIG_CRYPTO_TEST) += tcrypt.o
- 
+
+TESTCASE:
+mkdir mnt
+mount -ttmpfs none mnt
+mkdir mnt/d
+./inotify mnt/d&
+umount mnt ## << lockup or crash here
+
+TESTSOURCE:
+/* gcc -oinotify inotify.c */
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/inotify.h>
+
+int main(int argc, char **argv)
+{
+        char buf[1024];
+        struct inotify_event *ie;
+        char *p;
+        int i;
+        ssize_t l;
+
+        p = argv[1];
+        i = inotify_init();
+        inotify_add_watch(i, p, ~0);
+
+        l = read(i, buf, sizeof(buf));
+        printf("read %d bytes\n", l);
+        ie = (struct inotify_event *) buf;
+        printf("event mask: %d\n", ie->mask);
+	return 0;
+}
+
+Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
+---
+ fs/inotify.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/fs/inotify.c b/fs/inotify.c
+index 7bbed1b..dae3f28 100644
+--- a/fs/inotify.c
++++ b/fs/inotify.c
+@@ -428,11 +428,13 @@ void inotify_unmount_inodes(struct list_head *list)
+ 		watches = &inode->inotify_watches;
+ 		list_for_each_entry_safe(watch, next_w, watches, i_list) {
+ 			struct inotify_handle *ih= watch->ih;
++			get_inotify_watch(watch);
+ 			mutex_lock(&ih->mutex);
+ 			ih->in_ops->handle_event(watch, watch->wd, IN_UNMOUNT, 0,
+ 						 NULL, NULL);
+ 			inotify_remove_watch_locked(ih, watch);
+ 			mutex_unlock(&ih->mutex);
++			put_inotify_watch(watch);
+ 		}
+ 		mutex_unlock(&inode->inotify_mutex);
+ 		iput(inode);		
 -- 
-	Evgeniy Polyakov
+1.5.4.3
