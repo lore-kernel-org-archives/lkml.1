@@ -1,49 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYLHQp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYLHQqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbYLHQp1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 11:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYLHQpS
+	id S1754171AbYLHQqm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 11:46:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYLHQqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 11:45:18 -0500
-Received: from molly.corsac.net ([81.57.48.219]:35207 "EHLO molly.corsac.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753165AbYLHQpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 11:45:18 -0500
-Date: Mon, 8 Dec 2008 17:45:16 +0100
-From: Yves-Alexis Perez <corsac@debian.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #12152] Huge wakeups number from i1915
-Message-ID: <20081208164516.GG16053@corsac.net>
-References: <6VnlupFpCsN.A.2rE.MsEPJB@chimera> <20081207151203.46c01a0d@infradead.org> <1228717448.9677.3.camel@hidalgo> <200812080828.07683.rjw@sisk.pl> <20081208125938.GB31976@srcf.ucam.org> <20081208161948.GF16053@corsac.net> <20081208163505.GB2496@srcf.ucam.org>
+	Mon, 8 Dec 2008 11:46:31 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:57177 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753258AbYLHQqa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 11:46:30 -0500
+Message-ID: <493D4F5C.7020606@s5r6.in-berlin.de>
+Date: Mon, 08 Dec 2008 17:46:20 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.17) Gecko/20080829 SeaMonkey/1.1.12
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081208163505.GB2496@srcf.ucam.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: netdev@vger.kernel.org
+CC: Holger Hoffstaette <holger@wizards.de>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
+       stable@kernel.org
+Subject: Re: Nasty regression from .27.7 to .27.8: idle samba goes crazy
+References: <pan.2008.12.08.06.18.57.357875@wizards.de> <200812080834.22924.rjw@sisk.pl> <pan.2008.12.08.08.07.29.439625@wizards.de>
+In-Reply-To: <pan.2008.12.08.08.07.29.439625@wizards.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 08, 2008 at 04:35:05PM +0000, Matthew Garrett wrote:
-> On Mon, Dec 08, 2008 at 05:19:49PM +0100, Yves-Alexis Perez wrote:
-> > > Doesn't ring any bells for me...
-> > 
-> > This was the “irq spinning” thread on dri-devel.
+Holger Hoffstaette wrote at LKML:
+> On Mon, 08 Dec 2008 08:34:22 +0100, Rafael J. Wysocki wrote:
 > 
-> Looks like the patch was from Keith, not me?
+>> On Monday, 8 of December 2008, Holger Hoffstaette wrote:
+>>> Hi,
+>>> 
+>>> I just encountered a nasty symptom for the second time that has started to
+>>> occur after updating my home server from vanilla 2.6.27.7 to .8 (same
+>>> config).
+>>> 
+>>> A while after disconnecting a samba client, the smbd samba server
+>>> process goes crazy and consumes 100% CPU. From that time on it is
+>>> unkillable (kill -9 returns but the process continues to run). The only
+>>> recourse is reboot, which works without problem (i.e. unmounting the
+>>> served filesystems is apparently possible?). I tried to attach to the
+>>> process with gdb but that just hung.
+>>> 
+>>> The system is a generic old single-core P4 box with a single SATA drive,
+>>> Gentoo userland and Samba is 3.0.33 (in async mode). The kernel has no
+>>> patches or binary drivers. It has been rock solid before the update and
+>>> shows no other signs of weirdness in logs or otherwise. I downgraded to .7
+>>> for now and will see what happens, but since it worked before I am certain
+>>> that this is a regression in the .8 release.
+>>> 
+>>> The only commonality is a log entry by samba that seems to correlate with
+>>> both occurrences:
+>>> 
+>>> [2008/12/08 01:02:52, 0] lib/util_sock.c:read_data(534)
+>>>   read_data: read failure for 4 bytes to client 192.168.100.128. Error = No route to host
+>>> 
+>>> .128 is the Windows client machine (connected via a stable GigE link),
+>>> which I shut down pretty much exactly 30 minutes before that (any 30
+>>> minute timeouts in the kernel/network stack?). Both instances of these log
+>>> entries correlate with the CPU spikes which I noticed in my MRTG graphs.
+>>> 
+>>> Any suspects or ideas?
+>>> 
+>>> thanks
+>>> Holger
+>> 
+>> Please bisect.
+> 
+> I would love to try, but this is my "production server" (i.e. I need it
+> for real work) and I'll be traveling the next few days. I will try to
+> bisect after that (if nobody else has any ideas) but will have to make
+> sure the bug is actually reproducible after the timeout - for now I only
+> observed it by accident (via mrtg).
+> In the meantime maybe someone else will observe it as well.
+> 
+> thanks
+> Holger
+> 
 
-Woops, sorry. You made so much patches for me and my backlight that I
-got confused.
- 
-> Unrelatedly, I didn't get the Cc:ed copy of this mail. Did you get a 
-> bounce?
-
-Yeah (and I'll get one on this too). I never managed to send you a mail,
-my mailserver IP is listed on the mail-abuse RBL, I guess because it's
-an ADSL line. I need to configure another way out for mails to you :)
-
-Cheers,
+Added Cc: netdev, readded all other Cc's, quoted in full for netdev.
+Good luck,
 -- 
-Yves-Alexis
+Stefan Richter
+-=====-==--- ==-- -=---
+http://arcgraph.de/sr/
