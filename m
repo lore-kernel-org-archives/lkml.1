@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbYLHO4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbYLHO5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754536AbYLHO4u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 09:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYLHO4k
+	id S1754620AbYLHO5Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 09:57:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbYLHO5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 09:56:40 -0500
-Received: from rn-out-0910.google.com ([64.233.170.187]:61067 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbYLHO4j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 09:56:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=KfIWfYXsFAN/CWw7ypV6kfELQyE5XybuskdtZqCitDPnYEeJwegP5URm7WOVoTSsKv
-         rsBsqxf/EqtUKljlya8/vwvo0rEZeX0IArcsXnzAs966WctTLtoI3p/DI1EgiglKRJVJ
-         gPA85vGKXqp2aJqM6vLPBGmK82Ktt+0rFrE8Y=
-Message-ID: <b9df5fa10812080656l21385db3ob08fc4f9ad3f1f76@mail.gmail.com>
-Date: Mon, 8 Dec 2008 20:56:38 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [PATCH ] x86 : Fix compilation warning on paravirt-spinlocks.c
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>
+	Mon, 8 Dec 2008 09:57:04 -0500
+Received: from cantor.suse.de ([195.135.220.2]:37603 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753270AbYLHO5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 09:57:03 -0500
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Linux - Novell
+To: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: [PATCH] PCIe ASPM causes machine (HP Compaq 6735s) to sometimes freeze hard at boot at PCI initialization time
+Date: Mon, 8 Dec 2008 15:56:57 +0100
+User-Agent: KMail/1.9.9
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       Rafael Wysocki <rwysocki@suse.de>,
+       "shemminger@linux-foundation.org" <shemminger@linux-foundation.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Stable@kernel.org" <Stable@kernel.org>
+References: <200811281328.55259.trenn@suse.de> <20081205182148.GA28192@srcf.ucam.org> <1228699962.13024.2.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <1228699962.13024.2.camel@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200812081556.59070.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Fix compilation warning.
+On Monday 08 December 2008 02:32:42 Shaohua Li wrote:
+> On Sat, 2008-12-06 at 02:21 +0800, Matthew Garrett wrote:
+> > On Fri, Dec 05, 2008 at 02:07:13PM +0100, Thomas Renninger wrote:
+> > > PCIE: Break out of endless loop waiting for PCI config bits to switch
+> > >
+> > > Makes a Compaq 6735s boot reliably again which hang in the loop
+> > > on some boots.
+> >
+> > Which device does it get stuck on?
+> >
+> > > +	if (loop_count == 100)
+> > > +		dev_printk (KERN_WARNING, &pdev->dev, "Could not configure ASPM\n");
+> >
+> > "ASPM: Could not configure common clock\n"? ASPM should still work,
+> > though with higher latency. It probably also needs to revert the
+> > configuration changes.
+>
+> Yep, Just undo the pci config writes of pcie_aspm_configure_common_clock
+> should be fine to me. Maybe an expiration time is ok here.
+> Does the device work after this?
 
- CC      arch/x86/kernel/paravirt-spinlocks.o
-arch/x86/kernel/paravirt-spinlocks.c: In function `default_spin_lock_flags':
-arch/x86/kernel/paravirt-spinlocks.c:12: warning: passing arg 1 of
-`__raw_spin_lock' from incompatible pointer type
+After not writing back the pci values as done with this patch?
+Yes, I think it did.
 
-This patch fixes the above warning.  __raw_spin_lock(lock) is declared
-when CONFIG_SMP is defined. Thus, a call to __raw_spin_lock requires
-checking CONFIG_SMP is defined or not.
+It definitely does with this patch.
 
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+What about this one:
 
---- linux-2.6-orig/arch/x86/kernel/paravirt-spinlocks.c	2008-12-05
-19:53:15.000000000 +0600
-+++ linux-2.6/arch/x86/kernel/paravirt-spinlocks.c	2008-12-07
-23:52:59.000000000 +0600
-@@ -9,7 +9,9 @@
-
- static void default_spin_lock_flags(struct raw_spinlock *lock,
-unsigned long flags)
- {
-+#ifdef	CONFIG_SMP
- 	__raw_spin_lock(lock);
-+#endif
- }
-
- struct pv_lock_ops pv_lock_ops = {
