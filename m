@@ -1,155 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbYLHVPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbYLHVUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753244AbYLHVPe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 16:15:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYLHVP0
+	id S1753205AbYLHVUW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 16:20:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYLHVUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 16:15:26 -0500
-Received: from tundra.namei.org ([65.99.196.166]:4886 "EHLO tundra.namei.org"
+	Mon, 8 Dec 2008 16:20:09 -0500
+Received: from main.gmane.org ([80.91.229.2]:47807 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752054AbYLHVPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 16:15:25 -0500
-Date: Tue, 9 Dec 2008 08:15:03 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-cc: lkml <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       David Howells <dhowells@redhat.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] user namespaces: let user_ns be cloned with
- fairsched
-In-Reply-To: <20081208160429.GA18268@us.ibm.com>
-Message-ID: <alpine.LRH.1.10.0812090814360.6220@tundra.namei.org>
-References: <20081203191706.GA16433@us.ibm.com> <alpine.LRH.1.10.0812080946360.23851@tundra.namei.org> <20081208160429.GA18268@us.ibm.com>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751763AbYLHVUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 16:20:06 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Roman Kononov <kernel@kononov.ftml.net>
+Subject: OOPS in ATA?
+Date: Mon, 08 Dec 2008 15:09:22 -0600
+Message-ID: <ghk2e3$4l2$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="------------080908050109050508040605"
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: adsl-75-61-228-198.dsl.chcgil.sbcglobal.net
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.12) Gecko/20080227 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Dec 2008, Serge E. Hallyn wrote:
+This is a multi-part message in MIME format.
+--------------080908050109050508040605
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> > Applied to 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
-> 
-> Thanks, James.  I talked about patch 1 with Dhaval, and while he's ok
-> with the patch he (rightfully) thought there should be some extra
-> documentation.  If it's not too much trouble would you mind swapping
-> out patch 1 for the following?  (Otherwise I can send a new patch on
-> top of the original)
 
-It was applied to a public tree, so an update patch is needed.
+--------------080908050109050508040605
+Content-Type: text/plain;
+ name="oops.log"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="oops.log"
 
-> 
-> thanks,
-> -serge
-> 
-> >From 047b66fff5e014ac0eb995b8a60ff396abe2e8b2 Mon Sep 17 00:00:00 2001
-> From: Serge E. Hallyn <serue@us.ibm.com>
-> Date: Mon, 8 Dec 2008 07:24:33 -0800
-> Subject: [PATCH 1/1] user namespaces: let user_ns be cloned with fairsched
-> 
-> fairsched creates a per-uid directory under /sys/kernel/uids/.
-> So when you clone(CLONE_NEWUSER), it tries to create
-> /sys/kernel/uids/0, which already exists, and you get back
-> -ENOMEM.
-> 
-> This was supposed to be fixed by sysfs tagging, but that
-> was postponed (ok, rejected until sysfs locking is fixed).
-> So, just as with network namespaces, we just don't create
-> those directories for user namespaces other than the init.
-> 
-> Changelog:
-> 	Dec 8 2008: Documented the currently bogus state of
-> 	 support for user groups with user namespaces.  In
-> 	 particular, all users in a user namespace should be
-> 	 children of the user which created the user namespace.
-> 	 This is yet to be unimplemented.
-> 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> Acked-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> ---
->  Documentation/scheduler/sched-design-CFS.txt |   21 +++++++++++++++++++++
->  kernel/user.c                                |   12 +++++++++++-
->  2 files changed, 32 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Documentation/scheduler/sched-design-CFS.txt b/Documentation/scheduler/sched-design-CFS.txt
-> index eb471c7..8398ca4 100644
-> --- a/Documentation/scheduler/sched-design-CFS.txt
-> +++ b/Documentation/scheduler/sched-design-CFS.txt
-> @@ -273,3 +273,24 @@ task groups and modify their CPU share using the "cgroups" pseudo filesystem.
->  
->  	# #Launch gmplayer (or your favourite movie player)
->  	# echo <movie_player_pid> > multimedia/tasks
-> +
-> +8. Implementation note: user namespaces
-> +
-> +User namespaces are intended to be hierarchical.  But they are currently
-> +only partially implemented.  Each of those has ramifications for CFS.
-> +
-> +First, since user namespaces are hierarchical, the /sys/kernel/uids
-> +presentation is inadequate.  Eventually we will likely want to use sysfs
-> +tagging to provide private views of /sys/kernel/uids within each user
-> +namespace.
-> +
-> +Second, the hierarchical nature is intended to support completely
-> +unprivileged use of user namespaces.  So if using user groups, then
-> +we want the users in a user namespace to be children of the user
-> +who created it.
-> +
-> +That is currently unimplemented.  So instead, every user in a new
-> +user namespace will receive 1024 shares just like any user in the
-> +initial user namespace.  Note that at the moment creation of a new
-> +user namespace requires each of CAP_SYS_ADMIN, CAP_SETUID, and
-> +CAP_SETGID.
-> diff --git a/kernel/user.c b/kernel/user.c
-> index 97202cb..6608a3d 100644
-> --- a/kernel/user.c
-> +++ b/kernel/user.c
-> @@ -239,13 +239,21 @@ static struct kobj_type uids_ktype = {
->  	.release = uids_release,
->  };
->  
-> -/* create /sys/kernel/uids/<uid>/cpu_share file for this user */
-> +/*
-> + * Create /sys/kernel/uids/<uid>/cpu_share file for this user
-> + * We do not create this file for users in a user namespace (until
-> + * sysfs tagging is implemented).
-> + *
-> + * See Documentation/scheduler/sched-design-CFS.txt for ramifications.
-> + */
->  static int uids_user_create(struct user_struct *up)
->  {
->  	struct kobject *kobj = &up->kobj;
->  	int error;
->  
->  	memset(kobj, 0, sizeof(struct kobject));
-> +	if (up->user_ns != &init_user_ns)
-> +		return 0;
->  	kobj->kset = uids_kset;
->  	error = kobject_init_and_add(kobj, &uids_ktype, NULL, "%d", up->uid);
->  	if (error) {
-> @@ -281,6 +289,8 @@ static void remove_user_sysfs_dir(struct work_struct *w)
->  	unsigned long flags;
->  	int remove_user = 0;
->  
-> +	if (up->user_ns != &init_user_ns)
-> +		return;
->  	/* Make uid_hash_remove() + sysfs_remove_file() + kobject_del()
->  	 * atomic.
->  	 */
-> -- 
-> 1.5.4.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+RmlybXdhcmUgdHlwZTogTGludXhCSU9TCkxpbnV4IHZlcnNpb24gMi42LjI1LjIwIChya0Bu
+b2lzZSkgKGdjYyB2ZXJzaW9uIDQuMy4yIChHQ0MpICkgIzEgU01QIFBSRUVNUFQgTW9uIERl
+YyA4IDExOjAxOjA5IENTVCAyMDA4CkNvbW1hbmQgbGluZTogIGVhcmx5cHJpbnRrPXNlcmlh
+bCx0dHlTMCwxMTUyMDAgY29uc29sZT10dHlTMCwxMTUyMDAgaXA9ZGhjcCByZWJvb3Q9a2Jk
+IGVsZXZhdG9yPW5vb3AKQklPUy1wcm92aWRlZCBwaHlzaWNhbCBSQU0gbWFwOgogQklPUy1l
+ODIwOiAwMDAwMDAwMDAwMDAwMDAwIC0gMDAwMDAwMDAwMDAwMTAwMCAocmVzZXJ2ZWQpCiBC
+SU9TLWU4MjA6IDAwMDAwMDAwMDAwMDEwMDAgLSAwMDAwMDAwMDAwMGEwMDAwICh1c2FibGUp
+CiBCSU9TLWU4MjA6IDAwMDAwMDAwMDAwYzAwMDAgLSAwMDAwMDAwMDAwMGYwMDAwICh1c2Fi
+bGUpCiBCSU9TLWU4MjA6IDAwMDAwMDAwMDAwZjAwMDAgLSAwMDAwMDAwMDAwMTAwMDAwIChy
+ZXNlcnZlZCkKIEJJT1MtZTgyMDogMDAwMDAwMDAwMDEwMDAwMCAtIDAwMDAwMDAwYzAwMDAw
+MDAgKHVzYWJsZSkKIEJJT1MtZTgyMDogMDAwMDAwMDEwMDAwMDAwMCAtIDAwMDAwMDAxNDAw
+MDAwMDAgKHVzYWJsZSkKY29uc29sZSBbZWFybHlzZXIwXSBlbmFibGVkCmVuZF9wZm5fbWFw
+ID0gMTMxMDcyMAprZXJuZWwgZGlyZWN0IG1hcHBpbmcgdGFibGVzIHVwIHRvIDE0MDAwMDAw
+MCBAIDgwMDAtZTAwMApETUkgbm90IHByZXNlbnQgb3IgaW52YWxpZC4KZWFybHkgcmVzOiAw
+IFswLWZmZl0gQklPUyBkYXRhIHBhZ2UKZWFybHkgcmVzOiAxIFs2MDAwLTdmZmZdIFNNUF9U
+UkFNUE9MSU5FCmVhcmx5IHJlczogMiBbMjAwMDAwLTZmMmM2Zl0gVEVYVCBEQVRBIEJTUwpl
+YXJseSByZXM6IDMgWzgwMDAwMC05YmRhMjddIFJBTURJU0sKZWFybHkgcmVzOiA0IFs4MDAw
+LWNmZmZdIFBHVEFCTEUKWm9uZSBQRk4gcmFuZ2VzOgogIERNQSAgICAgICAgICAgICAxIC0+
+ICAgICA0MDk2CiAgRE1BMzIgICAgICAgIDQwOTYgLT4gIDEwNDg1NzYKICBOb3JtYWwgICAg
+MTA0ODU3NiAtPiAgMTMxMDcyMApNb3ZhYmxlIHpvbmUgc3RhcnQgUEZOIGZvciBlYWNoIG5v
+ZGUKZWFybHlfbm9kZV9tYXBbNF0gYWN0aXZlIFBGTiByYW5nZXMKICAgIDA6ICAgICAgICAx
+IC0+ICAgICAgMTYwCiAgICAwOiAgICAgIDE5MiAtPiAgICAgIDI0MAogICAgMDogICAgICAy
+NTYgLT4gICA3ODY0MzIKICAgIDA6ICAxMDQ4NTc2IC0+ICAxMzEwNzIwCkludGVsIE11bHRp
+UHJvY2Vzc29yIFNwZWNpZmljYXRpb24gdjEuNApNUFRBQkxFOiBPRU0gSUQ6IFRZQU4gICAg
+IE1QVEFCTEU6IFByb2R1Y3QgSUQ6IFMyODkyICAgICAgICBNUFRBQkxFOiBBUElDIGF0OiAw
+eEZFRTAwMDAwClByb2Nlc3NvciAjMCAoQm9vdHVwLUNQVSkKUHJvY2Vzc29yICMxCkkvTyBB
+UElDICMyIGF0IDB4RkQyMDAwMDAuCkkvTyBBUElDICMzIGF0IDB4RkUxMDAwMDAuCkkvTyBB
+UElDICM0IGF0IDB4RkUxMDEwMDAuClNldHRpbmcgQVBJQyByb3V0aW5nIHRvIGZsYXQKUHJv
+Y2Vzc29yczogMgpBbGxvY2F0aW5nIFBDSSByZXNvdXJjZXMgc3RhcnRpbmcgYXQgYzQwMDAw
+MDAgKGdhcDogYzAwMDAwMDA6NDAwMDAwMDApClBFUkNQVTogQWxsb2NhdGluZyAzMzczNiBi
+eXRlcyBvZiBwZXIgY3B1IGRhdGEKQnVpbHQgMSB6b25lbGlzdHMgaW4gWm9uZSBvcmRlciwg
+bW9iaWxpdHkgZ3JvdXBpbmcgb24uICBUb3RhbCBwYWdlczogMTAyODQ0MgpLZXJuZWwgY29t
+bWFuZCBsaW5lOiAgZWFybHlwcmludGs9c2VyaWFsLHR0eVMwLDExNTIwMCBjb25zb2xlPXR0
+eVMwLDExNTIwMCBpcD1kaGNwIHJlYm9vdD1rYmQgZWxldmF0b3I9bm9vcApJbml0aWFsaXpp
+bmcgQ1BVIzAKUElEIGhhc2ggdGFibGUgZW50cmllczogNDA5NiAob3JkZXI6IDEyLCAzMjc2
+OCBieXRlcykKVFNDIGNhbGlicmF0ZWQgYWdhaW5zdCBQSVQKTWFya2luZyBUU0MgdW5zdGFi
+bGUgZHVlIHRvIFRTQ3MgdW5zeW5jaHJvbml6ZWQKdGltZS5jOiBEZXRlY3RlZCAyNjEzLjQz
+NyBNSHogcHJvY2Vzc29yLgpDb25zb2xlOiBjb2xvdXIgZHVtbXkgZGV2aWNlIDgweDI1CmNv
+bnNvbGUgaGFuZG92ZXI6IGJvb3QgW2Vhcmx5c2VyMF0gLT4gcmVhbCBbdHR5UzBdCkRlbnRy
+eSBjYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDUyNDI4OCAob3JkZXI6IDEwLCA0MTk0MzA0
+IGJ5dGVzKQpJbm9kZS1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDI2MjE0NCAob3JkZXI6
+IDksIDIwOTcxNTIgYnl0ZXMpCkNoZWNraW5nIGFwZXJ0dXJlLi4uCk5vZGUgMDogYXBlcnR1
+cmUgQCBmODAwMDAwMCBzaXplIDY0IE1CCk1lbW9yeTogNDEwODM2NGsvNTI0Mjg4MGsgYXZh
+aWxhYmxlICgzMTc1ayBrZXJuZWwgY29kZSwgODUxMDRrIHJlc2VydmVkLCAxMDk4ayBkYXRh
+LCAyNjBrIGluaXQpClNMVUI6IEdlbnNsYWJzPTEyLCBIV2FsaWduPTY0LCBPcmRlcj0wLTEs
+IE1pbk9iamVjdHM9NCwgQ1BVcz0yLCBOb2Rlcz0xCkNhbGlicmF0aW5nIGRlbGF5IHVzaW5n
+IHRpbWVyIHNwZWNpZmljIHJvdXRpbmUuLiA1MjMxLjc1IEJvZ29NSVBTIChscGo9MjYxNTg3
+NikKTW91bnQtY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAyNTYKQ1BVOiBMMSBJIENhY2hl
+OiA2NEsgKDY0IGJ5dGVzL2xpbmUpLCBEIGNhY2hlIDY0SyAoNjQgYnl0ZXMvbGluZSkKQ1BV
+OiBMMiBDYWNoZTogMTAyNEsgKDY0IGJ5dGVzL2xpbmUpCkNQVTogUGh5c2ljYWwgUHJvY2Vz
+c29yIElEOiAwCkNQVTogUHJvY2Vzc29yIENvcmUgSUQ6IDAKRnJlZWluZyBTTVAgYWx0ZXJu
+YXRpdmVzOiAyMmsgZnJlZWQKRXh0SU5UIGluIGhhcmR3YXJlIGFuZCBNUCB0YWJsZSBkaWZm
+ZXIKVXNpbmcgbG9jYWwgQVBJQyB0aW1lciBpbnRlcnJ1cHRzLgpEZXRlY3RlZCAxMi41NjQg
+TUh6IEFQSUMgdGltZXIuCkJvb3RpbmcgcHJvY2Vzc29yIDEvMiBBUElDIDB4MQpJbml0aWFs
+aXppbmcgQ1BVIzEKQ2FsaWJyYXRpbmcgZGVsYXkgdXNpbmcgdGltZXIgc3BlY2lmaWMgcm91
+dGluZS4uIDUyMjYuNzEgQm9nb01JUFMgKGxwaj0yNjEzMzU1KQpDUFU6IEwxIEkgQ2FjaGU6
+IDY0SyAoNjQgYnl0ZXMvbGluZSksIEQgY2FjaGUgNjRLICg2NCBieXRlcy9saW5lKQpDUFU6
+IEwyIENhY2hlOiAxMDI0SyAoNjQgYnl0ZXMvbGluZSkKQ1BVOiBQaHlzaWNhbCBQcm9jZXNz
+b3IgSUQ6IDAKQ1BVOiBQcm9jZXNzb3IgQ29yZSBJRDogMQpEdWFsIENvcmUgQU1EIE9wdGVy
+b24odG0pIFByb2Nlc3NvciAyODUgc3RlcHBpbmcgMDIKQnJvdWdodCB1cCAyIENQVXMKbmV0
+X25hbWVzcGFjZTogMjk2IGJ5dGVzCk5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkg
+MTYKUENJOiBVc2luZyBjb25maWd1cmF0aW9uIHR5cGUgMQpTQ1NJIHN1YnN5c3RlbSBpbml0
+aWFsaXplZApQQ0k6IFByb2JpbmcgUENJIGhhcmR3YXJlClBDSTogVHJhbnNwYXJlbnQgYnJp
+ZGdlIC0gMDAwMDowMDowOS4wClBDSTogRGlzY292ZXJlZCBwcmltYXJ5IHBlZXIgYnVzIDQw
+IFtJUlFdClBDSTogVXNpbmcgSVJRIHJvdXRlciBkZWZhdWx0IFsxMGRlLzAwNWNdIGF0IDAw
+MDA6MDA6MDkuMApQQ0ktPkFQSUMgSVJRIHRyYW5zZm9ybTogMDAwMDowMDowMS4xW0FdIC0+
+IElSUSAxMApQQ0ktPkFQSUMgSVJRIHRyYW5zZm9ybTogMDAwMDowMDowMi4wW0FdIC0+IElS
+USAyMQpQQ0ktPkFQSUMgSVJRIHRyYW5zZm9ybTogMDAwMDowMDowMi4xW0JdIC0+IElSUSAy
+MApQQ0ktPkFQSUMgSVJRIHRyYW5zZm9ybTogMDAwMDowMDowNy4wW0FdIC0+IElSUSAyMwpQ
+Q0ktPkFQSUMgSVJRIHRyYW5zZm9ybTogMDAwMDowMDowOC4wW0FdIC0+IElSUSAyMgpQQ0kt
+PkFQSUMgSVJRIHRyYW5zZm9ybTogMDAwMDowMTowNi4wW0FdIC0+IElSUSAxOApQQ0ktPkFQ
+SUMgSVJRIHRyYW5zZm9ybTogMDAwMDowMTowOC4wW0FdIC0+IElSUSAxOApQQ0ktPkFQSUMg
+SVJRIHRyYW5zZm9ybTogMDAwMDowMzowMC4wW0FdIC0+IElSUSAxOApQQ0ktPkFQSUMgSVJR
+IHRyYW5zZm9ybTogMDAwMDo0MjowOS4wW0FdIC0+IElSUSAyOApQQ0ktPkFQSUMgSVJRIHRy
+YW5zZm9ybTogMDAwMDo0MjowOS4xW0JdIC0+IElSUSAyOQpQQ0ktRE1BOiBEaXNhYmxpbmcg
+QUdQLgpQQ0ktRE1BOiBhcGVydHVyZSBiYXNlIEAgZjgwMDAwMDAgc2l6ZSA2NTUzNiBLQgpQ
+Q0ktRE1BOiB1c2luZyBHQVJUIElPTU1VLgpQQ0ktRE1BOiBSZXNlcnZpbmcgNjRNQiBvZiBJ
+T01NVSBhcmVhIGluIHRoZSBBR1AgYXBlcnR1cmUKUENJOiBCcmlkZ2U6IDAwMDA6MDA6MDku
+MAogIElPIHdpbmRvdzogMTAwMC0xZmZmCiAgTUVNIHdpbmRvdzogMHhmYzAwMDAwMC0weGZk
+MGZmZmZmCiAgUFJFRkVUQ0ggd2luZG93OiBkaXNhYmxlZC4KUENJOiBCcmlkZ2U6IDAwMDA6
+MDA6MGQuMAogIElPIHdpbmRvdzogZGlzYWJsZWQuCiAgTUVNIHdpbmRvdzogZGlzYWJsZWQu
+CiAgUFJFRkVUQ0ggd2luZG93OiBkaXNhYmxlZC4KUENJOiBCcmlkZ2U6IDAwMDA6MDA6MGUu
+MAogIElPIHdpbmRvdzogZGlzYWJsZWQuCiAgTUVNIHdpbmRvdzogMHhmZDEwMDAwMC0weGZk
+MWZmZmZmCiAgUFJFRkVUQ0ggd2luZG93OiAweDAwMDAwMDAwZmQ4MDAwMDAtMHgwMDAwMDAw
+MGZkZmZmZmZmClBDSTogQnJpZGdlOiAwMDAwOjQwOjAxLjAKICBJTyB3aW5kb3c6IGRpc2Fi
+bGVkLgogIE1FTSB3aW5kb3c6IGRpc2FibGVkLgogIFBSRUZFVENIIHdpbmRvdzogZGlzYWJs
+ZWQuClBDSTogQnJpZGdlOiAwMDAwOjQwOjAyLjAKICBJTyB3aW5kb3c6IGRpc2FibGVkLgog
+IE1FTSB3aW5kb3c6IDB4ZmUwMDAwMDAtMHhmZTBmZmZmZgogIFBSRUZFVENIIHdpbmRvdzog
+MHgwMDAwMDAwMGM0MDAwMDAwLTB4MDAwMDAwMDBjNDBmZmZmZgpORVQ6IFJlZ2lzdGVyZWQg
+cHJvdG9jb2wgZmFtaWx5IDIKSVAgcm91dGUgY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAx
+MzEwNzIgKG9yZGVyOiA4LCAxMDQ4NTc2IGJ5dGVzKQpUQ1AgZXN0YWJsaXNoZWQgaGFzaCB0
+YWJsZSBlbnRyaWVzOiAyNjIxNDQgKG9yZGVyOiAxMCwgNDE5NDMwNCBieXRlcykKVENQIGJp
+bmQgaGFzaCB0YWJsZSBlbnRyaWVzOiA2NTUzNiAob3JkZXI6IDgsIDEwNDg1NzYgYnl0ZXMp
+ClRDUDogSGFzaCB0YWJsZXMgY29uZmlndXJlZCAoZXN0YWJsaXNoZWQgMjYyMTQ0IGJpbmQg
+NjU1MzYpClRDUCByZW5vIHJlZ2lzdGVyZWQKY2hlY2tpbmcgaWYgaW1hZ2UgaXMgaW5pdHJh
+bWZzLi4uIGl0IGlzCkZyZWVpbmcgaW5pdHJkIG1lbW9yeTogMTc4MmsgZnJlZWQKVG90YWwg
+SHVnZVRMQiBtZW1vcnkgYWxsb2NhdGVkLCAwCkluc3RhbGxpbmcga25mc2QgKGNvcHlyaWdo
+dCAoQykgMTk5NiBva2lyQG1vbmFkLnN3Yi5kZSkuClNHSSBYRlMgd2l0aCByZWFsdGltZSwg
+bGFyZ2UgYmxvY2svaW5vZGUgbnVtYmVycywgbm8gZGVidWcgZW5hYmxlZAppbyBzY2hlZHVs
+ZXIgbm9vcCByZWdpc3RlcmVkIChkZWZhdWx0KQppbyBzY2hlZHVsZXIgYW50aWNpcGF0b3J5
+IHJlZ2lzdGVyZWQKaW8gc2NoZWR1bGVyIGRlYWRsaW5lIHJlZ2lzdGVyZWQKaW8gc2NoZWR1
+bGVyIGNmcSByZWdpc3RlcmVkCnBjaSAwMDAwOjAwOjAwLjA6IEVuYWJsaW5nIEhUIE1TSSBN
+YXBwaW5nCnBjaSAwMDAwOjAwOjA3LjA6IEVuYWJsaW5nIEhUIE1TSSBNYXBwaW5nCnBjaSAw
+MDAwOjAwOjA5LjA6IEVuYWJsaW5nIEhUIE1TSSBNYXBwaW5nCnBjaSAwMDAwOjAwOjBkLjA6
+IEVuYWJsaW5nIEhUIE1TSSBNYXBwaW5nCnBjaSAwMDAwOjAwOjBkLjA6IEZvdW5kIGVuYWJs
+ZWQgSFQgTVNJIE1hcHBpbmcKcGNpIDAwMDA6MDA6MGUuMDogRW5hYmxpbmcgSFQgTVNJIE1h
+cHBpbmcKcGNpIDAwMDA6MDA6MGUuMDogRm91bmQgZW5hYmxlZCBIVCBNU0kgTWFwcGluZwpw
+Y2kgMDAwMDowMTowOC4wOiBGaXJtd2FyZSBsZWZ0IGUxMDAgaW50ZXJydXB0cyBlbmFibGVk
+OyBkaXNhYmxpbmcKcGNpIDAwMDA6NDA6MDEuMDogTVNJIHF1aXJrIGRldGVjdGVkOyBzdWJv
+cmRpbmF0ZSBNU0kgZGlzYWJsZWQKcGNpIDAwMDA6NDA6MDEuMDogQU1EODEzMSByZXYgMTIg
+ZGV0ZWN0ZWQ7IGRpc2FibGluZyBQQ0ktWCBNTVJCQwpwY2kgMDAwMDo0MDowMi4wOiBNU0kg
+cXVpcmsgZGV0ZWN0ZWQ7IHN1Ym9yZGluYXRlIE1TSSBkaXNhYmxlZApwY2kgMDAwMDo0MDow
+Mi4wOiBBTUQ4MTMxIHJldiAxMiBkZXRlY3RlZDsgZGlzYWJsaW5nIFBDSS1YIE1NUkJDCmFz
+c2lnbl9pbnRlcnJ1cHRfbW9kZSBGb3VuZCBNU0kgY2FwYWJpbGl0eQphc3NpZ25faW50ZXJy
+dXB0X21vZGUgRm91bmQgTVNJIGNhcGFiaWxpdHkKUmVhbCBUaW1lIENsb2NrIERyaXZlciB2
+MS4xMmFjCkxpbnV4IGFncGdhcnQgaW50ZXJmYWNlIHYwLjEwMwpTZXJpYWw6IDgyNTAvMTY1
+NTAgZHJpdmVyICRSZXZpc2lvbjogMS45MCAkIDQgcG9ydHMsIElSUSBzaGFyaW5nIGVuYWJs
+ZWQK77+9c2VyaWFsODI1MDogdHR5UzAgYXQgSS9PIDB4M2Y4IChpcnEgPSA0KSBpcyBhIDE2
+NTUwQQpzZXJpYWw4MjUwOiB0dHlTMSBhdCBJL08gMHgyZjggKGlycSA9IDMpIGlzIGEgMTY1
+NTBBCmJyZDogbW9kdWxlIGxvYWRlZApsb29wOiBtb2R1bGUgbG9hZGVkCnRnMy5jOnYzLjkx
+IChBcHJpbCAxOCwgMjAwOCkKZXRoMDogVGlnb24zIFtwYXJ0bm8oQkNNOTU3MDRBNykgcmV2
+IDIwMDMgUEhZKDU3MDQpXSAoUENJWDoxMDBNSHo6NjQtYml0KSAxMC8xMDAvMTAwMEJhc2Ut
+VCBFdGhlcm5ldCAwMDplMDo4MTozMDozMjoxNgpldGgwOiBSWGNzdW1zWzFdIExpbmtDaGdS
+RUdbMF0gTUlpcnFbMF0gQVNGWzBdIFdpcmVTcGVlZFsxXSBUU09jYXBbMV0KZXRoMDogZG1h
+X3J3Y3RybFs3NjlmNDAwMF0gZG1hX21hc2tbNjQtYml0XQpldGgxOiBUaWdvbjMgW3BhcnRu
+byhCQ005NTcwNEE3KSByZXYgMjAwMyBQSFkoNTcwNCldIChQQ0lYOjEwME1Iejo2NC1iaXQp
+IDEwLzEwMC8xMDAwQmFzZS1UIEV0aGVybmV0IDAwOmUwOjgxOjMwOjMyOjE3CmV0aDE6IFJY
+Y3N1bXNbMV0gTGlua0NoZ1JFR1swXSBNSWlycVswXSBBU0ZbMF0gV2lyZVNwZWVkWzFdIFRT
+T2NhcFsxXQpldGgxOiBkbWFfcndjdHJsWzc2OWY0MDAwXSBkbWFfbWFza1s2NC1iaXRdClVu
+aWZvcm0gTXVsdGktUGxhdGZvcm0gRS1JREUgZHJpdmVyCmlkZTogQXNzdW1pbmcgMzNNSHog
+c3lzdGVtIGJ1cyBzcGVlZCBmb3IgUElPIG1vZGVzOyBvdmVycmlkZSB3aXRoIGlkZWJ1cz14
+eApORk9SQ0UtQ0s4MDQ6IDAwMDA6MDA6MDYuMCAocmV2IGEyKSBVRE1BMTMzIGNvbnRyb2xs
+ZXIKTkZPUkNFLUNLODA0OiBJREUgY29udHJvbGxlciAoMHgxMGRlOjB4MDA1MyByZXYgMHhh
+MikgYXQgIFBDSSBzbG90IDAwMDA6MDA6MDYuMApORk9SQ0UtQ0s4MDQ6IG5vdCAxMDAlIG5h
+dGl2ZSBtb2RlOiB3aWxsIHByb2JlIGlycXMgbGF0ZXIKICAgIGlkZTA6IEJNLURNQSBhdCAw
+eDMwMjAtMHgzMDI3LCBCSU9TIHNldHRpbmdzOiBoZGE6UElPLCBoZGI6UElPCiAgICBpZGUx
+OiBCTS1ETUEgYXQgMHgzMDI4LTB4MzAyZiwgQklPUyBzZXR0aW5nczogaGRjOlBJTywgaGRk
+OlBJTwozd2FyZSA5MDAwIFN0b3JhZ2UgQ29udHJvbGxlciBkZXZpY2UgZHJpdmVyIGZvciBM
+aW51eCB2Mi4yNi4wMi4wMTAuCkRyaXZlciAnc2QnIG5lZWRzIHVwZGF0aW5nIC0gcGxlYXNl
+IHVzZSBidXNfdHlwZSBtZXRob2RzClNDU0kgTWVkaWEgQ2hhbmdlciBkcml2ZXIgdjAuMjUK
+RHJpdmVyICdjaCcgbmVlZHMgdXBkYXRpbmcgLSBwbGVhc2UgdXNlIGJ1c190eXBlIG1ldGhv
+ZHMKc2F0YV9udiAwMDAwOjAwOjA3LjA6IFVzaW5nIEFETUEgbW9kZQpzY3NpMCA6IHNhdGFf
+bnYKQlVHOiB1bmFibGUgdG8gaGFuZGxlIGtlcm5lbCBOVUxMIHBvaW50ZXIgZGVyZWZlcmVu
+Y2UgYXQgMDAwMDAwMDAwMDAwMDAwMApJUDogWzxmZmZmZmZmZjgwNDBhOTgzPl0gYXR0cmli
+dXRlX2NvbnRhaW5lcl9hZGRfZGV2aWNlKzB4MzMvMHgxNDAKUEdEIDAKT29wczogMDAwMCBb
+MV0gUFJFRU1QVCBTTVAKQ1BVIDEKTW9kdWxlcyBsaW5rZWQgaW46ClBpZDogMSwgY29tbTog
+c3dhcHBlciBOb3QgdGFpbnRlZCAyLjYuMjUuMjAgIzEKUklQOiAwMDEwOls8ZmZmZmZmZmY4
+MDQwYTk4Mz5dICBbPGZmZmZmZmZmODA0MGE5ODM+XSBhdHRyaWJ1dGVfY29udGFpbmVyX2Fk
+ZF9kZXZpY2UrMHgzMy8weDE0MApSU1A6IDAwMDA6ZmZmZjgxMDEzZmMzM2JlMCAgRUZMQUdT
+OiAwMDAxMDI0NgpSQVg6IDAwMDAwMDAwMDAwMDAwMDAgUkJYOiAwMDAwMDAwMDAwMDAwMDAw
+IFJDWDogZmZmZjgxMDEzZWQxZTM4MApSRFg6IDAwMDAwMDAwMDAwMDBjNjQgUlNJOiBmZmZm
+ZmZmZjgwNDBhYmQwIFJESTogZmZmZmZmZmY4MDYxNzlmMApSQlA6IGZmZmY4MTAxM2VjMjMw
+MDAgUjA4OiAwMDAwMDAwMDAwMDAwMDAwIFIwOTogZmZmZjgxMDEzZWMzNGQ4OApSMTA6IDAw
+MDAwMDAwMDAwMDAwMGYgUjExOiAwMDAwMDAwMDAwMDAwMDAwIFIxMjogMDAwMDAwMDAwMDAw
+MDAwMApSMTM6IGZmZmY4MTAxM2VjMjMxNzAgUjE0OiBmZmZmZmZmZjgwNDBhYmQwIFIxNTog
+ZmZmZjgxMDEzZWMyMzJhOApGUzogIDAwMDAwMDAwMDAwMDAwMDAoMDAwMCkgR1M6ZmZmZjgx
+MDEzZmMwZTM4MCgwMDAwKSBrbmxHUzowMDAwMDAwMDAwMDAwMDAwCkNTOiAgMDAxMCBEUzog
+MDAxOCBFUzogMDAxOCBDUjA6IDAwMDAwMDAwODAwNTAwM2IKQ1IyOiAwMDAwMDAwMDAwMDAw
+MDAwIENSMzogMDAwMDAwMDAwMDIwMTAwMCBDUjQ6IDAwMDAwMDAwMDAwMDA2ZTAKRFIwOiAw
+MDAwMDAwMDAwMDAwMDAwIERSMTogMDAwMDAwMDAwMDAwMDAwMCBEUjI6IDAwMDAwMDAwMDAw
+MDAwMDAKRFIzOiAwMDAwMDAwMDAwMDAwMDAwIERSNjogMDAwMDAwMDBmZmZmMGZmMCBEUjc6
+IDAwMDAwMDAwMDAwMDA0MDAKUHJvY2VzcyBzd2FwcGVyIChwaWQ6IDEsIHRocmVhZGluZm8g
+ZmZmZjgxMDEzZmMzMjAwMCwgdGFzayBmZmZmODEwMTNmYzMwMDAwKQpTdGFjazogIDAwMDAw
+MDAwMDAwMDAwMDAgZmZmZjgxMDEzZWMyMzE3MCBmZmZmODEwMTNlYzIzMDAwIDAwMDAwMDAw
+MDAwMDAwMDAKIGZmZmZmZmZmODA2MTllODAgZmZmZjgxMDEzZWMyMzM5MCBmZmZmODEwMTNl
+YzIzMDAwIGZmZmZmZmZmODA0Mzk5NTEKIGZmZmZmZmZmODA2MTk5NjAgMDAwMDAwMDAwMDAw
+MDAwMCBmZmZmODEwMTNlYzIzMDAwIGZmZmY4MTAxM2VjMjMxNzAKQ2FsbCBUcmFjZToKIFs8
+ZmZmZmZmZmY4MDQzOTk1MT5dID8gc2NzaV9zeXNmc19hZGRfaG9zdCsweDFhMS8weDFkMAog
+WzxmZmZmZmZmZjgwNDJmMWYxPl0gPyBzY3NpX2FkZF9ob3N0KzB4MTQxLzB4MjAwCiBbPGZm
+ZmZmZmZmODA0NTU1NTg+XSA/IGF0YV9zY3NpX2FkZF9ob3N0cysweDg4LzB4MTEwCiBbPGZm
+ZmZmZmZmODA0NTIyMjQ+XSA/IGF0YV9ob3N0X3JlZ2lzdGVyKzB4ODQvMHgyZjAKIFs8ZmZm
+ZmZmZmY4MDQ1MjU3NT5dID8gYXRhX2hvc3RfYWN0aXZhdGUrMHhlNS8weDE0MAogWzxmZmZm
+ZmZmZjgwNDYwZDZkPl0gPyBudl9pbml0X29uZSsweDIxZC8weDNlMAogWzxmZmZmZmZmZjgw
+M2Q2OWZjPl0gPyBwY2lfZGV2aWNlX3Byb2JlKzB4N2MvMHhhMAogWzxmZmZmZmZmZjgwNDA3
+MWJlPl0gPyBkcml2ZXJfcHJvYmVfZGV2aWNlKzB4OWUvMHgxZDAKIFs8ZmZmZmZmZmY4MDQw
+NzJmMD5dID8gX19kcml2ZXJfYXR0YWNoKzB4MC8weGIwCiBbPGZmZmZmZmZmODA0MDczOWI+
+XSA/IF9fZHJpdmVyX2F0dGFjaCsweGFiLzB4YjAKIFs8ZmZmZmZmZmY4MDQwNjk0Yj5dID8g
+YnVzX2Zvcl9lYWNoX2RldisweDViLzB4ODAKIFs8ZmZmZmZmZmY4MDI4Y2QzNT5dID8ga21l
+bV9jYWNoZV9hbGxvYysweDY1LzB4YTAKIFs8ZmZmZmZmZmY4MDQwNjIxOD5dID8gYnVzX2Fk
+ZF9kcml2ZXIrMHgxZTgvMHgyNjAKIFs8ZmZmZmZmZmY4MDQwNzU0Zj5dID8gZHJpdmVyX3Jl
+Z2lzdGVyKzB4M2YvMHgxMDAKIFs8ZmZmZmZmZmY4MDNkNmNhOD5dID8gX19wY2lfcmVnaXN0
+ZXJfZHJpdmVyKzB4NTgvMHhhMAogWzxmZmZmZmZmZjgwNjRkNDJkPl0gPyBrZXJuZWxfaW5p
+dCsweDEyZC8weDJmMwogWzxmZmZmZmZmZjgwMjJlMzliPl0gPyBmaW5pc2hfdGFza19zd2l0
+Y2grMHgzYi8weGMwCiBbPGZmZmZmZmZmODAyMGQwZjg+XSA/IGNoaWxkX3JpcCsweGEvMHgx
+MgogWzxmZmZmZmZmZjgwNjRkMzAwPl0gPyBrZXJuZWxfaW5pdCsweDAvMHgyZjMKIFs8ZmZm
+ZmZmZmY4MDIwZDBlZT5dID8gY2hpbGRfcmlwKzB4MC8weDEyCgoKQ29kZTogNTUgNDkgODkg
+ZmQgNDggYzcgYzcgZjAgNzkgNjEgODAgNGQgOGQgYmQgMzggMDEgMDAgMDAgNDEgNTQgNTUg
+NTMgNDggODMgZWMgMDggZTggYjkgYWUgMTAgMDAgNDggOGIgMWQgYjIgNjQgMmQgMDAgZWIg
+MDMgNDggODkgYzMgPDQ4PiA4YiAwMyA0OCA4MSBmYiAzMCAwZSA2ZSA4MCAwZiAxOCAwOCA3
+NCAyNiBmNiA0MyA1OCAwMSA3NSBlOApSSVAgIFs8ZmZmZmZmZmY4MDQwYTk4Mz5dIGF0dHJp
+YnV0ZV9jb250YWluZXJfYWRkX2RldmljZSsweDMzLzB4MTQwCiBSU1AgPGZmZmY4MTAxM2Zj
+MzNiZTA+CkNSMjogMDAwMDAwMDAwMDAwMDAwMAotLS1bIGVuZCB0cmFjZSBjY2I0MDcwZmQy
+ODVmOTdlIF0tLS0KS2VybmVsIHBhbmljIC0gbm90IHN5bmNpbmc6IEF0dGVtcHRlZCB0byBr
+aWxsIGluaXQhCg==
+--------------080908050109050508040605--
 
--- 
-James Morris
-<jmorris@namei.org>
