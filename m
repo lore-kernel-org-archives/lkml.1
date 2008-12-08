@@ -1,119 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbYLHIUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751666AbYLHIc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777AbYLHIUP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 03:20:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbYLHIT7
+	id S1751666AbYLHIc5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 03:32:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbYLHIcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 03:19:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49978 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750848AbYLHIT6 (ORCPT
+	Mon, 8 Dec 2008 03:32:47 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:54273 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750781AbYLHIcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 03:19:58 -0500
-Date: Mon, 8 Dec 2008 00:19:40 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] percpu_counter: FBC_BATCH should be a variable
-Message-Id: <20081208001940.94737420.akpm@linux-foundation.org>
-In-Reply-To: <493CD530.4020808@cosmosbay.com>
-References: <4939513C.3090101@cosmosbay.com>
-	<493B9699.8080603@cosmosbay.com>
-	<20081207090918.595627b2.akpm@linux-foundation.org>
-	<493C1632.2000901@cosmosbay.com>
-	<20081207203244.10372834.akpm@linux-foundation.org>
-	<493CD530.4020808@cosmosbay.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Dec 2008 03:32:46 -0500
+In-Reply-To: <20081208012211.GA23106@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       Stephane Eranian <eranian@googlemail.com>, Peter Anvin <hpa@zytor.com>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-kernel-owner@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Robert Richter <robert.richter@amd.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+MIME-Version: 1.0
+Subject: Re: [patch] Performance Counters for Linux, v2
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF9822E5EF.E1B46155-ON87257519.002E51BD-88257519.002EF09B@us.ibm.com>
+From: Corey J Ashford <cjashfor@us.ibm.com>
+Date: Mon, 8 Dec 2008 00:32:41 -0800
+X-MIMETrack: Serialize by Router on D03NM120/03/M/IBM(Release 8.0.1|February 07, 2008) at
+ 12/08/2008 01:32:41,
+	Serialize complete at 12/08/2008 01:32:41
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 08 Dec 2008 09:05:04 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
-
-> Andrew Morton a __crit :
-> > On Sun, 07 Dec 2008 19:30:10 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
-> > 
-> >>> Do
-> >>>
-> >>> 	$EDITOR  $(grep -l hotcpu_notifier */*.c)
-> >>>
-> >>> and you'll see lots of code gets it right, and lots of code gets it wrong.
-> >> I see nothing interesting, I must be blind.
-> >>
-> >> lib/percpu_counter.c: In function 'percpu_counter_startup':
-> >> lib/percpu_counter.c:158: error: 'percpu_counter_hotcpu_callback' undeclared (first use in this function)
-> >> lib/percpu_counter.c:158: error: (Each undeclared identifier is reported only once
-> >> lib/percpu_counter.c:158: error: for each function it appears in.)
-> >> make[1]: *** [lib/percpu_counter.o] Error 1
-> > 
-> > Perhaps you still had percpu_counter_hotcpu_callback inside #ifdef.
-> > 
-> > That a look at kernel/workqueue.c, fs/buffer.c.  No #ifdef CONFIG_HOTPLUG_CPU
-> > needed at all.
+linux-kernel-owner@vger.kernel.org wrote on 12/07/2008 05:22:12 PM:
+[snip]
 > 
-> We still need some #ifdef or we also must also delete them around "struct list_head list"
-> in include/linux/percpu_counter.h and grow struct percpu_counter.
+> The other big change is the support of virtual task counters via counter 
+
+> scheduling: a task can specify more counters than there are on the CPU, 
+> the kernel will then schedule the counters periodically to spread out hw 
+
+> resources. So for example if a task starts 6 counters on a CPU that has 
+> only two hardware counters, it still gets this output:
 > 
-> lib/percpu_counter.c: In function 'percpu_counter_hotcpu_callback':
-> lib/percpu_counter.c:137: error: 'struct percpu_counter' has no member named 'list'
-> lib/percpu_counter.c:137: warning: type defaults to 'int' in declaration of '__mptr'
-> lib/percpu_counter.c:137: warning: initialization from incompatible pointer type
-> ...
-> 
+>  counter[0 cycles              ]:   5204680573 , delta:   1733680843 
+events
+>  counter[1 instructions        ]:   1364468045 , delta:    454818351 
+events
+>  counter[2 cache-refs          ]:        12732 , delta:         4399 
+events
+>  counter[3 cache-misses        ]:         1009 , delta:          336 
+events
+>  counter[4 branch-instructions ]:    125993304 , delta:     42006998 
+events
+>  counter[5 branch-misses       ]:         1946 , delta:          649 
+events
+>
 
-Yes, this conditionality:
+Hello Ingo,
 
-struct percpu_counter {
-	spinlock_t lock;
-	s64 count;
-#ifdef CONFIG_HOTPLUG_CPU
-	struct list_head list;	/* All percpu_counters are on a list */
-#endif
-	s32 *counters;
-};
+I posted some questions about this capability in your proposal on LKML, 
+but I wasn't able to get the reply threaded in properly.  Could you take a 
+look at this post, please?
 
-mucked up our nice scheme.  Oh well.
+http://lkml.org/lkml/2008/12/5/299
 
-> +static void compute_batch_value(void)
-> +{
-> +	int nr = num_online_cpus();
-> +
-> +	percpu_counter_batch = max(32, nr*2);
-> +}
-> +
->  static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
->  					unsigned long action, void *hcpu)
->  {
-> +#ifdef CONFIG_HOTPLUG_CPU
->  	unsigned int cpu;
->  	struct percpu_counter *fbc;
->  
-> +	compute_batch_value();
->  	if (action != CPU_DEAD)
->  		return NOTIFY_OK;
->  
-> @@ -137,13 +146,14 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
->  		spin_unlock_irqrestore(&fbc->lock, flags);
->  	}
->  	mutex_unlock(&percpu_counters_lock);
-> +#endif
->  	return NOTIFY_OK;
->  }
->  
->  static int __init percpu_counter_startup(void)
->  {
-> +	compute_batch_value();
->  	hotcpu_notifier(percpu_counter_hotcpu_callback, 0);
->  	return 0;
->  }
->  module_init(percpu_counter_startup);
+Thanks for your consideration,
 
-compute_batch_value() can be __cpuinit, but I think we're close enough
-here ;)
+- Corey
 
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR 
+503-578-3507 
+cjashfor@us.ibm.com
