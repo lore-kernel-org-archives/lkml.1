@@ -1,89 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYLHQqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbYLHQxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754171AbYLHQqm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 11:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYLHQqb
+	id S1754065AbYLHQxY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 11:53:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYLHQxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 11:46:31 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:57177 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753258AbYLHQqa (ORCPT
+	Mon, 8 Dec 2008 11:53:13 -0500
+Received: from yw-out-2324.google.com ([74.125.46.28]:19660 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753343AbYLHQxM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 11:46:30 -0500
-Message-ID: <493D4F5C.7020606@s5r6.in-berlin.de>
-Date: Mon, 08 Dec 2008 17:46:20 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.17) Gecko/20080829 SeaMonkey/1.1.12
+	Mon, 8 Dec 2008 11:53:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=fvt4t8RnyV8u7BUOOFLh4lPBhxX/R2hWd05MK87TUEqzuIshqw0D273T7jDq0uBlyc
+         VK4uM8rvWFd/3oq+FggJLSIkvlfA0s0zo8wDa1HkyXV97kficqTYMuIavfmz2rAawuzO
+         77QbKoMR7Ew73d9UAc26XZe321psVk0Eg0Zxo=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Paul Collins <paul@burly.ondioline.org>
+Subject: Re: [REGRESSION] commit "ide: respect current DMA setting during resume" breaks resume on PowerBook G4
+Date: Mon, 8 Dec 2008 17:51:49 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rc6-next-20081128; KDE/4.1.3; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl
+References: <87wseb8mkm.fsf@burly.wgtn.ondioline.org>
+In-Reply-To: <87wseb8mkm.fsf@burly.wgtn.ondioline.org>
 MIME-Version: 1.0
-To: netdev@vger.kernel.org
-CC: Holger Hoffstaette <holger@wizards.de>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
-       stable@kernel.org
-Subject: Re: Nasty regression from .27.7 to .27.8: idle samba goes crazy
-References: <pan.2008.12.08.06.18.57.357875@wizards.de> <200812080834.22924.rjw@sisk.pl> <pan.2008.12.08.08.07.29.439625@wizards.de>
-In-Reply-To: <pan.2008.12.08.08.07.29.439625@wizards.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Content-Disposition: inline
+Message-Id: <200812081751.51063.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Holger Hoffstaette wrote at LKML:
-> On Mon, 08 Dec 2008 08:34:22 +0100, Rafael J. Wysocki wrote:
+On Monday 08 December 2008, Paul Collins wrote:
+> Commit e9eb8388306364295308132265c00bea685f409f ("ide: respect current
+> DMA setting during resume") breaks resume on my PowerBook G4.
 > 
->> On Monday, 8 of December 2008, Holger Hoffstaette wrote:
->>> Hi,
->>> 
->>> I just encountered a nasty symptom for the second time that has started to
->>> occur after updating my home server from vanilla 2.6.27.7 to .8 (same
->>> config).
->>> 
->>> A while after disconnecting a samba client, the smbd samba server
->>> process goes crazy and consumes 100% CPU. From that time on it is
->>> unkillable (kill -9 returns but the process continues to run). The only
->>> recourse is reboot, which works without problem (i.e. unmounting the
->>> served filesystems is apparently possible?). I tried to attach to the
->>> process with gdb but that just hung.
->>> 
->>> The system is a generic old single-core P4 box with a single SATA drive,
->>> Gentoo userland and Samba is 3.0.33 (in async mode). The kernel has no
->>> patches or binary drivers. It has been rock solid before the update and
->>> shows no other signs of weirdness in logs or otherwise. I downgraded to .7
->>> for now and will see what happens, but since it worked before I am certain
->>> that this is a regression in the .8 release.
->>> 
->>> The only commonality is a log entry by samba that seems to correlate with
->>> both occurrences:
->>> 
->>> [2008/12/08 01:02:52, 0] lib/util_sock.c:read_data(534)
->>>   read_data: read failure for 4 bytes to client 192.168.100.128. Error = No route to host
->>> 
->>> .128 is the Windows client machine (connected via a stable GigE link),
->>> which I shut down pretty much exactly 30 minutes before that (any 30
->>> minute timeouts in the kernel/network stack?). Both instances of these log
->>> entries correlate with the CPU spikes which I noticed in my MRTG graphs.
->>> 
->>> Any suspects or ideas?
->>> 
->>> thanks
->>> Holger
->> 
->> Please bisect.
+> I get a stream of the following:
 > 
-> I would love to try, but this is my "production server" (i.e. I need it
-> for real work) and I'll be traveling the next few days. I will try to
-> bisect after that (if nobody else has any ideas) but will have to make
-> sure the bug is actually reproducible after the timeout - for now I only
-> observed it by accident (via mrtg).
-> In the meantime maybe someone else will observe it as well.
+>     hda: task_out_intr: status=0x51 { DriveReady SeekComplete Error }
+>     hda: task_out_intr: error=0x04 { DriveStatusError }
+>     ide: failed opcode was: unknown
 > 
-> thanks
-> Holger
+> and generally the machine hangs, although once it reported
 > 
+>     ide0: reset: success
+> 
+> and resumed successfully.
 
-Added Cc: netdev, readded all other Cc's, quoted in full for netdev.
-Good luck,
+Sorry about this.  I'll send the following patch to Linus in few minutes...
+
+>From 1a659880ee755d96eeabe64bded059abed6d5ef5 Mon Sep 17 00:00:00 2001
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date: Mon, 8 Dec 2008 17:42:35 +0100
+Subject: [PATCH] Revert "ide: respect current DMA setting during resume"
+
+This reverts commit e9eb8388306364295308132265c00bea685f409f since
+it could break resume (thanks to Paul Collins for the report).
+
+I'll look into sorting this out properly for 2.6.29
+but for 2.6.28 it is the best to just revert my patch.
+
+Reported-by: Paul Collins <paul@burly.ondioline.org>
+Cc: rjw@sisk.pl
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-io.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+index 7d275b2..cc35d6d 100644
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -208,8 +208,10 @@ static ide_startstop_t ide_start_power_step(ide_drive_t *drive, struct request *
+ 		 */
+ 		if (drive->hwif->dma_ops == NULL)
+ 			break;
+-		if (drive->dev_flags & IDE_DFLAG_USING_DMA)
+-			ide_set_dma(drive);
++		/*
++		 * TODO: respect IDE_DFLAG_USING_DMA
++		 */
++		ide_set_dma(drive);
+ 		break;
+ 	}
+ 
 -- 
-Stefan Richter
--=====-==--- ==-- -=---
-http://arcgraph.de/sr/
+1.6.0.4
