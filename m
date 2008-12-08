@@ -1,378 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbYLHRpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751419AbYLHRsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752342AbYLHRpY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 12:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYLHRpJ
+	id S1751419AbYLHRsu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 12:48:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbYLHRsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 12:45:09 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:35846 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbYLHRpH (ORCPT
+	Mon, 8 Dec 2008 12:48:42 -0500
+Received: from rv-out-0506.google.com ([209.85.198.229]:7364 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbYLHRsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 12:45:07 -0500
-Subject: Re: [PATCH] percpu_counter: Fix __percpu_counter_sum()
-From: Mingming Cao <cmm@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org
-In-Reply-To: <20081206202233.3b74febc.akpm@linux-foundation.org>
-References: <4936D287.6090206@cosmosbay.com>
-	 <4936EB04.8000609@cosmosbay.com>
-	 <20081206202233.3b74febc.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Organization: IBM
-Date: Mon, 08 Dec 2008 09:44:58 -0800
-Message-Id: <1228758298.7096.5.camel@mingming-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 8 Dec 2008 12:48:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=GAQ0t/pSWcQNulBhkweEApPWV4De2tsuHzL9LP8xEzsrS9ggLy+XelPMgHCix1lkLw
+         X40HVGkW7se7gK0159IrbnFgZdZriyGuBB6Hym99NV746FXy5NNa8N59IstX1reCigAm
+         UPPP0+1c0YdgX0T8CR9x0fYq4op/Z+rdd2cjU=
+Message-ID: <2f11576a0812080948k135e15c5h2bc727355235f94@mail.gmail.com>
+Date: Tue, 9 Dec 2008 02:48:40 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rik van Riel" <riel@redhat.com>
+Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, "Peter Zijlstra" <peterz@infradead.org>,
+       "Johannes Weiner" <hannes@cmpxchg.org>,
+       "Christoph Lameter" <cl@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>
+In-Reply-To: <20081208220016.53FB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081129195357.813D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20081208205842.53F8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20081208220016.53FB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Google-Sender-Auth: bed77b15bf68f166
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-在 2008-12-06六的 20:22 -0800，Andrew Morton写道： 
-> On Wed, 03 Dec 2008 21:24:36 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
-> 
-> > Eric Dumazet a __crit :
-> > > Hi Andrew
-> > > 
-> > > While working on percpu_counter on net-next-2.6, I found
-> > > a CPU unplug race in percpu_counter_destroy()
-> > > 
-> > > (Very unlikely of course)
-> > > 
-> > > Thank you
-> > > 
-> > > [PATCH] percpu_counter: fix CPU unplug race in percpu_counter_destroy()
-> > > 
-> > > We should first delete the counter from percpu_counters list
-> > > before freeing memory, or a percpu_counter_hotcpu_callback()
-> > > could dereference a NULL pointer.
-> > > 
-> > > Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> > > ---
-> > > lib/percpu_counter.c |    4 ++--
-> > > 1 files changed, 2 insertions(+), 2 deletions(-)
-> > > 
-> > 
-> > Well, this percpu_counter stuff is simply not working at all.
-> > 
-> > We added some percpu_counters to network tree for 2.6.29 and we get
-> > drift bugs if calling __percpu_counter_sum() while some heavy duty
-> > benches are running, on a 8 cpus machine
-> > 
-> > 1) __percpu_counter_sum() is buggy, it should not write
-> > on per_cpu_ptr(fbc->counters, cpu), or another cpu
-> > could get its changes lost.
-> >
+> example,
+>
+>  Called zone_watermark_ok(zone, 2, pages_min, 0, 0);
+>  pages_min  = 64
+>  free pages = 80
+>
+> case A.
+>
+>     order    nr_pages
+>   --------------------
+>      2         5
+>      1        10
+>      0        30
+>
+>        -> zone_watermark_ok() return 1
+>
+> case B.
+>
+>     order    nr_pages
+>   --------------------
+>      3        10
+>      2         0
+>      1         0
+>      0         0
+>
+>        -> zone_watermark_ok() return 0
 
-Oh, you are right, I missed that, thanks for pointing this out.
+Doh!
+this example is obiously buggy.
 
-> 
-> > __percpu_counter_sum should be read only (const struct percpu_counter *fbc),
-> > and no locking needed.
-> 
-> No, we can't do this - it will break ext4.
-> 
-
-Yes, the needs was coming from the ext4 delayed allocation needs more
-accurate free blocks counter to prevent too late ENOSPC issue.  The
-intention was trying to get percpu_counter_read_positive()  be more
-accurate so that ext4 could avoid going to the slow path very often.
-
-But I overlooked that the update to the local counter race issue. Sorry
-about it!
-
-> Take a closer look at 1f7c14c62ce63805f9574664a6c6de3633d4a354 and at
-> e8ced39d5e8911c662d4d69a342b9d053eaaac4e.
-> 
-> I suggest that what we do is to revert both those changes.  We can
-> worry about the possibly-unneeded spin_lock later, in a separate patch.
-> 
-> It should have been a separate patch anyway.  It's conceptually
-> unrelated and is not a bugfix, but it was mixed in with a bugfix.
-> 
-> Mingming, this needs urgent consideration, please.  Note that I had to
-> make additional changes to ext4 due to the subsequent introduction of
-> the dirty_blocks counter.
-> 
-> 
+I guess Mr. KOSAKI is very silly or Idiot.
+I recommend to he get feathery blanket and good sleeping, instead
+black black coffee ;-)
 
 
-> 
-> Please read the below changelogs carefully and check that I have got my
-> head around this correctly - I may not have done.
-> 
-> What a mess.
-> 
-> 
-I looked at those two revert patches, they looks correct to me.
+...but below mesurement result still true.
 
-Thanks alot to take care of the mess.
-
-Mingming
-> 
-> 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> Revert
-> 
->     commit 1f7c14c62ce63805f9574664a6c6de3633d4a354
->     Author: Mingming Cao <cmm@us.ibm.com>
->     Date:   Thu Oct 9 12:50:59 2008 -0400
-> 
->         percpu counter: clean up percpu_counter_sum_and_set()
-> 
-> Before this patch we had the following:
-> 
-> percpu_counter_sum(): return the percpu_counter's value
-> 
-> percpu_counter_sum_and_set(): return the percpu_counter's value, copying
-> that value into the central value and zeroing the per-cpu counters before
-> returning.
-> 
-> After this patch, percpu_counter_sum_and_set() has gone, and
-> percpu_counter_sum() gets the old percpu_counter_sum_and_set()
-> functionality.
-> 
-> Problem is, as Eric points out, the old percpu_counter_sum_and_set()
-> functionality was racy and wrong.  It zeroes out counters on "other" cpus,
-> without holding any locks which will prevent races agaist updates from
-> those other CPUS.
-> 
-> This patch reverts 1f7c14c62ce63805f9574664a6c6de3633d4a354.  This means
-> that percpu_counter_sum_and_set() still has the race, but
-> percpu_counter_sum() does not.
-> 
-> Note that this is not a simple revert - ext4 has since started using
-> percpu_counter_sum() for its dirty_blocks counter as well.
-> 
-> 
-> Note that this revert patch changes percpu_counter_sum() semantics. 
-> 
-> Before the patch, a call to percpu_counter_sum() will bring the counter's
-> central counter mostly up-to-date, so a following percpu_counter_read()
-> will return a close value.
-> 
-> After this patch, a call to percpu_counter_sum() will leave the counter's
-> central accumulator unaltered, so a subsequent call to
-> percpu_counter_read() can now return a significantly inaccurate result.
-> 
-> If there is any code in the tree which was introduced after
-> e8ced39d5e8911c662d4d69a342b9d053eaaac4e was merged, and which depends
-> upon the new percpu_counter_sum() semantics, that code will break.
-> 
-> 
-Acked-by: Mingming Cao <cmm@us.ibm.com>
-> 
-> Reported-by: Eric Dumazet <dada1@cosmosbay.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Mingming Cao <cmm@us.ibm.com>
-> Cc: <linux-ext4@vger.kernel.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  fs/ext4/balloc.c               |    4 ++--
->  include/linux/percpu_counter.h |   12 +++++++++---
->  lib/percpu_counter.c           |    8 +++++---
->  3 files changed, 16 insertions(+), 8 deletions(-)
-> 
-> diff -puN fs/ext4/balloc.c~revert-percpu-counter-clean-up-percpu_counter_sum_and_set fs/ext4/balloc.c
-> --- a/fs/ext4/balloc.c~revert-percpu-counter-clean-up-percpu_counter_sum_and_set
-> +++ a/fs/ext4/balloc.c
-> @@ -609,8 +609,8 @@ int ext4_has_free_blocks(struct ext4_sb_
-> 
->  	if (free_blocks - (nblocks + root_blocks + dirty_blocks) <
->  						EXT4_FREEBLOCKS_WATERMARK) {
-> -		free_blocks  = percpu_counter_sum(fbc);
-> -		dirty_blocks = percpu_counter_sum(dbc);
-> +		free_blocks  = percpu_counter_sum_and_set(fbc);
-> +		dirty_blocks = percpu_counter_sum_and_set(dbc);
->  		if (dirty_blocks < 0) {
->  			printk(KERN_CRIT "Dirty block accounting "
->  					"went wrong %lld\n",
-> diff -puN include/linux/percpu_counter.h~revert-percpu-counter-clean-up-percpu_counter_sum_and_set include/linux/percpu_counter.h
-> --- a/include/linux/percpu_counter.h~revert-percpu-counter-clean-up-percpu_counter_sum_and_set
-> +++ a/include/linux/percpu_counter.h
-> @@ -35,7 +35,7 @@ int percpu_counter_init_irq(struct percp
->  void percpu_counter_destroy(struct percpu_counter *fbc);
->  void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
->  void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
-> -s64 __percpu_counter_sum(struct percpu_counter *fbc);
-> +s64 __percpu_counter_sum(struct percpu_counter *fbc, int set);
-> 
->  static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
->  {
-> @@ -44,13 +44,19 @@ static inline void percpu_counter_add(st
-> 
->  static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
->  {
-> -	s64 ret = __percpu_counter_sum(fbc);
-> +	s64 ret = __percpu_counter_sum(fbc, 0);
->  	return ret < 0 ? 0 : ret;
->  }
-> 
-> +static inline s64 percpu_counter_sum_and_set(struct percpu_counter *fbc)
-> +{
-> +	return __percpu_counter_sum(fbc, 1);
-> +}
-> +
-> +
->  static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
->  {
-> -	return __percpu_counter_sum(fbc);
-> +	return __percpu_counter_sum(fbc, 0);
->  }
-> 
->  static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-> diff -puN lib/percpu_counter.c~revert-percpu-counter-clean-up-percpu_counter_sum_and_set lib/percpu_counter.c
-> --- a/lib/percpu_counter.c~revert-percpu-counter-clean-up-percpu_counter_sum_and_set
-> +++ a/lib/percpu_counter.c
-> @@ -52,7 +52,7 @@ EXPORT_SYMBOL(__percpu_counter_add);
->   * Add up all the per-cpu counts, return the result.  This is a more accurate
->   * but much slower version of percpu_counter_read_positive()
->   */
-> -s64 __percpu_counter_sum(struct percpu_counter *fbc)
-> +s64 __percpu_counter_sum(struct percpu_counter *fbc, int set)
->  {
->  	s64 ret;
->  	int cpu;
-> @@ -62,9 +62,11 @@ s64 __percpu_counter_sum(struct percpu_c
->  	for_each_online_cpu(cpu) {
->  		s32 *pcount = per_cpu_ptr(fbc->counters, cpu);
->  		ret += *pcount;
-> -		*pcount = 0;
-> +		if (set)
-> +			*pcount = 0;
->  	}
-> -	fbc->count = ret;
-> +	if (set)
-> +		fbc->count = ret;
-> 
->  	spin_unlock(&fbc->lock);
->  	return ret;
-> _
-> 
-> 
-> 
-> 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> Revert
-> 
->     commit e8ced39d5e8911c662d4d69a342b9d053eaaac4e
->     Author: Mingming Cao <cmm@us.ibm.com>
->     Date:   Fri Jul 11 19:27:31 2008 -0400
-> 
->         percpu_counter: new function percpu_counter_sum_and_set
-> 
-> 
-> As described in
-> 
-> 	revert "percpu counter: clean up percpu_counter_sum_and_set()"
-> 
-> the new percpu_counter_sum_and_set() is racy against updates to the
-> cpu-local accumulators on other CPUs.  Revert that change.
-> 
-> This means that ext4 will be slow again.  But correct.
-> 
-
-Acked-by: Mingming Cao <cmm@us.ibm.com>
-
-> Reported-by: Eric Dumazet <dada1@cosmosbay.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Mingming Cao <cmm@us.ibm.com>
-> Cc: <linux-ext4@vger.kernel.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  fs/ext4/balloc.c               |    4 ++--
->  include/linux/percpu_counter.h |   12 +++---------
->  lib/percpu_counter.c           |    7 +------
->  3 files changed, 6 insertions(+), 17 deletions(-)
-> 
-> diff -puN fs/ext4/balloc.c~revert-percpu_counter-new-function-percpu_counter_sum_and_set fs/ext4/balloc.c
-> --- a/fs/ext4/balloc.c~revert-percpu_counter-new-function-percpu_counter_sum_and_set
-> +++ a/fs/ext4/balloc.c
-> @@ -609,8 +609,8 @@ int ext4_has_free_blocks(struct ext4_sb_
-> 
->  	if (free_blocks - (nblocks + root_blocks + dirty_blocks) <
->  						EXT4_FREEBLOCKS_WATERMARK) {
-> -		free_blocks  = percpu_counter_sum_and_set(fbc);
-> -		dirty_blocks = percpu_counter_sum_and_set(dbc);
-> +		free_blocks  = percpu_counter_sum_positive(fbc);
-> +		dirty_blocks = percpu_counter_sum_positive(dbc);
->  		if (dirty_blocks < 0) {
->  			printk(KERN_CRIT "Dirty block accounting "
->  					"went wrong %lld\n",
-> diff -puN include/linux/percpu_counter.h~revert-percpu_counter-new-function-percpu_counter_sum_and_set include/linux/percpu_counter.h
-> --- a/include/linux/percpu_counter.h~revert-percpu_counter-new-function-percpu_counter_sum_and_set
-> +++ a/include/linux/percpu_counter.h
-> @@ -35,7 +35,7 @@ int percpu_counter_init_irq(struct percp
->  void percpu_counter_destroy(struct percpu_counter *fbc);
->  void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
->  void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
-> -s64 __percpu_counter_sum(struct percpu_counter *fbc, int set);
-> +s64 __percpu_counter_sum(struct percpu_counter *fbc);
-> 
->  static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
->  {
-> @@ -44,19 +44,13 @@ static inline void percpu_counter_add(st
-> 
->  static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
->  {
-> -	s64 ret = __percpu_counter_sum(fbc, 0);
-> +	s64 ret = __percpu_counter_sum(fbc);
->  	return ret < 0 ? 0 : ret;
->  }
-> 
-> -static inline s64 percpu_counter_sum_and_set(struct percpu_counter *fbc)
-> -{
-> -	return __percpu_counter_sum(fbc, 1);
-> -}
-> -
-> -
->  static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
->  {
-> -	return __percpu_counter_sum(fbc, 0);
-> +	return __percpu_counter_sum(fbc);
->  }
-> 
->  static inline s64 percpu_counter_read(struct percpu_counter *fbc)
-> diff -puN lib/percpu_counter.c~revert-percpu_counter-new-function-percpu_counter_sum_and_set lib/percpu_counter.c
-> --- a/lib/percpu_counter.c~revert-percpu_counter-new-function-percpu_counter_sum_and_set
-> +++ a/lib/percpu_counter.c
-> @@ -52,7 +52,7 @@ EXPORT_SYMBOL(__percpu_counter_add);
->   * Add up all the per-cpu counts, return the result.  This is a more accurate
->   * but much slower version of percpu_counter_read_positive()
->   */
-> -s64 __percpu_counter_sum(struct percpu_counter *fbc, int set)
-> +s64 __percpu_counter_sum(struct percpu_counter *fbc)
->  {
->  	s64 ret;
->  	int cpu;
-> @@ -62,12 +62,7 @@ s64 __percpu_counter_sum(struct percpu_c
->  	for_each_online_cpu(cpu) {
->  		s32 *pcount = per_cpu_ptr(fbc->counters, cpu);
->  		ret += *pcount;
-> -		if (set)
-> -			*pcount = 0;
->  	}
-> -	if (set)
-> -		fbc->count = ret;
-> -
->  	spin_unlock(&fbc->lock);
->  	return ret;
->  }
-> _
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+> This patch change zone_watermark_ok() logic to prefer large contenious block.
+>
+>
+> Result:
+>
+>  test machine:
+>    CPU: ia64 x 8
+>    MEM: 8GB
+>
+>  benchmark:
+>    $ tbench 8  (three times mesurement)
+>
+>    tbench works between about 600sec.
+>    alloc_pages() and zone_watermark_ok() are called about 15,000,000 times.
+>
+>
+>              2.6.28-rc6                        this patch
+>
+>       throughput    max-latency       throughput       max-latency
+>        ---------------------------------------------------------
+>        1480.92         20.896          1,490.27        19.606
+>        1483.94         19.202          1,482.86        21.082
+>        1478.93         22.215          1,490.57        23.493
+>
+> avg     1,481.26        20.771          1,487.90        21.394
+> std         2.06         1.233              3.56         1.602
+> min     1,478.93        19.202          1,477.86        19.606
+> max     1,483.94        22.215          1,490.57        23.493
+>
+>
+> throughput improve about 5MB/sec. it over measurement wobbly.
