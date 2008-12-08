@@ -1,221 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbYLHAzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbYLHA4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754915AbYLHAzJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 19:55:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYLHAy4
+	id S1755550AbYLHA4V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 19:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYLHA4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 19:54:56 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:11200 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752711AbYLHAyz (ORCPT
+	Sun, 7 Dec 2008 19:56:12 -0500
+Received: from mu-out-0910.google.com ([209.85.134.184]:23131 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752711AbYLHA4L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 19:54:55 -0500
+	Sun, 7 Dec 2008 19:56:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :content-type:content-transfer-encoding;
-        b=R3r0oJZcT753REGVQMJi1WIXicUOVFf6529+U4cvD7ZqsLOQCT0yFTHPcXdiEsdBaz
-         8UBlJz5t5OMpwPbDVjxoijHwKXgQc3AWv0myh5WYqaH+LxDgMIBPxZy7RBo8e3PWh0/Z
-         hXvynLLb7bFVpxoGsesfAPExoAjhBFiZKLNNE=
-Message-ID: <493C7058.4060709@gmail.com>
-Date: Mon, 08 Dec 2008 01:54:48 +0100
+        b=JaL+sptFOyO+SgB1V0gQrydn5/fZdPBEXggXL92SrTwFc13AdfVeaxHR1JlELcpDVy
+         yKcOQtygKtEAohUO//QegDRkbovSLGVlnBpXxsl2uDQeYchN4zj9X26Oe0sKQJAXko+s
+         XNcAfmro+qC0bLapBEsyLpx5AXNyk+nU/S/d0=
+Message-ID: <493C70A6.70905@gmail.com>
+Date: Mon, 08 Dec 2008 01:56:06 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
 CC: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] tracing/function-graph-tracer: signal interrupts entry/exit
- points on outpout
+Subject: [PATCH 2/2] tracing/function-graph-tracer: implement a print_headers
+ function
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: provide interrupt detection on output
+Impact: provide headers to explain a bit the output
 
-Suggested by Ingo.
-If a hardirq is raised, we want it to be signaled on output, so this patch
-adds two arrows on the output to find entry and exit points of a hardirq.
-
-Unfortunately, there are many interrupt entrypoints and these can be differents
-from one arch to another.
-
-The approach here is one of the easiest, but doesn't shine by its scalability:
-we have an array of the interrupt entrypoints names that we compare with the
-symbol of the current traced function, if it matches, we draw the arrow.
-
-Ie:
-
- 1)               |                                unlock_buffer() {
- 1)               |                                  wake_up_bit() {
- 1)               |                                    bit_waitqueue() {
- 1)   0.872 us    |                                      __phys_addr();
- 1)   2.722 us    |                                    }
- 1)               |                                    __wake_up_bit() {
- =================>
- 1)               |                                      do_IRQ() {
- 1)               |                                        exit_idle() {
- 1)               |                                        irq_enter() {
- 1)   0.790 us    |                                          idle_cpu();
- 1)   2.346 us    |                                        }
- 1)               |                                        handle_edge_irq() {
- 1)   1.098 us    |                                          _spin_lock();
- 1)               |                                          ack_apic_edge() {
- 1)   0.722 us    |                                            irq_complete_move();
- 1)   0.737 us    |                                            move_native_irq();
- 1)   0.707 us    |                                            native_apic_mem_write();
- 1)   5.249 us    |                                          }
- 1)   0.879 us    |                                          _spin_unlock();
- 1)               |                                          handle_IRQ_event() {
- 1)               |                                            timer_interrupt() {
- 1)               |                                              tick_handle_oneshot_broadcast() {
- 1)   1.165 us    |                                                _spin_lock();
- 1)               |                                                ktime_get() {
- 1)               |                                                  ktime_get_ts() {
- 1)               |                                                    getnstimeofday() {
- 1)   1.782 us    |                                                      read_hpet();
- 1)   3.542 us    |                                                    }
- 1)   0.744 us    |                                                    set_normalized_timespec();
- 1)   6.640 us    |                                                  }
- 1)   8.226 us    |                                                }
- 1)               |                                                tick_do_broadcast() {
- 1)               |                                                  lapic_timer_broadcast() {
- 1)   0.879 us    |                                                    flat_send_IPI_mask();
- 1)   2.467 us    |                                                  }
- 1)   4.045 us    |                                                }
- 1)   0.864 us    |                                                _spin_unlock();
- 1) + 18.431 us   |                                              }
- 1) + 20.047 us   |                                            }
- 1) + 21.611 us   |                                          }
- 1)   0.940 us    |                                          note_interrupt();
- 1)   1.008 us    |                                          _spin_lock();
- 1)   0.992 us    |                                          _spin_unlock();
- 1) + 38.711 us   |                                        }
- 1)               |                                        irq_exit() {
- 1)   0.752 us    |                                          idle_cpu();
- 1)   2.609 us    |                                        }
- 1) + 48.952 us   |                                      }
- <=================
- 1) + 55.314 us   |                                    }
- 1) + 60.983 us   |                                  }
- 1) + 62.976 us   |                                }
- 1) + 64.984 us   |                              }
+This patch implements the print_headers callback for the function graph
+tracer. These headers are output according to the current trace options.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 1b43086..26b4d6a 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -324,6 +324,24 @@ int __init ftrace_dyn_arch_init(void *data)
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- 
-+/* Used during output to find the interrupts entry/exit points */
-+const char *ftrace_graph_irq_entries[] = {
-+	"smp_call_function_single_interrupt",
-+	"xen_call_function_single_interrupt",
-+	"wrapper_smp_local_timer_interrupt",
-+	"smp_irq_move_cleanup_interrupt",
-+	"smp_call_function_interrupt",
-+	"xen_call_function_interrupt",
-+	"smp_apic_timer_interrupt",
-+	"uv_bau_message_interrupt",
-+	"mce_threshold_interrupt",
-+	"smp_spurious_interrupt",
-+	"smp_thermal_interrupt",
-+	"smp_error_interrupt",
-+	"do_IRQ",
-+	NULL
-+};
-+
- #ifdef CONFIG_DYNAMIC_FTRACE
- extern void ftrace_graph_call(void);
- 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 11cac81..36065e8 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -411,6 +411,9 @@ static inline void unpause_graph_tracing(void)
- {
- 	atomic_dec(&current->tracing_graph_pause);
- }
-+
-+/* Contains the entrypoints to hardirq (arch defined) */
-+extern const char *ftrace_graph_irq_entries[];
- #else
- 
- #define __notrace_funcgraph
 diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index 32b7fb9..7ea446d 100644
+index 7ea446d..4434e4e 100644
 --- a/kernel/trace/trace_functions_graph.c
 +++ b/kernel/trace/trace_functions_graph.c
-@@ -10,6 +10,8 @@
- #include <linux/uaccess.h>
- #include <linux/ftrace.h>
- #include <linux/fs.h>
-+#include <linux/module.h>
-+#include <linux/kallsyms.h>
- 
- #include "trace.h"
- 
-@@ -64,6 +66,31 @@ static void graph_trace_reset(struct trace_array *tr)
- 	unregister_ftrace_graph();
- }
- 
-+/* Signal enter into or exit from an interrupt */
-+static enum print_line_t
-+print_graph_interrupt(struct trace_seq *s, unsigned long addr,
-+				enum trace_type type)
-+{
-+	char symbol[KSYM_NAME_LEN];
-+	const char *arrow;
-+	int ret;
-+	int i;
-+
-+	kallsyms_lookup(addr, NULL, NULL, NULL, symbol);
-+	for (i = 0; ftrace_graph_irq_entries[i]; i++)
-+		if (!strcmp(symbol, ftrace_graph_irq_entries[i])) {
-+			if (type == TRACE_GRAPH_ENT)
-+				arrow = " =================>\n";
-+			else
-+				arrow = " <=================\n";
-+			ret = trace_seq_printf(s, arrow);
-+			if (!ret)
-+				return TRACE_TYPE_PARTIAL_LINE;
-+			break;
-+		}
-+	return TRACE_TYPE_HANDLED;
-+}
-+
- static inline int log10_cpu(int nb)
- {
- 	if (nb / 100)
-@@ -385,6 +412,10 @@ print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
- 	int ret;
- 	struct trace_entry *ent = iter->ent;
- 
-+	ret = print_graph_interrupt(s, field->graph_ent.func, TRACE_GRAPH_ENT);
-+	if (ret == TRACE_TYPE_PARTIAL_LINE)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
- 	/* Pid */
- 	if (verif_pid(s, ent->pid, cpu) == TRACE_TYPE_PARTIAL_LINE)
- 		return TRACE_TYPE_PARTIAL_LINE;
-@@ -474,6 +505,11 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
- 		if (!ret)
- 			return TRACE_TYPE_PARTIAL_LINE;
+@@ -606,11 +606,36 @@ print_graph_function(struct trace_iterator *iter)
  	}
-+
-+	ret = print_graph_interrupt(s, trace->func, TRACE_GRAPH_RET);
-+	if (ret == TRACE_TYPE_PARTIAL_LINE)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
- 	return TRACE_TYPE_HANDLED;
  }
+ 
++static void print_graph_headers(struct seq_file *s)
++{
++	/* 1st line */
++	seq_printf(s, "# ");
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
++		seq_printf(s, "CPU ");
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
++		seq_printf(s, "TASK/PID     ");
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD)
++		seq_printf(s, "OVERHEAD/");
++	seq_printf(s, "DURATION            FUNCTION CALLS\n");
++
++	/* 2nd line */
++	seq_printf(s, "# ");
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
++		seq_printf(s, "|   ");
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
++		seq_printf(s, "|      |     ");
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD) {
++		seq_printf(s, "|        ");
++		seq_printf(s, "|                   |   |   |   |\n");
++	} else
++		seq_printf(s, "    |               |   |   |   |\n");
++}
+ static struct tracer graph_trace __read_mostly = {
+-	.name	     = "function_graph",
+-	.init	     = graph_trace_init,
+-	.reset	     = graph_trace_reset,
+-	.print_line = print_graph_function,
++	.name	     	= "function_graph",
++	.init	     	= graph_trace_init,
++	.reset	     	= graph_trace_reset,
++	.print_line	= print_graph_function,
++	.print_header	= print_graph_headers,
+ 	.flags		= &tracer_flags,
+ };
  
 -- 
 1.6.0.4
