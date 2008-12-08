@@ -1,88 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbYLHGbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbYLHGcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbYLHGbT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 01:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYLHGbK
+	id S1756297AbYLHGcq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 01:32:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYLHGci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 01:31:10 -0500
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:55509 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752832AbYLHGbJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 01:31:09 -0500
-X-Greylist: delayed 2064 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Dec 2008 01:31:09 EST
-Message-ID: <493CB716.8070300@yucs.org>
-Date: Mon, 08 Dec 2008 00:56:38 -0500
-From: Shaya Potter <spotter@yucs.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: weird realtek gigabit ethernet issue
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+	Mon, 8 Dec 2008 01:32:38 -0500
+Received: from molly.corsac.net ([81.57.48.219]:52338 "EHLO molly.corsac.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752382AbYLHGch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 01:32:37 -0500
+X-Greylist: delayed 517 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Dec 2008 01:32:37 EST
+Subject: Re: [Bug #12152] Huge wakeups number from i1915
+From: Yves-Alexis Perez <corsac@debian.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <1228717448.9677.3.camel@hidalgo>
+References: <6VnlupFpCsN.A.2rE.MsEPJB@chimera>
+	 <07Xes05z25M.A.VtF.ksEPJB@chimera> <20081207145203.0f998d5b@infradead.org>
+	 <200812072352.07151.rjw@sisk.pl>  <20081207151203.46c01a0d@infradead.org>
+	 <1228717448.9677.3.camel@hidalgo>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-N7OvyR/HkP2IoUFv5dAc"
+Date: Mon, 08 Dec 2008 07:32:49 +0100
+Message-Id: <1228717969.9677.9.camel@hidalgo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[please cc me in any response as not subscribed]
 
-I have an Asus M3A78-EM motherboard with a "Realtek Semiconductor Co.,
-Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)"
-(per lspci)
+--=-N7OvyR/HkP2IoUFv5dAc
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-which is using the r8169 module on ubuntu intrepid (specifically ubuntu
-kernel 2.6.27-9-generic)
+On lun, 2008-12-08 at 07:24 +0100, Yves-Alexis Perez wrote:
+> On dim, 2008-12-07 at 15:12 -0800, Arjan van de Ven wrote:
+> >=20
+> > > > at least in some of the cases where this has been seen the cause
+> > is
+> > > > the following:
+> > > > The i915 DRM driver used to do polling for completion, busy
+> > > > waiting. It moved to be interrupt driven, which is usually better
+> > > > for power, but it will show up as more wakeups in powertop....
+> > >=20
+> > > IOW, this is not a regression?
+> >=20
+> > I don't know about this specifc case (not enough information) but for
+> > the case I described it's not a regression. Going to interrupt driven
+> > from busy waiting is an improvement not a regression :)
+>=20
+> Well, several thousand or more interrupts really seems like a
+> regression :). But it seems that's the same thing as the =E2=80=9CIRQ
+> spinning=E2=80=9D (there was a thread on dri-devel about that).
+>=20
+> It seems fixed with a patch from Matthew Garrett applied to
+> drm-intel/for-airlied but I don't think this has been applied to Linus
+> master.
 
-kernel reports
+And it seems the same thing as
+https://bugs.freedesktop.org/show_bug.cgi?id=3D18609
 
-RTL8168c/8111c at 0xf88be000, 00:22:15:a1:d2:41, XID 3c4000c0 IRQ 222
+Cheers,
+--=20
+Yves-Alexis
 
-well, what's the issue, its going crazy on the dropped packets, even
-when the only thing connected to it is is an ssh session.
+--=-N7OvyR/HkP2IoUFv5dAc
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-namely ifconfig shows
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-eth0 Link encap:Ethernet HWaddr 00:22:15:a1:d2:41
-inet addr:192.168.0.41 Bcast:192.168.0.255 Mask:255.255.255.0
-inet6 addr: fe80::222:15ff:fea1:d241/64 Scope:Link
-UP BROADCAST RUNNING MULTICAST MTU:1500 Metric:1
-RX packets:499 errors:0 dropped:2867537736 overruns:0 frame:0
-TX packets:538 errors:0 dropped:0 overruns:0 carrier:0
-collisions:0 txqueuelen:1000
-RX bytes:38995 (38.9 KB) TX bytes:87571 (87.5 KB)
-Interrupt:222 Base address:0xe000
+iEYEABECAAYFAkk8v5EACgkQTUTAIMXAW65VPACgjy4sTQKfUdrovAB0Gl85du7e
+upwAoLDQfHNRZBvuIgE7W5ZHmvxPS2Uj
+=UzHe
+-----END PGP SIGNATURE-----
 
-and the dropped count keeps on cycling through its entire space rapidly.
-
-it's running in gigabit mode
-
-root@nas:/home/spotter# mii-tool
-eth0: negotiated 1000baseT-FD flow-control, link ok
-
-I have no idea why.  never seen anything like this before.  been
-wondering what could be doing it.
-
-in investigating the driver
-
-/*
- * The driver does not support incoming fragmented
- * frames. They are seen as a symptom of over-mtu
- * sized frames.
- */
-if (unlikely(rtl8169_fragmented_frame(status))) {
- 	dev->stats.rx_dropped++;
-        dev->stats.rx_length_errors++;
-        rtl8169_mark_to_asic(desc, tp->rx_buf_sz);
-        continue;
-}
-
-so it would appear to be some issue relating to fragmented frames.
-
-However, based on the amount of packets received, it seems to be very
-strange.
-
-I would have thought maybe it had something to do with jumbo packets,
-but all the machines on the net are using an mtu of 1500 currently.
-
-anyways, any explanation, if its not a bug, would be appreciated.
+--=-N7OvyR/HkP2IoUFv5dAc--
