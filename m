@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbYLHGUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756059AbYLHGXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756263AbYLHGUv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 01:20:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYLHGUl
+	id S1756059AbYLHGXw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 01:23:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbYLHGXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 01:20:41 -0500
-Received: from ozlabs.org ([203.10.76.45]:51408 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbYLHGUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 01:20:40 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Yet more ARM breakage in linux-next
-Date: Mon, 8 Dec 2008 16:50:34 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       "Linux/m68k" <linux-m68k@vger.kernel.org>
-References: <20081203192905.GA12502@flint.arm.linux.org.uk> <200812050042.28222.rusty@rustcorp.com.au> <Pine.LNX.4.64.0812072248430.14941@anakin>
-In-Reply-To: <Pine.LNX.4.64.0812072248430.14941@anakin>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812081650.35014.rusty@rustcorp.com.au>
+	Mon, 8 Dec 2008 01:23:44 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:18242 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751461AbYLHGXn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 01:23:43 -0500
+Subject: Re: UBI/DVB ioctl conflict?
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linux-mtd@lists.infradead.org, arnd@arndb.de,
+       LKML <linux-kernel@vger.kernel.org>, v4l-dvb-maintainer@linuxtv.org
+In-Reply-To: <20081207095811.13b51cca@zod.rchland.ibm.com>
+References: <20081207095811.13b51cca@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 08 Dec 2008 08:20:26 +0200
+Message-Id: <1228717226.13686.89.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 08 Dec 2008 06:22:26.0610 (UTC) FILETIME=[56FC1120:01C958FD]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 December 2008 08:20:59 Geert Uytterhoeven wrote:
-> On Fri, 5 Dec 2008, Rusty Russell wrote: 
-> > +static inline int __fls(int x)
->                  ^^^       ^^^
-> Other implementations take `unsigned long' and return `unsigned long'...
-
-It's all over the place, actually.  32 bit archs are especially loose.
-
-I've been toying with the idea of a boottime testsuite for all the
-bitops to see who gets them wrong.
-
-> > +static inline int __fls(unsigned long word)
->                  ^^^       ^^^^^^^^^^^^^
-> > +{
-> > +	return fls(word) - 1;
-> > +}
-> > +
+On Sun, 2008-12-07 at 09:58 -0500, Josh Boyer wrote:
+> I received a bug report where someone noticed that the UBI ioctls can
+> conflict with the dvb subsystem.  Looking it over, it seems that both
+> subsystems use 'o' as the magic, and do have a set of somewhat
+> conflicting sequence numbers as the secondary arg.
 > 
-> ... but this one uses mixed types?
+> Is this a problem?
 
-I cut and pasted.  I thought you were 32 bit, so doesn't matter?
+Hmm, thanks for noticing.
 
-> What are the official semantics of __fls()?
+I've looked at this, and thankfully it looks like we were lucky and do
+not use the same 'ioctl()' numbers, by chance.
 
-Find last bit set in the word, undefined if word is 0.  Returns 0
-to BITS_PER_LONG-1.
+Ioctl number has the following structure:
 
-Cheers,
-Rusty.
+bits 0-15: command (or sequence number)
+bits 16-29: parameter size
+bits 30-31: mode (read, write, etc).
+
+We have the following overlaps with DVB subsystem:
+
+#define AUDIO_STOP   _IO('o', 1)
+#define UBI_IOCRMVOL _IOW('o', 1, int32_t)
+
+#define AUDIO_PLAY   _IO('o', 2)
+#define UBI_IOCRSVOL _IOW('o', 2, struct ubi_rsvol_req)
+
+#define AUDIO_PAUSE  _IO('o', 3)
+#define UBI_IOCRNVOL _IOW('o', 3, struct ubi_rnvol_req)
+
+These are fine because parameter sizes are different, and because UBI
+uses _IOW and DVB uses _IO, so the mode bits are "01" and "00".
+
+And:
+
+#define FE_DISEQC_RECV_SLAVE_REPLY _IOR('o', 64,
+                                        struct dvb_diseqc_slave_reply)
+#define UBI_IOCATT _IOW('o', 64, struct ubi_attach_req)
+
+#define FE_DISEQC_SEND_BURST _IO('o', 65)
+#define UBI_IOCDET _IOW('o', 65, int32_t)
+
+are also fine because parameter sizes are different and the mode bits
+are different.
+
+However, we have to be very careful in the future. It seems like DVB
+has been in the kernel long before UBI, so this potential conflict
+would be my fault.
+
+Neither DVB nor UBI seem not to be documented in
+Documentation/ioctl/ioctl-number.txt. Should we do this?
+
+P.S. Added Arnd to CC for suggestions, as well as LKML and DVB
+maintainers.
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
