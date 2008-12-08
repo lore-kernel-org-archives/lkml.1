@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751625AbYLHJGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbYLHJH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751625AbYLHJGz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 04:06:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbYLHJGf
+	id S1753128AbYLHJH0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 04:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYLHJGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 04:06:35 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45182
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751369AbYLHJGd (ORCPT
+	Mon, 8 Dec 2008 04:06:39 -0500
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:34530 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751404AbYLHJGd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Dec 2008 04:06:33 -0500
-Date: Mon, 08 Dec 2008 01:06:34 -0800 (PST)
-Message-Id: <20081208.010634.247305010.davem@davemloft.net>
-To: Valdis.Kletnieks@vt.edu
-Cc: mitake@clustcom.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ktaka@clustcom.com
-Subject: Re: [RFC] New functions to manipulate registers for ethtool
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <58622.1228726903@turing-police.cc.vt.edu>
-References: <20081208171230.288c5ccf.mitake@clustcom.com>
-	<20081208.005431.200957157.davem@davemloft.net>
-	<58622.1228726903@turing-police.cc.vt.edu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Subject: Re: [PATCH 1/2] drivers/s390/crypto: Move dereference to after
+	IS_ERR test
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Julia Lawall <julia@diku.dk>
+Cc: heiko.carstens@de.ibm.com, linux390@de.ibm.com, linux-s390@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0812072314270.7130@ask.diku.dk>
+References: <Pine.LNX.4.64.0812072314270.7130@ask.diku.dk>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Mon, 08 Dec 2008 10:06:29 +0100
+Message-Id: <1228727189.15048.1.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Valdis.Kletnieks@vt.edu
-Date: Mon, 08 Dec 2008 04:01:43 -0500
+On Sun, 2008-12-07 at 23:14 +0100, Julia Lawall wrote:
+> If reply is ERR_PTR(...), then it should not be dereferenced, so I have
+> moved the dereference from the declaration to after the IS_ERR test.
 
-> On Mon, 08 Dec 2008 00:54:31 PST, David Miller said:
-> > From: Hitoshi Mitake <mitake@clustcom.com>
-> > Date: Mon, 8 Dec 2008 17:12:30 +0900
-> > 
-> > > I want to add two new functions to ethtool.
-> > > 
-> > > One is for setting driver's registers on MMIO area like
-> > > --change-eeprom option.
-> > 
-> > You can map the registers into userspace using the bus
-> > level mmap facilities exported to userspace.
-> > 
-> > No ethtool support is necessary for this.
-> 
-> Yes, but if Hitoshi wants to tell a user "run this command and send me
-> the output", what's the incantation the user needs to use?
+Nice finding again. That semantic match tools is really useful.
+Thanks, I'll add the patch to my collection.
 
-That's an awful reason to have to two ways of doing the exact same
-thing from userspace.
+-- 
+blue skies,
+  Martin.
 
-Write the tool.  Someone will if it's important enough (in fact
-such code probably exists already).
+"Reality continues to ruin my life." - Calvin.
+
 
