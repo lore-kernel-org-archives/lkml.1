@@ -1,51 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751848AbYLHJz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752958AbYLHJ4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751848AbYLHJz7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 04:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbYLHJzv
+	id S1752958AbYLHJ4j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 04:56:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYLHJ43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 04:55:51 -0500
-Received: from mga07.intel.com ([143.182.124.22]:25269 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750748AbYLHJzv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 04:55:51 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,734,1220252400"; 
-   d="scan'208";a="87638804"
-Message-ID: <493CEF38.3060004@linux.intel.com>
-Date: Mon, 08 Dec 2008 10:56:08 +0100
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Mon, 8 Dec 2008 04:56:29 -0500
+Received: from ozlabs.org ([203.10.76.45]:55296 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750748AbYLHJ42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 04:56:28 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Avi Kivity <avi@redhat.com>
+Subject: [PATCH] kvm: Extract core of kvm_flush_remote_tlbs/kvm_reload_remote_mmus.
+Date: Mon, 8 Dec 2008 20:26:24 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
+Cc: "kvm-devel" <kvm@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       Mike Travis <travis@sgi.com>
+References: <200812072125.14416.rusty@rustcorp.com.au> <493BF144.9080106@redhat.com>
+In-Reply-To: <493BF144.9080106@redhat.com>
 MIME-Version: 1.0
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-CC: Giangiacomo Mariotti <gg.mariotti@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
-References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>	 <493AE770.5030507@shaw.ca>	 <12bfabe40812061343j400f55d8r43571c8bd514adde@mail.gmail.com>	 <493AF2EA.4030601@shaw.ca>	 <12bfabe40812061416u1b6f800dn7261beae5ce36b2f@mail.gmail.com>	 <493B4242.1040202@shaw.ca>	 <12bfabe40812071355r65c13e52g5f3d94d3b060c939@mail.gmail.com>	 <20081207141337.588aede5@infradead.org>	 <12bfabe40812072248n3c931ce0hf030b3ac758026d4@mail.gmail.com>	 <493CCFE4.2080802@jp.fujitsu.com> <12bfabe40812080004p7438744eqeb884b42673bd73c@mail.gmail.com> <493CEAA0.50201@jp.fujitsu.com>
-In-Reply-To: <493CEAA0.50201@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812082026.24350.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Avi said:
+> Wow, code duplication from Rusty. Things must be bad.
 
-> IIRC, this error is not what happen on the time [301.7320xx] during
-> boot, but happen before the boot.  Since the record says "Processor
-> context corrupt," MCE handler should call panic(or do something stop
-> the system) if the context actually corrupted during the boot.
+Something about glass houses comes to mind.  But instead, a patch.
 
-The weird thing is that 301 seconds is quite a long delay for that.
-It should happen  relatively quickly at boot as the CPUs are initialized.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ virt/kvm/kvm_main.c |   44 +++++++++++++++-----------------------------
+ 1 file changed, 15 insertions(+), 29 deletions(-)
 
-> 
-> In other words, it seems that 1) the error was recorded at last time
-> when your machine crashed unexpectedly(by cosmic-ray etc.) and not cleared
-> yet, or 2) your machine is doing something wrong in every reset/poweroff.
-
-When it happens consistently at each boot then yes it's likely something
-leaking from the BIOS initialization sequence. Perhaps try a BIOS update?
-
--Andi
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -355,10 +355,11 @@ static void ack_flush(void *_completed)
+ {
+ }
+ 
+-void kvm_flush_remote_tlbs(struct kvm *kvm)
++static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
+ {
+ 	int i, cpu, me;
+ 	cpumask_t cpus;
++	bool called = false;
+ 	struct kvm_vcpu *vcpu;
+ 
+ 	me = get_cpu();
+@@ -367,45 +368,30 @@ void kvm_flush_remote_tlbs(struct kvm *k
+ 		vcpu = kvm->vcpus[i];
+ 		if (!vcpu)
+ 			continue;
+-		if (test_and_set_bit(KVM_REQ_TLB_FLUSH, &vcpu->requests))
++		if (test_and_set_bit(req, &vcpu->requests))
+ 			continue;
+ 		cpu = vcpu->cpu;
+ 		if (cpu != -1 && cpu != me)
+ 			cpu_set(cpu, cpus);
+ 	}
+-	if (cpus_empty(cpus))
+-		goto out;
+-	++kvm->stat.remote_tlb_flush;
+-	smp_call_function_mask(cpus, ack_flush, NULL, 1);
+-out:
++	if (!cpus_empty(cpus)) {
++		smp_call_function_mask(cpus, ack_flush, NULL, 1);
++		called = true;
++	}
+ 	put_cpu();
++	return called;
++}
++
++void kvm_flush_remote_tlbs(struct kvm *kvm)
++{
++	if (make_all_cpus_request(kvm, KVM_REQ_TLB_FLUSH))
++		++kvm->stat.remote_tlb_flush;
+ }
+ 
+ void kvm_reload_remote_mmus(struct kvm *kvm)
+ {
+-	int i, cpu, me;
+-	cpumask_t cpus;
+-	struct kvm_vcpu *vcpu;
+-
+-	me = get_cpu();
+-	cpus_clear(cpus);
+-	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
+-		vcpu = kvm->vcpus[i];
+-		if (!vcpu)
+-			continue;
+-		if (test_and_set_bit(KVM_REQ_MMU_RELOAD, &vcpu->requests))
+-			continue;
+-		cpu = vcpu->cpu;
+-		if (cpu != -1 && cpu != me)
+-			cpu_set(cpu, cpus);
+-	}
+-	if (cpus_empty(cpus))
+-		goto out;
+-	smp_call_function_mask(cpus, ack_flush, NULL, 1);
+-out:
+-	put_cpu();
++	make_all_cpus_request(kvm, KVM_REQ_MMU_RELOAD);
+ }
+-
+ 
+ int kvm_vcpu_init(struct kvm_vcpu *vcpu, struct kvm *kvm, unsigned id)
+ {
