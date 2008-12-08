@@ -1,111 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbYLHMfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbYLHMh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753226AbYLHMfc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 07:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYLHMfX
+	id S1753368AbYLHMh6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 07:37:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYLHMhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 07:35:23 -0500
-Received: from vps1.tull.net ([66.180.172.116]:50435 "HELO vps1.tull.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751572AbYLHMfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 07:35:22 -0500
-Date: Mon, 8 Dec 2008 23:35:17 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] fs: fix warning message with inserting a single	space
-Message-ID: <20081208123517.GA3892@mail.local.tull.net>
-References: <1228737252-31948-1-git-send-email-Hiroshi.DOYU@nokia.com>
+	Mon, 8 Dec 2008 07:37:50 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:54394 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751697AbYLHMht (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 07:37:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=a4kYl0PUOOcnDi9h3EN7v+1Lyed+7YkM780FwJblxePXRP1xYQ1Ewj6tDG4EuUv//a
+         we/81JBcS4UbvrjW13/RBFo9XmQaLy4RH7PkH+jXMSArjxOn1XmTwmXXso8Q/Itow2r6
+         +kBvIeCIa3/DRYww6rEWZZuMBsmvXcUkRusXs=
+Message-ID: <12bfabe40812080437o3655b15dm6234fc1d065c75c6@mail.gmail.com>
+Date: Mon, 8 Dec 2008 13:37:47 +0100
+From: "Giangiacomo Mariotti" <gg.mariotti@gmail.com>
+To: "Andi Kleen" <ak@linux.intel.com>
+Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
+Cc: "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+In-Reply-To: <493D0D42.2090203@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1228737252-31948-1-git-send-email-Hiroshi.DOYU@nokia.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>
+	 <12bfabe40812071355r65c13e52g5f3d94d3b060c939@mail.gmail.com>
+	 <20081207141337.588aede5@infradead.org>
+	 <12bfabe40812072248n3c931ce0hf030b3ac758026d4@mail.gmail.com>
+	 <493CCFE4.2080802@jp.fujitsu.com>
+	 <12bfabe40812080004p7438744eqeb884b42673bd73c@mail.gmail.com>
+	 <493CEAA0.50201@jp.fujitsu.com> <493CEF38.3060004@linux.intel.com>
+	 <493CF65B.30408@jp.fujitsu.com> <493D0D42.2090203@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 08, 2008 at 01:54:12PM +0200, Hiroshi DOYU wrote:
-> -			printk(KERN_WARNING "%s: %s passed in a files array"
-> +			printk(KERN_WARNING "%s: %s passed in a files array "
->  				"with an index of 1!\n", __func__,
->  				s->s_type->name);
-
-Yep. These look like the same kind of thing:
-
-arch/powerpc/platforms/cell/iommu.c +1109
-                                pr_debug("iommu: hash window doesn't fit in"
-                                         "real DMA window\n");
-
-arch/powerpc/platforms/cell/spider-pci.c +138
-                pr_err("SPIDERPCI-IOWA:"
-                       "Can't allocate struct spiderpci_iowa_private");
-
-(space after a colon?)
-
-arch/x86/kernel/microcode_intel.c +374
-                        printk(KERN_ERR "microcode: error!"
-                                        "Bad data in microcode data file\n");
-
-arch/x86/kernel/microcode_amd.c +411
-        printk(KERN_WARNING "microcode: AMD microcode update via /dev/cpu/microcode"
-                        "is not supported\n");
-
-arch/x86/kernel/pci-dma.c +303
-                printk(KERN_INFO "PCI: VIA PCI bridge detected."
-                                 "Disabling DAC.\n");
-
-arch/x86/kernel/smpboot.c +412
-                printk(KERN_WARNING "WARNING: SMP operation may be unreliable"
-                                    "with B stepping processors.\n");
-
-arch/x86/kernel/smpboot.c +420
-                printk(KERN_INFO "WARNING: This combination of AMD"
-                        "processors is not suitable for SMP.\n");
-
-arch/x86/kernel/smpboot.c +1089
-                printk(KERN_WARNING "weird, boot CPU (#%d) not listed"
-                                    "by the BIOS.\n", hard_smp_processor_id());
-
-arch/x86/kernel/smpboot.c +1127
-                printk(KERN_ERR "... forcing use of dummy APIC emulation."
-                                "(tell your hw vendor)\n");
-
-arch/x86/mm/init_32.c +668
-                        printk(KERN_WARNING "Warning only 4GB will be used."
-                                "Use a HIGHMEM64G enabled kernel.\n");
-
-arch/arm/common/dmabounce.c +510
-                         "Never registered with dmabounce but attempting"
-                         "to unregister!\n");
-
-arch/arm/plat-omap/dma.c +1843
-                        printk(KERN_WARNING "IRQ %04x for non-allocated DMA"
-                                        "channel %d\n", status, ch);
-
-arch/arm/plat-omap/mcbsp.c +874
-                dev_err(&pdev->dev, "McBSP device initialized without"
-                                "platform data\n");
-
-arch/arm/mach-s3c2412/mach-jive.c +255
-                printk(KERN_ERR "Unknown mtd set %ld specified,"
-                       "using default.", set);
-
-arch/arm/mach-pxa/trizeps4.c +354
-                printk(KERN_ERR "trizeps4_mci_init: MMC/SD: can't request"
-                                                "MMC card detect IRQ\n");
-
-arch/arm/mach-pxa/mioa701.c +651
-        printk(KERN_CRIT "Unregistering mioa701 suspend will hang next"
-               "resume !!!\n");
-
-arch/ia64/sn/kernel/io_common.c +354
-                printk(KERN_WARNING "on node %d but only %d nodes online."
-                       "Association set to undetermined.\n",
-
-arch/ia64/kernel/kprobes.c +249
-                        printk(KERN_WARNING "Kprobes on IP-Relative"
-                                        "Predict is not supported\n");
-
-Nick.
+On Mon, Dec 8, 2008 at 1:04 PM, Andi Kleen <ak@linux.intel.com> wrote:
+>
+>> I'm not sure but is it make sense if SMI causes an error and dropped MCE
+>> exception without clearing error record?
+>
+> I wouldn't expect an SMI causing an internal cache machine check. That
+> really
+> looks more like something that comes out of the initialization code. But
+> I haven't see it on any Nehalem system so far.
+>
+> Also it might be really some problem with this particular CPU.
+>
+> -Andi
+>
+If there's any test and/or anything else I can do to help tracking
+down what exactly causes the problem, just let me know. I've already
+done many cpu+memory intensive tests(in Linux for example a tbench
+with 256 threads and various kernel compilations) to see if the mce
+appears during normal working time of the cpus, but nothing happened.
+As I've already said in this thread, the mce appears only at a
+particular moment after reboot. So I have exactly 1 mce log after
+every reboot, always at [  301.7320xx] and with mce=nobootlog no mce
+gets logged. Windows Vista never gave me the BSOD, not even while
+taking all the tests of 3D Mark Vantage(yes, even if I'm a grown up, I
+still like VGs). The fact that windows never crashed should mean that
+the mce was never triggered on that OS, could that be somewhat related
+to the other problem I talked about here, i.e. that I cannot reboot on
+Linux and I'm forced to halt the system everytime I want to reboot,
+while on windows I don't have any similar problem?
