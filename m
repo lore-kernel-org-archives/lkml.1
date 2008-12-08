@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbYLHPuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYLHPwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753269AbYLHPuj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 10:50:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbYLHPua
+	id S1753880AbYLHPwM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 10:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbYLHPv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 10:50:30 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33559 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752908AbYLHPua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 10:50:30 -0500
-Date: Mon, 8 Dec 2008 16:50:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] tracing/function-graph-tracer: introduce
-	__notrace_funcgraph to filter special functions
-Message-ID: <20081208155018.GB405@elte.hu>
-References: <4939E600.804@gmail.com> <20081208141406.GA14856@elte.hu> <c62985530812080725i1f144c21td5b121749f507b09@mail.gmail.com>
+	Mon, 8 Dec 2008 10:51:57 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:60361 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752632AbYLHPv4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 10:51:56 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: dedekind@infradead.org
+Subject: Re: UBI/DVB ioctl conflict?
+Date: Mon, 8 Dec 2008 16:50:53 +0100
+User-Agent: KMail/1.9.9
+Cc: Laurent Pinchart <laurentp@cse-semaphore.com>,
+       linux-mtd@lists.infradead.org, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       v4l-dvb-maintainer@linuxtv.org, LKML <linux-kernel@vger.kernel.org>
+References: <20081207095811.13b51cca@zod.rchland.ibm.com> <200812081041.14178.laurentp@cse-semaphore.com> <1228729915.13686.95.camel@sauron>
+In-Reply-To: <1228729915.13686.95.camel@sauron>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530812080725i1f144c21td5b121749f507b09@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200812081650.54346.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/6DYJr5RhUdHpA0VEi6hhVea9dOY/ELD25ixv
+ 21CP6m6l+sAkpQvKIaUm+H64FLlIrB+2qvexDH02pb69Qz2rD5
+ ZbUzc28aONQ1pkZnhxBZA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
-
-> 2008/12/8 Ingo Molnar <mingo@elte.hu>:
-> >
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> >
-> >> Impact: trace more functions
-> >>
-> >> When the function graph tracer is configured, three more files are not
-> >> traced to prevent only four functions to be traced. And this impacts
-> >> the normal function tracer too.
-> >>
-> >> arch/x86/kernel/process_64/32.c:
-> >>
-> >> I had crashes when I let this file traced. After some debugging, I saw
-> >> that the "current" task point was changed inside__swtich_to(), ie:
-> >> "write_pda(pcurrent, next_p);" inside process_64.c Since the tracer
-> >> store the original return address of the function inside current, we
-> >> had crashes. Only __switch_to() has to be traced.
-> >>
-> >> kernel/module.c and kernel/extable.c:
-> >>
-> >> Because of a function used internally by the function graph tracer:
-> >> __kernel_text_address()
-> >>
-> >> To let the other functions inside these files to be traced, this patch
-> >> introduces the __notrace_funcgraph function prefix which is __notrace
-> >> if function graph tracer is configured and nothing if not.
-> >>
-> >> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> >
-> > applied to tip/tracing/function-graph-tracer, thanks Frederic!
+On Monday 08 December 2008, Artem Bityutskiy wrote:
+> On Mon, 2008-12-08 at 10:41 +0100, Laurent Pinchart wrote:
+> > Correct me if I'm wrong, but doesn't this only matters for devices that would 
+> > implement both the UBI and DVB API on the same inode ? That would be quite 
+> > unlikely.
 > 
-> Thanks!
-> 
-> > [ one small request: would it be possible to include the diffstat in the
-> >  patches you send? If you use git-diff then it's the --patch-with-stat
-> >  option. ]
-> 
-> 
-> Ok. BTW. I wanted to give a try on linux-next to test the last ftrace 
-> stuffs, but the auto-ftrace-next branch seems too much old. Are the 
-> auto branches updated every week or something like this...?
+> Yeah, I guess. But this anyway makes sense to keep ioctls
+> non-overlapping.
 
-yes - but there's a few pending regressions right now delaying the 
-reintegration.
+We try hard (but sometimes fail) to keep every ioctl number unique.
+The reason for this is that the device drivers are not the only
+pieces of code that look at them. Specifically, three other things
+frequently cause problems here:
 
-	Ingo
+* strace wants to know about ioctl numbers so that it can show
+the arguments in a meaningful way when tracing a program.
+
+* the original 64 bit emulation for ioctl numbers in fs/compat_ioctl.c
+assumes that it should translate specific calls in a given way. This
+is not important if both device drivers handle all their ioctls through
+their own ->compat_ioctl file operation.
+
+* A number of binary emulation layers try to convert between different
+formats (endianess, word size, ioctl numbers). The most common ones are
+Linux-on-BSD, x86-on-ia64, x86-on-powerpc and Unix-on-Linux emulation
+layers in user space.
+
+	Arnd <><
