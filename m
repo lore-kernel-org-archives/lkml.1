@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbYLHLvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbYLHLvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757492AbYLHLvY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 06:51:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbYLHLis
+	id S1757558AbYLHLvm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 06:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbYLHLiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 06:38:48 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48225 "EHLO mx2.redhat.com"
+	Mon, 8 Dec 2008 06:38:51 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48222 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753264AbYLHLhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753246AbYLHLhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Dec 2008 06:37:03 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Jan Kiszka <jan.kiszka@siemens.com>
-Subject: [PATCH 07/45] KVM: VMX: refactor IRQ and NMI window enabling
-Date: Mon,  8 Dec 2008 13:36:18 +0200
-Message-Id: <1228736216-15787-8-git-send-email-avi@redhat.com>
+Subject: [PATCH 08/45] KVM: VMX: fix real-mode NMI support
+Date: Mon,  8 Dec 2008 13:36:19 +0200
+Message-Id: <1228736216-15787-9-git-send-email-avi@redhat.com>
 In-Reply-To: <1228736216-15787-1-git-send-email-avi@redhat.com>
 References: <1228736216-15787-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,136 +23,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jan Kiszka <jan.kiszka@siemens.com>
 
-do_interrupt_requests and vmx_intr_assist go different way for
-achieving the same: enabling the nmi/irq window start notification.
-Unify their code over enable_{irq|nmi}_window, get rid of a redundant
-call to enable_intr_window instead of direct enable_nmi_window
-invocation and unroll enable_intr_window for both in-kernel and user
-space irq injection accordingly.
+Fix NMI injection in real-mode with the same pattern we perform IRQ
+injection.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/vmx.c |   78 +++++++++++++++++++++------------------------------
- 1 files changed, 32 insertions(+), 46 deletions(-)
+ arch/x86/kvm/vmx.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
 diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index f0866e1..440f56c 100644
+index 440f56c..38d1385 100644
 --- a/arch/x86/kvm/vmx.c
 +++ b/arch/x86/kvm/vmx.c
-@@ -2389,30 +2389,42 @@ static void kvm_do_inject_irq(struct kvm_vcpu *vcpu)
- 	kvm_queue_interrupt(vcpu, irq);
- }
+@@ -2358,6 +2358,19 @@ static void vmx_inject_irq(struct kvm_vcpu *vcpu, int irq)
  
--static void do_interrupt_requests(struct kvm_vcpu *vcpu,
--				       struct kvm_run *kvm_run)
-+static void enable_irq_window(struct kvm_vcpu *vcpu)
+ static void vmx_inject_nmi(struct kvm_vcpu *vcpu)
  {
- 	u32 cpu_based_vm_exec_control;
- 
--	vmx_update_window_states(vcpu);
-+	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
-+	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_INTR_PENDING;
-+	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
-+}
- 
--	if (vcpu->arch.interrupt_window_open &&
--	    vcpu->arch.irq_summary && !vcpu->arch.interrupt.pending)
--		kvm_do_inject_irq(vcpu);
-+static void enable_nmi_window(struct kvm_vcpu *vcpu)
-+{
-+	u32 cpu_based_vm_exec_control;
- 
--	if (vcpu->arch.interrupt_window_open && vcpu->arch.interrupt.pending)
--		vmx_inject_irq(vcpu, vcpu->arch.interrupt.nr);
-+	if (!cpu_has_virtual_nmis())
++	struct vcpu_vmx *vmx = to_vmx(vcpu);
++
++	if (vcpu->arch.rmode.active) {
++		vmx->rmode.irq.pending = true;
++		vmx->rmode.irq.vector = NMI_VECTOR;
++		vmx->rmode.irq.rip = kvm_rip_read(vcpu);
++		vmcs_write32(VM_ENTRY_INTR_INFO_FIELD,
++			     NMI_VECTOR | INTR_TYPE_SOFT_INTR |
++			     INTR_INFO_VALID_MASK);
++		vmcs_write32(VM_ENTRY_INSTRUCTION_LEN, 1);
++		kvm_rip_write(vcpu, vmx->rmode.irq.rip - 1);
 +		return;
- 
- 	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
-+	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_NMI_PENDING;
-+	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
-+}
-+
-+static void do_interrupt_requests(struct kvm_vcpu *vcpu,
-+				       struct kvm_run *kvm_run)
-+{
-+	vmx_update_window_states(vcpu);
-+
-+	if (vcpu->arch.interrupt_window_open) {
-+		if (vcpu->arch.irq_summary && !vcpu->arch.interrupt.pending)
-+			kvm_do_inject_irq(vcpu);
-+
-+		if (vcpu->arch.interrupt.pending)
-+			vmx_inject_irq(vcpu, vcpu->arch.interrupt.nr);
 +	}
- 	if (!vcpu->arch.interrupt_window_open &&
- 	    (vcpu->arch.irq_summary || kvm_run->request_interrupt_window))
--		/*
--		 * Interrupts blocked.  Wait for unblock.
--		 */
--		cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_INTR_PENDING;
--	else
--		cpu_based_vm_exec_control &= ~CPU_BASED_VIRTUAL_INTR_PENDING;
--	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
-+		enable_irq_window(vcpu);
+ 	vmcs_write32(VM_ENTRY_INTR_INFO_FIELD,
+ 			INTR_TYPE_NMI_INTR | INTR_INFO_VALID_MASK | NMI_VECTOR);
  }
- 
- static int vmx_set_tss_addr(struct kvm *kvm, unsigned int addr)
-@@ -3066,35 +3078,6 @@ static void update_tpr_threshold(struct kvm_vcpu *vcpu)
- 	vmcs_write32(TPR_THRESHOLD, (max_irr > tpr) ? tpr >> 4 : max_irr >> 4);
- }
- 
--static void enable_irq_window(struct kvm_vcpu *vcpu)
--{
--	u32 cpu_based_vm_exec_control;
--
--	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
--	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_INTR_PENDING;
--	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
--}
--
--static void enable_nmi_window(struct kvm_vcpu *vcpu)
--{
--	u32 cpu_based_vm_exec_control;
--
--	if (!cpu_has_virtual_nmis())
--		return;
--
--	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
--	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_NMI_PENDING;
--	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
--}
--
--static void enable_intr_window(struct kvm_vcpu *vcpu)
--{
--	if (vcpu->arch.nmi_pending)
--		enable_nmi_window(vcpu);
--	else if (kvm_cpu_has_interrupt(vcpu))
--		enable_irq_window(vcpu);
--}
--
- static void vmx_complete_interrupts(struct vcpu_vmx *vmx)
- {
- 	u32 exit_intr_info;
-@@ -3165,13 +3148,16 @@ static void vmx_intr_assist(struct kvm_vcpu *vcpu)
- 				vcpu->arch.nmi_pending = false;
- 				vcpu->arch.nmi_injected = true;
- 			} else {
--				enable_intr_window(vcpu);
-+				enable_nmi_window(vcpu);
- 				return;
- 			}
- 		}
- 		if (vcpu->arch.nmi_injected) {
- 			vmx_inject_nmi(vcpu);
--			enable_intr_window(vcpu);
-+			if (vcpu->arch.nmi_pending)
-+				enable_nmi_window(vcpu);
-+			else if (kvm_cpu_has_interrupt(vcpu))
-+				enable_irq_window(vcpu);
- 			return;
- 		}
- 	}
 -- 
 1.6.0.3
 
