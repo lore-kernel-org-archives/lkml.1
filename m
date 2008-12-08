@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYLHGTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbYLHGUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756236AbYLHGTz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 01:19:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYLHGTq
+	id S1756263AbYLHGUv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 01:20:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYLHGUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 01:19:46 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:38465 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751940AbYLHGTp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 01:19:45 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH 1/2] tracing/function-graph-tracer: signal interrupts
- entry/exit points on outpout
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <493C7058.4060709@gmail.com>
-References: <493C7058.4060709@gmail.com>
-Content-Type: text/plain
-Date: Mon, 08 Dec 2008 07:19:32 +0100
-Message-Id: <1228717172.23742.1.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 8 Dec 2008 01:20:41 -0500
+Received: from ozlabs.org ([203.10.76.45]:51408 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752135AbYLHGUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 01:20:40 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Yet more ARM breakage in linux-next
+Date: Mon, 8 Dec 2008 16:50:34 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       "Linux/m68k" <linux-m68k@vger.kernel.org>
+References: <20081203192905.GA12502@flint.arm.linux.org.uk> <200812050042.28222.rusty@rustcorp.com.au> <Pine.LNX.4.64.0812072248430.14941@anakin>
+In-Reply-To: <Pine.LNX.4.64.0812072248430.14941@anakin>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812081650.35014.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-08 at 01:54 +0100, Frederic Weisbecker wrote:
-> Impact: provide interrupt detection on output
-> 
-> Suggested by Ingo.
-> If a hardirq is raised, we want it to be signaled on output, so this patch
-> adds two arrows on the output to find entry and exit points of a hardirq.
-> 
-> Unfortunately, there are many interrupt entrypoints and these can be differents
-> from one arch to another.
-> 
-> The approach here is one of the easiest, but doesn't shine by its scalability:
-> we have an array of the interrupt entrypoints names that we compare with the
-> symbol of the current traced function, if it matches, we draw the arrow.
-> 
-> Ie:
-> 
->  1)               |                                unlock_buffer() {
->  1)               |                                  wake_up_bit() {
->  1)               |                                    bit_waitqueue() {
->  1)   0.872 us    |                                      __phys_addr();
->  1)   2.722 us    |                                    }
->  1)               |                                    __wake_up_bit() {
->  1)              ==>                                   __wake_up_bit() {
->  1)               |                                      do_IRQ() {
+On Monday 08 December 2008 08:20:59 Geert Uytterhoeven wrote:
+> On Fri, 5 Dec 2008, Rusty Russell wrote: 
+> > +static inline int __fls(int x)
+>                  ^^^       ^^^
+> Other implementations take `unsigned long' and return `unsigned long'...
 
-Would be much nicer, the current proposal is lost when grepping and adds
-a weird visual break in the output.
+It's all over the place, actually.  32 bit archs are especially loose.
 
+I've been toying with the idea of a boottime testsuite for all the
+bitops to see who gets them wrong.
+
+> > +static inline int __fls(unsigned long word)
+>                  ^^^       ^^^^^^^^^^^^^
+> > +{
+> > +	return fls(word) - 1;
+> > +}
+> > +
+> 
+> ... but this one uses mixed types?
+
+I cut and pasted.  I thought you were 32 bit, so doesn't matter?
+
+> What are the official semantics of __fls()?
+
+Find last bit set in the word, undefined if word is 0.  Returns 0
+to BITS_PER_LONG-1.
+
+Cheers,
+Rusty.
