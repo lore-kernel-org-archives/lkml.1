@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYLHOyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbYLHO4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbYLHOyx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 09:54:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYLHOyo
+	id S1754255AbYLHO4T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 09:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbYLHO4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 09:54:44 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56941 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752042AbYLHOyn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 09:54:43 -0500
-Date: Mon, 8 Dec 2008 15:54:42 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Michael Chan <mchan@broadcom.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, benli@broadcom.com
-Subject: Re: bnx2: fs_sync_timeout, reset code = 1020002
-Message-ID: <20081208145442.GA23820@atrey.karlin.mff.cuni.cz>
-References: <20081204105550.GA2429@elf.ucw.cz> <1228411378.9156.52.camel@HP1>
+	Mon, 8 Dec 2008 09:56:05 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54781 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752917AbYLHO4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 09:56:04 -0500
+Message-ID: <493D357C.4090308@redhat.com>
+Date: Mon, 08 Dec 2008 16:55:56 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1228411378.9156.52.camel@HP1>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Mike Travis <travis@sgi.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, kvm-devel <kvm@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] kvm: use modern cpumask primitives, no cpumask_t
+ on stack
+References: <200812072125.14416.rusty@rustcorp.com.au> <493BF144.9080106@redhat.com> <493D300A.6080805@sgi.com>
+In-Reply-To: <493D300A.6080805@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> On Thu, 2008-12-04 at 02:55 -0800, Pavel Machek wrote:
-> > Hi!
-> > 
-> > I'm getting `subj` (with different numbers, 1020002, 1020004,
-> > sometimes 102006). ifconfig eth0 up fails, network is completely
-> > broken.
-> 
-> Which kernel are you using?  If it used to work before 2.6.26 or so,
-> it
+Mike Travis wrote:
+>> Since we're in a get_cpu() here, how about a per_cpu static cpumask
+>> instead? I don't mind the inefficient fallback, just the duplication.
+>>     
+>
+> One thing to note is that when CPUMASK_OFFSTACK=n, then alloc_cpumask_var
+> returns a constant 1 and the duplicate code is not even compiled.
+>   
 
-I'm using 2.6.28-rc7. I did not try any previous kernels.
-
-> may be because of the PCI VPD access going beyond the size limit.  We
-> should have a PCI quirk to prevent this, but may be it is not
-> complete.
-
-I could not find quirk handling, so I enabled the debug and workaround
-options I could find...
+I'm a lot more concerned about source duplication than binary 
+duplication.  Rusty's patches resulted in a net reduction in 
+duplication, so perhaps I should keep quiet about it.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+error compiling committee.c: too many arguments to function
+
