@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbYLHOKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbYLHOOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753364AbYLHOKG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 09:10:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYLHOJz
+	id S1753429AbYLHOOb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 09:14:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbYLHOOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 09:09:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45594 "EHLO mx3.mail.elte.hu"
+	Mon, 8 Dec 2008 09:14:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37244 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751953AbYLHOJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 09:09:54 -0500
-Date: Mon, 8 Dec 2008 15:09:38 +0100
+	id S1752082AbYLHOOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 09:14:18 -0500
+Date: Mon, 8 Dec 2008 15:14:06 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: cleanup get_smp_config
-Message-ID: <20081208140938.GF29965@elte.hu>
-References: <493A1F9E.4010201@kernel.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] tracing/function-graph-tracer: introduce
+	__notrace_funcgraph to filter special functions
+Message-ID: <20081208141406.GA14856@elte.hu>
+References: <4939E600.804@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <493A1F9E.4010201@kernel.org>
+In-Reply-To: <4939E600.804@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,21 +36,37 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
+> Impact: trace more functions
 > 
-> Impact: cleanup
+> When the function graph tracer is configured, three more files are not 
+> traced to prevent only four functions to be traced. And this impacts 
+> the normal function tracer too.
 > 
-> reordering exit path in __get_smp_config
-> also move two print out to acpi_process_madt
+> arch/x86/kernel/process_64/32.c:
 > 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> I had crashes when I let this file traced. After some debugging, I saw 
+> that the "current" task point was changed inside__swtich_to(), ie: 
+> "write_pda(pcurrent, next_p);" inside process_64.c Since the tracer 
+> store the original return address of the function inside current, we 
+> had crashes. Only __switch_to() has to be traced.
 > 
-> ---
->  arch/x86/kernel/acpi/boot.c |   11 +++++++++++
->  arch/x86/kernel/mpparse.c   |   25 +++++++++++--------------
->  2 files changed, 22 insertions(+), 14 deletions(-)
+> kernel/module.c and kernel/extable.c:
+> 
+> Because of a function used internally by the function graph tracer: 
+> __kernel_text_address()
+> 
+> To let the other functions inside these files to be traced, this patch 
+> introduces the __notrace_funcgraph function prefix which is __notrace 
+> if function graph tracer is configured and nothing if not.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-applied to tip/x86/quirks, thanks Yinghai!
+applied to tip/tracing/function-graph-tracer, thanks Frederic!
+
+[ one small request: would it be possible to include the diffstat in the 
+  patches you send? If you use git-diff then it's the --patch-with-stat 
+  option. ]
 
 	Ingo
