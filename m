@@ -1,57 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752038AbYLHJg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752069AbYLHJl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752038AbYLHJg7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 04:36:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYLHJgu
+	id S1752069AbYLHJl1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 04:41:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYLHJlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 04:36:50 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56736 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751426AbYLHJgt (ORCPT
+	Mon, 8 Dec 2008 04:41:19 -0500
+Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:38279 "EHLO
+	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751305AbYLHJlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 04:36:49 -0500
-Message-ID: <493CEAA0.50201@jp.fujitsu.com>
-Date: Mon, 08 Dec 2008 18:36:32 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Mon, 8 Dec 2008 04:41:18 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtEEAD96PEnCTsYx/2dsb2JhbACBbMtngwU
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+Organization: CSE Semaphore
+To: linux-mtd@lists.infradead.org, dedekind@infradead.org
+Subject: Re: UBI/DVB ioctl conflict?
+Date: Mon, 8 Dec 2008 10:41:13 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, v4l-dvb-maintainer@linuxtv.org,
+       LKML <linux-kernel@vger.kernel.org>, arnd@arndb.de
+References: <20081207095811.13b51cca@zod.rchland.ibm.com> <1228717226.13686.89.camel@sauron>
+In-Reply-To: <1228717226.13686.89.camel@sauron>
 MIME-Version: 1.0
-To: Giangiacomo Mariotti <gg.mariotti@gmail.com>
-CC: Arjan van de Ven <arjan@infradead.org>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>
-Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
-References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>	 <493AE770.5030507@shaw.ca>	 <12bfabe40812061343j400f55d8r43571c8bd514adde@mail.gmail.com>	 <493AF2EA.4030601@shaw.ca>	 <12bfabe40812061416u1b6f800dn7261beae5ce36b2f@mail.gmail.com>	 <493B4242.1040202@shaw.ca>	 <12bfabe40812071355r65c13e52g5f3d94d3b060c939@mail.gmail.com>	 <20081207141337.588aede5@infradead.org>	 <12bfabe40812072248n3c931ce0hf030b3ac758026d4@mail.gmail.com>	 <493CCFE4.2080802@jp.fujitsu.com> <12bfabe40812080004p7438744eqeb884b42673bd73c@mail.gmail.com>
-In-Reply-To: <12bfabe40812080004p7438744eqeb884b42673bd73c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812081041.14178.laurentp@cse-semaphore.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Giangiacomo Mariotti wrote:
-> I still don't quite understand the logic behind this exception. It
-> happens always only once per boot, right after booting always at [
-> 301.7320xx], which clearly means that it's always triggered by the
-> same instruction/s. It's about a "Generic CACHE Level-2 Data-Write
-> Error", yet after that moment it never happens again until the next
-> boot at the same relative time. The cache has an hardware problem, the
-> process context is corrupted, but still after that single message I
-> don't have any problem, my system works normally, even under very high
-> pressure on cpu and memory. Is this normal? Should I try to limit the
-> number of cpu used to only 1(cpu0) on bios and disable hyperthreading?
-> That way I'd have a single physical and logical cpu, so probably if it
-> has an hardware problem on the cache, the heaven will fall?
+Hi,
 
-IIRC, this error is not what happen on the time [301.7320xx] during
-boot, but happen before the boot.  Since the record says "Processor
-context corrupt," MCE handler should call panic(or do something stop
-the system) if the context actually corrupted during the boot.
+On Monday 08 December 2008 07:20:26 Artem Bityutskiy wrote:
+> On Sun, 2008-12-07 at 09:58 -0500, Josh Boyer wrote:
+> > I received a bug report where someone noticed that the UBI ioctls can
+> > conflict with the dvb subsystem.  Looking it over, it seems that both
+> > subsystems use 'o' as the magic, and do have a set of somewhat
+> > conflicting sequence numbers as the secondary arg.
+> >
+> > Is this a problem?
+>
+> Hmm, thanks for noticing.
+>
+> I've looked at this, and thankfully it looks like we were lucky and do
+> not use the same 'ioctl()' numbers, by chance.
+>
+> Ioctl number has the following structure:
+>
+> bits 0-15: command (or sequence number)
+> bits 16-29: parameter size
+> bits 30-31: mode (read, write, etc).
+>
+> We have the following overlaps with DVB subsystem:
+>
+> #define AUDIO_STOP   _IO('o', 1)
+> #define UBI_IOCRMVOL _IOW('o', 1, int32_t)
+>
+> #define AUDIO_PLAY   _IO('o', 2)
+> #define UBI_IOCRSVOL _IOW('o', 2, struct ubi_rsvol_req)
+>
+> #define AUDIO_PAUSE  _IO('o', 3)
+> #define UBI_IOCRNVOL _IOW('o', 3, struct ubi_rnvol_req)
+>
+> These are fine because parameter sizes are different, and because UBI
+> uses _IOW and DVB uses _IO, so the mode bits are "01" and "00".
+>
+> And:
+>
+> #define FE_DISEQC_RECV_SLAVE_REPLY _IOR('o', 64,
+>                                         struct dvb_diseqc_slave_reply)
+> #define UBI_IOCATT _IOW('o', 64, struct ubi_attach_req)
+>
+> #define FE_DISEQC_SEND_BURST _IO('o', 65)
+> #define UBI_IOCDET _IOW('o', 65, int32_t)
+>
+> are also fine because parameter sizes are different and the mode bits
+> are different.
+>
+> However, we have to be very careful in the future. It seems like DVB
+> has been in the kernel long before UBI, so this potential conflict
+> would be my fault.
+>
+> Neither DVB nor UBI seem not to be documented in
+> Documentation/ioctl/ioctl-number.txt. Should we do this?
+>
+> P.S. Added Arnd to CC for suggestions, as well as LKML and DVB
+> maintainers.
 
-In other words, it seems that 1) the error was recorded at last time
-when your machine crashed unexpectedly(by cosmic-ray etc.) and not cleared
-yet, or 2) your machine is doing something wrong in every reset/poweroff.
+Correct me if I'm wrong, but doesn't this only matters for devices that would 
+implement both the UBI and DVB API on the same inode ? That would be quite 
+unlikely.
 
-Could you try "mce=nobootlog" boot option?
+Best regards,
 
-Thanks,
-H.Seto
+-- 
+Laurent Pinchart
+CSE Semaphore Belgium
 
+Chaussee de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+F +32 (2) 387 42 75
