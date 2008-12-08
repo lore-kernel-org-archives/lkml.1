@@ -1,237 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbYLHCMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbYLHCOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637AbYLHCMq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 21:12:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbYLHCMe
+	id S1755876AbYLHCOW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 21:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbYLHCOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 21:12:34 -0500
-Received: from fmailhost03.isp.att.net ([207.115.11.53]:60473 "EHLO
-	fmailhost03.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753847AbYLHCMc (ORCPT
+	Sun, 7 Dec 2008 21:14:07 -0500
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:44547 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753952AbYLHCOE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 21:12:32 -0500
-X-Originating-IP: [72.155.109.65]
-From: "Dan Terpstra" <terpstra@eecs.utk.edu>
-To: <eranian@gmail.com>, "'Thomas Gleixner'" <tglx@linutronix.de>
-Cc: <linux-arch@vger.kernel.org>, "'Peter Zijlstra'" <a.p.zijlstra@chello.nl>,
-       "'David Miller'" <davem@davemloft.net>,
-       "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'Steven Rostedt'" <rostedt@goodmis.org>,
-       "'Eric Dumazet'" <dada1@cosmosbay.com>,
-       "'Paul Mackerras'" <paulus@samba.org>, "'Peter Anvin'" <hpa@zytor.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Ingo Molnar'" <mingo@elte.hu>,
-       "'perfmon2-devel'" <perfmon2-devel@lists.sourceforge.net>,
-       "'Arjan van de Veen'" <arjan@infradead.org>
-References: <20081204225345.654705757@linutronix.de> <7c86c4470812051836t37e86565w3b92fd06fc905430@mail.gmail.com>
-Subject: RE: [perfmon2] [patch 0/3] [Announcement] Performance Counters forLinux
-Date: Sun, 7 Dec 2008 21:12:25 -0500
-Message-ID: <04009AA71D2343CF8DCD0E607DC58225@terpstrat60p>
+	Sun, 7 Dec 2008 21:14:04 -0500
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.0.5
+cc: linux-kernel@vger.kernel.org
+Date: Sun, 07 Dec 2008 18:13:56 -0800
+Message-ID: <7vabb7ct23.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <7c86c4470812051836t37e86565w3b92fd06fc905430@mail.gmail.com>
-Thread-Index: AclXS/Mhu159ZOFATF6ljy/ODolxewBjV0eQ
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Pobox-Relay-ID: E2163894-C4CD-11DD-B8DC-F83E113D384A-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm reminded of the quote attributed to Einstein: "Make things as simple as
-possible, but no simpler".
-In that regard, it appears that Stephane's perfmon is closer to the mark
-than this proposal.
-If Stephane's observations below are even close to correct, it would make
-PAPI's first-person event-set caliper model essentially useless. We must be
-able to start and stop multiple counter values simultaneously and quickly to
-infer any validity even for derived measurements as simple as
-instructions-per-cycle.
-dan terpstra
-for the PAPI team
+The latest maintenance release GIT 1.6.0.5 is available at the
+usual places:
+
+  http://www.kernel.org/pub/software/scm/git/
+
+  git-1.6.0.5.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.0.5.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.0.5.tar.{gz,bz2}		(preformatted docs)
+
+The RPM binary packages for a few architectures are also provided
+as courtesy.
+
+  RPMS/$arch/git-*-1.6.0.5-1.fc9.$arch.rpm	(RPM)
+
+Although we are into 1.6.1-rc cycle, we have accumulated enough fixes to
+warrant a new maintenance release, so here it is.
+
+----------------------------------------------------------------
+
+GIT v1.6.0.5 Release Notes
+==========================
+
+Fixes since v1.6.0.4
+--------------------
+
+* "git checkout" used to crash when your HEAD was pointing at a deleted
+  branch.
+
+* "git checkout" from an un-checked-out state did not allow switching out
+  of the current branch.
+
+* "git diff" always allowed GIT_EXTERNAL_DIFF and --no-ext-diff was no-op for
+  the command.
+
+* Giving 3 or more tree-ish to "git diff" is supposed to show the combined
+  diff from second and subsequent trees to the first one, but the order was
+  screwed up.
+
+* "git fast-export" did not export all tags.
+
+* "git ls-files --with-tree=<tree>" did not work with options other
+  than -c, most notably with -m.
+
+* "git pack-objects" did not make its best effort to honor --max-pack-size
+  option when a single first object already busted the given limit and
+  placed many objects in a single pack.
+
+* "git-p4" fast import frontend was too eager to trigger its keyword expansion
+  logic, even on a keyword-looking string that does not have closing '$' on the
+  same line.
+
+* "git push $there" when the remote $there is defined in $GIT_DIR/branches/$there
+  behaves more like what cg-push from Cogito used to work.
+
+* when giving up resolving a conflicted merge, "git reset --hard" failed
+  to remove new paths from the working tree.
+
+* "git tag" did not complain when given mutually incompatible set of options.
+
+* The message constructed in the internal editor was discarded when "git
+  tag -s" failed to sign the message, which was often caused by the user
+  not configuring GPG correctly.
+
+* "make check" cannot be run without sparse; people may have meant to say
+  "make test" instead, so suggest that.
+
+* Internal diff machinery had a corner case performance bug that choked on
+  a large file with many repeated contents.
+
+* "git repack" used to grab objects out of packs marked with .keep
+  into a new pack.
+
+* Many unsafe call to sprintf() style varargs functions are corrected.
+
+* Also contains quite a few documentation updates.
 
 
-> -----Original Message-----
-> From: stephane eranian [mailto:eranian@googlemail.com]
-> Sent: Friday, December 05, 2008 9:37 PM
-> To: Thomas Gleixner
-> Cc: linux-arch@vger.kernel.org; Peter Zijlstra; David Miller; LKML; Steven
-> Rostedt; Eric Dumazet; Paul Mackerras; Peter Anvin; Andrew Morton; Ingo
-> Molnar; perfmon2-devel; Arjan van de Veen
-> Subject: Re: [perfmon2] [patch 0/3] [Announcement] Performance Counters
-> forLinux
-> 
-> Hello,
-> 
-> I have been reading all the threads after this unexpected announcement
-> of a competing proposal for an interface to access the performance
-> counters.
-> I would like to respond to some of the things I have seen.
-> 
-> * ptrace: as Paul just pointed out, ptrace() is a limitation of the
->   current perfmon implementation. This is not a limitation of the
->   interface as has been insinuated earlier. In my mind, this does
->   not justify starting from scratch. There is nothing that precludes
->   removing ptrace and using the IPI to chase down the PMU state,
->   like you are doing. And in fact I believe we can do it more efficiently
->   because we would potentially collect multiple values in one IPI,
->   something your API cannot allow because it is single event oriented.
-> 
-> * There is more to perfmon than what you have looked at on LKML. There
->    is advanced sampling support with a kernel level buffer which is
-> remapped
->    to user space. So there is no such thing as a couple of ptrace() calls
-> per
->    sample. In fact, there is zero copy export to user space. In the
-> case of PEBS,
->    there is even zero-copy from HW to user space.
-> 
-> * The proposed API exposes events as individual entities. To measure N
->    events, you need N file descriptors. There is no coordination of
-> actions
->    between the various events. If you want to start/stop all events, it
-> seems
->    you have to close the  file descriptors and start over. That is not
-> how people
->    use this, especially people doing self monitoring. They want to
-> start/stop
->    around critical loops or functions and they want this to be fast.
-> 
-> * To read N events you need N syscalls and potentially N IPIs. There
->    is no guarantee of atomicity between the reads. The argument of raising
->    the priority to prevent preemption is bogus and unrealistic. We want
-> regular
->    users to be able to measure their own applications without having to
-> have
->    special privileges. This is especially unpractical when you want to
-> read from
->    another thread. It is important to get a view of the counters that
-> is as consistent
->    as possible and for that you want to read the registers are closely
-> as possible
->    from each other.
-> 
-> * As mentioned by Paul, Corey, the API inevitably forces the kernel to
-> know about
->   ALL the events and how they map onto counters. People who have been
-> doing this
->   in userland, and I am one of them, can tell you that this is a very
-> hard problem.
->   Looking at it just on the Intel and AMD x86 is misleading. It is not
-> the number of
->   events that matters, even it contributes to the kernel bloat, it is
-> managing the constraints
->   between events (event A and B cannot be measured together, if event
-> A uses counter X
->   then B cannot be measured on counter Y). Sometimes, the value of a
-> config register depends
->   on which register you load it on. With the proposed API, all this
-> complexity would have to go in
->   the kernel. I don't think it belongs here and it will leads to
-> maintenance problems, and longer
->   delays to enable support of new hardware. The argument for doing
-> this was that it would
->   facilitate writing tools. But all that complexity does not belong in
-> the tools but in a user library.
->   This is what libpfm is designed for and it has worked nicely so far.
-> The role of the kernel
->   is to control access to the PMU resource and to make sure incorrect
-> programming of the registers
->   cannot crash the kernel. If you do this, then providing support for
-> new hardware is for the most part
->   simply exposing the registers. Something which can even be
-> discovered automatically on newer
->   processors, e.g., ones supporting Intel architectural perfmon.
-> 
-> * Tools usually manage monitoring as a session. There was criticism
->    about the perfmon context abstraction and vectors. A context is  merely
->    a synonym for session.  I believe having a file descriptor per session
-> is
->    a natural thing to have. Vectors are used to access multiple registers
-> in
->    one syscall. Vector have variable sizes, it depends on what you want to
->    access. The size is not mandated by the number of registers of the
->    underlying hardware.
-> 
-> * As mentioned by Paul, with certain PMUs, it is not possible to solve
->   the event -> counter problem without having a global view
->   of all the events. Your API being single-event oriented, it is not
->   clear to me how this can be solved.
-> 
-> * It is not because you run a per thread session, that you should be
->   limited to measuring at priv level 3.
-> 
-> * Modern PMU, including AMD Barcelona. Itanium2, expose more than
->   counters. Any API than assumes PMU export only
->   counters is going to be limited, e.g. Oprofile. Perfmon does not
->   make that mistake, the interface does not know anything
->   about counters nor sampling periods. It sees registers with values
->   you can read or write. That has allowed us to support
->   advanced features such as Itanium2 Opcode filter, Itanium2
->   Code/Data range restrictions (hosted in debug regs), AMD
->   Barcelona IBS which has no event associated with it, Itanium2
->   BranchTraceBuffer, Intel Core 2 LBR, Intel Core i7 uncore PMU.
->   Some of those features have no ties with counters, they do not even
->   overflow (e.g., LBR). They must be used in combination with
->   counters, e.g., LBRs. I don't think you will be able to do this
->   with your API.
-> 
-> * With regards to sampling, advanced users have long been collecting
->   more than just the IP. They want to collect the values of other
->   PMU registers or even values of other non-PMU resources. With your
->   API, it seems for every new need, you'd have to create a new
->   perf_record_type, which translates into a kernel patch. This is not
->   what people want. With perfmon, you have a choice of doing user
->   level sampling (users gets notification for each sample) but you can
->   also use a kernel sampling buffer. In that case, you can express
->   what you want recorded in the buffer using simple bitmasks of PMU
->   registers. There is no predefined set, no kernel patch.
->   To make this even more flexible the buffer format is not part of the
->   interface, you can define your own and record whatever you want
->   in whatever format you want. All is provided by kernel modules. You
->   want double-buffer, cyclic buffer, just add your kernel module. It
->   seems this feature has been overlooked by LKML reviewers but it is
->   really powerful.
-> 
-> * It is not clear to me how you would add a sampling buffer and
->   remapping using your API given the number of file descriptors you will
->   end up using and the fact that you do not have the notion of a session.
-> 
-> * When sampling, you want to freeze the counters on overflow to get an
->   as consistent as possible view. There is no such guarantee in
->   your API nor implementation. On some hardware platforms, e.g.,
->   Itanium, you have no choice this is the behavior.
-> 
-> * Multiple counters can overflow at the same time and generate a
->   single interrupt. With your approach, if two counters overflow
->   simultaneously, then you need to enqueue two messages, yet only
->   one SIGIO wil be generated, it seems. Wonder how that works when
->   self-monitoring.
-> 
-> 
-> In summary, although the idea of simplifying tools by moving the
-> complexity elsewhere is legitimate, pushing it down to the kernel
-> is the wrong approach in my opinion, perfmon has avoided that as much
-> as possible for good reasons. We have shown , with libpfm,
-> that a large part of complexity can easily be encapsulated into a user
-> library. I also don't think the approach of managing events
-> independently of each others works for all processors. As pointed out
-> by others, there are other factors at stake and they may not
-> even be on the same core.
-> 
-> S. Eranian
-> 
-> --------------------------------------------------------------------------
-> ----
-> SF.Net email is Sponsored by MIX09, March 18-20, 2009 in Las Vegas,
-> Nevada.
-> The future of the web can't happen without you.  Join us at MIX09 to help
-> pave the way to the Next Web now. Learn more and register at
-> http://ad.doubleclick.net/clk;208669438;13503038;i?http://2009.visitmix.co
-> m/
-> _______________________________________________
-> perfmon2-devel mailing list
-> perfmon2-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/perfmon2-devel
+----------------------------------------------------------------
+
+Changes since v1.6.0.4 are as follows:
+
+Alexandre Julliard (2):
+      checkout: Don't crash when switching away from an invalid branch.
+      git-submodule: Avoid printing a spurious message.
+
+Brandon Casey (12):
+      t7700: demonstrate mishandling of objects in packs with a .keep file
+      packed_git: convert pack_local flag into a bitfield and add pack_keep
+      pack-objects: new option --honor-pack-keep
+      repack: don't repack local objects in packs with .keep file
+      repack: do not fall back to incremental repacking with [-a|-A]
+      builtin-gc.c: use new pack_keep bitfield to detect .keep file existence
+      t7700: demonstrate mishandling of loose objects in an alternate ODB
+      sha1_file.c: split has_loose_object() into local and non-local counterparts
+      pack-objects: extend --local to mean ignore non-local loose objects too
+      t7700: test that 'repack -a' packs alternate packed objects
+      repack: only unpack-unreachable if we are deleting redundant packs
+      revision.c: use proper data type in call to sizeof() within xrealloc
+
+Bryan Drewery (1):
+      Fix misleading wording for git-cherry-pick
+
+Christian Couder (3):
+      Documentation: rev-list: change a few instances of "git-cmd" to "git cmd"
+      Documentation: bisect: change a few instances of "git-cmd" to "git cmd"
+      Documentation: fix links to "everyday.html"
+
+Daniel Lowe (1):
+      Fix non-literal format in printf-style calls
+
+Davide Libenzi (1):
+      xdiff: give up scanning similar lines early
+
+Jakub Narebski (1):
+      gitweb: Make project specific override for 'grep' feature work
+
+Jan Krüger (1):
+      Documentation: git-svn: fix example for centralized SVN clone
+
+Jeff King (2):
+      commit: Fix stripping of patch in verbose mode.
+      tag: delete TAG_EDITMSG only on successful tag
+
+Joey Hess (1):
+      sha1_file: avoid bogus "file exists" error message
+
+Johannes Schindelin (1):
+      fast-export: use an unsorted string list for extra_refs
+
+Johannes Sixt (1):
+      compat/mingw.c: Teach mingw_rename() to replace read-only files
+
+Junio C Hamano (8):
+      Makefile: help people who run 'make check' by mistake
+      checkout: Fix "initial checkout" detection
+      Start 1.6.0.5 cycle
+      builtin-ls-files.c: coding style fix.
+      Teach ls-files --with-tree=<tree> to work with options other than -c
+      Teach "git diff" to honour --[no-]ext-diff
+      Update draft release notes to 1.6.0.5
+      GIT 1.6.0.5
+
+Linus Torvalds (1):
+      date/time: do not get confused by fractional seconds
+
+Martin Koegler (1):
+      git push: Interpret $GIT_DIR/branches in a Cogito compatible way
+
+Matt Kraai (1):
+      Remove the period after the git-check-attr summary
+
+Matt McCutchen (3):
+      config.txt: alphabetize configuration sections
+      git checkout: don't warn about unborn branch if -f is already passed
+      "git diff <tree>{3,}": do not reverse order of arguments
+
+Miklos Vajna (3):
+      Add new testcase to show fast-export does not always exports all tags
+      User's Manual: remove duplicated url at the end of Appendix B
+      http.c: use 'git_config_string' to get 'curl_http_proxy'
+
+Nguyễn Thái Ngọc Duy (1):
+      generate-cmdlist.sh: avoid selecting synopsis at wrong place
+
+Nicolas Pitre (1):
+      Fix pack.packSizeLimit and --max-pack-size handling
+
+Pete Wyckoff (1):
+      git-p4: fix keyword-expansion regex
+
+Ralf Wildenhues (1):
+      Fix typos in the documentation.
+
+SZEDER Gábor (2):
+      bash: remove dashed command leftovers
+      bash: offer refs instead of filenames for 'git revert'
+
+Sam Vilain (1):
+      sha1_file.c: resolve confusion EACCES vs EPERM
+
+Samuel Tardieu (2):
+      tag: Check that options are only allowed in the appropriate mode
+      tag: Add more tests about mixing incompatible modes and options
+
+Stefan Naewe (2):
+      git ls-remote: make usage string match manpage
+      request-pull: make usage string match manpage
+
+Thomas Rast (1):
+      fetch-pack: Avoid memcpy() with src==dst
 
