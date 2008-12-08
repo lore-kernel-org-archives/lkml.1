@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbYLHJH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752264AbYLHJLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753128AbYLHJH0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 04:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYLHJGj
+	id S1752264AbYLHJLA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 04:11:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbYLHJKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 04:06:39 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:34530 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751404AbYLHJGd (ORCPT
+	Mon, 8 Dec 2008 04:10:43 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45194
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751066AbYLHJKn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 04:06:33 -0500
-Subject: Re: [PATCH 1/2] drivers/s390/crypto: Move dereference to after
-	IS_ERR test
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Julia Lawall <julia@diku.dk>
-Cc: heiko.carstens@de.ibm.com, linux390@de.ibm.com, linux-s390@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0812072314270.7130@ask.diku.dk>
-References: <Pine.LNX.4.64.0812072314270.7130@ask.diku.dk>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 08 Dec 2008 10:06:29 +0100
-Message-Id: <1228727189.15048.1.camel@localhost>
+	Mon, 8 Dec 2008 04:10:43 -0500
+Date: Mon, 08 Dec 2008 01:10:43 -0800 (PST)
+Message-Id: <20081208.011043.229232186.davem@davemloft.net>
+To: rusty@rustcorp.com.au
+Cc: linux-kernel@vger.kernel.org, travis@sgi.com
+Subject: Re: [PATCH] sparc: replace for_each_cpu_mask_nr with for_each_cpu
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200812072136.17757.rusty@rustcorp.com.au>
+References: <200812072136.17757.rusty@rustcorp.com.au>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-12-07 at 23:14 +0100, Julia Lawall wrote:
-> If reply is ERR_PTR(...), then it should not be dereferenced, so I have
-> moved the dereference from the declaration to after the IS_ERR test.
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Sun, 7 Dec 2008 21:36:17 +1030
 
-Nice finding again. That semantic match tools is really useful.
-Thanks, I'll add the patch to my collection.
+> Simple replacement, now the _nr is redundant.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Signed-off-by: Mike Travis <travis@sgi.com>
 
--- 
-blue skies,
-  Martin.
+I had to shoe-horn this into sparc-next-2.6 since we've
+fully unified both sparc ports to be under arch/sparc.
 
-"Reality continues to ruin my life." - Calvin.
-
-
+Applied, thanks!
