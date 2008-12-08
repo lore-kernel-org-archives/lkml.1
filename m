@@ -1,66 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbYLHN4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbYLHOER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753277AbYLHN4i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 08:56:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYLHN41
+	id S1752971AbYLHOER (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 09:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbYLHOEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 08:56:27 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:39490 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbYLHN41 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 08:56:27 -0500
-Subject: Re: [PATCH] memory hotplug: run lru_add_drain_all() on each cpu
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, gerald.schaefer@de.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com, npiggin@suse.de
-In-Reply-To: <20081207133450.53D8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <1228482500.8392.15.camel@t60p>
-	 <1228509818.12681.21.camel@nimitz>
-	 <20081207133450.53D8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Mon, 08 Dec 2008 08:56:28 -0500
-Message-Id: <1228744588.22647.32.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Dec 2008 09:04:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44240 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751186AbYLHOD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 09:03:59 -0500
+Date: Mon, 8 Dec 2008 15:03:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/function-graph-tracer: signal interrupts
+	entry/exit points on outpout
+Message-ID: <20081208140351.GE29965@elte.hu>
+References: <493C7058.4060709@gmail.com> <20081208122221.GA16560@elte.hu> <c62985530812080547t67a84d0cy146265c767df99b4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530812080547t67a84d0cy146265c767df99b4@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-12-07 at 13:43 +0900, KOSAKI Motohiro wrote:
-> CC to Lee Schermerhorn
+
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+
+> 2008/12/8 Ingo Molnar <mingo@elte.hu>:
+> >
+> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> >
+> >> +/* Used during output to find the interrupts entry/exit points */
+> >> +const char *ftrace_graph_irq_entries[] = {
+> >> +     "smp_call_function_single_interrupt",
+> >> +     "xen_call_function_single_interrupt",
+> >> +     "wrapper_smp_local_timer_interrupt",
+> >> +     "smp_irq_move_cleanup_interrupt",
+> >> +     "smp_call_function_interrupt",
+> >> +     "xen_call_function_interrupt",
+> >> +     "smp_apic_timer_interrupt",
+> >> +     "uv_bau_message_interrupt",
+> >> +     "mce_threshold_interrupt",
+> >> +     "smp_spurious_interrupt",
+> >> +     "smp_thermal_interrupt",
+> >> +     "smp_error_interrupt",
+> >> +     "do_IRQ",
+> >> +     NULL
+> >
+> > hm, couldnt we move these symbols to a separate section, and then only
+> > check for [section.start ... section.end] instead of this ugly and slow
+> > array?
+> >
+> > Missing a few annotations initially is no big deal - we wont have
+> > pretty-print. do_IRQ() and smp_apic_timer_interrupt is what matters most
+> > in practice. "__irqentry" section annotation or so, which puts them into
+> > .text.irqentry or so - and then irqentry_start/end are extracted via
+> > appropriate glue in the arch/x86/kernel/vmlinux* linker script.
 > 
 > 
-> > On Fri, 2008-12-05 at 14:08 +0100, Gerald Schaefer wrote:
-> > > 
-> > > As explained above, the per-cpu pagevec layout should be independent
-> > > from NUMA or UNEVICTABLE_LRU, so I guess the right thing to do here
-> > > is completely remove the #ifdef as in the patch from Kosaki Motohiro
-> > > (or at least replace it with a CONFIG_SMP as suggested by Kamezawa
-> > > Hiroyuki).
-> > 
-> > Thanks for looking into it deeper.  That CONFIG_SMP thing really does
-> > look like the right solution.
+> I found it a bit ugly too while I wrote it :-( I like this idea of a 
+> section, I will just have to verify if it is between the start and the 
+> end of it to check if its an irq entry. But I think that even if the 
+> others than do_IRQ and smp_apic_timer_interrupt are more rare, they 
+> should be annotated for this new section (and it seems there are new 
+> coming interrupts like smp_perf_counter_interrupt() in perf 
+> counter....)... Perhaps someone would profile them...
 > 
-> Lee, Could you read this thread and explain why you add ifdef CONFIG_UNEVICTABLE_LRU?
-> I am not sure about that Dave's proposal is safe change. (but I guess he is right)
+> Hm?
 
-I added that back in Patch 17/25 "Mlocked Pages are
-non-reclaimable" [before nonreclaimable became unevictable".  I did this
-because "lru_add_drain_all()" was only used by numa code prior to this,
-and was under #ifdef CONFIG_NUMA".  I called lru_add_drain_all() from
-__mlock_vma_pages_range() [since removed] and I wanted the
-nonreclaimable/unevictable mlocked pages feature to be independent of
-numa.  So, I had to ensure that we defined the function for
-nonreclaimable/unevictable lru as well as numa.
+not annotating an IRQ entry is not a big problem in practice: people will 
+notice them in traces that they are not annotated, will send a feature 
+request, we annotate them. If they are not noticed, it means they are 
+rare in one way or another, and dont matter in practice. So this is a 
+self-maintaining concept.
 
-Now it appears that hotplug and memcg also depend on
-lru_add_drain_all(), so making it depend on 'SMP looks reasonable to me.
-
-Lee 
-
+	Ingo
