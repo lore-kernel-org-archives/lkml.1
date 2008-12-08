@@ -1,191 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbYLHVnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbYLHVwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbYLHVnf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 16:43:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYLHVnX
+	id S1753290AbYLHVwf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 16:52:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYLHVwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 16:43:23 -0500
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:56165 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752457AbYLHVnW (ORCPT
+	Mon, 8 Dec 2008 16:52:25 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:38379 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752431AbYLHVwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 16:43:22 -0500
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: xfs@oss.sgi.com
-Subject: Re: benchmark: write barrier/write cache on XFS
-Date: Mon, 8 Dec 2008 22:43:14 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200812082139.58328.Martin@Lichtvoll.de> (sfid-20081208_214015_115571_1580D367)
-In-Reply-To: <200812082139.58328.Martin@Lichtvoll.de>
+	Mon, 8 Dec 2008 16:52:24 -0500
+Date: Mon, 8 Dec 2008 15:52:21 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: [PATCH 1/1] user namespaces: document CFS behavior
+Message-ID: <20081208215221.GA3954@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart8041931.ao1rTqzOyJ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200812082243.19525.Martin@lichtvoll.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart8041931.ao1rTqzOyJ
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Documented the currently bogus state of support for CFS user groups with
+user namespaces.  In particular, all users in a user namespace should be
+children of the user which created the user namespace.  This is yet to
+be implemented.
 
-Am Montag 08 Dezember 2008 schrieb Martin Steigerwald:
-> Hi!
->
-> I got curious about the recent discussions about the write barrier
-> feature[1][2].
->
-> Thus I did my own benchmark this evening. Since I use XFS and tested
-> with XFS for now only. Write barrier + write cache, no barrier + write
-> cache, no write barrier + no write cache. I just did tar -xf
-> linux-2.6.27.tar.bz2 and rm -rf linux-2.6.27.
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Acked-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 
-I disabled write cache and barriers for my XFS filesystems on my TP 42=20
-shambhala. During that I did further tests. This time I also include IO=20
-scheduler settings. They are default and have been the same during my=20
-previous tests.
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+---
+ Documentation/scheduler/sched-design-CFS.txt |   21 +++++++++++++++++++++
+ kernel/user.c                                |    8 +++++++-
+ 2 files changed, 28 insertions(+), 1 deletions(-)
 
-Write cache has about 13 seconds benefit on the barrier enabled XFS for=20
-the tar -xf linux-2.6.27.tar.bz2 workload but no benefit at all for the=20
-rm -rf linux-2.6.27 workload!
+diff --git a/Documentation/scheduler/sched-design-CFS.txt b/Documentation/scheduler/sched-design-CFS.txt
+index eb471c7..8398ca4 100644
+--- a/Documentation/scheduler/sched-design-CFS.txt
++++ b/Documentation/scheduler/sched-design-CFS.txt
+@@ -273,3 +273,24 @@ task groups and modify their CPU share using the "cgroups" pseudo filesystem.
+ 
+ 	# #Launch gmplayer (or your favourite movie player)
+ 	# echo <movie_player_pid> > multimedia/tasks
++
++8. Implementation note: user namespaces
++
++User namespaces are intended to be hierarchical.  But they are currently
++only partially implemented.  Each of those has ramifications for CFS.
++
++First, since user namespaces are hierarchical, the /sys/kernel/uids
++presentation is inadequate.  Eventually we will likely want to use sysfs
++tagging to provide private views of /sys/kernel/uids within each user
++namespace.
++
++Second, the hierarchical nature is intended to support completely
++unprivileged use of user namespaces.  So if using user groups, then
++we want the users in a user namespace to be children of the user
++who created it.
++
++That is currently unimplemented.  So instead, every user in a new
++user namespace will receive 1024 shares just like any user in the
++initial user namespace.  Note that at the moment creation of a new
++user namespace requires each of CAP_SYS_ADMIN, CAP_SETUID, and
++CAP_SETGID.
+diff --git a/kernel/user.c b/kernel/user.c
+index 6c924bc..6608a3d 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -239,7 +239,13 @@ static struct kobj_type uids_ktype = {
+ 	.release = uids_release,
+ };
+ 
+-/* create /sys/kernel/uids/<uid>/cpu_share file for this user */
++/*
++ * Create /sys/kernel/uids/<uid>/cpu_share file for this user
++ * We do not create this file for users in a user namespace (until
++ * sysfs tagging is implemented).
++ *
++ * See Documentation/scheduler/sched-design-CFS.txt for ramifications.
++ */
+ static int uids_user_create(struct user_struct *up)
+ {
+ 	struct kobject *kobj = &up->kobj;
+-- 
+1.5.4.3
 
-And again nobarrier and no cache wins.
-
-
-On a heavily used /home-XFS - I know it should have more free space:
-
-martin@shambhala:~ -> LANG=3DC df -hT /home/
-=46ilesystem    Type    Size  Used Avail Use% Mounted on
-/dev/sda5      xfs    112G  107G  5.1G  96% /home
-
-
-
-It has been grown two times - since 6 AGs instead of the default of 4:
-
-shambhala:~> xfs_info /home
-meta-data=3D/dev/sda5              isize=3D256    agcount=3D6, agsize=3D488=
-3256=20
-blks
-         =3D                       sectsz=3D512   attr=3D2
-data     =3D                       bsize=3D4096   blocks=3D29299536, imaxpc=
-t=3D25
-         =3D                       sunit=3D0      swidth=3D0 blks
-naming   =3Dversion 2              bsize=3D4096
-log      =3Dinternal               bsize=3D4096   blocks=3D32768, version=
-=3D2
-         =3D                       sectsz=3D512   sunit=3D0 blks, lazy-coun=
-t=3D1
-realtime =3Dnone                   extsz=3D4096   blocks=3D0, rtextents=3D0
-
-
-
-IO scheduler settings:
-
-martin@shambhala:~> cat /sys/block/sda/queue/scheduler
-noop anticipatory deadline [cfq]
-martin@shambhala:~> grep "" /sys/block/sda/queue/iosched/*
-/sys/block/sda/queue/iosched/back_seek_max:16384
-/sys/block/sda/queue/iosched/back_seek_penalty:2
-/sys/block/sda/queue/iosched/fifo_expire_async:250
-/sys/block/sda/queue/iosched/fifo_expire_sync:123
-/sys/block/sda/queue/iosched/quantum:4
-/sys/block/sda/queue/iosched/slice_async:40
-/sys/block/sda/queue/iosched/slice_async_rq:2
-/sys/block/sda/queue/iosched/slice_idle:6
-/sys/block/sda/queue/iosched/slice_sync:100
-
-
-
-Write barriers and no write cache:
-
-shambhala:~> hdparm -W /dev/sda
-
-/dev/sda:
- write-caching =3D  0 (off)
-
-shambhala:> cat /proc/mounts | egrep "(/ |home)"
-rootfs / rootfs rw 0 0
-/dev/disk/by-uuid/7fcd9766-bf1a-426a-8a07-2c3e0c510898 / xfs=20
-rw,relatime,attr2,noquota 0 0
-/dev/sda5 /home xfs rw,relatime,attr2,logbufs=3D8,logbsize=3D256k,noquota 0=
- 0
-martin@shambhala:~/Zeit> sync; time tar -xf=20
-~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2 ; time sync
-tar -xf ~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2  36,71s user 4,22s=20
-system 36% cpu 1:51,58 total
-sync  0,00s user 0,05s system 0% cpu 12,689 total
-martin@shambhala:~/Zeit> sync; time rm -rf linux-2.6.27 ; time sync
-rm -rf linux-2.6.27  0,06s user 3,90s system 17% cpu 22,906 total
-sync  0,00s user 0,01s system 6% cpu 0,103 total
-
-
-
-Write barriers and write cache:
-
-shambhala:~> hdparm -W1 /dev/sda
-
-/dev/sda:
- setting drive write-caching to 1 (on)
- write-caching =3D  1 (on)
-
-martin@shambhala:~/Zeit> sync; time tar -xf=20
-~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2 ; time sync
-tar -xf ~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2  34,38s user 3,91s=20
-system 38% cpu 1:38,84 total
-sync  0,00s user 0,04s system 0% cpu 10,493 total
-martin@shambhala:~/Zeit> sync; time rm -rf linux-2.6.27 ; time sync
-rm -rf linux-2.6.27  0,07s user 3,98s system 17% cpu 23,511 total
-sync  0,00s user 0,01s system 5% cpu 0,126 total
-
-
-
-No write barriers and no write cache:
-
-shambhala:> vim fstab
-shambhala:> mount -o remount /
-shambhala:> mount -o remount /home
-shambhala:> cat /proc/mounts | egrep "(/ |home)"
-rootfs / rootfs rw 0 0
-/dev/disk/by-uuid/7fcd9766-bf1a-426a-8a07-2c3e0c510898 / xfs=20
-rw,relatime,attr2,nobarrier,noquota 0 0
-/dev/sda5 /home xfs=20
-rw,relatime,attr2,nobarrier,logbufs=3D8,logbsize=3D256k,noquota 0 0
-
-martin@shambhala:~/Zeit> sync; time tar -xf=20
-~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2 ; time sync
-tar -xf ~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2  30,36s user 3,31s=20
-system 48% cpu 1:08,94 total
-sync  0,00s user 0,08s system 0% cpu 17,462 total
-martin@shambhala:~/Zeit> sync; time rm -rf linux-2.6.27 ; time sync
-rm -rf linux-2.6.27  0,07s user 3,87s system 20% cpu 19,172 total
-sync  0,00s user 0,01s system 4% cpu 0,142 total
-
-
-
-martin@shambhala:~> date
-Mo 8. Dez 22:38:06 CET 2008
-
-Ciao,
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
-
---nextPart8041931.ao1rTqzOyJ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkk9lPMACgkQmRvqrKWZhMdGpACdG0Sbfn1QSynsFIjNlHXGC1EM
-oXAAoLF2KDf9MK5+jpQHGrUVGOLXW9iN
-=Vk//
------END PGP SIGNATURE-----
-
---nextPart8041931.ao1rTqzOyJ--
