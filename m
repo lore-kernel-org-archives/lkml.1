@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbYLHPTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbYLHPTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754494AbYLHPTk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 10:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYLHPTa
+	id S1754793AbYLHPTz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 10:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYLHPTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 10:19:30 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:49173 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752143AbYLHPT2 (ORCPT
+	Mon, 8 Dec 2008 10:19:31 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:46098 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752219AbYLHPT3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 10:19:28 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-serial@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 2/2] 8250_pci: add support for netmos 9835
-Date: Mon,  8 Dec 2008 16:19:15 +0100
-Message-Id: <1228749555-21363-2-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.0.5
-In-Reply-To: <1228749555-21363-1-git-send-email-jirislaby@gmail.com>
-References: <1228749555-21363-1-git-send-email-jirislaby@gmail.com>
+	Mon, 8 Dec 2008 10:19:29 -0500
+Date: Mon, 8 Dec 2008 20:52:49 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Gautham R Shenoy <ego@in.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [BUG] idle_balance() does not call load_balance_newidle()
+Message-ID: <20081208152249.GI5457@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Linux Kernel <linux-kernel@vger.kernel.org>,
+	Ingo Molnar <mingo@elte.hu>, Gautham R Shenoy <ego@in.ibm.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Hi,
+
+load_balance_newidle() does not get called if SD_BALANCE_NEWIDLE is
+set at higher level domain (3-CPU) and not in low level domain (2-MC).
+
+pulled_task is initialised to -1 and checked for non-zero which is
+always true if the lowest level sched_domain does not have
+SD_BALANCE_NEWIDLE flag set.
+
+Trivial fix to initialise pulled_task to zero.
+Patch against 2.6.28-rc7
+
+Thanks,
+Vaidy
+
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
- drivers/serial/8250_pci.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-index 1948c81..766cfac 100644
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -600,6 +600,10 @@ static int pci_netmos_init(struct pci_dev *dev)
- 	/* subdevice 0x00PS means <P> parallel, <S> serial */
- 	unsigned int num_serial = dev->subsystem_device & 0xf;
- 
-+	if (dev->subsystem_vendor == PCI_VENDOR_ID_IBM &&
-+			dev->subsystem_device == 0x0299)
-+		return 0;
-+
- 	if (num_serial == 0)
- 		return -ENODEV;
- 	return num_serial;
-@@ -3091,6 +3095,10 @@ static struct pci_device_id serial_pci_tbl[] = {
- 		0,
- 		pbn_b0_8_115200 },
- 
-+	{	PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9835,
-+		PCI_VENDOR_ID_IBM, 0x0299,
-+		0, 0, pbn_b0_bt_2_115200 },
-+
- 	/*
- 	 * These entries match devices with class COMMUNICATION_SERIAL,
- 	 * COMMUNICATION_MODEM or COMMUNICATION_MULTISERIAL
--- 
-1.6.0.5
+ kernel/sched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index f79c7c4..4abdce1 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3801,7 +3801,7 @@ out_balanced:
+ static void idle_balance(int this_cpu, struct rq *this_rq)
+ {
+ 	struct sched_domain *sd;
+-	int pulled_task = -1;
++	int pulled_task = 0;
+ 	unsigned long next_balance = jiffies + HZ;
+ 	cpumask_t tmpmask;
+ 
