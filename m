@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269AbYLHHep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbYLHHf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752269AbYLHHep (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 02:34:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbYLHHeh
+	id S1752596AbYLHHf3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 02:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYLHHew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 02:34:37 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:58738 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbYLHHeg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 02:34:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=wBtx0v4pKd/lyaxDSb8ia41aAtI56z9ZhUp4PQIlOphTLLAcwhpXJHRmeUAX5+WU3X
-         sVvr0FjaQV7n1Vzva7gTDjXNRoBT9h4I/xjjcJhB3wgJ1q6UiH2yOXdgeA1cRcfTo033
-         C+dqOQN48VLQUE6sZqDRMyQPT8/f1X4WuxRB0=
-Message-ID: <2aac3c260812072334v5d85ca2cke6cd33d7c912b8ea@mail.gmail.com>
-Date: Mon, 8 Dec 2008 08:34:03 +0100
-From: "Giangiacomo Mariotti" <giangiacomo.mariotti@gmail.com>
-To: "Shaya Potter" <spotter@yucs.org>
-Subject: Re: weird realtek gigabit ethernet issue
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <493CB716.8070300@yucs.org>
+	Mon, 8 Dec 2008 02:34:52 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36286 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752601AbYLHHev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 02:34:51 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Holger Hoffstaette" <holger@wizards.de>
+Subject: Re: Nasty regression from .27.7 to .27.8: idle samba goes crazy
+Date: Mon, 8 Dec 2008 08:34:22 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>, stable@kernel.org
+References: <pan.2008.12.08.06.18.57.357875@wizards.de>
+In-Reply-To: <pan.2008.12.08.06.18.57.357875@wizards.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <493CB716.8070300@yucs.org>
+Message-Id: <200812080834.22924.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mB87Yndq008905
 
-On Mon, Dec 8, 2008 at 6:56 AM, Shaya Potter <spotter@yucs.org> wrote:> [please cc me in any response as not subscribed]>> I have an Asus M3A78-EM motherboard with a "Realtek Semiconductor Co.,> Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)"> (per lspci)>> which is using the r8169 module on ubuntu intrepid (specifically ubuntu> kernel 2.6.27-9-generic)>> kernel reports>> RTL8168c/8111c at 0xf88be000, 00:22:15:a1:d2:41, XID 3c4000c0 IRQ 222>> well, what's the issue, its going crazy on the dropped packets, even> when the only thing connected to it is is an ssh session.>> namely ifconfig shows>> eth0 Link encap:Ethernet HWaddr 00:22:15:a1:d2:41> inet addr:192.168.0.41 Bcast:192.168.0.255 Mask:255.255.255.0> inet6 addr: fe80::222:15ff:fea1:d241/64 Scope:Link> UP BROADCAST RUNNING MULTICAST MTU:1500 Metric:1> RX packets:499 errors:0 dropped:2867537736 overruns:0 frame:0> TX packets:538 errors:0 dropped:0 overruns:0 carrier:0> collisions:0 txqueuelen:1000> RX bytes:38995 (38.9 KB) TX bytes:87571 (87.5 KB)> Interrupt:222 Base address:0xe000>> and the dropped count keeps on cycling through its entire space rapidly.>> it's running in gigabit mode>> root@nas:/home/spotter# mii-tool> eth0: negotiated 1000baseT-FD flow-control, link ok>> I have no idea why.  never seen anything like this before.  been> wondering what could be doing it.>> in investigating the driver>> /*>  * The driver does not support incoming fragmented>  * frames. They are seen as a symptom of over-mtu>  * sized frames.>  */> if (unlikely(rtl8169_fragmented_frame(status))) {>        dev->stats.rx_dropped++;>        dev->stats.rx_length_errors++;>        rtl8169_mark_to_asic(desc, tp->rx_buf_sz);>        continue;> }>> so it would appear to be some issue relating to fragmented frames.>> However, based on the amount of packets received, it seems to be very> strange.>> I would have thought maybe it had something to do with jumbo packets,> but all the machines on the net are using an mtu of 1500 currently.>> anyways, any explanation, if its not a bug, would be appreciated.> --> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in> the body of a message to majordomo@vger.kernel.org> More majordomo info at  http://vger.kernel.org/majordomo-info.html> Please read the FAQ at  http://www.tux.org/lkml/>Did you try using iproute2 instead of ifconfig? I have the sameproblem with ifconfig, but iproute says that there's no problem:ifconfig :
-eth0      Link encap:Ethernet  HWaddr 00:1f:d0:ae:41:0e          inet addr:192.168.1.3  Bcast:192.168.1.255  Mask:255.255.255.0          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1          RX packets:16100 errors:0 dropped:152365729778 overruns:0 frame:0          TX packets:15465 errors:0 dropped:0 overruns:0 carrier:0          collisions:0 txqueuelen:1000          RX bytes:15693968 (14.9 MiB)  TX bytes:2565833 (2.4 MiB)          Interrupt:245 Base address:0xc000
-ip -stats link show eth0 :
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_faststate UNKNOWN qlen 1000    link/ether 00:1f:d0:ae:41:0e brd ff:ff:ff:ff:ff:ff    RX: bytes  packets  errors  dropped overrun mcast    15677088   16028    0       0       0       0    TX: bytes  packets  errors  dropped carrier collsns    2536480    15384    0       0       0       0
+On Monday, 8 of December 2008, Holger Hoffstaette wrote:
+> 
+> Hi,
+> 
+> I just encountered a nasty symptom for the second time that has started to
+> occur after updating my home server from vanilla 2.6.27.7 to .8 (same
+> config).
+> 
+> A while after disconnecting a samba client, the smbd samba server
+> process goes crazy and consumes 100% CPU. From that time on it is
+> unkillable (kill -9 returns but the process continues to run). The only
+> recourse is reboot, which works without problem (i.e. unmounting the
+> served filesystems is apparently possible?). I tried to attach to the
+> process with gdb but that just hung.
+> 
+> The system is a generic old single-core P4 box with a single SATA drive,
+> Gentoo userland and Samba is 3.0.33 (in async mode). The kernel has no
+> patches or binary drivers. It has been rock solid before the update and
+> shows no other signs of weirdness in logs or otherwise. I downgraded to .7
+> for now and will see what happens, but since it worked before I am certain
+> that this is a regression in the .8 release.
+> 
+> The only commonality is a log entry by samba that seems to correlate with
+> both occurrences:
+> 
+> [2008/12/08 01:02:52, 0] lib/util_sock.c:read_data(534)
+>   read_data: read failure for 4 bytes to client 192.168.100.128. Error = No route to host
+> 
+> .128 is the Windows client machine (connected via a stable GigE link),
+> which I shut down pretty much exactly 30 minutes before that (any 30
+> minute timeouts in the kernel/network stack?). Both instances of these log
+> entries correlate with the CPU spikes which I noticed in my MRTG graphs.
+> 
+> Any suspects or ideas?
 
+Please bisect.
 
--- You highest men whom my eyes have seen, this is my doubt about you andmy secret laughter: I guess that you would call my overmanâ€”devil!What is great is so alien to your souls that the overman would beterrifying to you in his goodness ...ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Thanks,
+Rafael
