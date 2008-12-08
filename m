@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbYLHWjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbYLHWkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753916AbYLHWjU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 17:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbYLHWjF
+	id S1754129AbYLHWkd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 17:40:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbYLHWkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 17:39:05 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:53389 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752868AbYLHWjC (ORCPT
+	Mon, 8 Dec 2008 17:40:24 -0500
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:41173 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753174AbYLHWkX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 17:39:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=OltXl0fn8POkP8XmC3Y2yKztV3CwxY7CSr5Nrve1JM6ds+4oNiLkSzSkroBrgbRdaf
-         zgb3/wLjyfXMmFW1gmeuTOe4nRIXfeAWjd4KP8fnroVigh+Ht7uERvNow77g+d5Ws8t/
-         Z83lVCQcJKSGdj/Zk6/Ihin5fOYO+RE2QRQyU=
-Message-ID: <e9c3a7c20812081439m8161812nca092e0ed3114e57@mail.gmail.com>
-Date: Mon, 8 Dec 2008 15:39:01 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 03/13] dmaengine: up-level reference counting to the module level
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       maciej.sosnowski@intel.com, hskinnemoen@atmel.com,
-       nicolas.ferre@atmel.com
-In-Reply-To: <Pine.LNX.4.64.0812041959530.8851@axis700.grange>
+	Mon, 8 Dec 2008 17:40:23 -0500
+Date: Mon, 8 Dec 2008 23:40:23 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Shaya Potter <spotter@yucs.org>
+Cc: Giangiacomo Mariotti <giangiacomo.mariotti@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: weird realtek gigabit ethernet issue
+Message-ID: <20081208224023.GA8492@electric-eye.fr.zoreil.com>
+References: <493CB716.8070300@yucs.org> <2aac3c260812072334v5d85ca2cke6cd33d7c912b8ea@mail.gmail.com> <493D360D.5030203@yucs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
-	 <20081114213432.32354.2427.stgit@dwillia2-linux.ch.intel.com>
-	 <Pine.LNX.4.64.0812041746400.5079@axis700.grange>
-	 <e9c3a7c20812041051l44bd8086o97c12d77a116f62@mail.gmail.com>
-	 <Pine.LNX.4.64.0812041959530.8851@axis700.grange>
-X-Google-Sender-Auth: a6afef55ea8bfc2a
+In-Reply-To: <493D360D.5030203@yucs.org>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 4, 2008 at 12:28 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> Ok, but why not postpone calling .device_alloc_chan_resources() until a
-> channel is _found_?
+Shaya Potter <spotter@yucs.org> :
+[...]
+> perhaps, it also show me no dropped packets, but that would indicate a
+> bug in /proc/net/dev.
 
-dma_find_channel() is called in fast paths (atomic contexts, I/O
-writeout), so we need to allocate ahead of time.
+It is unrelated.
+
+It should be fixed in mainline as 523a609496dbc3897e530db2a2f27650d125ea00
+and in 2.6.27-stable as 6269b8494da80250422ed8ce4e6ee7126c0010aa.
+
+-- 
+Ueimor
