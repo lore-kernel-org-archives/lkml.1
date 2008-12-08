@@ -1,65 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbYLHSmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751742AbYLHSra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752140AbYLHSmh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 13:42:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbYLHSm2
+	id S1751742AbYLHSra (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 13:47:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYLHSrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 13:42:28 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:42959 "EHLO e2.ny.us.ibm.com"
+	Mon, 8 Dec 2008 13:47:21 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41236 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751232AbYLHSm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 13:42:27 -0500
-Date: Mon, 8 Dec 2008 10:42:23 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, manfred@colorfullife.com,
-       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
-       niv@us.ibm.com, dvhltc@us.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
-       andi@firstfloor.org, tglx@linutronix.de
-Subject: Re: [PATCH, RFC] v7 scalable classic RCU implementation
-Message-ID: <20081208184223.GA18260@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <20080915160221.GA9660@linux.vnet.ibm.com> <20080923235340.GA12166@linux.vnet.ibm.com> <20081010160930.GA9777@linux.vnet.ibm.com> <20081017083452.GA23228@in.ibm.com>
+	id S1751054AbYLHSrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 13:47:20 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: Nasty regression from .27.7 to .27.8: idle samba goes crazy
+Date: Mon, 8 Dec 2008 19:46:49 +0100
+User-Agent: KMail/1.9.9
+Cc: Holger Hoffstaette <holger@wizards.de>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>, stable@kernel.org
+References: <pan.2008.12.08.06.18.57.357875@wizards.de> <200812080834.22924.rjw@sisk.pl> <493D4C1B.4030006@s5r6.in-berlin.de>
+In-Reply-To: <493D4C1B.4030006@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081017083452.GA23228@in.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200812081946.50295.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 17, 2008 at 02:04:52PM +0530, Gautham R Shenoy wrote:
-> On Fri, Oct 10, 2008 at 09:09:30AM -0700, Paul E. McKenney wrote:
-> > +static void __cpuinit rcu_online_cpu(int cpu)
-> > +{
-> > +#ifdef CONFIG_NO_HZ
-> > +	struct rcu_dynticks *rdtp = &per_cpu(rcu_dynticks, cpu);
-> > +
-> > +	rdtp->dynticks_nesting = 1;
-> > +	rdtp->dynticks |= 1; 	/* need consecutive #s even for hotplug. */
-> > +	rdtp->dynticks_nmi = (rdtp->dynticks + 1) & ~0x1;
->
-> =>	rdtp->dynticks is odd. Hence rdtp->dynticks + 1 should be even.
-> 	Why is the additional & ~0x1 ?
+On Monday, 8 of December 2008, Stefan Richter wrote:
+> Rafael J. Wysocki wrote:
+> > Please bisect.
+> 
+> Why should he bisect before the developers who added networking related
+> patches to .8 attempted to reproduce the bug, let alone looked at the
+> report?
 
-Because this line should instead be:
+Because I think that's the fastest way to turn the attention of the appropriate
+people to the problem.
 
-	rdtp->dynticks_nmi = (rdtp->dynticks_nmi + 1) & ~0x1;
-
-Well spotted, even if it did take me a good long time to figure out
-that this really was a bug in my code!  ;-)
-
-That said, you would have to really work to exercise this one...  Near as
-I can tell, you would need to wrap the ->dynticks counter, which would
-then cause the dynticks_nmi counter to appear to go backwards.  And then
-you would have to prevent the newly onlined CPU from ever passing through
-a quiescent state, which would cause a failure in any case.
-
-Still, good to fix, even if I can't figure out how it would result in
-a failure.  Real hardware and software tends to be -much- better than me
-at finding such failures!
-
-							Thanx, Paul
+Thanks,
+Rafael
