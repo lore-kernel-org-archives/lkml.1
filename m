@@ -1,91 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756487AbYLHCth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbYLHCwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756487AbYLHCth (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 21:49:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbYLHCt0
+	id S1756182AbYLHCwB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 21:52:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbYLHCvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 21:49:26 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51581 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754092AbYLHCtZ (ORCPT
+	Sun, 7 Dec 2008 21:51:51 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:27898 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754226AbYLHCvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 21:49:25 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] vmscan: improve reclaim throuput to bail out patch take2
-Cc: kosaki.motohiro@jp.fujitsu.com, "Rik van Riel" <riel@redhat.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie
-In-Reply-To: <20081206192806.7bfba95b.akpm@linux-foundation.org>
-References: <20081204102729.1D5C.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081206192806.7bfba95b.akpm@linux-foundation.org>
-Message-Id: <20081208110909.53E4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sun, 7 Dec 2008 21:51:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OaVwtunEKhGRjj8ofr/vmGV9maAA4/Xq15+aHoXBveNjdq/3G35XH42Ud9Sq0hs5bY
+         k/Va/C/KcwU68vn5+XaD40KXKNHTxI++cLlu7HWEBzKy5wBUr0p1K9nTklD9gXxfkqgi
+         QJ82ZNc5EhTA6zcGeEDI84jnDuHowmyX1g1I8=
+Message-ID: <91b13c310812071851s5a82d52em63f86f1d3aa42ee9@mail.gmail.com>
+Date: Mon, 8 Dec 2008 10:51:48 +0800
+From: "Cheng Renquan" <crquan@gmail.com>
+To: "Eric Moore" <Eric.Moore@lsi.com>
+Subject: Re: [PATCH 2/2] mpt fusion: port "4.00.43.00" to mainstream git kernel
+Cc: support@lsi.com, DL-MPTFusionLinux@lsi.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Greg KH" <greg@kroah.com>,
+       chengrq@uit.com.cn
+In-Reply-To: <1228483610-18502-2-git-send-email-crquan@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Mon,  8 Dec 2008 11:49:21 +0900 (JST)
+Content-Disposition: inline
+References: <1228483610-18502-1-git-send-email-crquan@gmail.com>
+	 <1228483610-18502-2-git-send-email-crquan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, all,
 
-I think my last explain was too poor.
+I have tested and verified that these two patches can let my LSI-SAS-1068E
+controllers work well with 2.6.26.2 kernels, perfect,
 
+Tested-by: Cheng Renquan <crquan@gmail.com>
 
-> If this improved the throughput of direct-reclaim callers then one
-> would expect it to make larger improvements for kswapd (assuming 
-> that all other things are equal for those tasks, which they are not).
-> 
-> What is your direct-reclaim to kswapd-reclaim ratio for that workload?
-> (grep pgscan /proc/vmstat)
-> 
+but the latest git kernel has not yet been tested. just buildable. I
+personally suggest these patches integrated into Greg KH's staging
+tree. It seems meet staging's purpose well?
 
-because that benchmark is direct reclaim torturess workload.
+The bugzilla page has been updated,
 
-/proc/vmstat changing was
-
-<before>
-pgscan_kswapd_dma 1152
-pgscan_kswapd_normal 2400
-pgscan_kswapd_movable 0
-pgscan_direct_dma 32
-pgscan_direct_normal 512
-pgscan_direct_movable 0
-
-<after>
-pgscan_kswapd_dma 3520
-pgscan_kswapd_normal 12160
-pgscan_kswapd_movable 0
-pgscan_direct_dma 10048
-pgscan_direct_normal 31904
-pgscan_direct_movable 0
-
-	-> kswapd:direct = 1 : 3.4
+http://bugzilla.kernel.org/show_bug.cgi?id=12163
 
 
-Why I test non typical extreame woakload?
-I have two reason.
+And the first patch, it's just integrating the vendor driver "4.00.43.00":
 
-1. nobody want to regression although workload isn't typical.
+Subject:    [PATCH 1/2] mpt fusion: updated mpt drivers from lsi
+upstream "4.00.43.00"
 
-2. if the patch can scale performance although extreme case,
-   of cource it also can works well on light weight workload.
-
-
-if my patch have any regression, it definityly is valueless.
-my patch only solve extreme case.
-but I don't think it has.
+http://marc.info/?l=linux-scsi&m=122848357611653&w=2
 
 
-> Does that patch make any change to the amount of CPU time which kswapd
-> consumed?
-
-I don't mesure it yet.
-but at least, top coomand didn't find any consumption increasing.
-
-
-> 
-> Or you can not bother doing this work ;) The patch looks sensible
-> anyway.  It's just that the numbers look whacky.
+To LSI staff:
+  Please test it as soon, you have the resources. Please maintain your
+driver update in latest git kernel besides and not only major
+distrition kernels,
+  We customers need to run your mpt controllers not only on major
+distribution kernels but also the latest git kernel, you should at
+least maintain an updated driver for some major later kernels, like
+one for 2.6.24, one for 2.6.27, and one for the latest git tree. At
+least the driver in the git tree should be always updated, this would
+always keep your driver current.
+  I'm your customer located in Shenzhen, China. Please know it and
+keep co-operative with your customers and the Linux Kernel Development
+Community. Thank you.
 
 
 
+On Fri, Dec 5, 2008 at 9:26 PM,  <crquan@gmail.com> wrote:
+> From: Cheng Renquan <crquan@gmail.com>
+>
+> this one just can build with mainstream git kernel, I did not even test it.
+>
+> I just have tested it with kernel 2.6.26.2, that patch is very similar to
+> this, and it did work well with 2.6.26.2.
+>
+> Signed-off-by: Cheng Renquan <crquan@gmail.com>
+> ---
+>  drivers/message/fusion/linux_compat.h |    3 +-
+>  drivers/message/fusion/mptbase.c      |   10 +-
+>  drivers/message/fusion/mptbase.h      |    6 +-
+>  drivers/message/fusion/mptfc.c        |    4 +-
+>  drivers/message/fusion/mptsas.c       |   14 +---
+>  drivers/message/fusion/mptscsih.c     |  169 +++++++++++++--------------------
+>  drivers/message/fusion/mptscsih.h     |    2 +-
+>  7 files changed, 79 insertions(+), 129 deletions(-)
+>
+[...]
+> --
+> 1.6.0.3
+
+-- 
+Cheng Renquan, Shenzhen, China
+Steve Martin  - "I've got to keep breathing. It'll be my worst
+business mistake if I don't."
