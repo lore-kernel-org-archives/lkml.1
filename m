@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752108AbYLHJ0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752038AbYLHJg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752108AbYLHJ0a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 04:26:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYLHJ0T
+	id S1752038AbYLHJg7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 04:36:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYLHJgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 04:26:19 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:57649 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751066AbYLHJ0S (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 04:26:18 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: David Miller <davem@davemloft.net>
-Cc: mitake@clustcom.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ktaka@clustcom.com
-Subject: Re: [RFC] New functions to manipulate registers for ethtool
-In-Reply-To: Your message of "Mon, 08 Dec 2008 01:06:34 PST."
-             <20081208.010634.247305010.davem@davemloft.net>
-From: Valdis.Kletnieks@vt.edu
-References: <20081208171230.288c5ccf.mitake@clustcom.com> <20081208.005431.200957157.davem@davemloft.net> <58622.1228726903@turing-police.cc.vt.edu>
-            <20081208.010634.247305010.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1228728372_54791P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 8 Dec 2008 04:36:50 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56736 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbYLHJgt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 04:36:49 -0500
+Message-ID: <493CEAA0.50201@jp.fujitsu.com>
+Date: Mon, 08 Dec 2008 18:36:32 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Giangiacomo Mariotti <gg.mariotti@gmail.com>
+CC: Arjan van de Ven <arjan@infradead.org>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>
+Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
+References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>	 <493AE770.5030507@shaw.ca>	 <12bfabe40812061343j400f55d8r43571c8bd514adde@mail.gmail.com>	 <493AF2EA.4030601@shaw.ca>	 <12bfabe40812061416u1b6f800dn7261beae5ce36b2f@mail.gmail.com>	 <493B4242.1040202@shaw.ca>	 <12bfabe40812071355r65c13e52g5f3d94d3b060c939@mail.gmail.com>	 <20081207141337.588aede5@infradead.org>	 <12bfabe40812072248n3c931ce0hf030b3ac758026d4@mail.gmail.com>	 <493CCFE4.2080802@jp.fujitsu.com> <12bfabe40812080004p7438744eqeb884b42673bd73c@mail.gmail.com>
+In-Reply-To: <12bfabe40812080004p7438744eqeb884b42673bd73c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 08 Dec 2008 04:26:12 -0500
-Message-ID: <59951.1228728372@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1228728372_54791P
-Content-Type: text/plain; charset=us-ascii
+Giangiacomo Mariotti wrote:
+> I still don't quite understand the logic behind this exception. It
+> happens always only once per boot, right after booting always at [
+> 301.7320xx], which clearly means that it's always triggered by the
+> same instruction/s. It's about a "Generic CACHE Level-2 Data-Write
+> Error", yet after that moment it never happens again until the next
+> boot at the same relative time. The cache has an hardware problem, the
+> process context is corrupted, but still after that single message I
+> don't have any problem, my system works normally, even under very high
+> pressure on cpu and memory. Is this normal? Should I try to limit the
+> number of cpu used to only 1(cpu0) on bios and disable hyperthreading?
+> That way I'd have a single physical and logical cpu, so probably if it
+> has an hardware problem on the cache, the heaven will fall?
 
-On Mon, 08 Dec 2008 01:06:34 PST, David Miller said:
+IIRC, this error is not what happen on the time [301.7320xx] during
+boot, but happen before the boot.  Since the record says "Processor
+context corrupt," MCE handler should call panic(or do something stop
+the system) if the context actually corrupted during the boot.
 
-> That's an awful reason to have to two ways of doing the exact same
-> thing from userspace.
+In other words, it seems that 1) the error was recorded at last time
+when your machine crashed unexpectedly(by cosmic-ray etc.) and not cleared
+yet, or 2) your machine is doing something wrong in every reset/poweroff.
 
-Which is why 'sysctl' and 'echo > /proc/sys/....' both exist, right?
+Could you try "mce=nobootlog" boot option?
 
---==_Exmh_1228728372_54791P
-Content-Type: application/pgp-signature
+Thanks,
+H.Seto
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJPOg0cC3lWbTT17ARAo1gAKDgN0Yy2TBwjbdWEhe5cfRcqr/4NgCgjub6
-wl7a1ytBuqWfC/flnXHOIhw=
-=P1vJ
------END PGP SIGNATURE-----
-
---==_Exmh_1228728372_54791P--
