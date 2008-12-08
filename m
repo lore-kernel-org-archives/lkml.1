@@ -1,111 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbYLHPOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbYLHPRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753837AbYLHPOy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 10:14:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYLHPOq
+	id S1754139AbYLHPRm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 10:17:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYLHPRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 10:14:46 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:53449 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752219AbYLHPOp (ORCPT
+	Mon, 8 Dec 2008 10:17:31 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:50837 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751819AbYLHPRa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 10:14:45 -0500
-Date: Mon, 8 Dec 2008 10:14:45 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] Driver core: move the bus notifier call points (fwd)
-Message-ID: <Pine.LNX.4.44L0.0812081012030.2476-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Dec 2008 10:17:30 -0500
+Subject: Re: [PATCH 2/2] mpt fusion: port "4.00.43.00" to mainstream git
+	kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: crquan@gmail.com
+Cc: Eric Moore <Eric.Moore@lsi.com>, support@lsi.com,
+       DL-MPTFusionLinux@lsi.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1228483610-18502-2-git-send-email-crquan@gmail.com>
+References: <1228483610-18502-1-git-send-email-crquan@gmail.com>
+	 <1228483610-18502-2-git-send-email-crquan@gmail.com>
+Content-Type: text/plain
+Date: Mon, 08 Dec 2008 09:17:34 -0600
+Message-Id: <1228749454.3260.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben:
+On Fri, 2008-12-05 at 21:26 +0800, crquan@gmail.com wrote:
+> From: Cheng Renquan <crquan@gmail.com>
+> 
+> this one just can build with mainstream git kernel, I did not even test it.
+> 
+> I just have tested it with kernel 2.6.26.2, that patch is very similar to
+> this, and it did work well with 2.6.26.2.
+> 
+> Signed-off-by: Cheng Renquan <crquan@gmail.com>
+> ---
+>  drivers/message/fusion/linux_compat.h |    3 +-
 
-After posting the patch below, I noticed that you were the person who 
-originally added the bus notifier code.  You don't see any problems 
-with this code motion, do you?
+I don't quite understand what this patch is about.  This file isn't in
+the upstream and hasn't been for a while if I recall, so what is this
+patch actually patching?
 
-Alan Stern
+>  drivers/message/fusion/mptbase.c      |   10 +-
+>  drivers/message/fusion/mptbase.h      |    6 +-
+>  drivers/message/fusion/mptfc.c        |    4 +-
+>  drivers/message/fusion/mptsas.c       |   14 +---
+>  drivers/message/fusion/mptscsih.c     |  169 +++++++++++++--------------------
+>  drivers/message/fusion/mptscsih.h     |    2 +-
+>  7 files changed, 79 insertions(+), 129 deletions(-)
+> 
+> diff --git a/drivers/message/fusion/linux_compat.h b/drivers/message/fusion/linux_compat.h
+> index 24ad3f1..92e9797 100644
+> --- a/drivers/message/fusion/linux_compat.h
+> +++ b/drivers/message/fusion/linux_compat.h
+> @@ -31,7 +31,6 @@ static inline void *shost_private(struct Scsi_Host *shost)
+>  #define spi_dv_pending(x) (((struct spi_transport_attrs *)&(x)->starget_data)->dv_pending)
+>  #endif
+>  
+> -#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
+>  /**
+>   * mpt_scsilun_to_int: convert a scsi_lun to an int
+>   * @scsilun:    struct scsi_lun to be converted.
+> @@ -62,7 +61,7 @@ static inline int mpt_scsilun_to_int(struct scsi_lun *scsilun)
+>                                scsilun->scsi_lun[i + 1]) << (i * 8));
+>          return lun;
+>  }
+> -#endif
+> +
+>  #if (defined(CONFIG_SUSE_KERNEL) && !defined(scsi_is_sas_phy_local))
+>  #define SUSE_KERNEL_BASE	1
+>  #endif
+> diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
+> index 2979b63..36dd62a 100644
+> --- a/drivers/message/fusion/mptbase.c
+> +++ b/drivers/message/fusion/mptbase.c
+> @@ -1618,7 +1618,7 @@ mpt_mapresources(MPT_ADAPTER *ioc)
+>  	}
+>  #else
+>  	ioc->bars = pci_select_bars(pdev, IORESOURCE_MEM);
+> -	if (pci_enable_device_bars(pdev, ioc->bars)) {
+> +	if (pci_enable_device(pdev)) {
 
+API reversal.
 
+>  		printk(MYIOC_s_ERR_FMT "pci_enable_device_bars() with MEM "
+>  		    "failed\n",ioc->name);
+>  		return r;
+> @@ -1826,7 +1826,8 @@ mpt_attach(struct pci_dev *pdev, const struct pci_device_id *id)
+>  #endif
+>  
+>  	/* Initialize workqueue */
+> -	snprintf(ioc->reset_work_q_name, KOBJ_NAME_LEN, "mpt_poll_%d", ioc->id);
+> +	snprintf(ioc->reset_work_q_name, sizeof(ioc->reset_work_q_name),
+> +			"mpt_poll_%d", ioc->id);
+>  	ioc->reset_work_q =
+>  		create_singlethread_workqueue(ioc->reset_work_q_name);
+>  	if (!ioc->reset_work_q) {
+> @@ -1949,7 +1950,8 @@ mpt_attach(struct pci_dev *pdev, const struct pci_device_id *id)
+>  
+>  	INIT_LIST_HEAD(&ioc->fw_event_list);
+>  	spin_lock_init(&ioc->fw_event_lock);
+> -	snprintf(ioc->fw_event_q_name, KOBJ_NAME_LEN, "mpt/%d", ioc->id);
+> +	snprintf(ioc->fw_event_q_name, sizeof(ioc->fw_event_q_name),
+> +			"mpt/%d", ioc->id);
+>  	ioc->fw_event_q = create_singlethread_workqueue(ioc->fw_event_q_name);
+>  
+>  	if ((r = mpt_do_ioc_recovery(ioc, MPT_HOSTEVENT_IOC_BRINGUP,
+> @@ -2303,7 +2305,7 @@ mpt_do_ioc_recovery(MPT_ADAPTER *ioc, u32 reason, int sleepFlag)
+>  		pci_release_selected_regions(ioc->pcidev, ioc->bars);
+>  		ioc->bars = pci_select_bars(ioc->pcidev, IORESOURCE_MEM |
+>  		    IORESOURCE_IO);
+> -		if (pci_enable_device_bars(ioc->pcidev, ioc->bars))
+> +		if (pci_enable_device(ioc->pcidev))
 
-This patch (as1184) changes the location of the notifications in
-device_add() and device_del().  Now the BUS_NOTIFY_ADD_DEVICE message
-is sent after dpm_sysfs_add(), which is necessary for clients that
-want to add attributes to the power/ subdirectory.  The
-BUS_NOTIFY_DEL_DEVICE message is correspondingly moved before
-dpm_sysfs_remove().
+Things like this are reversing kernel API changes and can't go in.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+What you need to do is isolate the necessary changes to current git head
+(or scsi-misc) and then send it to the LSI maintainers.  The route to
+inclusion is via them.
 
----
+Alternatively, we can just continue on with debugging the actual problem
+you have rather than trying to upport some vendor driver.
 
-Index: usb-2.6/drivers/base/core.c
-===================================================================
---- usb-2.6.orig/drivers/base/core.c
-+++ usb-2.6/drivers/base/core.c
-@@ -884,11 +884,6 @@ int device_add(struct device *dev)
- 	if (platform_notify)
- 		platform_notify(dev);
- 
--	/* notify clients of device entry (new way) */
--	if (dev->bus)
--		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
--					     BUS_NOTIFY_ADD_DEVICE, dev);
--
- 	error = device_create_file(dev, &uevent_attr);
- 	if (error)
- 		goto attrError;
-@@ -916,6 +911,14 @@ int device_add(struct device *dev)
- 	if (error)
- 		goto DPMError;
- 	device_pm_add(dev);
-+
-+	/* Notify clients of device addition.  This call must come
-+	 * after dpm_sysf_add() and before kobject_uevent().
-+	 */
-+	if (dev->bus)
-+		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-+					     BUS_NOTIFY_ADD_DEVICE, dev);
-+
- 	kobject_uevent(&dev->kobj, KOBJ_ADD);
- 	bus_attach_device(dev);
- 	if (parent)
-@@ -940,9 +943,6 @@ done:
-  DPMError:
- 	bus_remove_device(dev);
-  BusError:
--	if (dev->bus)
--		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
--					     BUS_NOTIFY_DEL_DEVICE, dev);
- 	device_remove_attrs(dev);
-  AttrsError:
- 	device_remove_class_symlinks(dev);
-@@ -1027,6 +1027,12 @@ void device_del(struct device *dev)
- 	struct device *parent = dev->parent;
- 	struct class_interface *class_intf;
- 
-+	/* Notify clients of device removal.  This call must come
-+	 * before dpm_sysfs_remove().
-+	 */
-+	if (dev->bus)
-+		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-+					     BUS_NOTIFY_DEL_DEVICE, dev);
- 	device_pm_remove(dev);
- 	dpm_sysfs_remove(dev);
- 	if (parent)
-@@ -1064,9 +1070,6 @@ void device_del(struct device *dev)
- 	 */
- 	if (platform_notify_remove)
- 		platform_notify_remove(dev);
--	if (dev->bus)
--		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
--					     BUS_NOTIFY_DEL_DEVICE, dev);
- 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
- 	cleanup_device_parent(dev);
- 	if (!list_empty(&dev->klist_children.k_list))
+James
+
 
