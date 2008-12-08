@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbYLHRIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbYLHRPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754536AbYLHRIS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 12:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbYLHRH7
+	id S1754178AbYLHRPv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 12:15:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYLHRPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 12:07:59 -0500
-Received: from mail.klingt.org ([86.59.21.178]:48320 "EHLO klingt.org"
+	Mon, 8 Dec 2008 12:15:43 -0500
+Received: from mms3.broadcom.com ([216.31.210.19]:3970 "EHLO MMS3.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753446AbYLHRH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 12:07:58 -0500
-Subject: Re: [PATCH] [RT] avoid preemption in memory controller code
-From: Tim Blechmann <tim@klingt.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.DEB.1.10.0812081138470.26257@gandalf.stny.rr.com>
-References: <1228746854-23875-1-git-send-email-tim@klingt.org>
-	 <alpine.DEB.1.10.0812081138470.26257@gandalf.stny.rr.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MUR0zWqfO8LZinAN8o6L"
-Date: Mon, 08 Dec 2008 18:07:36 +0100
-Message-Id: <1228756056.7862.8.camel@thinkpad>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (klingt.org [127.0.0.1]); Mon, 08 Dec 2008 18:07:37 +0100 (CET)
+	id S1753331AbYLHRPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 12:15:42 -0500
+X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
+Subject: Re: bnx2: fs_sync_timeout, reset code = 1020002
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Pavel Machek" <pavel@suse.cz>
+cc: "kernel list" <linux-kernel@vger.kernel.org>,
+       "Benjamin Li" <benli@broadcom.com>
+In-Reply-To: <20081208145442.GA23820@atrey.karlin.mff.cuni.cz>
+References: <20081204105550.GA2429@elf.ucw.cz>
+ <1228411378.9156.52.camel@HP1>
+ <20081208145442.GA23820@atrey.karlin.mff.cuni.cz>
+Date: Mon, 08 Dec 2008 09:12:25 -0800
+Message-ID: <1228756345.11235.2.camel@HP1>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
+X-WSS-ID: 652389B937G24552059-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-MUR0zWqfO8LZinAN8o6L
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2008-12-08 at 06:54 -0800, Pavel Machek wrote:
+> > 
+> > On Thu, 2008-12-04 at 02:55 -0800, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > I'm getting `subj` (with different numbers, 1020002, 1020004,
+> > > sometimes 102006). ifconfig eth0 up fails, network is completely
+> > > broken.
+> > 
+> > Which kernel are you using?  If it used to work before 2.6.26 or so,
+> > it
+> 
+> I'm using 2.6.28-rc7. I did not try any previous kernels.
 
-> > the lru_lock of struct mem_group_per_zone is used to avoid preemption
-> > during the __mem_cgroup_stat_add_safe function.
-> > therefore, a raw_spinlock_t should be used.
->=20
-> What is the reason that this must avoid preemption?=20
+Please provide ethtool -i eth0
 
-it guards a call to smp_processor_id() in __mem_cgroup_stat_add_safe().
-see http://article.gmane.org/gmane.linux.rt.user/3690
+and lspci -xxx on the Broadcom device.
 
-> Is there another
-> way to solve this? I rather not just add a raw spinlock if we can
-> help it.
+Thanks.
 
-not sure, maybe one can disable preemption for that specific function?
+> 
+> > may be because of the PCI VPD access going beyond the size limit.  We
+> > should have a PCI quirk to prevent this, but may be it is not
+> > complete.
+> 
+> I could not find quirk handling, so I enabled the debug and workaround
+> options I could find...
+> 
 
-tim
-
---
-tim@klingt.org
-http://tim.klingt.org
-
-Art is either a complaint or do something else
-  John Cage quoting Jasper Johns
-
---=-MUR0zWqfO8LZinAN8o6L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkk9VFMACgkQFz+XezW6HD4eqQCgxBvOMt6an7l+8z5D9oBB8jta
-F/0Anj3ab0Y4xJzIbR/GwbYPgczkty9T
-=6g9o
------END PGP SIGNATURE-----
-
---=-MUR0zWqfO8LZinAN8o6L--
 
