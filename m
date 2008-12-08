@@ -1,91 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbYLHQN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbYLHQOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753265AbYLHQN3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 11:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbYLHQNR
+	id S1754152AbYLHQOU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 11:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbYLHQOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 11:13:17 -0500
-Received: from casper.infradead.org ([85.118.1.10]:58719 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753999AbYLHQNQ (ORCPT
+	Mon, 8 Dec 2008 11:14:11 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57384 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753164AbYLHQOK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 11:13:16 -0500
-Subject: Re: [RFC PATCH] hrtimer: removing all ur callback modes
-From: Peter Zijlstra <peterz@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, oliver@hartkopp.net
-In-Reply-To: <1228385830.5092.43.camel@twins>
-References: <1227613431.4259.1537.camel@twins>
-	 <1228385830.5092.43.camel@twins>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 08 Dec 2008 17:13:02 +0100
-Message-Id: <1228752782.6939.2.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Mon, 8 Dec 2008 11:14:10 -0500
+Date: Mon, 8 Dec 2008 17:14:09 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: mtk.manpages@gmail.com
+Cc: linux-doc@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: fsync.2 does not mention error handling
+Message-ID: <20081208161408.GA8163@atrey.karlin.mff.cuni.cz>
+References: <20081202120645.GA5327@elf.ucw.cz> <cfd18e0f0812041112u23843f00rad92fba8badb43c6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cfd18e0f0812041112u23843f00rad92fba8badb43c6@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-04 at 11:17 +0100, Peter Zijlstra wrote:
-> On Tue, 2008-11-25 at 12:43 +0100, Peter Zijlstra wrote:
-> > Hi,
-> > 
-> > This is an attempt at removing some of the hrtimer complexity by
-> > reducing the number of callback modes to 1.
-> > 
-> > This means that all hrtimer callback functions will be ran from HARD-irq
-> > context.
-> > 
-> > I went through all the 30 odd hrtimer callback functions in the kernel
-> > and saw only one that I'm not quite sure of, which is the one in
-> > net/can/bcm.c - hence I'm CC-ing the folks responsible for that code.
-> > 
-> > Furthermore, the hrtimer core now calls callbacks directly with IRQs
-> > disabled in case you try to enqueue an expired timer. If this timer is a
-> > periodic timer (which should use hrtimer_forward() to advance its time)
-> > then it might be possible to end up in an inf. recursive loop due to the
-> > fact that hrtimer_forward() doesn't round up to the next timer
-> > granularity, and therefore keeps on calling the callback - obviously
-> > this needs a fix.
-> > 
-> > Aside from that, this seems to compile and actually boot on my dual core
-> > test box - although I'm sure there are some bugs in, me not hitting any
-> > makes me certain :-)
-> > 
-> > Not-Quite-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> Ingo, this addition fixes the hotplug issue on my machine
+> Pavel,
 
-And because we're all human...
+> Could you provide some pointers to supporting information / mail
+> threads, relating to this?
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/hrtimer.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+Mail thread on lkml, "writing to disk, not...."
 
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index b09c7a2..e14af46 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1571,7 +1571,7 @@ static void tickle_timers(void *arg)
- static int __cpuinit hrtimer_cpu_notify(struct notifier_block *self,
- 					unsigned long action, void *hcpu)
- {
--	int dcpu = -1, scpu = (long)hcpu;
-+	int dcpu, scpu = (long)hcpu;
- 
- 	switch (action) {
- 
-@@ -1585,9 +1585,6 @@ static int __cpuinit hrtimer_cpu_notify(struct notifier_block *self,
- 	case CPU_DEAD_FROZEN:
- 		clockevents_notify(CLOCK_EVT_NOTIFY_CPU_DEAD, &scpu);
- 		dcpu = migrate_hrtimers(scpu);
--		break;
--
--	case CPU_POST_DEAD:
- 		if (dcpu == -1)
- 			break;
- 
+> > write file
+> > fsync file
+> > fsync .
+> >
+> > ... and someone else does "fsync ." in the meantime, you may get
+> > success when in fact directory entry of file is not written to the
+> > disk.
 
+> Also, I'm still not 100% clear what you are saying above.  Do you mean
+> that in this scenario, an error may occur but the first caller above
+> won't know of it?
+
+Yes.
+
+>  (It would help if you could write a few sentences
+> that you think should be in the man page.)
+
+Ok, see below.
+
+> > fsync() transfers ("flushes") all modified in-core data of (i.e.,
+> > modified buffer cache pages for) the file referred to by the file
+> > descriptor fd to the disk device (or other permanent storage device)
+> > where that file resides.  The call blocks until the device reports
+> > that the transfer has completed.  It also flushes metadata information
+> > associated with the file (see stat(2)).
+> >
+> > Calling fsync() does not necessarily ensure that the entry in the
+> > directory containing the file has also reached disk.  For that an
+> > explicit fsync() on a file descriptor for the directory is also
+> > needed.
+
+Replace paragraph with:
+
+On newly created files, explicitely calling fsync on a file descriptor
+for a directory is also needed, because calling fsync() on file does
+not necessarily ensure that the entry in the directory containing the
+file has reached disk.
+
+> >
+> > ...
+> > RETURN VALUE         top
+> >
+> > On success, these system calls return zero.  On error, -1 is
+> > returned, and errno is set appropriately.
+
+I'd add:
+
+After I/O error, fsync() only returns error condition to the first
+process that finishes fsync(). Therefore special care must be taken to
+coordinate different processes trying to write data to file/directory.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
