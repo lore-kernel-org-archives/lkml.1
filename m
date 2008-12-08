@@ -1,166 +1,326 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbYLHLln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbYLHLmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbYLHLln (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 06:41:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYLHLhc
+	id S1754289AbYLHLmD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 06:42:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbYLHLhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 06:37:32 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48257 "EHLO mx2.redhat.com"
+	Mon, 8 Dec 2008 06:37:35 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48256 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753301AbYLHLhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753300AbYLHLhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Dec 2008 06:37:04 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng@linux.intel.com>
-Subject: [PATCH 18/45] KVM: Improve MTRR structure
-Date: Mon,  8 Dec 2008 13:36:29 +0200
-Message-Id: <1228736216-15787-19-git-send-email-avi@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Jan Kiszka <jan.kiszka@siemens.com>
+Subject: [PATCH 14/45] KVM: VMX: work around lacking VNMI support
+Date: Mon,  8 Dec 2008 13:36:25 +0200
+Message-Id: <1228736216-15787-15-git-send-email-avi@redhat.com>
 In-Reply-To: <1228736216-15787-1-git-send-email-avi@redhat.com>
 References: <1228736216-15787-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sheng Yang <sheng@linux.intel.com>
+From: Jan Kiszka <jan.kiszka@siemens.com>
 
-As well as reset mmu context when set MTRR.
+Older VMX supporting CPUs do not provide the "Virtual NMI" feature for
+tracking the NMI-blocked state after injecting such events. For now
+KVM is unable to inject NMIs on those CPUs.
 
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
+Derived from Sheng Yang's suggestion to use the IRQ window notification
+for detecting the end of NMI handlers, this patch implements virtual
+NMI support without impact on the host's ability to receive real NMIs.
+The downside is that the given approach requires some heuristics that
+can cause NMI nesting in vary rare corner cases.
+
+The approach works as follows:
+ - inject NMI and set a software-based NMI-blocked flag
+ - arm the IRQ window start notification whenever an NMI window is
+   requested
+ - if the guest exits due to an opening IRQ window, clear the emulated
+   NMI-blocked flag
+ - if the guest net execution time with NMI-blocked but without an IRQ
+   window exceeds 1 second, force NMI-blocked reset and inject anyway
+
+This approach covers most practical scenarios:
+ - succeeding NMIs are seperated by at least one open IRQ window
+ - the guest may spin with IRQs disabled (e.g. due to a bug), but
+   leaving the NMI handler takes much less time than one second
+ - the guest does not rely on strict ordering or timing of NMIs
+   (would be problematic in virtualized environments anyway)
+
+Successfully tested with the 'nmi n' monitor command, the kgdbts
+testsuite on smp guests (additional patches required to add debug
+register support to kvm) + the kernel's nmi_watchdog=1, and a Siemens-
+specific board emulation (+ guest) that comes with its own NMI
+watchdog mechanism.
+
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/include/asm/kvm_host.h |    5 ++-
- arch/x86/kvm/x86.c              |   61 +++++++++++++++++++++++++++++++++++++-
- 2 files changed, 63 insertions(+), 3 deletions(-)
+ arch/x86/kvm/vmx.c |  174 ++++++++++++++++++++++++++++++++++------------------
+ 1 files changed, 115 insertions(+), 59 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index a40fa84..8082e87 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -21,6 +21,7 @@
- 
- #include <asm/pvclock-abi.h>
- #include <asm/desc.h>
-+#include <asm/mtrr.h>
- 
- #define KVM_MAX_VCPUS 16
- #define KVM_MEMORY_SLOTS 32
-@@ -86,6 +87,7 @@
- #define KVM_MIN_FREE_MMU_PAGES 5
- #define KVM_REFILL_PAGES 25
- #define KVM_MAX_CPUID_ENTRIES 40
-+#define KVM_NR_FIXED_MTRR_REGION 88
- #define KVM_NR_VAR_MTRR 8
- 
- extern spinlock_t kvm_lock;
-@@ -329,7 +331,8 @@ struct kvm_vcpu_arch {
- 	bool nmi_injected;
- 	bool nmi_window_open;
- 
--	u64 mtrr[0x100];
-+	struct mtrr_state_type mtrr_state;
-+	u32 pat;
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index f16a62c..2180109 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -90,6 +90,11 @@ struct vcpu_vmx {
+ 	} rmode;
+ 	int vpid;
+ 	bool emulation_required;
++
++	/* Support for vnmi-less CPUs */
++	int soft_vnmi_blocked;
++	ktime_t entry_time;
++	s64 vnmi_blocked_time;
  };
  
- struct kvm_mem_alias {
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index a2c4b55..f5b2334 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -39,6 +39,7 @@
- #include <asm/uaccess.h>
- #include <asm/msr.h>
- #include <asm/desc.h>
-+#include <asm/mtrr.h>
+ static inline struct vcpu_vmx *to_vmx(struct kvm_vcpu *vcpu)
+@@ -2230,6 +2235,8 @@ static int vmx_vcpu_reset(struct kvm_vcpu *vcpu)
  
- #define MAX_IO_MSRS 256
- #define CR0_RESERVED_BITS						\
-@@ -650,10 +651,38 @@ static bool msr_mtrr_valid(unsigned msr)
+ 	vmx->vcpu.arch.rmode.active = 0;
  
- static int set_msr_mtrr(struct kvm_vcpu *vcpu, u32 msr, u64 data)
- {
-+	u64 *p = (u64 *)&vcpu->arch.mtrr_state.fixed_ranges;
++	vmx->soft_vnmi_blocked = 0;
 +
- 	if (!msr_mtrr_valid(msr))
- 		return 1;
- 
--	vcpu->arch.mtrr[msr - 0x200] = data;
-+	if (msr == MSR_MTRRdefType) {
-+		vcpu->arch.mtrr_state.def_type = data;
-+		vcpu->arch.mtrr_state.enabled = (data & 0xc00) >> 10;
-+	} else if (msr == MSR_MTRRfix64K_00000)
-+		p[0] = data;
-+	else if (msr == MSR_MTRRfix16K_80000 || msr == MSR_MTRRfix16K_A0000)
-+		p[1 + msr - MSR_MTRRfix16K_80000] = data;
-+	else if (msr >= MSR_MTRRfix4K_C0000 && msr <= MSR_MTRRfix4K_F8000)
-+		p[3 + msr - MSR_MTRRfix4K_C0000] = data;
-+	else if (msr == MSR_IA32_CR_PAT)
-+		vcpu->arch.pat = data;
-+	else {	/* Variable MTRRs */
-+		int idx, is_mtrr_mask;
-+		u64 *pt;
-+
-+		idx = (msr - 0x200) / 2;
-+		is_mtrr_mask = msr - 0x200 - 2 * idx;
-+		if (!is_mtrr_mask)
-+			pt =
-+			  (u64 *)&vcpu->arch.mtrr_state.var_ranges[idx].base_lo;
-+		else
-+			pt =
-+			  (u64 *)&vcpu->arch.mtrr_state.var_ranges[idx].mask_lo;
-+		*pt = data;
-+	}
-+
-+	kvm_mmu_reset_context(vcpu);
- 	return 0;
+ 	vmx->vcpu.arch.regs[VCPU_REGS_RDX] = get_rdx_init_val();
+ 	kvm_set_cr8(&vmx->vcpu, 0);
+ 	msr = 0xfee00000 | MSR_IA32_APICBASE_ENABLE;
+@@ -2335,6 +2342,29 @@ out:
+ 	return ret;
  }
  
-@@ -749,10 +778,37 @@ int kvm_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
- 
- static int get_msr_mtrr(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
- {
-+	u64 *p = (u64 *)&vcpu->arch.mtrr_state.fixed_ranges;
++static void enable_irq_window(struct kvm_vcpu *vcpu)
++{
++	u32 cpu_based_vm_exec_control;
 +
- 	if (!msr_mtrr_valid(msr))
- 		return 1;
- 
--	*pdata = vcpu->arch.mtrr[msr - 0x200];
-+	if (msr == MSR_MTRRdefType)
-+		*pdata = vcpu->arch.mtrr_state.def_type +
-+			 (vcpu->arch.mtrr_state.enabled << 10);
-+	else if (msr == MSR_MTRRfix64K_00000)
-+		*pdata = p[0];
-+	else if (msr == MSR_MTRRfix16K_80000 || msr == MSR_MTRRfix16K_A0000)
-+		*pdata = p[1 + msr - MSR_MTRRfix16K_80000];
-+	else if (msr >= MSR_MTRRfix4K_C0000 && msr <= MSR_MTRRfix4K_F8000)
-+		*pdata = p[3 + msr - MSR_MTRRfix4K_C0000];
-+	else if (msr == MSR_IA32_CR_PAT)
-+		*pdata = vcpu->arch.pat;
-+	else {	/* Variable MTRRs */
-+		int idx, is_mtrr_mask;
-+		u64 *pt;
++	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
++	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_INTR_PENDING;
++	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
++}
 +
-+		idx = (msr - 0x200) / 2;
-+		is_mtrr_mask = msr - 0x200 - 2 * idx;
-+		if (!is_mtrr_mask)
-+			pt =
-+			  (u64 *)&vcpu->arch.mtrr_state.var_ranges[idx].base_lo;
-+		else
-+			pt =
-+			  (u64 *)&vcpu->arch.mtrr_state.var_ranges[idx].mask_lo;
-+		*pdata = *pt;
++static void enable_nmi_window(struct kvm_vcpu *vcpu)
++{
++	u32 cpu_based_vm_exec_control;
++
++	if (!cpu_has_virtual_nmis()) {
++		enable_irq_window(vcpu);
++		return;
 +	}
 +
- 	return 0;
++	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
++	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_NMI_PENDING;
++	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
++}
++
+ static void vmx_inject_irq(struct kvm_vcpu *vcpu, int irq)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+@@ -2360,6 +2390,19 @@ static void vmx_inject_nmi(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+ 
++	if (!cpu_has_virtual_nmis()) {
++		/*
++		 * Tracking the NMI-blocked state in software is built upon
++		 * finding the next open IRQ window. This, in turn, depends on
++		 * well-behaving guests: They have to keep IRQs disabled at
++		 * least as long as the NMI handler runs. Otherwise we may
++		 * cause NMI nesting, maybe breaking the guest. But as this is
++		 * highly unlikely, we can live with the residual risk.
++		 */
++		vmx->soft_vnmi_blocked = 1;
++		vmx->vnmi_blocked_time = 0;
++	}
++
+ 	++vcpu->stat.nmi_injections;
+ 	if (vcpu->arch.rmode.active) {
+ 		vmx->rmode.irq.pending = true;
+@@ -2384,6 +2427,8 @@ static void vmx_update_window_states(struct kvm_vcpu *vcpu)
+ 		!(guest_intr & (GUEST_INTR_STATE_STI |
+ 				GUEST_INTR_STATE_MOV_SS |
+ 				GUEST_INTR_STATE_NMI));
++	if (!cpu_has_virtual_nmis() && to_vmx(vcpu)->soft_vnmi_blocked)
++		vcpu->arch.nmi_window_open = 0;
+ 
+ 	vcpu->arch.interrupt_window_open =
+ 		((vmcs_readl(GUEST_RFLAGS) & X86_EFLAGS_IF) &&
+@@ -2403,55 +2448,31 @@ static void kvm_do_inject_irq(struct kvm_vcpu *vcpu)
+ 	kvm_queue_interrupt(vcpu, irq);
  }
  
-@@ -3942,6 +3998,7 @@ int kvm_arch_vcpu_setup(struct kvm_vcpu *vcpu)
- 	/* We do fxsave: this must be aligned. */
- 	BUG_ON((unsigned long)&vcpu->arch.host_fx_image & 0xF);
+-static void enable_irq_window(struct kvm_vcpu *vcpu)
+-{
+-	u32 cpu_based_vm_exec_control;
+-
+-	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
+-	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_INTR_PENDING;
+-	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
+-}
+-
+-static void enable_nmi_window(struct kvm_vcpu *vcpu)
+-{
+-	u32 cpu_based_vm_exec_control;
+-
+-	if (!cpu_has_virtual_nmis())
+-		return;
+-
+-	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
+-	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_NMI_PENDING;
+-	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
+-}
+-
+ static void do_interrupt_requests(struct kvm_vcpu *vcpu,
+ 				       struct kvm_run *kvm_run)
+ {
+ 	vmx_update_window_states(vcpu);
  
-+	vcpu->arch.mtrr_state.have_fixed = 1;
- 	vcpu_load(vcpu);
- 	r = kvm_arch_vcpu_reset(vcpu);
- 	if (r == 0)
+-	if (cpu_has_virtual_nmis()) {
+-		if (vcpu->arch.nmi_pending && !vcpu->arch.nmi_injected) {
+-			if (vcpu->arch.nmi_window_open) {
+-				vcpu->arch.nmi_pending = false;
+-				vcpu->arch.nmi_injected = true;
+-			} else {
+-				enable_nmi_window(vcpu);
+-				return;
+-			}
+-		}
+-		if (vcpu->arch.nmi_injected) {
+-			vmx_inject_nmi(vcpu);
+-			if (vcpu->arch.nmi_pending
+-			    || kvm_run->request_nmi_window)
+-				enable_nmi_window(vcpu);
+-			else if (vcpu->arch.irq_summary
+-				 || kvm_run->request_interrupt_window)
+-				enable_irq_window(vcpu);
++	if (vcpu->arch.nmi_pending && !vcpu->arch.nmi_injected) {
++		if (vcpu->arch.nmi_window_open) {
++			vcpu->arch.nmi_pending = false;
++			vcpu->arch.nmi_injected = true;
++		} else {
++			enable_nmi_window(vcpu);
+ 			return;
+ 		}
+-		if (!vcpu->arch.nmi_window_open || kvm_run->request_nmi_window)
++	}
++	if (vcpu->arch.nmi_injected) {
++		vmx_inject_nmi(vcpu);
++		if (vcpu->arch.nmi_pending || kvm_run->request_nmi_window)
+ 			enable_nmi_window(vcpu);
++		else if (vcpu->arch.irq_summary
++			 || kvm_run->request_interrupt_window)
++			enable_irq_window(vcpu);
++		return;
+ 	}
++	if (!vcpu->arch.nmi_window_open || kvm_run->request_nmi_window)
++		enable_nmi_window(vcpu);
+ 
+ 	if (vcpu->arch.interrupt_window_open) {
+ 		if (vcpu->arch.irq_summary && !vcpu->arch.interrupt.pending)
+@@ -3097,6 +3118,37 @@ static int kvm_handle_exit(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 		printk(KERN_WARNING "%s: unexpected, valid vectoring info "
+ 		       "(0x%x) and exit reason is 0x%x\n",
+ 		       __func__, vectoring_info, exit_reason);
++
++	if (unlikely(!cpu_has_virtual_nmis() && vmx->soft_vnmi_blocked)) {
++		if (vcpu->arch.interrupt_window_open) {
++			vmx->soft_vnmi_blocked = 0;
++			vcpu->arch.nmi_window_open = 1;
++		} else if (vmx->vnmi_blocked_time > 1000000000LL &&
++		    (kvm_run->request_nmi_window || vcpu->arch.nmi_pending)) {
++			/*
++			 * This CPU don't support us in finding the end of an
++			 * NMI-blocked window if the guest runs with IRQs
++			 * disabled. So we pull the trigger after 1 s of
++			 * futile waiting, but inform the user about this.
++			 */
++			printk(KERN_WARNING "%s: Breaking out of NMI-blocked "
++			       "state on VCPU %d after 1 s timeout\n",
++			       __func__, vcpu->vcpu_id);
++			vmx->soft_vnmi_blocked = 0;
++			vmx->vcpu.arch.nmi_window_open = 1;
++		}
++
++		/*
++		 * If the user space waits to inject an NNI, exit ASAP
++		 */
++		if (vcpu->arch.nmi_window_open && kvm_run->request_nmi_window
++		    && !vcpu->arch.nmi_pending) {
++			kvm_run->exit_reason = KVM_EXIT_NMI_WINDOW_OPEN;
++			++vcpu->stat.nmi_window_exits;
++			return 0;
++		}
++	}
++
+ 	if (exit_reason < kvm_vmx_max_exit_handlers
+ 	    && kvm_vmx_exit_handlers[exit_reason])
+ 		return kvm_vmx_exit_handlers[exit_reason](vcpu, kvm_run);
+@@ -3146,7 +3198,9 @@ static void vmx_complete_interrupts(struct vcpu_vmx *vmx)
+ 		if (unblock_nmi && vector != DF_VECTOR)
+ 			vmcs_set_bits(GUEST_INTERRUPTIBILITY_INFO,
+ 				      GUEST_INTR_STATE_NMI);
+-	}
++	} else if (unlikely(vmx->soft_vnmi_blocked))
++		vmx->vnmi_blocked_time +=
++			ktime_to_ns(ktime_sub(ktime_get(), vmx->entry_time));
+ 
+ 	idt_vectoring_info = vmx->idt_vectoring_info;
+ 	idtv_info_valid = idt_vectoring_info & VECTORING_INFO_VALID_MASK;
+@@ -3186,27 +3240,25 @@ static void vmx_intr_assist(struct kvm_vcpu *vcpu)
+ 
+ 	vmx_update_window_states(vcpu);
+ 
+-	if (cpu_has_virtual_nmis()) {
+-		if (vcpu->arch.nmi_pending && !vcpu->arch.nmi_injected) {
+-			if (vcpu->arch.interrupt.pending) {
+-				enable_nmi_window(vcpu);
+-			} else if (vcpu->arch.nmi_window_open) {
+-				vcpu->arch.nmi_pending = false;
+-				vcpu->arch.nmi_injected = true;
+-			} else {
+-				enable_nmi_window(vcpu);
+-				return;
+-			}
+-		}
+-		if (vcpu->arch.nmi_injected) {
+-			vmx_inject_nmi(vcpu);
+-			if (vcpu->arch.nmi_pending)
+-				enable_nmi_window(vcpu);
+-			else if (kvm_cpu_has_interrupt(vcpu))
+-				enable_irq_window(vcpu);
++	if (vcpu->arch.nmi_pending && !vcpu->arch.nmi_injected) {
++		if (vcpu->arch.interrupt.pending) {
++			enable_nmi_window(vcpu);
++		} else if (vcpu->arch.nmi_window_open) {
++			vcpu->arch.nmi_pending = false;
++			vcpu->arch.nmi_injected = true;
++		} else {
++			enable_nmi_window(vcpu);
+ 			return;
+ 		}
+ 	}
++	if (vcpu->arch.nmi_injected) {
++		vmx_inject_nmi(vcpu);
++		if (vcpu->arch.nmi_pending)
++			enable_nmi_window(vcpu);
++		else if (kvm_cpu_has_interrupt(vcpu))
++			enable_irq_window(vcpu);
++		return;
++	}
+ 	if (!vcpu->arch.interrupt.pending && kvm_cpu_has_interrupt(vcpu)) {
+ 		if (vcpu->arch.interrupt_window_open)
+ 			kvm_queue_interrupt(vcpu, kvm_cpu_get_interrupt(vcpu));
+@@ -3255,6 +3307,10 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+ 	u32 intr_info;
+ 
++	/* Record the guest's net vcpu time for enforced NMI injections. */
++	if (unlikely(!cpu_has_virtual_nmis() && vmx->soft_vnmi_blocked))
++		vmx->entry_time = ktime_get();
++
+ 	/* Handle invalid guest state instead of entering VMX */
+ 	if (vmx->emulation_required && emulate_invalid_guest_state) {
+ 		handle_invalid_guest_state(vcpu, kvm_run);
 -- 
 1.6.0.3
 
