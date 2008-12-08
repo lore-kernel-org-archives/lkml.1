@@ -1,94 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbYLHVwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbYLHVw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753290AbYLHVwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 16:52:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYLHVwZ
+	id S1753700AbYLHVw4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 16:52:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYLHVwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 16:52:25 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:38379 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752431AbYLHVwY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 16:52:24 -0500
-Date: Mon, 8 Dec 2008 15:52:21 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: James Morris <jmorris@namei.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: [PATCH 1/1] user namespaces: document CFS behavior
-Message-ID: <20081208215221.GA3954@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 8 Dec 2008 16:52:45 -0500
+Received: from gate.crashing.org ([63.228.1.57]:44369 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752503AbYLHVwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 16:52:44 -0500
+Subject: Re: [PATCH 1/2] Driver core: move the bus notifier call points
+ (fwd)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0812081012030.2476-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0812081012030.2476-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Tue, 09 Dec 2008 08:52:22 +1100
+Message-Id: <1228773142.7101.38.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documented the currently bogus state of support for CFS user groups with
-user namespaces.  In particular, all users in a user namespace should be
-children of the user which created the user namespace.  This is yet to
-be implemented.
+On Mon, 2008-12-08 at 10:14 -0500, Alan Stern wrote:
+> Ben:
+> 
+> After posting the patch below, I noticed that you were the person who 
+> originally added the bus notifier code.  You don't see any problems 
+> with this code motion, do you?
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Acked-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+I think it should be fine. I need to make sure the driver isn't bound
+yet, that's my main requirement, since I use those callbacks to setup
+the DMA operations & iommu for the device on Cell.
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- Documentation/scheduler/sched-design-CFS.txt |   21 +++++++++++++++++++++
- kernel/user.c                                |    8 +++++++-
- 2 files changed, 28 insertions(+), 1 deletions(-)
+Cheers,
+Ben.
 
-diff --git a/Documentation/scheduler/sched-design-CFS.txt b/Documentation/scheduler/sched-design-CFS.txt
-index eb471c7..8398ca4 100644
---- a/Documentation/scheduler/sched-design-CFS.txt
-+++ b/Documentation/scheduler/sched-design-CFS.txt
-@@ -273,3 +273,24 @@ task groups and modify their CPU share using the "cgroups" pseudo filesystem.
- 
- 	# #Launch gmplayer (or your favourite movie player)
- 	# echo <movie_player_pid> > multimedia/tasks
-+
-+8. Implementation note: user namespaces
-+
-+User namespaces are intended to be hierarchical.  But they are currently
-+only partially implemented.  Each of those has ramifications for CFS.
-+
-+First, since user namespaces are hierarchical, the /sys/kernel/uids
-+presentation is inadequate.  Eventually we will likely want to use sysfs
-+tagging to provide private views of /sys/kernel/uids within each user
-+namespace.
-+
-+Second, the hierarchical nature is intended to support completely
-+unprivileged use of user namespaces.  So if using user groups, then
-+we want the users in a user namespace to be children of the user
-+who created it.
-+
-+That is currently unimplemented.  So instead, every user in a new
-+user namespace will receive 1024 shares just like any user in the
-+initial user namespace.  Note that at the moment creation of a new
-+user namespace requires each of CAP_SYS_ADMIN, CAP_SETUID, and
-+CAP_SETGID.
-diff --git a/kernel/user.c b/kernel/user.c
-index 6c924bc..6608a3d 100644
---- a/kernel/user.c
-+++ b/kernel/user.c
-@@ -239,7 +239,13 @@ static struct kobj_type uids_ktype = {
- 	.release = uids_release,
- };
- 
--/* create /sys/kernel/uids/<uid>/cpu_share file for this user */
-+/*
-+ * Create /sys/kernel/uids/<uid>/cpu_share file for this user
-+ * We do not create this file for users in a user namespace (until
-+ * sysfs tagging is implemented).
-+ *
-+ * See Documentation/scheduler/sched-design-CFS.txt for ramifications.
-+ */
- static int uids_user_create(struct user_struct *up)
- {
- 	struct kobject *kobj = &up->kobj;
--- 
-1.5.4.3
+> Alan Stern
+> 
+> 
+> 
+> This patch (as1184) changes the location of the notifications in
+> device_add() and device_del().  Now the BUS_NOTIFY_ADD_DEVICE message
+> is sent after dpm_sysfs_add(), which is necessary for clients that
+> want to add attributes to the power/ subdirectory.  The
+> BUS_NOTIFY_DEL_DEVICE message is correspondingly moved before
+> dpm_sysfs_remove().
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> 
+> ---
+> 
+> Index: usb-2.6/drivers/base/core.c
+> ===================================================================
+> --- usb-2.6.orig/drivers/base/core.c
+> +++ usb-2.6/drivers/base/core.c
+> @@ -884,11 +884,6 @@ int device_add(struct device *dev)
+>  	if (platform_notify)
+>  		platform_notify(dev);
+>  
+> -	/* notify clients of device entry (new way) */
+> -	if (dev->bus)
+> -		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> -					     BUS_NOTIFY_ADD_DEVICE, dev);
+> -
+>  	error = device_create_file(dev, &uevent_attr);
+>  	if (error)
+>  		goto attrError;
+> @@ -916,6 +911,14 @@ int device_add(struct device *dev)
+>  	if (error)
+>  		goto DPMError;
+>  	device_pm_add(dev);
+> +
+> +	/* Notify clients of device addition.  This call must come
+> +	 * after dpm_sysf_add() and before kobject_uevent().
+> +	 */
+> +	if (dev->bus)
+> +		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> +					     BUS_NOTIFY_ADD_DEVICE, dev);
+> +
+>  	kobject_uevent(&dev->kobj, KOBJ_ADD);
+>  	bus_attach_device(dev);
+>  	if (parent)
+> @@ -940,9 +943,6 @@ done:
+>   DPMError:
+>  	bus_remove_device(dev);
+>   BusError:
+> -	if (dev->bus)
+> -		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> -					     BUS_NOTIFY_DEL_DEVICE, dev);
+>  	device_remove_attrs(dev);
+>   AttrsError:
+>  	device_remove_class_symlinks(dev);
+> @@ -1027,6 +1027,12 @@ void device_del(struct device *dev)
+>  	struct device *parent = dev->parent;
+>  	struct class_interface *class_intf;
+>  
+> +	/* Notify clients of device removal.  This call must come
+> +	 * before dpm_sysfs_remove().
+> +	 */
+> +	if (dev->bus)
+> +		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> +					     BUS_NOTIFY_DEL_DEVICE, dev);
+>  	device_pm_remove(dev);
+>  	dpm_sysfs_remove(dev);
+>  	if (parent)
+> @@ -1064,9 +1070,6 @@ void device_del(struct device *dev)
+>  	 */
+>  	if (platform_notify_remove)
+>  		platform_notify_remove(dev);
+> -	if (dev->bus)
+> -		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> -					     BUS_NOTIFY_DEL_DEVICE, dev);
+>  	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
+>  	cleanup_device_parent(dev);
+>  	if (!list_empty(&dev->klist_children.k_list))
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
