@@ -1,326 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbYLHLmD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYLHLm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754289AbYLHLmD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 06:42:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbYLHLhf
+	id S1754023AbYLHLm0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 06:42:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYLHLhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 06:37:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48256 "EHLO mx2.redhat.com"
+	Mon, 8 Dec 2008 06:37:38 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48251 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753300AbYLHLhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753293AbYLHLhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Dec 2008 06:37:04 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Jan Kiszka <jan.kiszka@siemens.com>
-Subject: [PATCH 14/45] KVM: VMX: work around lacking VNMI support
-Date: Mon,  8 Dec 2008 13:36:25 +0200
-Message-Id: <1228736216-15787-15-git-send-email-avi@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng@linux.intel.com>
+Subject: [PATCH 21/45] KVM: Enable MTRR for EPT
+Date: Mon,  8 Dec 2008 13:36:32 +0200
+Message-Id: <1228736216-15787-22-git-send-email-avi@redhat.com>
 In-Reply-To: <1228736216-15787-1-git-send-email-avi@redhat.com>
 References: <1228736216-15787-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Kiszka <jan.kiszka@siemens.com>
+From: Sheng Yang <sheng@linux.intel.com>
 
-Older VMX supporting CPUs do not provide the "Virtual NMI" feature for
-tracking the NMI-blocked state after injecting such events. For now
-KVM is unable to inject NMIs on those CPUs.
+The effective memory type of EPT is the mixture of MSR_IA32_CR_PAT and memory
+type field of EPT entry.
 
-Derived from Sheng Yang's suggestion to use the IRQ window notification
-for detecting the end of NMI handlers, this patch implements virtual
-NMI support without impact on the host's ability to receive real NMIs.
-The downside is that the given approach requires some heuristics that
-can cause NMI nesting in vary rare corner cases.
-
-The approach works as follows:
- - inject NMI and set a software-based NMI-blocked flag
- - arm the IRQ window start notification whenever an NMI window is
-   requested
- - if the guest exits due to an opening IRQ window, clear the emulated
-   NMI-blocked flag
- - if the guest net execution time with NMI-blocked but without an IRQ
-   window exceeds 1 second, force NMI-blocked reset and inject anyway
-
-This approach covers most practical scenarios:
- - succeeding NMIs are seperated by at least one open IRQ window
- - the guest may spin with IRQs disabled (e.g. due to a bug), but
-   leaving the NMI handler takes much less time than one second
- - the guest does not rely on strict ordering or timing of NMIs
-   (would be problematic in virtualized environments anyway)
-
-Successfully tested with the 'nmi n' monitor command, the kgdbts
-testsuite on smp guests (additional patches required to add debug
-register support to kvm) + the kernel's nmi_watchdog=1, and a Siemens-
-specific board emulation (+ guest) that comes with its own NMI
-watchdog mechanism.
-
-Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- arch/x86/kvm/vmx.c |  174 ++++++++++++++++++++++++++++++++++------------------
- 1 files changed, 115 insertions(+), 59 deletions(-)
+ arch/x86/include/asm/kvm_host.h |    3 ++-
+ arch/x86/kvm/mmu.c              |   11 ++++++++++-
+ arch/x86/kvm/svm.c              |    6 ++++++
+ arch/x86/kvm/vmx.c              |   10 ++++++++--
+ arch/x86/kvm/x86.c              |    2 +-
+ 5 files changed, 27 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index f16a62c..2180109 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -90,6 +90,11 @@ struct vcpu_vmx {
- 	} rmode;
- 	int vpid;
- 	bool emulation_required;
-+
-+	/* Support for vnmi-less CPUs */
-+	int soft_vnmi_blocked;
-+	ktime_t entry_time;
-+	s64 vnmi_blocked_time;
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 8082e87..93040b5 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -483,6 +483,7 @@ struct kvm_x86_ops {
+ 
+ 	int (*set_tss_addr)(struct kvm *kvm, unsigned int addr);
+ 	int (*get_tdp_level)(void);
++	int (*get_mt_mask_shift)(void);
  };
  
- static inline struct vcpu_vmx *to_vmx(struct kvm_vcpu *vcpu)
-@@ -2230,6 +2235,8 @@ static int vmx_vcpu_reset(struct kvm_vcpu *vcpu)
+ extern struct kvm_x86_ops *kvm_x86_ops;
+@@ -496,7 +497,7 @@ int kvm_mmu_setup(struct kvm_vcpu *vcpu);
+ void kvm_mmu_set_nonpresent_ptes(u64 trap_pte, u64 notrap_pte);
+ void kvm_mmu_set_base_ptes(u64 base_pte);
+ void kvm_mmu_set_mask_ptes(u64 user_mask, u64 accessed_mask,
+-		u64 dirty_mask, u64 nx_mask, u64 x_mask);
++		u64 dirty_mask, u64 nx_mask, u64 x_mask, u64 mt_mask);
  
- 	vmx->vcpu.arch.rmode.active = 0;
+ int kvm_mmu_reset_context(struct kvm_vcpu *vcpu);
+ void kvm_mmu_slot_remove_write_access(struct kvm *kvm, int slot);
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index ac2304f..09d05f5 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -168,6 +168,7 @@ static u64 __read_mostly shadow_x_mask;	/* mutual exclusive with nx_mask */
+ static u64 __read_mostly shadow_user_mask;
+ static u64 __read_mostly shadow_accessed_mask;
+ static u64 __read_mostly shadow_dirty_mask;
++static u64 __read_mostly shadow_mt_mask;
  
-+	vmx->soft_vnmi_blocked = 0;
+ void kvm_mmu_set_nonpresent_ptes(u64 trap_pte, u64 notrap_pte)
+ {
+@@ -183,13 +184,14 @@ void kvm_mmu_set_base_ptes(u64 base_pte)
+ EXPORT_SYMBOL_GPL(kvm_mmu_set_base_ptes);
+ 
+ void kvm_mmu_set_mask_ptes(u64 user_mask, u64 accessed_mask,
+-		u64 dirty_mask, u64 nx_mask, u64 x_mask)
++		u64 dirty_mask, u64 nx_mask, u64 x_mask, u64 mt_mask)
+ {
+ 	shadow_user_mask = user_mask;
+ 	shadow_accessed_mask = accessed_mask;
+ 	shadow_dirty_mask = dirty_mask;
+ 	shadow_nx_mask = nx_mask;
+ 	shadow_x_mask = x_mask;
++	shadow_mt_mask = mt_mask;
+ }
+ EXPORT_SYMBOL_GPL(kvm_mmu_set_mask_ptes);
+ 
+@@ -1546,6 +1548,8 @@ static int set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
+ {
+ 	u64 spte;
+ 	int ret = 0;
++	u64 mt_mask = shadow_mt_mask;
 +
- 	vmx->vcpu.arch.regs[VCPU_REGS_RDX] = get_rdx_init_val();
- 	kvm_set_cr8(&vmx->vcpu, 0);
- 	msr = 0xfee00000 | MSR_IA32_APICBASE_ENABLE;
-@@ -2335,6 +2342,29 @@ out:
- 	return ret;
+ 	/*
+ 	 * We don't set the accessed bit, since we sometimes want to see
+ 	 * whether the guest actually used the pte (in order to detect
+@@ -1564,6 +1568,11 @@ static int set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
+ 		spte |= shadow_user_mask;
+ 	if (largepage)
+ 		spte |= PT_PAGE_SIZE_MASK;
++	if (mt_mask) {
++		mt_mask = get_memory_type(vcpu, gfn) <<
++			  kvm_x86_ops->get_mt_mask_shift();
++		spte |= mt_mask;
++	}
+ 
+ 	spte |= (u64)pfn << PAGE_SHIFT;
+ 
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 9c4ce65..05efc4e 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1912,6 +1912,11 @@ static int get_npt_level(void)
+ #endif
  }
  
-+static void enable_irq_window(struct kvm_vcpu *vcpu)
++static int svm_get_mt_mask_shift(void)
 +{
-+	u32 cpu_based_vm_exec_control;
-+
-+	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
-+	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_INTR_PENDING;
-+	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
++	return 0;
 +}
 +
-+static void enable_nmi_window(struct kvm_vcpu *vcpu)
-+{
-+	u32 cpu_based_vm_exec_control;
-+
-+	if (!cpu_has_virtual_nmis()) {
-+		enable_irq_window(vcpu);
-+		return;
-+	}
-+
-+	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
-+	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_NMI_PENDING;
-+	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
-+}
-+
- static void vmx_inject_irq(struct kvm_vcpu *vcpu, int irq)
- {
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
-@@ -2360,6 +2390,19 @@ static void vmx_inject_nmi(struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+ static struct kvm_x86_ops svm_x86_ops = {
+ 	.cpu_has_kvm_support = has_svm,
+ 	.disabled_by_bios = is_disabled,
+@@ -1967,6 +1972,7 @@ static struct kvm_x86_ops svm_x86_ops = {
  
-+	if (!cpu_has_virtual_nmis()) {
-+		/*
-+		 * Tracking the NMI-blocked state in software is built upon
-+		 * finding the next open IRQ window. This, in turn, depends on
-+		 * well-behaving guests: They have to keep IRQs disabled at
-+		 * least as long as the NMI handler runs. Otherwise we may
-+		 * cause NMI nesting, maybe breaking the guest. But as this is
-+		 * highly unlikely, we can live with the residual risk.
-+		 */
-+		vmx->soft_vnmi_blocked = 1;
-+		vmx->vnmi_blocked_time = 0;
-+	}
-+
- 	++vcpu->stat.nmi_injections;
- 	if (vcpu->arch.rmode.active) {
- 		vmx->rmode.irq.pending = true;
-@@ -2384,6 +2427,8 @@ static void vmx_update_window_states(struct kvm_vcpu *vcpu)
- 		!(guest_intr & (GUEST_INTR_STATE_STI |
- 				GUEST_INTR_STATE_MOV_SS |
- 				GUEST_INTR_STATE_NMI));
-+	if (!cpu_has_virtual_nmis() && to_vmx(vcpu)->soft_vnmi_blocked)
-+		vcpu->arch.nmi_window_open = 0;
+ 	.set_tss_addr = svm_set_tss_addr,
+ 	.get_tdp_level = get_npt_level,
++	.get_mt_mask_shift = svm_get_mt_mask_shift,
+ };
  
- 	vcpu->arch.interrupt_window_open =
- 		((vmcs_readl(GUEST_RFLAGS) & X86_EFLAGS_IF) &&
-@@ -2403,55 +2448,31 @@ static void kvm_do_inject_irq(struct kvm_vcpu *vcpu)
- 	kvm_queue_interrupt(vcpu, irq);
+ static int __init svm_init(void)
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index b4c95a5..dae134f 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -3574,6 +3574,11 @@ static int get_ept_level(void)
+ 	return VMX_EPT_DEFAULT_GAW + 1;
  }
  
--static void enable_irq_window(struct kvm_vcpu *vcpu)
--{
--	u32 cpu_based_vm_exec_control;
--
--	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
--	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_INTR_PENDING;
--	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
--}
--
--static void enable_nmi_window(struct kvm_vcpu *vcpu)
--{
--	u32 cpu_based_vm_exec_control;
--
--	if (!cpu_has_virtual_nmis())
--		return;
--
--	cpu_based_vm_exec_control = vmcs_read32(CPU_BASED_VM_EXEC_CONTROL);
--	cpu_based_vm_exec_control |= CPU_BASED_VIRTUAL_NMI_PENDING;
--	vmcs_write32(CPU_BASED_VM_EXEC_CONTROL, cpu_based_vm_exec_control);
--}
--
- static void do_interrupt_requests(struct kvm_vcpu *vcpu,
- 				       struct kvm_run *kvm_run)
- {
- 	vmx_update_window_states(vcpu);
- 
--	if (cpu_has_virtual_nmis()) {
--		if (vcpu->arch.nmi_pending && !vcpu->arch.nmi_injected) {
--			if (vcpu->arch.nmi_window_open) {
--				vcpu->arch.nmi_pending = false;
--				vcpu->arch.nmi_injected = true;
--			} else {
--				enable_nmi_window(vcpu);
--				return;
--			}
--		}
--		if (vcpu->arch.nmi_injected) {
--			vmx_inject_nmi(vcpu);
--			if (vcpu->arch.nmi_pending
--			    || kvm_run->request_nmi_window)
--				enable_nmi_window(vcpu);
--			else if (vcpu->arch.irq_summary
--				 || kvm_run->request_interrupt_window)
--				enable_irq_window(vcpu);
-+	if (vcpu->arch.nmi_pending && !vcpu->arch.nmi_injected) {
-+		if (vcpu->arch.nmi_window_open) {
-+			vcpu->arch.nmi_pending = false;
-+			vcpu->arch.nmi_injected = true;
-+		} else {
-+			enable_nmi_window(vcpu);
- 			return;
- 		}
--		if (!vcpu->arch.nmi_window_open || kvm_run->request_nmi_window)
-+	}
-+	if (vcpu->arch.nmi_injected) {
-+		vmx_inject_nmi(vcpu);
-+		if (vcpu->arch.nmi_pending || kvm_run->request_nmi_window)
- 			enable_nmi_window(vcpu);
-+		else if (vcpu->arch.irq_summary
-+			 || kvm_run->request_interrupt_window)
-+			enable_irq_window(vcpu);
-+		return;
- 	}
-+	if (!vcpu->arch.nmi_window_open || kvm_run->request_nmi_window)
-+		enable_nmi_window(vcpu);
- 
- 	if (vcpu->arch.interrupt_window_open) {
- 		if (vcpu->arch.irq_summary && !vcpu->arch.interrupt.pending)
-@@ -3097,6 +3118,37 @@ static int kvm_handle_exit(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 		printk(KERN_WARNING "%s: unexpected, valid vectoring info "
- 		       "(0x%x) and exit reason is 0x%x\n",
- 		       __func__, vectoring_info, exit_reason);
++static int vmx_get_mt_mask_shift(void)
++{
++	return VMX_EPT_MT_EPTE_SHIFT;
++}
 +
-+	if (unlikely(!cpu_has_virtual_nmis() && vmx->soft_vnmi_blocked)) {
-+		if (vcpu->arch.interrupt_window_open) {
-+			vmx->soft_vnmi_blocked = 0;
-+			vcpu->arch.nmi_window_open = 1;
-+		} else if (vmx->vnmi_blocked_time > 1000000000LL &&
-+		    (kvm_run->request_nmi_window || vcpu->arch.nmi_pending)) {
-+			/*
-+			 * This CPU don't support us in finding the end of an
-+			 * NMI-blocked window if the guest runs with IRQs
-+			 * disabled. So we pull the trigger after 1 s of
-+			 * futile waiting, but inform the user about this.
-+			 */
-+			printk(KERN_WARNING "%s: Breaking out of NMI-blocked "
-+			       "state on VCPU %d after 1 s timeout\n",
-+			       __func__, vcpu->vcpu_id);
-+			vmx->soft_vnmi_blocked = 0;
-+			vmx->vcpu.arch.nmi_window_open = 1;
-+		}
-+
-+		/*
-+		 * If the user space waits to inject an NNI, exit ASAP
-+		 */
-+		if (vcpu->arch.nmi_window_open && kvm_run->request_nmi_window
-+		    && !vcpu->arch.nmi_pending) {
-+			kvm_run->exit_reason = KVM_EXIT_NMI_WINDOW_OPEN;
-+			++vcpu->stat.nmi_window_exits;
-+			return 0;
-+		}
-+	}
-+
- 	if (exit_reason < kvm_vmx_max_exit_handlers
- 	    && kvm_vmx_exit_handlers[exit_reason])
- 		return kvm_vmx_exit_handlers[exit_reason](vcpu, kvm_run);
-@@ -3146,7 +3198,9 @@ static void vmx_complete_interrupts(struct vcpu_vmx *vmx)
- 		if (unblock_nmi && vector != DF_VECTOR)
- 			vmcs_set_bits(GUEST_INTERRUPTIBILITY_INFO,
- 				      GUEST_INTR_STATE_NMI);
--	}
-+	} else if (unlikely(vmx->soft_vnmi_blocked))
-+		vmx->vnmi_blocked_time +=
-+			ktime_to_ns(ktime_sub(ktime_get(), vmx->entry_time));
+ static struct kvm_x86_ops vmx_x86_ops = {
+ 	.cpu_has_kvm_support = cpu_has_kvm_support,
+ 	.disabled_by_bios = vmx_disabled_by_bios,
+@@ -3629,6 +3634,7 @@ static struct kvm_x86_ops vmx_x86_ops = {
  
- 	idt_vectoring_info = vmx->idt_vectoring_info;
- 	idtv_info_valid = idt_vectoring_info & VECTORING_INFO_VALID_MASK;
-@@ -3186,27 +3240,25 @@ static void vmx_intr_assist(struct kvm_vcpu *vcpu)
+ 	.set_tss_addr = vmx_set_tss_addr,
+ 	.get_tdp_level = get_ept_level,
++	.get_mt_mask_shift = vmx_get_mt_mask_shift,
+ };
  
- 	vmx_update_window_states(vcpu);
+ static int __init vmx_init(void)
+@@ -3685,10 +3691,10 @@ static int __init vmx_init(void)
+ 		bypass_guest_pf = 0;
+ 		kvm_mmu_set_base_ptes(VMX_EPT_READABLE_MASK |
+ 			VMX_EPT_WRITABLE_MASK |
+-			VMX_EPT_DEFAULT_MT << VMX_EPT_MT_EPTE_SHIFT |
+ 			VMX_EPT_IGMT_BIT);
+ 		kvm_mmu_set_mask_ptes(0ull, 0ull, 0ull, 0ull,
+-				VMX_EPT_EXECUTABLE_MASK);
++				VMX_EPT_EXECUTABLE_MASK,
++				VMX_EPT_DEFAULT_MT << VMX_EPT_MT_EPTE_SHIFT);
+ 		kvm_enable_tdp();
+ 	} else
+ 		kvm_disable_tdp();
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 0edf753..f175b79 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2615,7 +2615,7 @@ int kvm_arch_init(void *opaque)
+ 	kvm_mmu_set_nonpresent_ptes(0ull, 0ull);
+ 	kvm_mmu_set_base_ptes(PT_PRESENT_MASK);
+ 	kvm_mmu_set_mask_ptes(PT_USER_MASK, PT_ACCESSED_MASK,
+-			PT_DIRTY_MASK, PT64_NX_MASK, 0);
++			PT_DIRTY_MASK, PT64_NX_MASK, 0, 0);
+ 	return 0;
  
--	if (cpu_has_virtual_nmis()) {
--		if (vcpu->arch.nmi_pending && !vcpu->arch.nmi_injected) {
--			if (vcpu->arch.interrupt.pending) {
--				enable_nmi_window(vcpu);
--			} else if (vcpu->arch.nmi_window_open) {
--				vcpu->arch.nmi_pending = false;
--				vcpu->arch.nmi_injected = true;
--			} else {
--				enable_nmi_window(vcpu);
--				return;
--			}
--		}
--		if (vcpu->arch.nmi_injected) {
--			vmx_inject_nmi(vcpu);
--			if (vcpu->arch.nmi_pending)
--				enable_nmi_window(vcpu);
--			else if (kvm_cpu_has_interrupt(vcpu))
--				enable_irq_window(vcpu);
-+	if (vcpu->arch.nmi_pending && !vcpu->arch.nmi_injected) {
-+		if (vcpu->arch.interrupt.pending) {
-+			enable_nmi_window(vcpu);
-+		} else if (vcpu->arch.nmi_window_open) {
-+			vcpu->arch.nmi_pending = false;
-+			vcpu->arch.nmi_injected = true;
-+		} else {
-+			enable_nmi_window(vcpu);
- 			return;
- 		}
- 	}
-+	if (vcpu->arch.nmi_injected) {
-+		vmx_inject_nmi(vcpu);
-+		if (vcpu->arch.nmi_pending)
-+			enable_nmi_window(vcpu);
-+		else if (kvm_cpu_has_interrupt(vcpu))
-+			enable_irq_window(vcpu);
-+		return;
-+	}
- 	if (!vcpu->arch.interrupt.pending && kvm_cpu_has_interrupt(vcpu)) {
- 		if (vcpu->arch.interrupt_window_open)
- 			kvm_queue_interrupt(vcpu, kvm_cpu_get_interrupt(vcpu));
-@@ -3255,6 +3307,10 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
- 	u32 intr_info;
- 
-+	/* Record the guest's net vcpu time for enforced NMI injections. */
-+	if (unlikely(!cpu_has_virtual_nmis() && vmx->soft_vnmi_blocked))
-+		vmx->entry_time = ktime_get();
-+
- 	/* Handle invalid guest state instead of entering VMX */
- 	if (vmx->emulation_required && emulate_invalid_guest_state) {
- 		handle_invalid_guest_state(vcpu, kvm_run);
+ out:
 -- 
 1.6.0.3
 
