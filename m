@@ -1,106 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbYLHCwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbYLHCx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756182AbYLHCwB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 21:52:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbYLHCvv
+	id S1756295AbYLHCx3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 21:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbYLHCxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 21:51:51 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:27898 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754226AbYLHCvu (ORCPT
+	Sun, 7 Dec 2008 21:53:18 -0500
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:47168 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754379AbYLHCxR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 21:51:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OaVwtunEKhGRjj8ofr/vmGV9maAA4/Xq15+aHoXBveNjdq/3G35XH42Ud9Sq0hs5bY
-         k/Va/C/KcwU68vn5+XaD40KXKNHTxI++cLlu7HWEBzKy5wBUr0p1K9nTklD9gXxfkqgi
-         QJ82ZNc5EhTA6zcGeEDI84jnDuHowmyX1g1I8=
-Message-ID: <91b13c310812071851s5a82d52em63f86f1d3aa42ee9@mail.gmail.com>
-Date: Mon, 8 Dec 2008 10:51:48 +0800
-From: "Cheng Renquan" <crquan@gmail.com>
-To: "Eric Moore" <Eric.Moore@lsi.com>
-Subject: Re: [PATCH 2/2] mpt fusion: port "4.00.43.00" to mainstream git kernel
-Cc: support@lsi.com, DL-MPTFusionLinux@lsi.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Greg KH" <greg@kroah.com>,
-       chengrq@uit.com.cn
-In-Reply-To: <1228483610-18502-2-git-send-email-crquan@gmail.com>
+	Sun, 7 Dec 2008 21:53:17 -0500
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.1-rc2
+cc: linux-kernel@vger.kernel.org
+Date: Sun, 07 Dec 2008 18:53:09 -0800
+Message-ID: <7vbpvnbcoa.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1228483610-18502-1-git-send-email-crquan@gmail.com>
-	 <1228483610-18502-2-git-send-email-crquan@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Pobox-Relay-ID: 5CBEE622-C4D3-11DD-A478-F83E113D384A-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, all,
+Another week, another rc.  There are no outstanding features that should
+graduate from 'next' anymore until final.
 
-I have tested and verified that these two patches can let my LSI-SAS-1068E
-controllers work well with 2.6.26.2 kernels, perfect,
+  http://www.kernel.org/pub/software/scm/git/
 
-Tested-by: Cheng Renquan <crquan@gmail.com>
+  git-1.6.1-rc2.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.1-rc2.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.1-rc2.tar.{gz,bz2}		(preformatted docs)
 
-but the latest git kernel has not yet been tested. just buildable. I
-personally suggest these patches integrated into Greg KH's staging
-tree. It seems meet staging's purpose well?
+The RPM binary packages for a few architectures are also there.
 
-The bugzilla page has been updated,
+  testing/git-*-1.6.1-rc2-1.fc9.$arch.rpm	(RPM)
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12163
+----------------------------------------------------------------
 
+Changes since v1.6.1-rc1 are as follows:
 
-And the first patch, it's just integrating the vendor driver "4.00.43.00":
+Alex Riesen (3):
+      Make some of fwrite/fclose/write/close failures visible
+      Make chdir failures visible
+      Report symlink failures in merge-recursive
 
-Subject:    [PATCH 1/2] mpt fusion: updated mpt drivers from lsi
-upstream "4.00.43.00"
+Alexander Gavrilov (2):
+      gitk: Make line origin search update the busy status
+      gitk: Add a menu option to start git gui
 
-http://marc.info/?l=linux-scsi&m=122848357611653&w=2
+Christian Couder (2):
+      bisect: fix "git bisect skip <commit>" and add tests cases
+      Documentation: describe how to "bisect skip" a range of commits
 
+Christian Stimming (1):
+      gitk: Update German translation
 
-To LSI staff:
-  Please test it as soon, you have the resources. Please maintain your
-driver update in latest git kernel besides and not only major
-distrition kernels,
-  We customers need to run your mpt controllers not only on major
-distribution kernels but also the latest git kernel, you should at
-least maintain an updated driver for some major later kernels, like
-one for 2.6.24, one for 2.6.27, and one for the latest git tree. At
-least the driver in the git tree should be always updated, this would
-always keep your driver current.
-  I'm your customer located in Shenzhen, China. Please know it and
-keep co-operative with your customers and the Linux Kernel Development
-Community. Thank you.
+Davide Libenzi (1):
+      xdiff: give up scanning similar lines early
 
+Deskin Miller (1):
+      git-svn: Make branch use correct svn-remote
 
+Giuseppe Bilotta (2):
+      gitweb: make gitweb_check_feature a boolean wrapper
+      Update comment on gitweb_check/get_feature
 
-On Fri, Dec 5, 2008 at 9:26 PM,  <crquan@gmail.com> wrote:
-> From: Cheng Renquan <crquan@gmail.com>
->
-> this one just can build with mainstream git kernel, I did not even test it.
->
-> I just have tested it with kernel 2.6.26.2, that patch is very similar to
-> this, and it did work well with 2.6.26.2.
->
-> Signed-off-by: Cheng Renquan <crquan@gmail.com>
-> ---
->  drivers/message/fusion/linux_compat.h |    3 +-
->  drivers/message/fusion/mptbase.c      |   10 +-
->  drivers/message/fusion/mptbase.h      |    6 +-
->  drivers/message/fusion/mptfc.c        |    4 +-
->  drivers/message/fusion/mptsas.c       |   14 +---
->  drivers/message/fusion/mptscsih.c     |  169 +++++++++++++--------------------
->  drivers/message/fusion/mptscsih.h     |    2 +-
->  7 files changed, 79 insertions(+), 129 deletions(-)
->
-[...]
-> --
-> 1.6.0.3
+Jakub Narebski (2):
+      gitweb: Fix handling of non-ASCII characters in inserted HTML files
+      gitweb: Make project specific override for 'grep' feature work
 
--- 
-Cheng Renquan, Shenzhen, China
-Steve Martin  - "I've got to keep breathing. It'll be my worst
-business mistake if I don't."
+Jeff King (2):
+      add stage to gitignore
+      tag: delete TAG_EDITMSG only on successful tag
+
+Johannes Sixt (1):
+      t4030-diff-textconv: Make octal escape sequence more portable
+
+Junio C Hamano (17):
+      builtin-rm.c: explain and clarify the "local change" logic
+      git add --intent-to-add: fix removal of cached emptiness
+      git add --intent-to-add: do not let an empty blob be committed by accident
+      gitweb: fix 'ctags' feature check and others
+      gitweb: rename gitweb_check_feature to gitweb_get_feature
+      Makefile: introduce NO_PTHREADS
+      Install git-stage in exec-path
+      git-am --whitespace: do not lose the command line option
+      git-am: propagate -C<n>, -p<n> options as well
+      git-am: propagate --3way options as well
+      Test that git-am does not lose -C/-p/--whitespace options
+      git-am: rename apply_opt_extra file to apply-opt
+      Update draft release notes to 1.6.1
+      GIT 1.6.0.5
+      Update draft release notes for 1.6.1
+      Revert "git-stash: use git rev-parse -q"
+      Point "stale" 1.6.0.5 documentation from the main git documentation page
+
+Linus Torvalds (1):
+      Add backslash to list of 'crud' characters in real name
+
+Mark Burton (1):
+      git-gui: Teach start_push_anywhere_action{} to notice when remote is a mirror.
+
+Matt McCutchen (1):
+      "git diff <tree>{3,}": do not reverse order of arguments
+
+Miklos Vajna (8):
+      User's Manual: remove duplicated url at the end of Appendix B
+      git-stash: use git rev-parse -q
+      filter-branch: use git rev-parse -q
+      lost-found: use git rev-parse -q
+      pull: use git rev-parse -q
+      rebase: use git rev-parse -q
+      submodule: use git rev-parse -q
+      http.c: use 'git_config_string' to get 'curl_http_proxy'
+
+Nguyễn Thái Ngọc Duy (1):
+      Extend index to save more flags
+
+Paul Mackerras (3):
+      gitk: Fix context menu items for generating diffs when in tree mode
+      gitk: Highlight only when search type is "containing:".
+      gitk: Fix bug in accessing undefined "notflag" variable
+
+Scott Chacon (1):
+      Add a built-in alias for 'stage' to the 'add' command
+
+Thomas Rast (1):
+      fetch-pack: Avoid memcpy() with src==dst
+
+Tor Arvid Lund (1):
+      git-p4: Fix bug in p4Where method.
+
