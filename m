@@ -1,69 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbYLHMWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbYLHMXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678AbYLHMWh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 07:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbYLHMW2
+	id S1753183AbYLHMXn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 07:23:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbYLHMXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 07:22:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60605 "EHLO mx3.mail.elte.hu"
+	Mon, 8 Dec 2008 07:23:35 -0500
+Received: from gecko.sbs.de ([194.138.37.40]:22730 "EHLO gecko.sbs.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbYLHMW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 07:22:27 -0500
-Date: Mon, 8 Dec 2008 13:22:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] tracing/function-graph-tracer: signal interrupts
-	entry/exit points on outpout
-Message-ID: <20081208122221.GA16560@elte.hu>
-References: <493C7058.4060709@gmail.com>
+	id S1751503AbYLHMXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 07:23:34 -0500
+X-Greylist: delayed 926 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Dec 2008 07:23:34 EST
+Message-ID: <493D0E0A.2000400@siemens.com>
+Date: Mon, 08 Dec 2008 13:07:38 +0100
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <493C7058.4060709@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Avi Kivity <avi@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/45] KVM: x86: Support for user space injected NMIs
+References: <1228736216-15787-1-git-send-email-avi@redhat.com> <1228736216-15787-13-git-send-email-avi@redhat.com>
+In-Reply-To: <1228736216-15787-13-git-send-email-avi@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Avi Kivity wrote:
+> From: Jan Kiszka <jan.kiszka@siemens.com>
+> 
+> Introduces the KVM_NMI IOCTL to the generic x86 part of KVM for
+> injecting NMIs from user space and also extends the statistic report
+> accordingly.
+> 
+> Based on the original patch by Sheng Yang.
+> 
+> Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
+> Signed-off-by: Sheng Yang <sheng.yang@intel.com>
+> Signed-off-by: Avi Kivity <avi@redhat.com>
+> ---
+>  arch/x86/include/asm/kvm_host.h |    2 +
+>  arch/x86/kvm/x86.c              |   46 +++++++++++++++++++++++++++++++++++++-
+>  include/linux/kvm.h             |   11 +++++++-
+>  3 files changed, 55 insertions(+), 4 deletions(-)
+> 
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+...
 
-> +/* Used during output to find the interrupts entry/exit points */
-> +const char *ftrace_graph_irq_entries[] = {
-> +	"smp_call_function_single_interrupt",
-> +	"xen_call_function_single_interrupt",
-> +	"wrapper_smp_local_timer_interrupt",
-> +	"smp_irq_move_cleanup_interrupt",
-> +	"smp_call_function_interrupt",
-> +	"xen_call_function_interrupt",
-> +	"smp_apic_timer_interrupt",
-> +	"uv_bau_message_interrupt",
-> +	"mce_threshold_interrupt",
-> +	"smp_spurious_interrupt",
-> +	"smp_thermal_interrupt",
-> +	"smp_error_interrupt",
-> +	"do_IRQ",
-> +	NULL
+> diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+> index f18b86f..44fd7fa 100644
+> --- a/include/linux/kvm.h
+> +++ b/include/linux/kvm.h
+> @@ -83,18 +83,22 @@ struct kvm_irqchip {
+>  #define KVM_EXIT_S390_SIEIC       13
+>  #define KVM_EXIT_S390_RESET       14
+>  #define KVM_EXIT_DCR              15
+> +#define KVM_EXIT_NMI              16
+> +#define KVM_EXIT_NMI_WINDOW_OPEN  17
+>  
+>  /* for KVM_RUN, returned by mmap(vcpu_fd, offset=0) */
+>  struct kvm_run {
+>  	/* in */
+>  	__u8 request_interrupt_window;
+> -	__u8 padding1[7];
+> +	__u8 request_nmi_window;
+> +	__u8 padding1[6];
+>  
+>  	/* out */
+>  	__u32 exit_reason;
+>  	__u8 ready_for_interrupt_injection;
+>  	__u8 if_flag;
+> -	__u8 padding2[2];
+> +	__u8 ready_for_nmi_injection;
+> +	__u8 padding2;
+>  
+>  	/* in (pre_kvm_run), out (post_kvm_run) */
+>  	__u64 cr8;
 
-hm, couldnt we move these symbols to a separate section, and then only 
-check for [section.start ... section.end] instead of this ugly and slow 
-array?
+Avi, please consider [1] again. You've already merged the related user
+space cleanup, and I was just waiting for your comment on how to deal
+with the kernel part, ideally _before_ merging the superfluous
+ready_for/request NMI interface into mainline.
 
-Missing a few annotations initially is no big deal - we wont have 
-pretty-print. do_IRQ() and smp_apic_timer_interrupt is what matters most 
-in practice. "__irqentry" section annotation or so, which puts them into 
-.text.irqentry or so - and then irqentry_start/end are extracted via 
-appropriate glue in the arch/x86/kernel/vmlinux* linker script.
+Thanks,
+Jan
 
-	Ingo
+[1] http://permalink.gmane.org/gmane.comp.emulators.kvm.devel/25016
+
+-- 
+Siemens AG, Corporate Technology, CT SE 26
+Corporate Competence Center Embedded Linux
