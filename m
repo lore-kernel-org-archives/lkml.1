@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbYLHMvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbYLHMxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753311AbYLHMvh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 07:51:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYLHMv0
+	id S1753478AbYLHMxf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 07:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbYLHMx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 07:51:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38326 "EHLO mx3.mail.elte.hu"
+	Mon, 8 Dec 2008 07:53:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38744 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751945AbYLHMvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 07:51:25 -0500
-Date: Mon, 8 Dec 2008 13:50:58 +0100
+	id S1751977AbYLHMx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 07:53:26 -0500
+Date: Mon, 8 Dec 2008 13:53:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: x86: Change static allocation of trampoline area
-Message-ID: <20081208125057.GC16560@elte.hu>
-References: <200812080050.23275.rjw@sisk.pl>
+To: Ken Chen <kenchen@google.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] sched: fix sd_parent_degenerate on non-numa smp machine
+Message-ID: <20081208125319.GD16560@elte.hu>
+References: <b040c32a0812071847x351c0315pb2cdb59150a59e79@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200812080050.23275.rjw@sisk.pl>
+In-Reply-To: <b040c32a0812071847x351c0315pb2cdb59150a59e79@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,28 +35,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Ken Chen <kenchen@google.com> wrote:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: x86: Change static allocation of trampoline area
-> Impact: Improvement
+> The addition of SD_SERIALIZE flag added to SD_NODE_INIT prevented top level
+> dummy numa sched_domain to be properly degenerated on non-numa smp machine.
+> The reason is that in sd_parent_degenerate(), it found that the child and
+> parent does not have comon sched_domain flags due to SD_SERIALIZE.  However,
+> for non-numa smp box, the top level is a dummy with a single sched_group.
 > 
-> While debugging a suspend-to-RAM related issue it occured to me that
-> if the trampoline code had grown past 4 KB, we would have been
-> allocating too little memory for it, since the 4 KB size of the
-> trampoline is hardcoded into arch/x86/kernel/e820.c .  Change that
-> by making the kernel compute the trampoline size and allocate as much
-> memory as necessary.
+> Filter out SD_SERIALIZE if it is on non-numa machine to properly degenerate
+> top level node sched_domain.  this will cut back some of the sd domain walk
+> in the load balancer code.
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  arch/x86/include/asm/trampoline.h |    7 +++++++
->  arch/x86/kernel/e820.c            |   16 ----------------
->  arch/x86/kernel/head32.c          |    3 +++
->  arch/x86/kernel/head64.c          |    3 +++
->  arch/x86/kernel/trampoline.c      |   19 +++++++++++++++++--
->  5 files changed, 30 insertions(+), 18 deletions(-)
+> Signed-off-by: Ken Chen <kenchen@google.com>
 
-applied to tip/x86/setup-memory, thanks Rafael!
+applied to tip/sched/core, thanks Ken!
 
 	Ingo
