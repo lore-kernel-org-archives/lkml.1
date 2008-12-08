@@ -1,58 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbYLHXZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbYLHXgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbYLHXZu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 18:25:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYLHXZk
+	id S1754088AbYLHXgl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 18:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYLHXgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 18:25:40 -0500
-Received: from cpsmtpo-eml02.KPNXCHANGE.COM ([213.75.38.151]:24272 "EHLO
-	cpsmtpo-eml02.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753128AbYLHXZk (ORCPT
+	Mon, 8 Dec 2008 18:36:31 -0500
+Received: from mu-out-0910.google.com ([209.85.134.190]:42363 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753266AbYLHXga (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 18:25:40 -0500
-From: Frans Pop <elendil@planet.nl>
-To: david@hardeman.nu
-Subject: Re: Is the Ricoh R5C822 documentation available?
-Date: Tue, 9 Dec 2008 00:25:35 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, drzeus-list@drzeus.cx,
-       linux-kernel@vger.kernel.org, tbm@cyrius.com
-References: <20081208215458.GI14254@hardeman.nu>
-In-reply-To: <20081208215458.GI14254@hardeman.nu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 8 Dec 2008 18:36:30 -0500
+Subject: Re: [PATCH] ioc4: automatically load sgiioc4 subordinate module
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Brent Casavant <bcasavan@sgi.com>, linux-kernel@vger.kernel.org,
+       mdr@sgi.com, rw@novell.com, Greg KH <greg@kroah.com>
+In-Reply-To: <20081208145507.8d03834e.akpm@linux-foundation.org>
+References: <alpine.BSF.1.10.0812051601060.388@pkunk.americas.sgi.com>
+	 <20081208145507.8d03834e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 09 Dec 2008 00:36:03 +0100
+Message-Id: <1228779363.5099.41.camel@nga>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812090025.37114.elendil@planet.nl>
-X-OriginalArrivalTime: 08 Dec 2008 23:25:38.0333 (UTC) FILETIME=[474D94D0:01C9598C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Mon, 2008-12-08 at 14:55 -0800, Andrew Morton wrote:
+> On Fri, 5 Dec 2008 16:04:37 -0600 (CST)
+> Brent Casavant <bcasavan@sgi.com> wrote:
+> 
+> > The main ioc4 driver which manages ownership of the SGI IOC4 PCI device
+> > does not automatically load any of the ioc4 submodules (the sgiioc4 IDE
+> > and ioc4_serial serial drivers) during PCI device probing.  This causes
+> > problems when the root device is a DVD-ROM attached to the IOC4 IDE
+> > interface (e.g. during system installation) as the sgiioc4 module
+> > will not be loaded and thus the DVD-ROM device will not be available.
+> > 
+> > Modify ioc4 to always load the sgiioc4 IDE module if the board carrying
+> > the IOC4 hardware actually implements the IDE interface (not all boards
+> > bring this functionality off the IOC4 chip).
+> > 
+> > The use of a work procedure is necessary as request_module() cannot be
+> > called from the device probe path as it eventually calls out to userspace.
+> > 
+> 
+> This is a fairly common problem, isn't it?
 
-> The Ricoh R5C822 card reader in my laptop includes a smart card reader
-> (http://www.ricoh.com/LSI/product_pcif/pcc/5c821/index.html) but it
-> doesn't seem supported by the kernel.
+It is, but it's getting better with recent drivers. It is only a
+problem, when there is "magic hidden mid-layer device binding" in the
+kernel, which is not exposed to the driver core.
 
-Weird. My laptop has the same device and I've successfully installed 
-Debian to it [1]...
+In an ideal world, the driver would create a custom bus "ioc4" (struct
+bus_type), with the devices hanging off this bus. These devices would
+then trigger the loading of the sub-driver modules, and the sub-drivers
+would bind to the device created on the "ioc4" bus, just by driver-core
+logic.
 
-02:06.2 SD Host controller [0805]: Ricoh Co Ltd R5C822 
-SD/SDIO/MMC/MS/MSPro Host Adapter [1180:0822] (rev 21)
-        Kernel driver in use: sdhci-pci
-        Kernel modules: sdhci-pci
-02:06.3 System peripheral [0880]: Ricoh Co Ltd R5C843 MMC Host Controller 
-[1180:0843] (rev ff)
-        Kernel driver in use: ricoh-mmc
-        Kernel modules: ricoh_mmc
+That would be the proper logic to make it work without any special
+magic, just by the generic uevent/modalias/modprobe mechanism.
 
-The function of the ricoh_mmc module is to disable the last (proprietary) 
-controller in favor of the first (generic) one.
+> Other drivers handle it via
+> appropriate udev magic and initrd/initramfs setups.
 
-Cheers,
-FJP
+We recently got rid of almost all custom hacks in udev rules.
 
-[1] Installing to SD/MMC card is supported as of D-I Lenny RC1 for i386 
-and amd64.
+Initramfs still has a bunch, but it's also getting smaller. We are down
+from hundreds of exceptions/tables/rules, to a few exceptions today.
+
+We have a real problem of maintaining/distributing such exceptions in/to
+the installed systems. The exceptions and the magic have been growing,
+and every system out there got almost all of these rules installed. Over
+the time people completely lost track which of the rules are still
+needed, and which are not. The split between the people doing kernel and
+userspace work really hits us here.
+
+You are right, that it looks a bit weird if you look at it just from
+inside the kernel, but as long as we don't have a sane way to instruct
+userspace/udev/initramfs/the installer from the kernel, like dropping
+magic instructions along with the driver to the installed system,
+changes like this are very welcome, not to bury userspace people in
+exceptions.
+
+One other problem is kernel updates on released systems, which we should
+make as easy as possible. In some cases the installed magic does no
+longer work for some reason, some innocent looking change mostly. So we
+very much prefer, if possible, the driver to be self-contained regarding
+the special magic it needs.
+
+If it is not possible/too much work to change a driver to integrate
+properly with the driver core, which as a result usually does not need
+any magic, we welcome every such change that moves the needed magic into
+the kernel itself.
+
+Thanks,
+Kay
+
