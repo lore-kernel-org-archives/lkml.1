@@ -1,136 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbYLHCx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbYLHDBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756295AbYLHCx3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 21:53:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbYLHCxS
+	id S1756136AbYLHDBo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 22:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbYLHDBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 21:53:18 -0500
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:47168 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754379AbYLHCxR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 21:53:17 -0500
-From: Junio C Hamano <gitster@pobox.com>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.6.1-rc2
-cc: linux-kernel@vger.kernel.org
-Date: Sun, 07 Dec 2008 18:53:09 -0800
-Message-ID: <7vbpvnbcoa.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 7 Dec 2008 22:01:35 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:58468 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754589AbYLHDBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 22:01:34 -0500
+Message-ID: <493C8D40.9000203@cn.fujitsu.com>
+Date: Mon, 08 Dec 2008 10:58:08 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Pobox-Relay-ID: 5CBEE622-C4D3-11DD-A478-F83E113D384A-77302942!a-sasl-quonix.pobox.com
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ring_buffer: fix comments
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Another week, another rc.  There are no outstanding features that should
-graduate from 'next' anymore until final.
 
-  http://www.kernel.org/pub/software/scm/git/
+Impact: comments cleanup
 
-  git-1.6.1-rc2.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.1-rc2.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.1-rc2.tar.{gz,bz2}		(preformatted docs)
+fix incorrect comments for enum ring_buffer_type
 
-The RPM binary packages for a few architectures are also there.
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
+index e097c2e..4981a9a 100644
+--- a/include/linux/ring_buffer.h
++++ b/include/linux/ring_buffer.h
+@@ -28,17 +28,19 @@ struct ring_buffer_event {
+  *				 size = 8 bytes
+  *
+  * @RINGBUF_TYPE_TIME_STAMP:	Sync time stamp with external clock
+- *				 array[0] = tv_nsec
+- *				 array[1] = tv_sec
++ *				 array[0]    = tv_nsec
++ *				 array[1..2] = tv_sec
+  *				 size = 16 bytes
+  *
+  * @RINGBUF_TYPE_DATA:		Data record
+  *				 If len is zero:
+  *				  array[0] holds the actual length
+- *				  array[1..(length+3)/4-1] holds data
++ *				  array[1..(length+3)/4] holds data
++ *				  size = 4 + 4 + length (bytes)
+  *				 else
+  *				  length = len << 2
+- *				  array[0..(length+3)/4] holds data
++ *				  array[0..(length+3)/4-1] holds data
++ *				  size = 4 + length (bytes)
+  */
+ enum ring_buffer_type {
+ 	RINGBUF_TYPE_PADDING,
 
-  testing/git-*-1.6.1-rc2-1.fc9.$arch.rpm	(RPM)
-
-----------------------------------------------------------------
-
-Changes since v1.6.1-rc1 are as follows:
-
-Alex Riesen (3):
-      Make some of fwrite/fclose/write/close failures visible
-      Make chdir failures visible
-      Report symlink failures in merge-recursive
-
-Alexander Gavrilov (2):
-      gitk: Make line origin search update the busy status
-      gitk: Add a menu option to start git gui
-
-Christian Couder (2):
-      bisect: fix "git bisect skip <commit>" and add tests cases
-      Documentation: describe how to "bisect skip" a range of commits
-
-Christian Stimming (1):
-      gitk: Update German translation
-
-Davide Libenzi (1):
-      xdiff: give up scanning similar lines early
-
-Deskin Miller (1):
-      git-svn: Make branch use correct svn-remote
-
-Giuseppe Bilotta (2):
-      gitweb: make gitweb_check_feature a boolean wrapper
-      Update comment on gitweb_check/get_feature
-
-Jakub Narebski (2):
-      gitweb: Fix handling of non-ASCII characters in inserted HTML files
-      gitweb: Make project specific override for 'grep' feature work
-
-Jeff King (2):
-      add stage to gitignore
-      tag: delete TAG_EDITMSG only on successful tag
-
-Johannes Sixt (1):
-      t4030-diff-textconv: Make octal escape sequence more portable
-
-Junio C Hamano (17):
-      builtin-rm.c: explain and clarify the "local change" logic
-      git add --intent-to-add: fix removal of cached emptiness
-      git add --intent-to-add: do not let an empty blob be committed by accident
-      gitweb: fix 'ctags' feature check and others
-      gitweb: rename gitweb_check_feature to gitweb_get_feature
-      Makefile: introduce NO_PTHREADS
-      Install git-stage in exec-path
-      git-am --whitespace: do not lose the command line option
-      git-am: propagate -C<n>, -p<n> options as well
-      git-am: propagate --3way options as well
-      Test that git-am does not lose -C/-p/--whitespace options
-      git-am: rename apply_opt_extra file to apply-opt
-      Update draft release notes to 1.6.1
-      GIT 1.6.0.5
-      Update draft release notes for 1.6.1
-      Revert "git-stash: use git rev-parse -q"
-      Point "stale" 1.6.0.5 documentation from the main git documentation page
-
-Linus Torvalds (1):
-      Add backslash to list of 'crud' characters in real name
-
-Mark Burton (1):
-      git-gui: Teach start_push_anywhere_action{} to notice when remote is a mirror.
-
-Matt McCutchen (1):
-      "git diff <tree>{3,}": do not reverse order of arguments
-
-Miklos Vajna (8):
-      User's Manual: remove duplicated url at the end of Appendix B
-      git-stash: use git rev-parse -q
-      filter-branch: use git rev-parse -q
-      lost-found: use git rev-parse -q
-      pull: use git rev-parse -q
-      rebase: use git rev-parse -q
-      submodule: use git rev-parse -q
-      http.c: use 'git_config_string' to get 'curl_http_proxy'
-
-Nguyễn Thái Ngọc Duy (1):
-      Extend index to save more flags
-
-Paul Mackerras (3):
-      gitk: Fix context menu items for generating diffs when in tree mode
-      gitk: Highlight only when search type is "containing:".
-      gitk: Fix bug in accessing undefined "notflag" variable
-
-Scott Chacon (1):
-      Add a built-in alias for 'stage' to the 'add' command
-
-Thomas Rast (1):
-      fetch-pack: Avoid memcpy() with src==dst
-
-Tor Arvid Lund (1):
-      git-p4: Fix bug in p4Where method.
 
