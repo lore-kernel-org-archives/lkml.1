@@ -1,116 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbYLHPKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbYLHPOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710AbYLHPKA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 10:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYLHPJu
+	id S1753837AbYLHPOy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 10:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYLHPOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 10:09:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33959 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754132AbYLHPJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 10:09:49 -0500
-Date: Mon, 8 Dec 2008 16:09:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH ] x86 : Fix compilation warning on paravirt-spinlocks.c
-Message-ID: <20081208150942.GA22016@elte.hu>
-References: <b9df5fa10812080656l21385db3ob08fc4f9ad3f1f76@mail.gmail.com>
+	Mon, 8 Dec 2008 10:14:46 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:53449 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752219AbYLHPOp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 10:14:45 -0500
+Date: Mon, 8 Dec 2008 10:14:45 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] Driver core: move the bus notifier call points (fwd)
+Message-ID: <Pine.LNX.4.44L0.0812081012030.2476-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b9df5fa10812080656l21385db3ob08fc4f9ad3f1f76@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ben:
 
-* Rakib Mullick <rakib.mullick@gmail.com> wrote:
+After posting the patch below, I noticed that you were the person who 
+originally added the bus notifier code.  You don't see any problems 
+with this code motion, do you?
 
-> Impact: Fix compilation warning.
-> 
->  CC      arch/x86/kernel/paravirt-spinlocks.o
-> arch/x86/kernel/paravirt-spinlocks.c: In function `default_spin_lock_flags':
-> arch/x86/kernel/paravirt-spinlocks.c:12: warning: passing arg 1 of
-> `__raw_spin_lock' from incompatible pointer type
-> 
-> This patch fixes the above warning.  __raw_spin_lock(lock) is declared
-> when CONFIG_SMP is defined. Thus, a call to __raw_spin_lock requires
-> checking CONFIG_SMP is defined or not.
-> 
-> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-> 
-> --- linux-2.6-orig/arch/x86/kernel/paravirt-spinlocks.c	2008-12-05
-> 19:53:15.000000000 +0600
-> +++ linux-2.6/arch/x86/kernel/paravirt-spinlocks.c	2008-12-07
-> 23:52:59.000000000 +0600
-> @@ -9,7 +9,9 @@
-> 
->  static void default_spin_lock_flags(struct raw_spinlock *lock,
-> unsigned long flags)
->  {
-> +#ifdef	CONFIG_SMP
->  	__raw_spin_lock(lock);
-> +#endif
+Alan Stern
 
-no - this just works around the compiler warning.
 
-Look at the real fix below i did some time ago. If you are into fixing 
-warnings you should try tip/master, that has a ton of warning fixes 
-already:
 
-  http://people.redhat.com/mingo/tip.git/README
+This patch (as1184) changes the location of the notifications in
+device_add() and device_del().  Now the BUS_NOTIFY_ADD_DEVICE message
+is sent after dpm_sysfs_add(), which is necessary for clients that
+want to add attributes to the power/ subdirectory.  The
+BUS_NOTIFY_DEL_DEVICE message is correspondingly moved before
+dpm_sysfs_remove().
 
-	Ingo
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
------------------------->
->From ecd05381e26b9a61e49fa485baea1595bd3d1b40 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 17 Oct 2008 16:09:57 +0200
-Subject: [PATCH] x86: fix default_spin_lock_flags() prototype
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-these warnings:
-
-  arch/x86/kernel/paravirt-spinlocks.c: In function ‘default_spin_lock_flags’:
-  arch/x86/kernel/paravirt-spinlocks.c:12: warning: passing argument 1 of ‘__raw_spin_lock’ from incompatible pointer type
-  arch/x86/kernel/paravirt-spinlocks.c: At top level:
-  arch/x86/kernel/paravirt-spinlocks.c:11: warning: ‘default_spin_lock_flags’ defined but not used
-
-showed that the prototype of default_spin_lock_flags() was confused about
-what type spinlocks have.
-
-the proper type on UP is raw_spinlock_t.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/paravirt-spinlocks.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/paravirt-spinlocks.c b/arch/x86/kernel/paravirt-spinlocks.c
-index 0e9f198..95777b0 100644
---- a/arch/x86/kernel/paravirt-spinlocks.c
-+++ b/arch/x86/kernel/paravirt-spinlocks.c
-@@ -7,7 +7,8 @@
+Index: usb-2.6/drivers/base/core.c
+===================================================================
+--- usb-2.6.orig/drivers/base/core.c
++++ usb-2.6/drivers/base/core.c
+@@ -884,11 +884,6 @@ int device_add(struct device *dev)
+ 	if (platform_notify)
+ 		platform_notify(dev);
  
- #include <asm/paravirt.h>
+-	/* notify clients of device entry (new way) */
+-	if (dev->bus)
+-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+-					     BUS_NOTIFY_ADD_DEVICE, dev);
+-
+ 	error = device_create_file(dev, &uevent_attr);
+ 	if (error)
+ 		goto attrError;
+@@ -916,6 +911,14 @@ int device_add(struct device *dev)
+ 	if (error)
+ 		goto DPMError;
+ 	device_pm_add(dev);
++
++	/* Notify clients of device addition.  This call must come
++	 * after dpm_sysf_add() and before kobject_uevent().
++	 */
++	if (dev->bus)
++		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
++					     BUS_NOTIFY_ADD_DEVICE, dev);
++
+ 	kobject_uevent(&dev->kobj, KOBJ_ADD);
+ 	bus_attach_device(dev);
+ 	if (parent)
+@@ -940,9 +943,6 @@ done:
+  DPMError:
+ 	bus_remove_device(dev);
+  BusError:
+-	if (dev->bus)
+-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+-					     BUS_NOTIFY_DEL_DEVICE, dev);
+ 	device_remove_attrs(dev);
+  AttrsError:
+ 	device_remove_class_symlinks(dev);
+@@ -1027,6 +1027,12 @@ void device_del(struct device *dev)
+ 	struct device *parent = dev->parent;
+ 	struct class_interface *class_intf;
  
--static void default_spin_lock_flags(struct raw_spinlock *lock, unsigned long flags)
-+static inline void
-+default_spin_lock_flags(raw_spinlock_t *lock, unsigned long flags)
- {
- 	__raw_spin_lock(lock);
- }
++	/* Notify clients of device removal.  This call must come
++	 * before dpm_sysfs_remove().
++	 */
++	if (dev->bus)
++		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
++					     BUS_NOTIFY_DEL_DEVICE, dev);
+ 	device_pm_remove(dev);
+ 	dpm_sysfs_remove(dev);
+ 	if (parent)
+@@ -1064,9 +1070,6 @@ void device_del(struct device *dev)
+ 	 */
+ 	if (platform_notify_remove)
+ 		platform_notify_remove(dev);
+-	if (dev->bus)
+-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+-					     BUS_NOTIFY_DEL_DEVICE, dev);
+ 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
+ 	cleanup_device_parent(dev);
+ 	if (!list_empty(&dev->klist_children.k_list))
+
