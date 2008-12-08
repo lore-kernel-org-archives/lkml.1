@@ -1,86 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752233AbYLHVKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbYLHVLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752233AbYLHVKz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 16:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbYLHVKl
+	id S1753537AbYLHVLy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 16:11:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYLHVLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 16:10:41 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:57885 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752126AbYLHVKk (ORCPT
+	Mon, 8 Dec 2008 16:11:45 -0500
+Received: from atthis.its.uu.se ([130.238.7.58]:58342 "EHLO atthis.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752054AbYLHVLp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 16:10:40 -0500
-In-Reply-To: <493D8A8B.9090201@s5r6.in-berlin.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Dennis Hardy <dhardy@sogetthis.com>, Greg KH <gregkh@suse.de>,
-       Holger Hoffstaette <holger@wizards.de>, layton@redhat.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
+	Mon, 8 Dec 2008 16:11:45 -0500
+X-DKIM: Sendmail DKIM Filter v0.6.4 atthis.its.uu.se DA02D102EA9
+Message-ID: <20081208174655.3g6avg94gsowwgks@webmail5.uu.se>
+Date: Mon, 08 Dec 2008 17:46:55 +0100
+From: Erika Wiberg <Erika.Wiberg.2222@student.uu.se>
+Reply-to: supportteamupdate@live.com
+To: undisclosed-recipients:;
+Subject: Dear e-mail user
 MIME-Version: 1.0
-Subject: Re: CIFS regression in 2.6.27.8
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF3E80A64B.F15C9D0B-ON87257519.00745117-86257519.0074700A@us.ibm.com>
-From: Steven French <sfrench@us.ibm.com>
-Date: Mon, 8 Dec 2008 15:10:35 -0600
-X-MIMETrack: Serialize by Router on D03NM123/03/M/IBM(Release 8.0.1|February 07, 2008) at
- 12/08/2008 14:10:36,
-	Serialize complete at 12/08/2008 14:10:36
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: Erika.Wiberg.2222@student.uu.se
+X-SA-Exim-Scanned: No (on rufa.its.uu.se); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes - they look distinct
 
 
-Steve French
-Senior Software Engineer
-Linux Technology Center - IBM Austin
-phone: 512-838-2294
-email: sfrench at-sign us dot ibm dot com
+Dear e-mail users,
 
+This message is from the messaging center to all of our  e-mail
+Account owners. We are currently upgrading our database and e -
+Mailbox Center. We want to remove all of our  e-mail accounts
+to create more space for new accounts.
 
+To prevent your  account from closing you must update
+it, for as we know it is at present used account.
 
-Stefan Richter <stefanr@s5r6.in-berlin.de> 
-12/08/2008 02:58 PM
+We have been sending this message to all our e-mail account owners and
+it is the last communication / control.
 
-To
-"Rafael J. Wysocki" <rjw@sisk.pl>
-cc
-Pekka Enberg <penberg@cs.helsinki.fi>, Dennis Hardy 
-<dhardy@sogetthis.com>, linux-kernel@vger.kernel.org, layton@redhat.com, 
-Steven French/Austin/IBM@IBMUS, Greg KH <gregkh@suse.de>, 
-netdev@vger.kernel.org, Holger Hoffstaette <holger@wizards.de>
-Subject
-Re: CIFS regression in 2.6.27.8
+Confirm your e-identity during the
 
+E-mail Username: .......... ......
 
+Email Password: .................
 
+Date of birth: .................
 
+Territory: .................
 
+Warning! () account owner who refuses to update their
+account within seven days after receiving this warning will lose his
+account. Protect your privacy. Log out when finished and close
+browser.
 
-Rafael J. Wysocki wrote:
->> On Mon, Dec 8, 2008 at 8:18 PM, Dennis Hardy <dhardy@sogetthis.com> 
-wrote:
->>> I just mounted a network drive (Windows Server) via CIFS under 
-2.6.27.8, and
->>> the sizes reported by "df" are completely incorrect:
-...
->>> Does anyone else see this sort of behavior with 2.6.27.8?  This worked 
-fine
->>> in 2.6.27.6 (we skipped 2.6.27.7)...
+NOTE: All email sent E-mail:
 
-There were several cifs updates in .8 but AFAIU none in .7.
+Thank you for using  account!
+Warning Code: VX2G99AAJ
+.................................................. ..........................
+.................................................. ..........................
+NOTE: This message allows the () e-mail protector
+unit. Message will be sent back to you after
+check your account before the account can be restored. Okay reserve.
 
-> FWIW, it seems to be related to this one: 
-http://lkml.org/lkml/2008/12/8/7
-
-Holger's report is about the userland SMB/CIFS server, while Denis's is
-about kernelspace client code.  They look like separate issues to me.
--- 
-Stefan Richter
--=====-==--- ==-- -=---
-http://arcgraph.de/sr/
+This message is from  mail users Center.
 
 
