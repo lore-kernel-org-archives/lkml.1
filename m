@@ -1,37 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144AbYLHJCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbYLHJCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752144AbYLHJCL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 04:02:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYLHJBv
+	id S1752814AbYLHJCm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 04:02:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYLHJBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 8 Dec 2008 04:01:53 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:53372 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301AbYLHJBv (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Dec 2008 04:01:51 -0500
-Received: from i220-221-252-159.s30.a048.ap.plala.or.jp ([220.221.252.159]:43848
-	"EHLO mail.m.clustcom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751066AbYLHJBu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 04:01:50 -0500
-X-Greylist: delayed 2949 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Dec 2008 04:01:50 EST
-Date: Mon, 8 Dec 2008 18:01:44 +0900
-From: Hitoshi Mitake <mitake@clustcom.com>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
 To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, ktaka@clustcom.com
+Cc: mitake@clustcom.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ktaka@clustcom.com
 Subject: Re: [RFC] New functions to manipulate registers for ethtool
-Message-Id: <20081208180144.3fd4cbaa.mitake@clustcom.com>
-In-Reply-To: <20081208.005431.200957157.davem@davemloft.net>
+In-Reply-To: Your message of "Mon, 08 Dec 2008 00:54:31 PST."
+             <20081208.005431.200957157.davem@davemloft.net>
+From: Valdis.Kletnieks@vt.edu
 References: <20081208171230.288c5ccf.mitake@clustcom.com>
-	<20081208.005431.200957157.davem@davemloft.net>
-Organization: Cluster Computing, Inc
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+            <20081208.005431.200957157.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1228726903_54791P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Mon, 08 Dec 2008 04:01:43 -0500
+Message-ID: <58622.1228726903@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 08 Dec 2008 00:54:31 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
+--==_Exmh_1228726903_54791P
+Content-Type: text/plain; charset=us-ascii
 
+On Mon, 08 Dec 2008 00:54:31 PST, David Miller said:
 > From: Hitoshi Mitake <mitake@clustcom.com>
 > Date: Mon, 8 Dec 2008 17:12:30 +0900
 > 
@@ -44,11 +46,24 @@ David Miller <davem@davemloft.net> wrote:
 > level mmap facilities exported to userspace.
 > 
 > No ethtool support is necessary for this.
-> 
-> > Another function is for reading driver's register on MMIO.
-> 
-> Also not necessary, for the same reasons described
-> above.
 
-I didn't know that, thanks!
-I'll work with my problems with mmap and userspace program.
+Yes, but if Hitoshi wants to tell a user "run this command and send me
+the output", what's the incantation the user needs to use?
+
+The user probably has ethtool installed if they have a semi-sane distro.
+Their eyeballs are just gonna glaze over if they're asked to map the registers
+into userspace.. ;)
+
+--==_Exmh_1228726903_54791P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJPOJ3cC3lWbTT17ARApwYAJ4wYzvoRxJD4uaTNMr0l42UMHW7DgCfTp5F
+n70UfZ8hONEHi2x7Bc69RvU=
+=SrQR
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1228726903_54791P--
