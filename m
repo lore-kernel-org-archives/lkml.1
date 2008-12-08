@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbYLHL56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbYLHL63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbYLHL56 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 06:57:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYLHLxo
+	id S1758638AbYLHL63 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 06:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757104AbYLHLy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 06:53:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37750 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752649AbYLHLxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 06:53:41 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michael Chan <mchan@broadcom.com>
-Subject: [PATCH] net (tg3): Fix failure to enable WoL by default when possible (rev. 2)
-Date: Mon, 8 Dec 2008 12:52:55 +0100
-User-Agent: KMail/1.9.9
-Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200812080046.56119.rjw@sisk.pl> <200812081250.59095.rjw@sisk.pl>
-In-Reply-To: <200812081250.59095.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812081252.55715.rjw@sisk.pl>
+	Mon, 8 Dec 2008 06:54:29 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:32522 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757053AbYLHLy2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 06:54:28 -0500
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+To: linux-kernel@vger.kernel.org
+Cc: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Subject: [PATCH 1/1] fs: fix warning message with inserting a single space
+Date: Mon,  8 Dec 2008 13:54:12 +0200
+Message-Id: <1228737252-31948-1-git-send-email-Hiroshi.DOYU@nokia.com>
+X-Mailer: git-send-email 1.6.0.4.836.gd5cb
+X-OriginalArrivalTime: 08 Dec 2008 11:54:14.0261 (UTC) FILETIME=[B0DE8A50:01C9592B]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: net (tg3): Fix failure to enable WoL by default when possible (rev. 2)
-
-tg3 is supposed to enable WoL by default on adapters which support
-that, but it fails to do so unless the adapter's
-/sys/devices/.../power/wakeup file contains 'enabled' during the
-initialization of the adapter.  Fix that by making tg3 update the
-device's 'should_wakeup' bit automatically whenever WoL should be
-enabled by default.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
 ---
- drivers/net/tg3.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ fs/libfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Index: linux-2.6/drivers/net/tg3.c
-===================================================================
---- linux-2.6.orig/drivers/net/tg3.c
-+++ linux-2.6/drivers/net/tg3.c
-@@ -11296,9 +11296,10 @@ static void __devinit tg3_get_eeprom_hw_
- 		if (val & VCPU_CFGSHDW_ASPM_DBNC)
- 			tp->tg3_flags |= TG3_FLAG_ASPM_WORKAROUND;
- 		if ((val & VCPU_CFGSHDW_WOL_ENABLE) &&
--		    (val & VCPU_CFGSHDW_WOL_MAGPKT) &&
--		    device_may_wakeup(&tp->pdev->dev))
-+		    (val & VCPU_CFGSHDW_WOL_MAGPKT)) {
- 			tp->tg3_flags |= TG3_FLAG_WOL_ENABLE;
-+			device_set_wakeup_enable(&tp->pdev->dev, true);
-+		}
- 		return;
- 	}
+diff --git a/fs/libfs.c b/fs/libfs.c
+index 1add676..8e6fa43 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -453,7 +453,7 @@ int simple_fill_super(struct super_block *s, int magic, struct tree_descr *files
  
-@@ -11428,9 +11429,10 @@ static void __devinit tg3_get_eeprom_hw_
- 			tp->tg3_flags &= ~TG3_FLAG_WOL_CAP;
+ 		/* warn if it tries to conflict with the root inode */
+ 		if (unlikely(i == 1))
+-			printk(KERN_WARNING "%s: %s passed in a files array"
++			printk(KERN_WARNING "%s: %s passed in a files array "
+ 				"with an index of 1!\n", __func__,
+ 				s->s_type->name);
  
- 		if ((tp->tg3_flags & TG3_FLAG_WOL_CAP) &&
--		    (nic_cfg & NIC_SRAM_DATA_CFG_WOL_ENABLE) &&
--		    device_may_wakeup(&tp->pdev->dev))
-+		    (nic_cfg & NIC_SRAM_DATA_CFG_WOL_ENABLE)) {
- 			tp->tg3_flags |= TG3_FLAG_WOL_ENABLE;
-+		    	device_set_wakeup_enable(&tp->pdev->dev, true);
-+		}
- 
- 		if (cfg2 & (1 << 17))
- 			tp->tg3_flags2 |= TG3_FLG2_CAPACITIVE_COUPLING;
+-- 
+1.6.0.4.836.gd5cb
+
