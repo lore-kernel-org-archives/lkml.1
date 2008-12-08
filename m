@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbYLHNmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbYLHNr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753589AbYLHNmq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 08:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbYLHNmh
+	id S1753624AbYLHNr7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 08:47:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbYLHNrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 08:42:37 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53285 "EHLO mx2.mail.elte.hu"
+	Mon, 8 Dec 2008 08:47:49 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53679 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751763AbYLHNmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 08:42:37 -0500
-Date: Mon, 8 Dec 2008 14:42:19 +0100
+	id S1752466AbYLHNrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 08:47:48 -0500
+Date: Mon, 8 Dec 2008 14:47:36 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] irq: move irq_desc according to smp_affinity v5
-Message-ID: <20081208134219.GC29965@elte.hu>
-References: <1228532430-28958-1-git-send-email-yinghai@kernel.org>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/function-graph-tracer: signal interrupts
+	entry/exit points on outpout
+Message-ID: <20081208134736.GD29965@elte.hu>
+References: <493C7058.4060709@gmail.com> <1228717172.23742.1.camel@twins> <c62985530812080538p3802f329vf6e12695d734f16d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1228532430-28958-1-git-send-email-yinghai@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530812080538p3802f329vf6e12695d734f16d@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,79 +38,47 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 
-> +#ifdef CONFIG_MOVE_IRQ_DESC
-> +	/* get new one */
-> +	desc = irq_to_desc(irq);
-> +#endif
->  
->  	spin_unlock(&desc->lock);
->  }
-> @@ -467,12 +475,20 @@ handle_edge_irq(unsigned int irq, struct
->  		    !desc->action)) {
->  		desc->status |= (IRQ_PENDING | IRQ_MASKED);
->  		mask_ack_irq(desc, irq);
-> +#ifdef CONFIG_MOVE_IRQ_DESC
-> +		/* get new one */
-> +		desc = irq_to_desc(irq);
-> +#endif
->  		goto out_unlock;
->  	}
->  	kstat_incr_irqs_this_cpu(irq, desc);
->  
->  	/* Start handling the irq */
->  	desc->chip->ack(irq);
-> +#ifdef CONFIG_MOVE_IRQ_DESC
-> +	/* get new one */
-> +	desc = irq_to_desc(irq);
-> +#endif
->  
->  	/* Mark the IRQ currently in progress.*/
->  	desc->status |= IRQ_INPROGRESS;
-> @@ -533,8 +549,13 @@ handle_percpu_irq(unsigned int irq, stru
->  	if (!noirqdebug)
->  		note_interrupt(irq, desc, action_ret);
->  
-> -	if (desc->chip->eoi)
-> +	if (desc->chip->eoi) {
->  		desc->chip->eoi(irq);
-> +#ifdef CONFIG_MOVE_IRQ_DESC
-> +		/* get new one */
-> +		desc = irq_to_desc(irq);
-> +#endif
-> +	}
->  }
->  
->  void
-> @@ -569,8 +590,13 @@ __set_irq_handler(unsigned int irq, irq_
->  
->  	/* Uninstall? */
->  	if (handle == handle_bad_irq) {
-> -		if (desc->chip != &no_irq_chip)
-> +		if (desc->chip != &no_irq_chip) {
->  			mask_ack_irq(desc, irq);
-> +#ifdef CONFIG_MOVE_IRQ_DESC
-> +			/* get new one */
-> +			desc = irq_to_desc(irq);
-> +#endif
+> 2008/12/8 Peter Zijlstra <a.p.zijlstra@chello.nl>:
+> > On Mon, 2008-12-08 at 01:54 +0100, Frederic Weisbecker wrote:
+> >> Impact: provide interrupt detection on output
+> >>
+> >> Suggested by Ingo.
+> >> If a hardirq is raised, we want it to be signaled on output, so this patch
+> >> adds two arrows on the output to find entry and exit points of a hardirq.
+> >>
+> >> Unfortunately, there are many interrupt entrypoints and these can be differents
+> >> from one arch to another.
+> >>
+> >> The approach here is one of the easiest, but doesn't shine by its scalability:
+> >> we have an array of the interrupt entrypoints names that we compare with the
+> >> symbol of the current traced function, if it matches, we draw the arrow.
+> >>
+> >> Ie:
+> >>
+> >>  1)               |                                unlock_buffer() {
+> >>  1)               |                                  wake_up_bit() {
+> >>  1)               |                                    bit_waitqueue() {
+> >>  1)   0.872 us    |                                      __phys_addr();
+> >>  1)   2.722 us    |                                    }
+> >>  1)               |                                    __wake_up_bit() {
+> >>  1)              ==>                                   __wake_up_bit() {
+> >>  1)               |                                      do_IRQ() {
+> >
+> > Would be much nicer, the current proposal is lost when grepping and adds
+> > a weird visual break in the output.
+> 
+> 
+> Ok, I will apply it like this in the V2.
+> Thanks!
 
-this patch adds a ton of #ifdefs to important .c files, which could all 
-have been avoided by introducing a new method:
+note that since the IRQ marker always comes on an entry record, there's 
+space in the usecs field for something like:
 
-	desc = irq_remap_to_desc(irq, desc);
-
-which would do something like:
-
- static struct irq_desc *
- irq_remap_to_desc(unsigned int irq, struct irq_desc *desc)
- {
- #ifdef CONFIG_MOVE_IRQ_DESC
-	return irq_to_desc(irq);
- #else
-	return desc;
- #endif
- }
+  1)   2.722 us    |                                    }
+  1)               |                                    __wake_up_bit() {
+  1)  [IRQ#123]   ==>                                   __wake_up_bit() {
 
 right?
 
