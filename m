@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbYLHPTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909AbYLHPUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754793AbYLHPTz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 10:19:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYLHPTb
+	id S1754909AbYLHPUY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 10:20:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYLHPUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 10:19:31 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:46098 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752219AbYLHPT3 (ORCPT
+	Mon, 8 Dec 2008 10:20:00 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:49175 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754836AbYLHPT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 10:19:29 -0500
-Date: Mon, 8 Dec 2008 20:52:49 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Gautham R Shenoy <ego@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [BUG] idle_balance() does not call load_balance_newidle()
-Message-ID: <20081208152249.GI5457@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-	Ingo Molnar <mingo@elte.hu>, Gautham R Shenoy <ego@in.ibm.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 8 Dec 2008 10:19:58 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-serial@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [PATCH 1/2] PCI: quirks, don't mark one netmos as class other
+Date: Mon,  8 Dec 2008 16:19:14 +0100
+Message-Id: <1228749555-21363-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Let it as serial, since it doesn't have subdevice in the form of 0x00PS.
 
-load_balance_newidle() does not get called if SD_BALANCE_NEWIDLE is
-set at higher level domain (3-CPU) and not in low level domain (2-MC).
-
-pulled_task is initialised to -1 and checked for non-zero which is
-always true if the lowest level sched_domain does not have
-SD_BALANCE_NEWIDLE flag set.
-
-Trivial fix to initialise pulled_task to zero.
-Patch against 2.6.28-rc7
-
-Thanks,
-Vaidy
-
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
 ---
+ drivers/pci/quirks.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 400d868..4d42c16 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1585,9 +1585,13 @@ static void __devinit quirk_netmos(struct pci_dev *dev)
+ 	 * of parallel ports and <S> is the number of serial ports.
+ 	 */
+ 	switch (dev->device) {
++	case PCI_DEVICE_ID_NETMOS_9835:
++		/* Well, this rule doesn't hold for the following 9835 device */
++		if (dev->subsystem_vendor == PCI_VENDOR_ID_IBM &&
++				dev->subsystem_device == 0x0299)
++			return;
+ 	case PCI_DEVICE_ID_NETMOS_9735:
+ 	case PCI_DEVICE_ID_NETMOS_9745:
+-	case PCI_DEVICE_ID_NETMOS_9835:
+ 	case PCI_DEVICE_ID_NETMOS_9845:
+ 	case PCI_DEVICE_ID_NETMOS_9855:
+ 		if ((dev->class >> 8) == PCI_CLASS_COMMUNICATION_SERIAL &&
+-- 
+1.6.0.5
 
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index f79c7c4..4abdce1 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3801,7 +3801,7 @@ out_balanced:
- static void idle_balance(int this_cpu, struct rq *this_rq)
- {
- 	struct sched_domain *sd;
--	int pulled_task = -1;
-+	int pulled_task = 0;
- 	unsigned long next_balance = jiffies + HZ;
- 	cpumask_t tmpmask;
- 
