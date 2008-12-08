@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYLHP5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbYLHQGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374AbYLHP5v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 10:57:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYLHP5m
+	id S1753604AbYLHQGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 11:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYLHQGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 10:57:42 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53874 "EHLO mx2.mail.elte.hu"
+	Mon, 8 Dec 2008 11:06:07 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49377 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbYLHP5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 10:57:42 -0500
-Date: Mon, 8 Dec 2008 16:57:30 +0100
+	id S1752571AbYLHQGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 11:06:05 -0500
+Date: Mon, 8 Dec 2008 17:05:57 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+To: Gregory Haskins <ghaskins@novell.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing/function-graph-tracer: fix 'flags' variable
-	mismatch
-Message-ID: <20081208155730.GC405@elte.hu>
-References: <4939E600.804@gmail.com> <20081208141406.GA14856@elte.hu> <c62985530812080725i1f144c21td5b121749f507b09@mail.gmail.com>
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched: fix build failure in kernel/sched_rt.c
+Message-ID: <20081208160557.GA4570@elte.hu>
+References: <493939B1.40506@novell.com> <20081208143228.GF14856@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530812080725i1f144c21td5b121749f507b09@mail.gmail.com>
+In-Reply-To: <20081208143228.GF14856@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,54 +37,39 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-btw., had a new compiler warning below.
-
-	Ingo
-
---------------->
->From e726f5f91effd8944c76475a2688093a03ba0d10 Mon Sep 17 00:00:00 2001
+>From a9750309ef51081abb17268936769511b3683488 Mon Sep 17 00:00:00 2001
 From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 8 Dec 2008 16:55:53 +0100
-Subject: [PATCH] tracing/function-graph-tracer: fix 'flags' variable mismatch
+Date: Mon, 8 Dec 2008 16:39:24 +0100
+Subject: [PATCH] sched: fix build failure in kernel/sched_rt.c
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 
-this warning:
+Impact: build fix
 
- kernel/trace/trace.c: In function ‘trace_vprintk’:
- kernel/trace/trace.c:3626: warning: ‘flags’ may be used uninitialized in this function
+fix:
 
-shows some confusion about irq_flags / flags use here. We already have
-irq_flags so remove the extra flags variable.
+ kernel/sched_rt.c: In function ‘inc_rt_tasks’:
+ kernel/sched_rt.c:593: error: ‘prio’ undeclared (first use in this function)
+ kernel/sched_rt.c:593: error: (Each undeclared identifier is reported only once
+ kernel/sched_rt.c:593: error: for each function it appears in.)
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/trace/trace.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ kernel/sched_rt.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 0b8659b..8ebe007 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3596,9 +3596,9 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
- 	struct ring_buffer_event *event;
- 	struct trace_array *tr = &global_trace;
- 	struct trace_array_cpu *data;
--	struct print_entry *entry;
--	unsigned long flags, irq_flags;
- 	int cpu, len = 0, size, pc;
-+	struct print_entry *entry;
-+	unsigned long irq_flags;
- 
- 	if (tracing_disabled || tracing_selftest_running)
- 		return 0;
-@@ -3623,7 +3623,7 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
- 	if (!event)
- 		goto out_unlock;
- 	entry = ring_buffer_event_data(event);
--	tracing_generic_entry_update(&entry->ent, flags, pc);
-+	tracing_generic_entry_update(&entry->ent, irq_flags, pc);
- 	entry->ent.type			= TRACE_PRINT;
- 	entry->ip			= ip;
- 	entry->depth			= depth;
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index c5b1c5a..64a8f0a 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -583,9 +583,7 @@ static inline int next_prio(struct rq *rq)
+ static inline
+ void inc_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
+ {
+-#if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
+ 	int prio = rt_se_prio(rt_se);
+-#endif
+ #ifdef CONFIG_SMP
+ 	struct rq *rq = rq_of_rt_rq(rt_rq);
+ #endif
