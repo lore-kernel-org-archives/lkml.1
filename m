@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbYLHL7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbYLHL7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbYLHL7K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 06:59:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757267AbYLHLzo
+	id S1758838AbYLHL7a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 06:59:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbYLHL5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 06:55:44 -0500
-Received: from ozlabs.org ([203.10.76.45]:38053 "EHLO ozlabs.org"
+	Mon, 8 Dec 2008 06:57:21 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:49057 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756226AbYLHLzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 06:55:43 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH 1/2] kvm: use modern cpumask primitives, no cpumask_t on stack
-Date: Mon, 8 Dec 2008 22:25:38 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
-Cc: "kvm-devel" <kvm@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>
-References: <200812072125.14416.rusty@rustcorp.com.au> <200812081638.07526.rusty@rustcorp.com.au> <493CEDC5.1080004@redhat.com>
-In-Reply-To: <493CEDC5.1080004@redhat.com>
+	id S1754298AbYLHL5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 06:57:19 -0500
+Message-ID: <493D0B9A.9000401@redhat.com>
+Date: Mon, 08 Dec 2008 13:57:14 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+CC: kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] module_refcounting and anonymous inodes
+References: <200812021114.59050.borntraeger@de.ibm.com> <200812081251.14648.borntraeger@de.ibm.com>
+In-Reply-To: <200812081251.14648.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812082225.39351.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 December 2008 20:19:57 Avi Kivity wrote:
-> Rusty Russell wrote:
-> >> Btw, for the general case, instead of forcing everyone to duplicate, how 
-> >> about:
-> >>
-> >> cpumask_var_t cpus;
-> >>
-> >> with_cpumask(cpus) {
-> >>    ... code to populate cpus
-> >>    smp_call_function_some(...);
-> >> } end_with_cpumask(cpus);
-> >>
-> >> Where with_cpumask() allocates cpus, and uses a mutex + static fallback 
-> >> on failure.
-> >>     
-> >
-> > I'd prefer not to hide deadlocks that way :(
-> >
-> > I'll re-battle with that code to neaten it.  There are only a few places
-> > which have these kind of issues.
-> >
-> >   
-> 
-> cpuvar_get_maybe_mutex_lock(...);
-> ...
-> cpuvar_put_maybe_mutex_unlock(...);
+Christian Borntraeger wrote:
+> Am Dienstag, 2. Dezember 2008 schrieb Christian Borntraeger:
+>   
+>> Hello Avi,
+>>
+>> here is the latest respin of my fixes for the kvm module unload problem:
+>>
+>> [PATCH 1/2] anon_inodes: use fops->owner for module refcount
+>> [PATCH 2/2] kvm: set owner of cpu and vm file operations
+>>     
+>
+> In the meantime patch 2 has a offset against the latest git. Should I resend
+> the patch or will you apply it anyway?
+>   
 
-My thought was something like:
+Applied the patches; thanks for the reminder.
 
-/* This is an empty struct for !CONFIG_CPUMASK_OFFSTACK. */
-static struct cpuvar_with_mutex_fallback fallback;
+-- 
+error compiling committee.c: too many arguments to function
 
-...
-	cpumask_var_t tmp;
-
-	cpuvar_alloc_fallback(&tmp, &fallback);
-	...
-	cpuvar_free_fallback(tmp, &fallback);
-
-We may get there eventually, but so far I've managed to produce
-less horrendous code in every case.
-
-Cheers,
-Rusty.
