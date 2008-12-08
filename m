@@ -1,95 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752054AbYLHTEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbYLHTK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752054AbYLHTEa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 14:04:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYLHTES
+	id S1752449AbYLHTK5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 14:10:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYLHTKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 14:04:18 -0500
-Received: from mms3.broadcom.com ([216.31.210.19]:2595 "EHLO MMS3.broadcom.com"
+	Mon, 8 Dec 2008 14:10:24 -0500
+Received: from gw.goop.org ([64.81.55.164]:48433 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751076AbYLHTER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 14:04:17 -0500
-X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
-Date: Mon, 8 Dec 2008 11:04:03 -0800
-From: "Matt Carlson" <mcarlson@broadcom.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: "Michael Chan" <mchan@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Jeff Garzik" <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] net (tg3): Fix failure to enable WoL by default
- when possible (rev. 2)
-Message-ID: <20081208190403.GA27341@xw6200.broadcom.net>
-References: <200812080046.56119.rjw@sisk.pl>
- <200812081250.59095.rjw@sisk.pl> <200812081252.55715.rjw@sisk.pl>
+	id S1751587AbYLHTKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 14:10:19 -0500
+Message-ID: <493D7117.9050503@goop.org>
+Date: Mon, 08 Dec 2008 11:10:15 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-In-Reply-To: <200812081252.55715.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-WSS-ID: 6523B02D37G24594580-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+To: Eric Lacombe <goretux@gmail.com>
+CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [x86] do_arch_prctl
+References: <200812080002.21192.goretux@gmail.com>
+In-Reply-To: <200812080002.21192.goretux@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This has mostly been fixed up already in Dave Miller's tree.  In that
-tree, the WOL capability advertisements happens at the end of the
-tg3_get_eeprom_hw_cfg() function.
+Eric Lacombe wrote:
+> I'm sorry to insist, but I really want to understand what occurs in this 
+> portion of kernel code. And that's why I resend my previous message with the 
+> hope that someone could enlighten my mind.
+>   
 
-Your patch did uncover a bug though.  The removal of device_may_wakeup()
-in the first hunk of your patch still needs to be done.
+Well, its quite possible there are no good answers beyond "it needs a 
+cleanup". 
+> Thanks in advance,
+>
+> 	Eric
+>
+> Le lundi 24 novembre 2008 19:22:18 Jeremy Fitzhardinge, vous avez écrit :
+>   
+>> Eric Lacombe wrote:
+>>     
+>>> Hello,
+>>>
+>>> Does the "doit case" (line 822 in ARCH_GET_FS, function do_arch_prctl)
+>>> exist for performance reasons? Else, why "task->thread.fs" (line 824)
+>>> does not contain the fs base in the "doit case"?
+>>>       
+>> "doit" gets set when you're operating on yourself.  If you're operating
+>> on another process, then you need to use their task structure values
+>> rather than the current process's values.  If you're doing it to
+>> yourself, then the task structure may be out of date because its only
+>> updated on a context switch.
+>>     
+>
+> The task_struct is also updated in sys_arch_prctl (ARCH_SET_FS and 
+> ARCH_SET_GS), so not just on a context switch.
+> How the task structure could be out of date wrt thread.gs and thread.fs?
+> What could be a typical scenario that could induced gs or fs to be modified and 
+> not thread.gs and thread.fs?
+>   
 
-On Mon, Dec 08, 2008 at 03:52:55AM -0800, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: net (tg3): Fix failure to enable WoL by default when possible (rev. 2)
-> 
-> tg3 is supposed to enable WoL by default on adapters which support
-> that, but it fails to do so unless the adapter's
-> /sys/devices/.../power/wakeup file contains 'enabled' during the
-> initialization of the adapter.  Fix that by making tg3 update the
-> device's 'should_wakeup' bit automatically whenever WoL should be
-> enabled by default.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/net/tg3.c |   10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
-> 
-> Index: linux-2.6/drivers/net/tg3.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/net/tg3.c
-> +++ linux-2.6/drivers/net/tg3.c
-> @@ -11296,9 +11296,10 @@ static void __devinit tg3_get_eeprom_hw_
->  		if (val & VCPU_CFGSHDW_ASPM_DBNC)
->  			tp->tg3_flags |= TG3_FLAG_ASPM_WORKAROUND;
->  		if ((val & VCPU_CFGSHDW_WOL_ENABLE) &&
-> -		    (val & VCPU_CFGSHDW_WOL_MAGPKT) &&
-> -		    device_may_wakeup(&tp->pdev->dev))
-> +		    (val & VCPU_CFGSHDW_WOL_MAGPKT)) {
->  			tp->tg3_flags |= TG3_FLAG_WOL_ENABLE;
-> +			device_set_wakeup_enable(&tp->pdev->dev, true);
-> +		}
->  		return;
->  	}
->  
-> @@ -11428,9 +11429,10 @@ static void __devinit tg3_get_eeprom_hw_
->  			tp->tg3_flags &= ~TG3_FLAG_WOL_CAP;
->  
->  		if ((tp->tg3_flags & TG3_FLAG_WOL_CAP) &&
-> -		    (nic_cfg & NIC_SRAM_DATA_CFG_WOL_ENABLE) &&
-> -		    device_may_wakeup(&tp->pdev->dev))
-> +		    (nic_cfg & NIC_SRAM_DATA_CFG_WOL_ENABLE)) {
->  			tp->tg3_flags |= TG3_FLAG_WOL_ENABLE;
-> +		    	device_set_wakeup_enable(&tp->pdev->dev, true);
-> +		}
->  
->  		if (cfg2 & (1 << 17))
->  			tp->tg3_flags2 |= TG3_FLG2_CAPACITIVE_COUPLING;
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Not sure.  It could just be redundant.
 
+> Why we have a difference between ARCH_GET_GS :
+>
+>   
+>> 833                 else if (doit) {
+>> 834                         asm("movl %%gs,%0" : "=r" (gsindex));
+>> 835                         if (gsindex)
+>> 836                                 rdmsrl(MSR_KERNEL_GS_BASE, base);
+>> 837                         else
+>> 838                                 base = task->thread.gs;
+>> 839                 }
+>>     
+>
+> and ARCH_GET_FS :
+>
+>   
+>> 821                 else if (doit)
+>> 822                         rdmsrl(MSR_FS_BASE, base);
+>>     
+>
+> If I follow what you say, why can't we have the same optimization in 
+> ARCH_GET_FS?
+>   
+
+I haven't looked into it very closely, but its possible the asymmetry 
+comes from the fact that there's no swapfs, and so the kernel and 
+userspace aren't sharing %fs.
+
+    J
