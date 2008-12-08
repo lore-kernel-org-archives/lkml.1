@@ -1,95 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbYLHTK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbYLHTNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752449AbYLHTK5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 14:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYLHTKY
+	id S1752613AbYLHTNm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 14:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYLHTNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 14:10:24 -0500
-Received: from gw.goop.org ([64.81.55.164]:48433 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751587AbYLHTKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 14:10:19 -0500
-Message-ID: <493D7117.9050503@goop.org>
-Date: Mon, 08 Dec 2008 11:10:15 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Eric Lacombe <goretux@gmail.com>
-CC: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [x86] do_arch_prctl
-References: <200812080002.21192.goretux@gmail.com>
-In-Reply-To: <200812080002.21192.goretux@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 8 Dec 2008 14:13:33 -0500
+Received: from smtprelay08.ispgateway.de ([80.67.29.8]:59799 "EHLO
+	smtprelay08.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232AbYLHTNc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 14:13:32 -0500
+X-Greylist: delayed 403 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Dec 2008 14:13:32 EST
+Subject: Re: ALPS input driver problem with DualPoint on Dell E6400/E6500
+ [patch]
+From: Alexander Hofbauer <alex@derhofbauer.at>
+To: linux-kernel@vger.kernel.org
+Cc: Matthew Chapman <matthewc@cse.unsw.edu.au>
+In-Reply-To: <20081208141438.GA30462@cse.unsw.EDU.AU>
+References: <1227638742.5353.5.camel@mobian>
+	 <20081208141438.GA30462@cse.unsw.EDU.AU>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-M6guejIb0X6bRoq5186Q"
+Date: Mon, 08 Dec 2008 20:06:45 +0100
+Message-Id: <1228763205.3637.28.camel@mobian>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+X-Df-Sender: 420630
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Lacombe wrote:
-> I'm sorry to insist, but I really want to understand what occurs in this 
-> portion of kernel code. And that's why I resend my previous message with the 
-> hope that someone could enlighten my mind.
->   
 
-Well, its quite possible there are no good answers beyond "it needs a 
-cleanup". 
-> Thanks in advance,
->
-> 	Eric
->
-> Le lundi 24 novembre 2008 19:22:18 Jeremy Fitzhardinge, vous avez écrit :
->   
->> Eric Lacombe wrote:
->>     
->>> Hello,
->>>
->>> Does the "doit case" (line 822 in ARCH_GET_FS, function do_arch_prctl)
->>> exist for performance reasons? Else, why "task->thread.fs" (line 824)
->>> does not contain the fs base in the "doit case"?
->>>       
->> "doit" gets set when you're operating on yourself.  If you're operating
->> on another process, then you need to use their task structure values
->> rather than the current process's values.  If you're doing it to
->> yourself, then the task structure may be out of date because its only
->> updated on a context switch.
->>     
->
-> The task_struct is also updated in sys_arch_prctl (ARCH_SET_FS and 
-> ARCH_SET_GS), so not just on a context switch.
-> How the task structure could be out of date wrt thread.gs and thread.fs?
-> What could be a typical scenario that could induced gs or fs to be modified and 
-> not thread.gs and thread.fs?
->   
+--=-M6guejIb0X6bRoq5186Q
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Not sure.  It could just be redundant.
+On Die, 2008-12-09 at 01:14 +1100, Matthew Chapman wrote:
+> Hi,
+>=20
+> Here's a patch that implements the 9-byte packet format, which solves
+> the problem for me.
 
-> Why we have a difference between ARCH_GET_GS :
->
->   
->> 833                 else if (doit) {
->> 834                         asm("movl %%gs,%0" : "=r" (gsindex));
->> 835                         if (gsindex)
->> 836                                 rdmsrl(MSR_KERNEL_GS_BASE, base);
->> 837                         else
->> 838                                 base = task->thread.gs;
->> 839                 }
->>     
->
-> and ARCH_GET_FS :
->
->   
->> 821                 else if (doit)
->> 822                         rdmsrl(MSR_FS_BASE, base);
->>     
->
-> If I follow what you say, why can't we have the same optimization in 
-> ARCH_GET_FS?
->   
+Thank you.
 
-I haven't looked into it very closely, but its possible the asymmetry 
-comes from the fact that there's no swapfs, and so the kernel and 
-userspace aren't sharing %fs.
 
-    J
+Indeed, the patch seems to work except for losing "grip" when using e.g.
+the DualPoint Stick and the touchpad buttons at the same time.
+
+Let's assume I click a window decoration drawn by compiz
+(gtk-window-decorator) to move the window and the use the Stick. At
+"normal" speed the window is dropped immediately. If I start dragging
+very slowly I can sometimes move it successfully.
+
+Playing around and trying to get some usable output from xev I could
+reproducibly freeze the whole system (at least graphical output and
+keyboard/mouse input) but I don't know if this is related to using
+2.6.28-rc7 or the video drivers+compiz or the ALPS DualPoint anyway.
+
+I nevertheless also experimented with metacity. Dragging works most of
+the time but even metacity sometimes seems to interpret a double click
+and maximizes the window instead of starting to move it.
+
+
+So I'm quite positive that this patch still has some rough edges and
+events that don't belong where they appear (or at least are not expected
+by the window managers) because not mixing Touchpad's and -stick's
+controls doesn't have any issues at all.
+
+
+
+Greetings from Austria,
+Alex
+
+--=-M6guejIb0X6bRoq5186Q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkk9cEEACgkQER+ES1ZqwmW57gCggjDZsWXDWb0gwntWsWJlmgrD
+d9kAn1RMYwJ9lxDqr5qZ6YLmwXH1FWxx
+=jZuF
+-----END PGP SIGNATURE-----
+
+--=-M6guejIb0X6bRoq5186Q--
+
