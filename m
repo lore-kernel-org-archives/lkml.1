@@ -1,208 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752475AbYLHILG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbYLHIMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752475AbYLHILG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 03:11:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYLHIKy
+	id S1752788AbYLHIMt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 03:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYLHIMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 03:10:54 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:45575 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbYLHIKx convert rfc822-to-8bit (ORCPT
+	Mon, 8 Dec 2008 03:12:41 -0500
+Received: from i220-221-252-159.s30.a048.ap.plala.or.jp ([220.221.252.159]:59052
+	"EHLO mail.m.clustcom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751050AbYLHIMl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 03:10:53 -0500
-Message-ID: <493CD530.4020808@cosmosbay.com>
-Date: Mon, 08 Dec 2008 09:05:04 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-ext4@vger.kernel.org
-Subject: [PATCH] percpu_counter: FBC_BATCH should be a variable
-References: <4939513C.3090101@cosmosbay.com>	<493B9699.8080603@cosmosbay.com>	<20081207090918.595627b2.akpm@linux-foundation.org>	<493C1632.2000901@cosmosbay.com> <20081207203244.10372834.akpm@linux-foundation.org>
-In-Reply-To: <20081207203244.10372834.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 08 Dec 2008 09:05:09 +0100 (CET)
+	Mon, 8 Dec 2008 03:12:41 -0500
+Date: Mon, 8 Dec 2008 17:12:30 +0900
+From: Hitoshi Mitake <mitake@clustcom.com>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: ktaka@clustcom.com
+Subject: [RFC] New functions to manipulate registers for ethtool
+Message-Id: <20081208171230.288c5ccf.mitake@clustcom.com>
+Organization: Cluster Computing, Inc
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton a écrit :
-> On Sun, 07 Dec 2008 19:30:10 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
-> 
->>> Do
->>>
->>> 	$EDITOR  $(grep -l hotcpu_notifier */*.c)
->>>
->>> and you'll see lots of code gets it right, and lots of code gets it wrong.
->> I see nothing interesting, I must be blind.
->>
->> lib/percpu_counter.c: In function 'percpu_counter_startup':
->> lib/percpu_counter.c:158: error: 'percpu_counter_hotcpu_callback' undeclared (first use in this function)
->> lib/percpu_counter.c:158: error: (Each undeclared identifier is reported only once
->> lib/percpu_counter.c:158: error: for each function it appears in.)
->> make[1]: *** [lib/percpu_counter.o] Error 1
-> 
-> Perhaps you still had percpu_counter_hotcpu_callback inside #ifdef.
-> 
-> That a look at kernel/workqueue.c, fs/buffer.c.  No #ifdef CONFIG_HOTPLUG_CPU
-> needed at all.
 
-We still need some #ifdef or we also must also delete them around "struct list_head list"
-in include/linux/percpu_counter.h and grow struct percpu_counter.
+Hi
 
-lib/percpu_counter.c: In function 'percpu_counter_hotcpu_callback':
-lib/percpu_counter.c:137: error: 'struct percpu_counter' has no member named 'list'
-lib/percpu_counter.c:137: warning: type defaults to 'int' in declaration of '__mptr'
-lib/percpu_counter.c:137: warning: initialization from incompatible pointer type
-...
+I want to add two new functions to ethtool.
 
+One is for setting driver's registers on MMIO area like --change-eeprom option.
+I think form of command line is like this,
+ethtool -X|--set-register ethX [offset N(in bytes)] [value N(single byte value)]
 
-Thank you Andrew
+Another function is for reading driver's register on MMIO.
+Currently, there is --register-dump option for dumping registers.
+But I want finer granularity one which unit of manipulation is byte.
+Like this,
+ethtool -B|--dump-register-byte ethX [offset N(in bytes)]
+(then print one byte to stdout)
 
+Of course, names of options is temporary.
 
-[PATCH] percpu_counter: FBC_BATCH should be a variable
+Because e1000e driver conflicts with some IPMI cards some time,
+and the reasons of conflict are setting of registers not supported by
+other general options of ethtool.
+If this function is added, examing cause of confliction will be much easier.
 
-For NR_CPUS >= 16 values, FBC_BATCH is 2*NR_CPUS
+How do you think about this plan?
+If this plan is not bad, and nobody is working on patch like this plan,
+I want to do that.
 
-Considering more and more distros are using high NR_CPUS values,
-it makes sense to use a more sensible value for FBC_BATCH, and
-get rid of NR_CPUS.
+Thanks
 
-A sensible value is 2*num_online_cpus(), with a minimum value of 32
-(This minimum value helps branch prediction in __percpu_counter_add())
-
-We already have a hotcpu notifier, so we can adjust FBC_BATCH dynamically.
-
-We rename FBC_BATCH to percpu_counter_batch since its not a constant
-anymore.
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-Acked-by: David S. Miller <davem@davemloft.net>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- fs/ext4/ext4.h                 |    6 +++---
- fs/ext4/inode.c                |    2 +-
- include/linux/percpu_counter.h |    8 ++------
- lib/percpu_counter.c           |   18 ++++++++++++++----
- 4 files changed, 20 insertions(+), 14 deletions(-)
-
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index b0537c8..6c46c64 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -1225,11 +1225,11 @@ do {								\
- } while (0)
- 
- #ifdef CONFIG_SMP
--/* Each CPU can accumulate FBC_BATCH blocks in their local
-+/* Each CPU can accumulate percpu_counter_batch blocks in their local
-  * counters. So we need to make sure we have free blocks more
-- * than FBC_BATCH  * nr_cpu_ids. Also add a window of 4 times.
-+ * than percpu_counter_batch  * nr_cpu_ids. Also add a window of 4 times.
-  */
--#define EXT4_FREEBLOCKS_WATERMARK (4 * (FBC_BATCH * nr_cpu_ids))
-+#define EXT4_FREEBLOCKS_WATERMARK (4 * (percpu_counter_batch * nr_cpu_ids))
- #else
- #define EXT4_FREEBLOCKS_WATERMARK 0
- #endif
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index be21a5a..db661e7 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -2497,7 +2497,7 @@ static int ext4_nonda_switch(struct super_block *sb)
- 	/*
- 	 * switch to non delalloc mode if we are running low
- 	 * on free block. The free block accounting via percpu
--	 * counters can get slightly wrong with FBC_BATCH getting
-+	 * counters can get slightly wrong with percpu_counter_batch getting
- 	 * accumulated on each CPU without updating global counters
- 	 * Delalloc need an accurate free block accounting. So switch
- 	 * to non delalloc when we are near to error range.
-diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
-index 9007ccd..99de7a3 100644
---- a/include/linux/percpu_counter.h
-+++ b/include/linux/percpu_counter.h
-@@ -24,11 +24,7 @@ struct percpu_counter {
- 	s32 *counters;
- };
- 
--#if NR_CPUS >= 16
--#define FBC_BATCH	(NR_CPUS*2)
--#else
--#define FBC_BATCH	(NR_CPUS*4)
--#endif
-+extern int percpu_counter_batch;
- 
- int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
- int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount);
-@@ -39,7 +35,7 @@ s64 __percpu_counter_sum(struct percpu_counter *fbc);
- 
- static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
- {
--	__percpu_counter_add(fbc, amount, FBC_BATCH);
-+	__percpu_counter_add(fbc, amount, percpu_counter_batch);
- }
- 
- static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
-diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
-index a866389..e73eb5b 100644
---- a/lib/percpu_counter.c
-+++ b/lib/percpu_counter.c
-@@ -9,10 +9,8 @@
- #include <linux/cpu.h>
- #include <linux/module.h>
- 
--#ifdef CONFIG_HOTPLUG_CPU
- static LIST_HEAD(percpu_counters);
- static DEFINE_MUTEX(percpu_counters_lock);
--#endif
- 
- void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
- {
-@@ -114,13 +112,24 @@ void percpu_counter_destroy(struct percpu_counter *fbc)
- }
- EXPORT_SYMBOL(percpu_counter_destroy);
- 
--#ifdef CONFIG_HOTPLUG_CPU
-+int percpu_counter_batch __read_mostly = 32;
-+EXPORT_SYMBOL(percpu_counter_batch);
-+
-+static void compute_batch_value(void)
-+{
-+	int nr = num_online_cpus();
-+
-+	percpu_counter_batch = max(32, nr*2);
-+}
-+
- static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
- 					unsigned long action, void *hcpu)
- {
-+#ifdef CONFIG_HOTPLUG_CPU
- 	unsigned int cpu;
- 	struct percpu_counter *fbc;
- 
-+	compute_batch_value();
- 	if (action != CPU_DEAD)
- 		return NOTIFY_OK;
- 
-@@ -137,13 +146,14 @@ static int __cpuinit percpu_counter_hotcpu_callback(struct notifier_block *nb,
- 		spin_unlock_irqrestore(&fbc->lock, flags);
- 	}
- 	mutex_unlock(&percpu_counters_lock);
-+#endif
- 	return NOTIFY_OK;
- }
- 
- static int __init percpu_counter_startup(void)
- {
-+	compute_batch_value();
- 	hotcpu_notifier(percpu_counter_hotcpu_callback, 0);
- 	return 0;
- }
- module_init(percpu_counter_startup);
--#endif
-
+Hitoshi
