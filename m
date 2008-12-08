@@ -1,185 +1,625 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYLHLm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbYLHLmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023AbYLHLm0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 06:42:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYLHLhi
+	id S1754697AbYLHLmn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 06:42:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbYLHLhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 06:37:38 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48251 "EHLO mx2.redhat.com"
+	Mon, 8 Dec 2008 06:37:42 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48284 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753293AbYLHLhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 06:37:04 -0500
+	id S1753106AbYLHLhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 06:37:07 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng@linux.intel.com>
-Subject: [PATCH 21/45] KVM: Enable MTRR for EPT
-Date: Mon,  8 Dec 2008 13:36:32 +0200
-Message-Id: <1228736216-15787-22-git-send-email-avi@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
+Subject: [PATCH 41/45] KVM: ppc: Refactor powerpc.c to relocate 440-specific code
+Date: Mon,  8 Dec 2008 13:36:52 +0200
+Message-Id: <1228736216-15787-42-git-send-email-avi@redhat.com>
 In-Reply-To: <1228736216-15787-1-git-send-email-avi@redhat.com>
 References: <1228736216-15787-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sheng Yang <sheng@linux.intel.com>
+From: Hollis Blanchard <hollisb@us.ibm.com>
 
-The effective memory type of EPT is the mixture of MSR_IA32_CR_PAT and memory
-type field of EPT entry.
+This introduces a set of core-provided hooks. For 440, some of these are
+implemented by booke.c, with the rest in (the new) 44x.c.
 
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
+Note that these hooks are link-time, not run-time. Since it is not possible to
+build a single kernel for both e500 and 440 (for example), using function
+pointers would only add overhead.
+
+Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/include/asm/kvm_host.h |    3 ++-
- arch/x86/kvm/mmu.c              |   11 ++++++++++-
- arch/x86/kvm/svm.c              |    6 ++++++
- arch/x86/kvm/vmx.c              |   10 ++++++++--
- arch/x86/kvm/x86.c              |    2 +-
- 5 files changed, 27 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h |    3 +
+ arch/powerpc/include/asm/kvm_ppc.h  |   34 +++++-----
+ arch/powerpc/kvm/44x.c              |  123 +++++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/44x_tlb.h          |    1 +
+ arch/powerpc/kvm/Kconfig            |   11 +--
+ arch/powerpc/kvm/Makefile           |    4 +-
+ arch/powerpc/kvm/booke.c            |   61 +++++++++++++----
+ arch/powerpc/kvm/emulate.c          |    2 +-
+ arch/powerpc/kvm/powerpc.c          |  103 +++--------------------------
+ 9 files changed, 207 insertions(+), 135 deletions(-)
+ create mode 100644 arch/powerpc/kvm/44x.c
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 8082e87..93040b5 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -483,6 +483,7 @@ struct kvm_x86_ops {
- 
- 	int (*set_tss_addr)(struct kvm *kvm, unsigned int addr);
- 	int (*get_tdp_level)(void);
-+	int (*get_mt_mask_shift)(void);
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index df73351..f5850d7 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -74,6 +74,9 @@ struct kvmppc_44x_tlbe {
+ struct kvm_arch {
  };
  
- extern struct kvm_x86_ops *kvm_x86_ops;
-@@ -496,7 +497,7 @@ int kvm_mmu_setup(struct kvm_vcpu *vcpu);
- void kvm_mmu_set_nonpresent_ptes(u64 trap_pte, u64 notrap_pte);
- void kvm_mmu_set_base_ptes(u64 base_pte);
- void kvm_mmu_set_mask_ptes(u64 user_mask, u64 accessed_mask,
--		u64 dirty_mask, u64 nx_mask, u64 x_mask);
-+		u64 dirty_mask, u64 nx_mask, u64 x_mask, u64 mt_mask);
- 
- int kvm_mmu_reset_context(struct kvm_vcpu *vcpu);
- void kvm_mmu_slot_remove_write_access(struct kvm *kvm, int slot);
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index ac2304f..09d05f5 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -168,6 +168,7 @@ static u64 __read_mostly shadow_x_mask;	/* mutual exclusive with nx_mask */
- static u64 __read_mostly shadow_user_mask;
- static u64 __read_mostly shadow_accessed_mask;
- static u64 __read_mostly shadow_dirty_mask;
-+static u64 __read_mostly shadow_mt_mask;
- 
- void kvm_mmu_set_nonpresent_ptes(u64 trap_pte, u64 notrap_pte)
- {
-@@ -183,13 +184,14 @@ void kvm_mmu_set_base_ptes(u64 base_pte)
- EXPORT_SYMBOL_GPL(kvm_mmu_set_base_ptes);
- 
- void kvm_mmu_set_mask_ptes(u64 user_mask, u64 accessed_mask,
--		u64 dirty_mask, u64 nx_mask, u64 x_mask)
-+		u64 dirty_mask, u64 nx_mask, u64 x_mask, u64 mt_mask)
- {
- 	shadow_user_mask = user_mask;
- 	shadow_accessed_mask = accessed_mask;
- 	shadow_dirty_mask = dirty_mask;
- 	shadow_nx_mask = nx_mask;
- 	shadow_x_mask = x_mask;
-+	shadow_mt_mask = mt_mask;
- }
- EXPORT_SYMBOL_GPL(kvm_mmu_set_mask_ptes);
- 
-@@ -1546,6 +1548,8 @@ static int set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
- {
- 	u64 spte;
- 	int ret = 0;
-+	u64 mt_mask = shadow_mt_mask;
++/* XXX Can't include mmu-44x.h because it redefines struct mm_context. */
++#define PPC44x_TLB_SIZE 64
 +
- 	/*
- 	 * We don't set the accessed bit, since we sometimes want to see
- 	 * whether the guest actually used the pte (in order to detect
-@@ -1564,6 +1568,11 @@ static int set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
- 		spte |= shadow_user_mask;
- 	if (largepage)
- 		spte |= PT_PAGE_SIZE_MASK;
-+	if (mt_mask) {
-+		mt_mask = get_memory_type(vcpu, gfn) <<
-+			  kvm_x86_ops->get_mt_mask_shift();
-+		spte |= mt_mask;
+ struct kvm_vcpu_arch {
+ 	/* Unmodified copy of the guest's TLB. */
+ 	struct kvmppc_44x_tlbe guest_tlb[PPC44x_TLB_SIZE];
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 39daeaa..96d5de9 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -61,23 +61,6 @@ extern void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 gvaddr, gfn_t gfn,
+ extern void kvmppc_mmu_priv_switch(struct kvm_vcpu *vcpu, int usermode);
+ extern void kvmppc_mmu_switch_pid(struct kvm_vcpu *vcpu, u32 pid);
+ 
+-/* XXX Book E specific */
+-extern void kvmppc_tlbe_set_modified(struct kvm_vcpu *vcpu, unsigned int i);
+-
+-extern void kvmppc_check_and_deliver_interrupts(struct kvm_vcpu *vcpu);
+-
+-static inline void kvmppc_queue_exception(struct kvm_vcpu *vcpu, int exception)
+-{
+-	unsigned int priority = exception_priority[exception];
+-	set_bit(priority, &vcpu->arch.pending_exceptions);
+-}
+-
+-static inline void kvmppc_clear_exception(struct kvm_vcpu *vcpu, int exception)
+-{
+-	unsigned int priority = exception_priority[exception];
+-	clear_bit(priority, &vcpu->arch.pending_exceptions);
+-}
+-
+ /* Helper function for "full" MSR writes. No need to call this if only EE is
+  * changing. */
+ static inline void kvmppc_set_msr(struct kvm_vcpu *vcpu, u32 new_msr)
+@@ -99,6 +82,23 @@ static inline void kvmppc_set_pid(struct kvm_vcpu *vcpu, u32 new_pid)
+ 	}
+ }
+ 
++/* Core-specific hooks */
++
++extern int kvmppc_core_check_processor_compat(void);
++
++extern void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, int cpu);
++extern void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu);
++
++extern void kvmppc_core_load_guest_debugstate(struct kvm_vcpu *vcpu);
++extern void kvmppc_core_load_host_debugstate(struct kvm_vcpu *vcpu);
++
++extern void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu);
++extern int kvmppc_core_pending_dec(struct kvm_vcpu *vcpu);
++extern void kvmppc_core_queue_program(struct kvm_vcpu *vcpu);
++extern void kvmppc_core_queue_dec(struct kvm_vcpu *vcpu);
++extern void kvmppc_core_queue_external(struct kvm_vcpu *vcpu,
++                                       struct kvm_interrupt *irq);
++
+ extern void kvmppc_core_destroy_mmu(struct kvm_vcpu *vcpu);
+ 
+ #endif /* __POWERPC_KVM_PPC_H__ */
+diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
+new file mode 100644
+index 0000000..fcf8c7d
+--- /dev/null
++++ b/arch/powerpc/kvm/44x.c
+@@ -0,0 +1,123 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License, version 2, as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++ *
++ * Copyright IBM Corp. 2008
++ *
++ * Authors: Hollis Blanchard <hollisb@us.ibm.com>
++ */
++
++#include <linux/kvm_host.h>
++#include <asm/reg.h>
++#include <asm/cputable.h>
++#include <asm/tlbflush.h>
++
++#include "44x_tlb.h"
++
++/* Note: clearing MSR[DE] just means that the debug interrupt will not be
++ * delivered *immediately*. Instead, it simply sets the appropriate DBSR bits.
++ * If those DBSR bits are still set when MSR[DE] is re-enabled, the interrupt
++ * will be delivered as an "imprecise debug event" (which is indicated by
++ * DBSR[IDE].
++ */
++static void kvm44x_disable_debug_interrupts(void)
++{
++	mtmsr(mfmsr() & ~MSR_DE);
++}
++
++void kvmppc_core_load_host_debugstate(struct kvm_vcpu *vcpu)
++{
++	kvm44x_disable_debug_interrupts();
++
++	mtspr(SPRN_IAC1, vcpu->arch.host_iac[0]);
++	mtspr(SPRN_IAC2, vcpu->arch.host_iac[1]);
++	mtspr(SPRN_IAC3, vcpu->arch.host_iac[2]);
++	mtspr(SPRN_IAC4, vcpu->arch.host_iac[3]);
++	mtspr(SPRN_DBCR1, vcpu->arch.host_dbcr1);
++	mtspr(SPRN_DBCR2, vcpu->arch.host_dbcr2);
++	mtspr(SPRN_DBCR0, vcpu->arch.host_dbcr0);
++	mtmsr(vcpu->arch.host_msr);
++}
++
++void kvmppc_core_load_guest_debugstate(struct kvm_vcpu *vcpu)
++{
++	struct kvm_guest_debug *dbg = &vcpu->guest_debug;
++	u32 dbcr0 = 0;
++
++	vcpu->arch.host_msr = mfmsr();
++	kvm44x_disable_debug_interrupts();
++
++	/* Save host debug register state. */
++	vcpu->arch.host_iac[0] = mfspr(SPRN_IAC1);
++	vcpu->arch.host_iac[1] = mfspr(SPRN_IAC2);
++	vcpu->arch.host_iac[2] = mfspr(SPRN_IAC3);
++	vcpu->arch.host_iac[3] = mfspr(SPRN_IAC4);
++	vcpu->arch.host_dbcr0 = mfspr(SPRN_DBCR0);
++	vcpu->arch.host_dbcr1 = mfspr(SPRN_DBCR1);
++	vcpu->arch.host_dbcr2 = mfspr(SPRN_DBCR2);
++
++	/* set registers up for guest */
++
++	if (dbg->bp[0]) {
++		mtspr(SPRN_IAC1, dbg->bp[0]);
++		dbcr0 |= DBCR0_IAC1 | DBCR0_IDM;
 +	}
- 
- 	spte |= (u64)pfn << PAGE_SHIFT;
- 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 9c4ce65..05efc4e 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1912,6 +1912,11 @@ static int get_npt_level(void)
- #endif
- }
- 
-+static int svm_get_mt_mask_shift(void)
-+{
-+	return 0;
++	if (dbg->bp[1]) {
++		mtspr(SPRN_IAC2, dbg->bp[1]);
++		dbcr0 |= DBCR0_IAC2 | DBCR0_IDM;
++	}
++	if (dbg->bp[2]) {
++		mtspr(SPRN_IAC3, dbg->bp[2]);
++		dbcr0 |= DBCR0_IAC3 | DBCR0_IDM;
++	}
++	if (dbg->bp[3]) {
++		mtspr(SPRN_IAC4, dbg->bp[3]);
++		dbcr0 |= DBCR0_IAC4 | DBCR0_IDM;
++	}
++
++	mtspr(SPRN_DBCR0, dbcr0);
++	mtspr(SPRN_DBCR1, 0);
++	mtspr(SPRN_DBCR2, 0);
 +}
 +
- static struct kvm_x86_ops svm_x86_ops = {
- 	.cpu_has_kvm_support = has_svm,
- 	.disabled_by_bios = is_disabled,
-@@ -1967,6 +1972,7 @@ static struct kvm_x86_ops svm_x86_ops = {
- 
- 	.set_tss_addr = svm_set_tss_addr,
- 	.get_tdp_level = get_npt_level,
-+	.get_mt_mask_shift = svm_get_mt_mask_shift,
- };
- 
- static int __init svm_init(void)
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index b4c95a5..dae134f 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -3574,6 +3574,11 @@ static int get_ept_level(void)
- 	return VMX_EPT_DEFAULT_GAW + 1;
- }
- 
-+static int vmx_get_mt_mask_shift(void)
++void kvmppc_core_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
 +{
-+	return VMX_EPT_MT_EPTE_SHIFT;
++	int i;
++
++	/* Mark every guest entry in the shadow TLB entry modified, so that they
++	 * will all be reloaded on the next vcpu run (instead of being
++	 * demand-faulted). */
++	for (i = 0; i <= tlb_44x_hwater; i++)
++		kvmppc_tlbe_set_modified(vcpu, i);
 +}
 +
- static struct kvm_x86_ops vmx_x86_ops = {
- 	.cpu_has_kvm_support = cpu_has_kvm_support,
- 	.disabled_by_bios = vmx_disabled_by_bios,
-@@ -3629,6 +3634,7 @@ static struct kvm_x86_ops vmx_x86_ops = {
++void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
++{
++	/* Don't leave guest TLB entries resident when being de-scheduled. */
++	/* XXX It would be nice to differentiate between heavyweight exit and
++	 * sched_out here, since we could avoid the TLB flush for heavyweight
++	 * exits. */
++	_tlbia();
++}
++
++int kvmppc_core_check_processor_compat(void)
++{
++	int r;
++
++	if (strcmp(cur_cpu_spec->platform, "ppc440") == 0)
++		r = 0;
++	else
++		r = -ENOTSUPP;
++
++	return r;
++}
+diff --git a/arch/powerpc/kvm/44x_tlb.h b/arch/powerpc/kvm/44x_tlb.h
+index e5b0a76..357d79a 100644
+--- a/arch/powerpc/kvm/44x_tlb.h
++++ b/arch/powerpc/kvm/44x_tlb.h
+@@ -29,6 +29,7 @@ extern struct kvmppc_44x_tlbe *kvmppc_44x_dtlb_search(struct kvm_vcpu *vcpu,
+                                                       gva_t eaddr);
+ extern struct kvmppc_44x_tlbe *kvmppc_44x_itlb_search(struct kvm_vcpu *vcpu,
+                                                       gva_t eaddr);
++extern void kvmppc_tlbe_set_modified(struct kvm_vcpu *vcpu, unsigned int i);
  
- 	.set_tss_addr = vmx_set_tss_addr,
- 	.get_tdp_level = get_ept_level,
-+	.get_mt_mask_shift = vmx_get_mt_mask_shift,
- };
+ /* TLB helper functions */
+ static inline unsigned int get_tlb_size(const struct kvmppc_44x_tlbe *tlbe)
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index ffed96f..37e9b3c 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -16,11 +16,9 @@ if VIRTUALIZATION
  
- static int __init vmx_init(void)
-@@ -3685,10 +3691,10 @@ static int __init vmx_init(void)
- 		bypass_guest_pf = 0;
- 		kvm_mmu_set_base_ptes(VMX_EPT_READABLE_MASK |
- 			VMX_EPT_WRITABLE_MASK |
--			VMX_EPT_DEFAULT_MT << VMX_EPT_MT_EPTE_SHIFT |
- 			VMX_EPT_IGMT_BIT);
- 		kvm_mmu_set_mask_ptes(0ull, 0ull, 0ull, 0ull,
--				VMX_EPT_EXECUTABLE_MASK);
-+				VMX_EPT_EXECUTABLE_MASK,
-+				VMX_EPT_DEFAULT_MT << VMX_EPT_MT_EPTE_SHIFT);
- 		kvm_enable_tdp();
- 	} else
- 		kvm_disable_tdp();
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 0edf753..f175b79 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2615,7 +2615,7 @@ int kvm_arch_init(void *opaque)
- 	kvm_mmu_set_nonpresent_ptes(0ull, 0ull);
- 	kvm_mmu_set_base_ptes(PT_PRESENT_MASK);
- 	kvm_mmu_set_mask_ptes(PT_USER_MASK, PT_ACCESSED_MASK,
--			PT_DIRTY_MASK, PT64_NX_MASK, 0);
-+			PT_DIRTY_MASK, PT64_NX_MASK, 0, 0);
- 	return 0;
+ config KVM
+ 	bool "Kernel-based Virtual Machine (KVM) support"
+-	depends on 44x && EXPERIMENTAL
++	depends on EXPERIMENTAL
+ 	select PREEMPT_NOTIFIERS
+ 	select ANON_INODES
+-	# We can only run on Book E hosts so far
+-	select KVM_BOOKE
+ 	---help---
+ 	  Support hosting virtualized guest machines. You will also
+ 	  need to select one or more of the processor modules below.
+@@ -30,12 +28,11 @@ config KVM
  
- out:
+ 	  If unsure, say N.
+ 
+-config KVM_BOOKE
+-	bool "KVM support for Book E PowerPC processors"
++config KVM_440
++	bool "KVM support for PowerPC 440 processors"
+ 	depends on KVM && 44x
+ 	---help---
+-	  Provides host support for KVM on Book E PowerPC processors. Currently
+-	  this works on 440 processors only.
++	  KVM can run unmodified 440 guest kernels on 440 host processors.
+ 
+ config KVM_TRACE
+ 	bool "KVM trace support"
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index a7f8574..f5e3375 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -13,5 +13,5 @@ obj-$(CONFIG_KVM) += kvm.o
+ 
+ AFLAGS_booke_interrupts.o := -I$(obj)
+ 
+-kvm-booke-objs := booke.o booke_interrupts.o 44x_tlb.o
+-obj-$(CONFIG_KVM_BOOKE) += kvm-booke.o
++kvm-440-objs := booke.o booke_interrupts.o 44x.o 44x_tlb.o
++obj-$(CONFIG_KVM_440) += kvm-440.o
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index b1e90a1..138014a 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -134,6 +134,40 @@ void kvmppc_dump_vcpu(struct kvm_vcpu *vcpu)
+ 	}
+ }
+ 
++static void kvmppc_booke_queue_exception(struct kvm_vcpu *vcpu, int exception)
++{
++	unsigned int priority = exception_priority[exception];
++	set_bit(priority, &vcpu->arch.pending_exceptions);
++}
++
++static void kvmppc_booke_clear_exception(struct kvm_vcpu *vcpu, int exception)
++{
++	unsigned int priority = exception_priority[exception];
++	clear_bit(priority, &vcpu->arch.pending_exceptions);
++}
++
++void kvmppc_core_queue_program(struct kvm_vcpu *vcpu)
++{
++	kvmppc_booke_queue_exception(vcpu, BOOKE_INTERRUPT_PROGRAM);
++}
++
++void kvmppc_core_queue_dec(struct kvm_vcpu *vcpu)
++{
++	kvmppc_booke_queue_exception(vcpu, BOOKE_INTERRUPT_DECREMENTER);
++}
++
++int kvmppc_core_pending_dec(struct kvm_vcpu *vcpu)
++{
++	unsigned int priority = exception_priority[BOOKE_INTERRUPT_DECREMENTER];
++	return test_bit(priority, &vcpu->arch.pending_exceptions);
++}
++
++void kvmppc_core_queue_external(struct kvm_vcpu *vcpu,
++                                struct kvm_interrupt *irq)
++{
++	kvmppc_booke_queue_exception(vcpu, BOOKE_INTERRUPT_EXTERNAL);
++}
++
+ /* Check if we are ready to deliver the interrupt */
+ static int kvmppc_can_deliver_interrupt(struct kvm_vcpu *vcpu, int interrupt)
+ {
+@@ -168,7 +202,7 @@ static int kvmppc_can_deliver_interrupt(struct kvm_vcpu *vcpu, int interrupt)
+ 	return r;
+ }
+ 
+-static void kvmppc_deliver_interrupt(struct kvm_vcpu *vcpu, int interrupt)
++static void kvmppc_booke_deliver_interrupt(struct kvm_vcpu *vcpu, int interrupt)
+ {
+ 	switch (interrupt) {
+ 	case BOOKE_INTERRUPT_DECREMENTER:
+@@ -183,7 +217,7 @@ static void kvmppc_deliver_interrupt(struct kvm_vcpu *vcpu, int interrupt)
+ }
+ 
+ /* Check pending exceptions and deliver one, if possible. */
+-void kvmppc_check_and_deliver_interrupts(struct kvm_vcpu *vcpu)
++void kvmppc_core_deliver_interrupts(struct kvm_vcpu *vcpu)
+ {
+ 	unsigned long *pending = &vcpu->arch.pending_exceptions;
+ 	unsigned int exception;
+@@ -193,8 +227,8 @@ void kvmppc_check_and_deliver_interrupts(struct kvm_vcpu *vcpu)
+ 	while (priority <= BOOKE_MAX_INTERRUPT) {
+ 		exception = priority_exception[priority];
+ 		if (kvmppc_can_deliver_interrupt(vcpu, exception)) {
+-			kvmppc_clear_exception(vcpu, exception);
+-			kvmppc_deliver_interrupt(vcpu, exception);
++			kvmppc_booke_clear_exception(vcpu, exception);
++			kvmppc_booke_deliver_interrupt(vcpu, exception);
+ 			break;
+ 		}
+ 
+@@ -251,7 +285,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 			/* Program traps generated by user-level software must be handled
+ 			 * by the guest kernel. */
+ 			vcpu->arch.esr = vcpu->arch.fault_esr;
+-			kvmppc_queue_exception(vcpu, BOOKE_INTERRUPT_PROGRAM);
++			kvmppc_booke_queue_exception(vcpu, BOOKE_INTERRUPT_PROGRAM);
+ 			r = RESUME_GUEST;
+ 			break;
+ 		}
+@@ -284,27 +318,27 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_FP_UNAVAIL:
+-		kvmppc_queue_exception(vcpu, exit_nr);
++		kvmppc_booke_queue_exception(vcpu, exit_nr);
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_DATA_STORAGE:
+ 		vcpu->arch.dear = vcpu->arch.fault_dear;
+ 		vcpu->arch.esr = vcpu->arch.fault_esr;
+-		kvmppc_queue_exception(vcpu, exit_nr);
++		kvmppc_booke_queue_exception(vcpu, exit_nr);
+ 		vcpu->stat.dsi_exits++;
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_INST_STORAGE:
+ 		vcpu->arch.esr = vcpu->arch.fault_esr;
+-		kvmppc_queue_exception(vcpu, exit_nr);
++		kvmppc_booke_queue_exception(vcpu, exit_nr);
+ 		vcpu->stat.isi_exits++;
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_SYSCALL:
+-		kvmppc_queue_exception(vcpu, exit_nr);
++		kvmppc_booke_queue_exception(vcpu, exit_nr);
+ 		vcpu->stat.syscall_exits++;
+ 		r = RESUME_GUEST;
+ 		break;
+@@ -318,7 +352,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		gtlbe = kvmppc_44x_dtlb_search(vcpu, eaddr);
+ 		if (!gtlbe) {
+ 			/* The guest didn't have a mapping for it. */
+-			kvmppc_queue_exception(vcpu, exit_nr);
++			kvmppc_booke_queue_exception(vcpu, exit_nr);
+ 			vcpu->arch.dear = vcpu->arch.fault_dear;
+ 			vcpu->arch.esr = vcpu->arch.fault_esr;
+ 			vcpu->stat.dtlb_real_miss_exits++;
+@@ -360,7 +394,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		gtlbe = kvmppc_44x_itlb_search(vcpu, eaddr);
+ 		if (!gtlbe) {
+ 			/* The guest didn't have a mapping for it. */
+-			kvmppc_queue_exception(vcpu, exit_nr);
++			kvmppc_booke_queue_exception(vcpu, exit_nr);
+ 			vcpu->stat.itlb_real_miss_exits++;
+ 			break;
+ 		}
+@@ -380,8 +414,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 			               gtlbe->word2);
+ 		} else {
+ 			/* Guest mapped and leaped at non-RAM! */
+-			kvmppc_queue_exception(vcpu,
+-			                       BOOKE_INTERRUPT_MACHINE_CHECK);
++			kvmppc_booke_queue_exception(vcpu, BOOKE_INTERRUPT_MACHINE_CHECK);
+ 		}
+ 
+ 		break;
+@@ -409,7 +442,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 
+ 	local_irq_disable();
+ 
+-	kvmppc_check_and_deliver_interrupts(vcpu);
++	kvmppc_core_deliver_interrupts(vcpu);
+ 
+ 	/* Do some exit accounting. */
+ 	vcpu->stat.sum_exits++;
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index 0ce8ed5..c5d2bfc 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -139,7 +139,7 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 	switch (get_op(inst)) {
+ 	case 3:                                                 /* trap */
+ 		printk("trap!\n");
+-		kvmppc_queue_exception(vcpu, BOOKE_INTERRUPT_PROGRAM);
++		kvmppc_core_queue_program(vcpu);
+ 		advance = 0;
+ 		break;
+ 
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index fda9baa..800fe97 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -98,14 +98,7 @@ void kvm_arch_hardware_unsetup(void)
+ 
+ void kvm_arch_check_processor_compat(void *rtn)
+ {
+-	int r;
+-
+-	if (strcmp(cur_cpu_spec->platform, "ppc440") == 0)
+-		r = 0;
+-	else
+-		r = -ENOTSUPP;
+-
+-	*(int *)rtn = r;
++	*(int *)rtn = kvmppc_core_check_processor_compat();
+ }
+ 
+ struct kvm *kvm_arch_create_vm(void)
+@@ -211,16 +204,14 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+ 
+ int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
+ {
+-	unsigned int priority = exception_priority[BOOKE_INTERRUPT_DECREMENTER];
+-
+-	return test_bit(priority, &vcpu->arch.pending_exceptions);
++	return kvmppc_core_pending_dec(vcpu);
+ }
+ 
+ static void kvmppc_decrementer_func(unsigned long data)
+ {
+ 	struct kvm_vcpu *vcpu = (struct kvm_vcpu *)data;
+ 
+-	kvmppc_queue_exception(vcpu, BOOKE_INTERRUPT_DECREMENTER);
++	kvmppc_core_queue_dec(vcpu);
+ 
+ 	if (waitqueue_active(&vcpu->wq)) {
+ 		wake_up_interruptible(&vcpu->wq);
+@@ -241,96 +232,20 @@ void kvm_arch_vcpu_uninit(struct kvm_vcpu *vcpu)
+ 	kvmppc_core_destroy_mmu(vcpu);
+ }
+ 
+-/* Note: clearing MSR[DE] just means that the debug interrupt will not be
+- * delivered *immediately*. Instead, it simply sets the appropriate DBSR bits.
+- * If those DBSR bits are still set when MSR[DE] is re-enabled, the interrupt
+- * will be delivered as an "imprecise debug event" (which is indicated by
+- * DBSR[IDE].
+- */
+-static void kvmppc_disable_debug_interrupts(void)
+-{
+-	mtmsr(mfmsr() & ~MSR_DE);
+-}
+-
+-static void kvmppc_restore_host_debug_state(struct kvm_vcpu *vcpu)
+-{
+-	kvmppc_disable_debug_interrupts();
+-
+-	mtspr(SPRN_IAC1, vcpu->arch.host_iac[0]);
+-	mtspr(SPRN_IAC2, vcpu->arch.host_iac[1]);
+-	mtspr(SPRN_IAC3, vcpu->arch.host_iac[2]);
+-	mtspr(SPRN_IAC4, vcpu->arch.host_iac[3]);
+-	mtspr(SPRN_DBCR1, vcpu->arch.host_dbcr1);
+-	mtspr(SPRN_DBCR2, vcpu->arch.host_dbcr2);
+-	mtspr(SPRN_DBCR0, vcpu->arch.host_dbcr0);
+-	mtmsr(vcpu->arch.host_msr);
+-}
+-
+-static void kvmppc_load_guest_debug_registers(struct kvm_vcpu *vcpu)
+-{
+-	struct kvm_guest_debug *dbg = &vcpu->guest_debug;
+-	u32 dbcr0 = 0;
+-
+-	vcpu->arch.host_msr = mfmsr();
+-	kvmppc_disable_debug_interrupts();
+-
+-	/* Save host debug register state. */
+-	vcpu->arch.host_iac[0] = mfspr(SPRN_IAC1);
+-	vcpu->arch.host_iac[1] = mfspr(SPRN_IAC2);
+-	vcpu->arch.host_iac[2] = mfspr(SPRN_IAC3);
+-	vcpu->arch.host_iac[3] = mfspr(SPRN_IAC4);
+-	vcpu->arch.host_dbcr0 = mfspr(SPRN_DBCR0);
+-	vcpu->arch.host_dbcr1 = mfspr(SPRN_DBCR1);
+-	vcpu->arch.host_dbcr2 = mfspr(SPRN_DBCR2);
+-
+-	/* set registers up for guest */
+-
+-	if (dbg->bp[0]) {
+-		mtspr(SPRN_IAC1, dbg->bp[0]);
+-		dbcr0 |= DBCR0_IAC1 | DBCR0_IDM;
+-	}
+-	if (dbg->bp[1]) {
+-		mtspr(SPRN_IAC2, dbg->bp[1]);
+-		dbcr0 |= DBCR0_IAC2 | DBCR0_IDM;
+-	}
+-	if (dbg->bp[2]) {
+-		mtspr(SPRN_IAC3, dbg->bp[2]);
+-		dbcr0 |= DBCR0_IAC3 | DBCR0_IDM;
+-	}
+-	if (dbg->bp[3]) {
+-		mtspr(SPRN_IAC4, dbg->bp[3]);
+-		dbcr0 |= DBCR0_IAC4 | DBCR0_IDM;
+-	}
+-
+-	mtspr(SPRN_DBCR0, dbcr0);
+-	mtspr(SPRN_DBCR1, 0);
+-	mtspr(SPRN_DBCR2, 0);
+-}
+-
+ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ {
+-	int i;
+-
+ 	if (vcpu->guest_debug.enabled)
+-		kvmppc_load_guest_debug_registers(vcpu);
++		kvmppc_core_load_guest_debugstate(vcpu);
+ 
+-	/* Mark every guest entry in the shadow TLB entry modified, so that they
+-	 * will all be reloaded on the next vcpu run (instead of being
+-	 * demand-faulted). */
+-	for (i = 0; i <= tlb_44x_hwater; i++)
+-		kvmppc_tlbe_set_modified(vcpu, i);
++	kvmppc_core_vcpu_load(vcpu, cpu);
+ }
+ 
+ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
+ {
+ 	if (vcpu->guest_debug.enabled)
+-		kvmppc_restore_host_debug_state(vcpu);
++		kvmppc_core_load_host_debugstate(vcpu);
+ 
+-	/* Don't leave guest TLB entries resident when being de-scheduled. */
+-	/* XXX It would be nice to differentiate between heavyweight exit and
+-	 * sched_out here, since we could avoid the TLB flush for heavyweight
+-	 * exits. */
+-	_tlbia();
++	kvmppc_core_vcpu_put(vcpu);
+ }
+ 
+ int kvm_arch_vcpu_ioctl_debug_guest(struct kvm_vcpu *vcpu,
+@@ -459,7 +374,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 		vcpu->arch.dcr_needed = 0;
+ 	}
+ 
+-	kvmppc_check_and_deliver_interrupts(vcpu);
++	kvmppc_core_deliver_interrupts(vcpu);
+ 
+ 	local_irq_disable();
+ 	kvm_guest_enter();
+@@ -477,7 +392,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ 
+ int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu, struct kvm_interrupt *irq)
+ {
+-	kvmppc_queue_exception(vcpu, BOOKE_INTERRUPT_EXTERNAL);
++	kvmppc_core_queue_external(vcpu, irq);
+ 
+ 	if (waitqueue_active(&vcpu->wq)) {
+ 		wake_up_interruptible(&vcpu->wq);
 -- 
 1.6.0.3
 
