@@ -1,42 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbYLHL4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbYLHL4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753147AbYLHL4f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 06:56:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755717AbYLHLvT
+	id S1758183AbYLHL4P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 06:56:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbYLHLvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 06:51:19 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:47098 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756609AbYLHLvR (ORCPT
+	Mon, 8 Dec 2008 06:51:08 -0500
+Received: from mail14.svc.cra.dublin.eircom.net ([159.134.118.30]:32603 "HELO
+	mail14.svc.cra.dublin.eircom.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757488AbYLHLvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 06:51:17 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH 0/2] module_refcounting and anonymous inodes
-Date: Mon, 8 Dec 2008 12:51:14 +0100
-User-Agent: KMail/1.9.9
-Cc: kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <200812021114.59050.borntraeger@de.ibm.com>
-In-Reply-To: <200812021114.59050.borntraeger@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812081251.14648.borntraeger@de.ibm.com>
+	Mon, 8 Dec 2008 06:51:04 -0500
+From: Mark McLoughlin <markmc@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>,
+       Anthony Liguori <aliguori@us.ibm.com>, Jiri Slaby <jirislaby@gmail.com>,
+       Greg KH <gregkh@suse.de>, Mark McLoughlin <markmc@redhat.com>
+Subject: [PATCH 1/2] virtio: add PCI device release() function
+Date: Mon,  8 Dec 2008 11:49:39 +0000
+Message-Id: <1228736980-19539-1-git-send-email-markmc@redhat.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <20081205184603.GC13133@suse.de>
+References: <20081205184603.GC13133@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 2. Dezember 2008 schrieb Christian Borntraeger:
-> Hello Avi,
-> 
-> here is the latest respin of my fixes for the kvm module unload problem:
-> 
-> [PATCH 1/2] anon_inodes: use fops->owner for module refcount
-> [PATCH 2/2] kvm: set owner of cpu and vm file operations
+Add a release() function for virtio_pci devices so as to avoid:
 
-In the meantime patch 2 has a offset against the latest git. Should I resend
-the patch or will you apply it anyway?
+  Device 'virtio0' does not have a release() function, it is broken and must be fixed
 
-Christian
+Move the code to free the resources associated with the device
+from virtio_pci_remove() into this new function. virtio_pci_remove()
+now merely unregisters the device which should cause the final
+ref to be dropped and virtio_pci_release_dev() to be called.
+
+Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+Reported-by: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Anthony Liguori <aliguori@us.ibm.com>
+---
+ drivers/virtio/virtio_pci.c |   21 +++++++++++++++------
+ 1 files changed, 15 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
+index 7462a51..265fdf2 100644
+--- a/drivers/virtio/virtio_pci.c
++++ b/drivers/virtio/virtio_pci.c
+@@ -307,6 +307,20 @@ static struct virtio_config_ops virtio_pci_config_ops = {
+ 	.finalize_features = vp_finalize_features,
+ };
+ 
++static void virtio_pci_release_dev(struct device *_d)
++{
++	struct virtio_device *dev = container_of(_d, struct virtio_device, dev);
++	struct virtio_pci_device *vp_dev = to_vp_device(dev);
++	struct pci_dev *pci_dev = vp_dev->pci_dev;
++
++	free_irq(pci_dev->irq, vp_dev);
++	pci_set_drvdata(pci_dev, NULL);
++	pci_iounmap(pci_dev, vp_dev->ioaddr);
++	pci_release_regions(pci_dev);
++	pci_disable_device(pci_dev);
++	kfree(vp_dev);
++}
++
+ /* the PCI probing function */
+ static int __devinit virtio_pci_probe(struct pci_dev *pci_dev,
+ 				      const struct pci_device_id *id)
+@@ -330,6 +344,7 @@ static int __devinit virtio_pci_probe(struct pci_dev *pci_dev,
+ 		return -ENOMEM;
+ 
+ 	vp_dev->vdev.dev.parent = &virtio_pci_root;
++	vp_dev->vdev.dev.release = virtio_pci_release_dev;
+ 	vp_dev->vdev.config = &virtio_pci_config_ops;
+ 	vp_dev->pci_dev = pci_dev;
+ 	INIT_LIST_HEAD(&vp_dev->virtqueues);
+@@ -389,12 +404,6 @@ static void __devexit virtio_pci_remove(struct pci_dev *pci_dev)
+ 	struct virtio_pci_device *vp_dev = pci_get_drvdata(pci_dev);
+ 
+ 	unregister_virtio_device(&vp_dev->vdev);
+-	free_irq(pci_dev->irq, vp_dev);
+-	pci_set_drvdata(pci_dev, NULL);
+-	pci_iounmap(pci_dev, vp_dev->ioaddr);
+-	pci_release_regions(pci_dev);
+-	pci_disable_device(pci_dev);
+-	kfree(vp_dev);
+ }
+ 
+ #ifdef CONFIG_PM
+-- 
+1.5.4.3
+
