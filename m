@@ -1,84 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751697AbYLHKQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbYLHKST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751697AbYLHKQh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 05:16:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYLHKQV
+	id S1752697AbYLHKST (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 05:18:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbYLHKSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 05:16:21 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33005 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752349AbYLHKQU (ORCPT
+	Mon, 8 Dec 2008 05:18:09 -0500
+Received: from mga05.intel.com ([192.55.52.89]:58383 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751514AbYLHKSJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 05:16:20 -0500
-Subject: Re: [RFC PATCH] hrtimer: removing all ur callback modes
-From: Peter Zijlstra <peterz@infradead.org>
-To: Oliver Hartkopp <oliver@hartkopp.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <493BC8A8.2030200@hartkopp.net>
-References: <1227613431.4259.1537.camel@twins>
-	 <1228385830.5092.43.camel@twins> <493BB1EB.5000004@hartkopp.net>
-	 <493BC8A8.2030200@hartkopp.net>
-Content-Type: text/plain
+	Mon, 8 Dec 2008 05:18:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,734,1220252400"; 
+   d="scan'208";a="647850727"
+Message-ID: <493CF472.1030502@linux.intel.com>
+Date: Mon, 08 Dec 2008 11:18:26 +0100
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Giangiacomo Mariotti <gg.mariotti@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
+References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>	 <493AE770.5030507@shaw.ca>	 <12bfabe40812061343j400f55d8r43571c8bd514adde@mail.gmail.com>	 <493AF2EA.4030601@shaw.ca>	 <12bfabe40812061416u1b6f800dn7261beae5ce36b2f@mail.gmail.com>	 <493B4242.1040202@shaw.ca>	 <12bfabe40812071355r65c13e52g5f3d94d3b060c939@mail.gmail.com>	 <20081207141337.588aede5@infradead.org>	 <12bfabe40812072248n3c931ce0hf030b3ac758026d4@mail.gmail.com>	 <493CCFE4.2080802@jp.fujitsu.com> <12bfabe40812080004p7438744eqeb884b42673bd73c@mail.gmail.com> <493CEAA0.50201@jp.fujitsu.com> <493CEF38.3060004@linux.intel.com> <493CF0CE.1000405@cosmosbay.com>
+In-Reply-To: <493CF0CE.1000405@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Mon, 08 Dec 2008 11:15:59 +0100
-Message-Id: <1228731359.5778.18.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-12-07 at 13:59 +0100, Oliver Hartkopp wrote:
-> Oliver Hartkopp wrote:
-> > Peter Zijlstra wrote:
-> >> On Tue, 2008-11-25 at 12:43 +0100, Peter Zijlstra wrote:
-> >>  
-> >>> Hi,
-> >>>
-> >>> This is an attempt at removing some of the hrtimer complexity by
-> >>> reducing the number of callback modes to 1.
-> >>>
-> >>> This means that all hrtimer callback functions will be ran from 
-> >>> HARD-irq
-> >>> context.
-> >>>
-> >>> I went through all the 30 odd hrtimer callback functions in the kernel
-> >>> and saw only one that I'm not quite sure of, which is the one in
-> >>> net/can/bcm.c - hence I'm CC-ing the folks responsible for that code.
-> >>>     
-> >
-> > Thanks Peter.
-> >
-> > Indeed i assumed my hrtimer callbacks to run in soft-irq. I tried the 
-> > can-bcm protocol with Ingos current linux-2.6-sched-devel.git 
-> > including your patches and i did not see any issues so far. And i do 
-> > not expect any (recursion) problems with hrtimer_forward() in my code 
-> > either.
-> >
-> > But i'm not that familiar with the timer context's stuff, that i would 
-> > like guaranty that the functions i use in bcm_send_user() and in 
-> > bcm_can_tx() are always safe to be used in hard-irq context.
-> >
-> > It would be nice, if you could give me some support by double checking 
-> > the correctness of the hard-irq context in the given functions.
+
+> Rings a bell here
 > 
-> Hi Peter,
+> include/linux/jiffies.h:157:#define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
 > 
-> i ran a heavy load test, which get's (reproducible) the attached outputs ...
-> 
-> Maybe it's not that good to define the hrtimer context to be always 
-> hard-irq.
+> Could it be related to INITIAL_JIFFIES ?
 
-Thing is, this 'cleanup' removes quite a bit of complexity from the core
-hrtimer code, and afaict your bit is the only thing that cannot seem to
-cope. So I'd rather look at fixing your site than re-introduce softirqs
-to hrtimers.
+Makes sense.  Probably cpu_clock() forgets to correct for that.
 
-> Any idea?
-
-What are the timing constraints of your problem? - I assume they are not
-too aggressive, otherwise you'd not be able to run from softirq, could
-you run from keventd?
-
+-Andi
