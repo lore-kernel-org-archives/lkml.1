@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbYLHUNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbYLHUZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752614AbYLHUNq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 15:13:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbYLHUNe
+	id S1752640AbYLHUZq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 15:25:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYLHUZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 15:13:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41523 "EHLO ogre.sisk.pl"
+	Mon, 8 Dec 2008 15:25:36 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37023 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751742AbYLHUNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 15:13:33 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: CIFS regression in 2.6.27.8
-Date: Mon, 8 Dec 2008 21:12:48 +0100
-User-Agent: KMail/1.9.9
-Cc: "Dennis Hardy" <dhardy@sogetthis.com>, linux-kernel@vger.kernel.org,
-       layton@redhat.com, "Steven French" <sfrench@us.ibm.com>,
-       "Greg KH" <gregkh@suse.de>, netdev@vger.kernel.org,
-       Holger Hoffstaette <holger@wizards.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-References: <20900699.post@talk.nabble.com> <84144f020812081128p6d1e2a55v69996a360e7f0e8f@mail.gmail.com>
-In-Reply-To: <84144f020812081128p6d1e2a55v69996a360e7f0e8f@mail.gmail.com>
+	id S1751936AbYLHUZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 15:25:36 -0500
+Message-ID: <493D82A6.9070104@redhat.com>
+Date: Mon, 08 Dec 2008 15:25:10 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
+References: <20081129195357.813D.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081208205842.53F8.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081208220016.53FB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20081208220016.53FB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812082112.49468.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 8 of December 2008, Pekka Enberg wrote:
-> Hi Dennis,
-> 
-> On Mon, Dec 8, 2008 at 8:18 PM, Dennis Hardy <dhardy@sogetthis.com> wrote:
-> > I just mounted a network drive (Windows Server) via CIFS under 2.6.27.8, and
-> > the sizes reported by "df" are completely incorrect:
-> >
-> >  root@exodus:~# df -h /mnt/fsv1
-> >  Filesystem            Size  Used Avail Use% Mounted on
-> >  //fsv1/Users          446G -222G  667G   -  /mnt/fsv1
-> >  root@exodus:~# df /mnt/fsv1
-> >  Filesystem           1K-blocks      Used Available Use% Mounted on
-> >  //fsv1/Users         467403140 -231816588 699219728   -  /mnt/fsv1
-> >  root@exodus:~# mount | grep fsv1
-> >  //fsv1/Users on /mnt/fsv1 type cifs (rw,mand)
-> >  root@exodus:~#
-> >
-> > Does anyone else see this sort of behavior with 2.6.27.8?  This worked fine
-> > in 2.6.27.6 (we skipped 2.6.27.7)...
-> >
-> > Ideas?
-> 
-> Well, lets cc the relevant people so your report isn't lost in the noise.
+KOSAKI Motohiro wrote:
 
-FWIW, it seems to be related to this one: http://lkml.org/lkml/2008/12/8/7
+> +	for (o = order; o < MAX_ORDER; o++) {
+> +		if (z->free_area[o].nr_free)
+> +			return 1;
 
-Thanks,
-Rafael
+Since page breakup and coalescing always manipulates .nr_free,
+I wonder if it would make sense to pack the nr_free variables
+in their own cache line(s), so we have fewer cache misses when
+going through zone_watermark_ok() ?
+
+That would end up looking something like this:
+
+(whitespace mangled because it doesn't make sense to apply
+just this thing, anyway)
+
+Index: linux-2.6.28-rc7/include/linux/mmzone.h
+===================================================================
+--- linux-2.6.28-rc7.orig/include/linux/mmzone.h        2008-12-02 
+15:04:33.000000000 -0500
++++ linux-2.6.28-rc7/include/linux/mmzone.h     2008-12-08 
+15:24:25.000000000 -0500
+@@ -58,7 +58,6 @@ static inline int get_pageblock_migratet
+
+  struct free_area {
+         struct list_head        free_list[MIGRATE_TYPES];
+-       unsigned long           nr_free;
+  };
+
+  struct pglist_data;
+@@ -296,6 +295,7 @@ struct zone {
+         seqlock_t               span_seqlock;
+  #endif
+         struct free_area        free_area[MAX_ORDER];
++       struct nr_free          [MAX_ORDER];
+
+  #ifndef CONFIG_SPARSEMEM
+         /*
+
+
+-- 
+All rights reversed.
