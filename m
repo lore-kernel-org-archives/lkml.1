@@ -1,107 +1,322 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbYLHPAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYLHPBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbYLHPAg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 10:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYLHPA1
+	id S1754498AbYLHPBz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 10:01:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYLHPBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 10:00:27 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43760 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751731AbYLHPA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 10:00:26 -0500
-Subject: Re: [PATCH 2/2] virtio: do not statically allocate root device
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Anthony Liguori <aliguori@us.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>, Greg KH <gregkh@suse.de>
-In-Reply-To: <493D3276.5040506@us.ibm.com>
-References: <20081205184603.GC13133@suse.de>
-	 <1228736980-19539-1-git-send-email-markmc@redhat.com>
-	 <1228736980-19539-2-git-send-email-markmc@redhat.com>
-	 <493D3276.5040506@us.ibm.com>
+	Mon, 8 Dec 2008 10:01:46 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:6794 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752466AbYLHPBp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 10:01:45 -0500
+Subject: Re: [PATCH] - support inheritance of mlocks across fork/exec V2
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       riel@redhat.com, hugh@veritas.com, kosaki.motohiro@jp.fujitsu.com,
+       linux-abi@vger.kernel.org
+In-Reply-To: <20081206220729.042a926e.akpm@linux-foundation.org>
+References: <1227561707.6937.61.camel@lts-notebook>
+	 <20081125152651.b4c3c18f.akpm@linux-foundation.org>
+	 <1228331069.6693.73.camel@lts-notebook>
+	 <20081206220729.042a926e.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Mon, 08 Dec 2008 14:58:53 +0000
-Message-Id: <1228748333.3609.47.camel@blaa>
+Organization: HP/OSLO
+Date: Mon, 08 Dec 2008 10:01:05 -0500
+Message-Id: <1228748465.22647.85.camel@lts-notebook>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-08 at 08:43 -0600, Anthony Liguori wrote:
-> Mark McLoughlin wrote:
-> > Apparently we shouldn't be statically allocating the root device
-> > object, so dynamically allocate it instead.
-> >
-> > Also add a release() function to avoid this warning:
-> >
-> >   Device 'virtio-pci' does not have a release() function, it is broken and must be fixed
-> >   
+On Sat, 2008-12-06 at 22:07 -0800, Andrew Morton wrote:
+> (cc linux-abi.  Again.)
+
+Sorry.
+
 > 
-> Is it really better to dynamically allocate the root device than 
-> statically allocate it?  Is the advice that we shouldn't statically 
-> allocate a device really a suggestion that if you're doing that, you're 
-> using struct device wrong?
+> On Wed, 03 Dec 2008 14:04:29 -0500 Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> 
+> > 
+> > 
+> > Against;  2.6.28-rc7-mmotm-081203
+> > 
+> > V02:	rework vetting of flags argument as suggested by
+> > 	Kosaki Motohiro.
+> > 	enhance description as requested by Andrew Morton.
+> > 
+> > Add support for mlockall(MCL_INHERIT|MCL_RECURSIVE):
+> > 
+> > 	MCL_CURRENT[|MCL_FUTURE]|MCL_INHERIT - inherit memory locks
+> > 		[vmas' VM_LOCKED flags] across fork(), and inherit
+> > 		MCL_FUTURE behavior [mm's def_flags] across fork()
+> > 		and exec().  Behaves as if child and/or new task
+> > 		called mlockall(MCL_CURRENT|MCL_FUTURE) as first
+> > 		instruction.
+> > 
+> > 	MCL_RECURSIVE - inherit MCL_CURRENT|MCL_FUTURE|MCL_INHERIT
+> > 		[vmas' VM_LOCKED flags for fork() and mm's def_flags
+> > 		and mcl_inherit across fork() and exec()] for all
+> > 		future generations of calling process's descendants.
+> > 		Behaves as if child and/or new task called
+> > 		mlockall(MCL_CURRENT|MCL_FUTURE|MCL_INHERIT|MCL_RECURSIVE)
+> > 		as the first instruction.
+> > 
+> > In support of a "lock prefix command"--e.g., mlock <cmd> <args> ...
+> > Analogous to taskset(1) for cpu affinity or numactl(8) for numa memory
+> > policy.
+> > 
+> > Together with patches to keep mlocked pages off the LRU, this will
+> > allow users/admins to lock down applications without modifying them,
+> > if their RLIMIT_MEMLOCK is sufficiently large, keeping their pages
+> > off the LRU and out of consideration for reclaim.
+> > 
+> > Potentially useful, as well, in real-time environments to force
+> > prefaulting and residency for applications that don't mlock themselves.
+> > 
+> > Jeff Sharkey at Montana State developed a similar patch for Linux
+> > [link no longer accessible], but apparently he never submitted the patch.
+> > 
+> > I submitted an earlier version of this patch around a year ago.  I
+> > resurrected it to test the unevictable lru/mlocked pages patches--
+> > e.g., by "mlock -r make -j<N*nr_cpus> all".  This did shake out a few
+> > races and vmstat accounting bugs, but NOT something I'd recommend as
+> > general practice--for kernel builds, that is.
+> > 
+> > ----
+> > 
+> > Define MCL_INHERIT, MCL_RECURSIVE in <asm-*/mman.h>.
+> > + x86 and  ia64 versions included.
+> > + other arch can/will be created, if this patch deemed merge-worthy.
+> > 
+> > Similarly, I'll provide kernel man page update if/when needed.
+> > 
+> > Example "lock prefix command" in Documentation/vm/mlock.c
+> > 
+> >
+> > ...
+> >
+> > --- linux-2.6.28-rc7-mmotm-081203.orig/mm/mlock.c	2008-12-03 10:33:11.000000000 -0500
+> > +++ linux-2.6.28-rc7-mmotm-081203/mm/mlock.c	2008-12-03 10:33:29.000000000 -0500
+> > @@ -573,15 +573,18 @@ asmlinkage long sys_munlock(unsigned lon
+> >  static int do_mlockall(int flags)
+> >  {
+> >  	struct vm_area_struct * vma, * prev = NULL;
+> > +	struct mm_struct *mm = current->mm;
+> >  	unsigned int def_flags = 0;
+> >  
+> >  	if (flags & MCL_FUTURE)
+> > -		def_flags = VM_LOCKED;
+> > -	current->mm->def_flags = def_flags;
+> > -	if (flags == MCL_FUTURE)
+> > +		def_flags = VM_LOCKED;;
+> 
+> You get paid by the semicolon?
 
-There are other statically allocated devices in tree[1]. It seems this
-is actively discouraged, though.
+Nope.  Interestingly, ckeckpatch was fine with this.  [It did warn about
+>80 char line in x86 mman.h, but there was already a much longer line,
+so I left it.  Fixed now so that patch is squeaky clean, as far as
+checkpatch is concerned.]
 
-AFAICT, the platform_bus device is there for a similar reason to ours -
-i.e. to group devices together in sysfs.
+> 
+> > +	mm->def_flags = def_flags;
+> > +	if (flags & MCL_INHERIT)
+> > +		mm->mcl_inherit = flags & (MCL_INHERIT | MCL_RECURSIVE);
+> 
+> aaaaaaarrrrrrggggggghhhhhhh!
+> 
+> So mm->mcl_inherit is _not_ a boolean meaning "this mm has MCL_INHERIT
+> set", as I naively believed when I saw it.  Is it in fact a composite
+> of both MCL_INHERIT and MCL_RECURSIVE, given a badly misleading name
+> and a waffly comment.
+> 
+> Can we please make this clearer?
 
-> If so, this conversion should be equally wrong.  Have you chosen to keep 
-> this device so that your initrd work-around continues to work as-is?  
+How about "mcl_inherit_mlocks_possibly_recursively" ?
 
-I choose to keep it because:
+Seriously, it made/makes sense to me.  If mcl_inherit is non-zero, it
+WILL contain MCL_INHERIT, meaning that existing mlocks and any VM_LOCKED
+in def_flags will be inherited across the next fork or exec [of course,
+existing mlocks can't be inherited across exec as we discard the address
+space].  It may also contain MCL_RECURSIVE--tested separately--meaning
+that the contents of mcl_inherit, itself, will also be inherited across
+the next and future forks/execs, until/unless a descendant invokes
+mlockall() w/o MCL_INHERIT or MCL_RECURSIVE to clear out mcl_inherit.
 
-  a) I'm trying to fix the warning spew from 'rmmod virtio_pci' without 
-     breaking anything else
+This seemed a bit much to try to explain on line where mcl_inherit is
+declared in mm_types.  More appropriate to a man page, I would have
+thought.   How about a Documentation/vm doc?
 
-  b) The grouping under /sys/devices/{virtio-pci,lguest,kvm_s390} is
-     useful IMHO and there are precedents (e.g. /sys/devices/platform)
+Meanwhile, perhaps:  "mcl_inherit" -> "mcl_inherit_flags" or "mcl_flags"
+or "mlock_flags", or such?
 
-  c) It's better to not gratuitously move stuff around where we know it 
-     will break something
+> 
+> >
+> > ...
+> >
+> > --- linux-2.6.28-rc7-mmotm-081203.orig/kernel/fork.c	2008-12-03 10:18:15.000000000 -0500
+> > +++ linux-2.6.28-rc7-mmotm-081203/kernel/fork.c	2008-12-03 10:33:29.000000000 -0500
+> > @@ -278,7 +278,8 @@ static int dup_mmap(struct mm_struct *mm
+> >  	 */
+> >  	down_write_nested(&mm->mmap_sem, SINGLE_DEPTH_NESTING);
+> >  
+> > -	mm->locked_vm = 0;
+> > +	if (!mm->mcl_inherit)
+> > +		mm->locked_vm = 0;
+> >  	mm->mmap = NULL;
+> >  	mm->mmap_cache = NULL;
+> >  	mm->free_area_cache = oldmm->mmap_base;
+> > @@ -316,7 +317,8 @@ static int dup_mmap(struct mm_struct *mm
+> >  		if (IS_ERR(pol))
+> >  			goto fail_nomem_policy;
+> >  		vma_set_policy(tmp, pol);
+> > -		tmp->vm_flags &= ~VM_LOCKED;
+> > +		if (!mm->mcl_inherit)
+> > +			tmp->vm_flags &= ~VM_LOCKED;
+> >  		tmp->vm_mm = mm;
+> >  		tmp->vm_next = NULL;
+> >  		anon_vma_link(tmp);
+> > @@ -406,6 +408,8 @@ __cacheline_aligned_in_smp DEFINE_SPINLO
+> >  
+> >  static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
+> >  {
+> > +	unsigned long def_flags = 0;
+> > +
+> >  	atomic_set(&mm->mm_users, 1);
+> >  	atomic_set(&mm->mm_count, 1);
+> >  	init_rwsem(&mm->mmap_sem);
+> > @@ -422,9 +426,14 @@ static struct mm_struct * mm_init(struct
+> >  	mm->free_area_cache = TASK_UNMAPPED_BASE;
+> >  	mm->cached_hole_size = ~0UL;
+> >  	mm_init_owner(mm, p);
+> > +	if (current->mm && current->mm->mcl_inherit) {
+> > +		def_flags = current->mm->def_flags & VM_LOCKED;
+> > +		if (mm->mcl_inherit & MCL_RECURSIVE)
+> > +			mm->mcl_inherit  = current->mm->mcl_inherit;
+> > +	}
+> 
+> hm.  That code looks familiar.  Not worth a helper function?
 
-> What exactly is the work around and is there a less hackish way we could 
-> support it?
+If we could remove the copy in load_elf_binary(), point would be moot.
 
-Being discussed elsewhere in the thread.
+More below.
 
-Cheers,
-Mark.
+> 
+> >  	if (likely(!mm_alloc_pgd(mm))) {
+> > -		mm->def_flags = 0;
+> > +		mm->def_flags = def_flags;
+> >  		mmu_notifier_mm_init(mm);
+> >  		return mm;
+> >  	}
+> > Index: linux-2.6.28-rc7-mmotm-081203/fs/binfmt_elf.c
+> > ===================================================================
+> > --- linux-2.6.28-rc7-mmotm-081203.orig/fs/binfmt_elf.c	2008-12-03 10:19:21.000000000 -0500
+> > +++ linux-2.6.28-rc7-mmotm-081203/fs/binfmt_elf.c	2008-12-03 10:33:29.000000000 -0500
+> > @@ -585,6 +585,7 @@ static int load_elf_binary(struct linux_
+> >  	unsigned long reloc_func_desc = 0;
+> >  	int executable_stack = EXSTACK_DEFAULT;
+> >  	unsigned long def_flags = 0;
+> > +	int mcl_inherit = 0;
+> >  	struct {
+> >  		struct elfhdr elf_ex;
+> >  		struct elfhdr interp_elf_ex;
+> > @@ -749,6 +750,13 @@ static int load_elf_binary(struct linux_
+> >  		SET_PERSONALITY(loc->elf_ex);
+> >  	}
+> >  
+> > +	/* Optionally inherit MCL_FUTURE state before destroying old mm */
+> > +	if (current->mm && current->mm->mcl_inherit) {
+> 
+> umm, OK, it looks like current->mm can be null here.
 
-[1] - git-grep 'struct device .* = {' next-20081204
-next-20081204:arch/cris/arch-v32/drivers/iop_fw_load.c:static struct device iop_spu_device[2] = {
-next-20081204:arch/cris/arch-v32/drivers/iop_fw_load.c:static struct device iop_mpu_device = {
-next-20081204:arch/ia64/kernel/pci-dma.c:struct device fallback_dev = {
-next-20081204:arch/parisc/kernel/drivers.c:static struct device root = {
-next-20081204:arch/powerpc/kernel/ibmebus.c:static struct device ibmebus_bus_device = { /* fake "parent" device */
-next-20081204:arch/powerpc/platforms/ps3/system-bus.c:static struct device ps3_system_bus = {
-next-20081204:arch/x86/kernel/pci-dma.c:struct device x86_dma_fallback_dev = {
-next-20081204:drivers/base/isa.c:static struct device isa_bus = {
-next-20081204:drivers/base/platform.c:struct device platform_bus = {
-next-20081204:drivers/idle/i7300_idle.c:static struct device dummy_dma_dev = {
-next-20081204:drivers/ieee1394/nodemgr.c:static struct device nodemgr_dev_template_ud = {
-next-20081204:drivers/ieee1394/nodemgr.c:static struct device nodemgr_dev_template_ne = {
-next-20081204:drivers/ieee1394/nodemgr.c:struct device nodemgr_dev_template_host = {
-next-20081204:drivers/lguest/lguest_device.c:static struct device lguest_root = {
-next-20081204:drivers/misc/sgi-gru/grumain.c:static struct device gru_device = {
-next-20081204:drivers/misc/sgi-xp/xp_main.c:struct device xp_dbg_subname = {
-next-20081204:drivers/misc/sgi-xp/xpc_main.c:struct device xpc_part_dbg_subname = {
-next-20081204:drivers/misc/sgi-xp/xpc_main.c:struct device xpc_chan_dbg_subname = {
-next-20081204:drivers/misc/sgi-xp/xpnet.c:struct device xpnet_dbg_subname = {
-...
-next-20081204:drivers/rapidio/rio-driver.c:static struct device rio_bus = {
-next-20081204:drivers/scsi/scsi_debug.c:static struct device pseudo_primary = {
-next-20081204:drivers/sh/maple/maple.c:static struct device maple_bus = {
-next-20081204:drivers/sh/superhyway/superhyway.c:static struct device superhyway_bus_device = {
-next-20081204:drivers/virtio/virtio_pci.c:static struct device virtio_pci_root = {
-next-20081204:drivers/w1/w1.c:struct device w1_master_device = {
-next-20081204:drivers/w1/w1.c:struct device w1_slave_device = {
-next-20081204:samples/firmware_class/firmware_sample_driver.c:static struct device ghost_device = {
-next-20081204:samples/firmware_class/firmware_sample_firmware_class.c:static struct device my_device = {
+Probably not here.  IIRC, it can be NULL [for init] up in mm_init() and
+I probably just cut and pasted, instead of a helper function...
+
+> 
+> > +		def_flags = current->mm->def_flags & VM_LOCKED;
+> 
+> ooh, we finally used local variable def_flags for something.  That's
+> been wasting space since 2.2.26 (or earlier).
+
+def_flags was being used to clear out the current->mm->def_flags.  Don't
+know why, tho'.  See below...
+> 
+> > +		if (current->mm->mcl_inherit & MCL_RECURSIVE)
+> > +			mcl_inherit  = current->mm->mcl_inherit;
+> > +	}
+> > +
+> >  	/* Flush all traces of the currently running executable */
+> >  	retval = flush_old_exec(bprm);
+> >  	if (retval)
+> > @@ -757,6 +765,7 @@ static int load_elf_binary(struct linux_
+> >  	/* OK, This is the point of no return */
+> >  	current->flags &= ~PF_FORKNOEXEC;
+> >  	current->mm->def_flags = def_flags;
+> > +	current->mm->mcl_inherit = mcl_inherit;
+> >  
+> >  	/* Do this immediately, since STACK_TOP as used in setup_arg_pages
+> >  	   may depend on the personality.  */
+> 
+> Why is this done in binfmt_elf.c?  Doesn't this preclude the operation
+> of these new flags for other binary formats?
+
+Because binfmt_elf.c is the only binary format loader [that I can see]
+that takes it upon itself to reinitialize mm->def_flags, which has
+already been set up in mm_init().  I wondered, myself, why this is the
+case, but I didn't dare just remove it, lest it reintroduce some obscure
+bug.  So, I duplicated my version of def_flags [and mcl_inherit]
+initialization here. 
+
+Now that you've raised the question:  why, indeed, does the elf format
+loader reinit def_flags?  Can we just remove this?
+
+> 
+> > Index: linux-2.6.28-rc7-mmotm-081203/arch/x86/include/asm/mman.h
+> > ===================================================================
+> > --- linux-2.6.28-rc7-mmotm-081203.orig/arch/x86/include/asm/mman.h	2008-12-03 10:16:26.000000000 -0500
+> > +++ linux-2.6.28-rc7-mmotm-081203/arch/x86/include/asm/mman.h	2008-12-03 10:33:29.000000000 -0500
+> > @@ -16,5 +16,8 @@
+> >  
+> >  #define MCL_CURRENT	1		/* lock all current mappings */
+> >  #define MCL_FUTURE	2		/* lock all future mappings */
+> > +#define MCL_INHERIT	4		/* inherit mlocks across fork */
+> > +					/* inherit '_FUTURE flag across fork/exec */
+> > +#define MCL_RECURSIVE	8		/* inherit mlocks recursively */
+> >  
+> >  #endif /* _ASM_X86_MMAN_H */
+> > Index: linux-2.6.28-rc7-mmotm-081203/include/linux/mm_types.h
+> > ===================================================================
+> > --- linux-2.6.28-rc7-mmotm-081203.orig/include/linux/mm_types.h	2008-12-03 10:18:01.000000000 -0500
+> > +++ linux-2.6.28-rc7-mmotm-081203/include/linux/mm_types.h	2008-12-03 10:33:29.000000000 -0500
+> > @@ -235,6 +235,8 @@ struct mm_struct {
+> >  	unsigned int token_priority;
+> >  	unsigned int last_interval;
+> >  
+> > +	int mcl_inherit;		/* inherit current/future locks */
+> > +
+> >  	unsigned long flags; /* Must use atomic bitops to access the bits */
+> 
+> I was thinking that the boolean mcl_inherit could become a bit in
+> mm.flags.  That was before I unmisled myself about it.
+> 
+> Perhaps we could use two bits.  That might get a bit nasty.
+
+I did look for someplace to add these flags, before deciding on a new
+member.  The "Must use atomic bitops", and the fact that mm->flags seems
+used soley for controlling core dumping [and defined in sched.h, no
+less!], put me off from going that route.  Similarly, because def_flags
+is an initializer for the vma's vm_flags, I didn't want to pollute that.
+I figured the 'int' would fill a padding slot on 64-bit archs, but does
+add to mm size for 32-bit archs.
+
+Suggestions?
+I'll hold off on a re-spin, pending resolution of some of these issues.
+
+Thanks for the thorough review.
+
+Lee
 
 
