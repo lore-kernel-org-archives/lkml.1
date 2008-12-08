@@ -1,135 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbYLHW43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903AbYLHW4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754164AbYLHW43 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 17:56:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYLHW4W
+	id S1752903AbYLHW4y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 17:56:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYLHW4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 17:56:22 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58501 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752855AbYLHW4V (ORCPT
+	Mon, 8 Dec 2008 17:56:37 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:47688 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752855AbYLHW4g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 17:56:21 -0500
-Date: Mon, 8 Dec 2008 23:58:01 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, Paul.Clements@steeleye.com
-Subject: Re: warn-on from nbd in 2.6.28-rc7 from sysfs_add_one()
-Message-ID: <20081208225758.GA2872@elf.ucw.cz>
-References: <20081208213542.GA10134@elf.ucw.cz>
+	Mon, 8 Dec 2008 17:56:36 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+References: <200812090832.20403.rusty@rustcorp.com.au>
+Date: Mon, 08 Dec 2008 14:52:39 -0800
+In-Reply-To: <200812090832.20403.rusty@rustcorp.com.au> (Rusty Russell's
+	message of "Tue, 9 Dec 2008 08:32:14 +1030")
+Message-ID: <m14p1ep9e0.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081208213542.GA10134@elf.ucw.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org, gregkh@suse.de
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Rusty Russell <rusty@rustcorp.com.au>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] Make Documentation/kobject.txt a little more coherent.
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-12-08 22:35:42, Pavel Machek wrote:
-> 
-> sysfs_add_one() complains about entry already existing.
+Rusty Russell <rusty@rustcorp.com.au> writes:
 
-Aha, luckily this is very reproducible:
+> While reading Documentation/kobject.txt:
+>
+>   Note kobject_rename does perform any locking or have a solid notion of
+>   what names are valid so the provide must provide their own sanity checking
+>   and serialization.
+>
+> I expect better: You never see me hard with time word making sentence
+> coherent stuff.  Ever.
+>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-root@amd:/home/pavel/misc# cat /dev/zero | head -c 10000000 >
-/tmp/delme.fstest.fs
-root@amd:/home/pavel/misc# nbd-server 9100 -l /anyone.can.connect
-/tmp/delme.fstest.fs &
-[1] 2360
-root@amd:/home/pavel/misc#
-** (process:2360): WARNING **: Could not parse config file: Could not
-open config file.
+Yes.  That does sound better.
 
-[1]+  Done                    nbd-server 9100 -l /anyone.can.connect
-/tmp/delme.fstest.fs
-root@amd:/home/pavel/misc# sleep 1
-sleep 1
-root@amd:/home/pavel/misc# sleep 1
-root@amd:/home/pavel/misc# nbd-client localhost 9100 /dev/nd0
-Error: Can not open NBD: No such device or address
-root@amd:/home/pavel/misc# insmod /data/l/b-linux/drivers/block/nbd.ko
-nbd: registered device at major 43
-root@amd:/home/pavel/misc# nbd-client localhost 9100 /dev/nd0
-Negotiation: ..size = 9765KB
-bs=1024, sz=9765
 
-^Z
-[1]+  Stopped                 nbd-client localhost 9100 /dev/nd0
-root@amd:/home/pavel/misc# bg
-[1]+ nbd-client localhost 9100 /dev/nd0 &
-root@amd:/home/pavel/misc# nbd-client localhost 9100 /dev/nd0
-Negotiation: ..size = 9765KB
-bs=1024, sz=9765
-------------[ cut here ]------------
-WARNING: at /data/l/linux/fs/sysfs/dir.c:462 sysfs_add_one+0x4a/0x50()
-sysfs: duplicate filename 'pid' can not be created
-Modules linked in: nbd
-Pid: 2757, comm: nbd-client Not tainted 2.6.28-rc7 #422
-Call Trace:
-
-...no, running two clients at the same time is not exactly clever. 
-
- 								Pavel
-
-> wlan0: associated
-> nbd: registered device at major 43
-> ------------[ cut here ]------------
-> WARNING: at /data/l/linux/fs/sysfs/dir.c:462 sysfs_add_one+0x4a/0x50()
-> sysfs: duplicate filename 'pid' can not be created
-> Modules linked in: nbd
-> Pid: 8280, comm: nbd-client Not tainted 2.6.28-rc7 #422
-> Call Trace:
->  [<c022e8d6>] warn_slowpath+0x76/0x90
->  [<c024e3d1>] __lock_acquire+0x181/0x930
->  [<c024e3d1>] __lock_acquire+0x181/0x930
->  [<c0298b9f>] ifind+0x8f/0xa0
->  [<c07bcff4>] _spin_unlock+0x14/0x20
->  [<c02ca151>] sysfs_find_dirent+0x21/0x30
->  [<c02ca17c>] __sysfs_add_one+0x1c/0x80
->  [<c02ca22a>] sysfs_add_one+0x4a/0x50
->  [<c02c9a50>] sysfs_add_file_mode+0x50/0x90
->  [<c02c9aa0>] sysfs_add_file+0x10/0x20
->  [<f8794e43>] nbd_ioctl+0x423/0x8e0 [nbd]
->  [<f87947d0>] nbd_thread+0x0/0x250 [nbd]
->  [<c021db8a>] __change_page_attr_set_clr+0xba/0x520
->  [<c03c90ea>] delay_tsc+0x2a/0x50
->  [<c03c9086>] __delay+0x6/0x10
->  [<c03cd72a>] _raw_spin_lock+0xfa/0x190
->  [<c021db8a>] __change_page_attr_set_clr+0xba/0x520
->  [<c03ba15a>] __blkdev_driver_ioctl+0x7a/0x90
->  [<c03ba229>] blkdev_ioctl+0x99/0x9e0
->  [<c024e3d1>] __lock_acquire+0x181/0x930
->  [<c0267dd6>] get_page_from_freelist+0x266/0x430
->  [<c0262a71>] find_get_page+0x91/0xd0
->  [<c024e3d1>] __lock_acquire+0x181/0x930
->  [<c02629e0>] find_get_page+0x0/0xd0
->  [<c0262cbb>] find_lock_page+0x1b/0x60
->  [<c02713a0>] __do_fault+0x1a0/0x3c0
->  [<c02713a9>] __do_fault+0x1a9/0x3c0
->  [<c02ab6a7>] block_ioctl+0x37/0x50
->  [<c02ab670>] block_ioctl+0x0/0x50
->  [<c0293bbb>] vfs_ioctl+0x2b/0x90
->  [<c0293c7c>] do_vfs_ioctl+0x5c/0x490
->  [<c02457f6>] down_read_trylock+0x56/0x60
->  [<c021cbd0>] do_page_fault+0x0/0x6a0
->  [<c021ce4c>] do_page_fault+0x27c/0x6a0
->  [<c02940ed>] sys_ioctl+0x3d/0x70
->  [<c0203d52>] syscall_call+0x7/0xb
-> ---[ end trace 0cbc102fb0629d93 ]---
-> nbd: sysfs_create_file failed!<6>nbd-server[8255]: segfault at 7 ip b7e61e97 sp bfc265d0 error 4 in libglib-2.0.so.0.1600.5[b7e37000+b4000]
-> nbd0: Receive control failed (result -32)
-> nbd0: queue cleared
-> nbd-server[8297]: segfault at 7 ip b7f18e97 sp bfbde2c0 error 4 in libglib-2.0.so.0.1600.5[b7eee000+b4000]
-> nbd0: Receive control failed (result -32)
-> nbd0: shutting down socket
-> nbd0: queue cleared
-> nbd-server[8338]: segfault at 7 ip b7f26e97 sp bfeebdd0 error 4 in libglib-2.0.so.0.1600.5[b7efc000+b4000]
-> nbd0: Receive control failed (result -32)
-> nbd0: shutting down socket
-> nbd0: queue cleared
-> 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
+> --- a/Documentation/kobject.txt
+> +++ b/Documentation/kobject.txt
+> @@ -118,8 +118,8 @@ the name of the kobject, call kobject_re
+>  
+>      int kobject_rename(struct kobject *kobj, const char *new_name);
+>  
+> -Note kobject_rename does perform any locking or have a solid notion of
+> -what names are valid so the provide must provide their own sanity checking
+> +kobject_rename does not perform any locking or have a solid notion of
+> +what names are valid so the caller must provide their own sanity checking
+>  and serialization.
+>  
+>  There is a function called kobject_set_name() but that is legacy cruft and
