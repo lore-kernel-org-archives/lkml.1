@@ -1,65 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbYLHDYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbYLHDZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755943AbYLHDYk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Dec 2008 22:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbYLHDY2
+	id S1755816AbYLHDZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Dec 2008 22:25:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbYLHDZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Dec 2008 22:24:28 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:41692 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754226AbYLHDY1 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Dec 2008 22:24:27 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Evgeniy Polyakov <zbr@ioremap.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Runaway loop with the current git.
-In-Reply-To: Your message of "Sun, 07 Dec 2008 19:22:41 +0100."
-             <ac3eb2510812071022le85080aiea301609fa8a50b1@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk> <20081207155507.GA15355@gondor.apana.org.au> <ac3eb2510812070803i150d91e7led58128796e8045e@mail.gmail.com> <20081207160921.693f637a@lxorguk.ukuu.org.uk> <20081207163151.GA31838@ioremap.net> <20081207170108.39dfd93f@lxorguk.ukuu.org.uk> <ac3eb2510812070922q2531a188v37874a042b259ac9@mail.gmail.com> <20081207172855.55fee78f@lxorguk.ukuu.org.uk> <ac3eb2510812070939h17ef6316hea96fe89f01207a6@mail.gmail.com> <20081207175118.09c633e8@lxorguk.ukuu.org.uk>
-            <ac3eb2510812071022le85080aiea301609fa8a50b1@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1228706592_4679P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Sun, 7 Dec 2008 22:25:09 -0500
+Received: from ozlabs.org ([203.10.76.45]:36228 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755066AbYLHDZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Dec 2008 22:25:07 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Sun, 07 Dec 2008 22:23:12 -0500
-Message-ID: <34909.1228706592@turing-police.cc.vt.edu>
+Message-ID: <18748.37739.383961.318233@drongo.ozlabs.ibm.com>
+Date: Mon, 8 Dec 2008 14:24:27 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch] Performance Counters for Linux, v2
+In-Reply-To: <20081208012211.GA23106@elte.hu>
+References: <20081208012211.GA23106@elte.hu>
+X-Mailer: VM 8.0.11 under Emacs 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1228706592_4679P
-Content-Type: text/plain; charset=us-ascii
+Ingo Molnar writes:
 
-On Sun, 07 Dec 2008 19:22:41 +0100, Kay Sievers said:
+> There's a new "counter group record" facility that is a straightforward 
+> extension of the existing "irq record" notification type. This record 
+> type can be set on a 'master' counter, and if the master counter triggers 
+> an IRQ or an NMI, all the 'secondary' counters are read out atomically 
+> and are put into the counter-group record. The result can then be read() 
+> out by userspace via a single system call. (Based on extensive feedback 
+> from Paul Mackerras and David Miller, thanks guys!)
+> 
+> The other big change is the support of virtual task counters via counter 
+> scheduling: a task can specify more counters than there are on the CPU, 
+> the kernel will then schedule the counters periodically to spread out hw 
+> resources.
 
-> We are _not_ loading a console driver that way, we try to load the
-> console device itself, not the driver. There is no driver for 5:1 in
-> any module.
+Still not good enough, I'm sorry.
 
-Semantic quibbling, trying to paper over stupidity.
+* I have no guarantee that the secondary counters were all counting
+  at the same time(s) as the master counter, so the numbers are
+  virtually useless.
 
-It doesn't really matter if it's a "console driver" or "the console device
-itself".  If you're in modprobe loading *any* piece of "all the stuff needed
-to make open("/dev/console") work", the last thing you want to be doing
-is opening /dev/console to complain about something not working.
+* I might legitimately want to be notified based on any of the
+  "secondary" counters reaching particular values.  The "master"
+  vs. "secondary" distinction is an artificial one that is going to
+  make certain reasonable use-cases impossible.
 
-As Alan said several times now, there really *is* a requirement that early
-userspace has its act together.
+These things are both symptoms of the fact that you still have the
+abstraction at the wrong level.  The basic abstraction really needs to
+be a counter-set, not an individual counter.
 
---==_Exmh_1228706592_4679P
-Content-Type: application/pgp-signature
+I think your patch can be extended to do counter-sets without
+complicating the interface too much.  We could have:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+struct event_spec {
+	u32 hw_event_type;
+	u32 hw_event_period;
+	u64 hw_raw_ctrl;
+};
 
-iD8DBQFJPJMgcC3lWbTT17ARAj8ZAJ0aSsSs4GmyNUjCJjyefIvfpp2CRQCgzDnR
-OZit34V9O9KpEAj/gpldVoE=
-=WB9/
------END PGP SIGNATURE-----
+int perf_counterset_open(u32 n_counters,
+    			 struct event_spec *counters,
+			 u32 record_type,
+			 pid_t pid,
+			 int cpu);
 
---==_Exmh_1228706592_4679P--
+and then you could have perf_counter_open as a simple wrapper around
+perf_counterset_open.
+
+With an approach like this we can also provide an "exclusive" mode for
+the PMU (e.g. with a flag bit in record_type or n_counters), which
+means that the counter-set occupies the whole PMU.  That will give a
+way for userspace to specify all the details of how the PMU is to be
+programmed, which in turn means that the kernel doesn't need to know
+all the arcane details of every event on every processor; it just
+needs to know the common events.
+
+I notice the implementation also still assumes it can add any counter
+at any time subject only to a limit on the number of counters in use.
+That will have to be fixed before it is usable on powerpc (and
+apparently on some x86 processors too).
+
+Paul.
