@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbYLHQfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbYLHQgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbYLHQfZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 11:35:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbYLHQfM
+	id S1754132AbYLHQgS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 11:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYLHQgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 11:35:12 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:55830 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753266AbYLHQfM (ORCPT
+	Mon, 8 Dec 2008 11:36:06 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:55252 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753269AbYLHQgF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 11:35:12 -0500
-Date: Mon, 8 Dec 2008 16:35:05 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Yves-Alexis Perez <corsac@debian.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12152] Huge wakeups number from i1915
-Message-ID: <20081208163505.GB2496@srcf.ucam.org>
-References: <6VnlupFpCsN.A.2rE.MsEPJB@chimera> <20081207151203.46c01a0d@infradead.org> <1228717448.9677.3.camel@hidalgo> <200812080828.07683.rjw@sisk.pl> <20081208125938.GB31976@srcf.ucam.org> <20081208161948.GF16053@corsac.net>
+	Mon, 8 Dec 2008 11:36:05 -0500
+Message-ID: <493D4C63.5040502@yandex.ru>
+Date: Mon, 08 Dec 2008 18:33:39 +0200
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+To: Arnd Bergmann <arnd@arndb.de>
+CC: dedekind@infradead.org, Laurent Pinchart <laurentp@cse-semaphore.com>,
+       linux-mtd@lists.infradead.org, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       v4l-dvb-maintainer@linuxtv.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: UBI/DVB ioctl conflict?
+References: <20081207095811.13b51cca@zod.rchland.ibm.com> <200812081041.14178.laurentp@cse-semaphore.com> <1228729915.13686.95.camel@sauron> <200812081650.54346.arnd@arndb.de>
+In-Reply-To: <200812081650.54346.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081208161948.GF16053@corsac.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+X-OriginalArrivalTime: 08 Dec 2008 16:35:40.0049 (UTC) FILETIME=[01955010:01C95953]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 08, 2008 at 05:19:49PM +0100, Yves-Alexis Perez wrote:
-> > Doesn't ring any bells for me...
+Arnd Bergmann wrote:
+> On Monday 08 December 2008, Artem Bityutskiy wrote:
+>> On Mon, 2008-12-08 at 10:41 +0100, Laurent Pinchart wrote:
+>>> Correct me if I'm wrong, but doesn't this only matters for devices that would 
+>>> implement both the UBI and DVB API on the same inode ? That would be quite 
+>>> unlikely.
+>> Yeah, I guess. But this anyway makes sense to keep ioctls
+>> non-overlapping.
 > 
-> This was the “irq spinning” thread on dri-devel.
+> We try hard (but sometimes fail) to keep every ioctl number unique.
+> The reason for this is that the device drivers are not the only
+> pieces of code that look at them. Specifically, three other things
+> frequently cause problems here:
 
-Looks like the patch was from Keith, not me?
+Thanks for the reply. Do you know the status of the
+Documentation/ioctl/ioctl-number.txt file - it does not seem to be up-to-date.
+Should I document add UBI ioctls there?
 
-Unrelatedly, I didn't get the Cc:ed copy of this mail. Did you get a 
-bounce?
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
