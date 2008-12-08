@@ -1,95 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752021AbYLHIEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbYLHIHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752021AbYLHIEo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 03:04:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbYLHIEf
+	id S1752476AbYLHIHM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 03:07:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbYLHIG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 03:04:35 -0500
-Received: from mail-gx0-f18.google.com ([209.85.217.18]:54896 "EHLO
-	mail-gx0-f18.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751009AbYLHIEe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 03:04:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=w5f0lTH8ihZj8JS7x3acgSMAMLGoK2UyP/B8F5eMMDRHFIPlca2qik//uQkp+RCmQ2
-         JY/L4RQSlX3WN96JDFcwlOaJ+/F+SoQ8VO8f0loMhPaXPxj2WyeBnuouuzzmTy7z+aTV
-         iHpEx+/3WhWZy/JRlO4bBCGlMhpvknUEs3wH4=
-Message-ID: <12bfabe40812080004p7438744eqeb884b42673bd73c@mail.gmail.com>
-Date: Mon, 8 Dec 2008 09:04:32 +0100
-From: "Giangiacomo Mariotti" <gg.mariotti@gmail.com>
-To: "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
-Cc: "Arjan van de Ven" <arjan@infradead.org>,
-       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
-       "Andi Kleen" <ak@linux.intel.com>
-In-Reply-To: <493CCFE4.2080802@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>
-	 <493AE770.5030507@shaw.ca>
-	 <12bfabe40812061343j400f55d8r43571c8bd514adde@mail.gmail.com>
-	 <493AF2EA.4030601@shaw.ca>
-	 <12bfabe40812061416u1b6f800dn7261beae5ce36b2f@mail.gmail.com>
-	 <493B4242.1040202@shaw.ca>
-	 <12bfabe40812071355r65c13e52g5f3d94d3b060c939@mail.gmail.com>
-	 <20081207141337.588aede5@infradead.org>
-	 <12bfabe40812072248n3c931ce0hf030b3ac758026d4@mail.gmail.com>
-	 <493CCFE4.2080802@jp.fujitsu.com>
+	Mon, 8 Dec 2008 03:06:56 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43684
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750847AbYLHIGz convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 03:06:55 -0500
+Date: Mon, 08 Dec 2008 00:06:55 -0800 (PST)
+Message-Id: <20081208.000655.211323914.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 8, 2008 at 8:42 AM, Hidetoshi Seto
-<seto.hidetoshi@jp.fujitsu.com> wrote:
-> Giangiacomo Mariotti wrote:
->> I noticed something else, which though may be due to my inexperience
->> with mce messages. In my directory /sys/devices/system/machinecheck
->> there are machinecheck0-7(one for each logical cpu of my system I
->> presume). Having received the MCE log always for cpu 0, I went to look
->> inside dir machinecheck0 and I found bank0-5ctl. So now my question
->> is, why do I receive MCE logs about bank 6, if my cpus don't have a
->> bank 6? Does that count start from 1? Or am I missing something else?
->
-> Answer would be in the following commit:
->
->> commit 8edc5cc5ec880c96de8e6686fb0d7a5231e91c05
->> Author: Venki Pallipadi <venkatesh.pallipadi@intel.com>
->> Date:   Mon May 12 15:43:34 2008 +0200
->>
->>     x86: remove 6 bank limitation in 64 bit MCE reporting code
-> (snip)
->>     The patch below does not create sysfs control (bankNctl) for banks
->>     higher than 6 as well. That needs some pre-cleanup in /sysfs mce layout,
->>     removal of per cpu /sysfs entries for bankctl as they are really global
->>     system level control today. That change will follow. This basic change
->>     is critical to report the detailed errors on banks higher than 6.
->
-> So there are 6 sysfs control(bank0-5ctl) even if your cpu have more banks.
->
-> Old kernel with bank limitation will say:
-> "MCE: warning: using only %d banks\n"
-> And it seems that old kernel will ignore records in banks higher than 6.
->
-> Thanks,
-> H.Seto
->
->
-I see, thanks for the info.
-I still don't quite understand the logic behind this exception. It
-happens always only once per boot, right after booting always at [
-301.7320xx], which clearly means that it's always triggered by the
-same instruction/s. It's about a "Generic CACHE Level-2 Data-Write
-Error", yet after that moment it never happens again until the next
-boot at the same relative time. The cache has an hardware problem, the
-process context is corrupted, but still after that single message I
-don't have any problem, my system works normally, even under very high
-pressure on cpu and memory. Is this normal? Should I try to limit the
-number of cpu used to only 1(cpu0) on bios and disable hyperthreading?
-That way I'd have a single physical and logical cpu, so probably if it
-has an hardware problem on the cache, the heaven will fall?
+
+Here are the pending net fixes:
+
+1) TPROXY code accesses invalid socket struct memory.  Fix from	
+   Balazs Scheidler.
+
+2) listen() on ATM socket multiple times corrupts VCC table.
+   Fix thanks to Chas Williams.
+
+3) TCP vegas congestion control doesn't hit ssthresh properly in
+   all cases, from Doug Leith.
+
+4) Two CAN socket layer filtering API fixes from Oliver Hartkopp.
+
+5) Really fix URG handling with TSO, from Ilpo Järvinen.
+
+6) netlabel OOPS'er fix from Paul Moore.
+
+7) 32/64 bit field access bug in HYSDN isdn driver from Pascal Terjan.
+
+8) A few small wireless driver bug fixes via John Linville.
+
+9) netx-eth driver doesn't initialize the driver spinlock, resulting
+   in warnings from lock checking, from Uwe Kleine-König.
+
+10) Missing list_del() in policy flushing leads to complete
+    corruption of the policy tables.  Fix from Wei Yongjun.
+
+11) b1isa_exit() in isdn drivers does not release CAPI controllers
+    resulting in all kinds of problems.  From Wilfried Klaebe.
+
+12) Fix from Rémi Denis-Courmont to keep phonet socket layer from
+    dumping sockets outside of the current namespace.
+
+13) Packet data read in enc28j60 driver doesn't use the correct buffer
+    offset in the wraparound cases, resulting in data loss.  Fix from
+    Baruch Siach based upon suggestions from Shachar Shemesh.
+
+Please pull, thanks a lot!
+
+The following changes since commit f6f7b52e2f6149d2ee365717afff315b05720162:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../wim/linux-2.6-watchdog
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Balazs Scheidler (1):
+      tproxy: fixe a possible read from an invalid location in the socket match
+
+Baruch Siach (1):
+      enc28j60: Fix sporadic packet loss (corrected again)
+
+Chas Williams (1):
+      ATM: CVE-2008-5079: duplicate listen() on socket corrupts the vcc table
+
+David S. Miller (1):
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+
+Doug Leith (1):
+      tcp: tcp_vegas ssthresh bug fix
+
+Ilpo Järvinen (1):
+      tcp: make urg+gso work for real this time
+
+Michael Chan (1):
+      bnx2: Add workaround to handle missed MSI.
+
+Oliver Hartkopp (2):
+      can: Fix CAN_(EFF|RTR)_FLAG handling in can_filter
+      can: omit received RTR frames for single ID filter lists
+
+Pascal Terjan (1):
+      hysdn: fix writing outside the field on 64 bits
+
+Paul Moore (1):
+      netlabel: Fix a potential NULL pointer dereference
+
+Shaddy Baddah (2):
+      mac80211: use unaligned safe memcmp() in-place of compare_ether_addr()
+      zd1211rw: use unaligned safe memcmp() in-place of compare_ether_addr()
+
+Tomas Winkler (1):
+      iwlwifi: clean key table in iwl_clear_stations_table function
+
+Uwe Kleine-König (1):
+      netx-eth: initialize per device spinlock
+
+Wei Yongjun (1):
+      xfrm: Fix kernel panic when flush and dump SPD entries
+
+Wilfried Klaebe (1):
+      b1isa: fix b1isa_exit() to really remove registered capi controllers
+
+Zhu Yi (1):
+      ipw2200: fix netif_*_queue() removal regression
+
+remi.denis-courmont@nokia (1):
+      Phonet: do not dump addresses from other namespaces
+
+ drivers/isdn/hardware/avm/b1isa.c       |    6 +--
+ drivers/isdn/hysdn/hysdn_net.c          |    4 +-
+ drivers/net/bnx2.c                      |   35 ++++++++++++++-
+ drivers/net/bnx2.h                      |    6 +++
+ drivers/net/enc28j60.c                  |   16 ++++++-
+ drivers/net/netx-eth.c                  |    2 +
+ drivers/net/wireless/ipw2200.c          |    4 ++
+ drivers/net/wireless/iwlwifi/iwl-core.c |    3 +
+ drivers/net/wireless/iwlwifi/iwl-sta.c  |   24 +++++++++-
+ drivers/net/wireless/zd1211rw/zd_mac.c  |    2 +-
+ include/linux/can/core.h                |    2 +-
+ net/atm/svc.c                           |    6 ++-
+ net/can/af_can.c                        |   68 +++++++++++++++++++++++-------
+ net/can/bcm.c                           |    7 ++-
+ net/ipv4/tcp_output.c                   |   22 +++++-----
+ net/ipv4/tcp_vegas.c                    |    2 +
+ net/mac80211/sta_info.c                 |    2 +-
+ net/netfilter/xt_socket.c               |    2 +-
+ net/netlabel/netlabel_unlabeled.c       |   10 +++--
+ net/phonet/pn_netlink.c                 |    3 +
+ net/xfrm/xfrm_policy.c                  |    1 +
+ 21 files changed, 173 insertions(+), 54 deletions(-)
