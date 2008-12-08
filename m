@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbYLHVdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbYLHVd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752943AbYLHVdh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 16:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYLHVd3
+	id S1752541AbYLHVd7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 16:33:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYLHVds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 16:33:29 -0500
-Received: from rv-out-0506.google.com ([209.85.198.237]:15868 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752210AbYLHVd2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 16:33:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=j/m4dR3f2Od0Hy6ZOyi6RHJ+hEO9jSUg2zAYhtjUr4nOOLBin4WzJxY+a+15jxO9GE
-         8X5iSzt9oqFdAiDIEnk3N7z2KgzmbW07MCOIq8Db1k8J8KbZXznb4vMdGr143OfzW5AZ
-         RJI/UBPirEywp99ZcGtEgvKndHrQe4+CwKay8=
-Message-ID: <86802c440812081333jee5fa69l35321ea3dae4e0e4@mail.gmail.com>
-Date: Mon, 8 Dec 2008 13:33:27 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Roman Kononov" <kernel@kononov.ftml.net>
-Subject: Re: OOPS in ATA?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <ghk2e3$4l2$1@ger.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 8 Dec 2008 16:33:48 -0500
+Received: from waste.org ([66.93.16.53]:37875 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753072AbYLHVdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 16:33:47 -0500
+Subject: Re: [PATCH] - support inheritance of mlocks across fork/exec V2
+From: Matt Mackall <mpm@selenic.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, riel@redhat.com,
+       hugh@veritas.com, kosaki.motohiro@jp.fujitsu.com,
+       linux-api@vger.kernel.org
+In-Reply-To: <1228770337.31442.44.camel@lts-notebook>
+References: <1227561707.6937.61.camel@lts-notebook>
+	 <20081125152651.b4c3c18f.akpm@linux-foundation.org>
+	 <1228331069.6693.73.camel@lts-notebook>
+	 <20081206220729.042a926e.akpm@linux-foundation.org>
+	 <1228770337.31442.44.camel@lts-notebook>
+Content-Type: text/plain
+Date: Mon, 08 Dec 2008 15:33:05 -0600
+Message-Id: <1228771985.3726.32.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ghk2e3$4l2$1@ger.gmane.org>
-X-Google-Sender-Auth: 13a512bd872357df
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 8, 2008 at 1:09 PM, Roman Kononov <kernel@kononov.ftml.net> wrote:
+On Mon, 2008-12-08 at 16:05 -0500, Lee Schermerhorn wrote:
+> > > In support of a "lock prefix command"--e.g., mlock <cmd>
+> <args> ...
+> > > Analogous to taskset(1) for cpu affinity or numactl(8) for numa memory
+> > > policy.
+> > > 
+> > > Together with patches to keep mlocked pages off the LRU, this will
+> > > allow users/admins to lock down applications without modifying them,
+> > > if their RLIMIT_MEMLOCK is sufficiently large, keeping their pages
+> > > off the LRU and out of consideration for reclaim.
+> > > 
+> > > Potentially useful, as well, in real-time environments to force
+> > > prefaulting and residency for applications that don't mlock themselves.
 
-1. legacy BIOS works?
-2. how about 2.6.28-rc7  etc?
+This is a bit scary to me. Privilege and mode inheritance across
+processes is the root of many nasty surprises, security and otherwise. 
 
-YH
+Here's a crazy alternative: add a flag to containers instead? I think
+this is a better match to what you're trying to do and will keep people
+from being surprised when an mlockall call in one thread causes a
+fork/exec in another thread to crash their box, but only sometimes.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
