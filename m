@@ -1,46 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbYLHVjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbYLHVnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753261AbYLHVjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 16:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYLHVjF
+	id S1753326AbYLHVnf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 16:43:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYLHVnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 16:39:05 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:38817 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752140AbYLHVjF (ORCPT
+	Mon, 8 Dec 2008 16:43:23 -0500
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:56165 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752457AbYLHVnW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 16:39:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=rfjdlOsEmB7/OFzzHTBH3ojlJyDLlmS2Tesx1sZ1FliA7P1Gz2BBv/BQ3rKnmTCkf3
-         DXh412ee+oy/kWV9SBTqpnEKLmWn9Y0kUcUnni8RlUX6raR3IEFHTRMnAhpoyHPnv4Tr
-         fASc+2ZafNWt6sttNZg595I878XcY1L4JUWKg=
-Message-ID: <524f69650812081339p41c7dfe7ud054158210e16845@mail.gmail.com>
-Date: Mon, 8 Dec 2008 15:39:01 -0600
-From: "Steve French" <smfrench@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: CIFS regression in 2.6.27.8
-Cc: "linux-cifs-client@lists.samba.org" 
-	<linux-cifs-client@lists.samba.org>
+	Mon, 8 Dec 2008 16:43:22 -0500
+From: Martin Steigerwald <Martin@lichtvoll.de>
+To: xfs@oss.sgi.com
+Subject: Re: benchmark: write barrier/write cache on XFS
+Date: Mon, 8 Dec 2008 22:43:14 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200812082139.58328.Martin@Lichtvoll.de> (sfid-20081208_214015_115571_1580D367)
+In-Reply-To: <200812082139.58328.Martin@Lichtvoll.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart8041931.ao1rTqzOyJ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Message-Id: <200812082243.19525.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I just mounted a network drive (Windows Server) via CIFS under 2.6.27.8, and
-> the sizes reported by "df" are completely incorrect:
+--nextPart8041931.ao1rTqzOyJ
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-The closest I had already installed was Ubuntu's most current kernel,
-2.6.27-9-generic, which should be pretty close, and I did not see this
-problem.  I would like to see a wireshark or tcpdump trace of this to
-analyze it farther.  See
-http://wiki.samba.org/index.php/Capture_Packets for details on this.
---
-Thanks,
+Am Montag 08 Dezember 2008 schrieb Martin Steigerwald:
+> Hi!
+>
+> I got curious about the recent discussions about the write barrier
+> feature[1][2].
+>
+> Thus I did my own benchmark this evening. Since I use XFS and tested
+> with XFS for now only. Write barrier + write cache, no barrier + write
+> cache, no write barrier + no write cache. I just did tar -xf
+> linux-2.6.27.tar.bz2 and rm -rf linux-2.6.27.
 
-Steve
+I disabled write cache and barriers for my XFS filesystems on my TP 42=20
+shambhala. During that I did further tests. This time I also include IO=20
+scheduler settings. They are default and have been the same during my=20
+previous tests.
+
+Write cache has about 13 seconds benefit on the barrier enabled XFS for=20
+the tar -xf linux-2.6.27.tar.bz2 workload but no benefit at all for the=20
+rm -rf linux-2.6.27 workload!
+
+And again nobarrier and no cache wins.
+
+
+On a heavily used /home-XFS - I know it should have more free space:
+
+martin@shambhala:~ -> LANG=3DC df -hT /home/
+=46ilesystem    Type    Size  Used Avail Use% Mounted on
+/dev/sda5      xfs    112G  107G  5.1G  96% /home
+
+
+
+It has been grown two times - since 6 AGs instead of the default of 4:
+
+shambhala:~> xfs_info /home
+meta-data=3D/dev/sda5              isize=3D256    agcount=3D6, agsize=3D488=
+3256=20
+blks
+         =3D                       sectsz=3D512   attr=3D2
+data     =3D                       bsize=3D4096   blocks=3D29299536, imaxpc=
+t=3D25
+         =3D                       sunit=3D0      swidth=3D0 blks
+naming   =3Dversion 2              bsize=3D4096
+log      =3Dinternal               bsize=3D4096   blocks=3D32768, version=
+=3D2
+         =3D                       sectsz=3D512   sunit=3D0 blks, lazy-coun=
+t=3D1
+realtime =3Dnone                   extsz=3D4096   blocks=3D0, rtextents=3D0
+
+
+
+IO scheduler settings:
+
+martin@shambhala:~> cat /sys/block/sda/queue/scheduler
+noop anticipatory deadline [cfq]
+martin@shambhala:~> grep "" /sys/block/sda/queue/iosched/*
+/sys/block/sda/queue/iosched/back_seek_max:16384
+/sys/block/sda/queue/iosched/back_seek_penalty:2
+/sys/block/sda/queue/iosched/fifo_expire_async:250
+/sys/block/sda/queue/iosched/fifo_expire_sync:123
+/sys/block/sda/queue/iosched/quantum:4
+/sys/block/sda/queue/iosched/slice_async:40
+/sys/block/sda/queue/iosched/slice_async_rq:2
+/sys/block/sda/queue/iosched/slice_idle:6
+/sys/block/sda/queue/iosched/slice_sync:100
+
+
+
+Write barriers and no write cache:
+
+shambhala:~> hdparm -W /dev/sda
+
+/dev/sda:
+ write-caching =3D  0 (off)
+
+shambhala:> cat /proc/mounts | egrep "(/ |home)"
+rootfs / rootfs rw 0 0
+/dev/disk/by-uuid/7fcd9766-bf1a-426a-8a07-2c3e0c510898 / xfs=20
+rw,relatime,attr2,noquota 0 0
+/dev/sda5 /home xfs rw,relatime,attr2,logbufs=3D8,logbsize=3D256k,noquota 0=
+ 0
+martin@shambhala:~/Zeit> sync; time tar -xf=20
+~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2 ; time sync
+tar -xf ~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2  36,71s user 4,22s=20
+system 36% cpu 1:51,58 total
+sync  0,00s user 0,05s system 0% cpu 12,689 total
+martin@shambhala:~/Zeit> sync; time rm -rf linux-2.6.27 ; time sync
+rm -rf linux-2.6.27  0,06s user 3,90s system 17% cpu 22,906 total
+sync  0,00s user 0,01s system 6% cpu 0,103 total
+
+
+
+Write barriers and write cache:
+
+shambhala:~> hdparm -W1 /dev/sda
+
+/dev/sda:
+ setting drive write-caching to 1 (on)
+ write-caching =3D  1 (on)
+
+martin@shambhala:~/Zeit> sync; time tar -xf=20
+~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2 ; time sync
+tar -xf ~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2  34,38s user 3,91s=20
+system 38% cpu 1:38,84 total
+sync  0,00s user 0,04s system 0% cpu 10,493 total
+martin@shambhala:~/Zeit> sync; time rm -rf linux-2.6.27 ; time sync
+rm -rf linux-2.6.27  0,07s user 3,98s system 17% cpu 23,511 total
+sync  0,00s user 0,01s system 5% cpu 0,126 total
+
+
+
+No write barriers and no write cache:
+
+shambhala:> vim fstab
+shambhala:> mount -o remount /
+shambhala:> mount -o remount /home
+shambhala:> cat /proc/mounts | egrep "(/ |home)"
+rootfs / rootfs rw 0 0
+/dev/disk/by-uuid/7fcd9766-bf1a-426a-8a07-2c3e0c510898 / xfs=20
+rw,relatime,attr2,nobarrier,noquota 0 0
+/dev/sda5 /home xfs=20
+rw,relatime,attr2,nobarrier,logbufs=3D8,logbsize=3D256k,noquota 0 0
+
+martin@shambhala:~/Zeit> sync; time tar -xf=20
+~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2 ; time sync
+tar -xf ~/Linux/Kernel/Mainline/linux-2.6.27.tar.bz2  30,36s user 3,31s=20
+system 48% cpu 1:08,94 total
+sync  0,00s user 0,08s system 0% cpu 17,462 total
+martin@shambhala:~/Zeit> sync; time rm -rf linux-2.6.27 ; time sync
+rm -rf linux-2.6.27  0,07s user 3,87s system 20% cpu 19,172 total
+sync  0,00s user 0,01s system 4% cpu 0,142 total
+
+
+
+martin@shambhala:~> date
+Mo 8. Dez 22:38:06 CET 2008
+
+Ciao,
+=2D-=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+
+--nextPart8041931.ao1rTqzOyJ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkk9lPMACgkQmRvqrKWZhMdGpACdG0Sbfn1QSynsFIjNlHXGC1EM
+oXAAoLF2KDf9MK5+jpQHGrUVGOLXW9iN
+=Vk//
+-----END PGP SIGNATURE-----
+
+--nextPart8041931.ao1rTqzOyJ--
