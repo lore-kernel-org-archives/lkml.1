@@ -1,111 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbYLHOrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbYLHOxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207AbYLHOrT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 09:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYLHOrD
+	id S1753486AbYLHOxQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 09:53:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbYLHOxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 09:47:03 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:52318 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbYLHOrA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 09:47:00 -0500
-Message-ID: <493D334D.6050004@us.ibm.com>
-Date: Mon, 08 Dec 2008 08:46:37 -0600
-From: Anthony Liguori <aliguori@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Mon, 8 Dec 2008 09:53:01 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48751 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752269AbYLHOxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 09:53:00 -0500
+Date: Mon, 8 Dec 2008 15:52:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@redhat.com>, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] AMD IOMMU updates for 2.6.28-rc8
+Message-ID: <20081208145251.GA20474@elte.hu>
+References: <20081208143653.GQ12816@amd.com>
 MIME-Version: 1.0
-To: Mark McLoughlin <markmc@redhat.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] virtio: make PCI devices take a virtio_pci module ref
-References: <1228394671.3732.77.camel@blaa> <200812051043.51417.rusty@rustcorp.com.au> <1228489626.3858.37.camel@blaa> <200812071852.08962.rusty@rustcorp.com.au> <1228741409.3609.32.camel@blaa>
-In-Reply-To: <1228741409.3609.32.camel@blaa>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081208143653.GQ12816@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark McLoughlin wrote:
-> On Sun, 2008-12-07 at 18:52 +1030, Rusty Russell wrote:
->   
->> On Saturday 06 December 2008 01:37:06 Mark McLoughlin wrote:
->>     
->>> Another example of a lack of an explicit dependency causing problems is
->>> Fedora's mkinitrd having this hack:
->>>
->>>     if echo $PWD | grep -q /virtio-pci/ ; then
->>>         findmodule virtio_pci
->>>     fi
->>>
->>> which basically says "if this is a virtio device, don't forget to
->>> include virtio_pci in the initrd too!". Now, mkinitrd is full of hacks,
->>> but this is a particularly unusual one.
->>>       
->> Um, I don't know what this does, sorry.
->>
->> I have no idea how Fedora chooses what to put in an initrd; I can't think
->> of a sensible way of deciding what goes in and what doesn't other than
->> lists and heuristics.
->>     
->
-> Fedora's mkinitrd creates an initrd suitable to boot the machine you run
-> mkinitrd on, rather than creating an initrd suitable to boot any
-> machine.
->
-> So, it goes "ah, / is mounted from /dev/vda, we need to include
-> virtio_blk and it's dependencies". It does that in a generic way that
-> works well for most setups:
->
->   1) Find the device name (e.g. vda) below /sys/block
->
->   2) Follow the 'device' link to e.g. /sys/devices/virtio-pci/virtio1
->
->   3) Find the module need for this through either 'modalias' or the 
->      'driver/module' symlink
->
->   4) Use modprobe to list any dependencies of that module
->
-> Clearly, virtio-pci won't be pulled in by any of this so we've added a
-> hack to say "oh, it's a virtio device, let's include virtio_pci just in
-> case".
->
-> It's not even the case that mkinitrd needs to know how to include the
-> the module for the bus, because in our case that's virtio.ko ... we've
-> pretty effectively hidden the the bus *implementation* from userspace.
->
-> I don't think this is worth wasting too much time fixing, that's why I'm
-> thinking we should just make virtio_pci built-in by default with
-> CONFIG_KVM_GUEST. 
->   
 
-What if we have multiple virtio transports?  Is there a way that we can 
-expose the relationship with virtio-blk and virtio-pci in sysfs?  We 
-have a struct device for the PCI device, it's just a matter of making 
-the link visible.
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Regards,
+> Hi Ingo,
+> 
+> The following changes since commit 218d11a8b071b23b76c484fd5f72a4fe3306801e:
+>   Jonathan Corbet (1):
+>         Fix a race condition in FASYNC handling
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-fixes-2.6.28
+> 
+> Joerg Roedel (5):
+>       AMD IOMMU: fix iommu_map_page function
+>       AMD IOMMU: fix loop counter in free_pagetable function
+>       AMD IOMMU: fix typo in comment
+>       AMD IOMMU: fix WARN_ON in dma_ops unmap path
+>       AMD IOMMU: __unmap_single: check for bad_dma_address instead of 0
+> 
+>  arch/x86/kernel/amd_iommu.c |   13 +++++++------
+>  1 files changed, 7 insertions(+), 6 deletions(-)
+> 
+> This are some small bugfixes which were found during the implementation
+> of the KVM support and further code review. Please pull.
 
-Anthony Liguori
+pulled into tip/x86/urgent, thanks Joerg!
 
-Regards,
-
-Anthony Liguori
-
->> But there really is no explicit dependency between virtio modules and
->> virtio_pci.  There just is for kvm/x86 at the moment, since that is how
->> they use virtio.  Running over another bus is certainly possible,
->> though may never happen for x86 (happens today for s390).
->>     
->
-> Right, and in the case of both kvm/s390 and lguest the bus
-> implementation is built-in, not a module.
->
-> Cheers,
-> Mark.
->
->   
-
+	Ingo
