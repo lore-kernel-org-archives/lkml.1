@@ -1,73 +1,321 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbYLHVFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbYLHVG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753174AbYLHVFd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 16:05:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbYLHVFZ
+	id S1753395AbYLHVG2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 16:06:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbYLHVGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 16:05:25 -0500
-Received: from mail.cacr.caltech.edu ([131.215.145.9]:37043 "EHLO
-	mail.cacr.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751361AbYLHVFY (ORCPT
+	Mon, 8 Dec 2008 16:06:19 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:10435 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751361AbYLHVGR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 16:05:24 -0500
-X-Greylist: delayed 752 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Dec 2008 16:05:24 EST
-Date: Mon, 8 Dec 2008 12:52:51 -0800
-From: Jan Lindheim <lindheim@cacr.caltech.edu>
-To: linux-kernel@vger.kernel.org
-Subject: stability problems with ixgb
-Message-ID: <20081208205250.GH29279@cacr.caltech.edu>
+	Mon, 8 Dec 2008 16:06:17 -0500
+Subject: Re: [PATCH] - support inheritance of mlocks across fork/exec V2
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       riel@redhat.com, hugh@veritas.com, kosaki.motohiro@jp.fujitsu.com,
+       linux-api@vger.kernel.org
+In-Reply-To: <20081206220729.042a926e.akpm@linux-foundation.org>
+References: <1227561707.6937.61.camel@lts-notebook>
+	 <20081125152651.b4c3c18f.akpm@linux-foundation.org>
+	 <1228331069.6693.73.camel@lts-notebook>
+	 <20081206220729.042a926e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Mon, 08 Dec 2008 16:05:37 -0500
+Message-Id: <1228770337.31442.44.camel@lts-notebook>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have a few large linux file servers, where we have tried to use
-the Intel 10 GigE (PCI-X version) without much success.  We can easily stress
-the network in a way that makes the adapter die in less than an hour.
-Here's the kernel trace from when the adapter dies, using kernel 2.6.27.8:
+Sorry for the resend.  I had the 'linux-api' address wrong on my reponse
+to Andrew.  Want to include the api list in this exchange.
 
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950053] WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0x1f8/0x210()
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950055] NETDEV WATCHDOG: eth2 (ixgb): transmit timed out
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950057] Modules linked in: nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs ppdev video output pci_slot ac sbs sbshc battery ipv6 xfs sbp2 lp cfi_cmdset_0002 cfi_util jedec_probe cfi_probe i2c_nforce2 gen_probe i2c_core psmouse ixgb parport_pc pcspkr k8temp parport ck804xrom shpchp pci_hotplug mtd chipreg map_funcs container button evdev ext3 jbd mbcache sg ide_cd_mod sr_mod cdrom sd_mod sata_nv pata_amd pata_acpi floppy arcmsr ata_generic tg3 libphy libata amd74xx scsi_mod ide_core ohci1394 dock ieee1394 ehci_hcd ohci_hcd usbcore dm_mirror dm_log dm_snapshot dm_mod thermal processor fan fuse
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950106] Pid: 0, comm: swapper Not tainted 2.6.27.8 #2
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950108] 
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950108] Call Trace:
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950111]  <IRQ>  [<ffffffff8023beec>] warn_slowpath+0xbc/0xf0
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950120]  [<ffffffff8022d397>] ? source_load+0x37/0x70
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950124]  [<ffffffff80367a69>] ? __next_cpu+0x19/0x30
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950128]  [<ffffffff80230e1a>] ? find_busiest_group+0x19a/0x850
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950131]  [<ffffffff8036d4df>] ? strlcpy+0x4f/0x70
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950135]  [<ffffffff80427670>] ? dev_watchdog+0x0/0x210
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950138]  [<ffffffff80427868>] dev_watchdog+0x1f8/0x210
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950142]  [<ffffffff802467a8>] run_timer_softirq+0x1a8/0x220
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950146]  [<ffffffff8021db39>] ? lapic_next_event+0x9/0x20
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950149]  [<ffffffff80241ce4>] __do_softirq+0x84/0x110
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950153]  [<ffffffff8020d76c>] call_softirq+0x1c/0x30
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950156]  [<ffffffff8020f2ba>] do_softirq+0x6a/0xb0
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950158]  [<ffffffff80241c48>] irq_exit+0x98/0xb0
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950161]  [<ffffffff8021dfa7>] smp_apic_timer_interrupt+0x87/0xc0
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950164]  [<ffffffff8020d1bb>] apic_timer_interrupt+0x6b/0x70
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950166]  <EOI>  [<ffffffff80213a45>] ? default_idle+0x35/0x50
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950173]  [<ffffffff80213a43>] ? default_idle+0x33/0x50
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950175]  [<ffffffff8020aeaf>] ? cpu_idle+0x5f/0xe0
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950180]  [<ffffffff8049a885>] ? start_secondary+0x145/0x1a0
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950182] 
-Dec  8 11:48:54 shc-storage02 kernel: [ 3106.950183] ---[ end trace 6be5d7707d0de713 ]---
+On Sat, 2008-12-06 at 22:07 -0800, Andrew Morton wrote:
+> (cc linux-abi.  Again.)
+> 
+> On Wed, 03 Dec 2008 14:04:29 -0500 Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> 
+> > 
+> > 
+> > Against;  2.6.28-rc7-mmotm-081203
+> > 
+> > V02:	rework vetting of flags argument as suggested by
+> > 	Kosaki Motohiro.
+> > 	enhance description as requested by Andrew Morton.
+> > 
+> > Add support for mlockall(MCL_INHERIT|MCL_RECURSIVE):
+> > 
+> > 	MCL_CURRENT[|MCL_FUTURE]|MCL_INHERIT - inherit memory locks
+> > 		[vmas' VM_LOCKED flags] across fork(), and inherit
+> > 		MCL_FUTURE behavior [mm's def_flags] across fork()
+> > 		and exec().  Behaves as if child and/or new task
+> > 		called mlockall(MCL_CURRENT|MCL_FUTURE) as first
+> > 		instruction.
+> > 
+> > 	MCL_RECURSIVE - inherit MCL_CURRENT|MCL_FUTURE|MCL_INHERIT
+> > 		[vmas' VM_LOCKED flags for fork() and mm's def_flags
+> > 		and mcl_inherit across fork() and exec()] for all
+> > 		future generations of calling process's descendants.
+> > 		Behaves as if child and/or new task called
+> > 		mlockall(MCL_CURRENT|MCL_FUTURE|MCL_INHERIT|MCL_RECURSIVE)
+> > 		as the first instruction.
+> > 
+> > In support of a "lock prefix command"--e.g., mlock <cmd> <args> ...
+> > Analogous to taskset(1) for cpu affinity or numactl(8) for numa memory
+> > policy.
+> > 
+> > Together with patches to keep mlocked pages off the LRU, this will
+> > allow users/admins to lock down applications without modifying them,
+> > if their RLIMIT_MEMLOCK is sufficiently large, keeping their pages
+> > off the LRU and out of consideration for reclaim.
+> > 
+> > Potentially useful, as well, in real-time environments to force
+> > prefaulting and residency for applications that don't mlock themselves.
+> > 
+> > Jeff Sharkey at Montana State developed a similar patch for Linux
+> > [link no longer accessible], but apparently he never submitted the patch.
+> > 
+> > I submitted an earlier version of this patch around a year ago.  I
+> > resurrected it to test the unevictable lru/mlocked pages patches--
+> > e.g., by "mlock -r make -j<N*nr_cpus> all".  This did shake out a few
+> > races and vmstat accounting bugs, but NOT something I'd recommend as
+> > general practice--for kernel builds, that is.
+> > 
+> > ----
+> > 
+> > Define MCL_INHERIT, MCL_RECURSIVE in <asm-*/mman.h>.
+> > + x86 and  ia64 versions included.
+> > + other arch can/will be created, if this patch deemed merge-worthy.
+> > 
+> > Similarly, I'll provide kernel man page update if/when needed.
+> > 
+> > Example "lock prefix command" in Documentation/vm/mlock.c
+> > 
+> >
+> > ...
+> >
+> > --- linux-2.6.28-rc7-mmotm-081203.orig/mm/mlock.c	2008-12-03 10:33:11.000000000 -0500
+> > +++ linux-2.6.28-rc7-mmotm-081203/mm/mlock.c	2008-12-03 10:33:29.000000000 -0500
+> > @@ -573,15 +573,18 @@ asmlinkage long sys_munlock(unsigned lon
+> >  static int do_mlockall(int flags)
+> >  {
+> >  	struct vm_area_struct * vma, * prev = NULL;
+> > +	struct mm_struct *mm = current->mm;
+> >  	unsigned int def_flags = 0;
+> >  
+> >  	if (flags & MCL_FUTURE)
+> > -		def_flags = VM_LOCKED;
+> > -	current->mm->def_flags = def_flags;
+> > -	if (flags == MCL_FUTURE)
+> > +		def_flags = VM_LOCKED;;
+> 
+> You get paid by the semicolon?
 
-Once the adapter stops to respond, the only way to bring it back,
-is to reboot.  Unloading and restarting the kernel module and/or network
-does not help.
+Nope.  Interestingly, ckeckpatch was fine with this.  [It did warn about
+>80 char line in x86 mman.h, but there was already a much longer line,
+so I left it.  Fixed now so that patch is squeaky clean, as far as
+checkpatch is concerned.]
 
-One of the most reliable ways to bring it down, is to run a bonnie++ test from
-6 clients to the server, over NFS.  Each client has gigabit network.
+> 
+> > +	mm->def_flags = def_flags;
+> > +	if (flags & MCL_INHERIT)
+> > +		mm->mcl_inherit = flags & (MCL_INHERIT | MCL_RECURSIVE);
+> 
+> aaaaaaarrrrrrggggggghhhhhhh!
+> 
+> So mm->mcl_inherit is _not_ a boolean meaning "this mm has MCL_INHERIT
+> set", as I naively believed when I saw it.  Is it in fact a composite
+> of both MCL_INHERIT and MCL_RECURSIVE, given a badly misleading name
+> and a waffly comment.
+> 
+> Can we please make this clearer?
 
-This is not a new problem with the latest kernel.  We have also tested with
-2.6.25.6, which fails the same way.
+How about "mcl_inherit_mlocks_possibly_recursively" ?
 
-Any insight and suggestions to the problem is much appreciated.
+Seriously, it made/makes sense to me.  If mcl_inherit is non-zero, it
+WILL contain MCL_INHERIT, meaning that existing mlocks and any VM_LOCKED
+in def_flags will be inherited across the next fork or exec [def_flags
+only].  It may also contain MCL_RECURSIVE--tested separately--meaning
+that the contents of mcl_inherit, itself, will also be inherited across
+the next and future forks/execs, until/unless a descendant invokes
+mlockall() w/o MCL_INHERIT or MCL_RECURSIVE to clear out mcl_inherit.
 
-Regards,
-Jan Lindheim
+This seemed a bit much to try to explain on line where mcl_inherit is
+declared in mm_types.  More appropriate to a man page, I would have
+thought.   How about a Documentation/vm doc?
+
+Meanwhile, perhaps:  "mcl_inherit" -> "mcl_inherit_flags" or "mcl_flags"
+or "mlock_flags", or such?
+
+> 
+> >
+> > ...
+> >
+> > --- linux-2.6.28-rc7-mmotm-081203.orig/kernel/fork.c	2008-12-03 10:18:15.000000000 -0500
+> > +++ linux-2.6.28-rc7-mmotm-081203/kernel/fork.c	2008-12-03 10:33:29.000000000 -0500
+> > @@ -278,7 +278,8 @@ static int dup_mmap(struct mm_struct *mm
+> >  	 */
+> >  	down_write_nested(&mm->mmap_sem, SINGLE_DEPTH_NESTING);
+> >  
+> > -	mm->locked_vm = 0;
+> > +	if (!mm->mcl_inherit)
+> > +		mm->locked_vm = 0;
+> >  	mm->mmap = NULL;
+> >  	mm->mmap_cache = NULL;
+> >  	mm->free_area_cache = oldmm->mmap_base;
+> > @@ -316,7 +317,8 @@ static int dup_mmap(struct mm_struct *mm
+> >  		if (IS_ERR(pol))
+> >  			goto fail_nomem_policy;
+> >  		vma_set_policy(tmp, pol);
+> > -		tmp->vm_flags &= ~VM_LOCKED;
+> > +		if (!mm->mcl_inherit)
+> > +			tmp->vm_flags &= ~VM_LOCKED;
+> >  		tmp->vm_mm = mm;
+> >  		tmp->vm_next = NULL;
+> >  		anon_vma_link(tmp);
+> > @@ -406,6 +408,8 @@ __cacheline_aligned_in_smp DEFINE_SPINLO
+> >  
+> >  static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
+> >  {
+> > +	unsigned long def_flags = 0;
+> > +
+> >  	atomic_set(&mm->mm_users, 1);
+> >  	atomic_set(&mm->mm_count, 1);
+> >  	init_rwsem(&mm->mmap_sem);
+> > @@ -422,9 +426,14 @@ static struct mm_struct * mm_init(struct
+> >  	mm->free_area_cache = TASK_UNMAPPED_BASE;
+> >  	mm->cached_hole_size = ~0UL;
+> >  	mm_init_owner(mm, p);
+> > +	if (current->mm && current->mm->mcl_inherit) {
+> > +		def_flags = current->mm->def_flags & VM_LOCKED;
+> > +		if (mm->mcl_inherit & MCL_RECURSIVE)
+> > +			mm->mcl_inherit  = current->mm->mcl_inherit;
+> > +	}
+> 
+> hm.  That code looks familiar.  Not worth a helper function?
+
+If we could remove the copy in load_elf_binary(), point would be moot.
+
+More below.
+
+> 
+> >  	if (likely(!mm_alloc_pgd(mm))) {
+> > -		mm->def_flags = 0;
+> > +		mm->def_flags = def_flags;
+> >  		mmu_notifier_mm_init(mm);
+> >  		return mm;
+> >  	}
+> > Index: linux-2.6.28-rc7-mmotm-081203/fs/binfmt_elf.c
+> > ===================================================================
+> > --- linux-2.6.28-rc7-mmotm-081203.orig/fs/binfmt_elf.c	2008-12-03 10:19:21.000000000 -0500
+> > +++ linux-2.6.28-rc7-mmotm-081203/fs/binfmt_elf.c	2008-12-03 10:33:29.000000000 -0500
+> > @@ -585,6 +585,7 @@ static int load_elf_binary(struct linux_
+> >  	unsigned long reloc_func_desc = 0;
+> >  	int executable_stack = EXSTACK_DEFAULT;
+> >  	unsigned long def_flags = 0;
+> > +	int mcl_inherit = 0;
+> >  	struct {
+> >  		struct elfhdr elf_ex;
+> >  		struct elfhdr interp_elf_ex;
+> > @@ -749,6 +750,13 @@ static int load_elf_binary(struct linux_
+> >  		SET_PERSONALITY(loc->elf_ex);
+> >  	}
+> >  
+> > +	/* Optionally inherit MCL_FUTURE state before destroying old mm */
+> > +	if (current->mm && current->mm->mcl_inherit) {
+> 
+> umm, OK, it looks like current->mm can be null here.
+
+Probably not here.  IIRC, it can be NULL [for init] up in mm_init() and
+I probably just cut and pasted, instead of a helper function...
+
+> 
+> > +		def_flags = current->mm->def_flags & VM_LOCKED;
+> 
+> ooh, we finally used local variable def_flags for something.  That's
+> been wasting space since 2.2.26 (or earlier).
+
+def_flags was being used to clear out the current->mm->def_flags.  Don't
+know why, tho'.  See below...
+> 
+> > +		if (current->mm->mcl_inherit & MCL_RECURSIVE)
+> > +			mcl_inherit  = current->mm->mcl_inherit;
+> > +	}
+> > +
+> >  	/* Flush all traces of the currently running executable */
+> >  	retval = flush_old_exec(bprm);
+> >  	if (retval)
+> > @@ -757,6 +765,7 @@ static int load_elf_binary(struct linux_
+> >  	/* OK, This is the point of no return */
+> >  	current->flags &= ~PF_FORKNOEXEC;
+> >  	current->mm->def_flags = def_flags;
+> > +	current->mm->mcl_inherit = mcl_inherit;
+> >  
+> >  	/* Do this immediately, since STACK_TOP as used in setup_arg_pages
+> >  	   may depend on the personality.  */
+> 
+> Why is this done in binfmt_elf.c?  Doesn't this preclude the operation
+> of these new flags for other binary formats?
+
+Because binfmt_elf.c is the only binary format loader [that I can see]
+that takes it upon itself to reinitialize mm->def_flags, which has
+already been set up in mm_init().  I wondered, myself, why this is the
+case, but I didn't dare just remove it, lest it reintroduce some obscure
+bug.  So, I duplicated my version of def_flags [and mcl_inherit]
+initialization here. 
+
+Now that you've raised the question:  why, indeed, does the elf format
+loader reinit def_flags?  Can we just remove this?
+
+> 
+> > Index: linux-2.6.28-rc7-mmotm-081203/arch/x86/include/asm/mman.h
+> > ===================================================================
+> > --- linux-2.6.28-rc7-mmotm-081203.orig/arch/x86/include/asm/mman.h	2008-12-03 10:16:26.000000000 -0500
+> > +++ linux-2.6.28-rc7-mmotm-081203/arch/x86/include/asm/mman.h	2008-12-03 10:33:29.000000000 -0500
+> > @@ -16,5 +16,8 @@
+> >  
+> >  #define MCL_CURRENT	1		/* lock all current mappings */
+> >  #define MCL_FUTURE	2		/* lock all future mappings */
+> > +#define MCL_INHERIT	4		/* inherit mlocks across fork */
+> > +					/* inherit '_FUTURE flag across fork/exec */
+> > +#define MCL_RECURSIVE	8		/* inherit mlocks recursively */
+> >  
+> >  #endif /* _ASM_X86_MMAN_H */
+> > Index: linux-2.6.28-rc7-mmotm-081203/include/linux/mm_types.h
+> > ===================================================================
+> > --- linux-2.6.28-rc7-mmotm-081203.orig/include/linux/mm_types.h	2008-12-03 10:18:01.000000000 -0500
+> > +++ linux-2.6.28-rc7-mmotm-081203/include/linux/mm_types.h	2008-12-03 10:33:29.000000000 -0500
+> > @@ -235,6 +235,8 @@ struct mm_struct {
+> >  	unsigned int token_priority;
+> >  	unsigned int last_interval;
+> >  
+> > +	int mcl_inherit;		/* inherit current/future locks */
+> > +
+> >  	unsigned long flags; /* Must use atomic bitops to access the bits */
+> 
+> I was thinking that the boolean mcl_inherit could become a bit in
+> mm.flags.  That was before I unmisled myself about it.
+> 
+> Perhaps we could use two bits.  That might get a bit nasty.
+
+I did look for someplace to add these flags, before deciding on a new
+member.  The "Must use atomic bitops", and the fact that mm->flags seems
+used soley for controlling core dumping [and defined in sched.h, no
+less!], put me off from going that route.  Similarly, because def_flags
+is an initializer for the vma's vm_flags, I didn't want to pollute that.
+I figured the 'int' would fill a padding slot on 64-bit archs, but does
+add to mm size for 32-bit archs.
+
+Suggestions?
+I'll hold off on a re-spin, pending resolution of some of these issues.
+
+Thanks for the thorough review.
+
+Lee
+
+
