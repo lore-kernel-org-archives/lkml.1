@@ -1,146 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbYLHGsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYLHGvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755694AbYLHGsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 01:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYLHGsD
+	id S1756148AbYLHGvO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 01:51:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYLHGu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 01:48:03 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:16196 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbYLHGsB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 01:48:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=u2zSlhbtkwuo6BpRKR1o4XYetLXY5rfSCeCQ8oFIi/DjpmS0K6O1IrdfDmKKiKomyq
-         7p9UJzaNiOmLGO3Tf4JDus48Zw7eruGc0CfxHyY1Z8hpxvKDwjZjGZQU9ZfeLbOhcsc+
-         1w05erRA1/5Rt/bctISYLrUbmlzVyJVk+kyRA=
-Message-ID: <12bfabe40812072248n3c931ce0hf030b3ac758026d4@mail.gmail.com>
-Date: Mon, 8 Dec 2008 07:48:00 +0100
-From: "Giangiacomo Mariotti" <gg.mariotti@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
-Cc: "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-In-Reply-To: <20081207141337.588aede5@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>
-	 <493AE770.5030507@shaw.ca>
-	 <12bfabe40812061343j400f55d8r43571c8bd514adde@mail.gmail.com>
-	 <493AF2EA.4030601@shaw.ca>
-	 <12bfabe40812061416u1b6f800dn7261beae5ce36b2f@mail.gmail.com>
-	 <493B4242.1040202@shaw.ca>
-	 <12bfabe40812071355r65c13e52g5f3d94d3b060c939@mail.gmail.com>
-	 <20081207141337.588aede5@infradead.org>
+	Mon, 8 Dec 2008 01:50:58 -0500
+Received: from mga02.intel.com ([134.134.136.20]:62482 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751948AbYLHGu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 01:50:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,734,1220252400"; 
+   d="scan'208";a="471998776"
+Subject: Re: AE_ERROR, ACPI thermal trip point state changed
+From: Zhang Rui <rui.zhang@intel.com>
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "lenb@kernel.org" <lenb@kernel.org>
+In-Reply-To: <493CB8DB.8070105@freemail.hu>
+References: <47CF96E2.9020302@freemail.hu>
+	 <1204757373.10256.179.camel@acpi-hp-zz.sh.intel.com>
+	 <823A93EED437D048963A3697DB0E35DE0129BB78@pdsmsx414.ccr.corp.intel.com>
+	 <47D0E694.5050102@freemail.hu>
+	 <1204874686.10256.185.camel@acpi-hp-zz.sh.intel.com>
+	 <47D24341.5070908@freemail.hu>
+	 <1205113940.10256.191.camel@acpi-hp-zz.sh.intel.com>
+	 <48ABDF1E.3010101@freemail.hu> <8763pwypf5.fsf@basil.nowhere.org>
+	 <49249121.6050304@freemail.hu> <20081119232224.GR6703@one.firstfloor.org>
+	 <493CB8DB.8070105@freemail.hu>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 08 Dec 2008 14:48:29 +0800
+Message-Id: <1228718909.7929.133.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed something else, which though may be due to my inexperience
-with mce messages. In my directory /sys/devices/system/machinecheck
-there are machinecheck0-7(one for each logical cpu of my system I
-presume). Having received the MCE log always for cpu 0, I went to look
-inside dir machinecheck0 and I found bank0-5ctl. So now my question
-is, why do I receive MCE logs about bank 6, if my cpus don't have a
-bank 6? Does that count start from 1? Or am I missing something else?
+On Mon, 2008-12-08 at 14:04 +0800, Németh Márton wrote:
+> Andi Kleen wrote:
+> > On Wed, Nov 19, 2008 at 11:20:17PM +0100, Németh Márton wrote:
+> >> Hi,
+> >>
+> >> Andi Kleen wrote:
+> >>> Németh Márton <nm127@freemail.hu> writes:
+> >>>> As of 2.6.27-rc3 the patch is still not included in the mainstream. I
+> >>>> hope that this patch was not forgotten completely.
+> >>> It's already in Linus' tree, will be in rc4.
+> >> I compiled and tried 2.6.28-rc5. In the dmesg I get the following message:
+> >>
+> >> [   63.589603] ACPI Exception (thermal-0538): AE_ERROR, ACPI thermal trip point state changed
+> >> [   63.589669] Please send acpidump to linux-acpi@vger.kernel.org
+> >> [   63.589805]  [20080926]
+> >>
+> >> The original patch still applies for 2.6.28-rc5 (with some offsets). This patch
+> >> is not included in 2.6.28-rc5, yet. The "AE_ERROR..." message does not appear
+> >> any more if I apply the patch. I attached this original patch for easier reference.
+> > 
+> > Hmm sorry I must have confused it with some other patch back then.
+> > Anyways Len Brown is handling ACPI again now, so he'll have to sort
+> > it out. cc'ed (the original patch is on linux-acpi)
+> 
+> This is just a status report about 2.6.28-rc7, nothing more. The AE_ERROR
+> message is still in the dmesg. The patch still solves the problem.
+> 
+do you mean this patch:
+http://marc.info/?l=linux-acpi&m=120522267418715&w=2
 
-Log of MCEs(They all happended once for each reboot):
+thanks,
+rui
 
-"Boot 0"
-MCE 0
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 BANK 6 MISC 202d ADDR ffeef740
-MCG status:
-MCi status:
-Error overflow
-Uncorrected error
-MCi_MISC register valid
-MCi_ADDR register valid
-Processor context corrupt
-MCA: Generic CACHE Level-2 Data-Write Error
-STATUS ee0000000100014a MCGSTATUS 0
-
-"Boot 1"
-MCE 0
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 BANK 6 MISC 308 ADDR ffefac00
-MCG status:
-MCi status:
-Error overflow
-Uncorrected error
-MCi_MISC register valid
-MCi_ADDR register valid
-Processor context corrupt
-MCA: Generic CACHE Level-2 Read Error
-STATUS ee0000000100011a MCGSTATUS 0
-
-"Boot 2"
-MCE 0
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 BANK 6 MISC 212d ADDR ffef77c0
-MCG status:
-MCi status:
-Error overflow
-Uncorrected error
-MCi_MISC register valid
-MCi_ADDR register valid
-Processor context corrupt
-MCA: Generic CACHE Level-2 Data-Write Error
-STATUS ee0000000100014a MCGSTATUS 0
-
-"Boot 3"
-MCE 0
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 BANK 6 MISC 202d ADDR ffee0280
-MCG status:
-MCi status:
-Error overflow
-Uncorrected error
-MCi_MISC register valid
-MCi_ADDR register valid
-Processor context corrupt
-MCA: Generic CACHE Level-2 Data-Write Error
-STATUS ee0000000100014a MCGSTATUS 0
-
-"Boot 4"
-MCE 0
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 BANK 6 MISC 202d ADDR ffef5cc0
-MCG status:
-MCi status:
-Error overflow
-Uncorrected error
-MCi_MISC register valid
-MCi_ADDR register valid
-Processor context corrupt
-MCA: Generic CACHE Level-2 Data-Write Error
-STATUS ee0000000100014a MCGSTATUS 0
-
-"Boot 5"
-MCE 0
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 BANK 6 MISC 212d ADDR ffef2f40
-MCG status:
-MCi status:
-Error overflow
-Uncorrected error
-MCi_MISC register valid
-MCi_ADDR register valid
-Processor context corrupt
-MCA: Generic CACHE Level-2 Data-Write Error
-STATUS ee0000000100014a MCGSTATUS 0
-
-Thanks for the help,
-
-Giangiacomo
