@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbYLHOaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYLHOau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753985AbYLHOaS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 09:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbYLHOaB
+	id S1754188AbYLHOau (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 09:30:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYLHOam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 09:30:01 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:60654 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752021AbYLHOaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 09:30:00 -0500
-From: John Keller <jpk@sgi.com>
-Message-Id: <200812081429.mB8ETtBO145498@fcbayern.americas.sgi.com>
-Subject: Re: genirq regression - CONFIG_AUTO_IRQ_AFFINITY
-To: yinghai@kernel.org (Yinghai Lu)
-Date: Mon, 8 Dec 2008 08:29:54 -0600 (CST)
-Cc: jpk@sgi.com (John Keller), linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu (Ingo Molnar)
-In-Reply-To: <86802c440812052056r6b08fd0dpfae41dee8ee9ac65@mail.gmail.com> from "Yinghai Lu" at Dec 05, 2008 08:56:23 PM
-X-Mailer: ELM [version 2.5 PL2]
+	Mon, 8 Dec 2008 09:30:42 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:9440 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752365AbYLHOal (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 09:30:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=E3VB8GXAjqiWTEtKY/YQYDSrI5phjI9K/sb10p/ETRfVNb6oXT0NuafH4Djp9JdzYa
+         cUmpM7bg6t6a40pulzkbsgmXh96TfVvAyFaLPMFyHoP7uHCZ2UsQ8VcX32BR25h0+Y0A
+         ETGIaRNx8/Q6DcduM+l46GENVl210sLtk1RF4=
+Message-ID: <2f11576a0812080630j4327dbbgf0aa0e332156d229@mail.gmail.com>
+Date: Mon, 8 Dec 2008 23:30:40 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>
+Subject: Re: [PATCH] memory hotplug: run lru_add_drain_all() on each cpu
+Cc: "Dave Hansen" <dave@linux.vnet.ibm.com>, gerald.schaefer@de.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       kamezawa.hiroyu@jp.fujitsu.com, y-goto@jp.fujitsu.com, npiggin@suse.de
+In-Reply-To: <1228744588.22647.32.camel@lts-notebook>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1228482500.8392.15.camel@t60p> <1228509818.12681.21.camel@nimitz>
+	 <20081207133450.53D8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <1228744588.22647.32.camel@lts-notebook>
+X-Google-Sender-Auth: 0be335245c5e8e18
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> On Fri, Dec 5, 2008 at 8:40 AM, John Keller <jpk@sgi.com> wrote:
-> > The addition of the generic affinity autoselector has introduced
-> > a regression in SN2 Altix.
-> >
-> > In the past, request_irq()'s call to select_smp_affinity() was
-> > essentially a noop.
-> >
-> > #ifdef CONFIG_AUTO_IRQ_AFFINITY
-> > extern int select_smp_affinity(unsigned int irq);
-> > #else
-> > static inline int select_smp_affinity(unsigned int irq)
-> > {
-> >        return 1;
-> > }
-> >
-> >
-> > Now changes have created do_irq_select_affinity(), which is
-> > executed by a call to request_irq().
-> >
-> >  request_irq()
-> >   __setup_irq()
-> >    do_irq_select_affinity()
-> >
-> > do_irq_select_affinity() will call the set_affinity() routine,
-> > with a default mask. On SN2 (and possibly all ia64 platforms),
-> > this will retarget all device interrupts to the same CPU, most
-> > likely CPU0.
-> 
-> > I'm looking at a patch that makes use of the new IRQ_AFFINITY_SET
-> > flag in the irq_desc to get around this.
-> >
-> 
-> that bit only be set in irq_set_affinity(),
-> 
-> arch/mips/kernel/cevt-bcm1480.c:        irq_set_affinity(irq,
-> cpumask_of_cpu(cpu));
-> arch/mips/kernel/cevt-sb1250.c: irq_set_affinity(irq, cpumask_of_cpu(cpu));
-> arch/sparc64/kernel/of_device.c:                irq_set_affinity(irq,
-> numa_mask);
-> arch/sparc64/kernel/pci_msi.c:          irq_set_affinity(irq, numa_mask);
-> arch/x86/kernel/hpet.c:                 irq_set_affinity(hdev->irq,
-> cpumask_of_cpu(hdev->cpu));
-> arch/x86/kernel/hpet.c: irq_set_affinity(dev->irq, cpumask_of_cpu(dev->cpu));
-> drivers/xen/events.c:   irq_set_affinity(irq, cpumask_of_cpu(0));
-> 
-> kernel/irq/proc.c:      irq_set_affinity(irq, new_value);
-> 
-> kernel/time/tick-common.c:              irq_set_affinity(newdev->irq, *cpumask);
-> 
-> so you may need to call it in your arch code. like
-> setup_IO_APIC_irq(),  create_irq()...
-> 
-> YH
-> 
+>> Lee, Could you read this thread and explain why you add ifdef CONFIG_UNEVICTABLE_LRU?
+>> I am not sure about that Dave's proposal is safe change. (but I guess he is right)
+>
+> I added that back in Patch 17/25 "Mlocked Pages are
+> non-reclaimable" [before nonreclaimable became unevictable".  I did this
+> because "lru_add_drain_all()" was only used by numa code prior to this,
+> and was under #ifdef CONFIG_NUMA".  I called lru_add_drain_all() from
+> __mlock_vma_pages_range() [since removed] and I wanted the
+> nonreclaimable/unevictable mlocked pages feature to be independent of
+> numa.  So, I had to ensure that we defined the function for
+> nonreclaimable/unevictable lru as well as numa.
+>
+> Now it appears that hotplug and memcg also depend on
+> lru_add_drain_all(), so making it depend on 'SMP looks reasonable to me.
 
-Yes, I am planning to set it in SN platform specific code,
-sn_irq_fixup().
+Thanks a lot.
 
-John
+I'll make that patch.
