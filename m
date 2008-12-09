@@ -1,103 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825AbYLICAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbYLICBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752825AbYLICAS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 21:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYLICAF
+	id S1753178AbYLICBm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 21:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYLICBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 21:00:05 -0500
-Received: from ik-out-1112.google.com ([66.249.90.183]:39867 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086AbYLICAD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 21:00:03 -0500
-Message-ID: <ac3eb2510812081800id4b1a88je311fcbbf574e06b@mail.gmail.com>
-Date: Tue, 9 Dec 2008 03:00:01 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Theodore Tso" <tytso@mit.edu>, "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Evgeniy Polyakov" <zbr@ioremap.net>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       linux-kernel@vger.kernel.org,
-       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
-Subject: Re: Runaway loop with the current git.
-In-Reply-To: <20081209010937.GL2501@mit.edu>
+	Mon, 8 Dec 2008 21:01:33 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:33358 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751086AbYLICBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 21:01:33 -0500
+Date: Mon, 8 Dec 2008 20:01:31 -0600 (CST)
+From: Brent Casavant <bcasavan@sgi.com>
+Reply-To: Brent Casavant <bcasavan@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, mdr@sgi.com, rw@novell.com,
+       kasievers@novell.com
+Subject: Re: [PATCH] ioc4: automatically load sgiioc4 subordinate module
+In-Reply-To: <20081208145507.8d03834e.akpm@linux-foundation.org>
+Message-ID: <alpine.BSF.1.10.0812081932180.1046@pkunk.americas.sgi.com>
+References: <alpine.BSF.1.10.0812051601060.388@pkunk.americas.sgi.com> <20081208145507.8d03834e.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (BSF 962 2008-03-14)
+Organization: "Silicon Graphics, Inc."
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081207180302.339bf58d@lxorguk.ukuu.org.uk>
-	 <20081207181559.63549cfc@lxorguk.ukuu.org.uk>
-	 <ac3eb2510812071021g44207efftb1e74f21578433be@mail.gmail.com>
-	 <20081207183112.3ef31caa@lxorguk.ukuu.org.uk>
-	 <ac3eb2510812071102s40ed4704we2221b2e53e4c099@mail.gmail.com>
-	 <20081207200008.5af2d1e9@lxorguk.ukuu.org.uk>
-	 <ac3eb2510812071426n2bd1bbefjd4fcdcd0e2efff80@mail.gmail.com>
-	 <20081208011850.GA10289@mit.edu>
-	 <ac3eb2510812071935v7e1b8c75x4d8fa9ce1c8dba6@mail.gmail.com>
-	 <20081209010937.GL2501@mit.edu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 9, 2008 at 02:09, Theodore Tso <tytso@mit.edu> wrote:
-> On Mon, Dec 08, 2008 at 04:35:20AM +0100, Kay Sievers wrote:
->> Sure, if we can make userspace behave nicely, I'm all for doing it. On
->> the other hand, I think it's a good thing to provide a sane
->> environment by the kernel for any "non-initramfs-optimized" helper.
->> Writing to /dev/console is a usual behavior for tools used in
->> initramfs, to be able to debug bootup problems. In many cases it is
->> just glibc's fallback LOG_CONS, if syslog is not available.
->
-> Well, can we agree that (a) there is a generalized modprobe recursion
-> detector already in the kernel, and (b) for some reason, Debian isn't
-> triggering it?  That seems like a bug, and while it may not be 100%
-> clear whether the bug is on the userspace side or the kernel side, it
-> would seem that finding and fixing *that* would be a Good Thing, and
-> it could be argued that a specific don't request char-major-5-1 would
-> be papering over this bug (whether it is in Debian's initrd or in the
-> kernel side code).  It would be good to make sure we understand what
-> the root causes for while the modprobe recursion detector is
-> apparently not triggering, since it could be that Debian's initrd
-> might cause some other uncaught recursion loop if we don't drive this
-> problem determination to root cause.
+On Mon, 8 Dec 2008, Andrew Morton wrote:
 
-Right, it would be good to know for sure what's going on.
+> On Fri, 5 Dec 2008 16:04:37 -0600 (CST)
+> Brent Casavant <bcasavan@sgi.com> wrote:
 
-In my test script it was just a simple access to /dev/console, so it
-might just be that modprobe wants to log something on Debian. At least
-that would match the behavior I've seen here.
+> > ---
+> >  ioc4.c |   26 ++++++++++++++++++++++++++
+> >  1 file changed, 26 insertions(+)
+> > 
+> > diff --git a/drivers/misc/ioc4.c b/drivers/misc/ioc4.c
+> > index 6f76573..36320bd 100644
+> > --- a/drivers/misc/ioc4.c
+> > +++ b/drivers/misc/ioc4.c
+> > @@ -269,6 +269,16 @@ ioc4_variant(struct ioc4_driver_data *idd)
+> >  	return IOC4_VARIANT_PCI_RT;
+> >  }
+> >  
+> > +static void
+> > +ioc4_load_modules(struct work_struct *work)
+> > +{
+> > +	/* arg just has to be freed */
+> > +
+> > +	request_module("sgiioc4");
+> > +
+> > +	kfree(work);
+> > +}
+> > +
+> >  /* Adds a new instance of an IOC4 card */
+> >  static int
+> >  ioc4_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
+> > @@ -378,6 +388,22 @@ ioc4_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
+> >  	}
+> >  	mutex_unlock(&ioc4_mutex);
+> >  
+> > +	if (idd->idd_variant != IOC4_VARIANT_PCI_RT) {
+> > +		struct work_struct *work;
+> > +		work = kzalloc(sizeof(struct work_struct), GFP_KERNEL);
+> > +		if (!work) {
+> > +			printk(KERN_WARNING
+> > +			       "%s: IOC4 unable to allocate memory for "
+> > +			       "load of sub-modules.\n",
+> > +			       __FUNCTION__);
+> > +		}
+> > +		else {
+> > +			printk(KERN_INFO "IOC4 loading ioc4 submodule\n");
+> > +			INIT_WORK(work, ioc4_load_modules);
+> > +			schedule_work(work);
+> > +		}
+> > +	}
+> > +
+> >  	return 0;
+> >  
+> 
+> ioc4 can be compiled as a module.  So if someone does an `rmmod ioc4' after
+> the schedule_work() and before or during the execution of the work
+> function, dead machine.
+> 
+> This race is fixable by adding a flush_scheduled_work() into
+> ioc4_exit(), I expect.
 
-And we really rely on these tools to be able to print debug messages
-sometimes to find other bugs (at least at the time it's theoretically
-possible to log). And I don't see how modprobe could find out, that it
-is not allowed to access /dev/console.
+In this case I believe a better spot for the flush_schedule_work() is
+immediately after calling schedule_work(), for two reasons.
 
-As an ideal solution, I would like to have /dev/console working before
-_any_ userspace is called, and it would put all the stuff that is
-written to it the kernel "dmesg buffer" as long as the console isn't
-working, just to be able to see what's going on, if needed. As the
-second choice, it would return -ENODEV. The current looping is
-definitely not what we want. :)
+First, and something I should have realized earlier, with the work
+scheduled but not guaranteed to have completed, we're not sure
+exactly when the IDE device will show up, and thus have no guarantee
+when the desired root device will appear.  Thus it would be good to
+make sure sgiioc4 has completed loading before ioc4_probe() returns.
 
->> That's why I still think it's a good thing, to connect the core tty
->> devices to their dev_t handler internally, before we init all the
->> other drivers and run userspace.
->
-> Um, how early?  (/me searches lkml.org for the original patch).  Ah,
-> OK, you want to do it postcore....  There may actually be a problem
-> with that, because it looks like vtconsole_class_init (which is
-> currently run as a postcore initcall) really wants to happen before
-> the tty layer initializes itself.  So moving tty into postcore could
-> potentially run into problems, depending on whether vt.c's or
-> tty_io.c's initcalls are run first.
+Second, if ioc4_exit() can be invoked at an unfortunate time as
+mentioned, that implies the following sequence is possible:
 
-Sure, we might need to change that, if it is a problem. It was mainly
-to find out what was going on, because people thought that some serial
-driver is involved in the loop, which I didn't believe.
+	
+	Thread A			Thread B
+					ioc4_probe();
+					schedule_work();
+	ioc4_exit();
+	flush_scheduled_work();
+					request_module("sgiioc4");
+					... sgiioc4 loads ...
+					ioc4_register_submodule();
+	pci_unregister_driver();
 
-To be safer, maybe we just want to move the cdev_add(),
-register_chrdev_region() call, which should prevent the "userspace
-driver search".
+This leaves us with sgiioc4 loaded and containing references to the
+now removed IOC4 driver.  I must assume badness ensues. :(
 
-Thanks,
-Kay
+This is normally prevented by the module reference counting mechanism,
+but in this case the reference count on ioc4 wouldn't bump until sgiioc4
+loads, which is after we're in the ioc4_exit() path.  I suppose some
+reference count tricks could work around this (i.e. bump ioc4's refcount
+before schedule_work(), and de-bump it when sgiioc4 is finished loading),
+but that has a hackish flavor.
+
+Anyway, I think both of these argue for putting the flush_scheduled_work()
+immediatley after the schedule_work() call.  I'll test this idea after
+a test system is configured overnight and should have a patch available
+tomorrow.
+
+Brent
+
+-- 
+Brent Casavant                          All music is folk music.  I ain't
+bcasavan@sgi.com                        never heard a horse sing a song.
+Silicon Graphics, Inc.                    -- Louis Armstrong
