@@ -1,88 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYLISFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbYLISIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbYLISFU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 13:05:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbYLISFE
+	id S1754688AbYLISIe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 13:08:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbYLISI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 13:05:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:55092 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753547AbYLISFA (ORCPT
+	Tue, 9 Dec 2008 13:08:26 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:36362 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752976AbYLISIZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 13:05:00 -0500
+	Tue, 9 Dec 2008 13:08:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=HZuXFzvnF7eySpq79DHEwHs4khIsx4pJ+kH2zxjCzSI1bzvlMI0EuAcNfvLWwoalxw
-         jb+c2bO5Vj8m5+uoAtpUhDGGZj8FrieLi1O09n+cvHoAolJnmMSM4USjIoLvoZGjZO4y
-         0sZVONM5jZvMkSt3pyqRbKC/zONyYK5K6DKQg=
-Message-ID: <e9e943910812091004n6cd419e1gc95bad41fb13fb32@mail.gmail.com>
-Date: Tue, 9 Dec 2008 18:04:58 +0000
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Boaz Harrosh" <bharrosh@panasas.com>
-Subject: Re: Checking link targets are NULL-terminated
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Hellwig" <hch@infradead.org>
-In-Reply-To: <493EA0E4.10604@panasas.com>
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Aso2jv9+OiDY9agI86cSpoly8DVVMQ4+9a1RUuV8OhlSLp2dwAqzxb29i4YeqX/G00
+         2Fh2qWDCZGOYu+jh2HRbCMT6BgVkAclA1QNUZpBKZ3HaJkUvwlEetU0wsAe6YR/SkUcT
+         rqhQTTAsHMZEg4c/jS1QFEpw+gmmEmQQzLsI4=
+Message-ID: <493EB22C.2050108@panasas.com>
+Date: Tue, 09 Dec 2008 20:00:12 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Christoph Hellwig <hch@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: Checking link targets are NULL-terminated
+References: <20081205144810.GA25585@dastardly.home.dghda.com> <20081208143003.9449bc77.akpm@linux-foundation.org> <20081209171814.GA8667@infradead.org>
+In-Reply-To: <20081209171814.GA8667@infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081205144810.GA25585@dastardly.home.dghda.com>
-	 <493E8F31.3040806@panasas.com>
-	 <e9e943910812090820h3cc63b5dtb767a8a11ee2bad2@mail.gmail.com>
-	 <493EA0E4.10604@panasas.com>
-X-Google-Sender-Auth: 779d43332200c65f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/9 Boaz Harrosh <bharrosh@panasas.com>:
-> I just want to make sure that you understand the code above and convince
-> you that this can/should be done and will damage nothing.
+Christoph Hellwig wrote:
+> On Mon, Dec 08, 2008 at 02:30:03PM -0800, Andrew Morton wrote:
+>> Perhaps nd_set_link() is a suitable place?  Change that function so
+>> that it is passed a third argument (max_len) and then check that within
+>> nd_set_link().  Change nd_set_link() to return a __must_check-marked
+>> errno, change callers to handle errors appropriately.
+>>
+>> Or something totally different ;)  But along those lines?
+> 
+> Note that XFS and possibly other filesystem don't store the NULL
+> termination on disk.  
 
-No problem, it never hurts to spell things out in detail :)
+Note that ext2, for example, also only writes the string bytes without
+any NULLs. It only happen to be zero padded because any last-page is zero-padded
+from i_size to end of page.
 
-> The code you see above is only for links that are shorter then some constant.
-> The ext2 (and other fs's) will cache this case and write the symlink directly
-> into the inode that will then have 0 number of data blocks. The space allocated
-> at inode is constant and is chosen for good inode packing on disk. The inode
-> starts empty then if a symlink is short the string is strcpy to above buffer.
+> So having a follow_link interface that uses a
+> counted string would be a nice little optimization for the XFS
+> follow_link / readlink implementation.   But I'm not really sure it's
+> worth complicating the VFS for that little gem.
+> 
 
-Sure, I understand this.
+The inode's i_size already holds the string count so at the higher level
+we have that information. But I'm convinced, nd_set_link() should receive
+a new max_len, all users should be changed as a matter of code audit.
+nd_set_link() should then proceed to truncate the string at that length
+unconditionally no need for error returns.
 
-> So even if intentional damage was done to on-disk data, putting another null
-> at the end will never hurt. At most it is redundant since there is another
-> one preceding. But in the case of damage the damage is fixed. There can never
-> be an information lost.
-
-If the link name on disk is corrupted and the last character is not a
-zero then it may be changed. That is information lost, albeit probably
-not *useful* information. I wouldn't like to make such a change
-without an OK from the FS maintainers, but I'll happily do it with
-one. So far we seem to have one vote in favour and none against. :)
-
-Note that the corruption doesn't have to be intentional, of course,
-although it was in the particular bug report I was looking at
-originally.
-
-> For symlinks that are longer then above constant 1 data block is allocated
-> and the symlink is written, padded by zeros. This is taken care of by the
-> generic layer in the code you patched at fs/namei.c. Terminating at
-> i_size + 1 will never reach the disk since only i_size bytes are ever written.
-
-If the data on disk is corrupted such that i_size == PAGE_SIZE then
-again we would have different data in-memory and on-disk. However in
-this case the page would only contain the link name and so wouldn't be
-dirtied and written out unless the name was changed anyway. So I
-agree, it should be safe in this case, regardless of my concerns
-above.
-
-Thanks,
-Duane.
-
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+My $0.017
+Boaz
