@@ -1,51 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbYLIKE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbYLIKGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753429AbYLIKE7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 05:04:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbYLIKEv
+	id S1753179AbYLIKGc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 05:06:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbYLIKGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 05:04:51 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:47896 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751646AbYLIKEu convert rfc822-to-8bit (ORCPT
+	Tue, 9 Dec 2008 05:06:21 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57576 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750922AbYLIKGU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 05:04:50 -0500
-Message-Id: <493E50DE.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Tue, 09 Dec 2008 10:05:02 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>, <tglx@linutronix.de>,
-       <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: x86-64: __pa_symbol() vs. __pa()
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Tue, 9 Dec 2008 05:06:20 -0500
+Date: Tue, 9 Dec 2008 05:06:19 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: "Diego Elio 'Flameeyes' Petten??" <flameeyes@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add basic export support to HFS+.
+Message-ID: <20081209100619.GA18141@infradead.org>
+References: <20081204174706.10397.94789.stgit@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081204174706.10397.94789.stgit@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can any of you recall the reason for the comment accompanying the
-__pa_symbol() definition:
+On Thu, Dec 04, 2008 at 06:47:06PM +0100, Diego Elio 'Flameeyes' Petten?? wrote:
+> From: Diego E. 'Flameeyes' Petten?? <flameeyes@gmail.com>
+> 
+> The functions' skeleton is taken from ext2/super.c and seems to work
+> fine for R/W access to HFS+ non-journaled case-sensitive filesystems.
+> 
+> It's probably slow and has a lot of space for improvement but it's
+> still better than having no hope to export HFS+ filesystems.
+> 
+> Signed-off-by: Diego E. 'Flameeyes' Petten?? <flameeyes@gmail.com>
+> ---
+> 
+>  fs/hfsplus/super.c |   49 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 49 insertions(+), 0 deletions(-)
+> 
 
-/* __pa_symbol should be used for C visible symbols.
-   This seems to be the official gcc blessed way to do such arithmetic. */
+> +static struct inode *hfsplus_export_get_inode(struct super_block *sb,
+> +					      u64 ino, u32 generation)
+> +{
+> +	struct inode *inode;
+> +
+> +	if (ino < HFSPLUS_FIRSTUSER_CNID && ino != HFSPLUS_ROOT_CNID)
+> +		return ERR_PTR(-ESTALE);
+> +
+> +	/* iget isn't really right if the inode is currently unallocated!!
+> +	 */
 
-To me this rather sounds like a compiler problem, and if it indeed
-exists then at least a few incorrect use have slipped in recently:
-- arch/x86/mm/ioremap.c passes bm_pte to __pa()
-- arch/x86/mm/pageattr.c passes _text and __{start,end}_rodata
-  to __pa()
-- arch/x86/mm/pgtable.c and arch/x86/xen/smp.c pass
-  swapper_pg_dir to __pa()
-- arch/x86/xen/enlighten passes level3_user_vsyscall to __pa()
-This is only the set where x86-64 (which prior to the merge had
-above comment already) is affected, i386 would have a few more.
+I don't understand this comment.  This interface is only used when
+getting the FH for an already allocated inode.  hfsplus_iget is what
+all other operations use in hfsplus, so it seems fine.  hfs experts
+might chime in that something else might be needed due to the strange
+ways links work in hfs, but from the VFS POW it seems fine.
 
-What would be particularly problematic is the potential indirect use
-of __pa(), e.g. through Xen's virt_to_{machine,bus}() as well as
-the use in common code (e.g. kernel/kexec.c).
+> +	inode = hfsplus_iget(sb, ino);
+> +	if (IS_ERR(inode))
+> +		return ERR_CAST(inode);
+> +	if (generation && inode->i_generation != generation) {
+> +		/* we didn't find the right inode.. */
+> +		iput(inode);
+> +		return ERR_PTR(-ESTALE);
+> +	}
 
-Thanks, Jan
+hfsplus never updates i_generation, so this check is superflous.  Brad,
+Roman: is there something that can help to guard against inode number
+reuse on HFS/HFSplus?
+
+
+> +/* Yes, most of these are left as NULL!!
+> + * A NULL value implies the default, which (hopefully) works with
+> + * hfs+-like file systems, but can be improved upon.
+> + * Currently only fh_to_dentry is required.
+> + */
+
+You _do_ need a get_parent, otherwise access will magically fail once
+any directory inode in a path is out of the cache.  This can be
+trivially reproduced by unexporting and unmounting a filesystem while
+a client has a cwd deep inside the exported filesystem.
+
+And otherwise I don't think this comment is helpful in the code,
+fh_to_parent / fh_To_dentry and get_parent is what most simpler
+filesystems have.
 
