@@ -1,64 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYLIMnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753592AbYLIMy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbYLIMnl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 07:43:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYLIMnd
+	id S1753592AbYLIMy5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 07:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYLIMyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 07:43:33 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47317 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751518AbYLIMnc (ORCPT
+	Tue, 9 Dec 2008 07:54:44 -0500
+Received: from an-out-0708.google.com ([209.85.132.242]:38765 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751576AbYLIMyn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 07:43:32 -0500
-Date: Tue, 9 Dec 2008 13:43:21 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: mtk.manpages@gmail.com
-Cc: Jonathan Corbet <corbet@lwn.net>,
-       kernel list <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Document sysfs interface to RTC system wakeup
-Message-ID: <20081209124320.GC1547@ucw.cz>
-References: <20081126161524.GD1983@elf.ucw.cz> <20081126095610.13195e15@bike.lwn.net> <20081126170032.GE10157@atrey.karlin.mff.cuni.cz> <cfd18e0f0811281340r2317a1e4y938e11da27a35558@mail.gmail.com>
+	Tue, 9 Dec 2008 07:54:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=DWdKme7y0siaVX/U41AigQ/UQIC5UfidkTxBxfJwrYeWsDn78BCCZ0GcsKN0KbhGWP
+         UMlWwbTUP3xW2VqssoqAKTpcyyz6ErjRHyrNkEuDp5DWOJw6eF3gjqpM5CuJOK+1W1cp
+         nNNbTS19azehM3qdjvm6ZvU/U4wUx/H7q3Nr8=
+Message-ID: <a4423d670812090454y72e2a0bdt8f6d53f0dc9b9ef2@mail.gmail.com>
+Date: Tue, 9 Dec 2008 15:54:42 +0300
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: linux-next@vger.kernel.org, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: next-20081209: pdflush: page allocation failure (xfs)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <cfd18e0f0811281340r2317a1e4y938e11da27a35558@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I got the message during compiling of the kernel.
+(tainted by previous warning)
 
-On Fri 2008-11-28 16:40:35, Michael Kerrisk wrote:
-> On Wed, Nov 26, 2008 at 12:00 PM, Pavel Machek <pavel@suse.cz> wrote:
-> >> On Wed, 26 Nov 2008 17:15:24 +0100
-> >> Pavel Machek <pavel@suse.cz> wrote:
-> >>
-> >> > +How to use /sys/class/rtc/rtcX/wakealarm
-> >> > +^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> >> > +This file takes the seconds since epoch to enable a wake event at the
-> >> > +specified time.
-> >>
-> >> More documentation is cool.  In this case, though, I'm left with an
-> >> immediate question: *why* am I interested in wakealarm?  Reading
-> >> through, I eventually figure out that it can maybe be used to get a
-> >> system to start up at some point in the future, maybe.  It seems like
-> >> that should be said at the outset.
-> >
-> > You can suspend/power down your machine, and it will power itself up
-> > at appropriate time.
-> >
-> >> Also; why do I want to migrate from /proc/acpi/alarm?
-> >
-> > Because /proc/acpi/alarm is ugly hack that is going to go away :-).
-> 
-> And these are the statements that (in slightly more polished terms)
-> should be in your doc ;-), in order to address Jonathan's quite
-> reasonable questions.
+x86_64, 2Gb of RAM
 
-I'm bad at polishing, but I'll add short explanation.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pdflush: page allocation failure. order:0, mode:0x4000
+Pid: 30415, comm: pdflush Tainted: G        W  2.6.28-rc7-next-20081209 #3
+Call Trace:
+ [<ffffffff8027c292>] __alloc_pages_internal+0x469/0x488
+ [<ffffffff802c170d>] ? bvec_alloc_bs+0xdc/0x11a
+ [<ffffffff8029b3b7>] alloc_slab_page+0x20/0x26
+ [<ffffffff8029b6b4>] __slab_alloc+0x26c/0x596
+ [<ffffffff802c170d>] ? bvec_alloc_bs+0xdc/0x11a
+ [<ffffffff802c170d>] ? bvec_alloc_bs+0xdc/0x11a
+ [<ffffffff8029bdbb>] kmem_cache_alloc+0x7b/0xbe
+ [<ffffffff802c170d>] bvec_alloc_bs+0xdc/0x11a
+ [<ffffffff802c17f4>] bio_alloc_bioset+0xa9/0x101
+ [<ffffffff802c18b6>] bio_alloc+0x10/0x1f
+ [<ffffffff80354781>] xfs_alloc_ioend_bio+0x23/0x52
+ [<ffffffff80354838>] xfs_submit_ioend+0x56/0xd4
+ [<ffffffff80354e9f>] xfs_page_state_convert+0x5e9/0x642
+ [<ffffffff803536bb>] ? xfs_count_page_state+0x97/0xb6
+ [<ffffffff803551cf>] xfs_vm_writepage+0xbe/0xf7
+ [<ffffffff8027c490>] __writepage+0x15/0x3b
+ [<ffffffff8027ce0b>] write_cache_pages+0x1cd/0x331
+ [<ffffffff8027c47b>] ? __writepage+0x0/0x3b
+ [<ffffffff8027cf91>] generic_writepages+0x22/0x28
+ [<ffffffff803550f3>] xfs_vm_writepages+0x45/0x4e
+ [<ffffffff8027cfc2>] do_writepages+0x2b/0x3b
+ [<ffffffff802b8e98>] __writeback_single_inode+0x186/0x2fa
+ [<ffffffff802b94c3>] ? generic_sync_sb_inodes+0x2bc/0x30a
+ [<ffffffff802b9433>] generic_sync_sb_inodes+0x22c/0x30a
+ [<ffffffff802b972b>] writeback_inodes+0x9d/0xf4
+ [<ffffffff8027d118>] wb_kupdate+0xa3/0x11e
+ [<ffffffff8027db96>] pdflush+0x11d/0x1d0
+ [<ffffffff8027d075>] ? wb_kupdate+0x0/0x11e
+ [<ffffffff8027da79>] ? pdflush+0x0/0x1d0
+ [<ffffffff80249cfd>] kthread+0x49/0x76
+ [<ffffffff8020c8fa>] child_rip+0xa/0x20
+ [<ffffffff802314de>] ? finish_task_switch+0x0/0xb9
+ [<ffffffff8020c2c0>] ? restore_args+0x0/0x30
+ [<ffffffff80249cb4>] ? kthread+0x0/0x76
+ [<ffffffff8020c8f0>] ? child_rip+0x0/0x20
+Mem-Info:
+DMA per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+CPU    1: hi:    0, btch:   1 usd:   0
+CPU    2: hi:    0, btch:   1 usd:   0
+CPU    3: hi:    0, btch:   1 usd:   0
+DMA32 per-cpu:
+CPU    0: hi:  186, btch:  31 usd: 109
+CPU    1: hi:  186, btch:  31 usd: 154
+CPU    2: hi:  186, btch:  31 usd:  76
+CPU    3: hi:  186, btch:  31 usd:  39
+Active_anon:46892 active_file:71530 inactive_anon:10315
+ inactive_file:243246 unevictable:0 dirty:15089 writeback:1402 unstable:0
+ free:1877 slab:116494 mapped:672 pagetables:401 bounce:0
+DMA free:1452kB min:40kB low:48kB high:60kB active_anon:0kB
+inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB
+present:15072kB pages_scanned:0 all_unreclaimable? yes
+lowmem_reserve[]: 0 1975 1975 1975
+DMA32 free:6056kB min:5664kB low:7080kB high:8496kB
+active_anon:187568kB inactive_anon:41260kB active_file:286120kB
+inactive_file:972984kB unevictable:0kB present:2023256kB
+pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+DMA: 1*4kB 1*8kB 0*16kB 1*32kB 2*64kB 2*128kB 2*256kB 1*512kB 0*1024kB
+0*2048kB 0*4096kB = 1452kB
+DMA32: 204*4kB 59*8kB 6*16kB 4*32kB 1*64kB 1*128kB 1*256kB 0*512kB
+0*1024kB 0*2048kB 1*4096kB = 6056kB
+314797 total pagecache pages
+0 pages in swap cache
+Swap cache stats: add 0, delete 0, find 0/0
+Free swap  = 3911788kB
+Total swap = 3911788kB
+523088 pages RAM
+22877 pages reserved
+224954 pages shared
+276682 pages non-shared
