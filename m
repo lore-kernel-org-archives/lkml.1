@@ -1,100 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbYLIW6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbYLIW7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755527AbYLIW6y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 17:58:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYLIW6q
+	id S1755719AbYLIW7v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 17:59:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYLIW7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 17:58:46 -0500
-Received: from mail-bw0-f13.google.com ([209.85.218.13]:47131 "EHLO
-	mail-bw0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbYLIW6p (ORCPT
+	Tue, 9 Dec 2008 17:59:43 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42745 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753362AbYLIW7m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 17:58:45 -0500
-X-Greylist: delayed 322 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Dec 2008 17:58:44 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=sAYtdt9AbPDOD8UBUnoCgZy89Tg16dS3UU+ZsbE5jpSUnOIAQRWyNOz+PY+xZ59L0u
-         LqBe5mG/7tRBK1mABJ5CbsvRAFv1b99mCLAzcKR7oqCKWubHACsg4QWjpgqkgy5OBj0/
-         QPXUYdnrjsEwVDHGfgOPBhHNvkqvqbz8RKSf8=
-Message-ID: <493EF6DC.10207@gmail.com>
-Date: Tue, 09 Dec 2008 23:53:16 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Tue, 9 Dec 2008 17:59:42 -0500
+Date: Tue, 9 Dec 2008 17:59:31 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com, Richard Henderson <rth@twiddle.net>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Bryan Wu <cooloney@kernel.org>, Mikael Starvik <starvik@axis.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Tony Luck <tony.luck@intel.com>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Ungerer <gerg@uclinux.org>, Ralf Baechle <ralf@linux-mips.org>,
+       linux-parisc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       "David S. Miller" <davem@davemloft.net>, Jeff Dike <jdike@addtoit.com>,
+       Ingo Molnar <mingo@redhat.com>, Chris Zankel <chris@zankel.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: setup_arch/arch_get_boot_command_line changes
+Message-ID: <20081209225931.GA7015@bombadil.infradead.org>
+References: <200812100850.26728.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] tracing/function-graph-tracer: add a new .irqentry.text
- section
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200812100850.26728.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Let the function-graph-tracer aware of the irq entrypoints
+On Wed, Dec 10, 2008 at 08:50:24AM +1030, Rusty Russell wrote:
+> Rusty Russell (10):
+> <snip>
+>       param: move banner printing to top of start_kernel.    
+> 
 
-Add a new .irqentry.text section to store the irq entrypoints functions
-inside the same section. This way, the tracer will be able to signal
-an interrupts triggering on output by recognizing these entrypoints.
+Will this not run afoul of lockdep since it will be attempting to take
+locks before lockdep has initialized?
 
-Also, make this section recordable for dynamic tracing.
+(as an aside, it would be nice if it came after setup_arch, since on
+some horrible platforms, printk_time needs the fpu turned on for
+(integer) division, but there's no arch hook before the first printk, so
+one needs to hijack the start_kernel entrypoint...)
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- arch/x86/kernel/vmlinux_64.lds.S  |    1 +
- include/asm-generic/vmlinux.lds.h |   10 ++++++++++
- scripts/recordmcount.pl           |    1 +
- 3 files changed, 12 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
-index 46e0544..1a614c0 100644
---- a/arch/x86/kernel/vmlinux_64.lds.S
-+++ b/arch/x86/kernel/vmlinux_64.lds.S
-@@ -35,6 +35,7 @@ SECTIONS
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	KPROBES_TEXT
-+	IRQENTRY_TEXT
- 	*(.fixup)
- 	*(.gnu.warning)
- 	_etext = .;		/* End of text section */
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 30536c3..acb72d8 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -288,6 +288,16 @@
- 		*(.kprobes.text)					\
- 		VMLINUX_SYMBOL(__kprobes_text_end) = .;
- 
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+#define IRQENTRY_TEXT							\
-+		ALIGN_FUNCTION();					\
-+		VMLINUX_SYMBOL(__irqentry_text_start) = .;		\
-+		*(.irqentry.text)					\
-+		VMLINUX_SYMBOL(__irqentry_text_end) = .;
-+#else
-+#define IRQENTRY_TEXT
-+#endif
-+
- /* Section used for early init (in .S files) */
- #define HEAD_TEXT  *(.head.text)
- 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 0b1dc9f..fe83141 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -114,6 +114,7 @@ my %text_sections = (
-      ".text" => 1,
-      ".sched.text" => 1,
-      ".spinlock.text" => 1,
-+     ".irqentry.text" => 1,
- );
- 
- $objdump = "objdump" if ((length $objdump) == 0);
--- 
-1.6.0.4
-
+regards, Kyle
