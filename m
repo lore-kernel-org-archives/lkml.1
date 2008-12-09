@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbYLIXCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbYLIXCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755841AbYLIXCb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 18:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbYLIXCU
+	id S1756291AbYLIXCq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 18:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbYLIXCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 18:02:20 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52136 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbYLIXCT (ORCPT
+	Tue, 9 Dec 2008 18:02:30 -0500
+Received: from mu-out-0910.google.com ([209.85.134.186]:38599 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756026AbYLIXC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 18:02:19 -0500
-Date: Tue, 9 Dec 2008 18:02:14 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: Kyle McMartin <kyle@infradead.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com, Richard Henderson <rth@twiddle.net>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Bryan Wu <cooloney@kernel.org>, Mikael Starvik <starvik@axis.com>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Tony Luck <tony.luck@intel.com>,
-       Hirokazu Takata <takata@linux-m32r.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@uclinux.org>, Ralf Baechle <ralf@linux-mips.org>,
-       linux-parisc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       "David S. Miller" <davem@davemloft.net>, Jeff Dike <jdike@addtoit.com>,
-       Ingo Molnar <mingo@redhat.com>, Chris Zankel <chris@zankel.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: setup_arch/arch_get_boot_command_line changes
-Message-ID: <20081209230214.GB7015@bombadil.infradead.org>
-References: <200812100850.26728.rusty@rustcorp.com.au> <20081209225931.GA7015@bombadil.infradead.org>
+	Tue, 9 Dec 2008 18:02:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Y1tPSb8GR/77VaZr06HjRfyiYdiV0ZvAOCocrp5uPEdy3X8hrxH5bwjjn/O0mrcCj8
+         c9hAX4WJAq9DINhKyLMm0xZ8jQRihJE/mvGUm2c8FI4IcYexwhUiee+60QPzJow6zgQn
+         UJJfxaMitctFxu/O8u4aLrrsYvNaE3IcYc3Xc=
+Message-ID: <493EF797.7090603@gmail.com>
+Date: Tue, 09 Dec 2008 23:56:23 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081209225931.GA7015@bombadil.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] tracing/function-graph-tracer: signal interrupt triggering
+ on output
+References: <493EF64D.50804@gmail.com>
+In-Reply-To: <493EF64D.50804@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 09, 2008 at 05:59:31PM -0500, Kyle McMartin wrote:
-> Will this not run afoul of lockdep since it will be attempting to take
-> locks before lockdep has initialized?
+Frederic Weisbecker wrote:
+> This patchset adds all the features to draw hardirq triggering on output
+> for the function graph tracer.
+> An example is given on the third patch.
+> 
+> Just one question, on recordmcount.pl:
+> 
+> my %text_sections = (
+>       ".text" => 1,
+>       ".sched.text" => 1,
+>       ".spinlock.text" => 1,
+> 
+> The .sched.text section is included inside .text, it's a subsection, I'm not sure
+> it's necessary to add it in text_sections. In doubt I added the new .irqentry.text
+> 
+> The stat of the patchset:
+> 
+>  arch/x86/kernel/apic.c               |    3 +-
+>  arch/x86/kernel/irq_64.c             |    3 +-
+>  arch/x86/kernel/vmlinux_64.lds.S     |    1 +
+>  include/asm-generic/vmlinux.lds.h    |   10 +++++
+>  include/linux/ftrace.h               |   11 ++++++
+>  kernel/trace/trace_functions_graph.c |   66 +++++++++++++++++++++++++++++++--
+>  scripts/recordmcount.pl              |    1 +
+>  7 files changed, 89 insertions(+), 6 deletions(-)
+> 
 > 
 
-Ah, printk calls lockdep_off now. Handy.
-
+Sorry, forgot to cc LKML on this one.
