@@ -1,125 +1,382 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbYLILEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYLILF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851AbYLILEM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 06:04:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYLILDp
+	id S1753960AbYLILF1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 06:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYLILFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 06:03:45 -0500
-Received: from gv-out-0910.google.com ([216.239.58.184]:3140 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753979AbYLILDn (ORCPT
+	Tue, 9 Dec 2008 06:05:13 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57019 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752607AbYLILFL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 06:03:43 -0500
-Date: Tue, 9 Dec 2008 12:03:37 +0100
-From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       tglx@linutronix.de
-Subject: Re: BUG: bad unlock balance detected! e1000e
-Message-ID: <20081209110337.GJ4864@gambetta>
-References: <c4e36d110812080324y68c0e453qcb68a040da7ac9a2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c4e36d110812080324y68c0e453qcb68a040da7ac9a2@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 9 Dec 2008 06:05:11 -0500
+Date: Tue, 9 Dec 2008 20:04:13 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH 1/6] memcg: Documentation for internal implementation
+Message-Id: <20081209200413.d842ede4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081209200213.0e2128c1.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081209200213.0e2128c1.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Zdenek,
 
-This could be due to 717d438d1fde94decef874b9808379d1f4523453
-    "e1000e: debug contention on NVM SWFLAG"
-Error handling is missing from e1000_reset_hw_ich8lan so it may happen
-that we don't acquire the nvm_mutex if the card times out.
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Adding Thomas to CC.
+Update/Fix document about implementation details of memcg.
 
-Regards,
-Frederik
+Changelog:
+ - applied Randy Dunlap's comments.
 
-It some error checking is missing in e1000e: debug contention on NVM
-SWFLAG
-On Mon, Dec 08, 2008 at 12:24:09PM +0100, Zdenek Kabelac wrote:
-> Hi
-> 
-> During occasional scan of message log - I've found out this BUG which
-> happened on Dec3 with the -rc7 from that day.
-> (So if it's now fixed in current git feel free to ignore :))
-> 
-> My machine T61 - C2D, 2GB, 64bit kernel - message appeared during
-> shutdown and was actually not noticed by me...
-> 
-> 
-> NetworkManager: <WARN>  nm_signal_handler(): Caught signal 15,
-> shutting down normally.
-> NetworkManager: <info>  (eth0): now unmanaged
-> NetworkManager: <info>  (eth0): device state change: 3 -> 1
-> NetworkManager: <info>  (eth0): cleaning up...
-> NetworkManager: <info>  (eth0): taking down device.
-> 
-> =====================================
-> [ BUG: bad unlock balance detected! ]
-> -------------------------------------
-> NetworkManager/2058 is trying to release lock (nvm_mutex) at:
-> [<ffffffff8052acb9>] mutex_unlock+0x9/0x10
-> but there are no more locks to release!
-> 
-> other info that might help us debug this:
-> 1 lock held by NetworkManager/2058:
->  #0:  (rtnl_mutex){--..}, at: [<ffffffff804b09ba>] rtnetlink_rcv+0x1a/0x40
-> 
-> stack backtrace:
-> Pid: 2058, comm: NetworkManager Not tainted 2.6.28-rc7 #90
-> Call Trace:
->  [<ffffffff8026bf6b>] print_unlock_inbalance_bug+0xfb/0x120
->  [<ffffffff8026db76>] ? mark_held_locks+0x56/0xa0
->  [<ffffffff802500ba>] ? try_to_del_timer_sync+0x5a/0x70
->  [<ffffffff8052ce23>] ? _spin_unlock_irqrestore+0x43/0x70
->  [<ffffffff8026f468>] lock_release_non_nested+0x1a8/0x2a0
->  [<ffffffff802500ba>] ? try_to_del_timer_sync+0x5a/0x70
->  [<ffffffff8052acb9>] ? mutex_unlock+0x9/0x10
->  [<ffffffff8026f61b>] lock_release+0xbb/0x200
->  [<ffffffff8052abc6>] __mutex_unlock_slowpath+0x86/0x170
->  [<ffffffff8052acb9>] mutex_unlock+0x9/0x10
->  [<ffffffffa019cf45>] e1000_release_swflag_ich8lan+0x35/0x40 [e1000e]
->  [<ffffffffa019de19>] e1000_reset_hw_ich8lan+0xa9/0x130 [e1000e]
->  [<ffffffffa01ab140>] e1000e_reset+0xf0/0x260 [e1000e]
->  [<ffffffff802500ea>] ? del_timer_sync+0x1a/0x30
->  [<ffffffffa01ab4d8>] e1000e_down+0x178/0x180 [e1000e]
->  [<ffffffffa01ad0b6>] e1000_close+0x26/0xd0 [e1000e]
->  [<ffffffff804a59b6>] dev_close+0x76/0xc0
->  [<ffffffff804a7bd6>] dev_change_flags+0x96/0x1e0
->  [<ffffffff804b1b4c>] do_setlink+0x2ac/0x440
->  [<ffffffff8052cd46>] ? _read_unlock+0x26/0x30
->  [<ffffffff804b1ded>] rtnl_setlink+0x10d/0x150
->  [<ffffffff8052aeb2>] ? mutex_lock_nested+0x1f2/0x300
->  [<ffffffff804b09ba>] ? rtnetlink_rcv+0x1a/0x40
->  [<ffffffff804b0b6d>] rtnetlink_rcv_msg+0x18d/0x240
->  [<ffffffff804b09e0>] ? rtnetlink_rcv_msg+0x0/0x240
->  [<ffffffff804bba29>] netlink_rcv_skb+0x89/0xb0
->  [<ffffffff804b09c9>] rtnetlink_rcv+0x29/0x40
->  [<ffffffff804bb74d>] netlink_unicast+0x2bd/0x2d0
->  [<ffffffff8049e3ee>] ? __alloc_skb+0x6e/0x150
->  [<ffffffff804bc6c4>] netlink_sendmsg+0x204/0x2f0
->  [<ffffffff80499ed8>] ? sock_def_readable+0x68/0x70
->  [<ffffffff80498077>] sock_sendmsg+0x107/0x130
->  [<ffffffff8025c690>] ? autoremove_wake_function+0x0/0x40
->  [<ffffffff80213853>] ? native_sched_clock+0x13/0x60
->  [<ffffffff802d60e6>] ? fget_light+0x106/0x110
->  [<ffffffff80497987>] ? move_addr_to_kernel+0x57/0x60
->  [<ffffffff804a087f>] ? verify_iovec+0x3f/0xe0
->  [<ffffffff80498229>] sys_sendmsg+0x189/0x320
->  [<ffffffff8049851d>] ? sys_sendto+0xfd/0x120
->  [<ffffffff802e6650>] ? d_free+0x50/0x60
->  [<ffffffff802d6691>] ? __fput+0x171/0x1e0
->  [<ffffffff8026dda3>] ? trace_hardirqs_on_caller+0x133/0x190
->  [<ffffffff8028e02f>] ? audit_syscall_entry+0x15f/0x190
->  [<ffffffff8052c906>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->  [<ffffffff8020c57b>] system_call_fastpath+0x16/0x1b
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ Documentation/controllers/memcg_test.txt |  240 ++++++++++++++++++++++++++-----
+ mm/memcontrol.c                          |    4 
+ 2 files changed, 207 insertions(+), 37 deletions(-)
+
+Index: mmotm-2.6.28-Dec03/Documentation/controllers/memcg_test.txt
+===================================================================
+--- mmotm-2.6.28-Dec03.orig/Documentation/controllers/memcg_test.txt
++++ mmotm-2.6.28-Dec03/Documentation/controllers/memcg_test.txt
+@@ -1,59 +1,76 @@
+ Memory Resource Controller(Memcg)  Implementation Memo.
+-Last Updated: 2009/12/03
++Last Updated: 2008/12/04
++Base Kernel Version: based on 2.6.28-rc7-mm.
+ 
+ Because VM is getting complex (one of reasons is memcg...), memcg's behavior
+-is complex. This is a document for memcg's internal behavior and some test
+-patterns tend to be racy.
++is complex. This is a document for memcg's internal behavior.
++Please note that implementation details can be changed.
+ 
+-1. charges
++(*) Topics on API should be in Documentation/controllers/memory.txt)
++
++0. How to record usage ?
++   2 objects are used.
++
++   page_cgroup ....an object per page.
++	Allocated at boot or memory hotplug. Freed at memory hot removal.
++
++   swap_cgroup ... an entry per swp_entry.
++	Allocated at swapon(). Freed at swapoff().
++
++   The page_cgroup has USED bit and double count against a page_cgroup never
++   occurs. swap_cgroup is used only when a charged page is swapped-out.
++
++1. Charge
+ 
+    a page/swp_entry may be charged (usage += PAGE_SIZE) at
+ 
+-	mem_cgroup_newpage_newpage()
+-	  called at new page fault and COW.
++	mem_cgroup_newpage_charge()
++	  Called at new page fault and Copy-On-Write.
+ 
+ 	mem_cgroup_try_charge_swapin()
+-	  called at do_swap_page() and swapoff.
+-	  followed by charge-commit-cancel protocol.
+-	  (With swap accounting) at commit, charges recorded in swap is removed.
++	  Called at do_swap_page() (page fault on swap entry) and swapoff.
++	  Followed by charge-commit-cancel protocol. (With swap accounting)
++	  At commit, a charge recorded in swap_cgroup is removed.
+ 
+ 	mem_cgroup_cache_charge()
+-	  called at add_to_page_cache()
++	  Called at add_to_page_cache()
+ 
+-	mem_cgroup_cache_charge_swapin)()
+-	  called by shmem's swapin processing.
++	mem_cgroup_cache_charge_swapin()
++	  Called at shmem's swapin.
+ 
+ 	mem_cgroup_prepare_migration()
+-	  called before migration. "extra" charge is done
+-	  followed by charge-commit-cancel protocol.
++	  Called before migration. "extra" charge is done and followed by
++	  charge-commit-cancel protocol.
+ 	  At commit, charge against oldpage or newpage will be committed.
+ 
+-2. uncharge
++2. Uncharge
+   a page/swp_entry may be uncharged (usage -= PAGE_SIZE) by
+ 
+ 	mem_cgroup_uncharge_page()
+-	  called when an anonymous page is unmapped. If the page is SwapCache
+-	  uncharge is delayed until mem_cgroup_uncharge_swapcache().
++	  Called when an anonymous page is fully unmapped. I.e., mapcount goes
++	  to 0. If the page is SwapCache, uncharge is delayed until
++	  mem_cgroup_uncharge_swapcache().
+ 
+ 	mem_cgroup_uncharge_cache_page()
+-	  called when a page-cache is deleted from radix-tree. If the page is
+-	  SwapCache, uncharge is delayed until mem_cgroup_uncharge_swapcache()
++	  Called when a page-cache is deleted from radix-tree. If the page is
++	  SwapCache, uncharge is delayed until mem_cgroup_uncharge_swapcache().
+ 
+ 	mem_cgroup_uncharge_swapcache()
+-	  called when SwapCache is removed from radix-tree. the charge itself
++	  Called when SwapCache is removed from radix-tree. The charge itself
+ 	  is moved to swap_cgroup. (If mem+swap controller is disabled, no
+-	  charge to swap.)
++	  charge to swap occurs.)
+ 
+ 	mem_cgroup_uncharge_swap()
+-	  called when swp_entry's refcnt goes down to be 0. charge against swap
++	  Called when swp_entry's refcnt goes down to 0. A charge against swap
+ 	  disappears.
+ 
+ 	mem_cgroup_end_migration(old, new)
+-	at success of migration -> old is uncharged (if necessary), charge
+-	to new is committed. at failure, charge to old is committed.
++	At success of migration old is uncharged (if necessary), a charge
++	to new page is committed. At failure, charge to old page is committed.
+ 
+ 3. charge-commit-cancel
+-	In some case, we can't know this "charge" is valid or not at charge.
++	In some case, we can't know this "charge" is valid or not at charging
++	(because of races).
+ 	To handle such case, there are charge-commit-cancel functions.
+ 		mem_cgroup_try_charge_XXX
+ 		mem_cgroup_commit_charge_XXX
+@@ -68,24 +85,164 @@ patterns tend to be racy.
+ 
+ 	At cancel(), simply usage -= PAGE_SIZE.
+ 
+-4. Typical Tests.
++Under below explanation, we assume CONFIG_MEM_RES_CTRL_SWAP=y.
++
++4. Anonymous
++	Anonymous page is newly allocated at
++		  - page fault into MAP_ANONYMOUS mapping.
++		  - Copy-On-Write.
++ 	It is charged right after it's allocated before doing any page table
++	related operations. Of course, it's uncharged when another page is used
++	for the fault address.
++
++	At freeing anonymous page (by exit() or munmap()), zap_pte() is called
++	and pages for ptes are freed one by one.(see mm/memory.c). Uncharges
++	are done at page_remove_rmap() when page_mapcount() goes down to 0.
++
++	Another page freeing is by page-reclaim (vmscan.c) and anonymous
++	pages are swapped out. In this case, the page is marked as
++	PageSwapCache(). uncharge() routine doesn't uncharge the page marked
++	as SwapCache(). It's delayed until __delete_from_swap_cache().
++
++	4.1 Swap-in.
++	At swap-in, the page is taken from swap-cache. There are 2 cases.
++
++	(a) If the SwapCache is newly allocated and read, it has no charges.
++	(b) If the SwapCache has been mapped by processes, it has been
++	    charged already.
++
++	In case (a), we charge it. In case (b), we don't charge it.
++	(But racy state between (a) and (b) exists. We do check it.)
++	At charging, a charge recorded in swap_cgroup is moved to page_cgroup.
++
++	4.2 Swap-out.
++	At swap-out, typical state transition is below.
++
++	(a) add to swap cache. (marked as SwapCache)
++	    swp_entry's refcnt += 1.
++	(b) fully unmapped.
++	    swp_entry's refcnt += # of ptes.
++	(c) write back to swap.
++	(d) delete from swap cache. (remove from SwapCache)
++	    swp_entry's refcnt -= 1.
++
++
++	At (b), the page is marked as SwapCache and not uncharged.
++	At (d), the page is removed from SwapCache and a charge in page_cgroup
++	is moved to swap_cgroup.
++
++	Finally, at task exit,
++	(e) zap_pte() is called and swp_entry's refcnt -=1 -> 0.
++	Here, a charge in swap_cgroup disappears.
++
++5. Page Cache
++   	Page Cache is charged at
++	- add_to_page_cache_locked().
++
++	uncharged at
++	- __remove_from_page_cache().
++
++	The logic is very clear. (About migration, see below)
++	Note: __remove_from_page_cache() is called by remove_from_page_cache()
++	and __remove_mapping().
++
++6. Shmem(tmpfs) Page Cache
++	Memcg's charge/uncharge have special handlers of shmem. The best way
++	to understand shmem's page state transition is to read mm/shmem.c.
++	But brief explanation of the behavior of memcg around shmem will be
++	helpful to understand the logic.
++
++	Shmem's page (just leaf page, not direct/indirect block) can be on
++		- radix-tree of shmem's inode.
++		- SwapCache.
++		- Both on radix-tree and SwapCache. This happens at swap-in
++		  and swap-out,
++
++	It's charged when...
++	- A new page is added to shmem's radix-tree.
++	- A swp page is read. (move a charge from swap_cgroup to page_cgroup)
++	It's uncharged when
++	- A page is removed from radix-tree and not SwapCache.
++	- When SwapCache is removed, a charge is moved to swap_cgroup.
++	- When swp_entry's refcnt goes down to 0, a charge in swap_cgroup
++	  disappears.
+ 
+-  Tests for racy cases.
++7. Page Migration
++   	One of the most complicated functions is page-migration-handler.
++	Memcg has 2 routines. Assume that we are migrating a page's contents
++	from OLDPAGE to NEWPAGE.
++
++	Usual migration logic is..
++	(a) remove the page from LRU.
++	(b) allocate NEWPAGE (migration target)
++	(c) lock by lock_page().
++	(d) unmap all mappings.
++	(e-1) If necessary, replace entry in radix-tree.
++	(e-2) move contents of a page.
++	(f) map all mappings again.
++	(g) pushback the page to LRU.
++	(-) OLDPAGE will be freed.
++
++	Before (g), memcg should complete all necessary charge/uncharge to
++	NEWPAGE/OLDPAGE.
++
++	The point is....
++	- If OLDPAGE is anonymous, all charges will be dropped at (d) because
++          try_to_unmap() drops all mapcount and the page will not be
++	  SwapCache.
++
++	- If OLDPAGE is SwapCache, charges will be kept at (g) because
++	  __delete_from_swap_cache() isn't called at (e-1)
++
++	- If OLDPAGE is page-cache, charges will be kept at (g) because
++	  remove_from_swap_cache() isn't called at (e-1)
++
++	memcg provides following hooks.
++
++	- mem_cgroup_prepare_migration(OLDPAGE)
++	  Called after (b) to account a charge (usage += PAGE_SIZE) against
++	  memcg which OLDPAGE belongs to.
++
++        - mem_cgroup_end_migration(OLDPAGE, NEWPAGE)
++	  Called after (f) before (g).
++	  If OLDPAGE is used, commit OLDPAGE again. If OLDPAGE is already
++	  charged, a charge by prepare_migration() is automatically canceled.
++	  If NEWPAGE is used, commit NEWPAGE and uncharge OLDPAGE.
++
++	  But zap_pte() (by exit or munmap) can be called while migration,
++	  we have to check if OLDPAGE/NEWPAGE is a valid page after commit().
++
++8. LRU
++        Each memcg has its own private LRU. Now, it's handling is under global
++	VM's control (means that it's handled under global zone->lru_lock).
++	Almost all routines around memcg's LRU is called by global LRU's
++	list management functions under zone->lru_lock().
++
++	A special function is mem_cgroup_isolate_pages(). This scans
++	memcg's private LRU and call __isolate_lru_page() to extract a page
++	from LRU.
++	(By __isolate_lru_page(), the page is removed from both of global and
++	 private LRU.)
+ 
+-  4.1 small limit to memcg.
++
++9. Typical Tests.
++
++ Tests for racy cases.
++
++ 9.1 Small limit to memcg.
+ 	When you do test to do racy case, it's good test to set memcg's limit
+ 	to be very small rather than GB. Many races found in the test under
+ 	xKB or xxMB limits.
+ 	(Memory behavior under GB and Memory behavior under MB shows very
+ 	 different situation.)
+ 
+-  4.2 shmem
++ 9.2 Shmem
+ 	Historically, memcg's shmem handling was poor and we saw some amount
+ 	of troubles here. This is because shmem is page-cache but can be
+ 	SwapCache. Test with shmem/tmpfs is always good test.
+ 
+-  4.3 migration
+-	For NUMA, migration is an another special. To do easy test, cpuset
++ 9.3 Migration
++	For NUMA, migration is an another special case. To do easy test, cpuset
+ 	is useful. Following is a sample script to do migration.
+ 
+ 	mount -t cgroup -o cpuset none /opt/cpuset
+@@ -118,20 +275,20 @@ patterns tend to be racy.
+ 	G2_TASK=`cat ${G2}/tasks`
+ 	move_task "${G1_TASK}" ${G2} &
+ 	--
+-  4.4 memory hotplug.
++ 9.4 Memory hotplug.
+ 	memory hotplug test is one of good test.
+ 	to offline memory, do following.
+ 	# echo offline > /sys/devices/system/memory/memoryXXX/state
+ 	(XXX is the place of memory)
+ 	This is an easy way to test page migration, too.
+ 
+- 4.5 mkdir/rmdir
++ 9.5 mkdir/rmdir
+ 	When using hierarchy, mkdir/rmdir test should be done.
+-	tests like following.
++	Use tests like the following.
+ 
+-	#echo 1 >/opt/cgroup/01/memory/use_hierarchy
+-	#mkdir /opt/cgroup/01/child_a
+-	#mkdir /opt/cgroup/01/child_b
++	echo 1 >/opt/cgroup/01/memory/use_hierarchy
++	mkdir /opt/cgroup/01/child_a
++	mkdir /opt/cgroup/01/child_b
+ 
+ 	set limit to 01.
+ 	add limit to 01/child_b
+@@ -143,3 +300,12 @@ patterns tend to be racy.
+ 	/opt/cgroup/01/child_c
+ 
+ 	running new jobs in new group is also good.
++
++ 9.6 Mount with other subsystems.
++	Mounting with other subsystems is a good test because there is a
++	race and lock dependency with other cgroup subsystems.
++
++	example)
++	# mount -t cgroup none /cgroup -t cpuset,memory,cpu,devices
++
++	and do task move, mkdir, rmdir etc...under this.
+Index: mmotm-2.6.28-Dec03/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.28-Dec03.orig/mm/memcontrol.c
++++ mmotm-2.6.28-Dec03/mm/memcontrol.c
+@@ -6,6 +6,10 @@
+  * Copyright 2007 OpenVZ SWsoft Inc
+  * Author: Pavel Emelianov <xemul@openvz.org>
+  *
++ * Documentation is available at
++ * 	Documentation/controllers/memory.txt
++ * 	Documentation/controllers/memcg_test.txt
++ *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+
