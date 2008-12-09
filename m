@@ -1,143 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbYLIDvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbYLIDuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbYLIDvX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 22:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYLIDvO
+	id S1753424AbYLIDuk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 22:50:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbYLIDuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 22:51:14 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:51163 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbYLIDvM (ORCPT
+	Mon, 8 Dec 2008 22:50:32 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:60313 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbYLIDuc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 22:51:12 -0500
-Date: Tue, 9 Dec 2008 09:18:28 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [mm] [PATCH 3/4] Memory cgroup hierarchical reclaim (v4)
-Message-ID: <20081209034828.GU13333@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-mm@kvack.org,
-	YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-	Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-	linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-	David Rientjes <rientjes@google.com>,
-	Pavel Emelianov <xemul@openvz.org>,
-	Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20081116081034.25166.7586.sendpatchset@balbir-laptop> <20081116081055.25166.85066.sendpatchset@balbir-laptop> <20081125205832.38f8c365.nishimura@mxp.nes.nec.co.jp> <492C1345.9090201@linux.vnet.ibm.com> <20081126111447.106ec275.nishimura@mxp.nes.nec.co.jp> <20081209115943.7d6a0ea3.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20081209115943.7d6a0ea3.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 8 Dec 2008 22:50:32 -0500
+Subject: [RFC][PATCH 1/3] Create arch_gettimeoffset infrastructure for use
+	in the generic timekeeping core.
+From: john stultz <johnstul@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: rmk+lkml@arm.linux.org.uk, cooloney@kernel.org, starvik@axis.com,
+       takata@linux-m32r.org, geert@linux-m68k.org,
+       Roman Zippel <zippel@linux-m68k.org>, lethal@linux-sh.org,
+       Magnus Damm <magnus.damm@gmail.com>, wli@holomorphy.com,
+       chris@zankel.net, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1228794561.6918.57.camel@localhost.localdomain>
+References: <1228794561.6918.57.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 08 Dec 2008 19:50:27 -0800
+Message-Id: <1228794627.6918.59.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-12-09 11:59:43]:
+Some arches don't supply their own clocksource. This is mainly the case
+in architectures that get their inter-tick times by reading the counter
+on their interval timer. Since these timers wrap every tick, they're not
+really useful as clocksources. Wrapping them to act like one is possible
+but not very efficient. So we provide a callout these arches  can
+implement for use with the jiffies clocksource to provide finer then
+tick granular time.
 
-> On Wed, 26 Nov 2008 11:14:47 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> 
-> > On Tue, 25 Nov 2008 20:31:25 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > Daisuke Nishimura wrote:
-> > > > Hi.
-> > > > 
-> > > > Unfortunately, trying to hold cgroup_mutex at reclaim causes dead lock.
-> > > > 
-> > > > For example, when attaching a task to some cpuset directory(memory_migrate=on),
-> > > > 
-> > > >     cgroup_tasks_write (hold cgroup_mutex)
-> > > >         attach_task_by_pid
-> > > >             cgroup_attach_task
-> > > >                 cpuset_attach
-> > > >                     cpuset_migrate_mm
-> > > >                         :
-> > > >                         unmap_and_move
-> > > >                             mem_cgroup_prepare_migration
-> > > >                                 mem_cgroup_try_charge
-> > > >                                     mem_cgroup_hierarchical_reclaim
-> > > > 
-> > > 
-> > > Did lockdep complain about it?
-> > > 
-> > I haven't understood lockdep so well, but I got logs like this:
-> > 
-> > ===
-> > INFO: task move.sh:17710 blocked for more than 480 seconds.
-> > "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> > move.sh       D ffff88010e1c76c0     0 17710  17597
-> >  ffff8800bd9edf00 0000000000000046 0000000000000000 0000000000000000
-> >  ffff8803afbc0000 ffff8800bd9ee270 0000000e00000000 000000010a54459c
-> >  ffffffffffffffff ffffffffffffffff ffffffffffffffff 7fffffffffffffff
-> > Call Trace:
-> >  [<ffffffff802ae9f0>] mem_cgroup_get_first_node+0x29/0x8a
-> >  [<ffffffff804cb357>] mutex_lock_nested+0x180/0x2a2
-> >  [<ffffffff802ae9f0>] mem_cgroup_get_first_node+0x29/0x8a
-> >  [<ffffffff802ae9f0>] mem_cgroup_get_first_node+0x29/0x8a
-> >  [<ffffffff802aed9c>] __mem_cgroup_try_charge+0x27a/0x2de
-> >  [<ffffffff802afdfd>] mem_cgroup_prepare_migration+0x6c/0xa5
-> >  [<ffffffff802ad97f>] migrate_pages+0x10c/0x4a0
-> >  [<ffffffff802ad9c8>] migrate_pages+0x155/0x4a0
-> >  [<ffffffff802a14cb>] new_node_page+0x0/0x2f
-> >  [<ffffffff802a1adb>] check_range+0x300/0x325
-> >  [<ffffffff802a2374>] do_migrate_pages+0x1a5/0x1f1
-> >  [<ffffffff8026d272>] cpuset_migrate_mm+0x30/0x93
-> >  [<ffffffff8026d29c>] cpuset_migrate_mm+0x5a/0x93
-> >  [<ffffffff8026df41>] cpuset_attach+0x93/0xa6
-> >  [<ffffffff8026ae1b>] cgroup_attach_task+0x395/0x3e1
-> >  [<ffffffff8026af61>] cgroup_tasks_write+0xfa/0x11d
-> >  [<ffffffff8026aea0>] cgroup_tasks_write+0x39/0x11d
-> >  [<ffffffff8026b5aa>] cgroup_file_write+0xef/0x216
-> >  [<ffffffff802b2968>] vfs_write+0xad/0x136
-> >  [<ffffffff802b2dfe>] sys_write+0x45/0x6e
-> >  [<ffffffff8020bdab>] system_call_fastpath+0x16/0x1b
-> > INFO: lockdep is turned off.
-> > ===
-> > 
-> > And other processes trying to hold cgroup_mutex are also stuck.
-> > 
-> > > 1. We could probably move away from cgroup_mutex to a memory controller specific
-> > > mutex.
-> > > 2. We could give up cgroup_mutex before migrate_mm, since it seems like we'll
-> > > hold the cgroup lock for long and holding it during reclaim will definitely be
-> > > visible to users trying to create/delete nodes.
-> > > 
-> > > I prefer to do (2), I'll look at the code more closely
-> > > 
-> > I basically agree, but I think we should also consider mpol_rebind_mm.
-> > 
-> > mpol_rebind_mm, which can be called from cpuset_attach, does down_write(mm->mmap_sem),
-> > which means down_write(mm->mmap_sem) can be called under cgroup_mutex.
-> > OTOH, page fault path does down_read(mm->mmap_sem) and can call mem_cgroup_try_charge,
-> > which means mutex_lock(cgroup_mutex) can be called under down_read(mm->mmap_sem).
-> > 
-> 
-> What's status of this problem ? fixed or not yet ?
-> Sorry for failing to track paches.
->
 
-Kamezawa-San,
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-We are looking at two approaches that I had mentioned earlier
-
-1) rely on the new cgroup_tasklist mutex introduced to close the race
-2) Removing cgroup lock dependency with cgroup_tasks_write. I worry
-that it can lead to long latencies with cgroup_lock held
-
-I can send a patch for (1) today, I want to fix (2)
-and spent a lot of time staring at that code and could not find
-any easy way to fix it.
+diff --git a/include/linux/time.h b/include/linux/time.h
+index ce321ac..b0ea1d5 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -112,6 +112,21 @@ struct timespec current_kernel_time(void);
+ #define CURRENT_TIME		(current_kernel_time())
+ #define CURRENT_TIME_SEC	((struct timespec) { get_seconds(), 0 })
  
++/* Some architectures do not supply their own clocksource.
++ * This is mainly the case in architectures that get their
++ * inter-tick times by reading the counter on their interval
++ * timer. Since these timers wrap every tick, they're not really
++ * useful as clocksources. Wrapping them to act like one is possible
++ * but not very efficient. So we provide a callout these arches
++ * can implement for use with the jiffies clocksource to provide
++ * finer then tick granular time.
++ */
++#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
++extern u32 arch_gettimeoffset(void);
++#else
++#define arch_gettimeoffset() (0)
++#endif
++
+ extern void do_gettimeofday(struct timeval *tv);
+ extern int do_settimeofday(struct timespec *tv);
+ extern int do_sys_settimeofday(struct timespec *tv, struct timezone *tz);
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index fa05e88..087a783 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -74,6 +74,10 @@ static void clocksource_forward_now(void)
+ 	clock->cycle_last = cycle_now;
+ 
+ 	nsec = cyc2ns(clock, cycle_delta);
++
++	/* If arch requires, add in gettimeoffset() */
++	nsec += arch_gettimeoffset();
++
+ 	timespec_add_ns(&xtime, nsec);
+ 
+ 	nsec = ((s64)cycle_delta * clock->mult_orig) >> clock->shift;
+@@ -106,6 +110,9 @@ void getnstimeofday(struct timespec *ts)
+ 		/* convert to nanoseconds: */
+ 		nsecs = cyc2ns(clock, cycle_delta);
+ 
++		/* If arch requires, add in gettimeoffset() */
++		nsecs += arch_gettimeoffset();
++
+ 	} while (read_seqretry(&xtime_lock, seq));
+ 
+ 	timespec_add_ns(ts, nsecs);
 
--- 
-	Balbir
+
