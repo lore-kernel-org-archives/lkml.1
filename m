@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbYLIWk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbYLIWs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbYLIWk1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 17:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbYLIWkP
+	id S1755265AbYLIWs1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 17:48:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbYLIWsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 17:40:15 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:33010 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbYLIWkO (ORCPT
+	Tue, 9 Dec 2008 17:48:17 -0500
+Received: from outbound-mail-17.bluehost.com ([69.89.20.232]:53556 "HELO
+	outbound-mail-17.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754691AbYLIWsQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 17:40:14 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, eranian@gmail.com,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>,
-       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Subject: Re: [patch] Performance Counters for Linux, v2
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081208012211.GA23106@elte.hu>
-	<7c86c4470812082237ne58c814s7218cc663f3b49e9@mail.gmail.com>
-	<20081209134636.GA1926@elte.hu>
-	<18750.61143.101922.949701@cargo.ozlabs.ibm.com>
-Date: Tue, 09 Dec 2008 23:40:31 +0100
-In-Reply-To: <18750.61143.101922.949701@cargo.ozlabs.ibm.com> (Paul Mackerras's message of "Wed, 10 Dec 2008 09:19:03 +1100")
-Message-ID: <87skoxc6qo.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 9 Dec 2008 17:48:16 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Dec 2008 17:48:16 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=k6k1c0LTMa5PRa/P+939Sah4xD1dopBiwa+TMb3qKVH6T+pnCYtLhwCDnjzUaW7ISp2lvM3CTRn9r/YVjJ0vXU65EQen8oAeThINUaaWyQCtGOmLLy/qDRwWeexlvb46;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: PCI fix
+Date: Tue, 9 Dec 2008 14:41:14 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812091441.14250.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 216.239.45.19 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras <paulus@samba.org> writes:
+Please pull my for-linus branch:
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
 
-> So, can we agree to discuss both sampling and counting, and design an
-> infrastructure that's good for both?
-
-When you say counting you should also include "event ring buffers with
-metadata", like PEBS on Intel x86. 
-
--Andi
+One more last minute fix for a small memory leak from Alex.
 
 -- 
-ak@linux.intel.com
+Jesse Barnes, Intel Open Source Technology Center
+
+Alex Chiang (1):
+      PCI: stop leaking 'slot_name' in pci_create_slot
+
+ drivers/pci/slot.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
