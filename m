@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbYLIJsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbYLIJwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318AbYLIJsL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 04:48:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYLIJry
+	id S1753386AbYLIJwd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 04:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYLIJwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 04:47:54 -0500
-Received: from mga10.intel.com ([192.55.52.92]:25875 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752443AbYLIJrx (ORCPT
+	Tue, 9 Dec 2008 04:52:25 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58187 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751566AbYLIJwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 04:47:53 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,740,1220252400"; 
-   d="scan'208";a="648174578"
-From: Sheng Yang <sheng@linux.intel.com>
-Organization: Intel Opensource Technology Center
-To: kvm@vger.kernel.org
-Subject: Re: [PATCH 0/2] module_refcounting and anonymous inodes
-Date: Tue, 9 Dec 2008 17:43:25 +0800
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; x86_64; ; )
-Cc: Avi Kivity <avi@redhat.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200812021114.59050.borntraeger@de.ibm.com> <200812081251.14648.borntraeger@de.ibm.com> <493D0B9A.9000401@redhat.com>
-In-Reply-To: <493D0B9A.9000401@redhat.com>
+	Tue, 9 Dec 2008 04:52:24 -0500
+Date: Tue, 9 Dec 2008 04:52:10 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       hch@infradead.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] EXPORTFS: Don't return NULL from
+	fh_to_dentry()/fh_to_parent() [ver #4]
+Message-ID: <20081209095209.GA8599@infradead.org>
+References: <20081205162318.20732.73054.stgit@warthog.procyon.org.uk> <alpine.LFD.2.00.0812050848060.3386@nehalem.linux-foundation.org> <20081205174228.GC29227@fieldses.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812091743.26586.sheng@linux.intel.com>
+In-Reply-To: <20081205174228.GC29227@fieldses.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 December 2008 19:57:14 Avi Kivity wrote:
-> Christian Borntraeger wrote:
-> > Am Dienstag, 2. Dezember 2008 schrieb Christian Borntraeger:
-> >> Hello Avi,
-> >>
-> >> here is the latest respin of my fixes for the kvm module unload problem:
-> >>
-> >> [PATCH 1/2] anon_inodes: use fops->owner for module refcount
-> >> [PATCH 2/2] kvm: set owner of cpu and vm file operations
-> >
-> > In the meantime patch 2 has a offset against the latest git. Should I
-> > resend the patch or will you apply it anyway?
->
-> Applied the patches; thanks for the reminder.
+On Fri, Dec 05, 2008 at 12:42:28PM -0500, J. Bruce Fields wrote:
+> Not of fh_to_dentry(), but it looks like fh_to_parent() is the same.  So
+> you'd want the below.
+> 
+> This is partially reverting 440037287c5, which appears to have also do
+> some changing of NULLs to ESTALEs which we might also want to reconsider
+> at some point.  Maybe Christoph could explain what the rationale was.
 
-Should we push the first patch to 2.6.28? I got some trouble with the separate 
-2nd patch, for I am using Linus' tree and make KVM as modules, so the 
-reference count reduced to negative now... (Oh Avi, I know you suggest to use 
-in kernel rather than modules, but module is indeed convenient. :) )
+Miklos suggested always returning ERR_PTR values instead of a a min
+or NULLs and ERR_PTR values to make the interface cleaner.  I tend
+to agree, but botched up the conversion.
 
--- 
-regards
-Yang, Sheng
