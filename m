@@ -1,110 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbYLIUmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbYLIUth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756507AbYLIUmm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 15:42:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbYLIUmc
+	id S1755415AbYLIUth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 15:49:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbYLIUt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 15:42:32 -0500
-Received: from waste.org ([66.93.16.53]:54558 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754211AbYLIUmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 15:42:31 -0500
-Subject: Re: [PATCH] - support inheritance of mlocks across fork/exec V2
-From: Matt Mackall <mpm@selenic.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, riel@redhat.com,
-       hugh@veritas.com, kosaki.motohiro@jp.fujitsu.com,
-       linux-api@vger.kernel.org
-In-Reply-To: <1228851652.6379.58.camel@lts-notebook>
-References: <1227561707.6937.61.camel@lts-notebook>
-	 <20081125152651.b4c3c18f.akpm@linux-foundation.org>
-	 <1228331069.6693.73.camel@lts-notebook>
-	 <20081206220729.042a926e.akpm@linux-foundation.org>
-	 <1228770337.31442.44.camel@lts-notebook>  <1228771985.3726.32.camel@calx>
-	 <1228851652.6379.58.camel@lts-notebook>
-Content-Type: text/plain
-Date: Tue, 09 Dec 2008 14:41:36 -0600
-Message-Id: <1228855296.3726.113.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 9 Dec 2008 15:49:27 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:47415 "EHLO
+	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752780AbYLIUt0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 15:49:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=EuadbUxmtXCAkdJrneC/LeBjq698gV8lZ6pBaFf/RLjbGJHAN68CykeTXmIksZvRn4
+         6B/H1piqQT2Dll+UllPDrAtthzlJ44ykYO9TGb9zB9RL/EN670oTr+3n12sX1j9sElyP
+         /EfdvMkRqyqnwyF1ECkp643Pq0t4RpP1fNcSs=
+Message-ID: <493ED9D4.5000508@gmail.com>
+Date: Tue, 09 Dec 2008 21:49:24 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+MIME-Version: 1.0
+To: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 18/31] drivers/pci: Make static
+References: <493EA286.7080500@gmail.com>
+In-Reply-To: <493EA286.7080500@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-09 at 14:40 -0500, Lee Schermerhorn wrote:
-> On Mon, 2008-12-08 at 15:33 -0600, Matt Mackall wrote:
-> > On Mon, 2008-12-08 at 16:05 -0500, Lee Schermerhorn wrote:
-> > > > > In support of a "lock prefix command"--e.g., mlock <cmd>
-> > > <args> ...
-> > > > > Analogous to taskset(1) for cpu affinity or numactl(8) for numa memory
-> > > > > policy.
-> > > > > 
-> > > > > Together with patches to keep mlocked pages off the LRU, this will
-> > > > > allow users/admins to lock down applications without modifying them,
-> > > > > if their RLIMIT_MEMLOCK is sufficiently large, keeping their pages
-> > > > > off the LRU and out of consideration for reclaim.
-> > > > > 
-> > > > > Potentially useful, as well, in real-time environments to force
-> > > > > prefaulting and residency for applications that don't mlock themselves.
-> > 
-> > This is a bit scary to me. Privilege and mode inheritance across
-> > processes is the root of many nasty surprises, security and otherwise.
-> 
-> Hi, Matt:
-> 
-> Could you explain more about this issue?  I believe that the patch
-> doesn't provide any privileges or capabilities that a process doesn't
-> already have.  It just allows one to cause a process and, optionally,
-> its descendants, to behave as if one had modified the sources to invoke
-> mlockall() directly.  It is still subject to each individual task's
-> resource limits.  At least, that was my intent.  
+Sparse asked whether these could be static.
 
-Again, it's about inheriting *something* across processes. This
-historically creates surprises. When the thing being inherited is a
-privilege, the surprises are security holes. I can't tell you what the
-surprises are, only that I expect there to be some.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/pci/hotplug/ibmphp_hpc.c |    2 +-
+ drivers/pci/hotplug/pciehp_hpc.c |    2 +-
+ drivers/pci/pci-driver.c         |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-mlockall is not a privilege in itself, but it is a non-standard mode of
-operation that most processes are not designed for or expecting, and it
-does relate to the handling of a finite resource with system stability
-implications. If the thing that turns on this mode is buried inside some
-poorly written app that decides it needs to mlockall somewhere, the
-'surprise' can occur far away - in the child of a child of a thread an
-hour later. And the surprise can be fatal - all memory eaten up, because
-our process just happened to run without an rlimit.
-
-I've seen this with RT. An app temporarily elevates itself to RT, and
-unrelatedly forks another process. The second short-lived process kicks
-off a daemon that sometime later consumes all CPU in a busy loop (in
-this case waiting on I/O that never happens because everything else is
-shut out).
-
-Doing it as a container parameter means that you explicitly recognize
-that 'everything in the container' gets this mode. And you've probably
-also given a thought to 'how big is this container' and the like as
-well.
-
-> As far as "what I'm trying to do":  I see this as exactly like using
-> taskset to set the cpu affinity of a task, or numactl to set the task
-> mempolicy without modifying the source.
-
-Oh sure, I completely get that and I think it's a useful notion. And I
-think the above analogous interfaces have more or less the same issues,
-except that mlockall is a much older and more widely used API.
-Containers are a better match here too, but the above predate
-containers.
-
->   If one had access to the
-> program source and wouldn't, e.g., void a support contract by modifying
-> it, one could just insert the calls into the source itself.
-
-Huh? We would of course set up a container 'from the outside'. By
-comparison, your mlockall() call traditionally operates from 'from the
-inside', and you're proposing to add a flag and a helper program that
-makes it work 'from the outside' too. Which is a bit hackish.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+diff --git a/drivers/pci/hotplug/ibmphp_hpc.c b/drivers/pci/hotplug/ibmphp_hpc.c
+index 83f337c..5c0dbc4 100644
+--- a/drivers/pci/hotplug/ibmphp_hpc.c
++++ b/drivers/pci/hotplug/ibmphp_hpc.c
+@@ -782,7 +782,7 @@ static void get_hpc_access (void)
+ /*----------------------------------------------------------------------
+ * Name:    free_hpc_access()
+ *---------------------------------------------------------------------*/
+-void free_hpc_access (void)
++static void free_hpc_access(void)
+ {
+ 	mutex_unlock(&sem_hpcaccess);
+ }
+diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
+index b643ca1..e23cfc1 100644
+--- a/drivers/pci/hotplug/pciehp_hpc.c
++++ b/drivers/pci/hotplug/pciehp_hpc.c
+@@ -1254,7 +1254,7 @@ abort:
+ 	return NULL;
+ }
+ 
+-void pcie_release_ctrl(struct controller *ctrl)
++static void pcie_release_ctrl(struct controller *ctrl)
+ {
+ 	pcie_shutdown_notification(ctrl);
+ 	pcie_cleanup_slot(ctrl);
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index b4cdd69..28eb38d 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -654,7 +654,7 @@ static int pci_pm_restore_noirq(struct device *dev)
+ 
+ #endif /* !CONFIG_HIBERNATION */
+ 
+-struct pm_ext_ops pci_pm_ops = {
++static struct pm_ext_ops pci_pm_ops = {
+ 	.base = {
+ 		.prepare = pci_pm_prepare,
+ 		.complete = pci_pm_complete,
 
