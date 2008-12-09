@@ -1,56 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbYLISlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbYLISnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754811AbYLISlb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 13:41:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbYLISlX
+	id S1754878AbYLISnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 13:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbYLISnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 13:41:23 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:58784 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753998AbYLISlW (ORCPT
+	Tue, 9 Dec 2008 13:43:03 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:44582 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754026AbYLISnA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 13:41:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ZiOCRj7R26zPZf6STjm7i8D6FQJSIoN4yOLL9z4awip8t6vtzdavAQ+egeQRwoEW1q
-         tOcPy2QmIMKTlKDbVRwokxkIIVnAjDju+FhL8rHsRodOZD3kXEoM/EnsFs17p7AhAVRg
-         Crz4bXfjqvOsyxhVYhbgDLdB/nIwqTdvohSX8=
-Message-ID: <493EBBD0.6070201@gmail.com>
-Date: Tue, 09 Dec 2008 19:41:20 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+	Tue, 9 Dec 2008 13:43:00 -0500
+Date: Tue, 9 Dec 2008 13:43:00 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb <linux-usb@vger.kernel.org>,
+       Ian Jackson <Ian.Jackson@eu.citrix.com>
+Subject: Re: Oops in UHCI when encountering "host controller process error"
+In-Reply-To: <493EB7EF.7040309@goop.org>
+Message-ID: <Pine.LNX.4.44L0.0812091341210.2178-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: linux-i2c@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 12/33] i2c: Make static
-References: <493EA286.7080500@gmail.com>
-In-Reply-To: <493EA286.7080500@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sparse asked whether these could be static.
+On Tue, 9 Dec 2008, Jeremy Fitzhardinge wrote:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/i2c/i2c-core.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+> Yep, there's something very odd going on in there.  By contrast, does 
+> this look OK?  The allocations are fine, but I'm wondering if the 
+> skeleton QH stuff is all correct; it seems to work OK in this state.
+> 
+> uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4000 handle=7e212000
+> uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4080 handle=7e212080
+> uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4100 handle=7e212100
+> uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4180 handle=7e212180
+> uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4200 handle=7e212200
+> uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4280 handle=7e212280
+> uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4300 handle=7e212300
+> uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4380 handle=7e212380
+> uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4400 handle=7e212400
+> uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4480 handle=7e212480
+> uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4500 handle=7e212500
+> Root-hub state: reset   FSBR: 0
+> HC status
+>   usbcmd    =     0000   Maxp32 
+>   usbstat   =     0020   HCHalted 
+>   usbint    =     0000
+>   usbfrnum  =   (0)000
+>   flbaseadd = 7ffd5000
+>   sof       =       40
+>   stat1     =     0080  
+>   stat2     =     0080  
+> Most recent frame: 0 (0)   Last ISO frame: 0 (0)
+> Periodic load table
+>         0       0       0       0       0       0       0       0
+>         0       0       0       0       0       0       0       0
+>         0       0       0       0       0       0       0       0
+>         0       0       0       0       0       0       0       0
+> Total: 0, #INT: 0, #ISO: 0
+> Frame List
+> Skeleton QHs
+> - skel_unlink_qh
+>     [ffff88002e5f4000] Skel QH link (00000001) element (00000001)
+>       queue is empty
+> - skel_iso_qh
+>     [ffff88002e5f4080] Skel QH link (00000001) element (00000001)
+>       queue is empty
+> - skel_int128_qh
+>     [ffff88002e5f4100] Skel QH link (7e212482) element (00000001)
+>       queue is empty
+> - skel_int64_qh
+>     [ffff88002e5f4180] Skel QH link (7e212482) element (00000001)
+>       queue is empty
+> - skel_int32_qh
+>     [ffff88002e5f4200] Skel QH link (7e212482) element (00000001)
+>       queue is empty
+> - skel_int16_qh
+>     [ffff88002e5f4280] Skel QH link (7e212482) element (00000001)
+>       queue is empty
+> - skel_int8_qh
+>     [ffff88002e5f4300] Skel QH link (7e212482) element (00000001)
+>       queue is empty
+> - skel_int4_qh
+>     [ffff88002e5f4380] Skel QH link (7e212482) element (00000001)
+>       queue is empty
+> - skel_int2_qh
+>     [ffff88002e5f4400] Skel QH link (7e212482) element (00000001)
+>       queue is empty
+> - skel_async_qh
+>     [ffff88002e5f4480] Skel QH link (00000001) element (7e215000)
+>       queue is empty
+> [ffff88002e5f3000] link (00000001) e0 Length=0 MaxLen=7ff DT0 EndPt=0 Dev=7f, PID=69(IN) (buf=00000000)
+> - skel_term_qh
+>     [ffff88002e5f4500] Skel QH link (7e212502) element (7e215000)
+>       queue is empty
 
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index c6a63f4..1049615 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -1699,7 +1699,8 @@ EXPORT_SYMBOL(i2c_smbus_write_word_data);
-  * This executes the SMBus "process call" protocol, returning negative errno
-  * else a 16-bit unsigned "word" received from the device.
-  */
--s32 i2c_smbus_process_call(struct i2c_client *client, u8 command, u16 value)
-+static s32 i2c_smbus_process_call(struct i2c_client *client, u8 command,
-+		u16 value)
- {
- 	union i2c_smbus_data data;
- 	int status;
+Yes, that looks normal for a controller with no activity.
+
+Alan Stern
+
