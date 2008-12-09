@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbYLIRft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbYLIRjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139AbYLIRft (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 12:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYLIRfk
+	id S1754302AbYLIRjT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 12:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYLIRjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 12:35:40 -0500
-Received: from zcars04f.nortel.com ([47.129.242.57]:65169 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751905AbYLIRfj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 12:35:39 -0500
-Message-ID: <493EAC45.4050704@nortel.com>
-Date: Tue, 09 Dec 2008 11:35:01 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
-MIME-Version: 1.0
-To: Will Newton <will.newton@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, eranian@gmail.com,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>,
-       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Subject: Re: [patch] Performance Counters for Linux, v2
-References: <20081208012211.GA23106@elte.hu>	 <7c86c4470812082237ne58c814s7218cc663f3b49e9@mail.gmail.com>	 <20081209134636.GA1926@elte.hu> <87a5b0800812090846h396523a0kdb2d1ca4b4781851@mail.gmail.com>
-In-Reply-To: <87a5b0800812090846h396523a0kdb2d1ca4b4781851@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 9 Dec 2008 12:39:00 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35067 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750781AbYLIRjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 12:39:00 -0500
+Date: Tue, 9 Dec 2008 12:37:03 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Jan Rekorajski <baggins@sith.mimuw.edu.pl>
+Cc: linux-kernel@vger.kernel.org, Holger Hoffstaette <holger@wizards.de>,
+       netdev@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Greg KH <greg@kroah.com>, stable@kernel.org,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Manfred Spraul <manfred@colorfullife.com>
+Subject: Re: Nasty regression from .27.7 to .27.8: idle samba goes crazy
+Message-ID: <20081209123703.043067eb@dhcp-100-2-144.bos.redhat.com>
+In-Reply-To: <20081208222246.GA29232@sith.mimuw.edu.pl>
+References: <pan.2008.12.08.06.18.57.357875@wizards.de>
+	<200812080834.22924.rjw@sisk.pl>
+	<pan.2008.12.08.08.07.29.439625@wizards.de>
+	<493D4F5C.7020606@s5r6.in-berlin.de>
+	<493D7349.10200@s5r6.in-berlin.de>
+	<20081208222246.GA29232@sith.mimuw.edu.pl>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Dec 2008 17:35:04.0554 (UTC) FILETIME=[789B5CA0:01C95A24]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Will Newton wrote:
-> On Tue, Dec 9, 2008 at 1:46 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> 
->> Firstly, sampling "at 1msec intervals" or any fixed period is a _very_
->> wrong mindset - and cross-sampling counters is a similarly wrong mindset.
-> 
-> If your hardware does not interrupt on overflow I don't think you have
-> any choice in the matter. I know such hardware is less than ideal but
-> it exists so it should be supported.
+On Mon, 8 Dec 2008 23:22:46 +0100
+Jan Rekorajski <baggins@sith.mimuw.edu.pl> wrote:
 
-I think you could still set up the counters as Ingo describes and then 
-sample the counters (as opposed to the program) at a suitable interval 
-(chosen such that the counters won't overflow more than once between 
-samples).
+> On Mon, 08 Dec 2008, Stefan Richter wrote:
+> 
+> > >>> On Monday, 8 of December 2008, Holger Hoffstaette wrote:
+> > >>>> The system is a generic old single-core P4 box with a single SATA drive,
+> > >>>> Gentoo userland and Samba is 3.0.33 (in async mode). The kernel has no
+> > >>>> patches or binary drivers.
+> > 
+> > Holger, it may be unrelated to the issue, but to be sure:  Which network
+> > card driver do you use?
+> 
+> I think you can safely rule out NIC, I'm also seeing this behaviour on a
+> brand new server with imap hanging in some busy-loop.
+> Network card in my case:
+> Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
+> 
+> What I observer was one CPU doing 100% system work, and the number of
+> timer interrupts went from 1k per second to 4k (for the whole system).
+> 
 
-Chris
+Try reverting the idr patch that went into 2.6.27.8. It broke DRM in the
+Fedora kernel at least.
+
+http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=blob_plain;f=releases/2.6.27.8/lib-idr.c-fix-rcu-related-race-with-idr_find.patch;h=b1145766fb9460a0c0285350b49216355c5b4ad8
