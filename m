@@ -1,92 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbYLIIU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbYLIIaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753796AbYLIIU4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 03:20:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbYLIIUW
+	id S1753125AbYLIIaz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 03:30:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYLIIaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 03:20:22 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:58609 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753064AbYLIIUU (ORCPT
+	Tue, 9 Dec 2008 03:30:46 -0500
+Received: from ag-out-0708.google.com ([72.14.246.246]:49192 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751395AbYLIIap (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 03:20:20 -0500
-Date: Tue, 9 Dec 2008 13:52:11 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [BUG] idle_balance() does not call load_balance_newidle()
-Message-ID: <20081209082211.GA29340@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Gautham R Shenoy <ego@in.ibm.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <20081208152249.GI5457@dirshya.in.ibm.com> <20081208154939.GA405@elte.hu> <20081209040706.GA20525@dirshya.in.ibm.com> <20081209063448.GA17706@elte.hu>
+	Tue, 9 Dec 2008 03:30:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=x5CZkDNapG4ID5x5jErXlxq5o1saIGfzuD6lS5p4DuRQchrX8XlDJ+ut4QqWgb6Q+I
+         W05zsvES+dU+q1qXPHCEd7bmnbU7Xd7oDobD2mz3xy6j2gF7GcMdfW+0WZOTQOTRWeli
+         VKi3rOTJWTmDUG4Fn1mH9rkjWnPbMaCj87vbg=
+Message-ID: <12bfabe40812090030v7d8bcd6aq99438d18b808d32f@mail.gmail.com>
+Date: Tue, 9 Dec 2008 09:30:42 +0100
+From: "Giangiacomo Mariotti" <gg.mariotti@gmail.com>
+To: "Mikael Abrahamsson" <swmike@swm.pp.se>
+Subject: Re: OFFLIST Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
+Cc: "Andi Kleen" <ak@linux.intel.com>,
+       "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.10.0812090857590.18782@uplift.swm.pp.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081209063448.GA17706@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>
+	 <alpine.DEB.1.10.0812081314010.18782@uplift.swm.pp.se>
+	 <493D296B.1080205@linux.intel.com>
+	 <alpine.DEB.1.10.0812081724080.18782@uplift.swm.pp.se>
+	 <493D6FB4.9090909@linux.intel.com>
+	 <alpine.DEB.1.10.0812082145410.18782@uplift.swm.pp.se>
+	 <12bfabe40812082146r3ea000em7a8f725101a50bd5@mail.gmail.com>
+	 <alpine.DEB.1.10.0812090737410.18782@uplift.swm.pp.se>
+	 <12bfabe40812082319x4ed6c9m5b744e51cdd3d838@mail.gmail.com>
+	 <alpine.DEB.1.10.0812090857590.18782@uplift.swm.pp.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2008-12-09 07:34:48]:
-
-> 
-> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> 
-> > * Ingo Molnar <mingo@elte.hu> [2008-12-08 16:49:39]:
-> > 
-> > > 
-> > > * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > Hi,
-> > > > 
-> > > > load_balance_newidle() does not get called if SD_BALANCE_NEWIDLE is
-> > > > set at higher level domain (3-CPU) and not in low level domain (2-MC).
-> > > > 
-> > > > pulled_task is initialised to -1 and checked for non-zero which is
-> > > > always true if the lowest level sched_domain does not have
-> > > > SD_BALANCE_NEWIDLE flag set.
-> > > > 
-> > > > Trivial fix to initialise pulled_task to zero.
-> > > > Patch against 2.6.28-rc7
-> > > 
-> > > applied to tip/sched/core, thanks! (Not for v2.6.28 because this could 
-> > > affect performance.)
-> > 
-> > Thanks Ingo.  This patch does not change any functionality in v2.6.28 
-> > and hence will not affect performance.  The SD flags are not touched. I 
-> > found this bug while setting different SD flags at MC level and CPU 
-> > level in my power saving balance patches.
-> 
-> if it does not change any functionality then we would not be doing the 
-> change, right?
- 
- :) 
-  
-> It does change functionality, because:
-> 
-> > > > load_balance_newidle() does not get called if SD_BALANCE_NEWIDLE is 
-> > > > set at higher level domain (3-CPU) and not in low level domain 
-> > > > (2-MC).
-> 
-> even though it's a bug fix, it affects how the SD flags are interpreted 
-> and acted upon by the load balancer - i.e. the change can impact 
-> performance.
-
-Agreed.  In my test setup with two levels of sched_domains,
-SD_BALANCE_NEWIDLE has not been set in both CPU level and MC level
-starting from 2.6.28-rc4.  In a setup with more levels of
-sched_domains and if the higher levels have SD_BALANCE_NEWIDLE set,
-then we will have a functional impact.  
-
-You are right in queueing it for 2.6.29.
-
-Thanks for the clarification.
-
---Vaidy
-
+On Tue, Dec 9, 2008 at 9:00 AM, Mikael Abrahamsson <swmike@swm.pp.se> wrote:
+> On Tue, 9 Dec 2008, Giangiacomo Mariotti wrote:
+>
+>> In its i386 version the mce didn't get logged for me too, but I noticed
+>> something like an option for non critical MCEs wasn't configured in the i386
+>> kernel. That might be the cause, or it's just a problem for the 64 bit
+>> version. Anyway, as I've already posted here lkml.org/lkml/2008/12/9/4,
+>> rebooting with a kexec completely removes the MCE, so I guess it's a bios
+>> problem.
+>
+> Yes, this bios seems very flakey. After I have booted linux a few times
+> (haven't narrowed down the problem exactly) both rtl8169 devices are removed
+> for me. They're completely gone, lspci doesn't show them, neither are they
+> shown in bios bootup screen. The built in bios cable testing option doesn't
+> find them either.
+>
+> Factory default:ing the BIOS usually bring them back. I have resorted to a
+> PCI 32bit e1000 for network connectivity because I grew bored of resetting
+> the bios every couple of times I booted linux on it.
+>
+> Vista doesn't cause this problem from what I have seen (but it might, I
+> don't have enough data).
+>
+> --
+> Mikael Abrahamsson    email: swmike@swm.pp.se
+>
+Yes, that happens to me too regularly. Also now my bios completely
+freezes after having successfully done the dmi pool check at boot if I
+try to boot directly from my HD, so I have to boot from my usb dvd
+writer. At the moment I successfully booted that rescuecd in 64 bit
+mode and the kexeced into my 2.6.27.8 debian system. I still haven't
+tried to make a bootable cd with grub and see if I can also boot
+directly into my HD at boot or if not even Grub can see it. The very
+good point of using the kexec method is that, even if my bios cannot
+boot my hd directly, I can bypass it. But I still don't know if I have
+this problem too.
