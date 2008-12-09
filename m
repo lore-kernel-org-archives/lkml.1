@@ -1,67 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbYLIXgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbYLIXjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbYLIXgy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 18:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbYLIXgl
+	id S1755552AbYLIXjT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 18:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbYLIXjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 18:36:41 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:52622 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752357AbYLIXgk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 18:36:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=E4XqkLTunVQDdMzpROhkzLuQ3obyN7cMUXf2lOlI3i9sy07VE3EmWgswptIRDz7QOZ
-         +wGz1MwuJ8J3/zujtBDJIYfPC6a0v0Q3qp3h62oLBtyfxT3YWsyFA8bkvt5KFSi5tsKk
-         aaQF+rEpAoyyAyj4WN+JiQRBJTGO1oe44Iprc=
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: [PATCH] Change my surname to reflect it's RL change
-Date: Wed, 10 Dec 2008 02:35:08 +0300
-Message-Id: <1228865708-12789-1-git-send-email-dbaryshkov@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
+	Tue, 9 Dec 2008 18:39:03 -0500
+Received: from sh.osrg.net ([192.16.179.4]:32932 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752357AbYLIXjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 18:39:01 -0500
+Date: Wed, 10 Dec 2008 08:38:43 +0900
+To: Alan.Brunelle@hp.com
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       andmike@linux.vnet.ibm.com, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] Correctly release and allocate a new request upon
+ retries
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <493D2E05.3070108@hp.com>
+References: <493D2E05.3070108@hp.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081210083909C.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My surname has changed due to marriage. Change MAINTAINERS entry
-and add .mailmap entry to reflect that.
+On Mon, 08 Dec 2008 09:24:05 -0500
+"Alan D. Brunelle" <Alan.Brunelle@hp.com> wrote:
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- .mailmap    |    1 +
- MAINTAINERS |    2 +-
- 2 files changed, 2 insertions(+), 1 deletions(-)
+> Commands needing to be retried require a complete re-initialization.
+> 
+> The test-unit-ready portion of this patch was causing boots to fail on
+> my test machine (as in http://lkml.org/lkml/2008/12/5/161). With this
+> patch in place, the system is booting reliably.
+> 
+> Mike Anderson found the same problem in the hp_hw_start_stop code,
+> and I applied the same solution in cdrom_read_cdda_bpc.
+> 
+> Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> Cc: Mike Anderson <andmike@linux.vnet.ibm.com>
+> ---
+>  drivers/cdrom/cdrom.c                       |   16 ++++++++++------
+>  drivers/scsi/device_handler/scsi_dh_hp_sw.c |   12 ++++++++----
+>  2 files changed, 18 insertions(+), 10 deletions(-)
 
-diff --git a/.mailmap b/.mailmap
-index 97f7b4f..4e83e7b 100644
---- a/.mailmap
-+++ b/.mailmap
-@@ -32,6 +32,7 @@ Christoph Hellwig <hch@lst.de>
- Corey Minyard <minyard@acm.org>
- David Brownell <david-b@pacbell.net>
- David Woodhouse <dwmw2@shinybook.infradead.org>
-+Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
- Domen Puncer <domen@coderock.org>
- Douglas Gilbert <dougg@torque.net>
- Ed L. Cashin <ecashin@coraid.com>
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 618c1ef..b52b3e5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -616,7 +616,7 @@ M:	mkpetch@internode.on.net
- S:	Maintained
- 
- ARM/TOSA MACHINE SUPPORT
--P:	Dmitry Baryshkov
-+P:	Dmitry Eremin-Solenikov
- M:	dbaryshkov@gmail.com
- P:	Dirk Opfer
- M:	dirk@opfer-online.de
--- 
-1.5.6.5
+> diff --git a/drivers/scsi/device_handler/scsi_dh_hp_sw.c b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
+> index 9aec4ca..f7da753 100644
+> --- a/drivers/scsi/device_handler/scsi_dh_hp_sw.c
+> +++ b/drivers/scsi/device_handler/scsi_dh_hp_sw.c
+> @@ -107,6 +107,7 @@ static int hp_sw_tur(struct scsi_device *sdev, struct hp_sw_dh_data *h)
+>  	struct request *req;
+>  	int ret;
+>  
+> +retry:
+>  	req = blk_get_request(sdev->request_queue, WRITE, GFP_NOIO);
+>  	if (!req)
+>  		return SCSI_DH_RES_TEMP_UNAVAIL;
+> @@ -121,7 +122,6 @@ static int hp_sw_tur(struct scsi_device *sdev, struct hp_sw_dh_data *h)
+>  	memset(req->sense, 0, SCSI_SENSE_BUFFERSIZE);
+>  	req->sense_len = 0;
+>  
+> -retry:
+>  	ret = blk_execute_rq(req->q, NULL, req, 1);
+>  	if (ret == -EIO) {
+>  		if (req->sense_len > 0) {
+> @@ -136,8 +136,10 @@ retry:
+>  		h->path_state = HP_SW_PATH_ACTIVE;
+>  		ret = SCSI_DH_OK;
+>  	}
+> -	if (ret == SCSI_DH_IMM_RETRY)
+> +	if (ret == SCSI_DH_IMM_RETRY) {
+> +		blk_put_request(req);
+>  		goto retry;
+> +	}
+>  	if (ret == SCSI_DH_DEV_OFFLINED) {
+>  		h->path_state = HP_SW_PATH_PASSIVE;
+>  		ret = SCSI_DH_OK;
+> @@ -200,6 +202,7 @@ static int hp_sw_start_stop(struct scsi_device *sdev, struct hp_sw_dh_data *h)
+>  	struct request *req;
+>  	int ret, retry;
+>  
+> +retry:
+>  	req = blk_get_request(sdev->request_queue, WRITE, GFP_NOIO);
+>  	if (!req)
+>  		return SCSI_DH_RES_TEMP_UNAVAIL;
+> @@ -216,7 +219,6 @@ static int hp_sw_start_stop(struct scsi_device *sdev, struct hp_sw_dh_data *h)
+>  	req->sense_len = 0;
+>  	retry = h->retries;
+>  
+> -retry:
+>  	ret = blk_execute_rq(req->q, NULL, req, 1);
+>  	if (ret == -EIO) {
+>  		if (req->sense_len > 0) {
+> @@ -231,8 +233,10 @@ retry:
+>  		ret = SCSI_DH_OK;
+>  
+>  	if (ret == SCSI_DH_RETRY) {
+> -		if (--retry)
+> +		if (--retry) {
+> +			blk_put_request(req);
+>  			goto retry;
+> +		}
+>  		ret = SCSI_DH_IO;
+>  	}
+
+Looks like the majority of the usage of
+blk_get_request/blk_execute_rq/blk_put_request can be simply replaced
+with scsi_execute()? The problem is that scsi_execute doesn't return
+all the information about errors?
+
 
