@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbYLILj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753652AbYLIL7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbYLILj4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 06:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbYLILjr
+	id S1753652AbYLIL7u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 06:59:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbYLIL7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 06:39:47 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:55416 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152AbYLILjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 06:39:46 -0500
-X-Bogosity: Ham, spamicity=0.000000
-Subject: [PATCH] Firewire node manager causes up to ~3.25s delay in
- freezing tasks.
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: krh@redhat.com, stefanr@s5r6.in-berlin.de,
-       linux1394-devel@lists.sourceforge.net,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Tue, 09 Dec 2008 22:40:20 +1100
-Message-Id: <1228822820.6681.22.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Tue, 9 Dec 2008 06:59:41 -0500
+Received: from mail-gx0-f29.google.com ([209.85.217.29]:42839 "EHLO
+	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752499AbYLIL7k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 06:59:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cslyUrdRUTik+TmYnQRqIb6MbYRlzk4Voo+75Tv5FAL/O/YSZRu87vq+jIGLH3epPT
+         HPBqr/9DsqdVe3rpAehQsbB5mrxorCDWM111J5zc3oOv1W/W+K7LYZdir/GIj6oDZeZb
+         jM0XpYAbUwC0qh0TBfhTPcf6YdD8HJFwrSGiw=
+Message-ID: <12bfabe40812090357s77a7fca8ya35747d9f5afd2d7@mail.gmail.com>
+Date: Tue, 9 Dec 2008 12:57:12 +0100
+From: "Giangiacomo Mariotti" <gg.mariotti@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
+Cc: "Andi Kleen" <ak@linux.intel.com>,
+       "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+In-Reply-To: <871vwheg9o.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>
+	 <12bfabe40812072248n3c931ce0hf030b3ac758026d4@mail.gmail.com>
+	 <493CCFE4.2080802@jp.fujitsu.com>
+	 <12bfabe40812080004p7438744eqeb884b42673bd73c@mail.gmail.com>
+	 <493CEAA0.50201@jp.fujitsu.com> <493CEF38.3060004@linux.intel.com>
+	 <493CF65B.30408@jp.fujitsu.com> <493D0D42.2090203@linux.intel.com>
+	 <12bfabe40812082154y188e9167vd37589b758d9868d@mail.gmail.com>
+	 <871vwheg9o.fsf@basil.nowhere.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all.
+On Tue, Dec 9, 2008 at 12:31 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> "Giangiacomo Mariotti" <gg.mariotti@gmail.com> writes:
+>
+>> On Mon, Dec 8, 2008 at 1:04 PM, Andi Kleen <ak@linux.intel.com> wrote:
+>>> Also it might be really some problem with this particular CPU.
+>>>
+>>> -Andi
+>>>
+>> It might be interesting to notice that booting a different distro and
+>
+> Does that different distro have machine checks enabled, was
+> mcelog installed and did you wait 5 minutes for mcelog's cronjob to run?
+>
 
-(Okay, having learnt that ieee1394 != bluetooth, I'll try again :>)
+That distro is SystemRescueCd v1.1.3(2.6.27.7) 64bit and yes it has MCE
+enabled and it logged the usual single MCE after booting into it. From there
+I mounted my debian 64 bit(2.6.27.8) partition, chrooted into it and kexeced
+my 64bit 2.6.27.8(which, if booted directly from power up, gives the
+usual single MCE after boot)
+kernel and this time no MCE appeared. I still haven't rebooted and no
+MCE appeared.
 
-The firewire nodemanager function "nodemgr_host_thread" contains a loop
-that calls try_to_freeze near the top of the loop, but then delays for
-up to 3.25 seconds (plus time to do work) before getting back to the top
-of the loop. When starting a cycle post-boot, this doesn't seem to bite,
-but it is causing a noticeable delay at boot time, when freezing
-processes prior to starting to read the image.
-
-The following patch adds invocation of try_to_freeze to the subloops
-that are used in the body of this function. With these additions, the
-time to freeze when starting to resume at boot time is virtually zero.
-I'm no expert on bluetooth, and so don't know that we shouldn't check
-the return value and jump back to the top of the loop or such like after
-being frozen, but I submit it for your consideration.
-
-Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
-
- nodemgr.c |    2 ++
- 1 file changed, 2 insertions(+)
-diff -ruNp 710-nodemanager-freezing.patch-old/drivers/ieee1394/nodemgr.c 710-nodemanager-freezing.patch-new/drivers/ieee1394/nodemgr.c
---- 710-nodemanager-freezing.patch-old/drivers/ieee1394/nodemgr.c	2008-12-06 08:42:08.000000000 +1100
-+++ 710-nodemanager-freezing.patch-new/drivers/ieee1394/nodemgr.c	2008-12-09 18:49:26.000000000 +1100
-@@ -1685,6 +1685,7 @@ static int nodemgr_host_thread(void *dat
- 		g = get_hpsb_generation(host);
- 		for (i = 0; i < 4 ; i++) {
- 			msleep_interruptible(63);
-+			try_to_freeze();
- 			if (kthread_should_stop())
- 				goto exit;
- 
-@@ -1725,6 +1726,7 @@ static int nodemgr_host_thread(void *dat
- 		/* Sleep 3 seconds */
- 		for (i = 3000/200; i; i--) {
- 			msleep_interruptible(200);
-+			try_to_freeze();
- 			if (kthread_should_stop())
- 				goto exit;
- 
-
-
+>> then doing a kexec from that into my 2.6.27.8 make the mce log
+>> disappear.
+>
+> Yes of course if it comes out of BIOS POST then there won't be another
+> one on kexec.
+>
+> -Andi
+>
+> --
+> ak@linux.intel.com
+>
