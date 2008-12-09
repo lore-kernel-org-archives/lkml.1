@@ -1,165 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYLIPro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbYLIPuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbYLIPro (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 10:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYLIPrg
+	id S1754178AbYLIPuh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 10:50:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYLIPu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 10:47:36 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:51287 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbYLIPrf (ORCPT
+	Tue, 9 Dec 2008 10:50:28 -0500
+Received: from smtprelay.restena.lu ([158.64.1.62]:50480 "EHLO
+	smtprelay.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750788AbYLIPu2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 10:47:35 -0500
-Date: Tue, 9 Dec 2008 21:16:12 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 4/6] Flat hierarchical reclaim by ID
-Message-ID: <20081209154612.GB7694@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>,
-	"nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-	"lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-	"menage@google.com" <menage@google.com>,
-	"kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20081209200213.0e2128c1.kamezawa.hiroyu@jp.fujitsu.com> <20081209200915.41917722.kamezawa.hiroyu@jp.fujitsu.com> <20081209122731.GB4174@balbir.in.ibm.com> <3526.10.75.179.61.1228832912.squirrel@webmail-b.css.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <3526.10.75.179.61.1228832912.squirrel@webmail-b.css.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 9 Dec 2008 10:50:28 -0500
+Date: Tue, 9 Dec 2008 16:50:25 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bruno.premont@restena.lu>
+To: Greg KH <gregkh@suse.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stefan Winter <stefan.winter@restena.lu>
+Subject: Re: [2.6.27.4-5 stable regressions] Kernel boot early crash with
+ low-64k reservation patches
+Message-ID: <20081209165025.679fd673@pluto.restena.lu>
+In-Reply-To: <20081209153654.GC25679@suse.de>
+References: <20081209083440.7569d7a0@pluto.restena.lu>
+	<20081209153654.GC25679@suse.de>
+Organization: Fondation RESTENA
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-12-09 23:28:32]:
-
-> Balbir Singh said:
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-12-09
-> > 20:09:15]:
-> >
-> >>
-> >> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >>
-> >> Implement hierarchy reclaim by cgroup_id.
-> >>
-> >> What changes:
-> >> 	- Page reclaim is not done by tree-walk algorithm
-> >> 	- mem_cgroup->last_schan_child is changed to be ID, not pointer.
-> >> 	- no cgroup_lock, done under RCU.
-> >> 	- scanning order is just defined by ID's order.
-> >> 	  (Scan by round-robin logic.)
-> >>
-> >> Changelog: v3 -> v4
-> >> 	- adjusted to changes in base kernel.
-> >> 	- is_acnestor() is moved to other patch.
-> >>
-> >> Changelog: v2 -> v3
-> >> 	- fixed use_hierarchy==0 case
-> >>
-> >> Changelog: v1 -> v2
-> >> 	- make use of css_tryget();
-> >> 	- count # of loops rather than remembering position.
-> >>
-> >> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujisu.com>
-> >
-> > I have not yet run the patch, but the heuristics seem a lot like
-> > magic. I am not against scanning by order, but is order the right way
-> > to scan groups?
-> My consideration is
->   - Both of current your implementation and this round robin is just
->     an example. I never think some kind of search algorighm detemined by
->     shape of tree is the best way.
->   - No one knows what order is the best, now. We have to find it.
->   - The best order will be determined by some kind of calculation rather
->     than shape of tree and must pass by tons of tests.
-
-Yes, the shape of the tree just limits where to reclaim from
-
->     This needs much amount of time and patient work. VM management is not
->     so easy thing.
->     I think your soft-limit idea can be easily merged onto this patch set.
+On Tue, 9 Dec 2008 07:36:54 -0800 Greg KH wrote:
+> On Tue, Dec 09, 2008 at 08:34:40AM +0100, Bruno Prémont wrote:
+> > Hi,
+> > 
+> > On a VMWare (ESX 3.5.0 Update 3) guest we get boot failure at the
+> > very beginning of boot process. (Boot successful with 2.6.27.4,
+> > failing with 2.6.27.x where x > 4 or just adding the 5 patches
+> > below to 2.6.27.4)
+> > 
+> > State of config option
+> >   CONFIG_X86_RESERVE_LOW_64K=y
+> > or
+> >   # CONFIG_X86_RESERVE_LOW_64K not set
+> > does not make any difference.
 > 
-
-Yes, potentially. With soft limit, the general expectation is this
-
-Let us say you have group A and B
-
-        groupA, soft limit = 1G
-        groupB, soft limit = 2G
-
-Now assume the system has 4G. When groupB is not using its memory,
-group A can grab all 4G, but when groupB kicks in and tries to use 2G
-or more, then the expectation is that
-
-group A will get 1/3 * 4 = 4/3G
-group B will get 2/3 * 4 = 8/3G
-
-Similar to CPU shares currently.
-
-> > Does this order reflect their position in the hierarchy?
->   No. just scan IDs from last scannned one in RR.
->   BTW, can you show what an algorithm works well in following case ?
->   ex)
->     groupA/   limit=1G     usage=300M
->           01/ limit=600M   usage=600M
->           02/ limit=700M   usage=70M
->           03/ limit=100M   usage=30M
->    Which one should be shrinked at first and why ?
->    1) when group_A hit limits.
-
-With tree reclaim, reclaim will first reclaim from A and stop if
-successful, otherwise it will go to 01, 02 and 03 and then go back to
-A.
-
->    2) when group_A/01 hit limits.
-
-This will reclaim only from 01, since A is under its limit
-
->    3) when group_A/02 hit limits.
-
-This will reclaim only from 02 since A is under its limit
-
-Does RR do the same right now?
-
->    I can't now.
+> Does the 2.6.27.8 kernel work better for you, or does it also fail?
 > 
->    This patch itself uses round-robin and have no special order.
->    I think implenting good algorithm under this needs some amount of time.
+> Also, have you tried the 2.6.28-rc releases to see if the problem is
+> also there?
 > 
-
-I agree that fine tuning it will require time, but what we need is
-something usable that will not have hard to debug or understand corner cases.
-
-> > Shouldn't id's belong to cgroups instead of just memory controller?
-> If Paul rejects, I'll move this to memcg. But bio-cgroup people also use
-> ID and, in this summer, I posted swap-cgroup-ID patch and asked to
-> implement IDs under cgroup rather than subsys. (asked by Paul or you.)
+> thanks,
 > 
+> greg k-h
 
-We should talk to Paul and convince him.
+Any stable release after 2.6.27.4 is bad (that is 2.6.27.5,
+2.6.27.6, 2.6.27.8 -- 2.6.27.7 has not been tested), they all produce
+the same (not verified exact register/stack values) result.
 
-> >From implementation, hierarchy code management at el. should go into
-> cgroup.c and it gives us clear view rather than implemented under memcg.
-> 
+We have not tried any 2.6.28-rc kernels yet.
 
-cgroup has hierarchy management already, in the form of children and
-sibling. Walking those structures is up to us, that is all we do
-currently :)
-
-> -Kame
-> > I would push back ids to cgroups infrastructure.
-> >
-> 
-> 
-> 
-
--- 
-	Balbir
+Bruno
