@@ -1,82 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbYLIVk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbYLIVlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755443AbYLIVk5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 16:40:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbYLIVkr
+	id S1755556AbYLIVlW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 16:41:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYLIVlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 16:40:47 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:59529
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754118AbYLIVkq (ORCPT
+	Tue, 9 Dec 2008 16:41:01 -0500
+Received: from yw-out-2324.google.com ([74.125.46.28]:7312 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755473AbYLIVlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 16:40:46 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: Document hadling of bad memory
-Date: Tue, 9 Dec 2008 15:40:41 -0600
-User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; x86_64; ; )
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       kernel list <linux-kernel@vger.kernel.org>, mtk.manpages@gmail.com,
-       dl9pf@gmx.de, rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>,
-       Trivial patch monkey <trivial@kernel.org>
-References: <20081126161521.GC1983@elf.ucw.cz> <20081201105625.25ee9f32.randy.dunlap@oracle.com> <20081209123152.GA1547@ucw.cz>
-In-Reply-To: <20081209123152.GA1547@ucw.cz>
+	Tue, 9 Dec 2008 16:41:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=hPE1Tpd09Tar5EYjmWk6Ge5EPZIyi2Sx6frjl7M48Vf+bopSCbSpxQGux9cXqiSJnG
+         s04hpFFqYST/Y94WYIumYMEuDBWhwdrK+svghoqSvDZpATzNllbvOc2gIcsM1ZpimE8E
+         MMx7Rl6hYonNsEwb69vXqTcSifjUQyf9cJcuI=
+Message-ID: <21d7e9970812091340p5121e8f8l1e2411035331e8d0@mail.gmail.com>
+Date: Wed, 10 Dec 2008 07:40:58 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [patch 021/104] lib/idr.c: fix rcu related race with idr_find
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       "Justin Forbes" <jmforbes@linuxtx.org>,
+       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Dave Jones" <davej@redhat.com>,
+       "Chuck Wolber" <chuckw@quantumlinux.com>,
+       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
+       "Michael Krufky" <mkrufky@linuxtv.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Domenico Andreoli" <cavokz@gmail.com>, "Willy Tarreau" <w@1wt.eu>,
+       "Rodrigo Rubira Branco" <rbranco@la.checkpoint.com>,
+       "Jake Edge" <jake@lwn.net>, "Eugene Teo" <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "Manfred Spraul" <manfred@colorfullife.com>,
+       "Clement Calmels" <cboulte@gmail.com>,
+       "Nadia Derbey" <Nadia.Derbey@bull.net>,
+       "Pierre Peiffer" <peifferp@gmail.com>
+In-Reply-To: <20081203194906.GV8950@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812091540.42429.rob@landley.net>
+References: <20081203193901.715896543@mini.kroah.org>
+	 <20081203194725.GA8950@kroah.com> <20081203194906.GV8950@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 December 2008 06:31:52 Pavel Machek wrote:
-> I cleaned the document up according to Randy (thanks!). I don't actually
-> know enough about DRAM error characcteristics, I guess'round the size of
-> bad region up to nearest 2^n makes sense.
+On Thu, Dec 4, 2008 at 5:49 AM, Greg KH <gregkh@suse.de> wrote:
+> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 >
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
+Revert.
+
+This caused problems in the F10 kernel with idr, the drm device alloc
+went all wierd,
+it might be a drm bug but changing this code triggers it and so it
+isn't really "stable"
+
+Dave.
+
+> ------------------
+> From: Manfred Spraul <manfred@colorfullife.com>
 >
-> diff --git a/Documentation/bad_memory.txt b/Documentation/bad_memory.txt
-...
-> +This Howto is about number 3).
+> commit 6ff2d39b91aec3dcae951afa982059e3dd9b49dc upstream.
+>
+> 2nd part of the fixes needed for
+> http://bugzilla.kernel.org/show_bug.cgi?id=11796.
+>
+> When the idr tree is either grown or shrunk, then the update to the number
+> of layers and the top pointer were not atomic.  This race caused crashes.
+>
+> The attached patch fixes that by replicating the layers counter in each
+> layer, thus idr_find doesn't need idp->layers anymore.
+>
+> Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
+> Cc: Clement Calmels <cboulte@gmail.com>
+> Cc: Nadia Derbey <Nadia.Derbey@bull.net>
+> Cc: Pierre Peiffer <peifferp@gmail.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>
+> ---
+>  include/linux/idr.h |    3 ++-
+>  lib/idr.c           |   14 ++++++++++++--
+>  2 files changed, 14 insertions(+), 3 deletions(-)
+>
+> --- a/include/linux/idr.h
+> +++ b/include/linux/idr.h
+> @@ -52,13 +52,14 @@ struct idr_layer {
+>        unsigned long            bitmap; /* A zero bit means "space here" */
+>        struct idr_layer        *ary[1<<IDR_BITS];
+>        int                      count;  /* When zero, we can release it */
+> +       int                      layer;  /* distance from leaf */
+>        struct rcu_head          rcu_head;
+>  };
+>
+>  struct idr {
+>        struct idr_layer *top;
+>        struct idr_layer *id_free;
+> -       int               layers;
+> +       int               layers; /* only valid without concurrent changes */
+>        int               id_free_cnt;
+>        spinlock_t        lock;
+>  };
+> --- a/lib/idr.c
+> +++ b/lib/idr.c
+> @@ -185,6 +185,7 @@ static int sub_alloc(struct idr *idp, in
+>                        new = get_from_free_list(idp);
+>                        if (!new)
+>                                return -1;
+> +                       new->layer = l-1;
+>                        rcu_assign_pointer(p->ary[m], new);
+>                        p->count++;
+>                }
+> @@ -210,6 +211,7 @@ build_up:
+>        if (unlikely(!p)) {
+>                if (!(p = get_from_free_list(idp)))
+>                        return -1;
+> +               p->layer = 0;
+>                layers = 1;
+>        }
+>        /*
+> @@ -237,6 +239,7 @@ build_up:
+>                }
+>                new->ary[0] = p;
+>                new->count = 1;
+> +               new->layer = layers-1;
+>                if (p->bitmap == IDR_FULL)
+>                        __set_bit(0, &new->bitmap);
+>                p = new;
+> @@ -493,17 +496,21 @@ void *idr_find(struct idr *idp, int id)
+>        int n;
+>        struct idr_layer *p;
+>
+> -       n = idp->layers * IDR_BITS;
+>        p = rcu_dereference(idp->top);
+> +       if (!p)
+> +               return NULL;
+> +       n = (p->layer+1) * IDR_BITS;
+>
+>        /* Mask off upper bits we don't use for the search. */
+>        id &= MAX_ID_MASK;
+>
+>        if (id >= (1 << n))
+>                return NULL;
+> +       BUG_ON(n == 0);
+>
+>        while (n > 0 && p) {
+>                n -= IDR_BITS;
+> +               BUG_ON(n != p->layer*IDR_BITS);
+>                p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
+>        }
+>        return((void *)p);
+> @@ -582,8 +589,11 @@ void *idr_replace(struct idr *idp, void
+>        int n;
+>        struct idr_layer *p, *old_p;
+>
+> -       n = idp->layers * IDR_BITS;
+>        p = idp->top;
+> +       if (!p)
+> +               return ERR_PTR(-EINVAL);
+> +
+> +       n = (p->layer+1) * IDR_BITS;
+>
+>        id &= MAX_ID_MASK;
 >
 >
->  BadRAM
->  ######
-> -BadRAM is the actively developed and available as kernel-patch
-> +BadRAM is the actively developed and available as a kernel patch
->  here:  http://rick.vanrein.org/linux/badram/
-
-Ok, once again: the point of this patch is to document an out of tree patch.
-
-The out of tree patch is here:
-http://rick.vanrein.org/linux/badram/software/BadRAM-2.6.27.1.patch
-
-It has its own Documentation/badram.txt file and it patches 
-Documentation/memory.txt, as acknowledged here:
-
->  For more details see the BadRAM documentation.
-> @@ -27,19 +27,20 @@ For more details see the BadRAM documentation.
->  memmap
->  ######
-
-Now what I don't understand is, why add something to the tree formalizing the 
-out-of-tree status of this other patch?  Why not just merge it?  If it's 
-interesting enough to have documentation about the patch in the tree, why is 
-the patch itself not interesting enough to merge?  It's clearly got an active 
-maintainer, and has for years.  (Is there something specific about it that 
-needs to be cleaned up?)
-
-Adding this extra documentation to the badram patch sounds great.  Merging the 
-badram patch into the linux kernel sounds useful; obviously _this_ patch is 
-inherently an expression of interest in it.  Adding documentation about the 
-badram patch to the linux kernel tree but _not_ adding the badram patch itself 
-seems kind of crazy.
-
-Would someone please explain the reasoning here?  I don't understand it.
-
-Rob
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
