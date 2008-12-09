@@ -1,111 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbYLIRk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754358AbYLIRqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753832AbYLIRk2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 12:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbYLIRkN
+	id S1754358AbYLIRqh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 12:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYLIRq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 12:40:13 -0500
-Received: from kroah.org ([198.145.64.141]:60434 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753555AbYLIRkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 12:40:11 -0500
-Date: Tue, 9 Dec 2008 09:39:14 -0800
-From: Greg KH <greg@kroah.com>
-To: Len Brown <lenb@kernel.org>
-Cc: stable@kernel.org, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] [PATCH 2.6.23..2.6.27.stable] ACPI: delete OSI(Linux)
-	DMI dmesg spam
-Message-ID: <20081209173914.GC32344@kroah.com>
-References: <alpine.LFD.2.00.0812081556060.4406@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0812081556060.4406@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 9 Dec 2008 12:46:28 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60857 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752357AbYLIRq1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 12:46:27 -0500
+Subject: Re: [RFC/PATCH] No get_user/put_user while holding mmap_sem in
+ do_pages_stat?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <493EA116.5020208@inria.fr>
+References: <493B3179.7030204@inria.fr>
+	 <20081206185050.544f67fc.akpm@linux-foundation.org>
+	 <493BDBE6.9040600@inria.fr> <1228840546.12654.2.camel@twins>
+	 <493EA116.5020208@inria.fr>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 09 Dec 2008 18:46:22 +0100
+Message-Id: <1228844782.6978.1.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 08, 2008 at 04:03:07PM -0500, Len Brown wrote:
-> Per 2.6.28 commit a6e0887f21bbab337ee32d9c0a84d7c0b6e9141b,
-> stop soliciting DMI info for this BIOS issue.
+On Tue, 2008-12-09 at 17:47 +0100, Brice Goglin wrote:
+> Peter Zijlstra wrote:
+> > On Sun, 2008-12-07 at 15:21 +0100, Brice Goglin wrote:
+> >   
+> >> Andrew Morton wrote:
+> >>     
+> >>> Was lockdep able to tell you about this in any way?
+> >>>   
+> >>>       
+> >> With CONFIG_PROVE_LOCKING (assuming that it's enough), it doesn't detect
+> >> the problem for real. It just says "possible recursive locking detected"
+> >> between do_page_fault and sys_move_pages.
+> >>     
+> >
+> > That is real - how much more real do you need a description of a
+> > recursive deadlock to be?
+> >   
 > 
-> Signed-off-by: Len Brown <len.brown@intel.com>
-
-I don't understand, this isn't commit a6e0887f21bb upstream, right?
-
-Is this patch upstream?  Or is it just that you don't want to get these
-messages anymore because it is fixed in 2.6.28 now?
-
-thanks,
-
-greg k-h
-
-> ---
-> This patch applies cleanly to 2.6.26 and 2.6.27
-> It applies with various offsets to 2.6.23, 2.6.24, 2.6.25
+> Well, it's a recursive down_read. It could be ok if we had the guarantee
+> that nobody else would be doing down_write in the middle. lockdep only
+> complained about this recursive down_read when there was a down_write
+> actually causing the deadlock, but it didn't say anything about this
+> down_write in the log.
 > 
-> thanks,
-> -Len Brown
-> Intel Open Source Technology Center
-> 
-> diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-> index 235a138..b0d40aa 100644
-> --- a/drivers/acpi/osl.c
-> +++ b/drivers/acpi/osl.c
-> @@ -1261,34 +1261,6 @@ acpi_status acpi_os_release_object(acpi_cache_t * cache, void *object)
->  	return (AE_OK);
->  }
->  
-> -/**
-> - *	acpi_dmi_dump - dump DMI slots needed for blacklist entry
-> - *
-> - *	Returns 0 on success
-> - */
-> -static int acpi_dmi_dump(void)
-> -{
-> -
-> -	if (!dmi_available)
-> -		return -1;
-> -
-> -	printk(KERN_NOTICE PREFIX "DMI System Vendor: %s\n",
-> -		dmi_get_system_info(DMI_SYS_VENDOR));
-> -	printk(KERN_NOTICE PREFIX "DMI Product Name: %s\n",
-> -		dmi_get_system_info(DMI_PRODUCT_NAME));
-> -	printk(KERN_NOTICE PREFIX "DMI Product Version: %s\n",
-> -		dmi_get_system_info(DMI_PRODUCT_VERSION));
-> -	printk(KERN_NOTICE PREFIX "DMI Board Name: %s\n",
-> -		dmi_get_system_info(DMI_BOARD_NAME));
-> -	printk(KERN_NOTICE PREFIX "DMI BIOS Vendor: %s\n",
-> -		dmi_get_system_info(DMI_BIOS_VENDOR));
-> -	printk(KERN_NOTICE PREFIX "DMI BIOS Date: %s\n",
-> -		dmi_get_system_info(DMI_BIOS_DATE));
-> -
-> -	return 0;
-> -}
-> -
-> -
->  /******************************************************************************
->   *
->   * FUNCTION:    acpi_os_validate_interface
-> @@ -1315,14 +1287,6 @@ acpi_os_validate_interface (char *interface)
->  			osi_linux.cmdline ? " via cmdline" :
->  			osi_linux.dmi ? " via DMI" : "");
->  
-> -		if (!osi_linux.dmi) {
-> -			if (acpi_dmi_dump())
-> -				printk(KERN_NOTICE PREFIX
-> -					"[please extract dmidecode output]\n");
-> -			printk(KERN_NOTICE PREFIX
-> -				"Please send DMI info above to "
-> -				"linux-acpi@vger.kernel.org\n");
-> -		}
->  		if (!osi_linux.known && !osi_linux.cmdline) {
->  			printk(KERN_NOTICE PREFIX
->  				"If \"acpi_osi=%sLinux\" works better, "
-> 
-> _______________________________________________
-> stable mailing list
-> stable@linux.kernel.org
-> http://linux.kernel.org/mailman/listinfo/stable
+> It would be great if lockdep could say "recursive read-lock is
+> deadlocking because this other guy (with its backtrace) took for write
+> in the middle". I needed sysrq-t to get this info.
+
+rwsem does not support recursive read-locks, so irrespective of write
+side locks, its a bug.
+
