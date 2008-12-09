@@ -1,112 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753592AbYLIMy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbYLIMzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753592AbYLIMy5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 07:54:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYLIMyo
+	id S1753185AbYLIMzX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 07:55:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbYLIMyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 07:54:44 -0500
-Received: from an-out-0708.google.com ([209.85.132.242]:38765 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751576AbYLIMyn (ORCPT
+	Tue, 9 Dec 2008 07:54:52 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57317 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751742AbYLIMyv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 07:54:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=DWdKme7y0siaVX/U41AigQ/UQIC5UfidkTxBxfJwrYeWsDn78BCCZ0GcsKN0KbhGWP
-         UMlWwbTUP3xW2VqssoqAKTpcyyz6ErjRHyrNkEuDp5DWOJw6eF3gjqpM5CuJOK+1W1cp
-         nNNbTS19azehM3qdjvm6ZvU/U4wUx/H7q3Nr8=
-Message-ID: <a4423d670812090454y72e2a0bdt8f6d53f0dc9b9ef2@mail.gmail.com>
-Date: Tue, 9 Dec 2008 15:54:42 +0300
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: linux-next@vger.kernel.org, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-Subject: next-20081209: pdflush: page allocation failure (xfs)
+	Tue, 9 Dec 2008 07:54:51 -0500
+Date: Tue, 9 Dec 2008 13:54:18 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: mtk.manpages@gmail.com
+Cc: kernel list <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Document sysfs interface to RTC system wakeup
+Message-ID: <20081209125418.GD1547@ucw.cz>
+References: <20081126161524.GD1983@elf.ucw.cz> <cfd18e0f0811281349k4dafa1bdk16500af7e513460@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <cfd18e0f0811281349k4dafa1bdk16500af7e513460@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got the message during compiling of the kernel.
-(tainted by previous warning)
 
-x86_64, 2Gb of RAM
+Add wakealarm description to rtc.txt, now including comments from
+Michael and others.
 
-pdflush: page allocation failure. order:0, mode:0x4000
-Pid: 30415, comm: pdflush Tainted: G        W  2.6.28-rc7-next-20081209 #3
-Call Trace:
- [<ffffffff8027c292>] __alloc_pages_internal+0x469/0x488
- [<ffffffff802c170d>] ? bvec_alloc_bs+0xdc/0x11a
- [<ffffffff8029b3b7>] alloc_slab_page+0x20/0x26
- [<ffffffff8029b6b4>] __slab_alloc+0x26c/0x596
- [<ffffffff802c170d>] ? bvec_alloc_bs+0xdc/0x11a
- [<ffffffff802c170d>] ? bvec_alloc_bs+0xdc/0x11a
- [<ffffffff8029bdbb>] kmem_cache_alloc+0x7b/0xbe
- [<ffffffff802c170d>] bvec_alloc_bs+0xdc/0x11a
- [<ffffffff802c17f4>] bio_alloc_bioset+0xa9/0x101
- [<ffffffff802c18b6>] bio_alloc+0x10/0x1f
- [<ffffffff80354781>] xfs_alloc_ioend_bio+0x23/0x52
- [<ffffffff80354838>] xfs_submit_ioend+0x56/0xd4
- [<ffffffff80354e9f>] xfs_page_state_convert+0x5e9/0x642
- [<ffffffff803536bb>] ? xfs_count_page_state+0x97/0xb6
- [<ffffffff803551cf>] xfs_vm_writepage+0xbe/0xf7
- [<ffffffff8027c490>] __writepage+0x15/0x3b
- [<ffffffff8027ce0b>] write_cache_pages+0x1cd/0x331
- [<ffffffff8027c47b>] ? __writepage+0x0/0x3b
- [<ffffffff8027cf91>] generic_writepages+0x22/0x28
- [<ffffffff803550f3>] xfs_vm_writepages+0x45/0x4e
- [<ffffffff8027cfc2>] do_writepages+0x2b/0x3b
- [<ffffffff802b8e98>] __writeback_single_inode+0x186/0x2fa
- [<ffffffff802b94c3>] ? generic_sync_sb_inodes+0x2bc/0x30a
- [<ffffffff802b9433>] generic_sync_sb_inodes+0x22c/0x30a
- [<ffffffff802b972b>] writeback_inodes+0x9d/0xf4
- [<ffffffff8027d118>] wb_kupdate+0xa3/0x11e
- [<ffffffff8027db96>] pdflush+0x11d/0x1d0
- [<ffffffff8027d075>] ? wb_kupdate+0x0/0x11e
- [<ffffffff8027da79>] ? pdflush+0x0/0x1d0
- [<ffffffff80249cfd>] kthread+0x49/0x76
- [<ffffffff8020c8fa>] child_rip+0xa/0x20
- [<ffffffff802314de>] ? finish_task_switch+0x0/0xb9
- [<ffffffff8020c2c0>] ? restore_args+0x0/0x30
- [<ffffffff80249cb4>] ? kthread+0x0/0x76
- [<ffffffff8020c8f0>] ? child_rip+0x0/0x20
-Mem-Info:
-DMA per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-CPU    1: hi:    0, btch:   1 usd:   0
-CPU    2: hi:    0, btch:   1 usd:   0
-CPU    3: hi:    0, btch:   1 usd:   0
-DMA32 per-cpu:
-CPU    0: hi:  186, btch:  31 usd: 109
-CPU    1: hi:  186, btch:  31 usd: 154
-CPU    2: hi:  186, btch:  31 usd:  76
-CPU    3: hi:  186, btch:  31 usd:  39
-Active_anon:46892 active_file:71530 inactive_anon:10315
- inactive_file:243246 unevictable:0 dirty:15089 writeback:1402 unstable:0
- free:1877 slab:116494 mapped:672 pagetables:401 bounce:0
-DMA free:1452kB min:40kB low:48kB high:60kB active_anon:0kB
-inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB
-present:15072kB pages_scanned:0 all_unreclaimable? yes
-lowmem_reserve[]: 0 1975 1975 1975
-DMA32 free:6056kB min:5664kB low:7080kB high:8496kB
-active_anon:187568kB inactive_anon:41260kB active_file:286120kB
-inactive_file:972984kB unevictable:0kB present:2023256kB
-pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA: 1*4kB 1*8kB 0*16kB 1*32kB 2*64kB 2*128kB 2*256kB 1*512kB 0*1024kB
-0*2048kB 0*4096kB = 1452kB
-DMA32: 204*4kB 59*8kB 6*16kB 4*32kB 1*64kB 1*128kB 1*256kB 0*512kB
-0*1024kB 0*2048kB 1*4096kB = 6056kB
-314797 total pagecache pages
-0 pages in swap cache
-Swap cache stats: add 0, delete 0, find 0/0
-Free swap  = 3911788kB
-Total swap = 3911788kB
-523088 pages RAM
-22877 pages reserved
-224954 pages shared
-276682 pages non-shared
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+--- clean-cg/Documentation/rtc.txt	2008-02-07 10:28:47.000000000 +0100
++++ linux/Documentation/rtc.txt	2008-12-09 13:51:06.000000000 +0100
+@@ -187,6 +187,64 @@
+ 
+ If all else fails, check out the rtc-test.c driver!
+ 
++	    Even newer /sys interface
++	    ~~~~~~~~~~~~~~~~~~~~~~~~~
++	    (thanks to tino.keitel@gmx.de)
++
++How to use /sys/class/rtc/rtcX/wakealarm
++^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++This file can be used to view / set the time of an alarm (wakeup event).  The
++contents of the file are time measured in seconds since the Epoch
++(00:00:00h, 1 Jan 1970, UTC).
++
++     - It reads as either empty, or the scheduled alarm time as seconds
++       since the POSIX Epoch.  (That time may already have passed, since
++       nothing currently enforces one-shot alarm semantics.)
++
++     - It can be written with an alarm time in the future, again seconds
++       since the POSIX Epoch, which enables the alarm.
++
++     - It can be written with an alarm time not in the future (such as 0,
++       the start of the POSIX epoch) to disable the alarm.
++
++If the alarm was already enabled, a new alarm can only be set after the
++old alarm is disabled.
++
++    This resembles the /proc/acpi/alarm file in that nothing happens when the
++    alarm triggers ...  except possibly waking the system from sleep.  It's also
++    like that in a nasty way: not much can be done to prevent one task from
++    clobbering another task's alarm settings.
++
++
++
++Migration from /proc/acpi/alarm
++^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++Users of /proc/acpi/alarm have to change their code to supply the
++seconds since the Epoch instead of a date string. (The date string in
++/proc is quite and ugly hack, and it will be removed one day, with
++rest of /proc/acpi).  
++
++For shell scripts, this can be done using the date command, e.g. like
++this:
++
++date -d tomorrow "+%s"
++
++This returns the seconds since the Epoch of the current time on the
++following day.
++
++Please note that you have to disable the old alarm first, if you want
++to set a new alarm. Otherwise, you get an error. Example:
++
++# Toggle example wakeup devices. Be sure to do 'cat wakeup' to check
++# the status when you are done.
++cd /proc/acpi
++echo EXP0 > wakeup
++echo PCI1 > wakeup
++echo HDEF > wakeup
++cd /sys/class/rtc/rtc0
++echo 0 > wakealarm
++echo $(( $(cat since_epoch) + 20 )) > wakealarm
++
+ 
+ -------------------- 8< ---------------- 8< -----------------------------
+ 
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
