@@ -1,77 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754400AbYLIAa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbYLIAmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754400AbYLIAa4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 19:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYLIAaq
+	id S1754495AbYLIAmt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 19:42:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753809AbYLIAmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 19:30:46 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50530 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753718AbYLIAaq (ORCPT
+	Mon, 8 Dec 2008 19:42:39 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:48141 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753806AbYLIAmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 19:30:46 -0500
-Date: Mon, 8 Dec 2008 19:30:43 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/13] checkpatch: struct file_operations should
-	normally be const
-Message-ID: <20081209003043.GB12482@goodmis.org>
-References: <1228674650-24392-1-git-send-email-apw@shadowen.org> <1228674650-24392-12-git-send-email-apw@shadowen.org>
+	Mon, 8 Dec 2008 19:42:38 -0500
+Date: Tue, 9 Dec 2008 08:42:24 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: Runaway loop with the current git.
+Message-ID: <20081209002451.GA31315@gondor.apana.org.au>
+References: <20081207112335.0afd5192@lxorguk.ukuu.org.uk> <E1L9Kwp-0003tF-RR@gondolin.me.apana.org.au> <20081207155507.GA15355@gondor.apana.org.au> <20081208130646.GB15381@ioremap.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1228674650-24392-12-git-send-email-apw@shadowen.org>
+In-Reply-To: <20081208130646.GB15381@ioremap.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 07, 2008 at 06:30:48PM +0000, Andy Whitcroft wrote:
-> From: Andy Whitcroft <apw@canonical.com>
-> 
-> In the general use case struct file_operations should be a const object.
-> Check for and warn where it is not.  As suggested by Steven and Ingo.
+On Mon, Dec 08, 2008 at 04:06:46PM +0300, Evgeniy Polyakov wrote:
+>
+> Your patch does not apply cleanly to the latest git and missed
+> rng dependency to rng2.
 
-Andy,
+Right it was against cryptodev-2.6 actually.  Thanks for fixing
+it up and confirming.  I'll submit this to Linus.
 
-Thanks for doing this!
-
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-
--- Steve
-
-> 
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: Andy Whitcroft <apw@canonical.com>
-> ---
->  scripts/checkpatch.pl |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index c39ce0b..94371f6 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -2509,6 +2509,11 @@ sub process {
->  		if ($line =~ /^.\s*__initcall\s*\(/) {
->  			WARN("please use device_initcall() instead of __initcall()\n" . $herecurr);
->  		}
-> +# check for struct file_operations, ensure they are const.
-> +		if ($line =~ /\bstruct\s+file_operations\b/ &&
-> +		    $line !~ /\bconst\b/) {
-> +			WARN("struct file_operations should normally be const\n" . $herecurr);
-> +		}
->  
->  # use of NR_CPUS is usually wrong
->  # ignore definitions of NR_CPUS and usage to define arrays as likely right
-> -- 
-> 1.6.0.4.911.gc990
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
