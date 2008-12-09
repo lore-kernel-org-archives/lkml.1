@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYLIQgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754358AbYLIQk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbYLIQgF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 11:36:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYLIQfz
+	id S1754358AbYLIQk0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 11:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYLIQkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 11:35:55 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43445 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753244AbYLIQfx (ORCPT
+	Tue, 9 Dec 2008 11:40:12 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:49108 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751629AbYLIQkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 11:35:53 -0500
-Subject: Re: [RFC/PATCH] No get_user/put_user while holding mmap_sem in
- do_pages_stat?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <493BDBE6.9040600@inria.fr>
-References: <493B3179.7030204@inria.fr>
-	 <20081206185050.544f67fc.akpm@linux-foundation.org>
-	 <493BDBE6.9040600@inria.fr>
-Content-Type: text/plain
+	Tue, 9 Dec 2008 11:40:10 -0500
+Message-ID: <493E9F3E.3020902@nortel.com>
+Date: Tue, 09 Dec 2008 10:39:26 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: eranian@gmail.com, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>,
+       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Subject: Re: [patch] Performance Counters for Linux, v2
+References: <20081208012211.GA23106@elte.hu> <7c86c4470812082237ne58c814s7218cc663f3b49e9@mail.gmail.com> <20081209134636.GA1926@elte.hu>
+In-Reply-To: <20081209134636.GA1926@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Tue, 09 Dec 2008 17:35:46 +0100
-Message-Id: <1228840546.12654.2.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+X-OriginalArrivalTime: 09 Dec 2008 16:39:28.0878 (UTC) FILETIME=[B46398E0:01C95A1C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-12-07 at 15:21 +0100, Brice Goglin wrote:
-> Andrew Morton wrote:
-> > Was lockdep able to tell you about this in any way?
-> >   
-> 
-> With CONFIG_PROVE_LOCKING (assuming that it's enough), it doesn't detect
-> the problem for real. It just says "possible recursive locking detected"
-> between do_page_fault and sys_move_pages.
+Ingo Molnar wrote:
 
-That is real - how much more real do you need a description of a
-recursive deadlock to be?
+> When there are two (or more) hw metrics to profile, the ideally best 
+> (i.e. the statistically most stable and most relevant) sampling for the 
+> two statistical variables (say of l2_misses versus l2_accesses) is to 
+> sample them independently, via their own metric. Not via a static 1khz 
+> rate - or via picking one of the variables to generate samples.
 
->  I actually understood the
-> problem after hitting sysrq-t and always getting the following backtraces:
-> * thread 1
-> [<ffffffff80430cb8>] __down_write_nested+0x9c/0xb4
-> [<ffffffff8028c2c4>] sys_mprotect+0xcc/0x230
-> * thread 2
-> [<ffffffff80430d73>] __down_read+0x9c/0xb4
-> [<ffffffff80223f5c>] do_page_fault+0x551/0x9d9
-> [...]
-> [<ffffffff8043111a>] error_exit+0x0/0x70
-> [<ffffffff802f5bec>] cap_task_movememory+0x0/0x3
-> [<ffffffff8032b99d>] __put_user_4+0x1d/0x30
-> [<ffffffff802a091f>] sys_move_pages+0x453/0x4c0
+Regardless of sampling method, don't you still want some way to 
+enable/disable the various counters as close to simultaneously as possible?
 
+Chris
