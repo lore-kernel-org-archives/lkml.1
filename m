@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbYLIRyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbYLIRzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbYLIRyq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 12:54:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbYLIRyc
+	id S1754943AbYLIRzG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 12:55:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755069AbYLIRyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 12:54:32 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:55314 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755029AbYLIRyb (ORCPT
+	Tue, 9 Dec 2008 12:54:33 -0500
+Received: from ocean.emcraft.com ([213.221.7.182]:33299 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755044AbYLIRyb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Dec 2008 12:54:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=DdRlVV7ZSg618bfRtIgMpfL6K9mxvmIFBuWaaS/S9Ui6hTM1xGKzb779Es497xlkhY
-         0H/2nzT8EmQOZtmskte0ru/ocBGdA6iEn3trcPRuNEONYZhsHpHBfkU2MYqGH4i01xax
-         EgmQZz3X4tAVG84sV5/eBqdE52832TWvAWLk0=
-Message-ID: <493EB0D5.3080606@gmail.com>
-Date: Tue, 09 Dec 2008 18:54:29 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fork_init: fix division by zero
+Date: Tue, 9 Dec 2008 20:44:40 +0300
+User-Agent: KMail/1.9.4
+Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>,
+       Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+       Ilya Yanok <yanok@emcraft.com>
 MIME-Version: 1.0
-To: dougthompson@xmission.com, bluesmoke-devel@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 8/33] drivers/edac: Make static
-References: <493EA286.7080500@gmail.com>
-In-Reply-To: <493EA286.7080500@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812092044.40649.yur@emcraft.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sparse asked whether these could be static.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+The following patch fixes divide-by-zero error for the
+cases of really big PAGE_SIZEs (e.g. 256KB on ppc44x).
+Support for such big page sizes on 44x is not present in the
+current kernel yet, but coming soon.
+
+Also this patch fixes the comment for the max_threads
+settings, as this didn't match the things actually done
+in the code.
+
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
 ---
- drivers/edac/x38_edac.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/fork.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/edac/x38_edac.c b/drivers/edac/x38_edac.c
-index 2406c2c..c25175a 100644
---- a/drivers/edac/x38_edac.c
-+++ b/drivers/edac/x38_edac.c
-@@ -243,7 +243,7 @@ static void x38_check(struct mem_ctl_info *mci)
- }
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 2a372a0..b0ac2fb 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -181,10 +181,14 @@ void __init fork_init(unsigned long mempages)
  
+ 	/*
+ 	 * The default maximum number of threads is set to a safe
+-	 * value: the thread structures can take up at most half
+-	 * of memory.
++	 * value: the thread structures can take up at most
++	 * (1/8) part of memory.
+ 	 */
++#if (8 * THREAD_SIZE) > PAGE_SIZE
+ 	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
++#else
++	max_threads = mempages * PAGE_SIZE / (8 * THREAD_SIZE);
++#endif
  
--void __iomem *x38_map_mchbar(struct pci_dev *pdev)
-+static void __iomem *x38_map_mchbar(struct pci_dev *pdev)
- {
- 	union {
- 		u64 mchbar;
+ 	/*
+ 	 * we need to allow at least 20 threads to boot a system
+-- 
+1.5.6.1
