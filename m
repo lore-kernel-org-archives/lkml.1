@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbYLILaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYLILbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753874AbYLILaJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 06:30:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYLIL3z
+	id S1754026AbYLILbj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 06:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYLILbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 06:29:55 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36682
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752289AbYLIL3z (ORCPT
+	Tue, 9 Dec 2008 06:31:31 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:39991 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752942AbYLILba (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 06:29:55 -0500
-Date: Tue, 09 Dec 2008 03:29:55 -0800 (PST)
-Message-Id: <20081209.032955.101042639.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: eranian@gmail.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org,
-       dada1@cosmosbay.com, robert.richter@amd.com, arjan@infradead.org,
-       hpa@zytor.com, a.p.zijlstra@chello.nl, rostedt@goodmis.org,
-       paulus@samba.org
-Subject: Re: [patch] Performance Counters for Linux, v2
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081209112225.GD21618@elte.hu>
-References: <20081209110246.GC21618@elte.hu>
-	<20081209.031120.90683825.davem@davemloft.net>
-	<20081209112225.GD21618@elte.hu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Dec 2008 06:31:30 -0500
+To: "Giangiacomo Mariotti" <gg.mariotti@gmail.com>
+Cc: "Andi Kleen" <ak@linux.intel.com>,
+       "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+Subject: Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
+From: Andi Kleen <andi@firstfloor.org>
+References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>
+	<12bfabe40812071355r65c13e52g5f3d94d3b060c939@mail.gmail.com>
+	<20081207141337.588aede5@infradead.org>
+	<12bfabe40812072248n3c931ce0hf030b3ac758026d4@mail.gmail.com>
+	<493CCFE4.2080802@jp.fujitsu.com>
+	<12bfabe40812080004p7438744eqeb884b42673bd73c@mail.gmail.com>
+	<493CEAA0.50201@jp.fujitsu.com> <493CEF38.3060004@linux.intel.com>
+	<493CF65B.30408@jp.fujitsu.com> <493D0D42.2090203@linux.intel.com>
+	<12bfabe40812082154y188e9167vd37589b758d9868d@mail.gmail.com>
+Date: Tue, 09 Dec 2008 12:31:47 +0100
+In-Reply-To: <12bfabe40812082154y188e9167vd37589b758d9868d@mail.gmail.com> (Giangiacomo Mariotti's message of "Tue, 9 Dec 2008 06:54:26 +0100")
+Message-ID: <871vwheg9o.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 9 Dec 2008 12:22:25 +0100
+"Giangiacomo Mariotti" <gg.mariotti@gmail.com> writes:
 
-> 
-> * David Miller <davem@davemloft.net> wrote:
-> 
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Date: Tue, 9 Dec 2008 12:02:46 +0100
-> > 
-> > > 
-> > > * stephane eranian <eranian@googlemail.com> wrote:
-> > > 
-> > > > > There's also more generic x86 support: all 4 generic PMCs of Nehalem 
-> > > > > / Core i7 are supported - i've run 4 instances of KernelTop and they 
-> > > > > used up four separate PMCs.
-> > > >
-> > > > Core/Atom have 5 counters, Nehalem has 7. Why are you not using all of 
-> > > > them already?
-> > > 
-> > > no, Nehalem has 4 generic purpose PMCs and 3 fixed-purpose PMCs (7 
-> > > total),
-> >  ...
-> > > Saying that it has 7 is misleading.
-> > 
-> > Even you just did.
-> 
-> which portion of my point stressing the general purpose attribute was 
-> unclear to you?
+> On Mon, Dec 8, 2008 at 1:04 PM, Andi Kleen <ak@linux.intel.com> wrote:
+>> Also it might be really some problem with this particular CPU.
+>>
+>> -Andi
+>>
+> It might be interesting to notice that booting a different distro and
 
-I'm just teasing you because you picked a trite point from stephane's
-email instead of the meat later on, which I would have found more
-interesting to hear you comment on.
+Does that different distro have machine checks enabled, was
+mcelog installed and did you wait 5 minutes for mcelog's cronjob to run? 
+
+> then doing a kexec from that into my 2.6.27.8 make the mce log
+> disappear.
+
+Yes of course if it comes out of BIOS POST then there won't be another
+one on kexec.
+
+-Andi
+
+-- 
+ak@linux.intel.com
