@@ -1,85 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbYLISQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbYLISZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754933AbYLISQz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 13:16:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbYLISQp
+	id S1754680AbYLISZB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 13:25:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbYLISYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 13:16:45 -0500
-Received: from kroah.org ([198.145.64.141]:42235 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753731AbYLISQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 13:16:45 -0500
-Date: Tue, 9 Dec 2008 09:58:48 -0800
-From: Greg KH <greg@kroah.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       Eugene Teo <eteo@redhat.com>, Justin Forbes <jmforbes@linuxtx.org>,
-       linux-kernel@vger.kernel.org, Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <w@1wt.eu>,
-       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk,
-       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
-       akpm@linux-foundation.org, Jake Edge <jake@lwn.net>,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: [stable] [patch 000/104] 2.6.27-stable review
-Message-ID: <20081209175848.GA8024@kroah.com>
-References: <20081203194725.GA8950@kroah.com> <200812032239.14280.rjw@sisk.pl> <200812050133.11325.rjw@sisk.pl>
+	Tue, 9 Dec 2008 13:24:51 -0500
+Received: from gw.goop.org ([64.81.55.164]:44256 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753706AbYLISYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 13:24:50 -0500
+Message-ID: <493EB7EF.7040309@goop.org>
+Date: Tue, 09 Dec 2008 10:24:47 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812050133.11325.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb <linux-usb@vger.kernel.org>,
+       Ian Jackson <Ian.Jackson@eu.citrix.com>
+Subject: Re: Oops in UHCI when encountering "host controller process error"
+References: <Pine.LNX.4.44L0.0812082105170.30007-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0812082105170.30007-100000@netrider.rowland.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 05, 2008 at 01:33:10AM +0100, Rafael J. Wysocki wrote:
-> On Wednesday, 3 of December 2008, Rafael J. Wysocki wrote:
-> > Hi Greg,
-> > 
-> > On Wednesday, 3 of December 2008, Greg KH wrote:
-> > > This is the start of the stable review cycle for the 2.6.27.8 release.
-> > > There are 104 patches in this series, all will be posted as a response
-> > > to this one.  If anyone has any issues with these being applied, please
-> > > let us know.  If anyone is a maintainer of the proper subsystem, and
-> > > wants to add a Signed-off-by: line to the patch, please respond with it.
-> > > 
-> > > And yes, there are a lot of patches here, the big series are:
-> > > 	- cifs data corruption patches
-> > > 	- pci hotplug slot patches to fix the most common warning
-> > > 	  showing up on kerneloops.org
-> > > 	- ext4 bugfixes
-> > > 
-> > > These patches are sent out with a number of different people on the Cc:
-> > > line.  If you wish to be a reviewer, please email stable@kernel.org to
-> > > add your name to the list.  If you want to be off the reviewer list,
-> > > also email us.
-> > > 
-> > > Responses should be made by Friday, December 5, 20:00:00 UTC.  Anything
-> > > received after that time might be too late.
-> > 
-> > The following ACPI commits are also -stable material IMO:
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=65df78473ffbf3bff5e2034df1638acc4f3ddd50
-> 
-> Argh, the following one is broken:
->  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=558073dd56707864f09d563b64e7c37c021e89d2
-> 
-> so please scratch it and this one is already on your list:
->  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7b4d469228a92a00e412675817cedd60133de38a
-> 
-> The remaining two, ie.
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=65df78473ffbf3bff5e2034df1638acc4f3ddd50 http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=40599072dca3ec7d4c9ff8271978be169f974638
+Alan Stern wrote:
+> The hardware starts running right at the end of uhci_start(), in the
+> call to start_rh().  However according to those debugging lines you
+> added to uhci_alloc_qh(), the DMA pool allocations are all messed up.  
+> Those initial allocations all occur within uhci_start(), in the
+>
+> 	for (i = 0; i < UHCI_NUM_SKELQH; ++i)
+>
+> loop.  It sure looks like the DMA pool memory management needs 
+> attention.
+>
+>   
 
-I've now queued these two up.
+Yep, there's something very odd going on in there.  By contrast, does 
+this look OK?  The allocations are fine, but I'm wondering if the 
+skeleton QH stuff is all correct; it seems to work OK in this state.
 
-If there is anything else that you think I need to add for the next
--stable release for 2.6.27, please let me know.
+uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4000 handle=7e212000
+uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4080 handle=7e212080
+uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4100 handle=7e212100
+uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4180 handle=7e212180
+uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4200 handle=7e212200
+uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4280 handle=7e212280
+uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4300 handle=7e212300
+uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4380 handle=7e212380
+uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4400 handle=7e212400
+uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4480 handle=7e212480
+uhci_alloc_qh: uhci=ffff88002e5de3d0 qh=ffff88002e5f4500 handle=7e212500
+Root-hub state: reset   FSBR: 0
+HC status
+  usbcmd    =     0000   Maxp32 
+  usbstat   =     0020   HCHalted 
+  usbint    =     0000
+  usbfrnum  =   (0)000
+  flbaseadd = 7ffd5000
+  sof       =       40
+  stat1     =     0080  
+  stat2     =     0080  
+Most recent frame: 0 (0)   Last ISO frame: 0 (0)
+Periodic load table
+        0       0       0       0       0       0       0       0
+        0       0       0       0       0       0       0       0
+        0       0       0       0       0       0       0       0
+        0       0       0       0       0       0       0       0
+Total: 0, #INT: 0, #ISO: 0
+Frame List
+Skeleton QHs
+- skel_unlink_qh
+    [ffff88002e5f4000] Skel QH link (00000001) element (00000001)
+      queue is empty
+- skel_iso_qh
+    [ffff88002e5f4080] Skel QH link (00000001) element (00000001)
+      queue is empty
+- skel_int128_qh
+    [ffff88002e5f4100] Skel QH link (7e212482) element (00000001)
+      queue is empty
+- skel_int64_qh
+    [ffff88002e5f4180] Skel QH link (7e212482) element (00000001)
+      queue is empty
+- skel_int32_qh
+    [ffff88002e5f4200] Skel QH link (7e212482) element (00000001)
+      queue is empty
+- skel_int16_qh
+    [ffff88002e5f4280] Skel QH link (7e212482) element (00000001)
+      queue is empty
+- skel_int8_qh
+    [ffff88002e5f4300] Skel QH link (7e212482) element (00000001)
+      queue is empty
+- skel_int4_qh
+    [ffff88002e5f4380] Skel QH link (7e212482) element (00000001)
+      queue is empty
+- skel_int2_qh
+    [ffff88002e5f4400] Skel QH link (7e212482) element (00000001)
+      queue is empty
+- skel_async_qh
+    [ffff88002e5f4480] Skel QH link (00000001) element (7e215000)
+      queue is empty
+[ffff88002e5f3000] link (00000001) e0 Length=0 MaxLen=7ff DT0 EndPt=0 Dev=7f, PID=69(IN) (buf=00000000)
+- skel_term_qh
+    [ffff88002e5f4500] Skel QH link (7e212502) element (7e215000)
+      queue is empty
 
-thanks,
 
-greg k-h
+Thanks,
+    J
