@@ -1,66 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbYLIBOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYLIBT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754546AbYLIBOz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 20:14:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbYLIBOq
+	id S1754518AbYLIBT4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 20:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYLIBTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 20:14:46 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56044 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753187AbYLIBOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 20:14:45 -0500
-Message-ID: <493DC628.5060900@cn.fujitsu.com>
-Date: Tue, 09 Dec 2008 09:13:12 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Tim Blechmann <tim@klingt.org>
-CC: rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] [RT] avoid preemption in memory controller code
-References: <1228746854-23875-1-git-send-email-tim@klingt.org>
-In-Reply-To: <1228746854-23875-1-git-send-email-tim@klingt.org>
-Content-Type: text/plain; charset=GB2312
+	Mon, 8 Dec 2008 20:19:44 -0500
+Received: from mga01.intel.com ([192.55.52.88]:62966 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751803AbYLIBTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 20:19:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,737,1220252400"; 
+   d="scan'208";a="648072245"
+Subject: Re: [PATCH] PCIe ASPM causes machine (HP Compaq 6735s) to
+	sometimes freeze hard at boot at PCI initialization time
+From: Shaohua Li <shaohua.li@intel.com>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       Rafael Wysocki <rwysocki@suse.de>,
+       "shemminger@linux-foundation.org" <shemminger@linux-foundation.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Stable@kernel.org" <Stable@kernel.org>
+In-Reply-To: <200812081617.52047.trenn@suse.de>
+References: <200811281328.55259.trenn@suse.de>
+	 <200812081604.09996.trenn@suse.de> <20081208150919.GA1155@srcf.ucam.org>
+	 <200812081617.52047.trenn@suse.de>
+Content-Type: text/plain
+Date: Tue, 09 Dec 2008 09:19:39 +0800
+Message-Id: <1228785579.9482.2.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-Tim Blechmann wrote:
-> the lru_lock of struct mem_group_per_zone is used to avoid preemption
-> during the __mem_cgroup_stat_add_safe function.
-> therefore, a raw_spinlock_t should be used.
+On Mon, 2008-12-08 at 23:17 +0800, Thomas Renninger wrote:
+> On Monday 08 December 2008 16:09:19 Matthew Garrett wrote:
+> > On Mon, Dec 08, 2008 at 04:04:09PM +0100, Thomas Renninger wrote:
+> > > -	pci_read_config_word(pdev, pos + PCI_EXP_LNKCTL, &reg16);
+> > > +	parent_reg = pci_read_config_word(pdev, pos + PCI_EXP_LNKCTL, &reg16);
+> >
+> > I don't think that does what you think it does :)
 > 
-
-FYI, this lru_lock no longer exists in -mm tree. The following patch
-removes that lock:
-
-	http://marc.info/?l=linux-mm&m=122665814801979&w=2
-
-> Signed-off-by: Tim Blechmann <tim@klingt.org>
+> Hehe, thanks for the quick and detailed review!
+> 
+> This one should be better:
+> 
+> PCIe: ASPM: Break out of endless loop waiting for PCI config bits to switch
+> 
+> Makes a Compaq 6735s boot reliably again which hang in the loop
+> on some boots.
+> 
+> Signed-off-by: Thomas Renninger <trenn@suse.de>
+> 
 > ---
->  mm/memcontrol.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+>  drivers/pci/pcie/aspm.c |   28 +++++++++++++++++++++++++---
+>  1 file changed, 25 insertions(+), 3 deletions(-)
 > 
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 517f945..8661732 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -95,9 +95,9 @@ enum mem_cgroup_zstat_index {
+> Index: linux-2.6.27/drivers/pci/pcie/aspm.c
+> ===================================================================
+> --- linux-2.6.27.orig/drivers/pci/pcie/aspm.c
+> +++ linux-2.6.27/drivers/pci/pcie/aspm.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/pm.h>
+>  #include <linux/init.h>
+>  #include <linux/slab.h>
+> +#include <linux/jiffies.h>
+>  #include <linux/pci-aspm.h>
+>  #include "../pci.h"
 >  
->  struct mem_cgroup_per_zone {
->  	/*
-> -	 * spin_lock to protect the per cgroup LRU
-> +	 * raw_spin_lock to protect the per cgroup LRU
->  	 */
-> -	spinlock_t		lru_lock;
-> +	raw_spinlock_t		lru_lock;
->  	struct list_head	active_list;
->  	struct list_head	inactive_list;
->  	unsigned long count[NR_MEM_CGROUP_ZSTAT];
+> @@ -161,11 +162,12 @@ static void pcie_check_clock_pm(struct p
+>   */
+>  static void pcie_aspm_configure_common_clock(struct pci_dev *pdev)
+>  {
+> -	int pos, child_pos;
+> +	int pos, child_pos, i = 0;
+>  	u16 reg16 = 0;
+>  	struct pci_dev *child_dev;
+>  	int same_clock = 1;
+> -
+> +	unsigned long start_jiffies = jiffies;
+> +	u16 child_regs[256], parent_reg;
+child_regs[8] should be enough. There should be just one pcie slot under
+the port.
 
+>  	/*
+>  	 * all functions of a slot should have the same Slot Clock
+>  	 * Configuration, so just check one function
+> @@ -191,16 +193,19 @@ static void pcie_aspm_configure_common_c
+>  		child_pos = pci_find_capability(child_dev, PCI_CAP_ID_EXP);
+>  		pci_read_config_word(child_dev, child_pos + PCI_EXP_LNKCTL,
+>  			&reg16);
+> +		child_regs[i] = reg16;
+>  		if (same_clock)
+>  			reg16 |= PCI_EXP_LNKCTL_CCC;
+>  		else
+>  			reg16 &= ~PCI_EXP_LNKCTL_CCC;
+>  		pci_write_config_word(child_dev, child_pos + PCI_EXP_LNKCTL,
+>  			reg16);
+> +		i++;
+>  	}
+>  
+>  	/* Configure upstream component */
+>  	pci_read_config_word(pdev, pos + PCI_EXP_LNKCTL, &reg16);
+> +	parent_reg = reg16;
+>  	if (same_clock)
+>  		reg16 |= PCI_EXP_LNKCTL_CCC;
+>  	else
+> @@ -212,12 +217,29 @@ static void pcie_aspm_configure_common_c
+>  	pci_write_config_word(pdev, pos + PCI_EXP_LNKCTL, reg16);
+>  
+>  	/* Wait for link training end */
+> -	while (1) {
+> +	/* break out after waiting for 1 second */
+should we set start_jiffies here? Otherwise, it's ok to me.
+
+Thanks,
+Shaohua
 
