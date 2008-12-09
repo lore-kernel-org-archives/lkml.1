@@ -1,146 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbYLIDAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbYLIDKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753311AbYLIDAz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 22:00:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYLIDAk
+	id S1752541AbYLIDKg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 22:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbYLIDKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 22:00:40 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53861 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752069AbYLIDAj (ORCPT
+	Mon, 8 Dec 2008 22:10:24 -0500
+Received: from SOUTH-STATION-ANNEX.MIT.EDU ([18.72.1.2]:36716 "EHLO
+	south-station-annex.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750914AbYLIDKX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 22:00:39 -0500
-Date: Tue, 9 Dec 2008 11:59:43 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [mm] [PATCH 3/4] Memory cgroup hierarchical reclaim (v4)
-Message-Id: <20081209115943.7d6a0ea3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081126111447.106ec275.nishimura@mxp.nes.nec.co.jp>
-References: <20081116081034.25166.7586.sendpatchset@balbir-laptop>
-	<20081116081055.25166.85066.sendpatchset@balbir-laptop>
-	<20081125205832.38f8c365.nishimura@mxp.nes.nec.co.jp>
-	<492C1345.9090201@linux.vnet.ibm.com>
-	<20081126111447.106ec275.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 8 Dec 2008 22:10:23 -0500
+X-Greylist: delayed 862 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Dec 2008 22:10:23 EST
+Message-ID: <20081208214910.6l58csoke98gw48w@webmail.mit.edu>
+Date: Mon, 08 Dec 2008 21:49:10 -0500
+From: Adam M Belay <abelay@MIT.EDU>
+To: Witold Szczeponik <Witold.Szczeponik@gmx.net>, Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, rjw@sisk.pl
+Subject: Re: [PATCH] PNPACPI: Enable Power Support
+References: <493D8A1F.2090907@gmx.net>
+In-Reply-To: <493D8A1F.2090907@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=UTF-8;
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.0.3)
+X-Spam-Score: 0
+X-Spam-Flag: NO
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Nov 2008 11:14:47 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+Hi Witold,
 
-> On Tue, 25 Nov 2008 20:31:25 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > Daisuke Nishimura wrote:
-> > > Hi.
-> > > 
-> > > Unfortunately, trying to hold cgroup_mutex at reclaim causes dead lock.
-> > > 
-> > > For example, when attaching a task to some cpuset directory(memory_migrate=on),
-> > > 
-> > >     cgroup_tasks_write (hold cgroup_mutex)
-> > >         attach_task_by_pid
-> > >             cgroup_attach_task
-> > >                 cpuset_attach
-> > >                     cpuset_migrate_mm
-> > >                         :
-> > >                         unmap_and_move
-> > >                             mem_cgroup_prepare_migration
-> > >                                 mem_cgroup_try_charge
-> > >                                     mem_cgroup_hierarchical_reclaim
-> > > 
-> > 
-> > Did lockdep complain about it?
-> > 
-> I haven't understood lockdep so well, but I got logs like this:
-> 
-> ===
-> INFO: task move.sh:17710 blocked for more than 480 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> move.sh       D ffff88010e1c76c0     0 17710  17597
->  ffff8800bd9edf00 0000000000000046 0000000000000000 0000000000000000
->  ffff8803afbc0000 ffff8800bd9ee270 0000000e00000000 000000010a54459c
->  ffffffffffffffff ffffffffffffffff ffffffffffffffff 7fffffffffffffff
-> Call Trace:
->  [<ffffffff802ae9f0>] mem_cgroup_get_first_node+0x29/0x8a
->  [<ffffffff804cb357>] mutex_lock_nested+0x180/0x2a2
->  [<ffffffff802ae9f0>] mem_cgroup_get_first_node+0x29/0x8a
->  [<ffffffff802ae9f0>] mem_cgroup_get_first_node+0x29/0x8a
->  [<ffffffff802aed9c>] __mem_cgroup_try_charge+0x27a/0x2de
->  [<ffffffff802afdfd>] mem_cgroup_prepare_migration+0x6c/0xa5
->  [<ffffffff802ad97f>] migrate_pages+0x10c/0x4a0
->  [<ffffffff802ad9c8>] migrate_pages+0x155/0x4a0
->  [<ffffffff802a14cb>] new_node_page+0x0/0x2f
->  [<ffffffff802a1adb>] check_range+0x300/0x325
->  [<ffffffff802a2374>] do_migrate_pages+0x1a5/0x1f1
->  [<ffffffff8026d272>] cpuset_migrate_mm+0x30/0x93
->  [<ffffffff8026d29c>] cpuset_migrate_mm+0x5a/0x93
->  [<ffffffff8026df41>] cpuset_attach+0x93/0xa6
->  [<ffffffff8026ae1b>] cgroup_attach_task+0x395/0x3e1
->  [<ffffffff8026af61>] cgroup_tasks_write+0xfa/0x11d
->  [<ffffffff8026aea0>] cgroup_tasks_write+0x39/0x11d
->  [<ffffffff8026b5aa>] cgroup_file_write+0xef/0x216
->  [<ffffffff802b2968>] vfs_write+0xad/0x136
->  [<ffffffff802b2dfe>] sys_write+0x45/0x6e
->  [<ffffffff8020bdab>] system_call_fastpath+0x16/0x1b
-> INFO: lockdep is turned off.
-> ===
-> 
-> And other processes trying to hold cgroup_mutex are also stuck.
-> 
-> > 1. We could probably move away from cgroup_mutex to a memory controller specific
-> > mutex.
-> > 2. We could give up cgroup_mutex before migrate_mm, since it seems like we'll
-> > hold the cgroup lock for long and holding it during reclaim will definitely be
-> > visible to users trying to create/delete nodes.
-> > 
-> > I prefer to do (2), I'll look at the code more closely
-> > 
-> I basically agree, but I think we should also consider mpol_rebind_mm.
-> 
-> mpol_rebind_mm, which can be called from cpuset_attach, does down_write(mm->mmap_sem),
-> which means down_write(mm->mmap_sem) can be called under cgroup_mutex.
-> OTOH, page fault path does down_read(mm->mmap_sem) and can call mem_cgroup_try_charge,
-> which means mutex_lock(cgroup_mutex) can be called under down_read(mm->mmap_sem).
-> 
+All in all your patch looks good, especially in the context of
+resolving the Thinkpad 600X issue.  I have some patches on the
+way that will add more complete power management support to the
+PNP stack and hopefully allow for runtime PM of these system
+devices, but I think this is a good short-term solution.
 
-What's status of this problem ? fixed or not yet ?
-Sorry for failing to track paches.
+One quick comment.  acpi_bus_set_power() can fail, and
+pnpacpi_set_resources() needs to handle this gracefully.  Please
+update the patch to include this.
+
+Also, for the follow up to this patch, I'm wondering what sort
+of ACPI behavior we need to support D1 and D2 states.  In PCI,
+disabling resource decoding (similar to _DIS) is only required
+for entering D3.  The ACPI spec seems to be ambiguous with this
+issue.  Len, any thoughts?
 
 Thanks,
--Kame
+Adam
 
+Quoting Witold Szczeponik <Witold.Szczeponik@gmx.net>:
 
-> > > I think similar problem can also happen when removing memcg's directory.
-> > > 
-> > 
-> > Why removing a directory? memcg (now) marks the directory as obsolete and we
-> > check for obsolete directories and get/put references.
-> > 
-> I don't think so.
->     
->     mem_cgroup_pre_destroy (make mem->obsolete = 1)
->         mem_cgroup_force_empty(mem, **FALSE**)
->             mem_cgroup_force_empty_list
->                 mem_cgroup_move_parent
->                     __mem_cgroup_try_charge
-> 
-> hmm, but looking more closely, cgroup_call_pre_destroy is called
-> outside of cgroup_mutex, so this problem doesn't happen at rmdir probably.
-> 
-> 
-> Thanks,
-> Daisuke Nishimura.
-> 
+> Subject: Enable PNPACPI _PSx Support
+>
+>
+> (This is an updated patch of http://lkml.org/lkml/2008/11/23/211)
+>
+> This patch sets the power of PnP ACPI devices to D0 when they
+> are activated and to D3 when they are disabled.  The latter is
+> in correspondence with the ACPI 3.0 specification, whereas the
+> former is added in order to be able to power up a device after
+> it has been previously disabled (or when booting up a system).
+> (As a consequence, the patch makes the PnP ACPI code more ACPI
+> compliant.)
+>
+> Section 6.2.2 of the ACPI Specification (at least versions 1.0b
+> and 3.0a) states: "Prior to running this control method [_DIS],
+> the OS[PM] will have already put the device in the D3 state."
+> Unfortunately, there is no clear statement as to when to put
+> a device in the D0 state. :-( Therefore, the patch executes the
+> method calls as _PS3/_DIS and _SRS/_PS0. What is clear: "If the
+> device is disabled, _SRS enables the device at the specified
+> resources." (From the ACPI 3.0a Specification.)
+>
+> The patch fixes a problem with some IBM ThinkPads (at least the
+> 600E and the 600X) where the serial ports have a dedicated
+> power source that needs to be brought up before the serial port
+> can be used.  Without this patch, the serial port is enabled
+> but has no power. (In the past, the tpctl utility had to be
+> utilized to turn on the power, but support for this feature
+> stopped with version 5.9 as it did not support the more recent
+> kernel versions.)
+>
+> No regressions were observed on hardware that does not require
+> this patch.
+>
+> The patch is applied against 2.6.27.8 (vanilla).
+>
+>
+> Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+>
+>
+> Index: linux/drivers/pnp/pnpacpi/core.c
+> ===================================================================
+> --- linux.orig/drivers/pnp/pnpacpi/core.c
+> +++ linux/drivers/pnp/pnpacpi/core.c
+> @@ -98,17 +98,20 @@ static int pnpacpi_set_resources(struct
+>  	status = acpi_set_current_resources(handle, &buffer);
+>  	if (ACPI_FAILURE(status))
+>  		ret = -EINVAL;
+> +	else
+> +		acpi_bus_set_power(handle, ACPI_STATE_D0);
+>  	kfree(buffer.pointer);
+>  	return ret;
+>  }
+>
+>  static int pnpacpi_disable_resources(struct pnp_dev *dev)
+>  {
+> +	acpi_handle handle = dev->data;
+>  	acpi_status status;
+>
+>  	/* acpi_unregister_gsi(pnp_irq(dev, 0)); */
+> -	status = acpi_evaluate_object((acpi_handle) dev->data,
+> -				      "_DIS", NULL, NULL);
+> +	acpi_bus_set_power(handle, ACPI_STATE_D3);
+> +	status = acpi_evaluate_object(handle, "_DIS", NULL, NULL);
+>  	return ACPI_FAILURE(status) ? -ENODEV : 0;
+>  }
+>
+>
+
 
