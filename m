@@ -1,120 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYLIQq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbYLIQre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbYLIQq4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 11:46:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbYLIQqg
+	id S1754791AbYLIQre (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 11:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbYLIQrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 11:46:36 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:2929 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753736AbYLIQqe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 11:46:34 -0500
-Message-ID: <493EA0E4.10604@panasas.com>
-Date: Tue, 09 Dec 2008 18:46:28 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Tue, 9 Dec 2008 11:47:24 -0500
+Received: from iona.labri.fr ([147.210.8.143]:59794 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753381AbYLIQrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 11:47:23 -0500
+Message-ID: <493EA116.5020208@inria.fr>
+Date: Tue, 09 Dec 2008 17:47:18 +0100
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-To: Duane Griffin <duaneg@dghda.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Checking link targets are NULL-terminated
-References: <20081205144810.GA25585@dastardly.home.dghda.com>	 <493E8F31.3040806@panasas.com> <e9e943910812090820h3cc63b5dtb767a8a11ee2bad2@mail.gmail.com>
-In-Reply-To: <e9e943910812090820h3cc63b5dtb767a8a11ee2bad2@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC/PATCH] No get_user/put_user while holding mmap_sem in do_pages_stat?
+References: <493B3179.7030204@inria.fr>	 <20081206185050.544f67fc.akpm@linux-foundation.org>	 <493BDBE6.9040600@inria.fr> <1228840546.12654.2.camel@twins>
+In-Reply-To: <1228840546.12654.2.camel@twins>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Dec 2008 16:45:03.0540 (UTC) FILETIME=[7BDCF740:01C95A1D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duane Griffin wrote:
-> Hi Boaz, thanks for your review and comments...
-> 
-> 2008/12/9 Boaz Harrosh <bharrosh@panasas.com>:
->>> diff --git a/fs/ext2/symlink.c b/fs/ext2/symlink.c
->>> index 4e2426e..9b01af2 100644
->>> --- a/fs/ext2/symlink.c
->>> +++ b/fs/ext2/symlink.c
->>> @@ -24,8 +24,14 @@
->>>  static void *ext2_follow_link(struct dentry *dentry, struct nameidata *nd)
->>>  {
->>>       struct ext2_inode_info *ei = EXT2_I(dentry->d_inode);
->>> -     nd_set_link(nd, (char *)ei->i_data);
->>> -     return NULL;
->>> +     void *err = NULL;
->>> +
->>> +     if (memchr(ei->i_data, 0, sizeof(ei->i_data)) == NULL)
->>> +             err = ERR_PTR(-ENAMETOOLONG);
->>> +     else
->>> +             nd_set_link(nd, (char *)ei->i_data);
->>> +
->>> +     return err;
->>>  }
->> Here (Like below) Just zero the very last byte in the buffer.
->> The first time this buffer was strcpy to, it was including the null terminated
->> string. then written to inode on disk. When read, at most it could be,
->> is as space allocated at inode (including null). If intentionally damaged, the symlink
->> will be corrupted but Kernel is safe.
-> 
-> I considered this approach. Filesystems that allocate buffers for the
-> name (e.g. XFS) already tend to unconditionally NULL-terminate it, so
-> this is a non-issue for them. However others (including ext2) do not
-> allocate a buffer, instead pointing to the in-memory data representing
-> the on-disk data. If we NULL-terminate in those cases the in-memory
-> and on-disk data would differ. If the kernel writes out the data for
-> some other reason (say after updating atime) then we may
-> unintentionally modify the link target. That may not be a serious
-> problem in practice, but it doesn't feel right.
-> 
+Peter Zijlstra wrote:
+> On Sun, 2008-12-07 at 15:21 +0100, Brice Goglin wrote:
+>   
+>> Andrew Morton wrote:
+>>     
+>>> Was lockdep able to tell you about this in any way?
+>>>   
+>>>       
+>> With CONFIG_PROVE_LOCKING (assuming that it's enough), it doesn't detect
+>> the problem for real. It just says "possible recursive locking detected"
+>> between do_page_fault and sys_move_pages.
+>>     
+>
+> That is real - how much more real do you need a description of a
+> recursive deadlock to be?
+>   
 
-I just want to make sure that you understand the code above and convince
-you that this can/should be done and will damage nothing.
+Well, it's a recursive down_read. It could be ok if we had the guarantee
+that nobody else would be doing down_write in the middle. lockdep only
+complained about this recursive down_read when there was a down_write
+actually causing the deadlock, but it didn't say anything about this
+down_write in the log.
 
-The code you see above is only for links that are shorter then some constant.
-The ext2 (and other fs's) will cache this case and write the symlink directly
-into the inode that will then have 0 number of data blocks. The space allocated
-at inode is constant and is chosen for good inode packing on disk. The inode
-starts empty then if a symlink is short the string is strcpy to above buffer.
-So even if intentional damage was done to on-disk data, putting another null
-at the end will never hurt. At most it is redundant since there is another
-one preceding. But in the case of damage the damage is fixed. There can never
-be an information lost.
+It would be great if lockdep could say "recursive read-lock is
+deadlocking because this other guy (with its backtrace) took for write
+in the middle". I needed sysrq-t to get this info.
 
-For symlinks that are longer then above constant 1 data block is allocated
-and the symlink is written, padded by zeros. This is taken care of by the
-generic layer in the code you patched at fs/namei.c. Terminating at
-i_size + 1 will never reach the disk since only i_size bytes are ever written.
+Brice
 
-> However, if the FS maintainers don't have a problem with it, it will
-> certainly be cleaner and easier to implement than scanning. Opinions?
-> 
-> [snip]
-> 
->> I hit this problem too, while developing a filesystem that was based
->> on ext2. The reason that it works is because the remainder of a page is always
->> Zero'ed out on writes. Then when read, you receive back your zero terminated link.
->> (Which means that if you have a symlink exactly 4k it will BUG but I guess
->> that is not possible).
-> 
-> It is not possible for an uncorrupted symlink :)
-> 
->> The solution is to use the i_size information for the string length, and zero
->> terminate at i_size + 1.
->>
->> The way I fixed it is that I Zero out the last page's remainder on read and not
->> on write like ext2 and other do it. (A symlink is less then 4k, right?)
-> 
-> Right. If PATH_MAX is larger than PAGE_SIZE no doubt all sorts of
-> things would start going horribly wrong.
-
-Right that's what I thought. So my approach should be safe. Zero out at
-i_size + 1 
-
-> 
-> Cheers,
-> Duane.
-> 
-
-Thanks
-Boaz
