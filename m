@@ -1,89 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbYLIGza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbYLIHMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752784AbYLIGza (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 01:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbYLIGzR
+	id S1752796AbYLIHMz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 02:12:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYLIHMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 01:55:17 -0500
-Received: from nn7.de ([85.214.94.156]:52612 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751673AbYLIGzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 01:55:16 -0500
-Subject: Re: [Bug #11698] 2.6.27-rc7, freezes with &gt; 1 s2ram cycle
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: "Rafael J\. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <200812081940.53840.rjw@sisk.pl>
-References: <49ZBswjGjrL.A.ECE.BGyNJB@chimera>
-	 <200812072116.08218.rjw@sisk.pl> <1228753843.3935.10.camel@localhost>
-	 <200812081940.53840.rjw@sisk.pl>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 09 Dec 2008 07:55:04 +0100
-Message-Id: <1228805704.3918.23.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 9 Dec 2008 02:12:44 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:56499 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbYLIHMm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 02:12:42 -0500
+Date: Tue, 9 Dec 2008 12:37:30 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: tony.luck@intel.com
+Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: next-20081104 - kernel panic on ia64 box, at
+	__mutex_lock_interruptible_slowpath
+Message-ID: <20081209070730.GA12102@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20081204200745.eff0ac87.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20081204200745.eff0ac87.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-08 at 19:40 +0100, Rafael J. Wysocki wrote:
-> On Monday, 8 of December 2008, Soeren Sonnenburg wrote:
-> > On Sun, 2008-12-07 at 21:16 +0100, Rafael J. Wysocki wrote:
-> > > On Thursday, 4 of December 2008, Soeren Sonnenburg wrote:
-> > > > On Wed, 2008-12-03 at 23:40 +0100, Rafael J. Wysocki wrote:
-> > > > > This message has been generated automatically as a part of a report
-> > > > > of regressions introduced between 2.6.26 and 2.6.27.
-> > > > > 
-> > > > > The following bug entry is on the current list of known regressions
-> > > > > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-> > > > > be listed and let me know (either way).
-> > > > > 
-> > > > > 
-> > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11698
-> > > > > Subject		: 2.6.27-rc7, freezes with &gt; 1 s2ram cycle
-> > > > > Submitter	: Soeren Sonnenburg <kernel@nn7.de>
-> > > > > Date		: 2008-09-29 11:29 (66 days old)
-> > > > > References	: http://marc.info/?l=linux-kernel&m=122268780926859&w=4
-> > > > > Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > well it freezes at any s2ram resume attempt, even without X just from
-> > > > console.
-> > > 
-> > > There are quite some things you can try.
-> > > 
-> > > First, it would be helpful to verify if it also fails in the minimal
-> > > configuration, ie. when booted with init=/bin/bash, as described
-> > > in Documentation/power/basic-pm-debugging.txt under
-> > > "Testing minimal configuration".
-> > 
-> > OK, I've found the problem:
-> > 
-> > 1. it does work with init=/bin/bash
-> > 2. it did not work after doing a binary search in the modules, even
-> > removing all modules did not help
-> > 3. I figured out that it only happens when I update the CPU's microcode,
-> > (booting with init=/bin/bash and /etc/init.d/microcode.ctl start
-> > triggers it)
-> > 
-> > Even better: s2ram always gave me my display back when s2ram under
-> > console.
-> > 
-> > Now I wonder if this is Bug #12100 ?
-> 
-> Well, that's quite likely.
-> 
-> > Unfortunately I need the microcode update, as I am suffering from
-> > a) PAT WC disabled due to known CPU erratum.
-> > b) coretemp coretemp.0: Errata AE18 not fixed, update BIOS or microcode of the CPU!
-> > 
-> > Anyway I now have a chance to test whether #11698 still occurs.
-> 
-> Hm, #11698 is the $subject bug.  Did you mean some other bug?
+Hi Tony,
 
-No, I meant this one (but it says freezes with > 1 s2ram cycle, which
-was supposed to say: when working for days or hours but having s2ram'd
-at least once the machine might freeze at some point)
+	next-20081204 kernel panic's, while booting up on ia64 box. This panic 
+was not reproducible with the latest next-20081208 kernel.
 
-Soeren
+VFS: Mounted root (cramfs filesystem) readonly.
+Unable to handle kernel NULL pointer dereference (address 0000000000000000)
+swapper[1266]: Oops 8804682956800 [1]
+Modules linked in:
+
+Pid: 1266, CPU 4, comm:              swapper
+psr : 00001010085a6010 ifs : 800000000000060d ip  : [<a0000001007f73d0>]    Not tainted (2.6.28-rc7-next-20081204-autokern1)
+ip is at __mutex_lock_interruptible_slowpath+0x70/0x220
+unat: 0000000000000000 pfs : 000000000000060d rsc : 0000000000000000
+rnat: e303ca0717d84d54 bsps: 52f9f686bedfb255 pr  : 101026600565a559
+ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70433f
+csd : 0000000000000000 ssd : 0000000000000000
+b0  : a0000001007f7390 b6  : a0000001004a2880 b7  : a0000001004d55c0
+f6  : 1003e0000000000000000 f7  : 1003e0000000000000020
+f8  : 1003e0000000000000800 f9  : 1003e0000000000010000
+f10 : 1003e0000000000000800 f11 : 1003e0000000000000020
+r1  : a000000100e88990 r2  : e000001303f97d30 r3  : e0000006443d0100
+r8  : 0000000000000000 r9  : e000001304432aa0 r10 : e0000006443d0000
+r11 : 0000000000000000 r12 : e000001303f97d10 r13 : e000001303f90000
+r14 : 0000000000000000 r15 : 0000000000000000 r16 : ffffffffffffffff
+r17 : e000001303f97d20 r18 : a000000100c5ef20 r19 : 0000000000000000
+usb 2-1: new low speed USB device using uhci_hcd and address 2
+r20 : a000000100c5ef50 r21 : e000001303f800c0 r22 : ffffffdfffffffff
+r23 : e000001303f801de r24 : 0000000000000001 r25 : 000000000000001a
+r26 : e00000130318401b r27 : 0000000000000000 r28 : 0000000010ee2419
+r29 : 0000000010ee2419 r30 : 0000000000000000 r31 : e0000006443d00f4
+
+Call Trace:
+ [<a0000001000155a0>] show_stack+0x80/0xa0
+                                sp=e000001303f978e0 bsp=e000001303f91178
+ [<a000000100015ea0>] show_regs+0x880/0x8c0
+                                sp=e000001303f97ab0 bsp=e000001303f91120
+ [<a00000010003dca0>] die+0x1a0/0x300
+                                sp=e000001303f97ab0 bsp=e000001303f910d8
+ [<a0000001007fff20>] ia64_do_page_fault+0x8a0/0xba0
+                                sp=e000001303f97ab0 bsp=e000001303f91078
+ [<a00000010000bfa0>] ia64_native_leave_kernel+0x0/0x270
+                                sp=e000001303f97b40 bsp=e000001303f91078
+ [<a0000001007f73d0>] __mutex_lock_interruptible_slowpath+0x70/0x220
+                                sp=e000001303f97d10 bsp=e000001303f91010
+ [<a0000001007f7630>] mutex_lock_interruptible+0x30/0x60
+                                sp=e000001303f97d30 bsp=e000001303f90fe8
+ [<a0000001004d56b0>] uart_open+0xf0/0xa60
+                                sp=e000001303f97d30 bsp=e000001303f90f58
+ [<a00000010049ace0>] tty_open+0x4a0/0xc20
+                                sp=e000001303f97d60 bsp=e000001303f90ec0
+ [<a00000010018f2e0>] chrdev_open+0x1c0/0x380
+                                sp=e000001303f97d70 bsp=e000001303f90e78
+ [<a000000100183b20>] __dentry_open+0x5c0/0x6a0
+                                sp=e000001303f97d80 bsp=e000001303f90e00
+ [<a000000100183ca0>] nameidata_to_filp+0xa0/0xc0
+                                sp=e000001303f97d80 bsp=e000001303f90dd0
+ [<a0000001001a3050>] do_filp_open+0x310/0x12e0
+                                sp=e000001303f97d80 bsp=e000001303f90d10
+usb 2-1: configuration #1 chosen from 1 choice
+ [<a000000100183290>] do_sys_open+0x90/0x200
+                                sp=e000001303f97e30 bsp=e000001303f90cc0
+ [<a0000001001834d0>] sys_open+0x50/0x80
+                                sp=e000001303f97e30 bsp=e000001303f90c68
+input: LITE-ON Technology USB NetVista Full Width Keyboard. as /class/input/input1
+ [<a0000001009c82b0>] do_linuxrc+0xb0/0x120
+                                sp=e000001303f97e30 bsp=e000001303f90c48
+ [<a000000100013710>] kernel_thread_helper+0xd0/0x100
+                                sp=e000001303f97e30 bsp=e000001303f90c20
+ [<a00000010000a4c0>] start_kernel_thread+0x20/0x40
+                                sp=e000001303f97e30 bsp=e000001303f90c20
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with ordered data mode.
+VFS: Mounted root (ext3 filesystem) readonly.
+Trying to move old root to /initrd ... <6>generic-usb 0003:04B3:3025.0001: input: USB HID v1.10 Keyboard [LITE-ON Technology USB NetVista Full Width Keyboard.] on usb-0000:00:05.3-1/input0
+okay
+Freeing unused kernel memory: 1760kB freed
+BUG: soft lockup - CPU#0 stuck for 61s! [swapper:1]
+Modules linked in:
+Modules linked in:
+
+Pid: 1, CPU 0, comm:              swapper
+psr : 00001010085a6010 ifs : 8000000000000000 ip  : [<a00000010000a500>]    Tainted: G      D    (2.6.28-rc7-next-20081204-autokern1)
+ip is at ia64_spinlock_contention+0x20/0x60
+unat: 0000000000000000 pfs : 0000000000000081 rsc : 0000000000000003
+rnat: 0000000000000000 bsps: 0000000000000000 pr  : 1810264469655559
+ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70433f
+csd : 0930ffff000f0000 ssd : 0930ffff00000000
+b0  : a0000001007f7390 b6  : a0000001007fa020 b7  : a0000001004d55c0
+f6  : 1003e0000000000400000 f7  : 1003e0000000000000000
+f8  : 1003e0000000028000000 f9  : 1003e0000000c5d145160
+f10 : 1003eee8b2cb700000000 f11 : 1003e0000000000000001
+r1  : a000000100e88990 r2  : 000000000000060d r3  : e00000064309001c
+r8  : 0000000000000000 r9  : e000001304432aa0 r10 : e0000006443d0000
+r11 : 0000000000000000 r12 : e000000643097d00 r13 : e000000643090000
+r14 : 0000000000000000 r15 : e000001304432a00 r16 : 0000000000000000
+r17 : 0000000000000000 r18 : a000000100c5ef20 r19 : 0000000000000000
+r20 : a000000100c5ef50 r21 : e000001303f800c0 r22 : e000001304432aa0
+r23 : 0000000000500002 r24 : e000000600005398 r25 : fffffffffffff000
+r26 : a00000010049a840 r27 : 0000000000000000 r28 : e000000644516020
+r29 : 0000000000000200 r30 : 0000000000000001 r31 : e0000006443d00f4
+
+Call Trace:
+ [<a0000001000155a0>] show_stack+0x80/0xa0
+                                sp=e000000643097960 bsp=e000000643091340
+ [<a000000100015ea0>] show_regs+0x880/0x8c0
+                                sp=e000000643097b30 bsp=e0000006430912e8
+ [<a0000001000f8770>] softlockup_tick+0x2b0/0x3a0
+                                sp=e000000643097b30 bsp=e000000643091290
+ [<a0000001000af920>] run_local_timers+0x40/0x60
+                                sp=e000000643097b30 bsp=e000000643091278
+ [<a0000001000af980>] update_process_times+0x40/0xc0
+                                sp=e000000643097b30 bsp=e000000643091248
+ [<a00000010003d800>] timer_interrupt+0x1c0/0x4c0
+                                sp=e000000643097b30 bsp=e0000006430911e0
+ [<a0000001000f8a90>] handle_IRQ_event+0x90/0x120
+                                sp=e000000643097b30 bsp=e0000006430911a8
+ [<a0000001000f8c70>] __do_IRQ+0x150/0x440
+                                sp=e000000643097b30 bsp=e000000643091148
+ [<a0000001000129b0>] ia64_handle_irq+0x410/0x440
+                                sp=e000000643097b30 bsp=e0000006430910c8
+ [<a00000010000bfa0>] ia64_native_leave_kernel+0x0/0x270
+                                sp=e000000643097b30 bsp=e0000006430910c8
+ [<a00000010000a500>] ia64_spinlock_contention+0x20/0x60
+                                sp=e000000643097d00 bsp=e0000006430910c8
+ [<a0000001007fa020>] _spin_lock+0x40/0x60
+                                sp=e000000643097d00 bsp=e0000006430910c0
+ [<a0000001007f7390>] __mutex_lock_interruptible_slowpath+0x30/0x220
+                                sp=e000000643097d00 bsp=e000000643091060
+ [<a0000001007f7630>] mutex_lock_interruptible+0x30/0x60
+                                sp=e000000643097d20 bsp=e000000643091040
+ [<a0000001004d56b0>] uart_open+0xf0/0xa60
+                                sp=e000000643097d20 bsp=e000000643090fa8
+ [<a00000010049ace0>] tty_open+0x4a0/0xc20
+                                sp=e000000643097d50 bsp=e000000643090f10
+ [<a00000010018f2e0>] chrdev_open+0x1c0/0x380
+                                sp=e000000643097d60 bsp=e000000643090ec8
+ [<a000000100183b20>] __dentry_open+0x5c0/0x6a0
+                                sp=e000000643097d70 bsp=e000000643090e50
+ [<a000000100183ca0>] nameidata_to_filp+0xa0/0xc0
+                                sp=e000000643097d70 bsp=e000000643090e28
+ [<a0000001001a3050>] do_filp_open+0x310/0x12e0
+                                sp=e000000643097d70 bsp=e000000643090d60
+ [<a000000100183290>] do_sys_open+0x90/0x200
+                                sp=e000000643097e20 bsp=e000000643090d10
+ [<a0000001001834d0>] sys_open+0x50/0x80
+                                sp=e000000643097e20 bsp=e000000643090cb8
+ [<a00000010000a980>] init_post+0x80/0x220
+                                sp=e000000643097e20 bsp=e000000643090c98
+ [<a0000001009c0640>] kernel_init+0x420/0x440
+                                sp=e000000643097e20 bsp=e000000643090c48
+ [<a000000100013710>] kernel_thread_helper+0xd0/0x100
+                                sp=e000000643097e30 bsp=e000000643090c20
+ [<a00000010000a4c0>] start_kernel_thread+0x20/0x40
+                                sp=e000000643097e30 bsp=e000000643090c20
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
