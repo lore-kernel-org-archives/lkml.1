@@ -1,142 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbYLIPpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYLIPro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058AbYLIPpa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 10:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYLIPpU
+	id S1754142AbYLIPro (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 10:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYLIPrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 10:45:20 -0500
-Received: from rtr.ca ([76.10.145.34]:34206 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751527AbYLIPpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 10:45:19 -0500
-Message-ID: <493E92D6.8090104@rtr.ca>
-Date: Tue, 09 Dec 2008 10:46:30 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Tue, 9 Dec 2008 10:47:36 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:51287 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751269AbYLIPrf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 10:47:35 -0500
+Date: Tue, 9 Dec 2008 21:16:12 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 4/6] Flat hierarchical reclaim by ID
+Message-ID: <20081209154612.GB7694@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	"linux-mm@kvack.org" <linux-mm@kvack.org>,
+	"nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+	"lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+	"menage@google.com" <menage@google.com>,
+	"kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20081209200213.0e2128c1.kamezawa.hiroyu@jp.fujitsu.com> <20081209200915.41917722.kamezawa.hiroyu@jp.fujitsu.com> <20081209122731.GB4174@balbir.in.ibm.com> <3526.10.75.179.61.1228832912.squirrel@webmail-b.css.fujitsu.com>
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>,
-       lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com,
-       linux-acpi@vger.kernel.org
-Subject: [PATCH] /proc/acpi/alarm: handle day-of-month wraparound on readback
-References: <200806222042.13929.david-b@pacbell.net> <4934176F.6080900@rtr.ca> <alpine.LFD.2.00.0812011311490.3197@localhost.localdomain> <4934619A.10809@rtr.ca>
-In-Reply-To: <4934619A.10809@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <3526.10.75.179.61.1228832912.squirrel@webmail-b.css.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(repost)
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-12-09 23:28:32]:
 
-Fix month wrap issue with readback from /proc/acpi/alarm
-This bug has been around *forever*.
+> Balbir Singh said:
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-12-09
+> > 20:09:15]:
+> >
+> >>
+> >> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> >>
+> >> Implement hierarchy reclaim by cgroup_id.
+> >>
+> >> What changes:
+> >> 	- Page reclaim is not done by tree-walk algorithm
+> >> 	- mem_cgroup->last_schan_child is changed to be ID, not pointer.
+> >> 	- no cgroup_lock, done under RCU.
+> >> 	- scanning order is just defined by ID's order.
+> >> 	  (Scan by round-robin logic.)
+> >>
+> >> Changelog: v3 -> v4
+> >> 	- adjusted to changes in base kernel.
+> >> 	- is_acnestor() is moved to other patch.
+> >>
+> >> Changelog: v2 -> v3
+> >> 	- fixed use_hierarchy==0 case
+> >>
+> >> Changelog: v1 -> v2
+> >> 	- make use of css_tryget();
+> >> 	- count # of loops rather than remembering position.
+> >>
+> >> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujisu.com>
+> >
+> > I have not yet run the patch, but the heuristics seem a lot like
+> > magic. I am not against scanning by order, but is order the right way
+> > to scan groups?
+> My consideration is
+>   - Both of current your implementation and this round robin is just
+>     an example. I never think some kind of search algorighm detemined by
+>     shape of tree is the best way.
+>   - No one knows what order is the best, now. We have to find it.
+>   - The best order will be determined by some kind of calculation rather
+>     than shape of tree and must pass by tons of tests.
 
-  $ echo '2008-12-01 10:36:20' > /proc/acpi/alarm
-  $ cat /proc/acpi/alarm
-  2008-11-01 10:36:20
+Yes, the shape of the tree just limits where to reclaim from
 
-Note how the readback above shows the month incorrectly
-when the alarm is set in the *next* calendar month.
-But with this patch applied, it shows the correct month (12).
+>     This needs much amount of time and patient work. VM management is not
+>     so easy thing.
+>     I think your soft-limit idea can be easily merged onto this patch set.
+> 
 
-This patch applies/works on 2.6.28-rc6.
-Probably best to queue it up for the next major cycle.
+Yes, potentially. With soft limit, the general expectation is this
 
-Signed-off-by: Mark Lord <mlord@pobox.com>
+Let us say you have group A and B
 
---- old/drivers/acpi/sleep/proc.c	2008-11-20 18:19:22.000000000 -0500
-+++ rc6/drivers/acpi/sleep/proc.c	2008-12-01 17:07:51.000000000 -0500
-@@ -84,12 +84,15 @@
- #define	HAVE_ACPI_LEGACY_ALARM
- #endif
- 
-+static u32 cmos_bcd_read(int offset, int rtc_control);
-+
- #ifdef	HAVE_ACPI_LEGACY_ALARM
- 
- static int acpi_system_alarm_seq_show(struct seq_file *seq, void *offset)
- {
- 	u32 sec, min, hr;
- 	u32 day, mo, yr, cent = 0;
-+	u32 today = 0;
- 	unsigned char rtc_control = 0;
- 	unsigned long flags;
- 
-@@ -97,38 +100,32 @@
- 
- 	spin_lock_irqsave(&rtc_lock, flags);
- 
--	sec = CMOS_READ(RTC_SECONDS_ALARM);
--	min = CMOS_READ(RTC_MINUTES_ALARM);
--	hr = CMOS_READ(RTC_HOURS_ALARM);
- 	rtc_control = CMOS_READ(RTC_CONTROL);
-+	sec = cmos_bcd_read(RTC_SECONDS_ALARM, rtc_control);
-+	min = cmos_bcd_read(RTC_MINUTES_ALARM, rtc_control);
-+	hr = cmos_bcd_read(RTC_HOURS_ALARM, rtc_control);
- 
- 	/* If we ever get an FACP with proper values... */
--	if (acpi_gbl_FADT.day_alarm)
-+	if (acpi_gbl_FADT.day_alarm) {
- 		/* ACPI spec: only low 6 its should be cared */
- 		day = CMOS_READ(acpi_gbl_FADT.day_alarm) & 0x3F;
--	else
--		day = CMOS_READ(RTC_DAY_OF_MONTH);
-+		if (!(rtc_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD)
-+			day = bcd2bin(day);
-+	} else
-+		day = cmos_bcd_read(RTC_DAY_OF_MONTH, rtc_control);
- 	if (acpi_gbl_FADT.month_alarm)
--		mo = CMOS_READ(acpi_gbl_FADT.month_alarm);
--	else
--		mo = CMOS_READ(RTC_MONTH);
-+		mo = cmos_bcd_read(acpi_gbl_FADT.month_alarm, rtc_control);
-+	else {
-+		mo = cmos_bcd_read(RTC_MONTH, rtc_control);
-+		today = cmos_bcd_read(RTC_DAY_OF_MONTH, rtc_control);
-+	}
- 	if (acpi_gbl_FADT.century)
--		cent = CMOS_READ(acpi_gbl_FADT.century);
-+		cent = cmos_bcd_read(acpi_gbl_FADT.century, rtc_control);
- 
--	yr = CMOS_READ(RTC_YEAR);
-+	yr = cmos_bcd_read(RTC_YEAR, rtc_control);
- 
- 	spin_unlock_irqrestore(&rtc_lock, flags);
- 
--	if (!(rtc_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
--		sec = bcd2bin(sec);
--		min = bcd2bin(min);
--		hr = bcd2bin(hr);
--		day = bcd2bin(day);
--		mo = bcd2bin(mo);
--		yr = bcd2bin(yr);
--		cent = bcd2bin(cent);
--	}
--
- 	/* we're trusting the FADT (see above) */
- 	if (!acpi_gbl_FADT.century)
- 		/* If we're not trusting the FADT, we should at least make it
-@@ -153,6 +150,20 @@
- 	else
- 		yr += cent * 100;
- 
-+	/*
-+	 * Show correct dates for alarms up to a month into the future.
-+	 * This solves issues for nearly all situations with the common
-+	 * 30-day alarm clocks in PC hardware.
-+	 */
-+	if (day < today) {
-+		if (mo < 12) {
-+			mo += 1;
-+		} else {
-+			mo = 1;
-+			yr += 1;
-+		}
-+	}
-+
- 	seq_printf(seq, "%4.4u-", yr);
- 	(mo > 12) ? seq_puts(seq, "**-") : seq_printf(seq, "%2.2u-", mo);
- 	(day > 31) ? seq_puts(seq, "** ") : seq_printf(seq, "%2.2u ", day);
+        groupA, soft limit = 1G
+        groupB, soft limit = 2G
+
+Now assume the system has 4G. When groupB is not using its memory,
+group A can grab all 4G, but when groupB kicks in and tries to use 2G
+or more, then the expectation is that
+
+group A will get 1/3 * 4 = 4/3G
+group B will get 2/3 * 4 = 8/3G
+
+Similar to CPU shares currently.
+
+> > Does this order reflect their position in the hierarchy?
+>   No. just scan IDs from last scannned one in RR.
+>   BTW, can you show what an algorithm works well in following case ?
+>   ex)
+>     groupA/   limit=1G     usage=300M
+>           01/ limit=600M   usage=600M
+>           02/ limit=700M   usage=70M
+>           03/ limit=100M   usage=30M
+>    Which one should be shrinked at first and why ?
+>    1) when group_A hit limits.
+
+With tree reclaim, reclaim will first reclaim from A and stop if
+successful, otherwise it will go to 01, 02 and 03 and then go back to
+A.
+
+>    2) when group_A/01 hit limits.
+
+This will reclaim only from 01, since A is under its limit
+
+>    3) when group_A/02 hit limits.
+
+This will reclaim only from 02 since A is under its limit
+
+Does RR do the same right now?
+
+>    I can't now.
+> 
+>    This patch itself uses round-robin and have no special order.
+>    I think implenting good algorithm under this needs some amount of time.
+> 
+
+I agree that fine tuning it will require time, but what we need is
+something usable that will not have hard to debug or understand corner cases.
+
+> > Shouldn't id's belong to cgroups instead of just memory controller?
+> If Paul rejects, I'll move this to memcg. But bio-cgroup people also use
+> ID and, in this summer, I posted swap-cgroup-ID patch and asked to
+> implement IDs under cgroup rather than subsys. (asked by Paul or you.)
+> 
+
+We should talk to Paul and convince him.
+
+> >From implementation, hierarchy code management at el. should go into
+> cgroup.c and it gives us clear view rather than implemented under memcg.
+> 
+
+cgroup has hierarchy management already, in the form of children and
+sibling. Walking those structures is up to us, that is all we do
+currently :)
+
+> -Kame
+> > I would push back ids to cgroups infrastructure.
+> >
+> 
+> 
+> 
+
+-- 
+	Balbir
