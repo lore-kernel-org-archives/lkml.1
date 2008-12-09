@@ -1,52 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbYLITcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYLITlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755024AbYLITcq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 14:32:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbYLITcc
+	id S1754840AbYLITlk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 14:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYLITl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 14:32:32 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45226 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753515AbYLITcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 14:32:31 -0500
-Date: Tue, 9 Dec 2008 14:30:39 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: Jan Rekorajski <baggins@sith.mimuw.edu.pl>, linux-kernel@vger.kernel.org,
-       Holger Hoffstaette <holger@wizards.de>, netdev@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
-       stable@kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: Re: Nasty regression from .27.7 to .27.8: idle samba goes crazy
-Message-ID: <20081209143039.036c9f91@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <493EC412.3090805@colorfullife.com>
-References: <pan.2008.12.08.06.18.57.357875@wizards.de>
-	<200812080834.22924.rjw@sisk.pl>
-	<pan.2008.12.08.08.07.29.439625@wizards.de>
-	<493D4F5C.7020606@s5r6.in-berlin.de>
-	<493D7349.10200@s5r6.in-berlin.de>
-	<20081208222246.GA29232@sith.mimuw.edu.pl>
-	<20081209123703.043067eb@dhcp-100-2-144.bos.redhat.com>
-	<493EC412.3090805@colorfullife.com>
-Organization: Red Hat, Inc.
+	Tue, 9 Dec 2008 14:41:27 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:40969 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754016AbYLITl0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 14:41:26 -0500
+Subject: Re: [PATCH] - support inheritance of mlocks across fork/exec V2
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, riel@redhat.com,
+       hugh@veritas.com, kosaki.motohiro@jp.fujitsu.com,
+       linux-api@vger.kernel.org
+In-Reply-To: <1228771985.3726.32.camel@calx>
+References: <1227561707.6937.61.camel@lts-notebook>
+	 <20081125152651.b4c3c18f.akpm@linux-foundation.org>
+	 <1228331069.6693.73.camel@lts-notebook>
+	 <20081206220729.042a926e.akpm@linux-foundation.org>
+	 <1228770337.31442.44.camel@lts-notebook>  <1228771985.3726.32.camel@calx>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 09 Dec 2008 14:40:51 -0500
+Message-Id: <1228851652.6379.58.camel@lts-notebook>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 09 Dec 2008 20:16:34 +0100
-Manfred Spraul <manfred@colorfullife.com> wrote:
+On Mon, 2008-12-08 at 15:33 -0600, Matt Mackall wrote:
+> On Mon, 2008-12-08 at 16:05 -0500, Lee Schermerhorn wrote:
+> > > > In support of a "lock prefix command"--e.g., mlock <cmd>
+> > <args> ...
+> > > > Analogous to taskset(1) for cpu affinity or numactl(8) for numa memory
+> > > > policy.
+> > > > 
+> > > > Together with patches to keep mlocked pages off the LRU, this will
+> > > > allow users/admins to lock down applications without modifying them,
+> > > > if their RLIMIT_MEMLOCK is sufficiently large, keeping their pages
+> > > > off the LRU and out of consideration for reclaim.
+> > > > 
+> > > > Potentially useful, as well, in real-time environments to force
+> > > > prefaulting and residency for applications that don't mlock themselves.
+> 
+> This is a bit scary to me. Privilege and mode inheritance across
+> processes is the root of many nasty surprises, security and otherwise.
 
-> Chuck Ebbert wrote:
-> > Try reverting the idr patch that went into 2.6.27.8. It broke DRM in the
-> > Fedora kernel at least.
-> >
-> >   
-> What happens?
-> Does it oops, does one of the BUG() statements trigger?
+Hi, Matt:
+
+Could you explain more about this issue?  I believe that the patch
+doesn't provide any privileges or capabilities that a process doesn't
+already have.  It just allows one to cause a process and, optionally,
+its descendants, to behave as if one had modified the sources to invoke
+mlockall() directly.  It is still subject to each individual task's
+resource limits.  At least, that was my intent.  
+
+> 
+> Here's a crazy alternative: add a flag to containers instead? I think
+> this is a better match to what you're trying to do and will keep people
+> from being surprised when an mlockall call in one thread causes a
+> fork/exec in another thread to crash their box, but only sometimes.
+
+Not so crazy.  It isn't really a better match, IMO [more below], but I
+can see providing a flag to enable/disable this ability in the
+container.  Initially, the default could be disabled.  If/when it's been
+around long enough that people are comfortable with it, perhaps the
+default could be flipped to enabled.
+
+As far as "what I'm trying to do":  I see this as exactly like using
+taskset to set the cpu affinity of a task, or numactl to set the task
+mempolicy without modifying the source.  If one had access to the
+program source and wouldn't, e.g., void a support contract by modifying
+it, one could just insert the calls into the source itself.  These would
+still be subject to, but "finer grain" than, external administrative
+controls, such as cpuset allowed mems and cpus.
+
+But, sometimes, it's very convenient to use the prefix commands to
+effect the same behavior.  I could certainly use it in the Oracle,
+SAP, ... benchmarking that I occasionally help out with.  Actually, as I
+have the patches, I can create custom kernels for the purpose of
+demonstrating the effects.  However, I think it would be useful for
+customers someday to have this feature in distro kernels.
+
+I don't understand your comment about threads and crashing the box. If
+an inherited mlockall() can crash Linux, then inserting the call into
+the source could also crash it.  I think that's a bug we'd need to fix
+in any case.  Indeed, using this facility during testing of the
+unevictable lru/mlocked pages work DID uncover bugs that I might not
+have seen otherwise.   If you meant "cause OOMs", I agree that this
+could happen, as well but, again, I think this would be the same
+behavior as if the calls were inserted into the source.
+
+Regarding one thread being surprised by what another thread did:  if you
+mean threads within the same executable, I'd expect them to part of the
+same program.  One hopes that someone knows the big picture--what all
+the threads are doing--obviating any such surprises.  But, I recall that
+you work/ed in the embedded space, and perhaps threads mean something
+different to you.
+
+Anyway...
+
+This is a pretty small patch that I can maintain out of tree for my own
+use in testing if people don't think its usefulness outweighs any
+concerns it raises.  Customers won't be able to use it, but thems the
+breaks.
+
+Regards,
+Lee
 > 
 
-It fails in strange ways, e.g. trying to open a DRM device causes it to
-disappear. (And DRM is a heavy user of idr.)
