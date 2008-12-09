@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbYLILX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbYLILYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbYLILX1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 06:23:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYLILXC
+	id S1754051AbYLILYU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 06:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYLILYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 06:23:02 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45843 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753376AbYLILXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 06:23:00 -0500
-Date: Tue, 9 Dec 2008 12:22:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: eranian@gmail.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org,
-       dada1@cosmosbay.com, robert.richter@amd.com, arjan@infradead.org,
-       hpa@zytor.com, a.p.zijlstra@chello.nl, rostedt@goodmis.org,
-       paulus@samba.org
-Subject: Re: [patch] Performance Counters for Linux, v2
-Message-ID: <20081209112225.GD21618@elte.hu>
-References: <20081208012211.GA23106@elte.hu> <7c86c4470812082237ne58c814s7218cc663f3b49e9@mail.gmail.com> <20081209110246.GC21618@elte.hu> <20081209.031120.90683825.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081209.031120.90683825.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 9 Dec 2008 06:24:11 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:56169 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752510AbYLILYK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 06:24:10 -0500
+Subject: Re: [PATCH] Bluetooth node manager causes up to ~3.25s delay in
+ freezing tasks.
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: linux-bluetooth@vger.kernel.org,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1228809311.6681.12.camel@nigel-laptop>
+References: <1228809311.6681.12.camel@nigel-laptop>
+Content-Type: text/plain
+Date: Tue, 09 Dec 2008 12:24:03 +0100
+Message-Id: <1228821843.19553.3.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Nigel,
 
-* David Miller <davem@davemloft.net> wrote:
+> The bluetooth nodemanager function "nodemgr_host_thread" contains a loop
+> that calls try_to_freeze near the top of the loop, but then delays for
+> up to 3.25 seconds (plus time to do work) before getting back to the top
+> of the loop. When starting a cycle post-boot, this doesn't seem to bite,
+> but it is causing a noticeable delay at boot time, when freezing
+> processes prior to starting to read the image.
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 9 Dec 2008 12:02:46 +0100
-> 
-> > 
-> > * stephane eranian <eranian@googlemail.com> wrote:
-> > 
-> > > > There's also more generic x86 support: all 4 generic PMCs of Nehalem 
-> > > > / Core i7 are supported - i've run 4 instances of KernelTop and they 
-> > > > used up four separate PMCs.
-> > >
-> > > Core/Atom have 5 counters, Nehalem has 7. Why are you not using all of 
-> > > them already?
-> > 
-> > no, Nehalem has 4 generic purpose PMCs and 3 fixed-purpose PMCs (7 
-> > total),
->  ...
-> > Saying that it has 7 is misleading.
-> 
-> Even you just did.
+I don't wanna disappoint you, but IEEE1394 is actually Firewire and not
+Bluetooth :)
 
-which portion of my point stressing the general purpose attribute was 
-unclear to you?
+Regards
 
-Saying it has 7 is misleading in the same way as if i told you now: 
-"look, i have four eyes!". (they are: left eye looking right, left eye 
-looking left, right eye looking left and right eye looking right)
+Marcel
 
-Nehalem has 4 general purpose PMCs, not 7. Yes, it has 7 counters but 
-they are not all general purpose. The P4 has 18.
 
-	Ingo
