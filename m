@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYLIVrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYLIVsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755271AbYLIVrf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 16:47:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbYLIVr1
+	id S1755486AbYLIVsO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 16:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbYLIVr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 16:47:27 -0500
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:44418 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753597AbYLIVr0 (ORCPT
+	Tue, 9 Dec 2008 16:47:57 -0500
+Received: from kuber.nabble.com ([216.139.236.158]:33088 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754635AbYLIVr5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 16:47:26 -0500
-MIME-version: 1.0
-X-IronPort-AV: E=Sophos;i="4.33,743,1220220000";   d="scan'208";a="93224134"
-Date: Tue, 09 Dec 2008 22:47:21 +0100
-From: markus reichelt <ml@mareichelt.de>
+	Tue, 9 Dec 2008 16:47:57 -0500
+Message-ID: <20924383.post@talk.nabble.com>
+Date: Tue, 9 Dec 2008 13:47:56 -0800 (PST)
+From: Dennis Hardy <dhardy@sogetthis.com>
 To: linux-kernel@vger.kernel.org
-Subject: Sanitizing Pipe Buffers
-Message-id: <20081209214721.GB3738@tatooine.rebelbase.local>
-Mail-followup-to: linux-kernel@vger.kernel.org
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=IS0zKkzwUGydFO0o
-Content-disposition: inline
-Organization: still stuck in reorganization mode
-X-PGP-Key: 0xC2A3FEE4
-X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
-X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Subject: Re: CIFS regression in 2.6.27.8
+In-Reply-To: <20081209154932.0952fbf3@dhcp-100-2-144.bos.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Nabble-From: dhardy@sogetthis.com
+References: <20900699.post@talk.nabble.com> <84144f020812081128p6d1e2a55v69996a360e7f0e8f@mail.gmail.com> <200812082112.49468.rjw@sisk.pl> <20081209154932.0952fbf3@dhcp-100-2-144.bos.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---IS0zKkzwUGydFO0o
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> I tried it on both i386 and x86_64 and had no problems. Is this client
+> non-x86 by any chance?
 
-Hi,
+Curious...my kernel is CONFIG_X86_32=y and CONFIG_X86=y, CONFIG_MK6=y.
 
-who maintains that pipe buffer magic in 2.6?=20
-
-Reason I'm asking: The kernel 2.4 branch does not sanitize pipe
-buffers, but there's a trivial patch to achieve this [1]
-
-I'd like to have the option to sanitize pipe buffers in 2.6.x kernels
-too, so I'm looking for a person to talk to. From what I heard,
-in kernel 2.6 branch pipe magic works differently. To what extend
-exactly? Or are pipe buffers already sanitized in the 2.6 kernel
-branch? (I doubt that)
-
-In light of the cold-boot attack[2] I'd like to have pipe buffers
-sanitized. So, how do I achieve this? Any hints?
+Perhaps this could be an issue with the Windows Server side (Windows Home
+Server, latest Windows SPs, etc.)  Maybe MSFT introduced some "improvement"
+in a recent update that caused an incompatibility of some sort.  I can try
+mounting some other Windows machines via CIFS from the 2.6.27.8 end and see
+what happens, plus boot back to 2.6.27.6 and compare.
 
 
-[1] http://mail.nl.linux.org/linux-crypto/2008-06/msg00004.html
-[2] http://citp.princeton.edu/memory/
+-- 
+View this message in context: http://www.nabble.com/CIFS-regression-in-2.6.27.8-tp20900699p20924383.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
 
---=20
-left blank, right bald
-
---IS0zKkzwUGydFO0o
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkk+52kACgkQLMyTO8Kj/uSrHACcDHGqL8thwCcF38zH02QPESjy
-p+wAn2zCt175GAWkLyrrhQA1yeDHCML8
-=tbvq
------END PGP SIGNATURE-----
-
---IS0zKkzwUGydFO0o--
