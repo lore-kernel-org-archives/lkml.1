@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYLIWHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbYLIWMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbYLIWHG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 17:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268AbYLIWGv
+	id S1755297AbYLIWMQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 17:12:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYLIWL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 17:06:51 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:46448 "EHLO
+	Tue, 9 Dec 2008 17:11:59 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:41363 "EHLO
 	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755280AbYLIWGs (ORCPT
+	with ESMTP id S1753185AbYLIWL6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 17:06:48 -0500
+	Tue, 9 Dec 2008 17:11:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:subject:references
          :in-reply-to:content-type:content-transfer-encoding;
-        b=hE1QyTOFMABY3qpZMKwvEumicdri0bA7lsm2UcFhAtK3Q3Q2Zj6uqHnte264DU+ESJ
-         3u4JaH1vb7m2LTwanqpJ/Tqq4XxOOWzORO//RT/U7LC0+ufezJxEWpnboBZ9s6ezFAw1
-         RVGqhxfwkxsPAyr0JDMZx/BUBc2K/wKFqHwVc=
-Message-ID: <493EEBF6.1040103@gmail.com>
-Date: Tue, 09 Dec 2008 23:06:46 +0100
+        b=lzN17rohkI3Qp3QsT/oMVOhDH47OdFHI37sN/LMqneMk12FyPQ8rey5SSUkeIW6kL0
+         TJOENs50ZZl+zMNL4FTMoloRoMbmhDHS+TzDM5u39JTc16/J+f4NypNkahRZhhZN1Wek
+         I63qJRS5Sd4qPivrb1vXq1QsCRTdNqH7ucKX4=
+Message-ID: <493EED2B.4030102@gmail.com>
+Date: Tue, 09 Dec 2008 23:11:55 +0100
 From: Roel Kluin <roel.kluin@gmail.com>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>, linux-fsdevel@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 25/31] fs: Make static
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 26/31] kernel: Make static
 References: <493EA286.7080500@gmail.com>
 In-Reply-To: <493EA286.7080500@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -37,124 +36,225 @@ Sparse asked whether these could be static.
 
 Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
- fs/bio-integrity.c    |    7 ++++---
- fs/ext4/extents.c     |    5 +++--
- fs/ext4/mballoc.c     |    2 +-
- fs/jbd2/transaction.c |    2 +-
- fs/reiserfs/journal.c |    2 +-
- fs/select.c           |    7 ++++---
- 6 files changed, 14 insertions(+), 11 deletions(-)
+ kernel/irq/manage.c          |    2 +-
+ kernel/kexec.c               |    2 +-
+ kernel/kprobes.c             |    2 +-
+ kernel/lockdep.c             |    4 ++--
+ kernel/smp.c                 |    2 +-
+ kernel/time/tick-broadcast.c |    2 +-
+ kernel/time/tick-sched.c     |    2 +-
+ kernel/trace/ftrace.c        |    4 ++--
+ kernel/trace/ring_buffer.c   |    6 ++++--
+ kernel/trace/trace.c         |   10 +++++-----
+ kernel/trace/trace_boot.c    |    2 +-
+ 11 files changed, 20 insertions(+), 18 deletions(-)
 
-diff --git a/fs/bio-integrity.c b/fs/bio-integrity.c
-index 19caf7c..80a7b33 100644
---- a/fs/bio-integrity.c
-+++ b/fs/bio-integrity.c
-@@ -226,7 +226,8 @@ unsigned int bio_integrity_tag_size(struct bio *bio)
- }
- EXPORT_SYMBOL(bio_integrity_tag_size);
- 
--int bio_integrity_tag(struct bio *bio, void *tag_buf, unsigned int len, int set)
-+static int bio_integrity_tag(struct bio *bio, void *tag_buf, unsigned int len,
-+		int set)
- {
- 	struct bio_integrity_payload *bip = bio->bi_integrity;
- 	struct blk_integrity *bi = bdev_get_integrity(bio->bi_bdev);
-@@ -536,7 +537,7 @@ EXPORT_SYMBOL(bio_integrity_endio);
-  * @bip:	Integrity vector to advance
-  * @skip:	Number of bytes to advance it
-  */
--void bio_integrity_mark_head(struct bio_integrity_payload *bip,
-+static void bio_integrity_mark_head(struct bio_integrity_payload *bip,
- 			     unsigned int skip)
- {
- 	struct bio_vec *iv;
-@@ -562,7 +563,7 @@ void bio_integrity_mark_head(struct bio_integrity_payload *bip,
-  * @bip:	Integrity vector to truncate
-  * @len:	New length of integrity vector
-  */
--void bio_integrity_mark_tail(struct bio_integrity_payload *bip,
-+static void bio_integrity_mark_tail(struct bio_integrity_payload *bip,
- 			     unsigned int len)
- {
- 	struct bio_vec *iv;
-diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
-index ea2ce3c..2387b85 100644
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -3083,7 +3083,7 @@ retry:
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 801addd..6e3d9f8 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -110,7 +110,7 @@ int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
  /*
-  * Callback function called for each extent to gather FIEMAP information.
+  * Generic version of the affinity autoselector.
   */
--int ext4_ext_fiemap_cb(struct inode *inode, struct ext4_ext_path *path,
-+static int ext4_ext_fiemap_cb(struct inode *inode, struct ext4_ext_path *path,
- 		       struct ext4_ext_cache *newex, struct ext4_extent *ex,
- 		       void *data)
+-int do_irq_select_affinity(unsigned int irq, struct irq_desc *desc)
++static int do_irq_select_affinity(unsigned int irq, struct irq_desc *desc)
  {
-@@ -3152,7 +3152,8 @@ int ext4_ext_fiemap_cb(struct inode *inode, struct ext4_ext_path *path,
- /* fiemap flags we can handle specified here */
- #define EXT4_FIEMAP_FLAGS	(FIEMAP_FLAG_SYNC|FIEMAP_FLAG_XATTR)
+ 	cpumask_t mask;
  
--int ext4_xattr_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo)
-+static int ext4_xattr_fiemap(struct inode *inode,
-+		struct fiemap_extent_info *fieinfo)
- {
- 	__u64 physical = 0;
- 	__u64 length;
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index 444ad99..c85c20e 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -2242,7 +2242,7 @@ ext4_mb_store_history(struct ext4_allocation_context *ac)
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index ac0fde7..07b1078 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -42,7 +42,7 @@
+ note_buf_t* crash_notes;
  
- 
- /* Create and initialize ext4_group_info data for the given group. */
--int ext4_mb_add_groupinfo(struct super_block *sb, ext4_group_t group,
-+static int ext4_mb_add_groupinfo(struct super_block *sb, ext4_group_t group,
- 			  struct ext4_group_desc *desc)
- {
- 	int i, len;
-diff --git a/fs/jbd2/transaction.c b/fs/jbd2/transaction.c
-index 39b7805..c376d3a 100644
---- a/fs/jbd2/transaction.c
-+++ b/fs/jbd2/transaction.c
-@@ -1372,7 +1372,7 @@ __blist_del_buffer(struct journal_head **list, struct journal_head *jh)
-  *
-  * Called under j_list_lock.  The journal may not be locked.
-  */
--void __jbd2_journal_temp_unlink_buffer(struct journal_head *jh)
-+static void __jbd2_journal_temp_unlink_buffer(struct journal_head *jh)
- {
- 	struct journal_head **list = NULL;
- 	transaction_t *transaction;
-diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-index 9643c3b..476fc6e 100644
---- a/fs/reiserfs/journal.c
-+++ b/fs/reiserfs/journal.c
-@@ -1872,7 +1872,7 @@ static int flush_used_journal_lists(struct super_block *s,
- ** removes any nodes in table with name block and dev as bh.
- ** only touchs the hnext and hprev pointers.
- */
--void remove_journal_hash(struct super_block *sb,
-+static void remove_journal_hash(struct super_block *sb,
- 			 struct reiserfs_journal_cnode **table,
- 			 struct reiserfs_journal_list *jl,
- 			 unsigned long block, int remove_freed)
-diff --git a/fs/select.c b/fs/select.c
-index 87df51e..c24614e 100644
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -532,9 +532,10 @@ asmlinkage long sys_select(int n, fd_set __user *inp, fd_set __user *outp,
+ /* vmcoreinfo stuff */
+-unsigned char vmcoreinfo_data[VMCOREINFO_BYTES];
++static unsigned char vmcoreinfo_data[VMCOREINFO_BYTES];
+ u32 vmcoreinfo_note[VMCOREINFO_NOTE_SIZE/4];
+ size_t vmcoreinfo_size;
+ size_t vmcoreinfo_max_size = sizeof(vmcoreinfo_data);
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 9f8a3f2..75cd3dc 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -419,7 +419,7 @@ void kretprobe_hash_unlock(struct task_struct *tsk, unsigned long *flags)
+ 	spin_unlock_irqrestore(hlist_lock, *flags);
  }
  
- #ifdef HAVE_SET_RESTORE_SIGMASK
--asmlinkage long sys_pselect7(int n, fd_set __user *inp, fd_set __user *outp,
--		fd_set __user *exp, struct timespec __user *tsp,
--		const sigset_t __user *sigmask, size_t sigsetsize)
-+static asmlinkage long sys_pselect7(int n, fd_set __user *inp,
-+		fd_set __user *outp, fd_set __user *exp,
-+		struct timespec __user *tsp, const sigset_t __user *sigmask,
-+		size_t sigsetsize)
+-void kretprobe_table_unlock(unsigned long hash, unsigned long *flags)
++static void kretprobe_table_unlock(unsigned long hash, unsigned long *flags)
  {
- 	sigset_t ksigmask, sigsaved;
- 	struct timespec ts, end_time, *to = NULL;
+ 	spinlock_t *hlist_lock = kretprobe_table_lock_ptr(hash);
+ 	spin_unlock_irqrestore(hlist_lock, *flags);
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 46a4041..eb8d81c 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -984,7 +984,7 @@ static int noinline print_infinite_recursion_bug(void)
+ 	return 0;
+ }
+ 
+-unsigned long __lockdep_count_forward_deps(struct lock_class *class,
++static unsigned long __lockdep_count_forward_deps(struct lock_class *class,
+ 					   unsigned int depth)
+ {
+ 	struct lock_list *entry;
+@@ -1015,7 +1015,7 @@ unsigned long lockdep_count_forward_deps(struct lock_class *class)
+ 	return ret;
+ }
+ 
+-unsigned long __lockdep_count_backward_deps(struct lock_class *class,
++static unsigned long __lockdep_count_backward_deps(struct lock_class *class,
+ 					    unsigned int depth)
+ {
+ 	struct lock_list *entry;
+diff --git a/kernel/smp.c b/kernel/smp.c
+index 75c8dde..269e6e6 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -13,7 +13,7 @@
+ 
+ static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
+ static LIST_HEAD(call_function_queue);
+-__cacheline_aligned_in_smp DEFINE_SPINLOCK(call_function_lock);
++static __cacheline_aligned_in_smp DEFINE_SPINLOCK(call_function_lock);
+ 
+ enum {
+ 	CSD_FLAG_WAIT		= 0x01,
+diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+index f98a1b7..8b244df 100644
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -27,7 +27,7 @@
+  * timer stops in C3 state.
+  */
+ 
+-struct tick_device tick_broadcast_device;
++static struct tick_device tick_broadcast_device;
+ static cpumask_t tick_broadcast_mask;
+ static DEFINE_SPINLOCK(tick_broadcast_lock);
+ static int tick_broadcast_force;
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 342fc9c..446620f 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -134,7 +134,7 @@ __setup("nohz=", setup_tick_nohz);
+  * value. We do this unconditionally on any cpu, as we don't know whether the
+  * cpu, which has the update task assigned is in a long sleep.
+  */
+-void tick_nohz_update_jiffies(void)
++static void tick_nohz_update_jiffies(void)
+ {
+ 	int cpu = smp_processor_id();
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 78db083..d9519ab 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -817,7 +817,7 @@ ftrace_avail_open(struct inode *inode, struct file *file)
+ 	return ret;
+ }
+ 
+-int ftrace_avail_release(struct inode *inode, struct file *file)
++static int ftrace_avail_release(struct inode *inode, struct file *file)
+ {
+ 	struct seq_file *m = (struct seq_file *)file->private_data;
+ 	struct ftrace_iterator *iter = m->private;
+@@ -1154,7 +1154,7 @@ void ftrace_set_filter(unsigned char *buf, int len, int reset)
+  * is enabled. If @buf is NULL and reset is set, all functions will be enabled
+  * for tracing.
+  */
+-void ftrace_set_notrace(unsigned char *buf, int len, int reset)
++static void ftrace_set_notrace(unsigned char *buf, int len, int reset)
+ {
+ 	ftrace_set_regex(buf, len, reset, 0);
+ }
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 668bbb5..44a934c 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1418,7 +1418,8 @@ void ring_buffer_record_enable_cpu(struct ring_buffer *buffer, int cpu)
+  * @buffer: The ring buffer
+  * @cpu: The per CPU buffer to get the entries from.
+  */
+-unsigned long ring_buffer_entries_cpu(struct ring_buffer *buffer, int cpu)
++static unsigned long ring_buffer_entries_cpu(struct ring_buffer *buffer,
++		int cpu)
+ {
+ 	struct ring_buffer_per_cpu *cpu_buffer;
+ 
+@@ -1434,7 +1435,8 @@ unsigned long ring_buffer_entries_cpu(struct ring_buffer *buffer, int cpu)
+  * @buffer: The ring buffer
+  * @cpu: The per CPU buffer to get the number of overruns from
+  */
+-unsigned long ring_buffer_overrun_cpu(struct ring_buffer *buffer, int cpu)
++static unsigned long ring_buffer_overrun_cpu(struct ring_buffer *buffer,
++		int cpu)
+ {
+ 	struct ring_buffer_per_cpu *cpu_buffer;
+ 
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index d86e325..1ae6df8 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -113,7 +113,7 @@ static DEFINE_PER_CPU(struct trace_array_cpu, max_data);
+ static int			tracer_enabled = 1;
+ 
+ /* function tracing enabled */
+-int				ftrace_function_enabled;
++static int			ftrace_function_enabled;
+ 
+ /*
+  * trace_buf_size is the size in bytes that is allocated
+@@ -572,7 +572,7 @@ static int cmdline_idx;
+ static DEFINE_SPINLOCK(trace_cmdline_lock);
+ 
+ /* temporary disable recording */
+-atomic_t trace_record_cmdline_disabled __read_mostly;
++static atomic_t trace_record_cmdline_disabled __read_mostly;
+ 
+ static void trace_init_cmdlines(void)
+ {
+@@ -734,7 +734,7 @@ static void ftrace_trace_stack(struct trace_array *tr,
+ #endif
+ }
+ 
+-void __trace_stack(struct trace_array *tr,
++static void __trace_stack(struct trace_array *tr,
+ 		   struct trace_array_cpu *data,
+ 		   unsigned long flags,
+ 		   int skip)
+@@ -1284,7 +1284,7 @@ lat_print_generic(struct trace_seq *s, struct trace_entry *entry, int cpu)
+ 		trace_seq_puts(s, ".");
+ }
+ 
+-unsigned long preempt_mark_thresh = 100;
++static unsigned long preempt_mark_thresh = 100;
+ 
+ static void
+ lat_print_timestamp(struct trace_seq *s, u64 abs_usecs,
+@@ -1950,7 +1950,7 @@ int tracing_open_generic(struct inode *inode, struct file *filp)
+ 	return 0;
+ }
+ 
+-int tracing_release(struct inode *inode, struct file *file)
++static int tracing_release(struct inode *inode, struct file *file)
+ {
+ 	struct seq_file *m = (struct seq_file *)file->private_data;
+ 	struct trace_iterator *iter = m->private;
+diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
+index d0a5e50..1649989 100644
+--- a/kernel/trace/trace_boot.c
++++ b/kernel/trace/trace_boot.c
+@@ -27,7 +27,7 @@ void stop_boot_trace(void)
+ 	trace_boot_enabled = 0;
+ }
+ 
+-void reset_boot_trace(struct trace_array *tr)
++static void reset_boot_trace(struct trace_array *tr)
+ {
+ 	stop_boot_trace();
+ }
 
