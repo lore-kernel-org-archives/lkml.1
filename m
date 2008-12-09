@@ -1,105 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbYLIX4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbYLIX5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755011AbYLIX4m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 18:56:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbYLIX4b
+	id S1756054AbYLIX5a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 18:57:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbYLIX5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 18:56:31 -0500
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:49738 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753956AbYLIX4a (ORCPT
+	Tue, 9 Dec 2008 18:57:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58271 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753930AbYLIX5R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 18:56:30 -0500
-Subject: [PATCH] Fix VMI crash on boot in 2.6.27+ kernels
-From: Zachary Amsden <zach@vmware.com>
-To: norman@thebacks.co.uk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, mingo <mingo@elte.hu>,
-       Greg KH <gregkh@suse.de>, Alok Kataria <alokkataria1@gmail.com>,
-       Bruno =?ISO-8859-1?Q?Pr=E9mont?= <"bruno .premont"@restena.lu>,
-       xl@xlsigned.net, dsd@gentoo.org
-Content-Type: multipart/mixed; boundary="=-l97DT3D8bSmjKwqAn0/3"
-Date: Tue, 09 Dec 2008 16:50:21 -0800
-Message-Id: <1228870222.8766.15.camel@bodhitayantram.eng.vmware.com>
+	Tue, 9 Dec 2008 18:57:17 -0500
+Date: Tue, 9 Dec 2008 15:56:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+Cc: zdenek.kabelac@gmail.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       netdev@vger.kernel.org, jesse.brandeburg@intel.com, davem@davemloft.net,
+       stable@kernel.org, e1000-devel@lists.sourceforge.net
+Subject: Re: BUG: bad unlock balance detected! e1000e
+Message-Id: <20081209155655.e82f9c24.akpm@linux-foundation.org>
+In-Reply-To: <20081209234346.GB7394@gambetta>
+References: <c4e36d110812080324y68c0e453qcb68a040da7ac9a2@mail.gmail.com>
+	<20081209110337.GJ4864@gambetta>
+	<20081209150801.2aa76ac6.akpm@linux-foundation.org>
+	<20081209234346.GB7394@gambetta>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 10 Dec 2008 00:43:46 +0100
+Frederik Deweerdt <frederik.deweerdt@xprog.eu> wrote:
 
---=-l97DT3D8bSmjKwqAn0/3
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+> On Tue, Dec 09, 2008 at 03:08:01PM -0800, Andrew Morton wrote:
+> > On Tue, 9 Dec 2008 12:03:37 +0100
+> > Frederik Deweerdt <frederik.deweerdt@xprog.eu> wrote:
+> > 
+> > > It some error checking is missing in e1000e: debug contention on NVM
+> > > SWFLAG
+> > > On Mon, Dec 08, 2008 at 12:24:09PM +0100, Zdenek Kabelac wrote:
+> > > > Hi
+> > > > 
+> > > > During occasional scan of message log - I've found out this BUG which
+> > > > happened on Dec3 with the -rc7 from that day.
+> > > > (So if it's now fixed in current git feel free to ignore :))
+> > > > 
+> > > > My machine T61 - C2D, 2GB, 64bit kernel - message appeared during
+> > > > shutdown and was actually not noticed by me...
+> > > > 
+> > > > 
+> > > > NetworkManager: <WARN>  nm_signal_handler(): Caught signal 15,
+> > > > shutting down normally.
+> > > > NetworkManager: <info>  (eth0): now unmanaged
+> > > > NetworkManager: <info>  (eth0): device state change: 3 -> 1
+> > > > NetworkManager: <info>  (eth0): cleaning up...
+> > > > NetworkManager: <info>  (eth0): taking down device.
+> > > > 
+> > > > =====================================
+> > > > [ BUG: bad unlock balance detected! ]
+> > > > -------------------------------------
+> > 
+> > (top-posting repaired.  Please don't do that!!!).
+> Yep, sorry.
+> > 
+> > > Hello Zdenek,
+> > > 
+> > > This could be due to 717d438d1fde94decef874b9808379d1f4523453
+> > >     "e1000e: debug contention on NVM SWFLAG"
+> > > Error handling is missing from e1000_reset_hw_ich8lan so it may happen
+> > > that we don't acquire the nvm_mutex if the card times out.
+> > > 
+> > > Adding Thomas to CC.
+> > 
+> > yup.  2.6.27 needs fixing also.
+> > 
+> > Like this?
+> I don't think so, e1000_acquire_swflag_ich8lan() locks and
+> e1000_release_swflag_ich8lan() unlocks.
 
-Patches backported into 2.6.27.4 caused a regression with VMI kernels
-running on VMware which ends in a page fault during boot.  I have a fix
-which still allows DMI checks to be done early.
+urgh, OK, I made the mistake of reading the comments.
 
-VMI initialiation can relocate the fixmap, causing early_ioremap
-to malfunction if it is initialized before the relocation.  The
-ioremap area is low enough in virtual address space that no actual
-collision occurs, however, because the pagetables for it were not
-allocated under VMI mode, the pagetable updates are dropped by
-the hypervisor as irrelevant, resulting in a crash on boot.
+> I think it is more along the
+> lines of:
+> 
+> 
+> diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
+> index 523b971..f971b83 100644
+> --- a/drivers/net/e1000e/ich8lan.c
+> +++ b/drivers/net/e1000e/ich8lan.c
+> @@ -1892,7 +1892,13 @@ static s32 e1000_reset_hw_ich8lan(struct e1000_hw *hw)
+>  		 */
+>  		ctrl |= E1000_CTRL_PHY_RST;
+>  	}
+> +
+>  	ret_val = e1000_acquire_swflag_ich8lan(hw);
+> +	if (ret_val) {
+> +		hw_dbg(hw, "Failed to acquire NVM swflag");
+> +		return ret_val;
+> +	}
+> +
+>  	hw_dbg(hw, "Issuing a global reset to ich8lan");
+>  	ew32(CTRL, (ctrl | E1000_CTRL_RST));
+>  	msleep(20);
+> 
+> 
+> But I'm not sure we should cancel the ongoing reset if the card times
+> out... 
+> 
 
-The best fix is perhaps to move early_ioremap_init() after vmi_init().
-The only things done before VMI init are basic memory access, things
-like collating the memory map, collecting boot CPUID capabilities, and
-parsing the early command line options... which vmi_init needs.
+Yes, something like that.  Or something like
 
-Since this went back into 2.6.27, it needs to go to both 2.6.28 and
-eventually to stable.  I didn't add any comments or anything as there
-could be some debate what the proper ordering should be.  In case that
-becomes an interesting discussion, there are two relevant facts in git
-today:
-
-1) no clients of early_ioremap occur before DMI.
-2) VMI requires access to early boot params.
-
-If any can suggest a better ordering, I am certainly open to that as
-well.
-
-Thanks,
-
-Zach
-
---=-l97DT3D8bSmjKwqAn0/3
-Content-Disposition: attachment; filename=x86-vmi-boot-ioremap-fix.patch
-Content-Type: text/x-patch; name=x86-vmi-boot-ioremap-fix.patch; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-
-VMI initialiation can relocate the fixmap, causing early_ioremap
-to malfunction if it is initialized before the relocation.  The
-ioremap area is low enough in virtual address space that no actual
-collision occurs, however, because the pagetables for it were not
-allocated under VMI mode, the pagetable updates are dropped by
-the hypervisor as irrelevant, resulting in a crash on boot.
-
-Signed-off-by: Zachary Amsden <zach@vmware.com>
-
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 9d5674f..9627753 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -795,7 +795,6 @@ void __init setup_arch(char **cmdline_p)
- #endif
+--- a/drivers/net/e1000e/ich8lan.c~a
++++ a/drivers/net/e1000e/ich8lan.c
+@@ -1940,12 +1940,14 @@ static s32 e1000_reset_hw_ich8lan(struct
+ 		ctrl |= E1000_CTRL_PHY_RST;
+ 	}
+ 	ret_val = e1000_acquire_swflag_ich8lan(hw);
+-	hw_dbg(hw, "Issuing a global reset to ich8lan\n");
+-	ew32(CTRL, (ctrl | E1000_CTRL_RST));
+-	msleep(20);
++	if (!ret_val) {
++		hw_dbg(hw, "Issuing a global reset to ich8lan\n");
++		ew32(CTRL, (ctrl | E1000_CTRL_RST));
++		msleep(20);
  
- 	early_cpu_init();
--	early_ioremap_init();
+-	/* release the swflag because it is not reset by hardware reset */
+-	e1000_release_swflag_ich8lan(hw);
++		/* release the swflag because it is not reset by hardware reset */
++		e1000_release_swflag_ich8lan(hw);
++	}
  
- 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
- 	screen_info = boot_params.screen_info;
-@@ -888,6 +887,8 @@ void __init setup_arch(char **cmdline_p)
- 	vmi_init();
- #endif
- 
-+	early_ioremap_init();
-+
- 	/* after early param, so could get panic from serial */
- 	reserve_early_setup_data();
- 
+ 	ret_val = e1000e_get_auto_rd_done(hw);
+ 	if (ret_val) {
+_
 
---=-l97DT3D8bSmjKwqAn0/3--
 
+Dunno. It's e1000-developer-summoning-dance time.
