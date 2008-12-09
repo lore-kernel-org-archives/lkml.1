@@ -1,169 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbYLIUaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbYLIUam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756782AbYLIUaQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 15:30:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbYLIUXu
+	id S1755856AbYLIUam (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 15:30:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbYLIUXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 15:23:50 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34908 "EHLO mx2.redhat.com"
+	Tue, 9 Dec 2008 15:23:51 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34904 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755041AbYLIUXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 15:23:15 -0500
+	id S1754998AbYLIUXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 15:23:14 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Xiantao Zhang <xiantao.zhang@intel.com>
-Subject: [PATCH 29/44] KVM: ia64: Define printk function for kvm-intel module
-Date: Tue,  9 Dec 2008 22:22:44 +0200
-Message-Id: <1228854179-23002-30-git-send-email-avi@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng@linux.intel.com>
+Subject: [PATCH 42/44] KVM: Enable MSI for device assignment
+Date: Tue,  9 Dec 2008 22:22:57 +0200
+Message-Id: <1228854179-23002-43-git-send-email-avi@redhat.com>
 In-Reply-To: <1228854179-23002-1-git-send-email-avi@redhat.com>
 References: <1228854179-23002-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Xiantao Zhang <xiantao.zhang@intel.com>
+From: Sheng Yang <sheng@linux.intel.com>
 
-kvm-intel module is relocated to an isolated address space
-with kernel, so it can't call host kernel's printk for debug
-purpose. In the module, we implement the printk to output debug
-info of vmm.
+We enable guest MSI and host MSI support in this patch. The userspace want to
+enable MSI should set KVM_DEV_IRQ_ASSIGN_ENABLE_MSI in the assigned_irq's flag.
+Function would return -ENOTTY if can't enable MSI, userspace shouldn't set MSI
+Enable bit when KVM_ASSIGN_IRQ return -ENOTTY with
+KVM_DEV_IRQ_ASSIGN_ENABLE_MSI.
 
-Signed-off-by: Xiantao Zhang <xiantao.zhang@intel.com>
+Userspace can tell the support of MSI device from #ifdef KVM_CAP_DEVICE_MSI.
+
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/ia64/include/asm/kvm_host.h |    4 ++++
- arch/ia64/kvm/Makefile           |    2 +-
- arch/ia64/kvm/kvm-ia64.c         |    8 ++++++++
- arch/ia64/kvm/kvm_lib.c          |   15 +++++++++++++++
- arch/ia64/kvm/vmm.c              |   26 ++++++++++++++++++++++++++
- 5 files changed, 54 insertions(+), 1 deletions(-)
- create mode 100644 arch/ia64/kvm/kvm_lib.c
+ include/linux/kvm.h |    3 ++
+ virt/kvm/kvm_main.c |   81 +++++++++++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 78 insertions(+), 6 deletions(-)
 
-diff --git a/arch/ia64/include/asm/kvm_host.h b/arch/ia64/include/asm/kvm_host.h
-index 678e264..0560f3f 100644
---- a/arch/ia64/include/asm/kvm_host.h
-+++ b/arch/ia64/include/asm/kvm_host.h
-@@ -39,6 +39,7 @@
- #define EXIT_REASON_EXTERNAL_INTERRUPT	6
- #define EXIT_REASON_IPI			7
- #define EXIT_REASON_PTC_G		8
-+#define EXIT_REASON_DEBUG		20
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index bb283c3..0997e6f 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -392,6 +392,9 @@ struct kvm_trace_rec {
+ #endif
+ #define KVM_CAP_IOMMU 18
+ #define KVM_CAP_NMI 19
++#if defined(CONFIG_X86)
++#define KVM_CAP_DEVICE_MSI 20
++#endif
  
- /*Define vmm address space and vm data space.*/
- #define KVM_VMM_SIZE (__IA64_UL_CONST(16)<<20)
-@@ -126,6 +127,8 @@
- 			KVM_MEM_DIRTY_LOG_SIZE) / sizeof(struct kvm_vcpu_data)
- #define KVM_MAX_MEM_SIZE (KVM_P2M_SIZE >> 3 << PAGE_SHIFT)
- 
-+#define VMM_LOG_LEN 256
-+
- #include <linux/types.h>
- #include <linux/mm.h>
- #include <linux/kvm.h>
-@@ -437,6 +440,7 @@ struct kvm_vcpu_arch {
- 
- 	unsigned long opcode;
- 	unsigned long cause;
-+	char log_buf[VMM_LOG_LEN];
- 	union context host;
- 	union context guest;
- };
-diff --git a/arch/ia64/kvm/Makefile b/arch/ia64/kvm/Makefile
-index 92cef66..76464dc 100644
---- a/arch/ia64/kvm/Makefile
-+++ b/arch/ia64/kvm/Makefile
-@@ -60,7 +60,7 @@ obj-$(CONFIG_KVM) += kvm.o
- 
- CFLAGS_vcpu.o += -mfixed-range=f2-f5,f12-f127
- kvm-intel-objs = vmm.o vmm_ivt.o trampoline.o vcpu.o optvfault.o mmio.o \
--	vtlb.o process.o
-+	vtlb.o process.o kvm_lib.o
- #Add link memcpy and memset to avoid possible structure assignment error
- kvm-intel-objs += memcpy.o memset.o
- obj-$(CONFIG_KVM_INTEL) += kvm-intel.o
-diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-index 70eb829..b4d24e2 100644
---- a/arch/ia64/kvm/kvm-ia64.c
-+++ b/arch/ia64/kvm/kvm-ia64.c
-@@ -474,6 +474,13 @@ static int handle_external_interrupt(struct kvm_vcpu *vcpu,
- 	return 1;
+ /*
+  * ioctls for VM fds
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 228c1d1..bf36ae9 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -159,9 +159,15 @@ static void kvm_assigned_dev_interrupt_work_handler(struct work_struct *work)
+ 	 * finer-grained lock, update this
+ 	 */
+ 	mutex_lock(&assigned_dev->kvm->lock);
+-	kvm_set_irq(assigned_dev->kvm,
+-		    assigned_dev->irq_source_id,
+-		    assigned_dev->guest_irq, 1);
++	if (assigned_dev->irq_requested_type & KVM_ASSIGNED_DEV_GUEST_INTX)
++		kvm_set_irq(assigned_dev->kvm,
++			    assigned_dev->irq_source_id,
++			    assigned_dev->guest_irq, 1);
++	else if (assigned_dev->irq_requested_type &
++				KVM_ASSIGNED_DEV_GUEST_MSI) {
++		assigned_device_msi_dispatch(assigned_dev);
++		enable_irq(assigned_dev->host_irq);
++	}
+ 	mutex_unlock(&assigned_dev->kvm->lock);
+ 	kvm_put_kvm(assigned_dev->kvm);
  }
- 
-+static int handle_vcpu_debug(struct kvm_vcpu *vcpu,
-+				struct kvm_run *kvm_run)
-+{
-+	printk("VMM: %s", vcpu->arch.log_buf);
-+	return 1;
-+}
-+
- static int (*kvm_vti_exit_handlers[])(struct kvm_vcpu *vcpu,
- 		struct kvm_run *kvm_run) = {
- 	[EXIT_REASON_VM_PANIC]              = handle_vm_error,
-@@ -485,6 +492,7 @@ static int (*kvm_vti_exit_handlers[])(struct kvm_vcpu *vcpu,
- 	[EXIT_REASON_EXTERNAL_INTERRUPT]    = handle_external_interrupt,
- 	[EXIT_REASON_IPI]		    = handle_ipi,
- 	[EXIT_REASON_PTC_G]		    = handle_global_purge,
-+	[EXIT_REASON_DEBUG]		    = handle_vcpu_debug,
- 
- };
- 
-diff --git a/arch/ia64/kvm/kvm_lib.c b/arch/ia64/kvm/kvm_lib.c
-new file mode 100644
-index 0000000..a85cb61
---- /dev/null
-+++ b/arch/ia64/kvm/kvm_lib.c
-@@ -0,0 +1,15 @@
-+/*
-+ * kvm_lib.c: Compile some libraries for kvm-intel module.
-+ *
-+ *	Just include kernel's library, and disable symbols export.
-+ * 	Copyright (C) 2008, Intel Corporation.
-+ *  	Xiantao Zhang  (xiantao.zhang@intel.com)
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+#undef CONFIG_MODULES
-+#include "../../../lib/vsprintf.c"
-+#include "../../../lib/ctype.c"
-diff --git a/arch/ia64/kvm/vmm.c b/arch/ia64/kvm/vmm.c
-index 2275bf4..9577795 100644
---- a/arch/ia64/kvm/vmm.c
-+++ b/arch/ia64/kvm/vmm.c
-@@ -62,5 +62,31 @@ void vmm_spin_unlock(spinlock_t *lock)
+@@ -197,6 +203,8 @@ static void kvm_free_assigned_device(struct kvm *kvm,
  {
- 	_vmm_raw_spin_unlock(lock);
+ 	if (irqchip_in_kernel(kvm) && assigned_dev->irq_requested_type)
+ 		free_irq(assigned_dev->host_irq, (void *)assigned_dev);
++	if (assigned_dev->irq_requested_type & KVM_ASSIGNED_DEV_HOST_MSI)
++		pci_disable_msi(assigned_dev->dev);
+ 
+ 	kvm_unregister_irq_ack_notifier(&assigned_dev->ack_notifier);
+ 	kvm_free_irq_source_id(kvm, assigned_dev->irq_source_id);
+@@ -242,6 +250,11 @@ static int assigned_device_update_intx(struct kvm *kvm,
+ 		return 0;
+ 
+ 	if (irqchip_in_kernel(kvm)) {
++		if (adev->irq_requested_type & KVM_ASSIGNED_DEV_HOST_MSI) {
++			free_irq(adev->host_irq, (void *)kvm);
++			pci_disable_msi(adev->dev);
++		}
++
+ 		if (!capable(CAP_SYS_RAWIO))
+ 			return -EPERM;
+ 
+@@ -265,6 +278,41 @@ static int assigned_device_update_intx(struct kvm *kvm,
+ 	return 0;
  }
-+
-+static void vcpu_debug_exit(struct kvm_vcpu *vcpu)
+ 
++#ifdef CONFIG_X86
++static int assigned_device_update_msi(struct kvm *kvm,
++			struct kvm_assigned_dev_kernel *adev,
++			struct kvm_assigned_irq *airq)
 +{
-+	struct exit_ctl_data *p = &vcpu->arch.exit_data;
-+	long psr;
-+
-+	local_irq_save(psr);
-+	p->exit_reason = EXIT_REASON_DEBUG;
-+	vmm_transition(vcpu);
-+	local_irq_restore(psr);
-+}
-+
-+asmlinkage int printk(const char *fmt, ...)
-+{
-+	struct kvm_vcpu *vcpu = current_vcpu;
-+	va_list args;
 +	int r;
 +
-+	memset(vcpu->arch.log_buf, 0, VMM_LOG_LEN);
-+	va_start(args, fmt);
-+	r = vsnprintf(vcpu->arch.log_buf, VMM_LOG_LEN, fmt, args);
-+	va_end(args);
-+	vcpu_debug_exit(vcpu);
-+	return r;
-+}
++	/* x86 don't care upper address of guest msi message addr */
++	adev->guest_msi.address_lo = airq->guest_msi.addr_lo;
++	adev->guest_msi.data = airq->guest_msi.data;
++	adev->ack_notifier.gsi = -1;
 +
- module_init(kvm_vmm_init)
- module_exit(kvm_vmm_exit)
++	if (adev->irq_requested_type & KVM_ASSIGNED_DEV_HOST_MSI)
++		return 0;
++
++	if (irqchip_in_kernel(kvm)) {
++		if (adev->irq_requested_type & KVM_ASSIGNED_DEV_HOST_INTX)
++			free_irq(adev->host_irq, (void *)adev);
++
++		r = pci_enable_msi(adev->dev);
++		if (r)
++			return r;
++
++		adev->host_irq = adev->dev->irq;
++		if (request_irq(adev->host_irq, kvm_assigned_dev_intr, 0,
++				"kvm_assigned_msi_device", (void *)adev))
++			return -EIO;
++	}
++
++	adev->irq_requested_type = KVM_ASSIGNED_DEV_GUEST_MSI |
++				   KVM_ASSIGNED_DEV_HOST_MSI;
++	return 0;
++}
++#endif
++
+ static int kvm_vm_ioctl_assign_irq(struct kvm *kvm,
+ 				   struct kvm_assigned_irq
+ 				   *assigned_irq)
+@@ -301,9 +349,30 @@ static int kvm_vm_ioctl_assign_irq(struct kvm *kvm,
+ 		}
+ 	}
+ 
+-	r = assigned_device_update_intx(kvm, match, assigned_irq);
+-	if (r)
+-		goto out_release;
++	if (assigned_irq->flags & KVM_DEV_IRQ_ASSIGN_ENABLE_MSI) {
++#ifdef CONFIG_X86
++		r = assigned_device_update_msi(kvm, match, assigned_irq);
++		if (r) {
++			printk(KERN_WARNING "kvm: failed to enable "
++					"MSI device!\n");
++			goto out_release;
++		}
++#else
++		r = -ENOTTY;
++#endif
++	} else if (assigned_irq->host_irq == 0 && match->dev->irq == 0) {
++		/* Host device IRQ 0 means don't support INTx */
++		printk(KERN_WARNING "kvm: wait device to enable MSI!\n");
++		r = 0;
++	} else {
++		/* Non-sharing INTx mode */
++		r = assigned_device_update_intx(kvm, match, assigned_irq);
++		if (r) {
++			printk(KERN_WARNING "kvm: failed to enable "
++					"INTx device!\n");
++			goto out_release;
++		}
++	}
+ 
+ 	mutex_unlock(&kvm->lock);
+ 	return r;
 -- 
 1.6.0.3
 
