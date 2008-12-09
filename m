@@ -1,112 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbYLIOa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbYLIOcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301AbYLIOa0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 09:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbYLIO2i
+	id S1755028AbYLIOcc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 09:32:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbYLIOcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 09:28:38 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51473 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755877AbYLIO2g (ORCPT
+	Tue, 9 Dec 2008 09:32:23 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:48812 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752815AbYLIOcW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 09:28:36 -0500
-Message-ID: <3526.10.75.179.61.1228832912.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <20081209122731.GB4174@balbir.in.ibm.com>
-References: <20081209200213.0e2128c1.kamezawa.hiroyu@jp.fujitsu.com>
-    <20081209200915.41917722.kamezawa.hiroyu@jp.fujitsu.com>
-    <20081209122731.GB4174@balbir.in.ibm.com>
-Date: Tue, 9 Dec 2008 23:28:32 +0900 (JST)
-Subject: Re: [RFC][PATCH 4/6] Flat hierarchical reclaim by ID
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Tue, 9 Dec 2008 09:32:22 -0500
+Message-ID: <493E8246.1090309@novell.com>
+Date: Tue, 09 Dec 2008 09:35:50 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=us-ascii
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] RT scheduler updates for tip
+References: <493939B1.40506@novell.com> <20081208143228.GF14856@elte.hu> <20081208161246.GB4570@elte.hu>
+In-Reply-To: <20081208161246.GB4570@elte.hu>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigE57F5BDB73D1D6B5CDF52F35"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh said:
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-12-09
-> 20:09:15]:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE57F5BDB73D1D6B5CDF52F35
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Ingo Molnar wrote:
+> okay, this series is quite bad so i'm disabling it for now. I sent a=20
+> build fix earlier today, then i triggered this build failure:
 >
->>
->> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>
->> Implement hierarchy reclaim by cgroup_id.
->>
->> What changes:
->> 	- Page reclaim is not done by tree-walk algorithm
->> 	- mem_cgroup->last_schan_child is changed to be ID, not pointer.
->> 	- no cgroup_lock, done under RCU.
->> 	- scanning order is just defined by ID's order.
->> 	  (Scan by round-robin logic.)
->>
->> Changelog: v3 -> v4
->> 	- adjusted to changes in base kernel.
->> 	- is_acnestor() is moved to other patch.
->>
->> Changelog: v2 -> v3
->> 	- fixed use_hierarchy==0 case
->>
->> Changelog: v1 -> v2
->> 	- make use of css_tryget();
->> 	- count # of loops rather than remembering position.
->>
->> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujisu.com>
+> kernel/built-in.o: In function `dequeue_pushable_task':
+> sched.c:(.text+0x4a9f): undefined reference to `plist_del'
+> kernel/built-in.o: In function `enqueue_pushable_task':
+> sched.c:(.text+0x5734): undefined reference to `plist_del'
+> sched.c:(.text+0x5747): undefined reference to `plist_add'
 >
-> I have not yet run the patch, but the heuristics seem a lot like
-> magic. I am not against scanning by order, but is order the right way
-> to scan groups?
-My consideration is
-  - Both of current your implementation and this round robin is just
-    an example. I never think some kind of search algorighm detemined by
-    shape of tree is the best way.
-  - No one knows what order is the best, now. We have to find it.
-  - The best order will be determined by some kind of calculation rather
-    than shape of tree and must pass by tons of tests.
-    This needs much amount of time and patient work. VM management is not
-    so easy thing.
-    I think your soft-limit idea can be easily merged onto this patch set.
-
-> Does this order reflect their position in the hierarchy?
-  No. just scan IDs from last scannned one in RR.
-  BTW, can you show what an algorithm works well in following case ?
-  ex)
-    groupA/   limit=1G     usage=300M
-          01/ limit=600M   usage=600M
-          02/ limit=700M   usage=70M
-          03/ limit=100M   usage=30M
-   Which one should be shrinked at first and why ?
-   1) when group_A hit limits.
-   2) when group_A/01 hit limits.
-   3) when group_A/02 hit limits.
-   I can't now.
-
-   This patch itself uses round-robin and have no special order.
-   I think implenting good algorithm under this needs some amount of time.
-
-> Shouldn't id's belong to cgroups instead of just memory controller?
-If Paul rejects, I'll move this to memcg. But bio-cgroup people also use
-ID and, in this summer, I posted swap-cgroup-ID patch and asked to
-implement IDs under cgroup rather than subsys. (asked by Paul or you.)
-
->From implementation, hierarchy code management at el. should go into
-cgroup.c and it gives us clear view rather than implemented under memcg.
-
--Kame
-> I would push back ids to cgroups infrastructure.
+> and then this:
 >
+> kernel/sched_rt.c: In function =E2=80=98next_prio=E2=80=99:
+> kernel/sched_rt.c:574: error: =E2=80=98struct rq=E2=80=99 has no member=
+ named =E2=80=98cpu=E2=80=99
+> kernel/sched_rt.c: In function =E2=80=98inc_rt_tasks=E2=80=99:
+> kernel/sched_rt.c:619: error: =E2=80=98rq=E2=80=99 undeclared (first us=
+e in this function)
+> kernel/sched_rt.c:619: error: (Each undeclared identifier is reported o=
+nly once
+> kernel/sched_rt.c:619: error: for each function it appears in.)
+> kernel/sched_rt.c: In function =E2=80=98dec_rt_tasks=E2=80=99:
+> kernel/sched_rt.c:667: error: =E2=80=98rq=E2=80=99 undeclared (first us=
+e in this function)
+>
+>
+>  =20
+
+Hi Ingo,
+  I was able to reproduce your first error (in the previous mail) by
+turning off CONFIG_SMP.  I have folded your fix into my series and got
+past it.  However, I was not able to reproduce these two new errors.  I
+was thinking that perhaps something merged improperly between my (older)
+tip/master and the merge point in cpus4096.  So I rebased the series on
+your latest tip/master as of this morning, but it still builds fine for
+me.  Could you send me the .config that causes this to blow up?  I will
+get it straightened out for you ASAP.  Sorry for the inconvenience.
+
+Thanks,
+-Greg
 
 
+
+--------------enigE57F5BDB73D1D6B5CDF52F35
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkk+gkYACgkQlOSOBdgZUxnB3wCeNmrf1hNLxJdQ6nFY8rKFh4sM
+0CMAn3kUs3Y5DGcX6hbYemaG4Bb7duwJ
+=aH8+
+-----END PGP SIGNATURE-----
+
+--------------enigE57F5BDB73D1D6B5CDF52F35--
