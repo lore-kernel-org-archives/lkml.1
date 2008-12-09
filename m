@@ -1,201 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYLITly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYLITme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755166AbYLITly (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 14:41:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbYLITlj
+	id S1754705AbYLITme (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 14:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbYLITmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 14:41:39 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:45757 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754752AbYLITli (ORCPT
+	Tue, 9 Dec 2008 14:42:25 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:52326 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754224AbYLITmY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 14:41:38 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 9 Dec 2008 11:41:35 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Casey Dahlin <cdahlin@redhat.com>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Scott James Remnant <scott@netsplit.com>
-Subject: Re: [RFC PATCH] waitfd: file descriptor to wait on child processes
-In-Reply-To: <493EA441.1070706@redhat.com>
-Message-ID: <alpine.DEB.1.10.0812091127160.17144@alien.or.mcafeemobile.com>
-References: <493EA441.1070706@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 9 Dec 2008 14:42:24 -0500
+Date: Tue, 9 Dec 2008 13:42:20 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Linux Torvalds <torvalds@osdl.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       MinChan Kim <minchan.kim@gmail.com>, arnd@arndb.de, jeremy@goop.org
+Subject: Re: [RFC v11][PATCH 00/13] Kernel based checkpoint/restart
+Message-ID: <20081209194220.GA20101@us.ibm.com>
+References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Dec 2008, Casey Dahlin wrote:
-
-> This is essentially my first kernel patch, so be nice :)
+Quoting Oren Laadan (orenl@cs.columbia.edu):
+> Checkpoint-restart (c/r): fixed races in file handling (comments from
+> from Al Viro). Updated and tested against v2.6.28-rc7 (feaf384...)
 > 
-> Linux already has signalfd, timerfd, and eventfd to expose signals, timers,
-> and events via a file descriptor. This patch is a working prototype for a
-> fourth: waitfd. It pretty much does what the name suggests: reading from it
-> yields a series of status ints (as would be written into the second argument
-> of waitpid) for child processes that have changed state. It takes essentially
-> the same arguments as waitpid (for now) and supports the same set of features.
-> 
-> This is far from ready for merge. Some things that are wrong with it:
-> * Waitpid's argument scheme probably isn't the best for this. By default it
-> makes it easiest to wait on a single child, which is not often useful in this
-> case. Waiting on all children or children in a particular process group is
-> possible, but not a particular, explicit set of children, which we probably
-> want (and which will complicate the implementation significantly).
-> * The prototype for peek_waitpid is obviously in the wrong place, but I
-> haven't found a good home for it.
-> * Waitid's semantics have slightly altered: passing NULL as the pointer to
-> siginfo_t with WNOWAIT will now return successfully instead of throwing
-> EFAULT. I don't know if that means I broke it or fixed it :)
-> * peek_waitpid may not be required at all now. I can probably trick sys_wait4
-> or sys_waitid into giving me what I want (or I could always just make do_wait
-> non-static).
-> 
-> Please provide thoughts.
+> We'd like these to make it into -mm. This version addresses the
+> last of the known bugs. Please pull at least the first 11 patches,
+> as they are similar to before.
 
-What's wrong in having a signalfd on SIGCHLD, than doing waitpid() once 
-you get the signal? Do you have cases where this wouldn't be OK?
-About the code, eventually, you really want to report the PID of the 
-exited child, together with the status. So maybe a non-compat-requiring 
-struct would be better to be returned by read(2).
-Also ...
+So far I'm finding no regressions and checkpoint/restart is working
+perfectly for me.
 
+Andrew, any chance of getting this round into -mm for some extra
+testing?
 
-
-
-> +static unsigned int waitfd_poll(struct file *file, poll_table *wait)
-> +{
-> +    struct waitfd_ctx *ctx = file->private_data;
-> +    long value;
-> +
-> +    poll_wait(file, &current->signal->wait_chldexit, wait);
-> +
-> +    value = peek_waitpid(ctx->upid, ctx->ops);
-> +    if (value > 0) {
-> +        return POLLIN;
-> +    } if (value == -ECHILD) {
-> +        return POLLIN;
-> +    }
-
-Trust the compiler, it's pretty good in not having you to add Perl-like 
-extra brackets ;)
-This also looks wierd:
-
-	} if (value == -ECHILD) {
-
-So maybe:
-
-	return value > 0 || value == -ECHILD ? POLLIN: 0;
-
-
-
-
-
-> +/*
-> + * Returns a multiple of the size of a "struct waitfd_siginfo", or a negative
-> + * error code. The "count" parameter must be at least the size of a
-> + * "struct waitfd_siginfo".
-> + */
-
-Really? ...
-
-
-
-> +static ssize_t waitfd_read(struct file *file, char __user *buf, size_t count,
-> +                 loff_t *ppos)
-> +{
-> +    struct waitfd_ctx *ctx = file->private_data;
-> +    int __user *stat_addr = (int *)buf;
-> +    int nonblock = file->f_flags & O_NONBLOCK ? WNOHANG: 0;
-> +    ssize_t ret, total = 0;
-> +
-> +    count /= sizeof(int);
-> +    if (!count)
-> +        return -EINVAL;
-> +
-> +    do {
-> +        ret = sys_wait4(ctx->upid, stat_addr, ctx->ops | nonblock,
-> +                NULL);
-> +        if (ret == 0)
-> +            ret = -EAGAIN;
-> +        if (ret == -ECHILD)
-> +            ret = 0;
-> +        if (ret <= 0)
-> +            break;
-> +
-> +        stat_addr++;
-> +        total += sizeof(struct siginfo);
-> +        nonblock = WNOHANG;
-> +    } while (--count);
-> +
-> +    return total ? total: ret;
-> +}
-
-... looks like you're returning a sequence of status ints, with wrong data 
-size returned by read(2).
-
-
-
-
-> +
-> +static const struct file_operations waitfd_fops = {
-> +    .release    = waitfd_release,
-> +    .poll        = waitfd_poll,
-> +    .read        = waitfd_read,
-> +};
-> +
-> +asmlinkage long sys_waitfd(pid_t upid, int ops)
-
-Please leave space for extra flags for fds, otherwise Uli will have to 
-make another sys_waitfd3().
-
-
-
-> +long peek_waitpid(pid_t upid, int options)
-> +{
-> +    struct pid *pid = NULL;
-> +    enum pid_type type;
-> +    long ret;
-> +
-> +    if (options & ~(WNOHANG|WUNTRACED|WCONTINUED|
-> +            __WNOTHREAD|__WCLONE|__WALL))
-> +        return -EINVAL;
-> +
-> +    options |= WNOHANG | WNOWAIT;
-> +
-> +    if (upid == -1)
-> +        type = PIDTYPE_MAX;
-> +    else if (upid < 0) {
-> +        type = PIDTYPE_PGID;
-> +        pid = find_get_pid(-upid);
-> +    } else if (upid == 0) {
-> +        type = PIDTYPE_PGID;
-> +        pid = get_pid(task_pgrp(current));
-> +    } else /* upid > 0 */ {
-> +        type = PIDTYPE_PID;
-> +        pid = find_get_pid(upid);
-> +    }
-> +
-> +    ret = do_wait(type, pid, options | WEXITED, NULL, NULL, NULL);
-> +    put_pid(pid);
-> +
-> +    /* avoid REGPARM breakage on x86: */
-> +    asmlinkage_protect(4, ret, upid, options);
-> +    return ret;
-> +}
-
-Given that you blinded copied this from sys_wait4(), you may want to at 
-least try to make sys_wait4() to re-use the new function.
-Also, your patch does not apply to latest Linus tree. Which one was the 
-base?
-
-
-
-- Davide
-
-
+thanks,
+-serge
