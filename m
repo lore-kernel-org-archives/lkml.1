@@ -1,152 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbYLIOg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbYLIOsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754714AbYLIOg2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 09:36:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbYLIOgU
+	id S1754139AbYLIOsF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 09:48:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYLIOry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 09:36:20 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:61213 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751742AbYLIOgT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 09:36:19 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Ulrich Weigand <ulrich.weigand@de.ibm.com>
-Subject: [PATCH, RFC] revert breakage from "tracehook: exec"
-Date: Tue, 9 Dec 2008 15:33:09 +0100
-User-Agent: KMail/1.9.9
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812091533.10628.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/Xzpuaum08h5hOrqSAf15B/tF4gdvi3wAltk8
- 7DMyXkn7UKqHk/+GzhGSkTPY/kQrOdmYj02grgVoVQa53BP3zU
- i5bcJTGYNyn+uyBX51jZQ==
+	Tue, 9 Dec 2008 09:47:54 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:34648 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752603AbYLIOrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 09:47:53 -0500
+Message-Id: <200812091548.mB9Fm0sm011959@d01av04.pok.ibm.com>
+Subject: [PATCH 1/1] sched: CPU remove deadlock fix
+To: mingo@elte.hu
+Cc: a.p.zijlstra@chello.nl, efault@gmx.de, vatsa@in.ibm.com,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       brking@linux.vnet.ibm.com
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Tue, 09 Dec 2008 08:47:00 -0600
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch 6341c39 "tracehook: exec" introduced a small regression in
-2.6.27 regarding binfmt_misc exec event reporting. Since the reporting
-is now done in the common search_binary_handler() function, an exec
-of a misc binary will result in two (or possibly multiple) exec events
-being reported, instead of just a single one, because the misc handler
-contains a recursive call to search_binary_handler.
 
-To add to the confusion, if ptrace event reporting (PTRACE_O_TRACEEVENT)
-is not active, the multiple instances of send_sig (SIGTRAP) will in fact
-cause only a single ptrace intercept, as the signals are not queued.
-However, if PTRACE_O_TRACEEVENT is on, the debugger will actually see
-multiple ptrace intercepts.
+This patch fixes a possible deadlock scenario in the CPU remove path.
+migration_call grabs rq->lock, then wakes up everything on rq->migration_queue
+with the lock held. Then one of the tasks on the migration queue ends up
+calling tg_shares_up which then also tries to acquire the same rq->lock.
 
-This (untested) patch moves the reporting back to the original location
-and outside of the binfmt_misc path.
+[c000000058eab2e0] c000000000502078 ._spin_lock_irqsave+0x98/0xf0
+[c000000058eab370] c00000000008011c .tg_shares_up+0x10c/0x20c
+[c000000058eab430] c00000000007867c .walk_tg_tree+0xc4/0xfc
+[c000000058eab4d0] c0000000000840c8 .try_to_wake_up+0xb0/0x3c4
+[c000000058eab590] c0000000000799a0 .__wake_up_common+0x6c/0xe0
+[c000000058eab640] c00000000007ada4 .complete+0x54/0x80
+[c000000058eab6e0] c000000000509fa8 .migration_call+0x5fc/0x6f8
+[c000000058eab7c0] c000000000504074 .notifier_call_chain+0x68/0xe0
+[c000000058eab860] c000000000506568 ._cpu_down+0x2b0/0x3f4
+[c000000058eaba60] c000000000506750 .cpu_down+0xa4/0x108
+[c000000058eabb10] c000000000507e54 .store_online+0x44/0xa8
+[c000000058eabba0] c000000000396260 .sysdev_store+0x3c/0x50
+[c000000058eabc10] c0000000001a39b8 .sysfs_write_file+0x124/0x18c
+[c000000058eabcd0] c00000000013061c .vfs_write+0xd0/0x1bc
+[c000000058eabd70] c0000000001308a4 .sys_write+0x68/0x114
+[c000000058eabe30] c0000000000086b4 syscall_exit+0x0/0x40
 
-Signed-off-by: Ulrich Weigand <ulrich.weigand@de.ibm.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
 ---
 
- arch/x86/ia32/ia32_aout.c |    1 +
- fs/binfmt_aout.c          |    1 +
- fs/binfmt_elf.c           |    1 +
- fs/binfmt_elf_fdpic.c     |    2 ++
- fs/binfmt_flat.c          |    2 ++
- fs/binfmt_som.c           |    1 +
- fs/exec.c                 |    1 -
- 7 files changed, 8 insertions(+), 1 deletion(-)
+ kernel/sched.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/x86/ia32/ia32_aout.c b/arch/x86/ia32/ia32_aout.c
-index 127ec3f..f5b829a 100644
---- a/arch/x86/ia32/ia32_aout.c
-+++ b/arch/x86/ia32/ia32_aout.c
-@@ -444,6 +444,7 @@ beyond_if:
- 	regs->r8 = regs->r9 = regs->r10 = regs->r11 =
- 	regs->r12 = regs->r13 = regs->r14 = regs->r15 = 0;
- 	set_fs(USER_DS);
-+	tracehook_report_exec(&aout_format, bprm, regs);
- 	return 0;
- }
- 
-diff --git a/fs/binfmt_aout.c b/fs/binfmt_aout.c
-index 204cfd1..6979226 100644
---- a/fs/binfmt_aout.c
-+++ b/fs/binfmt_aout.c
-@@ -444,6 +444,7 @@ beyond_if:
- 	regs->gp = ex.a_gpvalue;
- #endif
- 	start_thread(regs, ex.a_entry, current->mm->start_stack);
-+	tracehook_report_exec(&aout_format, bprm, regs);
- 	return 0;
- }
- 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index 8fcfa39..a7403cc 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1003,6 +1003,7 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- #endif
- 
- 	start_thread(regs, elf_entry, bprm->p);
-+	tracehook_report_exec(&elf_format, bprm, regs);
- 	retval = 0;
- out:
- 	kfree(loc);
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 5b5424c..d28052d 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -434,6 +434,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
- 	entryaddr = interp_params.entry_addr ?: exec_params.entry_addr;
- 	start_thread(regs, entryaddr, current->mm->start_stack);
- 
-+	tracehook_report_exec(&elf_fdpic_format, bprm, regs);
-+
- 	retval = 0;
- 
- error:
-diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
-index ccb781a..ed7aed3 100644
---- a/fs/binfmt_flat.c
-+++ b/fs/binfmt_flat.c
-@@ -922,6 +922,8 @@ static int load_flat_binary(struct linux_binprm * bprm, struct pt_regs * regs)
- 	
- 	start_thread(regs, start_addr, current->mm->start_stack);
- 
-+	tracehook_report_exec(&flat_format, bprm, regs);
-+
- 	return 0;
- }
- 
-diff --git a/fs/binfmt_som.c b/fs/binfmt_som.c
-index 74e587a..40d88df 100644
---- a/fs/binfmt_som.c
-+++ b/fs/binfmt_som.c
-@@ -274,6 +274,7 @@ load_som_binary(struct linux_binprm * bprm, struct pt_regs * regs)
- 	map_hpux_gateway_page(current,current->mm);
- 
- 	start_thread_som(regs, som_entry, bprm->p);
-+	tracehook_report_exec(&som_format, bprm, regs);
- 	return 0;
- 
- 	/* error cleanup */
-diff --git a/fs/exec.c b/fs/exec.c
-index 67120ec..700edae 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1225,7 +1225,6 @@ int search_binary_handler(struct linux_binprm *bprm,struct pt_regs *regs)
- 			read_unlock(&binfmt_lock);
- 			retval = fn(bprm, regs);
- 			if (retval >= 0) {
--				tracehook_report_exec(fmt, bprm, regs);
- 				put_binfmt(fmt);
- 				allow_write_access(bprm->file);
- 				if (bprm->file)
+diff -puN kernel/sched.c~sched_cpu_down_deadlock_fix kernel/sched.c
+--- linux-2.6/kernel/sched.c~sched_cpu_down_deadlock_fix	2008-12-09 08:42:09.000000000 -0600
++++ linux-2.6-bjking1/kernel/sched.c	2008-12-09 08:42:09.000000000 -0600
+@@ -6587,7 +6587,9 @@ migration_call(struct notifier_block *nf
+ 			req = list_entry(rq->migration_queue.next,
+ 					 struct migration_req, list);
+ 			list_del_init(&req->list);
++			spin_unlock_irq(&rq->lock);
+ 			complete(&req->done);
++			spin_lock_irq(&rq->lock);
+ 		}
+ 		spin_unlock_irq(&rq->lock);
+ 		break;
+_
