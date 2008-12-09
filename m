@@ -1,89 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbYLIMOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbYLIMcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753661AbYLIMOZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 07:14:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYLIMOP
+	id S1753587AbYLIMcV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 07:32:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYLIMcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 07:14:15 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:48107 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751511AbYLIMON (ORCPT
+	Tue, 9 Dec 2008 07:32:11 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39991 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750829AbYLIMcK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 07:14:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=s1Cs3rp3dA0WSJMWvkvXcphiPPrmQY//BSPlQuV9hrE3k0GAl4Y1Qa1To+br61Z3Xe
-         B34EuqRySX5VI6IgbCKKETCjGGcjMp2HTzWpBK8qDgk+uAaFgbasrxs2DJdF+gIntZq/
-         8IjbKbQzR9cMXuseHhcFo3buQ20/wUBnTBkdA=
-Message-ID: <4d8e3fd30812090414v2e7a4bc3h621ca56e91ae367@mail.gmail.com>
-Date: Tue, 9 Dec 2008 13:14:11 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "David Miller" <davem@davemloft.net>, "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] Performance Counters for Linux, v2
-Cc: eranian@gmail.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org,
-       dada1@cosmosbay.com, robert.richter@amd.com, arjan@infradead.org,
-       hpa@zytor.com, a.p.zijlstra@chello.nl, rostedt@goodmis.org,
-       paulus@samba.org
-In-Reply-To: <20081209.032955.101042639.davem@davemloft.net>
+	Tue, 9 Dec 2008 07:32:10 -0500
+Date: Tue, 9 Dec 2008 13:31:52 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, mtk.manpages@gmail.com,
+       dl9pf@gmx.de, rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: Re: Document hadling of bad memory
+Message-ID: <20081209123152.GA1547@ucw.cz>
+References: <20081126161521.GC1983@elf.ucw.cz> <20081201105625.25ee9f32.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081209110246.GC21618@elte.hu>
-	 <20081209.031120.90683825.davem@davemloft.net>
-	 <20081209112225.GD21618@elte.hu>
-	 <20081209.032955.101042639.davem@davemloft.net>
+In-Reply-To: <20081201105625.25ee9f32.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 9, 2008 at 12:29 PM, David Miller <davem@davemloft.net> wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 9 Dec 2008 12:22:25 +0100
->
->>
->> * David Miller <davem@davemloft.net> wrote:
->>
->> > From: Ingo Molnar <mingo@elte.hu>
->> > Date: Tue, 9 Dec 2008 12:02:46 +0100
->> >
->> > >
->> > > * stephane eranian <eranian@googlemail.com> wrote:
->> > >
->> > > > > There's also more generic x86 support: all 4 generic PMCs of Nehalem
->> > > > > / Core i7 are supported - i've run 4 instances of KernelTop and they
->> > > > > used up four separate PMCs.
->> > > >
->> > > > Core/Atom have 5 counters, Nehalem has 7. Why are you not using all of
->> > > > them already?
->> > >
->> > > no, Nehalem has 4 generic purpose PMCs and 3 fixed-purpose PMCs (7
->> > > total),
->> >  ...
->> > > Saying that it has 7 is misleading.
->> >
->> > Even you just did.
->>
->> which portion of my point stressing the general purpose attribute was
->> unclear to you?
->
-> I'm just teasing you because you picked a trite point from stephane's
-> email instead of the meat later on, which I would have found more
-> interesting to hear you comment on.
 
-I'm interested in Ingo's comments on that argument as well but I don't
-feel the need to act like were are all in a kindergarten.
+I cleaned the document up according to Randy (thanks!). I don't actually know
+enough about DRAM error characcteristics, I guess'round the size of
+bad region up to nearest 2^n makes sense.
 
-You are two astonishing developers and I'm sure you can demonstrate
-that you can have a pure technical discussion on this topic as you did
-several times in the past.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-Regards,
+diff --git a/Documentation/bad_memory.txt b/Documentation/bad_memory.txt
+index df84162..a2a8703 100644
+--- a/Documentation/bad_memory.txt
++++ b/Documentation/bad_memory.txt
+@@ -14,12 +14,12 @@ There are three possibilities I know of:
+ 
+ 3) Use BadRAM or memmap
+ 
+-This Howto is about number 3) .
++This Howto is about number 3).
+ 
+ 
+ BadRAM
+ ######
+-BadRAM is the actively developed and available as kernel-patch
++BadRAM is the actively developed and available as a kernel patch
+ here:  http://rick.vanrein.org/linux/badram/
+ 
+ For more details see the BadRAM documentation.
+@@ -27,19 +27,20 @@ For more details see the BadRAM documentation.
+ memmap
+ ######
+ 
+-memmap is already in the kernel and usable as kernel-parameter at
+-boot-time.  Its syntax is slightly strange and you may need to
+-calculate the values by yourself!
++memmap is already in the kernel and usable as a kernel parameter at
++boot time.  Its syntax is slightly strange and you may need to
++calculate the values by yourself.
+ 
+ Syntax to exclude a memory area (see kernel-parameters.txt for details):
+ memmap=<size>$<address>
+ 
+-Example: memtest86+ reported here errors at address 0x18691458, 0x18698424 and
++Example: memtest86+ reported errors at address 0x18691458, 0x18698424 and
+          some others. All had 0x1869xxxx in common, so I chose a pattern of
+-         0x18690000,0xffff0000.
++         0x18690000 and size of 0x10000. (Size needs to cover at least all
++	 known bad places, and rounding to nearest power of 2 makes sense
++	 'just to be safe').
+ 
+ With the numbers of the example above:
+ memmap=64K$0x18690000
+  or
+ memmap=0x10000$0x18690000
+-
+
 -- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
-http://mypage.vodafone.it/
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
