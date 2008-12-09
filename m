@@ -1,76 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbYLIPP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYLIPbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbYLIPP7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 10:15:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbYLIPPw
+	id S1753972AbYLIPbV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 10:31:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYLIPbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 10:15:52 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:35501 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbYLIPPv (ORCPT
+	Tue, 9 Dec 2008 10:31:08 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:40585 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232AbYLIPbE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 10:15:51 -0500
-Message-ID: <493E8B68.2030007@linux.vnet.ibm.com>
-Date: Tue, 09 Dec 2008 09:14:48 -0600
-From: Brian King <brking@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14 (X11/20060911)
+	Tue, 9 Dec 2008 10:31:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=tSve6RkrP3P6k2Fv9KOU/rwVrIllnUrGGkleAUjSKelVHBB+q+VIBkd55uQPN3i5+B
+         ZuFwEtxRbtgCW1F/sjjknbOYsnD2BBlZoZaoSBjhdVX6iMNT37eePt13Q4xU627qraox
+         +/AaA7O3OHA9haKscYihZQqgxFCA/4pQYFqF8=
+Message-ID: <493E8F31.3040806@panasas.com>
+Date: Tue, 09 Dec 2008 17:30:57 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: mingo@elte.hu, efault@gmx.de, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] sched: CPU remove deadlock fix
-References: <200812091548.mB9Fm0sm011959@d01av04.pok.ibm.com> <1228834342.8684.5.camel@twins> <1228834794.8684.6.camel@twins>
-In-Reply-To: <1228834794.8684.6.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Duane Griffin <duaneg@dghda.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: Checking link targets are NULL-terminated
+References: <20081205144810.GA25585@dastardly.home.dghda.com>
+In-Reply-To: <20081205144810.GA25585@dastardly.home.dghda.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-12-09 at 15:52 +0100, Peter Zijlstra wrote:
->> On Tue, 2008-12-09 at 08:47 -0600, Brian King wrote:
->>> This patch fixes a possible deadlock scenario in the CPU remove path.
->>> migration_call grabs rq->lock, then wakes up everything on rq->migration_queue
->>> with the lock held. Then one of the tasks on the migration queue ends up
->>> calling tg_shares_up which then also tries to acquire the same rq->lock.
->> Looks ok, does lockdep agree?
+Duane Griffin wrote:
+> Hi folks,
 > 
-> On second thought, I'm not seeing it at all..
+> I am looking at a report of an intermittent BUG caused by an
+> intentionally corrupted ext2 filesystem:
+> http://bugzilla.kernel.org/show_bug.cgi?id=11412
 > 
-> why doesn't every wakeup deadlock?
-
->From what I can tell, the only other place that does a complete(&req->done)
-is in migration_thread, and there the lock is released before doing the wakeup.
-
--Brian
-
+> What I think is happening is generic_readlink gets the name via
+> i_ops->follow_link and passes it into vfs_readlink, without it
+> necessarily being validating anywhere. If the name is not
+> NULL-terminated the strlen call in vfs_readlink may run off past the end
+> of the page. I think this is potentially happening in
+> page_follow_link_light, as well as ext2_follow_link, so it isn't just
+> ext* that is affected.
 > 
->>> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
->>> ---
->>>
->>>  kernel/sched.c |    2 ++
->>>  1 file changed, 2 insertions(+)
->>>
->>> diff -puN kernel/sched.c~sched_cpu_down_deadlock_fix kernel/sched.c
->>> --- linux-2.6/kernel/sched.c~sched_cpu_down_deadlock_fix	2008-12-09 08:42:09.000000000 -0600
->>> +++ linux-2.6-bjking1/kernel/sched.c	2008-12-09 08:42:09.000000000 -0600
->>> @@ -6587,7 +6587,9 @@ migration_call(struct notifier_block *nf
->>>  			req = list_entry(rq->migration_queue.next,
->>>  					 struct migration_req, list);
->>>  			list_del_init(&req->list);
->>> +			spin_unlock_irq(&rq->lock);
->>>  			complete(&req->done);
->>> +			spin_lock_irq(&rq->lock);
->>>  		}
->>>  		spin_unlock_irq(&rq->lock);
->>>  		break;
->>> _
+> Does this sound correct, or have I missed something?
+> 
+> Assuming this is a real problem, does anyone have a better solution than
+> scanning the name for a \0 (in ext2_follow_link and
+> page_follow_link_light) and returning -ENAMETOOLONG if we can't find
+> one? I.e. something like this:
+> 
+> diff --git a/fs/ext2/symlink.c b/fs/ext2/symlink.c
+> index 4e2426e..9b01af2 100644
+> --- a/fs/ext2/symlink.c
+> +++ b/fs/ext2/symlink.c
+> @@ -24,8 +24,14 @@
+>  static void *ext2_follow_link(struct dentry *dentry, struct nameidata *nd)
+>  {
+>  	struct ext2_inode_info *ei = EXT2_I(dentry->d_inode);
+> -	nd_set_link(nd, (char *)ei->i_data);
+> -	return NULL;
+> +	void *err = NULL;
+> +
+> +	if (memchr(ei->i_data, 0, sizeof(ei->i_data)) == NULL)
+> +		err = ERR_PTR(-ENAMETOOLONG);
+> +	else
+> +		nd_set_link(nd, (char *)ei->i_data);
+> +
+> +	return err;
+>  }
 
+Here (Like below) Just zero the very last byte in the buffer.
+The first time this buffer was strcpy to, it was including the null terminated
+string. then written to inode on disk. When read, at most it could be,
+is as space allocated at inode (including null). If intentionally damaged, the symlink
+will be corrupted but Kernel is safe.
 
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+>  
+>  const struct inode_operations ext2_symlink_inode_operations = {
+> diff --git a/fs/namei.c b/fs/namei.c
+> index d34e0f9..f20e94b 100644
+> --- a/fs/namei.c
+> +++ b/fs/namei.c
+> @@ -2750,29 +2750,49 @@ static char *page_getlink(struct dentry * dentry, struct page **ppage)
+>  {
+>  	struct page * page;
+>  	struct address_space *mapping = dentry->d_inode->i_mapping;
+> +	char *kaddr;
+> +
+>  	page = read_mapping_page(mapping, 0, NULL);
+>  	if (IS_ERR(page))
+>  		return (char*)page;
+> +
+> +	kaddr = kmap(page);
+> +	if (memchr(kaddr, 0, PAGE_SIZE) == NULL) {
+> +		kunmap(kaddr);
+> +		page_cache_release(page);
+> +		return ERR_PTR(-ENAMETOOLONG);
+> +	}
+> +
 
+You don't need to search and fail here. All you need is to NULL terminate on
+read_i_size() + 1 of inode. The length of the written string was set on write-time
+the buffer is big since it is a full page and I think symlinks are limited to
+less then that.
+
+If a person damaged the symlink inode on disk (set different size) then
+the data is corrupted but Kernel is still safe.
+
+>  	*ppage = page;
+> -	return kmap(page);
+> +	return kaddr;
+>  }
+>  
+>  int page_readlink(struct dentry *dentry, char __user *buffer, int buflen)
+>  {
+> +	int res;
+>  	struct page *page = NULL;
+>  	char *s = page_getlink(dentry, &page);
+> -	int res = vfs_readlink(dentry,buffer,buflen,s);
+> +
+> +	if (IS_ERR(s))
+> +		return PTR_ERR(s);
+> +
+
+Above will not fail this change is not needed
+
+> +	res = vfs_readlink(dentry, buffer, buflen, s);
+>  	if (page) {
+>  		kunmap(page);
+>  		page_cache_release(page);
+>  	}
+> +
+>  	return res;
+>  }
+>  
+>  void *page_follow_link_light(struct dentry *dentry, struct nameidata *nd)
+>  {
+>  	struct page *page = NULL;
+> -	nd_set_link(nd, page_getlink(dentry, &page));
+> +	char *name = page_getlink(dentry, &page);
+> +	if (IS_ERR(name))
+> +		return name;
+> +
+
+Same here
+
+> +	nd_set_link(nd, name);
+>  	return page;
+>  }
+>  
+> Cheers,
+> Duane.
+> 
+
+I hit this problem too, while developing a filesystem that was based
+on ext2. The reason that it works is because the remainder of a page is always
+Zero'ed out on writes. Then when read, you receive back your zero terminated link.
+(Which means that if you have a symlink exactly 4k it will BUG but I guess
+that is not possible).
+
+The solution is to use the i_size information for the string length, and zero
+terminate at i_size + 1.
+
+The way I fixed it is that I Zero out the last page's remainder on read and not
+on write like ext2 and other do it. (A symlink is less then 4k, right?)
+
+Boaz
 
