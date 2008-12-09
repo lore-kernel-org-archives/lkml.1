@@ -1,92 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbYLIIbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbYLIIeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbYLIIbZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 03:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYLIIbP
+	id S1753261AbYLIIeV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 03:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYLIIeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 03:31:15 -0500
-Received: from edna.telenet-ops.be ([195.130.132.58]:36768 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751395AbYLIIbO (ORCPT
+	Tue, 9 Dec 2008 03:34:13 -0500
+Received: from ag-out-0708.google.com ([72.14.246.248]:40414 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751466AbYLIIeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 03:31:14 -0500
-Date: Tue, 9 Dec 2008 09:31:11 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andreas Bombe <aeb@debian.org>
-cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] amiflop: get rid of sleep_on calls
-In-Reply-To: <1228755578-26069-1-git-send-email-aeb@debian.org>
-Message-ID: <Pine.LNX.4.64.0812090927580.29640@anakin>
-References: <1228755578-26069-1-git-send-email-aeb@debian.org>
+	Tue, 9 Dec 2008 03:34:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=woAX3vfiAmZz0U3KzEiIfx5+VbBC8G+0AA4XhytM6XlHJPseHspAfq98C6fXUQYNvF
+         +BQ/f1z6Xt9KQHtLDEZw2/UQCnfk6uXspWcq0JaZoirY3+ASv3k4mB4ZYv9n4WPTDVRo
+         I8aO0x/N0MnzphvlMPHiNL+bN/CzuIaexv8UI=
+Message-ID: <12bfabe40812090034s455edfe7uff3eb170c762404f@mail.gmail.com>
+Date: Tue, 9 Dec 2008 09:34:10 +0100
+From: "Giangiacomo Mariotti" <gg.mariotti@gmail.com>
+To: "Mikael Abrahamsson" <swmike@swm.pp.se>
+Subject: Re: OFFLIST Re: [HW PROBLEM] Intel I7 MCE. Erratum or not?
+Cc: "Andi Kleen" <ak@linux.intel.com>,
+       "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+In-Reply-To: <12bfabe40812090030v7d8bcd6aq99438d18b808d32f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12bfabe40812060421j10c93b3dg75a48aa304f633e8@mail.gmail.com>
+	 <493D296B.1080205@linux.intel.com>
+	 <alpine.DEB.1.10.0812081724080.18782@uplift.swm.pp.se>
+	 <493D6FB4.9090909@linux.intel.com>
+	 <alpine.DEB.1.10.0812082145410.18782@uplift.swm.pp.se>
+	 <12bfabe40812082146r3ea000em7a8f725101a50bd5@mail.gmail.com>
+	 <alpine.DEB.1.10.0812090737410.18782@uplift.swm.pp.se>
+	 <12bfabe40812082319x4ed6c9m5b744e51cdd3d838@mail.gmail.com>
+	 <alpine.DEB.1.10.0812090857590.18782@uplift.swm.pp.se>
+	 <12bfabe40812090030v7d8bcd6aq99438d18b808d32f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Dec 2008, Andreas Bombe wrote:
-> Apart from sleep_on() calls that could be easily converted to
-> wait_event() and completion calls amiflop also used a flag in ms_delay()
-> and ms_isr() as a custom mutex for ms_delay() without a need for
-> explicit unlocking.  I converted that to a standard mutex semaphore.
-> 
-> The replacement for the unconditional sleep_on() in fd_motor_on() is a
-> complete_all() together with a INIT_COMPLETION() before the mod_timer()
-> call.  It appears to me that fd_motor_on() might be called concurrently
-> and fd_select() does not guarantee mutual exclusivity in the case the
-> same drive gets selected again.
-> 
-> Signed-off-by: Andreas Bombe <aeb@debian.org>
-> ---
-> 
-> Note: I haven't tested these changes beyond correct compilation.
-> 
-> The complete_all() with INIT_COMPLETION() was because I'm not sure about
-> whether fd_motor_on() might run concurrently.  Better safe than sorry.
-
-I'm afraid my Amiga floppy drive doesn't work anymore...
-Any other testers available?
-
-> --- a/drivers/block/amiflop.c
-> +++ b/drivers/block/amiflop.c
-> @@ -220,19 +218,17 @@ static irqreturn_t ms_isr(int irq, void *dummy)
->     A more generic routine would do a schedule a la timer.device */
->  static void ms_delay(int ms)
->  {
-> -	unsigned long flags;
->  	int ticks;
-> +	static DECLARE_MUTEX(mutex);
-               ^^^^^^^^^^^^^
-Shouldn't this be a real mutex (declared using DEFINE_MUTEX(mutex)) instead of
-a semaphore used as a mutex?
-
-> +
->  	if (ms > 0) {
-> -		local_irq_save(flags);
-> -		while (ms_busy == 0)
-> -			sleep_on(&ms_wait);
-> -		ms_busy = 0;
-> -		local_irq_restore(flags);
-> +		down(&mutex);
-                ^^^^
-		mutex_lock
-
->  		ticks = MS_TICKS*ms-1;
->  		ciaa.tblo=ticks%256;
->  		ciaa.tbhi=ticks/256;
->  		ciaa.crb=0x19; /*count eclock, force load, one-shoot, start */
-> -		sleep_on(&ms_wait);
-> +		wait_for_completion(&ms_wait_completion);
-> +		up(&mutex);
-		mutex_unlock
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+On Tue, Dec 9, 2008 at 9:30 AM, Giangiacomo Mariotti
+<gg.mariotti@gmail.com> wrote:
+> Yes, that happens to me too regularly. Also now my bios completely
+> freezes after having successfully done the dmi pool check at boot if I
+> try to boot directly from my HD, so I have to boot from my usb dvd
+> writer. At the moment I successfully booted that rescuecd in 64 bit
+> mode and the kexeced into my 2.6.27.8 debian system. I still haven't
+> tried to make a bootable cd with grub and see if I can also boot
+> directly into my HD at boot or if not even Grub can see it. The very
+> good point of using the kexec method is that, even if my bios cannot
+> boot my hd directly, I can bypass it. But I still don't know if I have
+> this problem too.
+>
+Well, I'm not exactly sure that the dmi pool check is successful.
