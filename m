@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbYLIOsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbYLIOvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139AbYLIOsF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 09:48:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbYLIOry
+	id S1754281AbYLIOvn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 09:51:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYLIOve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 09:47:54 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:34648 "EHLO e1.ny.us.ibm.com"
+	Tue, 9 Dec 2008 09:51:34 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:1390 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752603AbYLIOrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 09:47:53 -0500
-Message-Id: <200812091548.mB9Fm0sm011959@d01av04.pok.ibm.com>
-Subject: [PATCH 1/1] sched: CPU remove deadlock fix
-To: mingo@elte.hu
-Cc: a.p.zijlstra@chello.nl, efault@gmx.de, vatsa@in.ibm.com,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       brking@linux.vnet.ibm.com
-From: Brian King <brking@linux.vnet.ibm.com>
-Date: Tue, 09 Dec 2008 08:47:00 -0600
+	id S1752263AbYLIOvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 09:51:33 -0500
+Date: Tue, 9 Dec 2008 15:51:19 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mike Anderson <andmike@linux.vnet.ibm.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       LKML-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH] Correctly release and allocate a new request upon retries
+Message-ID: <20081209145119.GA23742@kernel.dk>
+References: <493D2E05.3070108@hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <493D2E05.3070108@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 08 2008, Alan D. Brunelle wrote:
 
-This patch fixes a possible deadlock scenario in the CPU remove path.
-migration_call grabs rq->lock, then wakes up everything on rq->migration_queue
-with the lock held. Then one of the tasks on the migration queue ends up
-calling tg_shares_up which then also tries to acquire the same rq->lock.
+> Commands needing to be retried require a complete re-initialization.
+> 
+> The test-unit-ready portion of this patch was causing boots to fail on
+> my test machine (as in http://lkml.org/lkml/2008/12/5/161). With this
+> patch in place, the system is booting reliably.
+> 
+> Mike Anderson found the same problem in the hp_hw_start_stop code,
+> and I applied the same solution in cdrom_read_cdda_bpc.
 
-[c000000058eab2e0] c000000000502078 ._spin_lock_irqsave+0x98/0xf0
-[c000000058eab370] c00000000008011c .tg_shares_up+0x10c/0x20c
-[c000000058eab430] c00000000007867c .walk_tg_tree+0xc4/0xfc
-[c000000058eab4d0] c0000000000840c8 .try_to_wake_up+0xb0/0x3c4
-[c000000058eab590] c0000000000799a0 .__wake_up_common+0x6c/0xe0
-[c000000058eab640] c00000000007ada4 .complete+0x54/0x80
-[c000000058eab6e0] c000000000509fa8 .migration_call+0x5fc/0x6f8
-[c000000058eab7c0] c000000000504074 .notifier_call_chain+0x68/0xe0
-[c000000058eab860] c000000000506568 ._cpu_down+0x2b0/0x3f4
-[c000000058eaba60] c000000000506750 .cpu_down+0xa4/0x108
-[c000000058eabb10] c000000000507e54 .store_online+0x44/0xa8
-[c000000058eabba0] c000000000396260 .sysdev_store+0x3c/0x50
-[c000000058eabc10] c0000000001a39b8 .sysfs_write_file+0x124/0x18c
-[c000000058eabcd0] c00000000013061c .vfs_write+0xd0/0x1bc
-[c000000058eabd70] c0000000001308a4 .sys_write+0x68/0x114
-[c000000058eabe30] c0000000000086b4 syscall_exit+0x0/0x40
+Thanks Alan, applied for 2.6.28.
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
+-- 
+Jens Axboe
 
- kernel/sched.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff -puN kernel/sched.c~sched_cpu_down_deadlock_fix kernel/sched.c
---- linux-2.6/kernel/sched.c~sched_cpu_down_deadlock_fix	2008-12-09 08:42:09.000000000 -0600
-+++ linux-2.6-bjking1/kernel/sched.c	2008-12-09 08:42:09.000000000 -0600
-@@ -6587,7 +6587,9 @@ migration_call(struct notifier_block *nf
- 			req = list_entry(rq->migration_queue.next,
- 					 struct migration_req, list);
- 			list_del_init(&req->list);
-+			spin_unlock_irq(&rq->lock);
- 			complete(&req->done);
-+			spin_lock_irq(&rq->lock);
- 		}
- 		spin_unlock_irq(&rq->lock);
- 		break;
-_
