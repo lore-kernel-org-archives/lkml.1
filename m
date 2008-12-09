@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYLIUYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752AbYLIUZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbYLIUYg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 15:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbYLIUXM
+	id S1755752AbYLIUZd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 15:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbYLIUXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 15:23:12 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34841 "EHLO mx2.redhat.com"
+	Tue, 9 Dec 2008 15:23:16 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34845 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754610AbYLIUXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 15:23:06 -0500
+	id S1754688AbYLIUXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 15:23:07 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
-Subject: [PATCH 06/44] KVM: ppc: improve trap emulation
-Date: Tue,  9 Dec 2008 22:22:21 +0200
-Message-Id: <1228854179-23002-7-git-send-email-avi@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Nitin A Kamble <nitin.a.kamble@intel.com>
+Subject: [PATCH 08/44] KVM: Fix cpuid iteration on multiple leaves per eac
+Date: Tue,  9 Dec 2008 22:22:23 +0200
+Message-Id: <1228854179-23002-9-git-send-email-avi@redhat.com>
 In-Reply-To: <1228854179-23002-1-git-send-email-avi@redhat.com>
 References: <1228854179-23002-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hollis Blanchard <hollisb@us.ibm.com>
+From: Nitin A Kamble <nitin.a.kamble@intel.com>
 
-set ESR[PTR] when emulating a guest trap. This allows Linux guests to
-properly handle WARN_ON() (i.e. detect that it's a non-fatal trap).
+The code to traverse the cpuid data array list for counting type of leaves is
+currently broken.
 
-Also remove debugging printk in trap emulation.
+This patches fixes the 2 things in it.
 
-Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+ 1. Set the 1st counting entry's flag KVM_CPUID_FLAG_STATE_READ_NEXT. Without
+    it the code will never find a valid entry.
+
+ 2. Also the stop condition in the for loop while looking for the next unflaged
+    entry is broken. It needs to stop when it find one matching entry;
+    and in the case of count of 1, it will be the same entry found in this
+    iteration.
+
+Signed-Off-By: Nitin A Kamble <nitin.a.kamble@intel.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/powerpc/kvm/emulate.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kvm/x86.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-index 814f1e6..4c30fa0 100644
---- a/arch/powerpc/kvm/emulate.c
-+++ b/arch/powerpc/kvm/emulate.c
-@@ -74,8 +74,8 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
- 	int advance = 1;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 2889a0f..7a2aeba 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1246,6 +1246,7 @@ static void do_cpuid_ent(struct kvm_cpuid_entry2 *entry, u32 function,
+ 		int t, times = entry->eax & 0xff;
  
- 	switch (get_op(inst)) {
--	case 3:                                                 /* trap */
--		printk("trap!\n");
-+	case 3:                                             /* trap */
-+		vcpu->arch.esr |= ESR_PTR;
- 		kvmppc_core_queue_program(vcpu);
- 		advance = 0;
- 		break;
+ 		entry->flags |= KVM_CPUID_FLAG_STATEFUL_FUNC;
++		entry->flags |= KVM_CPUID_FLAG_STATE_READ_NEXT;
+ 		for (t = 1; t < times && *nent < maxnent; ++t) {
+ 			do_cpuid_1_ent(&entry[t], function, 0);
+ 			entry[t].flags |= KVM_CPUID_FLAG_STATEFUL_FUNC;
+@@ -2801,7 +2802,7 @@ static int move_to_next_stateful_cpuid_entry(struct kvm_vcpu *vcpu, int i)
+ 
+ 	e->flags &= ~KVM_CPUID_FLAG_STATE_READ_NEXT;
+ 	/* when no next entry is found, the current entry[i] is reselected */
+-	for (j = i + 1; j == i; j = (j + 1) % nent) {
++	for (j = i + 1; ; j = (j + 1) % nent) {
+ 		struct kvm_cpuid_entry2 *ej = &vcpu->arch.cpuid_entries[j];
+ 		if (ej->function == e->function) {
+ 			ej->flags |= KVM_CPUID_FLAG_STATE_READ_NEXT;
 -- 
 1.6.0.3
 
