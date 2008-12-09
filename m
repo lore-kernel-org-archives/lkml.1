@@ -1,151 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbYLIT5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754931AbYLIUFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbYLIT5z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 14:57:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbYLIT5q
+	id S1754931AbYLIUFk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 15:05:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbYLIUFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 14:57:46 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:2668 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754502AbYLIT5p (ORCPT
+	Tue, 9 Dec 2008 15:05:31 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:21411 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754372AbYLIUFa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 14:57:45 -0500
+	Tue, 9 Dec 2008 15:05:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=mSBx1SC9y1uA74P6nTArsqjOBg0S3/0IIrx4fVJBYTd55OnqXlkyFksfg1F6lIJhQS
-         4r1Q+OAoPXPh4RX+PGHiohxbNCJUqxhLvsUPG9cNJoyIJM5QtVT5RjDceMQCpdykzgdu
-         tV99CqmRYJz4bEmL3s8UBPifLRoLGKVsSZAO0=
-Message-ID: <493ECDB5.9000602@gmail.com>
-Date: Tue, 09 Dec 2008 20:57:41 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Fx5O7Ginp+0JjgNsBWyJFxsLDk+zPyZM5ahrkaQ+E1/P+IfTZaOOblNDVXs99+Q3Fy
+         bAfzj30kPsdr+h97dXWoOWNz125RJ+MZcwkN6DwcaTjLj95iHR5wYGlakOPsVxbL75ot
+         UZ6va6ahGYJ7MwIKmLhTgLEO/BzdRKt+WIoiY=
+Message-ID: <c62985530812091205r5b5afb29o5d9282076c7094c3@mail.gmail.com>
+Date: Tue, 9 Dec 2008 21:05:29 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [crash] Re: [PATCH 1/3] tracing/function-graph-tracer: introduce __notrace_funcgraph to filter special functions
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <c62985530812090059g27bcb36dg8318123d16a15664@mail.gmail.com>
 MIME-Version: 1.0
-To: mingo@redhat.com
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/33 V2] x86: Make static
-References: <493EA286.7080500@gmail.com> <493EA3BE.4050206@gmail.com>
-In-Reply-To: <493EA3BE.4050206@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <4939E600.804@gmail.com> <20081208141406.GA14856@elte.hu>
+	 <c62985530812080725i1f144c21td5b121749f507b09@mail.gmail.com>
+	 <20081208155018.GB405@elte.hu> <20081209023822.GA3602@elte.hu>
+	 <c62985530812090059g27bcb36dg8318123d16a15664@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sparse asked whether these could be static.
+2008/12/9 Frédéric Weisbecker <fweisbec@gmail.com>:
+> 2008/12/9 Ingo Molnar <mingo@elte.hu>:
+>>
+>> * Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>>> yes - but there's a few pending regressions right now delaying the
+>>> reintegration.
+>>
+>> one of them is a new type of ftrace crash that started triggering in
+>> tip/master:
+>>
+>> [    3.610253] initcall init_stack_trace+0x0/0x12 returned 0 after 105468 usecs
+>> [    3.616017] calling  init_function_trace+0x0/0x12 @ 1
+>> [    3.620014] Testing tracer function: <1>BUG: unable to handle kernel paging request at ffffffffffffff89
+>> [    3.648007] IP: [<ffffffff802113a9>] save_rest+0x9/0x70
+>> [    3.648007] PGD 203067 PUD 204067 PMD 0
+>> [    3.648007] Thread overran stack, or stack corrupted
+>> [    3.648007] Oops: 0000 [#1] SMP
+>> [    3.648007] last sysfs file:
+>> [    3.648007] CPU 0
+>> [    3.648007] Pid: 0, comm: swapper Not tainted 2.6.28-rc7-tip-01358-g7c567b4-dirty #6311
+>> [    3.648007] RIP: 0010:[<ffffffff802113a9>]  [<ffffffff802113a9>] save_rest+0x9/0x70
+>> [    3.648007] RSP: 0018:ffffffff816fde40  EFLAGS: 00010296
+>> [    3.648007] RAX: 0000000000000000 RBX: ffffffffffffffff RCX: 0000000000000003
+>> [    3.648007] RDX: 0000000000000000 RSI: ffffffff80218b1c RDI: ffffffff80218acc
+>> [    3.648007] RBP: ffffffff816fde88 R08: ffffffff8025e538 R09: 0000000000000001
+>> [    3.648007] R10: ffffffff80242084 R11: 0000000000000000 R12: 0000000000000001
+>> [    3.648007] R13: ffffffff8177f3a0 R14: ffffffff81782390 R15: 0000000000092f70
+>> [    3.648007] FS:  0000000000000000(0000) GS:ffffffff816f1b00(0000) knlGS:0000000000000000
+>> [    3.648007] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+>> [    3.648007] CR2: ffffffffffffff89 CR3: 0000000000201000 CR4: 00000000000006e0
+>> [    3.648007] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>> [    3.648007] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>> [    3.648007] Process swapper (pid: 0, threadinfo ffffffff816fc000, task ffffffff8150d4a0)
+>> [    3.648007] Stack:
+>> [    3.648007]  ffffffff802112d6 0000000000000000 0000000000000003 0000000000000000
+>> [    3.648007]  ffffffff816fc010 0000000000000003 ffffffff8025e538 0000000000000001
+>> [    3.648007]  ffffffff80218ad1 ffffffff816fde98 ffffffff80218b1c ffffffff816fdec8
+>> [    3.648007] Call Trace:
+>> [    3.648007]  [<ffffffff802112d6>] ? ftrace_call+0x5/0x2b
+>> [    3.648007]  [<ffffffff8025e538>] ? __atomic_notifier_call_chain+0x0/0x87
+>> [    3.648007]  [<ffffffff80218ad1>] ? constant_test_bit+0x9/0x26
+>> [    3.648007]  [<ffffffff80218b1c>] need_resched+0x23/0x2d
+>> [    3.648007]  [<ffffffff80218dff>] poll_idle+0x33/0x42
+>> [    3.648007]  [<ffffffff8025e5ce>] ? atomic_notifier_call_chain+0xf/0x11
+>> [    3.648007]  [<ffffffff8029230c>] ? stop_critical_timings+0x9/0x21
+>> [    3.648007]  [<ffffffff802100c9>] cpu_idle+0xac/0xe0
+>> [    3.648007]  [<ffffffff80e28bf2>] rest_init+0x66/0x68
+>> [    3.648007]  [<ffffffff8172be75>] start_kernel+0x47d/0x488
+>> [    3.648007]  [<ffffffff8172b140>] ? early_idt_handler+0x0/0x73
+>> [    3.648007]  [<ffffffff8172b2c3>] x86_64_start_reservations+0xae/0xb2
+>> [    3.648007]  [<ffffffff8172b421>] x86_64_start_kernel+0x137/0x146
+>> [    3.648007] Code: 00 00 00 75 0b 58 65 48 8b 24 25 30 00 00 00 50 e8 78 6e c7 00 c3 66 66 66 90 66 66 66 90 66 66 66 90 4c 8b 5c 24 38 48 89 5c 24 <38> 48 89 6c 24 30 4c 89 64 24 28 4c 89 6c 24 20 4c 89 74 24 18
+>> [    3.648007] RIP  [<ffffffff802113a9>] save_rest+0x9/0x70
+>> [    3.648007]  RSP <ffffffff816fde40>
+>> [    3.648007] CR2: ffffffffffffff89
+>> [    3.648007] ---[ end trace 5a5d197966b56a2e ]---
+>> [    3.648007] Kernel panic - not syncing: Attempted to kill the idle task!
+>> [    3.648007] Pid: 0, comm: swapper Tainted: G      D    2.6.28-rc7-tip-01358-g7c567b4-dirty #6311
+>>
+>> Full crashlog and config attached.
+>>
+>>        Ingo
+>>
+>
+>
+> Ok I will try this config this evening.
+> Thanks.
+>
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- arch/x86/kernel/hpet.c            |    2 +-
- arch/x86/kernel/io_apic.c         |    2 +-
- arch/x86/kernel/microcode_core.c  |    4 ++--
- arch/x86/kernel/microcode_intel.c |    2 +-
- arch/x86/kernel/setup.c           |    3 ++-
- arch/x86/kvm/vmx.c                |    2 +-
- arch/x86/pci/legacy.c             |    2 +-
- 7 files changed, 9 insertions(+), 8 deletions(-)
 
-please ignore previous patch (add_efi_memmap was exported)
+I built this config on an smp x86-64 and booted several times (and
+tested the function tracer manually) with and without the following
+options:
 
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index 067d8de..15fcaac 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -33,7 +33,7 @@
-  * HPET address is set in acpi/boot.c, when an ACPI entry exists
-  */
- unsigned long				hpet_address;
--unsigned long				hpet_num_timers;
-+static unsigned long			hpet_num_timers;
- static void __iomem			*hpet_virt_address;
- 
- struct hpet_dev {
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index 9043251..dd6371f 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -3401,7 +3401,7 @@ static void hpet_msi_set_affinity(unsigned int irq, cpumask_t mask)
- }
- #endif /* CONFIG_SMP */
- 
--struct irq_chip hpet_msi_type = {
-+static struct irq_chip hpet_msi_type = {
- 	.name = "HPET_MSI",
- 	.unmask = hpet_msi_unmask,
- 	.mask = hpet_msi_mask,
-diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
-index 82fb280..97af1ec 100644
---- a/arch/x86/kernel/microcode_core.c
-+++ b/arch/x86/kernel/microcode_core.c
-@@ -203,7 +203,7 @@ MODULE_ALIAS_MISCDEV(MICROCODE_MINOR);
- #endif
- 
- /* fake device for request_firmware */
--struct platform_device *microcode_pdev;
-+static struct platform_device *microcode_pdev;
- 
- static ssize_t reload_store(struct sys_device *dev,
- 			    struct sysdev_attribute *attr,
-@@ -319,7 +319,7 @@ static int microcode_resume_cpu(int cpu)
- 	return 0;
- }
- 
--void microcode_update_cpu(int cpu)
-+static void microcode_update_cpu(int cpu)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 	int err = 0;
-diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
-index 622dc4a..c34c820 100644
---- a/arch/x86/kernel/microcode_intel.c
-+++ b/arch/x86/kernel/microcode_intel.c
-@@ -465,7 +465,7 @@ static void microcode_fini_cpu(int cpu)
- 	uci->mc = NULL;
- }
- 
--struct microcode_ops microcode_intel_ops = {
-+static struct microcode_ops microcode_intel_ops = {
- 	.request_microcode_user		  = request_microcode_user,
- 	.request_microcode_fw             = request_microcode_fw,
- 	.collect_cpu_info                 = collect_cpu_info,
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 9d5674f..efc5cfe 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -448,7 +448,8 @@ static void __init reserve_early_setup_data(void)
-  * @size: Size of the crashkernel memory to reserve.
-  * Returns the base address on success, and -1ULL on failure.
-  */
--unsigned long long __init find_and_reserve_crashkernel(unsigned long long size)
-+static unsigned long long __init find_and_reserve_crashkernel(
-+		unsigned long long size)
- {
- 	const unsigned long long alignment = 16<<20; 	/* 16M */
- 	unsigned long long start = 0LL;
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index a4018b0..bd7d441 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -122,7 +122,7 @@ static struct vmcs_config {
- 	u32 vmentry_ctrl;
- } vmcs_config;
- 
--struct vmx_capability {
-+static struct vmx_capability {
- 	u32 ept;
- 	u32 vpid;
- } vmx_capability;
-diff --git a/arch/x86/pci/legacy.c b/arch/x86/pci/legacy.c
-index b722dd4..abe0f58 100644
---- a/arch/x86/pci/legacy.c
-+++ b/arch/x86/pci/legacy.c
-@@ -55,7 +55,7 @@ static int __init pci_legacy_init(void)
- 	return 0;
- }
- 
--int __init pci_subsys_init(void)
-+static int __init pci_subsys_init(void)
- {
- #ifdef CONFIG_X86_NUMAQ
- 	pci_numaq_init();
+initcall_debug apic=verbose sysrq_always_enabled ignore_loglevel
+selinux=0 nmi_watchdog=2 idle=poll
+
+And I can't reproduce this bug.... That might be a very nasty race condition...
