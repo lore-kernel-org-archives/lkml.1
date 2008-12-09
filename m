@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbYLIPJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYLIPMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754503AbYLIPJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 10:09:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYLIPJv
+	id S1754509AbYLIPMS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 10:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbYLIPMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 10:09:51 -0500
-Received: from www.crouse-house.com ([199.45.160.146]:35277 "EHLO
-	mail.crouse-house.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752766AbYLIPJu (ORCPT
+	Tue, 9 Dec 2008 10:12:05 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:55047 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753156AbYLIPME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 10:09:50 -0500
-Message-ID: <493E8A3D.90602@cosmicpenguin.net>
-Date: Tue, 09 Dec 2008 08:09:49 -0700
-From: Jordan Crouse <jordan@cosmicpenguin.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: john stultz <johnstul@us.ibm.com>
-CC: Harald Dunkel <harald.dunkel@t-online.de>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27.7 built for Geode: Clock drift
-References: <49358017.7080009@t-online.de>	 <1f1b08da0812051340t1967e753h354346d13ccb34d3@mail.gmail.com>	 <493A170C.90509@t-online.de> <1228788840.6918.33.camel@localhost.localdomain>
-In-Reply-To: <1228788840.6918.33.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 9 Dec 2008 10:12:04 -0500
+Subject: Re: [PATCH 1/1] sched: CPU remove deadlock fix
+From: Peter Zijlstra <peterz@infradead.org>
+To: Brian King <brking@linux.vnet.ibm.com>
+Cc: mingo@elte.hu, efault@gmx.de, vatsa@in.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1228834794.8684.6.camel@twins>
+References: <200812091548.mB9Fm0sm011959@d01av04.pok.ibm.com>
+	 <1228834342.8684.5.camel@twins>  <1228834794.8684.6.camel@twins>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 09 Dec 2008 16:11:56 +0100
+Message-Id: <1228835516.8684.7.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-john stultz wrote:
-> On Sat, 2008-12-06 at 07:09 +0100, Harald Dunkel wrote:
->> john stultz wrote:
->>> For both configs, can you run:
->>>    cat /sys/devices/system/clocksource/clocksource0/available_clocksource
->>> and:
->>>    cat /sys/devices/system/clocksource/clocksource0/current_clocksource
->>>
->>> Then send back the output?
->>>
->> Sure. For 486:
->>
->> % cat /sys/devices/system/clocksource/clocksource0/available_clocksource
->> pit jiffies
->> % cat /sys/devices/system/clocksource/clocksource0/current_clocksource
->> pit
->>
->>
->> For Geode (clock is running too fast):
->> % cat /sys/devices/system/clocksource/clocksource0/available_clocksource
->> jiffies
->> % cat /sys/devices/system/clocksource/clocksource0/current_clocksource
->> jiffies
->>
->>
->> dmesg says for Geode:
->>
->> :
->> TSC: Unable to calibrate against PIT
->> TSC: No reference (HPET/PMTIMER) available
->> Marking TSC unstable due to could not calculate TSC khz
+On Tue, 2008-12-09 at 15:59 +0100, Peter Zijlstra wrote:
+> On Tue, 2008-12-09 at 15:52 +0100, Peter Zijlstra wrote:
+> > On Tue, 2008-12-09 at 08:47 -0600, Brian King wrote:
+> > > This patch fixes a possible deadlock scenario in the CPU remove path.
+> > > migration_call grabs rq->lock, then wakes up everything on rq->migration_queue
+> > > with the lock held. Then one of the tasks on the migration queue ends up
+> > > calling tg_shares_up which then also tries to acquire the same rq->lock.
+> > 
+> > Looks ok, does lockdep agree?
 > 
-> Could you send your .config?
+> On second thought, I'm not seeing it at all..
 > 
-> It seems the PIT (which is used in 486 build) is being disabled in the
-> Geode config. However, I thought the Geode's had their own clocksources,
-> either the SCx200 or the GEODE_MFGPT_TIMER. Maybe one of those needs to
-> be enabled?
+> why doesn't every wakeup deadlock?
 
-He sent his original config in his first email - GEODE_MFGPT_TIMER was 
-enabled. Its not always certain that there are MFGPT timers available 
-(prior to about the middle of this year, most Geode BIOSes took all the 
-timers for themselves).  But in any case the system should fall back to 
-PIT automatically, so regardless of more advanced timers. the absence of 
-a PIT is troubling.
+because I'm blind...
 
-Jordan
+void __wake_up(wait_queue_head_t *q, unsigned int mode,
+			int nr_exclusive, void *key)
+{
+	unsigned long flags;
 
+	spin_lock_irqsave(&q->lock, flags);
+	__wake_up_common(q, mode, nr_exclusive, 0, key);
+	spin_unlock_irqrestore(&q->lock, flags);
+}
 
+that's q->lock, not rq->lock...
 
+> > > Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+> > > ---
+> > > 
+> > >  kernel/sched.c |    2 ++
+> > >  1 file changed, 2 insertions(+)
+> > > 
+> > > diff -puN kernel/sched.c~sched_cpu_down_deadlock_fix kernel/sched.c
+> > > --- linux-2.6/kernel/sched.c~sched_cpu_down_deadlock_fix	2008-12-09 08:42:09.000000000 -0600
+> > > +++ linux-2.6-bjking1/kernel/sched.c	2008-12-09 08:42:09.000000000 -0600
+> > > @@ -6587,7 +6587,9 @@ migration_call(struct notifier_block *nf
+> > >  			req = list_entry(rq->migration_queue.next,
+> > >  					 struct migration_req, list);
+> > >  			list_del_init(&req->list);
+> > > +			spin_unlock_irq(&rq->lock);
+> > >  			complete(&req->done);
+> > > +			spin_lock_irq(&rq->lock);
+> > >  		}
+> > >  		spin_unlock_irq(&rq->lock);
+> > >  		break;
+> > > _
