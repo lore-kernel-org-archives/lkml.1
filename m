@@ -1,105 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbYLIUGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbYLIUJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755128AbYLIUGp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 15:06:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbYLIUGg
+	id S1755067AbYLIUJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 15:09:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbYLIUJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 15:06:36 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:27745 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754396AbYLIUGf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 15:06:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=UJmVxgv/JUFjq2FLYwDuyBM3CvZ8ck5rLoGubeALjRjvTNJ6WcV+xlSvYDsjL4hQ45
-         X6amkzIohx7VUI7w/JvzR5fsEsDJGAvRfH8KL2+Jue/LLfd/cuzwHYX4636TjvfzLqOJ
-         OMT+Mo7kc4QJm9NpsA+HIgbgGTjqo3dyFFqgM=
-Message-ID: <3efb10970812091206l2e6a17a6tc475a57b942cd28f@mail.gmail.com>
-Date: Tue, 9 Dec 2008 21:06:34 +0100
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [ANNOUNCE] The -rt git tree
-Cc: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Clark Williams" <clark.williams@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
-       "Gregory Haskins" <ghaskins@novell.com>,
-       "Darren Hart" <dvhltc@us.ibm.com>
-In-Reply-To: <alpine.DEB.1.10.0812091248020.19115@gandalf.stny.rr.com>
+	Tue, 9 Dec 2008 15:09:19 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59040 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753555AbYLIUJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 15:09:18 -0500
+Message-ID: <493ED085.9010701@redhat.com>
+Date: Tue, 09 Dec 2008 15:09:41 -0500
+From: Casey Dahlin <cdahlin@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Scott James Remnant <scott@netsplit.com>
+Subject: Re: [RFC PATCH] waitfd: file descriptor to wait on child processes
+References: <493EA441.1070706@redhat.com> <alpine.DEB.1.10.0812091127160.17144@alien.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0812091127160.17144@alien.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.DEB.1.10.0812090946210.16798@gandalf.stny.rr.com>
-	 <c62985530812090908i38c5a7bflcbbcce6c8b9cd2f9@mail.gmail.com>
-	 <alpine.DEB.1.10.0812091248020.19115@gandalf.stny.rr.com>
-X-Google-Sender-Auth: 298e982e607689f5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Steven,
-
-It all sounds good!
-
-But, I was wondering, why using the scripts to convert the spinlocks
-over and over, instead of pushing only the new lock API to mainline
-asap? That would save a lot of conversion complexity and sounds like
-migrating the RT patch to mainline much easier. It sounds to me like a
-major rename action, and as long as there is only a spinlock behind
-the new API, there is a very low risk in breaking things.
-Later on the rt-mutex can be integrated behind the new API. In the
-mean time everybody can get used to the new locking API.
-That would save complexity and improve stability of the rt-patchset,
-because it does not need to be figured out over and over if there are
-new locks in new code that need to be converted back to spinlocks...
-(In fact we only need to focus from there on new code that use the
-spinlock API, and if it is really required to use that.)
-
-Kind Regards,
-
-Remy
-
-2008/12/9 Steven Rostedt <rostedt@goodmis.org>:
+Davide Libenzi wrote:
+> On Tue, 9 Dec 2008, Casey Dahlin wrote:
 >
-> On Tue, 9 Dec 2008, Fr?d?ric Weisbecker wrote:
+>   
+>> This is essentially my first kernel patch, so be nice :)
 >>
->> Hi Steve.
+>> Linux already has signalfd, timerfd, and eventfd to expose signals, timers,
+>> and events via a file descriptor. This patch is a working prototype for a
+>> fourth: waitfd. It pretty much does what the name suggests: reading from it
+>> yields a series of status ints (as would be written into the second argument
+>> of waitpid) for child processes that have changed state. It takes essentially
+>> the same arguments as waitpid (for now) and supports the same set of features.
 >>
->> That's a good news.
+>> This is far from ready for merge. Some things that are wrong with it:
+>> * Waitpid's argument scheme probably isn't the best for this. By default it
+>> makes it easiest to wait on a single child, which is not often useful in this
+>> case. Waiting on all children or children in a particular process group is
+>> possible, but not a particular, explicit set of children, which we probably
+>> want (and which will complicate the implementation significantly).
+>> * The prototype for peek_waitpid is obviously in the wrong place, but I
+>> haven't found a good home for it.
+>> * Waitid's semantics have slightly altered: passing NULL as the pointer to
+>> siginfo_t with WNOWAIT will now return successfully instead of throwing
+>> EFAULT. I don't know if that means I broke it or fixed it :)
+>> * peek_waitpid may not be required at all now. I can probably trick sys_wait4
+>> or sys_waitid into giving me what I want (or I could always just make do_wait
+>> non-static).
 >>
->> But after converting these spinlocks into lock_t, how will you synchronize with
->> the mainline on each release? You will have a huge amount of conflicts
->> at every merges...
+>> Please provide thoughts.
+>>     
 >
-> This is why master is separate from rt-master. The rt-master will grow
-> like tip/master does. But the master will be recreated each time.
-> Basically, the creation of master is this:
+> What's wrong in having a signalfd on SIGCHLD, than doing waitpid() once 
+> you get the signal? Do you have cases where this wouldn't be OK?
+>   
+
+When the child doesn't send SIGCHLD (clone() lets you do evil things :)
+
+Seriously though, that may be an option. Scott (CC'd ) is primarily the 
+consumer of this, so he can better comment.
+
+> About the code, eventually, you really want to report the PID of the 
+> exited child, together with the status. So maybe a non-compat-requiring 
+> struct would be better to be returned by read(2).
+> Also ...
 >
 >
-> git checkout master
-> git reset --hard rt-master
-> ./scripts/convert-spinlocks
-> git commit -a -m 'Convert all spinlocks to lock_t'
-> ./scripts/convert-locks
-> git commit -a -m 'Convert some locks back to spinlock_t'
 >
-> Thus we do not need to worry about the conflicts caused by the lock
-> conversion. That will be done automatically each time we create a new
-> master.
 >
-> -- Steve
+>   
+>> +static unsigned int waitfd_poll(struct file *file, poll_table *wait)
+>> +{
+>> +    struct waitfd_ctx *ctx = file->private_data;
+>> +    long value;
+>> +
+>> +    poll_wait(file, &current->signal->wait_chldexit, wait);
+>> +
+>> +    value = peek_waitpid(ctx->upid, ctx->ops);
+>> +    if (value > 0) {
+>> +        return POLLIN;
+>> +    } if (value == -ECHILD) {
+>> +        return POLLIN;
+>> +    }
+>>     
 >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Trust the compiler, it's pretty good in not having you to add Perl-like 
+> extra brackets ;)
+> This also looks wierd:
 >
+> 	} if (value == -ECHILD) {
+>
+> So maybe:
+>
+> 	return value > 0 || value == -ECHILD ? POLLIN: 0;
+>
+>
+>   
+
+Yeah, I ripped this up because during debugging poll was behaving oddly, 
+and I had been instrumenting the code with printks. It can go back to 
+being 1 line now.
+
+>
+>
+>   
+>> +/*
+>> + * Returns a multiple of the size of a "struct waitfd_siginfo", or a negative
+>> + * error code. The "count" parameter must be at least the size of a
+>> + * "struct waitfd_siginfo".
+>> + */
+>>     
+>
+> Really? ...
+>
+>
+>   
+
+Wow... and I read this patch before I sent it, too *facepalm*
+
+The function did briefly return a siginfo_t (I implemented on top of 
+waitid first).
+
+>   
+>> +static ssize_t waitfd_read(struct file *file, char __user *buf, size_t count,
+>> +                 loff_t *ppos)
+>> +{
+>> +    struct waitfd_ctx *ctx = file->private_data;
+>> +    int __user *stat_addr = (int *)buf;
+>> +    int nonblock = file->f_flags & O_NONBLOCK ? WNOHANG: 0;
+>> +    ssize_t ret, total = 0;
+>> +
+>> +    count /= sizeof(int);
+>> +    if (!count)
+>> +        return -EINVAL;
+>> +
+>> +    do {
+>> +        ret = sys_wait4(ctx->upid, stat_addr, ctx->ops | nonblock,
+>> +                NULL);
+>> +        if (ret == 0)
+>> +            ret = -EAGAIN;
+>> +        if (ret == -ECHILD)
+>> +            ret = 0;
+>> +        if (ret <= 0)
+>> +            break;
+>> +
+>> +        stat_addr++;
+>> +        total += sizeof(struct siginfo);
+>> +        nonblock = WNOHANG;
+>> +    } while (--count);
+>> +
+>> +    return total ? total: ret;
+>> +}
+>>     
+>
+> ... looks like you're returning a sequence of status ints, with wrong data 
+> size returned by read(2).
+>
+>
+>   
+More leftovers from above.
+>
+>   
+>> +
+>> +static const struct file_operations waitfd_fops = {
+>> +    .release    = waitfd_release,
+>> +    .poll        = waitfd_poll,
+>> +    .read        = waitfd_read,
+>> +};
+>> +
+>> +asmlinkage long sys_waitfd(pid_t upid, int ops)
+>>     
+>
+> Please leave space for extra flags for fds, otherwise Uli will have to 
+> make another sys_waitfd3().
+>
+>
+>   
+ack'd.
+>   
+>> +long peek_waitpid(pid_t upid, int options)
+>> +{
+>> +    struct pid *pid = NULL;
+>> +    enum pid_type type;
+>> +    long ret;
+>> +
+>> +    if (options & ~(WNOHANG|WUNTRACED|WCONTINUED|
+>> +            __WNOTHREAD|__WCLONE|__WALL))
+>> +        return -EINVAL;
+>> +
+>> +    options |= WNOHANG | WNOWAIT;
+>> +
+>> +    if (upid == -1)
+>> +        type = PIDTYPE_MAX;
+>> +    else if (upid < 0) {
+>> +        type = PIDTYPE_PGID;
+>> +        pid = find_get_pid(-upid);
+>> +    } else if (upid == 0) {
+>> +        type = PIDTYPE_PGID;
+>> +        pid = get_pid(task_pgrp(current));
+>> +    } else /* upid > 0 */ {
+>> +        type = PIDTYPE_PID;
+>> +        pid = find_get_pid(upid);
+>> +    }
+>> +
+>> +    ret = do_wait(type, pid, options | WEXITED, NULL, NULL, NULL);
+>> +    put_pid(pid);
+>> +
+>> +    /* avoid REGPARM breakage on x86: */
+>> +    asmlinkage_protect(4, ret, upid, options);
+>> +    return ret;
+>> +}
+>>     
+>
+> Given that you blinded copied this from sys_wait4(), you may want to at 
+> least try to make sys_wait4() to re-use the new function.
+>   
+
+Good idea.
+
+> Also, your patch does not apply to latest Linus tree. Which one was the 
+> base?
+>
+>   
+This is the last commit before mine in my git repo:
+
+commit f7a8db89c1f42e504bb12d2ae399cd96f755a7db
+Merge: 6f84b4d... c49b9f2...
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Mon Dec 8 19:52:43 2008 -0800
+
+    Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
+   
+    * git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6:
+      tproxy: fixe a possible read from an invalid location in the 
+socket match
+      zd1211rw: use unaligned safe memcmp() in-place of compare_ether_addr()
+          (...lots and lots of changes snipped...)
+
+--CJD
+
+
