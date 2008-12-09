@@ -1,41 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752935AbYLIBuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825AbYLICAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752935AbYLIBuO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 20:50:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYLIBuA
+	id S1752825AbYLICAS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 21:00:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYLICAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 20:50:00 -0500
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:63776 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751076AbYLIBuA (ORCPT
+	Mon, 8 Dec 2008 21:00:05 -0500
+Received: from ik-out-1112.google.com ([66.249.90.183]:39867 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbYLICAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 20:50:00 -0500
-Message-ID: <493DCEC7.9050203@lwfinger.net>
-Date: Mon, 08 Dec 2008 19:49:59 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Mon, 8 Dec 2008 21:00:03 -0500
+Message-ID: <ac3eb2510812081800id4b1a88je311fcbbf574e06b@mail.gmail.com>
+Date: Tue, 9 Dec 2008 03:00:01 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Theodore Tso" <tytso@mit.edu>, "Kay Sievers" <kay.sievers@vrfy.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Evgeniy Polyakov" <zbr@ioremap.net>,
+       "Herbert Xu" <herbert@gondor.apana.org.au>,
+       linux-kernel@vger.kernel.org,
+       "Linux Crypto Mailing List" <linux-crypto@vger.kernel.org>
+Subject: Re: Runaway loop with the current git.
+In-Reply-To: <20081209010937.GL2501@mit.edu>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: How to check for memory leaks
-References: <493D9D24.8080406@lwfinger.net> <c62985530812081433o5125f08gb7cad0d33a1b4104@mail.gmail.com>
-In-Reply-To: <c62985530812081433o5125f08gb7cad0d33a1b4104@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081207180302.339bf58d@lxorguk.ukuu.org.uk>
+	 <20081207181559.63549cfc@lxorguk.ukuu.org.uk>
+	 <ac3eb2510812071021g44207efftb1e74f21578433be@mail.gmail.com>
+	 <20081207183112.3ef31caa@lxorguk.ukuu.org.uk>
+	 <ac3eb2510812071102s40ed4704we2221b2e53e4c099@mail.gmail.com>
+	 <20081207200008.5af2d1e9@lxorguk.ukuu.org.uk>
+	 <ac3eb2510812071426n2bd1bbefjd4fcdcd0e2efff80@mail.gmail.com>
+	 <20081208011850.GA10289@mit.edu>
+	 <ac3eb2510812071935v7e1b8c75x4d8fa9ce1c8dba6@mail.gmail.com>
+	 <20081209010937.GL2501@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frédéric Weisbecker wrote:
-> 
-> You could have a look on kmemleak: http://www.procode.org/kmemleak/
-> It's up to date version is on the arm development git branch (topic kmemleak):
-> http://www.linux-arm.org/git?p=linux-2.6.git;a=summary
-> 
+On Tue, Dec 9, 2008 at 02:09, Theodore Tso <tytso@mit.edu> wrote:
+> On Mon, Dec 08, 2008 at 04:35:20AM +0100, Kay Sievers wrote:
+>> Sure, if we can make userspace behave nicely, I'm all for doing it. On
+>> the other hand, I think it's a good thing to provide a sane
+>> environment by the kernel for any "non-initramfs-optimized" helper.
+>> Writing to /dev/console is a usual behavior for tools used in
+>> initramfs, to be able to debug bootup problems. In many cases it is
+>> just glibc's fallback LOG_CONS, if syslog is not available.
+>
+> Well, can we agree that (a) there is a generalized modprobe recursion
+> detector already in the kernel, and (b) for some reason, Debian isn't
+> triggering it?  That seems like a bug, and while it may not be 100%
+> clear whether the bug is on the userspace side or the kernel side, it
+> would seem that finding and fixing *that* would be a Good Thing, and
+> it could be argued that a specific don't request char-major-5-1 would
+> be papering over this bug (whether it is in Debian's initrd or in the
+> kernel side code).  It would be good to make sure we understand what
+> the root causes for while the modprobe recursion detector is
+> apparently not triggering, since it could be that Debian's initrd
+> might cause some other uncaught recursion loop if we don't drive this
+> problem determination to root cause.
 
-I downloaded the git tree, but x86_64 architecture won't build in the kmemtest
-branch. I've built an i386 kernel that I will install on a different machine.
-Once I get that working, I'll try to fix the other problem and post a patch.
+Right, it would be good to know for sure what's going on.
 
-Larry
+In my test script it was just a simple access to /dev/console, so it
+might just be that modprobe wants to log something on Debian. At least
+that would match the behavior I've seen here.
 
+And we really rely on these tools to be able to print debug messages
+sometimes to find other bugs (at least at the time it's theoretically
+possible to log). And I don't see how modprobe could find out, that it
+is not allowed to access /dev/console.
+
+As an ideal solution, I would like to have /dev/console working before
+_any_ userspace is called, and it would put all the stuff that is
+written to it the kernel "dmesg buffer" as long as the console isn't
+working, just to be able to see what's going on, if needed. As the
+second choice, it would return -ENODEV. The current looping is
+definitely not what we want. :)
+
+>> That's why I still think it's a good thing, to connect the core tty
+>> devices to their dev_t handler internally, before we init all the
+>> other drivers and run userspace.
+>
+> Um, how early?  (/me searches lkml.org for the original patch).  Ah,
+> OK, you want to do it postcore....  There may actually be a problem
+> with that, because it looks like vtconsole_class_init (which is
+> currently run as a postcore initcall) really wants to happen before
+> the tty layer initializes itself.  So moving tty into postcore could
+> potentially run into problems, depending on whether vt.c's or
+> tty_io.c's initcalls are run first.
+
+Sure, we might need to change that, if it is a problem. It was mainly
+to find out what was going on, because people thought that some serial
+driver is involved in the loop, which I didn't believe.
+
+To be safer, maybe we just want to move the cdev_add(),
+register_chrdev_region() call, which should prevent the "userspace
+driver search".
+
+Thanks,
+Kay
