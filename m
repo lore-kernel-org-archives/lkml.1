@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYLIO3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbYLIO3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbYLIO3X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 09:29:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYLIORn
+	id S1757312AbYLIO3z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 09:29:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbYLIOU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 09:17:43 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:52458 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753377AbYLIOQ2 (ORCPT
+	Tue, 9 Dec 2008 09:20:28 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:44735 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754702AbYLIOUW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 09:16:28 -0500
-X-BigFish: VPS4(ze80izzzzzz32i43j64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0KBM4Z2-03-KKI-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: avi@redhat.com, mingo@redhat.com, dwmw2@infradead.org, gregkh@suse.de,
-       weidong.han@intel.com
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 10/11] VT-d: register functions for the IOMMU API
-Date: Tue, 9 Dec 2008 15:16:09 +0100
-Message-ID: <1228832170-13405-11-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <1228832170-13405-10-git-send-email-joerg.roedel@amd.com>
-References: <20081209141143.GW12816@amd.com>
- <1228832170-13405-1-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-2-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-3-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-4-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-5-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-6-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-7-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-8-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-9-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-10-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 09 Dec 2008 14:16:10.0997 (UTC) FILETIME=[AFA71250:01C95A08]
+	Tue, 9 Dec 2008 09:20:22 -0500
+Date: Tue, 9 Dec 2008 08:19:31 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Brice Goglin <Brice.Goglin@inria.fr>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC/PATCH] No get_user/put_user while holding mmap_sem in
+ do_pages_stat?
+In-Reply-To: <493BDBE6.9040600@inria.fr>
+Message-ID: <Pine.LNX.4.64.0812090811450.13181@quilx.com>
+References: <493B3179.7030204@inria.fr> <20081206185050.544f67fc.akpm@linux-foundation.org>
+ <493BDBE6.9040600@inria.fr>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- drivers/pci/intel-iommu.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+I guess the simplest solution would be to move the taking of mmap_sem into
+the loop. Mean taking mmap_sem for every page that we determine the status of.
 
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 7128105..81e04ec 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -277,6 +277,8 @@ static int intel_iommu_strict;
- static DEFINE_SPINLOCK(device_domain_lock);
- static LIST_HEAD(device_domain_list);
- 
-+static struct iommu_ops intel_iommu_ops;
-+
- static int __init intel_iommu_setup(char *str)
- {
- 	if (!str)
-@@ -2729,6 +2731,9 @@ int __init intel_iommu_init(void)
- 	init_timer(&unmap_timer);
- 	force_iommu = 1;
- 	dma_ops = &intel_dma_ops;
-+
-+	register_iommu(&intel_iommu_ops);
-+
- 	return 0;
- }
- 
-@@ -3119,3 +3124,13 @@ static phys_addr_t intel_iommu_iova_to_phys(struct iommu_domain *domain,
- 
- 	return phys;
- }
-+
-+static struct iommu_ops intel_iommu_ops = {
-+	.domain_init	= intel_iommu_domain_init,
-+	.domain_destroy = intel_iommu_domain_destroy,
-+	.attach_dev	= intel_iommu_attach_device,
-+	.detach_dev	= intel_iommu_detach_device,
-+	.map		= intel_iommu_map_range,
-+	.unmap		= intel_iommu_unmap_range,
-+	.iova_to_phys	= intel_iommu_iova_to_phys,
-+};
--- 
-1.5.6.4
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
+Index: linux-2.6/mm/migrate.c
+===================================================================
+--- linux-2.6.orig/mm/migrate.c	2008-12-09 08:07:08.796603952 -0600
++++ linux-2.6/mm/migrate.c	2008-12-09 08:08:36.400116263 -0600
+@@ -994,8 +994,6 @@
+ 	unsigned long i;
+ 	int err;
+
+-	down_read(&mm->mmap_sem);
+-
+ 	for (i = 0; i < nr_pages; i++) {
+ 		const void __user *p;
+ 		unsigned long addr;
+@@ -1007,12 +1005,17 @@
+ 			goto out;
+ 		addr = (unsigned long) p;
+
++		down_read(&mm->mmap_sem);
++
+ 		vma = find_vma(mm, addr);
+-		if (!vma)
++		if (!vma) {
++			up_read(&mm->mmap_sem);
+ 			goto set_status;
+-
++		}
+ 		page = follow_page(vma, addr, 0);
+
++		up_read(&mm->mmap_sem);
++
+ 		err = PTR_ERR(page);
+ 		if (IS_ERR(page))
+ 			goto set_status;
+@@ -1029,7 +1032,6 @@
+ 	err = 0;
+
+ out:
+-	up_read(&mm->mmap_sem);
+ 	return err;
+ }
 
