@@ -1,282 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbYLIHmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbYLIHxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752780AbYLIHmX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 02:42:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYLIHmO
+	id S1753096AbYLIHxE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 02:53:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbYLIHwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 02:42:14 -0500
-Received: from smtprelay.restena.lu ([158.64.1.62]:41764 "EHLO
-	smtprelay.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbYLIHmN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 02:42:13 -0500
-X-Greylist: delayed 449 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Dec 2008 02:42:12 EST
-Date: Tue, 9 Dec 2008 08:34:40 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bruno.premont@restena.lu>
-To: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg Kroah-Hartman <gregkh@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stefan Winter <stefan.winter@restena.lu>
-Subject: [2.6.27.4-5 stable regressions] Kernel boot early crash with
- low-64k reservation patches
-Message-ID: <20081209083440.7569d7a0@pluto.restena.lu>
-Organization: Fondation RESTENA
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+	Tue, 9 Dec 2008 02:52:53 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:57820 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752018AbYLIHwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 02:52:51 -0500
+Date: Tue, 9 Dec 2008 18:52:37 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for December 9
+Message-Id: <20081209185237.8bb715d7.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__9_Dec_2008_18_52_37_+1100_TwLoMhz/4XGAYauH"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Tue__9_Dec_2008_18_52_37_+1100_TwLoMhz/4XGAYauH
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On a VMWare (ESX 3.5.0 Update 3) guest we get boot failure at the very
-beginning of boot process. (Boot successful with 2.6.27.4, failing with
-2.6.27.x where x > 4 or just adding the 5 patches below to 2.6.27.4)
+Hi all,
 
-State of config option
-  CONFIG_X86_RESERVE_LOW_64K=y
-or
-  # CONFIG_X86_RESERVE_LOW_64K not set
-does not make any difference.
+Changes since 20081208:
 
+Today's tree fails the powerpc allyesconfig build but succeeds with
+CONFIG_PROFILE_ALL_BRANCHES turned off.
 
-Bruno
+New trees:
+	audit-current
+	audit
 
+Undropped tree:
+	ide
 
-========== console output (manual copy) ===============================
-Decompressing Linux... Parsing ELF... done.
-Booting the kernel.
+Dropped trees (temporarily):
+	v4l-dvb (build problem)
+	mmc (build problem)
+	drm (build problem)
+	semaphore-removal (due to unfixed conflicts against Linus' tree)
+	cpu_alloc (build problem)
+	perfmon3 (concerns from the x86 team)
+	audit (difficult conflicts)
+	staging (build failure)
 
+The net tree gained 2 conflicts against the nfsd tree.
 
+The drm tree gained a build problem and was dropped.
 
+The security-testing tree gained a conflict against the audit-current
+tree.
 
-BUG: Int 14: CR2 fbe00000
-     EDI c0385f65  ESI fbe00000  EBP c0385f80  ESP c0385f4c
-     EBX fbe00000  EDX 0000000e  ECX 00000003  EAX fbe10000
-     err 00000000  EIP c0399f8d   CS 00000062  flg 00010087
-Stack: fbe10000 fbe00000 c0385f80 c038cb6d fc001340 00000001 00000000 00000000
-       00000000 c0385fbc c03875a7 00000000 c0385fcc c0385fc0 c0389447 00100000
-       00000000 00000000 00099800 c0380000 c0385fbc 00000000 00099800 c0380000
-=======================================================================
+The lblnet tree lost 2 conflicts.
 
-The error is caused by one of the 5 patches that introduce low-64k
-memory protection:
-  71556e929b5666bc03750402ce30e3c61cd5148e
-    x86: add DMI quirk for AMI BIOS which corrupts address 0xc000 during resume
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-  41943efb7cff566ad1f6334bbddbb8b8a4bfeb59
-    x86: reserve low 64K on AMI and Phoenix BIOS boxen
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-  093327cb21660a2f0c028c9c8550b2808600281f
-    x86: add X86_RESERVE_LOW_64K
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-  5c371b31be32033b0a4a993431484da8a2305369
-    x86: fix CONFIG_X86_RESERVE_LOW_64K=y
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-  c27c4b666ddf7a36b6f20c9b809217157496b36b
-    x86: fix macro with bad_bios_dmi_table
-    Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+The ttydev tree lost 3 conflicts.
 
+The audit tree gained several conflicts against the security-testing tree
+and was dropped.
 
+----------------------------------------------------------------------------
 
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-Boot messages for successful boot with 2.6.27.4:
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
+i386, sparc and sparc64 defconfig.
 
-Linux version 2.6.27.4 (root@new-virtual) (gcc version 4.3.1 20080507 (prerelease) [gcc-4_3-branch revision 135036] (SUSE Linux) ) #1 Mon Oct 27 12:11:42 CET 2008
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
- BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000ca000 - 00000000000cc000 (reserved)
- BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000000fef0000 (usable)
- BIOS-e820: 000000000fef0000 - 000000000feff000 (ACPI data)
- BIOS-e820: 000000000feff000 - 000000000ff00000 (ACPI NVS)
- BIOS-e820: 000000000ff00000 - 0000000010000000 (usable)
- BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
- BIOS-e820: 00000000fffe0000 - 0000000100000000 (reserved)
-VMI: Found VMware, Inc. Hypervisor OPROM, API version 3.0, ROM version 1.0
-Reserving virtual address space above 0xfc000000
-last_pfn = 0x10000 max_arch_pfn = 0x100000
-x86 PAT enabled: cpu 0, old 0x0, new 0x7010600070106
-kernel direct mapping tables up to 10000000 @ 7000-c000
-DMI present.
-ACPI: RSDP 000F6C60, 0014 (r0 PTLTD )
-ACPI: RSDT 0FEFAB68, 0030 (r1 PTLTD    RSDT    6040000  LTP        0)
-ACPI: FACP 0FEFEF14, 0074 (r1 INTEL  440BX     6040000 PTL     F4240)
-ACPI: DSDT 0FEFAB98, 437C (r1 PTLTD  Custom    6040000 MSFT  100000D)
-ACPI: FACS 0FEFFFC0, 0040
-ACPI: APIC 0FEFEF88, 0050 (r1 PTLTD      APIC    6040000  LTP        0)
-ACPI: BOOT 0FEFEFD8, 0028 (r1 PTLTD  $SBFTBL$  6040000  LTP        1)
-256MB LOWMEM available.
-  mapped low ram: 0 - 10000000
-  low ram: 00000000 - 10000000
-  bootmap 00001000 - 00003000
-(6 early reservations) ==> bootmem [0000000000 - 0010000000]
-  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
-  #1 [0000100000 - 00003d67dc]    TEXT DATA BSS ==> [0000100000 - 00003d67dc]
-  #2 [00003d7000 - 00003d9000]    INIT_PG_TABLE ==> [00003d7000 - 00003d9000]
-  #3 [000009f800 - 0000100000]    BIOS reserved ==> [000009f800 - 0000100000]
-  #4 [0000007000 - 0000008000]          PGTABLE ==> [0000007000 - 0000008000]
-  #5 [0000001000 - 0000003000]          BOOTMAP ==> [0000001000 - 0000003000]
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00001000
-  Normal   0x00001000 -> 0x00010000
-Movable zone start PFN for each node
-early_node_map[3] active PFN ranges
-    0: 0x00000000 -> 0x0000009f
-    0: 0x00000100 -> 0x0000fef0
-    0: 0x0000ff00 -> 0x00010000
-On node 0 totalpages: 65423
-free_area_init_node: node 0, pgdat c0379adc, node_mem_map c1000000
-  DMA zone: 3967 pages, LIFO batch:0
-  Normal zone: 60944 pages, LIFO batch:15
-ACPI: PM-Timer IO Port: 0x1008
-Allocating PCI resources starting at 20000000 (gap: 10000000:eec00000)
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 64911
-Kernel command line: root=/dev/sda2 vga=normal
-Enabling fast FPU save and restore... done.
-Enabling unmasked SIMD FPU exception support... done.
-Initializing CPU#0
-PID hash table entries: 1024 (order: 10, 4096 bytes)
-Detected 2333.413 MHz processor.
-Console: colour VGA+ 80x25
-console [tty0] enabled
-Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
-Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
-Memory: 256128k/262144k available (1788k kernel code, 5320k reserved, 766k data, 204k init, 0k highmem)
-virtual kernel memory layout:
-    fixmap  : 0xfbff9000 - 0xfbfff000   (  24 kB)
-    vmalloc : 0xd0800000 - 0xfbff7000   ( 695 MB)
-    lowmem  : 0xc0000000 - 0xd0000000   ( 256 MB)
-      .init : 0xc0382000 - 0xc03b5000   ( 204 kB)
-      .data : 0xc02bf12e - 0xc037eb64   ( 766 kB)
-      .text : 0xc0100000 - 0xc02bf12e   (1788 kB)
-Checking if this processor honours the WP bit even in supervisor mode...Ok.
-CPA: page pool initialized 1 of 1 pages preallocated
-vmi: registering clock event vmi-timer. mult=9787043 shift=22
-Calibrating delay loop (skipped), value calculated using timer frequency.. 4666.82 BogoMIPS (lpj=23334130)
-Mount-cache hash table entries: 512
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 4096K
-Intel machine check architecture supported.
-Intel machine check reporting enabled on CPU#0.
-CPU: Intel(R) Xeon(R) CPU           E5345  @ 2.33GHz stepping 08
-Freeing SMP alternatives: 0k freed
-ACPI: Core revision 20080609
-ACPI: setting ELCR to 0200 (from 0a00)
-net_namespace: 440 bytes
-Booting paravirtualized kernel on vmi
-NET: Registered protocol family 16
-ACPI: bus type pci registered
-PCI: PCI BIOS revision 2.10 entry at 0xfd9a0, last bus=1
-PCI: Using configuration type 1 for base access
-ACPI: EC: Look up EC in DSDT
-ACPI: Interpreter enabled
-ACPI: (supports S0 S5)
-ACPI: Using PIC for interrupt routing
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-PCI: 0000:00:07.1 reg 20 io port: [1050, 105f]
-pci 0000:00:07.3: quirk: region 1000-103f claimed by PIIX4 ACPI
-pci 0000:00:07.3: quirk: region 1040-104f claimed by PIIX4 SMB
-PCI: 0000:00:0f.0 reg 10 io port: [1060, 106f]
-PCI: 0000:00:0f.0 reg 14 32bit mmio: [f8000000, fbffffff]
-PCI: 0000:00:0f.0 reg 18 32bit mmio: [f4000000, f47fffff]
-PCI: 0000:00:0f.0 reg 30 32bit mmio: [0, 7fff]
-PCI: 0000:00:10.0 reg 10 io port: [1080, 10ff]
-PCI: 0000:00:10.0 reg 14 32bit mmio: [f4800000, f4800fff]
-PCI: 0000:00:10.0 reg 30 32bit mmio: [0, 3fff]
-PCI: 0000:00:11.0 reg 10 io port: [1400, 147f]
-PCI: 0000:00:11.0 reg 30 32bit mmio: [0, ffff]
-PCI: 0000:00:12.0 reg 30 32bit mmio: [0, 3fff]
-bus 00 -> node 0
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 9 10 11 14 15) *0, disabled.
-ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 *9 10 11 14 15)
-ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 9 10 *11 14 15)
-ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 9 10 11 14 15) *0, disabled.
-Linux Plug and Play Support v0.97 (c) Adam Belay
-pnp: PnP ACPI init
-ACPI: bus type pnp registered
-pnp: PnP ACPI: found 12 devices
-ACPI: ACPI bus type pnp unregistered
-SCSI subsystem initialized
-PCI: Using ACPI for IRQ routing
-system 00:01: ioport range 0x1000-0x103f has been reserved
-system 00:01: ioport range 0x1040-0x104f has been reserved
-pci 0000:00:01.0: PCI bridge, secondary bus 0000:01
-pci 0000:00:01.0:   IO window: disabled
-pci 0000:00:01.0:   MEM window: disabled
-pci 0000:00:01.0:   PREFETCH window: disabled
-pci 0000:00:01.0: setting latency timer to 64
-bus: 00 index 0 io port: [0, ffff]
-bus: 00 index 1 mmio: [0, ffffffff]
-bus: 01 index 0 mmio: [0, 0]
-bus: 01 index 1 mmio: [0, 0]
-bus: 01 index 2 mmio: [0, 0]
-bus: 01 index 3 mmio: [0, 0]
-NET: Registered protocol family 2
-IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
-TCP established hash table entries: 8192 (order: 4, 65536 bytes)
-TCP bind hash table entries: 8192 (order: 3, 32768 bytes)
-TCP: Hash tables configured (established 8192 bind 8192)
-TCP reno registered
-NET: Registered protocol family 1
-Simple Boot Flag at 0x36 set to 0x1
-vmi: registering clock source khz=2333413
-Switched to NOHz mode on CPU #0
-msgmni has been set to 500
-...
+Below is a summary of the state of the merge.
 
+We are up to 131 trees (counting Linus' and 15 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
 
-DMI decode output:
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
 
-# dmidecode 2.9
-SMBIOS 2.4 present.
-45 structures occupying 1730 bytes.
-Table at 0x000E0010.
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
 
-Handle 0x0000, DMI type 0, 24 bytes
-BIOS Information
-        Vendor: Phoenix Technologies LTD
-        Version: 6.00
-        Release Date: 07/22/2008
-        Address: 0xE7910
-        Runtime Size: 100080 bytes
-        ROM Size: 64 kB
-        Characteristics:
-                ISA is supported
-                PCI is supported
-                PC Card (PCMCIA) is supported
-                PNP is supported
-                APM is supported
-                BIOS is upgradeable
-                BIOS shadowing is allowed
-                ESCD support is available
-                USB legacy is supported
-                Smart battery is supported
-                BIOS boot specification is supported
-                Targeted content distribution is supported
-        BIOS Revision: 4.6
-        Firmware Revision: 0.0
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
 
-Handle 0x0001, DMI type 1, 27 bytes
-System Information
-        Manufacturer: VMware, Inc.
-        Product Name: VMware Virtual Platform
-        Version: None
-        Serial Number: <stripped>
-        UUID: <stripped>
-        Wake-up Type: Power Switch
-        SKU Number: Not Specified
-        Family: Not Specified
-...
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging audit-current/for-linus
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+CONFLICT (content): Merge conflict in drivers/char/Makefile
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in arch/powerpc/platforms/85xx/mpc85xx_m=
+ds.c
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+CONFLICT (content): Merge conflict in scripts/recordmcount.pl
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+CONFLICT (content): Merge conflict in arch/x86/kernel/reboot.c
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (delete/modify): arch/sparc64/kernel/idprom.c deleted in HEAD and =
+modified in net/master. Version net/master of arch/sparc64/kernel/idprom.c =
+left in tree.
+CONFLICT (content): Merge conflict in fs/lockd/host.c
+CONFLICT (content): Merge conflict in fs/lockd/mon.c
+$ git rm -f arch/sparc64/kernel/idprom.c
+Applying net: async_tx merge fix
+Merging mtd/master
+CONFLICT (content): Merge conflict in drivers/mtd/maps/physmap.c
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging rr_cpumask/master
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/x86/kernel/setup.c
+CONFLICT (content): Merge conflict in kernel/cpu.c
+Merging cifs/master
+CONFLICT (content): Merge conflict in fs/cifs/connect.c
+Applying cifs: update for new IP4/6 address printing
+Merging mmc/next
+$ git reset --hard HEAD^
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging bkl-removal/bkl-removal
+CONFLICT (content): Merge conflict in fs/ioctl.c
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/net/tg3.c
+CONFLICT (content): Merge conflict in firmware/Makefile
+CONFLICT (content): Merge conflict in firmware/WHENCE
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+CONFLICT (content): Merge conflict in drivers/char/tty_audit.c
+CONFLICT (content): Merge conflict in fs/cifs/cifs_fs_sb.h
+CONFLICT (content): Merge conflict in fs/ocfs2/namei.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_cred.h
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_globals.h
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_ioctl.c
+CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.h
+Merging lblnet/master
+CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
+e.txt
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in fs/devpts/inode.c
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+CONFLICT (content): Merge conflict in drivers/watchdog/iTCO_wdt.c
+Merging proc/proc
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+CONFLICT (content): Merge conflict in kernel/sched.c
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging trivial/for-next
+Merging scsi-post-merge/master
+Created commit 3b3d658: Revert "Merge commit 'drm/drm-next'"
 
+--Signature=_Tue__9_Dec_2008_18_52_37_+1100_TwLoMhz/4XGAYauH
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkk+I8UACgkQjjKRsyhoI8zX7wCeOuJgj2UCQb5ZPj5uMI4DZFAM
+wdAAoIcEkATaXCScpevSbtxQpXl45EAI
+=4g7a
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__9_Dec_2008_18_52_37_+1100_TwLoMhz/4XGAYauH--
