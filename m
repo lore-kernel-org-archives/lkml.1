@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbYLIBdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbYLIBiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753382AbYLIBdh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 20:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYLIBd2
+	id S1752718AbYLIBiu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 20:38:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYLIBim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 20:33:28 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49360 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbYLIBd1 (ORCPT
+	Mon, 8 Dec 2008 20:38:42 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:18514 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751076AbYLIBil convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 20:33:27 -0500
-Date: Tue, 9 Dec 2008 10:32:31 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Tim Blechmann <tim@klingt.org>, rostedt@goodmis.org,
-       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] [RT] avoid preemption in memory controller code
-Message-Id: <20081209103231.ba6b3a39.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <493DC628.5060900@cn.fujitsu.com>
-References: <1228746854-23875-1-git-send-email-tim@klingt.org>
-	<493DC628.5060900@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Dec 2008 20:38:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=a0vk4u5Sl6tBAzhmZyt8Vfi6SG88JlLgb5rdnDWmZdiF2M8HNx6OFsYHhUpQIUTIrW
+         KU1L17ydXGE+NAptPhsCvd+Ut3pTkmpGqx1nrYbqI+ykvkYNhXaMPWyi8VOv+ZBXf5ae
+         P2yXv7R3XXdTuEyLw6TXFkm8jKHwOLv4EfrFY=
+Message-ID: <3aaafc130812081738o41c720f4kaf2a3ce611747b8@mail.gmail.com>
+Date: Mon, 8 Dec 2008 20:38:39 -0500
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+Subject: Re: How to check for memory leaks
+Cc: "Larry Finger" <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <c62985530812081433o5125f08gb7cad0d33a1b4104@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <493D9D24.8080406@lwfinger.net>
+	 <c62985530812081433o5125f08gb7cad0d33a1b4104@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 09 Dec 2008 09:13:12 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+On Mon, Dec 8, 2008 at 5:33 PM, Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+> 2008/12/8 Larry Finger <Larry.Finger@lwfinger.net>:
+>> What is the best way to check if there is a memory leak?
+>>
+>> If I start a ping running on my system using the rtl8187 driver, and nothing
 
-> CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-> CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Tim Blechmann wrote:
-> > the lru_lock of struct mem_group_per_zone is used to avoid preemption
-> > during the __mem_cgroup_stat_add_safe function.
-> > therefore, a raw_spinlock_t should be used.
-> > 
-> 
-> FYI, this lru_lock no longer exists in -mm tree. The following patch
-> removes that lock:
-> 
-> 	http://marc.info/?l=linux-mm&m=122665814801979&w=2
-> 
-> > Signed-off-by: Tim Blechmann <tim@klingt.org>
-> > ---
-> >  mm/memcontrol.c |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> > index 517f945..8661732 100644
-> > --- a/mm/memcontrol.c
-> > +++ b/mm/memcontrol.c
-> > @@ -95,9 +95,9 @@ enum mem_cgroup_zstat_index {
-> >  
-> >  struct mem_cgroup_per_zone {
-> >  	/*
-> > -	 * spin_lock to protect the per cgroup LRU
-> > +	 * raw_spin_lock to protect the per cgroup LRU
-> >  	 */
-> > -	spinlock_t		lru_lock;
-> > +	raw_spinlock_t		lru_lock;
-> >  	struct list_head	active_list;
-> >  	struct list_head	inactive_list;
-> >  	unsigned long count[NR_MEM_CGROUP_ZSTAT];
+Is this the driver in the staging tree or a different one?
 
-yes..I remvoed that. Please see mmotm and subscribe linux-mm, 
-if you have interests  memory resource controller.
-
-Anyway, thanks.
-
--Kame
-
+>> else active on my system, I see an increase in the "slab" value in /proc/meminfo
+>> of about 65 kB/minute. Is this indicative of a memory leak? When I run the same
+>> test with p54usb, the increase is only 20 kB/min.
+>>
+>> Thanks,
+>>
+>> Larry
+>
+>
+> Hi,
+>
+> You could have a look on kmemleak: http://www.procode.org/kmemleak/
+> It's up to date version is on the arm development git branch (topic kmemleak):
+> http://www.linux-arm.org/git?p=linux-2.6.git;a=summary
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
