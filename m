@@ -1,176 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYLIPbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbYLIPlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753972AbYLIPbV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 10:31:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYLIPbI
+	id S1753718AbYLIPlS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 10:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYLIPlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 10:31:08 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:40585 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbYLIPbE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 10:31:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=tSve6RkrP3P6k2Fv9KOU/rwVrIllnUrGGkleAUjSKelVHBB+q+VIBkd55uQPN3i5+B
-         ZuFwEtxRbtgCW1F/sjjknbOYsnD2BBlZoZaoSBjhdVX6iMNT37eePt13Q4xU627qraox
-         +/AaA7O3OHA9haKscYihZQqgxFCA/4pQYFqF8=
-Message-ID: <493E8F31.3040806@panasas.com>
-Date: Tue, 09 Dec 2008 17:30:57 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Tue, 9 Dec 2008 10:41:04 -0500
+Received: from mx1.suse.de ([195.135.220.2]:55344 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751021AbYLIPlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 10:41:03 -0500
+Date: Tue, 9 Dec 2008 07:36:54 -0800
+From: Greg KH <gregkh@suse.de>
+To: Bruno =?iso-8859-1?Q?Pr=E9mont?= <bruno.premont@restena.lu>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stefan Winter <stefan.winter@restena.lu>
+Subject: Re: [2.6.27.4-5 stable regressions] Kernel boot early crash with
+	low-64k reservation patches
+Message-ID: <20081209153654.GC25679@suse.de>
+References: <20081209083440.7569d7a0@pluto.restena.lu>
 MIME-Version: 1.0
-To: Duane Griffin <duaneg@dghda.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: Checking link targets are NULL-terminated
-References: <20081205144810.GA25585@dastardly.home.dghda.com>
-In-Reply-To: <20081205144810.GA25585@dastardly.home.dghda.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081209083440.7569d7a0@pluto.restena.lu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duane Griffin wrote:
-> Hi folks,
+On Tue, Dec 09, 2008 at 08:34:40AM +0100, Bruno Prémont wrote:
+> Hi,
 > 
-> I am looking at a report of an intermittent BUG caused by an
-> intentionally corrupted ext2 filesystem:
-> http://bugzilla.kernel.org/show_bug.cgi?id=11412
+> On a VMWare (ESX 3.5.0 Update 3) guest we get boot failure at the very
+> beginning of boot process. (Boot successful with 2.6.27.4, failing with
+> 2.6.27.x where x > 4 or just adding the 5 patches below to 2.6.27.4)
 > 
-> What I think is happening is generic_readlink gets the name via
-> i_ops->follow_link and passes it into vfs_readlink, without it
-> necessarily being validating anywhere. If the name is not
-> NULL-terminated the strlen call in vfs_readlink may run off past the end
-> of the page. I think this is potentially happening in
-> page_follow_link_light, as well as ext2_follow_link, so it isn't just
-> ext* that is affected.
-> 
-> Does this sound correct, or have I missed something?
-> 
-> Assuming this is a real problem, does anyone have a better solution than
-> scanning the name for a \0 (in ext2_follow_link and
-> page_follow_link_light) and returning -ENAMETOOLONG if we can't find
-> one? I.e. something like this:
-> 
-> diff --git a/fs/ext2/symlink.c b/fs/ext2/symlink.c
-> index 4e2426e..9b01af2 100644
-> --- a/fs/ext2/symlink.c
-> +++ b/fs/ext2/symlink.c
-> @@ -24,8 +24,14 @@
->  static void *ext2_follow_link(struct dentry *dentry, struct nameidata *nd)
->  {
->  	struct ext2_inode_info *ei = EXT2_I(dentry->d_inode);
-> -	nd_set_link(nd, (char *)ei->i_data);
-> -	return NULL;
-> +	void *err = NULL;
-> +
-> +	if (memchr(ei->i_data, 0, sizeof(ei->i_data)) == NULL)
-> +		err = ERR_PTR(-ENAMETOOLONG);
-> +	else
-> +		nd_set_link(nd, (char *)ei->i_data);
-> +
-> +	return err;
->  }
+> State of config option
+>   CONFIG_X86_RESERVE_LOW_64K=y
+> or
+>   # CONFIG_X86_RESERVE_LOW_64K not set
+> does not make any difference.
 
-Here (Like below) Just zero the very last byte in the buffer.
-The first time this buffer was strcpy to, it was including the null terminated
-string. then written to inode on disk. When read, at most it could be,
-is as space allocated at inode (including null). If intentionally damaged, the symlink
-will be corrupted but Kernel is safe.
+Does the 2.6.27.8 kernel work better for you, or does it also fail?
 
->  
->  const struct inode_operations ext2_symlink_inode_operations = {
-> diff --git a/fs/namei.c b/fs/namei.c
-> index d34e0f9..f20e94b 100644
-> --- a/fs/namei.c
-> +++ b/fs/namei.c
-> @@ -2750,29 +2750,49 @@ static char *page_getlink(struct dentry * dentry, struct page **ppage)
->  {
->  	struct page * page;
->  	struct address_space *mapping = dentry->d_inode->i_mapping;
-> +	char *kaddr;
-> +
->  	page = read_mapping_page(mapping, 0, NULL);
->  	if (IS_ERR(page))
->  		return (char*)page;
-> +
-> +	kaddr = kmap(page);
-> +	if (memchr(kaddr, 0, PAGE_SIZE) == NULL) {
-> +		kunmap(kaddr);
-> +		page_cache_release(page);
-> +		return ERR_PTR(-ENAMETOOLONG);
-> +	}
-> +
+Also, have you tried the 2.6.28-rc releases to see if the problem is
+also there?
 
-You don't need to search and fail here. All you need is to NULL terminate on
-read_i_size() + 1 of inode. The length of the written string was set on write-time
-the buffer is big since it is a full page and I think symlinks are limited to
-less then that.
+thanks,
 
-If a person damaged the symlink inode on disk (set different size) then
-the data is corrupted but Kernel is still safe.
-
->  	*ppage = page;
-> -	return kmap(page);
-> +	return kaddr;
->  }
->  
->  int page_readlink(struct dentry *dentry, char __user *buffer, int buflen)
->  {
-> +	int res;
->  	struct page *page = NULL;
->  	char *s = page_getlink(dentry, &page);
-> -	int res = vfs_readlink(dentry,buffer,buflen,s);
-> +
-> +	if (IS_ERR(s))
-> +		return PTR_ERR(s);
-> +
-
-Above will not fail this change is not needed
-
-> +	res = vfs_readlink(dentry, buffer, buflen, s);
->  	if (page) {
->  		kunmap(page);
->  		page_cache_release(page);
->  	}
-> +
->  	return res;
->  }
->  
->  void *page_follow_link_light(struct dentry *dentry, struct nameidata *nd)
->  {
->  	struct page *page = NULL;
-> -	nd_set_link(nd, page_getlink(dentry, &page));
-> +	char *name = page_getlink(dentry, &page);
-> +	if (IS_ERR(name))
-> +		return name;
-> +
-
-Same here
-
-> +	nd_set_link(nd, name);
->  	return page;
->  }
->  
-> Cheers,
-> Duane.
-> 
-
-I hit this problem too, while developing a filesystem that was based
-on ext2. The reason that it works is because the remainder of a page is always
-Zero'ed out on writes. Then when read, you receive back your zero terminated link.
-(Which means that if you have a symlink exactly 4k it will BUG but I guess
-that is not possible).
-
-The solution is to use the i_size information for the string length, and zero
-terminate at i_size + 1.
-
-The way I fixed it is that I Zero out the last page's remainder on read and not
-on write like ext2 and other do it. (A symlink is less then 4k, right?)
-
-Boaz
-
+greg k-h
