@@ -1,126 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbYLITGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbYLITVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755108AbYLITGs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 14:06:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbYLITGh
+	id S1754676AbYLITVa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 14:21:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYLITVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 14:06:37 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:41456 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754159AbYLITGg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 14:06:36 -0500
-Date: Tue, 9 Dec 2008 19:06:30 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: "Helight.Xu" <zhwenxu@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       ZhenwenXu <helight.xu@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] fix coding style of mm/mmap.c
-In-Reply-To: <20081209075652.GA3515@helight>
-Message-ID: <Pine.LNX.4.64.0812091837380.28534@blonde.anvils>
-References: <20081209075652.GA3515@helight>
+	Tue, 9 Dec 2008 14:21:20 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43476 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753569AbYLITVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 14:21:19 -0500
+Message-ID: <493EC53F.8060106@redhat.com>
+Date: Tue, 09 Dec 2008 14:21:35 -0500
+From: Casey Dahlin <cdahlin@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Scott James Remnant <scott@netsplit.com>
+Subject: Re: [RFC PATCH] waitfd: file descriptor to wait on child processes
+References: <493EA441.1070706@redhat.com>	<20081209170543.59b4fb73@lxorguk.ukuu.org.uk>	<493EBD23.3020800@redhat.com> <20081209190403.2731dfd0@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081209190403.2731dfd0@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Okay, thanks for this.
+Alan Cox wrote:
+>>> This propogates the fundamental braindamage of waitpid - the fact the
+>>> notification only works on child process trees.
+>>>
+>>> Here is a more elegant suggestion - use epoll, inotify and friends  fully
+>>> on /proc process nodes.
+>>>       
+>
+>   
+>> Last I checked inotify was not supported in /proc, or at least most of 
+>> it. What kind of work load is it to change that?
+>>     
+>
+> I don't know but I think it would be the better approach to find it. That
+> also separates notification of state to parents from the general problem
+> of wanting to know when a service has died, which seems to be an ever
+> more common point of interest on the desktop in particular.
+>
+>   
+Of course, using inotify on proc will not (and should not) actually reap 
+dead processes, meaning waitpid() isn't obviated by the change (though 
+now it is always called on a specific pid and is never expected to block 
+or EAGAIN). We also introduce a new gotcha for userspace programs: this 
+mechanism works identically for child and non-child processes, so a 
+process may or may not be waitable when returned. A simple "do not shoot 
+self in foot" should suffice for this though.
 
-Though, to be honest, we're not all that keen on random cleanups of
-this kind: they can cause more trouble than they're worth, when real
-development is going on in the area - better leave them to those who
-are working on bigger changes nearby.
+Also, it doesn't work if /proc hasn't been mounted, which just so 
+happens to matter for my particular use cases :)
+> File content change notification for /proc is hard because the contents
+> don't exist in the normal way and get updated but can be done if there is
+> a wait queue for the job. Actual changes to structure (new directories
+> etc) is in part a similar problem but there are clear points already in
+> existence when the proc nodes are created/destroyed and thus notification
+> can occur.
+>
+>   
+Changes to structure are more interesting in terms of this particular 
+problem anyway, and definitely simpler to capture.
 
-But mm/mmap.c is currently the same in mmotm as in Linus's git
-(though slightly different from the 2.6.27 version in your patch -
-I've rediffed it below), so it shouldn't cause anyone much trouble:
-Andrew, please add to mmotm.  (scripts/checkpatch.pl does warn on
-the long acct_stack_growth line, but Zhenwen has made it a little
-shorter, and people disagree about long function declaration lines.)
+--CJD
 
-Please inline your patches in future, so all can see them at a glance:
-ah, you're using gmail, yes, that does mess them up - I believe there's
-advice on how to configure it for sending Linux patches somewhere in
-the archives, but I didn't find it in Documentation/SubmittingPatches
-just now, sorry.
-
-Hugh
-
-
-[PATCH] fix coding style of mm/mmap.c
-
-From: ZhenwenXu <helight.xu@gmail.com>
-
-Fix a little of the coding style in mm/mmap.c 
-
-Signed-off-by: ZhenwenXu <helight.xu@gmail.com>
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-
- mm/mmap.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -413,7 +413,7 @@ void __vma_link_rb(struct mm_struct *mm,
- 
- static void __vma_link_file(struct vm_area_struct *vma)
- {
--	struct file * file;
-+	struct file *file;
- 
- 	file = vma->vm_file;
- 	if (file) {
-@@ -475,10 +475,10 @@ static void vma_link(struct mm_struct *m
-  * but it has already been inserted into prio_tree earlier.
-  */
- static void
--__insert_vm_struct(struct mm_struct * mm, struct vm_area_struct * vma)
-+__insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
- {
--	struct vm_area_struct * __vma, * prev;
--	struct rb_node ** rb_link, * rb_parent;
-+	struct vm_area_struct *__vma, *prev;
-+	struct rb_node **rb_link, *rb_parent;
- 
- 	__vma = find_vma_prepare(mm, vma->vm_start,&prev, &rb_link, &rb_parent);
- 	BUG_ON(__vma && __vma->vm_start < vma->vm_end);
-@@ -908,7 +908,7 @@ void vm_stat_account(struct mm_struct *m
-  * The caller must hold down_write(current->mm->mmap_sem).
-  */
- 
--unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
-+unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
- 			unsigned long len, unsigned long prot,
- 			unsigned long flags, unsigned long pgoff)
- {
-@@ -1464,7 +1464,7 @@ get_unmapped_area(struct file *file, uns
- EXPORT_SYMBOL(get_unmapped_area);
- 
- /* Look up the first VMA which satisfies  addr < vm_end,  NULL if none. */
--struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr)
-+struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
- {
- 	struct vm_area_struct *vma = NULL;
- 
-@@ -1507,7 +1507,7 @@ find_vma_prev(struct mm_struct *mm, unsi
- 			struct vm_area_struct **pprev)
- {
- 	struct vm_area_struct *vma = NULL, *prev = NULL;
--	struct rb_node * rb_node;
-+	struct rb_node *rb_node;
- 	if (!mm)
- 		goto out;
- 
-@@ -1541,7 +1541,7 @@ out:
-  * update accounting. This is shared with both the
-  * grow-up and grow-down cases.
-  */
--static int acct_stack_growth(struct vm_area_struct * vma, unsigned long size, unsigned long grow)
-+static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size, unsigned long grow)
- {
- 	struct mm_struct *mm = vma->vm_mm;
- 	struct rlimit *rlim = current->signal->rlim;
