@@ -1,52 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbYLIPlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbYLIPpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753718AbYLIPlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 10:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYLIPlE
+	id S1754058AbYLIPpa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 10:45:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYLIPpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 10:41:04 -0500
-Received: from mx1.suse.de ([195.135.220.2]:55344 "EHLO mx1.suse.de"
+	Tue, 9 Dec 2008 10:45:20 -0500
+Received: from rtr.ca ([76.10.145.34]:34206 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbYLIPlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 10:41:03 -0500
-Date: Tue, 9 Dec 2008 07:36:54 -0800
-From: Greg KH <gregkh@suse.de>
-To: Bruno =?iso-8859-1?Q?Pr=E9mont?= <bruno.premont@restena.lu>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Stefan Winter <stefan.winter@restena.lu>
-Subject: Re: [2.6.27.4-5 stable regressions] Kernel boot early crash with
-	low-64k reservation patches
-Message-ID: <20081209153654.GC25679@suse.de>
-References: <20081209083440.7569d7a0@pluto.restena.lu>
+	id S1751527AbYLIPpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 10:45:19 -0500
+Message-ID: <493E92D6.8090104@rtr.ca>
+Date: Tue, 09 Dec 2008 10:46:30 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081209083440.7569d7a0@pluto.restena.lu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Len Brown <lenb@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>,
+       lkml <linux-kernel@vger.kernel.org>, rtc-linux@googlegroups.com,
+       linux-acpi@vger.kernel.org
+Subject: [PATCH] /proc/acpi/alarm: handle day-of-month wraparound on readback
+References: <200806222042.13929.david-b@pacbell.net> <4934176F.6080900@rtr.ca> <alpine.LFD.2.00.0812011311490.3197@localhost.localdomain> <4934619A.10809@rtr.ca>
+In-Reply-To: <4934619A.10809@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 09, 2008 at 08:34:40AM +0100, Bruno Prémont wrote:
-> Hi,
-> 
-> On a VMWare (ESX 3.5.0 Update 3) guest we get boot failure at the very
-> beginning of boot process. (Boot successful with 2.6.27.4, failing with
-> 2.6.27.x where x > 4 or just adding the 5 patches below to 2.6.27.4)
-> 
-> State of config option
->   CONFIG_X86_RESERVE_LOW_64K=y
-> or
->   # CONFIG_X86_RESERVE_LOW_64K not set
-> does not make any difference.
+(repost)
 
-Does the 2.6.27.8 kernel work better for you, or does it also fail?
+Fix month wrap issue with readback from /proc/acpi/alarm
+This bug has been around *forever*.
 
-Also, have you tried the 2.6.28-rc releases to see if the problem is
-also there?
+  $ echo '2008-12-01 10:36:20' > /proc/acpi/alarm
+  $ cat /proc/acpi/alarm
+  2008-11-01 10:36:20
 
-thanks,
+Note how the readback above shows the month incorrectly
+when the alarm is set in the *next* calendar month.
+But with this patch applied, it shows the correct month (12).
 
-greg k-h
+This patch applies/works on 2.6.28-rc6.
+Probably best to queue it up for the next major cycle.
+
+Signed-off-by: Mark Lord <mlord@pobox.com>
+
+--- old/drivers/acpi/sleep/proc.c	2008-11-20 18:19:22.000000000 -0500
++++ rc6/drivers/acpi/sleep/proc.c	2008-12-01 17:07:51.000000000 -0500
+@@ -84,12 +84,15 @@
+ #define	HAVE_ACPI_LEGACY_ALARM
+ #endif
+ 
++static u32 cmos_bcd_read(int offset, int rtc_control);
++
+ #ifdef	HAVE_ACPI_LEGACY_ALARM
+ 
+ static int acpi_system_alarm_seq_show(struct seq_file *seq, void *offset)
+ {
+ 	u32 sec, min, hr;
+ 	u32 day, mo, yr, cent = 0;
++	u32 today = 0;
+ 	unsigned char rtc_control = 0;
+ 	unsigned long flags;
+ 
+@@ -97,38 +100,32 @@
+ 
+ 	spin_lock_irqsave(&rtc_lock, flags);
+ 
+-	sec = CMOS_READ(RTC_SECONDS_ALARM);
+-	min = CMOS_READ(RTC_MINUTES_ALARM);
+-	hr = CMOS_READ(RTC_HOURS_ALARM);
+ 	rtc_control = CMOS_READ(RTC_CONTROL);
++	sec = cmos_bcd_read(RTC_SECONDS_ALARM, rtc_control);
++	min = cmos_bcd_read(RTC_MINUTES_ALARM, rtc_control);
++	hr = cmos_bcd_read(RTC_HOURS_ALARM, rtc_control);
+ 
+ 	/* If we ever get an FACP with proper values... */
+-	if (acpi_gbl_FADT.day_alarm)
++	if (acpi_gbl_FADT.day_alarm) {
+ 		/* ACPI spec: only low 6 its should be cared */
+ 		day = CMOS_READ(acpi_gbl_FADT.day_alarm) & 0x3F;
+-	else
+-		day = CMOS_READ(RTC_DAY_OF_MONTH);
++		if (!(rtc_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD)
++			day = bcd2bin(day);
++	} else
++		day = cmos_bcd_read(RTC_DAY_OF_MONTH, rtc_control);
+ 	if (acpi_gbl_FADT.month_alarm)
+-		mo = CMOS_READ(acpi_gbl_FADT.month_alarm);
+-	else
+-		mo = CMOS_READ(RTC_MONTH);
++		mo = cmos_bcd_read(acpi_gbl_FADT.month_alarm, rtc_control);
++	else {
++		mo = cmos_bcd_read(RTC_MONTH, rtc_control);
++		today = cmos_bcd_read(RTC_DAY_OF_MONTH, rtc_control);
++	}
+ 	if (acpi_gbl_FADT.century)
+-		cent = CMOS_READ(acpi_gbl_FADT.century);
++		cent = cmos_bcd_read(acpi_gbl_FADT.century, rtc_control);
+ 
+-	yr = CMOS_READ(RTC_YEAR);
++	yr = cmos_bcd_read(RTC_YEAR, rtc_control);
+ 
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
+ 
+-	if (!(rtc_control & RTC_DM_BINARY) || RTC_ALWAYS_BCD) {
+-		sec = bcd2bin(sec);
+-		min = bcd2bin(min);
+-		hr = bcd2bin(hr);
+-		day = bcd2bin(day);
+-		mo = bcd2bin(mo);
+-		yr = bcd2bin(yr);
+-		cent = bcd2bin(cent);
+-	}
+-
+ 	/* we're trusting the FADT (see above) */
+ 	if (!acpi_gbl_FADT.century)
+ 		/* If we're not trusting the FADT, we should at least make it
+@@ -153,6 +150,20 @@
+ 	else
+ 		yr += cent * 100;
+ 
++	/*
++	 * Show correct dates for alarms up to a month into the future.
++	 * This solves issues for nearly all situations with the common
++	 * 30-day alarm clocks in PC hardware.
++	 */
++	if (day < today) {
++		if (mo < 12) {
++			mo += 1;
++		} else {
++			mo = 1;
++			yr += 1;
++		}
++	}
++
+ 	seq_printf(seq, "%4.4u-", yr);
+ 	(mo > 12) ? seq_puts(seq, "**-") : seq_printf(seq, "%2.2u-", mo);
+ 	(day > 31) ? seq_puts(seq, "** ") : seq_printf(seq, "%2.2u ", day);
