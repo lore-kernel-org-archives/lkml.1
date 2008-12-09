@@ -1,66 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbYLIBiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbYLIBpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752718AbYLIBiu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 20:38:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbYLIBim
+	id S1752718AbYLIBpx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 20:45:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYLIBpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 20:38:42 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:18514 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751076AbYLIBil convert rfc822-to-8bit (ORCPT
+	Mon, 8 Dec 2008 20:45:43 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:63014 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751275AbYLIBpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 20:38:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=a0vk4u5Sl6tBAzhmZyt8Vfi6SG88JlLgb5rdnDWmZdiF2M8HNx6OFsYHhUpQIUTIrW
-         KU1L17ydXGE+NAptPhsCvd+Ut3pTkmpGqx1nrYbqI+ykvkYNhXaMPWyi8VOv+ZBXf5ae
-         P2yXv7R3XXdTuEyLw6TXFkm8jKHwOLv4EfrFY=
-Message-ID: <3aaafc130812081738o41c720f4kaf2a3ce611747b8@mail.gmail.com>
-Date: Mon, 8 Dec 2008 20:38:39 -0500
-From: "J.R. Mauro" <jrm8005@gmail.com>
-To: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-Subject: Re: How to check for memory leaks
-Cc: "Larry Finger" <Larry.Finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <c62985530812081433o5125f08gb7cad0d33a1b4104@mail.gmail.com>
+	Mon, 8 Dec 2008 20:45:43 -0500
+Message-ID: <493DCDBA.8070600@lwfinger.net>
+Date: Mon, 08 Dec 2008 19:45:30 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
+To: "J.R. Mauro" <jrm8005@gmail.com>
+CC: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: How to check for memory leaks
+References: <493D9D24.8080406@lwfinger.net>	 <c62985530812081433o5125f08gb7cad0d33a1b4104@mail.gmail.com> <3aaafc130812081738o41c720f4kaf2a3ce611747b8@mail.gmail.com>
+In-Reply-To: <3aaafc130812081738o41c720f4kaf2a3ce611747b8@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <493D9D24.8080406@lwfinger.net>
-	 <c62985530812081433o5125f08gb7cad0d33a1b4104@mail.gmail.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 8, 2008 at 5:33 PM, Frédéric Weisbecker <fweisbec@gmail.com> wrote:
-> 2008/12/8 Larry Finger <Larry.Finger@lwfinger.net>:
->> What is the best way to check if there is a memory leak?
->>
->> If I start a ping running on my system using the rtl8187 driver, and nothing
+J.R. Mauro wrote:
+> 
+> Is this the driver in the staging tree or a different one?
 
-Is this the driver in the staging tree or a different one?
+This is the driver in wireless-testing, which is essentially the same as the one
+in mainline.
 
->> else active on my system, I see an increase in the "slab" value in /proc/meminfo
->> of about 65 kB/minute. Is this indicative of a memory leak? When I run the same
->> test with p54usb, the increase is only 20 kB/min.
->>
->> Thanks,
->>
->> Larry
->
->
-> Hi,
->
-> You could have a look on kmemleak: http://www.procode.org/kmemleak/
-> It's up to date version is on the arm development git branch (topic kmemleak):
-> http://www.linux-arm.org/git?p=linux-2.6.git;a=summary
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Larry
+
