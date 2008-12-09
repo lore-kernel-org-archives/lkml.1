@@ -1,122 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYLIXIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbYLIXJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbYLIXIb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 18:08:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbYLIXIT
+	id S1755887AbYLIXJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 18:09:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbYLIXJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 18:08:19 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46265 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751989AbYLIXIS (ORCPT
+	Tue, 9 Dec 2008 18:09:49 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44350 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbYLIXJt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 18:08:18 -0500
-Date: Tue, 9 Dec 2008 15:08:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-Cc: zdenek.kabelac@gmail.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "David S. Miller" <davem@davemloft.net>, stable@kernel.org
-Subject: Re: BUG: bad unlock balance detected! e1000e
-Message-Id: <20081209150801.2aa76ac6.akpm@linux-foundation.org>
-In-Reply-To: <20081209110337.GJ4864@gambetta>
-References: <c4e36d110812080324y68c0e453qcb68a040da7ac9a2@mail.gmail.com>
-	<20081209110337.GJ4864@gambetta>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Dec 2008 18:09:49 -0500
+Date: Wed, 10 Dec 2008 00:11:31 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Rob Landley <rob@landley.net>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       kernel list <linux-kernel@vger.kernel.org>, mtk.manpages@gmail.com,
+       dl9pf@gmx.de, rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: Re: Document hadling of bad memory
+Message-ID: <20081209231131.GB13389@elf.ucw.cz>
+References: <20081126161521.GC1983@elf.ucw.cz> <20081201105625.25ee9f32.randy.dunlap@oracle.com> <20081209123152.GA1547@ucw.cz> <200812091540.42429.rob@landley.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200812091540.42429.rob@landley.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Dec 2008 12:03:37 +0100
-Frederik Deweerdt <frederik.deweerdt@xprog.eu> wrote:
-
-> It some error checking is missing in e1000e: debug contention on NVM
-> SWFLAG
-> On Mon, Dec 08, 2008 at 12:24:09PM +0100, Zdenek Kabelac wrote:
-> > Hi
-> > 
-> > During occasional scan of message log - I've found out this BUG which
-> > happened on Dec3 with the -rc7 from that day.
-> > (So if it's now fixed in current git feel free to ignore :))
-> > 
-> > My machine T61 - C2D, 2GB, 64bit kernel - message appeared during
-> > shutdown and was actually not noticed by me...
-> > 
-> > 
-> > NetworkManager: <WARN>  nm_signal_handler(): Caught signal 15,
-> > shutting down normally.
-> > NetworkManager: <info>  (eth0): now unmanaged
-> > NetworkManager: <info>  (eth0): device state change: 3 -> 1
-> > NetworkManager: <info>  (eth0): cleaning up...
-> > NetworkManager: <info>  (eth0): taking down device.
-> > 
-> > =====================================
-> > [ BUG: bad unlock balance detected! ]
-> > -------------------------------------
-
-(top-posting repaired.  Please don't do that!!!).
-
-> Hello Zdenek,
+On Tue 2008-12-09 15:40:41, Rob Landley wrote:
+> On Tuesday 09 December 2008 06:31:52 Pavel Machek wrote:
+> > I cleaned the document up according to Randy (thanks!). I don't actually
+> > know enough about DRAM error characcteristics, I guess'round the size of
+> > bad region up to nearest 2^n makes sense.
+> >
+> > Signed-off-by: Pavel Machek <pavel@suse.cz>
+> >
+> > diff --git a/Documentation/bad_memory.txt b/Documentation/bad_memory.txt
+> ...
+> > +This Howto is about number 3).
+> >
+> >
+> >  BadRAM
+> >  ######
+> > -BadRAM is the actively developed and available as kernel-patch
+> > +BadRAM is the actively developed and available as a kernel patch
+> >  here:  http://rick.vanrein.org/linux/badram/
 > 
-> This could be due to 717d438d1fde94decef874b9808379d1f4523453
->     "e1000e: debug contention on NVM SWFLAG"
-> Error handling is missing from e1000_reset_hw_ich8lan so it may happen
-> that we don't acquire the nvm_mutex if the card times out.
+> Ok, once again: the point of this patch is to document an out of tree patch.
+
+No; the point of this piece of documentation is to tell people how to
+work _without_ that patch. Because it is simple enough.
+
+> The out of tree patch is here:
+> http://rick.vanrein.org/linux/badram/software/BadRAM-2.6.27.1.patch
 > 
-> Adding Thomas to CC.
+> It has its own Documentation/badram.txt file and it patches 
+> Documentation/memory.txt, as acknowledged here:
+> 
+> >  For more details see the BadRAM documentation.
+> > @@ -27,19 +27,20 @@ For more details see the BadRAM documentation.
+> >  memmap
+> >  ######
+> 
+> Now what I don't understand is, why add something to the tree formalizing the 
+> out-of-tree status of this other patch?  Why not just merge it?  If
+> it's 
 
-yup.  2.6.27 needs fixing also.
+Take a look at that patch. It is seriously overengineered. This should
+not need a config option, should not introduce new page flag, etc.
 
-Like this?
+We already have perfectly working interface for excluding specific
+addresses; maybe we need better documentation, and maybe kernel
+commandline interface should be changed to be more user friendly, but
+we certainly don't want to take the badram patch.
 
-From: Andrew Morton <akpm@linux-foundation.org>
+This excerpt should be enough:
 
-=====================================
-[ BUG: bad unlock balance detected! ]
--------------------------------------
-
-A regression added by 717d438d1fde94decef874b9808379d1f4523453 ("e1000e:
-debug contention on NVM SWFLAG").
-
-Reported-by: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/net/e1000e/ich8lan.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff -puN drivers/net/e1000e/ich8lan.c~drivers-net-e1000e-ich8lanc-fix-locking drivers/net/e1000e/ich8lan.c
---- a/drivers/net/e1000e/ich8lan.c~drivers-net-e1000e-ich8lanc-fix-locking
-+++ a/drivers/net/e1000e/ich8lan.c
-@@ -400,6 +400,7 @@ static s32 e1000_acquire_swflag_ich8lan(
- {
- 	u32 extcnf_ctrl;
- 	u32 timeout = PHY_CFG_TIMEOUT;
-+	s32 ret = 0;
+diff -pruN linux-2.6.27/include/linux/page-flags.h
+linux-2.6.27-new/include/linux/page-flags.h
+--- linux-2.6.27/include/linux/page-flags.h	2008-10-10
+03:43:53.000000000 +0530
++++ linux-2.6.27-new/include/linux/page-flags.h	2008-10-15
+10:04:48.000000000 +0530
+@@ -93,6 +93,9 @@ enum pageflags {
+ 	PG_mappedtodisk,	/* Has blocks allocated on-disk */
+ 	PG_reclaim,		/* To be reclaimed asap */
+ 	PG_buddy,		/* Page is free, on buddy lists */
++#ifdef CONFIG_BADRAM
++	PG_badram,              /* BadRam page */
++#endif
+ #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
+ 	PG_uncached,		/* Page has been mapped as uncached */
+ #
  
- 	might_sleep();
- 
-@@ -427,11 +428,11 @@ static s32 e1000_acquire_swflag_ich8lan(
- 		extcnf_ctrl &= ~E1000_EXTCNF_CTRL_SWFLAG;
- 		ew32(EXTCNF_CTRL, extcnf_ctrl);
- 		nvm_owner = -1;
--		mutex_unlock(&nvm_mutex);
--		return -E1000_ERR_CONFIG;
-+		ret = -E1000_ERR_CONFIG;
- 	}
- 
--	return 0;
-+	mutex_unlock(&nvm_mutex);
-+	return ret;
- }
- 
- /**
-_
 
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
