@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbYLITVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYLITWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754676AbYLITVa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 14:21:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYLITVU
+	id S1754794AbYLITWr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 14:22:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYLITWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 14:21:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43476 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753569AbYLITVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 14:21:19 -0500
-Message-ID: <493EC53F.8060106@redhat.com>
-Date: Tue, 09 Dec 2008 14:21:35 -0500
-From: Casey Dahlin <cdahlin@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Scott James Remnant <scott@netsplit.com>
-Subject: Re: [RFC PATCH] waitfd: file descriptor to wait on child processes
-References: <493EA441.1070706@redhat.com>	<20081209170543.59b4fb73@lxorguk.ukuu.org.uk>	<493EBD23.3020800@redhat.com> <20081209190403.2731dfd0@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081209190403.2731dfd0@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 9 Dec 2008 14:22:39 -0500
+Received: from host44-35-static.37-85-b.business.telecomitalia.it ([85.37.35.44]:43513
+	"EHLO mail.sineo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754204AbYLITWi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 14:22:38 -0500
+From: Luca Santarelli <hrk@users.sourceforge.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <F469DC97-2EE0-4CE5-BB1C-7419B8A31985@users.sourceforge.net>
+Subject: Re: [PATCH] bluetooth usb hci: ISSC usb dongle with buggy SCO  support
+References: <200812050002.13560.hrk@users.sourceforge.net> <20081207001953.c04b9357.akpm@linux-foundation.org> <F469DC97-2EE0-4CE5-BB1C-7419B8A31985@users.sourceforge.net>
+Message-Id: <42AA6D4E-DCE6-487B-9B70-2B0A7EFA76EC@users.sourceforge.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Date: Tue, 9 Dec 2008 20:22:27 +0100
+Cc: marcel@holtmann.org, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>> This propogates the fundamental braindamage of waitpid - the fact the
->>> notification only works on child process trees.
->>>
->>> Here is a more elegant suggestion - use epoll, inotify and friends  fully
->>> on /proc process nodes.
->>>       
->
->   
->> Last I checked inotify was not supported in /proc, or at least most of 
->> it. What kind of work load is it to change that?
->>     
->
-> I don't know but I think it would be the better approach to find it. That
-> also separates notification of state to parents from the general problem
-> of wanting to know when a service has died, which seems to be an ever
-> more common point of interest on the desktop in particular.
->
->   
-Of course, using inotify on proc will not (and should not) actually reap 
-dead processes, meaning waitpid() isn't obviated by the change (though 
-now it is always called on a specific pid and is never expected to block 
-or EAGAIN). We also introduce a new gotcha for userspace programs: this 
-mechanism works identically for child and non-child processes, so a 
-process may or may not be waitable when returned. A simple "do not shoot 
-self in foot" should suffice for this though.
 
-Also, it doesn't work if /proc hasn't been mounted, which just so 
-happens to matter for my particular use cases :)
-> File content change notification for /proc is hard because the contents
-> don't exist in the normal way and get updated but can be done if there is
-> a wait queue for the job. Actual changes to structure (new directories
-> etc) is in part a similar problem but there are clear points already in
-> existence when the proc nodes are created/destroyed and thus notification
-> can occur.
+Il giorno 09/dic/08, alle ore 00:07, Luca Santarelli ha scritto:
+
 >
->   
-Changes to structure are more interesting in terms of this particular 
-problem anyway, and definitely simpler to capture.
+> Il giorno 07/dic/08, alle ore 09:19, Andrew Morton ha scritto:
+>
+>> linux-next has:
+>>
+>> commit 12421b40b81d101d7535e03f1af197365adc932b
+>> Author: Marcel Holtmann <marcel@holtmann.org>
+>> Date:   Sun Nov 30 12:17:21 2008 +0100
+>>
+>>   Bluetooth: Remove deprecated hci_usb driver
+>>
+>>   The old hci_usb driver has been fully replaced with the new btusb  
+>> driver
+>>   and all major distributions switched to the new driver now. This  
+>> removes
+>>   it since it should not be used at all anymore.
+>>
+>> so please confirm that btusb correctly supports that hardware?
+>
+>
+> Thanks for the heads up! I'll compile the new sources and let you  
+> know if it's supported. However, since the hci_usb is being  
+> deprecated but not removed, shouldn't the patch be incorporated  
+> nonetheless?
+>
+> Luca
 
---CJD
+Ok, I'm back. I compiled the latest sources and the device is  
+recognized and works with the new btusb driver. What about the  
+deprecated driver? Will it be fixed or kept as it is?
 
+Luca
