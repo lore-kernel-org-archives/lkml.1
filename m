@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbYLIWZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbYLIW0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755405AbYLIWZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 17:25:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbYLIWZu
+	id S1754884AbYLIW0V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 17:26:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754696AbYLIW0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 17:25:50 -0500
-Received: from outbound-mail-153.bluehost.com ([67.222.39.33]:45467 "HELO
-	outbound-mail-153.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754496AbYLIWZt (ORCPT
+	Tue, 9 Dec 2008 17:26:08 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:49577 "EHLO
+	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754500AbYLIW0H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 17:25:49 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=uoTIcABsU2CSzWzUmIO3hUVZBx2DIL6/d2mKDIa+8kam5pHqjmuEXD4yRKR6RIT336qwDShw/S9eO9mpq4R3QGnwtvBC8niGBwHeA9Ddwixe2g1NLwOHsWV0yzgfqp5A;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] virtio: make PCI devices take a virtio_pci module ref
-Date: Tue, 9 Dec 2008 14:25:24 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: Mark McLoughlin <markmc@redhat.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       kvm <kvm@vger.kernel.org>, Anthony Liguori <aliguori@us.ibm.com>,
-       Michael Tokarev <mjt@tls.msk.ru>
-References: <1228394671.3732.77.camel@blaa> <200812051043.51417.rusty@rustcorp.com.au>
-In-Reply-To: <200812051043.51417.rusty@rustcorp.com.au>
+	Tue, 9 Dec 2008 17:26:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=TB43xMbIAX1SHXf+AcMoUV2mQo9e5DUjS7f674+yc93V4mKMNzr0kQ5BRwzcIzUFEp
+         3Fd3rZ23I/QGmcVWEvdKO5Q+ybQh8uXyTGCOqFTz1LdQs5f5U4XOCRyF1JKvqngNhohO
+         JktI8QShEVWV1d+3dHd20jF07kFFmRGDH9/2w=
+Message-ID: <493EF07D.4010405@gmail.com>
+Date: Tue, 09 Dec 2008 23:26:05 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: tiwai@suse.de, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 30/31] sound: Make static
+References: <493EA286.7080500@gmail.com>
+In-Reply-To: <493EA286.7080500@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812091425.25569.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 216.239.45.19 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, December 04, 2008 4:13 pm Rusty Russell wrote:
-> On Thursday 04 December 2008 23:14:31 Mark McLoughlin wrote:
-> > Nothing takes a ref on virtio_pci, so even if you have
-> > devices in use, rmmod will attempt to unload the module.
-> >
-> > Fix by simply making each device take a ref on the module.
->
-> Hi Mark,
->
->    Taking a reference to oneself is almost always wrong.  I'm a little
-> surprised that a successful call to pci_device->probe doesn't bump the
-> module count though.
->
-> Jesse?
+Sparse asked whether these could be static.
 
-Looks like the PCI bus type's probe function does take a device reference, 
-which should get called from driver_register when the driver calls 
-pci_register_driver...  Is that not happening in the virtio case?
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ sound/usb/usx2y/usb_stream.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+diff --git a/sound/usb/usx2y/usb_stream.c b/sound/usb/usx2y/usb_stream.c
+index ff23cc1..70b9635 100644
+--- a/sound/usb/usx2y/usb_stream.c
++++ b/sound/usb/usx2y/usb_stream.c
+@@ -276,7 +276,8 @@ static void subs_set_complete(struct urb **urbs, void (*complete)(struct urb *))
+ 	}
+ }
+ 
+-int usb_stream_prepare_playback(struct usb_stream_kernel *sk, struct urb *inurb)
++static int usb_stream_prepare_playback(struct usb_stream_kernel *sk,
++		struct urb *inurb)
+ {
+ 	struct usb_stream *s = sk->s;
+ 	struct urb *io;
+
