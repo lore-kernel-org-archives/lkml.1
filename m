@@ -1,88 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbYLIRMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbYLIRQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbYLIRMs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 12:12:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbYLIRMj
+	id S1754233AbYLIRQy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 12:16:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYLIRQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 12:12:39 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:55608 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979AbYLIRMi (ORCPT
+	Tue, 9 Dec 2008 12:16:45 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:60528 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751700AbYLIRQp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 12:12:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=VG2aWdQvmXGT5jXxCHsB6P9MYNTQihAWYTpLCaoxn8GBTaQpwI1zls58/+pMZ7wd9Y
-         A3nUGdSalaCBG0i8ZefB+g5+489Te/EYC6wInx/JPAXRaWLqGNfGp8m/VDrcPryeIJt9
-         f0wFyCPlXDgI3kvM3GEp8wKNMp7Ee+V95V0/I=
-Message-ID: <493EA704.5070007@gmail.com>
-Date: Tue, 09 Dec 2008 18:12:36 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+	Tue, 9 Dec 2008 12:16:45 -0500
+Message-ID: <493EA7F1.3060501@s5r6.in-berlin.de>
+Date: Tue, 09 Dec 2008 18:16:33 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.17) Gecko/20080829 SeaMonkey/1.1.12
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: linux-input@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 6/33] drivers/char: Make static
-References: <493EA286.7080500@gmail.com>
-In-Reply-To: <493EA286.7080500@gmail.com>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+CC: krh@redhat.com, linux1394-devel@lists.sourceforge.net,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Firewire node manager causes up to ~3.25s delay in freezing
+ tasks.
+References: <1228822820.6681.22.camel@nigel-laptop>
+In-Reply-To: <1228822820.6681.22.camel@nigel-laptop>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sparse asked whether these could be static.
+Nigel Cunningham wrote:
+> Hi all.
+> 
+> (Okay, having learnt that ieee1394 != bluetooth, I'll try again :>)
+> 
+> The firewire nodemanager function "nodemgr_host_thread" contains a loop
+> that calls try_to_freeze near the top of the loop, but then delays for
+> up to 3.25 seconds (plus time to do work) before getting back to the top
+> of the loop. When starting a cycle post-boot, this doesn't seem to bite,
+> but it is causing a noticeable delay at boot time, when freezing
+> processes prior to starting to read the image.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/char/defkeymap.c_shipped |    6 +++---
- drivers/char/keyboard.c          |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+In 2.6.27 and less, these were only 0.25 seconds.  The 3 additional
+seconds in 2.6.28-rc are my doing and sort of a regression.  It occurs
+to me that I should send this patch to mainline before release.
 
-diff --git a/drivers/char/defkeymap.c_shipped b/drivers/char/defkeymap.c_shipped
-index d2208df..e930e3b 100644
---- a/drivers/char/defkeymap.c_shipped
-+++ b/drivers/char/defkeymap.c_shipped
-@@ -43,7 +43,7 @@ u_short shift_map[NR_KEYS] = {
- 	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,
- };
- 
--u_short altgr_map[NR_KEYS] = {
-+static u_short altgr_map[NR_KEYS] = {
- 	0xf200,	0xf200,	0xf200,	0xf040,	0xf200,	0xf024,	0xf200,	0xf200,
- 	0xf07b,	0xf05b,	0xf05d,	0xf07d,	0xf05c,	0xf200,	0xf200,	0xf200,
- 	0xfb71,	0xfb77,	0xf918,	0xfb72,	0xfb74,	0xfb79,	0xfb75,	0xfb69,
-@@ -100,7 +100,7 @@ u_short shift_ctrl_map[NR_KEYS] = {
- 	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,
- };
- 
--u_short alt_map[NR_KEYS] = {
-+static u_short alt_map[NR_KEYS] = {
- 	0xf200,	0xf81b,	0xf831,	0xf832,	0xf833,	0xf834,	0xf835,	0xf836,
- 	0xf837,	0xf838,	0xf839,	0xf830,	0xf82d,	0xf83d,	0xf87f,	0xf809,
- 	0xf871,	0xf877,	0xf865,	0xf872,	0xf874,	0xf879,	0xf875,	0xf869,
-@@ -119,7 +119,7 @@ u_short alt_map[NR_KEYS] = {
- 	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,
- };
- 
--u_short ctrl_alt_map[NR_KEYS] = {
-+static u_short ctrl_alt_map[NR_KEYS] = {
- 	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,
- 	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,	0xf200,
- 	0xf811,	0xf817,	0xf805,	0xf812,	0xf814,	0xf819,	0xf815,	0xf809,
-diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
-index de26a97..564f719 100644
---- a/drivers/char/keyboard.c
-+++ b/drivers/char/keyboard.c
-@@ -151,7 +151,7 @@ static struct ledptr {
- /* Simple translation table for the SysRq keys */
- 
- #ifdef CONFIG_MAGIC_SYSRQ
--unsigned char kbd_sysrq_xlate[KEY_MAX + 1] =
-+static unsigned char kbd_sysrq_xlate[KEY_MAX + 1] =
-         "\000\0331234567890-=\177\t"                    /* 0x00 - 0x0f */
-         "qwertyuiop[]\r\000as"                          /* 0x10 - 0x1f */
-         "dfghjkl;'`\000\\zxcv"                          /* 0x20 - 0x2f */
+> The following patch adds invocation of try_to_freeze to the subloops
+> that are used in the body of this function. With these additions, the
+> time to freeze when starting to resume at boot time is virtually zero.
+> I'm no expert on bluetooth, and so don't know that we shouldn't check
+> the return value and jump back to the top of the loop or such like after
+> being frozen, but I submit it for your consideration.
+> 
+> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 
+As far as I can tell, try_to_freeze() without any jump is correct.
+
+>  nodemgr.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> diff -ruNp 710-nodemanager-freezing.patch-old/drivers/ieee1394/nodemgr.c 710-nodemanager-freezing.patch-new/drivers/ieee1394/nodemgr.c
+> --- 710-nodemanager-freezing.patch-old/drivers/ieee1394/nodemgr.c	2008-12-06 08:42:08.000000000 +1100
+> +++ 710-nodemanager-freezing.patch-new/drivers/ieee1394/nodemgr.c	2008-12-09 18:49:26.000000000 +1100
+> @@ -1685,6 +1685,7 @@ static int nodemgr_host_thread(void *dat
+>  		g = get_hpsb_generation(host);
+>  		for (i = 0; i < 4 ; i++) {
+>  			msleep_interruptible(63);
+> +			try_to_freeze();
+>  			if (kthread_should_stop())
+>  				goto exit;
+>  
+
+Here we have the goal to proceed only >= 0.25s after the last bus reset
+happened.  While the new try_to_freeze() held up nodemgr, another bus
+reset may happen.  But we check for this later in the loop and handle
+it, so this is OK.
+
+> @@ -1725,6 +1726,7 @@ static int nodemgr_host_thread(void *dat
+>  		/* Sleep 3 seconds */
+>  		for (i = 3000/200; i; i--) {
+>  			msleep_interruptible(200);
+> +			try_to_freeze();
+>  			if (kthread_should_stop())
+>  				goto exit;
+>  
+
+Ditto, the rest of the loop catches the case that another bus reset
+occurred during the sleep or freeze.
+
+Thanks for what appears to be a regression fix,
+-- 
+Stefan Richter
+-=====-==--- ==-- -=--=
+http://arcgraph.de/sr/
