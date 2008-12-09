@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbYLIOvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbYLIOwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754281AbYLIOvn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 09:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYLIOve
+	id S1754496AbYLIOwr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 09:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYLIOwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 09:51:34 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:1390 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752263AbYLIOvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 09:51:33 -0500
-Date: Tue, 9 Dec 2008 15:51:19 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Mike Anderson <andmike@linux.vnet.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       LKML-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] Correctly release and allocate a new request upon retries
-Message-ID: <20081209145119.GA23742@kernel.dk>
-References: <493D2E05.3070108@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <493D2E05.3070108@hp.com>
+	Tue, 9 Dec 2008 09:52:40 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:54206 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753064AbYLIOwj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 09:52:39 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH 1/1] sched: CPU remove deadlock fix
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Brian King <brking@linux.vnet.ibm.com>
+Cc: mingo@elte.hu, efault@gmx.de, vatsa@in.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200812091548.mB9Fm0sm011959@d01av04.pok.ibm.com>
+References: <200812091548.mB9Fm0sm011959@d01av04.pok.ibm.com>
+Content-Type: text/plain
+Date: Tue, 09 Dec 2008 15:52:22 +0100
+Message-Id: <1228834342.8684.5.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 08 2008, Alan D. Brunelle wrote:
+On Tue, 2008-12-09 at 08:47 -0600, Brian King wrote:
+> This patch fixes a possible deadlock scenario in the CPU remove path.
+> migration_call grabs rq->lock, then wakes up everything on rq->migration_queue
+> with the lock held. Then one of the tasks on the migration queue ends up
+> calling tg_shares_up which then also tries to acquire the same rq->lock.
 
-> Commands needing to be retried require a complete re-initialization.
+Looks ok, does lockdep agree?
+
+> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+> ---
 > 
-> The test-unit-ready portion of this patch was causing boots to fail on
-> my test machine (as in http://lkml.org/lkml/2008/12/5/161). With this
-> patch in place, the system is booting reliably.
+>  kernel/sched.c |    2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> Mike Anderson found the same problem in the hp_hw_start_stop code,
-> and I applied the same solution in cdrom_read_cdda_bpc.
-
-Thanks Alan, applied for 2.6.28.
-
--- 
-Jens Axboe
+> diff -puN kernel/sched.c~sched_cpu_down_deadlock_fix kernel/sched.c
+> --- linux-2.6/kernel/sched.c~sched_cpu_down_deadlock_fix	2008-12-09 08:42:09.000000000 -0600
+> +++ linux-2.6-bjking1/kernel/sched.c	2008-12-09 08:42:09.000000000 -0600
+> @@ -6587,7 +6587,9 @@ migration_call(struct notifier_block *nf
+>  			req = list_entry(rq->migration_queue.next,
+>  					 struct migration_req, list);
+>  			list_del_init(&req->list);
+> +			spin_unlock_irq(&rq->lock);
+>  			complete(&req->done);
+> +			spin_lock_irq(&rq->lock);
+>  		}
+>  		spin_unlock_irq(&rq->lock);
+>  		break;
+> _
 
