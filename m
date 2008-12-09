@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbYLIXCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755801AbYLIXF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756291AbYLIXCq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 18:02:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbYLIXCa
+	id S1755801AbYLIXF1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 18:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbYLIXFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 18:02:30 -0500
-Received: from mu-out-0910.google.com ([209.85.134.186]:38599 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756026AbYLIXC3 (ORCPT
+	Tue, 9 Dec 2008 18:05:17 -0500
+Received: from outbound-mail-125.bluehost.com ([67.222.38.25]:45923 "HELO
+	outbound-mail-125.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751696AbYLIXFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 18:02:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Y1tPSb8GR/77VaZr06HjRfyiYdiV0ZvAOCocrp5uPEdy3X8hrxH5bwjjn/O0mrcCj8
-         c9hAX4WJAq9DINhKyLMm0xZ8jQRihJE/mvGUm2c8FI4IcYexwhUiee+60QPzJow6zgQn
-         UJJfxaMitctFxu/O8u4aLrrsYvNaE3IcYc3Xc=
-Message-ID: <493EF797.7090603@gmail.com>
-Date: Tue, 09 Dec 2008 23:56:23 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Tue, 9 Dec 2008 18:05:16 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=cwU/pQL0rqc2EkBfoF3i3jbL/FTc22TrsTTRXwqQcjOkZLL4LbhUXxG9k0/G7uZ7DCsV+zJBLZQ1Sc8rXc139THTP5LVRS66nZjthtCzsUz7K9INsXZno4npFJnfELiU;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: PCI fix
+Date: Tue, 9 Dec 2008 15:04:39 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200812091441.14250.jbarnes@virtuousgeek.org>
+In-Reply-To: <200812091441.14250.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] tracing/function-graph-tracer: signal interrupt triggering
- on output
-References: <493EF64D.50804@gmail.com>
-In-Reply-To: <493EF64D.50804@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812091504.40126.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 216.239.45.19 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> This patchset adds all the features to draw hardirq triggering on output
-> for the function graph tracer.
-> An example is given on the third patch.
-> 
-> Just one question, on recordmcount.pl:
-> 
-> my %text_sections = (
->       ".text" => 1,
->       ".sched.text" => 1,
->       ".spinlock.text" => 1,
-> 
-> The .sched.text section is included inside .text, it's a subsection, I'm not sure
-> it's necessary to add it in text_sections. In doubt I added the new .irqentry.text
-> 
-> The stat of the patchset:
-> 
->  arch/x86/kernel/apic.c               |    3 +-
->  arch/x86/kernel/irq_64.c             |    3 +-
->  arch/x86/kernel/vmlinux_64.lds.S     |    1 +
->  include/asm-generic/vmlinux.lds.h    |   10 +++++
->  include/linux/ftrace.h               |   11 ++++++
->  kernel/trace/trace_functions_graph.c |   66 +++++++++++++++++++++++++++++++--
->  scripts/recordmcount.pl              |    1 +
->  7 files changed, 89 insertions(+), 6 deletions(-)
-> 
-> 
+On Tuesday, December 09, 2008 2:41 pm Jesse Barnes wrote:
+> Please pull my for-linus branch:
+> git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git
+> for-linus
+>
+> One more last minute fix for a small memory leak from Alex.
 
-Sorry, forgot to cc LKML on this one.
+Urg, added one more patch after sending this:
+
+Thomas Renninger (1):
+      PCIe: ASPM: Break out of endless loop waiting for PCI config bits to 
+switch
+
+ drivers/pci/pcie/aspm.c |   29 ++++++++++++++++++++++++++---
+
+Sorry about that.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
