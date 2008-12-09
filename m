@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbYLIWzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbYLIW6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbYLIWzu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 17:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbYLIWzd
+	id S1755527AbYLIW6y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 17:58:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYLIW6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 17:55:33 -0500
-Received: from fk-out-0910.google.com ([209.85.128.190]:41643 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755536AbYLIWzb (ORCPT
+	Tue, 9 Dec 2008 17:58:46 -0500
+Received: from mail-bw0-f13.google.com ([209.85.218.13]:47131 "EHLO
+	mail-bw0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbYLIW6p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 17:55:31 -0500
+	Tue, 9 Dec 2008 17:58:45 -0500
+X-Greylist: delayed 322 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Dec 2008 17:58:44 EST
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :content-type:content-transfer-encoding;
-        b=vkMaxMUsry8Mu8NqQ92poL8yBS7JY86gwhcnbcBl/KAQIvG0ka3CRB87zP6uTj7IbT
-         Ou9zFv29IFk8x92j2oCuHkwyJAzCJxOUvJcHfXKxvUhJ3QHOACStJbfxkSUzjhMccNdO
-         pOw/+Oef6J8pelCm92qSvxXyjCYKQ4ktdhDrU=
-Message-ID: <493EF75D.5070902@gmail.com>
-Date: Tue, 09 Dec 2008 23:55:25 +0100
+        b=sAYtdt9AbPDOD8UBUnoCgZy89Tg16dS3UU+ZsbE5jpSUnOIAQRWyNOz+PY+xZ59L0u
+         LqBe5mG/7tRBK1mABJ5CbsvRAFv1b99mCLAzcKR7oqCKWubHACsg4QWjpgqkgy5OBj0/
+         QPXUYdnrjsEwVDHGfgOPBhHNvkqvqbz8RKSf8=
+Message-ID: <493EF6DC.10207@gmail.com>
+Date: Tue, 09 Dec 2008 23:53:16 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
@@ -26,171 +27,74 @@ To: Ingo Molnar <mingo@elte.hu>
 CC: Steven Rostedt <rostedt@goodmis.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] tracing/function-graph-tracer: Output arrows signal on
- hardirq call/return
+Subject: [PATCH 1/3] tracing/function-graph-tracer: add a new .irqentry.text
+ section
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Make more obvious the hardirq calls in the output
+Impact: Let the function-graph-tracer aware of the irq entrypoints
 
-When a hardirq is triggered inside the codeflow on output, we have
-now two arrows that indicate the entry and return of the hardirq.
+Add a new .irqentry.text section to store the irq entrypoints functions
+inside the same section. This way, the tracer will be able to signal
+an interrupts triggering on output by recognizing these entrypoints.
 
- 0)               |                                        bit_waitqueue() {
- 0)   0.880 us    |                                          __phys_addr();
- 0)   2.699 us    |                                        }
- 0)               |                                        __wake_up_bit() {
- 0)   ==========> |                                        smp_apic_timer_interrupt() {
- 0)   0.797 us    |                                          native_apic_mem_write();
- 0)   0.715 us    |                                          exit_idle();
- 0)               |                                          irq_enter() {
- 0)   0.722 us    |                                            idle_cpu();
- 0)   5.519 us    |                                          }
- 0)               |                                          hrtimer_interrupt() {
- 0)               |                                            ktime_get() {
- 0)               |                                              ktime_get_ts() {
- 0)   0.805 us    |                                                getnstimeofday();
-
- [...]
-
- 0) ! 108.528 us  |                                          }
- 0)               |                                          irq_exit() {
- 0)               |                                            do_softirq() {
- 0)               |                                              __do_softirq() {
- 0)   0.895 us    |                                                __local_bh_disable();
- 0)               |                                                run_timer_softirq() {
- 0)   0.827 us    |                                                  hrtimer_run_pending();
- 0)   1.226 us    |                                                  _spin_lock_irq();
- 0)               |                                                  _spin_unlock_irq() {
- 0)   6.550 us    |                                                }
- 0)   0.924 us    |                                                _local_bh_enable();
- 0) + 12.129 us   |                                              }
- 0) + 13.911 us   |                                            }
- 0)   0.707 us    |                                            idle_cpu();
- 0) + 17.009 us   |                                          }
- 0) ! 137.419 us  |                                        }
- 0)   <========== |
- 0)   1.045 us    |                                        }
- 0) ! 148.908 us  |                                      }
- 0) ! 151.022 us  |                                    }
- 0) ! 153.022 us  |                                  }
- 0)   0.963 us    |                                  journal_mark_dirty();
- 0)   0.925 us    |                                  __brelse();
-
+Also, make this section recordable for dynamic tracing.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/trace/trace_functions_graph.c |   66 +++++++++++++++++++++++++++++++--
- 1 files changed, 62 insertions(+), 4 deletions(-)
+ arch/x86/kernel/vmlinux_64.lds.S  |    1 +
+ include/asm-generic/vmlinux.lds.h |   10 ++++++++++
+ scripts/recordmcount.pl           |    1 +
+ 3 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index af60eef..4bf39fc 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -231,6 +231,49 @@ trace_branch_is_leaf(struct trace_iterator *iter,
- 	return true;
- }
+diff --git a/arch/x86/kernel/vmlinux_64.lds.S b/arch/x86/kernel/vmlinux_64.lds.S
+index 46e0544..1a614c0 100644
+--- a/arch/x86/kernel/vmlinux_64.lds.S
++++ b/arch/x86/kernel/vmlinux_64.lds.S
+@@ -35,6 +35,7 @@ SECTIONS
+ 	SCHED_TEXT
+ 	LOCK_TEXT
+ 	KPROBES_TEXT
++	IRQENTRY_TEXT
+ 	*(.fixup)
+ 	*(.gnu.warning)
+ 	_etext = .;		/* End of text section */
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 30536c3..acb72d8 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -288,6 +288,16 @@
+ 		*(.kprobes.text)					\
+ 		VMLINUX_SYMBOL(__kprobes_text_end) = .;
  
-+static enum print_line_t
-+print_graph_irq(struct trace_seq *s, unsigned long addr,
-+				enum trace_type type, int cpu, pid_t pid)
-+{
-+	int ret;
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++#define IRQENTRY_TEXT							\
++		ALIGN_FUNCTION();					\
++		VMLINUX_SYMBOL(__irqentry_text_start) = .;		\
++		*(.irqentry.text)					\
++		VMLINUX_SYMBOL(__irqentry_text_end) = .;
++#else
++#define IRQENTRY_TEXT
++#endif
 +
-+	if (addr < (unsigned long)__irqentry_text_start ||
-+		addr >= (unsigned long)__irqentry_text_end)
-+		return TRACE_TYPE_UNHANDLED;
-+
-+	if (type == TRACE_GRAPH_ENT) {
-+		ret = trace_seq_printf(s, "==========> |  ");
-+	} else {
-+		/* Cpu */
-+		if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU) {
-+			ret = print_graph_cpu(s, cpu);
-+			if (ret == TRACE_TYPE_PARTIAL_LINE)
-+				return TRACE_TYPE_PARTIAL_LINE;
-+		}
-+		/* Proc */
-+		if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC) {
-+			ret = print_graph_proc(s, pid);
-+			if (ret == TRACE_TYPE_PARTIAL_LINE)
-+				return TRACE_TYPE_PARTIAL_LINE;
-+
-+			ret = trace_seq_printf(s, " | ");
-+			if (!ret)
-+				return TRACE_TYPE_PARTIAL_LINE;
-+		}
-+
-+		/* No overhead */
-+		if (tracer_flags.val & TRACE_GRAPH_PRINT_OVERHEAD) {
-+			ret = trace_seq_printf(s, "  ");
-+			if (!ret)
-+				return TRACE_TYPE_PARTIAL_LINE;
-+		}
-+
-+		ret = trace_seq_printf(s, "<========== |\n");
-+	}
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+	return TRACE_TYPE_HANDLED;
-+}
+ /* Section used for early init (in .S files) */
+ #define HEAD_TEXT  *(.head.text)
  
- static enum print_line_t
- print_graph_duration(unsigned long long duration, struct trace_seq *s)
-@@ -344,7 +387,7 @@ print_graph_entry_leaf(struct trace_iterator *iter,
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 0b1dc9f..fe83141 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -114,6 +114,7 @@ my %text_sections = (
+      ".text" => 1,
+      ".sched.text" => 1,
+      ".spinlock.text" => 1,
++     ".irqentry.text" => 1,
+ );
  
- static enum print_line_t
- print_graph_entry_nested(struct ftrace_graph_ent_entry *entry,
--			struct trace_seq *s)
-+			struct trace_seq *s, pid_t pid, int cpu)
- {
- 	int i;
- 	int ret;
-@@ -357,8 +400,18 @@ print_graph_entry_nested(struct ftrace_graph_ent_entry *entry,
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
- 
--	/* No time */
--	ret = trace_seq_printf(s, "            |  ");
-+	/* Interrupt */
-+	ret = print_graph_irq(s, call->func, TRACE_GRAPH_ENT, cpu, pid);
-+	if (ret == TRACE_TYPE_UNHANDLED) {
-+		/* No time */
-+		ret = trace_seq_printf(s, "            |  ");
-+		if (!ret)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+	} else {
-+		if (ret == TRACE_TYPE_PARTIAL_LINE)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+	}
-+
- 
- 	/* Function */
- 	for (i = 0; i < call->depth * TRACE_GRAPH_INDENT; i++) {
-@@ -410,7 +463,7 @@ print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
- 	if (trace_branch_is_leaf(iter, field))
- 		return print_graph_entry_leaf(iter, field, s);
- 	else
--		return print_graph_entry_nested(field, s);
-+		return print_graph_entry_nested(field, s, iter->ent->pid, cpu);
- 
- }
- 
-@@ -474,6 +527,11 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
- 		if (!ret)
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
-+
-+	ret = print_graph_irq(s, trace->func, TRACE_GRAPH_RET, cpu, ent->pid);
-+	if (ret == TRACE_TYPE_PARTIAL_LINE)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
- 	return TRACE_TYPE_HANDLED;
- }
- 
+ $objdump = "objdump" if ((length $objdump) == 0);
 -- 
 1.6.0.4
 
