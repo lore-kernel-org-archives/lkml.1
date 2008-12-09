@@ -1,91 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754385AbYLIOSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbYLIOTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754385AbYLIOSs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 09:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbYLIOQb
+	id S1754971AbYLIOTL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 09:19:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbYLIOQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 09:16:31 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:38998 "EHLO
-	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753226AbYLIOQY (ORCPT
+	Tue, 9 Dec 2008 09:16:33 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:40074 "EHLO
+	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753311AbYLIOQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 09:16:24 -0500
+	Tue, 9 Dec 2008 09:16:26 -0500
 X-BigFish: VPS3(zzzzzzz32i43j66h)
 X-Spam-TCS-SCL: 5:0
-X-FB-SS: 5,
-X-WSS-ID: 0KBM4YZ-04-AEF-01
+X-WSS-ID: 0KBM4YY-04-AEA-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: avi@redhat.com, mingo@redhat.com, dwmw2@infradead.org, gregkh@suse.de,
        weidong.han@intel.com
 CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        kvm@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 11/11] VT-d: remove now unused intel_iommu_found function
-Date: Tue, 9 Dec 2008 15:16:10 +0100
-Message-ID: <1228832170-13405-12-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 04/11] select IOMMU_API when DMAR and/or AMD_IOMMU is selected
+Date: Tue, 9 Dec 2008 15:16:03 +0100
+Message-ID: <1228832170-13405-5-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <1228832170-13405-11-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1228832170-13405-4-git-send-email-joerg.roedel@amd.com>
 References: <20081209141143.GW12816@amd.com>
  <1228832170-13405-1-git-send-email-joerg.roedel@amd.com>
  <1228832170-13405-2-git-send-email-joerg.roedel@amd.com>
  <1228832170-13405-3-git-send-email-joerg.roedel@amd.com>
  <1228832170-13405-4-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-5-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-6-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-7-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-8-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-9-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-10-git-send-email-joerg.roedel@amd.com>
- <1228832170-13405-11-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 09 Dec 2008 14:16:11.0036 (UTC) FILETIME=[AFAD05C0:01C95A08]
+X-OriginalArrivalTime: 09 Dec 2008 14:16:10.0794 (UTC) FILETIME=[AF8818A0:01C95A08]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+These two IOMMUs can implement the current version of this API. So
+select the API if one or both of these IOMMU drivers is selected.
+
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- drivers/pci/intel-iommu.c   |    6 ------
- include/linux/intel-iommu.h |    9 ---------
- 2 files changed, 0 insertions(+), 15 deletions(-)
+ arch/ia64/Kconfig     |    3 +++
+ arch/x86/Kconfig      |    3 +++
+ drivers/base/Makefile |    1 +
+ 3 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 81e04ec..ecb5fd3 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -3105,12 +3105,6 @@ static void intel_iommu_unmap_range(struct iommu_domain *domain,
- 		dmar_domain->max_addr = base;
- }
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 6bd91ed..6a7b0c9 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -687,3 +687,6 @@ config IRQ_PER_CPU
  
--int intel_iommu_found(void)
--{
--	return g_num_of_iommus;
--}
--EXPORT_SYMBOL_GPL(intel_iommu_found);
--
- static phys_addr_t intel_iommu_iova_to_phys(struct iommu_domain *domain,
- 					    unsigned long iova)
- {
-diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
-index 26ccc02..c4f6c10 100644
---- a/include/linux/intel-iommu.h
-+++ b/include/linux/intel-iommu.h
-@@ -330,15 +330,6 @@ extern int qi_flush_iotlb(struct intel_iommu *iommu, u16 did, u64 addr,
+ config IOMMU_HELPER
+ 	def_bool (IA64_HP_ZX1 || IA64_HP_ZX1_SWIOTLB || IA64_GENERIC || SWIOTLB)
++
++config IOMMU_API
++	def_bool (DMAR)
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ac22bb7..b9f7187 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -580,6 +580,9 @@ config SWIOTLB
+ config IOMMU_HELPER
+ 	def_bool (CALGARY_IOMMU || GART_IOMMU || SWIOTLB || AMD_IOMMU)
  
- extern void qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu);
- 
--#ifdef CONFIG_DMAR
--int intel_iommu_found(void);
--#else /* CONFIG_DMAR */
--static inline int intel_iommu_found(void)
--{
--	return 0;
--}
--#endif /* CONFIG_DMAR */
--
- extern void *intel_alloc_coherent(struct device *, size_t, dma_addr_t *, gfp_t);
- extern void intel_free_coherent(struct device *, size_t, void *, dma_addr_t);
- extern dma_addr_t intel_map_single(struct device *, phys_addr_t, size_t, int);
++config IOMMU_API
++	def_bool (AMD_IOMMU || DMAR)
++
+ config MAXSMP
+ 	bool "Configure Maximum number of SMP Processors and NUMA Nodes"
+ 	depends on X86_64 && SMP && BROKEN
+diff --git a/drivers/base/Makefile b/drivers/base/Makefile
+index c666373..b5b8ba5 100644
+--- a/drivers/base/Makefile
++++ b/drivers/base/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_FW_LOADER)	+= firmware_class.o
+ obj-$(CONFIG_NUMA)	+= node.o
+ obj-$(CONFIG_MEMORY_HOTPLUG_SPARSE) += memory.o
+ obj-$(CONFIG_SMP)	+= topology.o
++obj-$(CONFIG_IOMMU_API) += iommu.o
+ ifeq ($(CONFIG_SYSFS),y)
+ obj-$(CONFIG_MODULES)	+= module.o
+ endif
 -- 
 1.5.6.4
 
