@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbYLITqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYLITwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755167AbYLITqO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 14:46:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754923AbYLITp5
+	id S1754859AbYLITwU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 14:52:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbYLITwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 14:45:57 -0500
-Received: from mail-fx0-f19.google.com ([209.85.220.19]:63392 "EHLO
-	mail-fx0-f19.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754287AbYLITp5 (ORCPT
+	Tue, 9 Dec 2008 14:52:06 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:57903 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753841AbYLITwF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 14:45:57 -0500
-X-Greylist: delayed 882 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Dec 2008 14:45:56 EST
-Message-ID: <493EC412.3090805@colorfullife.com>
-Date: Tue, 09 Dec 2008 20:16:34 +0100
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Tue, 9 Dec 2008 14:52:05 -0500
+Message-ID: <493ECC48.6060107@nortel.com>
+Date: Tue, 09 Dec 2008 13:51:36 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: Jan Rekorajski <baggins@sith.mimuw.edu.pl>, linux-kernel@vger.kernel.org,
-       Holger Hoffstaette <holger@wizards.de>, netdev@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
-       stable@kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: Re: Nasty regression from .27.7 to .27.8: idle samba goes crazy
-References: <pan.2008.12.08.06.18.57.357875@wizards.de> <200812080834.22924.rjw@sisk.pl> <pan.2008.12.08.08.07.29.439625@wizards.de> <493D4F5C.7020606@s5r6.in-berlin.de> <493D7349.10200@s5r6.in-berlin.de> <20081208222246.GA29232@sith.mimuw.edu.pl> <20081209123703.043067eb@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20081209123703.043067eb@dhcp-100-2-144.bos.redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: eranian@gmail.com, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>,
+       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Subject: Re: [patch] Performance Counters for Linux, v2
+References: <20081208012211.GA23106@elte.hu> <7c86c4470812082237ne58c814s7218cc663f3b49e9@mail.gmail.com> <20081209134636.GA1926@elte.hu> <493E9F3E.3020902@nortel.com> <20081209190254.GA27833@elte.hu>
+In-Reply-To: <20081209190254.GA27833@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Dec 2008 19:51:39.0309 (UTC) FILETIME=[8D0FBDD0:01C95A37]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> Try reverting the idr patch that went into 2.6.27.8. It broke DRM in the
-> Fedora kernel at least.
->
->   
-What happens?
-Does it oops, does one of the BUG() statements trigger?
+Ingo Molnar wrote:
+> * Chris Friesen <cfriesen@nortel.com> wrote:
 
---
-    Manfred
+>> Regardless of sampling method, don't you still want some way to 
+>> enable/disable the various counters as close to simultaneously as 
+>> possible?
+> 
+> If it's about counter control for the monitored task, then we sure could 
+> do something about that. (apps/libraries could thus select a subset of 
+> functions to profile/measure, runtime, etc.)
+> 
+> If it's about counter control for the profiler/debugger, i'm not sure how 
+> useful that is - do you have a good usecase for it?
+
+I'm sure that others could give more usecases, but I was thinking about 
+cases like "I want to test _these_ multiple metrics simultaneously over 
+_this_ specific section of code".  In a case like this, it seems 
+desirable to start/stop the various performance counters as close 
+together as possible, especially if the section of code being tested is 
+short.
+
+Chris
