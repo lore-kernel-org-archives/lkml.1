@@ -1,171 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbYLIXSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbYLIXU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755806AbYLIXSt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 18:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYLIXSl
+	id S1755716AbYLIXU6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 18:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYLIXUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 18:18:41 -0500
-Received: from mpv4.tis.CWRU.Edu ([129.22.105.34]:17526 "EHLO
-	mpv4.tis.cwru.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbYLIXSk (ORCPT
+	Tue, 9 Dec 2008 18:20:49 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:60448 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753362AbYLIXUs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 18:18:40 -0500
-X-Greylist: delayed 363 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Dec 2008 18:18:40 EST
-To: linux-kernel@vger.kernel.org
-Subject: idle USB harddrive spins up with 2.6.28-rc7 and 2.6.27.8, but not with 2.6.26.8
-Content-Disposition: inline
-From: CSights <csights@fastmail.fm>
-Date: Tue, 9 Dec 2008 18:12:33 -0500
+	Tue, 9 Dec 2008 18:20:48 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 10 Dec 2008 00:20:38 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: fw-ohci: fix possible IOMMU resource exhaustion
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.8d55c1b322c680dc@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200812091812.33730.csights@fastmail.fm>
-X-Junkmail-Status: score=35/49, host=mpv4.tis.cwru.edu
-X-Junkmail-SD-Raw: score=suspect(0),
-	refid=str=0001.0A010207.493EFB64.0084,ss=2,fgs=0,
-	ip=69.219.234.254,
-	so=2008-09-22 23:22:13,
-	dmn=5.4.3/2007-10-18,
-	mode=single engine
-X-Junkmail-IWF: false
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi LKML,
-	I've got an IDE harddrive in a USB external enclosure. It is /dev/sda.
-	When I'm compiling the kernel or doing other things on /dev/hda1 the USB 
-harddrive (sda1) will spin-up or not spin-down.  This happens with kernel 
-versions 2.6.28-rc7 and 2.6.27.8, but not with 2.6.26.8.
-	Also, I'm using laptop-mode-tools to turn on laptop mode.
-	I used the "btrace" script on /dev/sda while compiling a kernel on /dev/hda1.  
-While running 2.6.26.8 btrace did not output anything.  With 2.6.27.8 and 
-2.6.28-rc7 a load of stuff was going on with /dev/sda.
-	I don't know what it means, but it is probably what is causing the harddrive 
-to spin up. :)  Hopefully someone besides me will consider this 
-a "regression".  Let me know if you need any other info.
+There is a DMA map/ unmap imbalance whenever a block write request
+packet is sent and then dequeued with ohci_cancel_packet.  The latter
+may happen frequently if the AR resp tasklet is executed before the AT
+req tasklet for the same transaction.
 
-Thanks!
-	C.
+Add the missing dma_unmap_single.
 
-Using 2.6.26.8, btrace of /dev/sda while compiling on /dev/hda1
-	did not output anything.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-Using 2.6.27.8, btrace of /dev/sda while compiling on /dev/hda1
-Dec  9 11:15:32 localhost logger:   8,0    0        1     0.000000000  1109  A  
-WS 14375 + 8 <- (8,1) 14312
-Dec  9 11:15:32 localhost logger:   8,0    0        2     0.000006705  1109  Q  
-WS 14375 + 8 [kjournald]
-Dec  9 11:15:32 localhost logger:   8,0    0        3     0.000043581  1109  G  
-WS 14375 + 8 [kjournald]
-Dec  9 11:15:32 localhost logger:   8,0    0        4     0.000065651  1109  P   
-N [kjournald]
-Dec  9 11:15:32 localhost logger:   8,0    0        5     0.000076267  1109  I   
-W 14375 + 8 [kjournald]
-Dec  9 11:15:32 localhost logger:   8,0    0        6     0.000300318  1109  D   
-W 14375 + 8 [kjournald]
-Dec  9 11:15:32 localhost logger:   8,0    0        7     0.000423518  1109  U   
-N [kjournald] 1
-Dec  9 11:15:32 localhost logger:   8,0    0        8     0.010028373     3  C   
-W 14375 + 8 [0]
-Dec  9 11:15:35 localhost logger:   8,0    0        9     3.219049689  1109  A  
-WS 14383 + 8 <- (8,1) 14320
-Dec  9 11:15:35 localhost logger:   8,0    0       10     3.219058350  1109  Q  
-WS 14383 + 8 [kjournald]
-Dec  9 11:15:35 localhost logger:   8,0    0       11     3.219095505  1109  G  
-WS 14383 + 8 [kjournald]
-Dec  9 11:15:35 localhost logger:   8,0    0       12     3.219115061  1109  P   
-N [kjournald]
-Dec  9 11:15:35 localhost logger:   8,0    0       13     3.219127074  1109  I   
-W 14383 + 8 [kjournald]
-Dec  9 11:15:35 localhost logger:   8,0    0       14     3.219344699  1109  D   
-W 14383 + 8 [kjournald]
-Dec  9 11:15:35 localhost logger:   8,0    0       15     3.219543607  1109  U   
-N [kjournald] 1
-Dec  9 11:15:35 localhost logger:   8,0    0       16     3.229477275     3  C   
-W 14383 + 8 [0]
-Dec  9 11:15:40 localhost logger:   8,0    0       17     8.372429561  1109  A  
-WS 14391 + 8 <- (8,1) 14328
-Dec  9 11:15:40 localhost logger:   8,0    0       18     8.372437663  1109  Q  
-WS 14391 + 8 [kjournald]
-Dec  9 11:15:40 localhost logger:   8,0    0       19     8.372474539  1109  G  
-WS 14391 + 8 [kjournald]
-Dec  9 11:15:40 localhost logger:   8,0    0       20     8.372496329  1109  P   
-N [kjournald]
-Dec  9 11:15:40 localhost logger:   8,0    0       21     8.372508063  1109  I   
-W 14391 + 8 [kjournald]
-Dec  9 11:15:40 localhost logger:   8,0    0       22     8.372729320  1109  D   
-W 14391 + 8 [kjournald]
-Dec  9 11:15:40 localhost logger:   8,0    0       23     8.372839669  1109  U   
-N [kjournald] 1
-Dec  9 11:15:40 localhost logger:   8,0    0       24     8.382665781     3  C   
-W 14391 + 8 [0]
-Dec  9 11:15:49 localhost logger:   8,0    0       25    17.082110738  1109  A  
-WS 14399 + 8 <- (8,1) 14336
-Dec  9 11:15:49 localhost logger:   8,0    0       26    17.082119119  1109  Q  
-WS 14399 + 8 [kjournald]
-Dec  9 11:15:49 localhost logger:   8,0    0       27    17.082156834  1109  G  
-WS 14399 + 8 [kjournald]
-Dec  9 11:15:49 localhost logger:   8,0    0       28    17.082180859  1109  P   
-N [kjournald]
-Dec  9 11:15:49 localhost logger:   8,0    0       29    17.082193431  1109  I   
-W 14399 + 8 [kjournald]
-Dec  9 11:15:49 localhost logger:   8,0    0       30    17.082418878  1109  D   
-W 14399 + 8 [kjournald]
-Dec  9 11:15:49 localhost logger:   8,0    0       31    17.082527831  1109  U   
-N [kjournald] 1
-Dec  9 11:15:49 localhost logger:   8,0    0       32    17.092196101     3  C   
-W 14399 + 8 [0]
-...etc...
+This was spotted due to https://bugzilla.redhat.com/show_bug.cgi?id=475156,
+but whether the patch already fixes bug 475156 has yet to be tested.
 
-Using kernel 2.6.28-rc7, btrace of /dev/sda while compiling on /dev/hda1
-Dec  9 17:48:37 localhost logger:   8,0    0        1     0.000000000  1129  A  
-WS 12567 + 8 <- (8,1) 12504
-Dec  9 17:48:37 localhost logger:   8,0    0        2     0.000005587  1129  Q  
-WS 12567 + 8 [kjournald]
-Dec  9 17:48:37 localhost logger:   8,0    0        3     0.000038553  1129  G  
-WS 12567 + 8 [kjournald]
-Dec  9 17:48:37 localhost logger:   8,0    0        4     0.000061460  1129  P   
-N [kjournald]
-Dec  9 17:48:37 localhost logger:   8,0    0        5     0.000074032  1129  I   
-W 12567 + 8 [kjournald]
-Dec  9 17:48:37 localhost logger:   8,0    0        6     0.000266235  1129  D   
-W 12567 + 8 [kjournald]
-Dec  9 17:48:37 localhost logger:   8,0    0        7     0.000372394  1129  U   
-N [kjournald] 1
-Dec  9 17:48:37 localhost logger:   8,0    0        8     0.010619230     3  C   
-W 12567 + 8 [0]
-Dec  9 17:49:19 localhost logger:   8,0    0        9    41.770854333  1129  A  
-WS 12575 + 8 <- (8,1) 12512
-Dec  9 17:49:19 localhost logger:   8,0    0       10    41.770862156  1129  Q  
-WS 12575 + 8 [kjournald]
-Dec  9 17:49:19 localhost logger:   8,0    0       11    41.770895121  1129  G  
-WS 12575 + 8 [kjournald]
-Dec  9 17:49:19 localhost logger:   8,0    0       12    41.770917191  1129  P   
-N [kjournald]
-Dec  9 17:49:19 localhost logger:   8,0    0       13    41.770929483  1129  I   
-W 12575 + 8 [kjournald]
-Dec  9 17:49:19 localhost logger:   8,0    0       14    41.771122524  1129  D   
-W 12575 + 8 [kjournald]
-Dec  9 17:49:19 localhost logger:   8,0    0       15    41.771247680  1129  U   
-N [kjournald] 1
-Dec  9 17:49:19 localhost logger:   8,0    0       16    41.780654465     3  C   
-W 12575 + 8 [0]
-Dec  9 17:49:22 localhost logger:   8,0    0       17    44.820030708  1129  A  
-WS 12583 + 8 <- (8,1) 12520
-Dec  9 17:49:22 localhost logger:   8,0    0       18    44.820038530  1129  Q  
-WS 12583 + 8 [kjournald]
-Dec  9 17:49:22 localhost logger:   8,0    0       19    44.820069539  1129  G  
-WS 12583 + 8 [kjournald]
-Dec  9 17:49:22 localhost logger:   8,0    0       20    44.820091050  1129  P   
-N [kjournald]
-Dec  9 17:49:22 localhost logger:   8,0    0       21    44.820103622  1129  I   
-W 12583 + 8 [kjournald]
-Dec  9 17:49:22 localhost logger:   8,0    0       22    44.820291914  1129  D   
-W 12583 + 8 [kjournald]
-Dec  9 17:49:22 localhost logger:   8,0    0       23    44.820386898  1129  U   
-N [kjournald] 1
-Dec  9 17:49:22 localhost logger:   8,0    0       24    44.830135906     3  C   
-W 12583 + 8 [0]
-...etc...
+ drivers/firewire/fw-ohci.c        |   11 +++++++----
+ drivers/firewire/fw-transaction.c |    3 +++
+ drivers/firewire/fw-transaction.h |    2 ++
+ 3 files changed, 12 insertions(+), 4 deletions(-)
+
+Index: linux/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -974,6 +974,7 @@ at_context_queue_packet(struct context *
+ 			packet->ack = RCODE_SEND_ERROR;
+ 			return -1;
+ 		}
++		packet->payload_bus = payload_bus;
+ 
+ 		d[2].req_count    = cpu_to_le16(packet->payload_length);
+ 		d[2].data_address = cpu_to_le32(payload_bus);
+@@ -1025,7 +1026,6 @@ static int handle_at_packet(struct conte
+ 	struct driver_data *driver_data;
+ 	struct fw_packet *packet;
+ 	struct fw_ohci *ohci = context->ohci;
+-	dma_addr_t payload_bus;
+ 	int evt;
+ 
+ 	if (last->transfer_status == 0)
+@@ -1038,9 +1038,8 @@ static int handle_at_packet(struct conte
+ 		/* This packet was cancelled, just continue. */
+ 		return 1;
+ 
+-	payload_bus = le32_to_cpu(last->data_address);
+-	if (payload_bus != 0)
+-		dma_unmap_single(ohci->card.device, payload_bus,
++	if (packet->payload_bus)
++		dma_unmap_single(ohci->card.device, packet->payload_bus,
+ 				 packet->payload_length, DMA_TO_DEVICE);
+ 
+ 	evt = le16_to_cpu(last->transfer_status) & 0x1f;
+@@ -1697,6 +1696,10 @@ static int ohci_cancel_packet(struct fw_
+ 	if (packet->ack != 0)
+ 		goto out;
+ 
++	if (packet->payload_bus)
++		dma_unmap_single(ohci->card.device, packet->payload_bus,
++				 packet->payload_length, DMA_TO_DEVICE);
++
+ 	log_ar_at_event('T', packet->speed, packet->header, 0x20);
+ 	driver_data->packet = NULL;
+ 	packet->ack = RCODE_CANCELLED;
+Index: linux/drivers/firewire/fw-transaction.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-transaction.c
++++ linux/drivers/firewire/fw-transaction.c
+@@ -208,6 +208,7 @@ fw_fill_request(struct fw_packet *packet
+ 	packet->speed = speed;
+ 	packet->generation = generation;
+ 	packet->ack = 0;
++	packet->payload_bus = 0;
+ }
+ 
+ /**
+@@ -582,6 +583,8 @@ fw_fill_response(struct fw_packet *respo
+ 		BUG();
+ 		return;
+ 	}
++
++	response->payload_bus = 0;
+ }
+ EXPORT_SYMBOL(fw_fill_response);
+ 
+Index: linux/drivers/firewire/fw-transaction.h
+===================================================================
+--- linux.orig/drivers/firewire/fw-transaction.h
++++ linux/drivers/firewire/fw-transaction.h
+@@ -27,6 +27,7 @@
+ #include <linux/list.h>
+ #include <linux/spinlock_types.h>
+ #include <linux/timer.h>
++#include <linux/types.h>
+ #include <linux/workqueue.h>
+ 
+ #define TCODE_IS_READ_REQUEST(tcode)	(((tcode) & ~1) == 4)
+@@ -153,6 +154,7 @@ struct fw_packet {
+ 	size_t header_length;
+ 	void *payload;
+ 	size_t payload_length;
++	dma_addr_t payload_bus;
+ 	u32 timestamp;
+ 
+ 	/*
+
+-- 
+Stefan Richter
+-=====-==--- ==-- -=-=-
+http://arcgraph.de/sr/
+
