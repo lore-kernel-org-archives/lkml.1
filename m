@@ -1,225 +1,485 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbYLIDgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbYLIDmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753190AbYLIDgR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Dec 2008 22:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYLIDgA
+	id S1752680AbYLIDmU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Dec 2008 22:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbYLIDmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Dec 2008 22:36:00 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:21456 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750857AbYLIDf7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Dec 2008 22:35:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=i2ksmoGezuGarQ4akJ6FcIF1p2nOkMedM2BMRD8x7x0uhAKDTiVWFrqoMG6hGbs4Iy
-         OiqFD3CcUr+HtGanPW6JtV4pFUp1PyVaOx819lyK9meRX4bUwFXXcjONboYYbLORyxqk
-         9VhbLXZOsIbT+QES4bxf6pAKMPXmrtVKZlF1Y=
-Message-ID: <91b13c310812081935n7edb610esbb322e57156b8c8f@mail.gmail.com>
-Date: Tue, 9 Dec 2008 11:35:56 +0800
-From: "Cheng Renquan" <crquan@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric Moore" <Eric.Moore@lsi.com>
-Subject: Re: [PATCH 1/2] mpt fusion: updated mpt drivers from lsi upstream "4.00.43.00"
-Cc: support@lsi.com, DL-MPTFusionLinux@lsi.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081208140742.1c3a026d.akpm@linux-foundation.org>
+	Mon, 8 Dec 2008 22:42:10 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49078 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750888AbYLIDmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Dec 2008 22:42:09 -0500
+Date: Tue, 9 Dec 2008 04:41:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] irq: move irq_desc according to smp_affinity v6
+Message-ID: <20081209034149.GB9809@elte.hu>
+References: <1228532430-28958-1-git-send-email-yinghai@kernel.org> <20081208134219.GC29965@elte.hu> <493D9A8E.7070107@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1228483610-18502-1-git-send-email-crquan@gmail.com>
-	 <20081208140742.1c3a026d.akpm@linux-foundation.org>
+In-Reply-To: <493D9A8E.7070107@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 8, 2008 at 11:17 PM, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> On Fri, 2008-12-05 at 21:26 +0800, crquan@gmail.com wrote:
->> From: Cheng Renquan <crquan@gmail.com>
->>
->> this one just can build with mainstream git kernel, I did not even test it.
->>
->> I just have tested it with kernel 2.6.26.2, that patch is very similar to
->> this, and it did work well with 2.6.26.2.
->>
->> Signed-off-by: Cheng Renquan <crquan@gmail.com>
->> ---
->>  drivers/message/fusion/linux_compat.h |    3 +-
->
-> I don't quite understand what this patch is about.  This file isn't in
-> the upstream and hasn't been for a while if I recall, so what is this
-> patch actually patching?
 
-James, please notice the first patch, it's about the mpt vendor
-driver, the upstream device vendor maintained three series of mpt
-drivers, specially for RHEL3,4,5/SLES8,9,10
-but they didn't maintain one for the latest mainstream git kernel,
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-the first patch (130KB after bzip2'ed) is just replace
-drivers/message/fusion/ with code "4.00.43.00" from vendor. You can
-extracting the source from vendor into drivers/message/fusion/ instead
-of applying this patch.
+> for physical apic is much simple
+> on 4 sockets 16 cores system
+> irq_desc is moving..
+> when
+> # echo 10 > /proc/irq/134483967/smp_affinity
+> # echo 100 > /proc/irq/134483967/smp_affinity
+> # echo 1000 > /proc/irq/134483967/smp_affinity
+> got
+> Nov  9 21:39:51 LBSuse kernel:   move irq_desc for 134483967 aka 0x8040fff to cpu 4 node 1
+> Nov  9 21:39:51 LBSuse kernel:   alloc kstat_irqs on cpu 4 node 1
+> Nov  9 21:39:51 LBSuse kernel:   alloc irq_cfg on cpu 4 node 1
+> Nov  9 21:40:05 LBSuse kernel:   move irq_desc for 134483967 aka 0x8040fff to cpu 8 node 2
+> Nov  9 21:40:05 LBSuse kernel:   alloc kstat_irqs on cpu 8 node 2
+> Nov  9 21:40:05 LBSuse kernel:   alloc irq_cfg on cpu 8 node 2
+> Nov  9 21:40:18 LBSuse kernel:   move irq_desc for 134483967 aka 0x8040fff to cpu 12 node 3
+> Nov  9 21:40:18 LBSuse kernel:   alloc kstat_irqs on cpu 12 node 3
+> Nov  9 21:40:18 LBSuse kernel:   alloc irq_cfg on cpu 12 node 3
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
->>  drivers/message/fusion/mptbase.c      |   10 +-
->>  drivers/message/fusion/mptbase.h      |    6 +-
->>  drivers/message/fusion/mptfc.c        |    4 +-
->>  drivers/message/fusion/mptsas.c       |   14 +---
->>  drivers/message/fusion/mptscsih.c     |  169 +++++++++++++--------------------
->>  drivers/message/fusion/mptscsih.h     |    2 +-
->>  7 files changed, 79 insertions(+), 129 deletions(-)
->>
->> diff --git a/drivers/message/fusion/linux_compat.h b/drivers/message/fusion/linux_compat.h
->> index 24ad3f1..92e9797 100644
->> --- a/drivers/message/fusion/linux_compat.h
->> +++ b/drivers/message/fusion/linux_compat.h
->> @@ -31,7 +31,6 @@ static inline void *shost_private(struct Scsi_Host *shost)
->>  #define spi_dv_pending(x) (((struct spi_transport_attrs *)&(x)->starget_data)->dv_pending)
->>  #endif
->>
->> -#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
->>  /**
->>   * mpt_scsilun_to_int: convert a scsi_lun to an int
->>   * @scsilun:    struct scsi_lun to be converted.
->> @@ -62,7 +61,7 @@ static inline int mpt_scsilun_to_int(struct scsi_lun *scsilun)
->>                                scsilun->scsi_lun[i + 1]) << (i * 8));
->>          return lun;
->>  }
->> -#endif
->> +
->>  #if (defined(CONFIG_SUSE_KERNEL) && !defined(scsi_is_sas_phy_local))
->>  #define SUSE_KERNEL_BASE     1
->>  #endif
->> diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
->> index 2979b63..36dd62a 100644
->> --- a/drivers/message/fusion/mptbase.c
->> +++ b/drivers/message/fusion/mptbase.c
->> @@ -1618,7 +1618,7 @@ mpt_mapresources(MPT_ADAPTER *ioc)
->>       }
->>  #else
->>       ioc->bars = pci_select_bars(pdev, IORESOURCE_MEM);
->> -     if (pci_enable_device_bars(pdev, ioc->bars)) {
->> +     if (pci_enable_device(pdev)) {
->
-> API reversal.
->
->>               printk(MYIOC_s_ERR_FMT "pci_enable_device_bars() with MEM "
->>                   "failed\n",ioc->name);
->>               return r;
->> @@ -1826,7 +1826,8 @@ mpt_attach(struct pci_dev *pdev, const struct pci_device_id *id)
->>  #endif
->>
->>       /* Initialize workqueue */
->> -     snprintf(ioc->reset_work_q_name, KOBJ_NAME_LEN, "mpt_poll_%d", ioc->id);
->> +     snprintf(ioc->reset_work_q_name, sizeof(ioc->reset_work_q_name),
->> +                     "mpt_poll_%d", ioc->id);
->>       ioc->reset_work_q =
->>               create_singlethread_workqueue(ioc->reset_work_q_name);
->>       if (!ioc->reset_work_q) {
->> @@ -1949,7 +1950,8 @@ mpt_attach(struct pci_dev *pdev, const struct pci_device_id *id)
->>
->>       INIT_LIST_HEAD(&ioc->fw_event_list);
->>       spin_lock_init(&ioc->fw_event_lock);
->> -     snprintf(ioc->fw_event_q_name, KOBJ_NAME_LEN, "mpt/%d", ioc->id);
->> +     snprintf(ioc->fw_event_q_name, sizeof(ioc->fw_event_q_name),
->> +                     "mpt/%d", ioc->id);
->>       ioc->fw_event_q = create_singlethread_workqueue(ioc->fw_event_q_name);
->>
->>       if ((r = mpt_do_ioc_recovery(ioc, MPT_HOSTEVENT_IOC_BRINGUP,
->> @@ -2303,7 +2305,7 @@ mpt_do_ioc_recovery(MPT_ADAPTER *ioc, u32 reason, int sleepFlag)
->>               pci_release_selected_regions(ioc->pcidev, ioc->bars);
->>               ioc->bars = pci_select_bars(ioc->pcidev, IORESOURCE_MEM |
->>                   IORESOURCE_IO);
->> -             if (pci_enable_device_bars(ioc->pcidev, ioc->bars))
->> +             if (pci_enable_device(ioc->pcidev))
->
-> Things like this are reversing kernel API changes and can't go in.
+Neat feature!
 
-All the work in the second patch is just let it can build.
+i'm wondering, have you tried to characterise the cost savings of moving 
+the irq desc? It will certainly save three heavy cross-NUMA cachemisses 
+on x86 per rare irq source.
 
-The vendor driver "4.00.43.00" is for RHEL5.1 (2.6.18-53.el5), and
-cannot build on 2.6.26 and latest git kernel,
+A way to attempt to measure this would be to write some quick debug hack 
+that prints the cycle count of one specific IRQ source, in do_IRQ(), from 
+the entry of do_IRQ() to the exit of do_IRQ(), using rdtscl(). Pick an 
+IRQ that you can trigger arbitrarily, and printk the cycle cost at the 
+end of do_IRQ(). [if irq == your_debug_irq - otherwise you can get a lot 
+of printks and not too good measurements].
 
-with applying the second patch, it can build. I have tested it, and
-verified that it fixed the bug described on:
+plus perhaps add some quick hack that makes the 
+irq_desc/chip_data/kstat_irqs migration dependent on a sysctl, such as 
+'panic_timeout' (tunable via 'echo 1 > /proc/sys/kernel/panic'). Then you 
+could try to trigger your debug IRQ and the cycle cost printk in two 
+modes:
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12163
+  echo 0 > /proc/sys/kernel/panic
 
+  [ migrate the IRQ to another domain and trigger the IRQ - wait for the 
+    cycle printout. Both cache-cold and cache-hot numbers are 
+    interesting. ]
 
->
-> What you need to do is isolate the necessary changes to current git head
-> (or scsi-misc) and then send it to the LSI maintainers.  The route to
-> inclusion is via them.
+  echo 1 > /proc/sys/kernel/panic
 
-Yes, I have tried, but the vendor LSI people just ignored, they were
-not co-operative, then how we can deal?
+  [ re-migrate the debug IRQ via /proc/irq/*/smp_affinity to make sure 
+    it's NUMA-local, then trigger the debug IRQ and record cache-cold and 
+    cache-hot cycle counts. ]
 
-Again, I hope LSI people in the Cc'ed list can read this mail and give replies.
+it's hard to measure this reliably, as on x86 the numa factor is usually 
+pretty low, so the local versus remote cachemiss cost is hard to 
+separate.
 
->
-> Alternatively, we can just continue on with debugging the actual problem
-> you have rather than trying to upport some vendor driver.
+A few comments about the patch too:
 
-That approach almost cannot solve the bug, we don't have the
-card/firmware specification, the debugging will be very hard.
+> +config MOVE_IRQ_DESC
+> +	bool "Move irq desc when changing irq smp_affinity"
+> +	depends on SPARSE_IRQ && SMP
+> +	default y
 
->
-> James
+new feature - should be default-no.
 
-On Tue, Dec 9, 2008 at 6:07 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> (off-list)
->
-> On Fri,  5 Dec 2008 21:26:49 +0800
-> crquan@gmail.com wrote:
->
->> Occasionally I'm working with LSI SAS 1068E controllers on 2.6.26.2 kernel,
->> it has a nasty bug that some hotplugged disks cannot be auto discovered,
->> the detailed description is on bugzilla.kernel:
->>
->> http://bugzilla.kernel.org/show_bug.cgi?id=12163
->>
->> After some inspecting the vendor's website, I found there are "4.00.43.00"
->> drivers for RHEL5.1, but the drivers in main stream kernel are still "3.04.07",
->> and the changelogs of "4.00.43.00" have records on solving that BUG,
->>
->> but the default "4.00.43.00" downloaded from lsi.com cannot even build on
->> kernel-2.6.26.2, and after some work, I get it run on 2.6.26.2, then can build
->> with mainstream git kernel (the HEAD currently),
->>
->> http://www.lsi.com/storage_home/products_home/standard_product_ics/sas_ics/lsisas1068e/index.html
->>
+> +	help
+> +	  This enables moving irq_desc to cpu/node that irq will use handled.
+> +
+> +	  If you don't know what to do here, say Y.
 
->>    -#define MPT_LINUX_VERSION_COMMON  "3.04.07"
->>    +#define MPT_LINUX_VERSION_COMMON  "4.00.43.00"
+Later on i think we should just select this in the NUMA case, instead of 
+complicating the user's selection. It's OK to have it configurable now - 
+should it cause problems.
 
-Please James notice this, the major version difference, but the mpt in
-the mainstream is "3.04.07", outdated.
+> +
+>  config X86_FIND_SMP_CONFIG
+>  	def_bool y
+>  	depends on X86_MPPARSE || X86_VOYAGER
+> Index: linux-2.6/arch/x86/kernel/io_apic.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/io_apic.c
+> +++ linux-2.6/arch/x86/kernel/io_apic.c
+> @@ -141,6 +141,9 @@ struct irq_cfg {
+>  	unsigned move_cleanup_count;
+>  	u8 vector;
+>  	u8 move_in_progress : 1;
+> +#ifdef CONFIG_MOVE_IRQ_DESC
+> +	u8 move_desc_in_progress_in_same_domain : 1;
+> +#endif
 
->> This patch is just the upstream "4.00.43.00", it's very big, about 130K after
->> bzip2'ed
->
-> Eric, is this as bad as it looks?  LSI's driver is 130kbytes and a
-> major version increment ahead of the mainline driver?
->
-> If so, is there anything we can do to bring the mainline driver more
-> up-to-date and to keep it there?  Should we (ie: me, James, distros,
-> etc) be seeking additional developers to help make all this happen?
+way too long field name - please rename to move_desc_pending or so.
 
-Cool, if Eric can read this, I'm willing to help make all this happen.
+> @@ -223,6 +226,122 @@ void arch_init_chip_data(struct irq_desc
+>  	}
+>  }
+>  
+> +#ifdef CONFIG_MOVE_IRQ_DESC
+> +
+> +static void init_copy_irq_2_pin(struct irq_cfg *old_cfg, struct irq_cfg *cfg,
+> +				 int cpu)
+> +{
 
+small style nit, it's a tiny bit tidier to break the line the following 
+way:
 
->
-> Thanks.
->
+static void
+init_copy_irq_2_pin(struct irq_cfg *old_cfg, struct irq_cfg *cfg, int cpu)
 
+[ as this way we have all the parameters on a single line, and the return 
+  type stands out on a separate line. ]
 
-Thanks.
+> +	struct irq_pin_list *old_entry, *head, *tail, *entry;
+> +
+> +	cfg->irq_2_pin = NULL;
+> +	old_entry = old_cfg->irq_2_pin;
+> +	if (!old_entry)
+> +		return;
+> +
+> +	entry = get_one_free_irq_2_pin(cpu);
+> +	if (!entry)
+> +		return;
+> +
+> +	entry->apic = old_entry->apic;
+> +	entry->pin = old_entry->pin;
+> +	head = entry;
+> +	tail = entry;
+> +	old_entry = old_entry->next;
 
--- 
-Cheng Renquan, Shenzhen, China
-Marie von Ebner-Eschenbach  - "Even a stopped clock is right twice a day."
+for mass-initialization please try to structure it a bit:
+
+> +	entry->apic	= old_entry->apic;
+> +	entry->pin	= old_entry->pin;
+> +	head		= entry;
+> +	tail		= entry;
+> +
+> +	old_entry	= old_entry->next;
+
+it's much easier to validate such constructs. For example, once 
+vertically aligned, i immediately saw an oddity in it - why is 
+'old_entry' initialized twice?
+
+> +
+> +	while (old_entry) {
+> +		entry = get_one_free_irq_2_pin(cpu);
+> +		if (!entry) {
+> +			entry = head;
+> +			while (entry) {
+> +				head = entry->next;
+> +				kfree(entry);
+> +				entry = head;
+> +			}
+> +			/* still use the old one */
+> +			return;
+> +		}
+
+same here:
+
+> +		entry->apic = old_entry->apic;
+> +		entry->pin = old_entry->pin;
+> +		tail->next = entry;
+> +		tail = entry;
+> +		old_entry = old_entry->next;
+> +	}
+> +
+> +	tail->next = NULL;
+> +	cfg->irq_2_pin = head;
+> +}
+> +
+> +static void free_irq_2_pin(struct irq_cfg *old_cfg, struct irq_cfg *cfg)
+> +{
+> +	struct irq_pin_list *entry, *next;
+> +
+> +	if (old_cfg->irq_2_pin == cfg->irq_2_pin)
+> +		return;
+> +
+> +	entry = old_cfg->irq_2_pin;
+> +
+> +	while (entry) {
+> +		next = entry->next;
+> +		kfree(entry);
+> +		entry = next;
+> +	}
+> +	old_cfg->irq_2_pin = NULL;
+> +}
+> +
+> +void arch_init_copy_chip_data(struct irq_desc *old_desc,
+> +				 struct irq_desc *desc, int cpu)
+> +{
+> +	struct irq_cfg *cfg;
+> +	struct irq_cfg *old_cfg;
+> +
+> +	cfg = get_one_free_irq_cfg(cpu);
+> +
+> +	if (!cfg)
+> +		return;
+> +
+> +	desc->chip_data = cfg;
+> +
+> +	old_cfg = old_desc->chip_data;
+> +
+> +	memcpy(cfg, old_cfg, sizeof(struct irq_cfg));
+> +
+> +	init_copy_irq_2_pin(old_cfg, cfg, cpu);
+> +}
+> +
+> +static void free_irq_cfg(struct irq_cfg *old_cfg)
+> +{
+> +	kfree(old_cfg);
+> +}
+> +
+> +void arch_free_chip_data(struct irq_desc *old_desc, struct irq_desc *desc)
+> +{
+> +	struct irq_cfg *old_cfg, *cfg;
+> +
+> +	old_cfg = old_desc->chip_data;
+> +	cfg = desc->chip_data;
+> +
+> +	if (old_cfg == cfg)
+> +		return;
+> +
+> +	if (old_cfg) {
+> +		free_irq_2_pin(old_cfg, cfg);
+> +		free_irq_cfg(old_cfg);
+> +		old_desc->chip_data = NULL;
+> +	}
+> +}
+> +
+> +static void set_extra_move_desc(struct irq_desc *desc, cpumask_t mask)
+> +{
+> +	struct irq_cfg *cfg = desc->chip_data;
+> +
+> +	if (!cfg->move_in_progress) {
+> +		/* it means that domain is not changed */
+> +		if (!cpus_intersects(desc->affinity, mask))
+> +			cfg->move_desc_in_progress_in_same_domain = 1;
+> +	}
+> +}
+> +#endif
+> +
+>  #else
+>  static struct irq_cfg *irq_cfg(unsigned int irq)
+>  {
+> @@ -231,9 +350,11 @@ static struct irq_cfg *irq_cfg(unsigned
+>  
+>  #endif
+>  
+> +#ifndef CONFIG_MOVE_IRQ_DESC
+>  static inline void set_extra_move_desc(struct irq_desc *desc, cpumask_t mask)
+>  {
+>  }
+> +#endif
+>  
+>  struct io_apic {
+>  	unsigned int index;
+> @@ -2346,14 +2467,34 @@ static void irq_complete_move(struct irq
+>  	struct irq_cfg *cfg = desc->chip_data;
+>  	unsigned vector, me;
+>  
+> -	if (likely(!cfg->move_in_progress))
+> +	if (likely(!cfg->move_in_progress)) {
+> +#ifdef CONFIG_MOVE_IRQ_DESC
+> +		if (likely(!cfg->move_desc_in_progress_in_same_domain))
+> +			return;
+> +
+> +		/* domain is not change, but affinity is changed */
+> +		me = smp_processor_id();
+> +		if (cpu_isset(me, desc->affinity)) {
+> +			*descp = desc = move_irq_desc(desc, me);
+> +			/* get the new one */
+> +			cfg = desc->chip_data;
+> +			cfg->move_desc_in_progress_in_same_domain = 0;
+> +		}
+> +#endif
+>  		return;
+> +	}
+>  
+>  	vector = ~get_irq_regs()->orig_ax;
+>  	me = smp_processor_id();
+>  	if ((vector == cfg->vector) && cpu_isset(me, cfg->domain)) {
+>  		cpumask_t cleanup_mask;
+>  
+> +#ifdef CONFIG_MOVE_IRQ_DESC
+> +		*descp = desc = move_irq_desc(desc, me);
+> +		/* get the new one */
+> +		cfg = desc->chip_data;
+> +#endif
+> +
+>  		cpus_and(cleanup_mask, cfg->old_domain, cpu_online_map);
+>  		cfg->move_cleanup_count = cpus_weight(cleanup_mask);
+>  		send_IPI_mask(cleanup_mask, IRQ_MOVE_CLEANUP_VECTOR);
+> Index: linux-2.6/kernel/irq/handle.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/irq/handle.c
+> +++ linux-2.6/kernel/irq/handle.c
+> @@ -90,6 +90,32 @@ static void init_kstat_irqs(struct irq_d
+>  		desc->kstat_irqs = (unsigned int *)ptr;
+>  }
+>  
+> +#ifdef CONFIG_MOVE_IRQ_DESC
+> +static void init_copy_kstat_irqs(struct irq_desc *old_desc, struct irq_desc *desc,
+> +				 int cpu, int nr)
+> +{
+> +	unsigned long bytes;
+> +
+> +	init_kstat_irqs(desc, cpu, nr);
+> +
+> +	if (desc->kstat_irqs != old_desc->kstat_irqs) {
+> +		/* Compute how many bytes we need per irq and allocate them */
+> +		bytes = nr * sizeof(unsigned int);
+> +
+> +		memcpy(desc->kstat_irqs, old_desc->kstat_irqs, bytes);
+> +	}
+> +}
+> +
+> +static void free_kstat_irqs(struct irq_desc *old_desc, struct irq_desc *desc)
+> +{
+> +	if (old_desc->kstat_irqs == desc->kstat_irqs)
+> +		return;
+> +
+> +	kfree(old_desc->kstat_irqs);
+> +	old_desc->kstat_irqs = NULL;
+> +}
+> +#endif
+> +
+>  void __attribute__((weak)) arch_init_chip_data(struct irq_desc *desc, int cpu)
+>  {
+>  }
+> @@ -110,6 +136,23 @@ static void init_one_irq_desc(int irq, s
+>  	arch_init_chip_data(desc, cpu);
+>  }
+>  
+> +#ifdef CONFIG_MOVE_IRQ_DESC
+> +static void init_copy_one_irq_desc(int irq, struct irq_desc *old_desc,
+> +		 struct irq_desc *desc, int cpu)
+> +{
+> +	memcpy(desc, old_desc, sizeof(struct irq_desc));
+> +	desc->cpu = cpu;
+> +	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
+> +	init_copy_kstat_irqs(old_desc, desc, cpu, nr_cpu_ids);
+> +	arch_init_copy_chip_data(old_desc, desc, cpu);
+> +}
+> +
+> +static void free_one_irq_desc(struct irq_desc *old_desc, struct irq_desc *desc)
+> +{
+> +	free_kstat_irqs(old_desc, desc);
+> +	arch_free_chip_data(old_desc, desc);
+> +}
+> +#endif
+>  /*
+>   * Protect the sparse_irqs:
+>   */
+> @@ -203,6 +246,73 @@ out_unlock:
+>  	return desc;
+>  }
+>  
+> +#ifdef CONFIG_MOVE_IRQ_DESC
+> +static struct irq_desc *__real_move_irq_desc(struct irq_desc *old_desc,
+> +						int cpu)
+> +{
+> +	struct irq_desc *desc;
+> +	unsigned int irq;
+> +	unsigned long flags;
+> +	int node;
+> +
+> +	irq = old_desc->irq;
+> +
+> +	spin_lock_irqsave(&sparse_irq_lock, flags);
+> +
+> +	/* We have to check it to avoid races with another CPU */
+> +	desc = irq_desc_ptrs[irq];
+> +
+> +	if (desc && old_desc != desc)
+> +			goto out_unlock;
+> +
+> +	node = cpu_to_node(cpu);
+> +	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+> +	printk(KERN_DEBUG "  move irq_desc for %d to cpu %d node %d\n",
+> +		 irq, cpu, node);
+> +	if (!desc) {
+> +		printk(KERN_ERR "can not get new irq_desc for moving\n");
+> +		/* still use old one */
+> +		desc = old_desc;
+> +		goto out_unlock;
+> +	}
+> +	init_copy_one_irq_desc(irq, old_desc, desc, cpu);
+> +
+> +	irq_desc_ptrs[irq] = desc;
+> +
+> +	/* free the old one */
+> +	free_one_irq_desc(old_desc, desc);
+> +	kfree(old_desc);
+> +
+> +out_unlock:
+> +	spin_unlock_irqrestore(&sparse_irq_lock, flags);
+> +
+> +	return desc;
+> +}
+> +
+> +struct irq_desc *move_irq_desc(struct irq_desc *desc, int cpu)
+> +{
+> +	int old_cpu;
+> +	int node, old_node;
+> +
+> +	/* those all static, do move them */
+> +	if (desc->irq < NR_IRQS_LEGACY)
+> +		return desc;
+> +
+> +	old_cpu = desc->cpu;
+> +	printk(KERN_DEBUG "try to move irq_desc from cpu %d to %d\n", old_cpu, cpu);
+> +	if (old_cpu != cpu) {
+> +		node = cpu_to_node(cpu);
+> +		old_node = cpu_to_node(old_cpu);
+> +		if (old_node != node)
+> +			desc = __real_move_irq_desc(desc, cpu);
+> +		else
+> +			desc->cpu = cpu;
+> +	}
+> +
+> +	return desc;
+> +}
+> +#endif
+
+Still a bit too much of #ifdeffery for my taste in kernel/irq/*.c, we 
+tend to have higher maintenance costs in files that have a lot of
+#ifdefs.
+
+Wouldnt it look neater if you introduced a new kernel/irq/numa_migrate.c 
+function that would provide these methods, with the prototypes being
+#ifdef-ed to inlines in the !CONFIG_MOVE_IRQ_DESC case in
+kernel/irq/internals.h?
+
+i'd also suggest to rename the config option to the more descriptive: 
+CONFIG_NUMA_MIGRATE_IRQ_DESC name.
+
+>  		/*
+>  		 * No locking required for CPU-local interrupts:
+>  		 */
+> -		if (desc->chip->ack)
+> +		if (desc->chip->ack) {
+>  			desc->chip->ack(irq);
+> +			/* get new one */
+> +			desc = irq_remap_to_desc(irq, desc);
+> +		}
+
+thanks for fixing this - it looks much nicer now!
+
+	Ingo
