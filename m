@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbYLIVNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbYLIVUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbYLIVNA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 16:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129AbYLIVMw
+	id S1755136AbYLIVUq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 16:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYLIVUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 16:12:52 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:57064 "EHLO
+	Tue, 9 Dec 2008 16:20:36 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:41737 "EHLO
 	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754118AbYLIVMv (ORCPT
+	with ESMTP id S1751073AbYLIVUg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 16:12:51 -0500
+	Tue, 9 Dec 2008 16:20:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:subject:references
          :in-reply-to:content-type:content-transfer-encoding;
-        b=SKKHC6FyUqukZTv3T09//nbrJd32cHt/Go33ddptVLUwJyzdQC/wrdIDrk+667c3oz
-         Hy19Md3+7XtB3UtRZWdSkARIkUe2GlJxzkfbb0GuiUgpAZ9NfzYi7WxM4dtyA6bflnAf
-         FpUQuElY7ao2osuEUMEsWmyH37YUrJBbe7Vig=
-Message-ID: <493EDF52.1000506@gmail.com>
-Date: Tue, 09 Dec 2008 22:12:50 +0100
+        b=AHpqv2Ht8nyyFLe/Ckr6K0iWmdHDJ0ZXXGZOZZTs9lMuAInI88QJudl6Kj1IoG6afF
+         LvjNoCZPHATLgfz3oQlmw5UrCKcePFfq6cPtNfGJigmp3Q3fvBMbvK8a1sYA21nkMFVH
+         6YeUf9146O/BojKgCxw/j6/zy7acnVNFahCwY=
+Message-ID: <493EE11D.2000201@gmail.com>
+Date: Tue, 09 Dec 2008 22:20:29 +0100
 From: Roel Kluin <roel.kluin@gmail.com>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-To: linux-pcmcia@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 19/31] drivers/pcmcia: Make static
+To: abelay@mit.edu, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 20/31] drivers/pnp: Make static
 References: <493EA286.7080500@gmail.com>
 In-Reply-To: <493EA286.7080500@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -36,20 +36,22 @@ Sparse asked whether these could be static.
 
 Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
- drivers/pcmcia/pcmcia_ioctl.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/pnp/resource.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pcmcia/pcmcia_ioctl.c b/drivers/pcmcia/pcmcia_ioctl.c
-index 1703b20..8b8ac7c 100644
---- a/drivers/pcmcia/pcmcia_ioctl.c
-+++ b/drivers/pcmcia/pcmcia_ioctl.c
-@@ -286,7 +286,7 @@ static int pccard_get_status(struct pcmcia_socket *s,
- 	return 0;
- } /* pccard_get_status */
+diff --git a/drivers/pnp/resource.c b/drivers/pnp/resource.c
+index f604061..d5b1e05 100644
+--- a/drivers/pnp/resource.c
++++ b/drivers/pnp/resource.c
+@@ -30,8 +30,8 @@ static int pnp_reserve_mem[16] = {[0 ... 15] = -1 };	/* reserve (don't use) some
+  * option registration
+  */
  
--int pccard_get_configuration_info(struct pcmcia_socket *s,
-+static int pccard_get_configuration_info(struct pcmcia_socket *s,
- 				  struct pcmcia_device *p_dev,
- 				  config_info_t *config)
+-struct pnp_option *pnp_build_option(struct pnp_dev *dev, unsigned long type,
+-				    unsigned int option_flags)
++static struct pnp_option *pnp_build_option(struct pnp_dev *dev,
++		unsigned long type, unsigned int option_flags)
  {
+ 	struct pnp_option *option;
+ 
 
