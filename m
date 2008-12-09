@@ -1,129 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752805AbYLIH5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbYLIIHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752805AbYLIH5d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 02:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbYLIH5Z
+	id S1753096AbYLIIHu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 03:07:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYLIIHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 02:57:25 -0500
-Received: from ag-out-0708.google.com ([72.14.246.245]:44033 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751466AbYLIH5Y (ORCPT
+	Tue, 9 Dec 2008 03:07:42 -0500
+Received: from mo-p00-ob.rzone.de ([81.169.146.162]:14162 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751982AbYLIIHl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 02:57:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=dN7RbaG6eMcarBnYqslLXJU+gL6hFQdDU56T1IVBg7BKKFJlztfWliN/+PTTnR0e/2
-         5rJOxT5TLajSU0NJs4ahQoeWk6ZeDPvaPzlhpeqx67xCloKowaKCopYQfXPluP3ADbUv
-         gcMHh/6Hn0eRKTIzoon95Ux9NmK/qftEDPdbE=
-Date: Tue, 9 Dec 2008 15:56:52 +0800
-To: hugh@veritas.com
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] fix coding style of mm/mmap.c
-Message-ID: <20081209075652.GA3515@helight>
-Reply-To: "Helight.Xu" <helight.xu@gmail.com>
+	Tue, 9 Dec 2008 03:07:41 -0500
+X-RZG-CLASS-ID: mo00
+X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW226lDNJVyuUOIzI8ObEx
+Message-ID: <493E2725.7090305@hartkopp.net>
+Date: Tue, 09 Dec 2008 09:07:01 +0100
+From: Oliver Hartkopp <oliver@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="cNdxnHkX5QqsyA0e"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "Helight.Xu" <zhwenxu@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC PATCH] hrtimer: removing all ur callback modes
+References: <1227613431.4259.1537.camel@twins>	 <1228385830.5092.43.camel@twins> <493BB1EB.5000004@hartkopp.net>	 <493BC8A8.2030200@hartkopp.net> <1228731359.5778.18.camel@twins>
+In-Reply-To: <1228731359.5778.18.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Peter Zijlstra wrote:
+> On Sun, 2008-12-07 at 13:59 +0100, Oliver Hartkopp wrote:
+>   
+>> Oliver Hartkopp wrote:
+>>     
+>>> Peter Zijlstra wrote:
+>>>       
+>>>> On Tue, 2008-11-25 at 12:43 +0100, Peter Zijlstra wrote:
+>>>>  
+>>>>         
+>>>>> Hi,
+>>>>>
+>>>>> This is an attempt at removing some of the hrtimer complexity by
+>>>>> reducing the number of callback modes to 1.
+>>>>>
+>>>>> This means that all hrtimer callback functions will be ran from 
+>>>>> HARD-irq
+>>>>> context.
+>>>>>
+>>>>>           
+>> Hi Peter,
+>>
+>> i ran a heavy load test, which get's (reproducible) the attached outputs ...
+>>
+>> Maybe it's not that good to define the hrtimer context to be always 
+>> hard-irq.
+>>     
+>
+> Thing is, this 'cleanup' removes quite a bit of complexity from the core
+> hrtimer code, and afaict your bit is the only thing that cannot seem to
+> cope. So I'd rather look at fixing your site than re-introduce softirqs
+> to hrtimers.
+>
+>   
 
---cNdxnHkX5QqsyA0e
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+I wouldn't be that sure that all the other sites can cope with it as i 
+only detected the problems with my code under heavy load ...
 
-fix some coding style of mm/mmap.c 
--- 
----------------------------------
-Zhenwen Xu - Open and Free
-Home Page:	http://zhwen.org
-My Studio:	http://dim4.cn
+>> Any idea?
+>>     
+>
+> What are the timing constraints of your problem? - I assume they are not
+> too aggressive, otherwise you'd not be able to run from softirq, could
+> you run from keventd?
+>   
 
---cNdxnHkX5QqsyA0e
-Content-Type: text/x-diff; charset=utf-8
-Content-Disposition: attachment; filename="0002-code-style.patch"
+I browsed some code that's using hrtimers and found some hopefully good 
+example in drivers/s390/crypto/ap_bus.c : They are using the hrtimer to 
+schedule a tasklet which is running in soft-irq context:
 
->From e968c1366585e4982f69e8ec0a27a806514676d0 Mon Sep 17 00:00:00 2001
-From: ZhenwenXu <helight.xu@gmail.com>
-Date: Fri, 14 Nov 2008 22:14:32 +0800
-Subject: [PATCH] code style
+http://lxr.linux.no/linux+v2.6.27.8/drivers/s390/crypto/ap_bus.c#L1150
 
+This could also be the correct approach for my sock_queue_rcv_skb() 
+problem, right?
 
-Signed-off-by: ZhenwenXu <helight.xu@gmail.com>
----
- mm/mmap.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+Regards,
+Oliver
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index e7a5a68..5750480 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -412,7 +412,7 @@ void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
- 
- static inline void __vma_link_file(struct vm_area_struct *vma)
- {
--	struct file * file;
-+	struct file *file;
- 
- 	file = vma->vm_file;
- 	if (file) {
-@@ -474,10 +474,10 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
-  * but it has already been inserted into prio_tree earlier.
-  */
- static void
--__insert_vm_struct(struct mm_struct * mm, struct vm_area_struct * vma)
-+__insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
- {
--	struct vm_area_struct * __vma, * prev;
--	struct rb_node ** rb_link, * rb_parent;
-+	struct vm_area_struct *__vma, *prev;
-+	struct rb_node **rb_link, *rb_parent;
- 
- 	__vma = find_vma_prepare(mm, vma->vm_start,&prev, &rb_link, &rb_parent);
- 	BUG_ON(__vma && __vma->vm_start < vma->vm_end);
-@@ -909,7 +909,7 @@ void vm_stat_account(struct mm_struct *mm, unsigned long flags,
-  * The caller must hold down_write(current->mm->mmap_sem).
-  */
- 
--unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
-+unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
- 			unsigned long len, unsigned long prot,
- 			unsigned long flags, unsigned long pgoff)
- {
-@@ -1458,7 +1458,7 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
- EXPORT_SYMBOL(get_unmapped_area);
- 
- /* Look up the first VMA which satisfies  addr < vm_end,  NULL if none. */
--struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr)
-+struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
- {
- 	struct vm_area_struct *vma = NULL;
- 
-@@ -1501,7 +1501,7 @@ find_vma_prev(struct mm_struct *mm, unsigned long addr,
- 			struct vm_area_struct **pprev)
- {
- 	struct vm_area_struct *vma = NULL, *prev = NULL;
--	struct rb_node * rb_node;
-+	struct rb_node *rb_node;
- 	if (!mm)
- 		goto out;
- 
-@@ -1535,7 +1535,7 @@ out:
-  * update accounting. This is shared with both the
-  * grow-up and grow-down cases.
-  */
--static int acct_stack_growth(struct vm_area_struct * vma, unsigned long size, unsigned long grow)
-+static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size, unsigned long grow)
- {
- 	struct mm_struct *mm = vma->vm_mm;
- 	struct rlimit *rlim = current->signal->rlim;
--- 
-1.5.6.5
+ps. What is the intended release for this hrtimer cleanup? 2.6.29?
 
 
---cNdxnHkX5QqsyA0e--
