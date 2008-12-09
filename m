@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbYLITDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbYLITE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754797AbYLITDq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 14:03:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbYLITDh
+	id S1755151AbYLITE3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 14:04:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbYLITEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 14:03:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35713 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753841AbYLITDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 14:03:36 -0500
-Date: Tue, 9 Dec 2008 20:02:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: eranian@gmail.com, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>,
-       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Subject: Re: [patch] Performance Counters for Linux, v2
-Message-ID: <20081209190254.GA27833@elte.hu>
-References: <20081208012211.GA23106@elte.hu> <7c86c4470812082237ne58c814s7218cc663f3b49e9@mail.gmail.com> <20081209134636.GA1926@elte.hu> <493E9F3E.3020902@nortel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <493E9F3E.3020902@nortel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 9 Dec 2008 14:04:20 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:25161 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753731AbYLITEU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 14:04:20 -0500
+Date: Tue, 9 Dec 2008 20:04:09 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-i2c@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 12/33] i2c: Make static
+Message-ID: <20081209200409.17fac29f@hyperion.delvare>
+In-Reply-To: <493EBBD0.6070201@gmail.com>
+References: <493EA286.7080500@gmail.com>
+	<493EBBD0.6070201@gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 09 Dec 2008 19:41:20 +0100, Roel Kluin wrote:
+> Sparse asked whether these could be static.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  drivers/i2c/i2c-core.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> index c6a63f4..1049615 100644
+> --- a/drivers/i2c/i2c-core.c
+> +++ b/drivers/i2c/i2c-core.c
+> @@ -1699,7 +1699,8 @@ EXPORT_SYMBOL(i2c_smbus_write_word_data);
+>   * This executes the SMBus "process call" protocol, returning negative errno
+>   * else a 16-bit unsigned "word" received from the device.
+>   */
+> -s32 i2c_smbus_process_call(struct i2c_client *client, u8 command, u16 value)
+> +static s32 i2c_smbus_process_call(struct i2c_client *client, u8 command,
+> +		u16 value)
+>  {
+>  	union i2c_smbus_data data;
+>  	int status;
 
-* Chris Friesen <cfriesen@nortel.com> wrote:
+Nack:
 
-> Ingo Molnar wrote:
->
->> When there are two (or more) hw metrics to profile, the ideally best 
->> (i.e. the statistically most stable and most relevant) sampling for 
->> the two statistical variables (say of l2_misses versus l2_accesses) is 
->> to sample them independently, via their own metric. Not via a static 
->> 1khz rate - or via picking one of the variables to generate samples.
->
-> Regardless of sampling method, don't you still want some way to 
-> enable/disable the various counters as close to simultaneously as 
-> possible?
+drivers/i2c/i2c-core.c:EXPORT_SYMBOL(i2c_smbus_process_call);
 
-If it's about counter control for the monitored task, then we sure could 
-do something about that. (apps/libraries could thus select a subset of 
-functions to profile/measure, runtime, etc.)
-
-If it's about counter control for the profiler/debugger, i'm not sure how 
-useful that is - do you have a good usecase for it?
-
-	Ingo
+-- 
+Jean Delvare
