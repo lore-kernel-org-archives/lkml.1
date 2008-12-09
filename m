@@ -1,141 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYLIQ50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbYLIQ6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754605AbYLIQ50 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 11:57:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYLIQ5R
+	id S1754768AbYLIQ6v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 11:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbYLIQ6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 11:57:17 -0500
-Received: from rn-out-0910.google.com ([64.233.170.190]:2938 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751629AbYLIQ5Q (ORCPT
+	Tue, 9 Dec 2008 11:58:41 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:53249 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751419AbYLIQ6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 11:57:16 -0500
-Message-ID: <493EA365.9070408@codemonkey.ws>
-Date: Tue, 09 Dec 2008 10:57:09 -0600
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 9 Dec 2008 11:58:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=TVq+zY8k6Fn8CxdE3/6gZbADU34O8iHLNznv71MMFRbA6WQEsuriyPZIbNhQqaXBUQ
+         MPcrwbO1Trmg7CZM3vnp15yzBWgKx3eLZUKun0F3mGZQyZZQn8aAiOvMNc2D6wHZ/Bdz
+         wqXDJVOFm0ZTeVa1tRVamNR22A0FP1JTDb5oY=
+Message-ID: <493EA3BE.4050206@gmail.com>
+Date: Tue, 09 Dec 2008 17:58:38 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-To: Mark McLoughlin <markmc@redhat.com>
-CC: Anthony Liguori <aliguori@us.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] virtio: make PCI devices take a virtio_pci module ref
-References: <1228394671.3732.77.camel@blaa>	 <200812051043.51417.rusty@rustcorp.com.au> <1228489626.3858.37.camel@blaa>	 <200812071852.08962.rusty@rustcorp.com.au> <1228741409.3609.32.camel@blaa>	 <493D334D.6050004@us.ibm.com> <1228840890.26198.25.camel@blaa>
-In-Reply-To: <1228840890.26198.25.camel@blaa>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: mingo@redhat.com
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/33] x86: Make static
+References: <493EA286.7080500@gmail.com>
+In-Reply-To: <493EA286.7080500@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark McLoughlin wrote:
-> On Mon, 2008-12-08 at 08:46 -0600, Anthony Liguori wrote:
->   
-> It feels a bit like busy work to generalise this since only virtio_pci
-> can be built as a module, but here's a patch.
->
-> The mkinitrd hack turns into:
->
->         # Handle finding virtio bus implementations
->         if [ -L ./virtio_module ] ; then
->             findmodule $(basename $(readlink ./virtio_module))
->         else if echo $PWD | grep -q /virtio-pci/ ; then
->             findmodule virtio_pci
->         fi; fi
->
-> Cheers,
-> Mark.
->
-> [PATCH] virtio: add a 'virtio_module' sysfs symlink
->
-> Add a way for userspace to determine which virtio bus transport a
-> given device is associated with.
->
-> This will be used by Fedora mkinitrd to generically determine e.g.
-> that virtio_pci is needed to mount a given root filesystem.
->
-> Signed-off-by: Mark McLoughlin <markmc@redhat.com>
->   
+Sparse asked whether these could be static.
 
-Acked-by: Anthony Liguori <aliguori@us.ibm.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ arch/x86/kernel/efi.c             |    2 +-
+ arch/x86/kernel/hpet.c            |    2 +-
+ arch/x86/kernel/io_apic.c         |    2 +-
+ arch/x86/kernel/microcode_core.c  |    4 ++--
+ arch/x86/kernel/microcode_intel.c |    2 +-
+ arch/x86/kernel/setup.c           |    3 ++-
+ arch/x86/kvm/vmx.c                |    2 +-
+ arch/x86/pci/legacy.c             |    2 +-
+ 8 files changed, 10 insertions(+), 9 deletions(-)
 
-> ---
->  drivers/virtio/virtio.c       |   21 ++++++++++++++++++++-
->  drivers/virtio/virtio_pci.c   |    1 +
->  include/linux/virtio_config.h |    2 ++
->  3 files changed, 23 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/virtio/virtio.c b/drivers/virtio/virtio.c
-> index 018c070..640ede8 100644
-> --- a/drivers/virtio/virtio.c
-> +++ b/drivers/virtio/virtio.c
-> @@ -189,13 +189,32 @@ int register_virtio_device(struct virtio_device *dev)
->  	 * matching driver. */
->  	err = device_register(&dev->dev);
->  	if (err)
-> -		add_status(dev, VIRTIO_CONFIG_S_FAILED);
-> +		goto out;
-> +
-> +	/* Create a virtio_module symlink */
-> +	if (dev->config->owner) {
-> +		struct module_kobject *mk = &dev->config->owner->mkobj;
-> +
-> +		err = sysfs_create_link(&dev->dev.kobj, &mk->kobj,
-> +					"virtio_module");
-> +		if (err)
-> +			goto unreg;
-> +	}
-> +
-> +	return 0;
-> +
-> +unreg:
-> +	device_unregister(&dev->dev);
-> +out:
-> +	add_status(dev, VIRTIO_CONFIG_S_FAILED);
->  	return err;
->  }
->  EXPORT_SYMBOL_GPL(register_virtio_device);
->  
->  void unregister_virtio_device(struct virtio_device *dev)
->  {
-> +	if (dev->config->owner)
-> +		sysfs_remove_link(&dev->dev.kobj, "virtio_module");
->  	device_unregister(&dev->dev);
->  }
->  EXPORT_SYMBOL_GPL(unregister_virtio_device);
-> diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
-> index 939e0b4..59e928d 100644
-> --- a/drivers/virtio/virtio_pci.c
-> +++ b/drivers/virtio/virtio_pci.c
-> @@ -328,6 +328,7 @@ static void vp_del_vq(struct virtqueue *vq)
->  }
->  
->  static struct virtio_config_ops virtio_pci_config_ops = {
-> +	.owner		= THIS_MODULE,
->  	.get		= vp_get,
->  	.set		= vp_set,
->  	.get_status	= vp_get_status,
-> diff --git a/include/linux/virtio_config.h b/include/linux/virtio_config.h
-> index bf8ec28..0a01cda 100644
-> --- a/include/linux/virtio_config.h
-> +++ b/include/linux/virtio_config.h
-> @@ -33,6 +33,7 @@
->  
->  /**
->   * virtio_config_ops - operations for configuring a virtio device
-> + * @owner: the module implementing these ops, usually THIS_MODULE
->   * @get: read the value of a configuration field
->   *	vdev: the virtio_device
->   *	offset: the offset of the configuration field
-> @@ -68,6 +69,7 @@
->   */
->  struct virtio_config_ops
->  {
-> +	struct module *owner;
->  	void (*get)(struct virtio_device *vdev, unsigned offset,
->  		    void *buf, unsigned len);
->  	void (*set)(struct virtio_device *vdev, unsigned offset,
->   
+diff --git a/arch/x86/kernel/efi.c b/arch/x86/kernel/efi.c
+index 1119d24..4ef1c4a 100644
+--- a/arch/x86/kernel/efi.c
++++ b/arch/x86/kernel/efi.c
+@@ -64,7 +64,7 @@ static int __init setup_noefi(char *arg)
+ }
+ early_param("noefi", setup_noefi);
+ 
+-int add_efi_memmap;
++static int add_efi_memmap;
+ EXPORT_SYMBOL(add_efi_memmap);
+ 
+ static int __init setup_add_efi_memmap(char *arg)
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 067d8de..15fcaac 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -33,7 +33,7 @@
+  * HPET address is set in acpi/boot.c, when an ACPI entry exists
+  */
+ unsigned long				hpet_address;
+-unsigned long				hpet_num_timers;
++static unsigned long			hpet_num_timers;
+ static void __iomem			*hpet_virt_address;
+ 
+ struct hpet_dev {
+diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+index 9043251..dd6371f 100644
+--- a/arch/x86/kernel/io_apic.c
++++ b/arch/x86/kernel/io_apic.c
+@@ -3401,7 +3401,7 @@ static void hpet_msi_set_affinity(unsigned int irq, cpumask_t mask)
+ }
+ #endif /* CONFIG_SMP */
+ 
+-struct irq_chip hpet_msi_type = {
++static struct irq_chip hpet_msi_type = {
+ 	.name = "HPET_MSI",
+ 	.unmask = hpet_msi_unmask,
+ 	.mask = hpet_msi_mask,
+diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
+index 82fb280..97af1ec 100644
+--- a/arch/x86/kernel/microcode_core.c
++++ b/arch/x86/kernel/microcode_core.c
+@@ -203,7 +203,7 @@ MODULE_ALIAS_MISCDEV(MICROCODE_MINOR);
+ #endif
+ 
+ /* fake device for request_firmware */
+-struct platform_device *microcode_pdev;
++static struct platform_device *microcode_pdev;
+ 
+ static ssize_t reload_store(struct sys_device *dev,
+ 			    struct sysdev_attribute *attr,
+@@ -319,7 +319,7 @@ static int microcode_resume_cpu(int cpu)
+ 	return 0;
+ }
+ 
+-void microcode_update_cpu(int cpu)
++static void microcode_update_cpu(int cpu)
+ {
+ 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+ 	int err = 0;
+diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
+index 622dc4a..c34c820 100644
+--- a/arch/x86/kernel/microcode_intel.c
++++ b/arch/x86/kernel/microcode_intel.c
+@@ -465,7 +465,7 @@ static void microcode_fini_cpu(int cpu)
+ 	uci->mc = NULL;
+ }
+ 
+-struct microcode_ops microcode_intel_ops = {
++static struct microcode_ops microcode_intel_ops = {
+ 	.request_microcode_user		  = request_microcode_user,
+ 	.request_microcode_fw             = request_microcode_fw,
+ 	.collect_cpu_info                 = collect_cpu_info,
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 9d5674f..efc5cfe 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -448,7 +448,8 @@ static void __init reserve_early_setup_data(void)
+  * @size: Size of the crashkernel memory to reserve.
+  * Returns the base address on success, and -1ULL on failure.
+  */
+-unsigned long long __init find_and_reserve_crashkernel(unsigned long long size)
++static unsigned long long __init find_and_reserve_crashkernel(
++		unsigned long long size)
+ {
+ 	const unsigned long long alignment = 16<<20; 	/* 16M */
+ 	unsigned long long start = 0LL;
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index a4018b0..bd7d441 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -122,7 +122,7 @@ static struct vmcs_config {
+ 	u32 vmentry_ctrl;
+ } vmcs_config;
+ 
+-struct vmx_capability {
++static struct vmx_capability {
+ 	u32 ept;
+ 	u32 vpid;
+ } vmx_capability;
+diff --git a/arch/x86/pci/legacy.c b/arch/x86/pci/legacy.c
+index b722dd4..abe0f58 100644
+--- a/arch/x86/pci/legacy.c
++++ b/arch/x86/pci/legacy.c
+@@ -55,7 +55,7 @@ static int __init pci_legacy_init(void)
+ 	return 0;
+ }
+ 
+-int __init pci_subsys_init(void)
++static int __init pci_subsys_init(void)
+ {
+ #ifdef CONFIG_X86_NUMAQ
+ 	pci_numaq_init();
 
