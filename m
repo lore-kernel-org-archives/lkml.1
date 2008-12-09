@@ -1,45 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbYLIKPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbYLIKQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753661AbYLIKPh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 05:15:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYLIKP3
+	id S1753841AbYLIKQk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 05:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbYLIKQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 05:15:29 -0500
-Received: from tundra.namei.org ([65.99.196.166]:1708 "EHLO tundra.namei.org"
+	Tue, 9 Dec 2008 05:16:31 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35171 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751466AbYLIKP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 05:15:28 -0500
-Date: Tue, 9 Dec 2008 21:15:02 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1] user namespaces: document CFS behavior
-In-Reply-To: <20081209100817.GA11886@elte.hu>
-Message-ID: <alpine.LRH.1.10.0812092114140.11867@tundra.namei.org>
-References: <20081208215221.GA3954@us.ibm.com> <alpine.LRH.1.10.0812090927350.8505@tundra.namei.org> <20081209024543.GA11538@elte.hu> <alpine.LRH.1.10.0812092005100.10841@tundra.namei.org> <20081209100817.GA11886@elte.hu>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	id S1751926AbYLIKQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 05:16:30 -0500
+Message-ID: <493E452E.4020304@redhat.com>
+Date: Tue, 09 Dec 2008 12:15:10 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+CC: Sheng Yang <sheng@linux.intel.com>, kvm@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] module_refcounting and anonymous inodes
+References: <200812021114.59050.borntraeger@de.ibm.com> <200812091743.26586.sheng@linux.intel.com> <493E3F8B.7070603@redhat.com> <200812091108.39145.borntraeger@de.ibm.com>
+In-Reply-To: <200812091108.39145.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Dec 2008, Ingo Molnar wrote:
+Christian Borntraeger wrote:
+> The problem is, how do you detect if the base kernel has patch1 applied?
+>   
 
-> > They're already published in my tree.  Do you want me to revert them?
-> 
-> I've also got it published :-/ If it's at the tail of your commits, can 
-> you reset it?
+In the external module compatibility kit, implement two versions of 
+anon_inode_getfd(), and select the appropriate one according to kernel 
+version (like we currently support 91 smp_call_function_single variants).
 
-There have been commits since, and people are using the tree in any case.
-
-
-- James
 -- 
-James Morris
-<jmorris@namei.org>
+error compiling committee.c: too many arguments to function
+
