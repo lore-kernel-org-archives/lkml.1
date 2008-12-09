@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758610AbYLIUjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757724AbYLIUk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758610AbYLIUjz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 15:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbYLIUYp
+	id S1757724AbYLIUk3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 15:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbYLIU1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 15:24:45 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34853 "EHLO mx2.redhat.com"
+	Tue, 9 Dec 2008 15:27:22 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46108 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754717AbYLIUXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 15:23:09 -0500
-From: Avi Kivity <avi@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
-Subject: [PATCH 13/44] KVM: ppc: use MMUCR accessor to obtain TID
-Date: Tue,  9 Dec 2008 22:22:28 +0200
-Message-Id: <1228854179-23002-14-git-send-email-avi@redhat.com>
-In-Reply-To: <1228854179-23002-1-git-send-email-avi@redhat.com>
-References: <1228854179-23002-1-git-send-email-avi@redhat.com>
+	id S1755701AbYLIU1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 15:27:21 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: mcarlson@broadcom.com
+Subject: Re: [PATCH] net (tg3): Fix failure to enable WoL by default when possible (rev. 2)
+Date: Tue, 9 Dec 2008 21:26:35 +0100
+User-Agent: KMail/1.9.9
+Cc: David Miller <davem@davemloft.net>, mchan@broadcom.com,
+       netdev@vger.kernel.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <200812081250.59095.rjw@sisk.pl> <20081208190403.GA27341@xw6200.broadcom.net> <20081209.002007.203471603.davem@davemloft.net>
+In-Reply-To: <20081209.002007.203471603.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812092126.35902.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hollis Blanchard <hollisb@us.ibm.com>
+On Tuesday, 9 of December 2008, David Miller wrote:
+> From: "Matt Carlson" <mcarlson@broadcom.com>
+> Date: Mon, 8 Dec 2008 11:04:03 -0800
+> 
+> > This has mostly been fixed up already in Dave Miller's tree.  In that
+> > tree, the WOL capability advertisements happens at the end of the
+> > tg3_get_eeprom_hw_cfg() function.
+> > 
+> > Your patch did uncover a bug though.  The removal of device_may_wakeup()
+> > in the first hunk of your patch still needs to be done.
+> 
+> Ok, can someone post a patch that takes care of that against
+> net-next-2.6?
 
-We have an accessor; might as well use it.
+Matt, are you going to take care of this or do you want me to do that?
 
-Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
----
- arch/powerpc/kvm/44x_tlb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kvm/44x_tlb.c b/arch/powerpc/kvm/44x_tlb.c
-index 8b65fbd..260fa8b 100644
---- a/arch/powerpc/kvm/44x_tlb.c
-+++ b/arch/powerpc/kvm/44x_tlb.c
-@@ -339,7 +339,7 @@ int kvmppc_44x_emul_tlbwe(struct kvm_vcpu *vcpu, u8 ra, u8 rs, u8 ws)
- 
- 	switch (ws) {
- 	case PPC44x_TLB_PAGEID:
--		tlbe->tid = vcpu->arch.mmucr & 0xff;
-+		tlbe->tid = get_mmucr_stid(vcpu);
- 		tlbe->word0 = vcpu->arch.gpr[rs];
- 		break;
- 
--- 
-1.6.0.3
-
+Rafael
