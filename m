@@ -1,119 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYLIXH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYLIXIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbYLIXH1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 18:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbYLIXHQ
+	id S1756142AbYLIXIb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 18:08:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbYLIXIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 18:07:16 -0500
-Received: from pne-smtpout2-sn2.hy.skanova.net ([81.228.8.164]:45341 "EHLO
-	pne-smtpout2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751989AbYLIXHO (ORCPT
+	Tue, 9 Dec 2008 18:08:19 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46265 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751989AbYLIXIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 18:07:14 -0500
-X-Greylist: delayed 4185 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Dec 2008 18:07:14 EST
-Date: Tue, 9 Dec 2008 22:57:26 +0100 (CET)
-From: Peter Osterlund <petero2@telia.com>
-X-X-Sender: petero@quad.localdomain
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Al Viro <viro@zeniv.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix pktcdvd breakage from commit
- e105b8bfc769b0545b6f0f395179d1e43cbee822
-In-Reply-To: <1228534691.3428.1.camel@nga>
-Message-ID: <alpine.LFD.1.10.0812092252590.12990@quad.localdomain>
-References: <ac3eb2510811300441m2a551cc7nec0374bb7a707bb8@mail.gmail.com>  <20081130133229.GZ28946@ZenIV.linux.org.uk>  <20081130134048.GA28946@ZenIV.linux.org.uk>  <ac3eb2510811300544r2b228a85n86553d6657ac5578@mail.gmail.com>  <20081130135031.GB28946@ZenIV.linux.org.uk>
-  <ac3eb2510811300557u4922699du87a62cfd29020db1@mail.gmail.com>  <20081130141329.GC28946@ZenIV.linux.org.uk>  <ac3eb2510811300628t2bb40427p22e22e2ed671d9a9@mail.gmail.com>  <20081130145221.GD28946@ZenIV.linux.org.uk>  <ac3eb2510811300756icbf6fe5x3c41c7fc9f870db1@mail.gmail.com>
-  <ac3eb2510812041857j5e49a4ecsfd2f351f572fb350@mail.gmail.com> <1228534691.3428.1.camel@nga>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 9 Dec 2008 18:08:18 -0500
+Date: Tue, 9 Dec 2008 15:08:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+Cc: zdenek.kabelac@gmail.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "David S. Miller" <davem@davemloft.net>, stable@kernel.org
+Subject: Re: BUG: bad unlock balance detected! e1000e
+Message-Id: <20081209150801.2aa76ac6.akpm@linux-foundation.org>
+In-Reply-To: <20081209110337.GJ4864@gambetta>
+References: <c4e36d110812080324y68c0e453qcb68a040da7ac9a2@mail.gmail.com>
+	<20081209110337.GJ4864@gambetta>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 6 Dec 2008, Kay Sievers wrote:
+On Tue, 9 Dec 2008 12:03:37 +0100
+Frederik Deweerdt <frederik.deweerdt@xprog.eu> wrote:
 
-> On Fri, 2008-12-05 at 03:57 +0100, Kay Sievers wrote:
->> On Sun, Nov 30, 2008 at 16:56, Kay Sievers <kay.sievers@vrfy.org> wrote:
->>> On Sun, Nov 30, 2008 at 15:52, Al Viro <viro@zeniv.linux.org.uk> wrote:
->>>> On Sun, Nov 30, 2008 at 03:28:15PM +0100, Kay Sievers wrote:
->>>>>> So we need to preserve the layout, with the easiest way probably being "add
->>>>>> one more ktype and use kobject_init_and_add() instead of that device_create()".
->>>>>> Sigh...
->>>>>
->>>>> What do you mean? We just need to replace the bogus "pd->pkt_dev" with
->>>>> MKDEV(0, 0) and we are fine.
->>>>
->>>> Userland-visible change - right now cat /sys/class/pktcdvd/pktcdvd3/dev will
->>>> give you dev_t of the block device in question.
->>>
->>> True, it's visible, but it's incorrect dead information which should
->>> be removed. Subsystem != "block is defined as S_IFCHR, and there is no
->>> such char device for pktcdvd. In fact the "dev" file of the pktcdvd
->>> class device points in many cases to a USB device, which must be
->>> fixed.
->>>
->>> The whole pktcdvd class is not used at all, besides for exporting a
->>> few files. The "dev" file at the class device is just a bug, and the
->>> MAJOR/MINOR uevent environment variables also. I doubt that there will
->>> be any visible breakage in something that isn't already totally
->>> broken. In short, I doubt, that anything that works today will stop
->>> working if we remove the bugus "dev" file.
->>>
->>> This seem like the simple and correct fix for the issue with /sys/dev/
->>> and the broken non-existing but exported pkcdvd char device:
->>> -               pd->dev = device_create(class_pktcdvd, NULL, pd->pkt_dev, NULL,
->>> +               pd->dev = device_create(class_pktcdvd, NULL, MKDEV(0, 0), NULL,
->>
->> Al, this bug still exists, right? Any objections to remove the dead char dev_t?
->
-> Here is a patch.
+> It some error checking is missing in e1000e: debug contention on NVM
+> SWFLAG
+> On Mon, Dec 08, 2008 at 12:24:09PM +0100, Zdenek Kabelac wrote:
+> > Hi
+> > 
+> > During occasional scan of message log - I've found out this BUG which
+> > happened on Dec3 with the -rc7 from that day.
+> > (So if it's now fixed in current git feel free to ignore :))
+> > 
+> > My machine T61 - C2D, 2GB, 64bit kernel - message appeared during
+> > shutdown and was actually not noticed by me...
+> > 
+> > 
+> > NetworkManager: <WARN>  nm_signal_handler(): Caught signal 15,
+> > shutting down normally.
+> > NetworkManager: <info>  (eth0): now unmanaged
+> > NetworkManager: <info>  (eth0): device state change: 3 -> 1
+> > NetworkManager: <info>  (eth0): cleaning up...
+> > NetworkManager: <info>  (eth0): taking down device.
+> > 
+> > =====================================
+> > [ BUG: bad unlock balance detected! ]
+> > -------------------------------------
 
-I can confirm that this patch doesn't seem to cause any negative side 
-effects on either pktsetup or pktcdvd, which are the only two user space 
-programs I know of that care about the pktcdvd driver.
+(top-posting repaired.  Please don't do that!!!).
 
-Acked-by: Peter Osterlund <petero2@telia.com>
+> Hello Zdenek,
+> 
+> This could be due to 717d438d1fde94decef874b9808379d1f4523453
+>     "e1000e: debug contention on NVM SWFLAG"
+> Error handling is missing from e1000_reset_hw_ich8lan so it may happen
+> that we don't acquire the nvm_mutex if the card times out.
+> 
+> Adding Thomas to CC.
 
+yup.  2.6.27 needs fixing also.
 
-> Thanks,
-> Kay
->
->
-> From: Kay Sievers <kay.sievers@vrfy.org>
-> Subject: pktcdvd: remove broken dev_t export of class devices
->
-> The pktcdvd created class devices only export some sysfs files,
-> but have no char dev_t registered in the driver.
->
-> At class device creation time they copy the dev_t value of the
-> block device to the char device, wich will register a new char
-> device in the driver core and userspace, with a conflicting dev_t
-> value.
->
-> In many cases the class devices dev_t just points to a random
-> USB device. This fixes the sysfs "duplicate entry" errors.
->
-> Cc: petero2@telia.com
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
-> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> ---
-> pktcdvd.c |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->
-> --- a/drivers/block/pktcdvd.c
-> +++ b/drivers/block/pktcdvd.c
-> @@ -302,7 +302,7 @@ static struct kobj_type kobj_pkt_type_wqueue = {
-> static void pkt_sysfs_dev_new(struct pktcdvd_device *pd)
-> {
-> 	if (class_pktcdvd) {
-> -		pd->dev = device_create(class_pktcdvd, NULL, pd->pkt_dev, NULL,
-> +		pd->dev = device_create(class_pktcdvd, NULL, MKDEV(0, 0), NULL,
-> 					"%s", pd->name);
-> 		if (IS_ERR(pd->dev))
-> 			pd->dev = NULL;
+Like this?
 
--- 
-Peter Osterlund - petero2@telia.com
-http://web.telia.com/~u89404340
+From: Andrew Morton <akpm@linux-foundation.org>
+
+=====================================
+[ BUG: bad unlock balance detected! ]
+-------------------------------------
+
+A regression added by 717d438d1fde94decef874b9808379d1f4523453 ("e1000e:
+debug contention on NVM SWFLAG").
+
+Reported-by: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/net/e1000e/ich8lan.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff -puN drivers/net/e1000e/ich8lan.c~drivers-net-e1000e-ich8lanc-fix-locking drivers/net/e1000e/ich8lan.c
+--- a/drivers/net/e1000e/ich8lan.c~drivers-net-e1000e-ich8lanc-fix-locking
++++ a/drivers/net/e1000e/ich8lan.c
+@@ -400,6 +400,7 @@ static s32 e1000_acquire_swflag_ich8lan(
+ {
+ 	u32 extcnf_ctrl;
+ 	u32 timeout = PHY_CFG_TIMEOUT;
++	s32 ret = 0;
+ 
+ 	might_sleep();
+ 
+@@ -427,11 +428,11 @@ static s32 e1000_acquire_swflag_ich8lan(
+ 		extcnf_ctrl &= ~E1000_EXTCNF_CTRL_SWFLAG;
+ 		ew32(EXTCNF_CTRL, extcnf_ctrl);
+ 		nvm_owner = -1;
+-		mutex_unlock(&nvm_mutex);
+-		return -E1000_ERR_CONFIG;
++		ret = -E1000_ERR_CONFIG;
+ 	}
+ 
+-	return 0;
++	mutex_unlock(&nvm_mutex);
++	return ret;
+ }
+ 
+ /**
+_
+
