@@ -1,337 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYLIWUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbYLIWUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbYLIWUi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 17:20:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYLIWU1
+	id S1755655AbYLIWUx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 17:20:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbYLIWUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 17:20:27 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:56588 "EHLO
-	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754188AbYLIWU0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 17:20:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=e/m4mZA7PiwmwG+bxnY5t2vmlozSkzeTG6HB6XAVbbnS4J6QAJJzh1AOOe/Vqfawf3
-         43caZAzole8BcEmbYdggtX38QCCHfomjl2Zwda3sklyBDtCtJVankuf2zTEDblpfje/o
-         kcc9BZ2/hrrkN+vfxBu1tBsa9JGZY8QSBkQww=
-Message-ID: <493EEF28.1040007@gmail.com>
-Date: Tue, 09 Dec 2008 23:20:24 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+	Tue, 9 Dec 2008 17:20:36 -0500
+Received: from ozlabs.org ([203.10.76.45]:50649 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754899AbYLIWUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 17:20:32 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: setup_arch/arch_get_boot_command_line changes
+Date: Wed, 10 Dec 2008 08:50:24 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com,
+       Richard Henderson <rth@twiddle.net>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Bryan Wu <cooloney@kernel.org>, Mikael Starvik <starvik@axis.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Tony Luck <tony.luck@intel.com>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Ungerer <gerg@uclinux.org>, Ralf Baechle <ralf@linux-mips.org>,
+       linux-parisc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       "David S. Miller" <davem@davemloft.net>, Jeff Dike <jdike@addtoit.com>,
+       Ingo Molnar <mingo@redhat.com>, Chris Zankel <chris@zankel.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
 MIME-Version: 1.0
-To: netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 28/31] net: Make static
-References: <493EA286.7080500@gmail.com>
-In-Reply-To: <493EA286.7080500@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812100850.26728.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sparse asked whether these could be static.
+OK, I've folded in all the fixes, thanks.  Git tree is here:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- net/decnet/dn_dev.c                      |    2 +-
- net/decnet/dn_route.c                    |    4 ++--
- net/dsa/mv88e6060.c                      |    4 ++--
- net/dsa/mv88e6123_61_65.c                |    4 ++--
- net/dsa/mv88e6131.c                      |    4 ++--
- net/irda/irttp.c                         |   14 +++++++-------
- net/irda/timer.c                         |    2 +-
- net/mac80211/rc80211_minstrel.c          |    8 ++++----
- net/phonet/sysctl.c                      |    2 +-
- net/rxrpc/ar-connection.c                |    2 +-
- net/rxrpc/ar-connevent.c                 |    2 +-
- net/rxrpc/ar-security.c                  |    2 +-
- net/sched/sch_api.c                      |    2 +-
- net/sunrpc/xprtrdma/svc_rdma_sendto.c    |    2 +-
- net/sunrpc/xprtrdma/svc_rdma_transport.c |    2 +-
- net/wireless/reg.c                       |    2 +-
- 16 files changed, 29 insertions(+), 29 deletions(-)
+	git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-boot-params.git
 
-diff --git a/net/decnet/dn_dev.c b/net/decnet/dn_dev.c
-index 28e26bd..5b066f7 100644
---- a/net/decnet/dn_dev.c
-+++ b/net/decnet/dn_dev.c
-@@ -1106,7 +1106,7 @@ static void dn_dev_set_timer(struct net_device *dev)
- 	add_timer(&dn_db->timer);
- }
- 
--struct dn_dev *dn_dev_create(struct net_device *dev, int *err)
-+static struct dn_dev *dn_dev_create(struct net_device *dev, int *err)
- {
- 	int i;
- 	struct dn_dev_parms *p = dn_dev_list;
-diff --git a/net/decnet/dn_route.c b/net/decnet/dn_route.c
-index 821bd1c..5ab48d0 100644
---- a/net/decnet/dn_route.c
-+++ b/net/decnet/dn_route.c
-@@ -312,7 +312,7 @@ static int dn_insert_route(struct dn_route *rt, unsigned hash, struct dn_route *
- 	return 0;
- }
- 
--void dn_run_flush(unsigned long dummy)
-+static void dn_run_flush(unsigned long dummy)
- {
- 	int i;
- 	struct dn_route *rt, *next;
-@@ -1423,7 +1423,7 @@ e_neighbour:
- 	goto done;
- }
- 
--int dn_route_input(struct sk_buff *skb)
-+static int dn_route_input(struct sk_buff *skb)
- {
- 	struct dn_route *rt;
- 	struct dn_skb_cb *cb = DN_SKB_CB(skb);
-diff --git a/net/dsa/mv88e6060.c b/net/dsa/mv88e6060.c
-index 54068ef..0f69224 100644
---- a/net/dsa/mv88e6060.c
-+++ b/net/dsa/mv88e6060.c
-@@ -273,14 +273,14 @@ static struct dsa_switch_driver mv88e6060_switch_driver = {
- 	.poll_link	= mv88e6060_poll_link,
- };
- 
--int __init mv88e6060_init(void)
-+static int __init mv88e6060_init(void)
- {
- 	register_switch_driver(&mv88e6060_switch_driver);
- 	return 0;
- }
- module_init(mv88e6060_init);
- 
--void __exit mv88e6060_cleanup(void)
-+static void __exit mv88e6060_cleanup(void)
- {
- 	unregister_switch_driver(&mv88e6060_switch_driver);
- }
-diff --git a/net/dsa/mv88e6123_61_65.c b/net/dsa/mv88e6123_61_65.c
-index 555b164..ec8c6a0 100644
---- a/net/dsa/mv88e6123_61_65.c
-+++ b/net/dsa/mv88e6123_61_65.c
-@@ -407,14 +407,14 @@ static struct dsa_switch_driver mv88e6123_61_65_switch_driver = {
- 	.get_sset_count		= mv88e6123_61_65_get_sset_count,
- };
- 
--int __init mv88e6123_61_65_init(void)
-+static int __init mv88e6123_61_65_init(void)
- {
- 	register_switch_driver(&mv88e6123_61_65_switch_driver);
- 	return 0;
- }
- module_init(mv88e6123_61_65_init);
- 
--void __exit mv88e6123_61_65_cleanup(void)
-+static void __exit mv88e6123_61_65_cleanup(void)
- {
- 	unregister_switch_driver(&mv88e6123_61_65_switch_driver);
- }
-diff --git a/net/dsa/mv88e6131.c b/net/dsa/mv88e6131.c
-index 36e01eb..374d46a 100644
---- a/net/dsa/mv88e6131.c
-+++ b/net/dsa/mv88e6131.c
-@@ -366,14 +366,14 @@ static struct dsa_switch_driver mv88e6131_switch_driver = {
- 	.get_sset_count		= mv88e6131_get_sset_count,
- };
- 
--int __init mv88e6131_init(void)
-+static int __init mv88e6131_init(void)
- {
- 	register_switch_driver(&mv88e6131_switch_driver);
- 	return 0;
- }
- module_init(mv88e6131_init);
- 
--void __exit mv88e6131_cleanup(void)
-+static void __exit mv88e6131_cleanup(void)
- {
- 	unregister_switch_driver(&mv88e6131_switch_driver);
- }
-diff --git a/net/irda/irttp.c b/net/irda/irttp.c
-index 74e439e..ecf4eb2 100644
---- a/net/irda/irttp.c
-+++ b/net/irda/irttp.c
-@@ -201,7 +201,7 @@ static void irttp_todo_expired(unsigned long data)
-  *
-  *     Flushes (removes all frames) in transitt-buffer (tx_list)
-  */
--void irttp_flush_queues(struct tsap_cb *self)
-+static void irttp_flush_queues(struct tsap_cb *self)
- {
- 	struct sk_buff* skb;
- 
-@@ -1266,9 +1266,9 @@ static void irttp_connect_confirm(void *instance, void *sap,
-  *    Some other device is connecting to this TSAP
-  *
-  */
--void irttp_connect_indication(void *instance, void *sap, struct qos_info *qos,
--			      __u32 max_seg_size, __u8 max_header_size,
--			      struct sk_buff *skb)
-+static void irttp_connect_indication(void *instance, void *sap,
-+		struct qos_info *qos, __u32 max_seg_size, __u8 max_header_size,
-+		struct sk_buff *skb)
- {
- 	struct tsap_cb *self;
- 	struct lsap_cb *lsap;
-@@ -1579,8 +1579,8 @@ EXPORT_SYMBOL(irttp_disconnect_request);
-  *    Disconnect indication, TSAP disconnected by peer?
-  *
-  */
--void irttp_disconnect_indication(void *instance, void *sap, LM_REASON reason,
--				 struct sk_buff *skb)
-+static void irttp_disconnect_indication(void *instance, void *sap,
-+		LM_REASON reason, struct sk_buff *skb)
- {
- 	struct tsap_cb *self;
- 
-@@ -1664,7 +1664,7 @@ static void irttp_do_data_indication(struct tsap_cb *self, struct sk_buff *skb)
-  *     Check if we have any frames to be transmitted, or if we have any
-  *     available credit to give away.
-  */
--void irttp_run_rx_queue(struct tsap_cb *self)
-+static void irttp_run_rx_queue(struct tsap_cb *self)
- {
- 	struct sk_buff *skb;
- 	int more = 0;
-diff --git a/net/irda/timer.c b/net/irda/timer.c
-index d730099..0335ba0 100644
---- a/net/irda/timer.c
-+++ b/net/irda/timer.c
-@@ -219,7 +219,7 @@ static void irlap_backoff_timer_expired(void *data)
-  *
-  *
-  */
--void irlap_media_busy_expired(void* data)
-+static void irlap_media_busy_expired(void *data)
- {
- 	struct irlap_cb *self = (struct irlap_cb *) data;
- 
-diff --git a/net/mac80211/rc80211_minstrel.c b/net/mac80211/rc80211_minstrel.c
-index f6d69da..7639bcc 100644
---- a/net/mac80211/rc80211_minstrel.c
-+++ b/net/mac80211/rc80211_minstrel.c
-@@ -233,10 +233,10 @@ minstrel_get_next_sample(struct minstrel_sta_info *mi)
- 	return sample_ndx;
- }
- 
--void
--minstrel_get_rate(void *priv, struct ieee80211_supported_band *sband,
--                  struct ieee80211_sta *sta, void *priv_sta,
--                  struct sk_buff *skb, struct rate_selection *sel)
-+static void minstrel_get_rate(void *priv,
-+		struct ieee80211_supported_band *sband,
-+		struct ieee80211_sta *sta, void *priv_sta,
-+		struct sk_buff *skb, struct rate_selection *sel)
- {
- 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
- 	struct minstrel_sta_info *mi = priv_sta;
-diff --git a/net/phonet/sysctl.c b/net/phonet/sysctl.c
-index 600a430..1532042 100644
---- a/net/phonet/sysctl.c
-+++ b/net/phonet/sysctl.c
-@@ -95,7 +95,7 @@ static struct ctl_table phonet_table[] = {
- 	{ .ctl_name = 0 }
- };
- 
--struct ctl_path phonet_ctl_path[] = {
-+static struct ctl_path phonet_ctl_path[] = {
- 	{ .procname = "net", .ctl_name = CTL_NET, },
- 	{ .procname = "phonet", .ctl_name = CTL_UNNUMBERED, },
- 	{ },
-diff --git a/net/rxrpc/ar-connection.c b/net/rxrpc/ar-connection.c
-index 3869a58..0f1218b 100644
---- a/net/rxrpc/ar-connection.c
-+++ b/net/rxrpc/ar-connection.c
-@@ -826,7 +826,7 @@ static void rxrpc_destroy_connection(struct rxrpc_connection *conn)
- /*
-  * reap dead connections
-  */
--void rxrpc_connection_reaper(struct work_struct *work)
-+static void rxrpc_connection_reaper(struct work_struct *work)
- {
- 	struct rxrpc_connection *conn, *_p;
- 	unsigned long now, earliest, reap_time;
-diff --git a/net/rxrpc/ar-connevent.c b/net/rxrpc/ar-connevent.c
-index 1ada43d..dc5cb1e 100644
---- a/net/rxrpc/ar-connevent.c
-+++ b/net/rxrpc/ar-connevent.c
-@@ -126,7 +126,7 @@ static int rxrpc_abort_connection(struct rxrpc_connection *conn,
-  * mark a call as being on a now-secured channel
-  * - must be called with softirqs disabled
-  */
--void rxrpc_call_is_secure(struct rxrpc_call *call)
-+static void rxrpc_call_is_secure(struct rxrpc_call *call)
- {
- 	_enter("%p", call);
- 	if (call) {
-diff --git a/net/rxrpc/ar-security.c b/net/rxrpc/ar-security.c
-index 60d1d36..dc62920 100644
---- a/net/rxrpc/ar-security.c
-+++ b/net/rxrpc/ar-security.c
-@@ -40,7 +40,7 @@ static void rxrpc_security_put(struct rxrpc_security *sec)
- /*
-  * look up an rxrpc security module
-  */
--struct rxrpc_security *rxrpc_security_lookup(u8 security_index)
-+static struct rxrpc_security *rxrpc_security_lookup(u8 security_index)
- {
- 	struct rxrpc_security *sec = NULL;
- 
-diff --git a/net/sched/sch_api.c b/net/sched/sch_api.c
-index 6ab4a2f..2ce3f34 100644
---- a/net/sched/sch_api.c
-+++ b/net/sched/sch_api.c
-@@ -184,7 +184,7 @@ EXPORT_SYMBOL(unregister_qdisc);
-    (root qdisc, all its children, children of children etc.)
-  */
- 
--struct Qdisc *qdisc_match_from_root(struct Qdisc *root, u32 handle)
-+static struct Qdisc *qdisc_match_from_root(struct Qdisc *root, u32 handle)
- {
- 	struct Qdisc *q;
- 
-diff --git a/net/sunrpc/xprtrdma/svc_rdma_sendto.c b/net/sunrpc/xprtrdma/svc_rdma_sendto.c
-index 9a7a8e7..a3334e3 100644
---- a/net/sunrpc/xprtrdma/svc_rdma_sendto.c
-+++ b/net/sunrpc/xprtrdma/svc_rdma_sendto.c
-@@ -69,7 +69,7 @@
-  * array is only concerned with the reply we are assured that we have
-  * on extra page for the RPCRMDA header.
-  */
--int fast_reg_xdr(struct svcxprt_rdma *xprt,
-+static int fast_reg_xdr(struct svcxprt_rdma *xprt,
- 		 struct xdr_buf *xdr,
- 		 struct svc_rdma_req_map *vec)
- {
-diff --git a/net/sunrpc/xprtrdma/svc_rdma_transport.c b/net/sunrpc/xprtrdma/svc_rdma_transport.c
-index 6fb493c..95a5955 100644
---- a/net/sunrpc/xprtrdma/svc_rdma_transport.c
-+++ b/net/sunrpc/xprtrdma/svc_rdma_transport.c
-@@ -61,7 +61,7 @@ static int svc_rdma_has_wspace(struct svc_xprt *xprt);
- static void rq_cq_reap(struct svcxprt_rdma *xprt);
- static void sq_cq_reap(struct svcxprt_rdma *xprt);
- 
--DECLARE_TASKLET(dto_tasklet, dto_tasklet_func, 0UL);
-+static DECLARE_TASKLET(dto_tasklet, dto_tasklet_func, 0UL);
- static DEFINE_SPINLOCK(dto_lock);
- static LIST_HEAD(dto_xprt_q);
- 
-diff --git a/net/wireless/reg.c b/net/wireless/reg.c
-index eb3b1a9..080906c 100644
---- a/net/wireless/reg.c
-+++ b/net/wireless/reg.c
-@@ -705,7 +705,7 @@ static void print_regdomain(const struct ieee80211_regdomain *rd)
- 	print_rd_rules(rd);
- }
- 
--void print_regdomain_info(const struct ieee80211_regdomain *rd)
-+static void print_regdomain_info(const struct ieee80211_regdomain *rd)
- {
- 	printk(KERN_INFO "cfg80211: Regulatory domain: %c%c\n",
- 		rd->alpha2[0], rd->alpha2[1]);
+Stephen, please include in linux-next.  Clearly this hits every arch.  I'll
+try to avoid rebasing unless I've broken some arch horribly.
 
+Thanks,
+Rusty.
+
+David Howells (2):
+      param: Adapt MN10300 to the new parameter handling regime
+      param: Adapt FRV to the new parameter handling regime    
+
+Rusty Russell (10):
+      USB: Don't use __module_param_call
+      param: allow parse_args to work non-destructively.
+      core_param: call these really, really early.      
+      param: make sure charp isn't used as a core_param 
+      param: arch_get_boot_command_line()               
+      params: move core_param() parsing to before setup_arch.
+      Call early_param earlier.                              
+      param: combine core_param and early_param parsing.     
+      params: don't use alloc_bootmem for saved_command_line 
+      param: move banner printing to top of start_kernel.    
+
+ arch/alpha/kernel/setup.c                  |   36 ++++++++-----
+ arch/arm/kernel/setup.c                    |   43 +++++++++-------
+ arch/avr32/kernel/setup.c                  |   15 ++---           
+ arch/blackfin/kernel/setup.c               |   22 ++++----        
+ arch/cris/kernel/setup.c                   |   29 +++++-----      
+ arch/frv/kernel/setup.c                    |   50 +++++++-----------
+ arch/h8300/kernel/setup.c                  |   27 +++++-----        
+ arch/ia64/dig/setup.c                      |    2 +-                
+ arch/ia64/hp/sim/hpsim_setup.c             |    2 +-                
+ arch/ia64/include/asm/machvec.h            |    4 +-                
+ arch/ia64/include/asm/paravirt.h           |    8 ++--              
+ arch/ia64/kernel/machvec.c                 |    8 +++-              
+ arch/ia64/kernel/setup.c                   |   32 ++++++------      
+ arch/ia64/sn/kernel/setup.c                |   13 ++---             
+ arch/ia64/uv/kernel/setup.c                |    2 +-                
+ arch/ia64/xen/xen_pv_ops.c                 |    2 +-                
+ arch/m32r/kernel/setup.c                   |   16 +++---            
+ arch/m68k/kernel/setup.c                   |   27 ++++++----        
+ arch/m68knommu/include/asm/machdep.h       |    2 +-                
+ arch/m68knommu/kernel/setup.c              |   33 ++++++------      
+ arch/m68knommu/platform/5206/config.c      |    2 +-                
+ arch/m68knommu/platform/5206e/config.c     |   14 +++--             
+ arch/m68knommu/platform/520x/config.c      |    2 +-                
+ arch/m68knommu/platform/523x/config.c      |    2 +-                
+ arch/m68knommu/platform/5249/config.c      |    2 +-                
+ arch/m68knommu/platform/5272/config.c      |   23 ++++----          
+ arch/m68knommu/platform/527x/config.c      |    2 +-                
+ arch/m68knommu/platform/528x/config.c      |    2 +-                
+ arch/m68knommu/platform/5307/config.c      |   13 +++--             
+ arch/m68knommu/platform/532x/config.c      |   22 ++++----          
+ arch/m68knommu/platform/5407/config.c      |    2 +-                
+ arch/m68knommu/platform/68328/config.c     |    2 +-                
+ arch/m68knommu/platform/68328/head-pilot.S |    2 +-                
+ arch/m68knommu/platform/68360/config.c     |    6 ++-               
+ arch/m68knommu/platform/68EZ328/config.c   |    4 +-                
+ arch/m68knommu/platform/68VZ328/config.c   |   12 +++--             
+ arch/mips/kernel/setup.c                   |   20 ++++----          
+ arch/mn10300/kernel/setup.c                |   61 +++++++++-------------
+ arch/parisc/kernel/setup.c                 |   30 +++++------           
+ arch/powerpc/kernel/prom.c                 |    1 -                     
+ arch/powerpc/kernel/setup_32.c             |   10 +++-                  
+ arch/powerpc/kernel/setup_64.c             |    8 ++-                   
+ arch/s390/kernel/setup.c                   |    8 +---                  
+ arch/sh/boards/board-magicpanelr2.c        |    2 +-                    
+ arch/sh/boards/board-sh7785lcr.c           |    2 +-
+ arch/sh/boards/mach-dreamcast/setup.c      |    2 +-
+ arch/sh/boards/mach-highlander/setup.c     |    2 +-
+ arch/sh/boards/mach-hp6xx/setup.c          |    2 +-
+ arch/sh/boards/mach-landisk/setup.c        |    2 +-
+ arch/sh/boards/mach-microdev/setup.c       |    2 +-
+ arch/sh/boards/mach-migor/setup.c          |    2 +-
+ arch/sh/boards/mach-r2d/setup.c            |    2 +-
+ arch/sh/boards/mach-sdk7780/setup.c        |    2 +-
+ arch/sh/boards/mach-se/7343/setup.c        |    2 +-
+ arch/sh/boards/mach-se/770x/setup.c        |    2 +-
+ arch/sh/boards/mach-se/7721/setup.c        |    2 +-
+ arch/sh/boards/mach-se/7722/setup.c        |    2 +-
+ arch/sh/boards/mach-se/7780/setup.c        |    2 +-
+ arch/sh/boards/mach-sh03/setup.c           |    2 +-
+ arch/sh/boards/mach-sh7763rdp/setup.c      |    2 +-
+ arch/sh/include/asm/machvec.h              |    2 +-
+ arch/sh/kernel/setup.c                     |   28 +++++-----
+ arch/sparc/kernel/setup.c                  |   14 +++---
+ arch/sparc64/kernel/setup.c                |   12 ++--
+ arch/um/kernel/um_arch.c                   |   10 +++-
+ arch/x86/kernel/setup.c                    |   41 +++++++--------
+ arch/xtensa/kernel/setup.c                 |   19 ++++---
+ drivers/usb/core/usb.c                     |    8 ++-
+ include/asm-generic/vmlinux.lds.h          |    3 +
+ include/linux/init.h                       |    5 +-
+ include/linux/moduleparam.h                |   43 ++++++++++++----
+ init/main.c                                |   74 ++++++++++++--------------
+ kernel/kexec.c                             |    1 +
+ kernel/module.c                            |    2 +-
+ kernel/params.c                            |   77 +++++++++++++++++++++------
+ 75 files changed, 535 insertions(+), 461 deletions(-)
