@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYLIJwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbYLIKD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbYLIJwt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 04:52:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYLIJwe
+	id S1753382AbYLIKD0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 05:03:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYLIKDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 04:52:34 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33302 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753395AbYLIJwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 04:52:33 -0500
-Message-ID: <493E3F8B.7070603@redhat.com>
-Date: Tue, 09 Dec 2008 11:51:07 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Sheng Yang <sheng@linux.intel.com>
-CC: kvm@vger.kernel.org, Christian Borntraeger <borntraeger@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] module_refcounting and anonymous inodes
-References: <200812021114.59050.borntraeger@de.ibm.com> <200812081251.14648.borntraeger@de.ibm.com> <493D0B9A.9000401@redhat.com> <200812091743.26586.sheng@linux.intel.com>
-In-Reply-To: <200812091743.26586.sheng@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 9 Dec 2008 05:03:17 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:48591 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752535AbYLIKDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 05:03:16 -0500
+Date: Tue, 9 Dec 2008 11:02:59 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, sameo@openedhand.com,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] rtc twl4030: rename ioctl function when
+ RTC_INTF_DEV=n
+Message-ID: <20081209110259.5941ef1b@i1501.lan.towertech.it>
+In-Reply-To: <493732D3.4020902@xenotime.net>
+References: <20081203183602.c06f8c39.sfr@canb.auug.org.au>
+	<493732D3.4020902@xenotime.net>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sheng Yang wrote:
-> Should we push the first patch to 2.6.28? 
+On Wed, 03 Dec 2008 17:30:59 -0800
+Randy Dunlap <rdunlap@xenotime.net> wrote:
 
-It's not a recent regression, so no.
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix build error when RTC_INTF_DEV=n:
+> 
+> drivers/rtc/rtc-twl4030.c:402: error: 'twl4030_rtc_ioctl' undeclared here (not in a function)
+> make[3]: *** [drivers/rtc/rtc-twl4030.o] Error 1
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-> I got some trouble with the separate 
-> 2nd patch, for I am using Linus' tree and make KVM as modules, so the 
-> reference count reduced to negative now... (Oh Avi, I know you suggest to use 
-> in kernel rather than modules, but module is indeed convenient. :) )
->   
 
-Right, that would affect everyone.  What we need is to hack the second 
-patch for external modules on <2.6.29.
+ Acked-by: Alessandro Zummo <a.zummo@towertech.it>
 
 -- 
-error compiling committee.c: too many arguments to function
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
