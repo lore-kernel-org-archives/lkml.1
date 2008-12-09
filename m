@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbYLIXBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbYLIXCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbYLIXBc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 18:01:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbYLIXAe
+	id S1755841AbYLIXCb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 18:02:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbYLIXCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 18:00:34 -0500
-Received: from ozlabs.org ([203.10.76.45]:37852 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755934AbYLIXAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 18:00:32 -0500
+	Tue, 9 Dec 2008 18:02:20 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52136 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751989AbYLIXCT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 18:02:19 -0500
+Date: Tue, 9 Dec 2008 18:02:14 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Kyle McMartin <kyle@infradead.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com, Richard Henderson <rth@twiddle.net>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Bryan Wu <cooloney@kernel.org>, Mikael Starvik <starvik@axis.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Tony Luck <tony.luck@intel.com>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Ungerer <gerg@uclinux.org>, Ralf Baechle <ralf@linux-mips.org>,
+       linux-parisc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       "David S. Miller" <davem@davemloft.net>, Jeff Dike <jdike@addtoit.com>,
+       Ingo Molnar <mingo@redhat.com>, Chris Zankel <chris@zankel.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: setup_arch/arch_get_boot_command_line changes
+Message-ID: <20081209230214.GB7015@bombadil.infradead.org>
+References: <200812100850.26728.rusty@rustcorp.com.au> <20081209225931.GA7015@bombadil.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18750.63619.54374.976070@cargo.ozlabs.ibm.com>
-Date: Wed, 10 Dec 2008 10:00:19 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [patch] Performance Counters for Linux, v2
-In-Reply-To: <20081209130045.GA32479@elte.hu>
-References: <20081208012211.GA23106@elte.hu>
-	<18748.37739.383961.318233@drongo.ozlabs.ibm.com>
-	<20081208113318.GA14723@elte.hu>
-	<18749.39345.732524.905159@cargo.ozlabs.ibm.com>
-	<20081209130045.GA32479@elte.hu>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20081209225931.GA7015@bombadil.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
-
-> * Paul Mackerras <paulus@samba.org> wrote:
+On Tue, Dec 09, 2008 at 05:59:31PM -0500, Kyle McMartin wrote:
+> Will this not run afoul of lockdep since it will be attempting to take
+> locks before lockdep has initialized?
 > 
-> > > Things like: "kerneltop would not be as accurate with: ..., to the 
-> > > level of adding 5% of extra noise.". Would that work for you?
-> > 
-> > OK, here's an example.  I have an application whose execution has 
-> > several different phases, and I want to measure the L1 Icache hit rate 
-> > and the L1 Dcache hit rate as a function of time and make a graph.  So 
-> > I need counters for L1 Icache accesses, L1 Icache misses, L1 Dcache 
-> > accesses, and L1 Dcache misses.  I want to sample at 1ms intervals. The 
-> > CPU I'm running on has two counters.
-> > 
-> > With your current proposal, I don't see any way to make sure that the 
-> > counter scheduler counts L1 Dcache accesses and L1 Dcache misses at the 
-> > same time, then schedules L1 Icache accesses and L1 Icache misses.  I 
-> > could end up with L1 Dcache accesses and L1 Icache accesses, then L1 
-> > Dcache misses and L1 Icache misses - and get a nonsensical situation 
-> > like the misses being greater than the accesses.
-> 
-> yes, agreed, this is a valid special case of simple counter readout - 
-> we'll add support to couple counters like that.
 
-This is an example of a sampling problem, but one where the thing
-being sampled is a derived statistic from two counter values.
+Ah, printk calls lockdep_off now. Handy.
 
-I don't agree that this is really a "special case".  There are lots of
-derived statistics that are interesting for performance analysis,
-starting with CPI (cycles per instruction), proportions of various
-instructions in the code, cache hit/miss rates for various different
-caches, etc., etc.
-
-> Note that this issue does not impact use of multiple counters in 
-> profilers. (i.e. anything that is not a pure readout of the counter, 
-> along linear time, as your example above suggests).
-
-Well, that's the sampling vs. counting distinction that I made in my
-other email.  We need to do both well.
-
-As far as I can see, my "counter set" proposal does everything yours
-does (since a counter set can be just a single counter), and also
-cleanly accommodates what's needed for counting and for sampling
-derived statistics.  No?
-
-Paul.
