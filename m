@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYLJGxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbYLJHGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbYLJGxj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 01:53:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYLJGx2
+	id S1755577AbYLJHGS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 02:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbYLJHGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 01:53:28 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:42292 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753640AbYLJGx1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 01:53:27 -0500
-Subject: Re: [PATCH][RT] Compile-time fix.
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Clark Williams <clark.williams@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Gregory Haskins <ghaskins@novell.com>, Darren Hart <dvhltc@us.ibm.com>
-In-Reply-To: <1228890920.9542.2.camel@dd>
-References: <alpine.DEB.1.10.0812090946210.16798@gandalf.stny.rr.com>
-	 <1228890920.9542.2.camel@dd>
-Content-Type: text/plain
-Organization: The Big Corporation
-Date: Tue, 09 Dec 2008 22:53:22 -0800
-Message-Id: <1228892002.9542.4.camel@dd>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Dec 2008 02:06:04 -0500
+Received: from kroah.org ([198.145.64.141]:38507 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754246AbYLJHGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 02:06:01 -0500
+Date: Tue, 9 Dec 2008 21:56:51 -0800
+From: Greg KH <greg@kroah.com>
+To: =?iso-8859-1?Q?J=FCri?= Reitel <juri.reitel@liewenthal.ee>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: USB serial gadget documentation and gserial.inf
+Message-ID: <20081210055651.GA30463@kroah.com>
+References: <4937933E.80207@liewenthal.ee>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4937933E.80207@liewenthal.ee>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Dec 04, 2008 at 10:22:22AM +0200, Jüri Reitel wrote:
+> Improve linux documentation and add better gserial.inf file, now users will 
+> not have to find the usbser.sys by themselves
+>
+> Signed-off-by: Kristjan Räts <kristjan.rats@liewenthal.ee>
+> Signed-off-by: Jüri Reitel <juri.reitel@liewenthal.ee>
 
-Compile-time fix.
+Care to send this to the usb gadget maintainer for review and the
+linux-usb mailing list?  Also, I think your patch is a bit corrupted :(
 
-Signed-off-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
+thanks,
 
-diff --git a/include/linux/mutex.h b/include/linux/mutex.h
-index 585feed..b74fdc2 100644
---- a/include/linux/mutex.h
-+++ b/include/linux/mutex.h
-@@ -14,7 +14,7 @@
- #include <linux/spinlock_types.h>
- #include <linux/linkage.h>
- #include <linux/lockdep.h>
--
-+#include <linux/spinlock.h>
- #include <asm/atomic.h>
- 
- /*
-
-
+greg k-h
