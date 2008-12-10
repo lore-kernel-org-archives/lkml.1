@@ -1,87 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbYLJNP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbYLJNPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754298AbYLJNP2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 08:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYLJNPJ
+	id S1755319AbYLJNPs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 08:15:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbYLJNPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 08:15:09 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:35375 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751945AbYLJNPH (ORCPT
+	Wed, 10 Dec 2008 08:15:21 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:51428 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752962AbYLJNPS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 08:15:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=MGLK7Vc7LWgsnA8vWzhynQ+HrVNMJ0Mx3Gj1izybqDz9et/k0lGut/GMVVbUhXVDnp
-         aCEbF8YSvKJGz2RYy0qwuJXsb+TG/R79MG58uSh9fCCA/NdYQvy/TzNQjNBrNAzZHIGO
-         BmRew7rVVX0BMftiVnBV3Jk/9Mf1x0n1RsQbM=
-Message-ID: <493FC0C5.2070004@gmail.com>
-Date: Wed, 10 Dec 2008 14:14:45 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Wed, 10 Dec 2008 08:15:18 -0500
+Date: Wed, 10 Dec 2008 14:15:15 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: David Howells <dhowells@redhat.com>
+cc: Yuri Tikhonov <yur@emcraft.com>, Wolfgang Denk <wd@denx.de>,
+       Detlev Zundel <dzu@denx.de>, linux-kernel@vger.kernel.org,
+       Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
+       Al Viro <viro@ZenIV.linux.org.uk>, Ilya Yanok <yanok@emcraft.com>
+Subject: Re: Re[2]: [PATCH] fork_init: fix division by zero
+In-Reply-To: <5545.1228914404@redhat.com>
+Message-ID: <Pine.LNX.4.64.0812101412130.27886@vixen.sonytel.be>
+References: <1795455197.20081210132912@emcraft.com> <200812092044.40649.yur@emcraft.com>
+ <Pine.LNX.4.64.0812100944080.25126@vixen.sonytel.be> <503391615.20081210130113@emcraft.com>
+ <20081210101745.GG28946@ZenIV.linux.org.uk> <5545.1228914404@redhat.com>
 MIME-Version: 1.0
-To: jeffrey.t.kirsher@intel.com
-CC: jesse.brandeburg@intel.com, bruce.w.allan@intel.com,
-       peter.p.waskiewicz.jr@intel.com, john.ronciak@intel.com,
-       e1000-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: mmotm 2008-12-09-15-24: e1000e mutex contention
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 10 Dec 2008, David Howells wrote:
+> Yuri Tikhonov <yur@emcraft.com> wrote:
+> >  In any case, adding braces as follows probably would be better:
+> > 
+> > +     max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
+> 
+> I think you mean brackets, not braces '{}'.
+> 
+> >  Right ?
+> 
+> Definitely not.
+> 
+> I added this function to the above:
+> 
+> 	unsigned long alt(void)
+> 	{
+> 		unsigned long max_threads;
+> 		max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
+> 		return max_threads;
+> 	}
+> 
+> and ran it through "gcc -S -O2" for x86_64:
+> 
+> 	jump:
+> 		movq    mempages(%rip), %rax
+> 		salq    $12, %rax
+> 		shrq    $16, %rax
+> 		ret
+> 	alt:
+> 		xorl    %eax, %eax
+> 		ret
+> 
+> Note the difference?  In jump(), x86_64 first multiplies mempages by 4096, and
+> _then_ divides by 8*8192.
+> 
+> In alt(), it just returns 0 because the compiler realised that you're
+> multiplying by 0.
 
-during bootup, I got ton of these:
+The case were the multiplier is 0 (actually smaller than 1, but not integer)
+is handled by
 
-WARNING: at drivers/net/e1000e/ich8lan.c:413
-e1000_acquire_swflag_ich8lan+0x43/0xf0()
-Hardware name: To Be Filled By O.E.M.
-e1000e mutex contention. Owned by pid -1
-Modules linked in:
-Pid: 1, comm: swapper Tainted: G        W  2.6.28-rc7-mm1_64 #490
-Call Trace:
- [<ffffffff8023e25f>] warn_slowpath+0xaf/0x110
- [<ffffffff803c1b1d>] ? vt_console_print+0x26d/0x380
- [<ffffffff8023e403>] ? __call_console_drivers+0x73/0x90
- [<ffffffff80259954>] ? up+0x34/0x50
- [<ffffffff8023e98d>] ? release_console_sem+0x1bd/0x210
- [<ffffffff803fe333>] e1000_acquire_swflag_ich8lan+0x43/0xf0
- [<ffffffff803fe748>] e1000_read_nvm_ich8lan+0x78/0x130
- [<ffffffff80401ad1>] e1000e_read_pba_num+0x31/0x80
- [<ffffffff80589609>] e1000_probe+0xcb9/0xd00
- [<ffffffff8035d46a>] ? kobject_get+0x1a/0x30
- [<ffffffff80370092>] local_pci_probe+0x12/0x20
- [<ffffffff80370c50>] pci_device_probe+0x80/0xa0
- [<ffffffff803f36eb>] ? driver_sysfs_add+0x6b/0x90
- [<ffffffff803f3832>] driver_probe_device+0xa2/0x1e0
- [<ffffffff803f3a0b>] __driver_attach+0x9b/0xa0
- [<ffffffff803f3970>] ? __driver_attach+0x0/0xa0
- [<ffffffff803f2ff3>] bus_for_each_dev+0x63/0x90
- [<ffffffff80791560>] ? e1000_init_module+0x0/0x70
- [<ffffffff803f367c>] driver_attach+0x1c/0x20
- [<ffffffff803f28a8>] bus_add_driver+0x1f8/0x270
- [<ffffffff80791560>] ? e1000_init_module+0x0/0x70
- [<ffffffff803f3bf0>] driver_register+0x70/0x160
- [<ffffffff80791560>] ? e1000_init_module+0x0/0x70
- [<ffffffff80370f2a>] __pci_register_driver+0x5a/0xa0
- [<ffffffff80791560>] ? e1000_init_module+0x0/0x70
- [<ffffffff807915af>] e1000_init_module+0x4f/0x70
- [<ffffffff80791360>] ? loop_init+0x0/0x1dc
- [<ffffffff8020903c>] _stext+0x3c/0x170
- [<ffffffff8027f068>] ? register_irq_proc+0xb8/0xe0
- [<ffffffff80300000>] ? load_script+0x70/0x250
- [<ffffffff807726ab>] kernel_init+0x166/0x1c2
- [<ffffffff8020d5ba>] child_rip+0xa/0x20
- [<ffffffff80772545>] ? kernel_init+0x0/0x1c2
- [<ffffffff8020d5b0>] ? child_rip+0x0/0x20
----[ end trace 9c09681510f4b604 ]---
+	#if (8 * THREAD_SIZE) > PAGE_SIZE
+	      max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
+	#else
+	     ...
 
-I've found few reports of this in the past, not sure if this one is related.
-The last known working is some mmotm based on -rc5.
+> If you're going to bracket the expression, it must be:
+> 
+> 		max_threads = (mempages * PAGE_SIZE) / (8 * THREAD_SIZE);
+> 
+> which should be superfluous.
+
+No, `mempages * PAGE_SIZE' may overflow.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
