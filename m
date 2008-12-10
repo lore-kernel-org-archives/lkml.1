@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbYLJStQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbYLJSuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757484AbYLJStQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 13:49:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbYLJSs6
+	id S1755954AbYLJSuX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 13:50:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbYLJSuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 13:48:58 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51649 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753650AbYLJSs5 (ORCPT
+	Wed, 10 Dec 2008 13:50:07 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:65262 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752963AbYLJSuG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 13:48:57 -0500
-Subject: Re: [PATCHSETS #2] KVM device passthrough support with AMD IOMMU
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joerg Roedel <joerg.roedel@amd.com>, Mike Day <ncmike@ncultra.org>
-Cc: Avi Kivity <avi@redhat.com>, mingo@redhat.com, weidong.han@intel.com,
-       torvalds@linux-foundation.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-In-Reply-To: <20081210184240.GH12816@amd.com>
-References: <20081209141143.GW12816@amd.com> <493F8D90.40205@redhat.com>
-	 <20081210141131.GB12816@amd.com>
-	 <1228918928.21454.27.camel@macbook.infradead.org>
-	 <20081210142525.GC12816@amd.com>
-	 <1228933475.23842.70.camel@macbook.infradead.org>
-	 <20081210184240.GH12816@amd.com>
-Content-Type: text/plain
-Date: Wed, 10 Dec 2008 18:48:23 +0000
-Message-Id: <1228934903.23842.75.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-1.fc10) 
+	Wed, 10 Dec 2008 13:50:06 -0500
+Message-ID: <49400F2F.4050603@vlnb.net>
+Date: Wed, 10 Dec 2008 21:49:19 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: linux-scsi@vger.kernel.org
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH][RFC 13/23]: Export of alloc_io_context() function
+References: <494009D7.4020602@vlnb.net>
+In-Reply-To: <494009D7.4020602@vlnb.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Provags-ID: V01U2FsdGVkX1+MIv/50Q2ai0Do8LluwhU07JCdK+CGd0wrGJH
+ RWspc4m5460w2o/nMUFUMze/x/28/VxvRv8ZilqdLgwZ1gsmkY
+ xFxOSaWG9f/aKRrQrApdQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-10 at 19:42 +0100, Joerg Roedel wrote:
-> Ok, I add it, thanks. Who is the author, Mike or you?
+This patch exports alloc_io_context() function. For performance reasons 
+SCST queues commands using a pool of IO threads. It is considerably 
+better for performance (>30% increase on sequential reads) if threads in 
+  a pool have the same IO context. Since SCST can be built as a module, 
+it needs alloc_io_context() function exported.
 
-Might as well attribute it to Mike; he spotted it.
+Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+---
+  block/blk-ioc.c |    1 +
+  1 file changed, 1 insertion(+)
 
--- 
-dwmw2
+diff -upkr linux-2.6.27.2/block/blk-ioc.c linux-2.6.27.2/block/blk-ioc.c
+--- linux-2.6.27.2/block/blk-ioc.c	2008-10-10 02:13:53.000000000 +0400
++++ linux-2.6.27.2/block/blk-ioc.c	2008-11-25 21:27:01.000000000 +0300
+@@ -105,6 +105,7 @@ struct io_context *alloc_io_context(gfp_
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL(alloc_io_context);
+ 
+ /*
+  * If the current task has no IO context then create one and initialise it.
 
