@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbYLJQlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYLJQmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbYLJQlY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756282AbYLJQlL
+	id S1757174AbYLJQmB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:42:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbYLJQlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:41:11 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:55486 "EHLO mgw2.diku.dk"
+	Wed, 10 Dec 2008 11:41:35 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:55500 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756051AbYLJQlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:41:09 -0500
-Date: Wed, 10 Dec 2008 17:41:06 +0100 (CET)
+	id S1756686AbYLJQld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 11:41:33 -0500
+Date: Wed, 10 Dec 2008 17:41:30 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dmitri.vorobiev@movial.fi, juergh@gmail.com, lm-sensors@lm-sensors.org,
+To: dmitri.vorobiev@movial.fi, khali@linux-fr.org, lm-sensors@lm-sensors.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 22/28] drivers/hwmon/dme1737.c: Drop return value from
+Subject: [PATCH 23/28] drivers/hwmon/f71805f.c: Drop return value from
  platform_driver remove functions
-Message-ID: <Pine.LNX.4.64.0812101740430.21998@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0812101741070.21998@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -94,37 +94,37 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/hwmon/dme1737.c |    6 ++----
+ drivers/hwmon/f71805f.c |    6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/hwmon/dme1737.c b/drivers/hwmon/dme1737.c
-index 27a5d39..3a9b988 100644
---- a/drivers/hwmon/dme1737.c
-+++ b/drivers/hwmon/dme1737.c
-@@ -2465,7 +2465,7 @@ exit:
+diff --git a/drivers/hwmon/f71805f.c b/drivers/hwmon/f71805f.c
+index 7a14a2d..76842db 100644
+--- a/drivers/hwmon/f71805f.c
++++ b/drivers/hwmon/f71805f.c
+@@ -1408,7 +1408,7 @@ exit:
  	return err;
  }
  
--static int __devexit dme1737_isa_remove(struct platform_device *pdev)
-+static void __devexit dme1737_isa_remove(struct platform_device *pdev)
+-static int __devexit f71805f_remove(struct platform_device *pdev)
++static void __devexit f71805f_remove(struct platform_device *pdev)
  {
- 	struct dme1737_data *data = platform_get_drvdata(pdev);
+ 	struct f71805f_data *data = platform_get_drvdata(pdev);
+ 	struct resource *res;
+@@ -1424,8 +1424,6 @@ static int __devexit f71805f_remove(struct platform_device *pdev)
  
-@@ -2474,8 +2474,6 @@ static int __devexit dme1737_isa_remove(struct platform_device *pdev)
- 	release_region(data->addr, DME1737_EXTENT);
- 	platform_set_drvdata(pdev, NULL);
- 	kfree(data);
+ 	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+ 	release_region(res->start + ADDR_REG_OFFSET, 2);
 -
 -	return 0;
  }
  
- static struct platform_driver dme1737_isa_driver = {
-@@ -2484,7 +2482,7 @@ static struct platform_driver dme1737_isa_driver = {
- 		.name = "dme1737",
+ static struct platform_driver f71805f_driver = {
+@@ -1434,7 +1432,7 @@ static struct platform_driver f71805f_driver = {
+ 		.name	= DRVNAME,
  	},
- 	.probe = dme1737_isa_probe,
--	.remove = __devexit_p(dme1737_isa_remove),
-+	.remove_new = __devexit_p(dme1737_isa_remove),
+ 	.probe		= f71805f_probe,
+-	.remove		= __devexit_p(f71805f_remove),
++	.remove_new	= __devexit_p(f71805f_remove),
  };
  
- /* ---------------------------------------------------------------------
+ static int __init f71805f_device_add(unsigned short address,
