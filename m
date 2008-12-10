@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbYLJQk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbYLJQlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757855AbYLJQk4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:40:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756282AbYLJQkp
+	id S1757915AbYLJQlY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:41:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756282AbYLJQlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:40:45 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:55460 "EHLO mgw2.diku.dk"
+	Wed, 10 Dec 2008 11:41:11 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:55486 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756874AbYLJQko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:40:44 -0500
-Date: Wed, 10 Dec 2008 17:40:41 +0100 (CET)
+	id S1756051AbYLJQlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 11:41:09 -0500
+Date: Wed, 10 Dec 2008 17:41:06 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dmitri.vorobiev@movial.fi, grant.likely@secretlab.ca,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 21/28] drivers/char/xilinx_hwicap: Drop return value from
+To: dmitri.vorobiev@movial.fi, juergh@gmail.com, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 22/28] drivers/hwmon/dme1737.c: Drop return value from
  platform_driver remove functions
-Message-ID: <Pine.LNX.4.64.0812101740170.21998@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0812101740430.21998@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -95,28 +94,37 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/char/xilinx_hwicap/xilinx_hwicap.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/hwmon/dme1737.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-index d161319..007b4df 100644
---- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-+++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
-@@ -743,14 +743,14 @@ static int __devinit hwicap_drv_probe(struct platform_device *pdev)
- 			&buffer_icap_config, regs);
+diff --git a/drivers/hwmon/dme1737.c b/drivers/hwmon/dme1737.c
+index 27a5d39..3a9b988 100644
+--- a/drivers/hwmon/dme1737.c
++++ b/drivers/hwmon/dme1737.c
+@@ -2465,7 +2465,7 @@ exit:
+ 	return err;
  }
  
--static int __devexit hwicap_drv_remove(struct platform_device *pdev)
-+static void __devexit hwicap_drv_remove(struct platform_device *pdev)
+-static int __devexit dme1737_isa_remove(struct platform_device *pdev)
++static void __devexit dme1737_isa_remove(struct platform_device *pdev)
  {
--	return hwicap_remove(&pdev->dev);
-+	hwicap_remove(&pdev->dev);
+ 	struct dme1737_data *data = platform_get_drvdata(pdev);
+ 
+@@ -2474,8 +2474,6 @@ static int __devexit dme1737_isa_remove(struct platform_device *pdev)
+ 	release_region(data->addr, DME1737_EXTENT);
+ 	platform_set_drvdata(pdev, NULL);
+ 	kfree(data);
+-
+-	return 0;
  }
  
- static struct platform_driver hwicap_platform_driver = {
- 	.probe = hwicap_drv_probe,
--	.remove = hwicap_drv_remove,
-+	.remove_new = hwicap_drv_remove,
- 	.driver = {
- 		.owner = THIS_MODULE,
- 		.name = DRIVER_NAME,
+ static struct platform_driver dme1737_isa_driver = {
+@@ -2484,7 +2482,7 @@ static struct platform_driver dme1737_isa_driver = {
+ 		.name = "dme1737",
+ 	},
+ 	.probe = dme1737_isa_probe,
+-	.remove = __devexit_p(dme1737_isa_remove),
++	.remove_new = __devexit_p(dme1737_isa_remove),
+ };
+ 
+ /* ---------------------------------------------------------------------
