@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbYLJF0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbYLJF1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884AbYLJF0T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 00:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750750AbYLJF0D
+	id S1754246AbYLJF1J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 00:27:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751030AbYLJF0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 00:26:03 -0500
-Received: from smtp.zeuux.org ([210.51.160.52]:62064 "EHLO z.billxu.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750736AbYLJF0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 00:26:01 -0500
-Date: Wed, 10 Dec 2008 13:25:55 +0800
-From: Jianjun Kong <jianjun@zeuux.org>
-To: "Helight.Xu" <helight.xu@gmail.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] rewrite the return method of static int
-	s3c24xx_spi_setup(struct spi_device *spi) in
-	drivers/spi/spi_s3c24xx.c
-Message-ID: <20081210052554.GA7660@ubuntu>
-References: <20081210030151.GA6404@helight>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081210030151.GA6404@helight>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 10 Dec 2008 00:26:54 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:59805 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750736AbYLJF0x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 00:26:53 -0500
+Date: Wed, 10 Dec 2008 00:26:48 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [stable] [PATCH 2.6.23..2.6.27.stable] ACPI: delete OSI(Linux) DMI
+ dmesg spam
+In-reply-to: <20081209173914.GC32344@kroah.com>
+X-X-Sender: lenb@localhost.localdomain
+To: Greg KH <greg@kroah.com>
+Cc: stable@kernel.org, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.2.00.0812100023150.17146@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <alpine.LFD.2.00.0812081556060.4406@localhost.localdomain>
+ <20081209173914.GC32344@kroah.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 11:01:51AM +0800, Helight.Xu wrote:
->rewrite the return method of static int 
->s3c24xx_spi_setup(struct spi_device *spi) 
->in drivers/spi/spi_s3c24xx.c 
->
->reason:
->s3c24xx_spi_setupxfer(spi, NULL) return 0 or -EINVAL, 
->so here shoud return the ret,but only 0.
 
-The original code can return the correct value.
-It contains 0 and -EINVAL, not only 0. So this change is not essential.
+> > Per 2.6.28 commit a6e0887f21bbab337ee32d9c0a84d7c0b6e9141b,
+> > stop soliciting DMI info for this BIOS issue.
+> > 
+> > Signed-off-by: Len Brown <len.brown@intel.com>
+> 
+> I don't understand, this isn't commit a6e0887f21bb upstream, right?
+> 
+> Is this patch upstream?  Or is it just that you don't want to get these
+> messages anymore because it is fixed in 2.6.28 now?
 
+We could port the upstream patch to the old .stable releases,
+but I though it would cause less conflicts to instead
+apply this simpler version that doesn't touch the DMI lists.
 
--- 
-Jianjun Kong |Happy Hacking
-Homepage: http://kongove.cn
-Gtalk:KongJianjun@gmail.com
+The reason we're turning off this message is because
+at this point we don't think we'll learn anything new from additional
+user feedback.
+
+thanks,
+-Len Brown
+Intel Open Source Technology Center
