@@ -1,213 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbYLJLyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbYLJL5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069AbYLJLyj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 06:54:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbYLJLya
+	id S1753205AbYLJL5h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 06:57:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYLJL52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 06:54:30 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44509 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751539AbYLJLy3 (ORCPT
+	Wed, 10 Dec 2008 06:57:28 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:42596 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbYLJL51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 06:54:29 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Wed, 10 Dec 2008 12:50:47 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [git pull] ieee1394 fix - updated
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-In-Reply-To: <tkrat.9291b0d04a76c14a@s5r6.in-berlin.de>
-Message-ID: <tkrat.d342fc31303e4524@s5r6.in-berlin.de>
-References: <tkrat.9291b0d04a76c14a@s5r6.in-berlin.de>
+	Wed, 10 Dec 2008 06:57:27 -0500
+Date: Wed, 10 Dec 2008 17:27:21 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       dm-devel@redhat.com, tglx@linutronix.de, mel@csn.ul.ie,
+       paulmck@linux.vnet.ibm.com
+Subject: [BUG] linux-next: 20081209 - kernel bug at
+	__rcu_process_callbacks, while booting up
+Message-ID: <20081210115721.GB6107@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20081209185237.8bb715d7.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20081209185237.8bb715d7.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On  9 Dec, Stefan Richter wrote:
-> Linus, please pull from the for-linus branch at
-> 
->     git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
-> 
-> to receive the following update:
+Hi,
 
-I received confirmation for another bug fix and updated for-linus:
+	Kernel bug is hit while booting up the next-20081208/09 kernels over
+the x86_64 box. The IP is pointing to 0x0 and its stuck at
+__rcu_process_callbacks.
 
-Nigel Cunningham (1):
-      ieee1394: node manager causes up to ~3.25s delay in freezing tasks
-
-Stefan Richter (1):
-      firewire: fw-ohci: fix IOMMU resource exhaustion
-
- drivers/firewire/fw-ohci.c        |   11 +++++++----
- drivers/firewire/fw-transaction.c |    3 +++
- drivers/firewire/fw-transaction.h |    2 ++
- drivers/ieee1394/nodemgr.c        |    2 ++
- 4 files changed, 14 insertions(+), 4 deletions(-)
-
-
-commit 1d1dc5e83f3299c108a4e44d58cc4bfef48c876a
-Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date:   Wed Dec 10 00:20:38 2008 +0100
-
-    firewire: fw-ohci: fix IOMMU resource exhaustion
-    
-    There is a DMA map/ unmap imbalance whenever a block write request
-    packet is sent and then dequeued with ohci_cancel_packet.  The latter
-    may happen frequently if the AR resp tasklet is executed before the AT
-    req tasklet for the same transaction.
-    
-    Add the missing dma_unmap_single.  This fixes
-    https://bugzilla.redhat.com/show_bug.cgi?id=475156
-    
-    Reported-by: Emmanuel Kowalski
-    Tested-by: Emmanuel Kowalski
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-
-diff --git a/drivers/firewire/fw-ohci.c b/drivers/firewire/fw-ohci.c
-index 46610b0..ab9c01e 100644
---- a/drivers/firewire/fw-ohci.c
-+++ b/drivers/firewire/fw-ohci.c
-@@ -974,6 +974,7 @@ at_context_queue_packet(struct context *ctx, struct fw_packet *packet)
- 			packet->ack = RCODE_SEND_ERROR;
- 			return -1;
- 		}
-+		packet->payload_bus = payload_bus;
- 
- 		d[2].req_count    = cpu_to_le16(packet->payload_length);
- 		d[2].data_address = cpu_to_le32(payload_bus);
-@@ -1025,7 +1026,6 @@ static int handle_at_packet(struct context *context,
- 	struct driver_data *driver_data;
- 	struct fw_packet *packet;
- 	struct fw_ohci *ohci = context->ohci;
--	dma_addr_t payload_bus;
- 	int evt;
- 
- 	if (last->transfer_status == 0)
-@@ -1038,9 +1038,8 @@ static int handle_at_packet(struct context *context,
- 		/* This packet was cancelled, just continue. */
- 		return 1;
- 
--	payload_bus = le32_to_cpu(last->data_address);
--	if (payload_bus != 0)
--		dma_unmap_single(ohci->card.device, payload_bus,
-+	if (packet->payload_bus)
-+		dma_unmap_single(ohci->card.device, packet->payload_bus,
- 				 packet->payload_length, DMA_TO_DEVICE);
- 
- 	evt = le16_to_cpu(last->transfer_status) & 0x1f;
-@@ -1697,6 +1696,10 @@ static int ohci_cancel_packet(struct fw_card *card, struct fw_packet *packet)
- 	if (packet->ack != 0)
- 		goto out;
- 
-+	if (packet->payload_bus)
-+		dma_unmap_single(ohci->card.device, packet->payload_bus,
-+				 packet->payload_length, DMA_TO_DEVICE);
-+
- 	log_ar_at_event('T', packet->speed, packet->header, 0x20);
- 	driver_data->packet = NULL;
- 	packet->ack = RCODE_CANCELLED;
-diff --git a/drivers/firewire/fw-transaction.c b/drivers/firewire/fw-transaction.c
-index 022ac4f..2884f87 100644
---- a/drivers/firewire/fw-transaction.c
-+++ b/drivers/firewire/fw-transaction.c
-@@ -207,6 +207,7 @@ fw_fill_request(struct fw_packet *packet, int tcode, int tlabel,
- 	packet->speed = speed;
- 	packet->generation = generation;
- 	packet->ack = 0;
-+	packet->payload_bus = 0;
- }
- 
- /**
-@@ -581,6 +582,8 @@ fw_fill_response(struct fw_packet *response, u32 *request_header,
- 		BUG();
- 		return;
- 	}
-+
-+	response->payload_bus = 0;
- }
- EXPORT_SYMBOL(fw_fill_response);
- 
-diff --git a/drivers/firewire/fw-transaction.h b/drivers/firewire/fw-transaction.h
-index aed7dbb..839466f 100644
---- a/drivers/firewire/fw-transaction.h
-+++ b/drivers/firewire/fw-transaction.h
-@@ -27,6 +27,7 @@
- #include <linux/list.h>
- #include <linux/spinlock_types.h>
- #include <linux/timer.h>
-+#include <linux/types.h>
- #include <linux/workqueue.h>
- 
- #define TCODE_IS_READ_REQUEST(tcode)	(((tcode) & ~1) == 4)
-@@ -153,6 +154,7 @@ struct fw_packet {
- 	size_t header_length;
- 	void *payload;
- 	size_t payload_length;
-+	dma_addr_t payload_bus;
- 	u32 timestamp;
- 
- 	/*
-
-commit ec9a13cdbfc8cf29502096ca69b65f07184a9b2c
-Author: Nigel Cunningham <ncunningham@crca.org.au>
-Date:   Tue Dec 9 22:40:20 2008 +1100
-
-    ieee1394: node manager causes up to ~3.25s delay in freezing tasks
-    
-    The firewire nodemanager function "nodemgr_host_thread" contains a loop
-    that calls try_to_freeze near the top of the loop, but then delays for
-    up to 3.25 seconds (plus time to do work) before getting back to the top
-    of the loop. When starting a cycle post-boot, this doesn't seem to bite,
-    but it is causing a noticeable delay at boot time, when freezing
-    processes prior to starting to read the image.
-    
-    The following patch adds invocation of try_to_freeze to the subloops
-    that are used in the body of this function. With these additions, the
-    time to freeze when starting to resume at boot time is virtually zero.
-    I'm no expert on firewire, and so don't know that we shouldn't check
-    the return value and jump back to the top of the loop or such like after
-    being frozen, but I submit it for your consideration.
-    
-    Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
-    
-    The delay until nodemgr freezes was up to 0.25s (plus time for node
-    probes) in Linux 2.6.27 and older and up to 3.25s (plus ~) since Linux
-    2.6.28-rc1, hence much more noticeable.
-    
-    try_to_freeze() without any jump is correct.  The surrounding code in
-    the respective loops will catch whether another bus reset happens during
-    the freeze and handle it.
-    
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-
-diff --git a/drivers/ieee1394/nodemgr.c b/drivers/ieee1394/nodemgr.c
-index 9e39f73..d333ae2 100644
---- a/drivers/ieee1394/nodemgr.c
-+++ b/drivers/ieee1394/nodemgr.c
-@@ -1685,6 +1685,7 @@ static int nodemgr_host_thread(void *data)
- 		g = get_hpsb_generation(host);
- 		for (i = 0; i < 4 ; i++) {
- 			msleep_interruptible(63);
-+			try_to_freeze();
- 			if (kthread_should_stop())
- 				goto exit;
- 
-@@ -1725,6 +1726,7 @@ static int nodemgr_host_thread(void *data)
- 		/* Sleep 3 seconds */
- 		for (i = 3000/200; i; i--) {
- 			msleep_interruptible(200);
-+			try_to_freeze();
- 			if (kthread_should_stop())
- 				goto exit;
- 
-
+Activating logical volumes
+  4 logical volume(s) in volume group "VolGroup00"BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+IP: [<0000000000000000>] 0x0
+PGD 3e8ad067 PUD 3e8ac067 PMD 0 
+Oops: 0010 [#1] SMP 
+last sysfs file: /sys/block/dm-1/removable
+CPU 3 
+Modules linked in:
+Pid: 0, comm: swapper Not tainted 2.6.28-rc7-next-20081209-autotest #1
+RIP: 0010:[<0000000000000000>]  [<0000000000000000>] 0x0
+RSP: 0018:ffff88003fa73ef0  EFLAGS: 00010286
+RAX: ffff88003eae0500 RBX: ffff880001047040 RCX: ffffffff80268f66
+RDX: 0000000000000000 RSI: ffffe20000fab800 RDI: ffff88003eae0500
+RBP: 0000000000000000 R08: ffff880001047040 R09: ffffffff80853950
+R10: 0000000000000038 R11: ffffffff8032222d R12: 0000000000000005
+R13: 0000000000000038 R14: 0000000000000009 R15: 0000000000000018
+FS:  000000000066d870(0000) GS:ffff88003f803f00(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 0000000000000000 CR3: 000000003e8a9000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process swapper (pid: 0, threadinfo ffff88003fa64000, task ffff88003f9dde00)
+Stack:
+ ffffffff80268f66 ffff88003fa73ef8 0000000000000100 0000000000000001
+ ffffffff807400b8 0000000000000038 ffffffff80269001 0000000000000018
+ ffffffff8023b891 ffffffff8020e79e 0000000000000046 ffff88003fa73f80
+Call Trace:
+ <IRQ> <0> [<ffffffff80268f66>] __rcu_process_callbacks+0x14e/0x1c3
+ [<ffffffff80269001>] rcu_process_callbacks+0x26/0x4a
+ [<ffffffff8023b891>] __do_softirq+0x76/0x136
+ [<ffffffff8020e79e>] profile_pc+0x21/0x5b
+ [<ffffffff8020d03c>] call_softirq+0x1c/0x28
+ [<ffffffff8020e091>] do_softirq+0x2c/0x6c
+ [<ffffffff8021e018>] smp_apic_timer_interrupt+0x93/0xac
+ [<ffffffff8020ca73>] apic_timer_interrupt+0x13/0x20
+ <EOI> <0>Code:  Bad RIP value.
+RIP  [<0000000000000000>] 0x0
+ RSP <ffff88003fa73ef0>
+CR2: 0000000000000000
+---[ end trace 69ecde41a682e571 ]---
+Kernel panic - not syncing: Fatal exception in interrupt
+Pid: 0, comm: swapper Tainted: G      D    2.6.28-rc7-next-20081209-autotest #1
+Call Trace:
+Mounting root fi <IRQ> lesystem.
+ [<ffffffff80236e7d>] panic+0x86/0x144
+ [<ffffffff8020ca73>] apic_timer_interrupt+0x13/0x20
+ [<ffffffff8051fd57>] oops_end+0x61/0xad
+ [<ffffffff8051fd96>] oops_end+0xa0/0xad
+ [<ffffffff805215ac>] do_page_fault+0x748/0x801
+ [<ffffffff8051f3af>] page_fault+0x1f/0x30
+ [<ffffffff8032222d>] selinux_cred_free+0x0/0x14
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000002
+IP: [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
+PGD 3e8ad067 PUD 3e8ac067 PMD 0 
+Oops: 0000 [#2] SMP 
+last sysfs file: /sys/block/ram7/removable
+CPU 2 
+Modules linked in:
+Pid: 1, comm: init Tainted: G      D    2.6.28-rc7-next-20081209-autotest #1
+RIP: 0010:[<ffffffff802926da>]  [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
+RSP: 0018:ffff88003f9d7db8  EFLAGS: 00010002
+RAX: 0000000000000000 RBX: 0000000000000246 RCX: 0000000000000001
+RDX: ffff880001037800 RSI: 0000000000000002 RDI: ffffffff80854f70
+RBP: 0000000000000020 R08: 0000000000000000 R09: ffffffff80859a80
+R10: 0000000000000001 R11: ffff88003f426018 R12: ffffffff80854f70
+R13: ffffffff80253ab1 R14: 0000000000000080 R15: ffffffff802b4141
+FS:  000000000066d870(0063) GS:ffff88003f803c80(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000002 CR3: 000000003e8a9000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process init (pid: 1, threadinfo ffff88003f9d6000, task ffff88003f9d8000)
+Stack:
+ 00000000ffffffff ffff88003f426000 ffffffff80859a80 ffffffff80859a80
+ 0000000000000000 ffffffff80253ab1 00000000006f1db0 0000000000000000
+ ffff88003eb6a2f8 ffff88003f9d7e48 0000000000000000 01ff88003e97c400
+Call Trace:
+ [<ffffffff80253ab1>] ? smp_call_function_many+0xdb/0x220
+ [<ffffffff802704ca>] ? do_writepages+0x23/0x30
+ [<ffffffff802b4141>] ? invalidate_bh_lru+0x0/0x42
+ [<ffffffff80253c16>] ? smp_call_function+0x20/0x24
+ [<ffffffff8023b483>] ? on_each_cpu+0x10/0x22
+ [<ffffffff802b919b>] ? kill_bdev+0x1b/0x30
+ [<ffffffff802b9892>] ? __blkdev_put+0x54/0x151
+ [<ffffffff8029899f>] ? __fput+0xe7/0x1b4
+ [<ffffffff802961ea>] ? filp_close+0x5e/0x66
+ [<ffffffff8029627f>] ? sys_close+0x8d/0xd1
+ [<ffffffff8020bf5b>] ? system_call_fastpath+0x16/0x1b
+Code: 18 03 00 00 48 8b 32 44 8b 72 18 48 85 f6 75 18 49 89 d0 89 ee 4c 89 e9 83 ca ff 4c 89 e7 e8 57 f8 ff ff 48 89 c6 eb 0a 8b 42 14 <48> 8b 04 c6 48 89 02 53 9d 31 c0 c1 ed 0f 48 85 f6 0f 95 c0 85 
+RIP  [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
+ RSP <ffff88003f9d7db8>
+CR2: 0000000000000002
+---[ end trace 69ecde41a682e571 ]---
+Kernel panic - not syncing: Attempted to kill init!
+Pid: 1, comm: init Tainted: G      D    2.6.28-rc7-next-20081209-autotest #1
+Call Trace:
+ [<ffffffff80236e7d>] panic+0x86/0x144
+ [<ffffffff802abbfb>] mntput_no_expire+0x1e/0x139
+ [<ffffffff802961ea>] filp_close+0x5e/0x66
+ [<ffffffff8023870d>] exit_fs+0x35/0x46
+ [<ffffffff80239b7a>] do_exit+0x75/0x766
+ [<ffffffff8051fd9e>] oops_end+0xa8/0xad
+ [<ffffffff805215ac>] do_page_fault+0x748/0x801
+ [<ffffffff80253ab1>] smp_call_function_many+0xdb/0x220
+ [<ffffffff802b4141>] invalidate_bh_lru+0x0/0x42
+ [<ffffffff8051f3af>] page_fault+0x1f/0x30
+ [<ffffffff802b4141>] invalidate_bh_lru+0x0/0x42
+ [<ffffffff80253ab1>] smp_call_function_many+0xdb/0x220
+ [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
+ [<ffffffff80253ab1>] smp_call_function_many+0xdb/0x220
+ [<ffffffff802704ca>] do_writepages+0x23/0x30
+ [<ffffffff802b4141>] invalidate_bh_lru+0x0/0x42
+ [<ffffffff80253c16>] smp_call_function+0x20/0x24
+ [<ffffffff8023b483>] on_each_cpu+0x10/0x22
+ [<ffffffff802b919b>] kill_bdev+0x1b/0x30
+ [<ffffffff802b9892>] __blkdev_put+0x54/0x151
+ [<ffffffff8029899f>] __fput+0xe7/0x1b4
+ [<ffffffff802961ea>] filp_close+0x5e/0x66
+ [<ffffffff8029627f>] sys_close+0x8d/0xd1
+ [<ffffffff8020bf5b>] system_call_fastpath+0x16/0x1b
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000002
+IP: [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
+PGD 0 
+Oops: 0000 [#3] SMP 
+last sysfs file: /sys/block/ram7/removable
+CPU 2 
+Modules linked in:
+Pid: 1, comm: init Tainted: G      D    2.6.28-rc7-next-20081209-autotest #1
+RIP: 0010:[<ffffffff802926da>]  [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
+RSP: 0018:ffff88003f9d7a58  EFLAGS: 00010002
+RAX: 0000000000000000 RBX: 0000000000000246 RCX: 0000000000000001
+RDX: ffff880001037800 RSI: 0000000000000002 RDI: ffffffff80854f70
+RBP: 0000000000000020 R08: ffffffff8052a5c0 R09: ffffffff80859a80
+R10: 0000000000000000 R11: ffffffff8067c887 R12: ffffffff80854f70
+R13: ffffffff80253ab1 R14: 0000000000000080 R15: ffffffff80211dd3
+FS:  000000000066d870(0000) GS:ffff88003f803c80(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000002 CR3: 0000000000201000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process init (pid: 1, threadinfo ffff88003f9d6000, task ffff88003f9d8000)
+Stack:
+ 00000000ffffffff ffff88003f9d8000 ffffffff80859a80 ffffffff80859a80
+ 0000000000000000 ffffffff80253ab1 ffffffff8052a5c0 ffff88003fa3bfc0
+ 0000000000000000 ffffffff8020e525 0000000000000010 000000003e943800
+Call Trace:
+ [<ffffffff80253ab1>] ? smp_call_function_many+0xdb/0x220
+ [<ffffffff8020e525>] ? dump_trace+0x223/0x232
+ [<ffffffff80253c16>] ? smp_call_function+0x20/0x24
+ [<ffffffff8021ccc1>] ? native_smp_send_stop+0x1a/0x26
+ [<ffffffff80236e91>] ? panic+0x9a/0x144
+ [<ffffffff802abbfb>] ? mntput_no_expire+0x1e/0x139
+ [<ffffffff802961ea>] ? filp_close+0x5e/0x66
+ [<ffffffff8023870d>] ? exit_fs+0x35/0x46
+ [<ffffffff80239b7a>] ? do_exit+0x75/0x766
+ [<ffffffff8051fd9e>] ? oops_end+0xa8/0xad
+ [<ffffffff805215ac>] ? do_page_fault+0x748/0x801
+ [<ffffffff80253ab1>] ? smp_call_function_many+0xdb/0x220
+ [<ffffffff802b4141>] ? invalidate_bh_lru+0x0/0x42
+ [<ffffffff8051f3af>] ? page_fault+0x1f/0x30
+ [<ffffffff802b4141>] ? invalidate_bh_lru+0x0/0x42
+ [<ffffffff80253ab1>] ? smp_call_function_many+0xdb/0x220
+ [<ffffffff802926da>] ? kmem_cache_alloc+0x6a/0x99
+ [<ffffffff80253ab1>] ? smp_call_function_many+0xdb/0x220
+ [<ffffffff802704ca>] ? do_writepages+0x23/0x30
+ [<ffffffff802b4141>] ? invalidate_bh_lru+0x0/0x42
+ [<ffffffff80253c16>] ? smp_call_function+0x20/0x24
+ [<ffffffff8023b483>] ? on_each_cpu+0x10/0x22
+ [<ffffffff802b919b>] ? kill_bdev+0x1b/0x30
+ [<ffffffff802b9892>] ? __blkdev_put+0x54/0x151
+ [<ffffffff8029899f>] ? __fput+0xe7/0x1b4
+ [<ffffffff802961ea>] ? filp_close+0x5e/0x66
+ [<ffffffff8029627f>] ? sys_close+0x8d/0xd1
+ [<ffffffff8020bf5b>] ? system_call_fastpath+0x16/0x1b
+Code: 18 03 00 00 48 8b 32 44 8b 72 18 48 85 f6 75 18 49 89 d0 89 ee 4c 89 e9 83 ca ff 4c 89 e7 e8 57 f8 ff ff 48 89 c6 eb 0a 8b 42 14 <48> 8b 04 c6 48 89 02 53 9d 31 c0 c1 ed 0f 48 85 f6 0f 95 c0 85 
+RIP  [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
+ RSP <ffff88003f9d7a58>
+CR2: 0000000000000002
+---[ end trace 69ecde41a682e571 ]---
+Fixing recursive fault but reboot is needed!
+ [<ffffffff80268f66>] __rcu_process_callbacks+0x14e/0x1c3
+ [<ffffffff80268f66>] __rcu_process_callbacks+0x14e/0x1c3
+ [<ffffffff80269001>] rcu_process_callbacks+0x26/0x4a
+ [<ffffffff8023b891>] __do_softirq+0x76/0x136
+ [<ffffffff8020e79e>] profile_pc+0x21/0x5b
+ [<ffffffff8020d03c>] call_softirq+0x1c/0x28
+ [<ffffffff8020e091>] do_softirq+0x2c/0x6c
+ [<ffffffff8021e018>] smp_apic_timer_interrupt+0x93/0xac
+ [<ffffffff8020ca73>] apic_timer_interrupt+0x13/0x20
+ <EOI> 
 
 -- 
-Stefan Richter
--=====-==--- ==-- -=-=-
-http://arcgraph.de/sr/
-
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
