@@ -1,46 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYLJQx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbYLJQzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbYLJQx0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:53:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbYLJQxR
+	id S1756466AbYLJQzS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:55:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbYLJQzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:53:17 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:55227 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755346AbYLJQxR (ORCPT
+	Wed, 10 Dec 2008 11:55:04 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:52106 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752963AbYLJQzB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:53:17 -0500
-Date: Wed, 10 Dec 2008 16:52:52 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Frans Pop <elendil@planet.nl>, Ingo Molnar <mingo@elte.hu>,
-       lenb@kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Greg KH <greg@kroah.com>, jbarnes@virtuousgeek.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: "APIC error on CPU1: 00(40)" during resume (was: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500)
-Message-ID: <20081210165252.GA13041@srcf.ucam.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812101506.45691.elendil@planet.nl> <alpine.LFD.2.00.0812100740390.3340@localhost.localdomain> <200812101705.18899.elendil@planet.nl> <alpine.LFD.2.00.0812100819570.3340@localhost.localdomain>
+	Wed, 10 Dec 2008 11:55:01 -0500
+Date: Wed, 10 Dec 2008 22:24:55 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, netdev <netdev@vger.kernel.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, eric@inl.fr, kaber@trash.net
+Subject: Re: linux-next: Tree for December 1 (netfilter build error)
+Message-ID: <20081210165455.GC6391@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20081201190827.2d02b1a5.sfr@canb.auug.org.au> <20081201115934.00ba918a.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0812100819570.3340@localhost.localdomain>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20081201115934.00ba918a.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 08:26:37AM -0800, Linus Torvalds wrote:
+* Randy Dunlap <randy.dunlap@oracle.com> [2008-12-01 11:59:34]:
 
-> So it looks like we don't reprogram the APIC -at-all- on secondary CPU's.
+> On Mon, 1 Dec 2008 19:08:27 +1100 Stephen Rothwell wrote:
 > 
-> What am I missing?
+> > Hi all,
+> > 
+> > Changes since 20081128:
+> > 
+> > Today's tree fails the powerpc allyesconfig build.
+> 
+> 
+> ERROR: "nfulnl_log_packet" [net/netfilter/xt_NFLOG.ko] undefined!
+> 
+> config attached.
 
-We unplug all CPUs except the boot one at suspend time. Does the APIC 
-get reprogrammed when they're replugged on resume?
+	next-20081210 kernel build fails when !CONFIG_NETFILTER_NETLINK_LOG 
+This was introduced by the 
 
+commit 5f7340eff8f68f41b7e5c7ad47ec4cd1ea1afb40
+Author: Eric Leblond <eric@inl.fr>
+Date:   Tue Nov 4 14:21:08 2008 +0100
+
+    netfilter: xt_NFLOG: don't call nf_log_packet in NFLOG module.
+	    
+the function nfulnl_log_packet is exported only if
+CONFIG_NETFILTER_NETLINK_LOG is enabled, so marking the loging function
+between ifdef.
+
+I have tested the patch for build failure only
+
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+ net/netfilter/xt_NFLOG.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/net/netfilter/xt_NFLOG.c b/net/netfilter/xt_NFLOG.c
+index a57c5cf..fa814a6 100644
+--- a/net/netfilter/xt_NFLOG.c
++++ b/net/netfilter/xt_NFLOG.c
+@@ -32,8 +32,11 @@ nflog_tg(struct sk_buff *skb, const struct xt_target_param *par)
+ 	li.u.ulog.group	     = info->group;
+ 	li.u.ulog.qthreshold = info->threshold;
+ 
++#ifdef CONFIG_NETFILTER_NETLINK_LOG
+ 	nfulnl_log_packet(par->family, par->hooknum, skb, par->in,
+ 			  par->out, &li, info->prefix);
++#endif /* CONFIG_NETFILTER_NETLINK_LOG */
++
+ 	return XT_CONTINUE;
+ }
+ 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
