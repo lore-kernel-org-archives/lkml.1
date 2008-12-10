@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbYLJSeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbYLJSee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757855AbYLJSeB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 13:34:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbYLJSav
+	id S1753979AbYLJSee (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 13:34:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756942AbYLJScU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 13:30:51 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:56088 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756929AbYLJSau (ORCPT
+	Wed, 10 Dec 2008 13:32:20 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:33341 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756963AbYLJScT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 13:30:50 -0500
-Message-ID: <49400ACD.3070502@vlnb.net>
-Date: Wed, 10 Dec 2008 21:30:37 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: linux-scsi@vger.kernel.org
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Subject: [PATCH][RFC 2/23]: SCST core
-References: <494009D7.4020602@vlnb.net>
-In-Reply-To: <494009D7.4020602@vlnb.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Dec 2008 13:32:19 -0500
+Subject: Re: [PATCH 03/15] kmemleak: Add the slab memory allocation/freeing
+	hooks
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <20081210182710.30323.57396.stgit@pc1117.cambridge.arm.com>
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
+	 <20081210182710.30323.57396.stgit@pc1117.cambridge.arm.com>
+Content-Type: text/plain
+Date: Wed, 10 Dec 2008 10:32:16 -0800
+Message-Id: <1228933936.9737.83.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/Gkhk0q3wX8t65G13aP0e51jDPEHWK5ryIjLV
- sBXgvyMWH98y4T+xTHHwrQBgyE2TuT4FkLk3DLr9AI/aRoLpc0
- 8SKrf22JdCg/AVrN3xobQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains SCST core code.
+On Wed, 2008-12-10 at 18:27 +0000, Catalin Marinas wrote:
+> This patch adds the callbacks to memleak_(alloc|free) functions from
+> the slab allocator. The patch also adds the SLAB_NOLEAKTRACE flag to
+> avoid recursive calls to kmemleak when it allocates its own data
+> structures.
 
-Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
----
-  drivers/scst/Kconfig         |  256 ++
-  drivers/scst/Makefile        |   12
-  drivers/scst/scst_cdbprobe.h |  519 +++++
-  drivers/scst/scst_lib.c      | 3689 +++++++++++++++++++++++++++++++++++++
-  drivers/scst/scst_main.c     | 1919 +++++++++++++++++++
-  drivers/scst/scst_module.c   |   69
-  drivers/scst/scst_priv.h     |  513 +++++
-  drivers/scst/scst_targ.c     | 5458 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  8 files changed, 12435 insertions(+)
+You might also want to try linux-mm@kvack.org for these.  You'll
+probably get some better review there, and they're just _kinda_ mm
+related. ;)
 
-The patch is too big to be submitted inline. You can find it in 
-http://scst.sourceforge.net/patches/scst_core.diff
-
+-- Dave
 
