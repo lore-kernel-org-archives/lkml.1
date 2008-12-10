@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbYLJPCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYLJPKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360AbYLJPCr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 10:02:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYLJPCj
+	id S1754837AbYLJPKe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 10:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbYLJPKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 10:02:39 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:52341 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750949AbYLJPCi (ORCPT
+	Wed, 10 Dec 2008 10:10:22 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:44075 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751169AbYLJPKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 10:02:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=xPXXI/y88MGxz5XFBvpEyvSFndIjJkdqeSaudq+liaLvin3/4mk97rIRQAZ47PbKf7
-         iDg97IAGIthfFoCNwiqeZYegWfDkfPF71FI95+syU35iBbRl6PRYyPMAvtJKct7JDunX
-         dgF9SiLyQUp0pDnfgHkT4Zzi1EAqXQNojibhY=
-Message-ID: <f6ca9fed0812100702o51ed6176i9147da3e055306b1@mail.gmail.com>
-Date: Wed, 10 Dec 2008 16:02:36 +0100
-From: drago01 <drago01@gmail.com>
-To: "kernel list" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] make usbaudio less noisy when CONFIG_SND_DEBUG_VERBOSE is not set
-Cc: "Chuck Ebbert" <cebbert@redhat.com>, "Takashi Iwai" <tiwai@suse.de>
+	Wed, 10 Dec 2008 10:10:22 -0500
+Date: Wed, 10 Dec 2008 10:10:19 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb <linux-usb@vger.kernel.org>,
+       Ian Jackson <Ian.Jackson@eu.citrix.com>
+Subject: Re: Oops in UHCI when encountering "host controller process error"
+In-Reply-To: <493EF5F8.5050008@goop.org>
+Message-ID: <Pine.LNX.4.44L0.0812101006540.2175-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This puts changes the usbaudio debug messages to be less noisy, when
-CONFIG_SND_DEBUG_VERBOSE is not set.
+On Tue, 9 Dec 2008, Jeremy Fitzhardinge wrote:
 
-Some distrubutions (ex: fedora) enable CONFIG_SND_DEBUG to get more debug
-information from their users, but some messages can be triggered very
-frequently and therefore flood the logs.
+> OK.  If the controller is idle and the kernel wants to submit it some 
+> new work, where does that happen?  Can I stick a uhci_sprint_schedule() 
+> there to see the state of the structures before it starts to work on them?
 
-This patch fixes this by only print them when CONFIG_SND_DEBUG_VERBOSE is set.
+The entry point is uhci_urb_enqueue().  You can do whatever you like 
+there, but bear in mind that it may be called in interrupt context.  
+uhci_sprint_schedule() should be fine.
 
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Adel Gadllah <adel.gadllah@gmail.com>
+However I don't really see the point.  If the DMA pool allocations are 
+so badly messed up that the initial setup is wrong, why bother to 
+search any further?
 
-diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
-index bbd70d5..6ddaa86 100644
---- a/sound/usb/usbaudio.c
-+++ b/sound/usb/usbaudio.c
-@@ -351,7 +351,7 @@ static int retire_capture_urb(struct
-snd_usb_substream *subs,
-     for (i = 0; i < urb->number_of_packets; i++) {
-         cp = (unsigned char *)urb->transfer_buffer +
-urb->iso_frame_desc[i].offset;
-         if (urb->iso_frame_desc[i].status) {
--            snd_printd(KERN_ERR "frame %d active: %d\n", i,
-urb->iso_frame_desc[i].status);
-+            snd_printdd(KERN_ERR "frame %d active: %d\n", i,
-urb->iso_frame_desc[i].status);
-             // continue;
-         }
-         len = urb->iso_frame_desc[i].actual_length / stride;
-@@ -1299,7 +1299,7 @@ static int init_usb_sample_rate(struct
-usb_device *dev, int iface,
-         if ((err = snd_usb_ctl_msg(dev, usb_rcvctrlpipe(dev, 0), GET_CUR,
-                        USB_TYPE_CLASS|USB_RECIP_ENDPOINT|USB_DIR_IN,
-                        SAMPLING_FREQ_CONTROL << 8, ep, data, 3, 1000)) < 0) {
--            snd_printk(KERN_WARNING "%d:%d:%d: cannot get freq at ep 0x%x\n",
-+            snd_printdd(KERN_WARNING "%d:%d:%d: cannot get freq at ep 0x%x\n",
-                    dev->devnum, iface, fmt->altsetting, ep);
-             return 0; /* some devices don't support reading */
-         }
+Alan Stern
+
