@@ -1,95 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYLJV1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbYLJV1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755950AbYLJV1F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 16:27:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYLJV0x
+	id S1756295AbYLJV1b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 16:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbYLJV1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 16:26:53 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:58429 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755166AbYLJV0w (ORCPT
+	Wed, 10 Dec 2008 16:27:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60798 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756058AbYLJV1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 16:26:52 -0500
-Date: Wed, 10 Dec 2008 22:28:21 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       zippel@linux-m68k.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Better way to force a rebuild
-Message-ID: <20081210212821.GA18348@uranus.ravnborg.org>
-References: <alpine.DEB.1.10.0812101443550.11805@gandalf.stny.rr.com> <20081210200242.GA15692@uranus.ravnborg.org>
+	Wed, 10 Dec 2008 16:27:14 -0500
+Date: Wed, 10 Dec 2008 13:26:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Flynn <davidf+nntp@woaf.net>
+Cc: linux-kernel@vger.kernel.org, "Ray Lee" <ray-lk@madrabbit.org>,
+       "Trond Myklebust" <trond.myklebust@fys.uio.no>, pkpatel.lists@gmail.com,
+       linux-nfs@vger.kernel.org, Netdev <netdev@vger.kernel.org>
+Subject: Re: 2.6.26.3 kernel - progressive slowdown over NFS
+Message-Id: <20081210132628.55991b93.akpm@linux-foundation.org>
+In-Reply-To: <slrngjt7b4.d62.davidf+nntp@dog.thdo.woaf.net>
+References: <f4e12c70809091747rd58165ahaa6594a35752c6ef@mail.gmail.com>
+	<slrngjt7b4.d62.davidf+nntp@dog.thdo.woaf.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081210200242.GA15692@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 09:02:42PM +0100, Sam Ravnborg wrote:
-> On Wed, Dec 10, 2008 at 02:48:35PM -0500, Steven Rostedt wrote:
-> > 
-> > Hi,
-> > 
-> > In include/linux/kernel.h I currently have the following lines at the 
-> > bottom of the file:
-> > 
-> > /* Rebuild everything on CONFIG_FTRACE_MCOUNT_RECORD */
-> > #ifdef CONFIG_FTRACE_MCOUNT_RECORD
-> > # define REBUILD_DUE_TO_FTRACE_MCOUNT_RECORD
-> > #endif
-> > 
-> > 
-> > This is only there to force a rebuild of all files when 
-> > CONFIG_FTRACE_MCOUNT_RECORD is modified. Since the modification of that 
-> > config causes the build to act different, we need to rebuild all C 
-> > objects. I added the #ifdef in kernel.h as a hack to force the rebuild by 
-> > the config dependencies used in kbuild.
-> > 
-> > My question is, is there a better way to force a full rebuild on a 
-> > modification of a config?
-> 
-> Why is that hack required in the first place?
-> We rebuild if:
-> - target file is missing (not the case here)
-> - any prerequisite files are newer than target (not the case here)
-> - any CONFIG_* options used by any prerequisite has changed (not the case here)
->   [It is due to your hack]
-> - gcc changed (not the case here)
-> - options are added/deleted to gcc (this should be the case for relevant files)
-> 
-> 
-> Looking a bit deeper into this.
-> I see that we have in Makefile.build:
-> 
-> define rule_cc_o_c
->         $(call echo-cmd,checksrc) $(cmd_checksrc)                         \
->         $(call echo-cmd,cc_o_c) $(cmd_cc_o_c);                            \
->         $(cmd_modversions)                                                \
->         $(cmd_record_mcount)   
-> 
-> So you want everyting to be rebuild if the command above changes.
-> That should be doable - and it is indeed a bug that we do not do so.
-> The integration of record_mcount needs to be improved.
+(cc's restored)
 
-I made the following quick hack.
-I think it should do the trick.
+Please always do reply-to-all when working with kernel people.  It's
+important.
 
-	Sam
+Thanks.
 
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 468fbc9..8b5bf43 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -215,7 +215,8 @@ define rule_cc_o_c
- 	$(call echo-cmd,cc_o_c) $(cmd_cc_o_c);				  \
- 	$(cmd_modversions)						  \
- 	$(cmd_record_mcount)						  \
--	scripts/basic/fixdep $(depfile) $@ '$(call make-cmd,cc_o_c)' >    \
-+	scripts/basic/fixdep $(depfile) $@                                \
-+	'$(call make-cmd,cc_o_c) $(call make-cmd,record_mcount)' >        \
- 	                                              $(dot-target).tmp;  \
- 	rm -f $(depfile);						  \
- 	mv -f $(dot-target).tmp $(dot-target).cmd
+On Tue, 9 Dec 2008 16:31:32 +0000 (UTC)
+David Flynn <davidf+nntp@woaf.net> wrote:
+
+> On 2008-09-10, Priyank Patel <pkpatel.lists@gmail.com> wrote:
+> > We have a simple python program which keeps running a C loop to lstat
+> > NFS mounted directories.  We are seeing some weird behavior w.r.t. the
+> > run-time of this program on 2.6.26.3 kernel vs 2.6.24 kernel.
+> >
+> > The run-time of the following code increases over time on the 2.6.26.3
+> > kernel, whereas remains flat (as expected) on the 2.6.24 kernel.
+> 
+> I'm seeing a similar effect, and ran a benchmark pre and post reboot:
+> 
+>  $ strace -T /usr/sbin/bonnie++ -d . -s 0 -f -n 1 >/tmp/bonnie-r44237-netslow 2>&1
+>  ...reboot...
+>  $ strace -T /usr/sbin/bonnie++ -d . -s 0 -f -n 1 >/tmp/bonnie-r44237-netfast 2>&1
+> 
+> Graphs of the operations are avaliable:
+>   http://davidf.woaf.net/nfsfail-2.6.26/
+> 
+> In particular http://davidf.woaf.net/nfsfail-2.6.26/r44237-stat.pdf
+> 
+> r44237-* was a machine with a 28 day uptime and
+> r44088-* is an identical machine with 14 day uptime.
+> 
+> The graphs show times as recorded by strace for each syscall (points), a
+> cumulative frequency plot is also drawn on the same graph (lines).
+> yellow-orange points/lines are before the reboot, purple afterwards.
+> 
+> The machines are part of a cluster with a r/o nfsroot and common debian
+> stock kernel:
+>  Linux r44088 2.6.26-1-amd64 #1 SMP Sat Aug 2 11:15:08 GMT 2008 x86_64 GNU/Linux
+> 
+> Other nfs filesystems are also mounted; all nfs mounts are nfsv3 over udp.
+> 
+> Has this issue been identified or resolved in 2.6.27?
+> 
+> Extra logs can be provided if required.
+> 
+> ..david
+
+
