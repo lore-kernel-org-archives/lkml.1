@@ -1,85 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbYLJXrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYLJXr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756681AbYLJXrG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 18:47:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756768AbYLJXqR
+	id S1756111AbYLJXr2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 18:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756645AbYLJXrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 18:46:17 -0500
-Received: from yx-out-1718.google.com ([74.125.44.155]:56154 "EHLO
-	yx-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755882AbYLJXqP (ORCPT
+	Wed, 10 Dec 2008 18:47:01 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60510 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757122AbYLJXrA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 18:46:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=xYhpQltUGaJVi+pVihw3RBZ/DaFvvS6G2RXlCnfueF8RqAi6XC3GZfHWrpJGD1dWGi
-         tInFKk4ZtuBa1L3tCLgLxIPTMj8/LpV0qfqe+u9QVb7tjvLfR0VLccDob06K2tT4o/Kq
-         9b41/lgHRqH2HOVjZko0ct9gHuVd05nS5PYcQ=
-Message-ID: <21d7e9970812101546n40ba9043r8fdf35b986c5d377@mail.gmail.com>
-Date: Thu, 11 Dec 2008 09:46:12 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Manfred Spraul" <manfred@colorfullife.com>
-Subject: Re: [PATCH] lib/idr.c: Fix bug introduced by RCU fix
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       cebbert@redhat.com, akpm@linux-foundation.org
-In-Reply-To: <200812101729.mBAHTGdr008642@mail.q-ag.de>
+	Wed, 10 Dec 2008 18:47:00 -0500
+Date: Wed, 10 Dec 2008 18:46:58 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>, v4l-dvb-maintainer@linuxtv.org,
+       linux-dvb@linuxtv.org
+cc: Henk Vergonet <Henk.Vergonet@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] remove deprecated use of RW_LOCK_UNLOCKED in dvb frontends
+Message-ID: <alpine.DEB.1.10.0812101844000.21545@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200812101729.mBAHTGdr008642@mail.q-ag.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 3:17 AM, Manfred Spraul
-<manfred@colorfullife.com> wrote:
-> The last patch to lib/idr.c caused a bug if idr_get_new_above() was
-> called on an empty idr:
-> Usually, nodes stay on the same layer. New layers are added to the top
-> of the tree.
-> The exception is idr_get_new_above() on an empty tree: In this case,
-> the new root node is first added on layer 0, then moved upwards.
-> p->layer was not updated.
->
-> As usual: You shall never rely on the source code comments, they
-> will only mislead you.
->
-> Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
 
-I've given this a run on my dri system and it appears to work great.
+The following patch is in:
 
-Tested-by: Dave Airlie <airlied@redhat.com>
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: cleanups
 
 
-> ---
->  lib/idr.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
->
-> diff --git a/lib/idr.c b/lib/idr.c
-> index 7a785a0..1c4f928 100644
-> --- a/lib/idr.c
-> +++ b/lib/idr.c
-> @@ -220,8 +220,14 @@ build_up:
->         */
->        while ((layers < (MAX_LEVEL - 1)) && (id >= (1 << (layers*IDR_BITS)))) {
->                layers++;
-> -               if (!p->count)
-> +               if (!p->count) {
-> +                       /* special case: if the tree is currently empty,
-> +                        * then we grow the tree by moving the top node
-> +                        * upwards.
-> +                        */
-> +                       p->layer++;
->                        continue;
-> +               }
->                if (!(new = get_from_free_list(idp))) {
->                        /*
->                         * The allocation failed.  If we built part of
-> --
-> 1.5.6.5
->
->
+Steven Rostedt (1):
+      remove deprecated use of RW_LOCK_UNLOCKED in dvb frontends
+
+----
+ drivers/media/dvb/frontends/drx397xD.c    |   12 ++++++------
+ drivers/media/dvb/frontends/drx397xD_fw.h |    4 ++--
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+---------------------------
+commit 3ca54b1298d8324890c2be66bca98db4d577b2f8
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Wed Dec 10 18:17:19 2008 -0500
+
+    remove deprecated use of RW_LOCK_UNLOCKED in dvb frontends
+    
+    Impact: clean up
+    
+    RW_LOCK_UNLOCKED is deprecated. This patch replaces it with the
+    __RW_LOCK_UNLOCKED(lock) macro. This change was a little trickier
+    than others due to the macro being used in another macro that fills
+    an array.
+    
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+diff --git a/drivers/media/dvb/frontends/drx397xD.c b/drivers/media/dvb/frontends/drx397xD.c
+index b9ca5c8..ec4e08d 100644
+--- a/drivers/media/dvb/frontends/drx397xD.c
++++ b/drivers/media/dvb/frontends/drx397xD.c
+@@ -39,7 +39,7 @@ static const char mod_name[] = "drx397xD";
+ #define F_SET_0D4h	2
+ 
+ enum fw_ix {
+-#define _FW_ENTRY(a, b)		b
++#define _FW_ENTRY(a, b, c)	b
+ #include "drx397xD_fw.h"
+ };
+ 
+@@ -72,11 +72,11 @@ static struct {
+ 	int refcnt;
+ 	const u8 *data[ARRAY_SIZE(blob_name)];
+ } fw[] = {
+-#define _FW_ENTRY(a, b)		{			\
+-			.name	= a,			\
+-			.file	= 0,			\
+-			.lock	= RW_LOCK_UNLOCKED,	\
+-			.refcnt = 0,			\
++#define _FW_ENTRY(a, b, c)	{					\
++			.name	= a,					\
++			.file	= 0,					\
++			.lock	= __RW_LOCK_UNLOCKED(fw[c].lock),	\
++			.refcnt = 0,					\
+ 			.data	= { }		}
+ #include "drx397xD_fw.h"
+ };
+diff --git a/drivers/media/dvb/frontends/drx397xD_fw.h b/drivers/media/dvb/frontends/drx397xD_fw.h
+index 01de02a..c8b44c1 100644
+--- a/drivers/media/dvb/frontends/drx397xD_fw.h
++++ b/drivers/media/dvb/frontends/drx397xD_fw.h
+@@ -18,8 +18,8 @@
+  */
+ 
+ #ifdef _FW_ENTRY
+-	_FW_ENTRY("drx397xD.A2.fw",	DRXD_FW_A2 = 0		),
+-	_FW_ENTRY("drx397xD.B1.fw",	DRXD_FW_B1		),
++	_FW_ENTRY("drx397xD.A2.fw",	DRXD_FW_A2 = 0,	DRXD_FW_A2	),
++	_FW_ENTRY("drx397xD.B1.fw",	DRXD_FW_B1,	DRXD_FW_B1	),
+ #undef _FW_ENTRY
+ #endif /* _FW_ENTRY */
+ 
+
