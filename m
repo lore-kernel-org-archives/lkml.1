@@ -1,88 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbYLJOHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbYLJOIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755272AbYLJOHc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 09:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYLJOHU
+	id S1754890AbYLJOIs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 09:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYLJOIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 09:07:20 -0500
-Received: from xenbox.codefidence.com ([92.48.73.16]:33002 "EHLO
-	xenbox.codefidence.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752440AbYLJOHT (ORCPT
+	Wed, 10 Dec 2008 09:08:38 -0500
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.67]:55870 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752472AbYLJOIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 09:07:19 -0500
-Message-ID: <493FCD12.30000@codefidence.com>
-Date: Wed, 10 Dec 2008 16:07:14 +0200
-From: Gilad Ben-Yossef <gilad@codefidence.com>
-Organization: Codefidence Ltd.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
-MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Laurent Pinchart <laurent.pinchart@skynet.be>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH] USB: use stack allocation for struct usb_ctrlrequest
-References: <20081210073247.GA18630@localhost> <200812101040.09886.laurent.pinchart@skynet.be> <20081210124308.GB6772@localhost>
-In-Reply-To: <20081210124308.GB6772@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 10 Dec 2008 09:08:37 -0500
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Wed, 10 Dec 2008 23:08:24 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: d-nishimura@mtf.biglobe.ne.jp, nishimura@mxp.nes.nec.co.jp,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, menage@google.com,
+       Daisuke Miyakawa <dmiyakawa@google.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC][RFT] memcg fix cgroup_mutex deadlock when cpuset reclaims
+ memory
+Message-Id: <20081210230824.726ec508.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <20081210130607.GD25467@balbir.in.ibm.com>
+References: <20081210051947.GH7593@balbir.in.ibm.com>
+	<20081210151948.9a83f70a.nishimura@mxp.nes.nec.co.jp>
+	<20081210164126.8b3be761.nishimura@mxp.nes.nec.co.jp>
+	<20081210171836.b959d19b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081210205337.3ed3db2c.d-nishimura@mtf.biglobe.ne.jp>
+	<20081210130607.GD25467@balbir.in.ibm.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
+On Wed, 10 Dec 2008 18:36:07 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> Hi Laurent,
->
-> On Wed, Dec 10, 2008 at 11:40:09AM +0200, Laurent Pinchart wrote:
->   
->> Hi Wu,
->>
->> On Wednesday 10 December 2008, Wu Fengguang wrote:
->>     
->>> sizeof(struct usb_ctrlrequest) = 8, which is as small as the *dt pointer
->>> in a 64bit system.
->>>       
->> The usb_ctrlrequest pointer is passed down to the hardware and must point to 
->> DMA-able memory. For this reason you can't use the stack and must kmalloc() 
->> the structure.
->>     
->
-> Ah thanks for the background. Does GFP_NOIO guarantee that?
->   
-No, GFP_NOIO means - do not generate block IO operations (e.g. move 
-pages to swap, sync dirty buffers to permanent storage etc.) in order to 
-fulfill this allocation.
+> * Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2008-12-10 20:53:37]:
+> 
+> > On Wed, 10 Dec 2008 17:18:36 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > 
+> > > On Wed, 10 Dec 2008 16:41:26 +0900
+> > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > 
+> > > > On Wed, 10 Dec 2008 15:19:48 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > > On Wed, 10 Dec 2008 10:49:47 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > > > Hi,
+> > > > > > 
+> > > > > > Here is a proposed fix for the memory controller cgroup_mutex deadlock
+> > > > > > reported. It is lightly tested and reviewed. I need help with review
+> > > > > > and test. Is the reported deadlock reproducible after this patch? A
+> > > > > > careful review of the cpuset impact will also be highly appreciated.
+> > > > > > 
+> > > > > > From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > > > > > 
+> > > > > > cpuset_migrate_mm() holds cgroup_mutex throughout the duration of
+> > > > > > do_migrate_pages(). The issue with that is that
+> > > > > > 
+> > > > > > 1. It can lead to deadlock with memcg, as do_migrate_pages()
+> > > > > >    enters reclaim
+> > > > > > 2. It can lead to long latencies, preventing users from creating/
+> > > > > >    destroying other cgroups anywhere else
+> > > > > > 
+> > > > > > The patch holds callback_mutex through the duration of cpuset_migrate_mm() and
+> > > > > > gives up cgroup_mutex while doing so.
+> > > > > > 
+> > > > > I agree changing cpuset_migrate_mm not to hold cgroup_mutex to fix the dead lock
+> > > > > is one choice, and it looks good to me at the first impression.
+> > > > > 
+> > > > > But I'm not sure it's good to change cpuset(other subsystem) code because of memcg.
+> > > > > 
+> > > > > Anyway, I'll test this patch and report the result tomorrow.
+> > > > > (Sorry, I don't have enough time today.)
+> > > > > 
+> > > > Unfortunately, this patch doesn't seem enough.
+> > > > 
+> > > > This patch can fix dead lock caused by "circular lock of cgroup_mutex",
+> > > > but cannot that of caused by "race between page reclaim and cpuset_attach(mpol_rebind_mm)".
+> > > > 
+> > > > (The dead lock I fixed in memcg-avoid-dead-lock-caused-by-race-between-oom-and-cpuset_attach.patch
+> > > > was caused by "race between memcg's oom and mpol_rebind_mm, and was independent of hierarchy.)
+> > > > 
+> > > > I attach logs I got in testing this patch.
+> > > > 
+> > > Hmm, ok then, what you  mention to is this race.
+> > > --
+> > > 	cgroup_lock()
+> > > 		-> cpuset_attach()
+> > > 			-> down_write(&mm->mmap_sem);
+> > > 
+> > > 	down_read()
+> > > 		-> page fault
+> > > 			-> reclaim in memcg
+> > > 				-> cgroup_lock().
+> > > --
+> > > What this patch tries to fix is this recursive locks
+> > > --
+> > > 	cgroup_lock()
+> > > 		-> cpuset_attach()
+> > > 			-> cpuset_migrate_mm()
+> > > 				-> charge to migration
+> > > 					-> go to reclaim and meet cgroup_lock.
+> > > --
+> > > 
+> > > 
+> > > Right ?
+> > > 
+> > Yes.
+> > Thank you for explaining in detail.
+> > 
+> 
+> Sorry, I don't understand the context, I am unable to figure out
+> 
+> 1. How to reproduce the problem that Daisuke-San reported
+Ah.. sorry.
 
-The reason for this flag here is presumably that such block IO 
-operations may very cause USB transaction of the very same kind we're 
-trying to service now, which can easily get us to a loop.
-> e.g. what if the memory is allocated from ZONE_HIGHMEM?
->   
-In many cases there is no problem to DMA high memory. If you happen to 
-be working with a device that does have problems with full 32 bit 
-addresses then GFP_DMA would be the right flag, not GFP_NOIO.
+1) mount memory cgroup and cpuset.
+   (I mount them on different mount points, but I think this can also happen
+   even when mounting on the same hierarchy.)
+2) make directories
+2-1) memory
+  - make a directory(/cgroup/memory/01)
+    - set memory.limit_in_bytes(no need to set memsw.limit_in_bytes).
+    - enable hierarchy(no need to make a child).
+2-2) cpuset
+  - make 2(at least) directories(/cgroup/cpuset/01,02)
+    - set different "mems".
+    - set memory_migrate on.
+3) attach shell to /cgroup/*/01
+4) run some programs enough to cause swap out/in
+5) trigger page migration by cpuset between 01 and 02 repeatedly.
+   I think Documentation/controllers/memcg_test.txt would help.
 
-Cheers,
-Gilad
+feel free to ask me if you need additional information.
+
+> 2. Whether the patch is correct or causing more problems or needs more
+>    stuff to completely fix the race.
+> 
+I should consider more to tell whether it's all right to release cgroup_mutex
+under attach_task, but some more stuff is needed at least.
 
 
--- 
-Gilad Ben-Yossef 
-Chief Coffee Drinker
-
-Codefidence Ltd.
-The code is free, your time isn't.(TM)
-
-Web:    http://codefidence.com
-Email:  gilad@codefidence.com
-Office: +972-8-9316883 ext. 201
-Fax:    +972-8-9316885
-Mobile: +972-52-8260388
-
-	The Doctor: Don't worry, Reinette, just a nightmare. 
-	Everyone has nightmares. Even monsters from under the 
-	bed have nightmares, don't you, monster?
-	Reinette: What do monsters have nightmares about?
-	The Doctor: Me! 
-
+Thanks,
+Daisuke Nishimura.
