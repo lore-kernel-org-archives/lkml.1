@@ -1,90 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbYLJNtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYLJNwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755243AbYLJNtW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 08:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYLJNtN
+	id S1754717AbYLJNwQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 08:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYLJNwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 08:49:13 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40759 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752947AbYLJNtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 08:49:13 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18YCdUtLU8YWQG2cOv8wgiAqyh1Y07lDJOrEnXq9f
-	FdQBz5QM9JMqDD
-Date: Wed, 10 Dec 2008 14:49:18 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH 2/4 v2] i.MX31: Image Processing Unit DMA and IRQ drivers
-In-Reply-To: <493FC389.1010406@gmail.com>
-Message-ID: <Pine.LNX.4.64.0812101442110.4578@axis700.grange>
-References: <Pine.LNX.4.64.0812101122250.4578@axis700.grange>
- <Pine.LNX.4.64.0812101130400.4578@axis700.grange> <493FC389.1010406@gmail.com>
+	Wed, 10 Dec 2008 08:52:01 -0500
+Received: from ag-out-0708.google.com ([72.14.246.245]:60006 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752431AbYLJNv7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 08:51:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mime-version:content-type
+         :content-disposition:user-agent:from;
+        b=QQXXpp/3M954+qxJYvSPL4mw7qDl40hTo8J4qMJtDDH/Zg3HMeXMDua4DnGeK+WA1F
+         3Z8xe1uMADQPNDWRIZTPaPKhVGN0uGofvrqebTe5oha9quNFIS/kwxmH7APO8CYsVROq
+         oRBxCZf3ZDMUSo9xJtC2KWd+LqUdWJ2cvPCuY=
+Date: Wed, 10 Dec 2008 21:51:43 +0800
+To: linux-kernel@vger.kernel.org
+Cc: rmk+kernel@arm.linux.org.uk
+Subject: [PATCH] fix some code style that line over 80 characters
+Message-ID: <20081210135143.GB4595@helight>
+Reply-To: "Helight.Xu" <helight.xu@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "Helight.Xu" <zhwenxu@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Dec 2008, Dmitry Krivoschekov wrote:
 
-> Hi,
-> 
-> Guennadi Liakhovetski wrote:
-> > From: Guennadi Liakhovetski <lg@denx.de>
-> >
-> > i.MX3x SoCs contain an Image Processing Unit, consisting of a Control
-> > Module (CM), Display Interface (DI), Synchronous Display Controller (SDC),
-> > Asynchronous Display Controller (ADC), Image Converter (IC), Post-Filter
-> > (PF), Camera Sensor Interface (CSI), and an Image DMA Controller (IDMAC).
-> > CM contains, among other blocks, an Interrupt Generator (IG) and a Clock
-> > and Reset Control Unit (CRCU). This driver serves IDMAC and IG. They are
-> > supported over dmaengine and irq-chip APIs respectively.
-> >
-> > IDMAC is a specialised DMA controller, its DMA channels cannot be used for
-> > general-purpose operations, even though it might be possible to configure
-> > a memory-to-memory channel for memcpy operation. This driver will not work
-> > with generic dmaengine clients, clients, wishing to use it must use
-> > respective wrapper structures, they also must specify which channels they
-> > require, as channels are hard-wired to specific IPU functions.
-> >
-> > Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
-> > ---
-> >  arch/arm/plat-mxc/include/mach/ipu.h  |  180 ++++
-> >  arch/arm/plat-mxc/include/mach/mx31.h |  139 +++-
-> >  drivers/mfd/Kconfig                   |   16 +
-> >  drivers/mfd/Makefile                  |    4 +-
-> >  drivers/mfd/ipu/Makefile              |    5 +
-> >  drivers/mfd/ipu/ipu_idmac.c           | 1617 +++++++++++++++++++++++++++++++++
-> >  drivers/mfd/ipu/ipu_intern.h          |  172 ++++
-> >  drivers/mfd/ipu/ipu_irq.c             |  277 ++++++
-> why do you think drivers/mfd is an appropriate location for this driver?
-> IPU is on-chip device, but it is not a separate multifunction device so
-> it should not be placed in drivers/mfd.
-> 
-> arch/arm/plat-mxc/ or drivers/video/ipu seem better places for this driver.
+>From 449a3ddd01a98aae9122d5199083f45ab9c98469 Mon Sep 17 00:00:00 2001
+From: Zhwen Xu <Helight.Xu@gmail.com>
+Date: Wed, 10 Dec 2008 21:29:04 +0800
+Subject: [PATCH] fix some code style that line over 80 characters 
 
-I am not sure drivers/mxc is the best place for it, but I am against both 
-arch/arm (well, mildly, it is now preferred to put arch-specific drivers 
-under drivers/) and drivers/video - I'm going to submit a camera driver 
-shortly, which goes under drivers/media/video and will use the ipu driver, 
-and should not depend on drivers/video. I was thinking about 
-drivers/media/ipu... But eventually decided for mfd as it is 
-multifunctional (no, it is not separate, is this a requirement?) - it is 
-currently providing an IRQ and a DMA driver. But I don't use the mfd API 
-atm. If we decide to keep it there, I can add it, if necessary / if it 
-provides any advantages for this case.
-
-In general, I am open to ideas in this respect.
-
-Thanks
-Guennadi
+Signed-off-by: ZhenwenXu <helight.xu@gmail.com>
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+ drivers/i2c/busses/i2c-s3c2410.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-s3c2410.c b/drivers/i2c/busses/i2c-s3c2410.c
+index c772e02..c466870 100644
+--- a/drivers/i2c/busses/i2c-s3c2410.c
++++ b/drivers/i2c/busses/i2c-s3c2410.c
+@@ -109,7 +109,8 @@ static inline int s3c24xx_i2c_is2440(struct s3c24xx_i2c *i2c)
+  * the default if there is none
+ */
+ 
+-static inline struct s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
++static inline struct
++s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
+ {
+ 	if (dev->platform_data != NULL)
+ 		return (struct s3c2410_platform_i2c *)dev->platform_data;
+@@ -123,7 +124,8 @@ static inline struct s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct d
+  * or zero to mean ok.
+ */
+ 
+-static inline void s3c24xx_i2c_master_complete(struct s3c24xx_i2c *i2c, int ret)
++static inline void
++s3c24xx_i2c_master_complete(struct s3c24xx_i2c *i2c, int ret)
+ {
+ 	dev_dbg(i2c->dev, "master_complete %d\n", ret);
+ 
+@@ -273,7 +275,8 @@ static inline int is_msgend(struct s3c24xx_i2c *i2c)
+  * process an interrupt and work out what to do
+  */
+ 
+-static int i2s_s3c_irq_nextbyte(struct s3c24xx_i2c *i2c, unsigned long iicstat)
++static int i2s_s3c_irq_nextbyte(struct s3c24xx_i2c *i2c,
++				unsigned long iicstat)
+ {
+ 	unsigned long tmp;
+ 	unsigned char byte;
+@@ -502,7 +505,8 @@ static int s3c24xx_i2c_set_master(struct s3c24xx_i2c *i2c)
+  * this starts an i2c transfer
+ */
+ 
+-static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c, struct i2c_msg *msgs, int num)
++static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
++			 struct i2c_msg *msgs, int num)
+ {
+ 	unsigned long timeout;
+ 	int ret;
+-- 
+1.5.6.5
+
+-- 
+---------------------------------
+Zhenwen Xu - Open and Free
+Home Page:	http://zhwen.org
+My Studio:	http://dim4.cn
