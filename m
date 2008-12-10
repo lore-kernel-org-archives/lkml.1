@@ -1,26 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755646AbYLJC1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYLJCen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755646AbYLJC1R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 21:27:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYLJC1C
+	id S1755512AbYLJCen (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 21:34:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYLJCed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 21:27:02 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47563 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753391AbYLJC1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 21:27:00 -0500
-Date: Tue, 9 Dec 2008 21:26:11 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Dennis Hardy <dhardy@sogetthis.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: CIFS regression in 2.6.27.8
-Message-ID: <20081209212611.25fcd053@tupile.poochiereds.net>
-In-Reply-To: <20924383.post@talk.nabble.com>
-References: <20900699.post@talk.nabble.com>
-	<84144f020812081128p6d1e2a55v69996a360e7f0e8f@mail.gmail.com>
-	<200812082112.49468.rjw@sisk.pl>
-	<20081209154932.0952fbf3@dhcp-100-2-144.bos.redhat.com>
-	<20924383.post@talk.nabble.com>
+	Tue, 9 Dec 2008 21:34:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42205 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754062AbYLJCec (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 21:34:32 -0500
+Date: Tue, 9 Dec 2008 18:32:05 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dave Airlie" <airlied@gmail.com>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Domenico Andreoli" <cavokz@gmail.com>, alan@lxorguk.ukuu.org.uk,
+       "Manfred Spraul" <manfred@colorfullife.com>,
+       "Clement Calmels" <cboulte@gmail.com>,
+       "Nadia Derbey" <Nadia.Derbey@bull.net>,
+       "Pierre Peiffer" <peifferp@gmail.com>
+Subject: Re: [patch 021/104] lib/idr.c: fix rcu related race with idr_find
+Message-Id: <20081209183205.223f9b58.akpm@linux-foundation.org>
+In-Reply-To: <21d7e9970812091808r47e0cf07u8df2a9d2a27b783c@mail.gmail.com>
+References: <20081203193901.715896543@mini.kroah.org>
+	<20081203194725.GA8950@kroah.com>
+	<20081203194906.GV8950@kroah.com>
+	<21d7e9970812091340p5121e8f8l1e2411035331e8d0@mail.gmail.com>
+	<alpine.LFD.2.00.0812091447230.3340@localhost.localdomain>
+	<21d7e9970812091643n7e3e4fe5g8e44030adfbababa@mail.gmail.com>
+	<21d7e9970812091746u5b6e8594s8567007ec1e26bac@mail.gmail.com>
+	<20081209180250.8d7301a7.akpm@linux-foundation.org>
+	<21d7e9970812091808r47e0cf07u8df2a9d2a27b783c@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,36 +42,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Dec 2008 13:47:56 -0800 (PST)
-Dennis Hardy <dhardy@sogetthis.com> wrote:
+On Wed, 10 Dec 2008 12:08:13 +1000 "Dave Airlie" <airlied@gmail.com> wrote:
 
+> >> if my usage is illegal over just overlooked.
+> >
+> >
+> > <greps for a while>
+> >
+> > I assume we're talking about drivers/gpu/drm/drm_stub.c:drm_minor_get_id()?
+> >
+> > I don't immediately see anything in the idr code which special-cases a
+> > NULL caller pointer?
+> >
 > 
-> > I tried it on both i386 and x86_64 and had no problems. Is this client
-> > non-x86 by any chance?
+> Actually now that I'm starting to wrap my head around it I think it
+> might be the fact that I call
+> idr_get_new_above with 64, then later with 0. I'm not sure the new
+> code is dealing with that case so
+> well.
 > 
-> Curious...my kernel is CONFIG_X86_32=y and CONFIG_X86=y, CONFIG_MK6=y.
+> We don't do that in the standard kernel tree yet, so it explains why
+> nobody's noticed, however the KMS
+> changes introduce it, and we have those in f10.
 > 
-> Perhaps this could be an issue with the Windows Server side (Windows Home
-> Server, latest Windows SPs, etc.)  Maybe MSFT introduced some "improvement"
-> in a recent update that caused an incompatibility of some sort.  I can try
-> mounting some other Windows machines via CIFS from the 2.6.27.8 end and see
-> what happens, plus boot back to 2.6.27.6 and compare.
+> http://git.kernel.org/?p=linux/kernel/git/airlied/drm-2.6.git;a=blob;f=drivers/gpu/drm/drm_stub.c;h=5ca132afa4f2e128999e319e44e31ad156e6ab74;hb=drm-next
+> 
+> is the drm_stub.c from drm-next that will trigger the issue.
+> 
+> Again I'm not sure if this is a legal use of idrs.
 > 
 
-There is a problem with CIFS in 2.6.27.8, but it mainly manifests
-itself as a kthread that doesn't shut down when it should (regression
-due to a missing couple of prerequisite patches). I've got a patch for
-2.6.27.9 that should fix that problem (assuming there is a .9)
+Well nobody really maintains or owns the idr code, so there's nobody we
+can ask about design intent.  Various people do hit-n-run attacks on it
+when the need presents.
 
-The fixes that went into 2.6.27.8 were mostly patches to fix races on
-mount and unmount and some fixes for socket handling. The problem
-you've described seems very consistent and localized to an area that
-wasn't patched in .8.
-
-I could easily be wrong, but the problem you've described seems more
-likely to be a server issue. If you can get binary network captures
-between the client and server like Steve F. requested, then we should
-be able to confirm it either way...
-
--- 
-Jeff Layton <jlayton@redhat.com>
