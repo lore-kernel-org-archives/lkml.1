@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYLJQQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbYLJQUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbYLJQQh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:16:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbYLJQN4
+	id S1755762AbYLJQUg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:20:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbYLJQU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:13:56 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:57318 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755687AbYLJQNy (ORCPT
+	Wed, 10 Dec 2008 11:20:26 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:43342 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752947AbYLJQUZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:13:54 -0500
-Message-ID: <493feac0.09cc660a.02d5.6e27@mx.google.com>
-To: Karsten Keil <kkeil@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org
-Date: Tue, 9 Dec 2008 23:07:02 +0100
-Subject: [PATCH 8/9] mISDN: fix sparse warnings
-From: Hannes Eder <hannes@hanneseder.net>
+	Wed, 10 Dec 2008 11:20:25 -0500
+Message-ID: <493FED0D.4080204@novell.com>
+Date: Wed, 10 Dec 2008 11:23:41 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Clark Williams <clark.williams@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Darren Hart <dvhltc@us.ibm.com>
+Subject: Re: [PATCH][RT] Compile-time fix.
+References: <alpine.DEB.1.10.0812090946210.16798@gandalf.stny.rr.com>  <1228890920.9542.2.camel@dd> <1228892002.9542.4.camel@dd> <alpine.DEB.1.10.0812100643130.5912@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0812100643130.5912@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig59C3C706CD6F66FA49A796D4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: use the address space modifier __user
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig59C3C706CD6F66FA49A796D4
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Fix this warning:
+Steven Rostedt wrote:
+>
+> If you do want to help, look at any of the other branches. Some have no=
+t=20
+> been updated yet, and they all should be able to compile and boot on th=
+eir=20
+> own. If they do not, then those need to be fixed.
+>  =20
 
-  drivers/isdn/mISDN/timerdev.c:264:11: warning: incorrect type in initializer (incompatible argument 2 (different address spaces))
-  drivers/isdn/mISDN/timerdev.c:264:11:    expected int ( *read )( ... )
-  drivers/isdn/mISDN/timerdev.c:264:11:    got int ( static [toplevel] *<noident> )( ... )
+A good place to start for some low-hanging fruit would be rt/workqueue.=20
+I ported the patches, but it doesn't yet boot (assuming Steve merged the
+work I had done...I havent looked recently).  I think its a relatively
+trivial problem, but I have not had a chance to track it down yet.
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
- drivers/isdn/mISDN/timerdev.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+-Greg
 
-diff --git a/drivers/isdn/mISDN/timerdev.c b/drivers/isdn/mISDN/timerdev.c
-index 62b5e49..f2b3218 100644
---- a/drivers/isdn/mISDN/timerdev.c
-+++ b/drivers/isdn/mISDN/timerdev.c
-@@ -86,7 +86,7 @@ mISDN_close(struct inode *ino, struct file *filep)
- }
- 
- static ssize_t
--mISDN_read(struct file *filep, char *buf, size_t count, loff_t *off)
-+mISDN_read(struct file *filep, char __user *buf, size_t count, loff_t *off)
- {
- 	struct mISDNtimerdev	*dev = filep->private_data;
- 	struct mISDNtimer	*timer;
-@@ -116,7 +116,7 @@ mISDN_read(struct file *filep, char *buf, size_t count, loff_t *off)
- 		timer = (struct mISDNtimer *)dev->expired.next;
- 		list_del(&timer->list);
- 		spin_unlock_irqrestore(&dev->lock, flags);
--		if (put_user(timer->id, (int *)buf))
-+		if (put_user(timer->id, (int __user *)buf))
- 			ret = -EFAULT;
- 		else
- 			ret = sizeof(int);
--- 
-1.5.6.3
 
+
+--------------enig59C3C706CD6F66FA49A796D4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkk/7Q0ACgkQlOSOBdgZUxmiiQCdFWxK5qJ18i2pwWaV3ujpahQJ
+YSMAn0F+V002UcXNZd/aQJTezOSpPjit
+=JlkL
+-----END PGP SIGNATURE-----
+
+--------------enig59C3C706CD6F66FA49A796D4--
