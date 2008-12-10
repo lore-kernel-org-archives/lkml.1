@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbYLJUMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbYLJUMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbYLJUMT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 15:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbYLJUME
+	id S1756653AbYLJUMv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 15:12:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbYLJUMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 15:12:04 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:55374 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753509AbYLJUMD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 15:12:03 -0500
-Date: Wed, 10 Dec 2008 14:11:23 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org,
-       Matt Mackall <mpm@selenic.com>, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] Do not pass the SLAB flags as GFP in slob kmem_cache_create
-In-Reply-To: <20081210193421.GA2215@localhost>
-Message-ID: <Pine.LNX.4.64.0812101411020.15262@quilx.com>
-References: <20081210173632.19697.67688.stgit@pc1117.cambridge.arm.com>
- <20081210193421.GA2215@localhost>
+	Wed, 10 Dec 2008 15:12:43 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47515 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752378AbYLJUMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 15:12:42 -0500
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: linux1394-devel@lists.sourceforge.net
+Subject: Re: [PATCH] firewire: fw-ohci: fix possible IOMMU resource exhaustion
+Date: Wed, 10 Dec 2008 15:16:03 -0500
+User-Agent: KMail/1.10.3 (Linux/2.6.27.7-135.fc10.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
+References: <tkrat.8d55c1b322c680dc@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.8d55c1b322c680dc@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812101516.03546.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Dec 2008, Cyrill Gorcunov wrote:
+On Tuesday 09 December 2008 18:20:38 Stefan Richter wrote:
+> There is a DMA map/ unmap imbalance whenever a block write request
+> packet is sent and then dequeued with ohci_cancel_packet.  The latter
+> may happen frequently if the AR resp tasklet is executed before the AT
+> req tasklet for the same transaction.
+> 
+> Add the missing dma_unmap_single.
+> 
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-> this would make the following line in slob_alloc
->
-> 	...
-> 	if (unlikely((gfp & __GFP_ZERO) && b))
-> 		memset(b, 0, size);
->  	...
->
-> useless. Not sure if it will be good :)
+Going to get this into the Fedora kernels ASAP, definitely looks like
+it'll at least help w/the IOMMU issues.
 
-No. GFP_ZERO is set when kmalloc etc is called. Its not set on
-kmem_cache_create.
+Nb: from what I recall, I saw such problems on an 8-way opteron pretty
+frequently with a debug-enabled kernel, haven't seen it on the same
+box running a release kernel (but also haven't tried the bug reporters
+reproducer).
 
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+
+-- 
+Jarod Wilson
+jarod@redhat.com
