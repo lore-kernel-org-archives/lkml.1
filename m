@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbYLJQnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758337AbYLJQnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758490AbYLJQnv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:43:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756494AbYLJQnY
+	id S1758337AbYLJQnf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:43:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757597AbYLJQnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:43:24 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:55577 "EHLO mgw2.diku.dk"
+	Wed, 10 Dec 2008 11:43:03 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:52590 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758254AbYLJQnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:43:22 -0500
-Date: Wed, 10 Dec 2008 17:43:19 +0100 (CET)
+	id S1758209AbYLJQnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 11:43:01 -0500
+Date: Wed, 10 Dec 2008 17:42:58 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dmitri.vorobiev@movial.fi, dsaxena@plexity.net,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 28/28] drivers/char/hw_random/omap-rng.c: Drop return value
- from platform_driver remove functions
-Message-ID: <Pine.LNX.4.64.0812101742590.21998@ask.diku.dk>
+To: dmitri.vorobiev@movial.fi, vt8231@hiddenengine.co.uk,
+       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 27/28] drivers/hwmon/vt8231.c: Drop return value from
+ platform_driver remove functions
+Message-ID: <Pine.LNX.4.64.0812101742380.21998@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -94,37 +95,45 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/char/hw_random/omap-rng.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/hwmon/vt8231.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/char/hw_random/omap-rng.c b/drivers/char/hw_random/omap-rng.c
-index d4e7dca..104d005 100644
---- a/drivers/char/hw_random/omap-rng.c
-+++ b/drivers/char/hw_random/omap-rng.c
-@@ -155,7 +155,7 @@ err_region:
- 	return ret;
+diff --git a/drivers/hwmon/vt8231.c b/drivers/hwmon/vt8231.c
+index 5bc5727..39cb37b 100644
+--- a/drivers/hwmon/vt8231.c
++++ b/drivers/hwmon/vt8231.c
+@@ -167,7 +167,7 @@ struct vt8231_data {
+ 
+ static struct pci_dev *s_bridge;
+ static int vt8231_probe(struct platform_device *pdev);
+-static int __devexit vt8231_remove(struct platform_device *pdev);
++static void __devexit vt8231_remove(struct platform_device *pdev);
+ static struct vt8231_data *vt8231_update_device(struct device *dev);
+ static void vt8231_init_device(struct vt8231_data *data);
+ 
+@@ -693,7 +693,7 @@ static struct platform_driver vt8231_driver = {
+ 		.name	= "vt8231",
+ 	},
+ 	.probe	= vt8231_probe,
+-	.remove	= __devexit_p(vt8231_remove),
++	.remove_new = __devexit_p(vt8231_remove),
+ };
+ 
+ static struct pci_device_id vt8231_pci_ids[] = {
+@@ -787,7 +787,7 @@ exit_release:
+ 	return err;
  }
  
--static int __exit omap_rng_remove(struct platform_device *pdev)
-+static void __exit omap_rng_remove(struct platform_device *pdev)
+-static int __devexit vt8231_remove(struct platform_device *pdev)
++static void __devexit vt8231_remove(struct platform_device *pdev)
  {
- 	struct resource *mem = dev_get_drvdata(&pdev->dev);
- 
-@@ -172,8 +172,6 @@ static int __exit omap_rng_remove(struct platform_device *pdev)
- 
- 	release_resource(mem);
- 	rng_base = NULL;
--
+ 	struct vt8231_data *data = platform_get_drvdata(pdev);
+ 	int i;
+@@ -805,7 +805,6 @@ static int __devexit vt8231_remove(struct platform_device *pdev)
+ 	release_region(data->addr, VT8231_EXTENT);
+ 	platform_set_drvdata(pdev, NULL);
+ 	kfree(data);
 -	return 0;
  }
  
- #ifdef CONFIG_PM
-@@ -206,7 +204,7 @@ static struct platform_driver omap_rng_driver = {
- 		.owner		= THIS_MODULE,
- 	},
- 	.probe		= omap_rng_probe,
--	.remove		= __exit_p(omap_rng_remove),
-+	.remove_new	= __exit_p(omap_rng_remove),
- 	.suspend	= omap_rng_suspend,
- 	.resume		= omap_rng_resume
- };
+ static void vt8231_init_device(struct vt8231_data *data)
