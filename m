@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbYLJX0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbYLJXdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756068AbYLJX0T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 18:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbYLJX0I
+	id S1756048AbYLJXdZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 18:33:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbYLJXdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 18:26:08 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51987 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754614AbYLJX0G (ORCPT
+	Wed, 10 Dec 2008 18:33:16 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:17412 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754011AbYLJXdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 18:26:06 -0500
-X-Sasl-enc: Ga15gWFF+WeXm8uofA0GYTV/8hi1lU/FBvTlKGm8KktZ 1228951564
-Date: Wed, 10 Dec 2008 21:26:02 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Witold Szczeponik <Witold.Szczeponik@gmx.net>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Adam Belay <abelay@mit.edu>, rjw@sisk.pl
-Subject: Re: [PATCH] PNPACPI: Enable Power Support
-Message-ID: <20081210232602.GC7589@khazad-dum.debian.net>
-References: <493D8A1F.2090907@gmx.net> <20081210095315.GA20627@khazad-dum.debian.net> <200812101123.00055.oliver@neukum.org>
+	Wed, 10 Dec 2008 18:33:15 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:content-type:content-transfer-encoding;
+	b=Pahi34OjzuyOcKxtZUlRHcu4aVYVgt0YYVa0aK1nVjhLN0VTWQkl2ICwUNIeCEc8B
+	wIFfuYiEuSj5AQ4yqic+Q==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200812101123.00055.oliver@neukum.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Wed, 10 Dec 2008 15:33:12 -0800
+Message-ID: <6599ad830812101533r6cb007eeu5ef19499e278f6b7@mail.gmail.com>
+Subject: [PATCH] CGroups: Fix a race between rmdir and remount
+From: Paul Menage <menage@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Dec 2008, Oliver Neukum wrote:
-> Am Mittwoch, 10. Dezember 2008 10:53:15 schrieb Henrique de Moraes Holschuh:
-> > Although I do wonder WTF we don't do that on our USB UHCI/EHCI kernel
-> > drivers, that ACPI needs to step in to fix it.  If it is not a wake
-> 
-> EHCI/UHCI have no way to power down host controllers.
-> It needs external means, namely ACPI.
+Fix a race between rmdir and remount
 
-I see.  So we can't just set the pci devices to D0 to cut power to the USB
-ports and USB controller while in STR?  Must be the EC stuff I just noticed
-in the ACPI AML, then.
+When a cgroup is removed, it's unlinked from its parent's children
+list, but not actually freed until the last dentry on it is released
+(at which point cgrp->root->number_of_cgroups is decremented).
 
-> > device, why are we leaving it powered up?  It is bad enough we don't
-> > have any sort of proper USB power control, but to leave the entire USB
-> > subsystem powered up without reason?!
-> 
-> We don't. If you unplug all devices, USB will power down as much as is
-> compatible with detecting new devices.
+Currently rebind_subsystems checks for the top cgroup's child list
+being empty in order to rebind subsystems into or out of a hierarchy -
+this can result in the set of subsystems bound to a hierarchy being
+different than the set of subsystems with state in the
+removed-but-not-freed cgroup.
 
-Thanks for the update.
+The simplest fix for this is to forbid remounts that change the set of
+subsystems on a hierarchy that has removed-but-not-freed cgroups.
 
-> > Vista not only powers down the USB HCIs and ports on STR, it also
-> > powers down ports when you "safely remove the USB device", and seems
-> > to leave the port powered down until you insert a device (or remove
-> > the device already in there, whatever).
-> 
-> If you cut power to a port, you cannot detect a hotplugging. You can
-> suspend it, which Linux does do.
+This bug can be reproduced via:
 
-Hmm, probably it is just suspend, then (outside of STR.  On STR, it *is*
-somehow powering down the ports when no wake devices are there, but that
-might be done using extra stuff, and not just the PCI functions of the Intel
-ICH6 EHCI/UHCI controllers).
+mkdir /mnt/cg
+mount -t cgroup -o ns,freezer cgroup /mnt/cg
+mkdir /mnt/cg/foo
+sleep 1h < /mnt/cg/foo &
+rmdir /mnt/cg/foo
+mount -t cgroup -o remount,ns,devices,freezer cgroup /mnt/cg
+kill $!
 
-I guess our userspace is not doing the suspend on "safely remove" then?
-Because at least here, it is not behaving as Windows does when I tell KDE to
-"safely eject" (which probably ends up being a HAL request of some sort).
+Signed-off-by: Paul Menage <menage@google.com>
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+---
+ kernel/cgroup.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+===================================================================
+--- hierarchy_lock-mmotm-2008-12-09.orig/kernel/cgroup.c
++++ hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+@@ -702,7 +702,7 @@ static int rebind_subsystems(struct cgro
+ 	 * any child cgroups exist. This is theoretically supportable
+ 	 * but involves complex error handling, so it's being left until
+ 	 * later */
+-	if (!list_empty(&cgrp->children))
++	if (root->number_of_cgroups > 1)
+ 		return -EBUSY;
+
+ 	/* Process each subsystem */
