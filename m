@@ -1,42 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYLJM7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753479AbYLJNGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYLJM7j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 07:59:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYLJM72
+	id S1753479AbYLJNGZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 08:06:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYLJNGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 07:59:28 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:52148 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752252AbYLJM71 (ORCPT
+	Wed, 10 Dec 2008 08:06:16 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:51085 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751657AbYLJNGP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 07:59:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=dabCF3wR8PgC4FhGEi0OIIP1ZJKkklvPmVdZUmP/sp3HSeRlqN/piStjUCSeDKuXvX
-         DA10qrbNz4ShyBaA2eYPVLCBmvi8FS0FwE3FxwhKHCAJSWliw8ZB2RkmmLtjETlBwJQW
-         r+l27jiwnCl1S5dRsVqeKf4TZGEE/YoG2PlOY=
-Message-ID: <493FBD1A.6000806@gmail.com>
-Date: Wed, 10 Dec 2008 13:59:06 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Wed, 10 Dec 2008 08:06:15 -0500
+Date: Wed, 10 Dec 2008 18:36:07 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: nishimura@mxp.nes.nec.co.jp
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, menage@google.com,
+       Daisuke Miyakawa <dmiyakawa@google.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, d-nishimura@mtf.biglobe.ne.jp
+Subject: Re: [RFC][RFT] memcg fix cgroup_mutex deadlock when cpuset
+	reclaims memory
+Message-ID: <20081210130607.GD25467@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: nishimura@mxp.nes.nec.co.jp,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	menage@google.com, Daisuke Miyakawa <dmiyakawa@google.com>,
+	YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	d-nishimura@mtf.biglobe.ne.jp
+References: <20081210051947.GH7593@balbir.in.ibm.com> <20081210151948.9a83f70a.nishimura@mxp.nes.nec.co.jp> <20081210164126.8b3be761.nishimura@mxp.nes.nec.co.jp> <20081210171836.b959d19b.kamezawa.hiroyu@jp.fujitsu.com> <20081210205337.3ed3db2c.d-nishimura@mtf.biglobe.ne.jp>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] makesystem: revive cscope target
-References: <1228911013-25641-1-git-send-email-jirislaby@gmail.com> <20081210124120.GA12784@uranus.ravnborg.org> <493FBA3B.5010801@gmail.com> <20081210130017.GA12939@uranus.ravnborg.org>
-In-Reply-To: <20081210130017.GA12939@uranus.ravnborg.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20081210205337.3ed3db2c.d-nishimura@mtf.biglobe.ne.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> OK - forgot about that one.
-> Will apply your patches when I get at my Linux box.
+* Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2008-12-10 20:53:37]:
 
-Ok, thanks.
+> On Wed, 10 Dec 2008 17:18:36 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > On Wed, 10 Dec 2008 16:41:26 +0900
+> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > 
+> > > On Wed, 10 Dec 2008 15:19:48 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > On Wed, 10 Dec 2008 10:49:47 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > Here is a proposed fix for the memory controller cgroup_mutex deadlock
+> > > > > reported. It is lightly tested and reviewed. I need help with review
+> > > > > and test. Is the reported deadlock reproducible after this patch? A
+> > > > > careful review of the cpuset impact will also be highly appreciated.
+> > > > > 
+> > > > > From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > > > > 
+> > > > > cpuset_migrate_mm() holds cgroup_mutex throughout the duration of
+> > > > > do_migrate_pages(). The issue with that is that
+> > > > > 
+> > > > > 1. It can lead to deadlock with memcg, as do_migrate_pages()
+> > > > >    enters reclaim
+> > > > > 2. It can lead to long latencies, preventing users from creating/
+> > > > >    destroying other cgroups anywhere else
+> > > > > 
+> > > > > The patch holds callback_mutex through the duration of cpuset_migrate_mm() and
+> > > > > gives up cgroup_mutex while doing so.
+> > > > > 
+> > > > I agree changing cpuset_migrate_mm not to hold cgroup_mutex to fix the dead lock
+> > > > is one choice, and it looks good to me at the first impression.
+> > > > 
+> > > > But I'm not sure it's good to change cpuset(other subsystem) code because of memcg.
+> > > > 
+> > > > Anyway, I'll test this patch and report the result tomorrow.
+> > > > (Sorry, I don't have enough time today.)
+> > > > 
+> > > Unfortunately, this patch doesn't seem enough.
+> > > 
+> > > This patch can fix dead lock caused by "circular lock of cgroup_mutex",
+> > > but cannot that of caused by "race between page reclaim and cpuset_attach(mpol_rebind_mm)".
+> > > 
+> > > (The dead lock I fixed in memcg-avoid-dead-lock-caused-by-race-between-oom-and-cpuset_attach.patch
+> > > was caused by "race between memcg's oom and mpol_rebind_mm, and was independent of hierarchy.)
+> > > 
+> > > I attach logs I got in testing this patch.
+> > > 
+> > Hmm, ok then, what you  mention to is this race.
+> > --
+> > 	cgroup_lock()
+> > 		-> cpuset_attach()
+> > 			-> down_write(&mm->mmap_sem);
+> > 
+> > 	down_read()
+> > 		-> page fault
+> > 			-> reclaim in memcg
+> > 				-> cgroup_lock().
+> > --
+> > What this patch tries to fix is this recursive locks
+> > --
+> > 	cgroup_lock()
+> > 		-> cpuset_attach()
+> > 			-> cpuset_migrate_mm()
+> > 				-> charge to migration
+> > 					-> go to reclaim and meet cgroup_lock.
+> > --
+> > 
+> > 
+> > Right ?
+> > 
+> Yes.
+> Thank you for explaining in detail.
+> 
+
+Sorry, I don't understand the context, I am unable to figure out
+
+1. How to reproduce the problem that Daisuke-San reported
+2. Whether the patch is correct or causing more problems or needs more
+   stuff to completely fix the race.
+
+> 
+> Daisuke Nishimura.
+> 
+> > BTW, releasing cgroup_lock() while attach() is going on is finally safe ?
+> > If not, can this lock for attach be replaced with (new) cgroup private mutex ?
+> > 
+> > a new mutex like this ?
+> > --
+> > struct cgroup {
+> > 	.....
+> > 	mutex_t		attach_mutex; /* for serializing attach() ops. 
+> > 					 while attach() is going on, rmdir() will fail */
+> > }
+> > --
+> > Do we need the big lock of cgroup_lock for attach(), at last ?
+> > 
+> > -Kame
+> > 
+
+-- 
+	Balbir
