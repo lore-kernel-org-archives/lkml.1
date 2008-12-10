@@ -1,178 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbYLJGaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbYLJGde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917AbYLJGaq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 01:30:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750750AbYLJGag
+	id S1755405AbYLJGde (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 01:33:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbYLJGd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 01:30:36 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:55080 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754894AbYLJGae (ORCPT
+	Wed, 10 Dec 2008 01:33:27 -0500
+Received: from rn-out-0910.google.com ([64.233.170.185]:20272 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753588AbYLJGd0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 01:30:34 -0500
-Date: Wed, 10 Dec 2008 15:19:48 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: balbir@linux.vnet.ibm.com
-Cc: menage@google.com, KAMEZAWA Hiroyuki <kamezawa.hiroyuki@jp.fujitsu.com>,
-       Daisuke Miyakawa <dmiyakawa@google.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, nishimura@mxp.nes.nec.co.jp
-Subject: Re: [RFC][RFT] memcg fix cgroup_mutex deadlock when cpuset reclaims
- memory
-Message-Id: <20081210151948.9a83f70a.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20081210051947.GH7593@balbir.in.ibm.com>
-References: <20081210051947.GH7593@balbir.in.ibm.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 10 Dec 2008 01:33:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=MrMaMzck2/FsGIbVVYW+aQMqN3JPnElt23nH0n0MZF80J09SwWY6qtkp95DM2VVQJL
+         k4JCHovmx9sqtjCDT4/dyIxXS9ynaPmj9f7vmPRdpnnwY4EQNyaIJW9mPYRcr8FQ2piY
+         OI7nwHQlUOwlDuuyItdH81tHK214OxPCPIm5M=
+Message-ID: <b9df5fa10812092228qe618ablaca61adc05f947ab@mail.gmail.com>
+Date: Wed, 10 Dec 2008 12:28:14 +0600
+From: "Rakib Mullick" <rakib.mullick@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH ] x86 : Fix compilation warning on paravirt-spinlocks.c
+Cc: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20081208150942.GA22016@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b9df5fa10812080656l21385db3ob08fc4f9ad3f1f76@mail.gmail.com>
+	 <20081208150942.GA22016@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Dec 2008 10:49:47 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> Hi,
-> 
-> Here is a proposed fix for the memory controller cgroup_mutex deadlock
-> reported. It is lightly tested and reviewed. I need help with review
-> and test. Is the reported deadlock reproducible after this patch? A
-> careful review of the cpuset impact will also be highly appreciated.
-> 
-> From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> cpuset_migrate_mm() holds cgroup_mutex throughout the duration of
-> do_migrate_pages(). The issue with that is that
-> 
-> 1. It can lead to deadlock with memcg, as do_migrate_pages()
->    enters reclaim
-> 2. It can lead to long latencies, preventing users from creating/
->    destroying other cgroups anywhere else
-> 
-> The patch holds callback_mutex through the duration of cpuset_migrate_mm() and
-> gives up cgroup_mutex while doing so.
-> 
-I agree changing cpuset_migrate_mm not to hold cgroup_mutex to fix the dead lock
-is one choice, and it looks good to me at the first impression.
-
-But I'm not sure it's good to change cpuset(other subsystem) code because of memcg.
-
-Anyway, I'll test this patch and report the result tomorrow.
-(Sorry, I don't have enough time today.)
-
+On 12/8/08, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  * Rakib Mullick <rakib.mullick@gmail.com> wrote:
+>
+> no - this just works around the compiler warning.
+>
+>  Look at the real fix below i did some time ago. If you are into fixing
+>  warnings you should try tip/master, that has a ton of warning fixes
+>  already:
+>
+>   http://people.redhat.com/mingo/tip.git/README
+>
+>         Ingo
+Thanks, Ingo for explanation. In 'default_spin_lock_flags' function ,
+the 2nd argument unsigned long flags isn't used in the function. Is it
+necessary to keep it ?
 
 Thanks,
-Daisuke Nishimura.
-
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  include/linux/cpuset.h |   13 ++++++++++++-
->  kernel/cpuset.c        |   23 ++++++++++++-----------
->  2 files changed, 24 insertions(+), 12 deletions(-)
-> 
-> diff -puN kernel/cgroup.c~cpuset-remove-cgroup-mutex-from-update-path kernel/cgroup.c
-> diff -puN kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path kernel/cpuset.c
-> --- a/kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path
-> +++ a/kernel/cpuset.c
-> @@ -369,7 +369,7 @@ static void guarantee_online_mems(const 
->   * task has been modifying its cpuset.
->   */
->  
-> -void cpuset_update_task_memory_state(void)
-> +void __cpuset_update_task_memory_state(bool held)
->  {
->  	int my_cpusets_mem_gen;
->  	struct task_struct *tsk = current;
-> @@ -380,7 +380,8 @@ void cpuset_update_task_memory_state(voi
->  	rcu_read_unlock();
->  
->  	if (my_cpusets_mem_gen != tsk->cpuset_mems_generation) {
-> -		mutex_lock(&callback_mutex);
-> +		if (!held)
-> +			mutex_lock(&callback_mutex);
->  		task_lock(tsk);
->  		cs = task_cs(tsk); /* Maybe changed when task not locked */
->  		guarantee_online_mems(cs, &tsk->mems_allowed);
-> @@ -394,7 +395,8 @@ void cpuset_update_task_memory_state(voi
->  		else
->  			tsk->flags &= ~PF_SPREAD_SLAB;
->  		task_unlock(tsk);
-> -		mutex_unlock(&callback_mutex);
-> +		if (!held)
-> +			mutex_unlock(&callback_mutex);
->  		mpol_rebind_task(tsk, &tsk->mems_allowed);
->  	}
->  }
-> @@ -949,13 +951,15 @@ static int update_cpumask(struct cpuset 
->   *    so that the migration code can allocate pages on these nodes.
->   *
->   *    Call holding cgroup_mutex, so current's cpuset won't change
-> - *    during this call, as manage_mutex holds off any cpuset_attach()
-> + *    during this call, as callback_mutex holds off any cpuset_attach()
->   *    calls.  Therefore we don't need to take task_lock around the
->   *    call to guarantee_online_mems(), as we know no one is changing
->   *    our task's cpuset.
->   *
->   *    Hold callback_mutex around the two modifications of our tasks
-> - *    mems_allowed to synchronize with cpuset_mems_allowed().
-> + *    mems_allowed to synchronize with cpuset_mems_allowed(). Give
-> + *    up cgroup_mutex to avoid deadlocking with other subsystems
-> + *    as we enter reclaim from do_migrate_pages().
->   *
->   *    While the mm_struct we are migrating is typically from some
->   *    other task, the task_struct mems_allowed that we are hacking
-> @@ -976,17 +980,14 @@ static void cpuset_migrate_mm(struct mm_
->  {
->  	struct task_struct *tsk = current;
->  
-> -	cpuset_update_task_memory_state();
-> -
-> +	cgroup_unlock();
->  	mutex_lock(&callback_mutex);
-> +	cpuset_update_task_memory_state_locked();
->  	tsk->mems_allowed = *to;
-> -	mutex_unlock(&callback_mutex);
-> -
->  	do_migrate_pages(mm, from, to, MPOL_MF_MOVE_ALL);
-> -
-> -	mutex_lock(&callback_mutex);
->  	guarantee_online_mems(task_cs(tsk),&tsk->mems_allowed);
->  	mutex_unlock(&callback_mutex);
-> +	cgroup_lock();
->  }
->  
->  static void *cpuset_being_rebound;
-> diff -puN include/linux/cpuset.h~cpuset-remove-cgroup-mutex-from-update-path include/linux/cpuset.h
-> --- a/include/linux/cpuset.h~cpuset-remove-cgroup-mutex-from-update-path
-> +++ a/include/linux/cpuset.h
-> @@ -25,7 +25,18 @@ extern void cpuset_cpus_allowed_locked(s
->  extern nodemask_t cpuset_mems_allowed(struct task_struct *p);
->  #define cpuset_current_mems_allowed (current->mems_allowed)
->  void cpuset_init_current_mems_allowed(void);
-> -void cpuset_update_task_memory_state(void);
-> +extern void __cpuset_update_task_memory_state(bool locked);
-> +
-> +static void inline cpuset_update_task_memory_state(void)
-> +{
-> +	__cpuset_update_task_memory_state(false);
-> +}
-> +
-> +static void inline cpuset_update_task_memory_state_locked(void)
-> +{
-> +	__cpuset_update_task_memory_state(true);
-> +}
-> +
->  int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask);
->  
->  extern int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask);
-> _
-> 
-> -- 
-> 	Balbir
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Rakib.
