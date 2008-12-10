@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbYLJCZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755646AbYLJC1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755855AbYLJCZp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 21:25:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYLJCZh
+	id S1755646AbYLJC1R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 21:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYLJC1C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 21:25:37 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:58483 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753391AbYLJCZg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 21:25:36 -0500
-Subject: Re: [Patch] Fix sys_time to handle intra-tick correction
-From: john stultz <johnstul@us.ibm.com>
-To: Vinay Sridhar <vinay@linux.vnet.ibm.com>
+	Tue, 9 Dec 2008 21:27:02 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47563 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753391AbYLJC1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 21:27:00 -0500
+Date: Tue, 9 Dec 2008 21:26:11 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Dennis Hardy <dhardy@sogetthis.com>
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1228868667.6758.176.camel@localhost>
-References: <1228823938.11639.7.camel@localhost.localdomain>
-	 <1228868667.6758.176.camel@localhost>
-Content-Type: text/plain
-Date: Tue, 09 Dec 2008 18:25:28 -0800
-Message-Id: <1228875929.6022.6.camel@localhost>
+Subject: Re: CIFS regression in 2.6.27.8
+Message-ID: <20081209212611.25fcd053@tupile.poochiereds.net>
+In-Reply-To: <20924383.post@talk.nabble.com>
+References: <20900699.post@talk.nabble.com>
+	<84144f020812081128p6d1e2a55v69996a360e7f0e8f@mail.gmail.com>
+	<200812082112.49468.rjw@sisk.pl>
+	<20081209154932.0952fbf3@dhcp-100-2-144.bos.redhat.com>
+	<20924383.post@talk.nabble.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-09 at 16:24 -0800, john stultz wrote:
-> On Tue, 2008-12-09 at 17:28 +0530, Vinay Sridhar wrote:
-> > Hi All,
-> > 
-> > This fix changes sys_time to use do_gettimeofday instead of get_seconds.
-> > Running the stime01 test from LTP triggers this error. Calling sys_stime
-> > and then calling sys_time causes this. "do_settimeofday" subtracts the
-> > nsec offset from the nsec value(0 in this case) passed to it.
-> > Subsequently, "set_normalized_timespec" modifies sec and nsec
-> > accordingly. This compensation is handled in the do_gettimeofday path.
-> > However, sys_time does not handle this case and reports an incorrect
-> > seconds value.
-> > 
-> > 
-> > signed-off by : Vinay Sridhar <vinay@linux.vnet.ibm.com>
+On Tue, 9 Dec 2008 13:47:56 -0800 (PST)
+Dennis Hardy <dhardy@sogetthis.com> wrote:
+
 > 
-> This does fix the symmetry by using the same interfaces on both sides,
-> so it seems reasonable to me. However, since do_gettimeofday reads the
-> clocksource hardware, this may have a slight performance impact to
-> time() users.
+> > I tried it on both i386 and x86_64 and had no problems. Is this client
+> > non-x86 by any chance?
 > 
-> I know privately I said this patch looked fine earlier, so sorry for the
-> mixed messages, but I really think we should be able to use
-> get_seconds() without this problem.
+> Curious...my kernel is CONFIG_X86_32=y and CONFIG_X86=y, CONFIG_MK6=y.
 > 
-> Looking more carefully at the code in do_settimeofday(), we should
-> accumulate the left over cycles, then we set the current time to the
-> specified time and update the xtime_cache.
+> Perhaps this could be an issue with the Windows Server side (Windows Home
+> Server, latest Windows SPs, etc.)  Maybe MSFT introduced some "improvement"
+> in a recent update that caused an incompatibility of some sort.  I can try
+> mounting some other Windows machines via CIFS from the 2.6.27.8 end and see
+> what happens, plus boot back to 2.6.27.6 and compare.
 > 
-> So I'm not sure if we're really fixing the right issue here. Further,
-> running on the x86_64 system, I don't see this issue crop up at all (for
-> either 64 or 32 bit binaries). I think you mentioned privately that this
-> was seen on i386, so maybe we need to dig just a bit deeper before going
-> with this fix.
-> 
-> And sorry again for running hot then cold on this patch. I just didn't
-> look deeply enough at the issue the first time around. :(
 
-Hey Vinay,
-	So I spent some time checking various kernels and it seems this issue
-is already resolved upstream by the clocksource_forward_now() change:
-9a055117d3d9cb562f83f8d4cd88772761f4cab0
+There is a problem with CIFS in 2.6.27.8, but it mainly manifests
+itself as a kthread that doesn't shut down when it should (regression
+due to a missing couple of prerequisite patches). I've got a patch for
+2.6.27.9 that should fix that problem (assuming there is a .9)
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9a055117d3d9cb562f83f8d4cd88772761f4cab0
+The fixes that went into 2.6.27.8 were mostly patches to fix races on
+mount and unmount and some fixes for socket handling. The problem
+you've described seems very consistent and localized to an area that
+wasn't patched in .8.
 
-thanks
--john
+I could easily be wrong, but the problem you've described seems more
+likely to be a server issue. If you can get binary network captures
+between the client and server like Steve F. requested, then we should
+be able to confirm it either way...
 
-
-
+-- 
+Jeff Layton <jlayton@redhat.com>
