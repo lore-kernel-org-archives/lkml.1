@@ -1,163 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbYLJQca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756479AbYLJQdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756179AbYLJQca (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:32:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbYLJQcW
+	id S1756479AbYLJQdX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:33:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbYLJQdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:32:22 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:32309 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753642AbYLJQcU (ORCPT
+	Wed, 10 Dec 2008 11:33:12 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:48079 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755283AbYLJQdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:32:20 -0500
-Date: Wed, 10 Dec 2008 19:32:18 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Trent Piepho <tpiepho@freescale.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Richard Purdie <rpurdie@rpsys.net>, devicetree-discuss@ozlabs.org,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Sean MacLennan <smaclennan@pikatech.com>
-Subject: Re: [PATCH 1/4] leds: Support OpenFirmware led bindings
-Message-ID: <20081210163217.GA20150@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1228923703-16370-1-git-send-email-tpiepho@freescale.com>
+	Wed, 10 Dec 2008 11:33:10 -0500
+Date: Wed, 10 Dec 2008 22:01:39 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org,
+       schwidefsky@de.ibm.com, Frank Blaschka <frank.blaschka@de.ibm.com>,
+       Ursula Braun <braunu@de.ibm.com>
+Subject: Re: [BUILD-FAILURE] linux-next: next-20081210 - s390x - lcs
+	drivers breaks with !CONFIG_IP_MULTICAST
+Message-ID: <20081210163139.GB6391@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20081210164659.9ebb8158.sfr@canb.auug.org.au> <20081210111740.GA6107@linux.vnet.ibm.com> <20081210120833.GA4586@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1228923703-16370-1-git-send-email-tpiepho@freescale.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081210120833.GA4586@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Trent,
+* Heiko Carstens <heiko.carstens@de.ibm.com> [2008-12-10 13:08:33]:
 
-On Wed, Dec 10, 2008 at 07:41:40AM -0800, Trent Piepho wrote:
-> Add bindings to support LEDs defined as of_platform devices in addition to
-> the existing bindings for platform devices.
+> On Wed, Dec 10, 2008 at 04:47:40PM +0530, Kamalesh Babulal wrote:
+> > Hi,
+> > 
+> > 	next-20081210 randconfig kernel builds fails with !CONFIG_IP_MULTICAST
+> > 
+> > drivers/s390/net/lcs.c: In function 'lcs_new_device':
+> > drivers/s390/net/lcs.c:2179: error: implicit declaration of function 'lcs_set_multicast_list'
+> > make[2]: *** [drivers/s390/net/lcs.o] Error 1
+> > make[1]: *** [drivers/s390/net] Error 2
+> > make: *** [drivers/s390] Error 2
 > 
-> New options in Kconfig allow the platform binding code and/or the
-> of_platform code to be turned on.  The of_platform code is of course only
-> available on archs that have OF support.
+> Thanks for reporting!
 > 
-> The existing probe and remove methods are refactored to use new functions
-> create_gpio_led(), to create and register one led, and delete_gpio_led(),
-> to unregister and free one led.  The new probe and remove methods for the
-> of_platform driver can then share most of the common probe and remove code
-> with the platform driver.
+> This should do the trick:
+
+Hi Heiko,
+
+	Thanks, the patch did the trick.
+
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 > 
-> The suspend and resume methods aren't shared, but they are very short.  The
-> actual led driving code is the same for LEDs created by either binding.
-> 
-> The OF bindings are based on patch by Anton Vorontsov
-> <avorontsov@ru.mvista.com>.  They have been extended to allow multiple LEDs
-> per device.
-> 
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> Acked-by: Sean MacLennan <smaclennan@pikatech.com>
-> CC: devicetree-discuss@ozlabs.org
 > ---
-
-Some petty notes below...
-
-[...]  
-> -static int gpio_led_probe(struct platform_device *pdev)
-> +static int __devinit create_gpio_led(const struct gpio_led *template,
-> +	struct gpio_led_data *led_dat, struct device *parent,
-> +	int (*blink_set)(unsigned, unsigned long *, unsigned long *))
-> +{
-> +	int ret;
+>  drivers/s390/net/lcs.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/s390/net/lcs.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/s390/net/lcs.c
+> +++ linux-2.6/drivers/s390/net/lcs.c
+> @@ -69,7 +69,9 @@ static char debug_buffer[255];
+>  static void lcs_tasklet(unsigned long);
+>  static void lcs_start_kernel_thread(struct work_struct *);
+>  static void lcs_get_frames_cb(struct lcs_channel *, struct lcs_buffer *);
+> +#ifdef CONFIG_IP_MULTICAST
+>  static int lcs_send_delipm(struct lcs_card *, struct lcs_ipm_list *);
+> +#endif /* CONFIG_IP_MULTICAST */
+>  static int lcs_recovery(void *ptr);
+> 
+>  /**
+> @@ -1280,6 +1282,8 @@ out:
+>  	lcs_clear_thread_running_bit(card, LCS_SET_MC_THREAD);
+>  	return 0;
+>  }
+> +#endif /* CONFIG_IP_MULTICAST */
 > +
-> +	ret = gpio_request(template->gpio, template->name);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	led_dat->cdev.name = template->name;
-> +	led_dat->cdev.default_trigger = template->default_trigger;
-> +	led_dat->gpio = template->gpio;
-> +	led_dat->can_sleep = gpio_cansleep(template->gpio);
-> +	led_dat->active_low = template->active_low;
-> +	if (blink_set) {
-> +		led_dat->platform_gpio_blink_set = blink_set;
-> +		led_dat->cdev.blink_set = gpio_blink_set;
-> +	}
-> +	led_dat->cdev.brightness_set = gpio_led_set;
-> +	led_dat->cdev.brightness = LED_OFF;
-> +
-> +	gpio_direction_output(led_dat->gpio, led_dat->active_low);
-
-This can fail (yeah, the original code didn't check return value
-either).
-
-> +	INIT_WORK(&led_dat->work, gpio_led_work);
-> +
-> +	ret = led_classdev_register(parent, &led_dat->cdev);
-> +	if (ret < 0)
-> +		gpio_free(led_dat->gpio);
-> +
-> +	return ret;
-> +}
-[...]
-> +static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
-> +					const struct of_device_id *match)
-> +{
-> +	struct device_node *np = ofdev->node, *child;
-> +	struct gpio_led led;
-> +	struct gpio_led_of_platform_data *pdata;
-> +	int count = 0, ret;
-> +
-> +	/* count LEDs defined by this device, so we know how much to allocate */
-> +	for_each_child_of_node(np, child)
-> +		count++;
-> +	if (!count)
-> +		return 0; /* or ENODEV? */
-> +
-> +	pdata = kzalloc(sizeof(*pdata) + sizeof(struct gpio_led_data) * count,
-> +			GFP_KERNEL);
-> +	if (!pdata)
-> +		return -ENOMEM;
-> +
-> +	memset(&led, 0, sizeof(led));
-> +	for_each_child_of_node(np, child) {
-> +		unsigned int flags;
-
-I think it would be better to use `enum of_gpio_flags' type here,
-just for clarity.
-
-> +
-> +		led.gpio = of_get_gpio_flags(child, 0, &flags);
-> +		led.active_low = flags & OF_GPIO_ACTIVE_LOW;
-> +		led.name = of_get_property(child, "label", NULL) ? : child->name;
-> +		led.default_trigger =
-> +			of_get_property(child, "linux,default-trigger", NULL);
-> +
-> +		ret = create_gpio_led(&led, &pdata->led_data[pdata->num_leds++],
-> +				      &ofdev->dev, NULL);
-> +		if (ret < 0)
-
-of_node_put(np); is missing here.
-
-> +			goto err;
-> +	}
-> +
-> +	dev_set_drvdata(&ofdev->dev, pdata);
-> +
-> +	return 0;
-> +
-> +err:
-> +	for (count = pdata->num_leds - 2; count >= 0; count--)
-> +		delete_gpio_led(&pdata->led_data[count]);
-> +
-> +	kfree(pdata);
-> +
-> +	return ret;
-> +}
-[...]
-
-Thanks,
+>  /**
+>   * function called by net device to
+>   * handle multicast address relevant things
+> @@ -1287,6 +1291,7 @@ out:
+>  static void
+>  lcs_set_multicast_list(struct net_device *dev)
+>  {
+> +#ifdef CONFIG_IP_MULTICAST
+>          struct lcs_card *card;
+> 
+>          LCS_DBF_TEXT(4, trace, "setmulti");
+> @@ -1294,9 +1299,9 @@ lcs_set_multicast_list(struct net_device
+> 
+>          if (!lcs_set_thread_start_bit(card, LCS_SET_MC_THREAD))
+>  		schedule_work(&card->kernel_thread_starter);
+> +#endif /* CONFIG_IP_MULTICAST */
+>  }
+> 
+> -#endif /* CONFIG_IP_MULTICAST */
+> 
+>  static long
+>  lcs_check_irb_error(struct ccw_device *cdev, struct irb *irb)
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
