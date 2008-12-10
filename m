@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYLJJhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbYLJJkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755989AbYLJJhY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 04:37:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbYLJJhK
+	id S1755699AbYLJJkW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 04:40:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbYLJJkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 04:37:10 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50288 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753640AbYLJJhC convert rfc822-to-8bit (ORCPT
+	Wed, 10 Dec 2008 04:40:07 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58626 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbYLJJkD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 04:37:02 -0500
+	Wed, 10 Dec 2008 04:40:03 -0500
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: linux-next: Tree for December 10
@@ -17,12 +17,12 @@ Cc: kosaki.motohiro@jp.fujitsu.com, linux-next@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <20081210164659.9ebb8158.sfr@canb.auug.org.au>
 References: <20081210164659.9ebb8158.sfr@canb.auug.org.au>
-Message-Id: <20081210183059.4FD6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20081210183658.4FD9.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 8BIT
 X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed, 10 Dec 2008 18:36:57 +0900 (JST)
+Date: Wed, 10 Dec 2008 18:39:58 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -49,86 +49,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > 
 > The sound tree gained a build failure and was dropped.
 
-Hi
+another problem on ia64.
 
-My ia64 box doesn't boot. is this a known bug?
-
-reprodusable: everytime reproduced.
-
+reprodusable: only one time seen
 
 
 message
-==================================
-Creating root device.
-Unable to handle kernel NULL pointer dereference (address 00000000000000c8)
-swapper[0]: Oops 8813272891392 [1]
+====
+------------[ cut here ]------------
+WARNING: at mm/vmalloc.c:104 vmap_page_range+0x2a0/0x500()
 Modules linked in: dm_snapshot dm_zero dm_mirror dm_region_hash dm_log dm_mod lpfc mptspi mptscsih mptbase ehci_hcd ohci_hcd uhci_hcd usbcore
-
-Pid: 0, CPU 0, comm:              swapper
-psr : 0000101008026018 ifs : 800000000000038a ip  : [<a00000010032be00>]    Not tainted (2.6.28-rc7-next-20081210)
-ip is at __blk_complete_request+0x20/0x2a0
-unat: 0000000000000000 pfs : 0000000000000205 rsc : 0000000000000003
-rnat: 000000000000000c bsps: e000000001143180 pr  : 656960155aa55695
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c0270033f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a00000010032c0e0 b6  : a000000100364480 b7  : a000000100504600
-f6  : 0fffcfffffffff0000000 f7  : 0ffe6e830000000000000
-f8  : 1000ae830000000000000 f9  : 1003e0000000000004020
-f10 : 1003e0000000000000060 f11 : 1003e00000000000000ab
-r1  : a000000100ef6c30 r2  : 00000000000000c8 r3  : e0000040c2611fe0
-r8  : 0000000000000000 r9  : 0000000000000801 r10 : 0000000000000a01
-r11 : 0000000000000801 r12 : a000000100b2fb40 r13 : a000000100b20000
-r14 : 0000000000000000 r15 : 0000000000000000 r16 : 0000000000000001
-r17 : e0000040c2611ff0 r18 : 0000000000000200 r19 : e0000040c3100000
-r20 : a040000000000000 r21 : 000000000000000e r22 : a000000100504600
-r23 : e0000040c0722a90 r24 : a000000100b2fbd0 r25 : a000000100ba3908
-r26 : 0000000000000400 r27 : 00000000000000ff r28 : 0000000000000000
-r29 : a000000100b20d34 r30 : 000000000000000d r31 : 0000000000007fff
 
 Call Trace:
  [<a000000100017940>] show_stack+0x80/0xa0
-                                sp=a000000100b2f710 bsp=a000000100b21358
- [<a000000100018240>] show_regs+0x880/0x8c0
-                                sp=a000000100b2f8e0 bsp=a000000100b21300
- [<a000000100040570>] die+0x1b0/0x2e0
-                                sp=a000000100b2f8e0 bsp=a000000100b212b8
- [<a000000100773dd0>] ia64_do_page_fault+0x810/0xb00
-                                sp=a000000100b2f8e0 bsp=a000000100b21258
- [<a00000010000c860>] ia64_native_leave_kernel+0x0/0x270
-                                sp=a000000100b2f970 bsp=a000000100b21258
- [<a00000010032be00>] __blk_complete_request+0x20/0x2a0
-                                sp=a000000100b2fb40 bsp=a000000100b21208
- [<a00000010032c0e0>] blk_complete_request+0x60/0x80
-                                sp=a000000100b2fb40 bsp=a000000100b211e0
- [<a000000100504620>] scsi_done+0x20/0x40
-                                sp=a000000100b2fb40 bsp=a000000100b211c0
- [<a000000201b12160>] mptscsih_io_done+0x7c0/0xf40 [mptscsih]
-                                sp=a000000100b2fb40 bsp=a000000100b210f8
- [<a000000201a480f0>] mpt_interrupt+0x1f0/0x1280 [mptbase]
-                                sp=a000000100b2fb40 bsp=a000000100b21098
- [<a0000001001211a0>] handle_IRQ_event+0x80/0x120
-                                sp=a000000100b2fbb0 bsp=a000000100b21060
- [<a000000100121570>] __do_IRQ+0x330/0x440
-                                sp=a000000100b2fbb0 bsp=a000000100b21000
- [<a000000100014990>] ia64_handle_irq+0x410/0x440
-                                sp=a000000100b2fbb0 bsp=a000000100b20f78
- [<a00000010000c860>] ia64_native_leave_kernel+0x0/0x270
-                                sp=a000000100b2fbb0 bsp=a000000100b20f78
- [<a0000001000186e0>] default_idle+0x1a0/0x1c0
-                                sp=a000000100b2fd80 bsp=a000000100b20f10
- [<a0000001000175a0>] cpu_idle+0x1e0/0x3c0
-                                sp=a000000100b2fe20 bsp=a000000100b20eb0
- [<a000000100733c50>] rest_init+0xd0/0x100
-                                sp=a000000100b2fe20 bsp=a000000100b20e98
- [<a000000100971440>] start_kernel+0x740/0x800
-                                sp=a000000100b2fe20 bsp=a000000100b20e20
- [<a000000100777e00>] __kprobes_text_end+0x760/0x780
-                                sp=a000000100b2fe30 bsp=a000000100b20d80
-Kernel panic - not syncing: Aiee, killing interrupt handler!
+                                sp=e000016004baf980 bsp=e000016004ba1218
+ [<a000000100017990>] dump_stack+0x30/0x60
+                                sp=e000016004bafb50 bsp=e000016004ba1200
+ [<a0000001000a95c0>] warn_slowpath+0x140/0x1a0
+                                sp=e000016004bafb50 bsp=e000016004ba1190
+ [<a000000100179080>] vmap_page_range+0x2a0/0x500
+                                sp=e000016004bafc80 bsp=e000016004ba10c8
+ [<a000000100179330>] map_vm_area+0x50/0xa0
+                                sp=e000016004bafc90 bsp=e000016004ba1098
+ [<a0000001001795b0>] __vmalloc_area_node+0x230/0x3a0
+                                sp=e000016004bafc90 bsp=e000016004ba1038
+ [<a000000100179820>] __vmalloc_node+0x100/0x120
+                                sp=e000016004bafca0 bsp=e000016004ba0ff0
+ [<a0000001001798e0>] vmalloc+0x40/0x60
+                                sp=e000016004bafca0 bsp=e000016004ba0fd0
+ [<a000000201e6f540>] dm_ctl_ioctl+0x480/0x8a0 [dm_mod]
+                                sp=e000016004bafca0 bsp=e000016004ba0f80
+ [<a0000001001d93f0>] vfs_ioctl+0x90/0x180
+                                sp=e000016004bafde0 bsp=e000016004ba0f48
+ [<a0000001001d95c0>] do_vfs_ioctl+0xe0/0xdc0
+                                sp=e000016004bafde0 bsp=e000016004ba0ef8
+ [<a0000001001da300>] sys_ioctl+0x60/0x100
+                                sp=e000016004bafe20 bsp=e000016004ba0e88
+ [<a00000010000c6c0>] ia64_ret_from_syscall+0x0/0x20
+                                sp=e000016004bafe30 bsp=e000016004ba0e88
+ [<a000000000010720>] __kernel_syscall_via_break+0x0/0x20
+                                sp=e000016004bb0000 bsp=e000016004ba0e88
+---[ end trace 089d7a1613208ad7 ]---
+device-mapper: names ioctl failed: Cannot allocate memory
+nash received SIGSEGV!  Backtrace:
+[0x4000000000017ca0]
+[0xa0000000000108e0]
+[0x4000000000050111]
+[0x4000000000040aa0]
+[0x4000000000043b80]
+[0x400000000003a7c0]
+[0x400000000003adb0]
+[0x400000000003b0f0]
+[0x4000000000007600]
+[0x4000000000017940]
+[0x40000000000187e0]
+[0x40000000002b4c00]
+[0x4000000000000280]
+Kernel panic - not syncing: Attempted to kill init!
 
 
-.config
-=====================
+
+
+.config 
+==
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.28-rc7
@@ -1562,5 +1545,8 @@ CONFIG_GENERIC_HARDIRQS=y
 CONFIG_GENERIC_IRQ_PROBE=y
 CONFIG_GENERIC_PENDING_IRQ=y
 CONFIG_IRQ_PER_CPU=y
+
+
+
 
 
