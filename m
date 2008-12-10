@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbYLJMfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYLJMkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753375AbYLJMfo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 07:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYLJMfd
+	id S1753254AbYLJMkG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 07:40:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbYLJMjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 07:35:33 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:42172 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750907AbYLJMfd (ORCPT
+	Wed, 10 Dec 2008 07:39:55 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:45264 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbYLJMjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 07:35:33 -0500
-Date: Wed, 10 Dec 2008 23:35:24 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Crypto Update for 2.6.28
-Message-ID: <20081210123524.GA11696@gondor.apana.org.au>
-References: <20080421024306.GA6813@gondor.apana.org.au> <20080714121403.GA28523@gondor.apana.org.au> <20081010070918.GA28057@gondor.apana.org.au> <alpine.LFD.2.00.0810101118050.3503@nehalem.linux-foundation.org> <20081011021357.GB3685@gondor.apana.org.au>
-MIME-Version: 1.0
+	Wed, 10 Dec 2008 07:39:54 -0500
+Date: Wed, 10 Dec 2008 13:41:20 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] makesystem: revive cscope target
+Message-ID: <20081210124120.GA12784@uranus.ravnborg.org>
+References: <1228911013-25641-1-git-send-email-jirislaby@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081011021357.GB3685@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1228911013-25641-1-git-send-email-jirislaby@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+On Wed, Dec 10, 2008 at 01:10:13PM +0100, Jiri Slaby wrote:
+> - export src and obj, so that we can check them in tags.sh
+> - don't allow * expansion during sh function calls
 
-At this late stage there is just one fix for a regression from
-2.6.27.  We used to allow algorithms to be built-in with the new
-testing framework built as a module.  This meant that the built-in
-algorithms may not get tested properly if modules can't be loaded
-when the built-in algorithms are registered.  It also seems to
-trigger a modprobe loop on one distro.  This configuration is now
-forbidden.
- 
-Please pull from
+What benefit does this patch give us?
+We do not use $obj neither $src in tags.sh.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+Likewise we do not pass it non-expanded parameters.
 
-or
-
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-
-Herbert Xu (1):
-      crypto: api - Disallow cryptomgr as a module if algorithms are built-in
-
- crypto/Kconfig  |   36 ++++++++++++++++++++++++++++++++----
- crypto/Makefile |   18 +++++++++---------
- 2 files changed, 41 insertions(+), 13 deletions(-)
- 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+	Sam
