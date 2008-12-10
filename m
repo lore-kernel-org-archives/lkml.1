@@ -1,548 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbYLJSgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbYLJShd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758171AbYLJSgj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 13:36:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbYLJSgX
+	id S1757017AbYLJShd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 13:37:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYLJShV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 13:36:23 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:60849 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757474AbYLJSgS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 13:36:18 -0500
-Message-ID: <49400C26.3090604@vlnb.net>
-Date: Wed, 10 Dec 2008 21:36:22 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: linux-scsi@vger.kernel.org
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Subject: [PATCH][RFC 4/23]: SCST debug support
-References: <494009D7.4020602@vlnb.net>
-In-Reply-To: <494009D7.4020602@vlnb.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Dec 2008 13:37:21 -0500
+Received: from waste.org ([66.93.16.53]:57563 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750761AbYLJShT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 13:37:19 -0500
+Subject: Re: [PATCH 04/15] kmemleak: Add the slob memory allocation/freeing
+	hooks
+From: Matt Mackall <mpm@selenic.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <20081210182716.30323.13359.stgit@pc1117.cambridge.arm.com>
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
+	 <20081210182716.30323.13359.stgit@pc1117.cambridge.arm.com>
+Content-Type: text/plain
+Date: Wed, 10 Dec 2008 12:36:01 -0600
+Message-Id: <1228934161.3726.124.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/oQ+fqfw/qSdGVL8fbEPpzbihvx0GEmZ0KDbd
- NcuoIYsltPqLbbXtSLkdIxPRRwS7gCWtdk171AQFAg4CJqDjKY
- YYOHiMRZAtmg0gIEMJhig==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains definitions and functions for tracing various 
-internal events. It can be fully compiled out and have no runtime overhead.
+On Wed, 2008-12-10 at 18:27 +0000, Catalin Marinas wrote:
+> This patch adds the callbacks to memleak_(alloc|free) functions from the
+> slob allocator.
 
-Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
----
-  drivers/scst/scst_debug.c |  128 ++++++++++++++++
-  include/scst/scst_debug.h |  361 ++++++++++++++++++++++++++++++++++++++++++++++
-  2 files changed, 489 insertions(+)
+Is this different than the last one?
 
-diff -uprN orig/linux-2.6.27/include/scst/scst_debug.h linux-2.6.27/include/scst/scst_debug.h
---- orig/linux-2.6.27/include/scst/scst_debug.h
-+++ linux-2.6.27/include/scst/scst_debug.h
-@@ -0,0 +1,361 @@
-+/*
-+ *  include/scst_debug.h
-+ *
-+ *  Copyright (C) 2004 - 2008 Vladislav Bolkhovitin <vst@vlnb.net>
-+ *  Copyright (C) 2004 - 2005 Leonid Stoljar
-+ *  Copyright (C) 2007 - 2008 CMS Distribution Limited
-+ *
-+ *  Contains macroses for execution tracing and error reporting
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation, version 2
-+ *  of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ *  GNU General Public License for more details.
-+ */
-+
-+#ifndef __SCST_DEBUG_H
-+#define __SCST_DEBUG_H
-+
-+#include <linux/autoconf.h>	/* for CONFIG_* */
-+
-+#include <linux/bug.h>		/* for WARN_ON_ONCE */
-+
-+
-+
-+#ifdef CONFIG_SCST_EXTRACHECKS
-+#define EXTRACHECKS_BUG_ON(a)		BUG_ON(a)
-+#define EXTRACHECKS_WARN_ON(a)		WARN_ON(a)
-+#define EXTRACHECKS_WARN_ON_ONCE(a)	WARN_ON_ONCE(a)
-+#else
-+#define EXTRACHECKS_BUG_ON(a)
-+#define EXTRACHECKS_WARN_ON(a)
-+#define EXTRACHECKS_WARN_ON_ONCE(a)
-+#endif
-+
-+#ifdef CONFIG_SCST_DEBUG
-+/*#  define LOG_FLAG KERN_DEBUG*/
-+#  define LOG_FLAG KERN_INFO
-+#  define INFO_FLAG KERN_INFO
-+#  define ERROR_FLAG KERN_INFO
-+#else
-+# define LOG_FLAG KERN_INFO
-+# define INFO_FLAG KERN_INFO
-+# define ERROR_FLAG KERN_ERR
-+#endif
-+
-+#define CRIT_FLAG KERN_CRIT
-+
-+#define NO_FLAG ""
-+
-+#define TRACE_NULL           0x00000000
-+#define TRACE_DEBUG          0x00000001
-+#define TRACE_FUNCTION       0x00000002
-+#define TRACE_LINE           0x00000004
-+#define TRACE_PID            0x00000008
-+#define TRACE_ENTRYEXIT      0x00000010
-+#define TRACE_BUFF           0x00000020
-+#define TRACE_MEMORY         0x00000040
-+#define TRACE_SG_OP          0x00000080
-+#define TRACE_OUT_OF_MEM     0x00000100
-+#define TRACE_MINOR          0x00000200 /* less important events */
-+#define TRACE_MGMT           0x00000400
-+#define TRACE_MGMT_MINOR     0x00000800
-+#define TRACE_MGMT_DEBUG     0x00001000
-+#define TRACE_SCSI           0x00002000
-+#define TRACE_SPECIAL        0x00004000 /* filtering debug, etc */
-+#define TRACE_ALL            0xffffffff
-+/* Flags 0xXXXX0000 are local for users */
-+
-+/*
-+ * Note: in the next two printk() statements the KERN_CONT macro is only
-+ * present to suppress a checkpatch warning (KERN_CONT is defined as "").
-+ */
-+#define PRINT(log_flag, format, args...)  \
-+		printk(KERN_CONT "%s" format "\n", log_flag, ## args)
-+#define PRINTN(log_flag, format, args...) \
-+		printk(KERN_CONT "%s" format, log_flag, ## args)
-+
-+#ifdef LOG_PREFIX
-+#define __LOG_PREFIX	LOG_PREFIX
-+#else
-+#define __LOG_PREFIX	NULL
-+#endif
-+
-+#if defined(CONFIG_SCST_DEBUG) || defined(CONFIG_SCST_TRACING)
-+
-+#ifndef CONFIG_SCST_DEBUG
-+#define ___unlikely(a)		(a)
-+#else
-+#define ___unlikely(a)		unlikely(a)
-+#endif
-+
-+extern int debug_print_prefix(unsigned long trace_flag, const char *log_level,
-+	const char *prefix, const char *func, int line);
-+extern void debug_print_buffer(const char *log_level, const void *data,
-+	int len);
-+
-+#define TRACE(trace, format, args...)					  \
-+do {									  \
-+	if (___unlikely(trace_flag & (trace))) {			  \
-+		char *__tflag = LOG_FLAG;				  \
-+		if (debug_print_prefix(trace_flag, __tflag, __LOG_PREFIX, \
-+				       __func__, __LINE__) > 0) {	  \
-+			__tflag = NO_FLAG;				  \
-+		}							  \
-+		PRINT(NO_FLAG, "%s" format, __tflag, args);		  \
-+	}								  \
-+} while (0)
-+
-+#define PRINT_BUFFER(message, buff, len)                            \
-+do {                                                                \
-+	PRINT(NO_FLAG, "%s:", message);				    \
-+	debug_print_buffer(INFO_FLAG, buff, len);		    \
-+} while (0)
-+
-+#define PRINT_BUFF_FLAG(flag, message, buff, len)			\
-+do {									\
-+	if (___unlikely(trace_flag & (flag))) {				\
-+		char *__tflag = INFO_FLAG;				\
-+		if (debug_print_prefix(trace_flag, __tflag, NULL, __func__,\
-+				       __LINE__) > 0) {			\
-+			__tflag = NO_FLAG;				\
-+		}							\
-+		PRINT(NO_FLAG, "%s%s:", __tflag, message);		\
-+		debug_print_buffer(INFO_FLAG, buff, len);		\
-+	}								\
-+} while (0)
-+
-+#else  /* CONFIG_SCST_DEBUG || CONFIG_SCST_TRACING */
-+
-+#define TRACE(trace, args...) do {} while (0)
-+#define PRINT_BUFFER(message, buff, len) do {} while (0)
-+#define PRINT_BUFF_FLAG(flag, message, buff, len) do {} while (0)
-+
-+#endif /* CONFIG_SCST_DEBUG || CONFIG_SCST_TRACING */
-+
-+#ifdef CONFIG_SCST_DEBUG
-+
-+#define __TRACE(trace, format, args...)					\
-+do {									\
-+	if (trace_flag & (trace)) {					\
-+		char *__tflag = LOG_FLAG;				\
-+		if (debug_print_prefix(trace_flag, __tflag, NULL, __func__,\
-+				       __LINE__) > 0) {			\
-+			__tflag = NO_FLAG;				\
-+		}							\
-+		PRINT(NO_FLAG, "%s" format, __tflag, args);		\
-+	}								\
-+} while (0)
-+
-+#define TRACE_MEM(args...)		__TRACE(TRACE_MEMORY, args)
-+#define TRACE_SG(args...)		__TRACE(TRACE_SG_OP, args)
-+#define TRACE_DBG(args...)		__TRACE(TRACE_DEBUG, args)
-+#define TRACE_DBG_SPECIAL(args...)	__TRACE(TRACE_DEBUG|TRACE_SPECIAL, args)
-+#define TRACE_MGMT_DBG(args...)		__TRACE(TRACE_MGMT_DEBUG, args)
-+#define TRACE_MGMT_DBG_SPECIAL(args...)	\
-+		__TRACE(TRACE_MGMT_DEBUG|TRACE_SPECIAL, args)
-+
-+#define TRACE_BUFFER(message, buff, len)				\
-+do {									\
-+	if (trace_flag & TRACE_BUFF) {					\
-+		char *__tflag = LOG_FLAG;				\
-+		if (debug_print_prefix(trace_flag, __tflag, NULL, __func__, \
-+				       __LINE__) > 0) {			\
-+			__tflag = NO_FLAG;				\
-+		}							\
-+		PRINT(NO_FLAG, "%s%s:", __tflag, message);		\
-+		debug_print_buffer(LOG_FLAG, buff, len);		\
-+	}								\
-+} while (0)
-+
-+#define TRACE_BUFF_FLAG(flag, message, buff, len)			\
-+do {									\
-+	if (trace_flag & (flag)) {					\
-+		char *__tflag = LOG_FLAG;				\
-+		if (debug_print_prefix(trace_flag, __tflag, NULL, __func__, \
-+				       __LINE__) > 0) {			\
-+			__tflag = NO_FLAG;				\
-+		}							\
-+		PRINT(NO_FLAG, "%s%s:", __tflag, message);		\
-+		debug_print_buffer(LOG_FLAG, buff, len);		\
-+	}								\
-+} while (0)
-+
-+#define PRINT_LOG_FLAG(log_flag, format, args...)			\
-+do {									\
-+	char *__tflag = log_flag;					\
-+	if (debug_print_prefix(trace_flag, __tflag, __LOG_PREFIX,	\
-+			       __func__, __LINE__) > 0) {		\
-+		__tflag = NO_FLAG;					\
-+	}								\
-+	PRINT(NO_FLAG, "%s" format, __tflag, args);			\
-+} while (0)
-+
-+#define PRINT_WARNING(format, args...)					\
-+do {									\
-+	if (strcmp(INFO_FLAG, LOG_FLAG)) {				\
-+		PRINT_LOG_FLAG(LOG_FLAG, "***WARNING*** " format, args); \
-+	}								\
-+	PRINT_LOG_FLAG(INFO_FLAG, "***WARNING*** " format, args);	\
-+} while (0)
-+
-+#define PRINT_ERROR(format, args...)					\
-+do {									\
-+	if (strcmp(ERROR_FLAG, LOG_FLAG)) {				\
-+		PRINT_LOG_FLAG(LOG_FLAG, "***ERROR*** " format, args);	\
-+	}								\
-+	PRINT_LOG_FLAG(ERROR_FLAG, "***ERROR*** " format, args);	\
-+} while (0)
-+
-+#define PRINT_CRIT_ERROR(format, args...)				\
-+do {									\
-+	/*  if (strcmp(CRIT_FLAG, LOG_FLAG))				\
-+	    {								\
-+	    PRINT_LOG_FLAG(LOG_FLAG, "***CRITICAL ERROR*** " format, args); \
-+	    }*/								\
-+	PRINT_LOG_FLAG(CRIT_FLAG, "***CRITICAL ERROR*** " format, args); \
-+} while (0)
-+
-+#define PRINT_INFO(format, args...)			\
-+do {							\
-+	if (strcmp(INFO_FLAG, LOG_FLAG)) {		\
-+		PRINT_LOG_FLAG(LOG_FLAG, format, args);	\
-+	}						\
-+	PRINT_LOG_FLAG(INFO_FLAG, format, args);	\
-+} while (0)
-+
-+#define TRACE_ENTRY()							\
-+do {									\
-+	if (trace_flag & TRACE_ENTRYEXIT) {				\
-+		if (trace_flag & TRACE_PID) {				\
-+			PRINT(LOG_FLAG, "[%d]: ENTRY %s", current->pid, \
-+				__func__);				\
-+		}							\
-+		else {							\
-+			PRINT(LOG_FLAG, "ENTRY %s", __func__);		\
-+		}							\
-+	}								\
-+} while (0)
-+
-+#define TRACE_EXIT()							\
-+do {									\
-+	if (trace_flag & TRACE_ENTRYEXIT) {				\
-+		if (trace_flag & TRACE_PID) {				\
-+			PRINT(LOG_FLAG, "[%d]: EXIT %s", current->pid,	\
-+				__func__);				\
-+		}							\
-+		else {							\
-+			PRINT(LOG_FLAG, "EXIT %s", __func__);		\
-+		}							\
-+	}								\
-+} while (0)
-+
-+#define TRACE_EXIT_RES(res)						\
-+do {									\
-+	if (trace_flag & TRACE_ENTRYEXIT) {				\
-+		if (trace_flag & TRACE_PID) {				\
-+			PRINT(LOG_FLAG, "[%d]: EXIT %s: %ld", current->pid, \
-+			      __func__, (long)(res));			\
-+		}							\
-+		else {							\
-+			PRINT(LOG_FLAG, "EXIT %s: %ld",			\
-+				__func__, (long)(res));			\
-+		}							\
-+	}                                                               \
-+} while (0)
-+
-+#define TRACE_EXIT_HRES(res)						\
-+do {									\
-+	if (trace_flag & TRACE_ENTRYEXIT) {				\
-+		if (trace_flag & TRACE_PID) {				\
-+			PRINT(LOG_FLAG, "[%d]: EXIT %s: 0x%lx", current->pid, \
-+			      __func__, (long)(res));			\
-+		}							\
-+		else {							\
-+			PRINT(LOG_FLAG, "EXIT %s: %lx",			\
-+					__func__, (long)(res));		\
-+		}							\
-+	}                                                               \
-+} while (0)
-+
-+#else  /* CONFIG_SCST_DEBUG */
-+
-+#define TRACE_MEM(format, args...) do {} while (0)
-+#define TRACE_SG(format, args...) do {} while (0)
-+#define TRACE_DBG(format, args...) do {} while (0)
-+#define TRACE_DBG_SPECIAL(format, args...) do {} while (0)
-+#define TRACE_MGMT_DBG(format, args...) do {} while (0)
-+#define TRACE_MGMT_DBG_SPECIAL(format, args...) do {} while (0)
-+#define TRACE_BUFFER(message, buff, len) do {} while (0)
-+#define TRACE_BUFF_FLAG(flag, message, buff, len) do {} while (0)
-+#define TRACE_ENTRY() do {} while (0)
-+#define TRACE_EXIT() do {} while (0)
-+#define TRACE_EXIT_RES(res) do {} while (0)
-+#define TRACE_EXIT_HRES(res) do {} while (0)
-+
-+#ifdef LOG_PREFIX
-+
-+#define PRINT_INFO(format, args...)				\
-+do {								\
-+	PRINT(INFO_FLAG, "%s: " format, LOG_PREFIX, args);	\
-+} while (0)
-+
-+#define PRINT_WARNING(format, args...)          \
-+do {                                            \
-+	PRINT(INFO_FLAG, "%s: ***WARNING*** "	\
-+	      format, LOG_PREFIX, args);	\
-+} while (0)
-+
-+#define PRINT_ERROR(format, args...)            \
-+do {                                            \
-+	PRINT(ERROR_FLAG, "%s: ***ERROR*** "	\
-+	      format, LOG_PREFIX, args);	\
-+} while (0)
-+
-+#define PRINT_CRIT_ERROR(format, args...)       \
-+do {                                            \
-+	PRINT(CRIT_FLAG, "%s: ***CRITICAL ERROR*** "	\
-+		format, LOG_PREFIX, args);		\
-+} while (0)
-+
-+#else
-+
-+#define PRINT_INFO(format, args...)           	\
-+do {                                            \
-+	PRINT(INFO_FLAG, format, args);		\
-+} while (0)
-+
-+#define PRINT_WARNING(format, args...)          \
-+do {                                            \
-+	PRINT(INFO_FLAG, "***WARNING*** "	\
-+		format, args);			\
-+} while (0)
-+
-+#define PRINT_ERROR(format, args...)          	\
-+do {                                            \
-+	PRINT(ERROR_FLAG, "***ERROR*** "	\
-+		format, args);			\
-+} while (0)
-+
-+#define PRINT_CRIT_ERROR(format, args...)		\
-+do {							\
-+	PRINT(CRIT_FLAG, "***CRITICAL ERROR*** "	\
-+		format, args);				\
-+} while (0)
-+
-+#endif /* LOG_PREFIX */
-+
-+#endif /* CONFIG_SCST_DEBUG */
-+
-+#if defined(CONFIG_SCST_DEBUG) && defined(CONFIG_DEBUG_SLAB)
-+#define SCST_SLAB_FLAGS (SLAB_RED_ZONE | SLAB_POISON)
-+#else
-+#define SCST_SLAB_FLAGS 0L
-+#endif
-+
-+#endif /* __SCST_DEBUG_H */
-diff -uprN orig/linux-2.6.27/drivers/scst/scst_debug.c linux-2.6.27/drivers/scst/scst_debug.c
---- orig/linux-2.6.27/drivers/scst/scst_debug.c
-+++ linux-2.6.27/drivers/scst/scst_debug.c
-@@ -0,0 +1,128 @@
-+/*
-+ *  scst_debug.c
-+ *
-+ *  Copyright (C) 2004 - 2008 Vladislav Bolkhovitin <vst@vlnb.net>
-+ *  Copyright (C) 2004 - 2005 Leonid Stoljar
-+ *  Copyright (C) 2007 - 2008 CMS Distribution Limited
-+ *
-+ *  Contains helper functions for execution tracing and error reporting.
-+ *  Intended to be included in main .c file.
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation, version 2
-+ *  of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ *  GNU General Public License for more details.
-+ */
-+
-+#include "scst.h"
-+#include "scst_debug.h"
-+
-+#if defined(CONFIG_SCST_DEBUG) || defined(CONFIG_SCST_TRACING)
-+
-+#define TRACE_BUF_SIZE    512
-+
-+static char trace_buf[TRACE_BUF_SIZE];
-+static DEFINE_SPINLOCK(trace_buf_lock);
-+
-+static inline int get_current_tid(void)
-+{
-+	/* Code should be the same as in sys_gettid() */
-+	if (in_interrupt()) {
-+		/*
-+		 * Unfortunately, task_pid_vnr() isn't IRQ-safe, so otherwise
-+		 * it can oops. ToDo.
-+		 */
-+		return 0;
-+	}
-+	return task_pid_vnr(current);
-+}
-+
-+int debug_print_prefix(unsigned long trace_flag, const char *log_level,
-+	const char *prefix, const char *func, int line)
-+{
-+	int i = 0;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&trace_buf_lock, flags);
-+
-+	if (trace_flag & TRACE_PID)
-+		i += snprintf(&trace_buf[i], TRACE_BUF_SIZE, "[%d]: ",
-+			      get_current_tid());
-+	if (prefix != NULL)
-+		i += snprintf(&trace_buf[i], TRACE_BUF_SIZE - i, "%s: ",
-+			      prefix);
-+	if (trace_flag & TRACE_FUNCTION)
-+		i += snprintf(&trace_buf[i], TRACE_BUF_SIZE - i, "%s:", func);
-+	if (trace_flag & TRACE_LINE)
-+		i += snprintf(&trace_buf[i], TRACE_BUF_SIZE - i, "%i:", line);
-+
-+	if (i > 0)
-+		PRINTN(log_level, "%s", trace_buf);
-+
-+	spin_unlock_irqrestore(&trace_buf_lock, flags);
-+
-+	return i;
-+}
-+EXPORT_SYMBOL(debug_print_prefix);
-+
-+void debug_print_buffer(const char *log_level, const void *data, int len)
-+{
-+	int z, z1, i;
-+	const unsigned char *buf = (const unsigned char *) data;
-+	int f = 0;
-+	unsigned long flags;
-+
-+	if (buf == NULL)
-+		return;
-+
-+	spin_lock_irqsave(&trace_buf_lock, flags);
-+
-+	PRINT(NO_FLAG, " (h)___0__1__2__3__4__5__6__7__8__9__A__B__C__D__E__F");
-+	for (z = 0, z1 = 0, i = 0; z < len; z++) {
-+		if (z % 16 == 0) {
-+			if (z != 0) {
-+				i += snprintf(&trace_buf[i], TRACE_BUF_SIZE - i,
-+					      " ");
-+				for (; (z1 < z) && (i < TRACE_BUF_SIZE - 1);
-+				     z1++) {
-+					if ((buf[z1] >= 0x20) &&
-+					    (buf[z1] < 0x80))
-+						trace_buf[i++] = buf[z1];
-+					else
-+						trace_buf[i++] = '.';
-+				}
-+				trace_buf[i] = '\0';
-+				PRINT(NO_FLAG, "%s", trace_buf);
-+				i = 0;
-+				f = 1;
-+			}
-+			i += snprintf(&trace_buf[i], TRACE_BUF_SIZE - i,
-+				      "%4x: ", z);
-+		}
-+		i += snprintf(&trace_buf[i], TRACE_BUF_SIZE - i, "%02x ",
-+			      buf[z]);
-+	}
-+	i += snprintf(&trace_buf[i], TRACE_BUF_SIZE - i, "  ");
-+	for (; (z1 < z) && (i < TRACE_BUF_SIZE - 1); z1++) {
-+		if ((buf[z1] > 0x20) && (buf[z1] < 0x80))
-+			trace_buf[i++] = buf[z1];
-+		else
-+			trace_buf[i++] = '.';
-+	}
-+	trace_buf[i] = '\0';
-+	if (f)
-+		PRINT(log_level, "%s", trace_buf);
-+	else
-+		PRINT(NO_FLAG, "%s", trace_buf);
-+
-+	spin_unlock_irqrestore(&trace_buf_lock, flags);
-+	return;
-+}
-+EXPORT_SYMBOL(debug_print_buffer);
-+
-+#endif /* CONFIG_SCST_DEBUG || CONFIG_SCST_TRACING */
+Acked-by: Matt Mackall <mpm@selenic.com>
 
-
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Matt Mackall <mpm@selenic.com>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  mm/slob.c |   15 +++++++++++----
+>  1 files changed, 11 insertions(+), 4 deletions(-)
+> 
+> diff --git a/mm/slob.c b/mm/slob.c
+> index cb675d1..ff5a98d 100644
+> --- a/mm/slob.c
+> +++ b/mm/slob.c
+> @@ -60,6 +60,7 @@
+>  #include <linux/kernel.h>
+>  #include <linux/slab.h>
+>  #include <linux/mm.h>
+> +#include <linux/memleak.h>
+>  #include <linux/cache.h>
+>  #include <linux/init.h>
+>  #include <linux/module.h>
+> @@ -463,6 +464,7 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
+>  {
+>  	unsigned int *m;
+>  	int align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
+> +	void *ret;
+>  
+>  	if (size < PAGE_SIZE - align) {
+>  		if (!size)
+> @@ -472,18 +474,18 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
+>  		if (!m)
+>  			return NULL;
+>  		*m = size;
+> -		return (void *)m + align;
+> +		ret = (void *)m + align;
+>  	} else {
+> -		void *ret;
+> -
+>  		ret = slob_new_page(gfp | __GFP_COMP, get_order(size), node);
+>  		if (ret) {
+>  			struct page *page;
+>  			page = virt_to_page(ret);
+>  			page->private = size;
+>  		}
+> -		return ret;
+>  	}
+> +
+> +	memleak_alloc(ret, size, 1, gfp);
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL(__kmalloc_node);
+>  
+> @@ -493,6 +495,7 @@ void kfree(const void *block)
+>  
+>  	if (unlikely(ZERO_OR_NULL_PTR(block)))
+>  		return;
+> +	memleak_free(block);
+>  
+>  	sp = (struct slob_page *)virt_to_page(block);
+>  	if (slob_page(sp)) {
+> @@ -555,12 +558,14 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
+>  	} else if (flags & SLAB_PANIC)
+>  		panic("Cannot create slab cache %s\n", name);
+>  
+> +	memleak_alloc(c, sizeof(struct kmem_cache), 1, GFP_KERNEL);
+>  	return c;
+>  }
+>  EXPORT_SYMBOL(kmem_cache_create);
+>  
+>  void kmem_cache_destroy(struct kmem_cache *c)
+>  {
+> +	memleak_free(c);
+>  	slob_free(c, sizeof(struct kmem_cache));
+>  }
+>  EXPORT_SYMBOL(kmem_cache_destroy);
+> @@ -577,6 +582,7 @@ void *kmem_cache_alloc_node(struct kmem_cache *c, gfp_t flags, int node)
+>  	if (c->ctor)
+>  		c->ctor(b);
+>  
+> +	memleak_alloc_recursive(b, c->size, 1, c->flags, flags);
+>  	return b;
+>  }
+>  EXPORT_SYMBOL(kmem_cache_alloc_node);
+> @@ -599,6 +605,7 @@ static void kmem_rcu_free(struct rcu_head *head)
+>  
+>  void kmem_cache_free(struct kmem_cache *c, void *b)
+>  {
+> +	memleak_free_recursive(b, c->flags);
+>  	if (unlikely(c->flags & SLAB_DESTROY_BY_RCU)) {
+>  		struct slob_rcu *slob_rcu;
+>  		slob_rcu = b + (c->size - sizeof(struct slob_rcu));
+-- 
+Mathematics is the supreme nostalgia of our time.
 
