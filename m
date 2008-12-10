@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbYLJSn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbYLJSnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758083AbYLJSn0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 13:43:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbYLJSmx
+	id S1758193AbYLJSnm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 13:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758040AbYLJSnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 13:42:53 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:59067 "EHLO
-	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757881AbYLJSmv (ORCPT
+	Wed, 10 Dec 2008 13:43:22 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:56601 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758033AbYLJSnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 13:42:51 -0500
-X-BigFish: VPS-37(zba6iz1432R98dR936eQ1805M936fOzzzzz32i6bh43j63h)
-X-Spam-TCS-SCL: 2:0
-X-FB-SS: 5,
-X-WSS-ID: 0KBOBYZ-04-CUN-01
-Date: Wed, 10 Dec 2008 19:42:40 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Avi Kivity <avi@redhat.com>, mingo@redhat.com, weidong.han@intel.com,
-       torvalds@linux-foundation.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCHSETS #2] KVM device passthrough support with AMD IOMMU
-Message-ID: <20081210184240.GH12816@amd.com>
-References: <20081209141143.GW12816@amd.com> <493F8D90.40205@redhat.com> <20081210141131.GB12816@amd.com> <1228918928.21454.27.camel@macbook.infradead.org> <20081210142525.GC12816@amd.com> <1228933475.23842.70.camel@macbook.infradead.org>
+	Wed, 10 Dec 2008 13:43:20 -0500
+Message-ID: <49400DC8.6050209@vlnb.net>
+Date: Wed, 10 Dec 2008 21:43:20 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1228933475.23842.70.camel@macbook.infradead.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 10 Dec 2008 18:42:40.0595 (UTC) FILETIME=[149BDA30:01C95AF7]
+To: linux-scsi@vger.kernel.org
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: [PATCH][RFC 9/23]: SCST virtual disk backend handler
+References: <494009D7.4020602@vlnb.net>
+In-Reply-To: <494009D7.4020602@vlnb.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18O5gu1VeyF4KDt5AJE8Y8qqE3YGCoKZWPgF0z
+ 1OWxP6jp3l3+q8+zVaqrbHpKVlt/zagepc0PLkqcYyAMrRf+lV
+ asH3ABtk1033hjJmAhxLA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 06:24:35PM +0000, David Woodhouse wrote:
-> On Wed, 2008-12-10 at 15:25 +0100, Joerg Roedel wrote:
-> > I already did it on-top of your tree because Han Weidong's patches 1-17
-> > were rebased to your tree and my IOMMU-API patches apply on-top of his
-> > patches.
-> 
-> OK, thanks. Looks like you still need this though, as Mike Day pointed
-> out:
-> 
-> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-> index 97df47c..a5f6e28 100644
-> --- a/drivers/pci/intel-iommu.c
-> +++ b/drivers/pci/intel-iommu.c
-> @@ -204,7 +204,7 @@ static inline bool dma_pte_present(struct dma_pte *pte)
->  }
->  
->  /* devices under the same p2p bridge are owned in one domain */
-> -#define DOMAIN_FLAG_P2P_MULTIPLE_DEVICES (1 < 0)
-> +#define DOMAIN_FLAG_P2P_MULTIPLE_DEVICES (1 << 0)
->  
->  /* domain represents a virtual machine, more than one devices
->   * across iommus may be owned in one domain, e.g. kvm guest.
+This patch contains the SCST virtual disk backend device handler. This
+is an SCST device handler that allows to export local files or local
+block devices as SCSI devices through the SCST target framework. This
+handler has three modes:
 
-Ok, I add it, thanks. Who is the author, Mike or you?
+  - FILEIO mode, which allows to use files on file systems or block 
+devices as virtual remotely available SCSI disks or CDROMs with benefits 
+of the Linux page cache.
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+  - BLOCKIO mode, which performs direct block IO with a block device, 
+bypassing page-cache for all operations. This mode works ideally with 
+high-end storage HBAs and for applications that either do not need 
+caching between application and disk or need the large block throughput.
+
+  - NULLIO mode, in which no real IO is performed. It is intended for 
+performance testing.
+
+Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+---
+  drivers/scst/dev_handlers/scst_vdisk.c | 3540 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  1 file changed, 3540 insertions(+)
+
+The patch is too big to be submitted inline. You can find it in 
+http://scst.sourceforge.net/patches/scst_vdisk.diff
+
+
 
