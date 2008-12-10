@@ -1,52 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYLJNXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbYLJNYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbYLJNXp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 08:23:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYLJNXg
+	id S1755169AbYLJNYd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 08:24:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYLJNYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 08:23:36 -0500
-Received: from cpsmtpo-eml03.KPNXCHANGE.COM ([213.75.38.152]:25474 "EHLO
-	cpsmtpo-eml03.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752497AbYLJNXf (ORCPT
+	Wed, 10 Dec 2008 08:24:24 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:51994 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752497AbYLJNYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 08:23:35 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [patch] ohci1394: don't leave interrupts enabled during suspend/resume
-Date: Wed, 10 Dec 2008 14:23:30 +0100
-User-Agent: KMail/1.9.9
-Cc: Robert Hancock <hancockr@shaw.ca>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200812061316.38460.elendil@planet.nl> <493B42D1.7090600@shaw.ca> <493B953F.3070504@s5r6.in-berlin.de>
-In-Reply-To: <493B953F.3070504@s5r6.in-berlin.de>
+	Wed, 10 Dec 2008 08:24:23 -0500
+Date: Wed, 10 Dec 2008 18:54:17 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: menage@google.com, KAMEZAWA Hiroyuki <kamezawa.hiroyuki@jp.fujitsu.com>,
+       Daisuke Miyakawa <dmiyakawa@google.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC][RFT] memcg fix cgroup_mutex deadlock when cpusetreclaims
+	memory
+Message-ID: <20081210132417.GE25467@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	menage@google.com,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyuki@jp.fujitsu.com>,
+	Daisuke Miyakawa <dmiyakawa@google.com>,
+	YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20081210051947.GH7593@balbir.in.ibm.com> <20081210174906.7c1a1a50.kamezawa.hiroyu@jp.fujitsu.com> <20081210105000.GC25467@balbir.in.ibm.com> <31051.10.75.179.61.1228908723.squirrel@webmail-b.css.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200812101423.31838.elendil@planet.nl>
-X-OriginalArrivalTime: 10 Dec 2008 13:23:32.0770 (UTC) FILETIME=[7F9DA020:01C95ACA]
+In-Reply-To: <31051.10.75.179.61.1228908723.squirrel@webmail-b.css.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the delayed reply.
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-12-10 20:32:03]:
 
-On Sunday 07 December 2008, you wrote:
-> Robert Hancock wrote:
-> > Presumably it should.. but the fact remains that if free_irq helps
-> > anything, then the device must be generating interrupts for some
-> > reason,
+> Balbir Singh said:
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-12-10
+> > 17:49:06]:
+> >
+> >> On Wed, 10 Dec 2008 10:49:47 +0530
+> >> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >>
+> >> > Hi,
+> >> >
+> >> > Here is a proposed fix for the memory controller cgroup_mutex deadlock
+> >> > reported. It is lightly tested and reviewed. I need help with review
+> >> > and test. Is the reported deadlock reproducible after this patch? A
+> >> > careful review of the cpuset impact will also be highly appreciated.
+> >> >
+> >> > From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> >> >
+> >> > cpuset_migrate_mm() holds cgroup_mutex throughout the duration of
+> >> > do_migrate_pages(). The issue with that is that
+> >> >
+> >> > 1. It can lead to deadlock with memcg, as do_migrate_pages()
+> >> >    enters reclaim
+> >> > 2. It can lead to long latencies, preventing users from creating/
+> >> >    destroying other cgroups anywhere else
+> >> >
+> >> > The patch holds callback_mutex through the duration of
+> >> cpuset_migrate_mm() and
+> >> > gives up cgroup_mutex while doing so.
+> >> >
+> >> > Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> >> > ---
+> >> >
+> >> >  include/linux/cpuset.h |   13 ++++++++++++-
+> >> >  kernel/cpuset.c        |   23 ++++++++++++-----------
+> >> >  2 files changed, 24 insertions(+), 12 deletions(-)
+> >> >
+> >> > diff -puN kernel/cgroup.c~cpuset-remove-cgroup-mutex-from-update-path
+> >> kernel/cgroup.c
+> >> > diff -puN kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path
+> >> kernel/cpuset.c
+> >> > --- a/kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path
+> >> > +++ a/kernel/cpuset.c
+> >> > @@ -369,7 +369,7 @@ static void guarantee_online_mems(const
+> >> >   * task has been modifying its cpuset.
+> >> >   */
+> >> >
+> >> > -void cpuset_update_task_memory_state(void)
+> >> > +void __cpuset_update_task_memory_state(bool held)
+> >> >  {
+> >> >  	int my_cpusets_mem_gen;
+> >> >  	struct task_struct *tsk = current;
+> >> > @@ -380,7 +380,8 @@ void cpuset_update_task_memory_state(voi
+> >> >  	rcu_read_unlock();
+> >> >
+> >> >  	if (my_cpusets_mem_gen != tsk->cpuset_mems_generation) {
+> >> > -		mutex_lock(&callback_mutex);
+> >> > +		if (!held)
+> >> > +			mutex_lock(&callback_mutex);
+> >> >  		task_lock(tsk);
+> >> >  		cs = task_cs(tsk); /* Maybe changed when task not locked */
+> >> >  		guarantee_online_mems(cs, &tsk->mems_allowed);
+> >> > @@ -394,7 +395,8 @@ void cpuset_update_task_memory_state(voi
+> >> >  		else
+> >> >  			tsk->flags &= ~PF_SPREAD_SLAB;
+> >> >  		task_unlock(tsk);
+> >> > -		mutex_unlock(&callback_mutex);
+> >> > +		if (!held)
+> >> > +			mutex_unlock(&callback_mutex);
+> >> >  		mpol_rebind_task(tsk, &tsk->mems_allowed);
+> >> >  	}
+> >> >  }
+> >> > @@ -949,13 +951,15 @@ static int update_cpumask(struct cpuset
+> >> >   *    so that the migration code can allocate pages on these nodes.
+> >> >   *
+> >> >   *    Call holding cgroup_mutex, so current's cpuset won't change
+> >> > - *    during this call, as manage_mutex holds off any cpuset_attach()
+> >> > + *    during this call, as callback_mutex holds off any
+> >> cpuset_attach()
+> >> >   *    calls.  Therefore we don't need to take task_lock around the
+> >> >   *    call to guarantee_online_mems(), as we know no one is changing
+> >> >   *    our task's cpuset.
+> >> >   *
+> >> >   *    Hold callback_mutex around the two modifications of our tasks
+> >> > - *    mems_allowed to synchronize with cpuset_mems_allowed().
+> >> > + *    mems_allowed to synchronize with cpuset_mems_allowed(). Give
+> >> > + *    up cgroup_mutex to avoid deadlocking with other subsystems
+> >> > + *    as we enter reclaim from do_migrate_pages().
+> >> >   *
+> >> >   *    While the mm_struct we are migrating is typically from some
+> >> >   *    other task, the task_struct mems_allowed that we are hacking
+> >> > @@ -976,17 +980,14 @@ static void cpuset_migrate_mm(struct mm_
+> >> >  {
+> >> >  	struct task_struct *tsk = current;
+> >> >
+> >> > -	cpuset_update_task_memory_state();
+> >> > -
+> >> > +	cgroup_unlock();
+> >> >  	mutex_lock(&callback_mutex);
+> >> > +	cpuset_update_task_memory_state_locked();
+> >> >  	tsk->mems_allowed = *to;
+> >> > -	mutex_unlock(&callback_mutex);
+> >> > -
+> >> >  	do_migrate_pages(mm, from, to, MPOL_MF_MOVE_ALL);
+> >> > -
+> >> > -	mutex_lock(&callback_mutex);
+> >> >  	guarantee_online_mems(task_cs(tsk),&tsk->mems_allowed);
+> >> >  	mutex_unlock(&callback_mutex);
+> >> > +	cgroup_lock();
+> >> >  }
+> >> >
+> >>
+> >> Hmm...can't this happen ?
+> >>
+> >> Assume there is a task X and cgroup Z1 and Z2. Z1 and Z2 doesn't need to
+> >> be in
+> >> the same hierarchy.
+> >> ==
+> >> 	CPU A attach task X to cgroup Z1
+> >> 		cgroup_lock()
+> >> 			for_each_subsys_state()
+> >
+> > You mean for_each_subsys() right?
+> >
+> >> 				=> attach(X,Z)
+> >> 					=> migrate_mm()
+> >> 						=> cgroup_unlock()
+> >> 							migration
+> >>
+> >> 	CPU B attach task X to cgroup Z2 at the same time
+> >> 		cgroup_lock()
+> >> 			replace css_set.
+> >> ==
+> >>
+> >> Works on CPU B can't break for_each_subsys_state() in CPU A ?
+> >>
+> >
+> > for_each_subsys is hierarchy aware, so if we try to add the same task
+> > to different hierachies, it should not be a problem right?
+> >
+> Ah, maybe. But what happens when Z1 and Z2 is the same hierarchy ?
+> Are there some locks ?
 >
-> Or another device:
-> http://www.gossamer-threads.com/lists/linux/kernel/896053
 
-Martin has the same laptop as I have, but his symptoms are still 
-different: he gets the error on boot, while I only get it on resume.
+If they are in the same hierarchy, tsk->cgroups and tsk->cg_list is
+updated atomically and for_each_subsys should not be affected.
 
-> Questions for Frans, quoting tglx:
-> Do you have CONFIG_NET_POLL_CONTROLLER enabled in your .config?  If
-> yes, can you please disable it and check whether the problem persists?
+Needs more thought and coffee though
 
-I had it enabled (due to NETCONSOLE), but disabling it makes no 
-difference. I still get the "irq 19: nobody cared".
+
+-- 
+	Balbir
