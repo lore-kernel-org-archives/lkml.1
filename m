@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYLJQiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYLJQjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbYLJQiy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbYLJQi1
+	id S1757584AbYLJQjb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:39:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbYLJQjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:38:27 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:38280 "EHLO mgw2.diku.dk"
+	Wed, 10 Dec 2008 11:39:20 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:34082 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757373AbYLJQiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:38:24 -0500
-Date: Wed, 10 Dec 2008 17:38:21 +0100 (CET)
+	id S1755949AbYLJQjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 11:39:19 -0500
+Date: Wed, 10 Dec 2008 17:39:16 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dmitri.vorobiev@movial.fi, ben-linux@fluff.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 17/28] arch/arm: Drop return value from platform_driver remove
+To: dmitri.vorobiev@movial.fi, rmk@arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 18/28] arch/arm: Drop return value from platform_driver remove
  functions
-Message-ID: <Pine.LNX.4.64.0812101738000.21998@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0812101738220.21998@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -95,64 +94,107 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/arm/mach-s3c2410/h1940-bluetooth.c |    5 ++---
- arch/arm/plat-s3c24xx/pwm.c             |    6 ++----
- 2 files changed, 4 insertions(+), 7 deletions(-)
+ arch/arm/mach-omap1/mailbox.c         |    6 ++----
+ arch/arm/mach-omap2/mailbox.c         |    5 ++---
+ arch/arm/mach-sa1100/jornada720_ssp.c |    5 ++---
+ arch/arm/plat-omap/mcbsp.c            |    6 ++----
+ 4 files changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/arch/arm/plat-s3c24xx/pwm.c b/arch/arm/plat-s3c24xx/pwm.c
-index ec56b88..3fcda3f 100644
---- a/arch/arm/plat-s3c24xx/pwm.c
-+++ b/arch/arm/plat-s3c24xx/pwm.c
-@@ -361,15 +361,13 @@ static int s3c_pwm_probe(struct platform_device *pdev)
+diff --git a/arch/arm/plat-omap/mcbsp.c b/arch/arm/plat-omap/mcbsp.c
+index af33fc7..07455c5 100644
+--- a/arch/arm/plat-omap/mcbsp.c
++++ b/arch/arm/plat-omap/mcbsp.c
+@@ -935,7 +935,7 @@ exit:
  	return ret;
  }
  
--static int s3c_pwm_remove(struct platform_device *pdev)
-+static void s3c_pwm_remove(struct platform_device *pdev)
+-static int __devexit omap_mcbsp_remove(struct platform_device *pdev)
++static void __devexit omap_mcbsp_remove(struct platform_device *pdev)
  {
- 	struct pwm_device *pwm = platform_get_drvdata(pdev);
+ 	struct omap_mcbsp *mcbsp = platform_get_drvdata(pdev);
  
- 	clk_put(pwm->clk_div);
- 	clk_put(pwm->clk);
- 	kfree(pwm);
+@@ -955,13 +955,11 @@ static int __devexit omap_mcbsp_remove(struct platform_device *pdev)
+ 		mcbsp->free = 0;
+ 		mcbsp->dev = NULL;
+ 	}
 -
 -	return 0;
  }
  
- static struct platform_driver s3c_pwm_driver = {
-@@ -378,7 +376,7 @@ static struct platform_driver s3c_pwm_driver = {
- 		.owner	= THIS_MODULE,
+ static struct platform_driver omap_mcbsp_driver = {
+ 	.probe		= omap_mcbsp_probe,
+-	.remove		= __devexit_p(omap_mcbsp_remove),
++	.remove_new	= __devexit_p(omap_mcbsp_remove),
+ 	.driver		= {
+ 		.name	= "omap-mcbsp",
  	},
- 	.probe		= s3c_pwm_probe,
--	.remove		= __devexit_p(s3c_pwm_remove),
-+	.remove_new	= __devexit_p(s3c_pwm_remove),
+diff --git a/arch/arm/mach-sa1100/jornada720_ssp.c b/arch/arm/mach-sa1100/jornada720_ssp.c
+index 28cf369..8bad8fd 100644
+--- a/arch/arm/mach-sa1100/jornada720_ssp.c
++++ b/arch/arm/mach-sa1100/jornada720_ssp.c
+@@ -178,18 +178,17 @@ static int __init jornada_ssp_probe(struct platform_device *dev)
+ 	return 0;
  };
  
- static int __init pwm_init(void)
-diff --git a/arch/arm/mach-s3c2410/h1940-bluetooth.c b/arch/arm/mach-s3c2410/h1940-bluetooth.c
-index 5a6bc56..35560ce 100644
---- a/arch/arm/mach-s3c2410/h1940-bluetooth.c
-+++ b/arch/arm/mach-s3c2410/h1940-bluetooth.c
-@@ -106,12 +106,11 @@ static int __init h1940bt_probe(struct platform_device *pdev)
- 	return device_create_file(&pdev->dev, &dev_attr_enable);
+-static int jornada_ssp_remove(struct platform_device *dev)
++static void jornada_ssp_remove(struct platform_device *dev)
+ {
+ 	/* Note that this doesnt actually remove the driver, since theres nothing to remove
+ 	 * It just makes sure everything is turned off */
+ 	GPSR = GPIO_GPIO25;
+ 	ssp_exit();
+-	return 0;
+ };
+ 
+ struct platform_driver jornadassp_driver = {
+ 	.probe	= jornada_ssp_probe,
+-	.remove	= jornada_ssp_remove,
++	.remove_new = jornada_ssp_remove,
+ 	.driver	= {
+ 		.name	= "jornada_ssp",
+ 	},
+diff --git a/arch/arm/mach-omap1/mailbox.c b/arch/arm/mach-omap1/mailbox.c
+index 59abbf3..cfbf6ba 100644
+--- a/arch/arm/mach-omap1/mailbox.c
++++ b/arch/arm/mach-omap1/mailbox.c
+@@ -175,16 +175,14 @@ static int __init omap1_mbox_probe(struct platform_device *pdev)
+ 	return ret;
  }
  
--static int h1940bt_remove(struct platform_device *pdev)
-+static void h1940bt_remove(struct platform_device *pdev)
+-static int omap1_mbox_remove(struct platform_device *pdev)
++static void omap1_mbox_remove(struct platform_device *pdev)
  {
- #ifdef CONFIG_LEDS_H1940
- 	led_trigger_unregister_simple(bt_led_trigger);
- #endif
+ 	omap_mbox_unregister(&mbox_dsp_info);
+-
 -	return 0;
  }
  
- 
-@@ -120,7 +119,7 @@ static struct platform_driver h1940bt_driver = {
- 		.name	= DRV_NAME,
+ static struct platform_driver omap1_mbox_driver = {
+ 	.probe	= omap1_mbox_probe,
+-	.remove	= omap1_mbox_remove,
++	.remove_new = omap1_mbox_remove,
+ 	.driver	= {
+ 		.name	= "mailbox",
  	},
- 	.probe		= h1940bt_probe,
--	.remove		= h1940bt_remove,
-+	.remove_new	= h1940bt_remove,
- };
+diff --git a/arch/arm/mach-omap2/mailbox.c b/arch/arm/mach-omap2/mailbox.c
+index 32b7af3..4217222 100644
+--- a/arch/arm/mach-omap2/mailbox.c
++++ b/arch/arm/mach-omap2/mailbox.c
+@@ -293,15 +293,14 @@ static int __init omap2_mbox_probe(struct platform_device *pdev)
+ 	return ret;
+ }
  
+-static int omap2_mbox_remove(struct platform_device *pdev)
++static void omap2_mbox_remove(struct platform_device *pdev)
+ {
+ 	omap_mbox_unregister(&mbox_dsp_info);
+-	return 0;
+ }
  
+ static struct platform_driver omap2_mbox_driver = {
+ 	.probe = omap2_mbox_probe,
+-	.remove = omap2_mbox_remove,
++	.remove_new = omap2_mbox_remove,
+ 	.driver = {
+ 		.name = "mailbox",
+ 	},
