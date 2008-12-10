@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbYLJO46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYLJPBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220AbYLJO46 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 09:56:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbYLJO4u
+	id S1755166AbYLJPBi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 10:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYLJPB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 09:56:50 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:51407 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750949AbYLJO4t (ORCPT
+	Wed, 10 Dec 2008 10:01:29 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:37875 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750949AbYLJPB2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 09:56:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=r9NyBxRAEUPHvgOdQj2absqROMYh2u74reGNtwbEZOR51grO9Y6fNoEZGTB/vTHKIR
-         bCy/c1fYczdof6a79i8QhP50Dqxv7MyMWKYMee4cGRztuC6yFJeWnKwwcOmSf287gGS0
-         /9H84op0Q9lVAQFMjiUALLOk1/J2UvUM4kejM=
-Date: Wed, 10 Dec 2008 18:01:16 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Helight.Xu" <helight.xu@gmail.com>
-Cc: linux-kernel@vger.kernel.org, rmk+kernel@arm.linux.org.uk
-Subject: Re: [PATCH] fix some code style that line over 80 characters
-Message-ID: <20081210150116.GB21396@x200.localdomain>
-References: <20081210135143.GB4595@helight>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081210135143.GB4595@helight>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 10 Dec 2008 10:01:28 -0500
+Subject: Re: [PATCH] dynamic_printk: add line feed to printk
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jason Baron <jbaron@redhat.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <20081210144058.GA11842@localhost>
+References: <20081210073347.GA18737@localhost>
+	 <1228904326.19553.127.camel@violet.holtmann.net>
+	 <20081210144058.GA11842@localhost>
+Content-Type: text/plain
+Date: Wed, 10 Dec 2008 16:01:22 +0100
+Message-Id: <1228921282.19553.153.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 09:51:43PM +0800, Helight.Xu wrote:
-> -static inline struct s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
-> +static inline struct
-> +s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
+Hi,
 
-NAK!
+> > > Append '\n' to two printk messages.
+> > 
+> > I already sent a patch for that and Greg picked it up.
+> 
+> No I didn't find it in the usb-2.6 tree:
+
+I don't know in detail how Greg manages its trees, but here is the patch
+
+http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/driver-core.current/driver-core-add-newlines-to-debugging-enabled-disabled-messages.patch
+
+Regards
+
+Marcel
+
+
