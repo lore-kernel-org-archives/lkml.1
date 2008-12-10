@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbYLJGde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbYLJGfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755405AbYLJGde (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 01:33:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbYLJGd1
+	id S1755262AbYLJGfj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 01:35:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbYLJGfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 01:33:27 -0500
-Received: from rn-out-0910.google.com ([64.233.170.185]:20272 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753588AbYLJGd0 (ORCPT
+	Wed, 10 Dec 2008 01:35:30 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:44665 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbYLJGf3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 01:33:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=MrMaMzck2/FsGIbVVYW+aQMqN3JPnElt23nH0n0MZF80J09SwWY6qtkp95DM2VVQJL
-         k4JCHovmx9sqtjCDT4/dyIxXS9ynaPmj9f7vmPRdpnnwY4EQNyaIJW9mPYRcr8FQ2piY
-         OI7nwHQlUOwlDuuyItdH81tHK214OxPCPIm5M=
-Message-ID: <b9df5fa10812092228qe618ablaca61adc05f947ab@mail.gmail.com>
-Date: Wed, 10 Dec 2008 12:28:14 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH ] x86 : Fix compilation warning on paravirt-spinlocks.c
-Cc: "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20081208150942.GA22016@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Dec 2008 01:35:29 -0500
+Subject: [PATCH][RT] lock.h: fix spelling of contended
+From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Clark Williams <clark.williams@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Gregory Haskins <ghaskins@novell.com>, Darren Hart <dvhltc@us.ibm.com>
+In-Reply-To: <alpine.DEB.1.10.0812090946210.16798@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0812090946210.16798@gandalf.stny.rr.com>
+Content-Type: text/plain
+Organization: The Big Corporation
+Date: Tue, 09 Dec 2008 22:35:20 -0800
+Message-Id: <1228890920.9542.2.camel@dd>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b9df5fa10812080656l21385db3ob08fc4f9ad3f1f76@mail.gmail.com>
-	 <20081208150942.GA22016@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/8/08, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Rakib Mullick <rakib.mullick@gmail.com> wrote:
->
-> no - this just works around the compiler warning.
->
->  Look at the real fix below i did some time ago. If you are into fixing
->  warnings you should try tip/master, that has a ton of warning fixes
->  already:
->
->   http://people.redhat.com/mingo/tip.git/README
->
->         Ingo
-Thanks, Ingo for explanation. In 'default_spin_lock_flags' function ,
-the 2nd argument unsigned long flags isn't used in the function. Is it
-necessary to keep it ?
+Maybe it'll save you a half second...
 
-Thanks,
-Rakib.
+Signed-off-by: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+
+diff --git a/include/linux/lock.h b/include/linux/lock.h
+index e0d10d6..785bf7d 100644
+--- a/include/linux/lock.h
++++ b/include/linux/lock.h
+@@ -11,7 +11,7 @@
+ #define DEFINE_LOCK(l)				DEFINE_SPINLOCK(l)
+ #define lock_init(l)				spin_lock_init(l)
+ #define lock_is_locked(l)			spin_is_locked(l)
+-#define lock_is_contended(l)			spin_is_conteted(l)
++#define lock_is_contended(l)			spin_is_contended(l)
+ #define lock_can_lock(l)			spin_can_lock(l)
+ #define assert_lock_locked(l)			assert_spin_locked(l)
+ 
+
+
