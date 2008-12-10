@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbYLJRK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbYLJRO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbYLJRK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 12:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYLJRKs
+	id S1756091AbYLJRO0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 12:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYLJROS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 12:10:48 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48653 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754441AbYLJRKr (ORCPT
+	Wed, 10 Dec 2008 12:14:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41584 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753567AbYLJROR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 12:10:47 -0500
-To: Rob Fowler <rjf@renci.org>
-Cc: eranian@gmail.com, linux-arch@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, Peter Anvin <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
-       Arjan van de Veen <arjan@infradead.org>
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081204225345.654705757@linutronix.de>
-	<7c86c4470812051836t37e86565w3b92fd06fc905430@mail.gmail.com>
-	<493FEDE9.5080209@renci.org>
-Date: Wed, 10 Dec 2008 18:11:06 +0100
-In-Reply-To: <493FEDE9.5080209@renci.org> (Rob Fowler's message of "Wed, 10 Dec 2008 11:27:21 -0500")
-Message-ID: <87d4g0c5w5.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Wed, 10 Dec 2008 12:14:17 -0500
+Date: Wed, 10 Dec 2008 09:13:30 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: Frans Pop <elendil@planet.nl>, Ingo Molnar <mingo@elte.hu>,
+       lenb@kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Greg KH <greg@kroah.com>, jbarnes@virtuousgeek.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: "APIC error on CPU1: 00(40)" during resume (was: Regression from
+ 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500)
+In-Reply-To: <20081210165252.GA13041@srcf.ucam.org>
+Message-ID: <alpine.LFD.2.00.0812100859520.3340@localhost.localdomain>
+References: <200812020320.31876.rjw@sisk.pl> <200812101506.45691.elendil@planet.nl> <alpine.LFD.2.00.0812100740390.3340@localhost.localdomain> <200812101705.18899.elendil@planet.nl> <alpine.LFD.2.00.0812100819570.3340@localhost.localdomain>
+ <20081210165252.GA13041@srcf.ucam.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Fowler <rjf@renci.org> writes:
->
-> -- Can it supplant or support oprofile by supporting the tools (Code Analyst, etc) that
->     depend on it?
 
-There's no need to supplant/support oprofile really because at least
-short term oprofile will not go away.
 
--Andi
+On Wed, 10 Dec 2008, Matthew Garrett wrote:
 
--- 
-ak@linux.intel.com
+> On Wed, Dec 10, 2008 at 08:26:37AM -0800, Linus Torvalds wrote:
+> 
+> > So it looks like we don't reprogram the APIC -at-all- on secondary CPU's.
+> > 
+> > What am I missing?
+> 
+> We unplug all CPUs except the boot one at suspend time. Does the APIC 
+> get reprogrammed when they're replugged on resume?
+
+Ahh, indeed. That ends up doing setup_local_APIC() in smp_callin().
+
+I wonder if we should do that from apic_resume() too - instead of saving 
+any state we could probably just re-initialize it.
+
+The setup_local_APIC() function also seems to be a lot more careful than 
+"resume_apic()" is about ordering (well, at least it has _comments_ on the 
+ordering), and it does things like ack'ing all pending irq's.
+
+Hmm.
+
+			Linus
