@@ -1,53 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbYLJU3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYLJUgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbYLJU3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 15:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYLJU3e
+	id S1755961AbYLJUgX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 15:36:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbYLJUgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 15:29:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51323 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754387AbYLJU3c (ORCPT
+	Wed, 10 Dec 2008 15:36:13 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:40659 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752993AbYLJUgM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 15:29:32 -0500
-Date: Wed, 10 Dec 2008 12:29:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: linux-kernel@vger.kernel.org, fbuihuu@gmail.com, netdev@vger.kernel.org,
-       linux-ia64@vger.kernel.org
-Subject: Re: sshd segmentation fault on ia64 on 28-rc7-mmotm-081203 -
- bisected
-Message-Id: <20081210122928.2bf923ce.akpm@linux-foundation.org>
-In-Reply-To: <1228940487.6139.68.camel@lts-notebook>
-References: <1228322600.6693.61.camel@lts-notebook>
-	<1228940487.6139.68.camel@lts-notebook>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 10 Dec 2008 15:36:12 -0500
+Date: Wed, 10 Dec 2008 21:37:40 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: rostedt@goodmis.org, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu
+Subject: Re: Better way to force a rebuild
+Message-ID: <20081210203740.GA16674@uranus.ravnborg.org>
+References: <alpine.DEB.1.10.0812101443550.11805@gandalf.stny.rr.com> <20081210200242.GA15692@uranus.ravnborg.org> <20081210121048.6186eaf9.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081210121048.6186eaf9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Dec 2008 15:21:26 -0500
-Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+On Wed, Dec 10, 2008 at 12:10:48PM -0800, Andrew Morton wrote:
+> On Wed, 10 Dec 2008 21:02:42 +0100
+> Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > On Wed, Dec 10, 2008 at 02:48:35PM -0500, Steven Rostedt wrote:
+> > > 
+> > > Hi,
+> > > 
+> > > In include/linux/kernel.h I currently have the following lines at the 
+> > > bottom of the file:
+> > > 
+> > > /* Rebuild everything on CONFIG_FTRACE_MCOUNT_RECORD */
+> > > #ifdef CONFIG_FTRACE_MCOUNT_RECORD
+> > > # define REBUILD_DUE_TO_FTRACE_MCOUNT_RECORD
+> > > #endif
+> > > 
+> > > 
+> > > This is only there to force a rebuild of all files when 
+> > > CONFIG_FTRACE_MCOUNT_RECORD is modified. Since the modification of that 
+> > > config causes the build to act different, we need to rebuild all C 
+> > > objects. I added the #ifdef in kernel.h as a hack to force the rebuild by 
+> > > the config dependencies used in kbuild.
+> > > 
+> > > My question is, is there a better way to force a full rebuild on a 
+> > > modification of a config?
+> > 
+> > Why is that hack required in the first place?
+> > We rebuild if:
+> > 1- target file is missing (not the case here)
+> > 2- any prerequisite files are newer than target (not the case here)
+> > 3- any CONFIG_* options used by any prerequisite has changed (not the case here)
+> >   [It is due to your hack]
+> > 4- gcc changed (not the case here)
+> > 5- options are added/deleted to gcc (this should be the case for relevant files)
+> > 
+> 
+> But damn me it's hard to work out where and how this is implemented :(
 
-> On Wed, 2008-12-03 at 11:43 -0500, Lee Schermerhorn wrote:
-> > I couldn't find anything on the list about this.
-> > 
-> > I've built and booted 28-rc7-mmotm-081203 on both x86_64 and ia64.  I
-> > can ssh into the x86_64 platform fine.  On the ia64, I'm seeing sshd
-> > [from RHEL5 distro] seg faulting.  [Same sshd worked on the
-> > 28-rc6-mmotm-081201 kernel.]
-> > 
-> > Has anyone else seen this?
-> > 
-> 
-> I finally got around to bisecting this--sshd fails with SEGV on ia64--on
-> mmotm-081208.  It appears to be caused by the patch duo:
-> 
-> do_mpage_readpage-remove-first_logical_block-parameter.patch
-> do_mpage_readpage-remove-first_logical_block-parameter-fix.patch
-> 
+The magic is to be found in Kbuild.include:
 
-Thanks, I dropped them.
+# Usage: $(call if_changed_rule,foo)
+# Will check if $(cmd_foo) or any of the prerequisites changed,
+# and if so will execute $(rule_foo).
+if_changed_rule = $(if $(strip $(any-prereq) $(arg-check) ),                 \
+        @set -e;                                                             \
+        $(rule_$(1)))
+
+
+This parts takes care of:
+$(any-prereq) takes care of 1 and 2 in the above list
+$(arg-check) takes care of 4 and 5 in the above list.
+
+And record_mcount is part of the following definition:
+define rule_cc_o_c
+        $(call echo-cmd,checksrc) $(cmd_checksrc)                         \
+        $(call echo-cmd,cc_o_c) $(cmd_cc_o_c);                            \
+        $(cmd_modversions)                                                \
+        $(cmd_record_mcount)                                              \
+        scripts/basic/fixdep $(depfile) $@ '$(call make-cmd,cc_o_c)' >    \
+                                                      $(dot-target).tmp;  \
+        rm -f $(depfile);                                                 \
+        mv -f $(dot-target).tmp $(dot-target).cmd
+endef
+
+Here we use fixdep to create a set of prerequisites - one for each
+CONFIG_ symbol that is found in the prerequisites. And fixdep reads the
+list of prerequisites in the $(dep-file) that is created by gcc in the
+cc_o_c command:
+
+cmd_cc_o_c = $(CC) $(c_flags) -c -o $(@D)/.tmp_$(@F) $<
+
+
+So after reading this you know almost as much about kbuild as I do.
+
+I will fix the record_mcount stuff somehow.
+But not tonight. Busy with work-work.
+
+	Sam
+
