@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbYLJTUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbYLJTYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557AbYLJTUa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 14:20:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbYLJTUV
+	id S1756466AbYLJTYw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 14:24:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYLJTYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 14:20:21 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:55605 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753943AbYLJTUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 14:20:21 -0500
-Subject: Re: [PATCH 12/15] kmemleak: Enable the building of the memory leak
-	detector
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081210182800.30323.49209.stgit@pc1117.cambridge.arm.com>
-References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
-	 <20081210182800.30323.49209.stgit@pc1117.cambridge.arm.com>
-Content-Type: text/plain
-Date: Wed, 10 Dec 2008 11:20:17 -0800
-Message-Id: <1228936817.9737.102.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Dec 2008 14:24:42 -0500
+Received: from vms173005pub.verizon.net ([206.46.173.5]:62669 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753216AbYLJTYl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 14:24:41 -0500
+Date: Wed, 10 Dec 2008 14:24:21 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: ACPI bugs - Dec-2008 status report
+X-X-Sender: lenb@localhost.localdomain
+To: linux-acpi@vger.kernel.org
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.2.00.0812101350260.3211@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-10 at 18:28 +0000, Catalin Marinas wrote:
-> +config DEBUG_MEMLEAK
-> +       bool "Kernel memory leak detector"
-> +       default n
-> +       depends on EXPERIMENTAL
-> +       select DEBUG_SLAB if SLAB
-> +       select SLUB_DEBUG if SLUB
-> +       select DEBUG_FS
-> +       select STACKTRACE
-> +       select FRAME_POINTER
-> +       select KALLSYMS
+I'd like to thank the bug submitters, testers, debuggers,
+and developers who worked together to significantly improve
+the quality of ACPI in Linux this year.  The numbers
+below are something you should all be proud of.
 
-So, not all architectures have STACKTRACE or FRAME_POINTER.  I think a
-few of these should at least be done with depends.
+ACPI bugs filed at bugzilla.kernel.org
+--------------------------------------
+1807 submitted total (1/day over 5 years)
+49 unresolved (was 115 in Dec-2007)
 
-Is this feature accessible if DEBUG_FS=n?  It seems to compile OK, but I
-wonder if it is useful.
+http://userweb.kernel.org/~lenb/20081210-bugzilla-history.gif
 
--- Dave
+Unresolved bugs per ACPI sub-category:
 
+http://userweb.kernel.org/~lenb/20081210-bugzilla-histogram.gif
+
+9 EC
+9 Power-Sleep-Wake
+6 Config-Interrupts
+5 Power-Processor
+4 Platform-drivers
+3 Power-Thermal
+3 Power-Video
+2 Config-Hotplug
+2 Power-off
+2 Other
+2 BIOS
+1 Config-Processors
+1 Config-Other
+0 Config-Tables
+0 ACPICA-Core
+0 Power-Battery
+0 Power-Fan
+0 Power-Other
+
+ACPICA bugs filed at http://acpica.org/bugzilla
+-----------------------------------------------
+24 unresolved (was 85 in Jan-2008)
+
+Suspend/Resume bugs at bugzilla.kernel.org
+------------------------------------------
+35 unresolved (102 filed, was 44 unresolved as recently as Sep-2008)
+
+thanks,
+-- 
+Len Brown, Intel Open Source Technology Center
