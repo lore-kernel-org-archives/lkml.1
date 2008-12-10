@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbYLJSZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbYLJSZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826AbYLJSZf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 13:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbYLJSZZ
+	id S1755510AbYLJSZt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 13:25:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbYLJSZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 13:25:25 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:49980 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382AbYLJSZY (ORCPT
+	Wed, 10 Dec 2008 13:25:29 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:16505 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753607AbYLJSZ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 13:25:24 -0500
-Subject: Re: [PATCHSETS #2] KVM device passthrough support with AMD IOMMU
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Avi Kivity <avi@redhat.com>, mingo@redhat.com, weidong.han@intel.com,
-       torvalds@linux-foundation.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-In-Reply-To: <20081210142525.GC12816@amd.com>
-References: <20081209141143.GW12816@amd.com> <493F8D90.40205@redhat.com>
-	 <20081210141131.GB12816@amd.com>
-	 <1228918928.21454.27.camel@macbook.infradead.org>
-	 <20081210142525.GC12816@amd.com>
-Content-Type: text/plain
-Date: Wed, 10 Dec 2008 18:24:35 +0000
-Message-Id: <1228933475.23842.70.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-1.fc10) 
+	Wed, 10 Dec 2008 13:25:28 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	content-type:content-transfer-encoding;
+	b=u0+uyY2ZOFJ9tN6Rk9Ictsy0DXEtTZ8rHOlJlRWIlpXGeqA85BxWlIioSxEzM+SoG
+	5BnlkRu7X9/YMKtfGdjyA==
+MIME-Version: 1.0
+In-Reply-To: <20081210132559.GF25467@balbir.in.ibm.com>
+References: <6599ad830812100240g5e549a5cqe29cbea736788865@mail.gmail.com>
+	 <29741.10.75.179.61.1228908581.squirrel@webmail-b.css.fujitsu.com>
+	 <20081210132559.GF25467@balbir.in.ibm.com>
+Date: Wed, 10 Dec 2008 10:25:20 -0800
+Message-ID: <6599ad830812101025s4a8eab08v214ccc95565c398e@mail.gmail.com>
+Subject: Re: [RFC][PATCH 1/6] memcg: fix pre_destory handler
+From: Paul Menage <menage@google.com>
+To: balbir@linux.vnet.ibm.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Paul Menage <menage@google.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-10 at 15:25 +0100, Joerg Roedel wrote:
-> I already did it on-top of your tree because Han Weidong's patches 1-17
-> were rebased to your tree and my IOMMU-API patches apply on-top of his
-> patches.
+On Wed, Dec 10, 2008 at 5:25 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+> Paul, I can't find those patches in -mm. I will try and dig them out
+> from my mbox. I agree, we need a hierarchy_mutex, cgroup_mutex is
+> becoming the next BKL.
 
-OK, thanks. Looks like you still need this though, as Mike Day pointed
-out:
+It never actually went into -mm. I'll sync it with the latest tree and
+try to send it out today.
 
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 97df47c..a5f6e28 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -204,7 +204,7 @@ static inline bool dma_pte_present(struct dma_pte *pte)
- }
- 
- /* devices under the same p2p bridge are owned in one domain */
--#define DOMAIN_FLAG_P2P_MULTIPLE_DEVICES (1 < 0)
-+#define DOMAIN_FLAG_P2P_MULTIPLE_DEVICES (1 << 0)
- 
- /* domain represents a virtual machine, more than one devices
-  * across iommus may be owned in one domain, e.g. kvm guest.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Paul
