@@ -1,111 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbYLJVBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756305AbYLJVBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbYLJVBK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 16:01:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbYLJVA4
+	id S1756305AbYLJVBj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 16:01:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbYLJVB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 16:00:56 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:58582 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754191AbYLJVA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 16:00:56 -0500
-Date: Wed, 10 Dec 2008 15:00:53 -0600 (CST)
-From: Brent Casavant <bcasavan@sgi.com>
-Reply-To: Brent Casavant <bcasavan@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       mdr@sgi.com, rw@novell.com, greg@kroah.com
-Subject: Re: [PATCH] ioc4: automatically load sgiioc4 subordinate module
-In-Reply-To: <20081208154155.1a4dd7ae.akpm@linux-foundation.org>
-Message-ID: <alpine.BSF.1.10.0812101458120.16859@pkunk.americas.sgi.com>
-References: <alpine.BSF.1.10.0812051601060.388@pkunk.americas.sgi.com> <20081208145507.8d03834e.akpm@linux-foundation.org> <1228779363.5099.41.camel@nga> <20081208154155.1a4dd7ae.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (BSF 962 2008-03-14)
-Organization: "Silicon Graphics, Inc."
+	Wed, 10 Dec 2008 16:01:29 -0500
+Received: from mail.inf.tu-dresden.de ([141.76.2.1]:37441 "EHLO
+	mail.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754847AbYLJVB2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 16:01:28 -0500
+X-Greylist: delayed 1862 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Dec 2008 16:01:28 EST
+Message-ID: <494026CD.5020102@inf.tu-dresden.de>
+Date: Wed, 10 Dec 2008 21:30:05 +0100
+From: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matthew Garrett <mjg@redhat.com>, Richard Purdie <rpurdie@rpsys.net>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] video: mbp_nvidia_bl: Fix brightness after suspend/hibernation
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Modify ioc4 to always load the sgiioc4 IDE module if the board carrying
-the IOC4 hardware actually implements the IDE interface (not all boards
-bring this functionality off the IOC4 chip).  A drive hosted on the
-IDE interface may contain the root filesystem, and sgiioc4 doesn't
-load automatically as ioc4 owns the PCI device ID, not sgiioc4.
+The mbp_nvidia_bl driver allows to change the display brightness on
+Apple MacBook Pro with Nvidia graphics adapters. However, after
+resuming from suspend the brightness is at its maximum instead of
+the last recently used value. This patch converts the driver into a
+platform_driver in order to register a resume hook to re-send brightness.
+In addition, resources will be allocated through platform_driver means
+instead of calling request_region/release_region directly.
 
-Signed-off-by: Michael Reed <mdr@sgi.com>
-Signed-off-by: Brent Casavant <bcasavan@sgi.com>
+A patch incorporating MacBook 5 MacBook Air 2, and MacBook Pro 5
+support is also available and will be sent next.
+
+Acked-by:      Henrik Rydberg <rydberg@euromail.se>
+Signed-off-by: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
 ---
-Version 2: Add flush_scheduled_work() in ioc4_exit(), and add
-explanatory comments.
+ drivers/video/backlight/mbp_nvidia_bl.c |   95 +++++++++++++++++++++++++------
+ 1 files changed, 77 insertions(+), 18 deletions(-)
 
- ioc4.c |   38 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+diff --git a/drivers/video/backlight/mbp_nvidia_bl.c b/drivers/video/backlight/mbp_nvidia_bl.c
+index 06964af..40a6b79 100644
+--- a/drivers/video/backlight/mbp_nvidia_bl.c
++++ b/drivers/video/backlight/mbp_nvidia_bl.c
+@@ -25,8 +25,6 @@
+ #include <linux/dmi.h>
+ #include <linux/io.h>
 
-diff --git a/drivers/misc/ioc4.c b/drivers/misc/ioc4.c
-index 6f76573..652629c 100644
---- a/drivers/misc/ioc4.c
-+++ b/drivers/misc/ioc4.c
-@@ -269,6 +269,16 @@ ioc4_variant(struct ioc4_driver_data *idd)
- 	return IOC4_VARIANT_PCI_RT;
- }
- 
-+static void
-+ioc4_load_modules(struct work_struct *work)
+-static struct backlight_device *mbp_backlight_device;
+-
+ static struct dmi_system_id __initdata mbp_device_table[] = {
+ 	{
+ 		.ident = "3,1",
+@@ -74,35 +72,96 @@ static struct backlight_ops mbp_ops = {
+ 	.update_status  = mbp_send_intensity,
+ };
+
++static int mbp_probe(struct platform_device *pdev)
 +{
-+	/* arg just has to be freed */
++	struct backlight_device *bd;
 +
-+	request_module("sgiioc4");
++	bd = backlight_device_register("mbp_backlight", NULL, NULL, &mbp_ops);
++	if (IS_ERR(bd))
++		return PTR_ERR(bd);
 +
-+	kfree(work);
++	bd->props.max_brightness = 15;
++	bd->props.brightness = mbp_get_intensity(bd);
++	backlight_update_status(bd);
++
++	platform_set_drvdata(pdev, bd);
++	return 0;
 +}
 +
- /* Adds a new instance of an IOC4 card */
- static int
- ioc4_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
-@@ -378,6 +388,32 @@ ioc4_probe(struct pci_dev *pdev, const struct pci_device_id *pci_id)
- 	}
- 	mutex_unlock(&ioc4_mutex);
- 
-+	/* Request sgiioc4 IDE driver on boards that bring that functionality
-+	 * off of IOC4.  The root filesystem may be hosted on a drive connected
-+	 * to IOC4, so we need to make sure the sgiioc4 driver is loaded as it
-+	 * won't be picked up by modprobes due to the ioc4 module owning the
-+	 * PCI device.
-+	 */
-+	if (idd->idd_variant != IOC4_VARIANT_PCI_RT) {
-+		struct work_struct *work;
-+		work = kzalloc(sizeof(struct work_struct), GFP_KERNEL);
-+		if (!work) {
-+			printk(KERN_WARNING
-+			       "%s: IOC4 unable to allocate memory for "
-+			       "load of sub-modules.\n",
-+			       __FUNCTION__);
-+		}
-+		else {
-+			/* Request the module from a work procedure as the
-+			 * modprobe goes out to a userland helper and that
-+			 * will hang if done directly from ioc4_probe().
-+			 */
-+			printk(KERN_INFO "IOC4 loading sgiioc4 submodule\n");
-+			INIT_WORK(work, ioc4_load_modules);
-+			schedule_work(work);
-+		}
-+	}
++static int mbp_remove(struct platform_device *pdev)
++{
++	struct backlight_device *bd = platform_get_drvdata(pdev);
 +
- 	return 0;
- 
- out_misc_region:
-@@ -462,6 +498,8 @@ ioc4_init(void)
- static void __devexit
- ioc4_exit(void)
++	backlight_device_unregister(bd);
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int mbp_resume(struct platform_device *pdev)
++{
++	/*
++	 * Nvidia GeForce 8600M GT in MacBookPro 3,1 and MacBookPro 4,1:
++	 *   1. Resume after suspend:
++	 *      SMI still reports the last recently written value, while
++	 *      the brightness is actually at its maximum.
++	 *   2. Resume after hibernation:
++	 *      SMI reports the actual (maximum) value, but the state
++	 *      in props.brightness might be different.
++	 * -> Re-send to fix (1), but do not re-read to fix (2).
++	 */
++	struct backlight_device *bd = platform_get_drvdata(pdev);
++
++	backlight_update_status(bd);
++	return 0;
++}
++#else
++#define mbp_resume NULL
++#endif
++
++static struct platform_driver mbp_driver = {
++	.probe          = mbp_probe,
++	.remove         = mbp_remove,
++	.resume         = mbp_resume,
++	.driver         = {
++		.owner  = THIS_MODULE,
++		.name   = "mbp_nvidia_bl"
++	},
++};
++
++static struct resource mbp_iores = {
++	.start          = 0xb2,
++	.end            = 0xb3,
++	.name           = "mbp_nvidia_bl",
++	.flags          = IORESOURCE_IO
++};
++
++static struct platform_device *mbp_device;
++
+ static int __init mbp_init(void)
  {
-+	/* Ensure ioc4_load_modules() has completed before exiting */
-+	flush_scheduled_work();
- 	pci_unregister_driver(&ioc4_driver);
++	int ret;
++
+ 	if (!dmi_check_system(mbp_device_table))
+ 		return -ENODEV;
+
+-	if (!request_region(0xb2, 2, "Macbook Pro backlight"))
+-		return -ENXIO;
++	ret = platform_driver_register(&mbp_driver);
++	if (ret)
++		return ret;
+
+-	mbp_backlight_device = backlight_device_register("mbp_backlight",
+-							 NULL, NULL,
+-							 &mbp_ops);
+-	if (IS_ERR(mbp_backlight_device)) {
+-		release_region(0xb2, 2);
+-		return PTR_ERR(mbp_backlight_device);
++	mbp_device = platform_device_register_simple("mbp_nvidia_bl", -1,
++						     &mbp_iores, 1);
++	if (!mbp_device) {
++		platform_driver_unregister(&mbp_driver);
++		return -ENOMEM;
+ 	}
+
+-	mbp_backlight_device->props.max_brightness = 15;
+-	mbp_backlight_device->props.brightness =
+-		mbp_get_intensity(mbp_backlight_device);
+-	backlight_update_status(mbp_backlight_device);
+-
+ 	return 0;
  }
- 
+
+ static void __exit mbp_exit(void)
+ {
+-	backlight_device_unregister(mbp_backlight_device);
+-
+-	release_region(0xb2, 2);
++	platform_device_unregister(mbp_device);
++	platform_driver_unregister(&mbp_driver);
+ }
+
+ module_init(mbp_init);
 -- 
-Brent Casavant                          All music is folk music.  I ain't
-bcasavan@sgi.com                        never heard a horse sing a song.
-Silicon Graphics, Inc.                    -- Louis Armstrong
+1.5.6.3
+
