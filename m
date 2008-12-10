@@ -1,78 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754935AbYLJNKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYLJNKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754935AbYLJNKc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 08:10:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYLJNKX
+	id S1755393AbYLJNKq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 08:10:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYLJNKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 08:10:23 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:56565 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751657AbYLJNKW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 08:10:22 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       Alexandru Romanescu <a_romanescu@yahoo.co.uk>,
-       Tejun Heo <tj@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 2/2] ATA: piix, cleanup dmi strings checking
-Date: Wed, 10 Dec 2008 14:07:22 +0100
-Message-Id: <1228914442-30805-2-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.0.5
-In-Reply-To: <1228914442-30805-1-git-send-email-jirislaby@gmail.com>
-References: <493EE339.1070806@garzik.org>
- <1228914442-30805-1-git-send-email-jirislaby@gmail.com>
+	Wed, 10 Dec 2008 08:10:25 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59744 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752640AbYLJNKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 08:10:24 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <5545.1228914404@redhat.com>
+References: <5545.1228914404@redhat.com> <1795455197.20081210132912@emcraft.com> <200812092044.40649.yur@emcraft.com> <Pine.LNX.4.64.0812100944080.25126@vixen.sonytel.be> <503391615.20081210130113@emcraft.com> <20081210101745.GG28946@ZenIV.linux.org.uk>
+Cc: dhowells@redhat.com, Yuri Tikhonov <yur@emcraft.com>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Wolfgang Denk <wd@denx.de>,
+       Detlev Zundel <dzu@denx.de>, linux-kernel@vger.kernel.org,
+       Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Ilya Yanok <yanok@emcraft.com>
+Subject: Re: Re[2]: [PATCH] fork_init: fix division by zero
+Date: Wed, 10 Dec 2008 13:09:38 +0000
+Message-ID: <5572.1228914578@redhat.com>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit
-ATA: piix, fix pointer deref on suspend
-fixed a possible oops in an ugly manner. Use newly introduced dmi_match()
-to make the code pretty again.
+David Howells <dhowells@redhat.com> wrote:
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Jeff Garzik <jgarzik@redhat.com>
-Cc: Alexandru Romanescu <a_romanescu@yahoo.co.uk>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
- drivers/ata/ata_piix.c |   21 +++++++--------------
- 1 files changed, 7 insertions(+), 14 deletions(-)
+> Ummm...  On powerpc, I believe rotate-left would be a division as it does the
+> bit-numbering and the bit direction the opposite way to more familiar CPUs
+> such as x86.
 
-diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
-index c11936e..5fdf167 100644
---- a/drivers/ata/ata_piix.c
-+++ b/drivers/ata/ata_piix.c
-@@ -1072,20 +1072,13 @@ static int piix_broken_suspend(void)
- 	 * matching is necessary because dmi_system_id.matches is
- 	 * limited to four entries.
- 	 */
--	if (dmi_get_system_info(DMI_SYS_VENDOR) &&
--	    dmi_get_system_info(DMI_PRODUCT_NAME) &&
--	    dmi_get_system_info(DMI_PRODUCT_VERSION) &&
--	    dmi_get_system_info(DMI_PRODUCT_SERIAL) &&
--	    dmi_get_system_info(DMI_BOARD_VENDOR) &&
--	    dmi_get_system_info(DMI_BOARD_NAME) &&
--	    dmi_get_system_info(DMI_BOARD_VERSION) &&
--	    !strcmp(dmi_get_system_info(DMI_SYS_VENDOR), "TOSHIBA") &&
--	    !strcmp(dmi_get_system_info(DMI_PRODUCT_NAME), "000000") &&
--	    !strcmp(dmi_get_system_info(DMI_PRODUCT_VERSION), "000000") &&
--	    !strcmp(dmi_get_system_info(DMI_PRODUCT_SERIAL), "000000") &&
--	    !strcmp(dmi_get_system_info(DMI_BOARD_VENDOR), "TOSHIBA") &&
--	    !strcmp(dmi_get_system_info(DMI_BOARD_NAME), "Portable PC") &&
--	    !strcmp(dmi_get_system_info(DMI_BOARD_VERSION), "Version A0"))
-+	if (dmi_match(DMI_SYS_VENDOR, "TOSHIBA") &&
-+	    dmi_match(DMI_PRODUCT_NAME, "000000") &&
-+	    dmi_match(DMI_PRODUCT_VERSION, "000000") &&
-+	    dmi_match(DMI_PRODUCT_SERIAL, "000000") &&
-+	    dmi_match(DMI_BOARD_VENDOR, "TOSHIBA") &&
-+	    dmi_match(DMI_BOARD_NAME, "Portable PC") &&
-+	    dmi_match(DMI_BOARD_VERSION, "Version A0"))
- 		return 1;
- 
- 	return 0;
--- 
-1.6.0.5
+Actually, I'm not sure that's true.  Sometimes powerpc makes my head hurt:-)
 
+David
