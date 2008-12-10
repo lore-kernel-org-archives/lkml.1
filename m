@@ -1,81 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbYLJT71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYLJUB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757600AbYLJT71 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 14:59:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbYLJT7C
+	id S1756889AbYLJUB0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 15:01:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbYLJUBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 14:59:02 -0500
-Received: from waste.org ([66.93.16.53]:41337 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757362AbYLJT7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 14:59:01 -0500
-Subject: Re: [PATCH] Do not pass the SLAB flags as GFP in slob
-	kmem_cache_create
-From: Matt Mackall <mpm@selenic.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <20081210193421.GA2215@localhost>
-References: <20081210173632.19697.67688.stgit@pc1117.cambridge.arm.com>
-	 <20081210193421.GA2215@localhost>
-Content-Type: text/plain
-Date: Wed, 10 Dec 2008 13:57:50 -0600
-Message-Id: <1228939070.3726.134.camel@calx>
+	Wed, 10 Dec 2008 15:01:17 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:57614 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753438AbYLJUBR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 15:01:17 -0500
+Date: Wed, 10 Dec 2008 21:02:42 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       zippel@linux-m68k.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Better way to force a rebuild
+Message-ID: <20081210200242.GA15692@uranus.ravnborg.org>
+References: <alpine.DEB.1.10.0812101443550.11805@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0812101443550.11805@gandalf.stny.rr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-10 at 22:34 +0300, Cyrill Gorcunov wrote:
-> [Catalin Marinas - Wed, Dec 10, 2008 at 05:36:33PM +0000]
-> | It looks like the kmem_cache_create() function in the slob allocator
-> | passes the SLAB flags as GFP flags to the slob_alloc() function. The
-> | patch changes this call to pass GFP_KERNEL as the other allocators seem
-> | to do.
-> | 
-> | Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> | Cc: Matt Mackall <mpm@selenic.com>
-> | ---
-> |  mm/slob.c |    2 +-
-> |  1 files changed, 1 insertions(+), 1 deletions(-)
-> | 
-> | diff --git a/mm/slob.c b/mm/slob.c
-> | index ff5a98d..dce9258 100644
-> | --- a/mm/slob.c
-> | +++ b/mm/slob.c
-> | @@ -538,7 +538,7 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
-> |  	struct kmem_cache *c;
-> |  
-> |  	c = slob_alloc(sizeof(struct kmem_cache),
-> | -		flags, ARCH_KMALLOC_MINALIGN, -1);
-> | +		GFP_KERNEL, ARCH_KMALLOC_MINALIGN, -1);
-> |  
-> |  	if (c) {
-> |  		c->name = name;
-> |
+On Wed, Dec 10, 2008 at 02:48:35PM -0500, Steven Rostedt wrote:
 > 
-> Hi Catalin,
+> Hi,
 > 
-> this would make the following line in slob_alloc
+> In include/linux/kernel.h I currently have the following lines at the 
+> bottom of the file:
 > 
-> 	...
-> 	if (unlikely((gfp & __GFP_ZERO) && b))
-> 		memset(b, 0, size);
->  	...
+> /* Rebuild everything on CONFIG_FTRACE_MCOUNT_RECORD */
+> #ifdef CONFIG_FTRACE_MCOUNT_RECORD
+> # define REBUILD_DUE_TO_FTRACE_MCOUNT_RECORD
+> #endif
 > 
-> useless. Not sure if it will be good :)
+> 
+> This is only there to force a rebuild of all files when 
+> CONFIG_FTRACE_MCOUNT_RECORD is modified. Since the modification of that 
+> config causes the build to act different, we need to rebuild all C 
+> objects. I added the #ifdef in kernel.h as a hack to force the rebuild by 
+> the config dependencies used in kbuild.
+> 
+> My question is, is there a better way to force a full rebuild on a 
+> modification of a config?
 
-I think that's fine. Notice that this is not the allocation of an
-object, but the allocation of a cache descriptor. We save the flags
-inside the descriptor so that when the user calls kmem_cache_alloc, we
-can pass them along to slob_alloc, where GFP_ZERO can take effect.
+Why is that hack required in the first place?
+We rebuild if:
+- target file is missing (not the case here)
+- any prerequisite files are newer than target (not the case here)
+- any CONFIG_* options used by any prerequisite has changed (not the case here)
+  [It is due to your hack]
+- gcc changed (not the case here)
+- options are added/deleted to gcc (this should be the case for relevant files)
 
-So, if we're comfortable with the idea that we can only create caches in
-'normal' contexts, then I think the patch is fine.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Looking a bit deeper into this.
+I see that we have in Makefile.build:
 
+define rule_cc_o_c
+        $(call echo-cmd,checksrc) $(cmd_checksrc)                         \
+        $(call echo-cmd,cc_o_c) $(cmd_cc_o_c);                            \
+        $(cmd_modversions)                                                \
+        $(cmd_record_mcount)   
+
+So you want everyting to be rebuild if the command above changes.
+That should be doable - and it is indeed a bug that we do not do so.
+The integration of record_mcount needs to be improved.
+
+
+	Sam
