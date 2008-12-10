@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbYLJKTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbYLJKVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755559AbYLJKTG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 05:19:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbYLJKSz
+	id S1756009AbYLJKVd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 05:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYLJKVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 05:18:55 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:33630 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754567AbYLJKSy (ORCPT
+	Wed, 10 Dec 2008 05:21:22 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:44033 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754720AbYLJKVV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 05:18:54 -0500
-Subject: Re: [PATCH] dynamic_printk: add line feed to printk
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jason Baron <jbaron@redhat.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-In-Reply-To: <20081210073347.GA18737@localhost>
-References: <20081210073347.GA18737@localhost>
-Content-Type: text/plain
-Date: Wed, 10 Dec 2008 11:18:46 +0100
-Message-Id: <1228904326.19553.127.camel@violet.holtmann.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Dec 2008 05:21:21 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH] PNPACPI: Enable Power Support
+Date: Wed, 10 Dec 2008 11:22:59 +0100
+User-Agent: KMail/1.9.9
+Cc: Witold Szczeponik <Witold.Szczeponik@gmx.net>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Adam Belay <abelay@mit.edu>, rjw@sisk.pl
+References: <493D8A1F.2090907@gmx.net> <20081210095315.GA20627@khazad-dum.debian.net>
+In-Reply-To: <20081210095315.GA20627@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200812101123.00055.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Am Mittwoch, 10. Dezember 2008 10:53:15 schrieb Henrique de Moraes Holschuh:
+> Although I do wonder WTF we don't do that on our USB UHCI/EHCI kernel
+> drivers, that ACPI needs to step in to fix it.  If it is not a wake
 
-> Append '\n' to two printk messages.
+EHCI/UHCI have no way to power down host controllers.
+It needs external means, namely ACPI.
 
-I already sent a patch for that and Greg picked it up.
+> device, why are we leaving it powered up?  It is bad enough we don't
+> have any sort of proper USB power control, but to leave the entire USB
+> subsystem powered up without reason?!
 
-> Also cleanup the code to reduce one level of indentation.
+We don't. If you unplug all devices, USB will power down as much as is
+compatible with detecting new devices.
 
-Please re-base that one against Greg's latest tree that includes my
-patch.
+> Vista not only powers down the USB HCIs and ports on STR, it also
+> powers down ports when you "safely remove the USB device", and seems
+> to leave the port powered down until you insert a device (or remove
+> the device already in there, whatever).
 
-Regards
+If you cut power to a port, you cannot detect a hotplugging. You can
+suspend it, which Linux does do.
 
-Marcel
+	Regards
+		Oliver
+
 
 
