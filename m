@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbYLJQnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbYLJQnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756748AbYLJQnP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:43:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758144AbYLJQmm
+	id S1758490AbYLJQnv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:43:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756494AbYLJQnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:42:42 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:55537 "EHLO mgw2.diku.dk"
+	Wed, 10 Dec 2008 11:43:24 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:55577 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758133AbYLJQmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:42:40 -0500
-Date: Wed, 10 Dec 2008 17:42:38 +0100 (CET)
+	id S1758254AbYLJQnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 11:43:22 -0500
+Date: Wed, 10 Dec 2008 17:43:19 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dmitri.vorobiev@movial.fi, juergh@gmail.com, lm-sensors@lm-sensors.org,
+To: dmitri.vorobiev@movial.fi, dsaxena@plexity.net,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 26/28] drivers/hwmon/vt1211.c: Drop return value from
- platform_driver remove functions
-Message-ID: <Pine.LNX.4.64.0812101742170.21998@ask.diku.dk>
+Subject: [PATCH 28/28] drivers/char/hw_random/omap-rng.c: Drop return value
+ from platform_driver remove functions
+Message-ID: <Pine.LNX.4.64.0812101742590.21998@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -94,37 +94,37 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/hwmon/vt1211.c |    6 ++----
+ drivers/char/hw_random/omap-rng.c |    6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/hwmon/vt1211.c b/drivers/hwmon/vt1211.c
-index 12b4359..106b4bc 100644
---- a/drivers/hwmon/vt1211.c
-+++ b/drivers/hwmon/vt1211.c
-@@ -1216,7 +1216,7 @@ EXIT:
- 	return err;
+diff --git a/drivers/char/hw_random/omap-rng.c b/drivers/char/hw_random/omap-rng.c
+index d4e7dca..104d005 100644
+--- a/drivers/char/hw_random/omap-rng.c
++++ b/drivers/char/hw_random/omap-rng.c
+@@ -155,7 +155,7 @@ err_region:
+ 	return ret;
  }
  
--static int __devexit vt1211_remove(struct platform_device *pdev)
-+static void __devexit vt1211_remove(struct platform_device *pdev)
+-static int __exit omap_rng_remove(struct platform_device *pdev)
++static void __exit omap_rng_remove(struct platform_device *pdev)
  {
- 	struct vt1211_data *data = platform_get_drvdata(pdev);
- 	struct resource *res;
-@@ -1228,8 +1228,6 @@ static int __devexit vt1211_remove(struct platform_device *pdev)
+ 	struct resource *mem = dev_get_drvdata(&pdev->dev);
  
- 	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
- 	release_region(res->start, res->end - res->start + 1);
+@@ -172,8 +172,6 @@ static int __exit omap_rng_remove(struct platform_device *pdev)
+ 
+ 	release_resource(mem);
+ 	rng_base = NULL;
 -
 -	return 0;
  }
  
- static struct platform_driver vt1211_driver = {
-@@ -1238,7 +1236,7 @@ static struct platform_driver vt1211_driver = {
- 		.name  = DRVNAME,
+ #ifdef CONFIG_PM
+@@ -206,7 +204,7 @@ static struct platform_driver omap_rng_driver = {
+ 		.owner		= THIS_MODULE,
  	},
- 	.probe  = vt1211_probe,
--	.remove = __devexit_p(vt1211_remove),
-+	.remove_new = __devexit_p(vt1211_remove),
+ 	.probe		= omap_rng_probe,
+-	.remove		= __exit_p(omap_rng_remove),
++	.remove_new	= __exit_p(omap_rng_remove),
+ 	.suspend	= omap_rng_suspend,
+ 	.resume		= omap_rng_resume
  };
- 
- static int __init vt1211_device_add(unsigned short address)
