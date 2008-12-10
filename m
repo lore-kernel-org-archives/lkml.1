@@ -1,124 +1,463 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbYLJN6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755426AbYLJN6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875AbYLJN6Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 08:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYLJN6D
+	id S1755426AbYLJN6h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 08:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYLJN6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 08:58:03 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:40235 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752431AbYLJN6A (ORCPT
+	Wed, 10 Dec 2008 08:58:22 -0500
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:62701 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753264AbYLJN6G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 08:58:00 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: mmotm 2008-12-09-15-24: memory corruption (bio slab)
-Date: Wed, 10 Dec 2008 14:57:21 +0100
-Message-Id: <1228917441-830-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.0.5
+	Wed, 10 Dec 2008 08:58:06 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsYEANlUP0lMROB9/2dsb2JhbACBbM5Bgwc
+Date: Wed, 10 Dec 2008 08:58:02 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Stephane Eranian <eranian@hpl.hp.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Performance counter in-kernel virtualization API
+Message-ID: <20081210135802.GA2297@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:46:40 up 23 days, 14:27,  4 users,  load average: 0.84, 1.21,
+	1.05
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello !
 
-on every bootup of this kernel, I get this (not sure if it is right after the moment when / gets mounted from md1):
+I finally found some code I've written 1.5 year ago which aimed at
+providing an in-kernel virtualization API which would be useful for
+tracers, and eventually a layer on top of it could be done to
+save/restore per-thread offset values so it makes sense for userspace
+too.
 
-wlan0 renamed to wlan1
-udev: renamed network interface wlan0 to wlan1
-swap_cgroup: uses 7848 bytes of vmalloc for pointer array space and 4018176 bytes to hold mem_cgroup pointers on swap
-swap_cgroup can be disabled by noswapaccount boot option.
-Adding 2008084k swap on /dev/sdb6.  Priority:-1 extents:1 across:2008084k 
-EXT3 FS on md1, internal journal
-bio: create slab <bio-1> at 1
-=============================================================================
-BUG bio-1: Redzone overwritten
------------------------------------------------------------------------------
+The state of these patches is : really really far from completeness.
+Actually, I think that at this stage, they can only be used as API and
+data structures ideas to represent some of the "features" inherent to
+performance counter handling (e.g. mapping control registers to physical
+counter registers...)
 
-INFO: 0xffff88007bacf068-0xffff88007bacf06f. First byte 0x68 instead of 0xcc
-INFO: Allocated in 0x6b6b6b6b6b6b6b6b age=10706345584330245030 cpu=1802201963 pid=1802201963
-INFO: Freed in 0x6b6b6b6b6b6b6b6b age=6527005130130424742 cpu=1802201963 pid=1802201963
-INFO: Slab 0xffffe20001b0dd48 objects=21 used=4 fp=0xffff88007bacf300 flags=0x40000000000000c3
-INFO: Object 0xffff88007bacf000 @offset=0 fp=0x0000000000001000
+Sadly I don't have much time to put on PMC, given tracing is my focus.
+Also, I did not go through any of the recent PMC code, so the approach I
+propose here might be completely wrong. The only thing I want people to
+keep in mind is that an in-kernel API for performance counters is good.
 
-  Object 0xffff88007bacf000:  fd 6f 57 04 00 00 00 00 00 00 00 00 00 00 00 00 375oW.............
-  Object 0xffff88007bacf010:  80 86 c2 7c 00 88 ff ff 19 00 00 00 00 00 00 00 ..302|..377377........
-  Object 0xffff88007bacf020:  00 00 00 00 00 00 00 00 01 00 00 00 01 00 00 00 ................
-  Object 0xffff88007bacf030:  00 00 00 00 00 10 00 00 00 10 00 00 04 00 00 00 ................
-  Object 0xffff88007bacf040:  ff ff ff ff 00 00 00 00 68 f0 ac 7b 00 88 ff ff 377377377377....h360254{..377377
-  Object 0xffff88007bacf050:  b0 ad 49 80 ff ff ff ff 58 99 b7 7a 00 88 ff ff 260255I.377377377377X.267z..377377
-  Object 0xffff88007bacf060:  10 98 49 80 ff ff ff ff                         ..I.377377377377        
- Redzone 0xffff88007bacf068:  68 1b b1 01 00 e2 ff ff                         h.261..342377377        
- Padding 0xffff88007bacf0a8:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
- Padding 0xffff88007bacf0b8:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
-Pid: 815, comm: udevd Tainted: G        W  2.6.28-rc7-mm1_64 #490
-Call Trace:
- <IRQ>  [<ffffffff802b6ed6>] print_trailer+0x106/0x160
- [<ffffffff802b7145>] check_bytes_and_report+0x125/0x180
- [<ffffffff802b83d6>] check_object+0x66/0x280
- [<ffffffff802b9e65>] __slab_free+0x225/0x370
- [<ffffffff8028f5d2>] ? mempool_free_slab+0x12/0x20
- [<ffffffff802bb7f2>] kmem_cache_free+0x72/0xa0
- [<ffffffff8028f5d2>] mempool_free_slab+0x12/0x20
- [<ffffffff8028f66a>] mempool_free+0x8a/0xa0
- [<ffffffff802ea03d>] bio_free+0x4d/0x60
- [<ffffffff8049981d>] dm_bio_destructor+0xd/0x10
- [<ffffffff802e848b>] bio_put+0x2b/0x40
- [<ffffffff8049ae39>] clone_endio+0x89/0xd0
- [<ffffffff802e851c>] bio_endio+0x1c/0x40
- [<ffffffff8034f42b>] req_bio_endio+0x8b/0xe0
- [<ffffffff8034f527>] __end_that_request_first+0xa7/0x2b0
- [<ffffffff8034f75c>] end_that_request_data+0x2c/0x70
- [<ffffffff8034f80d>] blk_end_io+0x2d/0xb0
- [<ffffffff8034f8be>] blk_end_request+0xe/0x10
- [<ffffffff80418edb>] scsi_io_completion+0x13b/0x490
- [<ffffffff8041250c>] scsi_finish_command+0xac/0xe0
- [<ffffffff80418d1a>] scsi_softirq_done+0xba/0x140
- [<ffffffff8043df0c>] ? ahci_interrupt+0x9c/0x5c0
- [<ffffffff80353a85>] blk_done_softirq+0x75/0x90
- [<ffffffff8025ab83>] ? sched_clock_cpu+0x143/0x190
- [<ffffffff80244052>] __do_softirq+0xc2/0x190
- [<ffffffff8020d6bc>] call_softirq+0x1c/0x30
- [<ffffffff8020ea15>] do_softirq+0x45/0x90
- [<ffffffff80243d9d>] irq_exit+0x8d/0xa0
- [<ffffffff8020ecc5>] do_IRQ+0xc5/0x110
- [<ffffffff8020cf93>] ret_from_intr+0x0/0xa
- <EOI> <3>FIX bio-1: Restoring 0xffff88007bacf068-0xffff88007bacf06f=0xcc
+And.. the code style is imperfect, it's not documented and it does not
+compile. ;) So feel free to ignore it. It's provided "as-is".
 
-=============================================================================
-BUG bio-1: Redzone overwritten
------------------------------------------------------------------------------
+Mathieu
 
-ffffffff8049981d is in dm_bio_destructor from drivers/md/dm.c.
 
-Inlined vecs doesn't fit to the allocated slab portion in my eyes, doesn't
-the patch below make sense?
+pmc-low-level-api
 
---
-
-Enlarge bio slabs to include inlined vecs
-
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- fs/bio.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ include/linux/pmc.h |   31 +++++++++++++++++++++++++++++++
+ kernel/Makefile     |    1 +
+ kernel/pmc.c        |   50 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 82 insertions(+)
 
-diff --git a/fs/bio.c b/fs/bio.c
-index 40b6488..cd1a439 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -68,7 +68,8 @@ static unsigned int bio_slab_nr, bio_slab_max;
+Index: linux-2.6-lttng/kernel/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/kernel/Makefile	2007-06-29 22:21:44.000000000 -0400
++++ linux-2.6-lttng/kernel/Makefile	2007-06-29 22:22:02.000000000 -0400
+@@ -60,6 +60,7 @@
+ obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
+ obj-$(CONFIG_IMMEDIATE) += immediate.o
+ obj-$(CONFIG_MARKERS) += marker.o
++obj-$(CONFIG_PMC) += pmc.o
  
- static struct kmem_cache *bio_find_or_create_slab(unsigned int extra_size)
- {
--	unsigned int sz = sizeof(struct bio) + extra_size;
-+	unsigned int sz = sizeof(struct bio) +
-+		sizeof(struct bio_vec) * BIO_INLINE_VECS + extra_size;
- 	struct kmem_cache *slab = NULL;
- 	struct bio_slab *bslab;
- 	unsigned int i, entry = -1;
--- 
-1.6.0.5
+ ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+ # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+Index: linux-2.6-lttng/include/linux/pmc.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/linux/pmc.h	2007-06-30 20:19:24.000000000 -0400
+@@ -0,0 +1,31 @@
++
++#include <linux/list.h>
++#include <linux/types.h>
++#include <asm/pmc.h>
++
++/*
++ * Two PMC modes : simply count or call a callback whenever the counter reach
++ * the "interval" value.
++ */
++enum pmc_mode { PMC_COUNT, PMC_SIGNAL };
++
++#define PMC_FLAG_DISABLED	0
++
++typedef void (*pmc_callback)(struct pmc_client *handle);
++
++struct pmc_client {
++				/* bitfield of usable logical PMCs */
++	unsigned long allowed[NR_LOGICAL_PMC/(8*sizeof(unsigned long))];
++	uint64_t interval;	/* Interval between signals (pmc increments) */
++	uint64_t count;		/* Current count updated by PMC (internal) */
++	uint64_t offset;	/* offset of count (internal) */
++	struct list_head node[NR_PHYSICAL_PMC];	/* List node (internal) */
++	pmc_callback *cb;	/* Callback to call when signal is ready */
++	void *private_data;	/* Private data, for the callback */
++	enum pmc_mode mode;	/* PMC mode : count or signal */
++	int prio;		/* Priority: highest have precedence */
++	int assigned;		/* Logical PMC assigned (internal) */
++	int control;		/* Control PMC assigned (internal) */
++};
++
++
+Index: linux-2.6-lttng/kernel/pmc.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/kernel/pmc.c	2007-06-30 11:42:04.000000000 -0400
+@@ -0,0 +1,50 @@
++/*
++ * Copyright (C) 2007 Mathieu Desnoyers
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++#include <linux/list.h>
++#include <linux/percpu.h>
++
++int pmc_register_client(struct pmc_client *client)
++{
++	return arch_pmc_register_client(client);
++}
++EXPORT_SYMBOL_GPL(pmc_register_client);
++
++void pmc_unregister_client(struct pmc_client *client)
++{
++	return arch_pmc_unregister_client(client);
++}
++EXPORT_SYMBOL_GPL(pmc_unregister_client);
++
++/*
++ * May fail.
++ */
++int pmc_read(struct pmc_client *client, uint64_t *count)
++{
++	return arch_pmc_read(client, count);
++}
++EXPORT_SYMBOL_GPL(pmc_read);
++
++/*
++ * May fail.
++ */
++int pmc_write(struct pmc_client *client, uint64_t count)
++{
++	return arch_pmc_write(client, count);
++}
++EXPORT_SYMBOL_GPL(pmc_write);
 
+
+
+pmc-low-level-api-i386.patch
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/i386/Kconfig.debug |    5 +
+ arch/i386/kernel/pmc.c  |  198 ++++++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-i386/pmc.h  |   50 ++++++++++++
+ 3 files changed, 253 insertions(+)
+
+Index: linux-2.6-lttng/arch/i386/Kconfig.debug
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/Kconfig.debug	2007-06-30 01:29:27.000000000 -0400
++++ linux-2.6-lttng/arch/i386/Kconfig.debug	2007-06-30 01:29:43.000000000 -0400
+@@ -84,5 +84,10 @@
+           would otherwise cause a system to silently reboot. Disabling this
+           option saves about 4k and might cause you much additional grey
+           hair.
++config PMC
++	default y
++	bool "Enable Performance Monitoring Counter Abstraction"
++	help
++	  This option enables abstracted PMCs.
+ 
+ endmenu
+Index: linux-2.6-lttng/include/asm-i386/pmc.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-i386/pmc.h	2007-06-30 13:00:36.000000000 -0400
+@@ -0,0 +1,50 @@
++
++#define PHYSICAL_PMC_W	0
++#define PHYSICAL_PMC_X	1
++#define PHYSICAL_PMC_Y	2
++#define PHYSICAL_PMC_Z	3
++#define NR_PHYSICAL_PMC	4
++
++#if 0
++#define C0	0
++#define C1	1
++#define C2	2
++#define C3	3
++#define C4	4
++#define C5	5
++#define C6	6
++
++#define _C0	(1<<C0)
++#define _C1	(1<<C1)
++#define _C2	(1<<C2)
++#define _C3	(1<<C3)
++#define _C4	(1<<C4)
++#define _C5	(1<<C5)
++#define _C6	(1<<C6)
++
++#define NR_CONTROL	7
++#endif //0
++
++/*
++ * Architecture dependant PMCs
++ */
++#define LOGICAL_ARCH_PMC_A	0
++#define LOGICAL_ARCH_PMC_B	1
++#define LOGICAL_ARCH_PMC_C	2
++#define NR_LOGICAL_ARCH_PMC	3
++
++#define _LOGICAL_ARCH_PMC_A	(1<<LOGICAL_ARCH_PMC_A)
++#define _LOGICAL_ARCH_PMC_B	(1<<LOGICAL_ARCH_PMC_B)
++#define _LOGICAL_ARCH_PMC_C	(1<<LOGICAL_ARCH_PMC_C)
++
++/*
++ * Architecture independent performance counters
++ */
++
++#define LOGICAL_PMC_ABC		\
++		(_LOGICAL_ARCH_PMC_A|_LOGICAL_ARCH_PMC_B|_LOGICAL_ARCH_PMC_C)
++#define LOGICAL_PMC_AB		\
++		(_LOGICAL_ARCH_PMC_A|_LOGICAL_ARCH_PMC_B)
++#define LOGICAL_PMC_BC		\
++		(_LOGICAL_ARCH_PMC_B|_LOGICAL_ARCH_PMC_C)
++
+Index: linux-2.6-lttng/arch/i386/kernel/pmc.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/arch/i386/kernel/pmc.c	2007-06-30 13:03:49.000000000 -0400
+@@ -0,0 +1,198 @@
++
++#include <linux/list.h>
++#include <linux/percpu.h>
++
++#include <linux/pmc.h>
++#include <linux/mutex.h>
++#include <asm/pmc.h>
++
++/*
++ * L A -> ( W & X & Y & Z ) | ( X & Z ) | ( W & Z ) | ( Y & Z )
++ *
++ * L B -> X & Y
++ *
++ * L C -> Y | Z
++ */
++
++static DECLARE_MUTEX(pmc_lock);
++static DEFINE_PER_CPU(struct list_head[NR_PHYSICAL_PMC], pmc_table);
++
++				/* P0    P1     P2     P3 */
++static char pmc_phys_mapping[NR_LOGICAL_PMC][NR_PHYSICAL_PMC] = {
++	/* LOGICAL_ARCH_PMC_A */	{ _C0|_C2, _C0|_C3, _C0|_C3, _C0|_C1|_C2|_C3, },
++	/* LOGICAL_ARCH_PMC_B */	{ 0, _C4, _C4, 0, },
++	/* LOGICAL_ARCH_PMC_C */	{ 0, 0, _C5, _C6, },
++};
++
++static int pmc_control_use[NR_CONTROL];
++
++static unsigned int pmc_phys_to_msr_mapping[NR_PHYSICAL_PMC] =
++{ 0xa, 0xb, 0xc, 0xd }
++
++static int do_start_pmc(int logical_pmc, int physical_pmc)
++{
++	unsigned int msrid;
++
++	msrid = pmc_phys_to_msr_mapping[physical_pmc];
++
++
++	switch (control_pmc) {
++		case C0:/* Set bit X pos 4 */
++			/* msb write */
++			break;
++		case C1:
++			break;
++		case C2:
++			break;
++		case C3:
++			break;
++		case C4:
++			break;
++		case C5:
++			break;
++		case C6:
++			break;
++	}
++}
++
++/*
++ * test if physical pmc is available or used by the same logical pmc.
++ */
++static int test_pmc_avail(struct list_head *head, int logical)
++{
++	struct pmc_client *client_iter;
++
++	list_for_each_entry_rcu(client_iter, head, node) {
++		if (client_iter.assigned != logical
++				&& client_iter.assigned >= 0)
++			return 0;
++	}
++	return 1;
++}
++
++static int start_pmc(int control_pmc, struct pmc_client *client)
++{
++	client.control = control_pmc;
++	if (pmc_control_use[control_pmc]++ == 0)
++		do_start_pmc(control_pmc);
++	return pmc_read(client, &client.offset);
++}
++
++static void stop_pmc(int control_pmc, struct pmc_client *client)
++{
++	if (--pmc_control_use[control_pmc] == 0)
++		do_stop_pmc(control_pmc);
++}
++
++//FIXME: add relocation of ressources if other ressources can be assigned to
++//different physical/logical IDs.
++//FIXME: report conflicting lower priority clients so they can be disabled
++//(assigned value would be set to -1).
++int arch_pmc_register_client(struct pmc_client *client)
++{
++	int l, p, c;
++	struct list_head *head;
++	int control_members, control_fail;
++	int ret = -EBUSY;
++
++	mutex_lock(&pmc_mutex);
++	for (l=0; l<NR_LOGICAL_PMC; l++) {
++		if (!test_bit(l, &client.allowed))
++			continue;
++		for (c=0; c<NR_CONTROL; c++) {
++			control_members = control_fail = 0;
++			for (p=0; p<NR_PHYSICAL_PMC; p++) {
++				head = &get_cpu_var(pmc_table[p]);
++				if (pmc_phys_mapping[l][p] & (1<<c)) {
++					if (test_pmc_avail(head, l))
++						control_members++;
++					else
++						control_fail++;
++				}
++				put_cpu_var(pmc_table[p]);
++			}
++			if (control_members > 0 && control_fail == 0) {
++				for (p=0; p<NR_PHYSICAL_PMC; p++) {
++					head = &get_cpu_var(pmc_table[p]);
++					list_add_rcu(&client.node[p], head);
++					put_cpu_var(pmc_table[p]);
++				}
++				start_pmc(l, p);
++				ret = 0;
++				goto end;
++			}
++		}
++	}
++end:
++	mutex_unlock(&pmc_mutex);
++	return ret;
++}
++
++int arch_pmc_unregister_client(struct pmc_client *client)
++{
++	int p;
++	struct pmc_client *client_iter;
++	struct list_head *head;
++	int ret = 0;
++
++	/* TODO Unregister IRQ handler. */
++	mutex_lock(&pmc_mutex);
++	//stop_pmc(client.control_pmc, );
++	for (p=0; p<NR_PHYSICAL_PMC; p++) {
++		head = &get_cpu_var(pmc_table[p]);
++		list_for_each_entry_safe_rcu(client_iter, head, node) {
++			if (client_iter == client) {
++				list_del_rcu(&client.node[p]);
++				break;
++			}
++
++		}
++		put_cpu_var(pmc_table[p]);
++	}
++	mutex_unlock(&pmc_mutex);
++	synchronize_rcu();	/* Wait before client can be freed */
++	return ret;
++}
++
++/*
++ * TODO : setup this IRQ handler
++ * Must be NMI reentrant.
++ */
++void pmc_signal(unsigned int pmc_physical_id)
++{
++	struct list_head *head;
++	struct pmc_client *client;
++	uint64_t count;
++
++	head = &get_cpu_var(pmc_table[pmc_physical_id]);
++	list_for_each_entry_rcu(client, head, node) {
++		if (client.assigned < 0)
++			continue;
++		ret = pmc_read(client, &count);
++		if (!ret) {
++			if (client.interval < count) {
++				if (client.cb)
++					client.cb(client);
++			}
++		}
++	}
++	put_cpu_var(pmc_table[pmc_physical_id]);
++}
++
++
++int arch_pmc_read(struct pmc_client *client, uint64_t *count)
++{
++	if (client.assigned < 0)
++		return -EBUSY;
++	switch (client.control) {
++
++
++	}
++	*count = client.count - client.offset;
++}
++
++int arch_pmc_write(struct pmc_client *client, uint64_t count)
++{
++
++
++}
+
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
