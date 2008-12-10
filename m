@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbYLJBqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbYLJBxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755474AbYLJBqZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 20:46:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYLJBqQ
+	id S1755298AbYLJBxW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 20:53:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYLJBxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 20:46:16 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:32736 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbYLJBqP (ORCPT
+	Tue, 9 Dec 2008 20:53:11 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:32935 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751657AbYLJBxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 20:46:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=B4Mr0lKl5X2/rcVs+xKAp4tD8Fm3lJm+z6cp/8TlTbZ82JhLAZFWmqXdeL5SdwUCAL
-         zf145mzOOKyEfCKK/cwZwnL7XwsArqVpLoNg+ojacvKa459nSVqeF2SFFgwUizWaBGOo
-         pU3DfF1E3puyOt9G8aZdrQHjUHCooK/iUAHo4=
-Message-ID: <21d7e9970812091746u5b6e8594s8567007ec1e26bac@mail.gmail.com>
-Date: Wed, 10 Dec 2008 11:46:13 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [patch 021/104] lib/idr.c: fix rcu related race with idr_find
-Cc: "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Domenico Andreoli" <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Manfred Spraul" <manfred@colorfullife.com>,
-       "Clement Calmels" <cboulte@gmail.com>,
-       "Nadia Derbey" <Nadia.Derbey@bull.net>,
-       "Pierre Peiffer" <peifferp@gmail.com>
-In-Reply-To: <21d7e9970812091643n7e3e4fe5g8e44030adfbababa@mail.gmail.com>
+	Tue, 9 Dec 2008 20:53:11 -0500
+Message-ID: <493F2009.6060300@zytor.com>
+Date: Tue, 09 Dec 2008 17:48:57 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Zachary Amsden <zach@vmware.com>, Huang Ying <ying.huang@intel.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, norman@thebacks.co.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Alok Kataria <alokkataria1@gmail.com>,
+       =?UTF-8?B?QnJ1bm8gUHLDqW1vbnQ=?= <"bruno .premont"@restena.lu>,
+       xl@xlsigned.net, dsd@gentoo.org
+Subject: Re: [PATCH] Fix VMI crash on boot in 2.6.27+ kernels
+References: <1228870222.8766.15.camel@bodhitayantram.eng.vmware.com> <86802c440812091715r775d514eh3acf9add9e24184e@mail.gmail.com>
+In-Reply-To: <86802c440812091715r775d514eh3acf9add9e24184e@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081203193901.715896543@mini.kroah.org>
-	 <20081203194725.GA8950@kroah.com> <20081203194906.GV8950@kroah.com>
-	 <21d7e9970812091340p5121e8f8l1e2411035331e8d0@mail.gmail.com>
-	 <alpine.LFD.2.00.0812091447230.3340@localhost.localdomain>
-	 <21d7e9970812091643n7e3e4fe5g8e44030adfbababa@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>
->> On Wed, 10 Dec 2008, Dave Airlie wrote:
->>>
->>> On Thu, Dec 4, 2008 at 5:49 AM, Greg KH <gregkh@suse.de> wrote:
->>> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
->>> >
->>> Revert.
->>>
->>> This caused problems in the F10 kernel with idr, the drm device alloc
->>> went all wierd,
->>> it might be a drm bug but changing this code triggers it and so it
->>> isn't really "stable"
->>
->> Well, maybe it should be reverted in mainlne too, then?
->
-> It appears idr_replace is broken at least in stable with this patch.
->
-> I'm trying to track down where the problem is (idr_replace doesn't look like
-> idr_find in a lot of places and I wonder if this has ever been tested.)
->
-(cc-trimmed).
+Yinghai Lu wrote:
+> 
+> VMI initialiation can relocate the fixmap, causing early_ioremap
+> to malfunction if it is initialized before the relocation.  The
+> ioremap area is low enough in virtual address space that no actual
+> collision occurs, however, because the pagetables for it were not
+> allocated under VMI mode, the pagetable updates are dropped by
+> the hypervisor as irrelevant, resulting in a crash on boot.
+> 
 
-Okay I'm not idr expert and maybe what the drm is doing is illegal but
-it never caused a problem up to now.
+I have mentioned in the past that I think the very concept of relocating
+the fixmap to be utterly braindead.  Instead, I believe we should locate
+it low in kernel space so it doesn't have to be relocated.  It's
+unfortunately a relatively large change.
 
-The drm grabs an idr minor number using a NULL pointer to reserve the
-number, it then uses idr_replace later
-to stick a pointer into the reserved number. However this seems to be
-what is broken, I'm not sure if this is a legal
-use of idrs but has worked like that for a long time now.
-
-I can fix the drm to workaround this, and allocate my pointers before
-I try to get a minor number, but I'd like to know
-if my usage is illegal over just overlooked.
+	-hpa
