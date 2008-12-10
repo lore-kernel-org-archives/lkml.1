@@ -1,126 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbYLJAPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755005AbYLJAYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220AbYLJAPa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 19:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYLJAPV
+	id S1755005AbYLJAYl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 19:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYLJAYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 19:15:21 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40120 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751546AbYLJAPU (ORCPT
+	Tue, 9 Dec 2008 19:24:32 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:51120 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751567AbYLJAYb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 19:15:20 -0500
-Date: Tue, 9 Dec 2008 16:15:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, adobriyan@gmail.com, greg@kroah.com
-Subject: Re: linux-next: Tree for December 9
-Message-Id: <20081209161511.15fe8cdb.akpm@linux-foundation.org>
-In-Reply-To: <ac3eb2510812091606k5615135fn87d35aaa16834ea8@mail.gmail.com>
-References: <20081209185237.8bb715d7.sfr@canb.auug.org.au>
-	<20081209153418.4628723d.akpm@linux-foundation.org>
-	<ac3eb2510812091606k5615135fn87d35aaa16834ea8@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 9 Dec 2008 19:24:31 -0500
+Subject: Re: [Patch] Fix sys_time to handle intra-tick correction
+From: john stultz <johnstul@us.ibm.com>
+To: Vinay Sridhar <vinay@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1228823938.11639.7.camel@localhost.localdomain>
+References: <1228823938.11639.7.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 09 Dec 2008 16:24:27 -0800
+Message-Id: <1228868667.6758.176.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Dec 2008 01:06:47 +0100
-"Kay Sievers" <kay.sievers@vrfy.org> wrote:
-
-> On Wed, Dec 10, 2008 at 00:34, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Tue, 9 Dec 2008 18:52:37 +1100
-> > Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> >> I have created today's linux-next tree at
-> >> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> >
-> > udevd is sitting there chewing up 100% of a CPU all the time.
-> >
-> > The machine is x86_64, running FC6.  It still happens with
-> > CONFIG_SELINUX=n.
-> >
-> > config:                 http://userweb.kernel.org/~akpm/config-akpm2.txt
-> > dmesg:                  http://userweb.kernel.org/~akpm/dmesg-akpm2.txt
-> > strace of udevd:        http://userweb.kernel.org/~akpm/strace.out.txt
-> >
-> > excerpt:
-> >
-> > close(9)                                = 0
-> > open("/proc/21707/stat", O_RDONLY)      = 9
-> > read(9, "21707 (hald-addon-stor) S 21033 "..., 255) = 240
-> > close(9)                                = 0
-> > open("/proc/22340/stat", O_RDONLY)      = 9
-> > read(9, "22340 (smartd) S 1 22339 22339 0"..., 255) = 245
-> > close(9)                                = 0
+On Tue, 2008-12-09 at 17:28 +0530, Vinay Sridhar wrote:
+> Hi All,
 > 
-> Maybe an event loop, caused by something.
+> This fix changes sys_time to use do_gettimeofday instead of get_seconds.
+> Running the stime01 test from LTP triggers this error. Calling sys_stime
+> and then calling sys_time causes this. "do_settimeofday" subtracts the
+> nsec offset from the nsec value(0 in this case) passed to it.
+> Subsequently, "set_normalized_timespec" modifies sec and nsec
+> accordingly. This compensation is handled in the do_gettimeofday path.
+> However, sys_time does not handle this case and reports an incorrect
+> seconds value.
 > 
-> Are you still able to run:
->   udevmonitor --kernel
-> and see if we get events, maybe in a loop, from the kernel?
 > 
+> signed-off by : Vinay Sridhar <vinay@linux.vnet.ibm.com>
+
+This does fix the symmetry by using the same interfaces on both sides,
+so it seems reasonable to me. However, since do_gettimeofday reads the
+clocksource hardware, this may have a slight performance impact to
+time() users.
+
+I know privately I said this patch looked fine earlier, so sorry for the
+mixed messages, but I really think we should be able to use
+get_seconds() without this problem.
+
+Looking more carefully at the code in do_settimeofday(), we should
+accumulate the left over cycles, then we set the current time to the
+specified time and update the xtime_cache.
+
+So I'm not sure if we're really fixing the right issue here. Further,
+running on the x86_64 system, I don't see this issue crop up at all (for
+either 64 or 32 bit binaries). I think you mentioned privately that this
+was seen on i386, so maybe we need to dig just a bit deeper before going
+with this fix.
+
+And sorry again for running hot then cold on this patch. I just didn't
+look deeply enough at the issue the first time around. :(
+
+thanks
+-john
 
 
-akpm2:/home/akpm# udevmonitor --kernel
-unknown option
 
 
-(lol)
-
-akpm2:/home/akpm# udevmonitor         
-udevmonitor prints the received event from the kernel [UEVENT]
-and the event which udev sends out after rule processing [UDEV]
-
-UDEV  [1228867146.103334] add@/class/bdi/9:0
-UDEV  [1228867146.107566] remove@/block/md0
-UDEV  [1228867146.111969] remove@/class/bdi/9:0
-UEVENT[1228867146.119889] add@/block/md0
-UEVENT[1228867146.119964] add@/class/bdi/9:0
-UEVENT[1228867146.120162] remove@/class/bdi/9:0
-UEVENT[1228867146.120205] remove@/block/md0
-UDEV  [1228867146.122839] add@/block/md0
-UDEV  [1228867146.129125] add@/class/bdi/9:0
-UDEV  [1228867146.133459] remove@/block/md0
-UDEV  [1228867146.137813] remove@/class/bdi/9:0
-UEVENT[1228867146.145652] add@/block/md0
-UEVENT[1228867146.145709] add@/class/bdi/9:0
-UEVENT[1228867146.145895] remove@/class/bdi/9:0
-UEVENT[1228867146.145941] remove@/block/md0
-UDEV  [1228867146.148606] add@/block/md0
-UDEV  [1228867146.154832] add@/class/bdi/9:0
-UDEV  [1228867146.159299] remove@/block/md0
-UDEV  [1228867146.163750] remove@/class/bdi/9:0
-UEVENT[1228867146.171354] add@/block/md0
-UEVENT[1228867146.171391] add@/class/bdi/9:0
-UEVENT[1228867146.171546] remove@/class/bdi/9:0
-UEVENT[1228867146.171566] remove@/block/md0
-UDEV  [1228867146.174242] add@/block/md0
-UDEV  [1228867146.180730] add@/class/bdi/9:0
-UDEV  [1228867146.185137] remove@/block/md0
-UDEV  [1228867146.189435] remove@/class/bdi/9:0
-UEVENT[1228867146.197278] add@/block/md0
-UEVENT[1228867146.197330] add@/class/bdi/9:0
-UEVENT[1228867146.197503] remove@/class/bdi/9:0
-UEVENT[1228867146.197545] remove@/block/md0
-UDEV  [1228867146.200025] add@/block/md0
-UDEV  [1228867146.206571] add@/class/bdi/9:0
-UDEV  [1228867146.210940] remove@/block/md0
-UDEV  [1228867146.215359] remove@/class/bdi/9:0
-UEVENT[1228867146.223278] add@/block/md0
-UEVENT[1228867146.223336] add@/class/bdi/9:0
-UEVENT[1228867146.223524] remove@/class/bdi/9:0
-UEVENT[1228867146.223571] remove@/block/md0
-UDEV  [1228867146.226163] add@/block/md0
-UDEV  [1228867146.232415] add@/class/bdi/9:0
-UDEV  [1228867146.236739] remove@/block/md0
-UDEV  [1228867146.241042] remove@/class/bdi/9:0
-UEVENT[1228867146.248895] add@/block/md0
-UEVENT[1228867146.249012] add@/class/bdi/9:0
-UEVENT[1228867146.249306] remove@/class/bdi/9:0
-UEVENT[1228867146.249409] remove@/block/md0
+> --- time.c.orig	2008-12-04 06:30:12.000000000 -0600
+> +++ time.c	2008-12-04 06:31:25.000000000 -0600
+> @@ -61,7 +61,12 @@ EXPORT_SYMBOL(sys_tz);
+>   */
+>  asmlinkage long sys_time(time_t __user * tloc)
+>  {
+> -	time_t i = get_seconds();
+> +	struct timeval t;	
+> +	time_t i;
+> +
+> +	do_gettimeofday(&t);
+> +
+> +	i = t.tv_sec;
+> 
+>  	if (tloc) {
+>  		if (put_user(i,tloc))
+> 
+> 
 
