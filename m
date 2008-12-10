@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbYLJVpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbYLJVrK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756668AbYLJVpn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 16:45:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755968AbYLJVpH
+	id S1756559AbYLJVrK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 16:47:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbYLJVq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 16:45:07 -0500
-Received: from netgear.net.ru ([195.178.208.66]:32869 "EHLO tservice.net.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755656AbYLJVpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 16:45:04 -0500
-Date: Thu, 11 Dec 2008 00:45:00 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user space data
-Message-ID: <20081210214500.GA24212@ioremap.net>
-References: <494009D7.4020602@vlnb.net> <494012C4.7090304@vlnb.net>
+	Wed, 10 Dec 2008 16:46:56 -0500
+Received: from cpsmtpo-eml01.KPNXCHANGE.COM ([213.75.38.150]:21672 "EHLO
+	cpsmtpo-eml01.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753915AbYLJVq4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 16:46:56 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [patch] ohci1394: don't leave interrupts enabled during suspend/resume
+Date: Wed, 10 Dec 2008 22:46:51 +0100
+User-Agent: KMail/1.9.9
+Cc: Robert Hancock <hancockr@shaw.ca>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <200812061316.38460.elendil@planet.nl> <200812101424.42755.elendil@planet.nl> <49402CBD.9020706@s5r6.in-berlin.de>
+In-Reply-To: <49402CBD.9020706@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <494012C4.7090304@vlnb.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200812102246.52798.elendil@planet.nl>
+X-OriginalArrivalTime: 10 Dec 2008 21:46:53.0202 (UTC) FILETIME=[D079D720:01C95B10]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vladislav.
+On Wednesday 10 December 2008, Stefan Richter wrote:
+> Frans Pop wrote:
+> > Any suggestions how to try and trace if that's what's happening?
+>
+> Test after booting with the kernel parameter nomsi.
 
-On Wed, Dec 10, 2008 at 10:04:36PM +0300, Vladislav Bolkhovitin (vst@vlnb.net) wrote:
-> In the chosen approach new optional field void *net_priv was added to 
-> struct page. It is enclosed by
+With pci=nomsi I still get the same "irq 19: nobody cared".
 
-There is a huge no-no in networking land on increasing skb.
-Reason is simple every skb will carry potentially unneded data as long
-as given option is enabled, and most of the time it will.
-To break this barrier one has to have (I wanted to write ego, but then
-decided to replace it with mojo) so huge reason to do this, that it is
-almost impossible to have.
+The devices that normally get MSI now get assigned as follows:
+- pcieport-driver: IRQ 16 and 17
+- iwlagn: irq 17
+- e1000e: irq 22
 
-Something tells me that increasing page structure with 8 bytes because
-of zero-copy iscsi transfer is not that great idea, since basically every
-user out there will have it enabled in the distro config and will waste
-noticeble amount of ram.
+ohci1394 remains the only driver at irq 19.
 
-The same problem of not sending any kind of notification to the user
-when his pages are 'acked' by receiving some packet or freeing the data
-exists long ago and was tried to be fixed several times.
-
-The most applicable to your case maybe DST experience. DST is a block
-layer device and all its pages starting from quite recent kernels are
-not allowed to be slab ones (xfs was the last one who provided slab
-pages in the bios), so each page has two 'unused' pointers in lru list
-entry, which you may reuse. If scsi layer may have slab pages from some
-place (although this does not sound like a good idea, ->sendpage() will
-bug on on them anyway), this hack will not work, otherwise you only need
-to have net_page_get/put stuff in and do not mess with increasing page.
-And this was tested 3-4 kernel releases ago, so things may be changed.
-
-Another appropach is to increase skb's shared data (at the end of the
-skb->data), and this approach was not frowned upon too much either, but
-it requires to mess with skb->destructor, which may not be appropriate
-in some cases. If iscsi does not use sockets (it does iirc), things are
-much simpler.
-
-Hope this helps.
-
--- 
-	Evgeniy Polyakov
+Except for the changes due to the nomsi option I see no significant 
+changes in dmesg for boot plus one suspend/resume cycle.
