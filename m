@@ -1,47 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbYLJFJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751656AbYLJFKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755152AbYLJFJu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 00:09:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbYLJFJk
+	id S1751656AbYLJFKI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 00:10:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbYLJFJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 00:09:40 -0500
-Received: from ns2.suse.de ([195.135.220.15]:55153 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750750AbYLJFJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 00:09:40 -0500
-Date: Wed, 10 Dec 2008 06:09:38 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Rik van Riel <riel@redhat.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
-Message-ID: <20081210050938.GF8434@wotan.suse.de>
-References: <20081129195357.813D.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081208205842.53F8.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081208220016.53FB.KOSAKI.MOTOHIRO@jp.fujitsu.com> <493D82A6.9070104@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <493D82A6.9070104@redhat.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 10 Dec 2008 00:09:44 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:55411 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752118AbYLJFJn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 00:09:43 -0500
+Message-ID: <493F4EF4.4080205@cosmosbay.com>
+Date: Wed, 10 Dec 2008 06:09:08 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: linux kernel <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, Mingming Cao <cmm@us.ibm.com>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] percpu_counter: Fix __percpu_counter_sum()
+References: <4936D287.6090206@cosmosbay.com>	 <4936EB04.8000609@cosmosbay.com>	 <20081206202233.3b74febc.akpm@linux-foundation.org>	 <493BCF60.1080409@cosmosbay.com>	 <20081207092854.f6bcbfae.akpm@linux-foundation.org>	 <493C0F40.7040304@cosmosbay.com>	 <20081207205250.dbb7fe4b.akpm@linux-foundation.org>	 <20081208221241.GA2501@mit.edu>	 <1228774836.16244.22.camel@lappy.programming.kicks-ass.net>	 <20081208230047.GC2501@mit.edu> <1228777500.12729.4.camel@twins>	 <493E2884.6010600@cosmosbay.com> <1228811653.6809.26.camel@twins>
+In-Reply-To: <1228811653.6809.26.camel@twins>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 10 Dec 2008 06:09:09 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 08, 2008 at 03:25:10PM -0500, Rik van Riel wrote:
-> KOSAKI Motohiro wrote:
-> 
-> >+	for (o = order; o < MAX_ORDER; o++) {
-> >+		if (z->free_area[o].nr_free)
-> >+			return 1;
-> 
-> Since page breakup and coalescing always manipulates .nr_free,
-> I wonder if it would make sense to pack the nr_free variables
-> in their own cache line(s), so we have fewer cache misses when
-> going through zone_watermark_ok() ?
+Now percpu_counter_sum() is 'fixed', what about "percpu_counter_add()" ?
 
-For order-0 allocations, they should not be touched at all. For
-higher order allocations in performance critical paths, we should
-try to fix those to use order-0 ;)
+void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
+{
+        s64 count;
+        s32 *pcount;
+        int cpu = get_cpu();
 
+        pcount = per_cpu_ptr(fbc->counters, cpu);
+        count = *pcount + amount;
+        if (count >= batch || count <= -batch) {
+                spin_lock(&fbc->lock);
+                fbc->count += count;
+                *pcount = 0;
+                spin_unlock(&fbc->lock);
+        } else {
+                *pcount = count;
+        }
+        put_cpu();
+}
+
+
+If I read this well, this is not IRQ safe.
+
+get_cpu() only disables preemption IMHO
+
+For nr_files, nr_dentry, nr_inodes, it should not be a problem.
+
+But for network counters (only in net-next-2.6) 
+and lib/proportions.c, we have a problem ?
+
+Using local_t instead of s32 for cpu 
+local counter here is possible, so that fast path doesnt have 
+to disable interrupts
+
+(use a local_t instead of s32 for fbc->counters)
+
+void __percpu_counter_add_irqsafe(struct percpu_counter *fbc, s64 amount, s32 batch)
+{
+        long count;
+        local_t *pcount;
+
+	/* following code only matters on 32bit arches */
+	if (sizeof(amount) != sizeof(local_t)) {
+		if (unlikely(amount >= batch || amount <= -batch))) {
+        	        spin_lock_irqsave(&fbc->lock, flags);
+                	fbc->count += amount;
+                	spin_unlock_irqrestore(&fbc->lock, flags);
+			return;
+		}
+	}
+        pcount = per_cpu_ptr(fbc->counters, get_cpu());
+        count = local_add_return((long)amount, pcount);
+        if (unlikely(count >= batch || count <= -batch)) {
+		unsigned long flags;
+
+		local_sub(count, pcount);
+                spin_lock_irqsave(&fbc->lock, flags);
+                fbc->count += count;
+                spin_unlock_irqrestore(&fbc->lock, flags);
+        }
+        put_cpu();
+}
