@@ -1,189 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbYLJBL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYLJBNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753687AbYLJBL3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 20:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbYLJBLU
+	id S1755352AbYLJBNI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 20:13:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbYLJBMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 20:11:20 -0500
-Received: from mx01.qsc.de ([213.148.129.14]:38172 "EHLO mx01.qsc.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753722AbYLJBLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 20:11:19 -0500
-X-Greylist: delayed 514 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Dec 2008 20:11:18 EST
-Date: Wed, 10 Dec 2008 02:02:19 +0100
-From: Andreas Bombe <aeb@debian.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] amiflop: get rid of sleep_on calls
-Message-ID: <20081210010219.GB5073@infernal.debian.net>
-Mail-Followup-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-	linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1228755578-26069-1-git-send-email-aeb@debian.org> <Pine.LNX.4.64.0812090927580.29640@anakin>
+	Tue, 9 Dec 2008 20:12:54 -0500
+Received: from mail-bw0-f13.google.com ([209.85.218.13]:53525 "EHLO
+	mail-bw0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753770AbYLJBMx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 20:12:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=wudOSMSm5vTDeSHtTYozmNyVVRhhAD+XQdLVK7fBLFglwLLLYxyl7t+XnzeIx9Juqj
+         BzgXcDMS492vl7Wcva7RUZLH5pGfEAIGvTkAB5ReEBt/ua9JzStxz44FdT+Zn/HEZe4e
+         g+hjRToIJUG0XhftcxklmrxB8FFTZXBiLzRdQ=
+Message-ID: <2c0942db0812091712l5efa2d2dia9ff2e3d92f81bbc@mail.gmail.com>
+Date: Tue, 9 Dec 2008 17:12:46 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Trond Myklebust" <trond.myklebust@fys.uio.no>, pkpatel.lists@gmail.com
+Subject: Re: Fwd: 2.6.26.3 kernel - progressive slowdown over NFS
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
+       Netdev <netdev@vger.kernel.org>
+In-Reply-To: <1228871206.30231.76.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812090927580.29640@anakin>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <f4e12c70809091747rd58165ahaa6594a35752c6ef@mail.gmail.com>
+	 <2c0942db0812091638o3d0fe68ek70744f6938949b25@mail.gmail.com>
+	 <1228871206.30231.76.camel@heimdal.trondhjem.org>
+X-Google-Sender-Auth: 8de2ef99fe7e59ed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apart from sleep_on() calls that could be easily converted to
-wait_event() and completion calls amiflop also used a flag in ms_delay()
-and ms_isr() as a custom mutex for ms_delay() without a need for
-explicit unlocking.  I converted that to a standard mutex.
+[ sigh, adding back original reporter. Oops.  -- rbl ]
 
-The replacement for the unconditional sleep_on() in fd_motor_on() is a
-complete_all() together with a INIT_COMPLETION() before the mod_timer()
-call.  It appears to me that fd_motor_on() might be called concurrently
-and fd_select() does not guarantee mutual exclusivity in the case the
-same drive gets selected again.
+Priyank Patel, please see Trond's response below and try out the
+suggested patch linked below.
 
-Signed-off-by: Andreas Bombe <aeb@debian.org>
----
-
-This version changes the struct semaphore used as mutex into a struct
-mutex.  Still only compile tested.
-
-I just tried out my Amiga and it appears to be in better shape than
-expected.  So I might get to actually test it when I find the time.  My
-Amiga has no Linux installation so I need to whip up a ramdisk or
-something else sufficient to test it.
-
- drivers/block/amiflop.c |   40 ++++++++++++++++------------------------
- 1 files changed, 16 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/block/amiflop.c b/drivers/block/amiflop.c
-index 4b1d4ac..8df436f 100644
---- a/drivers/block/amiflop.c
-+++ b/drivers/block/amiflop.c
-@@ -156,7 +156,7 @@ static volatile int fdc_busy = -1;
- static volatile int fdc_nested;
- static DECLARE_WAIT_QUEUE_HEAD(fdc_wait);
-  
--static DECLARE_WAIT_QUEUE_HEAD(motor_wait);
-+static DECLARE_COMPLETION(motor_on_completion);
- 
- static volatile int selected = -1;	/* currently selected drive */
- 
-@@ -184,8 +184,7 @@ static unsigned char mfmencode[16]={
- static unsigned char mfmdecode[128];
- 
- /* floppy internal millisecond timer stuff */
--static volatile int ms_busy = -1;
--static DECLARE_WAIT_QUEUE_HEAD(ms_wait);
-+static DECLARE_COMPLETION(ms_wait_completion);
- #define MS_TICKS ((amiga_eclock+50)/1000)
- 
- /*
-@@ -211,8 +210,7 @@ static int fd_device[4] = { 0, 0, 0, 0 };
- 
- static irqreturn_t ms_isr(int irq, void *dummy)
- {
--	ms_busy = -1;
--	wake_up(&ms_wait);
-+	complete(&ms_wait_completion);
- 	return IRQ_HANDLED;
- }
- 
-@@ -220,19 +218,17 @@ static irqreturn_t ms_isr(int irq, void *dummy)
-    A more generic routine would do a schedule a la timer.device */
- static void ms_delay(int ms)
- {
--	unsigned long flags;
- 	int ticks;
-+	static DEFINE_MUTEX(mutex);
-+
- 	if (ms > 0) {
--		local_irq_save(flags);
--		while (ms_busy == 0)
--			sleep_on(&ms_wait);
--		ms_busy = 0;
--		local_irq_restore(flags);
-+		mutex_lock(&mutex);
- 		ticks = MS_TICKS*ms-1;
- 		ciaa.tblo=ticks%256;
- 		ciaa.tbhi=ticks/256;
- 		ciaa.crb=0x19; /*count eclock, force load, one-shoot, start */
--		sleep_on(&ms_wait);
-+		wait_for_completion(&ms_wait_completion);
-+		mutex_unlock(&mutex);
- 	}
- }
- 
-@@ -254,8 +250,7 @@ static void get_fdc(int drive)
- 	printk("get_fdc: drive %d  fdc_busy %d  fdc_nested %d\n",drive,fdc_busy,fdc_nested);
- #endif
- 	local_irq_save(flags);
--	while (!try_fdc(drive))
--		sleep_on(&fdc_wait);
-+	wait_event(fdc_wait, try_fdc(drive));
- 	fdc_busy = drive;
- 	fdc_nested++;
- 	local_irq_restore(flags);
-@@ -330,7 +325,7 @@ static void fd_deselect (int drive)
- static void motor_on_callback(unsigned long nr)
- {
- 	if (!(ciaa.pra & DSKRDY) || --on_attempts == 0) {
--		wake_up (&motor_wait);
-+		complete_all(&motor_on_completion);
- 	} else {
- 		motor_on_timer.expires = jiffies + HZ/10;
- 		add_timer(&motor_on_timer);
-@@ -347,11 +342,12 @@ static int fd_motor_on(int nr)
- 		unit[nr].motor = 1;
- 		fd_select(nr);
- 
-+		INIT_COMPLETION(motor_on_completion);
- 		motor_on_timer.data = nr;
- 		mod_timer(&motor_on_timer, jiffies + HZ/2);
- 
- 		on_attempts = 10;
--		sleep_on (&motor_wait);
-+		wait_for_completion(&motor_on_completion);
- 		fd_deselect(nr);
- 	}
- 
-@@ -582,8 +578,7 @@ static void raw_read(int drive)
- {
- 	drive&=3;
- 	get_fdc(drive);
--	while (block_flag)
--		sleep_on(&wait_fd_block);
-+	wait_event(wait_fd_block, !block_flag);
- 	fd_select(drive);
- 	/* setup adkcon bits correctly */
- 	custom.adkcon = ADK_MSBSYNC;
-@@ -598,8 +593,7 @@ static void raw_read(int drive)
- 
- 	block_flag = 1;
- 
--	while (block_flag)
--		sleep_on (&wait_fd_block);
-+	wait_event(wait_fd_block, !block_flag);
- 
- 	custom.dsklen = 0;
- 	fd_deselect(drive);
-@@ -616,8 +610,7 @@ static int raw_write(int drive)
- 		rel_fdc();
- 		return 0;
- 	}
--	while (block_flag)
--		sleep_on(&wait_fd_block);
-+	wait_event(wait_fd_block, !block_flag);
- 	fd_select(drive);
- 	/* clear adkcon bits */
- 	custom.adkcon = ADK_PRECOMP1|ADK_PRECOMP0|ADK_WORDSYNC|ADK_MSBSYNC;
-@@ -1294,8 +1287,7 @@ static int non_int_flush_track (unsigned long nr)
- 			writepending = 0;
- 			return 0;
- 		}
--		while (block_flag == 2)
--			sleep_on (&wait_fd_block);
-+		wait_event(wait_fd_block, block_flag != 2);
- 	}
- 	else {
- 		local_irq_restore(flags);
--- 
-1.5.6.5
-
+On Tue, Dec 9, 2008 at 5:06 PM, Trond Myklebust
+<trond.myklebust@fys.uio.no> wrote:
+> On Tue, 2008-12-09 at 16:38 -0800, Ray Lee wrote:
+>> [ adding netdev, linux-nfs to cc: -- rbl ]
+>>
+>> Hi,
+>>
+>>
+>> We have a simple python program which keeps running a C loop to lstat
+>> NFS mounted directories.  We are seeing some weird behavior w.r.t. the
+>> run-time of this program on 2.6.26.3 kernel vs 2.6.24 kernel.
+>>
+>> The run-time of the following code increases over time on the 2.6.26.3
+>> kernel, whereas remains flat (as expected) on the 2.6.24 kernel.
+>> [See attached graphs - B1.jpg and B2.jpg]  Once the 2.6.26.3 machine
+>> gets into this state, we need to restart the box to get back to
+>> reasonable run-times.  Is this a known issue ?
+>
+> Could you try applying the following patch?
+>
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git&a=commitdiff&h=23918b03060f6e572168fdde1798a905679d2e06
+>
+> Trond
+>
+> PS: note that your 2.6.26 config file has _very_ different memory models
+> and kernel debugging options enabled compared to your 2.6.24 kernel.
+> That may also affect performance.
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
