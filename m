@@ -1,102 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbYLJRSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbYLJRVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756172AbYLJRSi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 12:18:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbYLJRS2
+	id S1756408AbYLJRVh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 12:21:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbYLJRV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 12:18:28 -0500
-Received: from mga11.intel.com ([192.55.52.93]:18024 "EHLO mga11.intel.com"
+	Wed, 10 Dec 2008 12:21:29 -0500
+Received: from mga03.intel.com ([143.182.124.21]:28395 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753567AbYLJRS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 12:18:27 -0500
+	id S1754916AbYLJRV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 12:21:28 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,748,1220252400"; 
-   d="scan'208";a="413244427"
-Subject: Re: iwlagn interrupt problem
-From: reinette chatre <reinette.chatre@intel.com>
-To: "Alexander E. Patrakov" <patrakov@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-In-Reply-To: <c072ca310812100710o58c38a27rba16ad2318a1cb95@mail.gmail.com>
-References: <c072ca310812100638k6c15473brb89632a9c175a028@mail.gmail.com>
-	 <c072ca310812100710o58c38a27rba16ad2318a1cb95@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 10 Dec 2008 09:19:08 -0800
-Message-Id: <1228929548.18730.21.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+   d="scan'208";a="88682945"
+From: "Graham, David" <david.graham@intel.com>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Jiri Slaby <jirislaby@gmail.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       David Miller <davem@davemloft.net>
+CC: "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Date: Wed, 10 Dec 2008 09:21:10 -0800
+Subject: RE: mmotm 2008-12-09-15-24: e1000e mutex contention
+Thread-Topic: mmotm 2008-12-09-15-24: e1000e mutex contention
+Thread-Index: AclayVzRRuSJcVBeTUeScPZ+h1lkUQAHVkJwAADQWEA=
+Message-ID: <13830B75AD5A2F42848F92269B11996F0461C06A@orsmsx509.amr.corp.intel.com>
+References: <493FC0C5.2070004@gmail.com>
+ <F169D4F5E1F1974DBFAFABF47F60C10A175A6379@orsmsx507.amr.corp.intel.com>
+In-Reply-To: <F169D4F5E1F1974DBFAFABF47F60C10A175A6379@orsmsx507.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id mBAHLidq010070
 
-On Wed, 2008-12-10 at 07:10 -0800, Alexander E. Patrakov wrote:
-> [linux-wireless: sorry for the duplicate, I didn't use the correct
-> address for LKML, as this is my first LKML post from work]
-> 
-> Hello. My kernel is 2.6.27.6, and at work, I sit in a place with
-> unreliable wireless connection. The problematic piece of dmesg looks
-> like this:
-> 
-> [17454.155855] wlan0: deauthenticated
-> [17456.509322] iwlagn 0000:0c:00.0: PCI INT A disabled
-> [17456.557701] iwlagn 0000:0c:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> [17456.557814] iwlagn 0000:0c:00.0: restoring config space at offset
-> 0x1 (was 0x100102, writing 0x100106)
-> [17456.756926] Registered led device: iwl-phy0:radio
-> [17456.756976] Registered led device: iwl-phy0:assoc
-> [17456.757028] Registered led device: iwl-phy0:RX
-> [17456.757065] Registered led device: iwl-phy0:TX
-> [17456.766141] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> [17460.329937] wlan0: authenticate with AP 00:19:5b:ba:53:b7
-> [17460.335391] wlan0: authenticated
-> [17460.335401] wlan0: associate with AP 00:19:5b:ba:53:b7
-> [17460.532088] wlan0: associate with AP 00:19:5b:ba:53:b7
-> [17460.534523] wlan0: RX AssocResp from 00:19:5b:ba:53:b7 (capab=0x431
-> status=0 aid=2)
-> [17460.534533] wlan0: associated
-> [17460.541523] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-> [17471.476059] wlan0: no IPv6 routers present
-> [17821.193753] wlan0: deauthenticated
-> [17823.550303] iwlagn 0000:0c:00.0: PCI INT A disabled
-> [17823.612978] iwlagn 0000:0c:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> [17823.613110] iwlagn 0000:0c:00.0: restoring config space at offset
-> 0x1 (was 0x100102, writing 0x100106)
-> [17823.812945] Registered led device: iwl-phy0:radio
-> [17823.812995] Registered led device: iwl-phy0:assoc
-> [17823.813048] Registered led device: iwl-phy0:RX
-> [17823.813085] Registered led device: iwl-phy0:TX
-> [17823.823450] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> [17827.380770] wlan0: authenticate with AP 00:19:5b:ba:53:b7
-> [17827.382603] wlan0: authenticated
-> [17827.382613] wlan0: associate with AP 00:19:5b:ba:53:b7
-> [17827.581037] wlan0: associate with AP 00:19:5b:ba:53:b7
-> [17827.583418] wlan0: RX AssocResp from 00:19:5b:ba:53:b7 (capab=0x431
-> status=0 aid=2)
-> [17827.583429] wlan0: associated
-> [17827.591080] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-> [17838.392089] wlan0: no IPv6 routers present
-> 
-> Prevois kernels panicked in this place, see description and photo at
-> http://patrakov.blogspot.com/2008/09/kernel-panic.html
-> 
-> The messages about "PCI INT A" are still a problem, because at this
-> time, the audio loops and the mouse is unresponsive (i.e., the system
-> locks up for a brief period of time, but eventually recovers). Here is
-> /proc/interrupts:
+Yes we've got a lot (about 150 on kernelmoops last time I looked), of these reports now, all warnings. They are different than the double-release of a mutex that was found & fixed Yesterday by Andrew Morton, as these are in-e1000e-driver warnings from a mutex_trylock(), and have not, as far as I know, been flagged by LOCKDEP. I am reviewing all the reports to see if the total set of warnings show that driver is at risk for a deadlock. If so, obviously we'll fix it. If not, we might just remove the trylock warning. 
 
-The messages you refer to are printed because a user space app
-(wpa_supplicant or network manager) brings the wireless interface down
-and up. Interrupts are disabled when interface is brought down and
-reenabled when interface is brought up.
+Dave
 
-The unresponsiveness is due to a bug that was fixed recently. The
-patches have been merged into wireless-testing repo and will be included
-in 2.6.29. If you want to try 
-the individual patches, please try:
-http://marc.info/?l=linux-wireless&m=122824886623698&w=2
-http://marc.info/?l=linux-wireless&m=122849275528102&w=2
+-----Original Message-----
+From: Brandeburg, Jesse 
+Sent: Wednesday, December 10, 2008 8:50 AM
+To: Jiri Slaby; Kirsher, Jeffrey T; David Miller
+Cc: Allan, Bruce W; Waskiewicz Jr, Peter P; Ronciak, John; e1000-devel@lists.sourceforge.net; Andrew Morton; Linux kernel mailing list; Graham, David
+Subject: RE: mmotm 2008-12-09-15-24: e1000e mutex contention
 
+Jiri Slaby wrote:
+> during bootup, I got ton of these:
+>
+> WARNING: at drivers/net/e1000e/ich8lan.c:413
+> e1000_acquire_swflag_ich8lan+0x43/0xf0()
+> Hardware name: To Be Filled By O.E.M.
+> e1000e mutex contention. Owned by pid -1
 
-Reinette
+I think these are probably due to akpm's patches yesterday.  I think 
+they've already been dropped.  The original issue still exists however, as 
+reported by Arjan (kerneloops) and others.
 
+We have Dave Graham here working on this, he is not done yet but he is 
+making progress.  We hope to have something to post soon.
+
+Jesse
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
