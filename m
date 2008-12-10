@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbYLJVug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbYLJWB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbYLJVug (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 16:50:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYLJVu2
+	id S1756369AbYLJWB2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 17:01:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbYLJWBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 16:50:28 -0500
-Received: from ozlabs.org ([203.10.76.45]:50426 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753915AbYLJVu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 16:50:27 -0500
+	Wed, 10 Dec 2008 17:01:17 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:56544 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755039AbYLJWBR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 17:01:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=ZLJ9aUsGLjqnyLxuNgVXMP308Gr5mSnXMbdrpMgJCFhxuLpmIY8HO7QtemhnM5oYdn
+         37uy5Q7Nf7QHExduQiMy3CQXh/y81znWR4rd6gK1NnMOLTGTgoh1EX4iqEYYPrU1GpP8
+         SfkGS4tgrdINGTbuWrhSWAk15Zj5iRV6YApe0=
+Message-ID: <49403C26.5050402@gmail.com>
+Date: Wed, 10 Dec 2008 23:01:10 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Hannes Eder <hannes@hanneseder.net>
+CC: Karsten Keil <kkeil@suse.de>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/9] mISDN: fix sparse warnings
+References: <493feab4.0aaa660a.7938.3213@mx.google.com>
+In-Reply-To: <493feab4.0aaa660a.7938.3213@mx.google.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Message-ID: <18752.14748.408940.386056@cargo.ozlabs.ibm.com>
-Date: Thu, 11 Dec 2008 08:50:20 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Yuri Tikhonov <yur@emcraft.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
-       linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-       linuxppc-dev@ozlabs.org,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Ilya Yanok <yanok@emcraft.com>
-Subject: Re: Re[2]: [PATCH] fork_init: fix division by zero
-In-Reply-To: <5545.1228914404@redhat.com>
-References: <1795455197.20081210132912@emcraft.com>
-	<200812092044.40649.yur@emcraft.com>
-	<Pine.LNX.4.64.0812100944080.25126@vixen.sonytel.be>
-	<503391615.20081210130113@emcraft.com>
-	<20081210101745.GG28946@ZenIV.linux.org.uk>
-	<5545.1228914404@redhat.com>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells writes:
+On 12/10/2008 04:13 PM, Hannes Eder wrote:
+> Should 'plx_lock' be declared in a header file?  Or is it really
+> neccessart to export it?
 
-> Ummm...  On powerpc, I believe rotate-left would be a division as it does the
-> bit-numbering and the bit direction the opposite way to more familiar CPUs
-> such as x86.
-
-No.  :)
-
-"Left" and "right" are relative to the way those of us humans in the
-Western European cultural tradition write numbers, which is
-big-endian.  So rotate-left always moves bits towards the more
-significant end of the word.
-
-Paul.
+As there is no other user, I vote for unexporting it.
