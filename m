@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbYLJU2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbYLJU3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755397AbYLJU2P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 15:28:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756507AbYLJU15
+	id S1756598AbYLJU3p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 15:29:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYLJU3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 15:27:57 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:52497 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754595AbYLJU14 (ORCPT
+	Wed, 10 Dec 2008 15:29:34 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51323 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754387AbYLJU3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 15:27:56 -0500
-X-Greylist: delayed 2360 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Dec 2008 15:27:56 EST
-Date: Wed, 10 Dec 2008 15:27:54 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       zippel@linux-m68k.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Better way to force a rebuild
-In-Reply-To: <alpine.DEB.1.10.0812101524230.11805@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0812101526350.11805@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0812101443550.11805@gandalf.stny.rr.com> <20081210200242.GA15692@uranus.ravnborg.org> <alpine.DEB.1.10.0812101524230.11805@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 10 Dec 2008 15:29:32 -0500
+Date: Wed, 10 Dec 2008 12:29:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: linux-kernel@vger.kernel.org, fbuihuu@gmail.com, netdev@vger.kernel.org,
+       linux-ia64@vger.kernel.org
+Subject: Re: sshd segmentation fault on ia64 on 28-rc7-mmotm-081203 -
+ bisected
+Message-Id: <20081210122928.2bf923ce.akpm@linux-foundation.org>
+In-Reply-To: <1228940487.6139.68.camel@lts-notebook>
+References: <1228322600.6693.61.camel@lts-notebook>
+	<1228940487.6139.68.camel@lts-notebook>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 10 Dec 2008 15:21:26 -0500
+Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
 
-On Wed, 10 Dec 2008, Steven Rostedt wrote:
-
+> On Wed, 2008-12-03 at 11:43 -0500, Lee Schermerhorn wrote:
+> > I couldn't find anything on the list about this.
 > > 
-> > 	Sam
+> > I've built and booted 28-rc7-mmotm-081203 on both x86_64 and ia64.  I
+> > can ssh into the x86_64 platform fine.  On the ia64, I'm seeing sshd
+> > [from RHEL5 distro] seg faulting.  [Same sshd worked on the
+> > 28-rc6-mmotm-081201 kernel.]
+> > 
+> > Has anyone else seen this?
 > > 
 > 
-> BTW, Sam, are you the new (or current) maintainer of kbuild/kconfig? If 
-> so, then we need to update MAINTAINERS.  I just notice that you reply to 
-> my kbuild questions more than anybody else (except for Andrew, but he 
-> doesn't count ;-)
+> I finally got around to bisecting this--sshd fails with SEGV on ia64--on
+> mmotm-081208.  It appears to be caused by the patch duo:
+> 
+> do_mpage_readpage-remove-first_logical_block-parameter.patch
+> do_mpage_readpage-remove-first_logical_block-parameter-fix.patch
+> 
 
-After writing this, I see...
-
-
-KCONFIG
-P:      Roman Zippel
-M:      zippel@linux-m68k.org
-L:      linux-kbuild@vger.kernel.org
-S:      Maintained
-
-[...]
-
-KERNEL BUILD (kbuild: Makefile, scripts/Makefile.*)
-P:      Sam Ravnborg
-M:      sam@ravnborg.org
-T:      git kernel.org:/pub/scm/linux/kernel/git/sam/kbuild-next.git
-T:      git kernel.org:/pub/scm/linux/kernel/git/sam/kbuild-fixes.git
-L:      linux-kbuild@vger.kernel.org
-S:      Maintained
-
-
-Bah, I need to make my vim search non-case-sensitive. My search for KBUILD 
-came up with nothing, and then I searched for KCONFIG.
-
--- Steve
-
-
+Thanks, I dropped them.
