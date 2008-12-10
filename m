@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbYLJEpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYLJEwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346AbYLJEpc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 23:45:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbYLJEo7
+	id S1755483AbYLJEwr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 23:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYLJEwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 23:44:59 -0500
-Received: from ozlabs.org ([203.10.76.45]:37626 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754255AbYLJEou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 23:44:50 -0500
+	Tue, 9 Dec 2008 23:52:37 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:58664 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751631AbYLJEwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Dec 2008 23:52:37 -0500
+Message-ID: <493F4A5B.6090009@cn.fujitsu.com>
+Date: Wed, 10 Dec 2008 12:49:31 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ftrace: support binary record
+References: <493F35F3.5020000@cn.fujitsu.com> <alpine.DEB.1.10.0812092307040.25755@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0812092307040.25755@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-ID: <18751.18735.539555.111549@drongo.ozlabs.ibm.com>
-Date: Wed, 10 Dec 2008 15:44:31 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, eranian@gmail.com,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>,
-       Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Subject: Re: [patch] Performance Counters for Linux, v2
-In-Reply-To: <87skoxc6qo.fsf@basil.nowhere.org>
-References: <20081208012211.GA23106@elte.hu>
-	<7c86c4470812082237ne58c814s7218cc663f3b49e9@mail.gmail.com>
-	<20081209134636.GA1926@elte.hu>
-	<18750.61143.101922.949701@cargo.ozlabs.ibm.com>
-	<87skoxc6qo.fsf@basil.nowhere.org>
-X-Mailer: VM 8.0.11 under Emacs 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen writes:
+Steven Rostedt wrote:
+> 
+> 
+> On Wed, 10 Dec 2008, Lai Jiangshan wrote:
+> 
+>> Binary record will save memory in trace buffer, and more events
+>> can be recorded in buffer.
+>>
+>> This patch add infrastructure for supporting binary record.
+>>
+>> This infrastructure records events by binary and shows events
+>> by human readable text.
+> 
+> Hmm, interesting. But could you show an example of its use. It is quite a 
+> lot of code, and looks a little complex.
+consider ftrace_struct_printk() as ftrace_printk(), but the
+first parameter is "struct ftrace_struct *fmt"
 
-> When you say counting you should also include "event ring buffers with
-> metadata", like PEBS on Intel x86. 
+new file: kernel/trace/trace_struct.c : this infrastructure's code
 
-I'm not familiar with PEBS.  Maybe it's something different again,
-neither sampling nor counting, but a third thing?
+lib/vsprintf.c : formator
+other files add ftrace_struct_printk()
 
-Paul.
+> 
+>> And add a API ftrace_struct_printk() using this infrastructure.
+>> (it's like ftrace_printk(), but it record the date by binary)
+>>
+
+
+example:
+...
+           <...>-3246  [000]  1243.166054: sys_read: sys_read by ftrace_printk, 3, asdfuuuuu
+           <...>-3246  [000]  1243.166057: sys_read: sys_read by ftrace_struct_printk, 3, asdfuuuuu
+           <...>-3246  [000]  1243.166490: sys_read: sys_read by ftrace_printk, 9, asdfuuuuu
+           <...>-3246  [000]  1243.166491: sys_read: sys_read by ftrace_struct_printk, 9, asdfuuuuu
+...
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 969a6d9..0d9fbed 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -17,7 +17,7 @@
+ #include <linux/pagemap.h>
+ #include <linux/splice.h>
+ #include "read_write.h"
+-
++#include <linux/ftrace.h>
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+ 
+@@ -356,12 +356,15 @@ static inline void file_pos_write(struct file *file, loff_t pos)
+ 	file->f_pos = pos;
+ }
+ 
++struct ftrace_struct test = {"ixxs", "sys_read by ftrace_struct_printk, %d, %s\n"};
+ asmlinkage ssize_t sys_read(unsigned int fd, char __user * buf, size_t count)
+ {
+ 	struct file *file;
+ 	ssize_t ret = -EBADF;
+ 	int fput_needed;
+ 
++	ftrace_printk("sys_read by ftrace_printk, %d, %s\n", fd, "asdfuuuuu");
++	ftrace_struct_printk(&test, fd, "asdfuuuuu");
+ 	file = fget_light(fd, &fput_needed);
+ 	if (file) {
+ 		loff_t pos = file_pos_read(file);
+
