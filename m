@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbYLJTNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbYLJTP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756559AbYLJTNT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 14:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYLJTNL
+	id S1753675AbYLJTP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 14:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYLJTPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 14:13:11 -0500
-Received: from kuber.nabble.com ([216.139.236.158]:57515 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753475AbYLJTNL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 14:13:11 -0500
-Message-ID: <20942054.post@talk.nabble.com>
-Date: Wed, 10 Dec 2008 11:13:09 -0800 (PST)
-From: Dennis Hardy <dhardy@sogetthis.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: CIFS regression in 2.6.27.8
-In-Reply-To: <20081209212611.25fcd053@tupile.poochiereds.net>
+	Wed, 10 Dec 2008 14:15:16 -0500
+Received: from gw.goop.org ([64.81.55.164]:34851 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753641AbYLJTPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 14:15:15 -0500
+Message-ID: <49401540.8030609@goop.org>
+Date: Wed, 10 Dec 2008 11:15:12 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb <linux-usb@vger.kernel.org>
+Subject: Re: Oops in UHCI when encountering "host controller process error"
+References: <Pine.LNX.4.44L0.0812101006540.2175-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0812101006540.2175-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Nabble-From: dhardy@sogetthis.com
-References: <20900699.post@talk.nabble.com> <84144f020812081128p6d1e2a55v69996a360e7f0e8f@mail.gmail.com> <200812082112.49468.rjw@sisk.pl> <20081209154932.0952fbf3@dhcp-100-2-144.bos.redhat.com> <20924383.post@talk.nabble.com> <20081209212611.25fcd053@tupile.poochiereds.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Stern wrote:
+> The entry point is uhci_urb_enqueue().  You can do whatever you like 
+> there, but bear in mind that it may be called in interrupt context.  
+> uhci_sprint_schedule() should be fine.
+>
+> However I don't really see the point.  If the DMA pool allocations are 
+> so badly messed up that the initial setup is wrong, why bother to 
+> search any further?
 
-> I could easily be wrong, but the problem you've described seems more
-> likely to be a server issue. 
+I was trying to use it as a way of gauging where the damage was coming from.
 
-Gentlemen, I am heading out to get an "L" (for loser) tattooed to my
-forehead.  MSFT pushed some updates for the Windows Server previously, and
-when we switched to 2.6.27.8 we rebooted everything, including the Windows
-Server, which activated the updates.  MSFT broke volume size reporting --
-even from other Windows machines!  We should have checked this before
-posting.
+But its moot now; Ian Campbell tracked it down to a missing TLB flush 
+which explained all the weird non-deterministic symptoms we were 
+seeing.  It all looks pretty good now.
 
-Please accept my deepest apologies for this -- Linux is, as always, working
-great.
-
-
--- 
-View this message in context: http://www.nabble.com/CIFS-regression-in-2.6.27.8-tp20900699p20942054.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
+    J
 
