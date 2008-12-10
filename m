@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYLJKZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbYLJK30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756108AbYLJKZw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 05:25:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbYLJKZo
+	id S1755875AbYLJK30 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 05:29:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbYLJK3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 05:25:44 -0500
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:42936 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751838AbYLJKZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 05:25:43 -0500
-Date: Wed, 10 Dec 2008 19:23:36 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: David Miller <davem@davemloft.net>, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       paulus@samba.org, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org,
-       eranian@googlemail.com, dada1@cosmosbay.com, robert.richter@amd.com,
-       arjan@infradead.org, hpa@zytor.com, rostedt@goodmis.org
-Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
-Message-ID: <20081210102335.GA30942@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Miller <davem@davemloft.net>, mingo@elte.hu,
-	a.p.zijlstra@chello.nl, paulus@samba.org, tglx@linutronix.de,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	akpm@linux-foundation.org, eranian@googlemail.com,
-	dada1@cosmosbay.com, robert.richter@amd.com, arjan@infradead.org,
-	hpa@zytor.com, rostedt@goodmis.org
-References: <20081205.002701.172921476.davem@davemloft.net> <20081205084233.GE2030@elte.hu> <87ej0mx0c0.fsf@basil.nowhere.org> <20081205.120814.51226316.davem@davemloft.net> <20081210034824.GA27217@linux-sh.org> <20081210102819.GF23556@one.firstfloor.org>
+	Wed, 10 Dec 2008 05:29:18 -0500
+Received: from ocean.emcraft.com ([213.221.7.182]:38002 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754706AbYLJK3S convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 05:29:18 -0500
+Date: Wed, 10 Dec 2008 13:29:12 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Organization: EmCraft
+X-Priority: 3 (Normal)
+Message-ID: <1795455197.20081210132912@emcraft.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
+       Detlev Zundel <dzu@denx.de>, Wolfgang Denk <wd@denx.de>,
+       Milton Miller <miltonm@bga.com>, Ilya Yanok <yanok@emcraft.com>
+Subject: Re[2]: [PATCH] fork_init: fix division by zero
+In-Reply-To: <20081210101745.GG28946@ZenIV.linux.org.uk>
+References: <200812092044.40649.yur@emcraft.com> <Pine.LNX.4.64.0812100944080.25126@vixen.sonytel.be> <503391615.20081210130113@emcraft.com> <20081210101745.GG28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081210102819.GF23556@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=windows-1251
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 11:28:19AM +0100, Andi Kleen wrote:
-> > Oprofile has been a pretty bad fit for them, and while I'm slightly more
-> 
-> You could always use a extension of timer mode that reads them
-> periodically? 
-> 
-This is what I do today, but it is not an ideal solution. It would be
-nice if these sorts of use cases could be supported by newer frameworks
-without every platform with similar requirements having to implement
-workarounds hanging off of the timer IRQ.
+
+ Hello Al,
+
+On Wednesday, December 10, 2008 you wrote:
+
+> On Wed, Dec 10, 2008 at 01:01:13PM +0300, Yuri Tikhonov wrote:
+
+>> >> +     max_threads = mempages * PAGE_SIZE / (8 * THREAD_SIZE);
+>> >                       ^^^^^^^^^^^^^^^^^^^^
+>> >> +#endif
+>> 
+>> > Can't this overflow, e.g. on 32-bit machines with HIGHMEM?
+>> 
+>>  The multiplier here is not PAGE_SIZE, but [PAGE_SIZE / (8 * 
+>> THREAD_SIZE)], and this value is expected to be rather small (2, 4, or 
+>> so).
+
+> x * y / z is parsed as (x * y) / z, not x * (y / z).
+
+ Here we believe in preprocessor: since all PAGE_SIZE, 8, and 
+THREAD_SIZE are the constants we expect it will calculate this.
+
+ E.g. here is the result from this line as produced by cross-gcc 
+4.2.2:
+
+        lis     r9,0
+        rlwinm  r29,r29,2,16,29
+        stw     r29,0(r9)
+
+ As you see - only rotate-left, i.e. multiplication to the constant.
+
+ In any case, adding braces as follows probably would be better:
+
++     max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
+
+ Right ?
+
+> Only assignment operators (and ?:, in a sense that a ? b : c ? d : e is
+> parsed as a ? b : (c ? d : e)) are right-to-left.  The rest is left-to-right.
+
+
+
+ Regards, Yuri
+
+ --
+ Yuri Tikhonov, Senior Software Engineer
+ Emcraft Systems, www.emcraft.com
+
