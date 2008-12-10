@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbYLJSuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756285AbYLJSv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755954AbYLJSuX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 13:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbYLJSuH
+	id S1756285AbYLJSv0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 13:51:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbYLJSvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 13:50:07 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:65262 "EHLO
+	Wed, 10 Dec 2008 13:51:15 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:50568 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752963AbYLJSuG (ORCPT
+	with ESMTP id S1753892AbYLJSvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 13:50:06 -0500
-Message-ID: <49400F2F.4050603@vlnb.net>
-Date: Wed, 10 Dec 2008 21:49:19 +0300
+	Wed, 10 Dec 2008 13:51:14 -0500
+Message-ID: <49400F82.1040603@vlnb.net>
+Date: Wed, 10 Dec 2008 21:50:42 +0300
 From: Vladislav Bolkhovitin <vst@vlnb.net>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
@@ -23,41 +23,47 @@ CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
        Boaz Harrosh <bharrosh@panasas.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH][RFC 13/23]: Export of alloc_io_context() function
+       Bart Van Assche <bart.vanassche@gmail.com>, linux-driver@qlogic.com,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: [PATCH][RFC 14/23]: Necessary functionality in qla2xxx driver to
+ support target mode
 References: <494009D7.4020602@vlnb.net>
 In-Reply-To: <494009D7.4020602@vlnb.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+MIv/50Q2ai0Do8LluwhU07JCdK+CGd0wrGJH
- RWspc4m5460w2o/nMUFUMze/x/28/VxvRv8ZilqdLgwZ1gsmkY
- xFxOSaWG9f/aKRrQrApdQ==
+X-Provags-ID: V01U2FsdGVkX187OcDNS5cZhBfAqUne6eeFe7vzWRJPBhpmRPN
+ 7UUFKJ5Yr8ZQR+2tfdUkW7IRjld50RWhVBx9W4jdZhylqSw/o6
+ VcEMmFIczWbPHFj3W8fdQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch exports alloc_io_context() function. For performance reasons 
-SCST queues commands using a pool of IO threads. It is considerably 
-better for performance (>30% increase on sequential reads) if threads in 
-  a pool have the same IO context. Since SCST can be built as a module, 
-it needs alloc_io_context() function exported.
+This patch adds necessary functionality in qla2xxx driver to support 
+SCST target mode add-on. Basically, it only adds the necessary for the 
+target mode add-on constants, hooks, sysfs entries and initialization 
+actions. It doesn't touch any core functionality of qla2xxx driver.
+
+This patch needs patches http://article.gmane.org/gmane.linux.scsi/43495 
+and http://article.gmane.org/gmane.linux.scsi/43475, but doesn't require 
+them.
 
 Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
 ---
-  block/blk-ioc.c |    1 +
-  1 file changed, 1 insertion(+)
+  drivers/scsi/qla2xxx/Kconfig         |   10 +
+  drivers/scsi/qla2xxx/qla2x_tgt.h     |  120 ++++++++++++++++++
+  drivers/scsi/qla2xxx/qla2x_tgt_def.h |  362 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  drivers/scsi/qla2xxx/qla_attr.c      |  324 ++++++++++++++++++++++++++++++++++++++++++++++++++
+  drivers/scsi/qla2xxx/qla_def.h       |   11 +
+  drivers/scsi/qla2xxx/qla_gbl.h       |    9 +
+  drivers/scsi/qla2xxx/qla_gs.c        |   11 +
+  drivers/scsi/qla2xxx/qla_init.c      |  235 ++++++++++++++++++++++++++++++++----
+  drivers/scsi/qla2xxx/qla_iocb.c      |    7 -
+  drivers/scsi/qla2xxx/qla_isr.c       |  123 +++++++++++++++++++
+  drivers/scsi/qla2xxx/qla_mbx.c       |   14 +-
+  drivers/scsi/qla2xxx/qla_os.c        |   14 ++
+  12 files changed, 1201 insertions(+), 39 deletions(-)
 
-diff -upkr linux-2.6.27.2/block/blk-ioc.c linux-2.6.27.2/block/blk-ioc.c
---- linux-2.6.27.2/block/blk-ioc.c	2008-10-10 02:13:53.000000000 +0400
-+++ linux-2.6.27.2/block/blk-ioc.c	2008-11-25 21:27:01.000000000 +0300
-@@ -105,6 +105,7 @@ struct io_context *alloc_io_context(gfp_
- 
- 	return ret;
- }
-+EXPORT_SYMBOL(alloc_io_context);
- 
- /*
-  * If the current task has no IO context then create one and initialise it.
+The patch is too big to be submitted inline. You can find it in 
+http://scst.sourceforge.net/patches/qla_tgt.diff
+
 
