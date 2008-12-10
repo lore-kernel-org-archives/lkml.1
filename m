@@ -1,71 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbYLJRAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYLJRIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756392AbYLJRAy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 12:00:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYLJRAq
+	id S1756106AbYLJRIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 12:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYLJRII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 12:00:46 -0500
-Received: from ocean.emcraft.com ([213.221.7.182]:40305 "EHLO
-	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754305AbYLJRAp (ORCPT
+	Wed, 10 Dec 2008 12:08:08 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:47272 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754003AbYLJRIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 12:00:45 -0500
-From: Yuri Tikhonov <yur@emcraft.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][v2] fork_init: fix division by zero
-Date: Wed, 10 Dec 2008 19:50:51 +0300
-User-Agent: KMail/1.9.4
-Cc: linuxppc-dev@ozlabs.org,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, David Howells <dhowells@redhat.com>,
-       Milton Miller <miltonm@bga.com>, Wolfgang Denk <wd@denx.de>,
-       Detlev Zundel <dzu@denx.de>, Ilya Yanok <yanok@emcraft.com>
+	Wed, 10 Dec 2008 12:08:07 -0500
+To: Hannes Eder <hannes@hanneseder.net>
+Cc: Karsten Keil <kkeil@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 9/9] mISDN: fix sparse warnings
+From: Andi Kleen <andi@firstfloor.org>
+References: <493feac3.25e2660a.2824.6cb2@mx.google.com>
+Date: Wed, 10 Dec 2008 18:08:24 +0100
+In-Reply-To: <493feac3.25e2660a.2824.6cb2@mx.google.com> (Hannes Eder's message of "Wed, 10 Dec 2008 16:43:30 +0100")
+Message-ID: <87hc5cc60n.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812101950.51958.yur@emcraft.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hannes Eder <hannes@hanneseder.net> writes:
+> @@ -918,7 +919,7 @@ hfcmulti_resync(struct hfc_multi *locked, struct hfc_multi *newmaster, int rm)
+>  	/* Disable sync of all cards */
+>  	list_for_each_entry_safe(hc, next, &HFClist, list) {
+>  		if (test_bit(HFC_CHIP_PLXSD, &hc->chip)) {
+> -			plx_acc_32 = (u_int *)(hc->plx_membase+PLX_GPIOC);
+> +			plx_acc_32 = (u_int __iomem *)(hc->plx_membase+PLX_GPIOC);
 
-The following patch fixes divide-by-zero error for the
-cases of really big PAGE_SIZEs (e.g. 256KB on ppc44x).
-Support for big page sizes on 44x is not present in the
-current kernel yet, but coming soon.
+It would be probably better to declare plx_membase __iomem too instead
+of so much casting.
 
-Also this patch fixes the comment for the max_threads
-settings, as this didn't match the things actually done
-in the code.
+-Andi
 
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
----
- kernel/fork.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 8d6a7dd..638eb7f 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -181,10 +181,14 @@ void __init fork_init(unsigned long mempages)
- 
- 	/*
- 	 * The default maximum number of threads is set to a safe
--	 * value: the thread structures can take up at most half
--	 * of memory.
-+	 * value: the thread structures can take up at most
-+	 * (1/8) part of memory.
- 	 */
-+#if (8 * THREAD_SIZE) > PAGE_SIZE
- 	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
-+#else
-+	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
-+#endif
- 
- 	/*
- 	 * we need to allow at least 20 threads to boot a system
 -- 
-1.5.6.1
+ak@linux.intel.com
