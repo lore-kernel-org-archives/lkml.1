@@ -1,199 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754973AbYLJPSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbYLJPWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754973AbYLJPSn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 10:18:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbYLJPSd
+	id S1755178AbYLJPWd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 10:22:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYLJPWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 10:18:33 -0500
-Received: from mail-gx0-f11.google.com ([209.85.217.11]:60261 "EHLO
-	mail-gx0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752947AbYLJPSd (ORCPT
+	Wed, 10 Dec 2008 10:22:21 -0500
+Received: from mail.bigtelecom.ru ([87.255.0.61]:40177 "EHLO
+	mail.bigtelecom.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752947AbYLJPWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 10:18:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=actx99hRWHjFu5z8TiBItp2NquHjkwkxWw1OsM1h0qcXPMECTYfFRvVtsb8o7tC6X8
-         uLO0PT1T8l1JnQXzMxDYleyzYV+8EDOonUEJCauxPA/36D5PzlK9N0q6kb82MYXvf3gm
-         OnDP12rLb7LMi4Pf7XK90dWfTrahwVE5aI5gg=
-Message-ID: <c072ca310812100710o58c38a27rba16ad2318a1cb95@mail.gmail.com>
-Date: Wed, 10 Dec 2008 20:10:42 +0500
-From: "Alexander E. Patrakov" <patrakov@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: iwlagn interrupt problem
-In-Reply-To: <c072ca310812100638k6c15473brb89632a9c175a028@mail.gmail.com>
+	Wed, 10 Dec 2008 10:22:19 -0500
+X-Greylist: delayed 466 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Dec 2008 10:22:18 EST
+Message-ID: <493FDCD4.5020108@bigtelecom.ru>
+Date: Wed, 10 Dec 2008 18:14:28 +0300
+From: Badalian Vyacheslav <slavon@bigtelecom.ru>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081121)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Jarek Poplawski <jarkao2@gmail.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: deadlocks if use htb
+References: <20081010075640.GA5204@ff.dom.local> <48EF17EA.5020306@bigtelecom.ru> <20081010090426.GA6054@ff.dom.local> <20081010095129.GB6054@ff.dom.local> <48F6FB3E.7060903@bigtelecom.ru> <20081016084027.GA17632@ff.dom.local> <48FEC302.5090707@bigtelecom.ru> <20081022070200.GB4178@ff.dom.local>
+In-Reply-To: <20081022070200.GB4178@ff.dom.local>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c072ca310812100638k6c15473brb89632a9c175a028@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[linux-wireless: sorry for the duplicate, I didn't use the correct
-address for LKML, as this is my first LKML post from work]
+Hello again! Sorry for long away.
+I was go away from this work for long time.
 
-Hello. My kernel is 2.6.27.6, and at work, I sit in a place with
-unreliable wireless connection. The problematic piece of dmesg looks
-like this:
+May we return to this bug?
+Servers at last stable kernel 2.6.27.8
+HZ=1000, HR=off, DynamicTicks=off, hysteresis=1
+Sorry - no patched, update do not i. Do you have fresh patches or ideas
+for tests?
+Also debug "Debug object operations" and "Debug timer objects" is on but
+i not see additional information at dump.
 
-[17454.155855] wlan0: deauthenticated
-[17456.509322] iwlagn 0000:0c:00.0: PCI INT A disabled
-[17456.557701] iwlagn 0000:0c:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-[17456.557814] iwlagn 0000:0c:00.0: restoring config space at offset
-0x1 (was 0x100102, writing 0x100106)
-[17456.756926] Registered led device: iwl-phy0:radio
-[17456.756976] Registered led device: iwl-phy0:assoc
-[17456.757028] Registered led device: iwl-phy0:RX
-[17456.757065] Registered led device: iwl-phy0:TX
-[17456.766141] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-[17460.329937] wlan0: authenticate with AP 00:19:5b:ba:53:b7
-[17460.335391] wlan0: authenticated
-[17460.335401] wlan0: associate with AP 00:19:5b:ba:53:b7
-[17460.532088] wlan0: associate with AP 00:19:5b:ba:53:b7
-[17460.534523] wlan0: RX AssocResp from 00:19:5b:ba:53:b7 (capab=0x431
-status=0 aid=2)
-[17460.534533] wlan0: associated
-[17460.541523] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-[17471.476059] wlan0: no IPv6 routers present
-[17821.193753] wlan0: deauthenticated
-[17823.550303] iwlagn 0000:0c:00.0: PCI INT A disabled
-[17823.612978] iwlagn 0000:0c:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-[17823.613110] iwlagn 0000:0c:00.0: restoring config space at offset
-0x1 (was 0x100102, writing 0x100106)
-[17823.812945] Registered led device: iwl-phy0:radio
-[17823.812995] Registered led device: iwl-phy0:assoc
-[17823.813048] Registered led device: iwl-phy0:RX
-[17823.813085] Registered led device: iwl-phy0:TX
-[17823.823450] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-[17827.380770] wlan0: authenticate with AP 00:19:5b:ba:53:b7
-[17827.382603] wlan0: authenticated
-[17827.382613] wlan0: associate with AP 00:19:5b:ba:53:b7
-[17827.581037] wlan0: associate with AP 00:19:5b:ba:53:b7
-[17827.583418] wlan0: RX AssocResp from 00:19:5b:ba:53:b7 (capab=0x431
-status=0 aid=2)
-[17827.583429] wlan0: associated
-[17827.591080] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-[17838.392089] wlan0: no IPv6 routers present
+Thanks!
 
-Prevois kernels panicked in this place, see description and photo at
-http://patrakov.blogspot.com/2008/09/kernel-panic.html
+That dump:
+[ 1500.932813] BUG: NMI Watchdog detected LOCKUP on CPU3, ip c0208ed9,
+registers:
+[ 1500.932813] Modules linked in: cls_u32 sch_sfq sch_htb netconsole
+e1000e e1000 i2c_i801
+[ 1500.932813]
+[ 1500.932813] Pid: 0, comm: swapper Not tainted (2.6.27-gentoo-r5-fw #1)
+[ 1500.932813] EIP: 0060:[<c0208ed9>] EFLAGS: 00000082 CPU: 3
+[ 1500.932813] EIP is at rb_insert_color+0x29/0xf0
+[ 1500.932813] EAX: f3391c68 EBX: f3391c68 ECX: 00000000 EDX: f3391c68
+[ 1500.932813] ESI: 00000000 EDI: f3391c68 EBP: f3391c68 ESP: f785fc1c
+[ 1500.932813]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[ 1500.932813] Process swapper (pid: 0, ti=f785e000 task=f7832940
+task.ti=f785e000)
+[ 1500.932813] Stack: c202c134 f3391c68 f3391c6c 00000000 c202c134
+c013d5a2 c202c12c f3391c68
+[ 1500.932813]        c202c12c c202212c c0480100 c013dba9 00000000
+002dcd3c 76886800 0000015d
+[ 1500.932813]        00000001 00000282 0000015d f3391c68 f3391800
+f3391880 c02ff53d 00000000
+[ 1500.932813] Call Trace:
+[ 1500.932813]  [<c013d5a2>] enqueue_hrtimer+0x72/0x90
+[ 1500.932813]  [<c013dba9>] hrtimer_start+0x99/0x150
+[ 1500.932813]  [<c02ff53d>] qdisc_watchdog_schedule+0x3d/0x50
+[ 1500.932813]  [<f88a379a>] htb_dequeue+0x6aa/0x7d0 [sch_htb]
+[ 1500.932813]  [<c02ee6a2>] dev_hard_start_xmit+0x242/0x2d0
+[ 1500.932813]  [<c02fccfc>] __qdisc_run+0x13c/0x1e0
+[ 1500.932813]  [<c02eea81>] dev_queue_xmit+0x241/0x570
+[ 1500.932813]  [<c03133a4>] ip_finish_output+0x184/0x260
+[ 1500.932813]  [<c030f6a6>] ip_forward_finish+0x26/0x40
+[ 1500.932813]  [<c030e1a6>] ip_rcv_finish+0x156/0x340
+[ 1500.932813]  [<c02e93e2>] __netdev_alloc_skb+0x22/0x50
+[ 1500.932813]  [<c02e8934>] __alloc_skb+0x34/0x120
+[ 1500.932813]  [<c02e93e2>] __netdev_alloc_skb+0x22/0x50
+[ 1500.932813]  [<c02edef7>] netif_receive_skb+0x227/0x4c0
+[ 1500.932813]  [<f8866db6>] e1000_receive_skb+0x46/0x80 [e1000e]
+[ 1500.932813]  [<f8867030>] e1000_clean_rx_irq+0x240/0x340 [e1000e]
+[ 1500.932813]  [<f8865277>] e1000_clean+0x1f7/0x5b0 [e1000e]
+[ 1500.932813]  [<c0121daa>] run_rebalance_domains+0x8a/0x520
+[ 1500.932813]  [<c011d6b7>] __dequeue_entity+0x57/0xc0
+[ 1500.932813]  [<c02ec69c>] net_rx_action+0xcc/0x1e0
+[ 1500.932813]  [<c012b842>] __do_softirq+0x82/0xf0
+[ 1500.932813]  [<c012b8ed>] do_softirq+0x3d/0x50
+[ 1500.932813]  [<c0106090>] do_IRQ+0x40/0x70
+[ 1500.932813]  [<c010462b>] common_interrupt+0x23/0x28
+[ 1500.932813]  [<c01099ef>] mwait_idle+0x2f/0x40
+[ 1500.932813]  [<c0102c13>] cpu_idle+0x73/0xf0
+[ 1500.932813]  =======================
+[ 1500.932813] Code: 76 00 55 89 c5 57 56 53 83 ec 04 89 14 24 8d 74 26
+00 8b 45 00 89 c3 83 e3 fc 74 36 8b 13 f6 c2 01 75 2f 89 d7 83 e7 fc 8b
+77 08 <39> de 74 53 85 f6 74 2f 8b 06 a8 01 75 29 83 c8 01 89 fd 89 06
 
-The messages about "PCI INT A" are still a problem, because at this
-time, the audio loops and the mouse is unresponsive (i.e., the system
-locks up for a brief period of time, but eventually recovers). Here is
-/proc/interrupts:
 
-          CPU0       CPU1
- 0:    2600610    2598665   IO-APIC-edge      timer
- 1:        173        181   IO-APIC-edge      i8042
- 3:          1          1   IO-APIC-edge
- 4:          1          1   IO-APIC-edge
- 7:          0          0   IO-APIC-edge      parport0
- 8:         42         32   IO-APIC-edge      rtc0
- 9:       2229       2204   IO-APIC-fasteoi   acpi
- 12:         72         66   IO-APIC-edge      i8042
- 14:      92707      91972   IO-APIC-edge      ata_piix
- 15:          0          0   IO-APIC-edge      ata_piix
- 16:        255        247   IO-APIC-fasteoi   firewire_ohci, yenta,
-i915@pci:0000:00:02.0
- 21:     357656     360896   IO-APIC-fasteoi   HDA Intel
- 22:        110         97   IO-APIC-fasteoi   uhci_hcd:usb1,
-uhci_hcd:usb2, uhci_hcd:usb4, uhci_hcd:usb5, uhci_hcd:usb6
- 23:      70327      69245   IO-APIC-fasteoi   ehci_hcd:usb3, ehci_hcd:usb7
-219:     126299     126470   PCI-MSI-edge      iwlagn
-220:      29297      29382   PCI-MSI-edge      eth0
-221:      41694      41968   PCI-MSI-edge      ahci
-NMI:          0          0   Non-maskable interrupts
-LOC:    1584309    2655947   Local timer interrupts
-RES:     461218     469590   Rescheduling interrupts
-CAL:        987      67106   function call interrupts
-TLB:        987       1027   TLB shootdowns
-TRM:          0          0   Thermal event interrupts
-SPU:          0          0   Spurious interrupts
-ERR:          0
-MIS:          0
 
-Here is lspci && lspci -n:
+> On Wed, Oct 22, 2008 at 10:06:58AM +0400, Badalian Vyacheslav wrote:
+>   
+>> Hello!
+>>     
+> Hi!
+>
+>   
+>> I get more information.
+>>
+>> Statistics of PC:
+>> 1. 2.6.26.6 Dunamic Timer, HiResTimer, 1000HZ, htb_hysteresis=0 -
+>> crashed 1d 18h ago
+>> 2. 2.6.26.5 HZ300, NO Dunamic Timer, No HiResTimer, htb_hysteresis=0 -
+>> uptime 5d 17h (no crashes for now, but it crashed some time ago with
+>> htb_hysteresis=1)
+>>     
+>
+> So it looks like htb_hysteresis change could be not enough, and it's
+> a pity because this could be easiest to "reverse" in the kernel.
+>
+>   
+>> 3. 2.6.27, 1000HZ, NO Dunamic Timer, No HiResTimer, htb_hysteresis=0 +
+>> PATCH - uptime 5d 17h (no crashes for now, but it crashed some time ago
+>> without patch)
+>>     
+>
+> So I guess this patch seems to make some difference, but it also could
+> be hard to convince people to fix it this way, because it makes
+> scheduling less exact.
+>
+> Alas I have still no idea of the real reason. IMHO this should be 
+> rather debugged by hrtimers/NMI people, but there were no respose last
+> time I Cc-ed them - anyway I added linux-kernel to Cc again here.
+>
+> I attach below a slightly modified version of the previous patch,
+> which lets for more exact scheduling, but could be more vulnerable for
+> this bug. Alas, even if it works, it still could be not the final
+> solution of this problem.
+>
+>   
+>> Also attach crash log of lash crash PC 1:
+>>
+>> [10610.110729] BUG: NMI Watchdog detected LOCKUP on CPU1, ip c01fd939,
+>> registers:
+>> [10610.110729] Modules linked in: netconsole e1000e i2c_i801 i2c_core e1000
+>> [10610.110729]
+>> [10610.110729] Pid: 0, comm: swapper Not tainted (2.6.26.6-fw #1)
+>> [10610.110729] EIP: 0060:[<c01fd939>] EFLAGS: 00000082 CPU: 1
+>> [10610.110729] EIP is at rb_insert_color+0x19/0xc0
+>>     
+>
+> Thanks,
+> Jarek P.
+>
+> --- (testing patch #2)
+>
+>  net/sched/sch_htb.c |    8 +++++++-
+>  1 files changed, 7 insertions(+), 1 deletions(-)
+>
+> diff --git a/net/sched/sch_htb.c b/net/sched/sch_htb.c
+> index 30c999c..ff9e965 100644
+> --- a/net/sched/sch_htb.c
+> +++ b/net/sched/sch_htb.c
+> @@ -162,6 +162,7 @@ struct htb_sched {
+>  
+>  	int rate2quantum;	/* quant = rate / rate2quantum */
+>  	psched_time_t now;	/* cached dequeue time */
+> +	psched_time_t next_watchdog;
+>  	struct qdisc_watchdog watchdog;
+>  
+>  	/* non shaped skbs; let them go directly thru */
+> @@ -920,7 +921,11 @@ static struct sk_buff *htb_dequeue(struct Qdisc *sch)
+>  		}
+>  	}
+>  	sch->qstats.overlimits++;
+> -	qdisc_watchdog_schedule(&q->watchdog, next_event);
+> +	if (q->next_watchdog < q->now || next_event <=
+> +	     q->next_watchdog - PSCHED_TICKS_PER_SEC / (10 * HZ)) {
+> +		qdisc_watchdog_schedule(&q->watchdog, next_event);
+> +		q->next_watchdog = next_event;
+> +	}
+>  fin:
+>  	return skb;
+>  }
+> @@ -973,6 +978,7 @@ static void htb_reset(struct Qdisc *sch)
+>  		}
+>  	}
+>  	qdisc_watchdog_cancel(&q->watchdog);
+> +	q->next_watchdog = 0;
+>  	__skb_queue_purge(&q->direct_queue);
+>  	sch->q.qlen = 0;
+>  	memset(q->row, 0, sizeof(q->row));
+>
+>   
 
-00:00.0 Host bridge: Intel Corporation Mobile PM965/GM965/GL960 Memory
-Controller Hub (rev 03)
-00:02.0 VGA compatible controller: Intel Corporation Mobile
-GM965/GL960 Integrated Graphics Controller (rev 03)
-00:02.1 Display controller: Intel Corporation Mobile GM965/GL960
-Integrated Graphics Controller (rev 03)
-00:1a.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB
-UHCI Controller #4 (rev 03)
-00:1a.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB
-UHCI Controller #5 (rev 03)
-00:1a.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2
-EHCI Controller #2 (rev 03)
-00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio
-Controller (rev 03)
-00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express
-Port 1 (rev 03)
-00:1c.2 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express
-Port 3 (rev 03)
-00:1d.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB
-UHCI Controller #1 (rev 03)
-00:1d.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB
-UHCI Controller #2 (rev 03)
-00:1d.2 USB Controller: Intel Corporation 82801H (ICH8 Family) USB
-UHCI Controller #3 (rev 03)
-00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2
-EHCI Controller #1 (rev 03)
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev f3)
-00:1f.0 ISA bridge: Intel Corporation 82801HEM (ICH8M) LPC Interface
-Controller (rev 03)
-00:1f.1 IDE interface: Intel Corporation 82801HBM/HEM (ICH8M/ICH8M-E)
-IDE Controller (rev 03)
-00:1f.2 SATA controller: Intel Corporation 82801HBM/HEM
-(ICH8M/ICH8M-E) SATA AHCI Controller (rev 03)
-00:1f.3 SMBus: Intel Corporation 82801H (ICH8 Family) SMBus Controller (rev 03)
-04:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8055
-PCI-E Gigabit Ethernet Controller (rev 14)
-0c:00.0 Network controller: Intel Corporation PRO/Wireless 4965 AG or
-AGN [Kedron] Network Connection (rev 61)
-1c:03.0 CardBus bridge: O2 Micro, Inc. OZ711SP1 Memory CardBus
-Controller (rev 01)
-1c:03.2 SD Host controller: O2 Micro, Inc. Integrated MMC/SD Controller (rev 02)
-1c:03.3 Mass storage controller: O2 Micro, Inc. Integrated MS/xD
-Controller (rev 01)
-1c:03.4 FireWire (IEEE 1394): O2 Micro, Inc. Firewire (IEEE 1394) (rev 02)
-00:00.0 0600: 8086:2a00 (rev 03)
-00:02.0 0300: 8086:2a02 (rev 03)
-00:02.1 0380: 8086:2a03 (rev 03)
-00:1a.0 0c03: 8086:2834 (rev 03)
-00:1a.1 0c03: 8086:2835 (rev 03)
-00:1a.7 0c03: 8086:283a (rev 03)
-00:1b.0 0403: 8086:284b (rev 03)
-00:1c.0 0604: 8086:283f (rev 03)
-00:1c.2 0604: 8086:2843 (rev 03)
-00:1d.0 0c03: 8086:2830 (rev 03)
-00:1d.1 0c03: 8086:2831 (rev 03)
-00:1d.2 0c03: 8086:2832 (rev 03)
-00:1d.7 0c03: 8086:2836 (rev 03)
-00:1e.0 0604: 8086:2448 (rev f3)
-00:1f.0 0601: 8086:2815 (rev 03)
-00:1f.1 0101: 8086:2850 (rev 03)
-00:1f.2 0106: 8086:2829 (rev 03)
-00:1f.3 0c05: 8086:283e (rev 03)
-04:00.0 0200: 11ab:4363 (rev 14)
-0c:00.0 0280: 8086:4229 (rev 61)
-1c:03.0 0607: 1217:7136 (rev 01)
-1c:03.2 0805: 1217:7120 (rev 02)
-1c:03.3 0180: 1217:7130 (rev 01)
-1c:03.4 0c00: 1217:00f7 (rev 02)
-
-Here is /proc/cmdline (nomsi is needed in order to work around the
-erratum in the GM965 graphics chipset without upgrading the driver).
-
-root=/dev/mapper/aep-root ro nomsi quiet resume=/dev/mapper/aep-swap_1
-
-If more information is needed, just ask.
-
---
-Alexander E. Patrakov
