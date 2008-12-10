@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbYLJNI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753479AbYLJNJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbYLJNI4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 08:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbYLJNIi
+	id S1753479AbYLJNJb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 08:09:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYLJNJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 08:08:38 -0500
-Received: from mga03.intel.com ([143.182.124.21]:41611 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879AbYLJNIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 08:08:37 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,747,1220252400"; 
-   d="scan'208";a="88594438"
-Date: Wed, 10 Dec 2008 20:58:46 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Laurent Pinchart <laurent.pinchart@skynet.be>
-Cc: Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH] usb: make printk messges more searchable
-Message-ID: <20081210125846.GC6772@localhost>
-References: <20081210072921.GA18142@localhost> <200812101042.17530.laurent.pinchart@skynet.be> <200812101056.15457.oliver@neukum.org> <200812101059.01068.laurent.pinchart@skynet.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812101059.01068.laurent.pinchart@skynet.be>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 10 Dec 2008 08:09:20 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:56562 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751657AbYLJNJT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 08:09:19 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       Alexandru Romanescu <a_romanescu@yahoo.co.uk>,
+       Tejun Heo <tj@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 1/2] DMI: add dmi_match
+Date: Wed, 10 Dec 2008 14:07:21 +0100
+Message-Id: <1228914442-30805-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.0.5
+In-Reply-To: <493EE339.1070806@garzik.org>
+References: <493EE339.1070806@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 11:59:00AM +0200, Laurent Pinchart wrote:
-> On Wednesday 10 December 2008, Oliver Neukum wrote:
-> > Am Mittwoch, 10. Dezember 2008 10:42:17 schrieb Laurent Pinchart:
-> > > Hi Wu,
-> > >
-> > > On Wednesday 10 December 2008, Wu Fengguang wrote:
-> > > > Make USB printk messages long and straightforward.  One of these
-> > > > decorated USB error messages cost me some smart efforts to locate.
-> > >
-> > > That would make the code break the 80 columns limit.
-> > >
-> > > From "Documentation/CodingStyle":
-> > >
-> > > "The limit on the length of lines is 80 columns and this is a strongly
-> > > preferred limit."
-> >
-> > Too rigid an application is bad. The kernel must be greppable.
-> 
-> I've also been bitten by split strings when grepping kernel source code. A 
-> cgrep that would unsplit strings before searching them would be nice :-)
+Add a wrapper for testing system_info which will handle also NULL
+system infos.
 
-Such printk will sure bite more people.  And it's amazing that the CodingStyle
-document uses printk as an 80-column example:
+This will be used by the ata PIIX driver.
 
- 80 The limit on the length of lines is 80 columns and this is a strongly
- 81 preferred limit.
- 82 
- 83 Statements longer than 80 columns will be broken into sensible chunks.
- 84 Descendants are always substantially shorter than the parent and are placed
- 85 substantially to the right. The same applies to function headers with a long
- 86 argument list. Long strings are as well broken into shorter strings. The
- 87 only exception to this is where exceeding 80 columns significantly increases
- 88 readability and does not hide information.
- 89 
- 90 void fun(int a, int b, int c)
- 91 {
- 92         if (condition)
- 93                 printk(KERN_WARNING "Warning this is a long printk with "
- 94                                                 "3 parameters a: %u b: %u "
- 95                                                 "c: %u \n", a, b, c);
- 96         else
- 97                 next_statement;
- 98 }
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Jeff Garzik <jgarzik@redhat.com>
+Cc: Alexandru Romanescu <a_romanescu@yahoo.co.uk>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+---
+ drivers/firmware/dmi_scan.c |   16 ++++++++++++++++
+ include/linux/dmi.h         |    3 +++
+ 2 files changed, 19 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
+index 4a597d8..78b989d 100644
+--- a/drivers/firmware/dmi_scan.c
++++ b/drivers/firmware/dmi_scan.c
+@@ -582,3 +582,19 @@ int dmi_walk(void (*decode)(const struct dmi_header *))
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(dmi_walk);
++
++/**
++ * dmi_match - compare a string to the dmi field (if exists)
++ *
++ * Returns true if the requested field equals to the str (including NULL).
++ */
++bool dmi_match(enum dmi_field f, const char *str)
++{
++	const char *info = dmi_get_system_info(f);
++
++	if (info == NULL || str == NULL)
++		return info == str;
++
++	return !strcmp(info, str);
++}
++EXPORT_SYMBOL_GPL(dmi_match);
+diff --git a/include/linux/dmi.h b/include/linux/dmi.h
+index 2bfda17..3416190 100644
+--- a/include/linux/dmi.h
++++ b/include/linux/dmi.h
+@@ -47,6 +47,7 @@ extern int dmi_name_in_vendors(const char *str);
+ extern int dmi_name_in_serial(const char *str);
+ extern int dmi_available;
+ extern int dmi_walk(void (*decode)(const struct dmi_header *));
++extern bool dmi_match(enum dmi_field f, const char *str);
+ 
+ #else
+ 
+@@ -61,6 +62,8 @@ static inline int dmi_name_in_serial(const char *s) { return 0; }
+ #define dmi_available 0
+ static inline int dmi_walk(void (*decode)(const struct dmi_header *))
+ 	{ return -1; }
++static inline bool dmi_match(enum dmi_field f, const char *str)
++	{ return false; }
+ 
+ #endif
+ 
+-- 
+1.6.0.5
 
