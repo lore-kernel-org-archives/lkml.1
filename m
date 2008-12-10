@@ -1,141 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbYLJTcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbYLJTed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbYLJTcs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 14:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbYLJTcj
+	id S1756877AbYLJTed (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 14:34:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYLJTeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 14:32:39 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36409 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754795AbYLJTci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 14:32:38 -0500
-X-Authenticated: #787645
-X-Provags-ID: V01U2FsdGVkX1/4FNF22Ub44McALy6/2et28yxKorggj+t4FmWslZ
-	CTorZ3CZXlkvvZ
-Message-ID: <4940194A.1030103@gmx.net>
-Date: Wed, 10 Dec 2008 20:32:26 +0100
-From: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Wed, 10 Dec 2008 14:34:25 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:48499 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753502AbYLJTeY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 14:34:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tzkrLl2ArcdSiWBLPx83jCPlrEPuuxzjZtjq3V3cyGW2fNzanF8iAjAWS5Lzsx8krY
+         yetgT8nPvWMza2cW24TKD+cTJRGec1UsL7Zep57/pqIcUkZISQvCPvd2wJJpK19GqgJH
+         Y5Tyc43IvtI3TRLV/JVP3fqAjJw16epyqH/zY=
+Date: Wed, 10 Dec 2008 22:34:21 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] Do not pass the SLAB flags as GFP in slob
+	kmem_cache_create
+Message-ID: <20081210193421.GA2215@localhost>
+References: <20081210173632.19697.67688.stgit@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
-To: Adam M Belay <abelay@MIT.EDU>
-CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       rjw@sisk.pl
-Subject: Re: [PATCH] PNPACPI: Enable Power Support
-References: <493D8A1F.2090907@gmx.net> <20081208214910.6l58csoke98gw48w@webmail.mit.edu>
-In-Reply-To: <20081208214910.6l58csoke98gw48w@webmail.mit.edu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.43
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081210173632.19697.67688.stgit@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adam M Belay wrote:
+[Catalin Marinas - Wed, Dec 10, 2008 at 05:36:33PM +0000]
+| It looks like the kmem_cache_create() function in the slob allocator
+| passes the SLAB flags as GFP flags to the slob_alloc() function. The
+| patch changes this call to pass GFP_KERNEL as the other allocators seem
+| to do.
+| 
+| Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+| Cc: Matt Mackall <mpm@selenic.com>
+| ---
+|  mm/slob.c |    2 +-
+|  1 files changed, 1 insertions(+), 1 deletions(-)
+| 
+| diff --git a/mm/slob.c b/mm/slob.c
+| index ff5a98d..dce9258 100644
+| --- a/mm/slob.c
+| +++ b/mm/slob.c
+| @@ -538,7 +538,7 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
+|  	struct kmem_cache *c;
+|  
+|  	c = slob_alloc(sizeof(struct kmem_cache),
+| -		flags, ARCH_KMALLOC_MINALIGN, -1);
+| +		GFP_KERNEL, ARCH_KMALLOC_MINALIGN, -1);
+|  
+|  	if (c) {
+|  		c->name = name;
+|
 
-> Hi Witold,
-> 
-> All in all your patch looks good, especially in the context of
-> resolving the Thinkpad 600X issue.  I have some patches on the
-> way that will add more complete power management support to the
-> PNP stack and hopefully allow for runtime PM of these system
-> devices, but I think this is a good short-term solution.
-> 
-> One quick comment.  acpi_bus_set_power() can fail, and
-> pnpacpi_set_resources() needs to handle this gracefully.  Please
-> update the patch to include this.
+Hi Catalin,
 
-Hi Adam,
+this would make the following line in slob_alloc
 
-please take a look at my patch at http://lkml.org/lkml/2008/11/23/211,
-a "precursor" to the current patch, which contains the required tests
-(it, does, however, also remove a comment that Bjorn asked me to keep).
-Would that be the type of tests you're thinking of?
+	...
+	if (unlikely((gfp & __GFP_ZERO) && b))
+		memset(b, 0, size);
+ 	...
 
---- Witold
+useless. Not sure if it will be good :)
 
-> 
-> Also, for the follow up to this patch, I'm wondering what sort
-> of ACPI behavior we need to support D1 and D2 states.  In PCI,
-> disabling resource decoding (similar to _DIS) is only required
-> for entering D3.  The ACPI spec seems to be ambiguous with this
-> issue.  Len, any thoughts?
-> 
-> Thanks,
-> Adam
-> 
-> Quoting Witold Szczeponik <Witold.Szczeponik@gmx.net>:
-> 
->> Subject: Enable PNPACPI _PSx Support
->>
->>
->> (This is an updated patch of http://lkml.org/lkml/2008/11/23/211)
->>
->> This patch sets the power of PnP ACPI devices to D0 when they
->> are activated and to D3 when they are disabled.  The latter is
->> in correspondence with the ACPI 3.0 specification, whereas the
->> former is added in order to be able to power up a device after
->> it has been previously disabled (or when booting up a system).
->> (As a consequence, the patch makes the PnP ACPI code more ACPI
->> compliant.)
->>
->> Section 6.2.2 of the ACPI Specification (at least versions 1.0b
->> and 3.0a) states: "Prior to running this control method [_DIS],
->> the OS[PM] will have already put the device in the D3 state."
->> Unfortunately, there is no clear statement as to when to put
->> a device in the D0 state. :-( Therefore, the patch executes the
->> method calls as _PS3/_DIS and _SRS/_PS0. What is clear: "If the
->> device is disabled, _SRS enables the device at the specified
->> resources." (From the ACPI 3.0a Specification.)
->>
->> The patch fixes a problem with some IBM ThinkPads (at least the
->> 600E and the 600X) where the serial ports have a dedicated
->> power source that needs to be brought up before the serial port
->> can be used.  Without this patch, the serial port is enabled
->> but has no power. (In the past, the tpctl utility had to be
->> utilized to turn on the power, but support for this feature
->> stopped with version 5.9 as it did not support the more recent
->> kernel versions.)
->>
->> No regressions were observed on hardware that does not require
->> this patch.
->>
->> The patch is applied against 2.6.27.8 (vanilla).
->>
->>
->> Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
->>
->>
->> Index: linux/drivers/pnp/pnpacpi/core.c
->> ===================================================================
->> --- linux.orig/drivers/pnp/pnpacpi/core.c
->> +++ linux/drivers/pnp/pnpacpi/core.c
->> @@ -98,17 +98,20 @@ static int pnpacpi_set_resources(struct
->>      status = acpi_set_current_resources(handle, &buffer);
->>      if (ACPI_FAILURE(status))
->>          ret = -EINVAL;
->> +    else
->> +        acpi_bus_set_power(handle, ACPI_STATE_D0);
->>      kfree(buffer.pointer);
->>      return ret;
->>  }
->>
->>  static int pnpacpi_disable_resources(struct pnp_dev *dev)
->>  {
->> +    acpi_handle handle = dev->data;
->>      acpi_status status;
->>
->>      /* acpi_unregister_gsi(pnp_irq(dev, 0)); */
->> -    status = acpi_evaluate_object((acpi_handle) dev->data,
->> -                      "_DIS", NULL, NULL);
->> +    acpi_bus_set_power(handle, ACPI_STATE_D3);
->> +    status = acpi_evaluate_object(handle, "_DIS", NULL, NULL);
->>      return ACPI_FAILURE(status) ? -ENODEV : 0;
->>  }
->>
->>
-> 
-> 
+---
+Some  CC: added
 
-
+		- Cyrill -
