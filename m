@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbYLJCJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbYLJCPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755760AbYLJCJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 21:09:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbYLJCJj
+	id S1755474AbYLJCPJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 21:15:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYLJCO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 21:09:39 -0500
-Received: from mga06.intel.com ([134.134.136.21]:34927 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754047AbYLJCJi (ORCPT
+	Tue, 9 Dec 2008 21:14:58 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:36927 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753391AbYLJCO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 21:09:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,743,1220252400"; 
-   d="scan'208";a="472620470"
-From: Sheng Yang <sheng@linux.intel.com>
-Organization: Intel Opensource Technology Center
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH 0/2] module_refcounting and anonymous inodes
-Date: Wed, 10 Dec 2008 10:05:09 +0800
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; x86_64; ; )
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>, kvm@vger.kernel.org,
+	Tue, 9 Dec 2008 21:14:57 -0500
+Date: Tue, 9 Dec 2008 21:14:54 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        LKML <linux-kernel@vger.kernel.org>
-References: <200812021114.59050.borntraeger@de.ibm.com> <493E452E.4020304@redhat.com> <493E7122.5010904@redhat.com>
-In-Reply-To: <493E7122.5010904@redhat.com>
+Subject: Re: [PATCH 0/3] tracing/function-graph-tracer: signal interrupt
+ triggering on output
+In-Reply-To: <493EF64D.50804@gmail.com>
+Message-ID: <alpine.DEB.1.10.0812092111510.19875@gandalf.stny.rr.com>
+References: <493EF64D.50804@gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812101005.10492.sheng@linux.intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 December 2008 21:22:42 Avi Kivity wrote:
-> Avi Kivity wrote:
-> > Christian Borntraeger wrote:
-> >> The problem is, how do you detect if the base kernel has patch1 applied?
-> >
-> > In the external module compatibility kit, implement two versions of
-> > anon_inode_getfd(), and select the appropriate one according to kernel
-> > version (like we currently support 91 smp_call_function_single variants).
->
-> I committed something simpler:  if running on 2.6.28 or earlier, I hack
-> out the two lines your second patch adds.\
 
-Good hack! 
+On Tue, 9 Dec 2008, Frederic Weisbecker wrote:
 
-> diff --git a/kernel/external-module-compat-comm.h
-> b/kernel/external-module-compat-comm.h index a089f62..d90522d 100644
-> --- a/kernel/external-module-compat-comm.h
-> +++ b/kernel/external-module-compat-comm.h
-> @@ -682,3 +682,13 @@ static inline void cpumask_clear_cpu(int cpu,
-> cpumask_var_t mask)
->
->  #endif
->
-> +#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,28)
+> This patchset adds all the features to draw hardirq triggering on output
+> for the function graph tracer.
+> An example is given on the third patch.
+> 
+> Just one question, on recordmcount.pl:
+> 
+> my %text_sections = (
+>       ".text" => 1,
+>       ".sched.text" => 1,
+>       ".spinlock.text" => 1,
+> 
+> The .sched.text section is included inside .text, it's a subsection, I'm not sure
+> it's necessary to add it in text_sections. In doubt I added the new .irqentry.text
+> 
 
-But should it be 2,6,29?...
+Matters what objdump -dr shows.
 
--- 
-regards
-Yang, Sheng
+$ objdump -dr kernel/sched.o | grep 'Disassembly'
+Disassembly of section .text:
+Disassembly of section .cpuinit.text:
+Disassembly of section .init.text:
+Disassembly of section .sched.text:
 
-> +
-> +#define IF_ANON_INODES_DOES_REFCOUNTS(x)
-> +
-> +#else
-> +
-> +#define IF_ANON_INODES_DOES_REFCOUNTS(x) x
-> +
-> +#endif
-> +
+Yep, .sched.text is needed.  It is not about what gets linked by the 
+linker. It is about what objdump shows, which is what recordmcount.pl uses 
+to determine whether or not to record the mcount callers in that section.
+
+-- Steve
+
