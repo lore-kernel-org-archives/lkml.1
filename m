@@ -1,52 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbYLJBxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYLJByq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755298AbYLJBxW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Dec 2008 20:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYLJBxL
+	id S1755548AbYLJByq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Dec 2008 20:54:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYLJByh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 20:53:11 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:32935 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751657AbYLJBxL (ORCPT
+	Tue, 9 Dec 2008 20:54:37 -0500
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:35833 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752335AbYLJByh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 20:53:11 -0500
-Message-ID: <493F2009.6060300@zytor.com>
-Date: Tue, 09 Dec 2008 17:48:57 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Zachary Amsden <zach@vmware.com>, Huang Ying <ying.huang@intel.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, norman@thebacks.co.uk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, Alok Kataria <alokkataria1@gmail.com>,
-       =?UTF-8?B?QnJ1bm8gUHLDqW1vbnQ=?= <"bruno .premont"@restena.lu>,
-       xl@xlsigned.net, dsd@gentoo.org
-Subject: Re: [PATCH] Fix VMI crash on boot in 2.6.27+ kernels
-References: <1228870222.8766.15.camel@bodhitayantram.eng.vmware.com> <86802c440812091715r775d514eh3acf9add9e24184e@mail.gmail.com>
-In-Reply-To: <86802c440812091715r775d514eh3acf9add9e24184e@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 9 Dec 2008 20:54:37 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsYEAMqvPklMROB9/2dsb2JhbACBbM8Vgwc
+Date: Tue, 9 Dec 2008 20:54:34 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Tom Zanussi <zanussi@comcast.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Relay : fix cpu offline problem
+Message-ID: <20081210015434.GA11566@Krystal>
+References: <20081209162512.GB24039@Krystal> <493F0E57.7090206@cn.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <493F0E57.7090206@cn.fujitsu.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:54:17 up 23 days,  2:34,  3 users,  load average: 0.91, 0.76,
+	0.68
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
+Ah, great, I did not see it passing by. Thanks !
+
+Mathieu
+
+* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+> Hi, Mathieu Desnoyers
 > 
-> VMI initialiation can relocate the fixmap, causing early_ioremap
-> to malfunction if it is initialized before the relocation.  The
-> ioremap area is low enough in virtual address space that no actual
-> collision occurs, however, because the pagetables for it were not
-> allocated under VMI mode, the pagetable updates are dropped by
-> the hypervisor as irrelevant, resulting in a crash on boot.
+> I have fixed this problem in mainline.
+> http://lkml.org/lkml/2008/11/14/74
+> 
+> Lai
+> 
+> Mathieu Desnoyers wrote:
+> > Here is a fix for how relay handles cpu hotplug in the allocation error path. If
+> > a cpu goes down while allocating, it may result in a buffer never being freed.
+> > 
+> > Lai Jiangshan originally identified this problem in the LTTng fork of
+> > relay (ltt-relay-alloc). Here is the fix which applies to the original
+> > kernel/relay.c.
+> > 
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > CC: Lai Jiangshan <laijs@cn.fujitsu.com>
+> > CC: Tom Zanussi <zanussi@comcast.net>
+> > ---
+> >  kernel/relay.c |    7 +++----
+> >  1 file changed, 3 insertions(+), 4 deletions(-)
+> > 
+> > Index: linux-2.6-lttng/kernel/relay.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/kernel/relay.c	2008-12-09 10:58:45.000000000 -0500
+> > +++ linux-2.6-lttng/kernel/relay.c	2008-12-09 11:09:58.000000000 -0500
+> > @@ -611,10 +611,9 @@ struct rchan *relay_open(const char *bas
+> >  	return chan;
+> >  
+> >  free_bufs:
+> > -	for_each_online_cpu(i) {
+> > -		if (!chan->buf[i])
+> > -			break;
+> > -		relay_close_buf(chan->buf[i]);
+> > +	for_each_possible_cpu(i) {
+> > +		if (chan->buf[i])
+> > +			relay_close_buf(chan->buf[i]);
+> >  	}
+> >  
+> >  	kref_put(&chan->kref, relay_destroy_channel);
+> 
 > 
 
-I have mentioned in the past that I think the very concept of relocating
-the fixmap to be utterly braindead.  Instead, I believe we should locate
-it low in kernel space so it doesn't have to be relocated.  It's
-unfortunately a relatively large change.
-
-	-hpa
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
