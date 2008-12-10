@@ -1,69 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbYLJHOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbYLJH3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755954AbYLJHOd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 02:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbYLJHOY
+	id S1755844AbYLJH3u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 02:29:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbYLJH3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 02:14:24 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:50579 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754266AbYLJHOW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 02:14:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=h1TJZ0KAXUS3U/Nm2aWoe+hyTkDxktA5q7WTjgfqaiwegVyYgFMg2KlBuwNDJsybkV
-         x+nY4sSK01JngCqNaD/3NvDowu/t8xIXpuB7s55GuWqfFyfeBLiZG5Sy8CvD/n+0BPSZ
-         CtqnqeiZ53TIt51EPQICYy42d+vn5oruIeb2s=
-Message-ID: <5d5443650812092314s4b51abb2me5e0f16a36d2c18c@mail.gmail.com>
-Date: Wed, 10 Dec 2008 12:44:21 +0530
-From: "Trilok Soni" <soni.trilok@gmail.com>
-To: "Lauri Leukkunen" <lauri.leukkunen@nokia.com>
-Subject: Re: [PATCH] Add TI TSC2005 Touchscreen driver
-Cc: "ext Sam Ravnborg" <sam@ravnborg.org>,
-       "David Brownell" <david-b@pacbell.net>, dmitry.torokhov@gmail.com,
-       "linux-omap@vger.kernel.org Mailing List" 
-	<linux-omap@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-       linux-input@vger.kernel.org
-In-Reply-To: <20081209131705.GC6667@pure.research.nokia.com>
+	Wed, 10 Dec 2008 02:29:41 -0500
+Received: from mga14.intel.com ([143.182.124.37]:62710 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754372AbYLJH3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 02:29:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,746,1220252400"; 
+   d="scan'208";a="88501544"
+Date: Wed, 10 Dec 2008 15:29:21 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org
+Subject: [PATCH] usb: make printk messges more searchable
+Message-ID: <20081210072921.GA18142@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <5d5443650812080949h5aff6010mb7341f581841f126@mail.gmail.com>
-	 <20081208182648.GA9740@uranus.ravnborg.org>
-	 <20081209131705.GC6667@pure.research.nokia.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lauri,
+Make USB printk messages long and straightforward.  One of these
+decorated USB error messages cost me some smart efforts to locate.
 
-On Tue, Dec 9, 2008 at 6:47 PM, Lauri Leukkunen
-<lauri.leukkunen@nokia.com> wrote:
-> On 08/12/08 19:26 +0100, ext Sam Ravnborg wrote:
->> > Add Texas Instruments TSC2005 chip touchscreen driver.
->> >
->> > Signed-off-by: Trilok Soni <soni.trilok@gmail.com>
->>
->> Hi Trilok.
->> A few nitpicks below.
->>
->> In general a very clean written driver with adequate comments - nice work!
->
-> Umm, isn't this code mostly written by Nokia? At least I remember modifying
-> some of it, and this version looks like Konsta Karsisto might be the last
-> person touching it. Originally I think it's written by Imre Deak, probably
-> based on the tsc2301 code.
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ drivers/usb/core/hub.c |   89 ++++++++++++++++++---------------------
+ 1 file changed, 43 insertions(+), 46 deletions(-)
 
-Yes, you are the author. Please check first few lines of this patch,
---from field has your name :)
-
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+--- linux-2.6.orig/drivers/usb/core/hub.c
++++ linux-2.6/drivers/usb/core/hub.c
+@@ -107,7 +107,8 @@ MODULE_PARM_DESC (blinkenlights, "true t
+ /* define initial 64-byte descriptor request timeout in milliseconds */
+ static int initial_descriptor_timeout = USB_CTRL_GET_TIMEOUT;
+ module_param(initial_descriptor_timeout, int, S_IRUGO|S_IWUSR);
+-MODULE_PARM_DESC(initial_descriptor_timeout, "initial 64-byte descriptor request timeout in milliseconds (default 5000 - 5.0 seconds)");
++MODULE_PARM_DESC(initial_descriptor_timeout,
++		"initial 64-byte descriptor request timeout in milliseconds (default 5000 - 5.0 seconds)");
+ 
+ /*
+  * As of 2.6.10 we introduce a new USB device initialization scheme which
+@@ -131,8 +132,7 @@ MODULE_PARM_DESC(old_scheme_first,
+ static int use_both_schemes = 1;
+ module_param(use_both_schemes, bool, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(use_both_schemes,
+-		"try the other device initialization scheme if the "
+-		"first one fails");
++		"try the other device initialization scheme if the first one fails");
+ 
+ /* Mutual exclusion for EHCI CF initialization.  This interferes with
+  * port reset on some companion controllers.
+@@ -545,8 +545,7 @@ static unsigned hub_power_on(struct usb_
+ 	if ((wHubCharacteristics & HUB_CHAR_LPSM) < 2)
+ 		dev_dbg(hub->intfdev, "enabling power on all ports\n");
+ 	else
+-		dev_dbg(hub->intfdev, "trying to enable port power on "
+-				"non-switchable hub\n");
++		dev_dbg(hub->intfdev, "trying to enable port power on non-switchable hub\n");
+ 	for (port1 = 1; port1 <= hub->descriptor->bNbrPorts; port1++)
+ 		set_port_feature(hub->hdev, port1, USB_PORT_FEAT_POWER);
+ 
+@@ -1020,8 +1019,7 @@ static int hub_configure(struct usb_hub 
+ 
+ 			if (remaining < hdev->maxchild * 100)
+ 				dev_warn(hub_dev,
+-					"insufficient power available "
+-					"to use all downstream ports\n");
++					"insufficient power available to use all downstream ports\n");
+ 			hub->mA_per_port = 100;		/* 7.2.1.1 */
+ 		}
+ 	} else {	/* Self-powered external hub */
+@@ -1136,8 +1134,8 @@ static int hub_probe(struct usb_interfac
+ 	hdev = interface_to_usbdev(intf);
+ 
+ 	if (hdev->level == MAX_TOPO_LEVEL) {
+-		dev_err(&intf->dev, "Unsupported bus topology: "
+-				"hub nested too deep\n");
++		dev_err(&intf->dev,
++			"Unsupported bus topology: hub nested too deep\n");
+ 		return -E2BIG;
+ 	}
+ 
+@@ -1476,8 +1474,8 @@ static void announce_device(struct usb_d
+ 	dev_info(&udev->dev, "New USB device found, idVendor=%04x, idProduct=%04x\n",
+ 		le16_to_cpu(udev->descriptor.idVendor),
+ 		le16_to_cpu(udev->descriptor.idProduct));
+-	dev_info(&udev->dev, "New USB device strings: Mfr=%d, Product=%d, "
+-		"SerialNumber=%d\n",
++	dev_info(&udev->dev,
++		"New USB device strings: Mfr=%d, Product=%d, SerialNumber=%d\n",
+ 		udev->descriptor.iManufacturer,
+ 		udev->descriptor.iProduct,
+ 		udev->descriptor.iSerialNumber);
+@@ -1542,7 +1540,7 @@ static int usb_configure_device_otg(stru
+ 					 * customize to match your product.
+ 					 */
+ 					dev_info(&udev->dev,
+-						"can't set HNP mode; %d\n",
++						"can't set HNP mode: %d\n",
+ 						err);
+ 					bus->b_hnp_enable = 0;
+ 				}
+@@ -1723,8 +1721,9 @@ int usb_authorize_device(struct usb_devi
+ 	}
+ 	result = usb_get_device_descriptor(usb_dev, sizeof(usb_dev->descriptor));
+ 	if (result < 0) {
+-		dev_err(&usb_dev->dev, "can't re-read device descriptor for "
+-			"authorization: %d\n", result);
++		dev_err(&usb_dev->dev,
++			"can't re-read device descriptor for authorization: %d\n",
++			result);
+ 		goto error_device_descriptor;
+ 	}
+ 	usb_dev->authorized = 1;
+@@ -2020,8 +2019,8 @@ int usb_port_suspend(struct usb_device *
+ 				USB_CTRL_SET_TIMEOUT);
+ 	} else {
+ 		/* device has up to 10 msec to fully suspend */
+-		dev_dbg(&udev->dev, "usb %ssuspend\n",
+-				udev->auto_pm ? "auto-" : "");
++		dev_dbg(&udev->dev, "%s\n",
++			udev->auto_pm ? "usb auto-suspend" : "usb suspend");
+ 		usb_set_device_state(udev, USB_STATE_SUSPENDED);
+ 		msleep(10);
+ 	}
+@@ -2045,8 +2044,8 @@ static int finish_port_resume(struct usb
+ 	u16	devstatus;
+ 
+ 	/* caller owns the udev device lock */
+-	dev_dbg(&udev->dev, "finish %sresume\n",
+-			udev->reset_resume ? "reset-" : "");
++	dev_dbg(&udev->dev, "%s\n",
++		udev->reset_resume ? "finish reset-resume" : "finish resume");
+ 
+ 	/* usb ch9 identifies four variants of SUSPENDED, based on what
+ 	 * state the device resumes to.  Linux currently won't see the
+@@ -2098,8 +2097,9 @@ static int finish_port_resume(struct usb
+ 					NULL, 0,
+ 					USB_CTRL_SET_TIMEOUT);
+ 			if (status)
+-				dev_dbg(&udev->dev, "disable remote "
+-					"wakeup, status %d\n", status);
++				dev_dbg(&udev->dev,
++					"disable remote wakeup, status %d\n",
++					status);
+ 		}
+ 		status = 0;
+ 	}
+@@ -2582,9 +2582,9 @@ hub_port_init (struct usb_hub *hub, stru
+ 				goto fail;
+ 			}
+ 			if (r) {
+-				dev_err(&udev->dev, "device descriptor "
+-						"read/%s, error %d\n",
+-						"64", r);
++				dev_err(&udev->dev,
++					"device descriptor read/64, error %d\n",
++					r);
+ 				retval = -EMSGSIZE;
+ 				continue;
+ 			}
+@@ -2621,9 +2621,9 @@ hub_port_init (struct usb_hub *hub, stru
+ 
+ 		retval = usb_get_device_descriptor(udev, 8);
+ 		if (retval < 8) {
+-			dev_err(&udev->dev, "device descriptor "
+-					"read/%s, error %d\n",
+-					"8", retval);
++			dev_err(&udev->dev,
++					"device descriptor read/8, error %d\n",
++					retval);
+ 			if (retval >= 0)
+ 				retval = -EMSGSIZE;
+ 		} else {
+@@ -2650,8 +2650,8 @@ hub_port_init (struct usb_hub *hub, stru
+   
+ 	retval = usb_get_device_descriptor(udev, USB_DT_DEVICE_SIZE);
+ 	if (retval < (signed)sizeof(udev->descriptor)) {
+-		dev_err(&udev->dev, "device descriptor read/%s, error %d\n",
+-			"all", retval);
++		dev_err(&udev->dev, "device descriptor read/all, error %d\n",
++			retval);
+ 		if (retval >= 0)
+ 			retval = -ENOMSG;
+ 		goto fail;
+@@ -2681,8 +2681,8 @@ check_highspeed (struct usb_hub *hub, st
+ 	status = usb_get_descriptor (udev, USB_DT_DEVICE_QUALIFIER, 0,
+ 			qual, sizeof *qual);
+ 	if (status == sizeof *qual) {
+-		dev_info(&udev->dev, "not running at top speed; "
+-			"connect to a high speed hub\n");
++		dev_info(&udev->dev,
++			"not running at top speed; connect to a high speed hub\n");
+ 		/* hub LEDs are probably harder to miss than syslog */
+ 		if (hub->has_indicators) {
+ 			hub->indicator[port1-1] = INDICATOR_GREEN_BLINK;
+@@ -2719,9 +2719,9 @@ hub_power_remaining (struct usb_hub *hub
+ 		else
+ 			delta = 8;
+ 		if (delta > hub->mA_per_port)
+-			dev_warn(&udev->dev, "%dmA is over %umA budget "
+-					"for port %d!\n",
+-					delta, hub->mA_per_port, port1);
++			dev_warn(&udev->dev,
++				 "%dmA is over %umA budget for port %d!\n",
++				 delta, hub->mA_per_port, port1);
+ 		remaining -= delta;
+ 	}
+ 	if (remaining < 0) {
+@@ -2812,8 +2812,9 @@ static void hub_port_connect_change(stru
+ 		status = hub_port_debounce(hub, port1);
+ 		if (status < 0) {
+ 			if (printk_ratelimit())
+-				dev_err(hub_dev, "connect-debounce failed, "
+-						"port %d disabled\n", port1);
++				dev_err(hub_dev,
++					"connect-debounce failed, port %d disabled\n",
++					port1);
+ 			portstatus &= ~USB_PORT_STAT_CONNECTION;
+ 		} else {
+ 			portstatus = status;
+@@ -2883,8 +2884,7 @@ static void hub_port_connect_change(stru
+ 			le16_to_cpus(&devstat);
+ 			if ((devstat & (1 << USB_DEVICE_SELF_POWERED)) == 0) {
+ 				dev_err(&udev->dev,
+-					"can't connect bus-powered hub "
+-					"to this port\n");
++					"can't connect bus-powered hub to this port\n");
+ 				if (hub->has_indicators) {
+ 					hub->indicator[port1-1] =
+ 						INDICATOR_AMBER_BLINK;
+@@ -3067,9 +3067,8 @@ static void hub_events(void)
+ 			if (portchange & USB_PORT_STAT_C_ENABLE) {
+ 				if (!connect_change)
+ 					dev_dbg (hub_dev,
+-						"port %d enable change, "
+-						"status %08x\n",
+-						i, portstatus);
++						 "port %d enable change, status %08x\n",
++						 i, portstatus);
+ 				clear_port_feature(hdev, i,
+ 					USB_PORT_FEAT_C_ENABLE);
+ 
+@@ -3083,10 +3082,8 @@ static void hub_events(void)
+ 				    && !connect_change
+ 				    && hdev->children[i-1]) {
+ 					dev_err (hub_dev,
+-					    "port %i "
+-					    "disabled by hub (EMI?), "
+-					    "re-enabling...\n",
+-						i);
++						 "port %i disabled by hub (EMI?), re-enabling...\n",
++						 i);
+ 					connect_change = 1;
+ 				}
+ 			}
+@@ -3420,8 +3417,8 @@ static int usb_reset_and_verify_device(s
+ 		ret = usb_set_interface(udev, desc->bInterfaceNumber,
+ 			desc->bAlternateSetting);
+ 		if (ret < 0) {
+-			dev_err(&udev->dev, "failed to restore interface %d "
+-				"altsetting %d (error=%d)\n",
++			dev_err(&udev->dev,
++				"failed to restore interface %d altsetting %d (error=%d)\n",
+ 				desc->bInterfaceNumber,
+ 				desc->bAlternateSetting,
+ 				ret);
