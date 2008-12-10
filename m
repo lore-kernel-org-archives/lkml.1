@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYLJVpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbYLJVpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756230AbYLJVpR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 16:45:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbYLJVo6
+	id S1756668AbYLJVpn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 16:45:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755968AbYLJVpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 16:44:58 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:42036 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755264AbYLJVo4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 16:44:56 -0500
-Date: Wed, 10 Dec 2008 20:48:52 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       stable@kernel.org
-Subject: [PATCH] fix mapping_writably_mapped()
-In-Reply-To: <Pine.LNX.4.64.0812101312340.16066@blonde.anvils>
-Message-ID: <Pine.LNX.4.64.0812102043060.25282@blonde.anvils>
-References: <1228855666.6379.84.camel@lts-notebook>
- <Pine.LNX.4.64.0812101312340.16066@blonde.anvils>
+	Wed, 10 Dec 2008 16:45:07 -0500
+Received: from netgear.net.ru ([195.178.208.66]:32869 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755656AbYLJVpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 16:45:04 -0500
+Date: Thu, 11 Dec 2008 00:45:00 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user space data
+Message-ID: <20081210214500.GA24212@ioremap.net>
+References: <494009D7.4020602@vlnb.net> <494012C4.7090304@vlnb.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <494012C4.7090304@vlnb.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee Schermerhorn noticed yesterday that I broke the mapping_writably_mapped
-test in 2.6.7!  Bad bad bug, good good find.
+Hi Vladislav.
 
-The i_mmap_writable count must be incremented for VM_SHARED (just as
-i_writecount is for VM_DENYWRITE, but while holding the i_mmap_lock)
-when dup_mmap() copies the vma for fork: it has its own more optimal
-version of __vma_link_file(), and I missed this out.  So the count
-was later going down to 0 (dangerous) when one end unmapped, then
-wrapping negative (inefficient) when the other end unmapped.
+On Wed, Dec 10, 2008 at 10:04:36PM +0300, Vladislav Bolkhovitin (vst@vlnb.net) wrote:
+> In the chosen approach new optional field void *net_priv was added to 
+> struct page. It is enclosed by
 
-The only impact on x86 would have been that setting a mandatory lock on
-a file which has at some time been opened O_RDWR and mapped MAP_SHARED
-(but not necessarily PROT_WRITE) across a fork, might fail with -EAGAIN
-when it should succeed, or succeed when it should fail.
+There is a huge no-no in networking land on increasing skb.
+Reason is simple every skb will carry potentially unneded data as long
+as given option is enabled, and most of the time it will.
+To break this barrier one has to have (I wanted to write ego, but then
+decided to replace it with mojo) so huge reason to do this, that it is
+almost impossible to have.
 
-But those architectures which rely on flush_dcache_page() to flush
-userspace modifications back into the page before the kernel reads it,
-may in some cases have skipped the flush after such a fork - though any
-repetitive test will soon wrap the count negative, in which case it will
-flush_dcache_page() unnecessarily.
+Something tells me that increasing page structure with 8 bytes because
+of zero-copy iscsi transfer is not that great idea, since basically every
+user out there will have it enabled in the distro config and will waste
+noticeble amount of ram.
 
-Fix would be a two-liner, but mapping variable added, and comment moved.
+The same problem of not sending any kind of notification to the user
+when his pages are 'acked' by receiving some packet or freeing the data
+exists long ago and was tried to be fixed several times.
 
-Reported-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
+The most applicable to your case maybe DST experience. DST is a block
+layer device and all its pages starting from quite recent kernels are
+not allowed to be slab ones (xfs was the last one who provided slab
+pages in the bios), so each page has two 'unused' pointers in lru list
+entry, which you may reuse. If scsi layer may have slab pages from some
+place (although this does not sound like a good idea, ->sendpage() will
+bug on on them anyway), this hack will not work, otherwise you only need
+to have net_page_get/put stuff in and do not mess with increasing page.
+And this was tested 3-4 kernel releases ago, so things may be changed.
 
- kernel/fork.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+Another appropach is to increase skb's shared data (at the end of the
+skb->data), and this approach was not frowned upon too much either, but
+it requires to mess with skb->destructor, which may not be appropriate
+in some cases. If iscsi does not use sockets (it does iirc), things are
+much simpler.
 
---- 2.6.28-rc7/kernel/fork.c	2008-11-15 23:09:30.000000000 +0000
-+++ linux/kernel/fork.c	2008-12-10 12:49:13.000000000 +0000
-@@ -315,17 +315,20 @@ static int dup_mmap(struct mm_struct *mm
- 		file = tmp->vm_file;
- 		if (file) {
- 			struct inode *inode = file->f_path.dentry->d_inode;
-+			struct address_space *mapping = file->f_mapping;
-+
- 			get_file(file);
- 			if (tmp->vm_flags & VM_DENYWRITE)
- 				atomic_dec(&inode->i_writecount);
--
--			/* insert tmp into the share list, just after mpnt */
--			spin_lock(&file->f_mapping->i_mmap_lock);
-+			spin_lock(&mapping->i_mmap_lock);
-+			if (tmp->vm_flags & VM_SHARED)
-+				mapping->i_mmap_writable++;
- 			tmp->vm_truncate_count = mpnt->vm_truncate_count;
--			flush_dcache_mmap_lock(file->f_mapping);
-+			flush_dcache_mmap_lock(mapping);
-+			/* insert tmp into the share list, just after mpnt */
- 			vma_prio_tree_add(tmp, mpnt);
--			flush_dcache_mmap_unlock(file->f_mapping);
--			spin_unlock(&file->f_mapping->i_mmap_lock);
-+			flush_dcache_mmap_unlock(mapping);
-+			spin_unlock(&mapping->i_mmap_lock);
- 		}
- 
- 		/*
+Hope this helps.
+
+-- 
+	Evgeniy Polyakov
