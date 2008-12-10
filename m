@@ -1,44 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbYLJWxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbYLJW5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755871AbYLJWxd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 17:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYLJWxW
+	id S1755358AbYLJW5T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 17:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYLJW5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 17:53:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56319 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752501AbYLJWxV (ORCPT
+	Wed, 10 Dec 2008 17:57:08 -0500
+Received: from mu-out-0910.google.com ([209.85.134.191]:36555 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751697AbYLJW5G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 17:53:21 -0500
-Date: Wed, 10 Dec 2008 14:52:26 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next: Tree for December 10
-Message-Id: <20081210145226.8a174e68.akpm@linux-foundation.org>
-In-Reply-To: <20081210164659.9ebb8158.sfr@canb.auug.org.au>
-References: <20081210164659.9ebb8158.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Dec 2008 17:57:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Np81IB6iQlNBiHR0SzrcfoCJSgvFCjRRKFc40ejDNtPL2lK0QR+t/iM2W/ECoPywpu
+         6XSkG+mnNZFbWX+QEgQ8jP8iS4Qqyr3so++0c1KQwUSj4/Hf/tcjYOsFsj0kKXrWmNQk
+         bISRqrS4riw3KanvYMU/rbD8C96Ms/rwjR++A=
+Date: Thu, 11 Dec 2008 01:48:54 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Vorobiev Dmitri <dmitri.vorobiev@movial.fi>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Julia Lawall <julia@diku.dk>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 1/28] drivers/base/platform.c: Drop return value from
+	platform_driver remove functions
+Message-ID: <20081210224854.GA5167@zarina>
+Reply-To: cbouatmailru@gmail.com
+References: <Pine.LNX.4.64.0812101725540.21998@ask.diku.dk> <20081210163819.17cf4628@lxorguk.ukuu.org.uk> <45755.88.114.236.15.1228932236.squirrel@webmail.movial.fi> <20081210212659.GA6132@zarina> <42393.88.114.236.15.1228946794.squirrel@webmail.movial.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <42393.88.114.236.15.1228946794.squirrel@webmail.movial.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Dec 2008 16:46:59 +1100
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On Thu, Dec 11, 2008 at 12:06:34AM +0200, Vorobiev Dmitri wrote:
+> > On Wed, Dec 10, 2008 at 08:03:56PM +0200, Vorobiev Dmitri wrote:
+> >> > On Wed, 10 Dec 2008 17:26:26 +0100 (CET)
+> >> > Julia Lawall <julia@diku.dk> wrote:
+> >> >
+> >> >> From: Julia Lawall <julia@diku.dk>
+> >> >>
+> >> >> The return value of the remove function of a driver structure, and
+> >> thus
+> >> >> of
+> >> >> a platform_driver structure, is ultimately ignored
+> >> >
+> >> > Currently
+> >>
+> >> Are there really any plans about actually using the return value?
+> >
+> > It's often used by the drivers, but currently not handled by
+> > the subsystem. For example, _remove() callback might return -EBUSY
+> > or -EAGAIN, which means that whoever called the _remove() should
+> > try later.
+> 
+> Sure, it's easy to find drivers, which that return a non-dummy value from
+> the remove() callback thinking that someone up there will take care of the
+> error.
+> 
+> The point is, however, that
+[...]
+> SCSI maintainers do not apply the patch
 
-> I have created today's linux-next tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> (patches at
-> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/)
+This sometimes happens. You can try to repost your original patch, and
+in the commit message briefly describe that return type is unlikely to
+change, and give a pointer to this discussion.
 
-This tree breaks poweroff on my x86_64 test box.  `halt -pfn' does all
-the usual things, but the machine doesn't turn off.
-
-config: http://userweb.kernel.org/~akpm/config-akpm2.txt
-dmesg: http://userweb.kernel.org/~akpm/dmesg-akpm2.txt
-
-Any suggestions which don't include the word "bisect" would be most welcome.
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
