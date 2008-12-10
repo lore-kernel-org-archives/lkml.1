@@ -1,234 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbYLJL5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbYLJMCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753205AbYLJL5h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 06:57:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYLJL52
+	id S1753205AbYLJMCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 07:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbYLJMCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 06:57:28 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:42596 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbYLJL51 (ORCPT
+	Wed, 10 Dec 2008 07:02:10 -0500
+Received: from rv-out-0506.google.com ([209.85.198.239]:16457 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbYLJMCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 06:57:27 -0500
-Date: Wed, 10 Dec 2008 17:27:21 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       dm-devel@redhat.com, tglx@linutronix.de, mel@csn.ul.ie,
-       paulmck@linux.vnet.ibm.com
-Subject: [BUG] linux-next: 20081209 - kernel bug at
-	__rcu_process_callbacks, while booting up
-Message-ID: <20081210115721.GB6107@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20081209185237.8bb715d7.sfr@canb.auug.org.au>
+	Wed, 10 Dec 2008 07:02:08 -0500
+Message-ID: <ac3eb2510812100402v58f792e3k6ebd6607495a13bf@mail.gmail.com>
+Date: Wed, 10 Dec 2008 13:02:06 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Mark McLoughlin" <markmc@redhat.com>
+Subject: Re: [PATCH] virtio: make PCI devices take a virtio_pci module ref
+Cc: "Anthony Liguori" <aliguori@us.ibm.com>,
+       "Rusty Russell" <rusty@rustcorp.com.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>,
+       "Michael Tokarev" <mjt@tls.msk.ru>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>
+In-Reply-To: <1228902558.5384.19.camel@blaa>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081209185237.8bb715d7.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <1228394671.3732.77.camel@blaa>
+	 <200812051043.51417.rusty@rustcorp.com.au>
+	 <1228489626.3858.37.camel@blaa>
+	 <200812071852.08962.rusty@rustcorp.com.au>
+	 <1228741409.3609.32.camel@blaa> <493D334D.6050004@us.ibm.com>
+	 <1228840890.26198.25.camel@blaa>
+	 <ac3eb2510812091016u944d6c9je6ac8470127e5115@mail.gmail.com>
+	 <1228902558.5384.19.camel@blaa>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Dec 10, 2008 at 10:49, Mark McLoughlin <markmc@redhat.com> wrote:
+> On Tue, 2008-12-09 at 19:16 +0100, Kay Sievers wrote:
+>> On Tue, Dec 9, 2008 at 17:41, Mark McLoughlin <markmc@redhat.com> wrote:
+>> > On Mon, 2008-12-08 at 08:46 -0600, Anthony Liguori wrote:
+>> >> Mark McLoughlin wrote:
+>> >> > On Sun, 2008-12-07 at 18:52 +1030, Rusty Russell wrote:
+>> >> >> On Saturday 06 December 2008 01:37:06 Mark McLoughlin wrote:
+>> >> >>
+>> >> >>> Another example of a lack of an explicit dependency causing problems is
+>> >> >>> Fedora's mkinitrd having this hack:
+>> >> >>>
+>> >> >>>     if echo $PWD | grep -q /virtio-pci/ ; then
+>> >> >>>         findmodule virtio_pci
+>> >> >>>     fi
+>> >> >>>
+>> >> >>> which basically says "if this is a virtio device, don't forget to
+>> >> >>> include virtio_pci in the initrd too!". Now, mkinitrd is full of hacks,
+>> >> >>> but this is a particularly unusual one.
+>> >> >>>
+>> >> >> Um, I don't know what this does, sorry.
+>> >> >>
+>> >> >> I have no idea how Fedora chooses what to put in an initrd; I can't think
+>> >> >> of a sensible way of deciding what goes in and what doesn't other than
+>> >> >> lists and heuristics.
+>> >> >>
+>> >> >
+>> >> > Fedora's mkinitrd creates an initrd suitable to boot the machine you run
+>> >> > mkinitrd on, rather than creating an initrd suitable to boot any
+>> >> > machine.
+>> >> >
+>> >> > So, it goes "ah, / is mounted from /dev/vda, we need to include
+>> >> > virtio_blk and it's dependencies". It does that in a generic way that
+>> >> > works well for most setups:
+>> >> >
+>> >> >   1) Find the device name (e.g. vda) below /sys/block
+>> >> >
+>> >> >   2) Follow the 'device' link to e.g. /sys/devices/virtio-pci/virtio1
+>> >> >
+>> >> >   3) Find the module need for this through either 'modalias' or the
+>> >> >      'driver/module' symlink
+>> >> >
+>> >> >   4) Use modprobe to list any dependencies of that module
+>> >> >
+>> >> > Clearly, virtio-pci won't be pulled in by any of this so we've added a
+>> >> > hack to say "oh, it's a virtio device, let's include virtio_pci just in
+>> >> > case".
+>> >> >
+>> >> > It's not even the case that mkinitrd needs to know how to include the
+>> >> > the module for the bus, because in our case that's virtio.ko ... we've
+>> >> > pretty effectively hidden the the bus *implementation* from userspace.
+>> >> >
+>> >> > I don't think this is worth wasting too much time fixing, that's why I'm
+>> >> > thinking we should just make virtio_pci built-in by default with
+>> >> > CONFIG_KVM_GUEST.
+>> >> >
+>> >>
+>> >> What if we have multiple virtio transports?
+>> >
+>> > I don't think that's so much an an issue (just build in any transport
+>> > supported by KVM), but rather that you might build a non-pv_ops kernel
+>> > to run on QEMU which would benefit from using virtio drivers ...
+>> >
+>> >>   Is there a way that we can
+>> >> expose the relationship with virtio-blk and virtio-pci in sysfs?  We
+>> >> have a struct device for the PCI device, it's just a matter of making
+>> >> the link visible.
+>> >
+>> > It feels a bit like busy work to generalise this since only virtio_pci
+>> > can be built as a module, but here's a patch.
+>> >
+>> > The mkinitrd hack turns into:
+>> >
+>> >        # Handle finding virtio bus implementations
+>> >        if [ -L ./virtio_module ] ; then
+>> >            findmodule $(basename $(readlink ./virtio_module))
+>> >        else if echo $PWD | grep -q /virtio-pci/ ; then
+>> >            findmodule virtio_pci
+>> >        fi; fi
+>> >
+>> > [PATCH] virtio: add a 'virtio_module' sysfs symlink
+>>
+>> Doesn't the device have a "driver" link already? If yes, the driver it
+>> points to should have a "module" link.
+>
+> The virtio bus is an abstraction that has several different backend
+> implementations - currently virtio-pci, lguest and kvm-s390.
+>
+> So yes, the driver/module link gives us the device driver, but the
+> virtio_module link is to the virtio bus driver (aka implementation,
+> transport, backend, ...):
+>
+>  $> basename $(readlink virtio_module)
+>  virtio_pci
+>  $> basename $(readlink driver/module)
+>  virtio_net
 
-	Kernel bug is hit while booting up the next-20081208/09 kernels over
-the x86_64 box. The IP is pointing to 0x0 and its stuck at
-__rcu_process_callbacks.
+I see. But why not just call it "module", like we do in all other
+places, when it points to /sys/module/.
 
-Activating logical volumes
-  4 logical volume(s) in volume group "VolGroup00"BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
-IP: [<0000000000000000>] 0x0
-PGD 3e8ad067 PUD 3e8ac067 PMD 0 
-Oops: 0010 [#1] SMP 
-last sysfs file: /sys/block/dm-1/removable
-CPU 3 
-Modules linked in:
-Pid: 0, comm: swapper Not tainted 2.6.28-rc7-next-20081209-autotest #1
-RIP: 0010:[<0000000000000000>]  [<0000000000000000>] 0x0
-RSP: 0018:ffff88003fa73ef0  EFLAGS: 00010286
-RAX: ffff88003eae0500 RBX: ffff880001047040 RCX: ffffffff80268f66
-RDX: 0000000000000000 RSI: ffffe20000fab800 RDI: ffff88003eae0500
-RBP: 0000000000000000 R08: ffff880001047040 R09: ffffffff80853950
-R10: 0000000000000038 R11: ffffffff8032222d R12: 0000000000000005
-R13: 0000000000000038 R14: 0000000000000009 R15: 0000000000000018
-FS:  000000000066d870(0000) GS:ffff88003f803f00(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 000000003e8a9000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process swapper (pid: 0, threadinfo ffff88003fa64000, task ffff88003f9dde00)
-Stack:
- ffffffff80268f66 ffff88003fa73ef8 0000000000000100 0000000000000001
- ffffffff807400b8 0000000000000038 ffffffff80269001 0000000000000018
- ffffffff8023b891 ffffffff8020e79e 0000000000000046 ffff88003fa73f80
-Call Trace:
- <IRQ> <0> [<ffffffff80268f66>] __rcu_process_callbacks+0x14e/0x1c3
- [<ffffffff80269001>] rcu_process_callbacks+0x26/0x4a
- [<ffffffff8023b891>] __do_softirq+0x76/0x136
- [<ffffffff8020e79e>] profile_pc+0x21/0x5b
- [<ffffffff8020d03c>] call_softirq+0x1c/0x28
- [<ffffffff8020e091>] do_softirq+0x2c/0x6c
- [<ffffffff8021e018>] smp_apic_timer_interrupt+0x93/0xac
- [<ffffffff8020ca73>] apic_timer_interrupt+0x13/0x20
- <EOI> <0>Code:  Bad RIP value.
-RIP  [<0000000000000000>] 0x0
- RSP <ffff88003fa73ef0>
-CR2: 0000000000000000
----[ end trace 69ecde41a682e571 ]---
-Kernel panic - not syncing: Fatal exception in interrupt
-Pid: 0, comm: swapper Tainted: G      D    2.6.28-rc7-next-20081209-autotest #1
-Call Trace:
-Mounting root fi <IRQ> lesystem.
- [<ffffffff80236e7d>] panic+0x86/0x144
- [<ffffffff8020ca73>] apic_timer_interrupt+0x13/0x20
- [<ffffffff8051fd57>] oops_end+0x61/0xad
- [<ffffffff8051fd96>] oops_end+0xa0/0xad
- [<ffffffff805215ac>] do_page_fault+0x748/0x801
- [<ffffffff8051f3af>] page_fault+0x1f/0x30
- [<ffffffff8032222d>] selinux_cred_free+0x0/0x14
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000002
-IP: [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
-PGD 3e8ad067 PUD 3e8ac067 PMD 0 
-Oops: 0000 [#2] SMP 
-last sysfs file: /sys/block/ram7/removable
-CPU 2 
-Modules linked in:
-Pid: 1, comm: init Tainted: G      D    2.6.28-rc7-next-20081209-autotest #1
-RIP: 0010:[<ffffffff802926da>]  [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
-RSP: 0018:ffff88003f9d7db8  EFLAGS: 00010002
-RAX: 0000000000000000 RBX: 0000000000000246 RCX: 0000000000000001
-RDX: ffff880001037800 RSI: 0000000000000002 RDI: ffffffff80854f70
-RBP: 0000000000000020 R08: 0000000000000000 R09: ffffffff80859a80
-R10: 0000000000000001 R11: ffff88003f426018 R12: ffffffff80854f70
-R13: ffffffff80253ab1 R14: 0000000000000080 R15: ffffffff802b4141
-FS:  000000000066d870(0063) GS:ffff88003f803c80(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000002 CR3: 000000003e8a9000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process init (pid: 1, threadinfo ffff88003f9d6000, task ffff88003f9d8000)
-Stack:
- 00000000ffffffff ffff88003f426000 ffffffff80859a80 ffffffff80859a80
- 0000000000000000 ffffffff80253ab1 00000000006f1db0 0000000000000000
- ffff88003eb6a2f8 ffff88003f9d7e48 0000000000000000 01ff88003e97c400
-Call Trace:
- [<ffffffff80253ab1>] ? smp_call_function_many+0xdb/0x220
- [<ffffffff802704ca>] ? do_writepages+0x23/0x30
- [<ffffffff802b4141>] ? invalidate_bh_lru+0x0/0x42
- [<ffffffff80253c16>] ? smp_call_function+0x20/0x24
- [<ffffffff8023b483>] ? on_each_cpu+0x10/0x22
- [<ffffffff802b919b>] ? kill_bdev+0x1b/0x30
- [<ffffffff802b9892>] ? __blkdev_put+0x54/0x151
- [<ffffffff8029899f>] ? __fput+0xe7/0x1b4
- [<ffffffff802961ea>] ? filp_close+0x5e/0x66
- [<ffffffff8029627f>] ? sys_close+0x8d/0xd1
- [<ffffffff8020bf5b>] ? system_call_fastpath+0x16/0x1b
-Code: 18 03 00 00 48 8b 32 44 8b 72 18 48 85 f6 75 18 49 89 d0 89 ee 4c 89 e9 83 ca ff 4c 89 e7 e8 57 f8 ff ff 48 89 c6 eb 0a 8b 42 14 <48> 8b 04 c6 48 89 02 53 9d 31 c0 c1 ed 0f 48 85 f6 0f 95 c0 85 
-RIP  [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
- RSP <ffff88003f9d7db8>
-CR2: 0000000000000002
----[ end trace 69ecde41a682e571 ]---
-Kernel panic - not syncing: Attempted to kill init!
-Pid: 1, comm: init Tainted: G      D    2.6.28-rc7-next-20081209-autotest #1
-Call Trace:
- [<ffffffff80236e7d>] panic+0x86/0x144
- [<ffffffff802abbfb>] mntput_no_expire+0x1e/0x139
- [<ffffffff802961ea>] filp_close+0x5e/0x66
- [<ffffffff8023870d>] exit_fs+0x35/0x46
- [<ffffffff80239b7a>] do_exit+0x75/0x766
- [<ffffffff8051fd9e>] oops_end+0xa8/0xad
- [<ffffffff805215ac>] do_page_fault+0x748/0x801
- [<ffffffff80253ab1>] smp_call_function_many+0xdb/0x220
- [<ffffffff802b4141>] invalidate_bh_lru+0x0/0x42
- [<ffffffff8051f3af>] page_fault+0x1f/0x30
- [<ffffffff802b4141>] invalidate_bh_lru+0x0/0x42
- [<ffffffff80253ab1>] smp_call_function_many+0xdb/0x220
- [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
- [<ffffffff80253ab1>] smp_call_function_many+0xdb/0x220
- [<ffffffff802704ca>] do_writepages+0x23/0x30
- [<ffffffff802b4141>] invalidate_bh_lru+0x0/0x42
- [<ffffffff80253c16>] smp_call_function+0x20/0x24
- [<ffffffff8023b483>] on_each_cpu+0x10/0x22
- [<ffffffff802b919b>] kill_bdev+0x1b/0x30
- [<ffffffff802b9892>] __blkdev_put+0x54/0x151
- [<ffffffff8029899f>] __fput+0xe7/0x1b4
- [<ffffffff802961ea>] filp_close+0x5e/0x66
- [<ffffffff8029627f>] sys_close+0x8d/0xd1
- [<ffffffff8020bf5b>] system_call_fastpath+0x16/0x1b
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000002
-IP: [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
-PGD 0 
-Oops: 0000 [#3] SMP 
-last sysfs file: /sys/block/ram7/removable
-CPU 2 
-Modules linked in:
-Pid: 1, comm: init Tainted: G      D    2.6.28-rc7-next-20081209-autotest #1
-RIP: 0010:[<ffffffff802926da>]  [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
-RSP: 0018:ffff88003f9d7a58  EFLAGS: 00010002
-RAX: 0000000000000000 RBX: 0000000000000246 RCX: 0000000000000001
-RDX: ffff880001037800 RSI: 0000000000000002 RDI: ffffffff80854f70
-RBP: 0000000000000020 R08: ffffffff8052a5c0 R09: ffffffff80859a80
-R10: 0000000000000000 R11: ffffffff8067c887 R12: ffffffff80854f70
-R13: ffffffff80253ab1 R14: 0000000000000080 R15: ffffffff80211dd3
-FS:  000000000066d870(0000) GS:ffff88003f803c80(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000002 CR3: 0000000000201000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process init (pid: 1, threadinfo ffff88003f9d6000, task ffff88003f9d8000)
-Stack:
- 00000000ffffffff ffff88003f9d8000 ffffffff80859a80 ffffffff80859a80
- 0000000000000000 ffffffff80253ab1 ffffffff8052a5c0 ffff88003fa3bfc0
- 0000000000000000 ffffffff8020e525 0000000000000010 000000003e943800
-Call Trace:
- [<ffffffff80253ab1>] ? smp_call_function_many+0xdb/0x220
- [<ffffffff8020e525>] ? dump_trace+0x223/0x232
- [<ffffffff80253c16>] ? smp_call_function+0x20/0x24
- [<ffffffff8021ccc1>] ? native_smp_send_stop+0x1a/0x26
- [<ffffffff80236e91>] ? panic+0x9a/0x144
- [<ffffffff802abbfb>] ? mntput_no_expire+0x1e/0x139
- [<ffffffff802961ea>] ? filp_close+0x5e/0x66
- [<ffffffff8023870d>] ? exit_fs+0x35/0x46
- [<ffffffff80239b7a>] ? do_exit+0x75/0x766
- [<ffffffff8051fd9e>] ? oops_end+0xa8/0xad
- [<ffffffff805215ac>] ? do_page_fault+0x748/0x801
- [<ffffffff80253ab1>] ? smp_call_function_many+0xdb/0x220
- [<ffffffff802b4141>] ? invalidate_bh_lru+0x0/0x42
- [<ffffffff8051f3af>] ? page_fault+0x1f/0x30
- [<ffffffff802b4141>] ? invalidate_bh_lru+0x0/0x42
- [<ffffffff80253ab1>] ? smp_call_function_many+0xdb/0x220
- [<ffffffff802926da>] ? kmem_cache_alloc+0x6a/0x99
- [<ffffffff80253ab1>] ? smp_call_function_many+0xdb/0x220
- [<ffffffff802704ca>] ? do_writepages+0x23/0x30
- [<ffffffff802b4141>] ? invalidate_bh_lru+0x0/0x42
- [<ffffffff80253c16>] ? smp_call_function+0x20/0x24
- [<ffffffff8023b483>] ? on_each_cpu+0x10/0x22
- [<ffffffff802b919b>] ? kill_bdev+0x1b/0x30
- [<ffffffff802b9892>] ? __blkdev_put+0x54/0x151
- [<ffffffff8029899f>] ? __fput+0xe7/0x1b4
- [<ffffffff802961ea>] ? filp_close+0x5e/0x66
- [<ffffffff8029627f>] ? sys_close+0x8d/0xd1
- [<ffffffff8020bf5b>] ? system_call_fastpath+0x16/0x1b
-Code: 18 03 00 00 48 8b 32 44 8b 72 18 48 85 f6 75 18 49 89 d0 89 ee 4c 89 e9 83 ca ff 4c 89 e7 e8 57 f8 ff ff 48 89 c6 eb 0a 8b 42 14 <48> 8b 04 c6 48 89 02 53 9d 31 c0 c1 ed 0f 48 85 f6 0f 95 c0 85 
-RIP  [<ffffffff802926da>] kmem_cache_alloc+0x6a/0x99
- RSP <ffff88003f9d7a58>
-CR2: 0000000000000002
----[ end trace 69ecde41a682e571 ]---
-Fixing recursive fault but reboot is needed!
- [<ffffffff80268f66>] __rcu_process_callbacks+0x14e/0x1c3
- [<ffffffff80268f66>] __rcu_process_callbacks+0x14e/0x1c3
- [<ffffffff80269001>] rcu_process_callbacks+0x26/0x4a
- [<ffffffff8023b891>] __do_softirq+0x76/0x136
- [<ffffffff8020e79e>] profile_pc+0x21/0x5b
- [<ffffffff8020d03c>] call_softirq+0x1c/0x28
- [<ffffffff8020e091>] do_softirq+0x2c/0x6c
- [<ffffffff8021e018>] smp_apic_timer_interrupt+0x93/0xac
- [<ffffffff8020ca73>] apic_timer_interrupt+0x13/0x20
- <EOI> 
+To find dependent modules, you would walk up the chain of parents, and
+include everything that is found by looking for "driver/module" and
+"module" links?
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Wouldn't that make it completely generic, without any virtio specific hacks?
+
+Kay
