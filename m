@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbYLJQj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbYLJQke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757645AbYLJQj6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:39:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755643AbYLJQjr
+	id S1756317AbYLJQke (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:40:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbYLJQkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:39:47 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:55362 "EHLO mgw2.diku.dk"
+	Wed, 10 Dec 2008 11:40:19 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:55414 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755612AbYLJQjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:39:45 -0500
-Date: Wed, 10 Dec 2008 17:39:41 +0100 (CET)
+	id S1755932AbYLJQkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 11:40:17 -0500
+Date: Wed, 10 Dec 2008 17:40:14 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dmitri.vorobiev@movial.fi, eric.miao@marvell.com, linux@arm.linux.org.uk,
+To: dmitri.vorobiev@movial.fi, rmk@arm.linux.org.uk,
        linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 19/28] arch/arm/mach-pxa: Drop return value from platform_driver
- remove functions
-Message-ID: <Pine.LNX.4.64.0812101739170.21998@ask.diku.dk>
+Subject: [PATCH 20/28] arch/arm: Drop return value from platform_driver remove
+ functions
+Message-ID: <Pine.LNX.4.64.0812101739410.21998@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,8 +28,9 @@ From: Julia Lawall <julia@diku.dk>
 The return value of the remove function of a driver structure, and thus of
 a platform_driver structure, is ultimately ignored, and is thus
 unnecessary.  This patch removes the return value for the remove function
-stored in a platform_driver structure.  For the files in this patch, the
-return values are always 0.
+stored in a platform_driver structure.  In arch/arm/common/scoop.c, in the
+original code, there could have been a return of a value other than 0.  The
+original return value is 0 in all other cases.
 
 A simplified version of the semantic patch that makes this change is as
 follows: (http://www.emn.fr/x-info/coccinelle/)
@@ -95,191 +96,140 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/arm/mach-pxa/corgi_ssp.c |    5 ++---
- arch/arm/mach-pxa/mioa701.c   |    5 ++---
- arch/arm/mach-pxa/pwm.c       |    9 ++++-----
- arch/arm/mach-pxa/ssp.c       |   11 +++++------
- arch/arm/mach-pxa/tosa-bt.c   |    6 ++----
- 5 files changed, 15 insertions(+), 21 deletions(-)
+ arch/arm/common/locomo.c     |    6 ++----
+ arch/arm/common/sa1111.c     |    6 ++----
+ arch/arm/common/scoop.c      |   10 ++++------
+ arch/arm/common/sharpsl_pm.c |    6 ++----
+ 4 files changed, 10 insertions(+), 18 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/corgi_ssp.c b/arch/arm/mach-pxa/corgi_ssp.c
-index 8e2f221..a0e823d 100644
---- a/arch/arm/mach-pxa/corgi_ssp.c
-+++ b/arch/arm/mach-pxa/corgi_ssp.c
-@@ -230,10 +230,9 @@ static int __init corgi_ssp_probe(struct platform_device *dev)
- 	return ret;
+diff --git a/arch/arm/common/locomo.c b/arch/arm/common/locomo.c
+index 7c6b4b9..ae57b07 100644
+--- a/arch/arm/common/locomo.c
++++ b/arch/arm/common/locomo.c
+@@ -799,7 +799,7 @@ static int locomo_probe(struct platform_device *dev)
+ 	return __locomo_probe(&dev->dev, mem, irq);
  }
  
--static int corgi_ssp_remove(struct platform_device *dev)
-+static void corgi_ssp_remove(struct platform_device *dev)
+-static int locomo_remove(struct platform_device *dev)
++static void locomo_remove(struct platform_device *dev)
  {
- 	ssp_exit(&corgi_ssp_dev);
--	return 0;
- }
+ 	struct locomo *lchip = platform_get_drvdata(dev);
  
- static int corgi_ssp_suspend(struct platform_device *dev, pm_message_t state)
-@@ -260,7 +259,7 @@ static int corgi_ssp_resume(struct platform_device *dev)
- 
- static struct platform_driver corgissp_driver = {
- 	.probe		= corgi_ssp_probe,
--	.remove		= corgi_ssp_remove,
-+	.remove_new	= corgi_ssp_remove,
- 	.suspend	= corgi_ssp_suspend,
- 	.resume		= corgi_ssp_resume,
- 	.driver		= {
-diff --git a/arch/arm/mach-pxa/mioa701.c b/arch/arm/mach-pxa/mioa701.c
-index 782903f..8f965d0 100644
---- a/arch/arm/mach-pxa/mioa701.c
-+++ b/arch/arm/mach-pxa/mioa701.c
-@@ -775,10 +775,9 @@ static int battery_probe(struct platform_device *pdev)
- 	return rc;
- }
- 
--static int battery_remove(struct platform_device *pdev)
-+static void battery_remove(struct platform_device *pdev)
- {
- 	battery_wm = NULL;
--	return 0;
- }
- 
- static struct platform_driver mioa701_battery_driver = {
-@@ -786,7 +785,7 @@ static struct platform_driver mioa701_battery_driver = {
- 		.name = "wm97xx-battery",
- 	},
- 	.probe = battery_probe,
--	.remove = battery_remove
-+	.remove_new = battery_remove
- };
- 
- static int __init mioa701_battery_init(void)
-diff --git a/arch/arm/mach-pxa/pwm.c b/arch/arm/mach-pxa/pwm.c
-index 74e2ead..43b4be6 100644
---- a/arch/arm/mach-pxa/pwm.c
-+++ b/arch/arm/mach-pxa/pwm.c
-@@ -250,14 +250,14 @@ static int __devinit pxa27x_pwm_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int __devexit pwm_remove(struct platform_device *pdev)
-+static void __devexit pwm_remove(struct platform_device *pdev)
- {
- 	struct pwm_device *pwm;
- 	struct resource *r;
- 
- 	pwm = platform_get_drvdata(pdev);
- 	if (pwm == NULL)
--		return -ENODEV;
-+		return;
- 
- 	mutex_lock(&pwm_lock);
- 	list_del(&pwm->node);
-@@ -270,7 +270,6 @@ static int __devexit pwm_remove(struct platform_device *pdev)
- 
- 	clk_put(pwm->clk);
- 	kfree(pwm);
--	return 0;
- }
- 
- static struct platform_driver pxa25x_pwm_driver = {
-@@ -278,7 +277,7 @@ static struct platform_driver pxa25x_pwm_driver = {
- 		.name	= "pxa25x-pwm",
- 	},
- 	.probe		= pxa25x_pwm_probe,
--	.remove		= __devexit_p(pwm_remove),
-+	.remove_new	= __devexit_p(pwm_remove),
- };
- 
- static struct platform_driver pxa27x_pwm_driver = {
-@@ -286,7 +285,7 @@ static struct platform_driver pxa27x_pwm_driver = {
- 		.name	= "pxa27x-pwm",
- 	},
- 	.probe		= pxa27x_pwm_probe,
--	.remove		= __devexit_p(pwm_remove),
-+	.remove_new	= __devexit_p(pwm_remove),
- };
- 
- static int __init pwm_init(void)
-diff --git a/arch/arm/mach-pxa/ssp.c b/arch/arm/mach-pxa/ssp.c
-index 2c31ec7..a1e94f7 100644
---- a/arch/arm/mach-pxa/ssp.c
-+++ b/arch/arm/mach-pxa/ssp.c
-@@ -434,14 +434,14 @@ err_free:
- 	return ret;
- }
- 
--static int __devexit ssp_remove(struct platform_device *pdev)
-+static void __devexit ssp_remove(struct platform_device *pdev)
- {
- 	struct resource *res;
- 	struct ssp_device *ssp;
- 
- 	ssp = platform_get_drvdata(pdev);
- 	if (ssp == NULL)
--		return -ENODEV;
-+		return;
- 
- 	iounmap(ssp->mmio_base);
- 
-@@ -455,7 +455,6 @@ static int __devexit ssp_remove(struct platform_device *pdev)
- 	mutex_unlock(&ssp_lock);
- 
- 	kfree(ssp);
--	return 0;
- }
- 
- static int __devinit pxa25x_ssp_probe(struct platform_device *pdev)
-@@ -478,7 +477,7 @@ static struct platform_driver pxa25x_ssp_driver = {
- 		.name	= "pxa25x-ssp",
- 	},
- 	.probe		= pxa25x_ssp_probe,
--	.remove		= __devexit_p(ssp_remove),
-+	.remove_new	= __devexit_p(ssp_remove),
- };
- 
- static struct platform_driver pxa25x_nssp_driver = {
-@@ -486,7 +485,7 @@ static struct platform_driver pxa25x_nssp_driver = {
- 		.name	= "pxa25x-nssp",
- 	},
- 	.probe		= pxa25x_nssp_probe,
--	.remove		= __devexit_p(ssp_remove),
-+	.remove_new	= __devexit_p(ssp_remove),
- };
- 
- static struct platform_driver pxa27x_ssp_driver = {
-@@ -494,7 +493,7 @@ static struct platform_driver pxa27x_ssp_driver = {
- 		.name	= "pxa27x-ssp",
- 	},
- 	.probe		= pxa27x_ssp_probe,
--	.remove		= __devexit_p(ssp_remove),
-+	.remove_new	= __devexit_p(ssp_remove),
- };
- 
- static int __init pxa_ssp_init(void)
-diff --git a/arch/arm/mach-pxa/tosa-bt.c b/arch/arm/mach-pxa/tosa-bt.c
-index fb0294b..d0039bd 100644
---- a/arch/arm/mach-pxa/tosa-bt.c
-+++ b/arch/arm/mach-pxa/tosa-bt.c
-@@ -106,7 +106,7 @@ err_reset:
- 	return rc;
- }
- 
--static int __devexit tosa_bt_remove(struct platform_device *dev)
-+static void __devexit tosa_bt_remove(struct platform_device *dev)
- {
- 	struct tosa_bt_data *data = dev->dev.platform_data;
- 	struct rfkill *rfk = platform_get_drvdata(dev);
-@@ -121,13 +121,11 @@ static int __devexit tosa_bt_remove(struct platform_device *dev)
- 
- 	gpio_free(data->gpio_pwr);
- 	gpio_free(data->gpio_reset);
+@@ -807,8 +807,6 @@ static int locomo_remove(struct platform_device *dev)
+ 		__locomo_remove(lchip);
+ 		platform_set_drvdata(dev, NULL);
+ 	}
 -
 -	return 0;
  }
  
- static struct platform_driver tosa_bt_driver = {
- 	.probe = tosa_bt_probe,
--	.remove = __devexit_p(tosa_bt_remove),
-+	.remove_new = __devexit_p(tosa_bt_remove),
+ /*
+@@ -819,7 +817,7 @@ static int locomo_remove(struct platform_device *dev)
+  */
+ static struct platform_driver locomo_device_driver = {
+ 	.probe		= locomo_probe,
+-	.remove		= locomo_remove,
++	.remove_new	= locomo_remove,
+ #ifdef CONFIG_PM
+ 	.suspend	= locomo_suspend,
+ 	.resume		= locomo_resume,
+diff --git a/arch/arm/common/sa1111.c b/arch/arm/common/sa1111.c
+index 47ccec9..9620972 100644
+--- a/arch/arm/common/sa1111.c
++++ b/arch/arm/common/sa1111.c
+@@ -954,7 +954,7 @@ static int __devinit sa1111_probe(struct platform_device *pdev)
+ 	return __sa1111_probe(&pdev->dev, mem, irq);
+ }
  
- 	.driver = {
- 		.name = "tosa-bt",
+-static int sa1111_remove(struct platform_device *pdev)
++static void sa1111_remove(struct platform_device *pdev)
+ {
+ 	struct sa1111 *sachip = platform_get_drvdata(pdev);
+ 
+@@ -967,8 +967,6 @@ static int sa1111_remove(struct platform_device *pdev)
+ 		sachip->saved_state = NULL;
+ #endif
+ 	}
+-
+-	return 0;
+ }
+ 
+ /*
+@@ -982,7 +980,7 @@ static int sa1111_remove(struct platform_device *pdev)
+  */
+ static struct platform_driver sa1111_device_driver = {
+ 	.probe		= sa1111_probe,
+-	.remove		= sa1111_remove,
++	.remove_new	= sa1111_remove,
+ 	.suspend	= sa1111_suspend,
+ 	.resume		= sa1111_resume,
+ 	.driver		= {
+diff --git a/arch/arm/common/scoop.c b/arch/arm/common/scoop.c
+index 697c649..d84f0a9 100644
+--- a/arch/arm/common/scoop.c
++++ b/arch/arm/common/scoop.c
+@@ -273,32 +273,30 @@ err_ioremap:
+ 	return ret;
+ }
+ 
+-static int __devexit scoop_remove(struct platform_device *pdev)
++static void __devexit scoop_remove(struct platform_device *pdev)
+ {
+ 	struct scoop_dev *sdev = platform_get_drvdata(pdev);
+ 	int ret;
+ 
+ 	if (!sdev)
+-		return -EINVAL;
++		return;
+ 
+ 	if (sdev->gpio.base != -1) {
+ 		ret = gpiochip_remove(&sdev->gpio);
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "Can't remove gpio chip: %d\n", ret);
+-			return ret;
++			return;
+ 		}
+ 	}
+ 
+ 	platform_set_drvdata(pdev, NULL);
+ 	iounmap(sdev->base);
+ 	kfree(sdev);
+-
+-	return 0;
+ }
+ 
+ static struct platform_driver scoop_driver = {
+ 	.probe		= scoop_probe,
+-	.remove		= __devexit_p(scoop_remove),
++	.remove_new	= __devexit_p(scoop_remove),
+ 	.suspend	= scoop_suspend,
+ 	.resume		= scoop_resume,
+ 	.driver		= {
+diff --git a/arch/arm/common/sharpsl_pm.c b/arch/arm/common/sharpsl_pm.c
+index 780bbf7..61393f3 100644
+--- a/arch/arm/common/sharpsl_pm.c
++++ b/arch/arm/common/sharpsl_pm.c
+@@ -818,7 +818,7 @@ static int __init sharpsl_pm_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int sharpsl_pm_remove(struct platform_device *pdev)
++static void sharpsl_pm_remove(struct platform_device *pdev)
+ {
+ 	suspend_set_ops(NULL);
+ 
+@@ -831,13 +831,11 @@ static int sharpsl_pm_remove(struct platform_device *pdev)
+ 
+ 	del_timer_sync(&sharpsl_pm.chrg_full_timer);
+ 	del_timer_sync(&sharpsl_pm.ac_timer);
+-
+-	return 0;
+ }
+ 
+ static struct platform_driver sharpsl_pm_driver = {
+ 	.probe		= sharpsl_pm_probe,
+-	.remove		= sharpsl_pm_remove,
++	.remove_new	= sharpsl_pm_remove,
+ 	.suspend	= sharpsl_pm_suspend,
+ 	.resume		= sharpsl_pm_resume,
+ 	.driver		= {
