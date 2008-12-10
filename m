@@ -1,142 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbYLJXnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbYLJXpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756738AbYLJXnj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 18:43:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756209AbYLJXn1
+	id S1756472AbYLJXpt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 18:45:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbYLJXpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 18:43:27 -0500
-Received: from mga03.intel.com ([143.182.124.21]:42154 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754640AbYLJXn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 18:43:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,749,1220252400"; 
-   d="scan'208";a="88823619"
-Date: Thu, 11 Dec 2008 07:43:17 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Marcel Holtmann <marcel@holtmann.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH] dynamic_printk: add line feed to printk
-Message-ID: <20081210234317.GA5904@localhost>
-References: <20081210073347.GA18737@localhost> <1228904326.19553.127.camel@violet.holtmann.net> <20081210144058.GA11842@localhost> <20081210152323.GB446@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081210152323.GB446@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 10 Dec 2008 18:45:39 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:21328 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754045AbYLJXpi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 18:45:38 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
+	b=IdBlzRUZok4dvrtsQ9xSq5jQyweslZD3qtPRdXDK5sRM6BzAQo2K+I0JOM4/dOne2
+	l/ZBkp9TT7wPIZ4v3kINQ==
+Message-Id: <20081210234432.407064000@menage.corp.google.com>
+References: <20081210233654.563182000@menage.corp.google.com>
+User-Agent: quilt/0.45-1
+Date: Wed, 10 Dec 2008 15:36:57 -0800
+From: menage@google.com
+To: kamezawa.hiroyu@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
+       containers@lists.linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [RFC][PATCH 3/3] CGroups: Add css_tryget()
+Content-Disposition: inline; filename=cgroup_refcnt.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 05:23:23PM +0200, Greg Kroah-Hartman wrote:
-> On Wed, Dec 10, 2008 at 10:40:58PM +0800, Wu Fengguang wrote:
-> > On Wed, Dec 10, 2008 at 12:18:46PM +0200, Marcel Holtmann wrote:
-> > > Hi,
-> > > 
-> > > > Append '\n' to two printk messages.
-> > > 
-> > > I already sent a patch for that and Greg picked it up.
-> > 
-> > No I didn't find it in the usb-2.6 tree:
-> > 
-> > git pull git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb-2.6.git
-> > >From git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb-2.6
-> >  * branch            HEAD       -> FETCH_HEAD
-> > Already up-to-date.
-> 
-> That's not the "usb" tree, if you read the description, it should be
-> clear.
+This patch adds css_tryget(), that obtains a counted reference on a
+CSS.  It is used in situations where the caller has a "weak" reference
+to the CSS, i.e. one that does not protect the cgroup from removal via
+a reference count, but would instead be cleaned up by a destroy()
+callback.
 
-Yup, it reads "junk tree, please ignore". When I first found it in
-git.kernel.org, I chose to trust the name 'usb-2.6' instead of its
-description...
+css_tryget() will return true on success, or false if the cgroup is
+being removed.
 
-> My tree is in quilt, please see the MAINTAINERS file for details.
+This is similar to Kamezawa Hiroyuki's patch from a week or two ago,
+but with the difference that in the event of css_tryget() racing with
+a cgroup_rmdir(), css_tryget() will only return false if the cgroup
+really does get removed.
 
-Got it. Below is the updated patch based on Marcel's one.
+This implementation is done by biasing css->refcnt, so that a refcnt
+of 1 means "releasable" and 0 means "released or releasing". In the
+event of a race, css_tryget() distinguishes between "released" and
+"releasing" by checking for the CSS_REMOVED flag in css->flags.
 
-Thanks,
-Fengguang
+Signed-off-by: Paul Menage <menage@google.com>
+
 ---
-dynamic_printk: reduce one level of indentation
+ include/linux/cgroup.h |   33 ++++++++++++++++++++++-----
+ kernel/cgroup.c        |   58 ++++++++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 80 insertions(+), 11 deletions(-)
 
-Cleanup pr_debug_write() to reduce one level of indentation.
-
-Cc: Marcel Holtmann <marcel@holtmann.org>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- lib/dynamic_printk.c |   58 ++++++++++++++++++-----------------------
- 1 file changed, 26 insertions(+), 32 deletions(-)
-
---- mm.orig/lib/dynamic_printk.c
-+++ mm/lib/dynamic_printk.c
-@@ -277,40 +277,34 @@ static ssize_t pr_debug_write(struct fil
- 				dynamic_enabled = DYNAMIC_ENABLED_NONE;
- 			}
- 			err = 0;
--		} else {
--			if (elem) {
--				if (value && (elem->enable == 0)) {
--					dynamic_printk_enabled |=
--							(1LL << elem->hash1);
--					dynamic_printk_enabled2 |=
--							(1LL << elem->hash2);
--					elem->enable = 1;
--					num_enabled++;
--					dynamic_enabled = DYNAMIC_ENABLED_SOME;
--					err = 0;
--					printk(KERN_DEBUG
--					       "debugging enabled for module %s\n",
--					       elem->name);
--				} else if (!value && (elem->enable == 1)) {
--					elem->enable = 0;
--					num_enabled--;
--					if (disabled_hash(elem->hash1, true))
--						dynamic_printk_enabled &=
-+		} else if (elem) {
-+			if (value && (elem->enable == 0)) {
-+				dynamic_printk_enabled |= (1LL << elem->hash1);
-+				dynamic_printk_enabled2 |= (1LL << elem->hash2);
-+				elem->enable = 1;
-+				num_enabled++;
-+				dynamic_enabled = DYNAMIC_ENABLED_SOME;
-+				err = 0;
-+				printk(KERN_DEBUG
-+					"debugging enabled for module %s\n",
-+					elem->name);
-+			} else if (!value && (elem->enable == 1)) {
-+				elem->enable = 0;
-+				num_enabled--;
-+				if (disabled_hash(elem->hash1, true))
-+					dynamic_printk_enabled &=
- 							~(1LL << elem->hash1);
--					if (disabled_hash(elem->hash2, false))
--						dynamic_printk_enabled2 &=
-+				if (disabled_hash(elem->hash2, false))
-+					dynamic_printk_enabled2 &=
- 							~(1LL << elem->hash2);
--					if (num_enabled)
--						dynamic_enabled =
--							DYNAMIC_ENABLED_SOME;
--					else
--						dynamic_enabled =
--							DYNAMIC_ENABLED_NONE;
--					err = 0;
--					printk(KERN_DEBUG
--					       "debugging disabled for module "
--					       "%s\n", elem->name);
--				}
-+				if (num_enabled)
-+					dynamic_enabled = DYNAMIC_ENABLED_SOME;
-+				else
-+					dynamic_enabled = DYNAMIC_ENABLED_NONE;
-+				err = 0;
-+				printk(KERN_DEBUG
-+					"debugging disabled for module %s\n",
-+					elem->name);
- 			}
- 		}
+Index: hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
+===================================================================
+--- hierarchy_lock-mmotm-2008-12-09.orig/include/linux/cgroup.h
++++ hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
+@@ -52,9 +52,9 @@ struct cgroup_subsys_state {
+ 	 * hierarchy structure */
+ 	struct cgroup *cgroup;
+ 
+-	/* State maintained by the cgroup system to allow
+-	 * subsystems to be "busy". Should be accessed via css_get()
+-	 * and css_put() */
++	/* State maintained by the cgroup system to allow subsystems
++	 * to be "busy". Should be accessed via css_get(),
++	 * css_tryget() and and css_put(). */
+ 
+ 	atomic_t refcnt;
+ 
+@@ -64,11 +64,14 @@ struct cgroup_subsys_state {
+ /* bits in struct cgroup_subsys_state flags field */
+ enum {
+ 	CSS_ROOT, /* This CSS is the root of the subsystem */
++	CSS_REMOVED, /* This CSS is dead */
+ };
+ 
+ /*
+- * Call css_get() to hold a reference on the cgroup;
+- *
++ * Call css_get() to hold a reference on the css; it can be used
++ * for a reference obtained via:
++ * - an existing ref-counted reference to the css
++ * - task->cgroups for a locked task
+  */
+ 
+ static inline void css_get(struct cgroup_subsys_state *css)
+@@ -77,9 +80,27 @@ static inline void css_get(struct cgroup
+ 	if (!test_bit(CSS_ROOT, &css->flags))
+ 		atomic_inc(&css->refcnt);
+ }
++
++/*
++ * Call css_tryget() to take a reference on a css if your existing
++ * (known-valid) reference isn't already ref-counted. Returns false if
++ * the css has been destroyed.
++ */
++
++static inline bool css_tryget(struct cgroup_subsys_state *css)
++{
++	if (test_bit(CSS_ROOT, &css->flags))
++		return true;
++	while (!atomic_inc_not_zero(&css->refcnt)) {
++		if (test_bit(CSS_REMOVED, &css->flags))
++			return false;
++	}
++	return true;
++}
++
+ /*
+  * css_put() should be called to release a reference taken by
+- * css_get()
++ * css_get() or css_tryget()
+  */
+ 
+ extern void __css_put(struct cgroup_subsys_state *css);
+Index: hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+===================================================================
+--- hierarchy_lock-mmotm-2008-12-09.orig/kernel/cgroup.c
++++ hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+@@ -2321,7 +2321,7 @@ static void init_cgroup_css(struct cgrou
+ 			       struct cgroup *cgrp)
+ {
+ 	css->cgroup = cgrp;
+-	atomic_set(&css->refcnt, 0);
++	atomic_set(&css->refcnt, 1);
+ 	css->flags = 0;
+ 	if (cgrp == dummytop)
+ 		set_bit(CSS_ROOT, &css->flags);
+@@ -2453,7 +2453,7 @@ static int cgroup_has_css_refs(struct cg
+ {
+ 	/* Check the reference count on each subsystem. Since we
+ 	 * already established that there are no tasks in the
+-	 * cgroup, if the css refcount is also 0, then there should
++	 * cgroup, if the css refcount is also 1, then there should
+ 	 * be no outstanding references, so the subsystem is safe to
+ 	 * destroy. We scan across all subsystems rather than using
+ 	 * the per-hierarchy linked list of mounted subsystems since
+@@ -2474,12 +2474,59 @@ static int cgroup_has_css_refs(struct cg
+ 		 * matter, since it can only happen if the cgroup
+ 		 * has been deleted and hence no longer needs the
+ 		 * release agent to be called anyway. */
+-		if (css && atomic_read(&css->refcnt))
++		if (css && (atomic_read(&css->refcnt) > 1))
+ 			return 1;
  	}
+ 	return 0;
+ }
+ 
++/*
++ * Atomically mark all of the cgroup's CSS objects as
++ * CSS_REMOVED. Return true on success, or false if the cgroup has
++ * busy subsystems. Call with cgroup_mutex held
++ */
++
++static int cgroup_clear_css_refs(struct cgroup *cgrp)
++{
++	struct cgroup_subsys *ss;
++	unsigned long flags;
++	bool failed = false;
++	local_irq_save(flags);
++	for_each_subsys(cgrp->root, ss) {
++		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
++		int refcnt;
++		do {
++			/* We can only remove a CSS with a refcnt==1 */
++			refcnt = atomic_read(&css->refcnt);
++			if (refcnt > 1) {
++				failed = true;
++				goto done;
++			}
++			BUG_ON(!refcnt);
++			/*
++			 * Drop the refcnt to 0 while we check other
++			 * subsystems. This will cause any racing
++			 * css_tryget() to spin until we set the
++			 * CSS_REMOVED bits or abort
++			 */
++		} while (atomic_cmpxchg(&css->refcnt, refcnt, 0) != refcnt);
++	}
++ done:
++	for_each_subsys(cgrp->root, ss) {
++		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
++		if (failed) {
++			/* Restore old refcnt if necessary */
++			if (!atomic_read(&css->refcnt))
++				atomic_set(&css->refcnt, 1);
++		} else {
++			/* Commit the fact that the CSS is removed */
++			set_bit(CSS_REMOVED, &css->flags);
++		}
++	}
++	local_irq_restore(flags);
++	return !failed;
++}
++
+ static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
+ {
+ 	struct cgroup *cgrp = dentry->d_fsdata;
+@@ -2510,7 +2557,7 @@ static int cgroup_rmdir(struct inode *un
+ 
+ 	if (atomic_read(&cgrp->count)
+ 	    || !list_empty(&cgrp->children)
+-	    || cgroup_has_css_refs(cgrp)) {
++	    || !cgroup_clear_css_refs(cgrp)) {
+ 		mutex_unlock(&cgroup_mutex);
+ 		return -EBUSY;
+ 	}
+@@ -3065,7 +3112,8 @@ void __css_put(struct cgroup_subsys_stat
+ {
+ 	struct cgroup *cgrp = css->cgroup;
+ 	rcu_read_lock();
+-	if (atomic_dec_and_test(&css->refcnt) && notify_on_release(cgrp)) {
++	if ((atomic_dec_return(&css->refcnt) == 1) &&
++	    notify_on_release(cgrp)) {
+ 		set_bit(CGRP_RELEASABLE, &cgrp->flags);
+ 		check_for_release(cgrp);
+ 	}
+
+--
