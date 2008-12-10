@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbYLJOG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbYLJOHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754472AbYLJOG6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 09:06:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYLJOGt
+	id S1755272AbYLJOHc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 09:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYLJOHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 09:06:49 -0500
-Received: from cpsmtpo-eml04.KPNXCHANGE.COM ([213.75.38.153]:16647 "EHLO
-	cpsmtpo-eml04.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750928AbYLJOGs (ORCPT
+	Wed, 10 Dec 2008 09:07:20 -0500
+Received: from xenbox.codefidence.com ([92.48.73.16]:33002 "EHLO
+	xenbox.codefidence.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752440AbYLJOHT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 09:06:48 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Ingo Molnar <mingo@elte.hu>, lenb@kernel.org
-Subject: "APIC error on CPU1: 00(40)" during resume (was: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500)
-Date: Wed, 10 Dec 2008 15:06:43 +0100
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
-       jbarnes@virtuousgeek.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812041900.27514.elendil@planet.nl> <alpine.LFD.2.00.0812041037250.3543@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0812041037250.3543@nehalem.linux-foundation.org>
+	Wed, 10 Dec 2008 09:07:19 -0500
+Message-ID: <493FCD12.30000@codefidence.com>
+Date: Wed, 10 Dec 2008 16:07:14 +0200
+From: Gilad Ben-Yossef <gilad@codefidence.com>
+Organization: Codefidence Ltd.
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Laurent Pinchart <laurent.pinchart@skynet.be>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH] USB: use stack allocation for struct usb_ctrlrequest
+References: <20081210073247.GA18630@localhost> <200812101040.09886.laurent.pinchart@skynet.be> <20081210124308.GB6772@localhost>
+In-Reply-To: <20081210124308.GB6772@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812101506.45691.elendil@planet.nl>
-X-OriginalArrivalTime: 10 Dec 2008 14:06:46.0169 (UTC) FILETIME=[8966E890:01C95AD0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anybody interested in persuing this issue?
+Wu Fengguang wrote:
 
-On Thursday 04 December 2008, Linus Torvalds wrote:
-> Ingo, Len, can you check the end of the email about the apparent
-> very-early interrupt issue? Can we get into acpi_ec_gpe_handler()
-> without interrupts being enabled some way?
+> Hi Laurent,
 >
-> HOWEVER. Having now looked through your fuller dmesg output even for
-> the _successful_ case, I actually find a few things that are a bit
-> worrying.
-[...]
-> The third thing that worries me is the _very_ early occurrence of
+> On Wed, Dec 10, 2008 at 11:40:09AM +0200, Laurent Pinchart wrote:
+>   
+>> Hi Wu,
+>>
+>> On Wednesday 10 December 2008, Wu Fengguang wrote:
+>>     
+>>> sizeof(struct usb_ctrlrequest) = 8, which is as small as the *dt pointer
+>>> in a 64bit system.
+>>>       
+>> The usb_ctrlrequest pointer is passed down to the hardware and must point to 
+>> DMA-able memory. For this reason you can't use the stack and must kmalloc() 
+>> the structure.
+>>     
 >
-> 	ACPI: Waking up from system sleep state S3
-> 	APIC error on CPU1: 00(40)
-> 	ACPI: EC: non-query interrupt received, switching to interrupt mode
->
-> Now, that "APIC error" thing is worrisome. It's worrisome for multiple
-> reasons:
->
->  - errors are never good (0x40 means "received illegal vector",
->    whatever caused _that_)
->
->  - more importantly, it seems to imply that interrupts are enabled on
->    CPU1, and they sure as hell shouldn't be enabled at this stage!
->
->    Do we perhaps have a SMP resume bug where we resume the other CPU's
->    with interrupts enabled?
->
->  - the "ACPI: EC: non-query interrupt received, switching to interrupt
->    mode" thing is from ACPI, and _also_ implies that interrupts are on.
->
-> Why are interrupts enabled that early? I really don't like seeing
-> interrupts enabled before we've even done the basic PCI resume.
->
-> I'd really like to resume the other CPU's much later (last in the whole
-> sequnce, long after we've set up devices), but the f'ing ACPI rules
-> seem to be against that. And maybe some setup actually needs the CPU's
-> alive to act as a bridge for IO (eg with HT or CSI).
+> Ah thanks for the background. Does GFP_NOIO guarantee that?
+>   
+No, GFP_NOIO means - do not generate block IO operations (e.g. move 
+pages to swap, sync dirty buffers to permanent storage etc.) in order to 
+fulfill this allocation.
+
+The reason for this flag here is presumably that such block IO 
+operations may very cause USB transaction of the very same kind we're 
+trying to service now, which can easily get us to a loop.
+> e.g. what if the memory is allocated from ZONE_HIGHMEM?
+>   
+In many cases there is no problem to DMA high memory. If you happen to 
+be working with a device that does have problems with full 32 bit 
+addresses then GFP_DMA would be the right flag, not GFP_NOIO.
+
+Cheers,
+Gilad
+
+
+-- 
+Gilad Ben-Yossef 
+Chief Coffee Drinker
+
+Codefidence Ltd.
+The code is free, your time isn't.(TM)
+
+Web:    http://codefidence.com
+Email:  gilad@codefidence.com
+Office: +972-8-9316883 ext. 201
+Fax:    +972-8-9316885
+Mobile: +972-52-8260388
+
+	The Doctor: Don't worry, Reinette, just a nightmare. 
+	Everyone has nightmares. Even monsters from under the 
+	bed have nightmares, don't you, monster?
+	Reinette: What do monsters have nightmares about?
+	The Doctor: Me! 
+
