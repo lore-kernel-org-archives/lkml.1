@@ -1,129 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbYLJShd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757757AbYLJSiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757017AbYLJShd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 13:37:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYLJShV
+	id S1757757AbYLJSiA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 13:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYLJShp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 13:37:21 -0500
-Received: from waste.org ([66.93.16.53]:57563 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750761AbYLJShT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 13:37:19 -0500
-Subject: Re: [PATCH 04/15] kmemleak: Add the slob memory allocation/freeing
-	hooks
-From: Matt Mackall <mpm@selenic.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <20081210182716.30323.13359.stgit@pc1117.cambridge.arm.com>
-References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
-	 <20081210182716.30323.13359.stgit@pc1117.cambridge.arm.com>
-Content-Type: text/plain
-Date: Wed, 10 Dec 2008 12:36:01 -0600
-Message-Id: <1228934161.3726.124.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 10 Dec 2008 13:37:45 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:50062 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752963AbYLJSho (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 13:37:44 -0500
+Message-ID: <49400C81.3010801@vlnb.net>
+Date: Wed, 10 Dec 2008 21:37:53 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: linux-scsi@vger.kernel.org
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: [PATCH][RFC 5/23]: SCST /proc interface
+References: <494009D7.4020602@vlnb.net>
+In-Reply-To: <494009D7.4020602@vlnb.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1917JRQvFmnFSymSAkAG2VSwluw4J3EyY71fW+
+ vcp/sF0fPBYM1Wvr1OHaznq3+Hijt08/hbAawTMzhLtULn0P2c
+ Yw/1pIKaPHzL8YIZ+6ZfQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-10 at 18:27 +0000, Catalin Marinas wrote:
-> This patch adds the callbacks to memleak_(alloc|free) functions from the
-> slob allocator.
+This patch contains SCST the /proc interface.
 
-Is this different than the last one?
+A description of this interface can be found in the patch with the
+SCST core documentation.
 
-Acked-by: Matt Mackall <mpm@selenic.com>
+Since a procfs-based configuration interface is unacceptable for new 
+kernel modules, in the next review iteration SCST's configuration 
+interface will be replaced by a sysfs-based configuration interface. 
+This patch is not intended to be included in the Linux kernel, but is 
+posted here, because as of today this configuration interface is 
+necessary when using SCST.
 
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Matt Mackall <mpm@selenic.com>
-> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  mm/slob.c |   15 +++++++++++----
->  1 files changed, 11 insertions(+), 4 deletions(-)
-> 
-> diff --git a/mm/slob.c b/mm/slob.c
-> index cb675d1..ff5a98d 100644
-> --- a/mm/slob.c
-> +++ b/mm/slob.c
-> @@ -60,6 +60,7 @@
->  #include <linux/kernel.h>
->  #include <linux/slab.h>
->  #include <linux/mm.h>
-> +#include <linux/memleak.h>
->  #include <linux/cache.h>
->  #include <linux/init.h>
->  #include <linux/module.h>
-> @@ -463,6 +464,7 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
->  {
->  	unsigned int *m;
->  	int align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
-> +	void *ret;
->  
->  	if (size < PAGE_SIZE - align) {
->  		if (!size)
-> @@ -472,18 +474,18 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
->  		if (!m)
->  			return NULL;
->  		*m = size;
-> -		return (void *)m + align;
-> +		ret = (void *)m + align;
->  	} else {
-> -		void *ret;
-> -
->  		ret = slob_new_page(gfp | __GFP_COMP, get_order(size), node);
->  		if (ret) {
->  			struct page *page;
->  			page = virt_to_page(ret);
->  			page->private = size;
->  		}
-> -		return ret;
->  	}
-> +
-> +	memleak_alloc(ret, size, 1, gfp);
-> +	return ret;
->  }
->  EXPORT_SYMBOL(__kmalloc_node);
->  
-> @@ -493,6 +495,7 @@ void kfree(const void *block)
->  
->  	if (unlikely(ZERO_OR_NULL_PTR(block)))
->  		return;
-> +	memleak_free(block);
->  
->  	sp = (struct slob_page *)virt_to_page(block);
->  	if (slob_page(sp)) {
-> @@ -555,12 +558,14 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
->  	} else if (flags & SLAB_PANIC)
->  		panic("Cannot create slab cache %s\n", name);
->  
-> +	memleak_alloc(c, sizeof(struct kmem_cache), 1, GFP_KERNEL);
->  	return c;
->  }
->  EXPORT_SYMBOL(kmem_cache_create);
->  
->  void kmem_cache_destroy(struct kmem_cache *c)
->  {
-> +	memleak_free(c);
->  	slob_free(c, sizeof(struct kmem_cache));
->  }
->  EXPORT_SYMBOL(kmem_cache_destroy);
-> @@ -577,6 +582,7 @@ void *kmem_cache_alloc_node(struct kmem_cache *c, gfp_t flags, int node)
->  	if (c->ctor)
->  		c->ctor(b);
->  
-> +	memleak_alloc_recursive(b, c->size, 1, c->flags, flags);
->  	return b;
->  }
->  EXPORT_SYMBOL(kmem_cache_alloc_node);
-> @@ -599,6 +605,7 @@ static void kmem_rcu_free(struct rcu_head *head)
->  
->  void kmem_cache_free(struct kmem_cache *c, void *b)
->  {
-> +	memleak_free_recursive(b, c->flags);
->  	if (unlikely(c->flags & SLAB_DESTROY_BY_RCU)) {
->  		struct slob_rcu *slob_rcu;
->  		slob_rcu = b + (c->size - sizeof(struct slob_rcu));
--- 
-Mathematics is the supreme nostalgia of our time.
+Unfortunately, configfs is not (yet) suited for configuring SCST. This 
+is, because configfs is user space driven, so kernel can't create 
+subdirectories on it, and all files on configfs are limited to 4K in 
+size. It makes impossible for kernel to show, e.g., a list of connected 
+initiators. Hence, with configfs it is necessary to have one more 
+interface to show such data, e.g. sysfs-based. It would lead to 2 
+interfaces in two different places for configuring SCSI targets: 
+configfs and sysfs based. Definitely, it is better to have only one, 
+sysfs-based interface, than 2 interfaces. From other side, sysfs in what 
+SCST needs provides basically the same possibilities as configfs. And 
+it's widely used in the kernel to configure various its parameters. See, 
+for instance, bonding devices or IO schedulers.
+
+The proposed /sys interface would be very similar to the current /proc 
+layout intact, except cases, where output >PAGE_SIZE is needed. For such 
+cases each entry, i.e. line, in such files would be presented as a 
+subdirectory with name the first element in that line and each other 
+element in it would be presented as a separate file (attribute). For 
+instance, /proc/scsi_tgt/sessions, which lists connected sessions, would 
+be converted to:
+
+/sys/scsi_tgt/
+    /sys/scsi_tgt/sessions/
+      /sys/scsi_tgt/sessions/session1_name/
+        /sys/scsi_tgt/sessions/session1_name/target_name
+        /sys/scsi_tgt/sessions/session1_name/initiator_name
+        /sys/scsi_tgt/sessions/session1_name/acl -> ../../acls/aclX
+        /sys/scsi_tgt/sessions/session1_name/commands
+    /sys/scsi_tgt/sessions/session2_name/
+        /sys/scsi_tgt/sessions/session2_name/target_name
+        /sys/scsi_tgt/sessions/session2_name/initiator_name
+        /sys/scsi_tgt/sessions/session2_name/acl -> ../../acls/aclY
+        /sys/scsi_tgt/sessions/session2_name/commands
+.
+.
+.
+
+Addition of new, e.g. vdisk devices, would be done via echo'ing commands 
+to, in this example, /sys/scsi_tgt/vdisk/mgmt file similarly as it's 
+currently done with /proc/scsi_tgt/vdisk/vdisk (same commands, actually).
+
+Any comments and suggestions will be greatly appreciated.
+
+Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+---
+  drivers/scst/scst_proc.c | 2196 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  1 file changed, 2196 insertions(+)
+
+The patch is too big to be submitted inline. You can find it in 
+http://scst.sourceforge.net/patches/scst_proc.diff
+
+
 
