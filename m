@@ -1,139 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758337AbYLJQnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756440AbYLJQsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758337AbYLJQnf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:43:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757597AbYLJQnD
+	id S1756440AbYLJQsG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:48:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYLJQrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:43:03 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:52590 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758209AbYLJQnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:43:01 -0500
-Date: Wed, 10 Dec 2008 17:42:58 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: dmitri.vorobiev@movial.fi, vt8231@hiddenengine.co.uk,
-       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 27/28] drivers/hwmon/vt8231.c: Drop return value from
- platform_driver remove functions
-Message-ID: <Pine.LNX.4.64.0812101742380.21998@ask.diku.dk>
+	Wed, 10 Dec 2008 11:47:53 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45545 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752871AbYLJQrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 11:47:52 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/Yhb4S2K3YafTYV7xBbfw7fZHzuGtpOK2BdWu4xB
+	LsAUk3MZqJ+ZhM
+Date: Wed, 10 Dec 2008 17:47:57 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Herring Robert <R.Herring@freescale.com>
+cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org
+Subject: RE: [PATCH 3/4 v2] i.MX31: framebuffer driver
+In-Reply-To: <DE2504B3A515524BBE6934369EFDC0DA06FBD5E8@az33exm20.fsl.freescale.net>
+Message-ID: <Pine.LNX.4.64.0812101727270.4578@axis700.grange>
+References: <Pine.LNX.4.64.0812101122250.4578@axis700.grange>
+ <Pine.LNX.4.64.0812101131530.4578@axis700.grange>
+ <DE2504B3A515524BBE6934369EFDC0DA06FBD5E8@az33exm20.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Wed, 10 Dec 2008, Herring Robert wrote:
 
-The return value of the remove function of a driver structure, and thus of
-a platform_driver structure, is ultimately ignored, and is thus
-unnecessary.  This patch removes the return value for the remove function
-stored in a platform_driver structure.  For the files in this patch, the
-return values are always 0.
+> You have obviously started with Freescale copyrighted GPL code, but you
+> have not given credit or maintained our copyrights.
 
-A simplified version of the semantic patch that makes this change is as
-follows: (http://www.emn.fr/x-info/coccinelle/)
+I did try to do this, at least in those files, which contain significant 
+portions of Freescale code. If you feel that I missed it in some specific 
+files please let me know, I'll happily add it, it was in no way my 
+intension to steal the authorschip. E.g.:
 
-// <smpl>
-@r@
-struct platform_driver I;
-identifier a,f;
-position p;
-@@
-I.remove = \(f@p\|a(f@p)\);
+> > diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+> > new file mode 100644
+> > index 0000000..e8084ae
+> > --- /dev/null
+> > +++ b/drivers/video/mx3fb.c
+> > @@ -0,0 +1,1843 @@
+> > +/*
+> > + * Copyright (C) 2008
+> > + * Guennadi Liakhovetski, DENX Software Engineering, <lg@denx.de>
+> > + *
+> > + * Copyright 2004-2007 Freescale Semiconductor, Inc. All Rights Reserved.
+...
+> > +MODULE_AUTHOR("Freescale Semiconductor, Inc.");
 
-@void_called@
-identifier r.f;
-position p;
-@@
-f@p(...);
+...
 
-@called@
-identifier r.f;
-position p1 != void_called.p;
-@@
-f@p1(...)
+>From IPU IDMAC driver:
 
-@localfn@
-identifier r.f;
-@@
-static int f(...) { ... }
+diff --git a/drivers/mfd/ipu/ipu_idmac.c b/drivers/mfd/ipu/ipu_idmac.c
+new file mode 100644
+index 0000000..939acbf
+--- /dev/null
++++ b/drivers/mfd/ipu/ipu_idmac.c
+@@ -0,0 +1,1617 @@
++/*
++ * Copyright (C) 2008
++ * Guennadi Liakhovetski, DENX Software Engineering, <lg@denx.de>
++ *
++ * Copyright (C) 2005-2007 Freescale Semiconductor, Inc. All Rights Reserved.
 
-@depends on !called && localfn@
-struct platform_driver I;
-identifier a,f;
-position r.p;
-@@
+Please tell me in which other files and in which form you'd like to see 
+Freescale mentioned.
 
-I.
-- remove
-+ remove_new
-   = \(f@p\|a(f@p)\);
+> The way you have structured the code moving the low-level SDC setup to
+> the framebuffer will cause problems. There are lots of inter-module
+> dependencies that have to be handled in the correct order to avoid
+> hanging the h/w. For example, the SDC BG_EN has to be cleared before
+> disabling the IDMA channel.
 
-@depends on !called && localfn@
-identifier r.f,i;
-constant C;
-expression E;
-@@
+I tried to preserve the hardware handling code and the calling sequence. 
+For example, I think, this is exactly what I do in this driver - 
+sdc_disable_channel() first calls sdc_fb_uninit(), which clears the 
+SDC_COM_FG_EN bit in SDC_COM_CONF, and then idmac_terminate_all() is 
+called, which disables the IDMAC channel. Or have I understood you wrong?
 
-- int
-+ void
-       f(...) {
-  <...
-(
--  return \(C\|i\);
-+  return;
-|
--  return E;
-+  E;
-+  return;
-)
-  ...>
-}
-// </smpl>
+> This structure will also not allow reuse of framebuffer, camera, and 
+> v4l2 output drivers with the next version of h/w.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+Why? All the generic (IDMAC, interrupt controller) code is put in a 
+separate driver under drivers/mfd/ipu (see my patch 2/4), and only 
+Synchronous Display Controller and Display Interface handling code is in 
+the framebuffer driver. And the generic code is also used by the camera 
+driver, whose second version is also going to be submitted to the V4L list 
+soon. As for the "next version of h/w" - sorry, obviously I know nothing 
+about it, so I cannot programme for it.
 
+Besides, please understand, that I can develop and submit only parts that 
+I test. Having no smart displays I cannot develop, test and submit 
+Asynchronous Display Controller code, etc.
+
+May I also note, that if Freescale made the effort and integrated their 
+sources into the mainline, we wouldn't have this discussion now, the code 
+would be structured the way you see best (as long as it is accepted by the 
+maintainers) and would support any versions of hardware you like.
+
+Thanks
+Guennadi
 ---
- drivers/hwmon/vt8231.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/hwmon/vt8231.c b/drivers/hwmon/vt8231.c
-index 5bc5727..39cb37b 100644
---- a/drivers/hwmon/vt8231.c
-+++ b/drivers/hwmon/vt8231.c
-@@ -167,7 +167,7 @@ struct vt8231_data {
- 
- static struct pci_dev *s_bridge;
- static int vt8231_probe(struct platform_device *pdev);
--static int __devexit vt8231_remove(struct platform_device *pdev);
-+static void __devexit vt8231_remove(struct platform_device *pdev);
- static struct vt8231_data *vt8231_update_device(struct device *dev);
- static void vt8231_init_device(struct vt8231_data *data);
- 
-@@ -693,7 +693,7 @@ static struct platform_driver vt8231_driver = {
- 		.name	= "vt8231",
- 	},
- 	.probe	= vt8231_probe,
--	.remove	= __devexit_p(vt8231_remove),
-+	.remove_new = __devexit_p(vt8231_remove),
- };
- 
- static struct pci_device_id vt8231_pci_ids[] = {
-@@ -787,7 +787,7 @@ exit_release:
- 	return err;
- }
- 
--static int __devexit vt8231_remove(struct platform_device *pdev)
-+static void __devexit vt8231_remove(struct platform_device *pdev)
- {
- 	struct vt8231_data *data = platform_get_drvdata(pdev);
- 	int i;
-@@ -805,7 +805,6 @@ static int __devexit vt8231_remove(struct platform_device *pdev)
- 	release_region(data->addr, VT8231_EXTENT);
- 	platform_set_drvdata(pdev, NULL);
- 	kfree(data);
--	return 0;
- }
- 
- static void vt8231_init_device(struct vt8231_data *data)
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
