@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYLJUB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbYLJUGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbYLJUB0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 15:01:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbYLJUBR
+	id S1756158AbYLJUGV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 15:06:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbYLJUGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 15:01:17 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:57614 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753438AbYLJUBR (ORCPT
+	Wed, 10 Dec 2008 15:06:06 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:46780 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232AbYLJUGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 15:01:17 -0500
-Date: Wed, 10 Dec 2008 21:02:42 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       zippel@linux-m68k.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Better way to force a rebuild
-Message-ID: <20081210200242.GA15692@uranus.ravnborg.org>
-References: <alpine.DEB.1.10.0812101443550.11805@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0812101443550.11805@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 10 Dec 2008 15:06:04 -0500
+Date: Wed, 10 Dec 2008 15:06:00 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linux Netdev List <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+cc: Eric Dumazet <dada1@cosmosbay.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] update rwlock initialization for nat_table
+In-Reply-To: <49400B7F.7040607@cosmosbay.com>
+Message-ID: <alpine.DEB.1.10.0812101504280.11805@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0812101314460.11805@gandalf.stny.rr.com> <49400B7F.7040607@cosmosbay.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 02:48:35PM -0500, Steven Rostedt wrote:
-> 
-> Hi,
-> 
-> In include/linux/kernel.h I currently have the following lines at the 
-> bottom of the file:
-> 
-> /* Rebuild everything on CONFIG_FTRACE_MCOUNT_RECORD */
-> #ifdef CONFIG_FTRACE_MCOUNT_RECORD
-> # define REBUILD_DUE_TO_FTRACE_MCOUNT_RECORD
-> #endif
-> 
-> 
-> This is only there to force a rebuild of all files when 
-> CONFIG_FTRACE_MCOUNT_RECORD is modified. Since the modification of that 
-> config causes the build to act different, we need to rebuild all C 
-> objects. I added the #ifdef in kernel.h as a hack to force the rebuild by 
-> the config dependencies used in kbuild.
-> 
-> My question is, is there a better way to force a full rebuild on a 
-> modification of a config?
 
-Why is that hack required in the first place?
-We rebuild if:
-- target file is missing (not the case here)
-- any prerequisite files are newer than target (not the case here)
-- any CONFIG_* options used by any prerequisite has changed (not the case here)
-  [It is due to your hack]
-- gcc changed (not the case here)
-- options are added/deleted to gcc (this should be the case for relevant files)
+The following patch is in:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: cleanups
 
 
-Looking a bit deeper into this.
-I see that we have in Makefile.build:
+Steven Rostedt (1):
+      update rwlock initialization for nat_table
 
-define rule_cc_o_c
-        $(call echo-cmd,checksrc) $(cmd_checksrc)                         \
-        $(call echo-cmd,cc_o_c) $(cmd_cc_o_c);                            \
-        $(cmd_modversions)                                                \
-        $(cmd_record_mcount)   
+----
+ net/ipv4/netfilter/nf_nat_rule.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+---------------------------
+commit d4175059c8f95e4cd58e0efaa85610ca59469fbd
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Wed Dec 10 15:00:09 2008 -0500
 
-So you want everyting to be rebuild if the command above changes.
-That should be doable - and it is indeed a bug that we do not do so.
-The integration of record_mcount needs to be improved.
+    update rwlock initialization for nat_table
+    
+    Impact: clean up
+    
+    The commit e099a173573ce1ba171092aee7bb3c72ea686e59
+    (netfilter: netns nat: per-netns NAT table) renamed the
+    nat_table from __nat_table to nat_table without updating the
+    __RW_LOCK_UNLOCKED(__nat_table.lock).
+    
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+diff --git a/net/ipv4/netfilter/nf_nat_rule.c b/net/ipv4/netfilter/nf_nat_rule.c
+index bea54a6..8d489e7 100644
+--- a/net/ipv4/netfilter/nf_nat_rule.c
++++ b/net/ipv4/netfilter/nf_nat_rule.c
+@@ -61,7 +61,7 @@ static struct
+ static struct xt_table nat_table = {
+ 	.name		= "nat",
+ 	.valid_hooks	= NAT_VALID_HOOKS,
+-	.lock		= __RW_LOCK_UNLOCKED(__nat_table.lock),
++	.lock		= __RW_LOCK_UNLOCKED(nat_table.lock),
+ 	.me		= THIS_MODULE,
+ 	.af		= AF_INET,
+ };
 
 
-	Sam
