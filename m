@@ -1,95 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751656AbYLJFKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbYLJFUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751656AbYLJFKI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 00:10:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbYLJFJo
+	id S1754872AbYLJFUM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 00:20:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbYLJFT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 00:09:44 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:55411 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752118AbYLJFJn (ORCPT
+	Wed, 10 Dec 2008 00:19:58 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:48809 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750AbYLJFT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 00:09:43 -0500
-Message-ID: <493F4EF4.4080205@cosmosbay.com>
-Date: Wed, 10 Dec 2008 06:09:08 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Wed, 10 Dec 2008 00:19:57 -0500
+Date: Wed, 10 Dec 2008 10:49:47 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: menage@google.com, KAMEZAWA Hiroyuki <kamezawa.hiroyuki@jp.fujitsu.com>,
+       Daisuke Miyakawa <dmiyakawa@google.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [RFC][RFT] memcg fix cgroup_mutex deadlock when cpuset reclaims
+	memory
+Message-ID: <20081210051947.GH7593@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: menage@google.com,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyuki@jp.fujitsu.com>,
+	Daisuke Miyakawa <dmiyakawa@google.com>,
+	YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: linux kernel <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, Mingming Cao <cmm@us.ibm.com>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] percpu_counter: Fix __percpu_counter_sum()
-References: <4936D287.6090206@cosmosbay.com>	 <4936EB04.8000609@cosmosbay.com>	 <20081206202233.3b74febc.akpm@linux-foundation.org>	 <493BCF60.1080409@cosmosbay.com>	 <20081207092854.f6bcbfae.akpm@linux-foundation.org>	 <493C0F40.7040304@cosmosbay.com>	 <20081207205250.dbb7fe4b.akpm@linux-foundation.org>	 <20081208221241.GA2501@mit.edu>	 <1228774836.16244.22.camel@lappy.programming.kicks-ass.net>	 <20081208230047.GC2501@mit.edu> <1228777500.12729.4.camel@twins>	 <493E2884.6010600@cosmosbay.com> <1228811653.6809.26.camel@twins>
-In-Reply-To: <1228811653.6809.26.camel@twins>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 10 Dec 2008 06:09:09 +0100 (CET)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now percpu_counter_sum() is 'fixed', what about "percpu_counter_add()" ?
+Hi,
 
-void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
-{
-        s64 count;
-        s32 *pcount;
-        int cpu = get_cpu();
+Here is a proposed fix for the memory controller cgroup_mutex deadlock
+reported. It is lightly tested and reviewed. I need help with review
+and test. Is the reported deadlock reproducible after this patch? A
+careful review of the cpuset impact will also be highly appreciated.
 
-        pcount = per_cpu_ptr(fbc->counters, cpu);
-        count = *pcount + amount;
-        if (count >= batch || count <= -batch) {
-                spin_lock(&fbc->lock);
-                fbc->count += count;
-                *pcount = 0;
-                spin_unlock(&fbc->lock);
-        } else {
-                *pcount = count;
-        }
-        put_cpu();
-}
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
 
+cpuset_migrate_mm() holds cgroup_mutex throughout the duration of
+do_migrate_pages(). The issue with that is that
 
-If I read this well, this is not IRQ safe.
+1. It can lead to deadlock with memcg, as do_migrate_pages()
+   enters reclaim
+2. It can lead to long latencies, preventing users from creating/
+   destroying other cgroups anywhere else
 
-get_cpu() only disables preemption IMHO
+The patch holds callback_mutex through the duration of cpuset_migrate_mm() and
+gives up cgroup_mutex while doing so.
 
-For nr_files, nr_dentry, nr_inodes, it should not be a problem.
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
 
-But for network counters (only in net-next-2.6) 
-and lib/proportions.c, we have a problem ?
+ include/linux/cpuset.h |   13 ++++++++++++-
+ kernel/cpuset.c        |   23 ++++++++++++-----------
+ 2 files changed, 24 insertions(+), 12 deletions(-)
 
-Using local_t instead of s32 for cpu 
-local counter here is possible, so that fast path doesnt have 
-to disable interrupts
+diff -puN kernel/cgroup.c~cpuset-remove-cgroup-mutex-from-update-path kernel/cgroup.c
+diff -puN kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path kernel/cpuset.c
+--- a/kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path
++++ a/kernel/cpuset.c
+@@ -369,7 +369,7 @@ static void guarantee_online_mems(const 
+  * task has been modifying its cpuset.
+  */
+ 
+-void cpuset_update_task_memory_state(void)
++void __cpuset_update_task_memory_state(bool held)
+ {
+ 	int my_cpusets_mem_gen;
+ 	struct task_struct *tsk = current;
+@@ -380,7 +380,8 @@ void cpuset_update_task_memory_state(voi
+ 	rcu_read_unlock();
+ 
+ 	if (my_cpusets_mem_gen != tsk->cpuset_mems_generation) {
+-		mutex_lock(&callback_mutex);
++		if (!held)
++			mutex_lock(&callback_mutex);
+ 		task_lock(tsk);
+ 		cs = task_cs(tsk); /* Maybe changed when task not locked */
+ 		guarantee_online_mems(cs, &tsk->mems_allowed);
+@@ -394,7 +395,8 @@ void cpuset_update_task_memory_state(voi
+ 		else
+ 			tsk->flags &= ~PF_SPREAD_SLAB;
+ 		task_unlock(tsk);
+-		mutex_unlock(&callback_mutex);
++		if (!held)
++			mutex_unlock(&callback_mutex);
+ 		mpol_rebind_task(tsk, &tsk->mems_allowed);
+ 	}
+ }
+@@ -949,13 +951,15 @@ static int update_cpumask(struct cpuset 
+  *    so that the migration code can allocate pages on these nodes.
+  *
+  *    Call holding cgroup_mutex, so current's cpuset won't change
+- *    during this call, as manage_mutex holds off any cpuset_attach()
++ *    during this call, as callback_mutex holds off any cpuset_attach()
+  *    calls.  Therefore we don't need to take task_lock around the
+  *    call to guarantee_online_mems(), as we know no one is changing
+  *    our task's cpuset.
+  *
+  *    Hold callback_mutex around the two modifications of our tasks
+- *    mems_allowed to synchronize with cpuset_mems_allowed().
++ *    mems_allowed to synchronize with cpuset_mems_allowed(). Give
++ *    up cgroup_mutex to avoid deadlocking with other subsystems
++ *    as we enter reclaim from do_migrate_pages().
+  *
+  *    While the mm_struct we are migrating is typically from some
+  *    other task, the task_struct mems_allowed that we are hacking
+@@ -976,17 +980,14 @@ static void cpuset_migrate_mm(struct mm_
+ {
+ 	struct task_struct *tsk = current;
+ 
+-	cpuset_update_task_memory_state();
+-
++	cgroup_unlock();
+ 	mutex_lock(&callback_mutex);
++	cpuset_update_task_memory_state_locked();
+ 	tsk->mems_allowed = *to;
+-	mutex_unlock(&callback_mutex);
+-
+ 	do_migrate_pages(mm, from, to, MPOL_MF_MOVE_ALL);
+-
+-	mutex_lock(&callback_mutex);
+ 	guarantee_online_mems(task_cs(tsk),&tsk->mems_allowed);
+ 	mutex_unlock(&callback_mutex);
++	cgroup_lock();
+ }
+ 
+ static void *cpuset_being_rebound;
+diff -puN include/linux/cpuset.h~cpuset-remove-cgroup-mutex-from-update-path include/linux/cpuset.h
+--- a/include/linux/cpuset.h~cpuset-remove-cgroup-mutex-from-update-path
++++ a/include/linux/cpuset.h
+@@ -25,7 +25,18 @@ extern void cpuset_cpus_allowed_locked(s
+ extern nodemask_t cpuset_mems_allowed(struct task_struct *p);
+ #define cpuset_current_mems_allowed (current->mems_allowed)
+ void cpuset_init_current_mems_allowed(void);
+-void cpuset_update_task_memory_state(void);
++extern void __cpuset_update_task_memory_state(bool locked);
++
++static void inline cpuset_update_task_memory_state(void)
++{
++	__cpuset_update_task_memory_state(false);
++}
++
++static void inline cpuset_update_task_memory_state_locked(void)
++{
++	__cpuset_update_task_memory_state(true);
++}
++
+ int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask);
+ 
+ extern int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask);
+_
 
-(use a local_t instead of s32 for fbc->counters)
-
-void __percpu_counter_add_irqsafe(struct percpu_counter *fbc, s64 amount, s32 batch)
-{
-        long count;
-        local_t *pcount;
-
-	/* following code only matters on 32bit arches */
-	if (sizeof(amount) != sizeof(local_t)) {
-		if (unlikely(amount >= batch || amount <= -batch))) {
-        	        spin_lock_irqsave(&fbc->lock, flags);
-                	fbc->count += amount;
-                	spin_unlock_irqrestore(&fbc->lock, flags);
-			return;
-		}
-	}
-        pcount = per_cpu_ptr(fbc->counters, get_cpu());
-        count = local_add_return((long)amount, pcount);
-        if (unlikely(count >= batch || count <= -batch)) {
-		unsigned long flags;
-
-		local_sub(count, pcount);
-                spin_lock_irqsave(&fbc->lock, flags);
-                fbc->count += count;
-                spin_unlock_irqrestore(&fbc->lock, flags);
-        }
-        put_cpu();
-}
+-- 
+	Balbir
