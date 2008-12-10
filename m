@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbYLJTLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbYLJTNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756329AbYLJTLE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 14:11:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYLJTKw
+	id S1756559AbYLJTNT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 14:13:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYLJTNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 14:10:52 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:39976 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751697AbYLJTKv (ORCPT
+	Wed, 10 Dec 2008 14:13:11 -0500
+Received: from kuber.nabble.com ([216.139.236.158]:57515 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753475AbYLJTNL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 14:10:51 -0500
-Date: Wed, 10 Dec 2008 20:12:13 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Subject: Re: [PATCH][RFC 2/23]: SCST core
-Message-ID: <20081210191213.GA15273@uranus.ravnborg.org>
-References: <494009D7.4020602@vlnb.net> <49400ACD.3070502@vlnb.net>
-Mime-Version: 1.0
+	Wed, 10 Dec 2008 14:13:11 -0500
+Message-ID: <20942054.post@talk.nabble.com>
+Date: Wed, 10 Dec 2008 11:13:09 -0800 (PST)
+From: Dennis Hardy <dhardy@sogetthis.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: CIFS regression in 2.6.27.8
+In-Reply-To: <20081209212611.25fcd053@tupile.poochiereds.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49400ACD.3070502@vlnb.net>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
+X-Nabble-From: dhardy@sogetthis.com
+References: <20900699.post@talk.nabble.com> <84144f020812081128p6d1e2a55v69996a360e7f0e8f@mail.gmail.com> <200812082112.49468.rjw@sisk.pl> <20081209154932.0952fbf3@dhcp-100-2-144.bos.redhat.com> <20924383.post@talk.nabble.com> <20081209212611.25fcd053@tupile.poochiereds.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 09:30:37PM +0300, Vladislav Bolkhovitin wrote:
-> This patch contains SCST core code.
-> 
-> Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
-> ---
->   drivers/scst/Kconfig         |  256 ++
 
-Do not use "default n" - this is already the default value.
+> I could easily be wrong, but the problem you've described seems more
+> likely to be a server issue. 
 
->   drivers/scst/Makefile        |   12
-EXTRA_CFLAGS are deprecated in favour of ccflags-y
+Gentlemen, I am heading out to get an "L" (for loser) tattooed to my
+forehead.  MSFT pushed some updates for the Windows Server previously, and
+when we switched to 2.6.27.8 we rebooted everything, including the Windows
+Server, which activated the updates.  MSFT broke volume size reporting --
+even from other Windows machines!  We should have checked this before
+posting.
 
-
->   drivers/scst/scst_cdbprobe.h |  519 +++++
-static const struct scst_sdbops scst_scsi_op_table[] 
-
-This does not belong to a header file.
+Please accept my deepest apologies for this -- Linux is, as always, working
+great.
 
 
->   drivers/scst/scst_lib.c      | 3689 +++++++++++++++++++++++++++++++++++++
->   drivers/scst/scst_main.c     | 1919 +++++++++++++++++++
->   drivers/scst/scst_module.c   |   69
->   drivers/scst/scst_priv.h     |  513 +++++
->   drivers/scst/scst_targ.c     | 5458 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->   8 files changed, 12435 insertions(+)
+-- 
+View this message in context: http://www.nabble.com/CIFS-regression-in-2.6.27.8-tp20900699p20942054.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
 
-There was a lot af TRACE_ENTRY() / TRACE_EXIT() noise.
-We should have proper tools for that by now (I hope).
-
-We often ask for exported symbols to be documented - so one has
-a slight idea of their purpose.
-
-CONFIG_SCST_STRICT_SERIALIZING has bad impact on readability.
-Could this be abstracted better?
-
-
-I did not look into the source in details. Just a few sparse comments.
-
-	Sam
