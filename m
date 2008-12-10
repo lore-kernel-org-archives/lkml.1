@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbYLJXTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbYLJXV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756114AbYLJXTO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 18:19:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbYLJXSz
+	id S1756109AbYLJXV4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 18:21:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbYLJXVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 18:18:55 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40147
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754554AbYLJXSy (ORCPT
+	Wed, 10 Dec 2008 18:21:43 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:49848 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753496AbYLJXVm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 18:18:54 -0500
-Date: Wed, 10 Dec 2008 15:18:55 -0800 (PST)
-Message-Id: <20081210.151855.191710508.davem@davemloft.net>
-To: roel.kluin@gmail.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 28/31] net: Make static
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <493EEF28.1040007@gmail.com>
-References: <493EA286.7080500@gmail.com>
-	<493EEF28.1040007@gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Dec 2008 18:21:42 -0500
+X-Sasl-enc: DKuBJQbvq5drhzzKXalVIRGQcrcXeDDaNMFmDOYbXUxd 1228951301
+Date: Wed, 10 Dec 2008 21:21:37 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Adam Belay <abelay@mit.edu>,
+       rjw@sisk.pl
+Subject: Re: [PATCH] PNPACPI: Enable Power Support
+Message-ID: <20081210232137.GB7589@khazad-dum.debian.net>
+References: <493D8A1F.2090907@gmx.net> <20081210095315.GA20627@khazad-dum.debian.net> <494018E9.2060507@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <494018E9.2060507@gmx.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roel Kluin <roel.kluin@gmail.com>
-Date: Tue, 09 Dec 2008 23:20:24 +0100
+On Wed, 10 Dec 2008, Witold Szczeponik wrote:
+> Henrique de Moraes Holschuh wrote:
+>> On Mon, 08 Dec 2008, Witold Szczeponik wrote:
+>>> This patch sets the power of PnP ACPI devices to D0 when they
+>>> are activated and to D3 when they are disabled.  The latter is
+>>
+>> This will likely fix my T43 to power down USB during STR. THANKS!!
+>> Now, I just need to check if the ACPI BIOS is smart enough to not do
+>> it when they are configured as wake devices [in the BIOS].
+>>
+>
+> Most likely it won't. :-(  My patch takes only care of devices that are
+> properly registered as PnP by ACPI: attached USB devices don't fall
+> under that category.
 
-> Sparse asked whether these could be static.
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+I do mean the UHCI and EHCI bridges, not USB devices hanging off them :)
 
-net-next-2.6 already had some of these fixed already, so
-I kicked those parts out and applied the rest of your
-patch.
+I will do an in-depth study of the AML in question, I just noticed it is
+coupled to some EC magic register, which might be doing stuff the USB
+subsystem just can't do normally.
 
-Thanks!
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
