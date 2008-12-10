@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbYLJSoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbYLJSpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757429AbYLJSoY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 13:44:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbYLJSoJ
+	id S1756630AbYLJSpd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 13:45:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYLJSpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 13:44:09 -0500
-Received: from 78-210-144-213.altitudetelecom.fr ([213.144.210.78]:42921 "EHLO
-	fydelkass.inl.fr" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbYLJSoH (ORCPT
+	Wed, 10 Dec 2008 13:45:21 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:56113 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753509AbYLJSpV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 13:44:07 -0500
-Subject: Re: linux-next: Tree for December 1 (netfilter build error)
-From: Eric Leblond <eric@inl.fr>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       netdev <netdev@vger.kernel.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, netfilter-devel@vger.kernel.org,
-       kaber@trash.net
-In-Reply-To: <20081210165455.GC6391@linux.vnet.ibm.com>
-References: <20081201190827.2d02b1a5.sfr@canb.auug.org.au>
-	 <20081201115934.00ba918a.randy.dunlap@oracle.com>
-	 <20081210165455.GC6391@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-UjSN4+bVpf7FFw9CcHSS"
-Organization: INL
-Date: Wed, 10 Dec 2008 19:43:50 +0100
-Message-Id: <1228934630.5961.8.camel@ice-age>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Wed, 10 Dec 2008 13:45:21 -0500
+Message-ID: <49400E0F.5030906@vlnb.net>
+Date: Wed, 10 Dec 2008 21:44:31 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: linux-scsi@vger.kernel.org
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: [PATCH][RFC 10/23]: SCST user space backend handler
+References: <494009D7.4020602@vlnb.net>
+In-Reply-To: <494009D7.4020602@vlnb.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/FM+G8kJjx+7zkxiS3LCJWk/8l6mXnoo5Ol2o
+ Bhrq3V3XA53FivD8qrOnFpn7+mH2cogbA3FMy0fDPn6LIHIJT/
+ ncS3xXEzDNhAIKlX7OLYA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch contains user space backend dev handler. It allows to 
+implement in the user space virtual SCSI devices in the SCST 
+environment. See description of its interface here: 
+http://scst.sourceforge.net/scst_user_spec.txt
 
---=-UjSN4+bVpf7FFw9CcHSS
-Content-Type: text/plain; charset="ISO-8859-15"
-Content-Transfer-Encoding: quoted-printable
+An example of an application that uses this interface is fileio_tgt. You 
+can download this software from 
+https://sourceforge.net/project/showfiles.php?group_id=110471&package_id=283232. 
+This application is a full feature virtual disk emulator similar to 
+scst_vdisk backend dev handler.
 
-Hi,
+Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+---
+  drivers/scst/dev_handlers/scst_user.c | 3059 ++++++++++++++++++++++++++++++++++
+  include/scst/scst_user.h              |  266 ++
+  2 files changed, 3325 insertions(+)
 
-Le mercredi 10 d=E9cembre 2008 =E0 22:24 +0530, Kamalesh Babulal a =E9crit =
-:
-> * Randy Dunlap <randy.dunlap@oracle.com> [2008-12-01 11:59:34]:
-> 	   =20
-> the function nfulnl_log_packet is exported only if
-> CONFIG_NETFILTER_NETLINK_LOG is enabled, so marking the loging function
-> between ifdef.
->=20
+The patch is too big to be submitted inline. You can find it in 
+http://scst.sourceforge.net/patches/scst_user.diff
 
-My patch introduces a real depedency of xt_NFLOG with nfnetlink_log
-(CONFIG_NETFILTER_NETLINK_LOG) but I forget to state it in Kconfig.
-=20
-I thus disagree with your patch. It is better to fix the compilation
-depedency instead by modifying Kconfig.
 
-A patch fixing this issue is to come.
-
-BR,=20
---=20
-Eric Leblond <eric@inl.fr>
-INL
-
---=-UjSN4+bVpf7FFw9CcHSS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Ceci est une partie de message
- =?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBJQA3gnxA7CdMWjzIRAjimAJ4vFonm+9eIWkFQZCO+WPCGwam1VwCcCSsx
-vAn3jMrhqMZDkbzvGr3MZSA=
-=KX8/
------END PGP SIGNATURE-----
-
---=-UjSN4+bVpf7FFw9CcHSS--
 
