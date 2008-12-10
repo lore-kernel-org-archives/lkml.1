@@ -1,141 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753479AbYLJNGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbYLJNHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753479AbYLJNGZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 08:06:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYLJNGQ
+	id S1754467AbYLJNHe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 08:07:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYLJNH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 08:06:16 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:51085 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751657AbYLJNGP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 08:06:15 -0500
-Date: Wed, 10 Dec 2008 18:36:07 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: nishimura@mxp.nes.nec.co.jp
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, menage@google.com,
-       Daisuke Miyakawa <dmiyakawa@google.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, d-nishimura@mtf.biglobe.ne.jp
-Subject: Re: [RFC][RFT] memcg fix cgroup_mutex deadlock when cpuset
-	reclaims memory
-Message-ID: <20081210130607.GD25467@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: nishimura@mxp.nes.nec.co.jp,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	menage@google.com, Daisuke Miyakawa <dmiyakawa@google.com>,
-	YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	d-nishimura@mtf.biglobe.ne.jp
-References: <20081210051947.GH7593@balbir.in.ibm.com> <20081210151948.9a83f70a.nishimura@mxp.nes.nec.co.jp> <20081210164126.8b3be761.nishimura@mxp.nes.nec.co.jp> <20081210171836.b959d19b.kamezawa.hiroyu@jp.fujitsu.com> <20081210205337.3ed3db2c.d-nishimura@mtf.biglobe.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20081210205337.3ed3db2c.d-nishimura@mtf.biglobe.ne.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 10 Dec 2008 08:07:26 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39837 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751657AbYLJNHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 08:07:25 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1795455197.20081210132912@emcraft.com>
+References: <1795455197.20081210132912@emcraft.com> <200812092044.40649.yur@emcraft.com> <Pine.LNX.4.64.0812100944080.25126@vixen.sonytel.be> <503391615.20081210130113@emcraft.com> <20081210101745.GG28946@ZenIV.linux.org.uk>
+To: Yuri Tikhonov <yur@emcraft.com>
+Cc: dhowells@redhat.com, Al Viro <viro@ZenIV.linux.org.uk>,
+       Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>,
+       linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+       linuxppc-dev@ozlabs.org,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Ilya Yanok <yanok@emcraft.com>
+Subject: Re: Re[2]: [PATCH] fork_init: fix division by zero
+Date: Wed, 10 Dec 2008 13:06:44 +0000
+Message-ID: <5545.1228914404@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2008-12-10 20:53:37]:
+Yuri Tikhonov <yur@emcraft.com> wrote:
 
-> On Wed, 10 Dec 2008 17:18:36 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>  Here we believe in preprocessor: since all PAGE_SIZE, 8, and 
+> THREAD_SIZE are the constants we expect it will calculate this.
+
+The preprocessor shouldn't be calculating this.  I believe it will _only_
+calculate expressions for #if.  In the situation you're referring to, it
+should perform a substitution and nothing more.  The preprocessor doesn't
+necessarily know how to handle the types involved.
+
+In any case, there's an easy way to find out: you can ask the compiler to give
+you the result of running the source through the preprocessor only.  For
+instance, if you run this:
+
+	#define PAGE_SIZE 4096
+	#define THREAD_SIZE 8192
+	unsigned long mempages;
+	unsigned long jump(void)
+	{
+		unsigned long max_threads;
+		max_threads = mempages * PAGE_SIZE / (8 * THREAD_SIZE);
+		return max_threads;
+	}
+
+through "gcc -E", you get:
+
+	# 1 "calc.c"
+	# 1 "<built-in>"
+	# 1 "<command line>"
+	# 1 "calc.c"
+	unsigned long mempages;
+	unsigned long jump(void)
+	{
+	 unsigned long max_threads;
+	 max_threads = mempages * 4096 / (8 * 8192);
+	 return max_threads;
+	}
+
+
+>  In any case, adding braces as follows probably would be better:
 > 
-> > On Wed, 10 Dec 2008 16:41:26 +0900
-> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > 
-> > > On Wed, 10 Dec 2008 15:19:48 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > > On Wed, 10 Dec 2008 10:49:47 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > Here is a proposed fix for the memory controller cgroup_mutex deadlock
-> > > > > reported. It is lightly tested and reviewed. I need help with review
-> > > > > and test. Is the reported deadlock reproducible after this patch? A
-> > > > > careful review of the cpuset impact will also be highly appreciated.
-> > > > > 
-> > > > > From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > > > > 
-> > > > > cpuset_migrate_mm() holds cgroup_mutex throughout the duration of
-> > > > > do_migrate_pages(). The issue with that is that
-> > > > > 
-> > > > > 1. It can lead to deadlock with memcg, as do_migrate_pages()
-> > > > >    enters reclaim
-> > > > > 2. It can lead to long latencies, preventing users from creating/
-> > > > >    destroying other cgroups anywhere else
-> > > > > 
-> > > > > The patch holds callback_mutex through the duration of cpuset_migrate_mm() and
-> > > > > gives up cgroup_mutex while doing so.
-> > > > > 
-> > > > I agree changing cpuset_migrate_mm not to hold cgroup_mutex to fix the dead lock
-> > > > is one choice, and it looks good to me at the first impression.
-> > > > 
-> > > > But I'm not sure it's good to change cpuset(other subsystem) code because of memcg.
-> > > > 
-> > > > Anyway, I'll test this patch and report the result tomorrow.
-> > > > (Sorry, I don't have enough time today.)
-> > > > 
-> > > Unfortunately, this patch doesn't seem enough.
-> > > 
-> > > This patch can fix dead lock caused by "circular lock of cgroup_mutex",
-> > > but cannot that of caused by "race between page reclaim and cpuset_attach(mpol_rebind_mm)".
-> > > 
-> > > (The dead lock I fixed in memcg-avoid-dead-lock-caused-by-race-between-oom-and-cpuset_attach.patch
-> > > was caused by "race between memcg's oom and mpol_rebind_mm, and was independent of hierarchy.)
-> > > 
-> > > I attach logs I got in testing this patch.
-> > > 
-> > Hmm, ok then, what you  mention to is this race.
-> > --
-> > 	cgroup_lock()
-> > 		-> cpuset_attach()
-> > 			-> down_write(&mm->mmap_sem);
-> > 
-> > 	down_read()
-> > 		-> page fault
-> > 			-> reclaim in memcg
-> > 				-> cgroup_lock().
-> > --
-> > What this patch tries to fix is this recursive locks
-> > --
-> > 	cgroup_lock()
-> > 		-> cpuset_attach()
-> > 			-> cpuset_migrate_mm()
-> > 				-> charge to migration
-> > 					-> go to reclaim and meet cgroup_lock.
-> > --
-> > 
-> > 
-> > Right ?
-> > 
-> Yes.
-> Thank you for explaining in detail.
+> +     max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
+
+I think you mean brackets, not braces '{}'.
+
+>  Right ?
+
+Definitely not.
+
+I added this function to the above:
+
+	unsigned long alt(void)
+	{
+		unsigned long max_threads;
+		max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
+		return max_threads;
+	}
+
+and ran it through "gcc -S -O2" for x86_64:
+
+	jump:
+		movq    mempages(%rip), %rax
+		salq    $12, %rax
+		shrq    $16, %rax
+		ret
+	alt:
+		xorl    %eax, %eax
+		ret
+
+Note the difference?  In jump(), x86_64 first multiplies mempages by 4096, and
+_then_ divides by 8*8192.
+
+In alt(), it just returns 0 because the compiler realised that you're
+multiplying by 0.
+
+If you're going to bracket the expression, it must be:
+
+		max_threads = (mempages * PAGE_SIZE) / (8 * THREAD_SIZE);
+
+which should be superfluous.
+
+>  E.g. here is the result from this line as produced by cross-gcc 
+> 4.2.2:
 > 
-
-Sorry, I don't understand the context, I am unable to figure out
-
-1. How to reproduce the problem that Daisuke-San reported
-2. Whether the patch is correct or causing more problems or needs more
-   stuff to completely fix the race.
-
+>         lis     r9,0
+>         rlwinm  r29,r29,2,16,29
+>         stw     r29,0(r9)
 > 
-> Daisuke Nishimura.
-> 
-> > BTW, releasing cgroup_lock() while attach() is going on is finally safe ?
-> > If not, can this lock for attach be replaced with (new) cgroup private mutex ?
-> > 
-> > a new mutex like this ?
-> > --
-> > struct cgroup {
-> > 	.....
-> > 	mutex_t		attach_mutex; /* for serializing attach() ops. 
-> > 					 while attach() is going on, rmdir() will fail */
-> > }
-> > --
-> > Do we need the big lock of cgroup_lock for attach(), at last ?
-> > 
-> > -Kame
-> > 
+>  As you see - only rotate-left, i.e. multiplication to the constant.
 
--- 
-	Balbir
+Ummm...  On powerpc, I believe rotate-left would be a division as it does the
+bit-numbering and the bit direction the opposite way to more familiar CPUs
+such as x86.
+
+David
