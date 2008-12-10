@@ -1,162 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbYLJRe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbYLJRf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbYLJRe5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 12:34:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbYLJRer
+	id S1755388AbYLJRf4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 12:35:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbYLJRfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 12:34:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48988 "EHLO mx2.mail.elte.hu"
+	Wed, 10 Dec 2008 12:35:48 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45403 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752178AbYLJRep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 12:34:45 -0500
-Date: Wed, 10 Dec 2008 18:33:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Frans Pop <elendil@planet.nl>, lenb@kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
-       jbarnes@virtuousgeek.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: "APIC error on CPU1: 00(40)" during resume (was: Regression
-	from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500)
-Message-ID: <20081210173343.GA1120@elte.hu>
-References: <200812020320.31876.rjw@sisk.pl> <200812101506.45691.elendil@planet.nl> <alpine.LFD.2.00.0812100740390.3340@localhost.localdomain> <200812101705.18899.elendil@planet.nl> <alpine.LFD.2.00.0812100819570.3340@localhost.localdomain>
+	id S1752178AbYLJRfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 12:35:47 -0500
+Date: Wed, 10 Dec 2008 09:35:45 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fs: filp_cachep can be static in fs/file_table.c
+Message-ID: <20081210173544.GA10602@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <493EF5CD.2050206@cosmosbay.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0812100819570.3340@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <493EF5CD.2050206@cosmosbay.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> Ingo - who's the main apic person these days?
-
-When it comes to blame someone for bugs then it's me :-)
-
-When it comes to code details, it's multiple people: Yinghai, Suresh, 
-Venki, Maciej and Thomas, Peter and me as x86 maintainers. I tried to Cc: 
-everyone.
-
-> On Wed, 10 Dec 2008, Frans Pop wrote:
+On Tue, Dec 09, 2008 at 11:48:45PM +0100, Eric Dumazet wrote:
+> Hi Andrew
 > 
-> > On Wednesday 10 December 2008, Linus Torvalds wrote:
-> > > On Wed, 10 Dec 2008, Frans Pop wrote:
-> > > > Anybody interested in persuing this issue?
-> > > >
-> > > > > The third thing that worries me is the _very_ early occurrence of
-> > > > >
-> > > > > 	ACPI: Waking up from system sleep state S3
-> > > > > 	APIC error on CPU1: 00(40)
-> > > > > 	ACPI: EC: non-query interrupt received, switching to interrupt
-> > > > > mode
-> > >
-> > > Well, the "too early" part is fixed with the PCI resume changes in
-> > > -next, and googling for "APIC error on CPU1: 00(40)" shows that it's
-> > > actually pretty common. Which is sad, but makes it somewhat less scary.
-> > >
-> > > The fact that it happens at resume for you (and not randomly) does
-> > > imply that we perhaps don't have a wonderful APIC wakeup sequence and
-> > > are doing something slightly wrong. But it likely isn't a big deal.
-> > >
-> > > Is that message new? If it is, maybe you can pinpoint roughly when it
-> > > started happening, and we could try guess which change triggered it.
-> > 
-> > It's been there since 2.6.26.3, which was the first kernel I've run on 
-> > this notebook.
+> Please find two cleanups before patch re-submission to use
+> SLAB_DESTROY_BY_RCU for "struct file".
 > 
-> Hmm. Our IO-APIC reprogramming looks pretty simple, and may well be 
-> correct.
+> Thank you
 > 
-> However, it looks like our _local_ APIC suspend/resume is a total piece 
-> of sh*t.  It's set up as a "system device" and has a single 
-> suspend/resume buffer, but the local APIC is a per-CPU thing. We even 
-> have a comment there (written by yours trule back in 2003!) that says:
+> [PATCH] fs: filp_cachep can be static in fs/file_table.c
 > 
->          * FIXME! This will be wrong if we ever support suspend on
->          * SMP! We'll need to do this as part of the CPU restore!
+> 1) Documentation cleanup
 > 
-> and back then suspend/resume on SMP was just a crazy notion, but now 
-> it's obviously every-day reality.
+> Documentation/filesystems/files.txt was not updated when
+> f_count became an atomic_long_t.
+> atomic_long_inc_not_zero() is now used instead of atomic_inc_not_zero()
 > 
-> So it looks like we don't reprogram the APIC -at-all- on secondary 
-> CPU's.
+> 2) filp_cachep can be static to fs/file_table.c
 > 
-> What am I missing?
+> Instead of creating the "filp" kmem_cache in vfs_caches_init(),
+> we can do it a litle be later in files_init(), so that filp_cachep
+> is static to fs/file_table.c
 
-we do reset it - local APIC timer IRQs would not be working, the NMI 
-watchdog wouldnt be working, we wouldnt be able to do cross-IPIs nor TLB 
-flushes etc. - so a non-working lapic is the sure way to a system lockup.
-But the resume/hotplug path is still a maze, agreed.
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-regarding those APIC error messages:
-
-> > > > >       ACPI: Waking up from system sleep state S3
-> > > > >       APIC error on CPU1: 00(40)
-> > > > >       ACPI: EC: non-query interrupt received, switching to interrupt
-
-that does suggest that the APIC was re-enabled (we dont get any APIC 
-error exceptions otherwise!), and its LVT was programmed as well, but 
-somehow we got an erroneous APIC message from an illegal vector.
-
-Illegal APIC message vectors can have two sources in practice:
-
- 1) the system bus being thermally unstable and corrupting APIC messages 
-    that would randomly contain the wrong vector (zero for example).
-    I had one (old) testbox that would do this. (Maybe other hw 
-    conditions can animate the southbridge to do this to us too.)
-
- 2) _another CPU_ sending an IPI with an illegal vector field. An APIC 
-    vector is 'illegal' if it is below 16 (architecturally protected 
-    exception entries), or if it points to an IDT entry that is not
-    present.
-
-#2: in this case would mean another CPU has set a target vector smaller
-than 16: we dont have any IDT entry that is explicitly non-existent (we 
-have a dummy entry mapped for everything). That seems unlikely - but we 
-could stick in a WARN_ON_ONCE() into the IPI send methods to catch this. 
-
-[ sidenote: as weird as it might seem it is valid IPI use to trigger
-  architectural exception vectors between 16 and 31. ]
-
-#1: seems like a too easy path out to blame the hw for it :-/ By all 
-means this has the appearance of kernel-induced damage to me, and seems 
-to occur when we fiddle the hw and are in a sensitive path of 
-resume-wakeup. I'd blame the kernel 9 times out of 10 bugs that trigger 
-at this stage.
-
-Still i have no idea how this APIC message could be kernel-inflicted - 
-even assuming buggy resume time lapic setup. The lapic timer cannot 
-inject 'bad' vectors to itself AFAIK. It's pretty hard to do it even 
-intentionally from another CPU, and when we do it we kill the whole 
-system by flooding it with bad IPIs.
-
-Maybe we have a window of setup where one of the LVT entries has zero in 
-the vector field but is still enabled, and the hw condition (lapic timer 
-tick) happens that triggers the IRQ injection - but the lapic cannot do 
-it due to the zero vector? I do not see such window of setup in the APIC 
-re-setup codepath though.
-
-Maybe it's the reschedule or TLB flush IPI from another CPU somehow 
-hitting the lapic in the wrong moment?
-
-Dunno. Does anyone else on the Cc: list have another theory that matches 
-up with some detail of the code?
-
-	Ingo
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> ---
+>  Documentation/filesystems/files.txt |    6 +++---
+>  fs/dcache.c                         |    6 ------
+>  fs/file_table.c                     |   10 +++++++++-
+>  include/linux/fdtable.h             |    2 --
+>  4 files changed, 12 insertions(+), 12 deletions(-)
+> 
+> diff --git a/Documentation/filesystems/files.txt b/Documentation/filesystems/files.txt
+> index bb0142f..ac2facc 100644
+> --- a/Documentation/filesystems/files.txt
+> +++ b/Documentation/filesystems/files.txt
+> @@ -76,13 +76,13 @@ the fdtable structure -
+>  5. Handling of the file structures is special. Since the look-up
+>     of the fd (fget()/fget_light()) are lock-free, it is possible
+>     that look-up may race with the last put() operation on the
+> -   file structure. This is avoided using atomic_inc_not_zero()
+> +   file structure. This is avoided using atomic_long_inc_not_zero()
+>     on ->f_count :
+> 
+>  	rcu_read_lock();
+>  	file = fcheck_files(files, fd);
+>  	if (file) {
+> -		if (atomic_inc_not_zero(&file->f_count))
+> +		if (atomic_long_inc_not_zero(&file->f_count))
+>  			*fput_needed = 1;
+>  		else
+>  		/* Didn't get the reference, someone's freed */
+> @@ -92,7 +92,7 @@ the fdtable structure -
+>  	....
+>  	return file;
+> 
+> -   atomic_inc_not_zero() detects if refcounts is already zero or
+> +   atomic_long_inc_not_zero() detects if refcounts is already zero or
+>     goes to zero during increment. If it does, we fail
+>     fget()/fget_light().
+> 
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index a1d86c7..fa1ba03 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -2313,9 +2313,6 @@ static void __init dcache_init(void)
+>  /* SLAB cache for __getname() consumers */
+>  struct kmem_cache *names_cachep __read_mostly;
+> 
+> -/* SLAB cache for file structures */
+> -struct kmem_cache *filp_cachep __read_mostly;
+> -
+>  EXPORT_SYMBOL(d_genocide);
+> 
+>  void __init vfs_caches_init_early(void)
+> @@ -2337,9 +2334,6 @@ void __init vfs_caches_init(unsigned long mempages)
+>  	names_cachep = kmem_cache_create("names_cache", PATH_MAX, 0,
+>  			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+> 
+> -	filp_cachep = kmem_cache_create("filp", sizeof(struct file), 0,
+> -			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+> -
+>  	dcache_init();
+>  	inode_init();
+>  	files_init(mempages);
+> diff --git a/fs/file_table.c b/fs/file_table.c
+> index 5ad0eca..a46e880 100644
+> --- a/fs/file_table.c
+> +++ b/fs/file_table.c
+> @@ -32,6 +32,9 @@ struct files_stat_struct files_stat = {
+>  /* public. Not pretty! */
+>  __cacheline_aligned_in_smp DEFINE_SPINLOCK(files_lock);
+> 
+> +/* SLAB cache for file structures */
+> +static struct kmem_cache *filp_cachep __read_mostly;
+> +
+>  static struct percpu_counter nr_files __cacheline_aligned_in_smp;
+> 
+>  static inline void file_free_rcu(struct rcu_head *head)
+> @@ -397,7 +400,12 @@ too_bad:
+>  void __init files_init(unsigned long mempages)
+>  { 
+>  	int n; 
+> -	/* One file with associated inode and dcache is very roughly 1K. 
+> +
+> +	filp_cachep = kmem_cache_create("filp", sizeof(struct file), 0,
+> +			SLAB_HWCACHE_ALIGN | SLAB_PANIC, NULL);
+> +
+> +	/*
+> +	 * One file with associated inode and dcache is very roughly 1K. 
+>  	 * Per default don't use more than 10% of our memory for files. 
+>  	 */ 
+> 
+> diff --git a/include/linux/fdtable.h b/include/linux/fdtable.h
+> index 4aab6f1..09d6c5b 100644
+> --- a/include/linux/fdtable.h
+> +++ b/include/linux/fdtable.h
+> @@ -57,8 +57,6 @@ struct files_struct {
+> 
+>  #define files_fdtable(files) (rcu_dereference((files)->fdt))
+> 
+> -extern struct kmem_cache *filp_cachep;
+> -
+>  struct file_operations;
+>  struct vfsmount;
+>  struct dentry;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
