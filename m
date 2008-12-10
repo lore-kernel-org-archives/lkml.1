@@ -1,130 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYLJQmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYLJQlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbYLJQmB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:42:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbYLJQlf
+	id S1757983AbYLJQlq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:41:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757152AbYLJQl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:41:35 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:55500 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756686AbYLJQld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:41:33 -0500
-Date: Wed, 10 Dec 2008 17:41:30 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: dmitri.vorobiev@movial.fi, khali@linux-fr.org, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 23/28] drivers/hwmon/f71805f.c: Drop return value from
- platform_driver remove functions
-Message-ID: <Pine.LNX.4.64.0812101741070.21998@ask.diku.dk>
+	Wed, 10 Dec 2008 11:41:28 -0500
+Received: from email.renci.org ([152.54.4.63]:48742 "EHLO mx1.renci.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757925AbYLJQl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 11:41:26 -0500
+X-Greylist: delayed 694 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Dec 2008 11:41:25 EST
+Message-ID: <493FEDE9.5080209@renci.org>
+Date: Wed, 10 Dec 2008 11:27:21 -0500
+From: Rob Fowler <rjf@renci.org>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: eranian@gmail.com
+CC: Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, Paul Mackerras <paulus@samba.org>,
+       Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
+       Arjan van de Veen <arjan@infradead.org>
+Subject: Re: [perfmon2] [patch 0/3] [Announcement] Performance Counters for
+ Linux
+References: <20081204225345.654705757@linutronix.de> <7c86c4470812051836t37e86565w3b92fd06fc905430@mail.gmail.com>
+In-Reply-To: <7c86c4470812051836t37e86565w3b92fd06fc905430@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: No, Score=-1.4 required=5.0 tests=ALL_TRUSTED
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+My reaction is more from a downstream tool developer and end user perspective.
 
-The return value of the remove function of a driver structure, and thus of
-a platform_driver structure, is ultimately ignored, and is thus
-unnecessary.  This patch removes the return value for the remove function
-stored in a platform_driver structure.  For the files in this patch, the
-return values are always 0.
+What I don't see in the new proposal is support for real end users of hardware
+performance counter information.  There is a long-existing community that is using the
+counters, including the hardware designers, driver writers, tool developers, and
+performance tuning specialists working for both vendors and end customers.   Not
+everyone is in the same camp, as each the hardware capabilities change from revision to
+revision of the chips as features are added, architectures evolve, and implementations are
+cleaned up.  System vendors have their own tools and developers (SpeedShop, Vtune, Tprof, Sun Studio
+Code Analyst, etc). There are academic and open source efforts with long histories (PAPI,
+oprofile, HPCToolkit (Rice, not IBM), etc). We've lived with proprietary drivers/APIs and with
+a succession of open-source drivers (pci, perfctr, oprofile, perfmon).  (My apologies to
+readers/developers whose favorite tool(s) I haven't mentioned.)  Out-and-out religious wars
+have not erupted, but there are a lot of healthy disagreements. A significant part of this
+community has been converging around Perfmon2/3, not because it is a thing of beauty, but
+because it is a tool that exposes the full HPM capabilities (which are often ugly) in a useful
+way for a community of tool developers and end users.
 
-A simplified version of the semantic patch that makes this change is as
-follows: (http://www.emn.fr/x-info/coccinelle/)
+Before considering this new proposal seriously, I'd need to see it proven.  This means
+that it needs to be developed, by the proposers, enough to be used seriously.  I've
+got collaborators that measure compute resources in units of tens of TeraFLOP-years, so
+my definition of "seriously" is that the HPM tool chain has to work with low overhead
+on huge clusters of multi-core, multi-socket machines and it has to be able to provide
+performance insights that will let us get even more performance out of applications
+that already do pretty well.  Google and other large users have similar notions of "serious".
 
-// <smpl>
-@r@
-struct platform_driver I;
-identifier a,f;
-position p;
-@@
-I.remove = \(f@p\|a(f@p)\);
+Here's my set of strawman requirements:
 
-@void_called@
-identifier r.f;
-position p;
-@@
-f@p(...);
+-- Can it support a *completely* functional PAPI?  There are a lot of tools (HPCToolkit,
+    TAU, etc.) built on this layer.
 
-@called@
-identifier r.f;
-position p1 != void_called.p;
-@@
-f@p1(...)
+-- Means to support IBS/EBS profiling and efficiently record execution contexts?  Can it
+    support event-based call stack profiling?
 
-@localfn@
-identifier r.f;
-@@
-static int f(...) { ... }
+-- Can it supplant or support oprofile by supporting the tools (Code Analyst, etc) that
+    depend on it?
 
-@depends on !called && localfn@
-struct platform_driver I;
-identifier a,f;
-position r.p;
-@@
+-- Kernel and daemon profiling capabilities?
 
-I.
-- remove
-+ remove_new
-   = \(f@p\|a(f@p)\);
+-- Does it have sufficiently low overhead?  Six years ago DCPI/ProfileMe was capable of
+    collecting around 5000 samples/second on a quad socket 1GHz Alpha EV67 system with
+    about a 1.5% overhead.  That's the gold standard. Oprofile and pfmon are not far off
+    that mark.
 
-@depends on !called && localfn@
-identifier r.f,i;
-constant C;
-expression E;
-@@
+-- Does it even scale within one box?  My workhorse systems today are quad-socket Barcelonas.
+    I'm reliably using multiple, cooperating (Some measure on-core, others measure off-core events.)
+    instances of pfmon to collect profiles using  all 64 (4 per core x 16 cores) counters
+    productively with low overhead.  Real soon now I will have similar expectations
+    regarding multi-socket Nehalems where the resources will be 7 (heterogeneous) counters per
+    core plus 8 "uncore" counters (I prefer "nest", Alex Mericas' terminology.) per socket.
 
-- int
-+ void
-       f(...) {
-  <...
-(
--  return \(C\|i\);
-+  return;
-|
--  return E;
-+  E;
-+  return;
-)
-  ...>
-}
-// </smpl>
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+Regards,
+Rob
 
----
- drivers/hwmon/f71805f.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/hwmon/f71805f.c b/drivers/hwmon/f71805f.c
-index 7a14a2d..76842db 100644
---- a/drivers/hwmon/f71805f.c
-+++ b/drivers/hwmon/f71805f.c
-@@ -1408,7 +1408,7 @@ exit:
- 	return err;
- }
- 
--static int __devexit f71805f_remove(struct platform_device *pdev)
-+static void __devexit f71805f_remove(struct platform_device *pdev)
- {
- 	struct f71805f_data *data = platform_get_drvdata(pdev);
- 	struct resource *res;
-@@ -1424,8 +1424,6 @@ static int __devexit f71805f_remove(struct platform_device *pdev)
- 
- 	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
- 	release_region(res->start + ADDR_REG_OFFSET, 2);
--
--	return 0;
- }
- 
- static struct platform_driver f71805f_driver = {
-@@ -1434,7 +1432,7 @@ static struct platform_driver f71805f_driver = {
- 		.name	= DRVNAME,
- 	},
- 	.probe		= f71805f_probe,
--	.remove		= __devexit_p(f71805f_remove),
-+	.remove_new	= __devexit_p(f71805f_remove),
- };
- 
- static int __init f71805f_device_add(unsigned short address,
+stephane eranian wrote:
+> Hello,
+> 
+> I have been reading all the threads after this unexpected announcement
+> of a competing proposal for an interface to access the performance counters.
+> I would like to respond to some of the things I have seen.
+> 
+
+  <<<<<< Details of Stephane's comment's elided >>>>>>
+
+> 
+> In summary, although the idea of simplifying tools by moving the
+> complexity elsewhere is legitimate, pushing it down to the kernel
+> is the wrong approach in my opinion, perfmon has avoided that as much
+> as possible for good reasons. We have shown , with libpfm,
+> that a large part of complexity can easily be encapsulated into a user
+> library. I also don't think the approach of managing events
+> independently of each others works for all processors. As pointed out
+> by others, there are other factors at stake and they may not
+> even be on the same core.
+> 
+> S. Eranian
+> 
+> ------------------------------------------------------------------------------
+> SF.Net email is Sponsored by MIX09, March 18-20, 2009 in Las Vegas, Nevada.
+> The future of the web can't happen without you.  Join us at MIX09 to help
+> pave the way to the Next Web now. Learn more and register at
+> http://ad.doubleclick.net/clk;208669438;13503038;i?http://2009.visitmix.com/
+> _______________________________________________
+> perfmon2-devel mailing list
+> perfmon2-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/perfmon2-devel
+
+-- 
+Robert J. Fowler
+Chief Domain Scientist, HPC
+Renaissance Computing Institute
+The University of North Carolina at Chapel Hill
+100 Europa Dr, Suite 540
+Chapel Hill, NC 27517
+V: 919.445.9670
+F: 919 445.9669
+rjf@renci.org
