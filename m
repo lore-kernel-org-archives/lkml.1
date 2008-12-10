@@ -1,99 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYLJL0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbYLJL1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753439AbYLJL0o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 06:26:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYLJL0b
+	id S1753633AbYLJL1r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 06:27:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYLJL1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 06:26:31 -0500
-Received: from i220-221-252-159.s30.a048.ap.plala.or.jp ([220.221.252.159]:57873
-	"EHLO mail.m.clustcom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751127AbYLJL0a (ORCPT
+	Wed, 10 Dec 2008 06:27:38 -0500
+Received: from mx3.schottelius.org ([77.109.138.221]:54760 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbYLJL1h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 06:26:30 -0500
-Date: Wed, 10 Dec 2008 20:26:18 +0900
-From: Hitoshi Mitake <mitake@clustcom.com>
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-Cc: David Miller <davem@davemloft.net>,
-       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ktaka@clustcom.com" <ktaka@clustcom.com>
-Subject: Re: [RFC] New functions to manipulate registers for ethtool
-Message-Id: <20081210202618.0f2a2218.mitake@clustcom.com>
-In-Reply-To: <F169D4F5E1F1974DBFAFABF47F60C10A1753409B@orsmsx507.amr.corp.intel.com>
-References: <20081208171230.288c5ccf.mitake@clustcom.com>
-	<20081208.005431.200957157.davem@davemloft.net>
-	<58622.1228726903@turing-police.cc.vt.edu>
-	<20081208.010634.247305010.davem@davemloft.net>
-	<F169D4F5E1F1974DBFAFABF47F60C10A1753409B@orsmsx507.amr.corp.intel.com>
-Organization: Cluster Computing, Inc
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Dec 2008 06:27:37 -0500
+Date: Wed, 10 Dec 2008 12:27:30 +0100
+From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 8
+Message-ID: <20081210112730.GA11869@denkbrett.schottelius.org>
+Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20081208205929.366a9a01.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Nq2Wo0NMKNjxTN9z"
+Content-Disposition: inline
+In-Reply-To: <20081208205929.366a9a01.sfr@canb.auug.org.au>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.28-rc6-wl-denkbrett-21906-g24e8b9a x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Dec 2008 09:36:53 -0800
-"Brandeburg, Jesse" <jesse.brandeburg@intel.com> wrote:
 
-> David Miller wrote:
-> > From: Valdis.Kletnieks@vt.edu
-> > Date: Mon, 08 Dec 2008 04:01:43 -0500
-> > 
-> >> On Mon, 08 Dec 2008 00:54:31 PST, David Miller said:
-> >>> From: Hitoshi Mitake <mitake@clustcom.com>
-> >>> Date: Mon, 8 Dec 2008 17:12:30 +0900
-> >>> 
-> >>>> I want to add two new functions to ethtool.
-> >>>> 
-> >>>> One is for setting driver's registers on MMIO area like
-> >>>> --change-eeprom option.
-> >>> 
-> >>> You can map the registers into userspace using the bus
-> >>> level mmap facilities exported to userspace.
-> 
-> one hiccup, Arjan recently added functionality to the kernel that could
-> disallow this unless a user overrides at boot. [1]
-> 
-> also, there is a .config option that disallows this but I'm just
-> mentioning it for posterity.
-> 
-> >>> No ethtool support is necessary for this.
-> >> 
-> >> Yes, but if Hitoshi wants to tell a user "run this command and send
-> >> me the output", what's the incantation the user needs to use?
-> > 
-> 
-> ethregs -s <bus>:<dev>.<fn>
-> 
-> > That's an awful reason to have to two ways of doing the exact same
-> > thing from userspace.
-> > 
-> > Write the tool.  Someone will if it's important enough (in fact
-> > such code probably exists already).
+--Nq2Wo0NMKNjxTN9z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for your replying, David, Valdis and Jesse.
+Stephen Rothwell [Mon, Dec 08, 2008 at 08:59:29PM +1100]:
+> Hi all,
+>=20
+> Changes since 20081204:
 
-> 
-> Hi Hitoshi,
-> you probably want to download and install our ethregs utility.
-> http://prdownloads.sf.net/e1000/ethregs-1.1.tar.gz
-> (this is not a direct link as it seems but gets redirected to a mirror
-> page, usually)
-> 
+kryptd crashes now:
 
-This is a nice software for me, Thanks.
+- first time cryptsetup is called I get a call trace
+- after the second time cryptsetup is called, I get a call trace
+  and system freeze
 
-> Please let me know if it doesn't support your device ID.
+Error message can be found at
 
-I used this on my environment.
-My NICs are 82573L and 82573E. ethregs could detected them well.
+http://home.schottelius.org/~nico/unix/linux/kernel/next-20081208-kcrypt.jp=
+eg
 
-It seems that this program doesn't support for writing value to registers.
-I think making ethregs to support writing is not bad idea.
-If you are not planning, I want to do that.
+Sincerly,
 
-I'm not a professional of Intel's NICs.
-How do you think?
+Nico
+
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--Nq2Wo0NMKNjxTN9z
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkk/p6IACgkQuL75KpiFGIzDUQCffOsbgyKidYSSNXLGU9x3loYB
+NnsAnR962/aifvcFTfVd8hfhzC9ULjoG
+=8hA7
+-----END PGP SIGNATURE-----
+
+--Nq2Wo0NMKNjxTN9z--
