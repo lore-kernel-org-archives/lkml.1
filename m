@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYLJP5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYLJQFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbYLJP5q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 10:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbYLJP5h
+	id S1755521AbYLJQFi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbYLJQFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 10:57:37 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:59946 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751278AbYLJP5h (ORCPT
+	Wed, 10 Dec 2008 11:05:24 -0500
+Received: from cpsmtpo-eml06.KPNXCHANGE.COM ([213.75.38.155]:55124 "EHLO
+	cpsmtpo-eml06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754739AbYLJQFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 10:57:37 -0500
-Date: Wed, 10 Dec 2008 09:57:21 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Pavel Emelyanov <xemul@openvz.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>
-Subject: [PATCH 1/1] devices cgroup: allow mkfifo
-Message-ID: <20081210155721.GA15166@us.ibm.com>
+	Wed, 10 Dec 2008 11:05:22 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: "APIC error on CPU1: 00(40)" during resume (was: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500)
+Date: Wed, 10 Dec 2008 17:05:17 +0100
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, lenb@kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
+       jbarnes@virtuousgeek.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <200812101506.45691.elendil@planet.nl> <alpine.LFD.2.00.0812100740390.3340@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0812100740390.3340@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200812101705.18899.elendil@planet.nl>
+X-OriginalArrivalTime: 10 Dec 2008 16:05:19.0509 (UTC) FILETIME=[19487450:01C95AE1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The devcgroup_inode_permission() hook in the devices whitelist
-cgroup has always bypassed access checks on fifos.  But the
-mknod hook did not.  The devices whitelist is only about block
-and char devices, and fifos can't even be added to the whitelist,
-so fifos can't be created at all except by tasks which have 'a'
-in their whitelist (meaning they have access to all devices).
+On Wednesday 10 December 2008, Linus Torvalds wrote:
+> On Wed, 10 Dec 2008, Frans Pop wrote:
+> > Anybody interested in persuing this issue?
+> >
+> > > The third thing that worries me is the _very_ early occurrence of
+> > >
+> > > 	ACPI: Waking up from system sleep state S3
+> > > 	APIC error on CPU1: 00(40)
+> > > 	ACPI: EC: non-query interrupt received, switching to interrupt
+> > > mode
+>
+> Well, the "too early" part is fixed with the PCI resume changes in
+> -next, and googling for "APIC error on CPU1: 00(40)" shows that it's
+> actually pretty common. Which is sad, but makes it somewhat less scary.
+>
+> The fact that it happens at resume for you (and not randomly) does
+> imply that we perhaps don't have a wonderful APIC wakeup sequence and
+> are doing something slightly wrong. But it likely isn't a big deal.
+>
+> Is that message new? If it is, maybe you can pinpoint roughly when it
+> started happening, and we could try guess which change triggered it.
 
-Fix the behavior by bypassing access checks to mkfifo.
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- security/device_cgroup.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/security/device_cgroup.c b/security/device_cgroup.c
-index 5ba7870..df9d491 100644
---- a/security/device_cgroup.c
-+++ b/security/device_cgroup.c
-@@ -513,6 +513,9 @@ int devcgroup_inode_mknod(int mode, dev_t dev)
- 	struct dev_cgroup *dev_cgroup;
- 	struct dev_whitelist_item *wh;
- 
-+	if (!S_ISBLK(mode) && !S_ISCHR(mode))
-+		return 0;
-+
- 	rcu_read_lock();
- 
- 	dev_cgroup = task_devcgroup(current);
--- 
-1.5.4.3
-
+It's been there since 2.6.26.3, which was the first kernel I've run on 
+this notebook.
