@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbYLJUHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbYLJUL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756601AbYLJUHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 15:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYLJUHE
+	id S1755317AbYLJUL2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 15:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbYLJULT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 15:07:04 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:61106 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754013AbYLJUHD (ORCPT
+	Wed, 10 Dec 2008 15:11:19 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48327 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752501AbYLJULS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 15:07:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=h9ke72vIySYISyuN31G9XkkB18qNoiKN5BBCvSi5CR97/HbkkAUnBXmT5Nb07SlY4c
-         mZQIa1CfFfzW0hwdL7f/R51/CU9EEla1C7UO7lwXcIl1cZ/jlkOJDbL4CPr5fQrR9Ki7
-         mcHXFe5GX68pWWtULR/CpCbfoUoKkYWrmMBII=
-Date: Wed, 10 Dec 2008 23:06:57 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH] Do not pass the SLAB flags as GFP in slob
-	kmem_cache_create
-Message-ID: <20081210200657.GB2215@localhost>
-References: <20081210173632.19697.67688.stgit@pc1117.cambridge.arm.com> <20081210193421.GA2215@localhost> <1228939070.3726.134.camel@calx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1228939070.3726.134.camel@calx>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 10 Dec 2008 15:11:18 -0500
+Date: Wed, 10 Dec 2008 12:10:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: rostedt@goodmis.org, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org, zippel@linux-m68k.org, mingo@elte.hu
+Subject: Re: Better way to force a rebuild
+Message-Id: <20081210121048.6186eaf9.akpm@linux-foundation.org>
+In-Reply-To: <20081210200242.GA15692@uranus.ravnborg.org>
+References: <alpine.DEB.1.10.0812101443550.11805@gandalf.stny.rr.com>
+	<20081210200242.GA15692@uranus.ravnborg.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Matt Mackall - Wed, Dec 10, 2008 at 01:57:50PM -0600]
-... 
-| I think that's fine. Notice that this is not the allocation of an
-| object, but the allocation of a cache descriptor. We save the flags
-| inside the descriptor so that when the user calls kmem_cache_alloc, we
-| can pass them along to slob_alloc, where GFP_ZERO can take effect.
-| 
-| So, if we're comfortable with the idea that we can only create caches in
-| 'normal' contexts, then I think the patch is fine.
-| 
-| -- 
-| Mathematics is the supreme nostalgia of our time.
-| 
+On Wed, 10 Dec 2008 21:02:42 +0100
+Sam Ravnborg <sam@ravnborg.org> wrote:
 
-Yes Matt, somehow missed that.
+> On Wed, Dec 10, 2008 at 02:48:35PM -0500, Steven Rostedt wrote:
+> > 
+> > Hi,
+> > 
+> > In include/linux/kernel.h I currently have the following lines at the 
+> > bottom of the file:
+> > 
+> > /* Rebuild everything on CONFIG_FTRACE_MCOUNT_RECORD */
+> > #ifdef CONFIG_FTRACE_MCOUNT_RECORD
+> > # define REBUILD_DUE_TO_FTRACE_MCOUNT_RECORD
+> > #endif
+> > 
+> > 
+> > This is only there to force a rebuild of all files when 
+> > CONFIG_FTRACE_MCOUNT_RECORD is modified. Since the modification of that 
+> > config causes the build to act different, we need to rebuild all C 
+> > objects. I added the #ifdef in kernel.h as a hack to force the rebuild by 
+> > the config dependencies used in kbuild.
+> > 
+> > My question is, is there a better way to force a full rebuild on a 
+> > modification of a config?
+> 
+> Why is that hack required in the first place?
+> We rebuild if:
+> - target file is missing (not the case here)
+> - any prerequisite files are newer than target (not the case here)
+> - any CONFIG_* options used by any prerequisite has changed (not the case here)
+>   [It is due to your hack]
+> - gcc changed (not the case here)
+> - options are added/deleted to gcc (this should be the case for relevant files)
+> 
+> 
+> Looking a bit deeper into this.
+> I see that we have in Makefile.build:
+> 
+> define rule_cc_o_c
+>         $(call echo-cmd,checksrc) $(cmd_checksrc)                         \
+>         $(call echo-cmd,cc_o_c) $(cmd_cc_o_c);                            \
+>         $(cmd_modversions)                                                \
+>         $(cmd_record_mcount)   
+> 
+> So you want everyting to be rebuild if the command above changes.
+> That should be doable - and it is indeed a bug that we do not do so.
+> The integration of record_mcount needs to be improved.
 
-		- Cyrill -
+Yes, changing the state of CONFIG_CC_OPTIMIZE_FOR_SIZE does exactly
+what Steven wants.
+
+But damn me it's hard to work out where and how this is implemented :(
