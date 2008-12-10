@@ -1,94 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbYLJILh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbYLJIQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755432AbYLJILh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 03:11:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbYLJIL1
+	id S1755499AbYLJIQv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 03:16:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbYLJIQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 03:11:27 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:37349 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753652AbYLJIL1 (ORCPT
+	Wed, 10 Dec 2008 03:16:44 -0500
+Received: from RedStar.dorchain.net ([212.88.133.153]:40220 "EHLO
+	Redstar.dorchain.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753652AbYLJIQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 03:11:27 -0500
-Date: Wed, 10 Dec 2008 13:41:14 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: menage@google.com, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Daisuke Miyakawa <dmiyakawa@google.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC][RFT] memcg fix cgroup_mutex deadlock when cpuset
-	reclaims memory
-Message-ID: <20081210081114.GB25467@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-	menage@google.com,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	Daisuke Miyakawa <dmiyakawa@google.com>,
-	YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20081210051947.GH7593@balbir.in.ibm.com> <20081210151948.9a83f70a.nishimura@mxp.nes.nec.co.jp> <20081210164126.8b3be761.nishimura@mxp.nes.nec.co.jp>
+	Wed, 10 Dec 2008 03:16:43 -0500
+X-DKIM: Sendmail DKIM Filter v2.6.0 Redstar.dorchain.net mBA8Ge0e015271
+Date: Wed, 10 Dec 2008 09:16:40 +0100
+From: Joerg Dorchain <joerg@dorchain.net>
+To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] amiflop: get rid of sleep_on calls
+Message-ID: <20081210081640.GG30213@Redstar.dorchain.net>
+References: <1228755578-26069-1-git-send-email-aeb@debian.org> <20081209082608.GA10651@Redstar.dorchain.net> <20081210004810.GA5073@infernal.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="nHwqXXcoX0o6fKCv"
 Content-Disposition: inline
-In-Reply-To: <20081210164126.8b3be761.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20081210004810.GA5073@infernal.debian.net>
+X-message-flag: Formating hard disk. please wait...   10%...  20%...
+X-Bindford: 6200 (more Power!)
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> [2008-12-10 16:41:26]:
 
-> On Wed, 10 Dec 2008 15:19:48 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > On Wed, 10 Dec 2008 10:49:47 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > Hi,
-> > > 
-> > > Here is a proposed fix for the memory controller cgroup_mutex deadlock
-> > > reported. It is lightly tested and reviewed. I need help with review
-> > > and test. Is the reported deadlock reproducible after this patch? A
-> > > careful review of the cpuset impact will also be highly appreciated.
-> > > 
-> > > From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > > 
-> > > cpuset_migrate_mm() holds cgroup_mutex throughout the duration of
-> > > do_migrate_pages(). The issue with that is that
-> > > 
-> > > 1. It can lead to deadlock with memcg, as do_migrate_pages()
-> > >    enters reclaim
-> > > 2. It can lead to long latencies, preventing users from creating/
-> > >    destroying other cgroups anywhere else
-> > > 
-> > > The patch holds callback_mutex through the duration of cpuset_migrate_mm() and
-> > > gives up cgroup_mutex while doing so.
-> > > 
-> > I agree changing cpuset_migrate_mm not to hold cgroup_mutex to fix the dead lock
-> > is one choice, and it looks good to me at the first impression.
-> > 
-> > But I'm not sure it's good to change cpuset(other subsystem) code because of memcg.
-> > 
-> > Anyway, I'll test this patch and report the result tomorrow.
-> > (Sorry, I don't have enough time today.)
-> > 
-> Unfortunately, this patch doesn't seem enough.
-> 
-> This patch can fix dead lock caused by "circular lock of cgroup_mutex",
-> but cannot that of caused by "race between page reclaim and cpuset_attach(mpol_rebind_mm)".
-> 
-> (The dead lock I fixed in memcg-avoid-dead-lock-caused-by-race-between-oom-and-cpuset_attach.patch
-> was caused by "race between memcg's oom and mpol_rebind_mm, and was independent of hierarchy.)
-> 
+--nHwqXXcoX0o6fKCv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, I agree, my point was to fix the deadlock caused in the hierarchy
-due to cpuset_migrate_mm(). If I understand correctly
+On Wed, Dec 10, 2008 at 01:48:10AM +0100, Andreas Bombe wrote:
+> I think we're not talking about the same problem.  If I were to use
+> complete() together with wait_for_completion() there would be a problem
+> if fd_motor_on() can get as far as wait_for_completion() while a
+> previous completion is yet uncompleted.  This can not happen for
+> different drives, as the fd_select() would block.  If it could happen
+> for the same drive, the complete() would allow only one task to
+> continue.  The complete_all() takes care of that.
+>=20
+> If requests are serialized for a drive so that there won't ever be two
+> running at the same time for certain (thinking about it, it's probable),
+> I could make it a simple complete().  It's hardly worth the risk,
+> however.
 
-1. This patch introduces no new bug, but the old bug remains. The
-deadlock is fixed
-2. We need this patch + your fix to completely solve the problem?
+IIRC (have not touched the driver for quite some time) at a
+certain stage all requests for a specific drive are serialized.
+The amiga floppy drives read and write whole tracks only, so
+follow-up acesses are likely to be on the same track and then
+served from the buffer of decoded blocks. I you do wild track
+jumping, it is slower than the original AmigaOS-driver.
 
-Could you also share how to reproduce the issue, I'll test on my end
-as well.
+But as I am not sure, and floppy drives are slow anyway, the
+complete_all() won't give any notable performance penalty, I guess.
 
-Thanks for your help!
+Joerg
 
--- 
-	Balbir
+--nHwqXXcoX0o6fKCv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkk/eucACgkQjY4+4PdzvOBtywCfdVKNeWcWJsy9XGuGgFx3OnR3
+zmIAmgIQkODWeSwuRFRHzyRMqzWwBca+
+=3w/d
+-----END PGP SIGNATURE-----
+
+--nHwqXXcoX0o6fKCv--
