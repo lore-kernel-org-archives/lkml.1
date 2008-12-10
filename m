@@ -1,97 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYLJNwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbYLJN6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbYLJNwQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 08:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYLJNwB
+	id S1754875AbYLJN6Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 08:58:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYLJN6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 08:52:01 -0500
-Received: from ag-out-0708.google.com ([72.14.246.245]:60006 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752431AbYLJNv7 (ORCPT
+	Wed, 10 Dec 2008 08:58:03 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:40235 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752431AbYLJN6A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 08:51:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=QQXXpp/3M954+qxJYvSPL4mw7qDl40hTo8J4qMJtDDH/Zg3HMeXMDua4DnGeK+WA1F
-         3Z8xe1uMADQPNDWRIZTPaPKhVGN0uGofvrqebTe5oha9quNFIS/kwxmH7APO8CYsVROq
-         oRBxCZf3ZDMUSo9xJtC2KWd+LqUdWJ2cvPCuY=
-Date: Wed, 10 Dec 2008 21:51:43 +0800
-To: linux-kernel@vger.kernel.org
-Cc: rmk+kernel@arm.linux.org.uk
-Subject: [PATCH] fix some code style that line over 80 characters
-Message-ID: <20081210135143.GB4595@helight>
-Reply-To: "Helight.Xu" <helight.xu@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "Helight.Xu" <zhwenxu@gmail.com>
+	Wed, 10 Dec 2008 08:58:00 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: mmotm 2008-12-09-15-24: memory corruption (bio slab)
+Date: Wed, 10 Dec 2008 14:57:21 +0100
+Message-Id: <1228917441-830-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
->From 449a3ddd01a98aae9122d5199083f45ab9c98469 Mon Sep 17 00:00:00 2001
-From: Zhwen Xu <Helight.Xu@gmail.com>
-Date: Wed, 10 Dec 2008 21:29:04 +0800
-Subject: [PATCH] fix some code style that line over 80 characters 
+on every bootup of this kernel, I get this (not sure if it is right after the moment when / gets mounted from md1):
 
-Signed-off-by: ZhenwenXu <helight.xu@gmail.com>
+wlan0 renamed to wlan1
+udev: renamed network interface wlan0 to wlan1
+swap_cgroup: uses 7848 bytes of vmalloc for pointer array space and 4018176 bytes to hold mem_cgroup pointers on swap
+swap_cgroup can be disabled by noswapaccount boot option.
+Adding 2008084k swap on /dev/sdb6.  Priority:-1 extents:1 across:2008084k 
+EXT3 FS on md1, internal journal
+bio: create slab <bio-1> at 1
+=============================================================================
+BUG bio-1: Redzone overwritten
+-----------------------------------------------------------------------------
+
+INFO: 0xffff88007bacf068-0xffff88007bacf06f. First byte 0x68 instead of 0xcc
+INFO: Allocated in 0x6b6b6b6b6b6b6b6b age=10706345584330245030 cpu=1802201963 pid=1802201963
+INFO: Freed in 0x6b6b6b6b6b6b6b6b age=6527005130130424742 cpu=1802201963 pid=1802201963
+INFO: Slab 0xffffe20001b0dd48 objects=21 used=4 fp=0xffff88007bacf300 flags=0x40000000000000c3
+INFO: Object 0xffff88007bacf000 @offset=0 fp=0x0000000000001000
+
+  Object 0xffff88007bacf000:  fd 6f 57 04 00 00 00 00 00 00 00 00 00 00 00 00 375oW.............
+  Object 0xffff88007bacf010:  80 86 c2 7c 00 88 ff ff 19 00 00 00 00 00 00 00 ..302|..377377........
+  Object 0xffff88007bacf020:  00 00 00 00 00 00 00 00 01 00 00 00 01 00 00 00 ................
+  Object 0xffff88007bacf030:  00 00 00 00 00 10 00 00 00 10 00 00 04 00 00 00 ................
+  Object 0xffff88007bacf040:  ff ff ff ff 00 00 00 00 68 f0 ac 7b 00 88 ff ff 377377377377....h360254{..377377
+  Object 0xffff88007bacf050:  b0 ad 49 80 ff ff ff ff 58 99 b7 7a 00 88 ff ff 260255I.377377377377X.267z..377377
+  Object 0xffff88007bacf060:  10 98 49 80 ff ff ff ff                         ..I.377377377377        
+ Redzone 0xffff88007bacf068:  68 1b b1 01 00 e2 ff ff                         h.261..342377377        
+ Padding 0xffff88007bacf0a8:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
+ Padding 0xffff88007bacf0b8:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
+Pid: 815, comm: udevd Tainted: G        W  2.6.28-rc7-mm1_64 #490
+Call Trace:
+ <IRQ>  [<ffffffff802b6ed6>] print_trailer+0x106/0x160
+ [<ffffffff802b7145>] check_bytes_and_report+0x125/0x180
+ [<ffffffff802b83d6>] check_object+0x66/0x280
+ [<ffffffff802b9e65>] __slab_free+0x225/0x370
+ [<ffffffff8028f5d2>] ? mempool_free_slab+0x12/0x20
+ [<ffffffff802bb7f2>] kmem_cache_free+0x72/0xa0
+ [<ffffffff8028f5d2>] mempool_free_slab+0x12/0x20
+ [<ffffffff8028f66a>] mempool_free+0x8a/0xa0
+ [<ffffffff802ea03d>] bio_free+0x4d/0x60
+ [<ffffffff8049981d>] dm_bio_destructor+0xd/0x10
+ [<ffffffff802e848b>] bio_put+0x2b/0x40
+ [<ffffffff8049ae39>] clone_endio+0x89/0xd0
+ [<ffffffff802e851c>] bio_endio+0x1c/0x40
+ [<ffffffff8034f42b>] req_bio_endio+0x8b/0xe0
+ [<ffffffff8034f527>] __end_that_request_first+0xa7/0x2b0
+ [<ffffffff8034f75c>] end_that_request_data+0x2c/0x70
+ [<ffffffff8034f80d>] blk_end_io+0x2d/0xb0
+ [<ffffffff8034f8be>] blk_end_request+0xe/0x10
+ [<ffffffff80418edb>] scsi_io_completion+0x13b/0x490
+ [<ffffffff8041250c>] scsi_finish_command+0xac/0xe0
+ [<ffffffff80418d1a>] scsi_softirq_done+0xba/0x140
+ [<ffffffff8043df0c>] ? ahci_interrupt+0x9c/0x5c0
+ [<ffffffff80353a85>] blk_done_softirq+0x75/0x90
+ [<ffffffff8025ab83>] ? sched_clock_cpu+0x143/0x190
+ [<ffffffff80244052>] __do_softirq+0xc2/0x190
+ [<ffffffff8020d6bc>] call_softirq+0x1c/0x30
+ [<ffffffff8020ea15>] do_softirq+0x45/0x90
+ [<ffffffff80243d9d>] irq_exit+0x8d/0xa0
+ [<ffffffff8020ecc5>] do_IRQ+0xc5/0x110
+ [<ffffffff8020cf93>] ret_from_intr+0x0/0xa
+ <EOI> <3>FIX bio-1: Restoring 0xffff88007bacf068-0xffff88007bacf06f=0xcc
+
+=============================================================================
+BUG bio-1: Redzone overwritten
+-----------------------------------------------------------------------------
+
+ffffffff8049981d is in dm_bio_destructor from drivers/md/dm.c.
+
+Inlined vecs doesn't fit to the allocated slab portion in my eyes, doesn't
+the patch below make sense?
+
+--
+
+Enlarge bio slabs to include inlined vecs
+
 ---
- drivers/i2c/busses/i2c-s3c2410.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
+ fs/bio.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-s3c2410.c b/drivers/i2c/busses/i2c-s3c2410.c
-index c772e02..c466870 100644
---- a/drivers/i2c/busses/i2c-s3c2410.c
-+++ b/drivers/i2c/busses/i2c-s3c2410.c
-@@ -109,7 +109,8 @@ static inline int s3c24xx_i2c_is2440(struct s3c24xx_i2c *i2c)
-  * the default if there is none
- */
+diff --git a/fs/bio.c b/fs/bio.c
+index 40b6488..cd1a439 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -68,7 +68,8 @@ static unsigned int bio_slab_nr, bio_slab_max;
  
--static inline struct s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
-+static inline struct
-+s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
+ static struct kmem_cache *bio_find_or_create_slab(unsigned int extra_size)
  {
- 	if (dev->platform_data != NULL)
- 		return (struct s3c2410_platform_i2c *)dev->platform_data;
-@@ -123,7 +124,8 @@ static inline struct s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct d
-  * or zero to mean ok.
- */
- 
--static inline void s3c24xx_i2c_master_complete(struct s3c24xx_i2c *i2c, int ret)
-+static inline void
-+s3c24xx_i2c_master_complete(struct s3c24xx_i2c *i2c, int ret)
- {
- 	dev_dbg(i2c->dev, "master_complete %d\n", ret);
- 
-@@ -273,7 +275,8 @@ static inline int is_msgend(struct s3c24xx_i2c *i2c)
-  * process an interrupt and work out what to do
-  */
- 
--static int i2s_s3c_irq_nextbyte(struct s3c24xx_i2c *i2c, unsigned long iicstat)
-+static int i2s_s3c_irq_nextbyte(struct s3c24xx_i2c *i2c,
-+				unsigned long iicstat)
- {
- 	unsigned long tmp;
- 	unsigned char byte;
-@@ -502,7 +505,8 @@ static int s3c24xx_i2c_set_master(struct s3c24xx_i2c *i2c)
-  * this starts an i2c transfer
- */
- 
--static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c, struct i2c_msg *msgs, int num)
-+static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
-+			 struct i2c_msg *msgs, int num)
- {
- 	unsigned long timeout;
- 	int ret;
+-	unsigned int sz = sizeof(struct bio) + extra_size;
++	unsigned int sz = sizeof(struct bio) +
++		sizeof(struct bio_vec) * BIO_INLINE_VECS + extra_size;
+ 	struct kmem_cache *slab = NULL;
+ 	struct bio_slab *bslab;
+ 	unsigned int i, entry = -1;
 -- 
-1.5.6.5
+1.6.0.5
 
--- 
----------------------------------
-Zhenwen Xu - Open and Free
-Home Page:	http://zhwen.org
-My Studio:	http://dim4.cn
