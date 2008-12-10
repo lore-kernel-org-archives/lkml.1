@@ -1,176 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbYLJKuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbYLJKvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753510AbYLJKuY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 05:50:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYLJKuJ
+	id S1753005AbYLJKvt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 05:51:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYLJKvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 05:50:09 -0500
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:40777 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbYLJKuI (ORCPT
+	Wed, 10 Dec 2008 05:51:39 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34323 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750809AbYLJKvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 05:50:08 -0500
-Date: Wed, 10 Dec 2008 16:20:00 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: menage@google.com, KAMEZAWA Hiroyuki <kamezawa.hiroyuki@jp.fujitsu.com>,
-       Daisuke Miyakawa <dmiyakawa@google.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC][RFT] memcg fix cgroup_mutex deadlock when cpuset
-	reclaims memory
-Message-ID: <20081210105000.GC25467@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	menage@google.com,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyuki@jp.fujitsu.com>,
-	Daisuke Miyakawa <dmiyakawa@google.com>,
-	YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20081210051947.GH7593@balbir.in.ibm.com> <20081210174906.7c1a1a50.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 10 Dec 2008 05:51:38 -0500
+Date: Wed, 10 Dec 2008 12:03:14 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Paul Mundt <lethal@linux-sh.org>, Andi Kleen <andi@firstfloor.org>,
+       David Miller <davem@davemloft.net>, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, paulus@samba.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org, eranian@googlemail.com, dada1@cosmosbay.com,
+       robert.richter@amd.com, arjan@infradead.org, hpa@zytor.com,
+       rostedt@goodmis.org
+Subject: Re: [patch 0/3] [Announcement] Performance Counters for Linux
+Message-ID: <20081210110314.GA25779@one.firstfloor.org>
+References: <20081205.002701.172921476.davem@davemloft.net> <20081205084233.GE2030@elte.hu> <87ej0mx0c0.fsf@basil.nowhere.org> <20081205.120814.51226316.davem@davemloft.net> <20081210034824.GA27217@linux-sh.org> <20081210102819.GF23556@one.firstfloor.org> <20081210102335.GA30942@linux-sh.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081210174906.7c1a1a50.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081210102335.GA30942@linux-sh.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-12-10 17:49:06]:
+On Wed, Dec 10, 2008 at 07:23:36PM +0900, Paul Mundt wrote:
+> On Wed, Dec 10, 2008 at 11:28:19AM +0100, Andi Kleen wrote:
+> > > Oprofile has been a pretty bad fit for them, and while I'm slightly more
+> > 
+> > You could always use a extension of timer mode that reads them
+> > periodically? 
+> > 
+> This is what I do today, but it is not an ideal solution. It would be
+> nice if these sorts of use cases could be supported by newer frameworks
+> without every platform with similar requirements having to implement
+> workarounds hanging off of the timer IRQ.
 
-> On Wed, 10 Dec 2008 10:49:47 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > Hi,
-> > 
-> > Here is a proposed fix for the memory controller cgroup_mutex deadlock
-> > reported. It is lightly tested and reviewed. I need help with review
-> > and test. Is the reported deadlock reproducible after this patch? A
-> > careful review of the cpuset impact will also be highly appreciated.
-> > 
-> > From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > 
-> > cpuset_migrate_mm() holds cgroup_mutex throughout the duration of
-> > do_migrate_pages(). The issue with that is that
-> > 
-> > 1. It can lead to deadlock with memcg, as do_migrate_pages()
-> >    enters reclaim
-> > 2. It can lead to long latencies, preventing users from creating/
-> >    destroying other cgroups anywhere else
-> > 
-> > The patch holds callback_mutex through the duration of cpuset_migrate_mm() and
-> > gives up cgroup_mutex while doing so.
-> > 
-> > Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > ---
-> > 
-> >  include/linux/cpuset.h |   13 ++++++++++++-
-> >  kernel/cpuset.c        |   23 ++++++++++++-----------
-> >  2 files changed, 24 insertions(+), 12 deletions(-)
-> > 
-> > diff -puN kernel/cgroup.c~cpuset-remove-cgroup-mutex-from-update-path kernel/cgroup.c
-> > diff -puN kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path kernel/cpuset.c
-> > --- a/kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path
-> > +++ a/kernel/cpuset.c
-> > @@ -369,7 +369,7 @@ static void guarantee_online_mems(const 
-> >   * task has been modifying its cpuset.
-> >   */
-> >  
-> > -void cpuset_update_task_memory_state(void)
-> > +void __cpuset_update_task_memory_state(bool held)
-> >  {
-> >  	int my_cpusets_mem_gen;
-> >  	struct task_struct *tsk = current;
-> > @@ -380,7 +380,8 @@ void cpuset_update_task_memory_state(voi
-> >  	rcu_read_unlock();
-> >  
-> >  	if (my_cpusets_mem_gen != tsk->cpuset_mems_generation) {
-> > -		mutex_lock(&callback_mutex);
-> > +		if (!held)
-> > +			mutex_lock(&callback_mutex);
-> >  		task_lock(tsk);
-> >  		cs = task_cs(tsk); /* Maybe changed when task not locked */
-> >  		guarantee_online_mems(cs, &tsk->mems_allowed);
-> > @@ -394,7 +395,8 @@ void cpuset_update_task_memory_state(voi
-> >  		else
-> >  			tsk->flags &= ~PF_SPREAD_SLAB;
-> >  		task_unlock(tsk);
-> > -		mutex_unlock(&callback_mutex);
-> > +		if (!held)
-> > +			mutex_unlock(&callback_mutex);
-> >  		mpol_rebind_task(tsk, &tsk->mems_allowed);
-> >  	}
-> >  }
-> > @@ -949,13 +951,15 @@ static int update_cpumask(struct cpuset 
-> >   *    so that the migration code can allocate pages on these nodes.
-> >   *
-> >   *    Call holding cgroup_mutex, so current's cpuset won't change
-> > - *    during this call, as manage_mutex holds off any cpuset_attach()
-> > + *    during this call, as callback_mutex holds off any cpuset_attach()
-> >   *    calls.  Therefore we don't need to take task_lock around the
-> >   *    call to guarantee_online_mems(), as we know no one is changing
-> >   *    our task's cpuset.
-> >   *
-> >   *    Hold callback_mutex around the two modifications of our tasks
-> > - *    mems_allowed to synchronize with cpuset_mems_allowed().
-> > + *    mems_allowed to synchronize with cpuset_mems_allowed(). Give
-> > + *    up cgroup_mutex to avoid deadlocking with other subsystems
-> > + *    as we enter reclaim from do_migrate_pages().
-> >   *
-> >   *    While the mm_struct we are migrating is typically from some
-> >   *    other task, the task_struct mems_allowed that we are hacking
-> > @@ -976,17 +980,14 @@ static void cpuset_migrate_mm(struct mm_
-> >  {
-> >  	struct task_struct *tsk = current;
-> >  
-> > -	cpuset_update_task_memory_state();
-> > -
-> > +	cgroup_unlock();
-> >  	mutex_lock(&callback_mutex);
-> > +	cpuset_update_task_memory_state_locked();
-> >  	tsk->mems_allowed = *to;
-> > -	mutex_unlock(&callback_mutex);
-> > -
-> >  	do_migrate_pages(mm, from, to, MPOL_MF_MOVE_ALL);
-> > -
-> > -	mutex_lock(&callback_mutex);
-> >  	guarantee_online_mems(task_cs(tsk),&tsk->mems_allowed);
-> >  	mutex_unlock(&callback_mutex);
-> > +	cgroup_lock();
-> >  }
-> >  
-> 
-> Hmm...can't this happen ?
-> 
-> Assume there is a task X and cgroup Z1 and Z2. Z1 and Z2 doesn't need to be in
-> the same hierarchy.
-> == 
-> 	CPU A attach task X to cgroup Z1
-> 		cgroup_lock()
-> 			for_each_subsys_state()
+But you shouldn't hang off the timer irq anyways, but better use a regular
+timer or hr timer. This would give more regular sampling even with dyntick.
+And doing such a timer is only a few lines of code, I'm not sure it would
+buy you all that much to generalize it.
 
-You mean for_each_subsys() right?
-
-> 				=> attach(X,Z)
-> 					=> migrate_mm()
-> 						=> cgroup_unlock()
-> 							migration
-> 
-> 	CPU B attach task X to cgroup Z2 at the same time
-> 		cgroup_lock()
-> 			replace css_set.
-> ==
-> 
-> Works on CPU B can't break for_each_subsys_state() in CPU A ?
->
-
-for_each_subsys is hierarchy aware, so if we try to add the same task
-to different hierachies, it should not be a problem right?
- 
-> Sorry if I misunderstand.
-
-I hope I understood your scenario correctly.
+-Andi
 
 -- 
-	Balbir
+ak@linux.intel.com
