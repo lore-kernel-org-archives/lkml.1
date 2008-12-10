@@ -1,85 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbYLJLcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751664AbYLJLcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753205AbYLJLcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 06:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYLJLcH
+	id S1751664AbYLJLcd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 06:32:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYLJLcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 06:32:07 -0500
-Received: from mx3.schottelius.org ([77.109.138.221]:43505 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbYLJLcF (ORCPT
+	Wed, 10 Dec 2008 06:32:09 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33459 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbYLJLcH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 06:32:05 -0500
-Date: Wed, 10 Dec 2008 12:32:03 +0100
-From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Suspend on X200 works on 2.6.28-rc6, but not -rc7
-Message-ID: <20081210113203.GB11869@denkbrett.schottelius.org>
-Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
-	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+	Wed, 10 Dec 2008 06:32:07 -0500
+Message-ID: <31051.10.75.179.61.1228908723.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20081210105000.GC25467@balbir.in.ibm.com>
+References: <20081210051947.GH7593@balbir.in.ibm.com>
+    <20081210174906.7c1a1a50.kamezawa.hiroyu@jp.fujitsu.com>
+    <20081210105000.GC25467@balbir.in.ibm.com>
+Date: Wed, 10 Dec 2008 20:32:03 +0900 (JST)
+Subject: Re: [RFC][RFT] memcg fix cgroup_mutex deadlock when cpusetreclaims 
+     memory
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>, menage@google.com,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyuki@jp.fujitsu.com>,
+       "Daisuke Miyakawa" <dmiyakawa@google.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="DKU6Jbt7q3WqK7+M"
-Content-Disposition: inline
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.28-rc6-wl-denkbrett-21906-g24e8b9a x86_64)
+Content-Type: text/plain;charset=us-ascii
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Balbir Singh said:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-12-10
+> 17:49:06]:
+>
+>> On Wed, 10 Dec 2008 10:49:47 +0530
+>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>
+>> > Hi,
+>> >
+>> > Here is a proposed fix for the memory controller cgroup_mutex deadlock
+>> > reported. It is lightly tested and reviewed. I need help with review
+>> > and test. Is the reported deadlock reproducible after this patch? A
+>> > careful review of the cpuset impact will also be highly appreciated.
+>> >
+>> > From: Balbir Singh <balbir@linux.vnet.ibm.com>
+>> >
+>> > cpuset_migrate_mm() holds cgroup_mutex throughout the duration of
+>> > do_migrate_pages(). The issue with that is that
+>> >
+>> > 1. It can lead to deadlock with memcg, as do_migrate_pages()
+>> >    enters reclaim
+>> > 2. It can lead to long latencies, preventing users from creating/
+>> >    destroying other cgroups anywhere else
+>> >
+>> > The patch holds callback_mutex through the duration of
+>> cpuset_migrate_mm() and
+>> > gives up cgroup_mutex while doing so.
+>> >
+>> > Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>> > ---
+>> >
+>> >  include/linux/cpuset.h |   13 ++++++++++++-
+>> >  kernel/cpuset.c        |   23 ++++++++++++-----------
+>> >  2 files changed, 24 insertions(+), 12 deletions(-)
+>> >
+>> > diff -puN kernel/cgroup.c~cpuset-remove-cgroup-mutex-from-update-path
+>> kernel/cgroup.c
+>> > diff -puN kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path
+>> kernel/cpuset.c
+>> > --- a/kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path
+>> > +++ a/kernel/cpuset.c
+>> > @@ -369,7 +369,7 @@ static void guarantee_online_mems(const
+>> >   * task has been modifying its cpuset.
+>> >   */
+>> >
+>> > -void cpuset_update_task_memory_state(void)
+>> > +void __cpuset_update_task_memory_state(bool held)
+>> >  {
+>> >  	int my_cpusets_mem_gen;
+>> >  	struct task_struct *tsk = current;
+>> > @@ -380,7 +380,8 @@ void cpuset_update_task_memory_state(voi
+>> >  	rcu_read_unlock();
+>> >
+>> >  	if (my_cpusets_mem_gen != tsk->cpuset_mems_generation) {
+>> > -		mutex_lock(&callback_mutex);
+>> > +		if (!held)
+>> > +			mutex_lock(&callback_mutex);
+>> >  		task_lock(tsk);
+>> >  		cs = task_cs(tsk); /* Maybe changed when task not locked */
+>> >  		guarantee_online_mems(cs, &tsk->mems_allowed);
+>> > @@ -394,7 +395,8 @@ void cpuset_update_task_memory_state(voi
+>> >  		else
+>> >  			tsk->flags &= ~PF_SPREAD_SLAB;
+>> >  		task_unlock(tsk);
+>> > -		mutex_unlock(&callback_mutex);
+>> > +		if (!held)
+>> > +			mutex_unlock(&callback_mutex);
+>> >  		mpol_rebind_task(tsk, &tsk->mems_allowed);
+>> >  	}
+>> >  }
+>> > @@ -949,13 +951,15 @@ static int update_cpumask(struct cpuset
+>> >   *    so that the migration code can allocate pages on these nodes.
+>> >   *
+>> >   *    Call holding cgroup_mutex, so current's cpuset won't change
+>> > - *    during this call, as manage_mutex holds off any cpuset_attach()
+>> > + *    during this call, as callback_mutex holds off any
+>> cpuset_attach()
+>> >   *    calls.  Therefore we don't need to take task_lock around the
+>> >   *    call to guarantee_online_mems(), as we know no one is changing
+>> >   *    our task's cpuset.
+>> >   *
+>> >   *    Hold callback_mutex around the two modifications of our tasks
+>> > - *    mems_allowed to synchronize with cpuset_mems_allowed().
+>> > + *    mems_allowed to synchronize with cpuset_mems_allowed(). Give
+>> > + *    up cgroup_mutex to avoid deadlocking with other subsystems
+>> > + *    as we enter reclaim from do_migrate_pages().
+>> >   *
+>> >   *    While the mm_struct we are migrating is typically from some
+>> >   *    other task, the task_struct mems_allowed that we are hacking
+>> > @@ -976,17 +980,14 @@ static void cpuset_migrate_mm(struct mm_
+>> >  {
+>> >  	struct task_struct *tsk = current;
+>> >
+>> > -	cpuset_update_task_memory_state();
+>> > -
+>> > +	cgroup_unlock();
+>> >  	mutex_lock(&callback_mutex);
+>> > +	cpuset_update_task_memory_state_locked();
+>> >  	tsk->mems_allowed = *to;
+>> > -	mutex_unlock(&callback_mutex);
+>> > -
+>> >  	do_migrate_pages(mm, from, to, MPOL_MF_MOVE_ALL);
+>> > -
+>> > -	mutex_lock(&callback_mutex);
+>> >  	guarantee_online_mems(task_cs(tsk),&tsk->mems_allowed);
+>> >  	mutex_unlock(&callback_mutex);
+>> > +	cgroup_lock();
+>> >  }
+>> >
+>>
+>> Hmm...can't this happen ?
+>>
+>> Assume there is a task X and cgroup Z1 and Z2. Z1 and Z2 doesn't need to
+>> be in
+>> the same hierarchy.
+>> ==
+>> 	CPU A attach task X to cgroup Z1
+>> 		cgroup_lock()
+>> 			for_each_subsys_state()
+>
+> You mean for_each_subsys() right?
+>
+>> 				=> attach(X,Z)
+>> 					=> migrate_mm()
+>> 						=> cgroup_unlock()
+>> 							migration
+>>
+>> 	CPU B attach task X to cgroup Z2 at the same time
+>> 		cgroup_lock()
+>> 			replace css_set.
+>> ==
+>>
+>> Works on CPU B can't break for_each_subsys_state() in CPU A ?
+>>
+>
+> for_each_subsys is hierarchy aware, so if we try to add the same task
+> to different hierachies, it should not be a problem right?
+>
+Ah, maybe. But what happens when Z1 and Z2 is the same hierarchy ?
+Are there some locks ?
 
---DKU6Jbt7q3WqK7+M
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+-Kame
 
-Hello!
 
-What the last next-trees already showed is now confirmed in -rc7:
-Suspend works, on resume the system freezes (screen is partly drawn).
-
-Xorg is always running, without xorg it works on most of the recent kernels.
-
-Working version:
-
-2.6.28-rc6
-2.6.28-rc6-wl-21906-g24e8b9a (running this right now)
-
-Crashing versions (at least):
-
-next-20081125
-next-20081127
-next-20081201
-next-20081202
-2.6.28-rc7
-
-Just wondering what happened between those versions that it does not work a=
-nymore.
-
-Sincerly,
-
-Nico
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---DKU6Jbt7q3WqK7+M
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkk/qLMACgkQuL75KpiFGIyeVQCfesIJeGm8VDdwK82DpRnBqaqt
-OkUAoL5KmSf6iOqQ645k2uxfn+RhBVCX
-=PiDm
------END PGP SIGNATURE-----
-
---DKU6Jbt7q3WqK7+M--
