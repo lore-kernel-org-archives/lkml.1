@@ -1,81 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbYLJL1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbYLJL3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753633AbYLJL1r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 06:27:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYLJL1i
+	id S1752968AbYLJL3y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 06:29:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbYLJL3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 06:27:38 -0500
-Received: from mx3.schottelius.org ([77.109.138.221]:54760 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbYLJL1h (ORCPT
+	Wed, 10 Dec 2008 06:29:45 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53102 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbYLJL3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 06:27:37 -0500
-Date: Wed, 10 Dec 2008 12:27:30 +0100
-From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 8
-Message-ID: <20081210112730.GA11869@denkbrett.schottelius.org>
-Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20081208205929.366a9a01.sfr@canb.auug.org.au>
+	Wed, 10 Dec 2008 06:29:44 -0500
+Message-ID: <29741.10.75.179.61.1228908581.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <6599ad830812100240g5e549a5cqe29cbea736788865@mail.gmail.com>
+References: <20081209200213.0e2128c1.kamezawa.hiroyu@jp.fujitsu.com><20081209200647.a1fa76a9.kamezawa.hiroyu@jp.fujitsu.com>
+    <6599ad830812100240g5e549a5cqe29cbea736788865@mail.gmail.com>
+Date: Wed, 10 Dec 2008 20:29:41 +0900 (JST)
+Subject: Re: [RFC][PATCH 1/6] memcg: fix pre_destory handler
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Paul Menage" <menage@google.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Nq2Wo0NMKNjxTN9z"
-Content-Disposition: inline
-In-Reply-To: <20081208205929.366a9a01.sfr@canb.auug.org.au>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.28-rc6-wl-denkbrett-21906-g24e8b9a x86_64)
+Content-Type: text/plain;charset=us-ascii
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Paul Menage said:
+> The reason for needing this patch is because of the non-atomic locking
+> in cgroup_rmdir() that was introduced due to the circular locking
+> dependency between the hotplug lock and the cgroup_mutex.
+>
+> But rather than adding a whole bunch more complexity, this looks like
+> another case that could be solved by the hierarchy_mutex patches that
+> I posted a while ago.
+>
+removing cgroup_lock() from memcg's reclaim path is okay.
+(and I posted patch...)
+But, prevent css_get() after pre_destroy() is another problem.
 
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+(BTW, I don't like hierarchy-walk-by-small-locks approarch now because
+ I'd like to implement scan-and-stop-continue routine.
+ See how readdir() aginst /proc scans PID. It's very roboust against
+ very temporal PIDs.)
 
-Stephen Rothwell [Mon, Dec 08, 2008 at 08:59:29PM +1100]:
-> Hi all,
->=20
-> Changes since 20081204:
+> Those allow the cpuset hotplug notifier (and any other subsystem that
+> wants a stable hierarchy) to take ss->hierarchy_mutex, to prevent
+> mkdir/rmdir/bind in its hierarchy, which helps to remove the deadlock
+> that the above dropping of cgroup_mutex was introduced to work around.
+>
+>>
+>> Considering above sequence, new tasks can be added while
+>>        (B) and (C)
+>> swap-in recored can be charged back to a cgroup after pre_destroy()
+>>        at (C) and (D), (E)
+>> (means cgrp's refcnt not comes from task but from other persistent
+>> objects.)
+>
+> Which "persistent object" are you getting the css refcount from?
+>
+page_cgroup generated from swap_cgroup.
 
-kryptd crashes now:
+> Is the problem that swap references aren't refcounted because you want
+> to avoid swap from keeping a cgroup alive?
+Yes. There is no operations allows users to make swap on memory.
+> But you still want to be able to do css_get() on the mem_cgroup*
+obtained from a swap
+> reference, and be safely synchronized with concurrent rmdir operations
+> without having to take a heavy lock?
+>
+yes. I don't want any locks.
 
-- first time cryptsetup is called I get a call trace
-- after the second time cryptsetup is called, I get a call trace
-  and system freeze
+> The solution that I originally tried to use for this in an early
+> version of cgroups (but dropped as I thought it was not needed) was to
+> treat css->refcount as follows:
+>
+>  0 => trying to remove or removed
+>  1 => normal state with no additional refs
+>
+> So to get a reference on a possibly removed css we'd have:
+>
+> int css_tryget(css) {
+>   while (!atomic_inc_not_zero(&css->refcount)) {
+>     if (test_bit(CSS_REMOVED, &css->flags)) {
+>       return 0;
+>     }
+>   }
+>   return 1;
+> }
+>
+> and cgroup_rmdir would do:
+>
+> for_each_subsys() {
+>   if (cmpxchg(&css->refcount, 0, -1)) {
+>     // busy, roll back -1s to 0s, give error
+>     ...
+>   }
+> }
+> // success
+> for_each_subsys() {
+>   set_bit(CSS_REMOVED, &css->flags);
+> }
+>
+> This makes it easy to have weak references to a css that can be
+> dropped in a destroy() callback.
+I tried similar patch and made it to use only one shared refcnt.
+(my previous patch...)
 
-Error message can be found at
+We need rolling update of refcnts and rollback. Such code tends to make
+a hole (This was what my first patch did...).
+And there is no fundamental difference between my shared refcnt and
+css_tryget() patch. Maybe above will give us better cache localily.
 
-http://home.schottelius.org/~nico/unix/linux/kernel/next-20081208-kcrypt.jp=
-eg
+Anyway, I have no objections to rolling update of refcnt and tryget().
+If it's a way to go, I'll go ahead.
 
-Sincerly,
+> Would this maybe even remove the need for mem_cgroup_pre_destroy()?
+>
+Yes and No. not sure. but my thinking is No.
 
-Nico
+1. pre_destroy() is called by rmdir(), in synchronized manner.
+   This means that all refs in memcg will be removed at rmdir().
+   If we drop refs at destroy(), it happens when dput()'s refcnt finally
+   goes down to 0. This asynchronous manner is not good for users.
 
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
+2. Current pre_destroy() code is very young. And we don't find any
+   corner case in which pre_destroy() can't complete thier works.
+   So, I don't want to remove pre_destroy() for a while.
 
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+3. Sometimes, pre_destroy() have to call try_to_free_pages() and
+   we cannot know we can call try_to_free_page() in dput().
 
---Nq2Wo0NMKNjxTN9z
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Thanks,
+-Kame
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkk/p6IACgkQuL75KpiFGIzDUQCffOsbgyKidYSSNXLGU9x3loYB
-NnsAnR962/aifvcFTfVd8hfhzC9ULjoG
-=8hA7
------END PGP SIGNATURE-----
-
---Nq2Wo0NMKNjxTN9z--
