@@ -1,43 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbYLJWB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbYLJWGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756369AbYLJWB2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 17:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbYLJWBR
+	id S1756626AbYLJWGv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 17:06:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbYLJWGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 17:01:17 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:56544 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755039AbYLJWBR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 17:01:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=ZLJ9aUsGLjqnyLxuNgVXMP308Gr5mSnXMbdrpMgJCFhxuLpmIY8HO7QtemhnM5oYdn
-         37uy5Q7Nf7QHExduQiMy3CQXh/y81znWR4rd6gK1NnMOLTGTgoh1EX4iqEYYPrU1GpP8
-         SfkGS4tgrdINGTbuWrhSWAk15Zj5iRV6YApe0=
-Message-ID: <49403C26.5050402@gmail.com>
-Date: Wed, 10 Dec 2008 23:01:10 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Wed, 10 Dec 2008 17:06:37 -0500
+Received: from smtp.movial.fi ([62.236.91.34]:42748 "EHLO smtp.movial.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755717AbYLJWGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 17:06:36 -0500
+Message-ID: <42393.88.114.236.15.1228946794.squirrel@webmail.movial.fi>
+In-Reply-To: <20081210212659.GA6132@zarina>
+References: <Pine.LNX.4.64.0812101725540.21998@ask.diku.dk>
+    <20081210163819.17cf4628@lxorguk.ukuu.org.uk>
+    <45755.88.114.236.15.1228932236.squirrel@webmail.movial.fi>
+    <20081210212659.GA6132@zarina>
+Date: Thu, 11 Dec 2008 00:06:34 +0200 (EET)
+Subject: Re: [PATCH 1/28] drivers/base/platform.c: Drop return value from 
+     platform_driver remove functions
+From: "Vorobiev Dmitri" <dmitri.vorobiev@movial.fi>
+To: cbouatmailru@gmail.com
+Cc: "Vorobiev Dmitri" <dmitri.vorobiev@movial.fi>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Julia Lawall" <julia@diku.dk>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-scsi@vger.kernel.org
+User-Agent: SquirrelMail/1.4.9a
 MIME-Version: 1.0
-To: Hannes Eder <hannes@hanneseder.net>
-CC: Karsten Keil <kkeil@suse.de>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 4/9] mISDN: fix sparse warnings
-References: <493feab4.0aaa660a.7938.3213@mx.google.com>
-In-Reply-To: <493feab4.0aaa660a.7938.3213@mx.google.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/10/2008 04:13 PM, Hannes Eder wrote:
-> Should 'plx_lock' be declared in a header file?  Or is it really
-> neccessart to export it?
+> On Wed, Dec 10, 2008 at 08:03:56PM +0200, Vorobiev Dmitri wrote:
+>> > On Wed, 10 Dec 2008 17:26:26 +0100 (CET)
+>> > Julia Lawall <julia@diku.dk> wrote:
+>> >
+>> >> From: Julia Lawall <julia@diku.dk>
+>> >>
+>> >> The return value of the remove function of a driver structure, and
+>> thus
+>> >> of
+>> >> a platform_driver structure, is ultimately ignored
+>> >
+>> > Currently
+>>
+>> Are there really any plans about actually using the return value?
+>
+> It's often used by the drivers, but currently not handled by
+> the subsystem. For example, _remove() callback might return -EBUSY
+> or -EAGAIN, which means that whoever called the _remove() should
+> try later.
 
-As there is no other user, I vote for unexporting it.
+Sure, it's easy to find drivers, which that return a non-dummy value from
+the remove() callback thinking that someone up there will take care of the
+error.
+
+The point is, however, that
+
+1) the SGI Indy SCSI controller driver doesn't compile cleanly [2], and
+SCSI maintainers do not apply the patch because, in principle, the
+(*remove)() callback should not return int since the return value is
+discarded [1];
+
+2) the changes in the platform driver framework are, as it seems, not
+acceptable because the non-dummy return values can, in principle, be used
+for error checking.
+
+All that I actually care about is to get rid of this:
+
+<<<
+
+  CC [M]  drivers/scsi/sgiwd93.o
+drivers/scsi/sgiwd93.c:314: warning: initialization from incompatible
+pointer type
+
+<<<
+
+I don't care whether the compilation warning is gone because [2] is
+applied, or the entire platform driver framework is combed though to
+change int to void.
+
+Thanks,
+Dmitri
+
+[1] http://kerneltrap.org/mailarchive/linux-scsi/2008/12/3/4300474
+
+[2] http://kerneltrap.org/mailarchive/linux-scsi/2008/11/20/4169644
