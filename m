@@ -1,77 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbYLJIrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbYLJIuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755187AbYLJIrK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 03:47:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756042AbYLJIqy
+	id S1755994AbYLJIuU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 03:50:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbYLJIuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 03:46:54 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:54850 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756041AbYLJIqx (ORCPT
+	Wed, 10 Dec 2008 03:50:04 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48374 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754894AbYLJIuD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 03:46:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=OEP9C1+u8T3YHpiwVqlyOSyZnYr3PYNJYTlu6IcPYr3yPsv+E1ykA4I9cmD0akrBMV
-         8/qxM2vgUVBBs0rF2rEDxVt39UiPfxX3IYfrakdEZsGSYvGJ/EbGKzD3sNGt4CoeZNSk
-         4gecgK0PfxAsFIVxE/3uBd2of0tq5oekfnp2E=
-Message-ID: <c62985530812100046l69ca7019j545fed604c373efa@mail.gmail.com>
-Date: Wed, 10 Dec 2008 09:46:51 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/3] tracing/function-graph-tracer: signal interrupt triggering on output
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.1.10.0812092111510.19875@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Dec 2008 03:50:03 -0500
+Date: Wed, 10 Dec 2008 17:49:06 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: menage@google.com, KAMEZAWA Hiroyuki <kamezawa.hiroyuki@jp.fujitsu.com>,
+       Daisuke Miyakawa <dmiyakawa@google.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC][RFT] memcg fix cgroup_mutex deadlock when cpuset reclaims
+ memory
+Message-Id: <20081210174906.7c1a1a50.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081210051947.GH7593@balbir.in.ibm.com>
+References: <20081210051947.GH7593@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <493EF64D.50804@gmail.com>
-	 <alpine.DEB.1.10.0812092111510.19875@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/10 Steven Rostedt <rostedt@goodmis.org>:
->
-> On Tue, 9 Dec 2008, Frederic Weisbecker wrote:
->
->> This patchset adds all the features to draw hardirq triggering on output
->> for the function graph tracer.
->> An example is given on the third patch.
->>
->> Just one question, on recordmcount.pl:
->>
->> my %text_sections = (
->>       ".text" => 1,
->>       ".sched.text" => 1,
->>       ".spinlock.text" => 1,
->>
->> The .sched.text section is included inside .text, it's a subsection, I'm not sure
->> it's necessary to add it in text_sections. In doubt I added the new .irqentry.text
->>
->
-> Matters what objdump -dr shows.
->
-> $ objdump -dr kernel/sched.o | grep 'Disassembly'
-> Disassembly of section .text:
-> Disassembly of section .cpuinit.text:
-> Disassembly of section .init.text:
-> Disassembly of section .sched.text:
->
-> Yep, .sched.text is needed.  It is not about what gets linked by the
-> linker. It is about what objdump shows, which is what recordmcount.pl uses
-> to determine whether or not to record the mcount callers in that section.
+On Wed, 10 Dec 2008 10:49:47 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
+> Hi,
+> 
+> Here is a proposed fix for the memory controller cgroup_mutex deadlock
+> reported. It is lightly tested and reviewed. I need help with review
+> and test. Is the reported deadlock reproducible after this patch? A
+> careful review of the cpuset impact will also be highly appreciated.
+> 
+> From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> 
+> cpuset_migrate_mm() holds cgroup_mutex throughout the duration of
+> do_migrate_pages(). The issue with that is that
+> 
+> 1. It can lead to deadlock with memcg, as do_migrate_pages()
+>    enters reclaim
+> 2. It can lead to long latencies, preventing users from creating/
+>    destroying other cgroups anywhere else
+> 
+> The patch holds callback_mutex through the duration of cpuset_migrate_mm() and
+> gives up cgroup_mutex while doing so.
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+>  include/linux/cpuset.h |   13 ++++++++++++-
+>  kernel/cpuset.c        |   23 ++++++++++++-----------
+>  2 files changed, 24 insertions(+), 12 deletions(-)
+> 
+> diff -puN kernel/cgroup.c~cpuset-remove-cgroup-mutex-from-update-path kernel/cgroup.c
+> diff -puN kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path kernel/cpuset.c
+> --- a/kernel/cpuset.c~cpuset-remove-cgroup-mutex-from-update-path
+> +++ a/kernel/cpuset.c
+> @@ -369,7 +369,7 @@ static void guarantee_online_mems(const 
+>   * task has been modifying its cpuset.
+>   */
+>  
+> -void cpuset_update_task_memory_state(void)
+> +void __cpuset_update_task_memory_state(bool held)
+>  {
+>  	int my_cpusets_mem_gen;
+>  	struct task_struct *tsk = current;
+> @@ -380,7 +380,8 @@ void cpuset_update_task_memory_state(voi
+>  	rcu_read_unlock();
+>  
+>  	if (my_cpusets_mem_gen != tsk->cpuset_mems_generation) {
+> -		mutex_lock(&callback_mutex);
+> +		if (!held)
+> +			mutex_lock(&callback_mutex);
+>  		task_lock(tsk);
+>  		cs = task_cs(tsk); /* Maybe changed when task not locked */
+>  		guarantee_online_mems(cs, &tsk->mems_allowed);
+> @@ -394,7 +395,8 @@ void cpuset_update_task_memory_state(voi
+>  		else
+>  			tsk->flags &= ~PF_SPREAD_SLAB;
+>  		task_unlock(tsk);
+> -		mutex_unlock(&callback_mutex);
+> +		if (!held)
+> +			mutex_unlock(&callback_mutex);
+>  		mpol_rebind_task(tsk, &tsk->mems_allowed);
+>  	}
+>  }
+> @@ -949,13 +951,15 @@ static int update_cpumask(struct cpuset 
+>   *    so that the migration code can allocate pages on these nodes.
+>   *
+>   *    Call holding cgroup_mutex, so current's cpuset won't change
+> - *    during this call, as manage_mutex holds off any cpuset_attach()
+> + *    during this call, as callback_mutex holds off any cpuset_attach()
+>   *    calls.  Therefore we don't need to take task_lock around the
+>   *    call to guarantee_online_mems(), as we know no one is changing
+>   *    our task's cpuset.
+>   *
+>   *    Hold callback_mutex around the two modifications of our tasks
+> - *    mems_allowed to synchronize with cpuset_mems_allowed().
+> + *    mems_allowed to synchronize with cpuset_mems_allowed(). Give
+> + *    up cgroup_mutex to avoid deadlocking with other subsystems
+> + *    as we enter reclaim from do_migrate_pages().
+>   *
+>   *    While the mm_struct we are migrating is typically from some
+>   *    other task, the task_struct mems_allowed that we are hacking
+> @@ -976,17 +980,14 @@ static void cpuset_migrate_mm(struct mm_
+>  {
+>  	struct task_struct *tsk = current;
+>  
+> -	cpuset_update_task_memory_state();
+> -
+> +	cgroup_unlock();
+>  	mutex_lock(&callback_mutex);
+> +	cpuset_update_task_memory_state_locked();
+>  	tsk->mems_allowed = *to;
+> -	mutex_unlock(&callback_mutex);
+> -
+>  	do_migrate_pages(mm, from, to, MPOL_MF_MOVE_ALL);
+> -
+> -	mutex_lock(&callback_mutex);
+>  	guarantee_online_mems(task_cs(tsk),&tsk->mems_allowed);
+>  	mutex_unlock(&callback_mutex);
+> +	cgroup_lock();
+>  }
+>  
+
+Hmm...can't this happen ?
+
+Assume there is a task X and cgroup Z1 and Z2. Z1 and Z2 doesn't need to be in
+the same hierarchy.
+== 
+	CPU A attach task X to cgroup Z1
+		cgroup_lock()
+			for_each_subsys_state()
+				=> attach(X,Z)
+					=> migrate_mm()
+						=> cgroup_unlock()
+							migration
+
+	CPU B attach task X to cgroup Z2 at the same time
+		cgroup_lock()
+			replace css_set.
+==
+
+Works on CPU B can't break for_each_subsys_state() in CPU A ?
+
+Sorry if I misunderstand.
+
+Thanks,
+-Kame
+
+		
 
 
-Ok. I looked at a disassembly objdump on vmlinux to find those
-subsections and didn't find it.
-But I didn't see that recordmcount did its work on each build folder,
-I guess that these sections are
-visible on the objects found in the subdirectories....
 
-Thanks.
+
+
