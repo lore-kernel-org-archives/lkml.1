@@ -1,137 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYLJQlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbYLJQmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757983AbYLJQlq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:41:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757152AbYLJQl2
+	id S1758107AbYLJQmc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757483AbYLJQl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:41:28 -0500
-Received: from email.renci.org ([152.54.4.63]:48742 "EHLO mx1.renci.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757925AbYLJQl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:41:26 -0500
-X-Greylist: delayed 694 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Dec 2008 11:41:25 EST
-Message-ID: <493FEDE9.5080209@renci.org>
-Date: Wed, 10 Dec 2008 11:27:21 -0500
-From: Rob Fowler <rjf@renci.org>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Wed, 10 Dec 2008 11:41:57 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:52542 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758041AbYLJQl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 11:41:56 -0500
+Date: Wed, 10 Dec 2008 17:41:52 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: dmitri.vorobiev@movial.fi, jim.cromie@gmail.com, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 24/28] drivers/hwmon/pc87xxx: Drop return value from
+ platform_driver remove functions
+Message-ID: <Pine.LNX.4.64.0812101741310.21998@ask.diku.dk>
 MIME-Version: 1.0
-To: eranian@gmail.com
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Paul Mackerras <paulus@samba.org>,
-       Peter Anvin <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
-       Arjan van de Veen <arjan@infradead.org>
-Subject: Re: [perfmon2] [patch 0/3] [Announcement] Performance Counters for
- Linux
-References: <20081204225345.654705757@linutronix.de> <7c86c4470812051836t37e86565w3b92fd06fc905430@mail.gmail.com>
-In-Reply-To: <7c86c4470812051836t37e86565w3b92fd06fc905430@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: No, Score=-1.4 required=5.0 tests=ALL_TRUSTED
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My reaction is more from a downstream tool developer and end user perspective.
+From: Julia Lawall <julia@diku.dk>
 
-What I don't see in the new proposal is support for real end users of hardware
-performance counter information.  There is a long-existing community that is using the
-counters, including the hardware designers, driver writers, tool developers, and
-performance tuning specialists working for both vendors and end customers.   Not
-everyone is in the same camp, as each the hardware capabilities change from revision to
-revision of the chips as features are added, architectures evolve, and implementations are
-cleaned up.  System vendors have their own tools and developers (SpeedShop, Vtune, Tprof, Sun Studio
-Code Analyst, etc). There are academic and open source efforts with long histories (PAPI,
-oprofile, HPCToolkit (Rice, not IBM), etc). We've lived with proprietary drivers/APIs and with
-a succession of open-source drivers (pci, perfctr, oprofile, perfmon).  (My apologies to
-readers/developers whose favorite tool(s) I haven't mentioned.)  Out-and-out religious wars
-have not erupted, but there are a lot of healthy disagreements. A significant part of this
-community has been converging around Perfmon2/3, not because it is a thing of beauty, but
-because it is a tool that exposes the full HPM capabilities (which are often ugly) in a useful
-way for a community of tool developers and end users.
+The return value of the remove function of a driver structure, and thus of
+a platform_driver structure, is ultimately ignored, and is thus
+unnecessary.  This patch removes the return value for the remove function
+stored in a platform_driver structure.  For the files in this patch, the
+return values are always 0.
 
-Before considering this new proposal seriously, I'd need to see it proven.  This means
-that it needs to be developed, by the proposers, enough to be used seriously.  I've
-got collaborators that measure compute resources in units of tens of TeraFLOP-years, so
-my definition of "seriously" is that the HPM tool chain has to work with low overhead
-on huge clusters of multi-core, multi-socket machines and it has to be able to provide
-performance insights that will let us get even more performance out of applications
-that already do pretty well.  Google and other large users have similar notions of "serious".
+A simplified version of the semantic patch that makes this change is as
+follows: (http://www.emn.fr/x-info/coccinelle/)
 
-Here's my set of strawman requirements:
+// <smpl>
+@r@
+struct platform_driver I;
+identifier a,f;
+position p;
+@@
+I.remove = \(f@p\|a(f@p)\);
 
--- Can it support a *completely* functional PAPI?  There are a lot of tools (HPCToolkit,
-    TAU, etc.) built on this layer.
+@void_called@
+identifier r.f;
+position p;
+@@
+f@p(...);
 
--- Means to support IBS/EBS profiling and efficiently record execution contexts?  Can it
-    support event-based call stack profiling?
+@called@
+identifier r.f;
+position p1 != void_called.p;
+@@
+f@p1(...)
 
--- Can it supplant or support oprofile by supporting the tools (Code Analyst, etc) that
-    depend on it?
+@localfn@
+identifier r.f;
+@@
+static int f(...) { ... }
 
--- Kernel and daemon profiling capabilities?
+@depends on !called && localfn@
+struct platform_driver I;
+identifier a,f;
+position r.p;
+@@
 
--- Does it have sufficiently low overhead?  Six years ago DCPI/ProfileMe was capable of
-    collecting around 5000 samples/second on a quad socket 1GHz Alpha EV67 system with
-    about a 1.5% overhead.  That's the gold standard. Oprofile and pfmon are not far off
-    that mark.
+I.
+- remove
++ remove_new
+   = \(f@p\|a(f@p)\);
 
--- Does it even scale within one box?  My workhorse systems today are quad-socket Barcelonas.
-    I'm reliably using multiple, cooperating (Some measure on-core, others measure off-core events.)
-    instances of pfmon to collect profiles using  all 64 (4 per core x 16 cores) counters
-    productively with low overhead.  Real soon now I will have similar expectations
-    regarding multi-socket Nehalems where the resources will be 7 (heterogeneous) counters per
-    core plus 8 "uncore" counters (I prefer "nest", Alex Mericas' terminology.) per socket.
+@depends on !called && localfn@
+identifier r.f,i;
+constant C;
+expression E;
+@@
 
+- int
++ void
+       f(...) {
+  <...
+(
+-  return \(C\|i\);
++  return;
+|
+-  return E;
++  E;
++  return;
+)
+  ...>
+}
+// </smpl>
 
-Regards,
-Rob
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
+---
+ drivers/hwmon/pc87360.c |    8 +++-----
+ drivers/hwmon/pc87427.c |    6 ++----
+ 2 files changed, 5 insertions(+), 9 deletions(-)
 
-stephane eranian wrote:
-> Hello,
-> 
-> I have been reading all the threads after this unexpected announcement
-> of a competing proposal for an interface to access the performance counters.
-> I would like to respond to some of the things I have seen.
-> 
-
-  <<<<<< Details of Stephane's comment's elided >>>>>>
-
-> 
-> In summary, although the idea of simplifying tools by moving the
-> complexity elsewhere is legitimate, pushing it down to the kernel
-> is the wrong approach in my opinion, perfmon has avoided that as much
-> as possible for good reasons. We have shown , with libpfm,
-> that a large part of complexity can easily be encapsulated into a user
-> library. I also don't think the approach of managing events
-> independently of each others works for all processors. As pointed out
-> by others, there are other factors at stake and they may not
-> even be on the same core.
-> 
-> S. Eranian
-> 
-> ------------------------------------------------------------------------------
-> SF.Net email is Sponsored by MIX09, March 18-20, 2009 in Las Vegas, Nevada.
-> The future of the web can't happen without you.  Join us at MIX09 to help
-> pave the way to the Next Web now. Learn more and register at
-> http://ad.doubleclick.net/clk;208669438;13503038;i?http://2009.visitmix.com/
-> _______________________________________________
-> perfmon2-devel mailing list
-> perfmon2-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/perfmon2-devel
-
--- 
-Robert J. Fowler
-Chief Domain Scientist, HPC
-Renaissance Computing Institute
-The University of North Carolina at Chapel Hill
-100 Europa Dr, Suite 540
-Chapel Hill, NC 27517
-V: 919.445.9670
-F: 919 445.9669
-rjf@renci.org
+diff --git a/drivers/hwmon/pc87360.c b/drivers/hwmon/pc87360.c
+index 5fbfa34..87c4ce3 100644
+--- a/drivers/hwmon/pc87360.c
++++ b/drivers/hwmon/pc87360.c
+@@ -225,7 +225,7 @@ struct pc87360_data {
+  */
+ 
+ static int pc87360_probe(struct platform_device *pdev);
+-static int __devexit pc87360_remove(struct platform_device *pdev);
++static void __devexit pc87360_remove(struct platform_device *pdev);
+ 
+ static int pc87360_read_value(struct pc87360_data *data, u8 ldi, u8 bank,
+ 			      u8 reg);
+@@ -245,7 +245,7 @@ static struct platform_driver pc87360_driver = {
+ 		.name	= "pc87360",
+ 	},
+ 	.probe		= pc87360_probe,
+-	.remove		= __devexit_p(pc87360_remove),
++	.remove_new	= __devexit_p(pc87360_remove),
+ };
+ 
+ /*
+@@ -1266,7 +1266,7 @@ ERROR1:
+ 	return err;
+ }
+ 
+-static int __devexit pc87360_remove(struct platform_device *pdev)
++static void __devexit pc87360_remove(struct platform_device *pdev)
+ {
+ 	struct pc87360_data *data = platform_get_drvdata(pdev);
+ 	int i;
+@@ -1285,8 +1285,6 @@ static int __devexit pc87360_remove(struct platform_device *pdev)
+ 		}
+ 	}
+ 	kfree(data);
+-
+-	return 0;
+ }
+ 
+ /* ldi is the logical device index
+diff --git a/drivers/hwmon/pc87427.c b/drivers/hwmon/pc87427.c
+index 7265f22..674176f 100644
+--- a/drivers/hwmon/pc87427.c
++++ b/drivers/hwmon/pc87427.c
+@@ -482,7 +482,7 @@ exit:
+ 	return err;
+ }
+ 
+-static int __devexit pc87427_remove(struct platform_device *pdev)
++static void __devexit pc87427_remove(struct platform_device *pdev)
+ {
+ 	struct pc87427_data *data = platform_get_drvdata(pdev);
+ 	struct resource *res;
+@@ -500,8 +500,6 @@ static int __devexit pc87427_remove(struct platform_device *pdev)
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+ 	release_region(res->start, res->end - res->start + 1);
+-
+-	return 0;
+ }
+ 
+ 
+@@ -511,7 +509,7 @@ static struct platform_driver pc87427_driver = {
+ 		.name	= DRVNAME,
+ 	},
+ 	.probe		= pc87427_probe,
+-	.remove		= __devexit_p(pc87427_remove),
++	.remove_new	= __devexit_p(pc87427_remove),
+ };
+ 
+ static int __init pc87427_device_add(unsigned short address)
