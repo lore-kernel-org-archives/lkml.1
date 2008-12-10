@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbYLJQzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbYLJRAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756466AbYLJQzS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:55:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbYLJQzE
+	id S1756392AbYLJRAy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 12:00:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYLJRAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:55:04 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:52106 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752963AbYLJQzB (ORCPT
+	Wed, 10 Dec 2008 12:00:46 -0500
+Received: from ocean.emcraft.com ([213.221.7.182]:40305 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbYLJRAp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:55:01 -0500
-Date: Wed, 10 Dec 2008 22:24:55 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, netdev <netdev@vger.kernel.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, eric@inl.fr, kaber@trash.net
-Subject: Re: linux-next: Tree for December 1 (netfilter build error)
-Message-ID: <20081210165455.GC6391@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20081201190827.2d02b1a5.sfr@canb.auug.org.au> <20081201115934.00ba918a.randy.dunlap@oracle.com>
+	Wed, 10 Dec 2008 12:00:45 -0500
+From: Yuri Tikhonov <yur@emcraft.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH][v2] fork_init: fix division by zero
+Date: Wed, 10 Dec 2008 19:50:51 +0300
+User-Agent: KMail/1.9.4
+Cc: linuxppc-dev@ozlabs.org,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, David Howells <dhowells@redhat.com>,
+       Milton Miller <miltonm@bga.com>, Wolfgang Denk <wd@denx.de>,
+       Detlev Zundel <dzu@denx.de>, Ilya Yanok <yanok@emcraft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081201115934.00ba918a.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200812101950.51958.yur@emcraft.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Randy Dunlap <randy.dunlap@oracle.com> [2008-12-01 11:59:34]:
 
-> On Mon, 1 Dec 2008 19:08:27 +1100 Stephen Rothwell wrote:
-> 
-> > Hi all,
-> > 
-> > Changes since 20081128:
-> > 
-> > Today's tree fails the powerpc allyesconfig build.
-> 
-> 
-> ERROR: "nfulnl_log_packet" [net/netfilter/xt_NFLOG.ko] undefined!
-> 
-> config attached.
+The following patch fixes divide-by-zero error for the
+cases of really big PAGE_SIZEs (e.g. 256KB on ppc44x).
+Support for big page sizes on 44x is not present in the
+current kernel yet, but coming soon.
 
-	next-20081210 kernel build fails when !CONFIG_NETFILTER_NETLINK_LOG 
-This was introduced by the 
+Also this patch fixes the comment for the max_threads
+settings, as this didn't match the things actually done
+in the code.
 
-commit 5f7340eff8f68f41b7e5c7ad47ec4cd1ea1afb40
-Author: Eric Leblond <eric@inl.fr>
-Date:   Tue Nov 4 14:21:08 2008 +0100
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+---
+ kernel/fork.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-    netfilter: xt_NFLOG: don't call nf_log_packet in NFLOG module.
-	    
-the function nfulnl_log_packet is exported only if
-CONFIG_NETFILTER_NETLINK_LOG is enabled, so marking the loging function
-between ifdef.
-
-I have tested the patch for build failure only
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
- net/netfilter/xt_NFLOG.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/net/netfilter/xt_NFLOG.c b/net/netfilter/xt_NFLOG.c
-index a57c5cf..fa814a6 100644
---- a/net/netfilter/xt_NFLOG.c
-+++ b/net/netfilter/xt_NFLOG.c
-@@ -32,8 +32,11 @@ nflog_tg(struct sk_buff *skb, const struct xt_target_param *par)
- 	li.u.ulog.group	     = info->group;
- 	li.u.ulog.qthreshold = info->threshold;
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 8d6a7dd..638eb7f 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -181,10 +181,14 @@ void __init fork_init(unsigned long mempages)
  
-+#ifdef CONFIG_NETFILTER_NETLINK_LOG
- 	nfulnl_log_packet(par->family, par->hooknum, skb, par->in,
- 			  par->out, &li, info->prefix);
-+#endif /* CONFIG_NETFILTER_NETLINK_LOG */
-+
- 	return XT_CONTINUE;
- }
+ 	/*
+ 	 * The default maximum number of threads is set to a safe
+-	 * value: the thread structures can take up at most half
+-	 * of memory.
++	 * value: the thread structures can take up at most
++	 * (1/8) part of memory.
+ 	 */
++#if (8 * THREAD_SIZE) > PAGE_SIZE
+ 	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
++#else
++	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
++#endif
  
+ 	/*
+ 	 * we need to allow at least 20 threads to boot a system
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+1.5.6.1
