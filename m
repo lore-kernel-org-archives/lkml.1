@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbYLJQmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbYLJQmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758107AbYLJQmc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 11:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757483AbYLJQl5
+	id S1758170AbYLJQmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 11:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbYLJQmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 11:41:57 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:52542 "EHLO mgw1.diku.dk"
+	Wed, 10 Dec 2008 11:42:22 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:52561 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758041AbYLJQl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 11:41:56 -0500
-Date: Wed, 10 Dec 2008 17:41:52 +0100 (CET)
+	id S1757560AbYLJQmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 11:42:20 -0500
+Date: Wed, 10 Dec 2008 17:42:16 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dmitri.vorobiev@movial.fi, jim.cromie@gmail.com, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 24/28] drivers/hwmon/pc87xxx: Drop return value from
+To: dmitri.vorobiev@movial.fi, mhoffman@lightlink.com,
+       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 25/28] drivers/hwmon/smsc47b397: Drop return value from
  platform_driver remove functions
-Message-ID: <Pine.LNX.4.64.0812101741310.21998@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0812101741530.21998@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -94,78 +95,78 @@ expression E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/hwmon/pc87360.c |    8 +++-----
- drivers/hwmon/pc87427.c |    6 ++----
+ drivers/hwmon/smsc47b397.c |    6 ++----
+ drivers/hwmon/smsc47m1.c   |    8 +++-----
  2 files changed, 5 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/hwmon/pc87360.c b/drivers/hwmon/pc87360.c
-index 5fbfa34..87c4ce3 100644
---- a/drivers/hwmon/pc87360.c
-+++ b/drivers/hwmon/pc87360.c
-@@ -225,7 +225,7 @@ struct pc87360_data {
-  */
- 
- static int pc87360_probe(struct platform_device *pdev);
--static int __devexit pc87360_remove(struct platform_device *pdev);
-+static void __devexit pc87360_remove(struct platform_device *pdev);
- 
- static int pc87360_read_value(struct pc87360_data *data, u8 ldi, u8 bank,
- 			      u8 reg);
-@@ -245,7 +245,7 @@ static struct platform_driver pc87360_driver = {
- 		.name	= "pc87360",
- 	},
- 	.probe		= pc87360_probe,
--	.remove		= __devexit_p(pc87360_remove),
-+	.remove_new	= __devexit_p(pc87360_remove),
+diff --git a/drivers/hwmon/smsc47b397.c b/drivers/hwmon/smsc47b397.c
+index eb03544..fd4d596 100644
+--- a/drivers/hwmon/smsc47b397.c
++++ b/drivers/hwmon/smsc47b397.c
+@@ -221,7 +221,7 @@ static const struct attribute_group smsc47b397_group = {
+ 	.attrs = smsc47b397_attributes,
  };
  
- /*
-@@ -1266,7 +1266,7 @@ ERROR1:
- 	return err;
- }
- 
--static int __devexit pc87360_remove(struct platform_device *pdev)
-+static void __devexit pc87360_remove(struct platform_device *pdev)
+-static int __devexit smsc47b397_remove(struct platform_device *pdev)
++static void __devexit smsc47b397_remove(struct platform_device *pdev)
  {
- 	struct pc87360_data *data = platform_get_drvdata(pdev);
- 	int i;
-@@ -1285,8 +1285,6 @@ static int __devexit pc87360_remove(struct platform_device *pdev)
- 		}
- 	}
+ 	struct smsc47b397_data *data = platform_get_drvdata(pdev);
+ 	struct resource *res;
+@@ -231,8 +231,6 @@ static int __devexit smsc47b397_remove(struct platform_device *pdev)
+ 	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+ 	release_region(res->start, SMSC_EXTENT);
  	kfree(data);
 -
 -	return 0;
  }
  
- /* ldi is the logical device index
-diff --git a/drivers/hwmon/pc87427.c b/drivers/hwmon/pc87427.c
-index 7265f22..674176f 100644
---- a/drivers/hwmon/pc87427.c
-+++ b/drivers/hwmon/pc87427.c
-@@ -482,7 +482,7 @@ exit:
+ static int smsc47b397_probe(struct platform_device *pdev);
+@@ -243,7 +241,7 @@ static struct platform_driver smsc47b397_driver = {
+ 		.name	= DRVNAME,
+ 	},
+ 	.probe		= smsc47b397_probe,
+-	.remove		= __devexit_p(smsc47b397_remove),
++	.remove_new	= __devexit_p(smsc47b397_remove),
+ };
+ 
+ static int __devinit smsc47b397_probe(struct platform_device *pdev)
+diff --git a/drivers/hwmon/smsc47m1.c b/drivers/hwmon/smsc47m1.c
+index d1b4985..fbd9556 100644
+--- a/drivers/hwmon/smsc47m1.c
++++ b/drivers/hwmon/smsc47m1.c
+@@ -138,7 +138,7 @@ struct smsc47m1_sio_data {
+ 
+ 
+ static int smsc47m1_probe(struct platform_device *pdev);
+-static int __devexit smsc47m1_remove(struct platform_device *pdev);
++static void __devexit smsc47m1_remove(struct platform_device *pdev);
+ static struct smsc47m1_data *smsc47m1_update_device(struct device *dev,
+ 		int init);
+ 
+@@ -159,7 +159,7 @@ static struct platform_driver smsc47m1_driver = {
+ 		.name	= DRVNAME,
+ 	},
+ 	.probe		= smsc47m1_probe,
+-	.remove		= __devexit_p(smsc47m1_remove),
++	.remove_new	= __devexit_p(smsc47m1_remove),
+ };
+ 
+ static ssize_t get_fan(struct device *dev, struct device_attribute
+@@ -629,7 +629,7 @@ error_release:
  	return err;
  }
  
--static int __devexit pc87427_remove(struct platform_device *pdev)
-+static void __devexit pc87427_remove(struct platform_device *pdev)
+-static int __devexit smsc47m1_remove(struct platform_device *pdev)
++static void __devexit smsc47m1_remove(struct platform_device *pdev)
  {
- 	struct pc87427_data *data = platform_get_drvdata(pdev);
+ 	struct smsc47m1_data *data = platform_get_drvdata(pdev);
  	struct resource *res;
-@@ -500,8 +500,6 @@ static int __devexit pc87427_remove(struct platform_device *pdev)
- 
- 	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
- 	release_region(res->start, res->end - res->start + 1);
+@@ -641,8 +641,6 @@ static int __devexit smsc47m1_remove(struct platform_device *pdev)
+ 	release_region(res->start, SMSC_EXTENT);
+ 	platform_set_drvdata(pdev, NULL);
+ 	kfree(data);
 -
 -	return 0;
  }
  
- 
-@@ -511,7 +509,7 @@ static struct platform_driver pc87427_driver = {
- 		.name	= DRVNAME,
- 	},
- 	.probe		= pc87427_probe,
--	.remove		= __devexit_p(pc87427_remove),
-+	.remove_new	= __devexit_p(pc87427_remove),
- };
- 
- static int __init pc87427_device_add(unsigned short address)
+ static struct smsc47m1_data *smsc47m1_update_device(struct device *dev,
