@@ -1,179 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbYLJTDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbYLJTEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757137AbYLJTDk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 14:03:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbYLJTD0
+	id S1757256AbYLJTEg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 14:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYLJTE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 14:03:26 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:58348 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752451AbYLJTDZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 14:03:25 -0500
-Message-ID: <49401260.5050501@vlnb.net>
-Date: Wed, 10 Dec 2008 22:02:56 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: linux-scsi@vger.kernel.org
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org
-Subject: [PATCH][RFC 22/23]: Documentation for iSCSI-SCST
-References: <494009D7.4020602@vlnb.net>
-In-Reply-To: <494009D7.4020602@vlnb.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Dec 2008 14:04:27 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:46611 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752431AbYLJTE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 14:04:26 -0500
+Subject: Re: [PATCH 07/15] kmemleak: Add memleak_alloc callback from
+	alloc_large_system_hash
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081210182732.30323.39834.stgit@pc1117.cambridge.arm.com>
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
+	 <20081210182732.30323.39834.stgit@pc1117.cambridge.arm.com>
+Content-Type: text/plain
+Date: Wed, 10 Dec 2008 11:04:20 -0800
+Message-Id: <1228935860.9737.98.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18wS77b2kJqaDIeiNcZxvbDv2vIu4lCgxRjNBp
- RL6G5EIou0LHBQJtXHpVFkwY9j1KbbyQ0i7QpXazwdZskMnZlk
- ElmEIcLjkmD2uc1QUXJBA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains documentation for iSCSI-SCST.
+On Wed, 2008-12-10 at 18:27 +0000, Catalin Marinas wrote:
+> 
+> @@ -4570,6 +4571,8 @@ void *__init alloc_large_system_hash(const char *tablename,
+>         if (_hash_mask)
+>                 *_hash_mask = (1 << log2qty) - 1;
+>  
+> +       memleak_alloc(table, size, 1, GFP_ATOMIC);
+> +
+>         return table;
+>  }
 
-Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
----
-  Documentation/scst/README.iscsi |  127 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  1 file changed, 127 insertions(+)
+Why is this sucker GFP_ATOMIC?
 
-diff -uprN orig/linux-2.6.27/Documentation/scst/README.iscsi linux-2.6.27/Documentation/scst/README.iscsi
---- orig/linux-2.6.27/Documentation/scst/README.iscsi
-+++ linux-2.6.27/Documentation/scst/README.iscsi
-@@ -0,0 +1,127 @@
-+iSCSI SCST target driver
-+========================
-+
-+Version 1.0.1/0.4.16r155, XX XXXX 2008
-+--------------------------------------
-+
-+This driver is a forked with all respects version of iSCSI Enterprise
-+Target (IET) (http://iscsitarget.sourceforge.net/) with updates to work
-+over SCST as well as with many improvements and bugfixes (see ChangeLog
-+file). The reason of fork is that the necessary changes are intrusive
-+and with the current IET merge policy, where only simple bugfix-like
-+patches, which doesn't touch the core code, could be merged, it is very
-+unlikely that they will be merged in the main IET trunk.
-+
-+To let it be installed and work at the same host together with IET
-+simultaneously all the driver's modules and files were renamed:
-+
-+ * ietd.conf -> iscsi-scstd.conf
-+ * ietadm -> iscsi-scst-adm
-+ * ietd -> iscsi-scstd
-+ * iscsi-target -> iscsi-scst
-+ * iscsi-target.ko -> iscsi-scst.ko
-+
-+To use full power of TCP zero-copy transmit functions, especially
-+dealing with user space supplied via scst_user module memory, iSCSI-SCST
-+needs to be notified when Linux networking finished data transmission.
-+For that you should enable CONFIG_TCP_ZERO_COPY_TRANSFER_COMPLETION_NOTIFICATION
-+kernel config option. This is highly recommended, but not required. Basically,
-+you should consider usage of this option as some optimization, which IET
-+doesn't have, so if you don't use it, you will just revert to the
-+original IET behavior, when for data transmission:
-+
-+ - For in-kernel allocated memory (scst_vdisk and pass-through
-+   handlers) usage of SGV cache on transmit path (READ-type commands)
-+   will be disabled. The performance hit will be not big, but performance
-+   will still remain better, than for IET, because SGV cache will remain
-+   used on receive path while IET doesn't have such feature.
-+
-+ - For user space allocated memory (scst_user handler) all transmitted
-+   data will be additionally copied into temporary TCP buffers. The
-+   performance hit will be quite noticeable.
-+
-+Note, that if your network hardware does not support TX offload
-+functions of has them disabled, then TCP zero-copy transmit functions on
-+your system will not be used by Linux networking in any case, so
-+put_page_callback patch will not be able to improve performance for you.
-+You can check your network hardware offload capabilities by command
-+"ethtool -k ethX", where X is the network device number. At least
-+"tx-checksumming" and "scatter-gather" should be enabled.
-+
-+Usage
-+-----
-+
-+ISCSI parameters like iSNS, CHAP and target parameters are configured in
-+iscsi-scstd.conf. All LUN information is configured using the regular
-+SCST interface. It is highly recommended to use scstadmin utility for
-+that purpose. The LUN information in iscsi-scstd.conf will be ignored.
-+This is because now responsibilities are divided (as it should be)
-+between the target driver (iSCSI-SCST) and the SCST core as it logically
-+should be: the target driver is responsible for handling targets and
-+their parameters, SCST core is responsible for handling backstorage.
-+
-+If you need to configure different LUs for different targets you should
-+create for each target group "Default_target_name", where "target_name"
-+means name of the target, for example:
-+"Default_iqn.2007-05.com.example:storage.disk1.sys1.xyz", and add there
-+all necessary LUNs. Check SCST README file for details.
-+
-+Check SCST README file how to tune for the best performance.
-+
-+If under high load you experience I/O stalls or see in the kernel log
-+abort or reset messages, then try to reduce QueuedCommands parameter in
-+iscsi-scstd.conf file for the corresponding target to some lower value,
-+like 8 (default is 32). See also SCST README file for more details about
-+that issue.
-+
-+CAUTION:  Working of target and initiator on the same host isn't
-+========  supported. See SCST README file for details.
-+
-+
-+Performance advices
-+-------------------
-+
-+1. If you use Windows XP or Windows 2003+ as initiators, you should
-+consider to decrease TcpAckFrequency parameter to 1. See
-+http://support.microsoft.com/kb/328890/ or google for "TcpAckFrequency"
-+for more details.
-+
-+
-+Compilation options
-+-------------------
-+
-+There are the following compilation options, that could be commented
-+in/out in the kernel's module Makefile:
-+
-+ - CONFIG_SCST_DEBUG - turns on some debugging code, including some logging.
-+   Makes the driver considerably bigger and slower, producing large amount of
-+   log data.
-+
-+ - CONFIG_SCST_TRACING - turns on ability to log events. Makes the driver
-+   considerably bigger and leads to some performance loss.
-+
-+ - CONFIG_SCST_EXTRACHECKS - adds extra validity checks in the various places.
-+
-+ - CONFIG_SCST_ISCSI_DEBUG_DIGEST_FAILURES - simulates digest failures in
-+   random places.
-+
-+
-+Credits
-+-------
-+
-+Thanks to:
-+
-+ * IET developers for IET
-+
-+ * Ming Zhang <blackmagic02881@gmail.com> for fixes
-+
-+ * Krzysztof Blaszkowski <kb@sysmikro.com.pl> for many fixes
-+
-+ * Alexey Kuznetsov <kuznet@ms2.inr.ac.ru> for comments and help in
-+   debugging
-+
-+ * Tomasz Chmielewski <mangoo@wpkg.org> for testing and suggestions
-+
-+ * Bart Van Assche <bart.vanassche@gmail.com> for a lot of help
-+
-+Vladislav Bolkhovitin <vst@vlnb.net>, http://scst.sourceforge.net
+Since alloc_large_system_hash() is using bootmem (and is called early),
+I'm a little surprised that it is OK to call into memleak_alloc() which
+uses kmem_cache_alloc().  Is the slab even set up at this point?
 
+-- Dave
 
