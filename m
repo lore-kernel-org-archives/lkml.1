@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbYLJKR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbYLJKTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbYLJKR5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 05:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYLJKRt
+	id S1755559AbYLJKTG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 05:19:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbYLJKSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 05:17:49 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38287 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754752AbYLJKRt (ORCPT
+	Wed, 10 Dec 2008 05:18:55 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:33630 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754567AbYLJKSy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 05:17:49 -0500
-Date: Wed, 10 Dec 2008 10:17:45 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Yuri Tikhonov <yur@emcraft.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Detlev Zundel <dzu@denx.de>, Wolfgang Denk <wd@denx.de>,
-       Milton Miller <miltonm@bga.com>, Ilya Yanok <yanok@emcraft.com>
-Subject: Re: [PATCH] fork_init: fix division by zero
-Message-ID: <20081210101745.GG28946@ZenIV.linux.org.uk>
-References: <200812092044.40649.yur@emcraft.com> <Pine.LNX.4.64.0812100944080.25126@vixen.sonytel.be> <503391615.20081210130113@emcraft.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <503391615.20081210130113@emcraft.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 10 Dec 2008 05:18:54 -0500
+Subject: Re: [PATCH] dynamic_printk: add line feed to printk
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jason Baron <jbaron@redhat.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <20081210073347.GA18737@localhost>
+References: <20081210073347.GA18737@localhost>
+Content-Type: text/plain
+Date: Wed, 10 Dec 2008 11:18:46 +0100
+Message-Id: <1228904326.19553.127.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 01:01:13PM +0300, Yuri Tikhonov wrote:
+Hi,
 
-> >> +     max_threads = mempages * PAGE_SIZE / (8 * THREAD_SIZE);
-> >                       ^^^^^^^^^^^^^^^^^^^^
-> >> +#endif
-> 
-> > Can't this overflow, e.g. on 32-bit machines with HIGHMEM?
-> 
->  The multiplier here is not PAGE_SIZE, but [PAGE_SIZE / (8 * 
-> THREAD_SIZE)], and this value is expected to be rather small (2, 4, or 
-> so).
+> Append '\n' to two printk messages.
 
-x * y / z is parsed as (x * y) / z, not x * (y / z).
+I already sent a patch for that and Greg picked it up.
 
-Only assignment operators (and ?:, in a sense that a ? b : c ? d : e is
-parsed as a ? b : (c ? d : e)) are right-to-left.  The rest is left-to-right.
+> Also cleanup the code to reduce one level of indentation.
+
+Please re-base that one against Greg's latest tree that includes my
+patch.
+
+Regards
+
+Marcel
+
+
