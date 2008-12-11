@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbYLKTBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbYLKTBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756920AbYLKTBY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:01:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbYLKTBO
+	id S1757244AbYLKTBv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:01:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbYLKTBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:01:14 -0500
-Received: from mail.klingt.org ([86.59.21.178]:49894 "EHLO klingt.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbYLKTBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:01:14 -0500
-From: Tim Blechmann <tim@klingt.org>
-To: rostedt@goodmis.org
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, Tim Blechmann <tim@klingt.org>
-Subject: [PATCH] [RT] avoid preemption in memory controller code
-Date: Thu, 11 Dec 2008 20:00:45 +0100
-Message-Id: <1229022045-31670-1-git-send-email-tim@klingt.org>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <preempt_enable_rt();>
-References: <preempt_enable_rt();>
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (klingt.org [127.0.0.1]); Thu, 11 Dec 2008 20:00:46 +0100 (CET)
+	Thu, 11 Dec 2008 14:01:38 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:50446 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756890AbYLKTBh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:01:37 -0500
+Message-ID: <4941636A.3050303@vlnb.net>
+Date: Thu, 11 Dec 2008 22:00:58 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: Re: [PATCH][RFC 13/23]: Export of alloc_io_context() function
+References: <494009D7.4020602@vlnb.net> <49400F2F.4050603@vlnb.net> <20081211133424.GU23742@kernel.dk> <4941592E.8070303@vlnb.net> <20081211184100.GX23742@kernel.dk>
+In-Reply-To: <20081211184100.GX23742@kernel.dk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19SN+qa5HXAiDcFXxQ8wt168iNZ65IWiF7+Yf5
+ 9XG+3Dj1/kzvtsLNdvX5IMzPmDxDKaBaT7iaTUxluRiPYJJMjW
+ nl48/brJBKQBxUjIFz/0Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the lru_lock of struct mem_group_per_zone is used to avoid preemption
-during the mem_cgroup_charge_statistics function. this does not work
-correctly, when CONFIG_PREEMPT_RT is enabled.
-therefore, the preemption is disabled using the preempt_disable_rt macro
-in these cases.
+Jens Axboe wrote:
+> On Thu, Dec 11 2008, Vladislav Bolkhovitin wrote:
+>> Jens Axboe wrote:
+>>> On Wed, Dec 10 2008, Vladislav Bolkhovitin wrote:
+>>>> This patch exports alloc_io_context() function. For performance reasons 
+>>>> SCST queues commands using a pool of IO threads. It is considerably 
+>>>> better for performance (>30% increase on sequential reads) if threads in 
+>>>>  a pool have the same IO context. Since SCST can be built as a module, 
+>>>> it needs alloc_io_context() function exported.
+>>>>
+>>>> Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+>>>> ---
+>>>>  block/blk-ioc.c |    1 +
+>>>>  1 file changed, 1 insertion(+)
+>>>>
+>>>> diff -upkr linux-2.6.27.2/block/blk-ioc.c linux-2.6.27.2/block/blk-ioc.c
+>>>> --- linux-2.6.27.2/block/blk-ioc.c	2008-10-10 02:13:53.000000000 +0400
+>>>> +++ linux-2.6.27.2/block/blk-ioc.c	2008-11-25 21:27:01.000000000 +0300
+>>>> @@ -105,6 +105,7 @@ struct io_context *alloc_io_context(gfp_
+>>>>
+>>>> 	return ret;
+>>>> }
+>>>> +EXPORT_SYMBOL(alloc_io_context);
+>>> Why is this needed, can't you just use CLONE_IO?
+>> There are two reasons for that:
+>>
+>> 1. kthread interface doesn't support passing CLONE_IO flag.
+> 
+> Then you fix that instead of working around it! :-)
 
-Signed-off-by: Tim Blechmann <tim@klingt.org>
----
- mm/memcontrol.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+It doesn't worth the effort, because of (2) below.
 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 562b94f..70493c4 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -158,7 +158,7 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
- };
- 
- /*
-- * Always modified under lru lock. Then, not necessary to preempt_disable()
-+ * Always modified under lru lock. Disable preemption with preempt_disable_rt()
-  */
- static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
- 					 struct page_cgroup *pc,
-@@ -170,6 +170,7 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
- 
- 	VM_BUG_ON(!irqs_disabled());
- 
-+	preempt_disable_rt();
- 	cpustat = &stat->cpustat[smp_processor_id()];
- 	if (PageCgroupCache(pc))
- 		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_CACHE, val);
-@@ -182,6 +183,7 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
- 	else
- 		__mem_cgroup_stat_add_safe(cpustat,
- 				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
-+	preempt_enable_rt();
- }
- 
- static struct mem_cgroup_per_zone *
--- 
-1.5.6.3
+>> 2. Each (virtual) device has own pool of threads, which serves it. 
+>> Threads in each such pools should have a common IO context, but 
+>> different pools should have different IO contexts. So, it would be 
+>> necessary to implement two levels start of IO threads in each pool. At 
+>> first, one thread would be started. Then it would call get_io_context() 
+>> to gain io_context. Then it would create the remaining threads with 
+>> CLONE_IO flag. Definitely, it's a lot more complicated than a simple 
+>> call of alloc_io_context() and assignment of the returned context to 
+>> each just created thread in a loop before they were ran.
+> 
+> Just start the first thread without CLONE_IO, and subsequent threads
+> fork off that with CLONE_IO set? 
+
+Yes, that would be the two stages threads creation. A *LOT* more 
+complicated, than with the direct io_context assignment using 
+alloc_io_context().
+
+> I think we need to make sure that we
+> allocate an IO context for the 'parent' if it doesn't have one already
+> and CLONE_IO is set, but that is something that can easily be rectified.
+
+Sorry, I don't feel I understood you here..
+
+> It may seem more complex, but if you use this approach you are pretty
+> much free to worry about any changes in the future there.
+
+Worrying about future changes is regular in Linux kernel, where there is 
+no stable API ;-)
+
 
