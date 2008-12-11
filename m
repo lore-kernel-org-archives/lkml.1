@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbYLKRJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbYLKRNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757074AbYLKRJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 12:09:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756291AbYLKRJS
+	id S1757048AbYLKRNX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 12:13:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756575AbYLKRNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 12:09:18 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:8688 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755795AbYLKRJS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 12:09:18 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	content-type:content-transfer-encoding;
-	b=CkUq1viP5fliwAwPDt8XcmsZjoO5shemqx714O0z/ul86lC6Cdup9ly6Yr+oH86eY
-	xqFKulf7N//7fhnF2sarA==
-MIME-Version: 1.0
-In-Reply-To: <20081211062940.GJ3008@balbir.in.ibm.com>
-References: <20081210233654.563182000@menage.corp.google.com>
-	 <20081210234432.065445000@menage.corp.google.com>
-	 <20081211062940.GJ3008@balbir.in.ibm.com>
-Date: Thu, 11 Dec 2008 09:09:15 -0800
-Message-ID: <6599ad830812110909t5e268bcak31df359c516874d1@mail.gmail.com>
-Subject: Re: [RFC][PATCH 1/3] CGroups: Add a per-subsystem hierarchy_mutex
-From: Paul Menage <menage@google.com>
-To: balbir@linux.vnet.ibm.com, menage@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 11 Dec 2008 12:13:13 -0500
+Received: from mga01.intel.com ([192.55.52.88]:18207 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756330AbYLKRNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 12:13:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,753,1220252400"; 
+   d="scan'208";a="413612060"
+Subject: Re: iwlagn interrupt problem
+From: reinette chatre <reinette.chatre@intel.com>
+To: "Alexander E. Patrakov" <patrakov@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+In-Reply-To: <c072ca310812110548s64612ac7icd6e9187aa4af75a@mail.gmail.com>
+References: <c072ca310812100638k6c15473brb89632a9c175a028@mail.gmail.com>
+	 <c072ca310812100710o58c38a27rba16ad2318a1cb95@mail.gmail.com>
+	 <1228929548.18730.21.camel@rc-desk>
+	 <c072ca310812110548s64612ac7icd6e9187aa4af75a@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 11 Dec 2008 09:14:15 -0800
+Message-Id: <1229015655.18730.210.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 10:29 PM, Balbir Singh
-<balbir@linux.vnet.ibm.com> wrote:
->
-> Seems reasonable, I was wondering if instead of acquiring a mutex per
-> subsystem that shares the root, if we can collapse it to a single
-> mutex and prevent cgroup from changing binding. Those are
-> optimizations that we can think of later
+On Thu, 2008-12-11 at 05:48 -0800, Alexander E. Patrakov wrote:
+> 2008/12/10 reinette chatre <reinette.chatre@intel.com>:
+> > The unresponsiveness is due to a bug that was fixed recently. The
+> > patches have been merged into wireless-testing repo and will be included
+> > in 2.6.29. If you want to try
+> > the individual patches, please try:
+> > http://marc.info/?l=linux-wireless&m=122824886623698&w=2
+> > http://marc.info/?l=linux-wireless&m=122849275528102&w=2
+> 
+> These individual patches don't apply to 2.6.27.6, so I installed
+> today's compat-wireless-2.6, and it seems to work. Thanks!
+> 
+> OTOH, are these patches a material for backporting into -stable?
 
-You mean a single hierarchy_mutex per root? But given that one of the
-things being protected is which root you're attached to, if you're
-trying to prevent hierarchy changes then which root's hierarchy_mutex
-would you lock?
+We are not planning to do so, but you are welcome to.
 
-Paul
+Reinette
+
