@@ -1,32 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbYLKL6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbYLKMDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756627AbYLKL6f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 06:58:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbYLKL6W
+	id S1756530AbYLKMDT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 07:03:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbYLKMDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 06:58:22 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47365 "EHLO mx2.suse.de"
+	Thu, 11 Dec 2008 07:03:07 -0500
+Received: from cantor.suse.de ([195.135.220.2]:58867 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755480AbYLKL6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 06:58:21 -0500
-Date: Thu, 11 Dec 2008 12:58:18 +0100
-Message-ID: <s5hr64ediud.wl%tiwai@suse.de>
+	id S1755480AbYLKMDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 07:03:05 -0500
+Date: Thu, 11 Dec 2008 13:03:03 +0100
+Message-ID: <s5hoczidimg.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-Cc: Clemens Ladisch <clemens@ladisch.de>, Ingo Molnar <mingo@elte.hu>,
-       alsa-devel@alsa-project.org, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [alsa-devel] 2.6.26.[6|7]-rt11, alsa rawmidi, seq hang	(tasklet_hi_schedule?)
-In-Reply-To: <s5hvdu93yfn.wl%tiwai@suse.de>
-References: <1226019485.3135.31.camel@localhost.localdomain>
-	<49140683.9040008@ladisch.de>
-	<1226610075.23485.20.camel@localhost.localdomain>
-	<1226616962.23485.28.camel@localhost.localdomain>
-	<1226621569.23485.44.camel@localhost.localdomain>
-	<491D33B9.5030308@ladisch.de>
-	<1226689030.17495.11.camel@localhost.localdomain>
-	<s5hiqqkc548.wl%tiwai@suse.de>
-	<s5hvdu93yfn.wl%tiwai@suse.de>
+To: "Bryan Wu" <cooloney@kernel.org>
+Cc: "ALSA devel" <alsa-devel@alsa-project.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Question] Can I open a substream in kernel space without attach to a file pointer?
+In-Reply-To: <386072610812110240l7af568f9h40c672036abe49f6@mail.gmail.com>
+References: <386072610811190200l576d7735rb0188ab53f5185fa@mail.gmail.com>
+	<s5h63mjddvj.wl%tiwai@suse.de>
+	<386072610811190742ycab0dbasc585376dc6ac47db@mail.gmail.com>
+	<s5hljvfbt8h.wl%tiwai@suse.de>
+	<386072610812110240l7af568f9h40c672036abe49f6@mail.gmail.com>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -36,254 +31,144 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Thu, 27 Nov 2008 17:50:52 +0100,
-I wrote:
+At Thu, 11 Dec 2008 18:40:38 +0800,
+Bryan Wu wrote:
 > 
-> At Wed, 19 Nov 2008 12:44:23 +0100,
-> I wrote:
-> > 
-> > At Fri, 14 Nov 2008 10:57:10 -0800,
-> > Fernando Lopez-Lezcano wrote:
-> > > 
-> > > On Fri, 2008-11-14 at 09:15 +0100, Clemens Ladisch wrote:
-> > > > Fernando Lopez-Lezcano wrote:
-> > > > > I've been trying to follow the printk crumbs without much success.
-> > > > > AFAICT it all points to tasklet_hi_schedule ...
-> > > > 
-> > > > I don't have -rt, but if the error is similar to the old one you might
-> > > > try replacing tasklet_hi_schedule with tasklet_schedule.
-> > > 
-> > > YES YES!! __Thanks__ for the suggestion, it WORKED!!
-> > > 
-> > > Maybe the kernel rt gurus should look around and see _why_ the problem
-> > > was happening in the first place. There are not that many uses of
-> > > tasklet_hi_schedule in the kernel tree I'm working with:
-> > (snip)
-> > > Maybe other drivers are affected as well by the rt patch. 
-> > > What is the difference between tasklet_hi_schedule and tasklet_schedule?
-> > 
-> > AFAIK, tasklet_hi_schedule() uses another softirq vector with the
-> > highest priority (the first item to be scanned).
-> > 
-> > Regarding the ALSA codes, there is no big reason to use hi_* version.
-> > Could you check the patch below and see whether you get any
-> > regressions?
+> Hi Takashi,
 > 
-> Nando, any chance to test on your machines?
+> I just made some progress about this USB audio gadget driver. But I
+> still got some questions about the audio playback.
+> Please kindly help me to work out here, as you're the best one to ask, -:)
+> 
+> I can receive ISO transfer packets from PC host. The packet includes
+> 192 bytes audio data.
+> So I tried to use vfs_write() function to write this 192 bytes to the
+> opened snd card.
+> There is no sound.
+> 
+> Then I create a buffer which is 6K bytes size and a workqueue. I will
+> fill the 6K buffer with the ISO packets data.
+> When the 6K buffer is full, in the workqueue handler I will call
+> vfs_write() function to write these 6K bytes data to the sound card.
+> This time, sound played and it works although it is not very smooth.
+> 
+> So I guess the audio buffer I great is very important to playback audio.
+> How to choose the buffer size? If the size < 6K, there is no sound.
+> I guess it depends on the sound card hardware, but I failed to find
+> any info from hw_params and sw_params.
 
-Ping.
+Well, this pretty much depends on the "sound card" you are accessing.
+You mentioned about AD1980 but the question is rather what
+controller is used.  The codec chip is basically independent from the
+DMA transfer parameter.
+
+> Actually, I want to remove the audio buffer here, just write the 192
+> audio data to sound card directly. Is that possible?
+
+Also depends on the hardware.  If the audio chip requires the DMA
+transfer, you'd need anyway a buffer.
 
 
 Takashi
 
-> > 
-> > 
-> > thanks,
-> > 
+> 
+> Thanks a lot.
+> -Bryan
+> 
+> 
+> On Thu, Nov 20, 2008 at 12:01 AM, Takashi Iwai <tiwai@suse.de> wrote:
+> > At Wed, 19 Nov 2008 23:42:48 +0800,
+> > Bryan Wu wrote:
+> >>
+> >> On Wed, Nov 19, 2008 at 9:49 PM, Takashi Iwai <tiwai@suse.de> wrote:
+> >> > At Wed, 19 Nov 2008 18:00:36 +0800,
+> >> > Bryan Wu wrote:
+> >> >>
+> >> >> Hi Takashi,
+> >> >>
+> >> >> I am developing a USB gadget driver compliant to USB Audio Class Spec 2.0.
+> >> >> So I want to open a PCM substream and do some playback of capture,
+> >> >> then close them?
+> >> >>
+> >> >> I found snd_pcm_open_substream() is for opening a substream and attach
+> >> >> it to a file.
+> >> >> But in my application, there is no need to open a file before opening
+> >> >> a substream.
+> >> >>
+> >> >> - Is there any interface for me to open a substream in kernel space
+> >> >> without attach to a file?
+> >> >> - How to playback and capture in kernel space, use snd_pcm_lib_write
+> >> >> and snd_pcm_lib_read?
+> >> >> - How to get the snd_pcm_hardware struct from low level driver,
+> >> >> because I have to get the hardware configuration of the snd pcm
+> >> >> device?
+> >> >>
+> >> >> And I am reading the code of OSS emulator in ALSA. It provides some
+> >> >> info about the kernel space sound card programming.
+> >> >
+> >> > Yes, OSS emulation code handles the PCM in the kernel.
+> >> > But, basically I don't recommend you to do this -- it's not the job of
+> >> > the sound card driver.  The whole PCM stuff is handled by the PCM
+> >> > middle layer, not the driver itself.
+> >>
+> >> No, my plan is not a sound card driver. It is an USB gadget audio driver.
+> >> When an embedded system for example Blackfin board connects to a USB host (PC),
+> >> PC will recognize this USB device as a USB Audio Class device.
+> >>
+> >> Generally, there should be a sound card on the embedded system. Our
+> >> Blackfin board
+> >> has an AD1980 ALSA sound card. The USB gadget audio driver will open this sound
+> >> card and export this device to USB host PC by some USB audio class specific
+> >> descriptors. Then the PC can playback some audio stream by USB cable, USB gadget
+> >> audio driver will receive this stream and playback the data by AD1980
+> >> ALSA playback
+> >> substream. Capture is the similar.
+> >>
+> >> > Any reason why you handle the PCM stuff completely in your driver
+> >> > code?
+> >> >
+> >>
+> >> There is USB gadget MIDI driver in kernel. But it asked the user to
+> >> use aconnect tool to
+> >> connect the virtual MIDI card to a real one. I don't want travel to
+> >> user space and it should
+> >> be more efficient in kernel space to handle all things including PCM
+> >> open/release/read/write
+> >> and Mixer control.
+> >>
+> >> Any hints about this? I really need some help from ALSA guru, cause
+> >> I'm not familiar the internal
+> >> things here.
+> >
+> > Well, the access in the kernel space is fairly similar as in the user
+> > space.  It opens, issues ioctls, reads and writes.  The difference is
+> > that you access via dedicated function calls instead of syscalls.
+> > There is no way to poke the driver internal from other drivers.
+> > To answer your questions...
+> >
+> >> >> - Is there any interface for me to open a substream in kernel space
+> >> >> without attach to a file?
+> >
+> > No.
+> >
+> >> >> - How to playback and capture in kernel space, use snd_pcm_lib_write
+> >> >> and snd_pcm_lib_read?
+> >
+> > Yes.  But for the kernel space buffer, you'd need to fake the
+> > user-space pointer by snd_enter_user() and snd_leave_user().  See
+> > snd_pcm_oss_write3().
+> >
+> >> >> - How to get the snd_pcm_hardware struct from low level driver,
+> >> >> because I have to get the hardware configuration of the snd pcm
+> >> >> device?
+> >
+> > Not way to peek/poke the driver internals from the outside.
+> > You'll need to negotiate via snd_pcm_kernel_ioctl() like user-space
+> > programs.
+> >
+> >
+> > HTH,
+> >
 > > Takashi
-> > 
-> > ---
-> > diff --git a/sound/core/rawmidi.c b/sound/core/rawmidi.c
-> > index 39672f6..002777b 100644
-> > --- a/sound/core/rawmidi.c
-> > +++ b/sound/core/rawmidi.c
-> > @@ -151,7 +151,7 @@ static inline void snd_rawmidi_output_trigger(struct snd_rawmidi_substream *subs
-> >  	if (!substream->opened)
-> >  		return;
-> >  	if (up) {
-> > -		tasklet_hi_schedule(&substream->runtime->tasklet);
-> > +		tasklet_schedule(&substream->runtime->tasklet);
-> >  	} else {
-> >  		tasklet_kill(&substream->runtime->tasklet);
-> >  		substream->ops->trigger(substream, 0);
-> > @@ -908,7 +908,7 @@ int snd_rawmidi_receive(struct snd_rawmidi_substream *substream,
-> >  	}
-> >  	if (result > 0) {
-> >  		if (runtime->event)
-> > -			tasklet_hi_schedule(&runtime->tasklet);
-> > +			tasklet_schedule(&runtime->tasklet);
-> >  		else if (snd_rawmidi_ready(substream))
-> >  			wake_up(&runtime->sleep);
-> >  	}
-> > diff --git a/sound/core/rtctimer.c b/sound/core/rtctimer.c
-> > index 51e64e3..0851cd1 100644
-> > --- a/sound/core/rtctimer.c
-> > +++ b/sound/core/rtctimer.c
-> > @@ -118,7 +118,7 @@ static void rtctimer_tasklet(unsigned long data)
-> >   */
-> >  static void rtctimer_interrupt(void *private_data)
-> >  {
-> > -	tasklet_hi_schedule(private_data);
-> > +	tasklet_schedule(private_data);
-> >  }
-> >  
-> >  
-> > diff --git a/sound/core/timer.c b/sound/core/timer.c
-> > index c584408..7965320 100644
-> > --- a/sound/core/timer.c
-> > +++ b/sound/core/timer.c
-> > @@ -743,7 +743,7 @@ void snd_timer_interrupt(struct snd_timer * timer, unsigned long ticks_left)
-> >  	spin_unlock_irqrestore(&timer->lock, flags);
-> >  
-> >  	if (use_tasklet)
-> > -		tasklet_hi_schedule(&timer->task_queue);
-> > +		tasklet_schedule(&timer->task_queue);
-> >  }
-> >  
-> >  /*
-> > diff --git a/sound/drivers/vx/vx_core.c b/sound/drivers/vx/vx_core.c
-> > index 473b07f..14e3354 100644
-> > --- a/sound/drivers/vx/vx_core.c
-> > +++ b/sound/drivers/vx/vx_core.c
-> > @@ -548,7 +548,7 @@ irqreturn_t snd_vx_irq_handler(int irq, void *dev)
-> >  	    (chip->chip_status & VX_STAT_IS_STALE))
-> >  		return IRQ_NONE;
-> >  	if (! vx_test_and_ack(chip))
-> > -		tasklet_hi_schedule(&chip->tq);
-> > +		tasklet_schedule(&chip->tq);
-> >  	return IRQ_HANDLED;
-> >  }
-> >  
-> > diff --git a/sound/drivers/vx/vx_pcm.c b/sound/drivers/vx/vx_pcm.c
-> > index 27de574..6644d00 100644
-> > --- a/sound/drivers/vx/vx_pcm.c
-> > +++ b/sound/drivers/vx/vx_pcm.c
-> > @@ -823,7 +823,7 @@ static int vx_pcm_trigger(struct snd_pcm_substream *subs, int cmd)
-> >  		 * we trigger the pipe using tasklet, so that the interrupts are
-> >  		 * issued surely after the trigger is completed.
-> >  		 */ 
-> > -		tasklet_hi_schedule(&pipe->start_tq);
-> > +		tasklet_schedule(&pipe->start_tq);
-> >  		chip->pcm_running++;
-> >  		pipe->running = 1;
-> >  		break;
-> > diff --git a/sound/pci/es1968.c b/sound/pci/es1968.c
-> > index 20ee759..e9c3794 100644
-> > --- a/sound/pci/es1968.c
-> > +++ b/sound/pci/es1968.c
-> > @@ -1953,7 +1953,7 @@ static irqreturn_t snd_es1968_interrupt(int irq, void *dev_id)
-> >  	outw(inw(chip->io_port + 4) & 1, chip->io_port + 4);
-> >  
-> >  	if (event & ESM_HWVOL_IRQ)
-> > -		tasklet_hi_schedule(&chip->hwvol_tq); /* we'll do this later */
-> > +		tasklet_schedule(&chip->hwvol_tq); /* we'll do this later */
-> >  
-> >  	/* else ack 'em all, i imagine */
-> >  	outb(0xFF, chip->io_port + 0x1A);
-> > diff --git a/sound/pci/maestro3.c b/sound/pci/maestro3.c
-> > index 9ff3f9e..59bbaf8 100644
-> > --- a/sound/pci/maestro3.c
-> > +++ b/sound/pci/maestro3.c
-> > @@ -1670,7 +1670,7 @@ static irqreturn_t snd_m3_interrupt(int irq, void *dev_id)
-> >  		return IRQ_NONE;
-> >  
-> >  	if (status & HV_INT_PENDING)
-> > -		tasklet_hi_schedule(&chip->hwvol_tq);
-> > +		tasklet_schedule(&chip->hwvol_tq);
-> >  
-> >  	/*
-> >  	 * ack an assp int if its running
-> > diff --git a/sound/pci/mixart/mixart_core.c b/sound/pci/mixart/mixart_core.c
-> > index b9a06c2..d3350f3 100644
-> > --- a/sound/pci/mixart/mixart_core.c
-> > +++ b/sound/pci/mixart/mixart_core.c
-> > @@ -550,7 +550,7 @@ irqreturn_t snd_mixart_interrupt(int irq, void *dev_id)
-> >  				mgr->msg_fifo[mgr->msg_fifo_writeptr] = msg;
-> >  				mgr->msg_fifo_writeptr++;
-> >  				mgr->msg_fifo_writeptr %= MSG_FIFO_SIZE;
-> > -				tasklet_hi_schedule(&mgr->msg_taskq);
-> > +				tasklet_schedule(&mgr->msg_taskq);
-> >  			}
-> >  			spin_unlock(&mgr->msg_lock);
-> >  			break;
-> > diff --git a/sound/pci/pcxhr/pcxhr.c b/sound/pci/pcxhr/pcxhr.c
-> > index 73de6e9..8309d44 100644
-> > --- a/sound/pci/pcxhr/pcxhr.c
-> > +++ b/sound/pci/pcxhr/pcxhr.c
-> > @@ -653,7 +653,7 @@ static int pcxhr_trigger(struct snd_pcm_substream *subs, int cmd)
-> >  					PCXHR_STREAM_STATUS_SCHEDULE_RUN;
-> >  				snd_pcm_trigger_done(s, subs);
-> >  			}
-> > -			tasklet_hi_schedule(&chip->mgr->trigger_taskq);
-> > +			tasklet_schedule(&chip->mgr->trigger_taskq);
-> >  		} else {
-> >  			stream = subs->runtime->private_data;
-> >  			snd_printdd("Only one Substream %c %d\n",
-> > diff --git a/sound/pci/pcxhr/pcxhr_core.c b/sound/pci/pcxhr/pcxhr_core.c
-> > index 7143259..4a5481f 100644
-> > --- a/sound/pci/pcxhr/pcxhr_core.c
-> > +++ b/sound/pci/pcxhr/pcxhr_core.c
-> > @@ -1213,7 +1213,7 @@ irqreturn_t pcxhr_interrupt(int irq, void *dev_id)
-> >  		mgr->dsp_time_last = PCXHR_DSP_TIME_INVALID;
-> >  		
-> >  		mgr->src_it_dsp = reg;
-> > -		tasklet_hi_schedule(&mgr->msg_taskq);
-> > +		tasklet_schedule(&mgr->msg_taskq);
-> >  	}
-> >  #ifdef CONFIG_SND_DEBUG_VERBOSE
-> >  	if (reg & PCXHR_FATAL_DSP_ERR)
-> > diff --git a/sound/pci/riptide/riptide.c b/sound/pci/riptide/riptide.c
-> > index e9f0706..1d0eeb1 100644
-> > --- a/sound/pci/riptide/riptide.c
-> > +++ b/sound/pci/riptide/riptide.c
-> > @@ -1754,7 +1754,7 @@ snd_riptide_interrupt(int irq, void *dev_id)
-> >  		if (IS_EOBIRQ(cif->hwport) || IS_EOSIRQ(cif->hwport) ||
-> >  		    IS_EOCIRQ(cif->hwport)) {
-> >  			chip->handled_irqs++;
-> > -			tasklet_hi_schedule(&chip->riptide_tq);
-> > +			tasklet_schedule(&chip->riptide_tq);
-> >  		}
-> >  		if (chip->rmidi && IS_MPUIRQ(cif->hwport)) {
-> >  			chip->handled_irqs++;
-> > diff --git a/sound/pci/rme9652/hdsp.c b/sound/pci/rme9652/hdsp.c
-> > index fdd3be5..44d0c15 100644
-> > --- a/sound/pci/rme9652/hdsp.c
-> > +++ b/sound/pci/rme9652/hdsp.c
-> > @@ -3750,7 +3750,7 @@ static irqreturn_t snd_hdsp_interrupt(int irq, void *dev_id)
-> >  		}
-> >  	}
-> >  	if (hdsp->use_midi_tasklet && schedule)
-> > -		tasklet_hi_schedule(&hdsp->midi_tasklet);
-> > +		tasklet_schedule(&hdsp->midi_tasklet);
-> >  	return IRQ_HANDLED;
-> >  }
-> >  
-> > diff --git a/sound/pci/rme9652/hdspm.c b/sound/pci/rme9652/hdspm.c
-> > index dc5c4ba..71231cf 100644
-> > --- a/sound/pci/rme9652/hdspm.c
-> > +++ b/sound/pci/rme9652/hdspm.c
-> > @@ -3476,7 +3476,7 @@ static irqreturn_t snd_hdspm_interrupt(int irq, void *dev_id)
-> >  		schedule = 1;
-> >  	}
-> >  	if (schedule)
-> > -		tasklet_hi_schedule(&hdspm->midi_tasklet);
-> > +		tasklet_schedule(&hdspm->midi_tasklet);
-> >  	return IRQ_HANDLED;
-> >  }
-> >  
-> > diff --git a/sound/pcmcia/pdaudiocf/pdaudiocf_irq.c b/sound/pcmcia/pdaudiocf/pdaudiocf_irq.c
-> > index fa4b113..ea903c8 100644
-> > --- a/sound/pcmcia/pdaudiocf/pdaudiocf_irq.c
-> > +++ b/sound/pcmcia/pdaudiocf/pdaudiocf_irq.c
-> > @@ -41,7 +41,7 @@ irqreturn_t pdacf_interrupt(int irq, void *dev)
-> >  		if (stat & PDAUDIOCF_IRQOVR)	/* should never happen */
-> >  			snd_printk(KERN_ERR "PDAUDIOCF SRAM buffer overrun detected!\n");
-> >  		if (chip->pcm_substream)
-> > -			tasklet_hi_schedule(&chip->tq);
-> > +			tasklet_schedule(&chip->tq);
-> >  		if (!(stat & PDAUDIOCF_IRQAKM))
-> >  			stat |= PDAUDIOCF_IRQAKM;	/* check rate */
-> >  	}
-> > diff --git a/sound/usb/usbmidi.c b/sound/usb/usbmidi.c
-> > index 5962e4b..6d9f9b1 100644
-> > --- a/sound/usb/usbmidi.c
-> > +++ b/sound/usb/usbmidi.c
-> > @@ -880,7 +880,7 @@ static void snd_usbmidi_output_trigger(struct snd_rawmidi_substream *substream,
-> >  				snd_rawmidi_transmit_ack(substream, 1);
-> >  			return;
-> >  		}
-> > -		tasklet_hi_schedule(&port->ep->tasklet);
-> > +		tasklet_schedule(&port->ep->tasklet);
-> >  	}
-> >  }
-> >  
+> >
+> 
