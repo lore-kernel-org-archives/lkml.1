@@ -1,235 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYLKAx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbYLKA6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754982AbYLKAx7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 19:53:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbYLKAxv
+	id S1755647AbYLKA6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 19:58:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbYLKA6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 19:53:51 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48605 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752223AbYLKAxu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 19:53:50 -0500
-Date: Thu, 11 Dec 2008 09:52:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: menage@google.com
-Cc: balbir@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [RFC][PATCH 3/3] CGroups: Add css_tryget()
-Message-Id: <20081211095255.8763905f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081210234432.407064000@menage.corp.google.com>
-References: <20081210233654.563182000@menage.corp.google.com>
-	<20081210234432.407064000@menage.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 10 Dec 2008 19:58:07 -0500
+Received: from main.gmane.org ([80.91.229.2]:45806 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753840AbYLKA6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 19:58:06 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] USB: use stack allocation for struct usb_ctrlrequest
+Date: Wed, 10 Dec 2008 18:57:47 -0600
+Message-ID: <4940658B.9020405@shaw.ca>
+References: <20081210073247.GA18630@localhost>	<200812101040.09886.laurent.pinchart@skynet.be>	<20081210124308.GB6772@localhost>	<493FCD12.30000@codefidence.com>	<20081210142301.GA11490@localhost> <20081210170106.d19e568d.zaitcev@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: linux-usb@vger.kernel.org
+X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+In-Reply-To: <20081210170106.d19e568d.zaitcev@redhat.com>
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Dec 2008 15:36:57 -0800
-menage@google.com wrote:
+Pete Zaitcev wrote:
+> On Wed, 10 Dec 2008 22:23:01 +0800, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+>> For 64bit systems, we can easily go beyond 4GB physical memory.
+>> So at least we should add GFP_DMA32 in addition to GFP_NOIO?
+> 
+> I am afraid the situation is that we really screwed the pooch while
+> creating the USB API. I may be wrong about this, but my understanding
+> is that if we get an address above 4GB from kmalloc and then send
+> it down to usb_submit_urb(), a random memory corruption is likely
+> (this is because we forget to check the result of dma_map_single()).
+> 
+> The code worked until now because most systems out in the field
+> either a) had IOMMU, or b) had 4GB or RAM or less, but not both.
+> The case (a) includes all AMD CPUs, all Itanium CPUs, and the
+> Intel-based enterprise systems from big vendors, e.g. IBM Calgary,
+> HP ZX-1, etc. Also, (a) covers Intel P4 class systems with swiotlb.
+> So, we only blow up if a kernel with swiotlb disabled boots on an
+> Intel box with more than 4GB of RAM. This is still far from ideal,
+> but we kinda pretend not to notice. I heard that Intel has seen
+> the error in their ways and is going to come out with IOMMU for
+> all their chipsets, so in a few years this is going to be moot.
 
-> This patch adds css_tryget(), that obtains a counted reference on a
-> CSS.  It is used in situations where the caller has a "weak" reference
-> to the CSS, i.e. one that does not protect the cgroup from removal via
-> a reference count, but would instead be cleaned up by a destroy()
-> callback.
-> 
-> css_tryget() will return true on success, or false if the cgroup is
-> being removed.
-> 
-> This is similar to Kamezawa Hiroyuki's patch from a week or two ago,
-> but with the difference that in the event of css_tryget() racing with
-> a cgroup_rmdir(), css_tryget() will only return false if the cgroup
-> really does get removed.
-> 
-> This implementation is done by biasing css->refcnt, so that a refcnt
-> of 1 means "releasable" and 0 means "released or releasing". In the
-> event of a race, css_tryget() distinguishes between "released" and
-> "releasing" by checking for the CSS_REMOVED flag in css->flags.
-> 
-> Signed-off-by: Paul Menage <menage@google.com>
-> 
-thx, I'll try this.
+If you have memory located above 4GB you essentially need either swiotlb 
+or one of the other IOMMUs enabled or the system won't work if any of 
+your devices have DMA limits. There is no other way that DMA could occur 
+to memory above 4GB for those devices.
 
--Kame
-
-
-
-> ---
->  include/linux/cgroup.h |   33 ++++++++++++++++++++++-----
->  kernel/cgroup.c        |   58 ++++++++++++++++++++++++++++++++++++++++++++-----
->  2 files changed, 80 insertions(+), 11 deletions(-)
-> 
-> Index: hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
-> ===================================================================
-> --- hierarchy_lock-mmotm-2008-12-09.orig/include/linux/cgroup.h
-> +++ hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
-> @@ -52,9 +52,9 @@ struct cgroup_subsys_state {
->  	 * hierarchy structure */
->  	struct cgroup *cgroup;
->  
-> -	/* State maintained by the cgroup system to allow
-> -	 * subsystems to be "busy". Should be accessed via css_get()
-> -	 * and css_put() */
-> +	/* State maintained by the cgroup system to allow subsystems
-> +	 * to be "busy". Should be accessed via css_get(),
-> +	 * css_tryget() and and css_put(). */
->  
->  	atomic_t refcnt;
->  
-> @@ -64,11 +64,14 @@ struct cgroup_subsys_state {
->  /* bits in struct cgroup_subsys_state flags field */
->  enum {
->  	CSS_ROOT, /* This CSS is the root of the subsystem */
-> +	CSS_REMOVED, /* This CSS is dead */
->  };
->  
->  /*
-> - * Call css_get() to hold a reference on the cgroup;
-> - *
-> + * Call css_get() to hold a reference on the css; it can be used
-> + * for a reference obtained via:
-> + * - an existing ref-counted reference to the css
-> + * - task->cgroups for a locked task
->   */
->  
->  static inline void css_get(struct cgroup_subsys_state *css)
-> @@ -77,9 +80,27 @@ static inline void css_get(struct cgroup
->  	if (!test_bit(CSS_ROOT, &css->flags))
->  		atomic_inc(&css->refcnt);
->  }
-> +
-> +/*
-> + * Call css_tryget() to take a reference on a css if your existing
-> + * (known-valid) reference isn't already ref-counted. Returns false if
-> + * the css has been destroyed.
-> + */
-> +
-> +static inline bool css_tryget(struct cgroup_subsys_state *css)
-> +{
-> +	if (test_bit(CSS_ROOT, &css->flags))
-> +		return true;
-> +	while (!atomic_inc_not_zero(&css->refcnt)) {
-> +		if (test_bit(CSS_REMOVED, &css->flags))
-> +			return false;
-> +	}
-> +	return true;
-> +}
-> +
->  /*
->   * css_put() should be called to release a reference taken by
-> - * css_get()
-> + * css_get() or css_tryget()
->   */
->  
->  extern void __css_put(struct cgroup_subsys_state *css);
-> Index: hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
-> ===================================================================
-> --- hierarchy_lock-mmotm-2008-12-09.orig/kernel/cgroup.c
-> +++ hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
-> @@ -2321,7 +2321,7 @@ static void init_cgroup_css(struct cgrou
->  			       struct cgroup *cgrp)
->  {
->  	css->cgroup = cgrp;
-> -	atomic_set(&css->refcnt, 0);
-> +	atomic_set(&css->refcnt, 1);
->  	css->flags = 0;
->  	if (cgrp == dummytop)
->  		set_bit(CSS_ROOT, &css->flags);
-> @@ -2453,7 +2453,7 @@ static int cgroup_has_css_refs(struct cg
->  {
->  	/* Check the reference count on each subsystem. Since we
->  	 * already established that there are no tasks in the
-> -	 * cgroup, if the css refcount is also 0, then there should
-> +	 * cgroup, if the css refcount is also 1, then there should
->  	 * be no outstanding references, so the subsystem is safe to
->  	 * destroy. We scan across all subsystems rather than using
->  	 * the per-hierarchy linked list of mounted subsystems since
-> @@ -2474,12 +2474,59 @@ static int cgroup_has_css_refs(struct cg
->  		 * matter, since it can only happen if the cgroup
->  		 * has been deleted and hence no longer needs the
->  		 * release agent to be called anyway. */
-> -		if (css && atomic_read(&css->refcnt))
-> +		if (css && (atomic_read(&css->refcnt) > 1))
->  			return 1;
->  	}
->  	return 0;
->  }
->  
-> +/*
-> + * Atomically mark all of the cgroup's CSS objects as
-> + * CSS_REMOVED. Return true on success, or false if the cgroup has
-> + * busy subsystems. Call with cgroup_mutex held
-> + */
-> +
-> +static int cgroup_clear_css_refs(struct cgroup *cgrp)
-> +{
-> +	struct cgroup_subsys *ss;
-> +	unsigned long flags;
-> +	bool failed = false;
-> +	local_irq_save(flags);
-> +	for_each_subsys(cgrp->root, ss) {
-> +		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
-> +		int refcnt;
-> +		do {
-> +			/* We can only remove a CSS with a refcnt==1 */
-> +			refcnt = atomic_read(&css->refcnt);
-> +			if (refcnt > 1) {
-> +				failed = true;
-> +				goto done;
-> +			}
-> +			BUG_ON(!refcnt);
-> +			/*
-> +			 * Drop the refcnt to 0 while we check other
-> +			 * subsystems. This will cause any racing
-> +			 * css_tryget() to spin until we set the
-> +			 * CSS_REMOVED bits or abort
-> +			 */
-> +		} while (atomic_cmpxchg(&css->refcnt, refcnt, 0) != refcnt);
-> +	}
-> + done:
-> +	for_each_subsys(cgrp->root, ss) {
-> +		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
-> +		if (failed) {
-> +			/* Restore old refcnt if necessary */
-> +			if (!atomic_read(&css->refcnt))
-> +				atomic_set(&css->refcnt, 1);
-> +		} else {
-> +			/* Commit the fact that the CSS is removed */
-> +			set_bit(CSS_REMOVED, &css->flags);
-> +		}
-> +	}
-> +	local_irq_restore(flags);
-> +	return !failed;
-> +}
-> +
->  static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
->  {
->  	struct cgroup *cgrp = dentry->d_fsdata;
-> @@ -2510,7 +2557,7 @@ static int cgroup_rmdir(struct inode *un
->  
->  	if (atomic_read(&cgrp->count)
->  	    || !list_empty(&cgrp->children)
-> -	    || cgroup_has_css_refs(cgrp)) {
-> +	    || !cgroup_clear_css_refs(cgrp)) {
->  		mutex_unlock(&cgroup_mutex);
->  		return -EBUSY;
->  	}
-> @@ -3065,7 +3112,8 @@ void __css_put(struct cgroup_subsys_stat
->  {
->  	struct cgroup *cgrp = css->cgroup;
->  	rcu_read_lock();
-> -	if (atomic_dec_and_test(&css->refcnt) && notify_on_release(cgrp)) {
-> +	if ((atomic_dec_return(&css->refcnt) == 1) &&
-> +	    notify_on_release(cgrp)) {
->  		set_bit(CGRP_RELEASABLE, &cgrp->flags);
->  		check_for_release(cgrp);
->  	}
-> 
-> --
-> 
+DMA mapping could still fail if the IOMMU space overflowed, though.
 
