@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932385AbYLKTkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932423AbYLKTk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932385AbYLKTkj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:40:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756395AbYLKTTM
+	id S932423AbYLKTk6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:40:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757886AbYLKTTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:19:12 -0500
-Received: from kroah.org ([198.145.64.141]:56584 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:19:13 -0500
+Received: from kroah.org ([198.145.64.141]:56591 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756767AbYLKTTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:19:10 -0500
-Date: Thu, 11 Dec 2008 11:16:06 -0800
+	id S1757398AbYLKTTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:19:12 -0500
+Date: Thu, 11 Dec 2008 11:16:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 62/83] ALSA: hda - No Headphone as Line-out swich without
-	line-outs
-Message-ID: <20081211191606.GJ5894@kroah.com>
+Subject: [patch 63/83] ALSA: hda - mark Dell studio 1535 quirk
+Message-ID: <20081211191608.GK5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-no-headphone-as-line-out-swich-without-line-outs.patch"
+Content-Disposition: inline; filename="alsa-hda-mark-dell-studio-1535-quirk.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,11 +41,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Takashi Iwai <tiwai@suse.de>
 
-commit 95026623da32848bc93fbfb472dc8737487df450 upstream
+commit c65574abad288d7123bd49e7906fa53b7e420239 upstream
 
-STAC/IDT driver creates "Headphone as Line-Out" switch even if there
-is no line-out pins on the machine.  For devices only with headpohnes
-and speaker-outs, this switch shouldn't be created.
+Fixed the quirk string for Dell studio 1535 (the product name wasn't
+published at the time the patch was made).
 
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
@@ -56,13 +54,13 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 --- a/sound/pci/hda/patch_sigmatel.c
 +++ b/sound/pci/hda/patch_sigmatel.c
-@@ -2505,7 +2505,7 @@ static int stac92xx_auto_create_multi_ou
- 		}
- 	}
- 
--	if (cfg->hp_outs > 1) {
-+	if (cfg->hp_outs > 1 && cfg->line_out_type == AUTO_PIN_LINE_OUT) {
- 		err = stac92xx_add_control(spec,
- 			STAC_CTL_WIDGET_HP_SWITCH,
- 			"Headphone as Line Out Switch", 0);
+@@ -1311,7 +1311,7 @@ static struct snd_pci_quirk stac92hd73xx
+ 	SND_PCI_QUIRK(PCI_VENDOR_ID_INTEL, 0x2668,
+ 				"DFI LanParty", STAC_92HD73XX_REF),
+ 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x0254,
+-				"unknown Dell", STAC_DELL_M6),
++				"Dell Studio 1535", STAC_DELL_M6),
+ 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x0255,
+ 				"unknown Dell", STAC_DELL_M6),
+ 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x0256,
 
