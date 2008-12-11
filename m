@@ -1,46 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbYLKUlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbYLKUoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757980AbYLKUlY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 15:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbYLKUlK
+	id S1758107AbYLKUoZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 15:44:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbYLKUoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 15:41:10 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:30430 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757231AbYLKUlJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 15:41:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=XV5WR5a5rEHQbomCnsFeuKJAC6UA4Hr37N7kvsuAT6fMO8SGC9ccSpC6F3qGAbp3v3
-         lQtrzyIr5GoXbxX7pryrrfUyWVSgRyu2U2qug3YDPfnJpM+6hykdBhsWx/dw0/MUJmWQ
-         xaQVcrTEh3t+KllCQ22mKQgw1VDQ35dpOSMJQ=
-Message-ID: <88e91b480812111241s14332db2vbba68b0aeb73bb65@mail.gmail.com>
-Date: Thu, 11 Dec 2008 15:41:08 -0500
-From: "Jonathan Barkelew" <debtech@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] x86: make 64bit efi to use ioremap_cache for efi_ioremap
+	Thu, 11 Dec 2008 15:44:15 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:38198 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756840AbYLKUoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 15:44:14 -0500
+Message-ID: <49417B99.7090004@sgi.com>
+Date: Thu, 11 Dec 2008 12:44:09 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@googlemail.com>,
+       Ralf Baechle <ralf@linux-mips.org>, Tony Luck <tony.luck@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+Subject: [PATCH 1/1] cpumask: force nr_cpumask_bit to NR_CPUS for CPUMASK_OFFSTACK=n
+References: <200812082136.33212.rusty@rustcorp.com.au> <493E4EE4.6010609@sgi.com> <200812101019.42908.rusty@rustcorp.com.au>
+In-Reply-To: <200812101019.42908.rusty@rustcorp.com.au>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> then how about use ioremap directly to replace fixed mapping in 64bit
->> with efi_ioremap?
->
-> Because for kexec to work, EFI runtime memory area should be mapped to
-> same virtual address across reboot.
+Re: cpumask conversions, or not?
 
-Why would this require a separate function for 64-bit systems?
-Wouldn't the 32-bit function have to take this into consideration as well?
+Rusty Russell wrote:
+> On Tuesday 09 December 2008 21:26:36 Mike Travis wrote:
+>> Rusty Russell wrote:
+>>> Hi all,
+>>>
+>>>    The new cpumask conversions are going well, but unfortunately Stephen
+>>> uncovered a nasty bug via linux-next: the new cpumask operators only go to
+>>> nr_cpumask_bits which can be less than NR_CPUS if NR_CPUS > BITS_PER_LONG.
+>>> The undefined bits confuse the old cpumask operators.  We fixed one case,
+>>> but I am concerned that we will break archs as we convert more core code.
+>> Hi Rusty,
+>>
+>> I think we can avoid this problem if we make cpumask_bits == NR_CPUS iff
+>> CONFIG_CPUMASK_OFFSTACK=n.  This complies with the current cpumask_t
+>> approach and should cause all cpumask operators to always operate on
+>> all cpumask bits.
+> 
+> A very good point.  And it's no worse than the old method.
+> 
+> OK, forget about this for now, no urgent conversions needed :)
+> Rusty.
 
-Also, why is the fixed address space so limited? What about EFI runtime services
-that are larger than 1MB?
+This probably should be submitted through linux-next for wider test coverage?
 
 Thanks,
-Jonathan Barkelew
+Mike
+---
+cpumask: force nr_cpumask_bits to be NR_CPUS when CPUMASK_OFFSTACK is false
+
+This maintains compatibility with the current cpumask_t.  Once an architecture
+is "cpumask clean" [IOW, all references span 0..(nr_cpus_ids-1) only, ignoring
+any bits >= nr_cpu_ids], then it can set CPUMASK_OFFSTACK=y.
+
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ include/linux/cpumask.h |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+--- linux-2.6-for-ingo.orig/include/linux/cpumask.h
++++ linux-2.6-for-ingo/include/linux/cpumask.h
+@@ -510,9 +510,6 @@ extern cpumask_t cpu_active_map;
+ 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD	\
+ }
+ 
+-/* This produces more efficient code. */
+-#define nr_cpumask_bits	NR_CPUS
+-
+ #else /* NR_CPUS > BITS_PER_LONG */
+ 
+ #define CPU_BITS_ALL						\
+@@ -521,9 +518,20 @@ extern cpumask_t cpu_active_map;
+ 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD		\
+ }
+ 
+-#define nr_cpumask_bits	nr_cpu_ids
+ #endif /* NR_CPUS > BITS_PER_LONG */
+ 
++#ifndef CONFIG_CPUMASK_OFFSTACK
++
++/* This produces more efficient code. */
++#define nr_cpumask_bits	NR_CPUS
++
++#else
++
++/* This allows for variabled-sized cpumask's */
++#define nr_cpumask_bits	nr_cpu_ids
++
++#endif
++
+ /* verify cpu argument to cpumask_* operators */
+ static inline unsigned int cpumask_check(unsigned int cpu)
+ {
