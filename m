@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbYLKTWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbYLKTUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154AbYLKTWX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:22:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbYLKTSR
+	id S1757755AbYLKTUT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756916AbYLKTSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:18:17 -0500
-Received: from kroah.org ([198.145.64.141]:55869 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:18:09 -0500
+Received: from kroah.org ([198.145.64.141]:55856 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756645AbYLKTSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756525AbYLKTSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Dec 2008 14:18:04 -0500
-Date: Thu, 11 Dec 2008 11:13:50 -0800
+Date: Thu, 11 Dec 2008 11:13:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,12 +23,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 10/83] sparc64: Fix bug in PTRACE_SETFPREGS64 handling.
-Message-ID: <20081211191350.GJ5894@kroah.com>
+Subject: [patch 07/83] sparc64: Fix offset calculation in compute_size()
+Message-ID: <20081211191344.GG5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0004-sparc64-Fix-bug-in-PTRACE_SETFPREGS64-handling.patch"
+Content-Disposition: inline; filename="0001-sparc64-Fix-offset-calculation-in-compute_size.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,34 +39,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Chris Torek <chris.torek@windriver.com>
+From: David S. Miller <davem@davemloft.net>
 
-[ Upstream commit 5769907ade8dda7002b304c03ef9e4ee5c1e0821 ]
+[ Upstream commit b270ee8a9fc9547eb781ce9ccd379450bcf9a204 ]
 
-From: Chris Torek <chris.torek@windriver.com>
-
->The SPARC64 kernel code for PTRACE_SETFPREGS64 appears to be an exact copy
->of that for PTRACE_GETFPREGS64.  This means that gdbserver and native
->64-bit GDB cannot set floating-point registers.
-
-It looks like a simple typo.
+The fault address is somewhere inside of the buffer, not
+before it.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc64/kernel/ptrace.c |    2 +-
+ arch/sparc64/lib/user_fixup.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/sparc64/kernel/ptrace.c
-+++ b/arch/sparc64/kernel/ptrace.c
-@@ -1014,7 +1014,7 @@ long arch_ptrace(struct task_struct *chi
- 		break;
- 
- 	case PTRACE_SETFPREGS64:
--		ret = copy_regset_to_user(child, view, REGSET_FP,
-+		ret = copy_regset_from_user(child, view, REGSET_FP,
- 					  0 * sizeof(u64),
- 					  33 * sizeof(u64),
- 					  fps);
+--- a/arch/sparc64/lib/user_fixup.c
++++ b/arch/sparc64/lib/user_fixup.c
+@@ -24,7 +24,7 @@ static unsigned long compute_size(unsign
+ 	if (fault_addr < start || fault_addr >= end) {
+ 		*offset = 0;
+ 	} else {
+-		*offset = start - fault_addr;
++		*offset = fault_addr - start;
+ 		size = end - fault_addr;
+ 	}
+ 	return size;
 
