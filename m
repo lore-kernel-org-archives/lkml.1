@@ -1,40 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757030AbYLKQHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYLKQOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757030AbYLKQHd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 11:07:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbYLKQHY
+	id S1756812AbYLKQOS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 11:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756384AbYLKQOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 11:07:24 -0500
-Received: from hpsmtp-eml16.KPNXCHANGE.COM ([213.75.38.116]:47291 "EHLO
-	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756248AbYLKQHY (ORCPT
+	Thu, 11 Dec 2008 11:14:05 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:33764 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755424AbYLKQOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 11:07:24 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Eric Anholt <eric@anholt.net>
-Subject: Re: Linux 2.6.28-rc8
-Date: Thu, 11 Dec 2008 17:07:19 +0100
-User-Agent: KMail/1.9.9
-Cc: nix.or.die@googlemail.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl
-References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain> <49407CE1.9090600@googlemail.com> <49407CE1.9090600@googlemail.com> <1228979963.3254.8.camel@gaiman.anholt.net>
-In-reply-To: <1228979963.3254.8.camel@gaiman.anholt.net>
+	Thu, 11 Dec 2008 11:14:04 -0500
+Date: Thu, 11 Dec 2008 16:14:02 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: breakage in linux-next sound/soc/blackfin/bf5xx-i2s.c
+Message-ID: <20081211161402.GA24645@rakim.wolfsonmicro.main>
+References: <8bd0f97a0812110802k1faa1c67tc81b4bb5282a3d17@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812111707.20857.elendil@planet.nl>
-X-OriginalArrivalTime: 11 Dec 2008 16:07:21.0111 (UTC) FILETIME=[8C2D3270:01C95BAA]
+In-Reply-To: <8bd0f97a0812110802k1faa1c67tc81b4bb5282a3d17@mail.gmail.com>
+X-Cookie: Printed on recycled paper.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Anholt wrote:
-> My recommended solution, of course, is to remove vesafb.
+On Thu, Dec 11, 2008 at 11:02:24AM -0500, Mike Frysinger wrote:
+> your recent change 3f4b783cfd (ASoC: Register platform DAIs) is
+> incorrect for sound/soc/blackfin/bf5xx-i2s.c.
 
-How is taking away useful functionality from users a better option than 
-just fixing the bug?
-
-Cheers,
-FJP
+Fixed, thanks.
