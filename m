@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbYLKTaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbYLKTh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760089AbYLKTaj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757667AbYLKTSk
+	id S1760254AbYLKTh4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:37:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757736AbYLKTTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:18:40 -0500
-Received: from kroah.org ([198.145.64.141]:56172 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:19:04 -0500
+Received: from kroah.org ([198.145.64.141]:56496 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757604AbYLKTSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:18:36 -0500
-Date: Thu, 11 Dec 2008 11:14:50 -0800
+	id S1757386AbYLKTTB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:19:01 -0500
+Date: Thu, 11 Dec 2008 11:15:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       =?iso-8859-1?B?RnLDqWTDqXJpYw==?= Marchal 
-	<frederic.marchal@wowcompany.com>,
-       Phil Dibowitz <phil@ipom.com>
-Subject: [patch 35/83] USB: Unusual dev for Mio moov 330 gps
-Message-ID: <20081211191450.GI5894@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 55/83] ALSA: hda - Restore default pin configs for realtek
+	codecs
+Message-ID: <20081211191549.GC5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline; filename="usb-unusual-dev-for-mio-moov-330-gps.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="alsa-hda-restore-default-pin-configs-for-realtek-codecs.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,37 +40,179 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Frédéric Marchal <frederic.marchal@wowcompany.com>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit e8fab4ce763c36869624c5388714ff19c30a91a7 upstream
+commit e044c39ae258678d6ebb09fccb2a0fdf7ec51847 upstream
 
-Here is an entry for the unusual_devs.h file to handle a Mio Moov 330 GPS that
-stops responding when it is requested to transfer more than 64KB. The patch is
-taken against kernel-2.6.27-git3.
+Some machines have broken BIOS resume that doesn't restore the default
+pin configuration properly, which results in a wrong detection of HP
+pin.  This causes a silent speaker output due to missing HP detection.
+Related bug: Novell bug#406101
+	https://bugzilla.novell.com/show_bug.cgi?id=406101
 
-Signed-off-by: Frédéric Marchal <frederic.marchal@wowcompany.com>
-Signed-off-by: Phil Dibowitz <phil@ipom.com>
+This patch fixes the issue by saving/restoring the default pin configs
+by the driver itself.
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/storage/unusual_devs.h |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ sound/pci/hda/patch_realtek.c |   77 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 77 insertions(+)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -2069,6 +2069,15 @@ UNUSUAL_DEV(  0x2770, 0x915d, 0x0010, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY ),
- 
-+/* Reported by Frederic Marchal <frederic.marchal@wowcompany.com>
-+ * Mio Moov 330
-+ */
-+UNUSUAL_DEV(  0x3340, 0xffff, 0x0000, 0x0000,
-+		"Mitac",
-+		"Mio DigiWalker USB Sync",
-+		US_SC_DEVICE,US_PR_DEVICE,NULL,
-+		US_FL_MAX_SECTORS_64 ),
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -292,6 +292,13 @@ struct alc_spec {
+ 	/* for PLL fix */
+ 	hda_nid_t pll_nid;
+ 	unsigned int pll_coef_idx, pll_coef_bit;
 +
- /* Reported by Andrey Rahmatullin <wrar@altlinux.org> */
- UNUSUAL_DEV(  0x4102, 0x1020, 0x0100,  0x0100,
- 		"iRiver",
++#ifdef SND_HDA_NEEDS_RESUME
++#define ALC_MAX_PINS	16
++	unsigned int num_pins;
++	hda_nid_t pin_nids[ALC_MAX_PINS];
++	unsigned int pin_cfgs[ALC_MAX_PINS];
++#endif
+ };
+ 
+ /*
+@@ -2723,6 +2730,64 @@ static void alc_free(struct hda_codec *c
+ 	codec->spec = NULL; /* to be sure */
+ }
+ 
++#ifdef SND_HDA_NEEDS_RESUME
++static void store_pin_configs(struct hda_codec *codec)
++{
++	struct alc_spec *spec = codec->spec;
++	hda_nid_t nid, end_nid;
++
++	end_nid = codec->start_nid + codec->num_nodes;
++	for (nid = codec->start_nid; nid < end_nid; nid++) {
++		unsigned int wid_caps = get_wcaps(codec, nid);
++		unsigned int wid_type =
++			(wid_caps & AC_WCAP_TYPE) >> AC_WCAP_TYPE_SHIFT;
++		if (wid_type != AC_WID_PIN)
++			continue;
++		if (spec->num_pins >= ARRAY_SIZE(spec->pin_nids))
++			break;
++		spec->pin_nids[spec->num_pins] = nid;
++		spec->pin_cfgs[spec->num_pins] =
++			snd_hda_codec_read(codec, nid, 0,
++					   AC_VERB_GET_CONFIG_DEFAULT, 0);
++		spec->num_pins++;
++	}
++}
++
++static void resume_pin_configs(struct hda_codec *codec)
++{
++	struct alc_spec *spec = codec->spec;
++	int i;
++
++	for (i = 0; i < spec->num_pins; i++) {
++		hda_nid_t pin_nid = spec->pin_nids[i];
++		unsigned int pin_config = spec->pin_cfgs[i];
++		snd_hda_codec_write(codec, pin_nid, 0,
++				    AC_VERB_SET_CONFIG_DEFAULT_BYTES_0,
++				    pin_config & 0x000000ff);
++		snd_hda_codec_write(codec, pin_nid, 0,
++				    AC_VERB_SET_CONFIG_DEFAULT_BYTES_1,
++				    (pin_config & 0x0000ff00) >> 8);
++		snd_hda_codec_write(codec, pin_nid, 0,
++				    AC_VERB_SET_CONFIG_DEFAULT_BYTES_2,
++				    (pin_config & 0x00ff0000) >> 16);
++		snd_hda_codec_write(codec, pin_nid, 0,
++				    AC_VERB_SET_CONFIG_DEFAULT_BYTES_3,
++				    pin_config >> 24);
++	}
++}
++
++static int alc_resume(struct hda_codec *codec)
++{
++	resume_pin_configs(codec);
++	codec->patch_ops.init(codec);
++	snd_hda_codec_resume_amp(codec);
++	snd_hda_codec_resume_cache(codec);
++	return 0;
++}
++#else
++#define store_pin_configs(codec)
++#endif
++
+ /*
+  */
+ static struct hda_codec_ops alc_patch_ops = {
+@@ -2731,6 +2796,9 @@ static struct hda_codec_ops alc_patch_op
+ 	.init = alc_init,
+ 	.free = alc_free,
+ 	.unsol_event = alc_unsol_event,
++#ifdef SND_HDA_NEEDS_RESUME
++	.resume = alc_resume,
++#endif
+ #ifdef CONFIG_SND_HDA_POWER_SAVE
+ 	.check_power_status = alc_check_power_status,
+ #endif
+@@ -3777,6 +3845,7 @@ static int alc880_parse_auto_config(stru
+ 	spec->num_mux_defs = 1;
+ 	spec->input_mux = &spec->private_imux;
+ 
++	store_pin_configs(codec);
+ 	return 1;
+ }
+ 
+@@ -5125,6 +5194,7 @@ static int alc260_parse_auto_config(stru
+ 	}
+ 	spec->num_mixers++;
+ 
++	store_pin_configs(codec);
+ 	return 1;
+ }
+ 
+@@ -9731,6 +9801,7 @@ static int alc262_parse_auto_config(stru
+ 	if (err < 0)
+ 		return err;
+ 
++	store_pin_configs(codec);
+ 	return 1;
+ }
+ 
+@@ -10762,6 +10833,7 @@ static int alc268_parse_auto_config(stru
+ 	if (err < 0)
+ 		return err;
+ 
++	store_pin_configs(codec);
+ 	return 1;
+ }
+ 
+@@ -11427,6 +11499,7 @@ static int alc269_parse_auto_config(stru
+ 	spec->mixers[spec->num_mixers] = alc269_capture_mixer;
+ 	spec->num_mixers++;
+ 
++	store_pin_configs(codec);
+ 	return 1;
+ }
+ 
+@@ -12495,6 +12568,7 @@ static int alc861_parse_auto_config(stru
+ 	spec->mixers[spec->num_mixers] = alc861_capture_mixer;
+ 	spec->num_mixers++;
+ 
++	store_pin_configs(codec);
+ 	return 1;
+ }
+ 
+@@ -13606,6 +13680,7 @@ static int alc861vd_parse_auto_config(st
+ 	if (err < 0)
+ 		return err;
+ 
++	store_pin_configs(codec);
+ 	return 1;
+ }
+ 
+@@ -14853,6 +14928,8 @@ static int alc662_parse_auto_config(stru
+ 
+ 	spec->mixers[spec->num_mixers] = alc662_capture_mixer;
+ 	spec->num_mixers++;
++
++	store_pin_configs(codec);
+ 	return 1;
+ }
+ 
 
