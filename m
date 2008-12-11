@@ -1,110 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYLKEJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbYLKEOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755925AbYLKEJc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 23:09:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbYLKEJW
+	id S1755479AbYLKEOS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 23:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbYLKEOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 23:09:22 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45559 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753232AbYLKEJV (ORCPT
+	Wed, 10 Dec 2008 23:14:09 -0500
+Received: from rv-out-0506.google.com ([209.85.198.236]:28477 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752814AbYLKEOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 23:09:21 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [linux-next][PATCH] cpumask:cpumask_of_node-ia64 fix
-Cc: kosaki.motohiro@jp.fujitsu.com, "Luck, Tony" <tony.luck@intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20081211105721.4FEE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081210164659.9ebb8158.sfr@canb.auug.org.au> <20081211105721.4FEE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20081211130833.4FFA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 10 Dec 2008 23:14:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nFtiYLH/WsTUmSsFHPJjvUHZO4UskkJLMVsD0vWyXwm08HvqhbopZTUpPhJH/NOYlV
+         Gmt7VHCud3gp7Lam3p+BVJjfsbEQp/wMqrGeWAZHCSjbdc0G6ILn1+8SPWjBTtpKCbRC
+         Zp3s5ulZFEjjCI93b6wpHk5P+UJBmh0NTjw0s=
+Message-ID: <9cde8bff0812102014q1ad8f16arf5f4cda96fdf89db@mail.gmail.com>
+Date: Thu, 11 Dec 2008 13:14:06 +0900
+From: "Nguyen Anh Quynh" <aquynh@gmail.com>
+To: "Al Viro" <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] fix calls to request_module()
+Cc: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Kuniyasu Suzaki" <k.suzaki@aist.go.jp>
+In-Reply-To: <20081211040118.GK28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu, 11 Dec 2008 13:09:17 +0900 (JST)
+Content-Disposition: inline
+References: <9cde8bff0812101935j5ef56140k67035d892a868738@mail.gmail.com>
+	 <20081211040118.GK28946@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops, sorry.
+On Thu, Dec 11, 2008 at 1:01 PM, Al Viro <viro@zeniv.linux.org.uk> wrote:
+> On Thu, Dec 11, 2008 at 12:35:21PM +0900, Nguyen Anh Quynh wrote:
+>> Hi,
+>>
+>> The request_module() function should always have the 1st param as a
+>> format argument. So for example, request_module("i2c-powermac") should
+>> be called as request_module("%s", "i2c-powermac"). Otherwise, new gcc
+>> like gcc 4.3.2 on Ubuntu 8.10 would spit out a lot of warnings. This
+>> patch fixes them all in linus-git tree.
+>
+> ... and it doesn't address the underlying problems at all.  A string literal
+> without a single % in it is a perfectly sane and valid format.  _Why_ are
+> we getting these warning?
 
-I forgot cc to linux-ia64.
+Hmm, I checked again, and the warnings actually lie elsewhere. I got
+mistake while work with several versions at the same time. So please
+ignore this patch.
 
-
-> ===
-> Subject: [PATCH] cpumask:cpumask_of_node-ia64 fix
-> Impact: bug fix
-> 
-> commit 07c636deede53ff3e96d54df0ece2c838e61951f introduce new CPU mask API and change cpu_mask variable type.
-> 
-> -----------------------------------------------
-> -               cpumask_t cpu_mask;
-> +               const struct cpumask *cpu_mask;
-> --------------------------------------------------
-> 
-> 
-> However, its change is incomplete. in build time, compiler output following type mismatch warnings.
-> 
->   arch/ia64/kernel/iosapic.c:708: warning: passing argument 2 of '__cpu_clear' from incompatible pointer type
->   arch/ia64/kernel/iosapic.c:711: warning: passing argument 1 of '__cpus_weight' from incompatible pointer type
->   arch/ia64/kernel/iosapic.c:719: warning: passing argument 1 of '__first_cpu' from incompatible pointer type
->   arch/ia64/kernel/iosapic.c:720: warning: passing argument 2 of '__next_cpu' from incompatible pointer type
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: "Luck, Tony" <tony.luck@intel.com>
-> CC: Rusty Russell <rusty@rustcorp.com.au>
-> ---
->  arch/ia64/kernel/iosapic.c |   10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
-> 
-> Index: b/arch/ia64/kernel/iosapic.c
-> ===================================================================
-> --- a/arch/ia64/kernel/iosapic.c
-> +++ b/arch/ia64/kernel/iosapic.c
-> @@ -695,7 +695,7 @@ get_target_cpu (unsigned int gsi, int ir
->  #ifdef CONFIG_NUMA
->  	{
->  		int num_cpus, cpu_index, iosapic_index, numa_cpu, i = 0;
-> -		const struct cpumask *cpu_mask;
-> +		struct cpumask *cpu_mask;
->  
->  		iosapic_index = find_iosapic(gsi);
->  		if (iosapic_index < 0 ||
-> @@ -705,10 +705,10 @@ get_target_cpu (unsigned int gsi, int ir
->  		cpu_mask = cpumask_of_node(iosapic_lists[iosapic_index].node);
->  		for_each_cpu_and(numa_cpu, cpu_mask, &domain) {
->  			if (!cpu_online(numa_cpu))
-> -				cpu_clear(numa_cpu, cpu_mask);
-> +				cpu_clear(numa_cpu, *cpu_mask);
->  		}
->  
-> -		num_cpus = cpus_weight(cpu_mask);
-> +		num_cpus = cpus_weight(*cpu_mask);
->  
->  		if (!num_cpus)
->  			goto skip_numa_setup;
-> @@ -716,8 +716,8 @@ get_target_cpu (unsigned int gsi, int ir
->  		/* Use irq assignment to distribute across cpus in node */
->  		cpu_index = irq % num_cpus;
->  
-> -		for (numa_cpu = first_cpu(cpu_mask) ; i < cpu_index ; i++)
-> -			numa_cpu = next_cpu(numa_cpu, cpu_mask);
-> +		for (numa_cpu = first_cpu(*cpu_mask) ; i < cpu_index ; i++)
-> +			numa_cpu = next_cpu(numa_cpu, *cpu_mask);
->  
->  		if (numa_cpu != NR_CPUS)
->  			return cpu_physical_id(numa_cpu);
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
+Thanks,
+Quynh
