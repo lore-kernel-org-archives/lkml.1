@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932321AbYLKTjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbYLKTes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932321AbYLKTjn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:39:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbYLKTTK
+	id S1759945AbYLKTes (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:34:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757369AbYLKTSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:19:10 -0500
-Received: from kroah.org ([198.145.64.141]:56553 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:18:54 -0500
+Received: from kroah.org ([198.145.64.141]:56348 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757862AbYLKTTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:19:07 -0500
-Date: Thu, 11 Dec 2008 11:16:01 -0800
+	id S1757769AbYLKTSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:18:51 -0500
+Date: Thu, 11 Dec 2008 11:15:17 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,14 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Travis Place <wishie@wishie.net>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 60/83] ALSA: hda - Make the HP EliteBook 8530p use AD1884A
-	model laptop
-Message-ID: <20081211191601.GH5894@kroah.com>
+       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>
+Subject: [patch 47/83] ALSA: hda - Add model for Toshiba L305 laptop
+Message-ID: <20081211191517.GU5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-make-the-hp-elitebook-8530p-use-ad1884a-model-laptop.patch"
+Content-Disposition: inline; filename="alsa-hda-add-model-for-toshiba-l305-laptop.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,27 +42,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Travis Place <wishie@wishie.net>
 
-commit 254248313aed7e6ff295ca21a82ca989b1f69c16 upstream
+commit 2346d0cde544179a8d235375f1bfbca5c141a31b upstream
 
-Added a QUIRK to patch_analog.c for the HP Elitebook 8530p
-(IDs 0x103c:0x30e7) to use AD1884A model 'laptop' by default.
-Playback and Capture confirmed working.
+Added Subsystem IDs (0x1179, 0xff64) for the Toshiba Satellite L305
+laptop, so it automatically uses the ALC268_TOSHIBA quirk.
 
 Signed-off-by: Travis Place <wishie@wishie.net>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Jaroslav Kysela <perex@perex.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- sound/pci/hda/patch_analog.c |    1 +
+ sound/pci/hda/patch_realtek.c |    1 +
  1 file changed, 1 insertion(+)
 
---- a/sound/pci/hda/patch_analog.c
-+++ b/sound/pci/hda/patch_analog.c
-@@ -3848,6 +3848,7 @@ static const char *ad1884a_models[AD1884
- static struct snd_pci_quirk ad1884a_cfg_tbl[] = {
- 	SND_PCI_QUIRK(0x103c, 0x3030, "HP", AD1884A_MOBILE),
- 	SND_PCI_QUIRK(0x103c, 0x3056, "HP", AD1884A_MOBILE),
-+	SND_PCI_QUIRK(0x103c, 0x30e7, "HP EliteBook 8530p", AD1884A_LAPTOP),
- 	SND_PCI_QUIRK(0x103c, 0x3614, "HP 6730s", AD1884A_LAPTOP),
- 	SND_PCI_QUIRK(0x17aa, 0x20ac, "Thinkpad X300", AD1884A_THINKPAD),
- 	{}
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -10806,6 +10806,7 @@ static struct snd_pci_quirk alc268_cfg_t
+ 	SND_PCI_QUIRK(0x1043, 0x1205, "ASUS W7J", ALC268_3ST),
+ 	SND_PCI_QUIRK(0x1179, 0xff10, "TOSHIBA A205", ALC268_TOSHIBA),
+ 	SND_PCI_QUIRK(0x1179, 0xff50, "TOSHIBA A305", ALC268_TOSHIBA),
++	SND_PCI_QUIRK(0x1179, 0xff64, "TOSHIBA L305", ALC268_TOSHIBA),
+ 	SND_PCI_QUIRK(0x14c0, 0x0025, "COMPAL IFL90/JFL-92", ALC268_TOSHIBA),
+ 	SND_PCI_QUIRK(0x152d, 0x0763, "Diverse (CPR2000)", ALC268_ACER),
+ 	SND_PCI_QUIRK(0x152d, 0x0771, "Quanta IL1", ALC267_QUANTA_IL1),
 
