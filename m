@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYLKWmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbYLKWme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759597AbYLKWmx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 17:42:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759077AbYLKWlA
+	id S1759510AbYLKWme (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 17:42:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759132AbYLKWki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 17:41:00 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:54052 "EHLO
+	Thu, 11 Dec 2008 17:40:38 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:54042 "EHLO
 	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758258AbYLKWk5 (ORCPT
+	with ESMTP id S1758052AbYLKWkd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 17:40:57 -0500
-Message-ID: <494196DD.5070600@cosmosbay.com>
-Date: Thu, 11 Dec 2008 23:40:29 +0100
+	Thu, 11 Dec 2008 17:40:33 -0500
+Message-ID: <494196C7.2050005@cosmosbay.com>
+Date: Thu, 11 Dec 2008 23:40:07 +0100
 From: Eric Dumazet <dada1@cosmosbay.com>
 User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
@@ -26,189 +26,185 @@ CC: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH v3 6/7] fs: struct file move from call_rcu() to SLAB_DESTROY_BY_RCU
+Subject: [PATCH v3 5/7] fs: new_inode_single() and iput_single()
 References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <493100B0.6090104@cosmosbay.com>
 In-Reply-To: <493100B0.6090104@cosmosbay.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 11 Dec 2008 23:40:30 +0100 (CET)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 11 Dec 2008 23:40:08 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <cl@linux-foundation.org>
+Goal of this patch is to not touch inode_lock for socket/pipes/anonfd
+inodes allocation/freeing.
 
-[PATCH] fs: struct file move from call_rcu() to SLAB_DESTROY_BY_RCU
+SINGLE dentries are attached to inodes that dont need to be linked
+in a list of inodes, being "inode_in_use" or "sb->s_inodes"
+As inode_lock was taken only to protect these lists, we avoid taking it
+as well.
 
-Currently we schedule RCU frees for each file we free separately. That has
-several drawbacks against the earlier file handling (in 2.6.5 f.e.), which
-did not require RCU callbacks:
+Using iput_single() from dput_single() avoids taking inode_lock
+at freeing time.
 
-1. Excessive number of RCU callbacks can be generated causing long RCU
-  queues that in turn cause long latencies. We hit SLUB page allocation
-  more often than necessary.
+This patch has a very noticeable effect, because we avoid dirtying of
+three contended cache lines in new_inode(), and five cache lines in iput()
 
-2. The cache hot object is not preserved between free and realloc. A close
-  followed by another open is very fast with the RCUless approach because
-  the last freed object is returned by the slab allocator that is
-  still cache hot. RCU free means that the object is not immediately
-  available again. The new object is cache cold and therefore open/close
-  performance tests show a significant degradation with the RCU
-  implementation.
+("socketallocbench -n 8" result : from 19.9s to 3.01s)
 
-One solution to this problem is to move the RCU freeing into the Slab
-allocator by specifying SLAB_DESTROY_BY_RCU as an option at slab creation
-time. The slab allocator will do RCU frees only when it is necessary
-to dispose of slabs of objects (rare). So with that approach we can cut
-out the RCU overhead significantly.
-
-However, the slab allocator may return the object for another use even
-before the RCU period has expired under SLAB_DESTROY_BY_RCU. This means
-there is the (unlikely) possibility that the object is going to be
-switched under us in sections protected by rcu_read_lock() and
-rcu_read_unlock(). So we need to verify that we have acquired the correct
-object after establishing a stable object reference (incrementing the
-refcounter does that).
-
-
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- Documentation/filesystems/files.txt |   21 ++++++++++++++--
- fs/file_table.c                     |   33 ++++++++++++++++++--------
- include/linux/fs.h                  |    5 ---
- 3 files changed, 42 insertions(+), 17 deletions(-)
+ fs/anon_inodes.c   |    2 +-
+ fs/dcache.c        |    2 +-
+ fs/inode.c         |   29 ++++++++++++++++++++---------
+ fs/pipe.c          |    2 +-
+ include/linux/fs.h |   12 +++++++++++-
+ net/socket.c       |    2 +-
+ 6 files changed, 35 insertions(+), 14 deletions(-)
 
-diff --git a/Documentation/filesystems/files.txt b/Documentation/filesystems/files.txt
-index ac2facc..6916baa 100644
---- a/Documentation/filesystems/files.txt
-+++ b/Documentation/filesystems/files.txt
-@@ -78,13 +78,28 @@ the fdtable structure -
-    that look-up may race with the last put() operation on the
-    file structure. This is avoided using atomic_long_inc_not_zero()
-    on ->f_count :
-+   As file structures are allocated with SLAB_DESTROY_BY_RCU,
-+   they can also be freed before a RCU grace period, and reused,
-+   but still as a struct file.
-+   It is necessary to check again after getting
-+   a stable reference (ie after atomic_long_inc_not_zero()),
-+   that fcheck_files(files, fd) points to the same file.
- 
- 	rcu_read_lock();
- 	file = fcheck_files(files, fd);
- 	if (file) {
--		if (atomic_long_inc_not_zero(&file->f_count))
-+		if (atomic_long_inc_not_zero(&file->f_count)) {
- 			*fput_needed = 1;
--		else
-+			/*
-+			 * Now we have a stable reference to an object.
-+			 * Check if other threads freed file and reallocated it.
-+			 */
-+			if (file != fcheck_files(files, fd)) {
-+				*fput_needed = 0;
-+				put_filp(file);
-+				file = NULL;
-+			}
-+		} else
- 		/* Didn't get the reference, someone's freed */
- 			file = NULL;
- 	}
-@@ -95,6 +110,8 @@ the fdtable structure -
-    atomic_long_inc_not_zero() detects if refcounts is already zero or
-    goes to zero during increment. If it does, we fail
-    fget()/fget_light().
-+   The second call to fcheck_files(files, fd) checks that this filp
-+   was not freed, then reused by an other thread.
- 
- 6. Since both fdtable and file structures can be looked up
-    lock-free, they must be installed using rcu_assign_pointer()
-diff --git a/fs/file_table.c b/fs/file_table.c
-index a46e880..3e9259d 100644
---- a/fs/file_table.c
-+++ b/fs/file_table.c
-@@ -37,17 +37,11 @@ static struct kmem_cache *filp_cachep __read_mostly;
- 
- static struct percpu_counter nr_files __cacheline_aligned_in_smp;
- 
--static inline void file_free_rcu(struct rcu_head *head)
--{
--	struct file *f =  container_of(head, struct file, f_u.fu_rcuhead);
--	kmem_cache_free(filp_cachep, f);
--}
--
- static inline void file_free(struct file *f)
+diff --git a/fs/anon_inodes.c b/fs/anon_inodes.c
+index 8bf83cb..89fd36d 100644
+--- a/fs/anon_inodes.c
++++ b/fs/anon_inodes.c
+@@ -125,7 +125,7 @@ EXPORT_SYMBOL_GPL(anon_inode_getfd);
+  */
+ static struct inode *anon_inode_mkinode(void)
  {
- 	percpu_counter_dec(&nr_files);
- 	file_check_state(f);
--	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
-+	kmem_cache_free(filp_cachep, f);
+-	struct inode *inode = new_inode(anon_inode_mnt->mnt_sb);
++	struct inode *inode = new_inode_single(anon_inode_mnt->mnt_sb);
+ 
+ 	if (!inode)
+ 		return ERR_PTR(-ENOMEM);
+diff --git a/fs/dcache.c b/fs/dcache.c
+index af3bfb3..3363853 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -231,7 +231,7 @@ static void dput_single(struct dentry *dentry)
+ 		return;
+ 	inode = dentry->d_inode;
+ 	if (inode)
+-		iput(inode);
++		iput_single(inode);
+ 	d_free(dentry);
  }
  
+diff --git a/fs/inode.c b/fs/inode.c
+index dc8e72a..0fdfe1b 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -221,6 +221,13 @@ void destroy_inode(struct inode *inode)
+ 		kmem_cache_free(inode_cachep, (inode));
+ }
+ 
++void iput_single(struct inode *inode)
++{
++	if (atomic_dec_and_test(&inode->i_count)) {
++		destroy_inode(inode);
++		percpu_counter_dec(&nr_inodes);
++	}
++}
+ 
  /*
-@@ -306,6 +300,14 @@ struct file *fget(unsigned int fd)
- 			rcu_read_unlock();
- 			return NULL;
- 		}
-+		/*
-+		 * Now we have a stable reference to an object.
-+		 * Check if other threads freed file and re-allocated it.
-+		 */
-+		if (unlikely(file != fcheck_files(files, fd))) {
-+			put_filp(file);
-+			file = NULL;
+  * These are initializations that only need to be done
+@@ -587,8 +594,9 @@ static int last_ino_get(void)
+ #endif
+ 
+ /**
+- *	new_inode 	- obtain an inode
++ *	__new_inode 	- obtain an inode
+  *	@sb: superblock
++ *  @single: if true, dont link new inode in a list
+  *
+  *	Allocates a new inode for given superblock. The default gfp_mask
+  *	for allocations related to inode->i_mapping is GFP_HIGHUSER_PAGECACHE.
+@@ -598,7 +606,7 @@ static int last_ino_get(void)
+  *	newly created inode's mapping
+  *
+  */
+-struct inode *new_inode(struct super_block *sb)
++struct inode *__new_inode(struct super_block *sb, int single)
+ {
+ 	/*
+ 	 * On a 32bit, non LFS stat() call, glibc will generate an EOVERFLOW
+@@ -607,22 +615,25 @@ struct inode *new_inode(struct super_block *sb)
+ 	 */
+ 	struct inode * inode;
+ 
+-	spin_lock_prefetch(&inode_lock);
+-	
+ 	inode = alloc_inode(sb);
+ 	if (inode) {
+ 		percpu_counter_inc(&nr_inodes);
+ 		inode->i_state = 0;
+ 		inode->i_ino = last_ino_get();
+-		spin_lock(&inode_lock);
+-		list_add(&inode->i_list, &inode_in_use);
+-		list_add(&inode->i_sb_list, &sb->s_inodes);
+-		spin_unlock(&inode_lock);
++ 		if (single) {
++  			INIT_LIST_HEAD(&inode->i_list);
++  			INIT_LIST_HEAD(&inode->i_sb_list);
++ 		} else {
++			spin_lock(&inode_lock);
++			list_add(&inode->i_list, &inode_in_use);
++			list_add(&inode->i_sb_list, &sb->s_inodes);
++			spin_unlock(&inode_lock);
 +		}
  	}
- 	rcu_read_unlock();
+ 	return inode;
+ }
  
-@@ -333,9 +335,19 @@ struct file *fget_light(unsigned int fd, int *fput_needed)
- 		rcu_read_lock();
- 		file = fcheck_files(files, fd);
- 		if (file) {
--			if (atomic_long_inc_not_zero(&file->f_count))
-+			if (atomic_long_inc_not_zero(&file->f_count)) {
- 				*fput_needed = 1;
--			else
-+				/*
-+				 * Now we have a stable reference to an object.
-+				 * Check if other threads freed this file and
-+				 * re-allocated it.
-+				 */
-+				if (unlikely(file != fcheck_files(files, fd))) {
-+					*fput_needed = 0;
-+					put_filp(file);
-+					file = NULL;
-+				}
-+			} else
- 				/* Didn't get the reference, someone's freed */
- 				file = NULL;
- 		}
-@@ -402,7 +414,8 @@ void __init files_init(unsigned long mempages)
- 	int n; 
+-EXPORT_SYMBOL(new_inode);
++EXPORT_SYMBOL(__new_inode);
  
- 	filp_cachep = kmem_cache_create("filp", sizeof(struct file), 0,
--			SLAB_HWCACHE_ALIGN | SLAB_PANIC, NULL);
-+			SLAB_HWCACHE_ALIGN | SLAB_DESTROY_BY_RCU | SLAB_PANIC,
-+			NULL);
+ void unlock_new_inode(struct inode *inode)
+ {
+diff --git a/fs/pipe.c b/fs/pipe.c
+index 4de6dd5..8c51a0d 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -865,7 +865,7 @@ static struct dentry_operations pipefs_dentry_operations = {
  
- 	/*
- 	 * One file with associated inode and dcache is very roughly 1K. 
+ static struct inode * get_pipe_inode(void)
+ {
+-	struct inode *inode = new_inode(pipe_mnt->mnt_sb);
++	struct inode *inode = new_inode_single(pipe_mnt->mnt_sb);
+ 	struct pipe_inode_info *pipe;
+ 
+ 	if (!inode)
 diff --git a/include/linux/fs.h b/include/linux/fs.h
-index a702d81..a1f56d4 100644
+index a789346..a702d81 100644
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -811,13 +811,8 @@ static inline int ra_has_index(struct file_ra_state *ra, pgoff_t index)
- #define FILE_MNT_WRITE_RELEASED	2
+@@ -1899,7 +1899,17 @@ extern void __iget(struct inode * inode);
+ extern void iget_failed(struct inode *);
+ extern void clear_inode(struct inode *);
+ extern void destroy_inode(struct inode *);
+-extern struct inode *new_inode(struct super_block *);
++extern struct inode *__new_inode(struct super_block *, int);
++static inline struct inode *new_inode(struct super_block *sb)
++{
++	return __new_inode(sb, 0);
++}
++static inline struct inode *new_inode_single(struct super_block *sb)
++{
++	return __new_inode(sb, 1);
++}
++extern void iput_single(struct inode *);
++
+ extern int should_remove_suid(struct dentry *);
+ extern int file_remove_suid(struct file *);
  
- struct file {
--	/*
--	 * fu_list becomes invalid after file_free is called and queued via
--	 * fu_rcuhead for RCU freeing
--	 */
- 	union {
- 		struct list_head	fu_list;
--		struct rcu_head 	fu_rcuhead;
- 	} f_u;
- 	struct path		f_path;
- #define f_dentry	f_path.dentry
+diff --git a/net/socket.c b/net/socket.c
+index 353c928..4017409 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -464,7 +464,7 @@ static struct socket *sock_alloc(void)
+ 	struct inode *inode;
+ 	struct socket *sock;
+ 
+-	inode = new_inode(sock_mnt->mnt_sb);
++	inode = new_inode_single(sock_mnt->mnt_sb);
+ 	if (!inode)
+ 		return NULL;
+ 
