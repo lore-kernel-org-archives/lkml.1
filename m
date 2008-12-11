@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbYLKXBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932073AbYLKXCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932135AbYLKXBt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 18:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758820AbYLKXAp
+	id S932073AbYLKXCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 18:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759649AbYLKXBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 18:00:45 -0500
-Received: from mail-bw0-f13.google.com ([209.85.218.13]:59668 "EHLO
-	mail-bw0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758775AbYLKXAl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 18:00:41 -0500
-Message-ID: <49419a3b.0aec660a.2b49.7900@mx.google.com>
-To: netdev@vger.kernel.org
-Cc: Karsten Keil <kkeil@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org
-Date: Thu, 11 Dec 2008 22:36:00 +0100
-Subject: [PATCH 7/9][v2] mISDN: comment out unused symbols
-From: Hannes Eder <hannes@hanneseder.net>
+	Thu, 11 Dec 2008 18:01:23 -0500
+Received: from mx01.qsc.de ([213.148.129.14]:55326 "EHLO mx01.qsc.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759289AbYLKXBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 18:01:21 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Dec 2008 18:01:21 EST
+Message-ID: <49419A14.50402@wizards.de>
+Date: Thu, 11 Dec 2008 23:54:12 +0100
+From: =?ISO-8859-1?Q?Holger_Hoffst=E4tte?= <holger@wizards.de>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Manfred Spraul <manfred@colorfullife.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: Nasty regression from .27.7 to .27.8: idle samba goes crazy
+References: <pan.2008.12.08.06.18.57.357875@wizards.de> <200812080834.22924.rjw@sisk.pl> <pan.2008.12.08.08.07.29.439625@wizards.de> <493D4F5C.7020606@s5r6.in-berlin.de> <493D7349.10200@s5r6.in-berlin.de> <20081208222246.GA29232@sith.mimuw.edu.pl> <20081209123703.043067eb@dhcp-100-2-144.bos.redhat.com> <493FFE5E.2000404@colorfullife.com>
+In-Reply-To: <493FFE5E.2000404@colorfullife.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warnings:
 
-  drivers/isdn/hardware/mISDN/hfcmulti.c:794: warning: 'vpm_check' defined but not used
-  drivers/isdn/mISDN/dsp_cmx.c:1546: warning: 'dsp_start_jiffies' defined but not used
+Dear all -
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-Acked-by: Karsten Keil <kkeil@suse.de>
----
- drivers/isdn/hardware/mISDN/hfcmulti.c |    2 ++
- drivers/isdn/mISDN/dsp_cmx.c           |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+Thanks for your efforts.
 
-diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
-index 970201d..0668072 100644
---- a/drivers/isdn/hardware/mISDN/hfcmulti.c
-+++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
-@@ -788,6 +788,7 @@ vpm_init(struct hfc_multi *wc)
- 	}
- }
- 
-+#ifdef UNUSED
- static void
- vpm_check(struct hfc_multi *hctmp)
- {
-@@ -798,6 +799,7 @@ vpm_check(struct hfc_multi *hctmp)
- 	if ((gpi2 & 0x3) != 0x3)
- 		printk(KERN_DEBUG "Got interrupt 0x%x from VPM!\n", gpi2);
- }
-+#endif /* UNUSED */
- 
- 
- /*
-diff --git a/drivers/isdn/mISDN/dsp_cmx.c b/drivers/isdn/mISDN/dsp_cmx.c
-index e868c47..c884511 100644
---- a/drivers/isdn/mISDN/dsp_cmx.c
-+++ b/drivers/isdn/mISDN/dsp_cmx.c
-@@ -1543,7 +1543,9 @@ send_packet:
- static u32	samplecount;
- struct timer_list dsp_spl_tl;
- u32	dsp_spl_jiffies; /* calculate the next time to fire */
-+#ifdef UNUSED
- static u32	dsp_start_jiffies; /* jiffies at the time, the calculation begins */
-+#endif /* UNUSED */
- static struct timeval dsp_start_tv; /* time at start of calculation */
- 
- void
--- 
-1.5.6.3
+Manfred Spraul wrote:
+> Chuck Ebbert wrote:
+>> On Mon, 8 Dec 2008 23:22:46 +0100
+>> Jan Rekorajski <baggins@sith.mimuw.edu.pl> wrote:
+>>
+>>  
+>>> On Mon, 08 Dec 2008, Stefan Richter wrote:
+>>>
+>>>    
+>>>>>>> On Monday, 8 of December 2008, Holger Hoffstaette wrote:
+>>>>>>>            
+>>>>>>>> The system is a generic old single-core P4 box with a single
+>>>>>>>> SATA drive,
+>>>>>>>> Gentoo userland and Samba is 3.0.33 (in async mode). The kernel
+>>>>>>>> has no
+>>>>>>>> patches or binary drivers.
+>>>>>>>>               
+>>>> Holger, it may be unrelated to the issue, but to be sure:  Which
+>>>> network
+>>>> card driver do you use?
+>>>>       
+>>> I think you can safely rule out NIC, I'm also seeing this behaviour on a
+>>> brand new server with imap hanging in some busy-loop.
+>>> Network card in my case:
+>>> Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
+>>>
+>>> What I observer was one CPU doing 100% system work, and the number of
+>>> timer interrupts went from 1k per second to 4k (for the whole system).
+>>>
+> Could you try the attached patch?
+> It should fix the bug.
+
+I just built 2.6.27.9-rc1 and disconnected the Windowz box several times.
+For now smbd does not seem to go into a death spin any more, even though
+as far as I can tell .9-rc1 does not contain Manfred'd latest patch. Not
+sure what that means, if anything.
+
+I'll keep running stable.9-rc1 and see what happens..
+
+thanks all
+Holger
 
