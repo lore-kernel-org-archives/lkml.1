@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbYLKAjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbYLKAji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754117AbYLKAjA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 19:39:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbYLKAiq
+	id S1756620AbYLKAji (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 19:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbYLKAj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 19:38:46 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44533 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756307AbYLKAim (ORCPT
+	Wed, 10 Dec 2008 19:39:27 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54448 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753858AbYLKAj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 19:38:42 -0500
-Date: Wed, 10 Dec 2008 16:38:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next: Tree for December 10
-Message-Id: <20081210163817.535cde9a.akpm@linux-foundation.org>
-In-Reply-To: <200812110053.49012.rjw@sisk.pl>
-References: <20081210164659.9ebb8158.sfr@canb.auug.org.au>
-	<20081210145226.8a174e68.akpm@linux-foundation.org>
-	<200812110053.49012.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 10 Dec 2008 19:39:27 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [bug?] bio: add experimental support for inlining a number of bio_vecs inside the bio
+Cc: kosaki.motohiro@jp.fujitsu.com, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081210121237.GQ23742@kernel.dk>
+References: <20081210204630.4FE3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081210121237.GQ23742@kernel.dk>
+Message-Id: <20081211093620.4FE8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu, 11 Dec 2008 09:39:23 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Dec 2008 00:53:48 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> On Wednesday, 10 of December 2008, Andrew Morton wrote:
-> > On Wed, 10 Dec 2008 16:46:59 +1100
-> > Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > 
-> > > I have created today's linux-next tree at
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> > > (patches at
-> > > http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/)
-> > 
-> > This tree breaks poweroff on my x86_64 test box.  `halt -pfn' does all
-> > the usual things, but the machine doesn't turn off.
-> > 
-> > config: http://userweb.kernel.org/~akpm/config-akpm2.txt
-> > dmesg: http://userweb.kernel.org/~akpm/dmesg-akpm2.txt
-> > 
-> > Any suggestions which don't include the word "bisect" would be most welcome.
+> > experimental??
 > 
-> Did you suspend-resume the box before that?
+> Experimental in the sense that it's the first version, not the concept.
+> It's held up well for me, but just yesterday I received the first bug
+> report on a ppc platform and now you have this on ia64. Can you pin
+> point where in __blk_complete_request() it dies with the NULL pointer
+> deref? I'm assuming you don't have CONFIG_FAIL_IO_TIMEOUT set, otherwise
+> I don't see how it could fail. So that looks like req->q being NULL,
+> which doesn't have much relation to this.
+> 
+> Can you try with slab and pagealloc debugging options switched on? The
+> above looks like a side effect of some badness there.
 
-Nope.  I've never tried suspend/resume on that machine, actually.
+Yes, I don't set CONFIG_FAIL_IO_TIMEOUT.
+However, your memory corruption fixing patch solve my problem too.
+
+	http://marc.info/?l=linux-kernel&m=122891947725303&w=2
+
+
+Thanks.
+
+
