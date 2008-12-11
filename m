@@ -1,62 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758535AbYLKUqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757720AbYLKUyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758535AbYLKUqp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 15:46:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbYLKUqg
+	id S1757720AbYLKUyw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 15:54:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbYLKUym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 15:46:36 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:1452 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756104AbYLKUqf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 15:46:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=AJLrIa6zeDolNJs9fKwBoWcykIXO/4e7Jw6zxzClxh8AHL7KtszQwUqqN47zpnCwA6
-         +FtxT6LLdzacx6pAEJEiP3NBxhiBhPX3zR1jWMrFO3kApa88a2AEOzB6Fi3Aid776sCR
-         VHSLhEOwBlmSbMf3BD2/epEfap5OrlPDSA1Ow=
-Message-ID: <84144f020812111246m7f6470f2n8b09283f54ead81@mail.gmail.com>
-Date: Thu, 11 Dec 2008 22:46:33 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: Linux 2.6.28-rc8
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Frans Pop" <elendil@planet.nl>, "Eric Anholt" <eric@anholt.net>,
-       nix.or.die@googlemail.com, linux-kernel@vger.kernel.org, rjw@sisk.pl,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Yinghai Lu" <yinghai@kernel.org>
-In-Reply-To: <20081211203604.GA14817@elte.hu>
+	Thu, 11 Dec 2008 15:54:42 -0500
+Received: from ns.suse.de ([195.135.220.2]:40571 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756209AbYLKUym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 15:54:42 -0500
+Date: Thu, 11 Dec 2008 12:50:33 -0800
+From: Greg KH <gregkh@suse.de>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: hjk@linutronix.de, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [RESEND][PATCH] uio: Add of_platform_driver to uio_pdrv_genirq
+Message-ID: <20081211205033.GA7080@suse.de>
+References: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain>
-	 <49407CE1.9090600@googlemail.com>
-	 <1228979963.3254.8.camel@gaiman.anholt.net>
-	 <200812111707.20857.elendil@planet.nl>
-	 <alpine.LFD.2.00.0812110814360.3340@localhost.localdomain>
-	 <20081211163548.GA11859@elte.hu>
-	 <alpine.LFD.2.00.0812110902450.3340@localhost.localdomain>
-	 <20081211203604.GA14817@elte.hu>
-X-Google-Sender-Auth: 754dce38ac165400
+In-Reply-To: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Thu, Dec 11, 2008 at 04:05:37PM +0100, Wolfram Sang wrote:
+> Make the generic uio-driver also accessible for of devices. It utilizes the
+> standard 'reg' and 'interrupt' properties. A typical usage would look like
+> this:
+> 
+> 	fpga-io@00003000 {
+> 		compatible = "generic-uio";
+> 		reg = <0x00003000 0x20>;
+> 		interrupts = <0xa>;
+> 		interrupt-parent = <&fpga_irq_mux>;
+> 	};
+> 
+> To achieve this, the probe function has been refactored, so it can be used by
+> platform and of code. Then, the of driver has been added.
+> 
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> ---
+>  drivers/uio/uio_pdrv_genirq.c |  178 ++++++++++++++++++++++++++++++++++++------
+>  1 file changed, 154 insertions(+), 24 deletions(-)
+> 
+> Index: playground/drivers/uio/uio_pdrv_genirq.c
+> ===================================================================
+> --- playground.orig/drivers/uio/uio_pdrv_genirq.c
+> +++ playground/drivers/uio/uio_pdrv_genirq.c
+> @@ -1,13 +1,15 @@
+>  /*
+>   * drivers/uio/uio_pdrv_genirq.c
+>   *
+> - * Userspace I/O platform driver with generic IRQ handling code.
+> + * Userspace I/O platform & of driver with generic IRQ handling code.
+>   *
+>   * Copyright (C) 2008 Magnus Damm
+> + * Copyright (C) 2008 Wolfram Sang, Pengutronix e.K.
+>   *
+>   * Based on uio_pdrv.c by Uwe Kleine-Koenig,
+>   * Copyright (C) 2008 by Digi International Inc.
+>   * All rights reserved.
+> + * Adding of_platform_driver based on xilinxfb.c by Grant Likely.
+>   *
+>   * This program is free software; you can redistribute it and/or modify it
+>   * under the terms of the GNU General Public License version 2 as published by
+> @@ -20,6 +22,10 @@
+>  #include <linux/bitops.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/stringify.h>
+> +#if defined(CONFIG_OF)
+> +#include <linux/of_device.h>
+> +#include <linux/of_platform.h>
+> +#endif
 
-On Thu, Dec 11, 2008 at 10:36 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> ok. In this case i'd suggest we should just remove the warning. People do
-> get scared by needless kernel stack dumps - no matter whether it's marked
-> informational or not.
->
-> So how about the patch below, queued up in tip/x86/debug? Arjan, what do
-> you think?
+You should never need to test a config variable in order to know to
+include a header file or not.
 
-How come we don't put it under CONFIG_X86_DEBUG or something and hide
-somewhere in the "Kernel debugging" menu?
+> +/* ---------------------------------------------------------------------
+> + * OF bus binding
+> + */
+> +
+> +#if defined(CONFIG_OF)
 
-                Pekka
+Same goes here, don't put #if in .c files please.
+
+thanks,
+
+greg k-h
