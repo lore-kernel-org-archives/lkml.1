@@ -1,96 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684AbYLKGy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbYLKHAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755684AbYLKGy2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 01:54:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYLKGyS
+	id S1755942AbYLKHAd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 02:00:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbYLKHAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 01:54:18 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42410 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751811AbYLKGyS (ORCPT
+	Thu, 11 Dec 2008 02:00:23 -0500
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:38209 "EHLO
+	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751094AbYLKHAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 01:54:18 -0500
-Date: Thu, 11 Dec 2008 15:53:23 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Paul Menage <menage@google.com>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [RFC][PATCH 2/3] CGroups: Use hierarchy_mutex in memory
- controller
-Message-Id: <20081211155323.957eb73c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081211063307.GL3008@balbir.in.ibm.com>
-References: <20081210233654.563182000@menage.corp.google.com>
-	<20081210234432.236302000@menage.corp.google.com>
-	<20081211094938.85b00cf3.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830812101652o25bc33f3r2a710e0879f9b196@mail.gmail.com>
-	<20081211100501.bf538f0c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081211063307.GL3008@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Dec 2008 02:00:22 -0500
+X-Greylist: delayed 1601 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Dec 2008 02:00:22 EST
+X-AuditID: 0ac90647-aacf5ba000000f8c-90-4940b4439eab
+Message-ID: <4940B426.6040509@hitachi.com>
+Date: Thu, 11 Dec 2008 15:33:10 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, roland@redhat.com,
+       kosaki.motohiro@jp.fujitsu.com, sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: [PATCH] coredump_filter: enable to change the default filter
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Dec 2008 12:03:07 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+This patch introduces new kernel parameter `coredump_filter'.
+Setting a value to this parameter causes the default bitmask
+of coredump_filter to be changed.
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-12-11 10:05:01]:
-> 
-> > On Wed, 10 Dec 2008 16:52:57 -0800
-> > Paul Menage <menage@google.com> wrote:
-> > 
-> > > On Wed, Dec 10, 2008 at 4:49 PM, KAMEZAWA Hiroyuki
-> > > <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > >
-> > > >        an operation like rmdir() in somewhere.
-> > > >                hierarchy_lock for A (acquired)
-> > > >                hierarchy_lock for B (waiting)
-> > > >
-> > > >        in subsys A.
-> > > >                mmap_sem (acquired)
-> > > >                hierarchy_lock for A (waiting)
-> > > >        in subsys B.
-> > > >                hierarchy_lock for B (aquired)
-> > > >                mmap_sem             (waiting)
-> > > >
-> > > 
-> > > That's a valid deadlock - you'd need to require the mmap_sem nests
-> > > either inside all hierarchy_mutexes or else outside all of them.
-> > > 
-> > This was a found dead lock between memcg and cpuset.
-> > 
-> > another one was 
-> > 
-> > 	an operation like rmdir() in somewhere.
-> > 		hierarchy_lock for memcg (acquired)
-> > 		hierarchy_lock for B (waiting)
-> > 
-> > 	in subsys B.
-> > 		hierarchy_lock for B (aquired)
-> 
-> But then the hierarchy_locks acquired will be different right?
-> 
-yes.
+It is useful for users to change coredump_filter settings for
+the whole system at boot time.  Without this parameter, users
+have to change coredump_filter settings for each /proc/<pid>/
+in an initializing script.
 
-> > 		have to do some memory reclaim -> hierarchy_lock for memcg (waiting)
-> > 
-> > I have no objections to hierarchy_lock itself but calling context to memcg is very
-> > complicated and simple replace of these locks will be just a small help.
-> 
-> Could you please explain the race better?
-> 
-I explained...
-One example was mmap_sem. above one is recursive lock in cpuset you tried to fix.
-(Fortunately, cpuset's subsys ID is smaller than memcg's one. you'll not see
- in real environment.)
-And there are other unknown subsyses are planned, bio, checkpoint, etc..
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+CC: Roland McGrath <roland@redhat.com>
+CC: Motohiro Kosaki <kosaki.motohiro@jp.fujitsu.com>
+---
+ Documentation/kernel-parameters.txt |    5 +++++
+ kernel/fork.c                       |   15 +++++++++++++--
+ 2 files changed, 18 insertions(+), 2 deletions(-)
 
-Could you write a document to explain what kind of nest of locks are allowed
-before merging this ?
+Index: linux-2.6.28-rc8/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.28-rc8.orig/Documentation/kernel-parameters.txt
++++ linux-2.6.28-rc8/Documentation/kernel-parameters.txt
+@@ -547,6 +547,11 @@ and is between 256 and 4096 characters. 
+ 			not work reliably with all consoles, but is known
+ 			to work with serial and VGA consoles.
+ 
++	coredump_filter=
++			[KNL] Change the default value for
++			/proc/<pid>/coredump_filter.
++			See also Documentation/filesystems/proc.txt.
++
+ 	cpcihp_generic=	[HW,PCI] Generic port I/O CompactPCI driver
+ 			Format:
+ 			<first_slot>,<last_slot>,<port>,<enum_bit>[,<debug>]
+Index: linux-2.6.28-rc8/kernel/fork.c
+===================================================================
+--- linux-2.6.28-rc8.orig/kernel/fork.c
++++ linux-2.6.28-rc8/kernel/fork.c
+@@ -397,6 +397,18 @@ __cacheline_aligned_in_smp DEFINE_SPINLO
+ #define allocate_mm()	(kmem_cache_alloc(mm_cachep, GFP_KERNEL))
+ #define free_mm(mm)	(kmem_cache_free(mm_cachep, (mm)))
+ 
++static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
++
++static int __init coredump_filter_setup(char *s)
++{
++	default_dump_filter =
++		(simple_strtoul(s, NULL, 0) << MMF_DUMP_FILTER_SHIFT) &
++		MMF_DUMP_FILTER_MASK;
++	return 1;
++}
++
++__setup("coredump_filter=", coredump_filter_setup);
++
+ #include <linux/init_task.h>
+ 
+ static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
+@@ -405,8 +417,7 @@ static struct mm_struct * mm_init(struct
+ 	atomic_set(&mm->mm_count, 1);
+ 	init_rwsem(&mm->mmap_sem);
+ 	INIT_LIST_HEAD(&mm->mmlist);
+-	mm->flags = (current->mm) ? current->mm->flags
+-				  : MMF_DUMP_FILTER_DEFAULT;
++	mm->flags = (current->mm) ? current->mm->flags : default_dump_filter;
+ 	mm->core_state = NULL;
+ 	mm->nr_ptes = 0;
+ 	set_mm_counter(mm, file_rss, 0);
 
-Thanks,
--Kame
+
 
