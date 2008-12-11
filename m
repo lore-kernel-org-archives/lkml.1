@@ -1,86 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756871AbYLKSlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbYLKSn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756871AbYLKSlc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 13:41:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbYLKSlW
+	id S1757124AbYLKSn3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 13:43:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbYLKSnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 13:41:22 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:22746 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755521AbYLKSlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 13:41:21 -0500
-Date: Thu, 11 Dec 2008 19:41:02 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Subject: Re: [PATCH][RFC 13/23]: Export of alloc_io_context() function
-Message-ID: <20081211184100.GX23742@kernel.dk>
-References: <494009D7.4020602@vlnb.net> <49400F2F.4050603@vlnb.net> <20081211133424.GU23742@kernel.dk> <4941592E.8070303@vlnb.net>
+	Thu, 11 Dec 2008 13:43:17 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:46950 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755762AbYLKSnQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 13:43:16 -0500
+From: Paul Moore <paul.moore@hp.com>
+Subject: [PATCH] netlabel: Compiler warning and NULL pointer dereference fix
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, geert.uytterhoeven@sonycom.com
+Date: Thu, 11 Dec 2008 13:43:12 -0500
+Message-ID: <20081211184312.30832.25526.stgit@flek.lan>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4941592E.8070303@vlnb.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11 2008, Vladislav Bolkhovitin wrote:
-> Jens Axboe wrote:
-> >On Wed, Dec 10 2008, Vladislav Bolkhovitin wrote:
-> >>This patch exports alloc_io_context() function. For performance reasons 
-> >>SCST queues commands using a pool of IO threads. It is considerably 
-> >>better for performance (>30% increase on sequential reads) if threads in 
-> >>  a pool have the same IO context. Since SCST can be built as a module, 
-> >>it needs alloc_io_context() function exported.
-> >>
-> >>Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
-> >>---
-> >>  block/blk-ioc.c |    1 +
-> >>  1 file changed, 1 insertion(+)
-> >>
-> >>diff -upkr linux-2.6.27.2/block/blk-ioc.c linux-2.6.27.2/block/blk-ioc.c
-> >>--- linux-2.6.27.2/block/blk-ioc.c	2008-10-10 02:13:53.000000000 +0400
-> >>+++ linux-2.6.27.2/block/blk-ioc.c	2008-11-25 21:27:01.000000000 +0300
-> >>@@ -105,6 +105,7 @@ struct io_context *alloc_io_context(gfp_
-> >> 
-> >> 	return ret;
-> >> }
-> >>+EXPORT_SYMBOL(alloc_io_context);
-> >
-> >Why is this needed, can't you just use CLONE_IO?
-> 
-> There are two reasons for that:
-> 
-> 1. kthread interface doesn't support passing CLONE_IO flag.
+Fix the two compiler warnings show below.  Thanks to Geert Uytterhoeven for
+finding and reporting the problem.
 
-Then you fix that instead of working around it! :-)
+ net/netlabel/netlabel_unlabeled.c:567: warning: 'entry' may be used
+   uninitialized in this function
+ net/netlabel/netlabel_unlabeled.c:629: warning: 'entry' may be used
+   uninitialized in this function
 
-> 2. Each (virtual) device has own pool of threads, which serves it. 
-> Threads in each such pools should have a common IO context, but 
-> different pools should have different IO contexts. So, it would be 
-> necessary to implement two levels start of IO threads in each pool. At 
-> first, one thread would be started. Then it would call get_io_context() 
-> to gain io_context. Then it would create the remaining threads with 
-> CLONE_IO flag. Definitely, it's a lot more complicated than a simple 
-> call of alloc_io_context() and assignment of the returned context to 
-> each just created thread in a loop before they were ran.
+Signed-off-by: Paul Moore <paul.moore@hp.com>
+---
 
-Just start the first thread without CLONE_IO, and subsequent threads
-fork off that with CLONE_IO set? I think we need to make sure that we
-allocate an IO context for the 'parent' if it doesn't have one already
-and CLONE_IO is set, but that is something that can easily be rectified.
-It may seem more complex, but if you use this approach you are pretty
-much free to worry about any changes in the future there.
+ net/netlabel/netlabel_unlabeled.c |   38 +++++++++++++++++++------------------
+ 1 files changed, 20 insertions(+), 18 deletions(-)
 
--- 
-Jens Axboe
+diff --git a/net/netlabel/netlabel_unlabeled.c b/net/netlabel/netlabel_unlabeled.c
+index 90c8506..8c03080 100644
+--- a/net/netlabel/netlabel_unlabeled.c
++++ b/net/netlabel/netlabel_unlabeled.c
+@@ -562,7 +562,6 @@ static int netlbl_unlhsh_remove_addr4(struct net *net,
+ 				      const struct in_addr *mask,
+ 				      struct netlbl_audit *audit_info)
+ {
+-	int ret_val = 0;
+ 	struct netlbl_af4list *list_entry;
+ 	struct netlbl_unlhsh_addr4 *entry;
+ 	struct audit_buffer *audit_buf;
+@@ -577,7 +576,7 @@ static int netlbl_unlhsh_remove_addr4(struct net *net,
+ 	if (list_entry != NULL)
+ 		entry = netlbl_unlhsh_addr4_entry(list_entry);
+ 	else
+-		ret_val = -ENOENT;
++		entry = NULL;
+ 
+ 	audit_buf = netlbl_audit_start_common(AUDIT_MAC_UNLBL_STCDEL,
+ 					      audit_info);
+@@ -588,19 +587,21 @@ static int netlbl_unlhsh_remove_addr4(struct net *net,
+ 					  addr->s_addr, mask->s_addr);
+ 		if (dev != NULL)
+ 			dev_put(dev);
+-		if (entry && security_secid_to_secctx(entry->secid,
+-						      &secctx,
+-						      &secctx_len) == 0) {
++		if (entry != NULL &&
++		    security_secid_to_secctx(entry->secid,
++					     &secctx, &secctx_len) == 0) {
+ 			audit_log_format(audit_buf, " sec_obj=%s", secctx);
+ 			security_release_secctx(secctx, secctx_len);
+ 		}
+-		audit_log_format(audit_buf, " res=%u", ret_val == 0 ? 1 : 0);
++		audit_log_format(audit_buf, " res=%u", entry != NULL ? 1 : 0);
+ 		audit_log_end(audit_buf);
+ 	}
+ 
+-	if (ret_val == 0)
+-		call_rcu(&entry->rcu, netlbl_unlhsh_free_addr4);
+-	return ret_val;
++	if (entry == NULL)
++		return -ENOENT;
++
++	call_rcu(&entry->rcu, netlbl_unlhsh_free_addr4);
++	return 0;
+ }
+ 
+ #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+@@ -624,7 +625,6 @@ static int netlbl_unlhsh_remove_addr6(struct net *net,
+ 				      const struct in6_addr *mask,
+ 				      struct netlbl_audit *audit_info)
+ {
+-	int ret_val = 0;
+ 	struct netlbl_af6list *list_entry;
+ 	struct netlbl_unlhsh_addr6 *entry;
+ 	struct audit_buffer *audit_buf;
+@@ -638,7 +638,7 @@ static int netlbl_unlhsh_remove_addr6(struct net *net,
+ 	if (list_entry != NULL)
+ 		entry = netlbl_unlhsh_addr6_entry(list_entry);
+ 	else
+-		ret_val = -ENOENT;
++		entry = NULL;
+ 
+ 	audit_buf = netlbl_audit_start_common(AUDIT_MAC_UNLBL_STCDEL,
+ 					      audit_info);
+@@ -649,19 +649,21 @@ static int netlbl_unlhsh_remove_addr6(struct net *net,
+ 					  addr, mask);
+ 		if (dev != NULL)
+ 			dev_put(dev);
+-		if (entry && security_secid_to_secctx(entry->secid,
+-						      &secctx,
+-						      &secctx_len) == 0) {
++		if (entry != NULL &&
++		    security_secid_to_secctx(entry->secid,
++					     &secctx, &secctx_len) == 0) {
+ 			audit_log_format(audit_buf, " sec_obj=%s", secctx);
+ 			security_release_secctx(secctx, secctx_len);
+ 		}
+-		audit_log_format(audit_buf, " res=%u", ret_val == 0 ? 1 : 0);
++		audit_log_format(audit_buf, " res=%u", entry != NULL ? 1 : 0);
+ 		audit_log_end(audit_buf);
+ 	}
+ 
+-	if (ret_val == 0)
+-		call_rcu(&entry->rcu, netlbl_unlhsh_free_addr6);
+-	return ret_val;
++	if (entry == NULL)
++		return -ENOENT;
++
++	call_rcu(&entry->rcu, netlbl_unlhsh_free_addr6);
++	return 0;
+ }
+ #endif /* IPv6 */
+ 
 
