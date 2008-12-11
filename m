@@ -1,98 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbYLKOSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbYLKOUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756769AbYLKOSR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 09:18:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbYLKOSB
+	id S1756809AbYLKOUJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 09:20:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbYLKOT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 09:18:01 -0500
-Received: from mail-bw0-f13.google.com ([209.85.218.13]:63442 "EHLO
-	mail-bw0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756114AbYLKOSA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 09:18:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=TxuWLCjbPZBD40wfjzgpRRLEO6GKy+5Y8nbfWINeAq0DC/fUo9EBHOnpKXDdqJhTlo
-         RmG7aX+SQdHXfz3KNB8DeLAnqf7TYcK1xc2EDocsAJoSFlv89X8FJxjFZWwa2c6OlTXn
-         mgqICDHxcGf2ssg15rX8Zq9coBEgoBWccKL+4=
-Message-ID: <494182DC.7080808@gmail.com>
-Date: Thu, 11 Dec 2008 22:15:08 +0100
-From: jan sonnek <ha2nny@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Warning -mmc card when Suspend
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 11 Dec 2008 09:19:57 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38194 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756048AbYLKOT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 09:19:56 -0500
+Subject: configfs, dlm_controld & lockdep
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: joel.becker@oracle.com
+Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
+Content-Type: text/plain
+Organization: Red Hat UK Ltd
+Date: Thu, 11 Dec 2008 14:20:08 +0000
+Message-Id: <1229005208.3625.26.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When I suspend and then wake up my notebook I get this warning.
+Hi,
 
-[15409.820484] Broken read from PCI device 0000:05:01.4
-[15409.820493] ------------[ cut here ]------------
-[15409.820497] WARNING: at drivers/pci/pci.c:747 pci_save_state+0x50/0x189()
-[15409.820502] Hardware name: F3F
-[15409.820506] Modules linked in: coretemp hwmon ipv6 iwl3945 rfkill 
-mac80211 ohci1394 ieee1394 sdhci_pci sdhci cfg80211 mmc_core ricoh_mmc 
-sr_mod cdrom sg battery
-[15409.820530] Pid: 7599, comm: pm-suspend Tainted: G        W 
-2.6.28-rc7-mm1-hanny #4
-[15409.820536] Call Trace:
-[15409.820543]  [<c01260d6>] warn_slowpath+0x76/0xad
-[15409.820552]  [<c0175501>] ? constant_test_bit+0x9/0x20
-[15409.820559]  [<c0103847>] ? ftrace_call+0x5/0x8
-[15409.820565]  [<c0103847>] ? ftrace_call+0x5/0x8
-[15409.820572]  [<c0143448>] ? test_ti_thread_flag+0x8/0x10
-[15409.820579]  [<c0376d00>] ? _spin_unlock_irq+0x18/0x2a
-[15409.820586]  [<c0143448>] ? test_ti_thread_flag+0x8/0x10
-[15409.820592]  [<c0376d32>] ? _spin_unlock_irqrestore+0x20/0x2b
-[15409.820598]  [<c01f9431>] ? pci_bus_read_config_dword+0x5c/0x68
-[15409.820605]  [<c01fc2a6>] pci_save_state+0x50/0x189
-[15409.820612]  [<c01fe1d4>] pci_legacy_suspend+0x3c/0x52
-[15409.820618]  [<c01fe326>] pci_pm_suspend+0x62/0x77
-[15409.820625]  [<c02622d0>] pm_op+0x4a/0xc4
-[15409.820631]  [<c0262993>] device_suspend+0x361/0x469
-[15409.820637]  [<c0147710>] suspend_devices_and_enter+0x3d/0x114
-[15409.820644]  [<c01479f0>] enter_state+0x1b7/0x23e
-[15409.820649]  [<c0147b0b>] state_store+0x94/0xa7
-[15409.820655]  [<c0147a77>] ? state_store+0x0/0xa7
-[15409.820662]  [<c01f01d5>] kobj_attr_store+0x1a/0x22
-[15409.820668]  [<c01b2a1b>] sysfs_write_file+0xb9/0xe4
-[15409.820674]  [<c01b2962>] ? sysfs_write_file+0x0/0xe4
-[15409.820681]  [<c017bae7>] vfs_write+0x81/0xb2
-[15409.820686]  [<c017bbbb>] sys_write+0x40/0x65
-[15409.820692]  [<c0103031>] sysenter_do_call+0x12/0x25
-[15409.820698] ---[ end trace 71ce89e40e3c7ca1 ]---
+I've been trying to track down the cause of the following messages which
+appear in my logs each time I start up dlm_controld:
 
-When I insert my SD card the same problem I get and Registre dump, more 
-in my dmesg in attachement.
+Dec  1 12:53:17 men-an-tol kernel:
+=============================================
+Dec  1 12:53:17 men-an-tol kernel: [ INFO: possible recursive locking
+detected ]
+Dec  1 12:53:17 men-an-tol kernel: 2.6.28-rc5 #179
+Dec  1 12:53:17 men-an-tol kernel:
+---------------------------------------------
+Dec  1 12:53:17 men-an-tol kernel: dlm_controld/2455 is trying to
+acquire lock:
+Dec  1 12:53:17 men-an-tol kernel:
+(&sb->s_type->i_mutex_key#11/2){--..}, at: [<
+ffffffffa0294d76>] configfs_attach_group+0x4a/0x183 [configfs]
+Dec  1 12:53:17 men-an-tol kernel:
+Dec  1 12:53:17 men-an-tol kernel: but task is already holding lock:
+Dec  1 12:53:17 men-an-tol kernel:
+(&sb->s_type->i_mutex_key#11/2){--..}, at: [<
+ffffffffa0294d76>] configfs_attach_group+0x4a/0x183 [configfs]
+Dec  1 12:53:17 men-an-tol kernel:
+Dec  1 12:53:17 men-an-tol kernel: other info that might help us debug
+this:
+Dec  1 12:53:17 men-an-tol kernel: 2 locks held by dlm_controld/2455:
+Dec  1 12:53:17 men-an-tol kernel: #0:
+(&sb->s_type->i_mutex_key#10/1){--..}, a
+t: [<ffffffff802b5e11>] lookup_create+0x26/0x94
+Dec  1 12:53:17 men-an-tol kernel: #1:
+(&sb->s_type->i_mutex_key#11/2){--..}, a
+t: [<ffffffffa0294d76>] configfs_attach_group+0x4a/0x183 [configfs]
+Dec  1 12:53:17 men-an-tol kernel:
 
-05:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 
-ff) (prog-if ff)
-         !!! Unknown header type 7f
+which seems to be caused by the mkdir which dlm_controld does in
+configfs. Looking at the stack trace, this didn't make much sense until
+I stuck noinline in front of several functions in configfs, whereupon I
+get:
+ [<ffffffff8025808e>] __lock_acquire+0xdce/0x14f5
+ [<ffffffff80254894>] ? get_lock_stats+0x34/0x5c
+ [<ffffffff802548ca>] ? put_lock_stats+0xe/0x27
+ [<ffffffff802549c3>] ? lock_release_holdtime+0xe0/0xe5
+ [<ffffffff8025880a>] lock_acquire+0x55/0x71
+ [<ffffffffa024add0>] ? configfs_attach_group+0x40/0x89 [configfs]
+ [<ffffffff8050563c>] mutex_lock_nested+0xf9/0x2c5
+ [<ffffffffa024add0>] ? configfs_attach_group+0x40/0x89 [configfs]
+ [<ffffffffa024add0>] ? configfs_attach_group+0x40/0x89 [configfs]
+ [<ffffffffa024ac7c>] ? configfs_attach_item+0xed/0x201 [configfs]
+ [<ffffffffa024add0>] configfs_attach_group+0x40/0x89 [configfs] <- second call
+ [<ffffffffa024aec5>] create_default_group+0xac/0xe3 [configfs]
+ [<ffffffffa024af24>] populate_groups+0x28/0x52 [configfs]
+ [<ffffffffa024add8>] configfs_attach_group+0x48/0x89 [configfs] <- first call
+ [<ffffffffa024b222>] configfs_mkdir+0x2d4/0x3bf [configfs]
+ [<ffffffff802b66ef>] vfs_mkdir+0xb0/0x121
+ [<ffffffff802b8afa>] sys_mkdirat+0xa2/0xf5
+ [<ffffffff8020b4fc>] ? sysret_check+0x27/0x62
+ [<ffffffff802569ec>] ? trace_hardirqs_on_caller+0xf0/0x114
+ [<ffffffff8026cf14>] ? audit_syscall_entry+0x126/0x15a
+ [<ffffffff802b8b60>] sys_mkdir+0x13/0x15
+ [<ffffffff8020b4cb>] system_call_fastpath+0x16/0x1b
 
-[16480.579435] Disabling non-boot CPUs ...
-[16480.625957] mmc0: Controller never released inhibit bit(s).
-[16480.625957] sdhci: ============== REGISTER DUMP ==============
-[16480.625957] sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
-[16480.625957] sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
-[16480.625957] sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
-[16480.625957] sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
-[16480.625957] sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
-[16480.625957] sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
-[16480.625957] sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
-[16480.625957] sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
-[16480.625957] sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
-[16480.625957] sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
-[16480.625957] sdhci: ===========================================
-...
+so it looks like configfs_attach_group is being called recursively in
+this case, and I think thats the cause of the warning messages. Also I
+spotted a couple of other things... from configfs_attach_item() the
+inode mutex which is being locked just uses a plain old mutex_lock()
+call whereas in configfs_attach_group() which calls
+configfs_attach_item() there is an annotated I_MUTEX_CHILD call. I would
+have expected them both to be the same since I presume that the parent
+is common (locked by the VFS if I've understood whats going on here).
 
-Thanks,
+The second thing is that configfs_attach_item() calls populate_attrs()
+which calls through to configfs_add_file(), so in order words it seems
+to also be called from the context of the mkdir call. In that case the
+inode mutex is locked with I_MUTEX_NORMAL annotation.
 
--js
+So I'm a bit confused as to why lockdep doesn't flag up those issues too
+since they appear to occur before the one which produced the above
+message, or maybe I've misunderstood how the annotation works.
+
+Any ideas what is going wrong here? I think it must just be an
+annotation issue since it appears that configfs works perfectly ok
+otherwise, but it would be nice to get to the bottom of it,
+
+Steve.
+
+
 
 
