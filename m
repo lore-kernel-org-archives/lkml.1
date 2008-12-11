@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758971AbYLKXZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYLKXZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758971AbYLKXZU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 18:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757154AbYLKXZF
+	id S1759481AbYLKXZm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 18:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758783AbYLKXZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 18:25:05 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:6570 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757072AbYLKXZD (ORCPT
+	Thu, 11 Dec 2008 18:25:17 -0500
+Received: from mga02.intel.com ([134.134.136.20]:41169 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758687AbYLKXZP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 18:25:03 -0500
-X-IronPort-AV: E=Sophos;i="4.36,207,1228089600"; 
-   d="scan'208";a="211424313"
-From: Roland Dreier <rdreier@cisco.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, Nguyen Anh Quynh <aquynh@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Kuniyasu Suzaki <k.suzaki@aist.go.jp>
-Subject: Re: [PATCH] fix calls to request_module()
-References: <9cde8bff0812101935j5ef56140k67035d892a868738@mail.gmail.com>
-	<20081211040118.GK28946@ZenIV.linux.org.uk>
-	<20081210201455.0c611484.akpm@linux-foundation.org>
-	<20081211044901.GL28946@ZenIV.linux.org.uk>
-	<adatz9b2thy.fsf@cisco.com>
-	<20081210214142.9e7b2298.akpm@linux-foundation.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 11 Dec 2008 15:25:01 -0800
-In-Reply-To: <20081210214142.9e7b2298.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 10 Dec 2008 21:41:42 -0800")
-Message-ID: <adahc5a2t2q.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 11 Dec 2008 18:25:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,207,1228118400"; 
+   d="scan'208";a="473273566"
+From: "Ma, Chinang" <chinang.ma@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       "Nueckel, Hubert" <hubert.nueckel@intel.com>
+Date: Thu, 11 Dec 2008 16:25:06 -0700
+Subject: CFS scheduler OLTP perforamnce
+Thread-Topic: CFS scheduler OLTP perforamnce
+Thread-Index: Aclb57OanrTi/daKTMORB++KI0JLSQ==
+Message-ID: <BC02C49EEB98354DBA7F5DD76F2A9E80030A74A5FF@azsmsx501.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 11 Dec 2008 23:25:01.0992 (UTC) FILETIME=[B0E1A280:01C95BE7]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I wonder if we could add a printk_stfu() which isn't declared
- > attribute(printf) and which simply calls printk.  We might still get a
- > single warning at the interface point.
+We are evaluating the CFS OLTP performance with 2.6.28-c7 kernel. In this workload once a database foreground process commit a transaction it will signal the log writer process to write to the log file. Foreground processes will wait until log writer finish writing and wake them up. With hundreds of foreground process running in the system, it is important that the log writer get to run as soon as data is available. 
 
-That would fix the class of warnings like
+Here are the experiments we have done with 2.6.28-rc7.
+1. Increase log writer priority "renice -20 <log writer pid>" while keeping all other processes running in default CFS priority. We get a baseline performance with log latency (scheduling + i/o) at 7 ms.
 
-	printk(char_pointer_gcc_doesnt_know_is_safe);
+2. To reduce log latency, we set log writer to SCHED_RR with higher priority. We tried "chrt -p 49  <log writer pid>" and got 0.7% boost in performance with log latency reduced to 6.4 ms.
 
-but therre are alsofunctions like device_create() etc etc where someone
-could easily and legitimately do the same thing.
+It seems that in this case renice to higher priority with CFS did not reduce scheduling latency as well as SCHED_RR.
 
- - R.
+-Chinang
