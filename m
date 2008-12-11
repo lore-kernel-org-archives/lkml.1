@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbYLKQtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757470AbYLKQuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757224AbYLKQtu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 11:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756654AbYLKQsn
+	id S1757470AbYLKQuK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 11:50:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665AbYLKQso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 11:48:43 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:45056 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756623AbYLKQsm (ORCPT
+	Thu, 11 Dec 2008 11:48:44 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:18619 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756643AbYLKQsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 11:48:42 -0500
-X-BigFish: VPS1(zzzzzzz32i64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0KBQ1CR-01-7O1-01
+	Thu, 11 Dec 2008 11:48:43 -0500
+X-BigFish: VPS1(zzzzzzz32i66h)
+X-Spam-TCS-SCL: 5:0
+X-FB-SS: 5,
+X-WSS-ID: 0KBQ1CS-01-7O4-01
 From: Robert Richter <robert.richter@amd.com>
 To: oprofile-list <oprofile-list@lists.sourceforge.net>
 CC: LKML <linux-kernel@vger.kernel.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 10/10] ftrace: remove unused function arg in trace_iterator_increment()
-Date: Thu, 11 Dec 2008 16:04:46 +0100
-Message-ID: <1229007886-14362-11-git-send-email-robert.richter@amd.com>
+       Robert Richter <robert.richter@amd.com>
+Subject: [PATCH 03/10] oprofile: whitspace changes only
+Date: Thu, 11 Dec 2008 16:04:39 +0100
+Message-ID: <1229007886-14362-4-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1229007886-14362-1-git-send-email-robert.richter@amd.com>
 References: <1229007886-14362-1-git-send-email-robert.richter@amd.com>
@@ -31,36 +31,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes the unused cpu function parameter.
-
-Cc: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- kernel/trace/trace.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/oprofile/op_model_amd.c |    4 ++--
+ drivers/oprofile/cpu_buffer.c    |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index d86e325..a96b335 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -914,7 +914,7 @@ enum trace_file_type {
- 	TRACE_FILE_LAT_FMT	= 1,
- };
+diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
+index fb67e19..f71bd21 100644
+--- a/arch/x86/oprofile/op_model_amd.c
++++ b/arch/x86/oprofile/op_model_amd.c
+@@ -70,8 +70,8 @@ static unsigned long reset_value[NUM_COUNTERS];
+  * data. Should then be added to linux/oprofile.h.
+  */
+ extern void
+-oprofile_add_ibs_sample(struct pt_regs *const regs,
+-			unsigned int *const ibs_sample, int ibs_code);
++oprofile_add_ibs_sample(struct pt_regs * const regs,
++			unsigned int * const ibs_sample, int ibs_code);
  
--static void trace_iterator_increment(struct trace_iterator *iter, int cpu)
-+static void trace_iterator_increment(struct trace_iterator *iter)
+ struct ibs_fetch_sample {
+ 	/* MSRC001_1031 IBS Fetch Linear Address Register */
+diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+index 3958107..2c4d541 100644
+--- a/drivers/oprofile/cpu_buffer.c
++++ b/drivers/oprofile/cpu_buffer.c
+@@ -277,8 +277,8 @@ void oprofile_add_sample(struct pt_regs * const regs, unsigned long event)
+ 
+ #define MAX_IBS_SAMPLE_SIZE 14
+ 
+-void oprofile_add_ibs_sample(struct pt_regs *const regs,
+-			     unsigned int *const ibs_sample, int ibs_code)
++void oprofile_add_ibs_sample(struct pt_regs * const regs,
++			     unsigned int * const ibs_sample, int ibs_code)
  {
- 	/* Don't allow ftrace to trace into the ring buffers */
- 	ftrace_disable_cpu();
-@@ -993,7 +993,7 @@ static void *find_next_entry_inc(struct trace_iterator *iter)
- 	iter->ent = __find_next_entry(iter, &iter->cpu, &iter->ts);
- 
- 	if (iter->ent)
--		trace_iterator_increment(iter, iter->cpu);
-+		trace_iterator_increment(iter);
- 
- 	return iter->ent ? iter : NULL;
- }
+ 	int is_kernel = !user_mode(regs);
+ 	struct oprofile_cpu_buffer *cpu_buf = &__get_cpu_var(cpu_buffer);
 -- 
 1.6.0.1
 
