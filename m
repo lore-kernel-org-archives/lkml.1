@@ -1,52 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbYLKWz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbYLKWzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759208AbYLKWz1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 17:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758016AbYLKWyk
+	id S1759319AbYLKWzu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 17:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758693AbYLKWyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 17:54:40 -0500
+	Thu, 11 Dec 2008 17:54:50 -0500
 Received: from fg-out-1718.google.com ([72.14.220.153]:41229 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757823AbYLKWyj (ORCPT
+	with ESMTP id S1758575AbYLKWyt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 17:54:39 -0500
-Message-ID: <49419a2d.06a1660a.5c0a.ffff908c@mx.google.com>
+	Thu, 11 Dec 2008 17:54:49 -0500
+Message-ID: <49419a37.0aa5660a.7d74.31a0@mx.google.com>
 To: netdev@vger.kernel.org
 Cc: Karsten Keil <kkeil@suse.de>
 Cc: linux-kernel@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org
 Date: Thu, 11 Dec 2008 22:36:00 +0100
-Subject: [PATCH 4/9][v2] mISDN: un-export symbol 'plx_lock'
+Subject: [PATCH 6/9][v2] mISDN: fix sparse warning: symbol 'id' shadows an earlier one
 From: Hannes Eder <hannes@hanneseder.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'plx_lock' is only used within hfcmulti.c.
+Impact: rename function scope variable
 
 Fix this warning:
 
-  drivers/isdn/hardware/mISDN/hfcmulti.c:176:1: warning: symbol 'plx_lock' shadows an earlier one
-  drivers/isdn/hardware/mISDN/hfcmulti.c:175:19: originally declared here
+  drivers/isdn/mISDN/l1oip_core.c:472:8: warning: symbol 'id' shadows an earlier one
+  drivers/isdn/mISDN/l1oip_core.c:254:14: originally declared here
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 Acked-by: Karsten Keil <kkeil@suse.de>
 ---
- drivers/isdn/hardware/mISDN/hfcmulti.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/isdn/mISDN/l1oip_core.c |   22 +++++++++++-----------
+ 1 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
-index 599d832..970201d 100644
---- a/drivers/isdn/hardware/mISDN/hfcmulti.c
-+++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
-@@ -173,7 +173,6 @@ static int interrupt_registered;
- static struct hfc_multi *syncmaster;
- static int plxsd_master; /* if we have a master card (yet) */
- static spinlock_t plx_lock; /* may not acquire other lock inside */
--EXPORT_SYMBOL(plx_lock);
+diff --git a/drivers/isdn/mISDN/l1oip_core.c b/drivers/isdn/mISDN/l1oip_core.c
+index e42150a..0884dd6 100644
+--- a/drivers/isdn/mISDN/l1oip_core.c
++++ b/drivers/isdn/mISDN/l1oip_core.c
+@@ -469,7 +469,7 @@ l1oip_socket_recv(struct l1oip *hc, u8 remotecodec, u8 channel, u16 timebase,
+ static void
+ l1oip_socket_parse(struct l1oip *hc, struct sockaddr_in *sin, u8 *buf, int len)
+ {
+-	u32			id;
++	u32			packet_id;
+ 	u8			channel;
+ 	u8			remotecodec;
+ 	u16			timebase;
+@@ -508,7 +508,7 @@ l1oip_socket_parse(struct l1oip *hc, struct sockaddr_in *sin, u8 *buf, int len)
+ 	}
  
- #define	TYP_E1		1
- #define	TYP_4S		4
+ 	/* get id flag */
+-	id = (*buf>>4)&1;
++	packet_id = (*buf>>4)&1;
+ 
+ 	/* check coding */
+ 	remotecodec = (*buf) & 0x0f;
+@@ -520,11 +520,11 @@ l1oip_socket_parse(struct l1oip *hc, struct sockaddr_in *sin, u8 *buf, int len)
+ 	buf++;
+ 	len--;
+ 
+-	/* check id */
+-	if (id) {
++	/* check packet_id */
++	if (packet_id) {
+ 		if (!hc->id) {
+ 			printk(KERN_WARNING "%s: packet error - packet has id "
+-				"0x%x, but we have not\n", __func__, id);
++				"0x%x, but we have not\n", __func__, packet_id);
+ 			return;
+ 		}
+ 		if (len < 4) {
+@@ -532,16 +532,16 @@ l1oip_socket_parse(struct l1oip *hc, struct sockaddr_in *sin, u8 *buf, int len)
+ 				"short for ID value\n", __func__);
+ 			return;
+ 		}
+-		id = (*buf++) << 24;
+-		id += (*buf++) << 16;
+-		id += (*buf++) << 8;
+-		id += (*buf++);
++		packet_id = (*buf++) << 24;
++		packet_id += (*buf++) << 16;
++		packet_id += (*buf++) << 8;
++		packet_id += (*buf++);
+ 		len -= 4;
+ 
+-		if (id != hc->id) {
++		if (packet_id != hc->id) {
+ 			printk(KERN_WARNING "%s: packet error - ID mismatch, "
+ 				"got 0x%x, we 0x%x\n",
+-				__func__, id, hc->id);
++				__func__, packet_id, hc->id);
+ 			return;
+ 		}
+ 	} else {
 -- 
 1.5.6.3
 
