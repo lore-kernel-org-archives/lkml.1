@@ -1,75 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbYLKBvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYLKB7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755432AbYLKBvM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 20:51:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYLKBu5
+	id S1755503AbYLKB7O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 20:59:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbYLKB65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 20:50:57 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:52216 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753023AbYLKBu4 (ORCPT
+	Wed, 10 Dec 2008 20:58:57 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40528 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754048AbYLKB64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 20:50:56 -0500
-X-Sasl-enc: 22q0U9FTGL9W5SnnkWjJJDBAT1QFfUYmz8DXyZKutMec 1228960254
-Date: Wed, 10 Dec 2008 23:50:52 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Adam Belay <abelay@mit.edu>,
-       rjw@sisk.pl
-Subject: Re: [PATCH] PNPACPI: Enable Power Support
-Message-ID: <20081211015052.GA18925@khazad-dum.debian.net>
-References: <493D8A1F.2090907@gmx.net> <20081210095315.GA20627@khazad-dum.debian.net> <494018E9.2060507@gmx.net> <20081210232137.GB7589@khazad-dum.debian.net> <20081211012838.GA18065@khazad-dum.debian.net>
+	Wed, 10 Dec 2008 20:58:56 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "Luck, Tony" <tony.luck@intel.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [linux-next][PATCH] cpumask:cpumask_of_node-ia64 fix
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20081210164659.9ebb8158.sfr@canb.auug.org.au>
+References: <20081210164659.9ebb8158.sfr@canb.auug.org.au>
+Message-Id: <20081211105721.4FEE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081211012838.GA18065@khazad-dum.debian.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu, 11 Dec 2008 10:58:50 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Dec 2008, Henrique de Moraes Holschuh wrote:
-> Bah, never mind.  Major issue between the keyboard and the chair, on my
-> end...  Got PR# and PS# confused.  The ThinkPad ACPI DSDT in question has
-> the standard crap for wake device control, and PR# methods, but no PS#
-> methods.
-> 
-> The PR0..PR2 nodes for the UHCI and EHCI USB ports on the ThinkPad T43
-> mention a power resource object, and that power resource CAN power on/off
-> the USB ports (and that freaks out the UHCI and EHCI kernel drivers causing
-> over-current reports, but that was to be expected).  The AML code tells the
-> EC to do some magic that probably tells a MOSFET somewhere in the mainboard
-> to stop supplying power to the ports.
-> 
-> And Windows XP (this is not a Vista BIOS and I never tried running Vista in
-> it...) is noticing that power resource (even without PS3 or PR3 nodes) and
-> calling that power resource _OFF handler to power down USB ports when it
-> doesn't need these devices for wakeup reasons, before entering STR.
-> 
-> Anyone has any clue on what part of the ACPI spec could result on that
-> behaviour?  Because otherwise I will just bloody special-case it into
-> thinkpad-acpi's suspend and resume stuff.  It will piss the USB subsystem
-> off if I can't arrange to do it on early resume and late suspend, however.
+===
+Subject: [PATCH] cpumask:cpumask_of_node-ia64 fix
+Impact: bug fix
 
-Found it.  ACPI 3.0b, page 238, 7.2 Device Power Management Objects.
+commit 07c636deede53ff3e96d54df0ece2c838e61951f introduce new CPU mask API and change cpu_mask variable type.
 
-"For OSPM to put the device in the D3 state, the following must occur:
+-----------------------------------------------
+-               cpumask_t cpu_mask;
++               const struct cpumask *cpu_mask;
+--------------------------------------------------
 
-All Power Resources no longer referenced by any device in the system must
-be in the OFF state"
 
-If you want to put *any* particular ACPI device into D3, you turn off
-*every* unused power resource, be them related or not to that device...
+However, its change is incomplete. in build time, compiler output following type mismatch warnings.
 
-Windows XP seems to do it, and powers down the USB ports. None of them are
-set for wake-from-S3, they all go to D3 and no references to the power
-resources are left.  We probably should be doing the same.
+  arch/ia64/kernel/iosapic.c:708: warning: passing argument 2 of '__cpu_clear' from incompatible pointer type
+  arch/ia64/kernel/iosapic.c:711: warning: passing argument 1 of '__cpus_weight' from incompatible pointer type
+  arch/ia64/kernel/iosapic.c:719: warning: passing argument 1 of '__first_cpu' from incompatible pointer type
+  arch/ia64/kernel/iosapic.c:720: warning: passing argument 2 of '__next_cpu' from incompatible pointer type
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: "Luck, Tony" <tony.luck@intel.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/ia64/kernel/iosapic.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+Index: b/arch/ia64/kernel/iosapic.c
+===================================================================
+--- a/arch/ia64/kernel/iosapic.c
++++ b/arch/ia64/kernel/iosapic.c
+@@ -695,7 +695,7 @@ get_target_cpu (unsigned int gsi, int ir
+ #ifdef CONFIG_NUMA
+ 	{
+ 		int num_cpus, cpu_index, iosapic_index, numa_cpu, i = 0;
+-		const struct cpumask *cpu_mask;
++		struct cpumask *cpu_mask;
+ 
+ 		iosapic_index = find_iosapic(gsi);
+ 		if (iosapic_index < 0 ||
+@@ -705,10 +705,10 @@ get_target_cpu (unsigned int gsi, int ir
+ 		cpu_mask = cpumask_of_node(iosapic_lists[iosapic_index].node);
+ 		for_each_cpu_and(numa_cpu, cpu_mask, &domain) {
+ 			if (!cpu_online(numa_cpu))
+-				cpu_clear(numa_cpu, cpu_mask);
++				cpu_clear(numa_cpu, *cpu_mask);
+ 		}
+ 
+-		num_cpus = cpus_weight(cpu_mask);
++		num_cpus = cpus_weight(*cpu_mask);
+ 
+ 		if (!num_cpus)
+ 			goto skip_numa_setup;
+@@ -716,8 +716,8 @@ get_target_cpu (unsigned int gsi, int ir
+ 		/* Use irq assignment to distribute across cpus in node */
+ 		cpu_index = irq % num_cpus;
+ 
+-		for (numa_cpu = first_cpu(cpu_mask) ; i < cpu_index ; i++)
+-			numa_cpu = next_cpu(numa_cpu, cpu_mask);
++		for (numa_cpu = first_cpu(*cpu_mask) ; i < cpu_index ; i++)
++			numa_cpu = next_cpu(numa_cpu, *cpu_mask);
+ 
+ 		if (numa_cpu != NR_CPUS)
+ 			return cpu_physical_id(numa_cpu);
+
+
