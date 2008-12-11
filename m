@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbYLKTtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760507AbYLKTuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758606AbYLKTtp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758501AbYLKT11
+	id S1760507AbYLKTuK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:50:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759559AbYLKTcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:27:27 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:12491 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758884AbYLKT10 (ORCPT
+	Thu, 11 Dec 2008 14:32:39 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:56365 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760460AbYLKTch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:27:26 -0500
-Date: Thu, 11 Dec 2008 12:27:25 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, justin.chen@hp.com,
-       linux-pci <linux-pci@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] PCI Hotplug: acpiphp wants a 64-bit _SUN
-Message-ID: <20081211192725.GH18309@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>, justin.chen@hp.com,
-	linux-pci <linux-pci@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20081211181242.GD18309@ldl.fc.hp.com> <20081211181644.GE18309@ldl.fc.hp.com> <20081211192356.GS31176@sci.fi>
+	Thu, 11 Dec 2008 14:32:37 -0500
+Date: Thu, 11 Dec 2008 13:32:28 -0600
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Boaz Harrosh <bharrosh@panasas.com>, Mike.Halcrow.mhalcrow@us.ibm.com,
+       Phillip.Hellewell.phillip@hellewell.homeip.net,
+       ecryptfs-devel@lists.sourceforge.net
+Subject: Re: [PATCH] eCryptfs: check readlink result was not an error
+	before using it
+Message-ID: <20081211193228.GA13627@halcrowt61p.lan>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+References: <1229022995-9898-1-git-send-email-duaneg@dghda.com> <1229022995-9898-2-git-send-email-duaneg@dghda.com> <1229022995-9898-3-git-send-email-duaneg@dghda.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081211192356.GS31176@sci.fi>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1229022995-9898-3-git-send-email-duaneg@dghda.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ville Syrjälä <syrjala@sci.fi>:
-> On Thu, Dec 11, 2008 at 11:16:44AM -0700, Alex Chiang wrote:
-> > From: Justin Chen <justin.chen@hp.com>
-> > 
-> > Certain HP machines require the full 64 bits of _SUN as allowed
-> > by the ACPI spec. Without this change, we get name collisions in
-> > the lower 32 bits of the _SUN returned by firmware.
-> > 
-> > Signed-off-by: Justin Chen <justin.chen@hp.com>
-> > Signed-off-by: Alex Chiang <achiang@hp.com>
-> > ---
-> > diff --git a/drivers/pci/hotplug/acpiphp.h b/drivers/pci/hotplug/acpiphp.h
-> > index f9e244d..9bcb6cb 100644
-> > --- a/drivers/pci/hotplug/acpiphp.h
-> > +++ b/drivers/pci/hotplug/acpiphp.h
-> > @@ -113,7 +113,7 @@ struct acpiphp_slot {
-> >  
-> >  	u8		device;		/* pci device# */
-> >  
-> > -	u32		sun;		/* ACPI _SUN (slot unique number) */
-> > +	unsigned long long sun;		/* ACPI _SUN (slot unique number) */
+On Thu, Dec 11, 2008 at 07:16:26PM +0000, Duane Griffin wrote:
+> The result from readlink is being used to index into the link name
+> buffer without checking whether it is a valid length. If readlink
+> returns an error this will fault or cause memory corruption.
 > 
-> Why not make it u64 if that's what ACPI says it should be?
+> Signed-off-by: Duane Griffin <duaneg@dghda.com>
 
-Some 64-bit architectures typedef u64 to unsigned long, and some
-to unsigned long long.
+Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
 
-I'd prefer not to have to cast it to a (ULL) every time I want to
-printk.
-
-Thanks.
-
-/ac
-
+> ---
+>  fs/ecryptfs/inode.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
+> index 89209f0..5e78fc1 100644
+> --- a/fs/ecryptfs/inode.c
+> +++ b/fs/ecryptfs/inode.c
+> @@ -673,10 +673,11 @@ static void *ecryptfs_follow_link(struct dentry *dentry, struct nameidata *nd)
+>  	ecryptfs_printk(KERN_DEBUG, "Calling readlink w/ "
+>  			"dentry->d_name.name = [%s]\n", dentry->d_name.name);
+>  	rc = dentry->d_inode->i_op->readlink(dentry, (char __user *)buf, len);
+> -	buf[rc] = '\0';
+>  	set_fs(old_fs);
+>  	if (rc < 0)
+>  		goto out_free;
+> +	else
+> +		buf[rc] = '\0';
+>  	rc = 0;
+>  	nd_set_link(nd, buf);
+>  	goto out;
