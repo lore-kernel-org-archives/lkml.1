@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYLKRk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbYLKRlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbYLKRk6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 12:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585AbYLKRjt
+	id S1757971AbYLKRlX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 12:41:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757672AbYLKRj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 12:39:49 -0500
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:41459 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757574AbYLKRjs (ORCPT
+	Thu, 11 Dec 2008 12:39:57 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:57969 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757640AbYLKRjz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 12:39:48 -0500
+	Thu, 11 Dec 2008 12:39:55 -0500
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v5 5/7] sched: activate active load balancing in new idle
-	cpus
+Subject: [RFC PATCH v5 6/7] sched: add SD_BALANCE_NEWIDLE at MC and CPU level
+	for sched_mc>0
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
        Suresh B Siddha <suresh.b.siddha@intel.com>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -25,8 +25,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
        Max Krasnyansky <maxk@qualcomm.com>,
        Gregory Haskins <gregory.haskins@gmail.com>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Thu, 11 Dec 2008 23:13:10 +0530
-Message-ID: <20081211174310.2020.81073.stgit@drishya.in.ibm.com>
+Date: Thu, 11 Dec 2008 23:13:17 +0530
+Message-ID: <20081211174317.2020.87473.stgit@drishya.in.ibm.com>
 In-Reply-To: <20081211173831.2020.57550.stgit@drishya.in.ibm.com>
 References: <20081211173831.2020.57550.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -37,95 +37,81 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Active load balancing is a process by which migration thread
-is woken up on the target CPU in order to pull current
-running task on another package into this newly idle
-package.
+Add SD_BALANCE_NEWIDLE flag at MC level and CPU level
+if sched_mc is set.  This helps power savings and
+will not affect performance when sched_mc=0
 
-This method is already in use with normal load_balance(),
-this patch introduces this method to new idle cpus when
-sched_mc is set to POWERSAVINGS_BALANCE_WAKEUP.
+Ingo and Mike Galbraith have optimised the SD flags by
+removing SD_BALANCE_NEWIDLE at MC and CPU level.  This
+helps performance but hurts power savings since this
+slows down task consolidation by reducing the number
+of times load_balance is run.
 
-This logic provides effective consolidation of short running
-daemon jobs in a almost idle system
+    sched: fine-tune SD_MC_INIT
+        commit 14800984706bf6936bbec5187f736e928be5c218
+        Author: Mike Galbraith <efault@gmx.de>
+        Date:   Fri Nov 7 15:26:50 2008 +0100
 
-The side effect of this patch may be ping-ponging of tasks
-if the system is moderately utilised. May need to adjust the
-iterations before triggering.
+    sched: re-tune balancing -- revert
+        commit 9fcd18c9e63e325dbd2b4c726623f760788d5aa8
+        Author: Ingo Molnar <mingo@elte.hu>
+        Date:   Wed Nov 5 16:52:08 2008 +0100
+
+This patch selectively enables SD_BALANCE_NEWIDLE flag
+only when sched_mc is set to 1 or 2.  This helps power savings
+by task consolidation and also does not hurt performance at
+sched_mc=0 where all power saving optimisations are turned off.
 
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
 
- kernel/sched.c |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 54 insertions(+), 0 deletions(-)
+ include/linux/sched.h    |   10 ++++++++++
+ include/linux/topology.h |    6 ++++--
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 0918677..d60f191 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3692,10 +3692,64 @@ redo:
- 	}
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 888f2b2..e894892 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -782,6 +782,16 @@ enum powersavings_balance_level {
+ 	((sched_mc_power_savings || sched_smt_power_savings) ?	\
+ 	 SD_POWERSAVINGS_BALANCE : 0)
  
- 	if (!ld_moved) {
-+		int active_balance;
++/*
++ * Optimise SD flags for power savings:
++ * SD_BALANCE_NEWIDLE helps agressive task consolidation and power savings.
++ * Keep default SD flags if sched_{smt,mc}_power_saving=0
++ */
 +
- 		schedstat_inc(sd, lb_failed[CPU_NEWLY_IDLE]);
- 		if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
- 		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
- 			return -1;
++#define POWERSAVING_SD_FLAGS	\
++	((sched_mc_power_savings || sched_smt_power_savings) ?	\
++	  SD_BALANCE_NEWIDLE : 0)
 +
-+		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
-+			return -1;
-+
-+		if (sd->nr_balance_failed++ < 2)
-+			return -1;
-+
-+		/*
-+		 * The only task running in a non-idle cpu can be moved to this
-+		 * cpu in an attempt to completely freeup the other CPU
-+		 * package. The same method used to move task in load_balance()
-+		 * have been extended for load_balance_newidle() to speedup
-+		 * consolidation at sched_mc=POWERSAVINGS_BALANCE_WAKEUP (2)
-+		 *
-+		 * The package power saving logic comes from
-+		 * find_busiest_group().  If there are no imbalance, then
-+		 * f_b_g() will return NULL.  However when sched_mc={1,2} then
-+		 * f_b_g() will select a group from which a running task may be
-+		 * pulled to this cpu in order to make the other package idle.
-+		 * If there is no opportunity to make a package idle and if
-+		 * there are no imbalance, then f_b_g() will return NULL and no
-+		 * action will be taken in load_balance_newidle().
-+		 *
-+		 * Under normal task pull operation due to imbalance, there
-+		 * will be more than one task in the source run queue and
-+		 * move_tasks() will succeed.  ld_moved will be true and this
-+		 * active balance code will not be triggered.
-+		 */
-+
-+		/* Lock busiest in correct order while this_rq is held */
-+		double_lock_balance(this_rq, busiest);
-+
-+		/*
-+		 * don't kick the migration_thread, if the curr
-+		 * task on busiest cpu can't be moved to this_cpu
-+		 */
-+		if (!cpu_isset(this_cpu, busiest->curr->cpus_allowed)) {
-+			double_unlock_balance(this_rq, busiest);
-+			all_pinned = 1;
-+			return ld_moved;
-+		}
-+
-+		if (!busiest->active_balance) {
-+			busiest->active_balance = 1;
-+			busiest->push_cpu = this_cpu;
-+			active_balance = 1;
-+		}
-+
-+		double_unlock_balance(this_rq, busiest);
-+		if (active_balance)
-+			wake_up_process(busiest->migration_thread);
-+
- 	} else
- 		sd->nr_balance_failed = 0;
+ #define test_sd_parent(sd, flag)	((sd->parent &&		\
+ 					 (sd->parent->flags & flag)) ? 1 : 0)
  
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index 117f1b7..26c608c 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -125,7 +125,8 @@ void arch_update_cpu_topology(void);
+ 				| SD_WAKE_AFFINE	\
+ 				| SD_WAKE_BALANCE	\
+ 				| SD_SHARE_PKG_RESOURCES\
+-				| BALANCE_FOR_MC_POWER,	\
++				| BALANCE_FOR_MC_POWER	\
++				| POWERSAVING_SD_FLAGS, \
+ 	.last_balance		= jiffies,		\
+ 	.balance_interval	= 1,			\
+ }
+@@ -150,7 +151,8 @@ void arch_update_cpu_topology(void);
+ 				| SD_BALANCE_FORK	\
+ 				| SD_WAKE_AFFINE	\
+ 				| SD_WAKE_BALANCE	\
+-				| BALANCE_FOR_PKG_POWER,\
++				| BALANCE_FOR_PKG_POWER \
++				| POWERSAVING_SD_FLAGS, \
+ 	.last_balance		= jiffies,		\
+ 	.balance_interval	= 1,			\
+ }
 
