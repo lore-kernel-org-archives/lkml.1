@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbYLKWZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbYLKW00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758922AbYLKWZj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 17:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbYLKWZ3
+	id S1758866AbYLKW00 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 17:26:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbYLKW0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 17:25:29 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:57720 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757439AbYLKWZ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 17:25:29 -0500
-Date: Thu, 11 Dec 2008 23:26:57 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adam Jackson <ajax@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] net: Remove a noisy printk
-Message-ID: <20081211222657.GA27757@uranus.ravnborg.org>
-References: <1229033625-30825-1-git-send-email-ajax@redhat.com>
-Mime-Version: 1.0
+	Thu, 11 Dec 2008 17:26:13 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:39535 "EHLO kumera.dghda.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757026AbYLKW0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 17:26:11 -0500
+From: "Duane Griffin" <duaneg@dghda.com>
+Date: Thu, 11 Dec 2008 22:26:05 +0000
+To: Duane Griffin <duaneg@dghda.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Boaz Harrosh <bharrosh@panasas.com>, Stephen@kumera.dghda.com,
+       Tweedie@kumera.dghda.com, sct@redhat.com, Andrew@kumera.dghda.com,
+       Morton@kumera.dghda.com, akpm@linux-foundation.org, adilger@sun.com,
+       linux-ext4@vger.kernel.org
+Subject: [PATCH, v2] ext3: ensure link targets are NULL-terminated
+Message-ID: <20081211222605.GB18665@dastardly.home.dghda.com>
+References: <1229022995-9898-1-git-send-email-duaneg@dghda.com> <1229022995-9898-2-git-send-email-duaneg@dghda.com> <1229022995-9898-3-git-send-email-duaneg@dghda.com> <1229022995-9898-4-git-send-email-duaneg@dghda.com> <1229022995-9898-5-git-send-email-duaneg@dghda.com> <1229022995-9898-6-git-send-email-duaneg@dghda.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229033625-30825-1-git-send-email-ajax@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1229022995-9898-6-git-send-email-duaneg@dghda.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 05:13:42PM -0500, Adam Jackson wrote:
-> From: Dave Jones <davej@redhat.com>
-> 
-> These messages are trivial to trigger when running stress tests
-> like isic, and add no real value.
-> 
-> Signed-off-by: Dave Jones <davej@redhat.com>
-> Signed-off-by: Adam Jackson <ajax@redhat.com>
+Ensure link targets are NUL-terminated, even if corrupted on-disk.
 
-I would suggest to send this to netdev.
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+---
 
-	Sam
+V2: terminate when the link is read instead of every time it is
+followed, as suggested by Dave Kleikamp.
+
+diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+index f8424ad..c168781 100644
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -2817,9 +2817,10 @@ struct inode *ext3_iget(struct super_block *sb, unsigned long ino)
+ 		inode->i_op = &ext3_dir_inode_operations;
+ 		inode->i_fop = &ext3_dir_operations;
+ 	} else if (S_ISLNK(inode->i_mode)) {
+-		if (ext3_inode_is_fast_symlink(inode))
++		if (ext3_inode_is_fast_symlink(inode)) {
+ 			inode->i_op = &ext3_fast_symlink_inode_operations;
+-		else {
++			((char *) ei->i_data)[inode->i_size] = '\0';
++		} else {
+ 			inode->i_op = &ext3_symlink_inode_operations;
+ 			ext3_set_aops(inode);
+ 		}
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
