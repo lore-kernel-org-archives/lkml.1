@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbYLKUkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758324AbYLKUko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758106AbYLKUkL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 15:40:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbYLKUj4
+	id S1758324AbYLKUko (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 15:40:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757332AbYLKUk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 15:39:56 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58820 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757217AbYLKUjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 15:39:55 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [PATCH 3/3] Sound (HDA Intel): Restore PCI configuration space with interrupts off
-Date: Thu, 11 Dec 2008 21:38:56 +0100
-User-Agent: KMail/1.9.9
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200812112103.17018.rjw@sisk.pl> <s5h7i66v4nb.wl%tiwai@suse.de>
-In-Reply-To: <s5h7i66v4nb.wl%tiwai@suse.de>
+	Thu, 11 Dec 2008 15:40:26 -0500
+Received: from mail-bw0-f13.google.com ([209.85.218.13]:40176 "EHLO
+	mail-bw0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757227AbYLKUkZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 15:40:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=f+J6uNVYh6IoOxpqt8BeQcs4PG1aI5AjJJLMrpGMGvDlMvXC8mNA98oWqRi8heZVfM
+         Gk3JPmhxPiVkJywUeeSLeEOJWe4bbp2Py7IkXw/BY8vkUTVMnS7KrNpLNaE4IaypQre1
+         Pxgm/cQOKaGn7wnRE7DAhxu7piKaJ1URkVU0I=
+Message-ID: <4941793D.1000707@gmail.com>
+Date: Thu, 11 Dec 2008 21:34:05 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: jeff@garzik.org, linux-kernel@vger.kernel.org, jgarzik@redhat.com,
+       a_romanescu@yahoo.co.uk, tj@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 2/2 v2] ATA: piix, fix pointer deref on suspend
+References: <493E0689.6020302@garzik.org>	<1228855948-22886-1-git-send-email-jirislaby@gmail.com>	<1228855948-22886-2-git-send-email-jirislaby@gmail.com> <20081211122712.aee1f039.akpm@linux-foundation.org>
+In-Reply-To: <20081211122712.aee1f039.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812112138.57145.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 11 of December 2008, Takashi Iwai wrote:
-> At Thu, 11 Dec 2008 21:03:16 +0100,
-> Rafael J. Wysocki wrote:
-> > 
-> > On Thursday, 11 of December 2008, Takashi Iwai wrote:
-> > > At Sun, 07 Dec 2008 10:47:56 +0100,
-> > > I wrote:
-> > > > 
-> > > > At Sat, 6 Dec 2008 20:45:35 -0800,
-> > > > Jesse Barnes wrote:
-> > > > > 
-> > > > > On Saturday, December 6, 2008 6:09 am Rafael J. Wysocki wrote:
-> > > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > > Subject: Sound (HDA Intel): Restore PCI configuration space with interrupts
-> > > > > > off
-> > > > > >
-> > > > > > Move the restoration of the standard PCI configuration registers
-> > > > > > in the snd_hda_intel driver to a ->resume_early() callback executed
-> > > > > > with interrupts disabled, since doing that with interrupts enabled
-> > > > > > may lead to problems in some cases.
-> > > > > >
-> > > > > > This patch addresses the regression from 2.6.26 tracked as
-> > > > > > http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
-> > > > > 
-> > > > > Since I only applied 1 and 2 you'll need to send this one through Takashi.
-> > > > 
-> > > > OK, I merged it to for-next branch now.
-> > > > It should appear in the linux-next tree of tomorrow.
-> > > 
-> > > There is no build errors at least on linux-next, but I guess the
-> > > testing about PM has been rarely done on linux-next kernel...
-> > > 
-> > > BTW, Rafael, is this particular patch (against hda_intel.c) works in
-> > > general or dependent on other two patches?
-> > 
-> > It should be safe without the other patches too.
+Andrew Morton napsal(a):
+> On Tue,  9 Dec 2008 21:52:28 +0100
+> Jiri Slaby <jirislaby@gmail.com> wrote:
 > 
-> OK, but this alone doesn't make much sense without others, right?
+>> Commit
+>> ata_piix: add borked Tecra M4 to broken suspend list
+>> introduced DMI variables checking, but they can be null, so that
+>> we possibly dereference null.
+>>
+>> Check if they are null and avoid checks in that case.
+>>
+>> Solves:
+>> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+>> IP: [<ffffffff8043da97>] piix_pci_device_suspend+0x117/0x230
 > 
-> I'm asking this because I'm not pretty sure how this should be handled.
-> Certainly it must be in 2.6.29, but about for 2.6.28...
+> This already got fixed, the nasty way.
+> 
+> I queued "DMI: add dmi_match".  We can later switch the piix nastyfix
+> over to the nicefix as a cleanup.
 
-Well, I think 2.6.29 would be fine.
-
-Thanks,
-Rafael
+Oooops, I didn't Cced you to the last version, sorry for that.
