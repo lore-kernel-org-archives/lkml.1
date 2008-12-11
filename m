@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbYLKH5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbYLKIFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbYLKH5x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 02:57:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbYLKH5n
+	id S1755649AbYLKIFq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 03:05:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYLKIFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 02:57:43 -0500
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:29245 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751054AbYLKH5n (ORCPT
+	Thu, 11 Dec 2008 03:05:36 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:44134 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750863AbYLKIFf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 02:57:43 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=zy0A5DBDeMzOB+BJSqYUIQnZIXkl+gb5AYLON5d/ii3eyLuuH32SXN4K3Js8+faHXCnvxEK6tWUqN+gz4AvysB0Q2HRm/oSaXtxQOB6TbeXgqSM/S5/dNh0GYHwyvNs3BNoRwvph+8riu6l9wCrpnjovhvI7wXFtZBmBo2fyTKU=  ;
-X-YMail-OSG: xp729AwVM1lvxIIZp8zN0bf9OaXkGdij6m.2R_tGBL6Xw0R5y8h4axwmGlJ8ARFvId_Qisxs.QzzUXMZVvfkYj0Ow939cJ62t8qjRcfhqbQpBYBxJ.2VjZxV7BRPxxlL7.Exi0Om4c3wiUqngJ8FHUo75Ea9rzqqWfLUqjvm
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Morton, Andrew" <akpm@linux-foundation.org>
-Subject: Re: Linux 2.6.28-rc8
-Date: Thu, 11 Dec 2008 18:57:36 +1100
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain>
+	Thu, 11 Dec 2008 03:05:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=nyJWRpVT1gScUMTeKqg4JTezhS8Bh1PZmllp8FJgRxmoVdZD7Nc+7ovO4r36hpdAkY
+         k9GV3b630pr5vQwDRNgWAdNHR+j7iYyikCPZ6lg1YhuG/rZG7E+4Mk5vks/FmJat7IC5
+         opBOu4P04cweWM9RCRdcAI6VeFj21InLJoV1Y=
+Message-ID: <14cd75110812110005n2809dae7n909a606f68ff1a61@mail.gmail.com>
+Date: Thu, 11 Dec 2008 13:05:34 +0500
+From: "Muhammad Mutahir Latif" <mutahirlatif@gmail.com>
+Reply-To: mutahirlatif@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: SATA passthrough commands from User Space
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812111857.36862.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 December 2008 12:04, Linus Torvalds wrote:
-> Nothing overly exciting here. Lots of small things, mostly in drivers
-> (with some defconfig updates for m68k and mips making the diffs bigger).
->
-> There's some uncomfortably big changes to the intel DRI code, but most of
-> that is all about fixes to the new i916 "GEM" code that is only used by
-> development X servers, and is a new feature, so it shouldn't be able to
-> cause regressions.
->
-> Perhaps more interesting is simply the release scheduling issue. I'm
-> getting slowly ready to do a real 2.6.28, but I don't think anybody really
-> wants the merge window to be around the holidays. So the question is
-> really whether to
->
->  (a) just make the -rc's go on a few more weeks, and do 2.6.28 after xmas
->
->      I like this, because alledgely people are debugging things, and we'd
->      get a more stable 2.6.28.
+Hi
 
-I still have one fix for a reported regression (softlink code doesn't
-honour GFP_NOFS, caused by a patch of mine). Posted a couple of weeks
-ago, but it didn't get anywhere.
+I am new to linux kernel development and need help in developing an
+application in linux for a SATA device. What is required is that the
+application needs to send raw SATA commands along with data (like Read
+DMA, Write FPDMA etc) to a SATA hard disk. Secondly we also have to
+achieve a reasonably high data transfer throughput.
 
-I thought it would be good to have in 2.6.28, but it's been present in
-a couple of releases now, so maybe Andrew didn't think it worth the
-trouble?
+As a starting point I was thinking of modifying the AHCI driver by
+adding an IOCTL hook to the driver , through which the user space
+application would be able to send command and data to the drive. The
+IOCTL function in the driver on getting a command would prepare the
+appropriate structures, prepare memory buffers and then call other
+builtin AHCI functions to perform the operations. Is this the correct
+approach for handling such a problem or should we be looking at the
+libata and use functions from that module. I would really appreciate
+any help from someone who might have modified AHCI or libata so that
+raw SATA commands can be sent from the user space
+
+Thanks
+
+Mutahir
