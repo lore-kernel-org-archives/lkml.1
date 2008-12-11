@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbYLKIFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbYLKIGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755649AbYLKIFq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 03:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYLKIFg
+	id S1754795AbYLKIGI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 03:06:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYLKIFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 03:05:36 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:44134 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbYLKIFf (ORCPT
+	Thu, 11 Dec 2008 03:05:52 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39949 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755700AbYLKIFr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 03:05:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=nyJWRpVT1gScUMTeKqg4JTezhS8Bh1PZmllp8FJgRxmoVdZD7Nc+7ovO4r36hpdAkY
-         k9GV3b630pr5vQwDRNgWAdNHR+j7iYyikCPZ6lg1YhuG/rZG7E+4Mk5vks/FmJat7IC5
-         opBOu4P04cweWM9RCRdcAI6VeFj21InLJoV1Y=
-Message-ID: <14cd75110812110005n2809dae7n909a606f68ff1a61@mail.gmail.com>
-Date: Thu, 11 Dec 2008 13:05:34 +0500
-From: "Muhammad Mutahir Latif" <mutahirlatif@gmail.com>
-Reply-To: mutahirlatif@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: SATA passthrough commands from User Space
+	Thu, 11 Dec 2008 03:05:47 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH for -mm] bailing out check first
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20081211170321.500B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu, 11 Dec 2008 17:05:42 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi
 
-I am new to linux kernel development and need help in developing an
-application in linux for a SATA device. What is required is that the
-application needs to send raw SATA commands along with data (like Read
-DMA, Write FPDMA etc) to a SATA hard disk. Secondly we also have to
-achieve a reasonably high data transfer throughput.
+This patch intent to fix trivial problem of rvr bailing out patch.
+Is this useful?
 
-As a starting point I was thinking of modifying the AHCI driver by
-adding an IOCTL hook to the driver , through which the user space
-application would be able to send command and data to the drive. The
-IOCTL function in the driver on getting a command would prepare the
-appropriate structures, prepare memory buffers and then call other
-builtin AHCI functions to perform the operations. Is this the correct
-approach for handling such a problem or should we be looking at the
-libata and use functions from that module. I would really appreciate
-any help from someone who might have modified AHCI or libata so that
-raw SATA commands can be sent from the user space
 
-Thanks
 
-Mutahir
+==
+Subject: [PATCH for -mm] bailing out check first
+
+current reclaim bailing out logic has a bit inefficiency.
+
+example, if system has 4 node and reclaim logic can get enough memory from first node,
+current logic works as following.
+
+1. reclaim node-1 and success reclaim enough memory.
+   then, bailing out happend.
+2. shrink_zones() call shrink_zone(node-2) and scan 32 page on each lru list.
+   after that, shrink_zone stop node-2 reclaim by bailing out logic.
+3. shrink_zones() call shrink_zone(node-3) ...
+4. shrink_zones() call shrink_zone(node-4) ...
+
+step 2-4 are unnecessary.
+it can be removed.
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Rik van Riel <riel@redhat.com>
+---
+ mm/vmscan.c |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1452,15 +1452,6 @@ static void shrink_zone(int priority, st
+ 
+ 	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
+ 					nr[LRU_INACTIVE_FILE]) {
+-		for_each_evictable_lru(l) {
+-			if (nr[l]) {
+-				nr_to_scan = min(nr[l], swap_cluster_max);
+-				nr[l] -= nr_to_scan;
+-
+-				nr_reclaimed += shrink_list(l, nr_to_scan,
+-							    zone, sc, priority);
+-			}
+-		}
+ 		/*
+ 		 * On large memory systems, scan >> priority can become
+ 		 * really large. This is fine for the starting priority;
+@@ -1472,6 +1463,16 @@ static void shrink_zone(int priority, st
+ 		if (nr_reclaimed > swap_cluster_max &&
+ 		    priority < DEF_PRIORITY && !current_is_kswapd())
+ 			break;
++
++		for_each_evictable_lru(l) {
++			if (nr[l]) {
++				nr_to_scan = min(nr[l], swap_cluster_max);
++				nr[l] -= nr_to_scan;
++
++				nr_reclaimed += shrink_list(l, nr_to_scan,
++							    zone, sc, priority);
++			}
++		}
+ 	}
+ 
+ 	sc->nr_reclaimed = nr_reclaimed;
+
+
