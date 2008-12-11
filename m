@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbYLKTV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbYLKTV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758235AbYLKTV0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:21:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757231AbYLKTSN
+	id S1758490AbYLKTV6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:21:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbYLKTSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:18:13 -0500
-Received: from kroah.org ([198.145.64.141]:55860 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:18:16 -0500
+Received: from kroah.org ([198.145.64.141]:55872 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756611AbYLKTSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756699AbYLKTSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Dec 2008 14:18:04 -0500
-Date: Thu, 11 Dec 2008 11:13:48 -0800
+Date: Thu, 11 Dec 2008 11:13:55 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Max Dmitrichenko <dmitrmax@gmail.com>,
+       alan@lxorguk.ukuu.org.uk, "Hong H. Pham" <hong.pham@windriver.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 09/83] sparc64: Fix PCI resource mapping on sparc64
-Message-ID: <20081211191348.GI5894@kroah.com>
+Subject: [patch 12/83] sparc64: Sync FPU state in VIS emulation handler.
+Message-ID: <20081211191355.GL5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0003-sparc64-Fix-PCI-resource-mapping-on-sparc64.patch"
+Content-Disposition: inline; filename="0006-sparc64-Sync-FPU-state-in-VIS-emulation-handler.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,53 +40,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Max Dmitrichenko <dmitrmax@gmail.com>
+From: Hong H. Pham <hong.pham@windriver.com>
 
-[ Upstream commit 145e1c0023585e0e8f6df22316308ec61c5066b2 ]
+[ Upstream commit 410d2c8187ed969238ba98008c1d57307a56cfd8 ]
 
-There is a problem discovered in recent versions of ATI Mach64 driver
-in X.org on sparc64 architecture. In short, the driver fails to mmap
-MMIO aperture (PCI resource #2).
+Copy the FPU state to the task's thread_info->fpregs for the VIS emulation
+functions to access.
 
-I've found that kernel's __pci_mmap_make_offset() returns EINVAL. It
-checks whether user attempts to mmap more than the resource length,
-which is 0x1000 bytes in our case. But PAGE_SIZE on SPARC64 is 0x2000
-and this is what actually is being mmaped. So __pci_mmap_make_offset()
-failed for this PCI resource.
-
-Signed-off-by: Max Dmitrichenko <dmitrmax@gmail.com>
+Signed-off-by: Hong H. Pham <hong.pham@windriver.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc64/kernel/pci.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ arch/sparc64/kernel/visemul.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/arch/sparc64/kernel/pci.c
-+++ b/arch/sparc64/kernel/pci.c
-@@ -1017,6 +1017,7 @@ static int __pci_mmap_make_offset(struct
+--- a/arch/sparc64/kernel/visemul.c
++++ b/arch/sparc64/kernel/visemul.c
+@@ -807,6 +807,8 @@ int vis_emul(struct pt_regs *regs, unsig
+ 	if (get_user(insn, (u32 __user *) pc))
+ 		return -EFAULT;
  
- 	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
- 		struct resource *rp = &pdev->resource[i];
-+		resource_size_t aligned_end;
- 
- 		/* Active? */
- 		if (!rp->flags)
-@@ -1034,8 +1035,15 @@ static int __pci_mmap_make_offset(struct
- 				continue;
- 		}
- 
-+		/* Align the resource end to the next page address.
-+		 * PAGE_SIZE intentionally added instead of (PAGE_SIZE - 1),
-+		 * because actually we need the address of the next byte
-+		 * after rp->end.
-+		 */
-+		aligned_end = (rp->end + PAGE_SIZE) & PAGE_MASK;
++	save_and_clear_fpu();
 +
- 		if ((rp->start <= user_paddr) &&
--		    (user_paddr + user_size) <= (rp->end + 1UL))
-+		    (user_paddr + user_size) <= aligned_end)
- 			break;
- 	}
- 
+ 	opf = (insn & VIS_OPF_MASK) >> VIS_OPF_SHIFT;
+ 	switch (opf) {
+ 	default:
 
