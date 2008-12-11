@@ -1,103 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbYLKHVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYLKH22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048AbYLKHVT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 02:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYLKHVD
+	id S1756062AbYLKH22 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 02:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYLKH2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 02:21:03 -0500
-Received: from ti-out-0910.google.com ([209.85.142.188]:51035 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094AbYLKHVB (ORCPT
+	Thu, 11 Dec 2008 02:28:18 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:33019 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751094AbYLKH2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 02:21:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GisEM4lZoIVmMJhio8v678xjP+fyCegeym9vBn//y1YzTMr3tVmUrtXXPfwpeL1cKX
-         1flANULWysmYK4L8uMhVzO0nlsf/K8Wysh3hda436siPkbVRzzPehPZnV7TOu59MGvLt
-         79YPJjgPVMhQ4g9J5C7JVxgDv/PVZHkyoyY6A=
-Date: Thu, 11 Dec 2008 15:20:32 +0800
-From: Zhenwen Xu <helight.xu@gmail.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, rmk+kernel@arm.linux.org.uk,
-       linux-arm@lists.arm.linux.org.uk
-Subject: [PATCH] fix some code style that line over 80 characters
-Message-ID: <20081211072032.GA7203@helight>
-Reply-To: Zhenwen Xu <helight.xu@gmail.com>
-References: <20081210135143.GB4595@helight> <20081210150116.GB21396@x200.localdomain>
+	Thu, 11 Dec 2008 02:28:17 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=UHOXNR5vnbO5kYBChx2xrb6rakiatJb0Z4wAg9h0QSA85nRfcbOS94xrR0OgX2PiX
+	37VHo8utNw3/81Ts1bk6w==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081210150116.GB21396@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081211141507.a087f270.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081210233654.563182000@menage.corp.google.com>
+	 <20081210234432.407064000@menage.corp.google.com>
+	 <20081211141507.a087f270.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Wed, 10 Dec 2008 23:28:12 -0800
+Message-ID: <6599ad830812102328x52657bffm9864a0f9a4b3d5bd@mail.gmail.com>
+Subject: Re: [RFC][PATCH 3/3] CGroups: Add css_tryget()
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fix some code style that characters more than 80 
-in drivers/i2c/busses/i2c-s3c2410.c
+On Wed, Dec 10, 2008 at 9:15 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>
+> Could you add this ?
+> ==
+> bool    css_is_removed(struct cgroup_subsys_state *css)
+> {
+>        return test_bit(CSS_REMOVED, &css->flags);
+> }
+> ==
+> Then, I'll use this instead of memcg->obsolete flag.
 
+I actually had a patch almost ready to send out the nuked memcg->obsolete.
 
->From 449a3ddd01a98aae9122d5199083f45ab9c98469 Mon Sep 17 00:00:00 2001
-From: Zhwen Xu <Helight.Xu@gmail.com>
-Date: Wed, 10 Dec 2008 21:29:04 +0800
-Subject: [PATCH] fix some code style that characters more than 80
+A difference in mine is that I did
 
-Signed-off-by: ZhenwenXu <helight.xu@gmail.com>
----
- drivers/i2c/busses/i2c-s3c2410.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
+#define css_is_removed(__css) test_bit(CSS_REMOVED, &(__css)->css.flags)
 
-diff --git a/drivers/i2c/busses/i2c-s3c2410.c b/drivers/i2c/busses/i2c-s3c2410.c
-index c772e02..c466870 100644
---- a/drivers/i2c/busses/i2c-s3c2410.c
-+++ b/drivers/i2c/busses/i2c-s3c2410.c
-@@ -109,7 +109,8 @@ static inline int s3c24xx_i2c_is2440(struct s3c24xx_i2c *i2c)
-  * the default if there is none
- */
- 
--static inline struct s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
-+static inline
-+struct s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
- {
- 	if (dev->platform_data != NULL)
- 		return (struct s3c2410_platform_i2c *)dev->platform_data;
-@@ -123,7 +124,8 @@ static inline struct s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct d
-  * or zero to mean ok.
- */
- 
--static inline void s3c24xx_i2c_master_complete(struct s3c24xx_i2c *i2c, int ret)
-+static inline void
-+s3c24xx_i2c_master_complete(struct s3c24xx_i2c *i2c, int ret)
- {
- 	dev_dbg(i2c->dev, "master_complete %d\n", ret);
- 
-@@ -273,7 +275,8 @@ static inline int is_msgend(struct s3c24xx_i2c *i2c)
-  * process an interrupt and work out what to do
-  */
- 
--static int i2s_s3c_irq_nextbyte(struct s3c24xx_i2c *i2c, unsigned long iicstat)
-+static int i2s_s3c_irq_nextbyte(struct s3c24xx_i2c *i2c,
-+				unsigned long iicstat)
- {
- 	unsigned long tmp;
- 	unsigned char byte;
-@@ -502,7 +505,8 @@ static int s3c24xx_i2c_set_master(struct s3c24xx_i2c *i2c)
-  * this starts an i2c transfer
- */
- 
--static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c, struct i2c_msg *msgs, int num)
-+static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
-+			 struct i2c_msg *msgs, int num)
- {
- 	unsigned long timeout;
- 	int ret;
--- 
-1.5.6.5
+so that you can use it on any subsystem state object that contains a
+"struct cgroup_subsys_state css;" field, which is currently all of
+them I think, without having to add the "->css" every time.
 
--- 
----------------------------------
-Zhenwen Xu - Open and Free
-Home Page:	http://zhwen.org
-My Studio:	http://dim4.cn
+Paul
