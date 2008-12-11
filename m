@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757248AbYLKQTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbYLKQT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757248AbYLKQTG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 11:19:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbYLKQSZ
+	id S1757323AbYLKQT3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 11:19:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756536AbYLKQS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 11:18:25 -0500
-Received: from mail24.svc.cra.dublin.eircom.net ([159.134.118.53]:38777 "HELO
-	mail24.svc.cra.dublin.eircom.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756437AbYLKQSX (ORCPT
+	Thu, 11 Dec 2008 11:18:26 -0500
+Received: from mail16.svc.cra.dublin.eircom.net ([159.134.118.215]:43820 "HELO
+	mail16.svc.cra.dublin.eircom.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756429AbYLKQSX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Dec 2008 11:18:23 -0500
 From: Mark McLoughlin <markmc@redhat.com>
@@ -18,84 +18,377 @@ Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
        Kay Sievers <kay.sievers@vrfy.org>,
        Cornelia Huck <cornelia.huck@de.ibm.com>,
        Mark McLoughlin <markmc@redhat.com>
-Subject: [PATCH 2/4] virtio: do not statically allocate root device
-Date: Thu, 11 Dec 2008 16:16:54 +0000
-Message-Id: <1229012216-4211-2-git-send-email-markmc@redhat.com>
+Subject: [PATCH 4/4] s390: remove s390_root_dev_*()
+Date: Thu, 11 Dec 2008 16:16:56 +0000
+Message-Id: <1229012216-4211-4-git-send-email-markmc@redhat.com>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1229012216-4211-1-git-send-email-markmc@redhat.com>
+In-Reply-To: <1229012216-4211-3-git-send-email-markmc@redhat.com>
 References: <1229012203.7968.79.camel@blaa>
  <1229012216-4211-1-git-send-email-markmc@redhat.com>
+ <1229012216-4211-2-git-send-email-markmc@redhat.com>
+ <1229012216-4211-3-git-send-email-markmc@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We shouldn't be statically allocating the root device object,
-so dynamically allocate it using root_device_register()
-instead.
-
-Also avoids this warning from 'rmmod virtio_pci':
-
-  Device 'virtio-pci' does not have a release() function, it is broken and must be fixed
+Replace s390_root_dev_register() with root_device_register() etc.
 
 Signed-off-by: Mark McLoughlin <markmc@redhat.com>
-Cc: Anthony Liguori <aliguori@us.ibm.com>
 ---
- drivers/virtio/virtio_pci.c |   17 +++++++----------
- 1 files changed, 7 insertions(+), 10 deletions(-)
+ arch/s390/include/asm/s390_rdev.h |   15 -----------
+ drivers/s390/Makefile             |    2 +-
+ drivers/s390/block/dcssblk.c      |   11 +++----
+ drivers/s390/crypto/ap_bus.c      |    7 ++---
+ drivers/s390/kvm/kvm_virtio.c     |    5 +--
+ drivers/s390/net/cu3088.c         |    7 ++---
+ drivers/s390/net/qeth_core_main.c |    7 ++---
+ drivers/s390/net/qeth_l2_main.c   |    2 -
+ drivers/s390/net/qeth_l3_main.c   |    2 -
+ drivers/s390/s390_rdev.c          |   51 -------------------------------------
+ net/iucv/iucv.c                   |    5 +--
+ 11 files changed, 19 insertions(+), 95 deletions(-)
+ delete mode 100644 arch/s390/include/asm/s390_rdev.h
+ delete mode 100644 drivers/s390/s390_rdev.c
 
-diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
-index 265fdf2..bef6b45 100644
---- a/drivers/virtio/virtio_pci.c
-+++ b/drivers/virtio/virtio_pci.c
-@@ -73,10 +73,7 @@ MODULE_DEVICE_TABLE(pci, virtio_pci_id_table);
- /* A PCI device has it's own struct device and so does a virtio device so
-  * we create a place for the virtio devices to show up in sysfs.  I think it
-  * would make more sense for virtio to not insist on having it's own device. */
--static struct device virtio_pci_root = {
--	.parent		= NULL,
--	.init_name	= "virtio-pci",
--};
-+static struct device *virtio_pci_root;
+diff --git a/arch/s390/include/asm/s390_rdev.h b/arch/s390/include/asm/s390_rdev.h
+deleted file mode 100644
+index 6fa2044..0000000
+--- a/arch/s390/include/asm/s390_rdev.h
++++ /dev/null
+@@ -1,15 +0,0 @@
+-/*
+- *  include/asm-s390/ccwdev.h
+- *
+- *    Copyright (C) 2002,2005 IBM Deutschland Entwicklung GmbH, IBM Corporation
+- *    Author(s): Cornelia Huck <cornelia.huck@de.ibm.com>
+- *               Carsten Otte  <cotte@de.ibm.com>
+- *
+- *  Interface for s390 root device
+- */
+-
+-#ifndef _S390_RDEV_H_
+-#define _S390_RDEV_H_
+-extern struct device *s390_root_dev_register(const char *);
+-extern void s390_root_dev_unregister(struct device *);
+-#endif /* _S390_RDEV_H_ */
+diff --git a/drivers/s390/Makefile b/drivers/s390/Makefile
+index 4f4e7cf..d0eae59 100644
+--- a/drivers/s390/Makefile
++++ b/drivers/s390/Makefile
+@@ -4,7 +4,7 @@
  
- /* Convert a generic virtio device to our structure */
- static struct virtio_pci_device *to_vp_device(struct virtio_device *vdev)
-@@ -343,7 +340,7 @@ static int __devinit virtio_pci_probe(struct pci_dev *pci_dev,
- 	if (vp_dev == NULL)
- 		return -ENOMEM;
+ CFLAGS_sysinfo.o += -Iinclude/math-emu -Iarch/s390/math-emu -w
  
--	vp_dev->vdev.dev.parent = &virtio_pci_root;
-+	vp_dev->vdev.dev.parent = virtio_pci_root;
- 	vp_dev->vdev.dev.release = virtio_pci_release_dev;
- 	vp_dev->vdev.config = &virtio_pci_config_ops;
- 	vp_dev->pci_dev = pci_dev;
-@@ -437,13 +434,13 @@ static int __init virtio_pci_init(void)
+-obj-y += s390mach.o sysinfo.o s390_rdev.o
++obj-y += s390mach.o sysinfo.o
+ obj-y += cio/ block/ char/ crypto/ net/ scsi/ kvm/
+ 
+ drivers-y += drivers/s390/built-in.o
+diff --git a/drivers/s390/block/dcssblk.c b/drivers/s390/block/dcssblk.c
+index 63f26a1..20fca50 100644
+--- a/drivers/s390/block/dcssblk.c
++++ b/drivers/s390/block/dcssblk.c
+@@ -15,7 +15,6 @@
+ #include <asm/io.h>
+ #include <linux/completion.h>
+ #include <linux/interrupt.h>
+-#include <asm/s390_rdev.h>
+ 
+ //#define DCSSBLK_DEBUG		/* Debug messages on/off */
+ #define DCSSBLK_NAME "dcssblk"
+@@ -951,7 +950,7 @@ dcssblk_check_params(void)
+ static void __exit
+ dcssblk_exit(void)
  {
- 	int err;
- 
--	err = device_register(&virtio_pci_root);
--	if (err)
--		return err;
-+	virtio_pci_root = root_device_register("virtio-pci");
-+	if (IS_ERR(virtio_pci_root))
-+		return PTR_ERR(virtio_pci_root);
- 
- 	err = pci_register_driver(&virtio_pci_driver);
- 	if (err)
--		device_unregister(&virtio_pci_root);
-+		device_unregister(virtio_pci_root);
- 
- 	return err;
+-	s390_root_dev_unregister(dcssblk_root_dev);
++	root_device_unregister(dcssblk_root_dev);
+ 	unregister_blkdev(dcssblk_major, DCSSBLK_NAME);
  }
-@@ -452,8 +449,8 @@ module_init(virtio_pci_init);
  
- static void __exit virtio_pci_exit(void)
+@@ -960,22 +959,22 @@ dcssblk_init(void)
  {
--	device_unregister(&virtio_pci_root);
- 	pci_unregister_driver(&virtio_pci_driver);
-+	root_device_unregister(virtio_pci_root);
+ 	int rc;
+ 
+-	dcssblk_root_dev = s390_root_dev_register("dcssblk");
++	dcssblk_root_dev = root_device_register("dcssblk");
+ 	if (IS_ERR(dcssblk_root_dev))
+ 		return PTR_ERR(dcssblk_root_dev);
+ 	rc = device_create_file(dcssblk_root_dev, &dev_attr_add);
+ 	if (rc) {
+-		s390_root_dev_unregister(dcssblk_root_dev);
++		root_device_unregister(dcssblk_root_dev);
+ 		return rc;
+ 	}
+ 	rc = device_create_file(dcssblk_root_dev, &dev_attr_remove);
+ 	if (rc) {
+-		s390_root_dev_unregister(dcssblk_root_dev);
++		root_device_unregister(dcssblk_root_dev);
+ 		return rc;
+ 	}
+ 	rc = register_blkdev(0, DCSSBLK_NAME);
+ 	if (rc < 0) {
+-		s390_root_dev_unregister(dcssblk_root_dev);
++		root_device_unregister(dcssblk_root_dev);
+ 		return rc;
+ 	}
+ 	dcssblk_major = rc;
+diff --git a/drivers/s390/crypto/ap_bus.c b/drivers/s390/crypto/ap_bus.c
+index e3fe683..0689c22 100644
+--- a/drivers/s390/crypto/ap_bus.c
++++ b/drivers/s390/crypto/ap_bus.c
+@@ -32,7 +32,6 @@
+ #include <linux/notifier.h>
+ #include <linux/kthread.h>
+ #include <linux/mutex.h>
+-#include <asm/s390_rdev.h>
+ #include <asm/reset.h>
+ #include <linux/hrtimer.h>
+ #include <linux/ktime.h>
+@@ -1358,7 +1357,7 @@ int __init ap_module_init(void)
+ 	}
+ 
+ 	/* Create /sys/devices/ap. */
+-	ap_root_device = s390_root_dev_register("ap");
++	ap_root_device = root_device_register("ap");
+ 	rc = IS_ERR(ap_root_device) ? PTR_ERR(ap_root_device) : 0;
+ 	if (rc)
+ 		goto out_bus;
+@@ -1401,7 +1400,7 @@ out_work:
+ 	hrtimer_cancel(&ap_poll_timer);
+ 	destroy_workqueue(ap_work_queue);
+ out_root:
+-	s390_root_dev_unregister(ap_root_device);
++	root_device_unregister(ap_root_device);
+ out_bus:
+ 	while (i--)
+ 		bus_remove_file(&ap_bus_type, ap_bus_attrs[i]);
+@@ -1432,7 +1431,7 @@ void ap_module_exit(void)
+ 	hrtimer_cancel(&ap_poll_timer);
+ 	destroy_workqueue(ap_work_queue);
+ 	tasklet_kill(&ap_tasklet);
+-	s390_root_dev_unregister(ap_root_device);
++	root_device_unregister(ap_root_device);
+ 	while ((dev = bus_find_device(&ap_bus_type, NULL, NULL,
+ 		    __ap_match_all)))
+ 	{
+diff --git a/drivers/s390/kvm/kvm_virtio.c b/drivers/s390/kvm/kvm_virtio.c
+index c79cf05..db61252 100644
+--- a/drivers/s390/kvm/kvm_virtio.c
++++ b/drivers/s390/kvm/kvm_virtio.c
+@@ -24,7 +24,6 @@
+ #include <asm/kvm_virtio.h>
+ #include <asm/setup.h>
+ #include <asm/s390_ext.h>
+-#include <asm/s390_rdev.h>
+ 
+ #define VIRTIO_SUBCODE_64 0x0D00
+ 
+@@ -335,7 +334,7 @@ static int __init kvm_devices_init(void)
+ 	if (!MACHINE_IS_KVM)
+ 		return -ENODEV;
+ 
+-	kvm_root = s390_root_dev_register("kvm_s390");
++	kvm_root = root_device_register("kvm_s390");
+ 	if (IS_ERR(kvm_root)) {
+ 		rc = PTR_ERR(kvm_root);
+ 		printk(KERN_ERR "Could not register kvm_s390 root device");
+@@ -344,7 +343,7 @@ static int __init kvm_devices_init(void)
+ 
+ 	rc = vmem_add_mapping(real_memory_size, PAGE_SIZE);
+ 	if (rc) {
+-		s390_root_dev_unregister(kvm_root);
++		root_device_unregister(kvm_root);
+ 		return rc;
+ 	}
+ 
+diff --git a/drivers/s390/net/cu3088.c b/drivers/s390/net/cu3088.c
+index f4a3237..4838345 100644
+--- a/drivers/s390/net/cu3088.c
++++ b/drivers/s390/net/cu3088.c
+@@ -25,7 +25,6 @@
+ #include <linux/module.h>
+ #include <linux/err.h>
+ 
+-#include <asm/s390_rdev.h>
+ #include <asm/ccwdev.h>
+ #include <asm/ccwgroup.h>
+ 
+@@ -120,12 +119,12 @@ cu3088_init (void)
+ {
+ 	int rc;
+ 
+-	cu3088_root_dev = s390_root_dev_register("cu3088");
++	cu3088_root_dev = root_device_register("cu3088");
+ 	if (IS_ERR(cu3088_root_dev))
+ 		return PTR_ERR(cu3088_root_dev);
+ 	rc = ccw_driver_register(&cu3088_driver);
+ 	if (rc)
+-		s390_root_dev_unregister(cu3088_root_dev);
++		root_device_unregister(cu3088_root_dev);
+ 
+ 	return rc;
+ }
+@@ -134,7 +133,7 @@ static void __exit
+ cu3088_exit (void)
+ {
+ 	ccw_driver_unregister(&cu3088_driver);
+-	s390_root_dev_unregister(cu3088_root_dev);
++	root_device_unregister(cu3088_root_dev);
  }
  
- module_exit(virtio_pci_exit);
+ MODULE_DEVICE_TABLE(ccw,cu3088_ids);
+diff --git a/drivers/s390/net/qeth_core_main.c b/drivers/s390/net/qeth_core_main.c
+index 52d2659..ffeb47b 100644
+--- a/drivers/s390/net/qeth_core_main.c
++++ b/drivers/s390/net/qeth_core_main.c
+@@ -21,7 +21,6 @@
+ 
+ #include <asm/ebcdic.h>
+ #include <asm/io.h>
+-#include <asm/s390_rdev.h>
+ 
+ #include "qeth_core.h"
+ #include "qeth_core_offl.h"
+@@ -4465,7 +4464,7 @@ static int __init qeth_core_init(void)
+ 				&driver_attr_group);
+ 	if (rc)
+ 		goto driver_err;
+-	qeth_core_root_dev = s390_root_dev_register("qeth");
++	qeth_core_root_dev = root_device_register("qeth");
+ 	rc = IS_ERR(qeth_core_root_dev) ? PTR_ERR(qeth_core_root_dev) : 0;
+ 	if (rc)
+ 		goto register_err;
+@@ -4479,7 +4478,7 @@ static int __init qeth_core_init(void)
+ 
+ 	return 0;
+ slab_err:
+-	s390_root_dev_unregister(qeth_core_root_dev);
++	root_device_unregister(qeth_core_root_dev);
+ register_err:
+ 	driver_remove_file(&qeth_core_ccwgroup_driver.driver,
+ 			   &driver_attr_group);
+@@ -4496,7 +4495,7 @@ out_err:
+ 
+ static void __exit qeth_core_exit(void)
+ {
+-	s390_root_dev_unregister(qeth_core_root_dev);
++	root_device_unregister(qeth_core_root_dev);
+ 	driver_remove_file(&qeth_core_ccwgroup_driver.driver,
+ 			   &driver_attr_group);
+ 	ccwgroup_driver_unregister(&qeth_core_ccwgroup_driver);
+diff --git a/drivers/s390/net/qeth_l2_main.c b/drivers/s390/net/qeth_l2_main.c
+index 1b1e803..33c8fe2 100644
+--- a/drivers/s390/net/qeth_l2_main.c
++++ b/drivers/s390/net/qeth_l2_main.c
+@@ -17,8 +17,6 @@
+ #include <linux/mii.h>
+ #include <linux/ip.h>
+ 
+-#include <asm/s390_rdev.h>
+-
+ #include "qeth_core.h"
+ #include "qeth_core_offl.h"
+ 
+diff --git a/drivers/s390/net/qeth_l3_main.c b/drivers/s390/net/qeth_l3_main.c
+index ed59fed..5dd2210 100644
+--- a/drivers/s390/net/qeth_l3_main.c
++++ b/drivers/s390/net/qeth_l3_main.c
+@@ -23,8 +23,6 @@
+ #include <net/ip.h>
+ #include <net/arp.h>
+ 
+-#include <asm/s390_rdev.h>
+-
+ #include "qeth_l3.h"
+ #include "qeth_core_offl.h"
+ 
+diff --git a/drivers/s390/s390_rdev.c b/drivers/s390/s390_rdev.c
+deleted file mode 100644
+index 64371c0..0000000
+--- a/drivers/s390/s390_rdev.c
++++ /dev/null
+@@ -1,51 +0,0 @@
+-/*
+- *  drivers/s390/s390_rdev.c
+- *  s390 root device
+- *
+- *    Copyright (C) 2002, 2005 IBM Deutschland Entwicklung GmbH,
+- *			 IBM Corporation
+- *    Author(s): Cornelia Huck (cornelia.huck@de.ibm.com)
+- *		  Carsten Otte  (cotte@de.ibm.com)
+- */
+-
+-#include <linux/slab.h>
+-#include <linux/err.h>
+-#include <linux/device.h>
+-#include <asm/s390_rdev.h>
+-
+-static void
+-s390_root_dev_release(struct device *dev)
+-{
+-	kfree(dev);
+-}
+-
+-struct device *
+-s390_root_dev_register(const char *name)
+-{
+-	struct device *dev;
+-	int ret;
+-
+-	if (!strlen(name))
+-		return ERR_PTR(-EINVAL);
+-	dev = kzalloc(sizeof(struct device), GFP_KERNEL);
+-	if (!dev)
+-		return ERR_PTR(-ENOMEM);
+-	dev_set_name(dev, name);
+-	dev->release = s390_root_dev_release;
+-	ret = device_register(dev);
+-	if (ret) {
+-		kfree(dev);
+-		return ERR_PTR(ret);
+-	}
+-	return dev;
+-}
+-
+-void
+-s390_root_dev_unregister(struct device *dev)
+-{
+-	if (dev)
+-		device_unregister(dev);
+-}
+-
+-EXPORT_SYMBOL(s390_root_dev_register);
+-EXPORT_SYMBOL(s390_root_dev_unregister);
+diff --git a/net/iucv/iucv.c b/net/iucv/iucv.c
+index d7b54b5..6314e1b 100644
+--- a/net/iucv/iucv.c
++++ b/net/iucv/iucv.c
+@@ -47,7 +47,6 @@
+ #include <asm/ebcdic.h>
+ #include <asm/io.h>
+ #include <asm/s390_ext.h>
+-#include <asm/s390_rdev.h>
+ #include <asm/smp.h>
+ 
+ /*
+@@ -1609,7 +1608,7 @@ static int __init iucv_init(void)
+ 	rc = register_external_interrupt(0x4000, iucv_external_interrupt);
+ 	if (rc)
+ 		goto out;
+-	iucv_root = s390_root_dev_register("iucv");
++	iucv_root = root_device_register("iucv");
+ 	if (IS_ERR(iucv_root)) {
+ 		rc = PTR_ERR(iucv_root);
+ 		goto out_int;
+@@ -1653,7 +1652,7 @@ out_free:
+ 		kfree(iucv_irq_data[cpu]);
+ 		iucv_irq_data[cpu] = NULL;
+ 	}
+-	s390_root_dev_unregister(iucv_root);
++	root_device_unregister(iucv_root);
+ out_int:
+ 	unregister_external_interrupt(0x4000, iucv_external_interrupt);
+ out:
 -- 
 1.5.4.3
 
