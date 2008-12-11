@@ -1,78 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbYLKV1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbYLKV3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757997AbYLKV1H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 16:27:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbYLKV0z
+	id S1758076AbYLKV3a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 16:29:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757201AbYLKV3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 16:26:55 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33974 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756219AbYLKV0z (ORCPT
+	Thu, 11 Dec 2008 16:29:22 -0500
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:52115 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756221AbYLKV3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 16:26:55 -0500
-Message-ID: <494184AA.8090509@cs.helsinki.fi>
-Date: Thu, 11 Dec 2008 23:22:50 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
-MIME-Version: 1.0
-To: Catalin Marinas <catalin.marinas@arm.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/15] kmemleak: Add the slab memory allocation/freeing
- hooks
-References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com> <20081210182710.30323.57396.stgit@pc1117.cambridge.arm.com>
-In-Reply-To: <20081210182710.30323.57396.stgit@pc1117.cambridge.arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Dec 2008 16:29:21 -0500
+Subject: Re: [PATCH] Fix VMI crash on boot in 2.6.27, 2.6.28 kernels
+From: Zachary Amsden <zach@vmware.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Yinghai Lu <yinghai@kernel.org>, Huang Ying <ying.huang@intel.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "norman@thebacks.co.uk" <norman@thebacks.co.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alok Kataria <alokkataria1@gmail.com>,
+       "bruno.premont@restena.lu" <bruno.premont@restena.lu>,
+       "xl@xlsigned.net" <xl@xlsigned.net>, "dsd@gentoo.org" <dsd@gentoo.org>
+In-Reply-To: <20081211033105.GA31972@suse.de>
+References: <1228870222.8766.15.camel@bodhitayantram.eng.vmware.com>
+	 <86802c440812091715r775d514eh3acf9add9e24184e@mail.gmail.com>
+	 <1228953980.8766.42.camel@bodhitayantram.eng.vmware.com>
+	 <49405CB6.6010006@kernel.org>  <20081211033105.GA31972@suse.de>
+Content-Type: multipart/mixed; boundary="=-pEoLuG3kFwTEU5VIW37q"
+Date: Thu, 11 Dec 2008 14:23:11 -0800
+Message-Id: <1229034191.8766.63.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Catalin,
 
-Catalin Marinas wrote:
-> @@ -2610,6 +2611,13 @@ static struct slab *alloc_slabmgmt(struct kmem_cache *cachep, void *objp,
->  		/* Slab management obj is off-slab. */
->  		slabp = kmem_cache_alloc_node(cachep->slabp_cache,
->  					      local_flags & ~GFP_THISNODE, nodeid);
-> +		/*
-> +		 * Only scan the list member to avoid false negatives
-> +		 * (especially caused by the s_mem pointer)
-> +		 */
+--=-pEoLuG3kFwTEU5VIW37q
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Heh, I run into this part again and as I have a long term memory of a 
-goldfish I had to look up the discussion we had. So may I suggest you 
-change the comment to:
+On Wed, 2008-12-10 at 19:31 -0800, Greg KH wrote:
 
-/*
-  * If the first object in the slab is leaked (it's allocated but no
-  * one has a reference to it), we want to make sure kmemleak does not
-  * treat the ->s_mem pointer as a reference to the object. Otherwise
-  * we will not report the leak.
-  */
+> > +#ifdef CONFIG_VMI
+> > +	/* VMI may relocate the fixmap; do this before touching ioremap area */
+> > +	vmi_init();
+> > +#endif
+> 
+> Shouldn't the #ifdef not be needed here if the .h files are set up
+> properly for the vmi_init prototype?  Please try to keep them out of .c
+> files wherever possible.
 
-> +		memleak_scan_area(slabp, offsetof(struct slab, list),
-> +				  sizeof(struct list_head),
-> +				  local_flags & ~GFP_THISNODE);
->  		if (!slabp)
->  			return NULL;
->  	} else {
-> @@ -3195,6 +3203,8 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
->  		STATS_INC_ALLOCMISS(cachep);
->  		objp = cache_alloc_refill(cachep, flags);
->  	}
-> +	/* avoid false negatives */
-> +	memleak_erase(&ac->entry[ac->avail]);
+Yes, they should.  Judging by setup.c though, you would think the
+opposite... in any case I fixed it.  Please apply - and yes, I tested
+compile both ways.
 
-For this, maybe something like this:
+--=-pEoLuG3kFwTEU5VIW37q
+Content-Disposition: attachment; filename=x86-vmi-boot-ioremap-fix-take-3.patch
+Content-Type: text/x-patch; name=x86-vmi-boot-ioremap-fix-take-3.patch; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-/*
-  * To avoid a false negative, if an object that is in one of the
-  * per-CPU caches is leaked, we need to make sure kmemleak doesn't
-  * treat the array pointers as a reference to the object.
-  */
+VMI initialiation can relocate the fixmap, causing early_ioremap
+to malfunction if it is initialized before the relocation.
+To fix this, VMI activation is split into two phases; the detection,
+which must happen before setting up ioremap, and the activation,
+which must happen after parsing early boot parameters.
 
->  	return objp;
->  }
->  
+This fixes a crash on boot when VMI is enabled under VMware.
 
-Do you take care of the per-node lists as well?
+Signed-off-by: Zachary Amsden <zach@vmware.com>
+
+diff --git a/arch/x86/include/asm/vmi.h b/arch/x86/include/asm/vmi.h
+index b7c0dea..128958a 100644
+--- a/arch/x86/include/asm/vmi.h
++++ b/arch/x86/include/asm/vmi.h
+@@ -223,9 +223,15 @@ struct pci_header {
+ } __attribute__((packed));
+ 
+ /* Function prototypes for bootstrapping */
++#ifdef CONFIG_VMI
+ extern void vmi_init(void);
++extern void vmi_activate(void);
+ extern void vmi_bringup(void);
+-extern void vmi_apply_boot_page_allocations(void);
++#else
++#define vmi_init()
++#define vmi_activate()
++#define vmi_bringup()
++#endif
+ 
+ /* State needed to start an application processor in an SMP system. */
+ struct vmi_ap_state {
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 9d5674f..bdec76e 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -794,6 +794,9 @@ void __init setup_arch(char **cmdline_p)
+ 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
+ #endif
+ 
++	/* VMI may relocate the fixmap; do this before touching ioremap area */
++	vmi_init();
++
+ 	early_cpu_init();
+ 	early_ioremap_init();
+ 
+@@ -880,13 +883,8 @@ void __init setup_arch(char **cmdline_p)
+ 	check_efer();
+ #endif
+ 
+-#if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
+-	/*
+-	 * Must be before kernel pagetables are setup
+-	 * or fixmap area is touched.
+-	 */
+-	vmi_init();
+-#endif
++	/* Must be before kernel pagetables are setup */
++	vmi_activate();
+ 
+ 	/* after early param, so could get panic from serial */
+ 	reserve_early_setup_data();
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 7b10933..f71f96f 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -294,9 +294,7 @@ static void __cpuinit start_secondary(void *unused)
+ 	 * fragile that we want to limit the things done here to the
+ 	 * most necessary things.
+ 	 */
+-#ifdef CONFIG_VMI
+ 	vmi_bringup();
+-#endif
+ 	cpu_init();
+ 	preempt_disable();
+ 	smp_callin();
+diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
+index 8b6c393..22fd657 100644
+--- a/arch/x86/kernel/vmi_32.c
++++ b/arch/x86/kernel/vmi_32.c
+@@ -960,8 +960,6 @@ static inline int __init activate_vmi(void)
+ 
+ void __init vmi_init(void)
+ {
+-	unsigned long flags;
+-
+ 	if (!vmi_rom)
+ 		probe_vmi_rom();
+ 	else
+@@ -973,13 +971,21 @@ void __init vmi_init(void)
+ 
+ 	reserve_top_address(-vmi_rom->virtual_top);
+ 
+-	local_irq_save(flags);
+-	activate_vmi();
+-
+ #ifdef CONFIG_X86_IO_APIC
+ 	/* This is virtual hardware; timer routing is wired correctly */
+ 	no_timer_check = 1;
+ #endif
++}
++
++void vmi_activate(void)
++{
++	unsigned long flags;
++
++	if (!vmi_rom)
++		return;
++
++	local_irq_save(flags);
++	activate_vmi();
+ 	local_irq_restore(flags & X86_EFLAGS_IF);
+ }
+ 
+
+--=-pEoLuG3kFwTEU5VIW37q--
+
