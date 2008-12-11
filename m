@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbYLKTSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYLKTSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757734AbYLKTSr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:18:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756470AbYLKTSF
+	id S1757530AbYLKTSY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:18:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbYLKTSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 11 Dec 2008 14:18:05 -0500
-Received: from kroah.org ([198.145.64.141]:55772 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:55755 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756111AbYLKTSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756306AbYLKTSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Dec 2008 14:18:03 -0500
-Date: Thu, 11 Dec 2008 11:13:38 -0800
+Date: Thu, 11 Dec 2008 11:13:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 04/83] niu: Fix readq implementation when architecture does
-	not provide one.
-Message-ID: <20081211191338.GD5894@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Roland Dreier <rolandd@cisco.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 03/83] cxgb3: Fix kernel crash caused by uninitialized
+	l2t_entry.arpq
+Message-ID: <20081211191334.GC5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0003-niu-Fix-readq-implementation-when-architecture-does.patch"
+Content-Disposition: inline; filename="0002-cxgb3-Fix-kernel-crash-caused-by-uninitialized-l2t_.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,52 +41,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Roland Dreier <rdreier@cisco.com>
 
-[ Upstream commit e23a59e1ca6d177a57a7791b3629db93ff1d9813 ]
+[ Upstream commit 6d329af9967e7ab3f4a3d7f1e8ef87539c3a069f ]
 
-This fixes a TX hang reported by Jesper Dangaard Brouer.
+Commit 147e70e6 ("cxgb3: Use SKB list interfaces instead of home-grown
+implementation.") causes a crash in t3_l2t_send_slow() when an iWARP
+connection request is received.  This is because the new l2t_entry.arpq
+skb queue is never initialized, and therefore trying to add an skb to
+it causes a NULL dereference.  With the old code there was no need to
+initialize the queues because the l2t_entry structures were zeroed,
+and the code used NULL to mean empty.
 
-When an architecutre cannot provide a fully functional
-64-bit atomic readq/writeq, the driver must implement
-it's own.  This is because only the driver can say whether
-doing something like using two 32-bit reads to implement
-the full 64-bit read will actually work properly.
+Fix this by adding __skb_queue_head_init() when all the l2t_entry
+structures get allocated.
 
-In particular one of the issues is whether the top 32-bits
-or the bottom 32-bits of the 64-bit register should be read
-first.  There could be side effects, and in fact that is
-exactly the problem here.
-
-The TX_CS register has counters in the upper 32-bits and
-state bits in the lower 32-bits.  A read clears the state
-bits.
-
-We would read the counter half before the state bit half.
-That first read would clear the state bits, and then the
-driver thinks that no interrupts are pending because the
-interrupt indication state bits are seen clear every time.
-
-Fix this by reading the bottom half before the upper half.
-
-Tested-by: Jesper Dangaard Brouer <jdb@comx.dk>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/niu.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/cxgb3/l2t.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/net/niu.c
-+++ b/drivers/net/niu.c
-@@ -51,8 +51,7 @@ MODULE_VERSION(DRV_MODULE_VERSION);
- #ifndef readq
- static u64 readq(void __iomem *reg)
- {
--	return (((u64)readl(reg + 0x4UL) << 32) |
--		(u64)readl(reg));
-+	return ((u64) readl(reg)) | (((u64) readl(reg + 4UL)) << 32);
- }
- 
- static void writeq(u64 val, void __iomem *reg)
+--- a/drivers/net/cxgb3/l2t.c
++++ b/drivers/net/cxgb3/l2t.c
+@@ -436,6 +436,7 @@ struct l2t_data *t3_init_l2t(unsigned in
+ 	for (i = 0; i < l2t_capacity; ++i) {
+ 		d->l2tab[i].idx = i;
+ 		d->l2tab[i].state = L2T_STATE_UNUSED;
++		__skb_queue_head_init(&d->l2tab[i].arpq);
+ 		spin_lock_init(&d->l2tab[i].lock);
+ 		atomic_set(&d->l2tab[i].refcnt, 0);
+ 	}
 
