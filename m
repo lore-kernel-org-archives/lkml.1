@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYLKJbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYLKJo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbYLKJbl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 04:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYLKJbc
+	id S1755442AbYLKJo1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 04:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbYLKJoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 04:31:32 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:32841 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753869AbYLKJbb (ORCPT
+	Thu, 11 Dec 2008 04:44:17 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45181 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753924AbYLKJoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 04:31:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=NuP7F5CIE6fCASma6hIwH3NktQw7OiW3+uvlX6HtuGUk0A4f8eHiJJ0b+CZL+Nrsxy
-         c0CHps4clFdgGtzdigdSpn/jTdw2H4PWPrx1K87ignzXHULS9BpArA+z6Y1vt/xxfmXc
-         fUor+ut/bOoSKF8NZO/huE+/jyeGTJaiajMuU=
-Message-ID: <84144f020812110131w2824d251ge1273203639cf1c6@mail.gmail.com>
-Date: Thu, 11 Dec 2008 11:31:29 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Catalin Marinas" <catalin.marinas@arm.com>
-Subject: Re: [PATCH] Do not pass the SLAB flags as GFP in slob kmem_cache_create
-Cc: linux-kernel@vger.kernel.org, "Matt Mackall" <mpm@selenic.com>,
-       "Cyrill Gorcunov" <gorcunov@gmail.com>,
-       "Christoph Lameter" <cl@linux-foundation.org>
-In-Reply-To: <20081210173632.19697.67688.stgit@pc1117.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 11 Dec 2008 04:44:16 -0500
+Subject: Re: [PATCH 00/15] Kernel memory leak detector
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 11 Dec 2008 09:44:08 +0000
+Message-Id: <1228988648.332.5.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081210173632.19697.67688.stgit@pc1117.cambridge.arm.com>
-X-Google-Sender-Auth: 0fb88bc8392a92d2
+X-OriginalArrivalTime: 11 Dec 2008 09:44:10.0012 (UTC) FILETIME=[0469E5C0:01C95B75]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 7:36 PM, Catalin Marinas
-<catalin.marinas@arm.com> wrote:
-> It looks like the kmem_cache_create() function in the slob allocator
-> passes the SLAB flags as GFP flags to the slob_alloc() function. The
-> patch changes this call to pass GFP_KERNEL as the other allocators seem
-> to do.
->
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Matt Mackall <mpm@selenic.com>
+On Wed, 2008-12-10 at 18:26 +0000, Catalin Marinas wrote:
+> A new kmemleak version is available. Thanks to all who reviewed the code
+> and gave feedback. Kmemleak can also be found on this git tree:
+> 
+> git://linux-arm.org/linux-2.6.git kmemleak
+[...]
+> Changes since the previous release:
 
-Applied, thanks!
+Something I forgot to mention here - I dropped the mem_map array
+scanning since it doesn't work in all the kernel configurations and, as
+Andrew Morton pointed out, it goes too deep into the kernel structures.
+I didn't see any false positives on ARM but it may need more testing.
+
+-- 
+Catalin
+
