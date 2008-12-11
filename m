@@ -1,100 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbYLKWzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759425AbYLKW4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759319AbYLKWzu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 17:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758693AbYLKWyu
+	id S1759425AbYLKW4Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 17:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759150AbYLKWzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 17:54:50 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:41229 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758575AbYLKWyt (ORCPT
+	Thu, 11 Dec 2008 17:55:15 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:47618 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759082AbYLKWzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 17:54:49 -0500
-Message-ID: <49419a37.0aa5660a.7d74.31a0@mx.google.com>
+	Thu, 11 Dec 2008 17:55:13 -0500
+Message-ID: <49419a44.09c5660a.39e6.65f7@mx.google.com>
 To: netdev@vger.kernel.org
 Cc: Karsten Keil <kkeil@suse.de>
 Cc: linux-kernel@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org
 Date: Thu, 11 Dec 2008 22:36:00 +0100
-Subject: [PATCH 6/9][v2] mISDN: fix sparse warning: symbol 'id' shadows an earlier one
+Subject: [PATCH 9/9][v2] mISDN: hfcmulti: use __iomem address space modifier
 From: Hannes Eder <hannes@hanneseder.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: rename function scope variable
+Impact: make use of the __iomem address space modifier, and change u_char *,
+u_short * and u_int * to void *
 
-Fix this warning:
+Fix more than 30 sparse warnings of this or similar type:
 
-  drivers/isdn/mISDN/l1oip_core.c:472:8: warning: symbol 'id' shadows an earlier one
-  drivers/isdn/mISDN/l1oip_core.c:254:14: originally declared here
+  drivers/isdn/hardware/mISDN/hfcmulti.c:261:31: warning: incorrect type in argument 2 (different address spaces)
+  drivers/isdn/hardware/mISDN/hfcmulti.c:261:31:    got unsigned char [usertype] *
+  drivers/isdn/hardware/mISDN/hfcmulti.c:261:31:    expected void volatile [noderef] <asn:2>*addr
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 Acked-by: Karsten Keil <kkeil@suse.de>
 ---
- drivers/isdn/mISDN/l1oip_core.c |   22 +++++++++++-----------
- 1 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/isdn/hardware/mISDN/hfc_multi.h |    4 +-
+ drivers/isdn/hardware/mISDN/hfcmulti.c  |   44 ++++++++++++++++--------------
+ 2 files changed, 25 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/isdn/mISDN/l1oip_core.c b/drivers/isdn/mISDN/l1oip_core.c
-index e42150a..0884dd6 100644
---- a/drivers/isdn/mISDN/l1oip_core.c
-+++ b/drivers/isdn/mISDN/l1oip_core.c
-@@ -469,7 +469,7 @@ l1oip_socket_recv(struct l1oip *hc, u8 remotecodec, u8 channel, u16 timebase,
- static void
- l1oip_socket_parse(struct l1oip *hc, struct sockaddr_in *sin, u8 *buf, int len)
+diff --git a/drivers/isdn/hardware/mISDN/hfc_multi.h b/drivers/isdn/hardware/mISDN/hfc_multi.h
+index a33d87a..7bbf730 100644
+--- a/drivers/isdn/hardware/mISDN/hfc_multi.h
++++ b/drivers/isdn/hardware/mISDN/hfc_multi.h
+@@ -162,8 +162,8 @@ struct hfc_multi {
+ 	void		(*write_fifo)(struct hfc_multi *hc, u_char *data,
+ 				int len);
+ 	u_long		pci_origmembase, plx_origmembase, dsp_origmembase;
+-	u_char		*pci_membase; /* PCI memory (MUST BE BYTE POINTER) */
+-	u_char		*plx_membase; /* PLX memory */
++	void __iomem	*pci_membase; /* PCI memory */
++	void __iomem	*plx_membase; /* PLX memory */
+ 	u_char		*dsp_membase; /* DSP on PLX */
+ 	u_long		pci_iobase; /* PCI IO */
+ 	struct hfcm_hw	hw;	/* remember data of write-only-registers */
+diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
+index 0668072..c63e2f4 100644
+--- a/drivers/isdn/hardware/mISDN/hfcmulti.c
++++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
+@@ -889,7 +889,8 @@ static inline void
+ hfcmulti_resync(struct hfc_multi *locked, struct hfc_multi *newmaster, int rm)
  {
--	u32			id;
-+	u32			packet_id;
- 	u8			channel;
- 	u8			remotecodec;
- 	u16			timebase;
-@@ -508,7 +508,7 @@ l1oip_socket_parse(struct l1oip *hc, struct sockaddr_in *sin, u8 *buf, int len)
+ 	struct hfc_multi *hc, *next, *pcmmaster = NULL;
+-	u_int *plx_acc_32, pv;
++	void __iomem *plx_acc_32;
++	u_int pv;
+ 	u_long flags;
+ 
+ 	spin_lock_irqsave(&HFClock, flags);
+@@ -917,7 +918,7 @@ hfcmulti_resync(struct hfc_multi *locked, struct hfc_multi *newmaster, int rm)
+ 	/* Disable sync of all cards */
+ 	list_for_each_entry_safe(hc, next, &HFClist, list) {
+ 		if (test_bit(HFC_CHIP_PLXSD, &hc->chip)) {
+-			plx_acc_32 = (u_int *)(hc->plx_membase+PLX_GPIOC);
++			plx_acc_32 = hc->plx_membase + PLX_GPIOC;
+ 			pv = readl(plx_acc_32);
+ 			pv &= ~PLX_SYNC_O_EN;
+ 			writel(pv, plx_acc_32);
+@@ -939,7 +940,7 @@ hfcmulti_resync(struct hfc_multi *locked, struct hfc_multi *newmaster, int rm)
+ 			printk(KERN_DEBUG "id=%d (0x%p) = syncronized with "
+ 				"interface.\n", hc->id, hc);
+ 		/* Enable new sync master */
+-		plx_acc_32 = (u_int *)(hc->plx_membase+PLX_GPIOC);
++		plx_acc_32 = hc->plx_membase + PLX_GPIOC;
+ 		pv = readl(plx_acc_32);
+ 		pv |= PLX_SYNC_O_EN;
+ 		writel(pv, plx_acc_32);
+@@ -969,7 +970,7 @@ hfcmulti_resync(struct hfc_multi *locked, struct hfc_multi *newmaster, int rm)
+ 					    "QUARTZ is automatically "
+ 					    "enabled by HFC-%dS\n", hc->type);
+ 			}
+-			plx_acc_32 = (u_int *)(hc->plx_membase+PLX_GPIOC);
++			plx_acc_32 = hc->plx_membase + PLX_GPIOC;
+ 			pv = readl(plx_acc_32);
+ 			pv |= PLX_SYNC_O_EN;
+ 			writel(pv, plx_acc_32);
+@@ -1014,7 +1015,8 @@ plxsd_checksync(struct hfc_multi *hc, int rm)
+ static void
+ release_io_hfcmulti(struct hfc_multi *hc)
+ {
+-	u_int	*plx_acc_32, pv;
++	void __iomem *plx_acc_32;
++	u_int	pv;
+ 	u_long	plx_flags;
+ 
+ 	if (debug & DEBUG_HFCMULTI_INIT)
+@@ -1034,7 +1036,7 @@ release_io_hfcmulti(struct hfc_multi *hc)
+ 			printk(KERN_DEBUG "%s: release PLXSD card %d\n",
+ 			    __func__, hc->id + 1);
+ 		spin_lock_irqsave(&plx_lock, plx_flags);
+-		plx_acc_32 = (u_int *)(hc->plx_membase+PLX_GPIOC);
++		plx_acc_32 = hc->plx_membase + PLX_GPIOC;
+ 		writel(PLX_GPIOC_INIT, plx_acc_32);
+ 		pv = readl(plx_acc_32);
+ 		/* Termination off */
+@@ -1056,9 +1058,9 @@ release_io_hfcmulti(struct hfc_multi *hc)
+ 	test_and_clear_bit(HFC_CHIP_PLXSD, &hc->chip); /* prevent resync */
+ 	pci_write_config_word(hc->pci_dev, PCI_COMMAND, 0);
+ 	if (hc->pci_membase)
+-		iounmap((void *)hc->pci_membase);
++		iounmap(hc->pci_membase);
+ 	if (hc->plx_membase)
+-		iounmap((void *)hc->plx_membase);
++		iounmap(hc->plx_membase);
+ 	if (hc->pci_iobase)
+ 		release_region(hc->pci_iobase, 8);
+ 
+@@ -1081,7 +1083,8 @@ init_chip(struct hfc_multi *hc)
+ 	u_long			flags, val, val2 = 0, rev;
+ 	int			i, err = 0;
+ 	u_char			r_conf_en, rval;
+-	u_int			*plx_acc_32, pv;
++	void __iomem		*plx_acc_32;
++	u_int			pv;
+ 	u_long			plx_flags, hfc_flags;
+ 	int			plx_count;
+ 	struct hfc_multi	*pos, *next, *plx_last_hc;
+@@ -1155,7 +1158,7 @@ init_chip(struct hfc_multi *hc)
+ 			printk(KERN_DEBUG "%s: initializing PLXSD card %d\n",
+ 			    __func__, hc->id + 1);
+ 		spin_lock_irqsave(&plx_lock, plx_flags);
+-		plx_acc_32 = (u_int *)(hc->plx_membase+PLX_GPIOC);
++		plx_acc_32 = hc->plx_membase + PLX_GPIOC;
+ 		writel(PLX_GPIOC_INIT, plx_acc_32);
+ 		pv = readl(plx_acc_32);
+ 		/* The first and the last cards are terminating the PCM bus */
+@@ -1191,8 +1194,7 @@ init_chip(struct hfc_multi *hc)
+ 					"we disable termination\n",
+ 				    __func__, plx_last_hc->id + 1);
+ 			spin_lock_irqsave(&plx_lock, plx_flags);
+-			plx_acc_32 = (u_int *)(plx_last_hc->plx_membase
+-					+ PLX_GPIOC);
++			plx_acc_32 = plx_last_hc->plx_membase + PLX_GPIOC;
+ 			pv = readl(plx_acc_32);
+ 			pv &= ~PLX_TERM_ON;
+ 			writel(pv, plx_acc_32);
+@@ -1241,7 +1243,7 @@ init_chip(struct hfc_multi *hc)
+ 	/* Speech Design PLX bridge pcm and sync mode */
+ 	if (test_bit(HFC_CHIP_PLXSD, &hc->chip)) {
+ 		spin_lock_irqsave(&plx_lock, plx_flags);
+-		plx_acc_32 = (u_int *)(hc->plx_membase+PLX_GPIOC);
++		plx_acc_32 = hc->plx_membase + PLX_GPIOC;
+ 		pv = readl(plx_acc_32);
+ 		/* Connect PCM */
+ 		if (hc->hw.r_pcm_md0 & V_PCM_MD) {
+@@ -1353,8 +1355,7 @@ controller_fail:
+ 			/* retry with master clock */
+ 			if (test_bit(HFC_CHIP_PLXSD, &hc->chip)) {
+ 				spin_lock_irqsave(&plx_lock, plx_flags);
+-				plx_acc_32 = (u_int *)(hc->plx_membase +
+-					PLX_GPIOC);
++				plx_acc_32 = hc->plx_membase + PLX_GPIOC;
+ 				pv = readl(plx_acc_32);
+ 				pv |= PLX_MASTER_EN | PLX_SLAVE_EN_N;
+ 				pv |= PLX_SYNC_O_EN;
+@@ -1390,7 +1391,7 @@ controller_fail:
+ 		if (test_bit(HFC_CHIP_PCM_MASTER, &hc->chip))
+ 			plxsd_master = 1;
+ 		spin_lock_irqsave(&plx_lock, plx_flags);
+-		plx_acc_32 = (u_int *)(hc->plx_membase+PLX_GPIOC);
++		plx_acc_32 = hc->plx_membase + PLX_GPIOC;
+ 		pv = readl(plx_acc_32);
+ 		pv |=  PLX_DSP_RES_N;
+ 		writel(pv, plx_acc_32);
+@@ -2587,7 +2588,8 @@ hfcmulti_interrupt(int intno, void *dev_id)
+ 	struct dchannel		*dch;
+ 	u_char			r_irq_statech, status, r_irq_misc, r_irq_oview;
+ 	int			i;
+-	u_short			*plx_acc, wval;
++	void __iomem		*plx_acc;
++	u_short			wval;
+ 	u_char			e1_syncsta, temp;
+ 	u_long			flags;
+ 
+@@ -2607,7 +2609,7 @@ hfcmulti_interrupt(int intno, void *dev_id)
+ 
+ 	if (test_bit(HFC_CHIP_PLXSD, &hc->chip)) {
+ 		spin_lock_irqsave(&plx_lock, flags);
+-		plx_acc = (u_short *)(hc->plx_membase + PLX_INTCSR);
++		plx_acc = hc->plx_membase + PLX_INTCSR;
+ 		wval = readw(plx_acc);
+ 		spin_unlock_irqrestore(&plx_lock, flags);
+ 		if (!(wval & PLX_INTCSR_LINTI1_STATUS))
+@@ -4092,7 +4094,7 @@ init_card(struct hfc_multi *hc)
+ {
+ 	int	err = -EIO;
+ 	u_long	flags;
+-	u_short	*plx_acc;
++	void	__iomem *plx_acc;
+ 	u_long	plx_flags;
+ 
+ 	if (debug & DEBUG_HFCMULTI_INIT)
+@@ -4114,7 +4116,7 @@ init_card(struct hfc_multi *hc)
+ 
+ 	if (test_bit(HFC_CHIP_PLXSD, &hc->chip)) {
+ 		spin_lock_irqsave(&plx_lock, plx_flags);
+-		plx_acc = (u_short *)(hc->plx_membase+PLX_INTCSR);
++		plx_acc = hc->plx_membase + PLX_INTCSR;
+ 		writew((PLX_INTCSR_PCIINT_ENABLE | PLX_INTCSR_LINTI1_ENABLE),
+ 			plx_acc); /* enable PCI & LINT1 irq */
+ 		spin_unlock_irqrestore(&plx_lock, plx_flags);
+@@ -4163,7 +4165,7 @@ init_card(struct hfc_multi *hc)
+ error:
+ 	if (test_bit(HFC_CHIP_PLXSD, &hc->chip)) {
+ 		spin_lock_irqsave(&plx_lock, plx_flags);
+-		plx_acc = (u_short *)(hc->plx_membase+PLX_INTCSR);
++		plx_acc = hc->plx_membase + PLX_INTCSR;
+ 		writew(0x00, plx_acc); /*disable IRQs*/
+ 		spin_unlock_irqrestore(&plx_lock, plx_flags);
  	}
- 
- 	/* get id flag */
--	id = (*buf>>4)&1;
-+	packet_id = (*buf>>4)&1;
- 
- 	/* check coding */
- 	remotecodec = (*buf) & 0x0f;
-@@ -520,11 +520,11 @@ l1oip_socket_parse(struct l1oip *hc, struct sockaddr_in *sin, u8 *buf, int len)
- 	buf++;
- 	len--;
- 
--	/* check id */
--	if (id) {
-+	/* check packet_id */
-+	if (packet_id) {
- 		if (!hc->id) {
- 			printk(KERN_WARNING "%s: packet error - packet has id "
--				"0x%x, but we have not\n", __func__, id);
-+				"0x%x, but we have not\n", __func__, packet_id);
- 			return;
- 		}
- 		if (len < 4) {
-@@ -532,16 +532,16 @@ l1oip_socket_parse(struct l1oip *hc, struct sockaddr_in *sin, u8 *buf, int len)
- 				"short for ID value\n", __func__);
- 			return;
- 		}
--		id = (*buf++) << 24;
--		id += (*buf++) << 16;
--		id += (*buf++) << 8;
--		id += (*buf++);
-+		packet_id = (*buf++) << 24;
-+		packet_id += (*buf++) << 16;
-+		packet_id += (*buf++) << 8;
-+		packet_id += (*buf++);
- 		len -= 4;
- 
--		if (id != hc->id) {
-+		if (packet_id != hc->id) {
- 			printk(KERN_WARNING "%s: packet error - ID mismatch, "
- 				"got 0x%x, we 0x%x\n",
--				__func__, id, hc->id);
-+				__func__, packet_id, hc->id);
- 			return;
- 		}
- 	} else {
 -- 
 1.5.6.3
 
