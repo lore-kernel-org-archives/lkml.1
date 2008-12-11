@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYLKTSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbYLKTTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757530AbYLKTSY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:18:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbYLKTSF
+	id S1757876AbYLKTTK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:19:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbYLKTSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:18:05 -0500
-Received: from kroah.org ([198.145.64.141]:55755 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:18:06 -0500
+Received: from kroah.org ([198.145.64.141]:55727 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756306AbYLKTSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756467AbYLKTSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Dec 2008 14:18:03 -0500
-Date: Thu, 11 Dec 2008 11:13:34 -0800
+Date: Thu, 11 Dec 2008 11:13:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Roland Dreier <rolandd@cisco.com>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 03/83] cxgb3: Fix kernel crash caused by uninitialized
-	l2t_entry.arpq
-Message-ID: <20081211191334.GC5894@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jianjun Kong <jianjun@zeuux.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 02/83] af_unix: netns: fix problem of return value
+Message-ID: <20081211191332.GB5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0002-cxgb3-Fix-kernel-crash-caused-by-uninitialized-l2t_.patch"
+Content-Disposition: inline; filename="0001-af_unix-netns-fix-problem-of-return-value.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,37 +40,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Roland Dreier <rdreier@cisco.com>
+From: Jianjun Kong <jianjun@zeuux.org>
 
-[ Upstream commit 6d329af9967e7ab3f4a3d7f1e8ef87539c3a069f ]
+[ Upstream commit 48dcc33e5e11de0f76b65b113988dbc930d17395 ]
 
-Commit 147e70e6 ("cxgb3: Use SKB list interfaces instead of home-grown
-implementation.") causes a crash in t3_l2t_send_slow() when an iWARP
-connection request is received.  This is because the new l2t_entry.arpq
-skb queue is never initialized, and therefore trying to add an skb to
-it causes a NULL dereference.  With the old code there was no need to
-initialize the queues because the l2t_entry structures were zeroed,
-and the code used NULL to mean empty.
+fix problem of return value
 
-Fix this by adding __skb_queue_head_init() when all the l2t_entry
-structures get allocated.
+net/unix/af_unix.c: unix_net_init()
+when error appears, it should return 'error', not always return 0.
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
 ---
- drivers/net/cxgb3/l2t.c |    1 +
- 1 file changed, 1 insertion(+)
+ net/unix/af_unix.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/cxgb3/l2t.c
-+++ b/drivers/net/cxgb3/l2t.c
-@@ -436,6 +436,7 @@ struct l2t_data *t3_init_l2t(unsigned in
- 	for (i = 0; i < l2t_capacity; ++i) {
- 		d->l2tab[i].idx = i;
- 		d->l2tab[i].state = L2T_STATE_UNUSED;
-+		__skb_queue_head_init(&d->l2tab[i].arpq);
- 		spin_lock_init(&d->l2tab[i].lock);
- 		atomic_set(&d->l2tab[i].refcnt, 0);
- 	}
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -2230,7 +2230,7 @@ static int unix_net_init(struct net *net
+ #endif
+ 	error = 0;
+ out:
+-	return 0;
++	return error;
+ }
+ 
+ static void unix_net_exit(struct net *net)
 
