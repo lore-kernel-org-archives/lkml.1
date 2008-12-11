@@ -1,58 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbYLKQw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbYLKQxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758095AbYLKQw6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 11:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756827AbYLKQtO
+	id S1757845AbYLKQxl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 11:53:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757226AbYLKQtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 11:49:14 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:22225 "EHLO
-	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756529AbYLKQtL (ORCPT
+	Thu, 11 Dec 2008 11:49:17 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:37303 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756584AbYLKQtN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 11:49:11 -0500
-X-BigFish: VPS1(zzzzzzz32i67h)
-X-Spam-TCS-SCL: 6:0
-X-WSS-ID: 0KBQ1DK-01-7Q3-01
+	Thu, 11 Dec 2008 11:49:13 -0500
+X-BigFish: VPS1(zzzzzzz32i65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KBQ1DH-02-VNA-01
 From: Robert Richter <robert.richter@amd.com>
 To: LKML <linux-kernel@vger.kernel.org>
 CC: oprofile-list <oprofile-list@lists.sourceforge.net>,
        Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 5/9] ring_buffer: add remaining cpu functions to ring_buffer.h
-Date: Thu, 11 Dec 2008 17:41:59 +0100
-Message-ID: <1229013723-8191-6-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 2/9] oprofile: adding cpu_buffer_write_commit()
+Date: Thu, 11 Dec 2008 17:41:56 +0100
+Message-ID: <1229013723-8191-3-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1229013723-8191-1-git-send-email-robert.richter@amd.com>
 References: <1229013723-8191-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 11 Dec 2008 16:48:57.0087 (UTC) FILETIME=[5BE4E8F0:01C95BB0]
+X-OriginalArrivalTime: 11 Dec 2008 16:48:56.0978 (UTC) FILETIME=[5BD44720:01C95BB0]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These functions are not yet in ring_buffer.h though they seems to be
-part of the API.
+This is in preparation for changes in the cpu buffer implementation.
 
-Cc: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- include/linux/ring_buffer.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/oprofile/cpu_buffer.c |   18 +-----------------
+ drivers/oprofile/cpu_buffer.h |   17 +++++++++++++++++
+ 2 files changed, 18 insertions(+), 17 deletions(-)
 
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index e097c2e..de9d8c1 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -116,6 +116,8 @@ void ring_buffer_record_enable_cpu(struct ring_buffer *buffer, int cpu);
+diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+index 7e5e650..d6f5de6 100644
+--- a/drivers/oprofile/cpu_buffer.c
++++ b/drivers/oprofile/cpu_buffer.c
+@@ -148,22 +148,6 @@ static unsigned long nr_available_slots(struct oprofile_cpu_buffer const *b)
+ 	return tail + (b->buffer_size - head) - 1;
+ }
  
- unsigned long ring_buffer_entries(struct ring_buffer *buffer);
- unsigned long ring_buffer_overruns(struct ring_buffer *buffer);
-+unsigned long ring_buffer_entries_cpu(struct ring_buffer *buffer, int cpu);
-+unsigned long ring_buffer_overrun_cpu(struct ring_buffer *buffer, int cpu);
+-static void increment_head(struct oprofile_cpu_buffer *b)
+-{
+-	unsigned long new_head = b->head_pos + 1;
+-
+-	/*
+-	 * Ensure anything written to the slot before we increment is
+-	 * visible
+-	 */
+-	wmb();
+-
+-	if (new_head < b->buffer_size)
+-		b->head_pos = new_head;
+-	else
+-		b->head_pos = 0;
+-}
+-
+ static inline void
+ add_sample(struct oprofile_cpu_buffer *cpu_buf,
+ 	   unsigned long pc, unsigned long event)
+@@ -171,7 +155,7 @@ add_sample(struct oprofile_cpu_buffer *cpu_buf,
+ 	struct op_sample *entry = cpu_buffer_write_entry(cpu_buf);
+ 	entry->eip = pc;
+ 	entry->event = event;
+-	increment_head(cpu_buf);
++	cpu_buffer_write_commit(cpu_buf);
+ }
  
- u64 ring_buffer_time_stamp(int cpu);
- void ring_buffer_normalize_time_stamp(int cpu, u64 *ts);
+ static inline void
+diff --git a/drivers/oprofile/cpu_buffer.h b/drivers/oprofile/cpu_buffer.h
+index 0870699..e608976 100644
+--- a/drivers/oprofile/cpu_buffer.h
++++ b/drivers/oprofile/cpu_buffer.h
+@@ -59,6 +59,23 @@ struct op_sample *cpu_buffer_write_entry(struct oprofile_cpu_buffer *cpu_buf)
+ }
+ 
+ static inline
++void cpu_buffer_write_commit(struct oprofile_cpu_buffer *b)
++{
++	unsigned long new_head = b->head_pos + 1;
++
++	/*
++	 * Ensure anything written to the slot before we increment is
++	 * visible
++	 */
++	wmb();
++
++	if (new_head < b->buffer_size)
++		b->head_pos = new_head;
++	else
++		b->head_pos = 0;
++}
++
++static inline
+ struct op_sample *cpu_buffer_read_entry(struct oprofile_cpu_buffer *cpu_buf)
+ {
+ 	return &cpu_buf->buffer[cpu_buf->tail_pos];
 -- 
 1.6.0.1
 
