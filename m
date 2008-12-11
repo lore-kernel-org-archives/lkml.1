@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbYLKW5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759024AbYLKW5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758033AbYLKW5E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 17:57:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759419AbYLKW4M
+	id S1759024AbYLKW5p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 17:57:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757941AbYLKW5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 17:56:12 -0500
-Received: from rv-out-0506.google.com ([209.85.198.231]:2439 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759135AbYLKW4K (ORCPT
+	Thu, 11 Dec 2008 17:57:33 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:45620 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758113AbYLKW5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 17:56:10 -0500
-Message-ID: <ac3eb2510812111448s7c700199ia2e57834f91c02a@mail.gmail.com>
-Date: Thu, 11 Dec 2008 23:48:32 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 12201] New: long wait in call_usermodehelper() / queue_work() / wait_for_completion()
-Cc: mike@nauticaltech.com, bugme-daemon@bugzilla.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Al Viro" <viro@zeniv.linux.org.uk>
-In-Reply-To: <20081211143758.510b51b6.akpm@linux-foundation.org>
+	Thu, 11 Dec 2008 17:57:32 -0500
+Date: Thu, 11 Dec 2008 17:57:23 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.28-rc8
+Message-ID: <20081211225723.GD10890@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Joerg Roedel <joro@8bytes.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain> <20081211084058.GE24323@8bytes.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <bug-12201-10286@http.bugzilla.kernel.org/>
-	 <20081211143758.510b51b6.akpm@linux-foundation.org>
+In-Reply-To: <20081211084058.GE24323@8bytes.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 23:37, Andrew Morton <akpm@linux-foundation.org> wrote:
->> As I continued to dig deeper (using lots of printks), I found that these delays
->> were caused by the netlink_create() code calling request_module() to find/load
->> a module for AUDIT support which doesn't exist.
->>
->> Continuing to dig, I found that request_module() uses call_usermodehelper() to
->> run /sbin/modprobe to find/load the module.
->>
->> The farthest I got is that after the process is created, we call
->> wait_for_completion() to get the result of that process.  This waiting process
->> takes 1-2 seconds.
->>
->> The big problem in troubleshooting here is that this only starts to happen
->> after the server has been online for a while (10 days maybe) and serving lots
->> of traffic.  The delay gradually builds up and maxes out at around 2 seconds.
->>
->> If I manually call /sbin/modprobe on the commandline and provide it the same
->> arguments that call_usermodehelper() uses, the command returns instantly 100%
->> of the time (assuming server has been on for a while).
->>
->> If I write a small pilot program that calls socket(PF_NETLINK, SOCK_RAW,
->> NETLINK_AUDIT), it will delay by 1-2 seconds 100% of the time (assuming server
->> has been online for a while).  Certain protocol types given to socket() have
->> zero delay (because no module needs to be loaded).
->>
->> Steps to reproduce:
->> Once server has been online for a while, a simple call to socket(PF_NETLINK,
->> SOCK_RAW, NETLINK_AUDIT) shows the problem.
+On Thu, Dec 11, 2008 at 09:40:58AM +0100, Joerg Roedel wrote:
+> On Wed, Dec 10, 2008 at 05:04:39PM -0800, Linus Torvalds wrote:
+> > 
+> >  (a) just make the -rc's go on a few more weeks, and do 2.6.28 after xmas
+> > 
+> >      I like this, because alledgely people are debugging things, and we'd 
+> >      get a more stable 2.6.28.
+> >
+> 
+> I'll vote for a. An open merge window over the holidays possible results
+> in needless stresses for the developers at a time which some of them
+> want to use otherwise. Or if any merge introduces bad bugs and the
+> developers that can fix it are on xmax vacation we may end up with an
+> unusable upstream tree for a week or so. Same with merge conflicts.
+> So, I'd suggest to wait until everybody is back to work until opening
+> the merge window.
 
-If you replace /sbin/modprobe in the kernel module loader, does the
-delay go away:
-  echo /bin/true > /proc/sys/kernel/modprobe
-?
+I'd vote for (a) as well, and hopefully folks who are really
+conscientious can do some integration testing of linux-next and can
+report problems there to make the merge window go more smoothly after
+the New Year's.
 
-Kay
+							- Ted
