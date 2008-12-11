@@ -1,39 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbYLKSf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757008AbYLKShX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756863AbYLKSf4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 13:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbYLKSfs
+	id S1757008AbYLKShX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 13:37:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbYLKShE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 13:35:48 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59746 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756074AbYLKSfr (ORCPT
+	Thu, 11 Dec 2008 13:37:04 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:42899 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756074AbYLKShD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 13:35:47 -0500
-Date: Thu, 11 Dec 2008 10:35:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, eranian@googlemail.com,
-       dada1@cosmosbay.com, robert.richter@amd.com, arjan@infradead.org,
-       hpa@zytor.com, a.p.zijlstra@chello.nl, paulus@samba.org,
-       davem@davemloft.net
-Subject: Re: [patch] Performance Counters for Linux, v3
-Message-Id: <20081211103504.73ecabdd.akpm@linux-foundation.org>
-In-Reply-To: <20081211155230.GA4230@elte.hu>
-References: <20081211155230.GA4230@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Dec 2008 13:37:03 -0500
+Message-ID: <49415DC3.5060203@zytor.com>
+Date: Thu, 11 Dec 2008 10:36:51 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Brueckl <ib@wupperonline.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Egmont Koblinger <egmont@uhulinux.hu>
+Subject: Re: [PATCH] console ASCII glyph 1:1 mapping
+References: <4940441e@wupperonline.de> <alpine.LFD.2.00.0812110823320.3340@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0812110823320.3340@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Dec 2008 16:52:30 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Linus Torvalds wrote:
+> Hmm. I bounced both your patches to Peter, since they look valid but I 
+> want somebody who knows this code better to ack them. 
+> 
+> Peter - is there somebody else who should double-check these things, or 
+> can you ack them?
 
-> To: linux-kernel@vger.kernel.org
-> Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Stephane Eranian <eranian@googlemail.com>, Eric Dumazet <dada1@cosmosbay.com>, Robert Richter <robert.richter@amd.com>, Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>
+I should be able to.
 
-Please copy perfctr-devel@lists.sourceforge.net on all this.  That is where
-the real-world people who use these facilities on a regular basis hang out.
+For both patches:
+
+Acked-by: H. Peter Anvin <hpa@zytor.com>
+
+[Let me know if you prefer me setting up a git tree to pull from.]
+
+This was introduced by commit
+1ed8a2b3c501bedd4b35130c8a52662ccf78abad, which among other things have
+this:
+
+--------
+As Behdad pointed out, some fonts (e.g. sun12x22 from the kbd package)
+lack Unicode mapping information, hence all you get is lots of question
+marks. Though theoretically it's actually a user-space bug (the font
+should be fixed), Behdad and I both believe that it'd be good to work
+around in the kernel by re-introducing the fallback solution for ASCII
+characters only. This sounds a quite reasonable decision, since all
+fonts ship the ASCII characters in the first 128 positions. This way
+users won't be surprised by lots of question marks just because s/he
+issued a not-so-perfectly parameterized setfont command. As this
+fallback is only re-introduced for code points below 128, you still
+won't see an accented letter replaced by another, but at least you'll
+always get the English letters right.
+--------
+
+The implementation was obviously buggy, however.
+
+The statement above is also just plain wrong, since installing a font
+with no Unicode table causes a direct-to-font Unicode table to be set up
+(0xF0xx for all positions) unless explicitly overridden.
+
+Anyway, I was rather against adding this fallback, because I felt it was
+needless complexity to deal with a very explicit user error.
+Fortunately, the bug didn't affect any legitimate users.
+
+	-hpa
