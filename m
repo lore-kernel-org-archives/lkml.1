@@ -1,85 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbYLKB2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbYLKBar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455AbYLKB2y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 20:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbYLKB2o
+	id S1755892AbYLKBar (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 20:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbYLKBaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 20:28:44 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:34948 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753208AbYLKB2n (ORCPT
+	Wed, 10 Dec 2008 20:30:39 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:54082 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753192AbYLKBai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 20:28:43 -0500
-X-Sasl-enc: EZ9vLRRhgoCNTkfel2tBpS2kV9rUkONr4aXfAY6sPHnt 1228958921
-Date: Wed, 10 Dec 2008 23:28:38 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Adam Belay <abelay@mit.edu>,
-       rjw@sisk.pl
-Subject: Re: [PATCH] PNPACPI: Enable Power Support
-Message-ID: <20081211012838.GA18065@khazad-dum.debian.net>
-References: <493D8A1F.2090907@gmx.net> <20081210095315.GA20627@khazad-dum.debian.net> <494018E9.2060507@gmx.net> <20081210232137.GB7589@khazad-dum.debian.net>
+	Wed, 10 Dec 2008 20:30:38 -0500
+Date: Wed, 10 Dec 2008 20:28:34 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] ibmphp: Fix module ref count underflow
+Message-ID: <20081211012834.GA3262@localhost.localdomain>
+References: <20081210194334.GA25257@hmsreliant.think-freely.org> <20081210222812.GA1513@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081210232137.GB7589@khazad-dum.debian.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
+In-Reply-To: <20081210222812.GA1513@kroah.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Witold!
-
-On Wed, 10 Dec 2008, Henrique de Moraes Holschuh wrote:
-
-> On Wed, 10 Dec 2008, Witold Szczeponik wrote:
-> > Henrique de Moraes Holschuh wrote:
-> >> On Mon, 08 Dec 2008, Witold Szczeponik wrote:
-> >>> This patch sets the power of PnP ACPI devices to D0 when they
-> >>> are activated and to D3 when they are disabled.  The latter is
-> >>
-> >> This will likely fix my T43 to power down USB during STR. THANKS!!
-> >> Now, I just need to check if the ACPI BIOS is smart enough to not do
-> >> it when they are configured as wake devices [in the BIOS].
-> >>
-> >
-> > Most likely it won't. :-(  My patch takes only care of devices that are
-> > properly registered as PnP by ACPI: attached USB devices don't fall
-> > under that category.
+On Wed, Dec 10, 2008 at 02:28:12PM -0800, Greg KH wrote:
+> On Wed, Dec 10, 2008 at 02:43:34PM -0500, Neil Horman wrote:
+> > Hey-
+> > 	I happened to notice that the ibmphp hotplug driver does something
+> > rather silly in its init routine.  It purposely calls module_put so as to
+> > underflow its module ref count to avoid being removed from the kernel.  This is
+> > bad practice, and wrong, since it provides a window for subsequent module_gets
+> > to reset the refcount to zero, allowing an unload to race in and cause all sorts
+> > of mysterious panics.  If the module is unsafe to load, it should inform the
+> > kernel as such with a call to __unsafe.  The patch below does that.
+> > 
+> > Regards
+> > Neil
+> > 
+> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 > 
-> I do mean the UHCI and EHCI bridges, not USB devices hanging off them :)
+> Jesse is the PCI maintainer now, you should send this to him to verify
+> that it goes in.
 > 
-> I will do an in-depth study of the AML in question, I just noticed it is
-> coupled to some EC magic register, which might be doing stuff the USB
-> subsystem just can't do normally.
+> Feel free to add my:
+> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> to this, nice job.
+> 
+Thanks!  I've forwarded the patch on to Jesse.
 
-Bah, never mind.  Major issue between the keyboard and the chair, on my
-end...  Got PR# and PS# confused.  The ThinkPad ACPI DSDT in question has
-the standard crap for wake device control, and PR# methods, but no PS#
-methods.
+Best
+Neil
 
-The PR0..PR2 nodes for the UHCI and EHCI USB ports on the ThinkPad T43
-mention a power resource object, and that power resource CAN power on/off
-the USB ports (and that freaks out the UHCI and EHCI kernel drivers causing
-over-current reports, but that was to be expected).  The AML code tells the
-EC to do some magic that probably tells a MOSFET somewhere in the mainboard
-to stop supplying power to the ports.
-
-And Windows XP (this is not a Vista BIOS and I never tried running Vista in
-it...) is noticing that power resource (even without PS3 or PR3 nodes) and
-calling that power resource _OFF handler to power down USB ports when it
-doesn't need these devices for wakeup reasons, before entering STR.
-
-Anyone has any clue on what part of the ACPI spec could result on that
-behaviour?  Because otherwise I will just bloody special-case it into
-thinkpad-acpi's suspend and resume stuff.  It will piss the USB subsystem
-off if I can't arrange to do it on early resume and late suspend, however.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> thanks,
+> 
+> greg k-h
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
