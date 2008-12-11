@@ -1,105 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbYLKFDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYLKFIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755539AbYLKFDu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 00:03:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750867AbYLKFDl
+	id S1755044AbYLKFIf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 00:08:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYLKFI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 00:03:41 -0500
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:11436 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750801AbYLKFDk (ORCPT
+	Thu, 11 Dec 2008 00:08:27 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50136 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbYLKFI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 00:03:40 -0500
-X-IronPort-AV: E=Sophos;i="4.33,751,1220227200"; 
-   d="scan'208";a="122530720"
-From: Roland Dreier <rdreier@cisco.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nguyen Anh Quynh <aquynh@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Kuniyasu Suzaki <k.suzaki@aist.go.jp>
-Subject: Re: [PATCH] fix calls to request_module()
-References: <9cde8bff0812101935j5ef56140k67035d892a868738@mail.gmail.com>
-	<20081211040118.GK28946@ZenIV.linux.org.uk>
-	<20081210201455.0c611484.akpm@linux-foundation.org>
-	<20081211044901.GL28946@ZenIV.linux.org.uk>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 10 Dec 2008 21:03:37 -0800
-In-Reply-To: <20081211044901.GL28946@ZenIV.linux.org.uk> (Al Viro's message of
-	"Thu, 11 Dec 2008 04:49:01 +0000")
-Message-ID: <adatz9b2thy.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 11 Dec 2008 05:03:37.0454 (UTC) FILETIME=[D36D60E0:01C95B4D]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Thu, 11 Dec 2008 00:08:26 -0500
+Date: Wed, 10 Dec 2008 21:09:55 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.28-rc8
+Message-ID: <20081210210955.36fa2965@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain>
+References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I mean, I do not believe that any gcc version would start spewing warnings
- > of
- > 	printf("-- \n");
- > and its ilk...
+On Wed, 10 Dec 2008 17:04:39 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-No, I haven't seen gcc warn about anything that crazy (ie where it can
-see the format string and prove it's safe).
+> 
+> Nothing overly exciting here. Lots of small things, mostly in drivers 
+> (with some defconfig updates for m68k and mips making the diffs
+> bigger). 
+> 
+> There's some uncomfortably big changes to the intel DRI code, but
+> most of that is all about fixes to the new i916 "GEM" code that is
+> only used by development X servers, and is a new feature, so it
+> shouldn't be able to cause regressions.
+> 
+> Perhaps more interesting is simply the release scheduling issue. I'm 
+> getting slowly ready to do a real 2.6.28, but I don't think anybody
+> really wants the merge window to be around the holidays. So the
+> question is really whether to 
+> 
+>  (a) just make the -rc's go on a few more weeks, and do 2.6.28 after
+> xmas
+> 
+>      I like this, because alledgely people are debugging things, and
+> we'd get a more stable 2.6.28.
+> 
+> or
+> 
+>  (b) release in a week or two, but just allow for possibly extending
+> the merge window due to people being drunk on eggnog..
+> 
+>      I like this because let's face it, we get more and better bug 
+>      information after releases, and everything _should_ be ready for 
+>      merging *before* the merge window anyway.
+> 
 
-I do see warnings from the Ubuntu gcc with code like:
-
-#include <stdio.h>
-
-extern char *a;
-
-void foo()
-{
-	printf(a);
-}
-
-which produces
-
-a.c: In function 'foo':
-a.c:7: warning: format not a string literal and no format arguments
+if you go for option (b) I would suggest doing an -rc in the middle, or
+at least some snapshot release, to act as anchor point for the second
+wave... maybe even a day or two of quiet around that to give people
+time to regroup.
 
 
-The kernel has such code eg in init/main.c, which does
-
-	printk(linux_banner);
-
-when linux_banner is only visible to the compiler as
-
-extern const char linux_banner[];
-
-however the trivial fix
-
-diff --git a/init/main.c b/init/main.c
-index 7e117a2..e471598 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -568,7 +568,7 @@ asmlinkage void __init start_kernel(void)
- 	boot_cpu_init();
- 	page_address_init();
- 	printk(KERN_NOTICE);
--	printk(linux_banner);
-+	printk("%s", linux_banner);
- 	setup_arch(&command_line);
- 	mm_init_owner(&init_mm, &init_task);
- 	setup_command_line(command_line);
-
-doesn't seem that appealing, since it bloats the object code for a
-non-bug -- 7 bytes for me on x86_64:
-
-add/remove: 0/0 grow/shrink: 1/0 up/down: 7/0 (7)
-function                                     old     new   delta
-start_kernel                                 680     687      +7
-
-given the number of such warnings I see in a typical compile, this would
-be a fairly hefty amount of bloat just to shut up gcc.
-
-On the other hand, gcc warning on such code (untrusted format string
-passed into a printf-like function) seems quite legitimate as well.
-
-So I dunno.
-
- - Roland
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
