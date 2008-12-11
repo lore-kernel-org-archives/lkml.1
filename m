@@ -1,187 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYLKAiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbYLKAij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbYLKAiJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 19:38:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYLKAhv
+	id S1756244AbYLKAij (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 19:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYLKAi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 19:37:51 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:53300 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309AbYLKAhs (ORCPT
+	Wed, 10 Dec 2008 19:38:29 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47663 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753442AbYLKAi2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 19:37:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=xCCHkuxWO7HS1WyGO21c9EhXYjbEgrN7Knio/r7jJh3JSCeafncfn6sZ4EDovnJXek
-         2XAkSqDQznezqV0rvVTooSUhGFppWlxprsWiQXakiWL/3pUmTZHzMxO2pRNN7Y5aFu4I
-         BwmxkS2F/aS36SuuFd6tTskA11n0ORao2xz0Q=
-Message-ID: <9929d2390812101637r7df0a80av7a171e9cfa624c6e@mail.gmail.com>
-Date: Wed, 10 Dec 2008 16:37:46 -0800
-From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [E1000-devel] BUG: bad unlock balance detected! e1000e
-Cc: "Frederik Deweerdt" <frederik.deweerdt@xprog.eu>,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org,
-       stable@kernel.org, tglx@linutronix.de, zdenek.kabelac@gmail.com,
-       davem@davemloft.net
-In-Reply-To: <20081209155655.e82f9c24.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 10 Dec 2008 19:38:28 -0500
+Date: Thu, 11 Dec 2008 09:37:33 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: menage@google.com
+Cc: balbir@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [RFC][PATCH 1/3] CGroups: Add a per-subsystem hierarchy_mutex
+Message-Id: <20081211093733.c24deb6e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081210234432.065445000@menage.corp.google.com>
+References: <20081210233654.563182000@menage.corp.google.com>
+	<20081210234432.065445000@menage.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c4e36d110812080324y68c0e453qcb68a040da7ac9a2@mail.gmail.com>
-	 <20081209110337.GJ4864@gambetta>
-	 <20081209150801.2aa76ac6.akpm@linux-foundation.org>
-	 <20081209234346.GB7394@gambetta>
-	 <20081209155655.e82f9c24.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 2f112e1288b90174
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 9, 2008 at 3:56 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed, 10 Dec 2008 00:43:46 +0100
-> Frederik Deweerdt <frederik.deweerdt@xprog.eu> wrote:
->
->> On Tue, Dec 09, 2008 at 03:08:01PM -0800, Andrew Morton wrote:
->> > On Tue, 9 Dec 2008 12:03:37 +0100
->> > Frederik Deweerdt <frederik.deweerdt@xprog.eu> wrote:
->> >
->> > > It some error checking is missing in e1000e: debug contention on NVM
->> > > SWFLAG
->> > > On Mon, Dec 08, 2008 at 12:24:09PM +0100, Zdenek Kabelac wrote:
->> > > > Hi
->> > > >
->> > > > During occasional scan of message log - I've found out this BUG which
->> > > > happened on Dec3 with the -rc7 from that day.
->> > > > (So if it's now fixed in current git feel free to ignore :))
->> > > >
->> > > > My machine T61 - C2D, 2GB, 64bit kernel - message appeared during
->> > > > shutdown and was actually not noticed by me...
->> > > >
->> > > >
->> > > > NetworkManager: <WARN>  nm_signal_handler(): Caught signal 15,
->> > > > shutting down normally.
->> > > > NetworkManager: <info>  (eth0): now unmanaged
->> > > > NetworkManager: <info>  (eth0): device state change: 3 -> 1
->> > > > NetworkManager: <info>  (eth0): cleaning up...
->> > > > NetworkManager: <info>  (eth0): taking down device.
->> > > >
->> > > > =====================================
->> > > > [ BUG: bad unlock balance detected! ]
->> > > > -------------------------------------
->> >
->> > (top-posting repaired.  Please don't do that!!!).
->> Yep, sorry.
->> >
->> > > Hello Zdenek,
->> > >
->> > > This could be due to 717d438d1fde94decef874b9808379d1f4523453
->> > >     "e1000e: debug contention on NVM SWFLAG"
->> > > Error handling is missing from e1000_reset_hw_ich8lan so it may happen
->> > > that we don't acquire the nvm_mutex if the card times out.
->> > >
->> > > Adding Thomas to CC.
->> >
->> > yup.  2.6.27 needs fixing also.
->> >
->> > Like this?
->> I don't think so, e1000_acquire_swflag_ich8lan() locks and
->> e1000_release_swflag_ich8lan() unlocks.
->
-> urgh, OK, I made the mistake of reading the comments.
->
->> I think it is more along the
->> lines of:
->>
->>
->> diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
->> index 523b971..f971b83 100644
->> --- a/drivers/net/e1000e/ich8lan.c
->> +++ b/drivers/net/e1000e/ich8lan.c
->> @@ -1892,7 +1892,13 @@ static s32 e1000_reset_hw_ich8lan(struct e1000_hw *hw)
->>                */
->>               ctrl |= E1000_CTRL_PHY_RST;
->>       }
->> +
->>       ret_val = e1000_acquire_swflag_ich8lan(hw);
->> +     if (ret_val) {
->> +             hw_dbg(hw, "Failed to acquire NVM swflag");
->> +             return ret_val;
->> +     }
->> +
->>       hw_dbg(hw, "Issuing a global reset to ich8lan");
->>       ew32(CTRL, (ctrl | E1000_CTRL_RST));
->>       msleep(20);
->>
->>
->> But I'm not sure we should cancel the ongoing reset if the card times
->> out...
->>
->
-> Yes, something like that.  Or something like
->
-> --- a/drivers/net/e1000e/ich8lan.c~a
-> +++ a/drivers/net/e1000e/ich8lan.c
-> @@ -1940,12 +1940,14 @@ static s32 e1000_reset_hw_ich8lan(struct
->                ctrl |= E1000_CTRL_PHY_RST;
->        }
->        ret_val = e1000_acquire_swflag_ich8lan(hw);
-> -       hw_dbg(hw, "Issuing a global reset to ich8lan\n");
-> -       ew32(CTRL, (ctrl | E1000_CTRL_RST));
-> -       msleep(20);
-> +       if (!ret_val) {
-> +               hw_dbg(hw, "Issuing a global reset to ich8lan\n");
-> +               ew32(CTRL, (ctrl | E1000_CTRL_RST));
-> +               msleep(20);
->
-> -       /* release the swflag because it is not reset by hardware reset */
-> -       e1000_release_swflag_ich8lan(hw);
-> +               /* release the swflag because it is not reset by hardware reset */
-> +               e1000_release_swflag_ich8lan(hw);
-> +       }
->
->        ret_val = e1000e_get_auto_rd_done(hw);
->        if (ret_val) {
-> _
->
->
-> Dunno. It's e1000-developer-summoning-dance time.
->
+thank you for this work.
 
-Actually, if we time out trying to acquire the swflag, we still want
-to reset the part because we are most likely in an unrecoverable
-state.
+On Wed, 10 Dec 2008 15:36:55 -0800
+menage@google.com wrote:
 
-So I would suggest the following
- --- a/drivers/net/e1000e/ich8lan.c~a
- +++ a/drivers/net/e1000e/ich8lan.c
- @@ -1940,9 +1940,10 @@ static s32 e1000_reset_hw_ich8lan(struct
-                ctrl |= E1000_CTRL_PHY_RST;
-        }
-        ret_val = e1000_acquire_swflag_ich8lan(hw);
-        hw_dbg(hw, "Issuing a global reset to ich8lan\n");
-        ew32(CTRL, (ctrl | E1000_CTRL_RST));
-        msleep(20);
- +       if (!ret_val) {
- -
- -       /* release the swflag because it is not reset by hardware reset */
- -       e1000_release_swflag_ich8lan(hw);
- +               /* release the swflag because it is not reset by
-hardware reset */
- +               e1000_release_swflag_ich8lan(hw);
- +       }
+> This patch adds a hierarchy_mutex to the cgroup_subsys object that
+> protects changes to the hierarchy observed by that subsystem. It is
+> taken by the cgroup subsystem (in addition to cgroup_mutex) for the
+> following operations:
+> 
+> - linking a cgroup into that subsystem's cgroup tree
+> - unlinking a cgroup from that subsystem's cgroup tree
+> - moving the subsystem to/from a hierarchy (including across the
+>   bind() callback)
+> 
+o.k. usage is very clear.
 
-Of course, we will want to add a comment to the fact that we still
-want to reset the part, even if we have not acquired the lock because
-we are in an unrecoverable state.
+> Thus if the subsystem holds its own hierarchy_mutex, it can safely
+> traverse its own hierarchy.
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
+> ---
+> 
+>  Documentation/cgroups/cgroups.txt |    2 +-
+>  include/linux/cgroup.h            |    9 ++++++++-
+>  kernel/cgroup.c                   |   37 +++++++++++++++++++++++++++++++++++--
+>  3 files changed, 44 insertions(+), 4 deletions(-)
+> 
+> Index: hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
+> ===================================================================
+> --- hierarchy_lock-mmotm-2008-12-09.orig/include/linux/cgroup.h
+> +++ hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
+> @@ -337,8 +337,15 @@ struct cgroup_subsys {
+>  #define MAX_CGROUP_TYPE_NAMELEN 32
+>  	const char *name;
+>  
+> -	struct cgroupfs_root *root;
+> +	/*
+> +	 * Protects sibling/children links of cgroups in this
+> +	 * hierarchy, plus protects which hierarchy (or none) the
+> +	 * subsystem is a part of (i.e. root/sibling)
+> +	 */
+> +	struct mutex hierarchy_mutex;
+>  
+> +	/* Protected by this->hierarchy_mutex and cgroup_lock() */
+> +	struct cgroupfs_root *root;
+>  	struct list_head sibling;
+>  };
+>  
+> Index: hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+> ===================================================================
+> --- hierarchy_lock-mmotm-2008-12-09.orig/kernel/cgroup.c
+> +++ hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+> @@ -714,23 +714,26 @@ static int rebind_subsystems(struct cgro
+>  			BUG_ON(cgrp->subsys[i]);
+>  			BUG_ON(!dummytop->subsys[i]);
+>  			BUG_ON(dummytop->subsys[i]->cgroup != dummytop);
+> +			mutex_lock(&ss->hierarchy_mutex);
+>  			cgrp->subsys[i] = dummytop->subsys[i];
+>  			cgrp->subsys[i]->cgroup = cgrp;
+>  			list_move(&ss->sibling, &root->subsys_list);
+>  			ss->root = root;
+>  			if (ss->bind)
+>  				ss->bind(ss, cgrp);
+> -
+> +			mutex_unlock(&ss->hierarchy_mutex);
+>  		} else if (bit & removed_bits) {
+>  			/* We're removing this subsystem */
+>  			BUG_ON(cgrp->subsys[i] != dummytop->subsys[i]);
+>  			BUG_ON(cgrp->subsys[i]->cgroup != cgrp);
+> +			mutex_lock(&ss->hierarchy_mutex);
+>  			if (ss->bind)
+>  				ss->bind(ss, dummytop);
+>  			dummytop->subsys[i]->cgroup = dummytop;
+>  			cgrp->subsys[i] = NULL;
+>  			subsys[i]->root = &rootnode;
+>  			list_move(&ss->sibling, &rootnode.subsys_list);
+> +			mutex_unlock(&ss->hierarchy_mutex);
+>  		} else if (bit & final_bits) {
+>  			/* Subsystem state should already exist */
+>  			BUG_ON(!cgrp->subsys[i]);
+> @@ -2326,6 +2329,29 @@ static void init_cgroup_css(struct cgrou
+>  	cgrp->subsys[ss->subsys_id] = css;
+>  }
+>  
+> +static void cgroup_lock_hierarchy(struct cgroupfs_root *root)
+> +{
+> +	/* We need to take each hierarchy_mutex in a consistent order */
+> +	int i;
+> +
+> +	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> +		struct cgroup_subsys *ss = subsys[i];
+> +		if (ss->root == root)
+> +			mutex_lock_nested(&ss->hierarchy_mutex, i);
+> +	}
+> +}
+> +
+> +static void cgroup_unlock_hierarchy(struct cgroupfs_root *root)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> +		struct cgroup_subsys *ss = subsys[i];
+> +		if (ss->root == root)
+> +			mutex_unlock(&ss->hierarchy_mutex);
+> +	}
+> +}
+> +
+Maybe no problem..but I don't like releasing lock in the order of acquiring lock.
 
-I can provide a patch in a few minutes.
+	for (i = CGROUP_SUBSYS_COUNT - 1; i >=0; i--)  ?
 
--- 
-Cheers,
-Jeff
+
+-Kame
+
+
