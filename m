@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761903AbYLKTp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932539AbYLKTqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761903AbYLKTp5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:45:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757931AbYLKTTd
+	id S932539AbYLKTqZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:46:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757528AbYLKTTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:19:33 -0500
-Received: from kroah.org ([198.145.64.141]:56804 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:19:34 -0500
+Received: from kroah.org ([198.145.64.141]:56815 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757690AbYLKTTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:19:31 -0500
-Date: Thu, 11 Dec 2008 11:16:41 -0800
+	id S1757666AbYLKTTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:19:32 -0500
+Date: Thu, 11 Dec 2008 11:16:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Peter Korsgaard <jacmet@sunsite.dk>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: [patch 77/83] atv: hid quirk for appletv IR receiver
-Message-ID: <20081211191641.GY5894@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: [patch 78/83] Allow recursion in binfmt_script and binfmt_misc
+Message-ID: <20081211191644.GZ5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="atv-hid-quirk-for-appletv-ir-receiver.patch"
+Content-Disposition: inline; filename="allow-recursion-in-binfmt_script-and-binfmt_misc.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,36 +41,108 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Peter Korsgaard <jacmet@sunsite.dk>
+From: Kirill A. Shutemov <kirill@shutemov.name>
 
-(2.6.27 backport of 0f492f2a)
+commit bf2a9a39639b8b51377905397a5005f444e9a892 upstream.
 
-Similar to the existing IRCONTROL4 handling
+binfmt_script and binfmt_misc disallow recursion to avoid stack overflow
+using sh_bang and misc_bang.  It causes problem in some cases:
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+$ echo '#!/bin/ls' > /tmp/t0
+$ echo '#!/tmp/t0' > /tmp/t1
+$ echo '#!/tmp/t1' > /tmp/t2
+$ chmod +x /tmp/t*
+$ /tmp/t2
+zsh: exec format error: /tmp/t2
+
+Similar problem with binfmt_misc.
+
+This patch introduces field 'recursion_depth' into struct linux_binprm to
+track recursion level in binfmt_misc and binfmt_script.  If recursion
+level more then BINPRM_MAX_RECURSION it generates -ENOEXEC.
+
+[akpm@linux-foundation.org: make linux_binprm.recursion_depth a uint]
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+Cc: Pavel Emelyanov <xemul@openvz.org>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hid/usbhid/hid-quirks.c |    2 ++
- 1 file changed, 2 insertions(+)
+ fs/binfmt_em86.c        |    2 +-
+ fs/binfmt_misc.c        |    4 ++--
+ fs/binfmt_script.c      |    5 +++--
+ include/linux/binfmts.h |    2 ++
+ 4 files changed, 8 insertions(+), 5 deletions(-)
 
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -83,6 +83,7 @@
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_JIS	0x0232
- #define USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY	0x030a
- #define USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY	0x030b
-+#define USB_DEVICE_ID_APPLE_ATV_IRCONTROL	0x8241
- #define USB_DEVICE_ID_APPLE_IRCONTROL4	0x8242
+--- a/fs/binfmt_em86.c
++++ b/fs/binfmt_em86.c
+@@ -43,7 +43,7 @@ static int load_em86(struct linux_binprm
+ 			return -ENOEXEC;
+ 	}
  
- #define USB_VENDOR_ID_ASUS		0x0b05
-@@ -458,6 +459,7 @@ static const struct hid_blacklist {
- 	{ USB_VENDOR_ID_AFATECH, USB_DEVICE_ID_AFATECH_AF9016, HID_QUIRK_FULLSPEED_INTERVAL },
+-	bprm->sh_bang = 1;	/* Well, the bang-shell is implicit... */
++	bprm->recursion_depth++; /* Well, the bang-shell is implicit... */
+ 	allow_write_access(bprm->file);
+ 	fput(bprm->file);
+ 	bprm->file = NULL;
+--- a/fs/binfmt_misc.c
++++ b/fs/binfmt_misc.c
+@@ -117,7 +117,7 @@ static int load_misc_binary(struct linux
+ 		goto _ret;
  
- 	{ USB_VENDOR_ID_BELKIN, USB_DEVICE_ID_FLIP_KVM, HID_QUIRK_HIDDEV },
-+	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ATV_IRCONTROL, HID_QUIRK_HIDDEV | HID_QUIRK_IGNORE_HIDINPUT },
- 	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_IRCONTROL4, HID_QUIRK_HIDDEV | HID_QUIRK_IGNORE_HIDINPUT },
- 	{ USB_VENDOR_ID_SAMSUNG, USB_DEVICE_ID_SAMSUNG_IR_REMOTE, HID_QUIRK_HIDDEV | HID_QUIRK_IGNORE_HIDINPUT },
- 	{ USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_SIDEWINDER_GV, HID_QUIRK_HIDINPUT },
+ 	retval = -ENOEXEC;
+-	if (bprm->misc_bang)
++	if (bprm->recursion_depth > BINPRM_MAX_RECURSION)
+ 		goto _ret;
+ 
+ 	/* to keep locking time low, we copy the interpreter string */
+@@ -197,7 +197,7 @@ static int load_misc_binary(struct linux
+ 	if (retval < 0)
+ 		goto _error;
+ 
+-	bprm->misc_bang = 1;
++	bprm->recursion_depth++;
+ 
+ 	retval = search_binary_handler (bprm, regs);
+ 	if (retval < 0)
+--- a/fs/binfmt_script.c
++++ b/fs/binfmt_script.c
+@@ -22,14 +22,15 @@ static int load_script(struct linux_binp
+ 	char interp[BINPRM_BUF_SIZE];
+ 	int retval;
+ 
+-	if ((bprm->buf[0] != '#') || (bprm->buf[1] != '!') || (bprm->sh_bang)) 
++	if ((bprm->buf[0] != '#') || (bprm->buf[1] != '!') ||
++	    (bprm->recursion_depth > BINPRM_MAX_RECURSION))
+ 		return -ENOEXEC;
+ 	/*
+ 	 * This section does the #! interpretation.
+ 	 * Sorta complicated, but hopefully it will work.  -TYT
+ 	 */
+ 
+-	bprm->sh_bang = 1;
++	bprm->recursion_depth++;
+ 	allow_write_access(bprm->file);
+ 	fput(bprm->file);
+ 	bprm->file = NULL;
+--- a/include/linux/binfmts.h
++++ b/include/linux/binfmts.h
+@@ -36,6 +36,7 @@ struct linux_binprm{
+ 	unsigned long p; /* current top of mem */
+ 	unsigned int sh_bang:1,
+ 		     misc_bang:1;
++	unsigned int recursion_depth;
+ 	struct file * file;
+ 	int e_uid, e_gid;
+ 	kernel_cap_t cap_post_exec_permitted;
+@@ -58,6 +59,7 @@ struct linux_binprm{
+ #define BINPRM_FLAGS_EXECFD_BIT 1
+ #define BINPRM_FLAGS_EXECFD (1 << BINPRM_FLAGS_EXECFD_BIT)
+ 
++#define BINPRM_MAX_RECURSION 4
+ 
+ /*
+  * This structure defines the functions that are used to load the binary formats that
 
