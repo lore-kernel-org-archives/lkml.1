@@ -1,112 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbYLKTHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbYLKTLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757362AbYLKTHA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756574AbYLKTGr
+	id S1757267AbYLKTLV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:11:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbYLKTLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:06:47 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:28236 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756352AbYLKTGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:06:46 -0500
-Date: Thu, 11 Dec 2008 20:06:27 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Subject: Re: [PATCH][RFC 13/23]: Export of alloc_io_context() function
-Message-ID: <20081211190627.GA23742@kernel.dk>
-References: <494009D7.4020602@vlnb.net> <49400F2F.4050603@vlnb.net> <20081211133424.GU23742@kernel.dk> <4941592E.8070303@vlnb.net> <20081211184100.GX23742@kernel.dk> <4941636A.3050303@vlnb.net>
+	Thu, 11 Dec 2008 14:11:04 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:43484 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756111AbYLKTLC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:11:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=ehCf5zQ7igk+uAPc0NY+HQOpfG99RQs8AyEZa91GxpCH/IKoFNiP8dyrKnsJHrixGB
+         eTUTfUKtWbZAHuR1+mYFN4oe7j79Jxw5ymXrOmQ9RiWNTkL4Lvh7LOnHt/bsxvHzkc1R
+         t1h3vsnxvxlBA5FjQG1B3EdR0ZLTF5Yqh1l/c=
+Message-ID: <12c511ca0812111111t2992dd2cw8b4d57ac57bd0700@mail.gmail.com>
+Date: Thu, 11 Dec 2008 11:11:00 -0800
+From: "Tony Luck" <tony.luck@intel.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] Performance Counters for Linux, v3
+Cc: linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Stephane Eranian" <eranian@googlemail.com>,
+       "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Robert Richter" <robert.richter@amd.com>,
+       "Arjan van de Veen" <arjan@infradead.org>,
+       "Peter Anvin" <hpa@zytor.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Paul Mackerras" <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20081211155230.GA4230@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4941636A.3050303@vlnb.net>
+References: <20081211155230.GA4230@elte.hu>
+X-Google-Sender-Auth: 5fefb106ec6cbd48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11 2008, Vladislav Bolkhovitin wrote:
-> Jens Axboe wrote:
-> >On Thu, Dec 11 2008, Vladislav Bolkhovitin wrote:
-> >>Jens Axboe wrote:
-> >>>On Wed, Dec 10 2008, Vladislav Bolkhovitin wrote:
-> >>>>This patch exports alloc_io_context() function. For performance reasons 
-> >>>>SCST queues commands using a pool of IO threads. It is considerably 
-> >>>>better for performance (>30% increase on sequential reads) if threads 
-> >>>>in a pool have the same IO context. Since SCST can be built as a 
-> >>>> module, it needs alloc_io_context() function exported.
-> >>>>
-> >>>>Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
-> >>>>---
-> >>>> block/blk-ioc.c |    1 +
-> >>>> 1 file changed, 1 insertion(+)
-> >>>>
-> >>>>diff -upkr linux-2.6.27.2/block/blk-ioc.c linux-2.6.27.2/block/blk-ioc.c
-> >>>>--- linux-2.6.27.2/block/blk-ioc.c	2008-10-10 02:13:53.000000000 +0400
-> >>>>+++ linux-2.6.27.2/block/blk-ioc.c	2008-11-25 21:27:01.000000000 +0300
-> >>>>@@ -105,6 +105,7 @@ struct io_context *alloc_io_context(gfp_
-> >>>>
-> >>>>	return ret;
-> >>>>}
-> >>>>+EXPORT_SYMBOL(alloc_io_context);
-> >>>Why is this needed, can't you just use CLONE_IO?
-> >>There are two reasons for that:
-> >>
-> >>1. kthread interface doesn't support passing CLONE_IO flag.
-> >
-> >Then you fix that instead of working around it! :-)
-> 
-> It doesn't worth the effort, because of (2) below.
-> 
-> >>2. Each (virtual) device has own pool of threads, which serves it. 
-> >>Threads in each such pools should have a common IO context, but 
-> >>different pools should have different IO contexts. So, it would be 
-> >>necessary to implement two levels start of IO threads in each pool. At 
-> >>first, one thread would be started. Then it would call get_io_context() 
-> >>to gain io_context. Then it would create the remaining threads with 
-> >>CLONE_IO flag. Definitely, it's a lot more complicated than a simple 
-> >>call of alloc_io_context() and assignment of the returned context to 
-> >>each just created thread in a loop before they were ran.
-> >
-> >Just start the first thread without CLONE_IO, and subsequent threads
-> >fork off that with CLONE_IO set? 
-> 
-> Yes, that would be the two stages threads creation. A *LOT* more 
-> complicated, than with the direct io_context assignment using 
-> alloc_io_context().
-> 
-> >I think we need to make sure that we
-> >allocate an IO context for the 'parent' if it doesn't have one already
-> >and CLONE_IO is set, but that is something that can easily be rectified.
-> 
-> Sorry, I don't feel I understood you here..
+>        /*
+>         * Special "software" counters provided by the kernel, even if
+>         * the hardware does not support performance counters. These
+>         * counters measure various physical and sw events of the
+>         * kernel (and allow the profiling of them as well):
+>         */
+>        PERF_COUNT_CPU_CLOCK            = -1,
+>        PERF_COUNT_TASK_CLOCK           = -2,
+>        /*
+>         * Future software events:
+>         */
+>        /* PERF_COUNT_PAGE_FAULTS       = -3,
+>           PERF_COUNT_CONTEXT_SWITCHES  = -4, */
 
-Sure I understand that it's then a two-stage rocket for the first
-context you fork off. I don't see how you qualify that as a *LOT* more
-complicated...
+  ...
+> +[ Note: more hw_event_types are supported as well, but they are CPU
+> +  specific and are enumerated via /sys on a per CPU basis. Raw hw event
+> +  types can be passed in as negative numbers. For example, to count
+> +  "External bus cycles while bus lock signal asserted" events on Intel
+> +  Core CPUs, pass in a -0x4064 event type value. ]
 
-> >It may seem more complex, but if you use this approach you are pretty
-> >much free to worry about any changes in the future there.
-> 
-> Worrying about future changes is regular in Linux kernel, where there is 
-> no stable API ;-)
+It looks like you have an overlap here.  You are using some negative numbers
+to denote your special software events, but also as "raw" hardware events.
+What if these conflict?
 
-Sure, but if your stuff gets merged then *I* have to fiddle with your
-stuff as well when making changes. If you plan to keep your stuff out of
-the kernel and maintain it there, fine, but I think you probably don't.
-
-It's not a HUGE deal for this case, since you basically just want to use
-alloc_io_context() and ioc_task_link(). So we can make the export and be
-done with it.
-
--- 
-Jens Axboe
-
+-Tony
