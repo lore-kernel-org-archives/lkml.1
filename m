@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbYLKOA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbYLKOB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756597AbYLKOA4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 09:00:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755901AbYLKOAr
+	id S1756742AbYLKOB2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 09:01:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbYLKOBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 09:00:47 -0500
-Received: from rv-out-0506.google.com ([209.85.198.233]:18088 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755834AbYLKOAr (ORCPT
+	Thu, 11 Dec 2008 09:01:16 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:41990 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755901AbYLKOBP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 09:00:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=JDT0S31tEYzWmFmubQcEqS7xuER+lzt2YBZcFtBxwG4a2LFYQhqLdyM735YoEbOi/9
-         irL267uEHvWhiLzhusq7GvjHLMt9NcHwN2Q0E2IoUqBHQdM+4JYNtYQx90od7rcmzSz1
-         a5IniFBp14AfPq18ui+dPTNsO36E8m0gjZnxc=
-Message-ID: <661de9470812110600i6097ca0q7a2d7250f6c493dc@mail.gmail.com>
-Date: Thu, 11 Dec 2008 19:30:46 +0530
-From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH] memcg: show real limit under hierarchy
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20081211122237.4FF7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 11 Dec 2008 09:01:15 -0500
+Date: Thu, 11 Dec 2008 15:01:12 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Paul Moore <paul.moore@hp.com>
+cc: David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT]: Networking
+In-Reply-To: <200812110821.00002.paul.moore@hp.com>
+Message-ID: <Pine.LNX.4.64.0812111500360.19338@vixen.sonytel.be>
+References: <20081208.000655.211323914.davem@davemloft.net>
+ <Pine.LNX.4.64.0812111344580.10515@vixen.sonytel.be> <200812110821.00002.paul.moore@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081211121135.e00f6a2d.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20081211122237.4FF7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Google-Sender-Auth: 3cc53903377f325a
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 8:54 AM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->> I wonder other people who debugs memcg's hierarchy may use similar patches.
->> this is my one.
->> comments ?
->> ==
->> From:KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>
->> Show "real" limit of memcg.
->> This helps my debugging and maybe useful for users.
->>
->> While testing hierarchy like this
->>
->>       mount -t cgroup none /cgroup -t memory
->>       mkdir /cgroup/A
->>       set use_hierarchy==1 to "A"
->>       mkdir /cgroup/A/01
->>       mkdir /cgroup/A/01/02
->>       mkdir /cgroup/A/01/03
->>       mkdir /cgroup/A/01/03/04
->>       mkdir /cgroup/A/08
->>       mkdir /cgroup/A/08/01
->>       ....
->> and set each own limit to them, "real" limit of each memcg is unclear.
->> This patch shows real limit by checking all ancestors in memory.stat.
->>
->> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> Great!
->
-> I hoped to use this patch at hierarchy inactive_ratio debugging ;)
+On Thu, 11 Dec 2008, Paul Moore wrote:
+> On Thursday 11 December 2008 7:50:23 am Geert Uytterhoeven wrote:
+> > On Mon, 8 Dec 2008, David Miller wrote:
+> > > Here are the pending net fixes:
+> > >
+> > > 6) netlabel OOPS'er fix from Paul Moore.
+> > >
+> > > Paul Moore (1):
+> > >       netlabel: Fix a potential NULL pointer dereference
+> >
+> > This introduced:
+> > | net/netlabel/netlabel_unlabeled.c:567: warning: 'entry' may be used
+> > | uninitialized in this function
+> > | net/netlabel/netlabel_unlabeled.c:629: warning: 'entry' may be used
+> > | uninitialized in this function
+> >
+> > which may still oops, if the uninitialized entry pointer is
+> > dereferenced (in case list_entry == NULL).
+> 
+> Hi Geert,
+> 
+> First of, a quick question: what version of gcc are you using?  I'm 
+> using gcc-4.3.2 and I don't get this warning/error.  Regardless, I'll 
+> send out a patch later today which should resolve the warning.
 
-I like this very much too
+I'm using an m68k cross-compiler, built from Debian sources:
 
-I would prefer to use
+| gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)
 
-min_limit = min(tmp, min_limit); and similarly for min_memsw_limit
+With kind regards,
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Geert Uytterhoeven
+Software Architect
 
-Balbir
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
