@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbYLKTU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758361AbYLKTVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758188AbYLKTU7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756972AbYLKTSM
+	id S1758361AbYLKTVl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756719AbYLKTSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:18:12 -0500
-Received: from kroah.org ([198.145.64.141]:55859 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:18:14 -0500
+Received: from kroah.org ([198.145.64.141]:55865 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756550AbYLKTSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756629AbYLKTSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Dec 2008 14:18:04 -0500
-Date: Thu, 11 Dec 2008 11:13:46 -0800
+Date: Thu, 11 Dec 2008 11:13:57 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh@veritas.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 08/83] sparc64: Fix __copy_{to,from}_user_inatomic defines.
-Message-ID: <20081211191346.GH5894@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Garzik <jeff@garzik.org>
+Subject: [patch 13/83] Enforce a minimum SG_IO timeout
+Message-ID: <20081211191357.GM5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0002-sparc64-Fix-__copy_-to-from-_user_inatomic-defines.patch"
+Content-Disposition: inline; filename="enforce-a-minimum-sg_io-timeout.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,34 +40,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Hugh Dickins <hugh@veritas.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-[ Upstream commit b270ee8a9fc9547eb781ce9ccd379450bcf9a204 ]
+commit f2f1fa78a155524b849edf359e42a3001ea652c0 upstream.
 
-Alexander Beregalov reports oops in __bzero() called from
-copy_from_user_fixup() called from iov_iter_copy_from_user_atomic(),
-when running dbench on tmpfs on sparc64: its __copy_from_user_inatomic
-and __copy_to_user_inatomic should be avoiding, not calling, the fixups.
+There's no point in having too short SG_IO timeouts, since if the
+command does end up timing out, we'll end up through the reset sequence
+that is several seconds long in order to abort the command that timed
+out.
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+As a result, shorter timeouts than a few seconds simply do not make
+sense, as the recovery would be longer than the timeout itself.
+
+Add a BLK_MIN_SG_TIMEOUT to match the existign BLK_DEFAULT_SG_TIMEOUT.
+
+Suggested-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Acked-by: Tejun Heo <tj@kernel.org>
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc/include/asm/uaccess_64.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ block/bsg.c            |    2 ++
+ block/scsi_ioctl.c     |    2 ++
+ include/linux/blkdev.h |    1 +
+ 3 files changed, 5 insertions(+)
 
---- a/arch/sparc/include/asm/uaccess_64.h
-+++ b/arch/sparc/include/asm/uaccess_64.h
-@@ -265,8 +265,8 @@ extern long __strnlen_user(const char __
+--- a/block/bsg.c
++++ b/block/bsg.c
+@@ -202,6 +202,8 @@ static int blk_fill_sgv4_hdr_rq(struct r
+ 		rq->timeout = q->sg_timeout;
+ 	if (!rq->timeout)
+ 		rq->timeout = BLK_DEFAULT_SG_TIMEOUT;
++	if (rq->timeout < BLK_MIN_SG_TIMEOUT)
++		rq->timeout = BLK_MIN_SG_TIMEOUT;
  
- #define strlen_user __strlen_user
- #define strnlen_user __strnlen_user
--#define __copy_to_user_inatomic __copy_to_user
--#define __copy_from_user_inatomic __copy_from_user
-+#define __copy_to_user_inatomic ___copy_to_user
-+#define __copy_from_user_inatomic ___copy_from_user
+ 	return 0;
+ }
+--- a/block/scsi_ioctl.c
++++ b/block/scsi_ioctl.c
+@@ -208,6 +208,8 @@ static int blk_fill_sghdr_rq(struct requ
+ 		rq->timeout = q->sg_timeout;
+ 	if (!rq->timeout)
+ 		rq->timeout = BLK_DEFAULT_SG_TIMEOUT;
++	if (rq->timeout < BLK_MIN_SG_TIMEOUT)
++		rq->timeout = BLK_MIN_SG_TIMEOUT;
  
- #endif  /* __ASSEMBLY__ */
+ 	return 0;
+ }
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -623,6 +623,7 @@ extern unsigned long blk_max_low_pfn, bl
+  * default timeout for SG_IO if none specified
+  */
+ #define BLK_DEFAULT_SG_TIMEOUT	(60 * HZ)
++#define BLK_MIN_SG_TIMEOUT	(7 * HZ)
  
+ #ifdef CONFIG_BOUNCE
+ extern int init_emergency_isa_pool(void);
 
