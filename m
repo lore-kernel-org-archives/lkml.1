@@ -1,601 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYLKBF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYLKBGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbYLKBF2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 20:05:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbYLKBFU
+	id S1756073AbYLKBGQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 20:06:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYLKBGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 20:05:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39062 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751820AbYLKBFQ (ORCPT
+	Wed, 10 Dec 2008 20:06:00 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49285 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbYLKBF7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 20:05:16 -0500
-Date: Wed, 10 Dec 2008 17:04:39 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.28-rc8
-Message-ID: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Wed, 10 Dec 2008 20:05:59 -0500
+Date: Thu, 11 Dec 2008 10:05:01 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
+Cc: balbir@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [RFC][PATCH 2/3] CGroups: Use hierarchy_mutex in memory 
+ controller
+Message-Id: <20081211100501.bf538f0c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <6599ad830812101652o25bc33f3r2a710e0879f9b196@mail.gmail.com>
+References: <20081210233654.563182000@menage.corp.google.com>
+	<20081210234432.236302000@menage.corp.google.com>
+	<20081211094938.85b00cf3.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830812101652o25bc33f3r2a710e0879f9b196@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 10 Dec 2008 16:52:57 -0800
+Paul Menage <menage@google.com> wrote:
+
+> On Wed, Dec 10, 2008 at 4:49 PM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> >
+> >        an operation like rmdir() in somewhere.
+> >                hierarchy_lock for A (acquired)
+> >                hierarchy_lock for B (waiting)
+> >
+> >        in subsys A.
+> >                mmap_sem (acquired)
+> >                hierarchy_lock for A (waiting)
+> >        in subsys B.
+> >                hierarchy_lock for B (aquired)
+> >                mmap_sem             (waiting)
+> >
+> 
+> That's a valid deadlock - you'd need to require the mmap_sem nests
+> either inside all hierarchy_mutexes or else outside all of them.
+> 
+This was a found dead lock between memcg and cpuset.
+
+another one was 
+
+	an operation like rmdir() in somewhere.
+		hierarchy_lock for memcg (acquired)
+		hierarchy_lock for B (waiting)
+
+	in subsys B.
+		hierarchy_lock for B (aquired)
+		have to do some memory reclaim -> hierarchy_lock for memcg (waiting)
+
+I have no objections to hierarchy_lock itself but calling context to memcg is very
+complicated and simple replace of these locks will be just a small help.
+
+-Kame
 
-Nothing overly exciting here. Lots of small things, mostly in drivers 
-(with some defconfig updates for m68k and mips making the diffs bigger). 
-
-There's some uncomfortably big changes to the intel DRI code, but most of 
-that is all about fixes to the new i916 "GEM" code that is only used by 
-development X servers, and is a new feature, so it shouldn't be able to 
-cause regressions.
-
-Perhaps more interesting is simply the release scheduling issue. I'm 
-getting slowly ready to do a real 2.6.28, but I don't think anybody really 
-wants the merge window to be around the holidays. So the question is 
-really whether to 
-
- (a) just make the -rc's go on a few more weeks, and do 2.6.28 after xmas
-
-     I like this, because alledgely people are debugging things, and we'd 
-     get a more stable 2.6.28.
-
-or
-
- (b) release in a week or two, but just allow for possibly extending the 
-     merge window due to people being drunk on eggnog..
-
-     I like this because let's face it, we get more and better bug 
-     information after releases, and everything _should_ be ready for 
-     merging *before* the merge window anyway.
-
-or
-
- (c) some other crazy scheme that somebody comes up with in a drug-induced 
-     stupor.
-
-So I haven't quite decided on that thing yet, but I'm open to suggestions. 
-
-			Linus
-
----
-Abhijeet Kolekar (1):
-      mac80211 : Fix setting ad-hoc mode and non-ibss channel
-
-Adrian Hunter (3):
-      UBIFS: allow for gaps when dirtying the LPT
-      [MTD] [NAND] OMAP: OneNAND: header file relocation
-      [MTD] [NAND] OMAP: OneNAND: header file relocation (part 2)
-
-Akira Takeuchi (4):
-      MN10300: Discard low-priority Tx interrupts when closing an on-chip serial port
-      MN10300: Fix the preemption resume_kernel() routine
-      MN10300: Fix __put_user_asm8()
-      MN10300: Give correct size when reserving interrupt vector table
-
-Al Viro (4):
-      kill obsolete temporary comment in swsusp_close()
-      fix bogus argument of blkdev_put() in pktcdvd
-      return records for fork() both to child and parent
-      fix broken timestamps in AVC generated by kernel threads
-
-Alan Cox (3):
-      pata_sis: Remove bogus cable match
-      pata_ninja32: update ID table
-      ata: Fix experimental tags
-
-Alessandro Zummo (2):
-      rtc: rtc-starfire fixes
-      rtc: fix missing id_table in rtc-ds1672 and rtc-max6900 drivers
-
-Alex Chiang (1):
-      PCI: stop leaking 'slot_name' in pci_create_slot
-
-Alexey Dobriyan (1):
-      [IA64] remove BUILD_BUG_ON from paravirt_getreg()
-
-Andi Kleen (1):
-      x86: fix early panic with boot option "nosmp"
-
-Andreas Petlund (1):
-      pci: Added quirk to disable msi for MCP55 NIC on Asus P5N32-SLI Premium
-
-Andreas Schwab (1):
-      Fix block dev compat ioctl handling
-
-Andrew Morton (4):
-      mm/backing-dev.c: remove recently-added WARN_ON()
-      revert "percpu counter: clean up percpu_counter_sum_and_set()"
-      revert "percpu_counter: new function percpu_counter_sum_and_set"
-      drivers/video/mb862xx/mb862xxfb.c: fix printk
-
-Anton Vorontsov (2):
-      powerpc/83xx: Fix MCU support merge issue in mpc8349emitx.dts
-      powerpc/83xx: Enable FIXED_PHY in mpc834x_itx and mpc83xx defconfigs
-
-Arjan van de Ven (1):
-      net: make skb_truesize_bug() call WARN()
-
-Artem Bityutskiy (6):
-      UBIFS: remove printk
-      MAINTAINERS: change UBI/UBIFS git tree URLs
-      UBIFS: fix compilation warnings
-      UBIFS: do not print scary memory allocation warnings
-      UBIFS: do not allocate too much
-      UBIFS: pre-allocate bulk-read buffer
-
-Atsushi Nemoto (1):
-      [MTD] physmap: fix memory leak on physmap_flash_remove by using devres
-
-Avi Kivity (1):
-      KVM: VMX: Fix interrupt loss during race with NMI
-
-Balaji Rao (1):
-      drivers/serial/s3c2440.c: fix typo in MODULE_LICENSE
-
-Balazs Scheidler (1):
-      tproxy: fixe a possible read from an invalid location in the socket match
-
-Balbir Singh (1):
-      uml: boot broken due to buffer overrun
-
-Bartlomiej Zolnierkiewicz (7):
-      amd74xx: workaround unreliable AltStatus register for nVidia controllers
-      ide: add SAMSUNG SP0822N with firmware WA100-10 to ivb_list[]
-      ide: respect current DMA setting during resume
-      ide: fix build for DEBUG_PM
-      ide: remove dead code from drive_is_ready()
-      Revert "ide: respect current DMA setting during resume"
-      ide: build-fix for CONFIG_BLK_DEV_IDEDMA_PMAC=n
-
-Baruch Siach (1):
-      enc28j60: Fix sporadic packet loss (corrected again)
-
-Benjamin Herrenschmidt (2):
-      powerpc: Fix dma_map_sg() cache flushing on non coherent platforms
-      radeonfb: Disable new color expand acceleration unless explicitely enabled
-
-Bernard Pidoux (1):
-      rose: zero length frame filtering in af_rose.c
-
-Bernhard Walle (2):
-      [WATCHDOG] hpwdt: set the mapped BIOS address space as executable
-      [WATCHDOG] hpwdt: Fix kdump when using hpwdt
-
-Brian King (1):
-      sched: CPU remove deadlock fix
-
-Brice Goglin (1):
-      mm: no get_user/put_user while holding mmap_sem in do_pages_stat?
-
-Catalin Marinas (1):
-      net: Fix memory leak in the proto_register function
-
-Chas Williams (1):
-      ATM: CVE-2008-5079: duplicate listen() on socket corrupts the vcc table
-
-Chen Gong (1):
-      [MTD] m25p80: chip erase != block erase != sector erase
-
-Cheng Renquan (2):
-      ath5k: fix Security issue in DebugFS part of ath5k
-      block: set disk->node_id before it's being used
-
-Chris Torek (1):
-      sparc64: Fix bug in PTRACE_SETFPREGS64 handling.
-
-Christian Borntraeger (1):
-      KVM: s390: Fix problem state handling in guest sigp handler
-
-Christof Schmitt (1):
-      [SCSI] zfcp: Fix opening of wka ports
-
-Christoph Hellwig (3):
-      clean up blkdev_get a little bit
-      kill FMODE_NDELAY_NOW
-      documnt FMODE_ constants
-
-Chuck Lever (1):
-      NLM: client-side nlm_lookup_host() should avoid matching on srcaddr
-
-Cord Walter (1):
-      axnet_cs / pcnet_cs: moving PCMCIA_DEVICE_PROD_ID for Netgear FA411
-
-Cyrill Gorcunov (1):
-      MN10300: vmlinux.lds.S cleanup - use PAGE_SIZE, PERCPU macros
-
-Dave Airlie (1):
-      drm/radeon: don't actually enable the IRQ regs until irq is enabled
-
-Dave Chinner (1):
-      [XFS] Fix hang after disallowed rename across directory quota domains
-
-David Daney (1):
-      MIPS: Return ENOSYS from sys32_syscall on 64bit kernels like elsewhere.
-
-David Howells (1):
-      MN10300: Introduce barriers to replace removed volatiles in gdbstub 16550 driver
-
-David S. Miller (2):
-      sungem: Fix PCS_MIICTRL register write in gem_init_phy().
-      sparc64: Fix offset calculation in compute_size()
-
-Dean Nelson (1):
-      sgi-gru: call fs_initcall() if statically linked
-
-Denis V. Lunev (1):
-      [MTD] [NAND] fix OOPS accessing flash operations over STM flash on PXA
-
-Dmitri Monakhov (1):
-      inotify: fix IN_ONESHOT unmount event watcher
-
-Doug Leith (1):
-      tcp: tcp_vegas ssthresh bug fix
-
-Eric Anholt (6):
-      drm/i915: Respect GM965/GM45 bit-17-instead-of-bit-11 option for swizzling.
-      drm/i915: Move flushing list cleanup from flush request retire to request emit.
-      drm/i915: If interrupted while setting object domains, still emit the flush.
-      drm/i915: Make a single set-to-gtt-domain path.
-      drm/i915: Make a single set-to-cpu-domain path and use it wherever needed.
-      drm/i915: Return error in i915_gem_set_to_gtt_domain if we're not in the GTT.
-
-Eric Dumazet (3):
-      oprofile: fix CPU unplug panic in ppro_stop()
-      percpu_counter: fix CPU unplug race in percpu_counter_destroy()
-      atomic: fix a typo in atomic_long_xchg()
-
-Eric Paris (1):
-      Audit: make audit=0 actually turn off audit
-
-Finn Thain (1):
-      macfb: Do not overflow fb_fix_screeninfo.id
-
-Florian Fainelli (1):
-      [WATCHDOG] fix mtx1_wdt compilation failure
-
-Frédéric Moulins (1):
-      pppol2tp: Add missing sock_put() in pppol2tp_release()
-
-Geert Uytterhoeven (1):
-      m68k: Update defconfigs for 2.6.28-rc7
-
-Geoff Levand (1):
-      fbcon: fix workqueue shutdown
-
-Giuseppe Cavallaro (1):
-      phy: fix phy_id detection also for broken hardware.
-
-Grant Likely (1):
-      powerpc/virtex5: Fix Virtex5 machine check handling
-
-Hannes Eder (1):
-      alim15x3: fix sparse warning
-
-Harvey Harrison (1):
-      UBIFS: endian handling fixes and annotations
-
-Herbert Xu (2):
-      bridge: netfilter: fix update_pmtu crash with GRE
-      crypto: api - Disallow cryptomgr as a module if algorithms are built-in
-
-Hollis Blanchard (1):
-      KVM: ppc: stop leaking host memory on VM exit
-
-Hong H. Pham (1):
-      sparc64: Sync FPU state in VIS emulation handler.
-
-Hugh Dickins (2):
-      KSYM_SYMBOL_LEN fixes
-      fix mapping_writably_mapped()
-
-Ilpo Järvinen (1):
-      tcp: make urg+gso work for real this time
-
-Ingo Molnar (2):
-      net/wireless/reg.c: fix bad WARN_ON in if statement
-      x86: fix default_spin_lock_flags() prototype
-
-J. Bruce Fields (3):
-      nfsd: clean up grace period on early exit
-      nfsd: use of unitialized list head on error exit in nfs4recover.c
-      EXPORTFS: handle NULL returns from fh_to_dentry()/fh_to_parent()
-
-Jack Steiner (1):
-      [IA64] Fix GRU compile error w/o CONFIG_HUGETLB_PAGE
-
-James Bottomley (5):
-      [SCSI] aacraid: switch to block timeout
-      [SCSI] ibmvscsi: switch to block timeout
-      [SCSI] megaraid_sas: switch to block timeout
-      [SCSI] make scsi_eh_try_stu use block timeout
-      [SCSI] stex: switch to block timeout
-
-James Morris (1):
-      MAINTAINERS: Add security subsystem maintainer
-
-James Smart (1):
-      [SCSI] fc_transport: fix old bug on bitflag definitions
-
-Jan Engelhardt (1):
-      netfilter: xtables: add missing const qualifier to xt_tgchk_param
-
-Jiri Slaby (3):
-      ATM: horizon, fix hrz_probe fail path
-      MAINTAINERS: add netdev to ATM
-      ATA: piix, fix pointer deref on suspend
-
-Joerg Roedel (8):
-      x86: fix broken flushing in GART nofullflush path
-      AMD IOMMU: set device table entry for aliased devices
-      AMD IOMMU: fix possible race while accessing iommu->need_sync
-      AMD IOMMU: fix iommu_map_page function
-      AMD IOMMU: fix loop counter in free_pagetable function
-      AMD IOMMU: fix typo in comment
-      AMD IOMMU: fix WARN_ON in dma_ops unmap path
-      AMD IOMMU: __unmap_single: check for bad_dma_address instead of 0
-
-Johannes Berg (1):
-      iwlagn: fix DMA sync
-
-John Keller (1):
-      [IA64] SN: prevent IRQ retargetting in request_irq()
-
-John Stultz (1):
-      time: catch xtime_nsec underflows and fix them
-
-Jonathan Corbet (1):
-      Fix a race condition in FASYNC handling
-
-Joseph Myers (1):
-      sparc64: Fix VIS emulation bugs
-
-Julia Lawall (2):
-      [MTD] [NAND] drivers/mtd/nand/pasemi_nand.c: Add missing pci_dev_put
-      [IA64] eliminate NULL test and memset after alloc_bootmem
-
-Junjiro R. Okajima (1):
-      nfsd: fix vm overcommit crash fix #2
-
-KAMEZAWA Hiroyuki (1):
-      page_cgroup should ignore empty nodes
-
-KOSAKI Motohiro (1):
-      mm: remove UP version of lru_add_drain_all()
-
-Kay Sievers (2):
-      bdi: register sysfs bdi device only once per queue
-      pktcdvd: remove broken dev_t export of class devices
-
-Keith Packard (4):
-      drm/i915: Rename object_set_domain to object_set_to_gpu_domain
-      drm/i915: Move the execbuffer domain computations together
-      drm/i915: Retry execbuffer pinning after clearing the GTT
-      drm/i915: Disable the GM965 MSI errata workaround.
-
-Kumar Gala (1):
-      powerpc: Use physical cpu id when setting the processor affinity
-
-Lennert Buytenhek (1):
-      [ARM] 5340/1: fix stack placement after noexecstack changes
-
-Linus Torvalds (4):
-      iTCO_wdt: fix typo when setting TCO_EN bit
-      Revert "ACPI: battery: Convert discharge energy rate to current properly"
-      Enforce a minimum SG_IO timeout
-      Linux 2.6.28-rc8
-
-Luis R. Rodriguez (2):
-      ath9k: Fix SW-IOMMU bounce buffer starvation
-      ath9k: correct expected max RX buffer size
-
-Mahesh Salgaonkar (1):
-      sched: don't export sched_mc_power_savings in laptops
-
-Manfred Spraul (1):
-      lib/idr.c: Fix bug introduced by RCU fix
-
-Marcelo Tosatti (2):
-      KVM: MMU: fix sync of ptes addressed at owner pagetable
-      KVM: MMU: avoid creation of unreachable pages in the shadow
-
-Mark Salter (1):
-      MN10300: Fix application of kernel module relocations
-
-Martin Petermann (1):
-      [SCSI] zfcp: fix remote port status check
-
-Martin Xu (1):
-      ath5k: disable beacon filter when station is not associated
-
-Mathieu Desnoyers (1):
-      documentation: local_ops fix on_each_cpu
-
-Matt Mackall (1):
-      pagemap: fix 32-bit pagemap regression
-
-Michael Chan (1):
-      bnx2: Add workaround to handle missed MSI.
-
-Michael Schmitz (1):
-      ide: fix the ide_release_lock imbalance
-
-Mike Christie (1):
-      [SCSI] Fix hang in starved list processing
-
-Mike Frysinger (3):
-      [MTD] m25p80: fix detection of SPI parts
-      [MTD] m25p80: fix detection of m25p16 flashes
-      asm/generic: fix bug - kernel fails to build when enable some common audit code on Blackfin
-
-Milan Broz (1):
-      block: fix setting of max_segment_size and seg_boundary mask
-
-Nick Andrew (3):
-      MIPS: Fix incorrect use of loose in vpe.c
-      Fix incorrect use of loose in tty/serial drivers
-      Fix incorrect use of loose in i2o_block.c
-
-Nicolas Pitre (1):
-      [ARM] 5339/1: fix __fls() on ARM
-
-Nigel Cunningham (1):
-      ieee1394: node manager causes up to ~3.25s delay in freezing tasks
-
-Oliver Hartkopp (2):
-      can: Fix CAN_(EFF|RTR)_FLAG handling in can_filter
-      can: omit received RTR frames for single ID filter lists
-
-Owain Ainsworth (1):
-      drm/i915: Don't return error in evict_everything when we get to the end.
-
-Pascal Terjan (1):
-      hysdn: fix writing outside the field on 64 bits
-
-Patrick McHardy (3):
-      netfilter: ctnetlink: fix conntrack creation race
-      netfilter: ctnetlink: fix GFP_KERNEL allocation under spinlock
-      macvlan: don't broadcast PAUSE frames to macvlan devices
-
-Paul Moore (1):
-      netlabel: Fix a potential NULL pointer dereference
-
-Petr Tesarik (2):
-      tcp: Do not use TSO/GSO when there is urgent data
-      posix-cpu-timers: fix clock_gettime with CLOCK_PROCESS_CPUTIME_ID
-
-Petr Vandrovec (1):
-      When block layer fails to map iov, it calls bio_unmap_user to undo
-
-Qinghuang Feng (3):
-      driver/net/*: remove redundant argument comments
-      drivers/net/chelsio/sge.c: remove redundant argument comments
-      drivers/message/i2o/iop.c: cleanup kerneldoc
-
-Rafael J. Wysocki (1):
-      ACPI: Fix ACPI battery regression introduced by commit 558073
-
-Ralf Baechle (5):
-      MIPS: IP22, Fulong, Malta: Update defconfigs.
-      MIPS: Malta: Consolidate platform device code.
-      MIPS: o32: Fix number of arguments to splice(2).
-      MIPS: 64-bit: vmsplice needs to use the compat wrapper for o32 and N32.
-      MIPS: Better than nothing implementation of PCI mmap to fix X.
-
-Randy Dunlap (4):
-      net/hp-plus: fix link errors
-      net: hp-plus uses eip_poll
-      [patch 1/1] audit: remove excess kernel-doc
-      rtc twl4030: rename ioctl function when RTC_INTF_DEV=n
-
-Richard Kennedy (1):
-      AMD IOMMU: struct amd_iommu remove padding on 64 bit
-
-Rik van Riel (1):
-      vmscan: evict streaming IO first
-
-Robin Holt (4):
-      [IA64] Updated the generic_defconfig to work with the 2.6.28-rc7 kernel.
-      [IA64] Clear up section mismatch for sn_check_wars.
-      [IA64] Clear up section mismatch with arch_unregister_cpu()
-      [IA64] Clear up section mismatch for ioc4_ide_attach_one.
-
-Roel Kluin (1):
-      check_hung_task(): unsigned sysctl_hung_task_warnings cannot be less than 0
-
-Roland McGrath (1):
-      tracehook: exec double-reporting fix
-
-Russell King (2):
-      [ARM] omap: fix a pile of issues
-      [ARM] Fix alignment fault handling for ARMv6 and later CPUs
-
-Rusty Russell (1):
-      sparc: asm/bitops.h should define __fls
-
-Rémi Denis-Courmont (1):
-      Phonet: fix oops in phonet_address_del() on non-Phonet device
-
-Saeed Bishara (1):
-      [ARM] Orion: fix bug in pcie configuration cycle function field mask
-
-Shaddy Baddah (2):
-      mac80211: use unaligned safe memcmp() in-place of compare_ether_addr()
-      zd1211rw: use unaligned safe memcmp() in-place of compare_ether_addr()
-
-Stefan Richter (1):
-      firewire: fw-ohci: fix IOMMU resource exhaustion
-
-Swen Schillig (5):
-      [SCSI] zfcp: returning an ERR_PTR where a NULL value is expected
-      [SCSI] zfcp: verify for correct rport state before scanning for SCSI devs
-      [SCSI] zfcp: eliminate race between validation and locking
-      [SCSI] zfcp: fix deadlock between wq triggered port scan and ERP
-      [SCSI] zfcp: prevent double decrement on host_busy while being busy
-
-Tejun Heo (2):
-      block: internal dequeue shouldn't start timer
-      pata_hpt366: fix clock detection
-
-Thomas Bogendoerfer (1):
-      x86: fix dma_mapping_error for 32bit x86
-
-Thomas Renninger (1):
-      PCIe: ASPM: Break out of endless loop waiting for PCI config bits to switch
-
-Tiejun Chen (1):
-      MIPS: Malta: Add back RTC support
-
-Tom Tucker (1):
-      Add a reference to sunrpc in svc_addsock
-
-Tom Zanussi (1):
-      relayfs: fix infinite loop with splice()
-
-Tomas Winkler (1):
-      iwlwifi: clean key table in iwl_clear_stations_table function
-
-Tony Luck (1):
-      [IA64] Fix section mismatch ioc3uart_init()/ioc3uart_submodule
-
-Trent Piepho (1):
-      phylib: Add Vitesse VSC8221 SGMII PHY
-
-Uwe Kleine-König (1):
-      netx-eth: initialize per device spinlock
-
-Vlad Malov (1):
-      MIPS: Fix potential DOS by untrusted user app.
-
-Wei Yongjun (1):
-      xfrm: Fix kernel panic when flush and dump SPD entries
-
-Wilfried Klaebe (1):
-      b1isa: fix b1isa_exit() to really remove registered capi controllers
-
-William Cohen (1):
-      x86/oprofile: fix Intel cpu family 6 detection
-
-Wim Van Sebroeck (3):
-      [WATCHDOG] iTCO_wdt : problem with rebooting on new ICH9 based motherboards
-      [WATCHDOG] iTCO_wdt : correct status clearing
-      [WATCHDOG] iTCO_wdt: add PCI ID's for ICH9 & ICH10 chipsets
-
-Wolfgang Grandegger (1):
-      [MTD] [NAND] fsl_upm: fix build problem with 2.6.28-rc2
-
-Xiantao Zhang (2):
-      KVM: ia64: Fix incorrect kbuild CFLAGS override
-      KVM: ia64: Fix: Use correct calling convention for PAL_VPS_RESUME_HANDLER
-
-Zhu Yi (1):
-      ipw2200: fix netif_*_queue() removal regression
-
-dann frazier (1):
-      net: Fix soft lockups/OOM issues w/ unix garbage collector
-
-remi.denis-courmont@nokia (1):
-      Phonet: do not dump addresses from other namespaces
