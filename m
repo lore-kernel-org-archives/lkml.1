@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757826AbYLKRkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYLKRk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757826AbYLKRkm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 12:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbYLKRjo
+	id S1757378AbYLKRk6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 12:40:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585AbYLKRjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 12:39:44 -0500
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:47175 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756622AbYLKRjm (ORCPT
+	Thu, 11 Dec 2008 12:39:49 -0500
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:41459 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757574AbYLKRjs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 12:39:42 -0500
+	Thu, 11 Dec 2008 12:39:48 -0500
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v5 4/7] sched: bias task wakeups to preferred semi-idle
-	packages
+Subject: [RFC PATCH v5 5/7] sched: activate active load balancing in new idle
+	cpus
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
        Suresh B Siddha <suresh.b.siddha@intel.com>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -25,8 +25,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
        Max Krasnyansky <maxk@qualcomm.com>,
        Gregory Haskins <gregory.haskins@gmail.com>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Thu, 11 Dec 2008 23:13:04 +0530
-Message-ID: <20081211174304.2020.14746.stgit@drishya.in.ibm.com>
+Date: Thu, 11 Dec 2008 23:13:10 +0530
+Message-ID: <20081211174310.2020.81073.stgit@drishya.in.ibm.com>
 In-Reply-To: <20081211173831.2020.57550.stgit@drishya.in.ibm.com>
 References: <20081211173831.2020.57550.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -37,66 +37,95 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Preferred wakeup cpu (from a semi idle package) has been
-nominated in find_busiest_group() in the previous patch.  Use
-this information in sched_mc_preferred_wakeup_cpu in function
-wake_idle() to bias task wakeups if the following conditions
-are satisfied:
-	- The present cpu that is trying to wakeup the process is
-	  idle and waking the target process on this cpu will
-	  potentially wakeup a completely idle package
-	- The previous cpu on which the target process ran is
-	  also idle and hence selecting the previous cpu may
-	  wakeup a semi idle cpu package
-	- The task being woken up is allowed to run in the
-	  nominated cpu (cpu affinity and restrictions)
+Active load balancing is a process by which migration thread
+is woken up on the target CPU in order to pull current
+running task on another package into this newly idle
+package.
 
-Basically if both the current cpu and the previous cpu on
-which the task ran is idle, select the nominated cpu from semi
-idle cpu package for running the new task that is waking up.
+This method is already in use with normal load_balance(),
+this patch introduces this method to new idle cpus when
+sched_mc is set to POWERSAVINGS_BALANCE_WAKEUP.
 
-Cache hotness is considered since the actual biasing happens
-in wake_idle() only if the application is cache cold.
+This logic provides effective consolidation of short running
+daemon jobs in a almost idle system
 
-This technique will effectively move short running bursty jobs in
-a mostly idle system.
-
-Wakeup biasing for power savings gets automatically disabled if
-system utilisation increases due to the fact that the probability
-of finding both this_cpu and prev_cpu idle decreases.
+The side effect of this patch may be ping-ponging of tasks
+if the system is moderately utilised. May need to adjust the
+iterations before triggering.
 
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
 
- kernel/sched_fair.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
+ kernel/sched.c |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 54 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 98345e4..939f2a1 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1027,6 +1027,23 @@ static int wake_idle(int cpu, struct task_struct *p)
- 	cpumask_t tmp;
- 	struct sched_domain *sd;
- 	int i;
-+	unsigned int chosen_wakeup_cpu;
-+	int this_cpu;
-+
-+	/*
-+	 * At POWERSAVINGS_BALANCE_WAKEUP level, if both this_cpu and prev_cpu
-+	 * are idle and this is not a kernel thread and this task's affinity
-+	 * allows it to be moved to preferred cpu, then just move!
-+	 */
-+
-+	this_cpu = smp_processor_id();
-+	chosen_wakeup_cpu =
-+		cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu;
-+
-+	if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP &&
-+		idle_cpu(cpu) && idle_cpu(this_cpu) && p->mm &&
-+		cpu_isset(chosen_wakeup_cpu, p->cpus_allowed))
-+		return chosen_wakeup_cpu;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 0918677..d60f191 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3692,10 +3692,64 @@ redo:
+ 	}
  
- 	/*
- 	 * If it is idle, then it is the best cpu to run this task.
+ 	if (!ld_moved) {
++		int active_balance;
++
+ 		schedstat_inc(sd, lb_failed[CPU_NEWLY_IDLE]);
+ 		if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
+ 		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+ 			return -1;
++
++		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
++			return -1;
++
++		if (sd->nr_balance_failed++ < 2)
++			return -1;
++
++		/*
++		 * The only task running in a non-idle cpu can be moved to this
++		 * cpu in an attempt to completely freeup the other CPU
++		 * package. The same method used to move task in load_balance()
++		 * have been extended for load_balance_newidle() to speedup
++		 * consolidation at sched_mc=POWERSAVINGS_BALANCE_WAKEUP (2)
++		 *
++		 * The package power saving logic comes from
++		 * find_busiest_group().  If there are no imbalance, then
++		 * f_b_g() will return NULL.  However when sched_mc={1,2} then
++		 * f_b_g() will select a group from which a running task may be
++		 * pulled to this cpu in order to make the other package idle.
++		 * If there is no opportunity to make a package idle and if
++		 * there are no imbalance, then f_b_g() will return NULL and no
++		 * action will be taken in load_balance_newidle().
++		 *
++		 * Under normal task pull operation due to imbalance, there
++		 * will be more than one task in the source run queue and
++		 * move_tasks() will succeed.  ld_moved will be true and this
++		 * active balance code will not be triggered.
++		 */
++
++		/* Lock busiest in correct order while this_rq is held */
++		double_lock_balance(this_rq, busiest);
++
++		/*
++		 * don't kick the migration_thread, if the curr
++		 * task on busiest cpu can't be moved to this_cpu
++		 */
++		if (!cpu_isset(this_cpu, busiest->curr->cpus_allowed)) {
++			double_unlock_balance(this_rq, busiest);
++			all_pinned = 1;
++			return ld_moved;
++		}
++
++		if (!busiest->active_balance) {
++			busiest->active_balance = 1;
++			busiest->push_cpu = this_cpu;
++			active_balance = 1;
++		}
++
++		double_unlock_balance(this_rq, busiest);
++		if (active_balance)
++			wake_up_process(busiest->migration_thread);
++
+ 	} else
+ 		sd->nr_balance_failed = 0;
+ 
 
