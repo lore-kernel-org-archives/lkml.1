@@ -1,98 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbYLKMpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbYLKMpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756407AbYLKMpF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 07:45:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbYLKMox
+	id S1756582AbYLKMpq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 07:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYLKMph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 07:44:53 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:23991 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149AbYLKMow (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 07:44:52 -0500
-Date: Thu, 11 Dec 2008 13:44:38 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] block: Fix LSF default inconsistency
-Message-ID: <20081211134438.6d871834@hyperion.delvare>
-In-Reply-To: <20081211110839.GH23742@kernel.dk>
-References: <20081211111614.493d2a62@hyperion.delvare>
-	<20081211104109.GF23742@kernel.dk>
-	<20081211115844.1b1dbf49@hyperion.delvare>
-	<20081211110839.GH23742@kernel.dk>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+	Thu, 11 Dec 2008 07:45:37 -0500
+Received: from mga14.intel.com ([143.182.124.37]:39646 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754339AbYLKMpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 07:45:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,753,1220252400"; 
+   d="scan'208";a="89039310"
+Date: Thu, 11 Dec 2008 13:45:23 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       akpm@linux-foundation.org, eranian@googlemail.com
+Subject: [patch 1/3] x86, bts: turn BUG_ON into WARN_ON_ONCE
+Message-ID: <20081211134523.A13571@sedona.ch.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+Turn BUG_ON's into WARN_ON_ONCE.
 
-On Thu, 11 Dec 2008 12:08:39 +0100, Jens Axboe wrote:
-> Anyway, how about something like this? Totally untested...
-> 
-> diff --git a/block/Kconfig b/block/Kconfig
-> index 1ab7c15..ce566dd 100644
-> --- a/block/Kconfig
-> +++ b/block/Kconfig
-> @@ -24,21 +24,18 @@ menuconfig BLOCK
->  if BLOCK
->  
->  config LBD
-> -	bool "Support for Large Block Devices"
-> +	bool "Support for Large Block Devices and files"
->  	depends on !64BIT
-> +	select LSF
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
 
-You can't select something...
+Index: ftrace/arch/x86/kernel/ds.c
+===================================================================
+--- ftrace.orig/arch/x86/kernel/ds.c	2008-12-08 09:42:53.000000000 +0100
++++ ftrace/arch/x86/kernel/ds.c	2008-12-08 13:29:03.000000000 +0100
+@@ -452,7 +452,7 @@
+ 
+ static void ds_release(struct ds_tracer *tracer, enum ds_qualifier qual)
+ {
+-	BUG_ON(tracer->context->owner[qual] != tracer);
++	WARN_ON_ONCE(tracer->context->owner[qual] != tracer);
+ 	tracer->context->owner[qual] = NULL;
+ 
+ 	put_tracer(tracer->context->task);
+@@ -774,7 +774,7 @@
+ 
+ 	printk(KERN_INFO "DS available\n");
+ 
+-	BUG_ON(MAX_SIZEOF_DS < ds_cfg.sizeof_ds);
++	WARN_ON_ONCE(MAX_SIZEOF_DS < ds_cfg.sizeof_ds);
+ }
+ 
+ void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
+Index: ftrace/arch/x86/kernel/ptrace.c
+===================================================================
+--- ftrace.orig/arch/x86/kernel/ptrace.c	2008-12-08 09:42:53.000000000 +0100
++++ ftrace/arch/x86/kernel/ptrace.c	2008-12-08 13:29:03.000000000 +0100
+@@ -878,7 +878,8 @@
+ {
+ 	unsigned char bts_record[BTS_MAX_RECORD_SIZE];
+ 
+-	BUG_ON(BTS_MAX_RECORD_SIZE < bts_cfg.sizeof_bts);
++	if (BTS_MAX_RECORD_SIZE < bts_cfg.sizeof_bts)
++		return -EOVERFLOW;
+ 
+ 	memset(bts_record, 0, bts_cfg.sizeof_bts);
+ 	switch (in->qualifier) {
+@@ -1133,7 +1134,7 @@
+ 
+ 		ret = ds_get_bts_index(child->bts, &size);
+ 		if (ret == 0) {
+-			BUG_ON(size != (int) size);
++			WARN_ON_ONCE(size != (int) size);
+ 			ret = (int) size;
+ 		}
+ 		break;
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
->  	help
-> -	  Enable block devices of size 2TB and larger.
-> +	  Enable block devices or files of size 2TB and larger.
->  
->  	  This option is required to support the full capacity of large
->  	  (2TB+) block devices, including RAID, disk, Network Block Device,
->  	  Logical Volume Manager (LVM) and loopback.
-> -
-> -	  For example, RAID devices are frequently bigger than the capacity
-> -	  of the largest individual hard drive.
-> -
-> -	  This option is not required if you have individual disk drives
-> -	  which total 2TB+ and you are not aggregating the capacity into
-> -	  a large block device (e.g. using RAID or LVM).
-> +	
-> +	  This option also enables support for single files larger than
-> +	  2TB.
->  
->  	  If unsure, say N.
->  
-> @@ -57,15 +54,6 @@ config BLK_DEV_IO_TRACE
->  
->  	  If unsure, say N.
->  
-> -config LSF
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-... that no longer exists. You must either leave the config LSF as a
-bool with no label and no help file, or drop it altogether and replace
-all occurrences of CONFIG_LSF in the kernel source with CONFIG_LBD.
-
-> -	bool "Support for Large Single Files"
-> -	depends on !64BIT
-> -	help
-> -	  Say Y here if you want to be able to handle very large files (2TB
-> -	  and larger), otherwise say N.
-> -
-> -	  If unsure, say Y.
-> -
->  config BLK_DEV_BSG
->  	bool "Block layer SG support v4 (EXPERIMENTAL)"
->  	depends on EXPERIMENTAL
-> 
-
-
--- 
-Jean Delvare
