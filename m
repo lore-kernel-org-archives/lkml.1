@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbYLKUXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbYLKUZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756799AbYLKUXm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 15:23:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbYLKUXS
+	id S1757531AbYLKUZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 15:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYLKUZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 15:23:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37656 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756845AbYLKUXR (ORCPT
+	Thu, 11 Dec 2008 15:25:08 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:22230 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752139AbYLKUZG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 15:23:17 -0500
-Date: Thu, 11 Dec 2008 12:22:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Karsten Keil <kkeil@suse.de>
-Cc: hannes@hanneseder.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 0/9] mISDN: fix sparse warnings
-Message-Id: <20081211122245.754e7829.akpm@linux-foundation.org>
-In-Reply-To: <20081210173056.GB15810@pingi.kke.suse.de>
-References: <493feaa6.05a0660a.4b69.407f@mx.google.com>
-	<20081210173056.GB15810@pingi.kke.suse.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Dec 2008 15:25:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=jAhTnUPGbTIBYiIAW7aIA8JI6zxIy+WVkrXOiDAI25hT+G3IQcZ7laAL/qKMw3CrdX
+         1TYdOHLb+onG3dd1tBi9gKzczDNRN5asG0jJegC6KRvxOXVApXhZzRSeaUa983/jw98a
+         ZJ6Dj5fMqtMJOt6s2SZf+Tn2JtJfWJQwtD2T4=
+Message-ID: <e9e943910812111225o700afd2crc72e3aab4053fa72@mail.gmail.com>
+Date: Thu, 11 Dec 2008 20:25:03 +0000
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Subject: Re: [PATCH] ext2: ensure link targets are NULL-terminated
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "Boaz Harrosh" <bharrosh@panasas.com>, linux-ext4@vger.kernel.org
+In-Reply-To: <20081211192158.GE26095@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1229022995-9898-1-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-2-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-3-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-4-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-5-git-send-email-duaneg@dghda.com>
+	 <20081211192158.GE26095@parisc-linux.org>
+X-Google-Sender-Auth: ea416ea9b27b48ca
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Dec 2008 18:30:56 +0100
-Karsten Keil <kkeil@suse.de> wrote:
+2008/12/11 Matthew Wilcox <matthew@wil.cx>:
+> On Thu, Dec 11, 2008 at 07:16:28PM +0000, Duane Griffin wrote:
+>> Ensure link targets are NULL-terminated, even if corrupted on-disk.
+>
+> FWIW, that's spelled 'NUL' -- NULL is a pointer value, NUL is an ASCII
+> code.
 
-> On Tue, Dec 09, 2008 at 08:49:30PM +0100, Hannes Eder wrote:
-> > This series of patches fixes a fair amount of sparse warnings in mISDN.
-> > 
-> 
-> Acked-by: Karsten keil <kkeil@suse.de>
-> 
-> to all.
-> 
+Good point, thanks. I'll try to remember for the future!
 
-I was going to apply these but
+Cheers,
+Duane.
 
-a) It's nine patches all with the same title and I can't be bothered
-   thinking up useful titles for each one.  See
-   Documentation/SubmittingPatches
-
-b) I can't find all the patches on lkml.
-
-c) Why am I applying misdn patches anyway?  If someone else already
-   applied them then they aren't in linux-next.
-
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
