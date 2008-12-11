@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757955AbYLKTTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbYLKTU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757955AbYLKTTh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:19:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbYLKTSH
+	id S1758188AbYLKTU7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:20:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756972AbYLKTSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:18:07 -0500
-Received: from kroah.org ([198.145.64.141]:55787 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:18:12 -0500
+Received: from kroah.org ([198.145.64.141]:55859 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756352AbYLKTSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:18:03 -0500
-Date: Thu, 11 Dec 2008 11:13:40 -0800
+	id S1756550AbYLKTSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:18:04 -0500
+Date: Thu, 11 Dec 2008 11:13:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Frederic Moulins <frederic.moulins@alsatis.com>,
+       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh@veritas.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 05/83] pppol2tp: Add missing sock_put() in
-	pppol2tp_release()
-Message-ID: <20081211191340.GE5894@kroah.com>
+Subject: [patch 08/83] sparc64: Fix __copy_{to,from}_user_inatomic defines.
+Message-ID: <20081211191346.GH5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline; filename="0004-pppol2tp-Add-missing-sock_put-in-pppol2tp_release.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="0002-sparc64-Fix-__copy_-to-from-_user_inatomic-defines.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,28 +40,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Frédéric Moulins <frederic.moulins@alsatis.com>
+From: Hugh Dickins <hugh@veritas.com>
 
-[ Upstream commit e6358135147807351db3b7782d3e198a1bba8b62 ]
+[ Upstream commit b270ee8a9fc9547eb781ce9ccd379450bcf9a204 ]
 
-pppol2tp_sock_to_session() do sock_hold() if the session to release is
-not NULL.
+Alexander Beregalov reports oops in __bzero() called from
+copy_from_user_fixup() called from iov_iter_copy_from_user_atomic(),
+when running dbench on tmpfs on sparc64: its __copy_from_user_inatomic
+and __copy_to_user_inatomic should be avoiding, not calling, the fixups.
 
-Signed-off-by: Frederic Moulins <frederic.moulins@alsatis.com>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/pppol2tp.c |    1 +
- 1 file changed, 1 insertion(+)
+ arch/sparc/include/asm/uaccess_64.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/net/pppol2tp.c
-+++ b/drivers/net/pppol2tp.c
-@@ -1353,6 +1353,7 @@ static int pppol2tp_release(struct socke
- 			kfree_skb(skb);
- 			sock_put(sk);
- 		}
-+		sock_put(sk);
- 	}
+--- a/arch/sparc/include/asm/uaccess_64.h
++++ b/arch/sparc/include/asm/uaccess_64.h
+@@ -265,8 +265,8 @@ extern long __strnlen_user(const char __
  
- 	release_sock(sk);
+ #define strlen_user __strlen_user
+ #define strnlen_user __strnlen_user
+-#define __copy_to_user_inatomic __copy_to_user
+-#define __copy_from_user_inatomic __copy_from_user
++#define __copy_to_user_inatomic ___copy_to_user
++#define __copy_from_user_inatomic ___copy_from_user
+ 
+ #endif  /* __ASSEMBLY__ */
+ 
 
