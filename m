@@ -1,165 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbYLKUgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758151AbYLKUho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757991AbYLKUgx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 15:36:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbYLKUgo
+	id S1758151AbYLKUho (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 15:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757223AbYLKUhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 15:36:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39002 "EHLO mx2.mail.elte.hu"
+	Thu, 11 Dec 2008 15:37:35 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33088 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756559AbYLKUgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 15:36:43 -0500
-Date: Thu, 11 Dec 2008 21:36:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Frans Pop <elendil@planet.nl>, Eric Anholt <eric@anholt.net>,
-       nix.or.die@googlemail.com, linux-kernel@vger.kernel.org, rjw@sisk.pl,
-       Arjan van de Ven <arjan@infradead.org>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: Linux 2.6.28-rc8
-Message-ID: <20081211203604.GA14817@elte.hu>
-References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain> <49407CE1.9090600@googlemail.com> <49407CE1.9090600@googlemail.com> <1228979963.3254.8.camel@gaiman.anholt.net> <200812111707.20857.elendil@planet.nl> <alpine.LFD.2.00.0812110814360.3340@localhost.localdomain> <20081211163548.GA11859@elte.hu> <alpine.LFD.2.00.0812110902450.3340@localhost.localdomain>
+	id S1756792AbYLKUhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 15:37:35 -0500
+Message-ID: <494179EE.8060009@redhat.com>
+Date: Thu, 11 Dec 2008 21:37:02 +0100
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0812110902450.3340@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: [PATCH] loop: Flush possible running bios when loop device is released.
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Flush possible running bios when loop device is released.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+When there are still queued bios and reference count
+drops to zero, loop device must flush all queued bios.
 
-> On Thu, 11 Dec 2008, Ingo Molnar wrote:
-> > 
-> > hm, the warning caught a couple of real bugs already. (one in some 
-> > cpq driver, another was in some networking driver iirc)
-> 
-> Well, one thing that does irritate me is that it scares people who 
-> can't do anything about it, and probably _shouldn't_ do anything about 
-> it.
+Otherwise it can lead to situation that caller
+closes the device, but some bios are still running
+and endio() function call later oopses when uses
+unallocated mempool.
 
-yeah - and false positives also tend to create apathy and resistence 
-against kernel warnings - thus drawing tester resources away from more 
-important bugs.
+This happens for example when running dm-crypt over loop,
+here is typical oops backtrace:
 
-> I wonder if we should just change the "Warning" message to 
-> "Informational" or something. Yes, they are often real bugs. But no, 
-> they're not _automatically_ bugs. Almost all the time when a warning 
-> triggers, it's really just a developer who wants to know about it, it's 
-> not something that a user should really care/worry about.
+ Oops: 0000 [#1] PREEMPT SMP
+ EIP is at mempool_free+0x12/0x6b
+...
+ crypt_dec_pending+0x50/0x54 [dm_crypt]
+ crypt_endio+0x9f/0xa7 [dm_crypt]
+ crypt_endio+0x0/0xa7 [dm_crypt]
+ bio_endio+0x2b/0x2e
+ loop_thread+0x37a/0x3b1
+ do_lo_send_aops+0x0/0x165
+ autoremove_wake_function+0x0/0x33
+ loop_thread+0x0/0x3b1
+ kthread+0x3b/0x61
+ kthread+0x0/0x61
+ kernel_thread_helper+0x7/0x10
 
-ok. In this case i'd suggest we should just remove the warning. People do 
-get scared by needless kernel stack dumps - no matter whether it's marked 
-informational or not.
+(But crash is reproducible with different dm targets 
+running over loop device too.)
 
-So how about the patch below, queued up in tip/x86/debug? Arjan, what do 
-you think?
+Patch fixes it by flushing the bios in release call,
+reusing the flush mechanism for switching backing store.
 
-	Ingo
-
---------------->
->From 2dcae81e819fa5cc0e9310ef8b0c079940df3bf3 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 11 Dec 2008 21:29:51 +0100
-Subject: [PATCH] IO resources, x86: remove multi-BAR mapping sanity check
-
-Impact: remove a debug warning
-
-The ioremap() time multi-BAR map warning has been causing false positives:
-
- http://lkml.org/lkml/2008/12/10/432
- http://lkml.org/lkml/2008/12/11/136
-
-So remove it for now.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Milan Broz <mbroz@redhat.com>
 ---
- arch/x86/mm/ioremap.c  |    6 ------
- include/linux/ioport.h |    1 -
- kernel/resource.c      |   38 --------------------------------------
- 3 files changed, 0 insertions(+), 45 deletions(-)
+ drivers/block/loop.c |   17 ++++++++++++++++-
+ 1 files changed, 16 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index d4c4307..421b92d 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -220,12 +220,6 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 		return (__force void __iomem *)phys_to_virt(phys_addr);
- 
- 	/*
--	 * Check if the request spans more than any BAR in the iomem resource
--	 * tree.
--	 */
--	WARN_ON(iomem_map_sanity_check(phys_addr, size));
--
--	/*
- 	 * Don't allow anybody to remap normal RAM that we're using..
- 	 */
- 	for (pfn = phys_addr >> PAGE_SHIFT;
-diff --git a/include/linux/ioport.h b/include/linux/ioport.h
-index 041e95a..0dde772 100644
---- a/include/linux/ioport.h
-+++ b/include/linux/ioport.h
-@@ -174,7 +174,6 @@ extern struct resource * __devm_request_region(struct device *dev,
- 
- extern void __devm_release_region(struct device *dev, struct resource *parent,
- 				  resource_size_t start, resource_size_t n);
--extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
- 
- #endif /* __ASSEMBLY__ */
- #endif	/* _LINUX_IOPORT_H */
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 4337063..4b0bc70 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -829,41 +829,3 @@ static int __init reserve_setup(char *str)
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 5c4ee70..0ccf2ae 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -624,20 +624,33 @@ static int loop_switch(struct loop_device *lo, struct file *file)
  }
  
- __setup("reserve=", reserve_setup);
--
--/*
-- * Check if the requested addr and size spans more than any slot in the
-- * iomem resource tree.
-- */
--int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
--{
--	struct resource *p = &iomem_resource;
--	int err = 0;
--	loff_t l;
--
--	read_lock(&resource_lock);
--	for (p = p->child; p ; p = r_next(NULL, p, &l)) {
--		/*
--		 * We can probably skip the resources without
--		 * IORESOURCE_IO attribute?
--		 */
--		if (p->start >= addr + size)
--			continue;
--		if (p->end < addr)
--			continue;
--		if (PFN_DOWN(p->start) <= PFN_DOWN(addr) &&
--		    PFN_DOWN(p->end) >= PFN_DOWN(addr + size - 1))
--			continue;
--		printk(KERN_WARNING "resource map sanity check conflict: "
--		       "0x%llx 0x%llx 0x%llx 0x%llx %s\n",
--		       (unsigned long long)addr,
--		       (unsigned long long)(addr + size - 1),
--		       (unsigned long long)p->start,
--		       (unsigned long long)p->end,
--		       p->name);
--		err = -1;
--		break;
--	}
--	read_unlock(&resource_lock);
--
--	return err;
--}
+ /*
++ * Helper to flush the IOs in loop, but keeping loop thread running
++ */
++static int loop_flush(struct loop_device *lo)
++{
++	return loop_switch(lo, NULL);
++}
++
++/*
+  * Do the actual switch; called from the BIO completion routine
+  */
+ static void do_loop_switch(struct loop_device *lo, struct switch_request *p)
+ {
+ 	struct file *file = p->file;
+ 	struct file *old_file = lo->lo_backing_file;
+-	struct address_space *mapping = file->f_mapping;
++	struct address_space *mapping;
++
++	if (!file)
++		goto out;
+ 
++	mapping = file->f_mapping;
+ 	mapping_set_gfp_mask(old_file->f_mapping, lo->old_gfp_mask);
+ 	lo->lo_backing_file = file;
+ 	lo->lo_blocksize = S_ISBLK(mapping->host->i_mode) ?
+ 		mapping->host->i_bdev->bd_block_size : PAGE_SIZE;
+ 	lo->old_gfp_mask = mapping_gfp_mask(mapping);
+ 	mapping_set_gfp_mask(mapping, lo->old_gfp_mask & ~(__GFP_IO|__GFP_FS));
++out:
+ 	complete(&p->wait);
+ }
+ 
+@@ -1347,6 +1360,8 @@ static int lo_release(struct gendisk *disk, fmode_t mode)
+ 
+ 	if ((lo->lo_flags & LO_FLAGS_AUTOCLEAR) && !lo->lo_refcnt)
+ 		loop_clr_fd(lo, NULL);
++	else if (!lo->lo_refcnt && lo->lo_thread)
++		loop_flush(lo);
+ 
+ 	mutex_unlock(&lo->lo_ctl_mutex);
+ 
+
+
