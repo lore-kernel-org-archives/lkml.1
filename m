@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbYLKBLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbYLKBL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756482AbYLKBLV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 20:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbYLKBLH
+	id S1755576AbYLKBL5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 20:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbYLKBLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 20:11:07 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59129 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752451AbYLKBLF (ORCPT
+	Wed, 10 Dec 2008 20:11:46 -0500
+Received: from mga11.intel.com ([192.55.52.93]:35279 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753192AbYLKBLp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 20:11:05 -0500
-Date: Wed, 10 Dec 2008 20:11:02 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mike Frysinger <vapier.adi@gmail.com>
-cc: Al Viro <viro@zeniv.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] make INIT_FS use the __RW_LOCK_UNLOCKED initialization
-In-Reply-To: <8bd0f97a0812101707p7df7745dk9840b05c0b26184b@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0812102010100.29200@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0812101832200.21545@gandalf.stny.rr.com>  <20081210234307.GI28946@ZenIV.linux.org.uk> <8bd0f97a0812101707p7df7745dk9840b05c0b26184b@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 10 Dec 2008 20:11:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,749,1220252400"; 
+   d="scan'208";a="413394097"
+From: "Han, Weidong" <weidong.han@intel.com>
+To: "'Joerg Roedel'" <joerg.roedel@amd.com>,
+       "'David Woodhouse'" <dwmw2@infradead.org>
+CC: "'Avi Kivity'" <avi@redhat.com>, "'mingo@redhat.com'" <mingo@redhat.com>,
+       "'torvalds@linux-foundation.org'" <torvalds@linux-foundation.org>,
+       "'iommu@lists.linux-foundation.org'" 
+	<iommu@lists.linux-foundation.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'kvm@vger.kernel.org'" <kvm@vger.kernel.org>
+Date: Thu, 11 Dec 2008 09:11:21 +0800
+Subject: RE: [PATCHSETS #2] KVM device passthrough support with AMD IOMMU
+Thread-Topic: [PATCHSETS #2] KVM device passthrough support with AMD IOMMU
+Thread-Index: Acla0z4qBZZ0fCqVQ7a70Oype6ZivQAWgUWA
+Message-ID: <715D42877B251141A38726ABF5CABF2C018E6FAE6E@pdsmsx503.ccr.corp.intel.com>
+References: <20081209141143.GW12816@amd.com> <493F8D90.40205@redhat.com>
+ <20081210141131.GB12816@amd.com>
+ <1228918928.21454.27.camel@macbook.infradead.org>
+ <20081210142525.GC12816@amd.com>
+In-Reply-To: <20081210142525.GC12816@amd.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 10 Dec 2008, Mike Frysinger wrote:
-
-> On Wed, Dec 10, 2008 at 18:43, Al Viro wrote:
-> > On Wed, Dec 10, 2008 at 06:37:28PM -0500, Steven Rostedt wrote:
-> >>
-> >> The following patch is in:
-> >>
-> >>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> >>
-> >>     branch: cleanups
-> >
-> > Would be better to take init_fs to something in fs/ or kernel/ and kill
-> > the duplicates, along with INIT_FS macro itself...
+Joerg Roedel wrote:
+> On Wed, Dec 10, 2008 at 02:22:08PM +0000, David Woodhouse wrote:
+>> On Wed, 2008-12-10 at 15:11 +0100, Joerg Roedel wrote:
+>>> So now its open how this will be merged alltogether. We can merge
+>>> it in three steps (first from Dave's tree, then Avi and at last my
+>>> IOMMU updates which has to happen in that order).
+>>> The other option is to merge this all with one pull-request I send
+>>> to Linus. It should not conflict with your updates Avi because all
+>>> these changes apply also cleanly to current linus/master.
+>>> Is this acceptable for everyone?
+>>> 
+>>> David, its important to hear your opinion on that because this
+>>> single pull-request would include all VT-d updates you have queued
+>>> in your tree? Is this ok for you?
+>> 
+>> Yes, that's fine by me. Should I apply patches 1-14 of Weidong's
+>> patch set from Monday first? Or just let you do that?
 > 
-> how about the next level: unify init_task.c.  a quick check shows that
-> like 90% of the stuff in there is the same for everyone ...
-> -mike
+> I already did it on-top of your tree because Han Weidong's patches
+> 1-17 were rebased to your tree and my IOMMU-API patches apply on-top
+> of his patches.
+> 
+> Joerg
 
-I could probably do it for x86 and PPC, but beyond that, each arch 
-maintainer will have to do it separately. That's a change that would need 
-testing.
+It's good. Thanks Dave and Joerg.
 
-These changes are trivial (something I need to get RT working).
-
--- Steve
-
+Regards,
+Weidong
