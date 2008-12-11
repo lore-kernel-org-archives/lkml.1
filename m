@@ -1,81 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbYLKSSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbYLKST6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757276AbYLKSSf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 13:18:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbYLKSSV
+	id S1756884AbYLKST6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 13:19:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbYLKSTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 13:18:21 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:58734 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756868AbYLKSSU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 13:18:20 -0500
-Message-ID: <4941592E.8070303@vlnb.net>
-Date: Thu, 11 Dec 2008 21:17:18 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 11 Dec 2008 13:19:49 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:56168 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754467AbYLKSTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 13:19:49 -0500
+Message-ID: <494159C2.5020401@sgi.com>
+Date: Thu, 11 Dec 2008 10:19:46 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Subject: Re: [PATCH][RFC 13/23]: Export of alloc_io_context() function
-References: <494009D7.4020602@vlnb.net> <49400F2F.4050603@vlnb.net> <20081211133424.GU23742@kernel.dk>
-In-Reply-To: <20081211133424.GU23742@kernel.dk>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] cpumask: use maxcpus=NUM to extend the cpu limit
+ as well as restrict the limit
+References: <20081211112806.499831000@polaris-admin.engr.sgi.com> <20081211112807.004085000@polaris-admin.engr.sgi.com> <20081211134131.GB6264@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20081211134131.GB6264@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19UxRl678ApofNAkSQA+3M4u1+WLTs/6nF6bdR
- j9cHbM15yiCf1ngSKoCDGP/kv5Vf0P3AMf6MpchcvIM2MbUgf+
- 93BDWFV8VtWIvEfHGNBYQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Wed, Dec 10 2008, Vladislav Bolkhovitin wrote:
->> This patch exports alloc_io_context() function. For performance reasons 
->> SCST queues commands using a pool of IO threads. It is considerably 
->> better for performance (>30% increase on sequential reads) if threads in 
->>   a pool have the same IO context. Since SCST can be built as a module, 
->> it needs alloc_io_context() function exported.
+Heiko Carstens wrote:
+> On Thu, Dec 11, 2008 at 03:28:09AM -0800, Mike Travis wrote:
+>> Impact: allow adding additional cpus.
 >>
->> Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
->> ---
->>   block/blk-ioc.c |    1 +
->>   1 file changed, 1 insertion(+)
+>> Use maxcpus=NUM kernel parameter to extend the number of possible cpus as well
+>> as (currently) limit them.  Any cpus >= number of present cpus will disabled.
 >>
->> diff -upkr linux-2.6.27.2/block/blk-ioc.c linux-2.6.27.2/block/blk-ioc.c
->> --- linux-2.6.27.2/block/blk-ioc.c	2008-10-10 02:13:53.000000000 +0400
->> +++ linux-2.6.27.2/block/blk-ioc.c	2008-11-25 21:27:01.000000000 +0300
->> @@ -105,6 +105,7 @@ struct io_context *alloc_io_context(gfp_
->>  
->>  	return ret;
->>  }
->> +EXPORT_SYMBOL(alloc_io_context);
+>> The ability to HOTPLUG ON cpus that are "possible" but not "present" is
+>> dealt with in a later patch.
 > 
-> Why is this needed, can't you just use CLONE_IO?
+> Hm.. documentation/kernel-parameters.txt says:
+> 
+> 	maxcpus=	[SMP] Maximum number of processors that an SMP kernel
+> 			should make use of.  maxcpus=n : n >= 0 limits the
+> 			kernel to using 'n' processors.	 n=0 is a special case,
+> 			it is equivalent to "nosmp", which also disables
+> 			the IO APIC.
+> 
+> but documentation/cpu-hotplug.txt says:
+> 
+> maxcpus=n    Restrict boot time cpus to n. Say if you have 4 cpus, using
+> 	     maxcpus=2 will only boot 2. You can choose to bring the
+> 	     other cpus later online, read FAQ's for more info.
+> 
+> It used to be (implementation wise) that maxcpus doesn't influence the number
+> of possible cpus but just indicated how many cpus were brought online at startup
+> of the kernel. Which is what cpu-hotplug.txt describes.
+> 
+> Other present cpus would appear offline and could be brought online later.
+> 
+> For s390 I added the possible_cpus kernel parameter back then, since my
+> understanding back then was that maxcpus doesn't and shouldn't influence the
+> number of possible cpus:
+> 
+> possible_cpus=n		[s390 only] use this to set hotpluggable cpus.
+> 			This option sets possible_cpus bits in
+> 			cpu_possible_map. Thus keeping the numbers of bits set
+> 			constant even if the machine gets rebooted.
+> 
+> Dunno... it all looks like a mess ;)
 
-There are two reasons for that:
+Hmm, I hadn't noticed that.  For a while the X86 devel kernel had an
+"additional_cpus=n" parameter, which was also a bit confusing.  Say you
+wanted, 64 total, you had to give the increment over how many you already
+had [e.g., (want)64 - (have)16  = (additional_cpus=)48.]
 
-1. kthread interface doesn't support passing CLONE_IO flag.
+I just figured that re-using the same kernel parameter was better than adding
+another.  But I'm willing to go either way.
 
-2. Each (virtual) device has own pool of threads, which serves it. 
-Threads in each such pools should have a common IO context, but 
-different pools should have different IO contexts. So, it would be 
-necessary to implement two levels start of IO threads in each pool. At 
-first, one thread would be started. Then it would call get_io_context() 
-to gain io_context. Then it would create the remaining threads with 
-CLONE_IO flag. Definitely, it's a lot more complicated than a simple 
-call of alloc_io_context() and assignment of the returned context to 
-each just created thread in a loop before they were ran.
+Btw, I did alter the Documentation/kernel-parameters.txt file:
+
+        maxcpus=        [SMP] Maximum number of processors that an SMP kernel
+                        should make use of.  maxcpus=n : n >= 0 limits the
+                        kernel to using 'n' processors.  n=0 is a special case,
+                        it is equivalent to "nosmp", which also disables
+                        the IO APIC.  On [X86] maxcpus can also be used to
+                        extend the number of possible cpus to overcome ACPI
+                        tables that do not indicate disabled cpus, as well as
+                        allow for additional cpus to be HOT PLUGGED in.
+                        Format: <0-NR_CPUS>
+
+In modifying the code, I could not find any arch-specific instances and the only
+general case was in the 3 references in init/main.c, so I figured it was pretty
+safe to use.
 
 Thanks,
-Vlad
-
+Mike
