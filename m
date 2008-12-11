@@ -1,55 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbYLKUap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757838AbYLKUe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757846AbYLKUap (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 15:30:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbYLKUag
+	id S1757838AbYLKUe7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 15:34:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756981AbYLKUet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 15:30:36 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58676 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756765AbYLKUaf (ORCPT
+	Thu, 11 Dec 2008 15:34:49 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:44403 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756899AbYLKUes (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 15:30:35 -0500
-Date: Thu, 11 Dec 2008 12:29:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       jgarzik@redhat.com, a_romanescu@yahoo.co.uk, tj@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 1/2] DMI: add dmi_match
-Message-Id: <20081211122912.58eb164e.akpm@linux-foundation.org>
-In-Reply-To: <1228855948-22886-1-git-send-email-jirislaby@gmail.com>
-References: <493E0689.6020302@garzik.org>
-	<1228855948-22886-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Dec 2008 15:34:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=r5djmk3TykhAJ/GO+ZjUxu1jJ4nvkJHsadYfQtV5P4xn35e+Fc23ajKGjvVXXR7SLp
+         +fP5pAUdADc/cJdmLdWjNTuyS+ccgtPDRjlGkm6EZXP1t+JRnhPfw7Ymke5vUBIcmsNh
+         AyavdUX289BzLI9VpXu5P72xElsO/WgCezBiU=
+Message-ID: <e9e943910812111234h3e2bbc1bh934a6605f30b5fea@mail.gmail.com>
+Date: Thu, 11 Dec 2008 20:34:46 +0000
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "Dave Kleikamp" <shaggy@linux.vnet.ibm.com>
+Subject: Re: [PATCH] JFS: ensure link targets are NULL-terminated
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "Boaz Harrosh" <bharrosh@panasas.com>,
+       Dave.Kleikamp.shaggy@austin.ibm.com,
+       jfs-discussion@lists.sourceforge.net
+In-Reply-To: <1229025971.9245.18.camel@norville.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1229022995-9898-1-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-2-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-3-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-4-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-5-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-6-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-7-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-8-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-9-git-send-email-duaneg@dghda.com>
+	 <1229025971.9245.18.camel@norville.austin.ibm.com>
+X-Google-Sender-Auth: a103fb40bef59884
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  9 Dec 2008 21:52:27 +0100
-Jiri Slaby <jirislaby@gmail.com> wrote:
+2008/12/11 Dave Kleikamp <shaggy@linux.vnet.ibm.com>:
+> Thanks.
+>
+> I came up with an alternate patch that I like slightly better.  This one
+> null-terminates the string when the inode is read rather than every time
+> the link is followed, and at the proper place (i_size).  It's not a big
+> deal, since the symlink will be corrupted either way.  What do you think
+> of this patch?
+>
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+>
+> diff --git a/fs/jfs/inode.c b/fs/jfs/inode.c
+> index 2103397..b00ee9f 100644
+> --- a/fs/jfs/inode.c
+> +++ b/fs/jfs/inode.c
+> @@ -59,8 +59,14 @@ struct inode *jfs_iget(struct super_block *sb, unsigned long ino)
+>                if (inode->i_size >= IDATASIZE) {
+>                        inode->i_op = &page_symlink_inode_operations;
+>                        inode->i_mapping->a_ops = &jfs_aops;
+> -               } else
+> +               } else {
+>                        inode->i_op = &jfs_symlink_inode_operations;
+> +                       /*
+> +                        * The inline data should be null-terminated, but
+> +                        * don't let on-disk corruption crash the kernel
+> +                        */
+> +                       JFS_IP(inode)->i_inline[inode->i_size] = '\0';
+> +               }
+>        } else {
+>                inode->i_op = &jfs_file_inode_operations;
+>                init_special_inode(inode, inode->i_mode, inode->i_rdev);
 
-> 
-> +/**
-> + * dmi_match - compare string to the dmi field (if exists)
-> + *
-> + * Returns true if requested field equals to str (including NULL).
-> + */
+Yes, I prefer your version too :)
 
-Forgot to document the arguments.  If you think it matters. (I don't).
+I'll rework the other patches similarly, where appropriate. Thanks!
 
-> +static inline bool dmi_match(enum dmi_field f, const char *str)
-> +{
-> +	const char *info = dmi_get_system_info(f);
-> +
-> +	if (info == NULL || str == NULL)
-> +		return info == str;
-> +
-> +	return !strcmp(info, str);
-> +}
-> +
+Cheers,
+Duane.
 
-I suspect we'd have thinner kernel if this wasn't inlined.
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
