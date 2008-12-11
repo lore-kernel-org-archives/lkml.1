@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932416AbYLKTu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760964AbYLKTv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932416AbYLKTu7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:50:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760069AbYLKThX
+	id S1760964AbYLKTv3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:51:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760263AbYLKTqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:37:23 -0500
-Received: from parsec.stupidest.org ([71.6.196.126]:58798 "EHLO
-	parsec.stupidest.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758404AbYLKThV (ORCPT
+	Thu, 11 Dec 2008 14:46:44 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:54198 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760195AbYLKTqn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:37:21 -0500
-X-Greylist: delayed 472 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Dec 2008 14:37:21 EST
-Date: Thu, 11 Dec 2008 11:29:21 -0800
-From: Chris Wedgwood <reviews@ml.cw.f00f.org>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch 37/83] USB: add Nikon D300 camera to unusual_devs
-Message-ID: <20081211192920.GA25494@puku.stupidest.org>
-References: <20081211190201.612240183@mini.kroah.org> <20081211191455.GK5894@kroah.com>
+	Thu, 11 Dec 2008 14:46:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=gQPCyjHdKjaWCsJcgyJh7wc4kEd4kBoNGjxAr+j+dVoFEV2u3dvsNxG5SIiyGqs0rb
+         3lyZi4qCM24TTJDc3vK1xCnKR/ulyVlx+kFlbq8VgGsQbiPyWo7LxGg6KSAsxzH1jXXM
+         QwXzM305c2pMghq0J+8kAZxPMpty6leD4ysy4=
+Message-ID: <43e72e890812111146n1b9b0d07y99cd8cea3d72e952@mail.gmail.com>
+Date: Thu, 11 Dec 2008 11:46:41 -0800
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Latest staging stuff
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081211191455.GK5894@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 11:14:55AM -0800, Greg KH wrote:
+Greg,
 
-> 2.6.27-stable review patch.  If anyone has any objections, please
-> let us know.
->
-> From: Paul Ready <lxtwin@homecall.co.uk>
->
-> commit 0047ca0a45c6a481abd467fb52d2a480ffc8c6b9 upstream
->
-> Addresses http://bugzilla.kernel.org/show_bug.cgi?id=11685
->
-> When A Nikon D300 camera is connected to a system it is seen in
-> /proc/bus/pci/devices but is not accessible.
+Where do I get stuff to send patches against your latest staging? I
+thought it would be your staging git tree:
 
+git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging.git
 
-I can't tell from looking over the bugzilla comments if this fix is
-really the right fix or even necessary.
+But this doesn't seem to have the latest. I actually see more later stuff on:
 
-Is this definately the right fix?
+http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/staging/
+
+What is the difference between what you maintain in these? I take it
+there is no actual git tree that is not just a directory with patches
+for staging huh? It seems I would have to apply all the patches in
+gregkh/gregkh-2.6/patches/staging/ and then send stuff against it.
+
+  Luis
