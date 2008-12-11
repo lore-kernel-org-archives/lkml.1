@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbYLKBK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbYLKBLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755558AbYLKBK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 20:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYLKBKt
+	id S1756482AbYLKBLV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 20:11:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbYLKBLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 20:10:49 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49523 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbYLKBKs (ORCPT
+	Wed, 10 Dec 2008 20:11:07 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59129 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752451AbYLKBLF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 20:10:48 -0500
-Date: Thu, 11 Dec 2008 10:09:53 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Paul Menage <menage@google.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 1/6] memcg: fix pre_destory handler
-Message-Id: <20081211100953.74d4c026.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <6599ad830812101628o3899c091gd39ef9bd5df851b0@mail.gmail.com>
-References: <20081209200213.0e2128c1.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081209200647.a1fa76a9.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830812100240g5e549a5cqe29cbea736788865@mail.gmail.com>
-	<29741.10.75.179.61.1228908581.squirrel@webmail-b.css.fujitsu.com>
-	<6599ad830812101035v33dbc6cfh57aa5510f6d65d54@mail.gmail.com>
-	<20081211092531.175c6830.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830812101628o3899c091gd39ef9bd5df851b0@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Dec 2008 20:11:05 -0500
+Date: Wed, 10 Dec 2008 20:11:02 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mike Frysinger <vapier.adi@gmail.com>
+cc: Al Viro <viro@zeniv.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] make INIT_FS use the __RW_LOCK_UNLOCKED initialization
+In-Reply-To: <8bd0f97a0812101707p7df7745dk9840b05c0b26184b@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0812102010100.29200@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0812101832200.21545@gandalf.stny.rr.com>  <20081210234307.GI28946@ZenIV.linux.org.uk> <8bd0f97a0812101707p7df7745dk9840b05c0b26184b@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Dec 2008 16:28:38 -0800
-Paul Menage <menage@google.com> wrote:
 
-> On Wed, Dec 10, 2008 at 4:25 PM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Wed, 10 Dec 2008, Mike Frysinger wrote:
+
+> On Wed, Dec 10, 2008 at 18:43, Al Viro wrote:
+> > On Wed, Dec 10, 2008 at 06:37:28PM -0500, Steven Rostedt wrote:
 > >>
-> >> Can you clarify what you mean by "rolling update of refcnts"?
+> >> The following patch is in:
 > >>
-> >  for(..i++)
-> >        atomic_dec/inc( refcnt[i)
+> >>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> >>
+> >>     branch: cleanups
 > >
-> > But my first version of this patch did above. I can write it again easily.
+> > Would be better to take init_fs to something in fs/ or kernel/ and kill
+> > the duplicates, along with INIT_FS macro itself...
 > 
-> I just sent out a small patch collection that had my version of
-> css_tryget() in it - is that what you had in mind by "rolling update"?
-> 
-yes. but yours seems to be more robust than my version.
-I'll try to use yours and prepare a patch for css_tryget() in memcg.
- 
--Kame
+> how about the next level: unify init_task.c.  a quick check shows that
+> like 90% of the stuff in there is the same for everyone ...
+> -mike
+
+I could probably do it for x86 and PPC, but beyond that, each arch 
+maintainer will have to do it separately. That's a change that would need 
+testing.
+
+These changes are trivial (something I need to get RT working).
+
+-- Steve
 
