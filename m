@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbYLKU2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbYLKU2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757890AbYLKU2V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 15:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756929AbYLKU2I
+	id S1758051AbYLKU2s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 15:28:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756946AbYLKU2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 15:28:08 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:60381 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756920AbYLKU2H (ORCPT
+	Thu, 11 Dec 2008 15:28:38 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56072 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756924AbYLKU2h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 15:28:07 -0500
-Date: Thu, 11 Dec 2008 20:28:00 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yuri Tikhonov <yur@emcraft.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Geert.Uytterhoeven@sonycom.com,
-       dhowells@redhat.com, miltonm@bga.com, wd@denx.de, dzu@denx.de,
-       yanok@emcraft.com
-Subject: Re: [PATCH][v2] fork_init: fix division by zero
-Message-ID: <20081211202800.GQ28946@ZenIV.linux.org.uk>
-References: <200812101950.51958.yur@emcraft.com> <20081211121635.ff58193f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081211121635.ff58193f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 11 Dec 2008 15:28:37 -0500
+Date: Thu, 11 Dec 2008 12:27:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       jgarzik@redhat.com, a_romanescu@yahoo.co.uk, tj@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 2/2 v2] ATA: piix, fix pointer deref on suspend
+Message-Id: <20081211122712.aee1f039.akpm@linux-foundation.org>
+In-Reply-To: <1228855948-22886-2-git-send-email-jirislaby@gmail.com>
+References: <493E0689.6020302@garzik.org>
+	<1228855948-22886-1-git-send-email-jirislaby@gmail.com>
+	<1228855948-22886-2-git-send-email-jirislaby@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 12:16:35PM -0800, Andrew Morton wrote:
-> > +#if (8 * THREAD_SIZE) > PAGE_SIZE
-> >  	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
-> > +#else
-> > +	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
-> > +#endif
-> 
-> The expression you've chosen here can be quite inacccurate, because
-> ((PAGE_SIZE / (8 * THREAD_SIZE)) is a small number.  The way to
-> preserve accuracy is
-> 
-> 	max_threads = (mempages * PAGE_SIZE) / (8 * THREAD_SIZE);
-> 
-> so how about avoiding the nasty ifdefs and doing
+On Tue,  9 Dec 2008 21:52:28 +0100
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-Are you sure?  Do they actually cross the page boundaries?
+> Commit
+> ata_piix: add borked Tecra M4 to broken suspend list
+> introduced DMI variables checking, but they can be null, so that
+> we possibly dereference null.
+> 
+> Check if they are null and avoid checks in that case.
+> 
+> Solves:
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+> IP: [<ffffffff8043da97>] piix_pci_device_suspend+0x117/0x230
+
+This already got fixed, the nasty way.
+
+I queued "DMI: add dmi_match".  We can later switch the piix nastyfix
+over to the nicefix as a cleanup.
+
