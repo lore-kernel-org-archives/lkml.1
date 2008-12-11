@@ -1,96 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYLKB7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYLKCB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503AbYLKB7O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 20:59:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbYLKB65
+	id S1755915AbYLKCB7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 21:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYLKCBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 20:58:57 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40528 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754048AbYLKB64 (ORCPT
+	Wed, 10 Dec 2008 21:01:51 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:37532 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754101AbYLKCBu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 20:58:56 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Luck, Tony" <tony.luck@intel.com>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: [linux-next][PATCH] cpumask:cpumask_of_node-ia64 fix
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20081210164659.9ebb8158.sfr@canb.auug.org.au>
-References: <20081210164659.9ebb8158.sfr@canb.auug.org.au>
-Message-Id: <20081211105721.4FEE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 10 Dec 2008 21:01:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=XWE2tV4va5qBwMjK8E503ekSE8zrCLHx/DP7MA51Z92Cz0/zTDPFBlyLviPkPqCXfG
+         B06qRU3hfTJfa6+l/Zczd3EO1/bKWu0OCLAmPQkY4u7YuQ6iBnENhYkeDQnrxj0HaZ2T
+         N+SAVAyB0Xmh6R/RyAwMnWic9rGivnHi8sV7c=
+Message-ID: <e9c3a7c20812101801r19c8fb40s6b8ce9bd6c565fed@mail.gmail.com>
+Date: Wed, 10 Dec 2008 19:01:49 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 1/4 v2] dmaengine: add a tx_free method to struct dma_async_tx_descriptor
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       adaplas@gmail.com, "Sascha Hauer" <s.hauer@pengutronix.de>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <Pine.LNX.4.64.0812110011440.8273@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu, 11 Dec 2008 10:58:50 +0900 (JST)
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0812101122250.4578@axis700.grange>
+	 <Pine.LNX.4.64.0812101129340.4578@axis700.grange>
+	 <e9c3a7c20812101158h3de9c604i1c88bb7c412ccf02@mail.gmail.com>
+	 <Pine.LNX.4.64.0812110011440.8273@axis700.grange>
+X-Google-Sender-Auth: 1b2e6e1b583ac457
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-===
-Subject: [PATCH] cpumask:cpumask_of_node-ia64 fix
-Impact: bug fix
+On Wed, Dec 10, 2008 at 5:30 PM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> Hi Dan,
+>
+> On Wed, 10 Dec 2008, Dan Williams wrote:
+>
+>> On Wed, Dec 10, 2008 at 3:36 AM, Guennadi Liakhovetski
+>> <g.liakhovetski@gmx.de> wrote:
+>> > From: Guennadi Liakhovetski <lg@denx.de>
+>> >
+>> > Some users reuse DMA transaction descriptors multiple times and need an
+>> > explicit call to release them. An example of such a user is Video4Linux, which
+>> > has to be able to release descriptors on ioctl(VIDIOC_DQBUF).
+>> >
+>> > Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
+>>
+>>
+>> Hi Guennadi,
+>>
+>> Other dmaengine drivers have tasklets that scan the list of completed
+>> descriptors and free the "acked" ones.  This happens in the cleanup
+>> tasklet...
+>> /me looks
+>> ...hmm this driver does not have a cleanup routine?  Ideally support
+>> for ioctl(VIDIOC_DQBUF) could be achieved through this mechanism
+>> without needing to increase the size of dma_async_tx_descriptor (which
+>> has cache utilization impacts on other drivers).
+>
+> You mean there are drivers, that have struct dma_async_tx_descriptor on
+> stack?
 
-commit 07c636deede53ff3e96d54df0ece2c838e61951f introduce new CPU mask API and change cpu_mask variable type.
+huh?
 
------------------------------------------------
--               cpumask_t cpu_mask;
-+               const struct cpumask *cpu_mask;
---------------------------------------------------
+> And you mean, that increasing the size
+> of the struct by one pointer and letting users explicitly free those
+> descriptors when they want is worse than introducing a tasklet that will
+> have to periodically scan the list of descriptors while other hot paths
+> will move elements to and from this list, look for acked elements, lock
+> the list and free those elements? Periodically, because although we have
+> an event when to free them - on ioctl - there is no API to trigger that
+> tasklet.
 
+There are a few events that trigger this: completion interrupt,
+someone polls is_tx_complete, we run out of descriptors.
 
-However, its change is incomplete. in build time, compiler output following type mismatch warnings.
+> Or am I missing something? I can do this, it just sounds strange
+> to me.
 
-  arch/ia64/kernel/iosapic.c:708: warning: passing argument 2 of '__cpu_clear' from incompatible pointer type
-  arch/ia64/kernel/iosapic.c:711: warning: passing argument 1 of '__cpus_weight' from incompatible pointer type
-  arch/ia64/kernel/iosapic.c:719: warning: passing argument 1 of '__first_cpu' from incompatible pointer type
-  arch/ia64/kernel/iosapic.c:720: warning: passing argument 2 of '__next_cpu' from incompatible pointer type
+You are missing that existing drivers need to do this anyway to to
+handle operation completion actions.  So, while they are at it they
+also free the descriptor which relieves client code from needing to
+track what it has in-flight versus completed, especially since clients
+may not get a handle to each descriptor a driver creates on its
+behalf.
 
+What I am suggesting is that other dmaengine drivers would handle this
+implicitly after one of the above events...  can this happen in the
+ipu_idmac case as well?
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: "Luck, Tony" <tony.luck@intel.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>
----
- arch/ia64/kernel/iosapic.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-Index: b/arch/ia64/kernel/iosapic.c
-===================================================================
---- a/arch/ia64/kernel/iosapic.c
-+++ b/arch/ia64/kernel/iosapic.c
-@@ -695,7 +695,7 @@ get_target_cpu (unsigned int gsi, int ir
- #ifdef CONFIG_NUMA
- 	{
- 		int num_cpus, cpu_index, iosapic_index, numa_cpu, i = 0;
--		const struct cpumask *cpu_mask;
-+		struct cpumask *cpu_mask;
- 
- 		iosapic_index = find_iosapic(gsi);
- 		if (iosapic_index < 0 ||
-@@ -705,10 +705,10 @@ get_target_cpu (unsigned int gsi, int ir
- 		cpu_mask = cpumask_of_node(iosapic_lists[iosapic_index].node);
- 		for_each_cpu_and(numa_cpu, cpu_mask, &domain) {
- 			if (!cpu_online(numa_cpu))
--				cpu_clear(numa_cpu, cpu_mask);
-+				cpu_clear(numa_cpu, *cpu_mask);
- 		}
- 
--		num_cpus = cpus_weight(cpu_mask);
-+		num_cpus = cpus_weight(*cpu_mask);
- 
- 		if (!num_cpus)
- 			goto skip_numa_setup;
-@@ -716,8 +716,8 @@ get_target_cpu (unsigned int gsi, int ir
- 		/* Use irq assignment to distribute across cpus in node */
- 		cpu_index = irq % num_cpus;
- 
--		for (numa_cpu = first_cpu(cpu_mask) ; i < cpu_index ; i++)
--			numa_cpu = next_cpu(numa_cpu, cpu_mask);
-+		for (numa_cpu = first_cpu(*cpu_mask) ; i < cpu_index ; i++)
-+			numa_cpu = next_cpu(numa_cpu, *cpu_mask);
- 
- 		if (numa_cpu != NR_CPUS)
- 			return cpu_physical_id(numa_cpu);
-
-
+Thanks,
+Dan
