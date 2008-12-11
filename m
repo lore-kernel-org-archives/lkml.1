@@ -1,84 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757752AbYLKVIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbYLKVMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757752AbYLKVIP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 16:08:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776AbYLKVH6
+	id S1757557AbYLKVMr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 16:12:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbYLKVMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 16:07:58 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:52730 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756767AbYLKVH5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 16:07:57 -0500
-Date: Thu, 11 Dec 2008 22:09:17 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Subject: Re: [PATCH][RFC 2/23]: SCST core
-Message-ID: <20081211210917.GB27010@uranus.ravnborg.org>
-References: <494009D7.4020602@vlnb.net> <49400ACD.3070502@vlnb.net> <20081210191213.GA15273@uranus.ravnborg.org> <49414DBE.6070801@vlnb.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49414DBE.6070801@vlnb.net>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 11 Dec 2008 16:12:38 -0500
+Received: from mail.gmx.net ([213.165.64.20]:48506 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756201AbYLKVMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 16:12:38 -0500
+X-Authenticated: #1587495
+X-Provags-ID: V01U2FsdGVkX1+18HEWPnW1qKwP6p/KnCMSH6BgmOaQe6TMY2y4Qg
+	boCJImoO27o/ZD
+From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [patch 03/83] cxgb3: Fix kernel crash caused by uninitialized l2t_entry.arpq
+Date: Thu, 11 Dec 2008 22:12:34 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Roland Dreier <rolandd@cisco.com>, Jeff Garzik <jgarzik@redhat.com>
+References: <20081211190201.612240183@mini.kroah.org> <20081211191334.GC5894@kroah.com>
+In-Reply-To: <20081211191334.GC5894@kroah.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart6511956.XDOFFPBlSr";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200812112212.35832.s.L-H@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> >>  drivers/scst/scst_lib.c      | 3689 
-> >>  +++++++++++++++++++++++++++++++++++++
-> >>  drivers/scst/scst_main.c     | 1919 +++++++++++++++++++
-> >>  drivers/scst/scst_module.c   |   69
-> >>  drivers/scst/scst_priv.h     |  513 +++++
-> >>  drivers/scst/scst_targ.c     | 5458 
-> >>  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> >>  8 files changed, 12435 insertions(+)
-> >
-> >There was a lot af TRACE_ENTRY() / TRACE_EXIT() noise.
-> >We should have proper tools for that by now (I hope).
-> 
-> Sorry, I don't see such tools with, for instance, a possibility to be 
-> compiled out in non-debug builds.
-> 
-> From one side, I can agree, those TRACE_ENTRY()/TRACE_EXIT() statements 
-> *may* look like a noise (I personally don't notice them), but, from 
-> other side, in past times they have proved how usable they are. If an 
-> SCST user has a problem, I simply ask him to make a debug build, then 
-> enable entry_exit and some other logging levels, then reproduce the 
-> problem and send me the logs. Then in most cases I can see what's wrong 
-> and provide a fix without additional actions and questions.
+--nextPart6511956.XDOFFPBlSr
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I had ftrace in mind but it has not hit mainline yet.
-But will do before this patchset does.
+Hi
 
-> 
-> >We often ask for exported symbols to be documented - so one has
-> >a slight idea of their purpose.
-> 
-> They are documented, near their prototypes in the public header files, 
-> particularly, scst.h. It was done so, because it was supposed that one, 
-> writing a target driver or dev handler will have on hands the header 
-> files, not source code.
-> 
-> Should we move those comments from the functions prototypes to the 
-> functions definitions?
-If there will be multiple implmentations of the same prototype
-we generally recommend to stick the comment in a .H file.
-But otherwise keep it close to the source it describe with the
-minimal hope that it gets updated.
+On Donnerstag, 11. Dezember 2008, Greg KH wrote:
+> 2.6.27-stable review patch.  If anyone has any objections, please let us =
+know.
+>=20
+> ------------------
+>=20
+> From: Roland Dreier <rdreier@cisco.com>
+>=20
+> [ Upstream commit 6d329af9967e7ab3f4a3d7f1e8ef87539c3a069f ]
+>=20
+> Commit 147e70e6 ("cxgb3: Use SKB list interfaces instead of home-grown
+> implementation.") causes a crash in t3_l2t_send_slow() when an iWARP
+> connection request is received.  This is because the new l2t_entry.arpq
+> skb queue is never initialized, and therefore trying to add an skb to
+> it causes a NULL dereference.  With the old code there was no need to
+> initialize the queues because the l2t_entry structures were zeroed,
+> and the code used NULL to mean empty.
+>=20
+> Fix this by adding __skb_queue_head_init() when all the l2t_entry
+> structures get allocated.
 
-Oh - and we do not distribute a stripped down headers only
-version of the kernel. Users will see full kernel source.
+This patch doesn't compile.
 
-	Sam
+> Signed-off-by: Roland Dreier <rolandd@cisco.com>
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>=20
+> ---
+>  drivers/net/cxgb3/l2t.c |    1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> --- a/drivers/net/cxgb3/l2t.c
+> +++ b/drivers/net/cxgb3/l2t.c
+> @@ -436,6 +436,7 @@ struct l2t_data *t3_init_l2t(unsigned in
+>  	for (i =3D 0; i < l2t_capacity; ++i) {
+>  		d->l2tab[i].idx =3D i;
+>  		d->l2tab[i].state =3D L2T_STATE_UNUSED;
+> +		__skb_queue_head_init(&d->l2tab[i].arpq);
+>  		spin_lock_init(&d->l2tab[i].lock);
+>  		atomic_set(&d->l2tab[i].refcnt, 0);
+>  	}
+
+  CC [M]  drivers/net/cxgb3/cxgb3_main.o
+  CC [M]  drivers/net/cxgb3/ael1002.o
+  CC [M]  drivers/net/cxgb3/vsc8211.o
+  CC [M]  drivers/net/cxgb3/t3_hw.o
+  CC [M]  drivers/net/cxgb3/mc5.o
+  CC [M]  drivers/net/cxgb3/xgmac.o
+  CC [M]  drivers/net/cxgb3/sge.o
+  CC [M]  drivers/net/cxgb3/l2t.o
+drivers/net/cxgb3/l2t.c: In function =E2=80=98t3_init_l2t=E2=80=99:
+drivers/net/cxgb3/l2t.c:439: error: implicit declaration of function =E2=80=
+=98__skb_queue_head_init=E2=80=99
+drivers/net/cxgb3/l2t.c:439: error: =E2=80=98struct l2t_entry=E2=80=99 has =
+no member named =E2=80=98arpq=E2=80=99
+make[3]: *** [drivers/net/cxgb3/l2t.o] Error 1
+make[2]: *** [drivers/net/cxgb3] Error 2
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
+
+It seems to depend on
+
+commit 147e70e62fdd5af6263106ad634b03c5154c1e56
+Author: David S. Miller <davem@davemloft.net>
+Date:   Mon Sep 22 01:29:52 2008 -0700
+
+    cxgb3: Use SKB list interfaces instead of home-grown implementation.
+
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+Regards
+	Stefan Lippers-Hollmann
+
+--nextPart6511956.XDOFFPBlSr
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklBgkMACgkQORbEMfgJlPY5PwCbBfY0Lf/RZ0KRIDiaFuxmlEiJ
+tOAAnjkUE++aLn07ot8cp7Lel9o0i4vc
+=YuiO
+-----END PGP SIGNATURE-----
+
+--nextPart6511956.XDOFFPBlSr--
