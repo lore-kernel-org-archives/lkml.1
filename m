@@ -1,54 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbYLKRTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbYLKR2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757104AbYLKRTr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 12:19:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578AbYLKRTj
+	id S1756990AbYLKR2k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 12:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbYLKR22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 12:19:39 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41930 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755947AbYLKRTi (ORCPT
+	Thu, 11 Dec 2008 12:28:28 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:62918 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756548AbYLKR21 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 12:19:38 -0500
-Date: Thu, 11 Dec 2008 12:19:35 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Robert Richter <robert.richter@amd.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/9] oprofile: port to the new ring buffer
-In-Reply-To: <1229013723-8191-1-git-send-email-robert.richter@amd.com>
-Message-ID: <alpine.DEB.1.10.0812111219100.29200@gandalf.stny.rr.com>
-References: <1229013723-8191-1-git-send-email-robert.richter@amd.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 11 Dec 2008 12:28:27 -0500
+Message-ID: <49414DBE.6070801@vlnb.net>
+Date: Thu, 11 Dec 2008 20:28:30 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: Re: [PATCH][RFC 2/23]: SCST core
+References: <494009D7.4020602@vlnb.net> <49400ACD.3070502@vlnb.net> <20081210191213.GA15273@uranus.ravnborg.org>
+In-Reply-To: <20081210191213.GA15273@uranus.ravnborg.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19SFE20XXq1ekIxKaIAt57GWbYPD4TpxRl1iAz
+ QPG8cha/KeiDNEZ6/7Hgekp8T0QK5av+dWDpySH7zR7XqDL6gJ
+ 0zkSosAhXWfUfWMlmCEmQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 11 Dec 2008, Robert Richter wrote:
-
-> This patch set ports cpu buffers in oprofile to the new ring buffer
-> provided by the tracing framework. The motivation here is to leave the
-> pain of implementing ring buffers to others. Oh, no, there are more
-> advantages. Main reason is the support of different sample sizes that
-> could be stored in the buffer. Use cases for this are IBS and Cell spu
-> profiling. Using the new ring buffer ensures valid and complete
-> samples and allows copying the cpu buffer stateless without knowing
-> its content. Second it will use generic kernel API and also reduce
-> code size. And hopefully, there are less bugs.
+Sam Ravnborg wrote:
+> On Wed, Dec 10, 2008 at 09:30:37PM +0300, Vladislav Bolkhovitin wrote:
+>> This patch contains SCST core code.
+>>
+>> Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+>> ---
+>>   drivers/scst/Kconfig         |  256 ++
 > 
-> The patch set is also available here:
+> Do not use "default n" - this is already the default value.
+
+OK
+
+>>   drivers/scst/Makefile        |   12
+> EXTRA_CFLAGS are deprecated in favour of ccflags-y
+
+OK
+
+>>   drivers/scst/scst_cdbprobe.h |  519 +++++
+> static const struct scst_sdbops scst_scsi_op_table[] 
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git ring_buffer
+> This does not belong to a header file.
 
-Robert,
+OK
 
-Thanks for doing this! I'll try to take time out this week to review these 
-patches.
+>>   drivers/scst/scst_lib.c      | 3689 +++++++++++++++++++++++++++++++++++++
+>>   drivers/scst/scst_main.c     | 1919 +++++++++++++++++++
+>>   drivers/scst/scst_module.c   |   69
+>>   drivers/scst/scst_priv.h     |  513 +++++
+>>   drivers/scst/scst_targ.c     | 5458 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>>   8 files changed, 12435 insertions(+)
+> 
+> There was a lot af TRACE_ENTRY() / TRACE_EXIT() noise.
+> We should have proper tools for that by now (I hope).
 
--- Steve
+Sorry, I don't see such tools with, for instance, a possibility to be 
+compiled out in non-debug builds.
 
+ From one side, I can agree, those TRACE_ENTRY()/TRACE_EXIT() statements 
+*may* look like a noise (I personally don't notice them), but, from 
+other side, in past times they have proved how usable they are. If an 
+SCST user has a problem, I simply ask him to make a debug build, then 
+enable entry_exit and some other logging levels, then reproduce the 
+problem and send me the logs. Then in most cases I can see what's wrong 
+and provide a fix without additional actions and questions.
+
+> We often ask for exported symbols to be documented - so one has
+> a slight idea of their purpose.
+
+They are documented, near their prototypes in the public header files, 
+particularly, scst.h. It was done so, because it was supposed that one, 
+writing a target driver or dev handler will have on hands the header 
+files, not source code.
+
+Should we move those comments from the functions prototypes to the 
+functions definitions?
+
+> CONFIG_SCST_STRICT_SERIALIZING has bad impact on readability.
+> Could this be abstracted better?
+
+We will try.
+
+Thanks,
+Vlad
