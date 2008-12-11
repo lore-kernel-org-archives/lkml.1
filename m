@@ -1,239 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbYLKONY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbYLKOSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337AbYLKONY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 09:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbYLKONL
+	id S1756769AbYLKOSR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 09:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbYLKOSB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 09:13:11 -0500
-Received: from rn-out-0910.google.com ([64.233.170.186]:53871 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756092AbYLKONJ (ORCPT
+	Thu, 11 Dec 2008 09:18:01 -0500
+Received: from mail-bw0-f13.google.com ([209.85.218.13]:63442 "EHLO
+	mail-bw0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756114AbYLKOSA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 09:13:09 -0500
+	Thu, 11 Dec 2008 09:18:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=QAZmhyl2RXfZWD6o9x7/Ab+YHaL+QJwJIq8CtV3seLkR47lXLvpdtaDFttypyNQCpe
-         umkBnTBb2ukfzKxJccQdtOt+vzix6nrg6D5JMGteL9syXAktIbNyV+2Zay7rBFV0oMaY
-         fANFVPLGRRVCTwZCilr8NxJYFXi6iybtBctsM=
-Message-ID: <386072610812110612u6eed650bpe302b663a692b3bf@mail.gmail.com>
-Date: Thu, 11 Dec 2008 22:12:56 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: [Question] Can I open a substream in kernel space without attach to a file pointer?
-Cc: "ALSA devel" <alsa-devel@alsa-project.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <s5hiqpqdeuw.wl%tiwai@suse.de>
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=TxuWLCjbPZBD40wfjzgpRRLEO6GKy+5Y8nbfWINeAq0DC/fUo9EBHOnpKXDdqJhTlo
+         RmG7aX+SQdHXfz3KNB8DeLAnqf7TYcK1xc2EDocsAJoSFlv89X8FJxjFZWwa2c6OlTXn
+         mgqICDHxcGf2ssg15rX8Zq9coBEgoBWccKL+4=
+Message-ID: <494182DC.7080808@gmail.com>
+Date: Thu, 11 Dec 2008 22:15:08 +0100
+From: jan sonnek <ha2nny@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: Warning -mmc card when Suspend
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <386072610811190200l576d7735rb0188ab53f5185fa@mail.gmail.com>
-	 <s5h63mjddvj.wl%tiwai@suse.de>
-	 <386072610811190742ycab0dbasc585376dc6ac47db@mail.gmail.com>
-	 <s5hljvfbt8h.wl%tiwai@suse.de>
-	 <386072610812110240l7af568f9h40c672036abe49f6@mail.gmail.com>
-	 <s5hoczidimg.wl%tiwai@suse.de>
-	 <386072610812110519j78aa8971ga37635658741b021@mail.gmail.com>
-	 <s5hiqpqdeuw.wl%tiwai@suse.de>
-X-Google-Sender-Auth: 7688cc9121f2297c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 9:24 PM, Takashi Iwai <tiwai@suse.de> wrote:
-> At Thu, 11 Dec 2008 21:19:21 +0800,
-> Bryan Wu wrote:
->>
->> On Thu, Dec 11, 2008 at 8:03 PM, Takashi Iwai <tiwai@suse.de> wrote:
->> > At Thu, 11 Dec 2008 18:40:38 +0800,
->> > Bryan Wu wrote:
->> >>
->> >> Hi Takashi,
->> >>
->> >> I just made some progress about this USB audio gadget driver. But I
->> >> still got some questions about the audio playback.
->> >> Please kindly help me to work out here, as you're the best one to ask, -:)
->> >>
->> >> I can receive ISO transfer packets from PC host. The packet includes
->> >> 192 bytes audio data.
->> >> So I tried to use vfs_write() function to write this 192 bytes to the
->> >> opened snd card.
->> >> There is no sound.
->> >>
->> >> Then I create a buffer which is 6K bytes size and a workqueue. I will
->> >> fill the 6K buffer with the ISO packets data.
->> >> When the 6K buffer is full, in the workqueue handler I will call
->> >> vfs_write() function to write these 6K bytes data to the sound card.
->> >> This time, sound played and it works although it is not very smooth.
->> >>
->> >> So I guess the audio buffer I great is very important to playback audio.
->> >> How to choose the buffer size? If the size < 6K, there is no sound.
->> >> I guess it depends on the sound card hardware, but I failed to find
->> >> any info from hw_params and sw_params.
->> >
->> > Well, this pretty much depends on the "sound card" you are accessing.
->> > You mentioned about AD1980 but the question is rather what
->> > controller is used.  The codec chip is basically independent from the
->> > DMA transfer parameter.
->> >
->>
->> Right, currently I'm trying AD1980 which using DMA transfer by
->> Blackfin BF54x processor.
->
-> Is it an ASoC one?
->
+When I suspend and then wake up my notebook I get this warning.
 
-Yes, it's.
+[15409.820484] Broken read from PCI device 0000:05:01.4
+[15409.820493] ------------[ cut here ]------------
+[15409.820497] WARNING: at drivers/pci/pci.c:747 pci_save_state+0x50/0x189()
+[15409.820502] Hardware name: F3F
+[15409.820506] Modules linked in: coretemp hwmon ipv6 iwl3945 rfkill 
+mac80211 ohci1394 ieee1394 sdhci_pci sdhci cfg80211 mmc_core ricoh_mmc 
+sr_mod cdrom sg battery
+[15409.820530] Pid: 7599, comm: pm-suspend Tainted: G        W 
+2.6.28-rc7-mm1-hanny #4
+[15409.820536] Call Trace:
+[15409.820543]  [<c01260d6>] warn_slowpath+0x76/0xad
+[15409.820552]  [<c0175501>] ? constant_test_bit+0x9/0x20
+[15409.820559]  [<c0103847>] ? ftrace_call+0x5/0x8
+[15409.820565]  [<c0103847>] ? ftrace_call+0x5/0x8
+[15409.820572]  [<c0143448>] ? test_ti_thread_flag+0x8/0x10
+[15409.820579]  [<c0376d00>] ? _spin_unlock_irq+0x18/0x2a
+[15409.820586]  [<c0143448>] ? test_ti_thread_flag+0x8/0x10
+[15409.820592]  [<c0376d32>] ? _spin_unlock_irqrestore+0x20/0x2b
+[15409.820598]  [<c01f9431>] ? pci_bus_read_config_dword+0x5c/0x68
+[15409.820605]  [<c01fc2a6>] pci_save_state+0x50/0x189
+[15409.820612]  [<c01fe1d4>] pci_legacy_suspend+0x3c/0x52
+[15409.820618]  [<c01fe326>] pci_pm_suspend+0x62/0x77
+[15409.820625]  [<c02622d0>] pm_op+0x4a/0xc4
+[15409.820631]  [<c0262993>] device_suspend+0x361/0x469
+[15409.820637]  [<c0147710>] suspend_devices_and_enter+0x3d/0x114
+[15409.820644]  [<c01479f0>] enter_state+0x1b7/0x23e
+[15409.820649]  [<c0147b0b>] state_store+0x94/0xa7
+[15409.820655]  [<c0147a77>] ? state_store+0x0/0xa7
+[15409.820662]  [<c01f01d5>] kobj_attr_store+0x1a/0x22
+[15409.820668]  [<c01b2a1b>] sysfs_write_file+0xb9/0xe4
+[15409.820674]  [<c01b2962>] ? sysfs_write_file+0x0/0xe4
+[15409.820681]  [<c017bae7>] vfs_write+0x81/0xb2
+[15409.820686]  [<c017bbbb>] sys_write+0x40/0x65
+[15409.820692]  [<c0103031>] sysenter_do_call+0x12/0x25
+[15409.820698] ---[ end trace 71ce89e40e3c7ca1 ]---
 
->> >> Actually, I want to remove the audio buffer here, just write the 192
->> >> audio data to sound card directly. Is that possible?
->> >
->> > Also depends on the hardware.  If the audio chip requires the DMA
->> > transfer, you'd need anyway a buffer.
->> >
->>
->> So how to determine the buffer size based on the DMA hardware configuration?
->
-> This should be done via usual hw_refine / hw_params ioctls.
->
+When I insert my SD card the same problem I get and Registre dump, more 
+in my dmesg in attachement.
 
-in struct snd_pcm_hw_params, I guess only fifo_size is useful for me
-to choose my buffer size, right?
-If the fifo_size == 1K, so how big is OK for my buffer size?
+05:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 
+ff) (prog-if ff)
+         !!! Unknown header type 7f
 
-The buffer size is so tricky here, I try to make my driver is
-independent with the lower card hardware.
-So I need to find a algorithm to choose the buffer size here.
+[16480.579435] Disabling non-boot CPUs ...
+[16480.625957] mmc0: Controller never released inhibit bit(s).
+[16480.625957] sdhci: ============== REGISTER DUMP ==============
+[16480.625957] sdhci: Sys addr: 0xffffffff | Version:  0x0000ffff
+[16480.625957] sdhci: Blk size: 0x0000ffff | Blk cnt:  0x0000ffff
+[16480.625957] sdhci: Argument: 0xffffffff | Trn mode: 0x0000ffff
+[16480.625957] sdhci: Present:  0xffffffff | Host ctl: 0x000000ff
+[16480.625957] sdhci: Power:    0x000000ff | Blk gap:  0x000000ff
+[16480.625957] sdhci: Wake-up:  0x000000ff | Clock:    0x0000ffff
+[16480.625957] sdhci: Timeout:  0x000000ff | Int stat: 0xffffffff
+[16480.625957] sdhci: Int enab: 0xffffffff | Sig enab: 0xffffffff
+[16480.625957] sdhci: AC12 err: 0x0000ffff | Slot int: 0x0000ffff
+[16480.625957] sdhci: Caps:     0xffffffff | Max curr: 0xffffffff
+[16480.625957] sdhci: ===========================================
+...
 
->> I tried to change the period_size and buffer_size of the runtime struct.
->> It also didn't work.
->
-> Well, the constraint is rather the "slave" sound card.  You are
-> actually creating a tunnel driver.  The period size and buffer size
-> are issues of the controller, thus you cannot change the parameters of
-> the tunnel driver freely.
->
+Thanks,
 
-Exactly. And another question is whether is it possible using
-nonblocking writing in my driver?
+-js
 
-Thanks a lot for your patient answer.
--Bryan
 
->
-> Takashi
->
->>
->> Thanks a lot
->> -Bryan
->>
->> >
->> > Takashi
->> >
->> >>
->> >> Thanks a lot.
->> >> -Bryan
->> >>
->> >>
->> >> On Thu, Nov 20, 2008 at 12:01 AM, Takashi Iwai <tiwai@suse.de> wrote:
->> >> > At Wed, 19 Nov 2008 23:42:48 +0800,
->> >> > Bryan Wu wrote:
->> >> >>
->> >> >> On Wed, Nov 19, 2008 at 9:49 PM, Takashi Iwai <tiwai@suse.de> wrote:
->> >> >> > At Wed, 19 Nov 2008 18:00:36 +0800,
->> >> >> > Bryan Wu wrote:
->> >> >> >>
->> >> >> >> Hi Takashi,
->> >> >> >>
->> >> >> >> I am developing a USB gadget driver compliant to USB Audio Class Spec 2.0.
->> >> >> >> So I want to open a PCM substream and do some playback of capture,
->> >> >> >> then close them?
->> >> >> >>
->> >> >> >> I found snd_pcm_open_substream() is for opening a substream and attach
->> >> >> >> it to a file.
->> >> >> >> But in my application, there is no need to open a file before opening
->> >> >> >> a substream.
->> >> >> >>
->> >> >> >> - Is there any interface for me to open a substream in kernel space
->> >> >> >> without attach to a file?
->> >> >> >> - How to playback and capture in kernel space, use snd_pcm_lib_write
->> >> >> >> and snd_pcm_lib_read?
->> >> >> >> - How to get the snd_pcm_hardware struct from low level driver,
->> >> >> >> because I have to get the hardware configuration of the snd pcm
->> >> >> >> device?
->> >> >> >>
->> >> >> >> And I am reading the code of OSS emulator in ALSA. It provides some
->> >> >> >> info about the kernel space sound card programming.
->> >> >> >
->> >> >> > Yes, OSS emulation code handles the PCM in the kernel.
->> >> >> > But, basically I don't recommend you to do this -- it's not the job of
->> >> >> > the sound card driver.  The whole PCM stuff is handled by the PCM
->> >> >> > middle layer, not the driver itself.
->> >> >>
->> >> >> No, my plan is not a sound card driver. It is an USB gadget audio driver.
->> >> >> When an embedded system for example Blackfin board connects to a USB host (PC),
->> >> >> PC will recognize this USB device as a USB Audio Class device.
->> >> >>
->> >> >> Generally, there should be a sound card on the embedded system. Our
->> >> >> Blackfin board
->> >> >> has an AD1980 ALSA sound card. The USB gadget audio driver will open this sound
->> >> >> card and export this device to USB host PC by some USB audio class specific
->> >> >> descriptors. Then the PC can playback some audio stream by USB cable, USB gadget
->> >> >> audio driver will receive this stream and playback the data by AD1980
->> >> >> ALSA playback
->> >> >> substream. Capture is the similar.
->> >> >>
->> >> >> > Any reason why you handle the PCM stuff completely in your driver
->> >> >> > code?
->> >> >> >
->> >> >>
->> >> >> There is USB gadget MIDI driver in kernel. But it asked the user to
->> >> >> use aconnect tool to
->> >> >> connect the virtual MIDI card to a real one. I don't want travel to
->> >> >> user space and it should
->> >> >> be more efficient in kernel space to handle all things including PCM
->> >> >> open/release/read/write
->> >> >> and Mixer control.
->> >> >>
->> >> >> Any hints about this? I really need some help from ALSA guru, cause
->> >> >> I'm not familiar the internal
->> >> >> things here.
->> >> >
->> >> > Well, the access in the kernel space is fairly similar as in the user
->> >> > space.  It opens, issues ioctls, reads and writes.  The difference is
->> >> > that you access via dedicated function calls instead of syscalls.
->> >> > There is no way to poke the driver internal from other drivers.
->> >> > To answer your questions...
->> >> >
->> >> >> >> - Is there any interface for me to open a substream in kernel space
->> >> >> >> without attach to a file?
->> >> >
->> >> > No.
->> >> >
->> >> >> >> - How to playback and capture in kernel space, use snd_pcm_lib_write
->> >> >> >> and snd_pcm_lib_read?
->> >> >
->> >> > Yes.  But for the kernel space buffer, you'd need to fake the
->> >> > user-space pointer by snd_enter_user() and snd_leave_user().  See
->> >> > snd_pcm_oss_write3().
->> >> >
->> >> >> >> - How to get the snd_pcm_hardware struct from low level driver,
->> >> >> >> because I have to get the hardware configuration of the snd pcm
->> >> >> >> device?
->> >> >
->> >> > Not way to peek/poke the driver internals from the outside.
->> >> > You'll need to negotiate via snd_pcm_kernel_ioctl() like user-space
->> >> > programs.
->> >> >
->> >> >
->> >> > HTH,
->> >> >
->> >> > Takashi
->> >> >
->> >>
->> >
->>
->
