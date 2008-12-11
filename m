@@ -1,75 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbYLKAeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYLKAiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755836AbYLKAeT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 19:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYLKAeE
+	id S1753584AbYLKAiJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 19:38:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYLKAhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 19:34:04 -0500
-Received: from www.tglx.de ([62.245.132.106]:48832 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751408AbYLKAeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 19:34:01 -0500
-Date: Thu, 11 Dec 2008 01:33:41 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Edward Estabrook <edward.estabrook.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org, hjk@linutronix.de,
-       gregkh@suse.de, edward.estabrook@gmail.com,
-       edward_estabrook@agilent.com
-Subject: Re: [PATCH 1/1] Userspace I/O (UIO): Add support for userspace DMA
-	(corrected)
-Message-ID: <20081211003340.GB3078@local>
-References: <208aa0f00812031751n27a75d21h8747054651639463@mail.gmail.com>
+	Wed, 10 Dec 2008 19:37:51 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:53300 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbYLKAhs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 19:37:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=xCCHkuxWO7HS1WyGO21c9EhXYjbEgrN7Knio/r7jJh3JSCeafncfn6sZ4EDovnJXek
+         2XAkSqDQznezqV0rvVTooSUhGFppWlxprsWiQXakiWL/3pUmTZHzMxO2pRNN7Y5aFu4I
+         BwmxkS2F/aS36SuuFd6tTskA11n0ORao2xz0Q=
+Message-ID: <9929d2390812101637r7df0a80av7a171e9cfa624c6e@mail.gmail.com>
+Date: Wed, 10 Dec 2008 16:37:46 -0800
+From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [E1000-devel] BUG: bad unlock balance detected! e1000e
+Cc: "Frederik Deweerdt" <frederik.deweerdt@xprog.eu>,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org,
+       stable@kernel.org, tglx@linutronix.de, zdenek.kabelac@gmail.com,
+       davem@davemloft.net
+In-Reply-To: <20081209155655.e82f9c24.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <208aa0f00812031751n27a75d21h8747054651639463@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <c4e36d110812080324y68c0e453qcb68a040da7ac9a2@mail.gmail.com>
+	 <20081209110337.GJ4864@gambetta>
+	 <20081209150801.2aa76ac6.akpm@linux-foundation.org>
+	 <20081209234346.GB7394@gambetta>
+	 <20081209155655.e82f9c24.akpm@linux-foundation.org>
+X-Google-Sender-Auth: 2f112e1288b90174
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 03, 2008 at 05:51:30PM -0800, Edward Estabrook wrote:
-> From: Edward Estabrook <Edward_Estabrook@agilent.com>
-> 
-> Here is a patch that adds the ability to dynamically allocate and use
-> coherent DMA
-> from userspace by extending the Userspace IO driver.  This patch applies against
-> 2.6.28-rc6.
+On Tue, Dec 9, 2008 at 3:56 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 10 Dec 2008 00:43:46 +0100
+> Frederik Deweerdt <frederik.deweerdt@xprog.eu> wrote:
+>
+>> On Tue, Dec 09, 2008 at 03:08:01PM -0800, Andrew Morton wrote:
+>> > On Tue, 9 Dec 2008 12:03:37 +0100
+>> > Frederik Deweerdt <frederik.deweerdt@xprog.eu> wrote:
+>> >
+>> > > It some error checking is missing in e1000e: debug contention on NVM
+>> > > SWFLAG
+>> > > On Mon, Dec 08, 2008 at 12:24:09PM +0100, Zdenek Kabelac wrote:
+>> > > > Hi
+>> > > >
+>> > > > During occasional scan of message log - I've found out this BUG which
+>> > > > happened on Dec3 with the -rc7 from that day.
+>> > > > (So if it's now fixed in current git feel free to ignore :))
+>> > > >
+>> > > > My machine T61 - C2D, 2GB, 64bit kernel - message appeared during
+>> > > > shutdown and was actually not noticed by me...
+>> > > >
+>> > > >
+>> > > > NetworkManager: <WARN>  nm_signal_handler(): Caught signal 15,
+>> > > > shutting down normally.
+>> > > > NetworkManager: <info>  (eth0): now unmanaged
+>> > > > NetworkManager: <info>  (eth0): device state change: 3 -> 1
+>> > > > NetworkManager: <info>  (eth0): cleaning up...
+>> > > > NetworkManager: <info>  (eth0): taking down device.
+>> > > >
+>> > > > =====================================
+>> > > > [ BUG: bad unlock balance detected! ]
+>> > > > -------------------------------------
+>> >
+>> > (top-posting repaired.  Please don't do that!!!).
+>> Yep, sorry.
+>> >
+>> > > Hello Zdenek,
+>> > >
+>> > > This could be due to 717d438d1fde94decef874b9808379d1f4523453
+>> > >     "e1000e: debug contention on NVM SWFLAG"
+>> > > Error handling is missing from e1000_reset_hw_ich8lan so it may happen
+>> > > that we don't acquire the nvm_mutex if the card times out.
+>> > >
+>> > > Adding Thomas to CC.
+>> >
+>> > yup.  2.6.27 needs fixing also.
+>> >
+>> > Like this?
+>> I don't think so, e1000_acquire_swflag_ich8lan() locks and
+>> e1000_release_swflag_ich8lan() unlocks.
+>
+> urgh, OK, I made the mistake of reading the comments.
+>
+>> I think it is more along the
+>> lines of:
+>>
+>>
+>> diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
+>> index 523b971..f971b83 100644
+>> --- a/drivers/net/e1000e/ich8lan.c
+>> +++ b/drivers/net/e1000e/ich8lan.c
+>> @@ -1892,7 +1892,13 @@ static s32 e1000_reset_hw_ich8lan(struct e1000_hw *hw)
+>>                */
+>>               ctrl |= E1000_CTRL_PHY_RST;
+>>       }
+>> +
+>>       ret_val = e1000_acquire_swflag_ich8lan(hw);
+>> +     if (ret_val) {
+>> +             hw_dbg(hw, "Failed to acquire NVM swflag");
+>> +             return ret_val;
+>> +     }
+>> +
+>>       hw_dbg(hw, "Issuing a global reset to ich8lan");
+>>       ew32(CTRL, (ctrl | E1000_CTRL_RST));
+>>       msleep(20);
+>>
+>>
+>> But I'm not sure we should cancel the ongoing reset if the card times
+>> out...
+>>
+>
+> Yes, something like that.  Or something like
+>
+> --- a/drivers/net/e1000e/ich8lan.c~a
+> +++ a/drivers/net/e1000e/ich8lan.c
+> @@ -1940,12 +1940,14 @@ static s32 e1000_reset_hw_ich8lan(struct
+>                ctrl |= E1000_CTRL_PHY_RST;
+>        }
+>        ret_val = e1000_acquire_swflag_ich8lan(hw);
+> -       hw_dbg(hw, "Issuing a global reset to ich8lan\n");
+> -       ew32(CTRL, (ctrl | E1000_CTRL_RST));
+> -       msleep(20);
+> +       if (!ret_val) {
+> +               hw_dbg(hw, "Issuing a global reset to ich8lan\n");
+> +               ew32(CTRL, (ctrl | E1000_CTRL_RST));
+> +               msleep(20);
+>
+> -       /* release the swflag because it is not reset by hardware reset */
+> -       e1000_release_swflag_ich8lan(hw);
+> +               /* release the swflag because it is not reset by hardware reset */
+> +               e1000_release_swflag_ich8lan(hw);
+> +       }
+>
+>        ret_val = e1000e_get_auto_rd_done(hw);
+>        if (ret_val) {
+> _
+>
+>
+> Dunno. It's e1000-developer-summoning-dance time.
+>
 
-Hi Edward,
-sorry I didn't answer sooner. It was not lack of interest in your work, I
-just had to think about it (and had quite a lot of other work, too).
-I consider your idea of having DMA coherent memory allocatable from userspace
-a valid demand. However, the interface should be implemented differently.
+Actually, if we time out trying to acquire the swflag, we still want
+to reset the part because we are most likely in an unrecoverable
+state.
 
-As a general requirement, all information you need to pass to userspace has
-to go through sysfs. This is a UIO design decision and should not be changed
-lightly. Please don't fill information into the allocated memory.
+So I would suggest the following
+ --- a/drivers/net/e1000e/ich8lan.c~a
+ +++ a/drivers/net/e1000e/ich8lan.c
+ @@ -1940,9 +1940,10 @@ static s32 e1000_reset_hw_ich8lan(struct
+                ctrl |= E1000_CTRL_PHY_RST;
+        }
+        ret_val = e1000_acquire_swflag_ich8lan(hw);
+        hw_dbg(hw, "Issuing a global reset to ich8lan\n");
+        ew32(CTRL, (ctrl | E1000_CTRL_RST));
+        msleep(20);
+ +       if (!ret_val) {
+ -
+ -       /* release the swflag because it is not reset by hardware reset */
+ -       e1000_release_swflag_ich8lan(hw);
+ +               /* release the swflag because it is not reset by
+hardware reset */
+ +               e1000_release_swflag_ich8lan(hw);
+ +       }
 
-We shouldn't mix dynamically allocated DMA regions with the already existing
-static memory mappings. There should be an extra directory, maybe called
-/sys/class/uio/uioN/dyn_dma_mem/ containing information about this kind of
-DMA memory. This directory would not exist by default, it's only created if
-some user actually allocates such memory.
+Of course, we will want to add a comment to the fact that we still
+want to reset the part, even if we have not acquired the lock because
+we are in an unrecoverable state.
 
-In the UIO core, these mappings should be handled with a dynamic list, not
-a static array. The number of possible mappings has to be limited to a
-sensible maximum, maybe 50 or 100. The code handling the existing static
-mappings could mostly stay as-is.
+I can provide a patch in a few minutes.
 
-Userspace can allocate new DMA memory by using some magic number as the offset
-parameter of mmap() like you suggested. However, this magic should be just one
-of the bits 16..31 (e.g. 0x00010000) to have other bits available for future
-extensions.
-
-I think you should also reconsider the way you unmap the memory. It's certainly
-right to unmap everything when the device is unregistered, but I think there's
-more to think about:
-- Should the memory be freed as soon as all users have the device closed?
-- What happens if a user calls munmap() on such a mapping?
-
-I'm looking forward to your next version.
-
-Thanks,
-Hans
-
+-- 
+Cheers,
+Jeff
