@@ -1,86 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbYLKTD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757210AbYLKTFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757148AbYLKTD5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:03:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbYLKTDs
+	id S1757210AbYLKTFW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbYLKTFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:03:48 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:35286 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750767AbYLKTDr (ORCPT
+	Thu, 11 Dec 2008 14:05:09 -0500
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:46050 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbYLKTFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:03:47 -0500
-Date: Thu, 11 Dec 2008 12:03:46 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Alex Chiang <achiang@hp.com>, justin.chen@hp.com,
-       linux-pci <linux-pci@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] PCI Hotplug: acpiphp wants a 64-bit _SUN
-Message-ID: <20081211190346.GD26095@parisc-linux.org>
-References: <20081211181242.GD18309@ldl.fc.hp.com> <20081211181644.GE18309@ldl.fc.hp.com> <200812111035.02652.jbarnes@virtuousgeek.org>
+	Thu, 11 Dec 2008 14:05:08 -0500
+Date: Fri, 12 Dec 2008 00:37:05 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Vatsa <vatsa@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+       David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>
+Subject: Re: [RFC PATCH v5 1/7] sched: Framework for
+	sched_mc/smt_power_savings=N
+Message-ID: <20081211190705.GM5457@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Collier-Brown <davecb@sun.com>,
+	Tim Connors <tconnors@astro.swin.edu.au>,
+	Max Krasnyansky <maxk@qualcomm.com>,
+	Gregory Haskins <gregory.haskins@gmail.com>
+References: <20081211173831.2020.57550.stgit@drishya.in.ibm.com> <20081211174237.2020.77181.stgit@drishya.in.ibm.com> <20081211185528.GN3008@balbir.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200812111035.02652.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081211185528.GN3008@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 10:35:01AM -0800, Jesse Barnes wrote:
-> On Thursday, December 11, 2008 10:16 am Alex Chiang wrote:
-> > From: Justin Chen <justin.chen@hp.com>
-> >
-> > Certain HP machines require the full 64 bits of _SUN as allowed
-> > by the ACPI spec. Without this change, we get name collisions in
-> > the lower 32 bits of the _SUN returned by firmware.
-> >
-> > Signed-off-by: Justin Chen <justin.chen@hp.com>
-> > Signed-off-by: Alex Chiang <achiang@hp.com>
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2008-12-12 00:25:29]:
+
+> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-12-11 23:12:37]:
 > 
-> It's very late in the cycle, so I'd like to get acks from at least a couple of 
-> other testers for this one...  Any volunteers?
+> > From: Gautham R Shenoy <ego@in.ibm.com>
+> > 
+> > ***  RFC patch of work in progress and not for inclusion. ***
+> > 
+> > Currently the sched_mc/smt_power_savings variable is a boolean, which either
+> > enables or disables topology based power savings. This extends the behaviour of
+> > the variable from boolean to multivalued, such that based on the value, we
+> > decide how aggressively do we want to perform topology based powersavings
+> > balance.
+> > 
+> > Variable levels of power saving tunable would benefit end user to match the
+> > required level of power savings vs performance trade off depending on the
+> > system configuration and workloads.
+> > 
+> > This initial version makes the sched_mc_power_savings global variable to take
+> > more values (0,1,2).
+> > 
+> > Later version is expected to add new member sd->powersavings_level at the multi
+> > core CPU level sched_domain. This make all sd->flags check for
+> > SD_POWERSAVINGS_BALANCE into a different macro that will check for
+> > powersavings_level.
+> > 
+> > The power savings level setting should be in one place either in the
+> > sched_mc_power_savings global variable or contained within the appropriate
+> > sched_domain structure.
+> > 
+> > Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> > Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> > ---
+> > 
+> >  include/linux/sched.h |   11 +++++++++++
+> >  kernel/sched.c        |   16 +++++++++++++---
+> >  2 files changed, 24 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/include/linux/sched.h b/include/linux/sched.h
+> > index 55e30d1..888f2b2 100644
+> > --- a/include/linux/sched.h
+> > +++ b/include/linux/sched.h
+> > @@ -764,6 +764,17 @@ enum cpu_idle_type {
+> >  #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
+> >  #define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
+> > 
+> > +enum powersavings_balance_level {
+> > +	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
+> > +	POWERSAVINGS_BALANCE_BASIC,	/* Fill one thread/core/package
+> > +					 * first for long running threads
+> > +					 */
+> > +	POWERSAVINGS_BALANCE_WAKEUP,	/* Also bias task wakeups to semi-idle
+> > +					 * cpu package for power savings
+> > +					 */
+> > +	MAX_POWERSAVINGS_BALANCE_LEVELS
+> > +};
+> > +
+> >  #define BALANCE_FOR_MC_POWER	\
+> >  	(sched_smt_power_savings ? SD_POWERSAVINGS_BALANCE : 0)
+> > 
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index e4bb1dd..322cd2a 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -7879,14 +7879,24 @@ int arch_reinit_sched_domains(void)
+> >  static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+> >  {
+> >  	int ret;
+> > +	unsigned int level = 0;
+> > 
+> > -	if (buf[0] != '0' && buf[0] != '1')
+> > +	sscanf(buf, "%u", &level);
+> 
+> Don't we need to check what sscanf returns? Does a invalid value push
+> the power savings to 0
 
-Testers or reviewers?  Here's my review (done thinking out loud style):
+Hi Balbir,
 
-$ grep -w sun drivers/pci/hotplug/acpiphp*
-1. drivers/pci/hotplug/acpiphp_core.c:     snprintf(name, SLOT_NAME_SIZE, "%u", slot->acpi_slot->sun);
-2. drivers/pci/hotplug/acpiphp_glue.c:     unsigned long long adr, sun;
-3. drivers/pci/hotplug/acpiphp_glue.c:     status = acpi_evaluate_integer(handle, "_SUN", NULL, &sun);
-4. drivers/pci/hotplug/acpiphp_glue.c:             sun = bridge->nr_slots+1;
-5. drivers/pci/hotplug/acpiphp_glue.c:                     if (slot->sun != sun)
-6. drivers/pci/hotplug/acpiphp_glue.c:             slot->sun = sun;
-7. drivers/pci/hotplug/acpiphp_glue.c: slot->sun, pci_domain_nr(bridge->pci_bus),
-8. drivers/pci/hotplug/acpiphp_glue.c: "hotplug driver\n", slot->sun);
-9. drivers/pci/hotplug/acpiphp.h:  u32             sun;            /* ACPI _SUN (slot unique number) */
-10. drivers/pci/hotplug/acpiphp_ibm.c:#define hpslot_to_sun(A) (((struct
-slot *)((A)->private))->acpi_slot->sun)
-11. drivers/pci/hotplug/acpiphp_ibm.c:              u8  sun;
+Good catch.  I have always been providing correct value ;)
 
-#1 is a printk ... string changed to %llu.  Fine.
+An incorrect input will make sched_mc=0  I just verified that.  I will
+fix it.
 
-#2 is a declaration of a local variable, not related.
-#3 is a use of said local variable, fine.
-#4 ditto
-#5 compares said local variable to the newly widened element.  Good.
-#6 is an assignment.  Good.
-#7 is also a printk.  Also changed to %llu.  Good.
-#8 Ditto.
-#9 is the change in question.
-
-#10 and #11 are in the acpiphp_ibm driver.  This driver will truncate
-the stored value of 'sun' to 32-bit ... however, it then compares the
-result for equality with an 8-bit value.  We do no harm here by storing
-a 64-bit value in sun instead of a 32-bit value.  If IBM want to produce
-machines that use more than 8 bits for slot number, they will have to
-change their firmware interface anyway -- their ACPI table uses 8-bit
-wide data types for it.
-
-Acked-by: Matthew Wilcox <willy@linux.intel.com>
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+--Vaidy
