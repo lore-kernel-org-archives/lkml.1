@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbYLKJGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbYLKJKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbYLKJGO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 04:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbYLKJFz
+	id S1755455AbYLKJKM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 04:10:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbYLKJJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 04:05:55 -0500
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:65102 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753869AbYLKJFx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 04:05:53 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [PATCH 5/6] kvm-s390: use register_virtio_root_device()
-Date: Thu, 11 Dec 2008 10:05:49 +0100
-User-Agent: KMail/1.9.9
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org,
-       Anthony Liguori <aliguori@us.ibm.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-References: <1228931096.5384.63.camel@blaa> <1228931139-12956-4-git-send-email-markmc@redhat.com> <1228931139-12956-5-git-send-email-markmc@redhat.com>
-In-Reply-To: <1228931139-12956-5-git-send-email-markmc@redhat.com>
+	Thu, 11 Dec 2008 04:09:54 -0500
+Received: from smtp1.nine.ch ([217.150.241.29]:51685 "EHLO smtp1.nine.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754339AbYLKJJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 04:09:51 -0500
+Message-ID: <4940D8C0.9060709@miromico.ch>
+Date: Thu, 11 Dec 2008 10:09:20 +0100
+From: Alex Raimondi <mailinglist@miromico.ch>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+CC: kernel@avr32linux.org, linux-kernel@vger.kernel.org
+Subject: Re: Segfault in fbcmap.c => Compiler bug?
+References: <4940CE1F.5080605@miromico.ch> <20081211092959.6410c352@hcegtvedt>
+In-Reply-To: <20081211092959.6410c352@hcegtvedt>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812111005.49597.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 10. Dezember 2008 schrieb Mark McLoughlin:
-> This is basically a no-op change, since it does exactly the
-> same thing as s390_root_dev_register() when the caller isn't
-> a module.
+Hi, 
 
-Ok, I gave it a short test and it seems to work.
-Some comments: I agree with your comment in patch0, that a generic 
-device_register_root() function might be useful. 
+> On Thu, 11 Dec 2008 09:23:59 +0100
+> Alex Raimondi <mailinglist@miromico.ch> wrote:
+> 
+> Hi Alex,
+> 
+>> I am using latest atmel avr32 kernel (2.6.27) form
+>> git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git.
+>> I am on it's master branch. I added a few patches specific to our own
+>> board (hammerhead). 
+>>
+> 
+> Which toolchain are you using? If you have grabbed it from atmel.com
+> you have to download Buildroot for AVR32 [1] and build your own
+> toolchain. The toolchain on atmel.com is broken.
 
-> --- a/drivers/s390/kvm/kvm_virtio.c
-> +++ b/drivers/s390/kvm/kvm_virtio.c
-[...]
-> -	kvm_root = s390_root_dev_register("kvm_s390");
-> +	kvm_root = register_virtio_root_device("kvm_s390");
-[...]
-> -		s390_root_dev_unregister(kvm_root);
-> +		unregister_virtio_root_device(kvm_root);
+I have both. AV32 toolchain from atmel is installed via apt-get. I have builroot 2.2.1 which 
+generated a toolchain, as well. 
 
-You can now remove the include <asm/s390_rdev.h>
+but kernel compilation is done using apt-get toolchain.
+
+So, your suggestion is to remove the atmel stuff completely and use only buildroot toolchain?
+
+Thx, 
+
+Alex
+
+> 
+>> When compiling with support for atmel_lcdfb the kernel segfaults at
+>> module probe.
+>>
+>> This is the segfault output:
+>>
+>> **********************************
+>> alg: No test for stdrng (krng)
+>> io scheduler noop registered
+>> io scheduler cfq registered (default)
+>> atmel_lcdfb atmel_lcdfb.0: 225KiB frame buffer at 13940000 (mapped at
+>> b3940000) Unable to handle kernel NULL pointer dereference at virtual
+> 
+> Does indeed look like a known GCC bug.
+> 
+> <snipp> rest of kernel dump and debugging>
+> 
+> 1: www.atmel.no/buildroot
+> 
+
