@@ -1,189 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757286AbYLKQtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbYLKQtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757286AbYLKQtb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 11:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbYLKQsk
+	id S1757224AbYLKQtu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 11:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756654AbYLKQsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 11:48:40 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:18065 "EHLO
-	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756525AbYLKQsj (ORCPT
+	Thu, 11 Dec 2008 11:48:43 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:45056 "EHLO
+	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756623AbYLKQsm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 11:48:39 -0500
-X-BigFish: VPS3(zzzzzzz32i43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0KBQ1CM-01-7NX-01
+	Thu, 11 Dec 2008 11:48:42 -0500
+X-BigFish: VPS1(zzzzzzz32i64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0KBQ1CR-01-7O1-01
 From: Robert Richter <robert.richter@amd.com>
 To: oprofile-list <oprofile-list@lists.sourceforge.net>
 CC: LKML <linux-kernel@vger.kernel.org>,
-       Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 01/10] oprofile: comment cleanup
-Date: Thu, 11 Dec 2008 16:04:37 +0100
-Message-ID: <1229007886-14362-2-git-send-email-robert.richter@amd.com>
+       Robert Richter <robert.richter@amd.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH 10/10] ftrace: remove unused function arg in trace_iterator_increment()
+Date: Thu, 11 Dec 2008 16:04:46 +0100
+Message-ID: <1229007886-14362-11-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <1229007886-14362-1-git-send-email-robert.richter@amd.com>
 References: <1229007886-14362-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 11 Dec 2008 16:48:26.0792 (UTC) FILETIME=[49D64280:01C95BB0]
+X-OriginalArrivalTime: 11 Dec 2008 16:48:26.0948 (UTC) FILETIME=[49EE1040:01C95BB0]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes the coding style of some comments.
+This removes the unused cpu function parameter.
 
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/oprofile/op_model_amd.c |   31 ++++++++++++++++---------------
- drivers/oprofile/cpu_buffer.c    |   25 ++++++++++++++++---------
- 2 files changed, 32 insertions(+), 24 deletions(-)
+ kernel/trace/trace.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
-index 5095137..fb67e19 100644
---- a/arch/x86/oprofile/op_model_amd.c
-+++ b/arch/x86/oprofile/op_model_amd.c
-@@ -65,8 +65,10 @@ static unsigned long reset_value[NUM_COUNTERS];
- #define IBS_FETCH_BEGIN 3
- #define IBS_OP_BEGIN    4
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index d86e325..a96b335 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -914,7 +914,7 @@ enum trace_file_type {
+ 	TRACE_FILE_LAT_FMT	= 1,
+ };
  
--/* The function interface needs to be fixed, something like add
--   data. Should then be added to linux/oprofile.h. */
-+/*
-+ * The function interface needs to be fixed, something like add
-+ * data. Should then be added to linux/oprofile.h.
-+ */
- extern void
- oprofile_add_ibs_sample(struct pt_regs *const regs,
- 			unsigned int *const ibs_sample, int ibs_code);
-@@ -106,7 +108,7 @@ struct ibs_op_sample {
+-static void trace_iterator_increment(struct trace_iterator *iter, int cpu)
++static void trace_iterator_increment(struct trace_iterator *iter)
+ {
+ 	/* Don't allow ftrace to trace into the ring buffers */
+ 	ftrace_disable_cpu();
+@@ -993,7 +993,7 @@ static void *find_next_entry_inc(struct trace_iterator *iter)
+ 	iter->ent = __find_next_entry(iter, &iter->cpu, &iter->ts);
  
- /*
-  * unitialize the APIC for the IBS interrupts if needed on AMD Family10h+
--*/
-+ */
- static void clear_ibs_nmi(void);
+ 	if (iter->ent)
+-		trace_iterator_increment(iter, iter->cpu);
++		trace_iterator_increment(iter);
  
- static int ibs_allowed;	/* AMD Family10h and later */
-@@ -223,7 +225,7 @@ op_amd_handle_ibs(struct pt_regs * const regs,
- 						(unsigned int *)&ibs_fetch,
- 						IBS_FETCH_BEGIN);
- 
--			/*reenable the IRQ */
-+			/* reenable the IRQ */
- 			rdmsr(MSR_AMD64_IBSFETCHCTL, low, high);
- 			high &= ~IBS_FETCH_HIGH_VALID_BIT;
- 			high |= IBS_FETCH_HIGH_ENABLE;
-@@ -331,8 +333,10 @@ static void op_amd_stop(struct op_msrs const * const msrs)
- 	unsigned int low, high;
- 	int i;
- 
--	/* Subtle: stop on all counters to avoid race with
--	 * setting our pm callback */
-+	/*
-+	 * Subtle: stop on all counters to avoid race with setting our
-+	 * pm callback
-+	 */
- 	for (i = 0 ; i < NUM_COUNTERS ; ++i) {
- 		if (!reset_value[i])
- 			continue;
-@@ -343,13 +347,15 @@ static void op_amd_stop(struct op_msrs const * const msrs)
- 
- #ifdef CONFIG_OPROFILE_IBS
- 	if (ibs_allowed && ibs_config.fetch_enabled) {
--		low = 0;		/* clear max count and enable */
-+		/* clear max count and enable */
-+		low = 0;
- 		high = 0;
- 		wrmsr(MSR_AMD64_IBSFETCHCTL, low, high);
- 	}
- 
- 	if (ibs_allowed && ibs_config.op_enabled) {
--		low = 0;		/* clear max count and enable */
-+		/* clear max count and enable */
-+		low = 0;
- 		high = 0;
- 		wrmsr(MSR_AMD64_IBSOPCTL, low, high);
- 	}
-@@ -443,10 +449,7 @@ static int pfm_amd64_setup_eilvt(void)
- 	return 0;
+ 	return iter->ent ? iter : NULL;
  }
- 
--/*
-- * initialize the APIC for the IBS interrupts
-- * if available (AMD Family10h rev B0 and later)
-- */
-+/* initialize the APIC for the IBS interrupts if available */
- static void setup_ibs(void)
- {
- 	ibs_allowed = boot_cpu_has(X86_FEATURE_IBS);
-@@ -463,9 +466,7 @@ static void setup_ibs(void)
- }
- 
- 
--/*
-- * unitialize the APIC for the IBS interrupts if needed on AMD Family10h
-- * rev B0 and later */
-+/* uninitialize the APIC for the IBS interrupts if needed */
- static void clear_ibs_nmi(void)
- {
- 	if (ibs_allowed)
-diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
-index 01d38e7..3958107 100644
---- a/drivers/oprofile/cpu_buffer.c
-+++ b/drivers/oprofile/cpu_buffer.c
-@@ -127,9 +127,10 @@ void end_cpu_work(void)
- /* Resets the cpu buffer to a sane state. */
- void cpu_buffer_reset(struct oprofile_cpu_buffer *cpu_buf)
- {
--	/* reset these to invalid values; the next sample
--	 * collected will populate the buffer with proper
--	 * values to initialize the buffer
-+	/*
-+	 * reset these to invalid values; the next sample collected
-+	 * will populate the buffer with proper values to initialize
-+	 * the buffer
- 	 */
- 	cpu_buf->last_is_kernel = -1;
- 	cpu_buf->last_task = NULL;
-@@ -151,8 +152,10 @@ static void increment_head(struct oprofile_cpu_buffer *b)
- {
- 	unsigned long new_head = b->head_pos + 1;
- 
--	/* Ensure anything written to the slot before we
--	 * increment is visible */
-+	/*
-+	 * Ensure anything written to the slot before we increment is
-+	 * visible
-+	 */
- 	wmb();
- 
- 	if (new_head < b->buffer_size)
-@@ -253,8 +256,10 @@ void oprofile_add_ext_sample(unsigned long pc, struct pt_regs * const regs,
- 	if (!oprofile_begin_trace(cpu_buf))
- 		return;
- 
--	/* if log_sample() fail we can't backtrace since we lost the source
--	 * of this event */
-+	/*
-+	 * if log_sample() fail we can't backtrace since we lost the
-+	 * source of this event
-+	 */
- 	if (log_sample(cpu_buf, pc, is_kernel, event))
- 		oprofile_ops.backtrace(regs, backtrace_depth);
- 	oprofile_end_trace(cpu_buf);
-@@ -338,8 +343,10 @@ void oprofile_add_trace(unsigned long pc)
- 		return;
- 	}
- 
--	/* broken frame can give an eip with the same value as an escape code,
--	 * abort the trace if we get it */
-+	/*
-+	 * broken frame can give an eip with the same value as an
-+	 * escape code, abort the trace if we get it
-+	 */
- 	if (pc == ESCAPE_CODE) {
- 		cpu_buf->tracing = 0;
- 		cpu_buf->backtrace_aborted++;
 -- 
 1.6.0.1
 
