@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758297AbYLKWPC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbYLKWTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758297AbYLKWPC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 17:15:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbYLKWNv
+	id S1758236AbYLKWTQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 17:19:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbYLKWS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 17:13:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:32835 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756918AbYLKWNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 17:13:49 -0500
-From: Adam Jackson <ajax@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Adam Jackson <ajax@redhat.com>
-Subject: [PATCH] PCI: Don't carp about BAR allocation failures in quiet boot
-Date: Thu, 11 Dec 2008 17:13:45 -0500
-Message-Id: <1229033625-30825-4-git-send-email-ajax@redhat.com>
-In-Reply-To: <1229033625-30825-3-git-send-email-ajax@redhat.com>
-References: <1229033625-30825-1-git-send-email-ajax@redhat.com>
- <1229033625-30825-2-git-send-email-ajax@redhat.com>
- <1229033625-30825-3-git-send-email-ajax@redhat.com>
+	Thu, 11 Dec 2008 17:18:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44567 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754339AbYLKWS4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 17:18:56 -0500
+Date: Thu, 11 Dec 2008 14:18:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       mingo@elte.hu, acme@ghostprotocols.net, davem@davemloft.net
+Subject: Re: [PATCH] update rwlock initialization for nat_table
+Message-Id: <20081211141829.cda39684.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0812101504280.11805@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0812101314460.11805@gandalf.stny.rr.com>
+	<49400B7F.7040607@cosmosbay.com>
+	<alpine.DEB.1.10.0812101504280.11805@gandalf.stny.rr.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These are easy to trigger (more or less harmlessly) with multiple video
-cards, since the ROM BAR will typically not be given any space by the
-BIOS bridge setup.  No reason to punish quiet boot for this.
+On Wed, 10 Dec 2008 15:06:00 -0500 (EST)
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Signed-off-by: Adam Jackson <ajax@redhat.com>
----
- arch/x86/pci/i386.c     |    4 ++--
- drivers/pci/setup-res.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> The following patch is in:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>     branch: cleanups
+> 
+> 
+> Steven Rostedt (1):
+>       update rwlock initialization for nat_table
+> 
+> ----
+>  net/ipv4/netfilter/nf_nat_rule.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> ---------------------------
+> commit d4175059c8f95e4cd58e0efaa85610ca59469fbd
+> Author: Steven Rostedt <srostedt@redhat.com>
+> Date:   Wed Dec 10 15:00:09 2008 -0500
+> 
+>     update rwlock initialization for nat_table
+>     
+>     Impact: clean up
 
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index 844df0c..43d9783 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -129,7 +129,7 @@ static void __init pcibios_allocate_bus_resources(struct list_head *bus_list)
- 				pr = pci_find_parent_resource(dev, r);
- 				if (!r->start || !pr ||
- 				    request_resource(pr, r) < 0) {
--					dev_err(&dev->dev, "BAR %d: can't allocate resource\n", idx);
-+					dev_info(&dev->dev, "BAR %d: can't allocate resource\n", idx);
- 					/*
- 					 * Something is wrong with the region.
- 					 * Invalidate the resource to prevent
-@@ -170,7 +170,7 @@ static void __init pcibios_allocate_resources(int pass)
- 					r->flags, disabled, pass);
- 				pr = pci_find_parent_resource(dev, r);
- 				if (!pr || request_resource(pr, r) < 0) {
--					dev_err(&dev->dev, "BAR %d: can't allocate resource\n", idx);
-+					dev_info(&dev->dev, "BAR %d: can't allocate resource\n", idx);
- 					/* We'll assign a new address later */
- 					r->end -= r->start;
- 					r->start = 0;
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 2dbd96c..4e37563 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -134,7 +134,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
- 
- 	align = resource_alignment(res);
- 	if (!align) {
--		dev_err(&dev->dev, "BAR %d: can't allocate resource (bogus "
-+		dev_info(&dev->dev, "BAR %d: can't allocate resource (bogus "
- 			"alignment) %pR flags %#lx\n",
- 			resno, res, res->flags);
- 		return -EINVAL;
-@@ -157,7 +157,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
- 	}
- 
- 	if (ret) {
--		dev_err(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
-+		dev_info(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
- 			resno, res->flags & IORESOURCE_IO ? "I/O" : "mem", res);
- 	} else {
- 		res->flags &= ~IORESOURCE_STARTALIGN;
--- 
-1.6.0.3
+It's more than a "cleanup"?
+
+>     The commit e099a173573ce1ba171092aee7bb3c72ea686e59
+>     (netfilter: netns nat: per-netns NAT table) renamed the
+>     nat_table from __nat_table to nat_table without updating the
+>     __RW_LOCK_UNLOCKED(__nat_table.lock).
+>     
+>     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> 
+> diff --git a/net/ipv4/netfilter/nf_nat_rule.c b/net/ipv4/netfilter/nf_nat_rule.c
+> index bea54a6..8d489e7 100644
+> --- a/net/ipv4/netfilter/nf_nat_rule.c
+> +++ b/net/ipv4/netfilter/nf_nat_rule.c
+> @@ -61,7 +61,7 @@ static struct
+>  static struct xt_table nat_table = {
+>  	.name		= "nat",
+>  	.valid_hooks	= NAT_VALID_HOOKS,
+> -	.lock		= __RW_LOCK_UNLOCKED(__nat_table.lock),
+> +	.lock		= __RW_LOCK_UNLOCKED(nat_table.lock),
+>  	.me		= THIS_MODULE,
+>  	.af		= AF_INET,
+>  };
+
+At present any lockdep messages relating to this lock will print the
+wrong name.  So it's a nanobug, I think?
 
