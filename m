@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbYLKTaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbYLKTfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759250AbYLKTaL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:30:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757652AbYLKTSj
+	id S1757171AbYLKTfk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:35:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757828AbYLKTS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:18:39 -0500
-Received: from kroah.org ([198.145.64.141]:56144 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:18:56 -0500
+Received: from kroah.org ([198.145.64.141]:56303 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757598AbYLKTSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:18:34 -0500
-Date: Thu, 11 Dec 2008 11:14:48 -0800
+	id S1757808AbYLKTSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:18:53 -0500
+Date: Thu, 11 Dec 2008 11:15:21 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, fangxiaozhi <huananhu@huawei.com>,
-       Phil Dibowitz <phil@ipom.com>
-Subject: [patch 34/83] USB: unusual-devs: support Huawei data card product
-	IDs
-Message-ID: <20081211191448.GH5894@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "Robin H. Johnson" <robbat2@gentoo.org>,
+       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>
+Subject: [patch 49/83] ALSA: HDA: patch_analog: Fix SPDIF output on AD1989B
+Message-ID: <20081211191521.GW5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-unusual-devs-support-huawei-data-card-product-ids.patch"
+Content-Disposition: inline; filename="alsa-hda-patch_analog-fix-spdif-output-on-ad1989b.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,382 +40,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: fangxiaozhi <huananhu@huawei.com>
+From: Robin H. Johnson <robbat2@gentoo.org>
 
-commit 1460e5e44cc5ecad7704f63b10dcb3a59d0e008b upstream.
+commit e8bfc6c1d22395ab706784cb1bcd60f6f9569ed6 upstream
 
-In this patch, we want to do one thing: add more Huawei product IDs into the
-USB driver. Then it can support  more Huawei data card devices. So to declare
-the unusual device for new Huawei data card devices in unusual_devs.h and to
-declare more new product IDs in option.c.
+The SPDIF pins for AD1989 are not enabled by default. Set OUT bit so that they
+actually work. Also initialize the HDMI SPDIF at the same time.
 
-To modify the data value and length in the function of
-usb_stor_huawei_e220_init in initializers.c That's because based on the USB
-standard, while sending SET_FETURE_D to the device, it requires the
-corresponding data to be zero, and its sending length also must be zero.  In
-our old solution, it can be compatible with our WCDMA data card devices, but
-can not support our CDMA data card devices.  But in this new solution, it can
-be compatible with all of our data card devices.
-
-Signed-off-by: fangxiaozhi <huananhu@huawei.com>
-Signed-off-by: Phil Dibowitz <phil@ipom.com>
+Signed-off-by: Robin H. Johnson <robbat2@gentoo.org>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Jaroslav Kysela <perex@perex.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/storage/unusual_devs.h |  273 ++++++++++++++++++++++++++++++++++---
- 1 file changed, 254 insertions(+), 19 deletions(-)
+ sound/pci/hda/patch_analog.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -1635,97 +1635,332 @@ UNUSUAL_DEV(  0x1210, 0x0003, 0x0100, 0x
- /* Reported by fangxiaozhi <huananhu@huawei.com>
-  * This brings the HUAWEI data card devices into multi-port mode
-  */
--UNUSUAL_DEV( 0x12d1, 0x1001, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1001, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1003, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1003, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1004, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1004, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1401, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1401, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1403, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1402, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1405, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1403, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1406, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1404, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1408, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1405, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1409, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1406, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1410, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1407, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1411, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1408, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1412, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1409, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1413, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x140A, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1414, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x140B, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1415, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x140C, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1416, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x140D, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1417, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x140E, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1418, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x140F, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
- 		0),
--UNUSUAL_DEV( 0x12d1, 0x1419, 0x0000, 0x0000,
-+UNUSUAL_DEV(  0x12d1, 0x1410, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1411, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1412, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1413, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1414, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1415, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1416, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1417, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1418, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1419, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141A, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141B, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141C, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141D, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141E, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x141F, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1420, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1421, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1422, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1423, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1424, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1425, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1426, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1427, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1428, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1429, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142A, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142B, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142C, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142D, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142E, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x142F, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1430, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1431, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1432, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1433, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1434, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1435, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1436, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1437, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1438, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x1439, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x143A, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x143B, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x143C, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x143D, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x143E, 0x0000, 0x0000,
-+		"HUAWEI MOBILE",
-+		"Mass Storage",
-+		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
-+		0),
-+UNUSUAL_DEV(  0x12d1, 0x143F, 0x0000, 0x0000,
- 		"HUAWEI MOBILE",
- 		"Mass Storage",
- 		US_SC_DEVICE, US_PR_DEVICE, usb_stor_huawei_e220_init,
+--- a/sound/pci/hda/patch_analog.c
++++ b/sound/pci/hda/patch_analog.c
+@@ -2247,8 +2247,12 @@ static struct hda_verb ad1988_spdif_init
+ 
+ /* AD1989 has no ADC -> SPDIF route */
+ static struct hda_verb ad1989_spdif_init_verbs[] = {
+-	/* SPDIF out pin */
++	/* SPDIF-1 out pin */
++	{0x1b, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_OUT },
+ 	{0x1b, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_UNMUTE | 0x27}, /* 0dB */
++	/* SPDIF-2/HDMI out pin */
++	{0x1d, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_OUT },
++	{0x1d, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_UNMUTE | 0x27}, /* 0dB */
+ 	{ }
+ };
+ 
 
