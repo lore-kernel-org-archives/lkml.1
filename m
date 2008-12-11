@@ -1,177 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757226AbYLKTGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbYLKTGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757226AbYLKTGS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbYLKTGB
+	id S1757436AbYLKTGc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:06:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756719AbYLKTGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:06:01 -0500
-Received: from gw.goop.org ([64.81.55.164]:42759 "EHLO mail.goop.org"
+	Thu, 11 Dec 2008 14:06:11 -0500
+Received: from mail.klingt.org ([86.59.21.178]:33912 "EHLO klingt.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbYLKTGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:06:00 -0500
-Message-ID: <49416494.6040009@goop.org>
-Date: Thu, 11 Dec 2008 11:05:56 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH RFC] vm_unmap_aliases: allow callers to inhibit TLB flush
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1756623AbYLKTGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:06:09 -0500
+From: Tim Blechmann <tim@klingt.org>
+To: rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, Tim Blechmann <tim@klingt.org>
+Subject: [PATCH] [RT] preempt_disable_rt for CONFIG_PREEMPT_RT
+Date: Thu, 11 Dec 2008 20:05:48 +0100
+Message-Id: <1229022348-32311-1-git-send-email-tim@klingt.org>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <alpine.DEB.1.10.0812081218471.26257@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0812081218471.26257@gandalf.stny.rr.com>
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (klingt.org [127.0.0.1]); Thu, 11 Dec 2008 20:05:49 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick,
+in some cases, spinlocks are used to avoid preemption. does not work
+correctly, when CONFIG_PREEMPT_RT is enabled.
 
-In Xen when we're killing the lazy vmalloc aliases, we're only concerned 
-about the pagetable references to the mapped pages, not the TLB entries. 
-For the most part eliminating the TLB flushes would be a performance 
-optimisation, but there's at least one case where we need to shoot down 
-aliases in an interrupt-disabled section, so the TLB shootdown IPIs 
-would potentially deadlock.
+therefore two new macros are introduced:
+preempt_disable_rt/preempt_disable_rt behave like their equivalents, if
+CONFIG_PREEMPT_RT is enabled, and as noops otherwise.
 
-I'm wondering what your thoughts are about this approach?
+Signed-off-by: Tim Blechmann <tim@klingt.org>
+---
+ include/linux/preempt.h |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-I'm not super-happy with the changes to __purge_vmap_area_lazy(), but 
-given that we need a tri-state policy selection there, adding an enum is 
-clearer than adding another boolean argument.
-
-It also raises the question of how many callers of vm_unmap_aliases() 
-really care about flushing the tlbs. Presumably if we're shooting down 
-some stray vmalloc mappings then nobody is actually using them at the 
-time, and any corresponding TLB entries are residual. Or does leaving 
-them around leave open the possibility of unwanted speculative 
-references which could violate memory type rules?  Perhaps callers who 
-care about that could arrange their own tlb flush?
-
-Thanks,
-    J
-
-===================================================================
---- a/include/linux/vmalloc.h
-+++ b/include/linux/vmalloc.h
-@@ -41,6 +41,7 @@
- extern void *vm_map_ram(struct page **pages, unsigned int count,
- 				int node, pgprot_t prot);
- extern void vm_unmap_aliases(void);
-+extern void __vm_unmap_aliases(int allow_flush);
+diff --git a/include/linux/preempt.h b/include/linux/preempt.h
+index 72b1a10..2526170 100644
+--- a/include/linux/preempt.h
++++ b/include/linux/preempt.h
+@@ -93,6 +93,16 @@ do { \
  
- #ifdef CONFIG_MMU
- extern void __init vmalloc_init(void);
-===================================================================
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -458,18 +458,26 @@
+ #endif
  
- static atomic_t vmap_lazy_nr = ATOMIC_INIT(0);
- 
-+enum purge_flush {
-+	PURGE_FLUSH_NEVER,
-+	PURGE_FLUSH_IF_NEEDED,
-+	PURGE_FLUSH_FORCE
-+};
++#ifdef CONFIG_PREEMPT_RT
++#define preempt_disable_rt	preempt_disable
++#define preempt_enable_rt	preempt_enable
++#else
++#define
++#define preempt_disable_rt	do { } while (0)
++#define preempt_enable_rt	do { } while (0)
++#endif
 +
- /*
-  * Purges all lazily-freed vmap areas.
-  *
-  * If sync is 0 then don't purge if there is already a purge in progress.
-- * If force_flush is 1, then flush kernel TLBs between *start and *end even
-- * if we found no lazy vmap areas to unmap (callers can use this to optimise
-- * their own TLB flushing).
-+ * 'flush' sets the TLB flushing policy between *start and *end:
-+ *    PURGE_FLUSH_NEVER     caller doesn't care about TLB state, so don't flush
-+ *    PURGE_FLUSH_IF_NEEDED flush if we found a lazy vmap area to unmap
-+ *    PURGE_FLUSH_FORCE     always flush, to allow callers to optimise their own flushing
-+ *
-  * Returns with *start = min(*start, lowest purged address)
-  *              *end = max(*end, highest purged address)
-  */
- static void __purge_vmap_area_lazy(unsigned long *start, unsigned long *end,
--					int sync, int force_flush)
-+				   int sync, enum purge_flush flush)
- {
- 	static DEFINE_SPINLOCK(purge_lock);
- 	LIST_HEAD(valist);
-@@ -481,7 +489,7 @@
- 	 * should not expect such behaviour. This just simplifies locking for
- 	 * the case that isn't actually used at the moment anyway.
- 	 */
--	if (!sync && !force_flush) {
-+	if (!sync && flush != PURGE_FLUSH_FORCE) {
- 		if (!spin_trylock(&purge_lock))
- 			return;
- 	} else
-@@ -508,7 +516,7 @@
- 		atomic_sub(nr, &vmap_lazy_nr);
- 	}
- 
--	if (nr || force_flush)
-+	if ((nr && flush == PURGE_FLUSH_IF_NEEDED) || flush == PURGE_FLUSH_FORCE)
- 		flush_tlb_kernel_range(*start, *end);
- 
- 	if (nr) {
-@@ -528,7 +536,7 @@
- {
- 	unsigned long start = ULONG_MAX, end = 0;
- 
--	__purge_vmap_area_lazy(&start, &end, 0, 0);
-+	__purge_vmap_area_lazy(&start, &end, 0, PURGE_FLUSH_IF_NEEDED);
- }
- 
- /*
-@@ -538,7 +546,7 @@
- {
- 	unsigned long start = ULONG_MAX, end = 0;
- 
--	__purge_vmap_area_lazy(&start, &end, 1, 0);
-+	__purge_vmap_area_lazy(&start, &end, 1, PURGE_FLUSH_IF_NEEDED);
- }
- 
- /*
-@@ -847,11 +855,11 @@
-  * be sure that none of the pages we have control over will have any aliases
-  * from the vmap layer.
-  */
--void vm_unmap_aliases(void)
-+void __vm_unmap_aliases(int allow_flush)
- {
- 	unsigned long start = ULONG_MAX, end = 0;
- 	int cpu;
--	int flush = 0;
-+	enum purge_flush flush = PURGE_FLUSH_IF_NEEDED;
- 
- 	if (unlikely(!vmap_initialized))
- 		return;
-@@ -875,7 +883,7 @@
- 				s = vb->va->va_start + (i << PAGE_SHIFT);
- 				e = vb->va->va_start + (j << PAGE_SHIFT);
- 				vunmap_page_range(s, e);
--				flush = 1;
-+				flush = PURGE_FLUSH_FORCE;
- 
- 				if (s < start)
- 					start = s;
-@@ -891,7 +899,13 @@
- 		rcu_read_unlock();
- 	}
- 
--	__purge_vmap_area_lazy(&start, &end, 1, flush);
-+	__purge_vmap_area_lazy(&start, &end, 1,
-+			       allow_flush ? flush : PURGE_FLUSH_NEVER);
-+}
 +
-+void vm_unmap_aliases(void)
-+{
-+	__vm_unmap_aliases(1);
- }
- EXPORT_SYMBOL_GPL(vm_unmap_aliases);
+ #ifdef CONFIG_PREEMPT_NOTIFIERS
  
-
+ struct preempt_notifier;
+-- 
+1.5.6.3
 
