@@ -1,117 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758151AbYLKUho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbYLKUkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758151AbYLKUho (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 15:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757223AbYLKUhf
+	id S1758106AbYLKUkL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 15:40:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbYLKUj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 15:37:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33088 "EHLO mx2.redhat.com"
+	Thu, 11 Dec 2008 15:39:56 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58820 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756792AbYLKUhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 15:37:35 -0500
-Message-ID: <494179EE.8060009@redhat.com>
-Date: Thu, 11 Dec 2008 21:37:02 +0100
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Jens Axboe <jens.axboe@oracle.com>,
+	id S1757217AbYLKUjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 15:39:55 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH 3/3] Sound (HDA Intel): Restore PCI configuration space with interrupts off
+Date: Thu, 11 Dec 2008 21:38:56 +0100
+User-Agent: KMail/1.9.9
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: [PATCH] loop: Flush possible running bios when loop device is released.
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200812020320.31876.rjw@sisk.pl> <200812112103.17018.rjw@sisk.pl> <s5h7i66v4nb.wl%tiwai@suse.de>
+In-Reply-To: <s5h7i66v4nb.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812112138.57145.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Flush possible running bios when loop device is released.
+On Thursday, 11 of December 2008, Takashi Iwai wrote:
+> At Thu, 11 Dec 2008 21:03:16 +0100,
+> Rafael J. Wysocki wrote:
+> > 
+> > On Thursday, 11 of December 2008, Takashi Iwai wrote:
+> > > At Sun, 07 Dec 2008 10:47:56 +0100,
+> > > I wrote:
+> > > > 
+> > > > At Sat, 6 Dec 2008 20:45:35 -0800,
+> > > > Jesse Barnes wrote:
+> > > > > 
+> > > > > On Saturday, December 6, 2008 6:09 am Rafael J. Wysocki wrote:
+> > > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > Subject: Sound (HDA Intel): Restore PCI configuration space with interrupts
+> > > > > > off
+> > > > > >
+> > > > > > Move the restoration of the standard PCI configuration registers
+> > > > > > in the snd_hda_intel driver to a ->resume_early() callback executed
+> > > > > > with interrupts disabled, since doing that with interrupts enabled
+> > > > > > may lead to problems in some cases.
+> > > > > >
+> > > > > > This patch addresses the regression from 2.6.26 tracked as
+> > > > > > http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
+> > > > > 
+> > > > > Since I only applied 1 and 2 you'll need to send this one through Takashi.
+> > > > 
+> > > > OK, I merged it to for-next branch now.
+> > > > It should appear in the linux-next tree of tomorrow.
+> > > 
+> > > There is no build errors at least on linux-next, but I guess the
+> > > testing about PM has been rarely done on linux-next kernel...
+> > > 
+> > > BTW, Rafael, is this particular patch (against hda_intel.c) works in
+> > > general or dependent on other two patches?
+> > 
+> > It should be safe without the other patches too.
+> 
+> OK, but this alone doesn't make much sense without others, right?
+> 
+> I'm asking this because I'm not pretty sure how this should be handled.
+> Certainly it must be in 2.6.29, but about for 2.6.28...
 
-When there are still queued bios and reference count
-drops to zero, loop device must flush all queued bios.
+Well, I think 2.6.29 would be fine.
 
-Otherwise it can lead to situation that caller
-closes the device, but some bios are still running
-and endio() function call later oopses when uses
-unallocated mempool.
-
-This happens for example when running dm-crypt over loop,
-here is typical oops backtrace:
-
- Oops: 0000 [#1] PREEMPT SMP
- EIP is at mempool_free+0x12/0x6b
-...
- crypt_dec_pending+0x50/0x54 [dm_crypt]
- crypt_endio+0x9f/0xa7 [dm_crypt]
- crypt_endio+0x0/0xa7 [dm_crypt]
- bio_endio+0x2b/0x2e
- loop_thread+0x37a/0x3b1
- do_lo_send_aops+0x0/0x165
- autoremove_wake_function+0x0/0x33
- loop_thread+0x0/0x3b1
- kthread+0x3b/0x61
- kthread+0x0/0x61
- kernel_thread_helper+0x7/0x10
-
-(But crash is reproducible with different dm targets 
-running over loop device too.)
-
-Patch fixes it by flushing the bios in release call,
-reusing the flush mechanism for switching backing store.
-
-Signed-off-by: Milan Broz <mbroz@redhat.com>
----
- drivers/block/loop.c |   17 ++++++++++++++++-
- 1 files changed, 16 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-index 5c4ee70..0ccf2ae 100644
---- a/drivers/block/loop.c
-+++ b/drivers/block/loop.c
-@@ -624,20 +624,33 @@ static int loop_switch(struct loop_device *lo, struct file *file)
- }
- 
- /*
-+ * Helper to flush the IOs in loop, but keeping loop thread running
-+ */
-+static int loop_flush(struct loop_device *lo)
-+{
-+	return loop_switch(lo, NULL);
-+}
-+
-+/*
-  * Do the actual switch; called from the BIO completion routine
-  */
- static void do_loop_switch(struct loop_device *lo, struct switch_request *p)
- {
- 	struct file *file = p->file;
- 	struct file *old_file = lo->lo_backing_file;
--	struct address_space *mapping = file->f_mapping;
-+	struct address_space *mapping;
-+
-+	if (!file)
-+		goto out;
- 
-+	mapping = file->f_mapping;
- 	mapping_set_gfp_mask(old_file->f_mapping, lo->old_gfp_mask);
- 	lo->lo_backing_file = file;
- 	lo->lo_blocksize = S_ISBLK(mapping->host->i_mode) ?
- 		mapping->host->i_bdev->bd_block_size : PAGE_SIZE;
- 	lo->old_gfp_mask = mapping_gfp_mask(mapping);
- 	mapping_set_gfp_mask(mapping, lo->old_gfp_mask & ~(__GFP_IO|__GFP_FS));
-+out:
- 	complete(&p->wait);
- }
- 
-@@ -1347,6 +1360,8 @@ static int lo_release(struct gendisk *disk, fmode_t mode)
- 
- 	if ((lo->lo_flags & LO_FLAGS_AUTOCLEAR) && !lo->lo_refcnt)
- 		loop_clr_fd(lo, NULL);
-+	else if (!lo->lo_refcnt && lo->lo_thread)
-+		loop_flush(lo);
- 
- 	mutex_unlock(&lo->lo_ctl_mutex);
- 
-
-
+Thanks,
+Rafael
