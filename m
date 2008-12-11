@@ -1,79 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbYLKIqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284AbYLKIqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbYLKIqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 03:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbYLKIqD
+	id S1756284AbYLKIqf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 03:46:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbYLKIqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 03:46:03 -0500
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:25052 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753503AbYLKIqA (ORCPT
+	Thu, 11 Dec 2008 03:46:16 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:30365 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755102AbYLKIqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 03:46:00 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ZwUNBu8dBslsYdMMDv99wFRuSGGIlHNtGSufFZ9x0Dc08M1siqHqfZ488HWpxP+YfH5qRbjE7/BH0ZU7uxF3qpH15LWeC0IB0/GN+H1riB2nEYBsmQcqlhyGgOJV0UTz+Oy6x3a0KAysgt8ek37qbOdWKNuxEa/8fdBoxSMyfCM=  ;
-X-YMail-OSG: dX9dR18VM1mnVDCuACrPC5RzPUYk.HJxf3yBSwwW4itgMZVCEBACv3LWZ8Hd64GhzoEh.ca0IokOinaNcsx2mHhcTYk3P_sSSujMIE8luQarJDRv9POMsWt0.Wf.bqKFf3327IpIqevY_DmqyhH8C0Oc9J9ZmcRfp6wAtQ6AvcOu.vcYnT_rCEypwtuN
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Linux 2.6.28-rc8
-Date: Thu, 11 Dec 2008 19:45:53 +1100
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain> <200812111857.36862.nickpiggin@yahoo.com.au> <20081211000730.2e0334d0.akpm@linux-foundation.org>
-In-Reply-To: <20081211000730.2e0334d0.akpm@linux-foundation.org>
+	Thu, 11 Dec 2008 03:46:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YB44k+AHoln110YIUvFfilEiryGlKD8jwqe+o0sJSYpcOIxym1+fMAOsm1moJ8GaJP
+         kl4mg7xPfuNwOpykr3GLHEpuzt7c1hV8N2LswsZSfbTI+EYpXiWeKLRI1dsHcmIw0hmW
+         qalmyDk7LxwzLmnL+7t/ul7CZP8gN6GIPftMU=
+Date: Thu, 11 Dec 2008 08:46:06 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Badalian Vyacheslav <slavon@bigtelecom.ru>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: deadlocks if use htb
+Message-ID: <20081211084606.GA4129@ff.dom.local>
+References: <20081010075640.GA5204@ff.dom.local> <48EF17EA.5020306@bigtelecom.ru> <20081010090426.GA6054@ff.dom.local> <20081010095129.GB6054@ff.dom.local> <48F6FB3E.7060903@bigtelecom.ru> <20081016084027.GA17632@ff.dom.local> <48FEC302.5090707@bigtelecom.ru> <20081022070200.GB4178@ff.dom.local> <493FDCD4.5020108@bigtelecom.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812111945.53399.nickpiggin@yahoo.com.au>
+In-Reply-To: <493FDCD4.5020108@bigtelecom.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 December 2008 19:07, Andrew Morton wrote:
-> On Thu, 11 Dec 2008 18:57:36 +1100 Nick Piggin <nickpiggin@yahoo.com.au> 
-wrote:
-> > On Thursday 11 December 2008 12:04, Linus Torvalds wrote:
-> > > Nothing overly exciting here. Lots of small things, mostly in drivers
-> > > (with some defconfig updates for m68k and mips making the diffs
-> > > bigger).
-> > >
-> > > There's some uncomfortably big changes to the intel DRI code, but most
-> > > of that is all about fixes to the new i916 "GEM" code that is only used
-> > > by development X servers, and is a new feature, so it shouldn't be able
-> > > to cause regressions.
-> > >
-> > > Perhaps more interesting is simply the release scheduling issue. I'm
-> > > getting slowly ready to do a real 2.6.28, but I don't think anybody
-> > > really wants the merge window to be around the holidays. So the
-> > > question is really whether to
-> > >
-> > >  (a) just make the -rc's go on a few more weeks, and do 2.6.28 after
-> > > xmas
-> > >
-> > >      I like this, because alledgely people are debugging things, and
-> > > we'd get a more stable 2.6.28.
+On Wed, Dec 10, 2008 at 06:14:28PM +0300, Badalian Vyacheslav wrote:
+> Hello again! Sorry for long away.
+
+Hi!
+
+> I was go away from this work for long time.
+> 
+> May we return to this bug?
+> Servers at last stable kernel 2.6.27.8
+> HZ=1000, HR=off, DynamicTicks=off, hysteresis=1
+> Sorry - no patched, update do not i. Do you have fresh patches or ideas
+> for tests?
+
+Not much, but I can have if you only are willing to test them...
+I attach below a patch which combines 2 patches I sent yesterday to
+netdev (PATCH 7/6 and 8/6) vs. 2.6.27.7 (named testing patch #3 here).
+
+You can still try the testing patch #2 I sent previously (quoted below)
+with or without this new #3 patch.
+
+Thanks,
+Jarek P.
+
+> Also debug "Debug object operations" and "Debug timer objects" is on but
+> i not see additional information at dump.
+> 
+> Thanks!
+> 
+> That dump:
+> [ 1500.932813] BUG: NMI Watchdog detected LOCKUP on CPU3, ip c0208ed9,
+> registers:
+> [ 1500.932813] Modules linked in: cls_u32 sch_sfq sch_htb netconsole
+> e1000e e1000 i2c_i801
+> [ 1500.932813]
+> [ 1500.932813] Pid: 0, comm: swapper Not tainted (2.6.27-gentoo-r5-fw #1)
+> [ 1500.932813] EIP: 0060:[<c0208ed9>] EFLAGS: 00000082 CPU: 3
+> [ 1500.932813] EIP is at rb_insert_color+0x29/0xf0
+...
+> > --- (testing patch #2)
 > >
-> > I still have one fix for a reported regression (softlink code doesn't
-> > honour GFP_NOFS, caused by a patch of mine). Posted a couple of weeks
-> > ago, but it didn't get anywhere.
->
-> I don't have a clue what you're talking about.
->
-> <greps the tree>
->
-> ./fs/affs/inode.c:      case ST_SOFTLINK:
-> ./fs/affs/namei.c:      error = affs_add_entry(dir, inode, dentry,
-> ST_SOFTLINK); ./include/linux/amigaffs.h:#define ST_SOFTLINK  3
->
-> really?
+> >  net/sched/sch_htb.c |    8 +++++++-
+> >  1 files changed, 7 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/net/sched/sch_htb.c b/net/sched/sch_htb.c
+> > index 30c999c..ff9e965 100644
 
-Oh, I thought I cc'ed you...
 
-http://marc.info/?l=linux-fsdevel&m=122777850302085&w=2
-http://marc.info/?l=linux-fsdevel&m=122777852502093&w=2
+-----------> (testing patch #3)
+
+diff -Nurp a2.6.27.7/net/sched/sch_htb.c b2.6.27.7/net/sched/sch_htb.c
+--- a2.6.27.7/net/sched/sch_htb.c	2008-12-11 08:16:16.000000000 +0000
++++ b2.6.27.7/net/sched/sch_htb.c	2008-12-11 08:20:27.000000000 +0000
+@@ -696,12 +696,13 @@ static void htb_charge_class(struct htb_
+  * next pending event (0 for no event in pq).
+  * Note: Applied are events whose have cl->pq_key <= q->now.
+  */
+-static psched_time_t htb_do_events(struct htb_sched *q, int level)
++static psched_time_t htb_do_events(struct htb_sched *q, int level,
++				   unsigned long start)
+ {
+ 	/* don't run for longer than 2 jiffies; 2 is used instead of
+ 	   1 to simplify things when jiffy is going to be incremented
+ 	   too soon */
+-	unsigned long stop_at = jiffies + 2;
++	unsigned long stop_at = start + 2;
+ 	while (time_before(jiffies, stop_at)) {
+ 		struct htb_class *cl;
+ 		long diff;
+@@ -720,8 +721,8 @@ static psched_time_t htb_do_events(struc
+ 		if (cl->cmode != HTB_CAN_SEND)
+ 			htb_add_to_wait_tree(q, cl, diff);
+ 	}
+-	/* too much load - let's continue on next jiffie */
+-	return q->now + PSCHED_TICKS_PER_SEC / HZ;
++	/* too much load - let's continue on next jiffie (including above) */
++	return q->now + 2 * PSCHED_TICKS_PER_SEC / HZ;
+ }
+ 
+ /* Returns class->node+prio from id-tree where classe's id is >= id. NULL
+@@ -880,6 +881,7 @@ static struct sk_buff *htb_dequeue(struc
+ 	struct htb_sched *q = qdisc_priv(sch);
+ 	int level;
+ 	psched_time_t next_event;
++	unsigned long start_at;
+ 
+ 	/* try to dequeue direct packets as high prio (!) to minimize cpu work */
+ 	skb = __skb_dequeue(&q->direct_queue);
+@@ -892,6 +894,7 @@ static struct sk_buff *htb_dequeue(struc
+ 	if (!sch->q.qlen)
+ 		goto fin;
+ 	q->now = psched_get_time();
++	start_at = jiffies;
+ 
+ 	next_event = q->now + 5 * PSCHED_TICKS_PER_SEC;
+ 	q->nwc_hit = 0;
+@@ -901,14 +904,14 @@ static struct sk_buff *htb_dequeue(struc
+ 		psched_time_t event;
+ 
+ 		if (q->now >= q->near_ev_cache[level]) {
+-			event = htb_do_events(q, level);
++			event = htb_do_events(q, level, start_at);
+ 			if (!event)
+ 				event = q->now + PSCHED_TICKS_PER_SEC;
+ 			q->near_ev_cache[level] = event;
+ 		} else
+ 			event = q->near_ev_cache[level];
+ 
+-		if (event && next_event > event)
++		if (next_event > event)
+ 			next_event = event;
+ 
+ 		m = ~q->row_mask[level];
