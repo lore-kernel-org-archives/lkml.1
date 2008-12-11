@@ -1,394 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbYLKQT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbYLKQVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757323AbYLKQT3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 11:19:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756536AbYLKQS0
+	id S1756980AbYLKQVA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 11:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756469AbYLKQUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 11:18:26 -0500
-Received: from mail16.svc.cra.dublin.eircom.net ([159.134.118.215]:43820 "HELO
-	mail16.svc.cra.dublin.eircom.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756429AbYLKQSX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 11:18:23 -0500
+	Thu, 11 Dec 2008 11:20:52 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37207 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755791AbYLKQUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 11:20:51 -0500
+Subject: Re: [PATCH 2/6] virtio: add register_virtio_root_device()
 From: Mark McLoughlin <markmc@redhat.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org,
        Anthony Liguori <aliguori@us.ibm.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: [PATCH 4/4] s390: remove s390_root_dev_*()
-Date: Thu, 11 Dec 2008 16:16:56 +0000
-Message-Id: <1229012216-4211-4-git-send-email-markmc@redhat.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1229012216-4211-3-git-send-email-markmc@redhat.com>
-References: <1229012203.7968.79.camel@blaa>
- <1229012216-4211-1-git-send-email-markmc@redhat.com>
- <1229012216-4211-2-git-send-email-markmc@redhat.com>
- <1229012216-4211-3-git-send-email-markmc@redhat.com>
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>
+In-Reply-To: <20081211135924.4394cc56@gondolin>
+References: <1228931096.5384.63.camel@blaa>
+	 <1228931139-12956-1-git-send-email-markmc@redhat.com>
+	 <1228931139-12956-2-git-send-email-markmc@redhat.com>
+	 <20081211135924.4394cc56@gondolin>
+Content-Type: text/plain
+Date: Thu, 11 Dec 2008 16:16:43 +0000
+Message-Id: <1229012203.7968.79.camel@blaa>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace s390_root_dev_register() with root_device_register() etc.
+On Thu, 2008-12-11 at 13:59 +0100, Cornelia Huck wrote:
+> On Wed, 10 Dec 2008 17:45:35 +0000,
+> Mark McLoughlin <markmc@redhat.com> wrote:
+> 
+> > Add a function to allocate a root device object to group the
+> > devices from a given virtio implementation.
+> > 
+> > Also add a 'module' sysfs symlink to allow so that userspace
+> > can generically determine which virtio implementation a
+> > device is associated with. This will be used by Fedora
+> > mkinitrd to generically determine e.g. that virtio_pci is
+> > needed to mount a given root filesystem.
+> 
+> Nothing about this is really virtio-specific (just as
+> s390_root_dev_register() is not really s390-specific), and a 'module'
+> symlink doesn't really hurt in a generic implementation, even if it is
+> unneeded. I'm voting to put this in some generic, always built-in code
+> (or have the users select it) so we could also use it from s390.
 
-Signed-off-by: Mark McLoughlin <markmc@redhat.com>
----
- arch/s390/include/asm/s390_rdev.h |   15 -----------
- drivers/s390/Makefile             |    2 +-
- drivers/s390/block/dcssblk.c      |   11 +++----
- drivers/s390/crypto/ap_bus.c      |    7 ++---
- drivers/s390/kvm/kvm_virtio.c     |    5 +--
- drivers/s390/net/cu3088.c         |    7 ++---
- drivers/s390/net/qeth_core_main.c |    7 ++---
- drivers/s390/net/qeth_l2_main.c   |    2 -
- drivers/s390/net/qeth_l3_main.c   |    2 -
- drivers/s390/s390_rdev.c          |   51 -------------------------------------
- net/iucv/iucv.c                   |    5 +--
- 11 files changed, 19 insertions(+), 95 deletions(-)
- delete mode 100644 arch/s390/include/asm/s390_rdev.h
- delete mode 100644 drivers/s390/s390_rdev.c
+Okay, coming up ...
 
-diff --git a/arch/s390/include/asm/s390_rdev.h b/arch/s390/include/asm/s390_rdev.h
-deleted file mode 100644
-index 6fa2044..0000000
---- a/arch/s390/include/asm/s390_rdev.h
-+++ /dev/null
-@@ -1,15 +0,0 @@
--/*
-- *  include/asm-s390/ccwdev.h
-- *
-- *    Copyright (C) 2002,2005 IBM Deutschland Entwicklung GmbH, IBM Corporation
-- *    Author(s): Cornelia Huck <cornelia.huck@de.ibm.com>
-- *               Carsten Otte  <cotte@de.ibm.com>
-- *
-- *  Interface for s390 root device
-- */
--
--#ifndef _S390_RDEV_H_
--#define _S390_RDEV_H_
--extern struct device *s390_root_dev_register(const char *);
--extern void s390_root_dev_unregister(struct device *);
--#endif /* _S390_RDEV_H_ */
-diff --git a/drivers/s390/Makefile b/drivers/s390/Makefile
-index 4f4e7cf..d0eae59 100644
---- a/drivers/s390/Makefile
-+++ b/drivers/s390/Makefile
-@@ -4,7 +4,7 @@
- 
- CFLAGS_sysinfo.o += -Iinclude/math-emu -Iarch/s390/math-emu -w
- 
--obj-y += s390mach.o sysinfo.o s390_rdev.o
-+obj-y += s390mach.o sysinfo.o
- obj-y += cio/ block/ char/ crypto/ net/ scsi/ kvm/
- 
- drivers-y += drivers/s390/built-in.o
-diff --git a/drivers/s390/block/dcssblk.c b/drivers/s390/block/dcssblk.c
-index 63f26a1..20fca50 100644
---- a/drivers/s390/block/dcssblk.c
-+++ b/drivers/s390/block/dcssblk.c
-@@ -15,7 +15,6 @@
- #include <asm/io.h>
- #include <linux/completion.h>
- #include <linux/interrupt.h>
--#include <asm/s390_rdev.h>
- 
- //#define DCSSBLK_DEBUG		/* Debug messages on/off */
- #define DCSSBLK_NAME "dcssblk"
-@@ -951,7 +950,7 @@ dcssblk_check_params(void)
- static void __exit
- dcssblk_exit(void)
- {
--	s390_root_dev_unregister(dcssblk_root_dev);
-+	root_device_unregister(dcssblk_root_dev);
- 	unregister_blkdev(dcssblk_major, DCSSBLK_NAME);
- }
- 
-@@ -960,22 +959,22 @@ dcssblk_init(void)
- {
- 	int rc;
- 
--	dcssblk_root_dev = s390_root_dev_register("dcssblk");
-+	dcssblk_root_dev = root_device_register("dcssblk");
- 	if (IS_ERR(dcssblk_root_dev))
- 		return PTR_ERR(dcssblk_root_dev);
- 	rc = device_create_file(dcssblk_root_dev, &dev_attr_add);
- 	if (rc) {
--		s390_root_dev_unregister(dcssblk_root_dev);
-+		root_device_unregister(dcssblk_root_dev);
- 		return rc;
- 	}
- 	rc = device_create_file(dcssblk_root_dev, &dev_attr_remove);
- 	if (rc) {
--		s390_root_dev_unregister(dcssblk_root_dev);
-+		root_device_unregister(dcssblk_root_dev);
- 		return rc;
- 	}
- 	rc = register_blkdev(0, DCSSBLK_NAME);
- 	if (rc < 0) {
--		s390_root_dev_unregister(dcssblk_root_dev);
-+		root_device_unregister(dcssblk_root_dev);
- 		return rc;
- 	}
- 	dcssblk_major = rc;
-diff --git a/drivers/s390/crypto/ap_bus.c b/drivers/s390/crypto/ap_bus.c
-index e3fe683..0689c22 100644
---- a/drivers/s390/crypto/ap_bus.c
-+++ b/drivers/s390/crypto/ap_bus.c
-@@ -32,7 +32,6 @@
- #include <linux/notifier.h>
- #include <linux/kthread.h>
- #include <linux/mutex.h>
--#include <asm/s390_rdev.h>
- #include <asm/reset.h>
- #include <linux/hrtimer.h>
- #include <linux/ktime.h>
-@@ -1358,7 +1357,7 @@ int __init ap_module_init(void)
- 	}
- 
- 	/* Create /sys/devices/ap. */
--	ap_root_device = s390_root_dev_register("ap");
-+	ap_root_device = root_device_register("ap");
- 	rc = IS_ERR(ap_root_device) ? PTR_ERR(ap_root_device) : 0;
- 	if (rc)
- 		goto out_bus;
-@@ -1401,7 +1400,7 @@ out_work:
- 	hrtimer_cancel(&ap_poll_timer);
- 	destroy_workqueue(ap_work_queue);
- out_root:
--	s390_root_dev_unregister(ap_root_device);
-+	root_device_unregister(ap_root_device);
- out_bus:
- 	while (i--)
- 		bus_remove_file(&ap_bus_type, ap_bus_attrs[i]);
-@@ -1432,7 +1431,7 @@ void ap_module_exit(void)
- 	hrtimer_cancel(&ap_poll_timer);
- 	destroy_workqueue(ap_work_queue);
- 	tasklet_kill(&ap_tasklet);
--	s390_root_dev_unregister(ap_root_device);
-+	root_device_unregister(ap_root_device);
- 	while ((dev = bus_find_device(&ap_bus_type, NULL, NULL,
- 		    __ap_match_all)))
- 	{
-diff --git a/drivers/s390/kvm/kvm_virtio.c b/drivers/s390/kvm/kvm_virtio.c
-index c79cf05..db61252 100644
---- a/drivers/s390/kvm/kvm_virtio.c
-+++ b/drivers/s390/kvm/kvm_virtio.c
-@@ -24,7 +24,6 @@
- #include <asm/kvm_virtio.h>
- #include <asm/setup.h>
- #include <asm/s390_ext.h>
--#include <asm/s390_rdev.h>
- 
- #define VIRTIO_SUBCODE_64 0x0D00
- 
-@@ -335,7 +334,7 @@ static int __init kvm_devices_init(void)
- 	if (!MACHINE_IS_KVM)
- 		return -ENODEV;
- 
--	kvm_root = s390_root_dev_register("kvm_s390");
-+	kvm_root = root_device_register("kvm_s390");
- 	if (IS_ERR(kvm_root)) {
- 		rc = PTR_ERR(kvm_root);
- 		printk(KERN_ERR "Could not register kvm_s390 root device");
-@@ -344,7 +343,7 @@ static int __init kvm_devices_init(void)
- 
- 	rc = vmem_add_mapping(real_memory_size, PAGE_SIZE);
- 	if (rc) {
--		s390_root_dev_unregister(kvm_root);
-+		root_device_unregister(kvm_root);
- 		return rc;
- 	}
- 
-diff --git a/drivers/s390/net/cu3088.c b/drivers/s390/net/cu3088.c
-index f4a3237..4838345 100644
---- a/drivers/s390/net/cu3088.c
-+++ b/drivers/s390/net/cu3088.c
-@@ -25,7 +25,6 @@
- #include <linux/module.h>
- #include <linux/err.h>
- 
--#include <asm/s390_rdev.h>
- #include <asm/ccwdev.h>
- #include <asm/ccwgroup.h>
- 
-@@ -120,12 +119,12 @@ cu3088_init (void)
- {
- 	int rc;
- 
--	cu3088_root_dev = s390_root_dev_register("cu3088");
-+	cu3088_root_dev = root_device_register("cu3088");
- 	if (IS_ERR(cu3088_root_dev))
- 		return PTR_ERR(cu3088_root_dev);
- 	rc = ccw_driver_register(&cu3088_driver);
- 	if (rc)
--		s390_root_dev_unregister(cu3088_root_dev);
-+		root_device_unregister(cu3088_root_dev);
- 
- 	return rc;
- }
-@@ -134,7 +133,7 @@ static void __exit
- cu3088_exit (void)
- {
- 	ccw_driver_unregister(&cu3088_driver);
--	s390_root_dev_unregister(cu3088_root_dev);
-+	root_device_unregister(cu3088_root_dev);
- }
- 
- MODULE_DEVICE_TABLE(ccw,cu3088_ids);
-diff --git a/drivers/s390/net/qeth_core_main.c b/drivers/s390/net/qeth_core_main.c
-index 52d2659..ffeb47b 100644
---- a/drivers/s390/net/qeth_core_main.c
-+++ b/drivers/s390/net/qeth_core_main.c
-@@ -21,7 +21,6 @@
- 
- #include <asm/ebcdic.h>
- #include <asm/io.h>
--#include <asm/s390_rdev.h>
- 
- #include "qeth_core.h"
- #include "qeth_core_offl.h"
-@@ -4465,7 +4464,7 @@ static int __init qeth_core_init(void)
- 				&driver_attr_group);
- 	if (rc)
- 		goto driver_err;
--	qeth_core_root_dev = s390_root_dev_register("qeth");
-+	qeth_core_root_dev = root_device_register("qeth");
- 	rc = IS_ERR(qeth_core_root_dev) ? PTR_ERR(qeth_core_root_dev) : 0;
- 	if (rc)
- 		goto register_err;
-@@ -4479,7 +4478,7 @@ static int __init qeth_core_init(void)
- 
- 	return 0;
- slab_err:
--	s390_root_dev_unregister(qeth_core_root_dev);
-+	root_device_unregister(qeth_core_root_dev);
- register_err:
- 	driver_remove_file(&qeth_core_ccwgroup_driver.driver,
- 			   &driver_attr_group);
-@@ -4496,7 +4495,7 @@ out_err:
- 
- static void __exit qeth_core_exit(void)
- {
--	s390_root_dev_unregister(qeth_core_root_dev);
-+	root_device_unregister(qeth_core_root_dev);
- 	driver_remove_file(&qeth_core_ccwgroup_driver.driver,
- 			   &driver_attr_group);
- 	ccwgroup_driver_unregister(&qeth_core_ccwgroup_driver);
-diff --git a/drivers/s390/net/qeth_l2_main.c b/drivers/s390/net/qeth_l2_main.c
-index 1b1e803..33c8fe2 100644
---- a/drivers/s390/net/qeth_l2_main.c
-+++ b/drivers/s390/net/qeth_l2_main.c
-@@ -17,8 +17,6 @@
- #include <linux/mii.h>
- #include <linux/ip.h>
- 
--#include <asm/s390_rdev.h>
--
- #include "qeth_core.h"
- #include "qeth_core_offl.h"
- 
-diff --git a/drivers/s390/net/qeth_l3_main.c b/drivers/s390/net/qeth_l3_main.c
-index ed59fed..5dd2210 100644
---- a/drivers/s390/net/qeth_l3_main.c
-+++ b/drivers/s390/net/qeth_l3_main.c
-@@ -23,8 +23,6 @@
- #include <net/ip.h>
- #include <net/arp.h>
- 
--#include <asm/s390_rdev.h>
--
- #include "qeth_l3.h"
- #include "qeth_core_offl.h"
- 
-diff --git a/drivers/s390/s390_rdev.c b/drivers/s390/s390_rdev.c
-deleted file mode 100644
-index 64371c0..0000000
---- a/drivers/s390/s390_rdev.c
-+++ /dev/null
-@@ -1,51 +0,0 @@
--/*
-- *  drivers/s390/s390_rdev.c
-- *  s390 root device
-- *
-- *    Copyright (C) 2002, 2005 IBM Deutschland Entwicklung GmbH,
-- *			 IBM Corporation
-- *    Author(s): Cornelia Huck (cornelia.huck@de.ibm.com)
-- *		  Carsten Otte  (cotte@de.ibm.com)
-- */
--
--#include <linux/slab.h>
--#include <linux/err.h>
--#include <linux/device.h>
--#include <asm/s390_rdev.h>
--
--static void
--s390_root_dev_release(struct device *dev)
--{
--	kfree(dev);
--}
--
--struct device *
--s390_root_dev_register(const char *name)
--{
--	struct device *dev;
--	int ret;
--
--	if (!strlen(name))
--		return ERR_PTR(-EINVAL);
--	dev = kzalloc(sizeof(struct device), GFP_KERNEL);
--	if (!dev)
--		return ERR_PTR(-ENOMEM);
--	dev_set_name(dev, name);
--	dev->release = s390_root_dev_release;
--	ret = device_register(dev);
--	if (ret) {
--		kfree(dev);
--		return ERR_PTR(ret);
--	}
--	return dev;
--}
--
--void
--s390_root_dev_unregister(struct device *dev)
--{
--	if (dev)
--		device_unregister(dev);
--}
--
--EXPORT_SYMBOL(s390_root_dev_register);
--EXPORT_SYMBOL(s390_root_dev_unregister);
-diff --git a/net/iucv/iucv.c b/net/iucv/iucv.c
-index d7b54b5..6314e1b 100644
---- a/net/iucv/iucv.c
-+++ b/net/iucv/iucv.c
-@@ -47,7 +47,6 @@
- #include <asm/ebcdic.h>
- #include <asm/io.h>
- #include <asm/s390_ext.h>
--#include <asm/s390_rdev.h>
- #include <asm/smp.h>
- 
- /*
-@@ -1609,7 +1608,7 @@ static int __init iucv_init(void)
- 	rc = register_external_interrupt(0x4000, iucv_external_interrupt);
- 	if (rc)
- 		goto out;
--	iucv_root = s390_root_dev_register("iucv");
-+	iucv_root = root_device_register("iucv");
- 	if (IS_ERR(iucv_root)) {
- 		rc = PTR_ERR(iucv_root);
- 		goto out_int;
-@@ -1653,7 +1652,7 @@ out_free:
- 		kfree(iucv_irq_data[cpu]);
- 		iucv_irq_data[cpu] = NULL;
- 	}
--	s390_root_dev_unregister(iucv_root);
-+	root_device_unregister(iucv_root);
- out_int:
- 	unregister_external_interrupt(0x4000, iucv_external_interrupt);
- out:
--- 
-1.5.4.3
+> > Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+> > ---
+> >  drivers/virtio/virtio.c |   71 +++++++++++++++++++++++++++++++++++++++++++++++
+> >  include/linux/virtio.h  |   10 ++++++
+> >  2 files changed, 81 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/drivers/virtio/virtio.c b/drivers/virtio/virtio.c
+> > index 018c070..61e6597 100644
+> > --- a/drivers/virtio/virtio.c
+> > +++ b/drivers/virtio/virtio.c
+> > @@ -1,6 +1,7 @@
+> >  #include <linux/virtio.h>
+> >  #include <linux/spinlock.h>
+> >  #include <linux/virtio_config.h>
+> > +#include <linux/err.h>
+> > 
+> >  /* Unique numbering for virtio devices. */
+> >  static unsigned int dev_index;
+> > @@ -200,6 +201,76 @@ void unregister_virtio_device(struct virtio_device *dev)
+> >  }
+> >  EXPORT_SYMBOL_GPL(unregister_virtio_device);
+> > 
+> > +/* A root device for virtio devices from a given backend.  This makes them
+> > + * appear as /sys/devices/{name}/0,1,2 not /sys/devices/0,1,2. It also allows
+> > + * us to have a /sys/devices/{name}/module symlink to the backend module. */
+> > +struct virtio_root_device
+> > +{
+> > +	struct device dev;
+> > +	struct module *owner;
+> > +};
+> > +
+> > +static struct virtio_root_device *to_virtio_root(struct device *dev)
+> > +{
+> > +        return container_of(dev, struct virtio_root_device, dev);
+> > +}
+> > +
+> > +static void release_virtio_root_device(struct device *dev)
+> > +{
+> > +	struct virtio_root_device *root = to_virtio_root(dev);
+> > +	if (root->owner)
+> > +		sysfs_remove_link(&root->dev.kobj, "module");
+> > +	kfree(root);
+> > +}
+> 
+> Can this code be a module? If yes, move the release callback to a
+> build-in as there are races with release-functions in modules.
+
+Not sure I fully understand the issue here, but it won't be an problem
+with it if we move to driver core.
+
+> > +struct device *__register_virtio_root_device(const char *name,
+> > +					     struct module *owner)
+> > +{
+> > +	struct virtio_root_device *root;
+> > +	int err = -ENOMEM;
+> > +
+> > +	root = kzalloc(sizeof(struct virtio_root_device), GFP_KERNEL);
+> > +	if (!root)
+> > +		goto out;
+> > +
+> > +	err = dev_set_name(&root->dev, name);
+> > +	if (err)
+> > +		goto free_root;
+> > +
+> > +	err = device_register(&root->dev);
+> > +	if (err)
+> > +		goto free_root;
+> > +
+> > +	root->dev.parent  = NULL;
+> > +	root->dev.release = release_virtio_root_device;
+> 
+> You must set ->release before calling device_register(), and setting
+> the parent is unneeded.
+
+Okay.
+
+> > +	if (owner) {
+> > +		struct module_kobject *mk = &owner->mkobj;
+> > +
+> > +		err = sysfs_create_link(&root->dev.kobj, &mk->kobj, "module");
+> > +                if (err) {
+> > +			device_unregister(&root->dev);
+> > +			return ERR_PTR(err);
+> > +		}
+> > +
+> > +		root->owner = owner;
+> > +	}
+> > +
+> > +	return &root->dev;
+> > +
+> > +free_root:
+> > +	kfree(root);
+> 
+> You need to call device_put() if you called device_register().
+
+Oh, I missed that subtlety. So the rules are:
+
+  1) To release before calling device_register(), use kfree()
+
+  2) To release if device_register() failed, put_device()
+
+  3) To release once device_register() succeeds, device_unregister()
+
+Cheers,
+Mark.
 
