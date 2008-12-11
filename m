@@ -1,73 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759719AbYLKXFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759850AbYLKXGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759719AbYLKXFj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 18:05:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758446AbYLKXFZ
+	id S1759850AbYLKXGV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 18:06:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758922AbYLKXGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 18:05:25 -0500
-Received: from kandzendo.ru ([195.178.208.66]:44864 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757873AbYLKXFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 18:05:23 -0500
-Date: Fri, 12 Dec 2008 02:05:21 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mike@nauticaltech.com, bugme-daemon@bugzilla.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [Bugme-new] [Bug 12201] New: long wait in call_usermodehelper() / queue_work() / wait_for_completion()
-Message-ID: <20081211230521.GA2392@ioremap.net>
-References: <bug-12201-10286@http.bugzilla.kernel.org/> <20081211143758.510b51b6.akpm@linux-foundation.org> <20081211225158.GA2169@ioremap.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081211225158.GA2169@ioremap.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 11 Dec 2008 18:06:05 -0500
+Received: from mail-bw0-f13.google.com ([209.85.218.13]:36794 "EHLO
+	mail-bw0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757990AbYLKXGC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 18:06:02 -0500
+Message-ID: <49419a25.02e2660a.1ba9.6cda@mx.google.com>
+To: netdev@vger.kernel.org
+Cc: Karsten Keil <kkeil@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org
+Date: Thu, 11 Dec 2008 22:36:00 +0100
+Subject: [PATCH 2/9][v2] mISDN: consistently define 'debug' as '*u_int'
+From: Hannes Eder <hannes@hanneseder.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 01:51:58AM +0300, Evgeniy Polyakov (zbr@ioremap.net) wrote:
-> > > If I write a small pilot program that calls socket(PF_NETLINK, SOCK_RAW,
-> > > NETLINK_AUDIT), it will delay by 1-2 seconds 100% of the time (assuming server
-> > > has been online for a while).  Certain protocol types given to socket() have
-> > > zero delay (because no module needs to be loaded).
-> > > 
-> > > Steps to reproduce:
-> > > Once server has been online for a while, a simple call to socket(PF_NETLINK,
-> > > SOCK_RAW, NETLINK_AUDIT) shows the problem.
-> > 
-> > OK, weird.
-> > 
-> > Please get sysrq working then get us a task trace, so we can see who is
-> > sleeping where.  Do this:
-> > 
-> > 
-> > - run your "small pilot program"
-> 
-> Or send it to us and we will quickly fix the bug :)
-> 
-> Thank you!
+Impact: change data type for variable 'debug' from *int to *u_int,
+same for the argument type of mISDN_inittimer
 
-Btw, does this ugly hack fix the problem?
-According to your description it may be the case.
+In "core.h" mISDN_inittimer is declared with the argument type "*u_int", make
+the definition in "timerdev.c" match this.
 
-diff --git a/net/netlink/af_netlink.c b/net/netlink/af_netlink.c
-index 480184a..2b64eb5 100644
---- a/net/netlink/af_netlink.c
-+++ b/net/netlink/af_netlink.c
-@@ -434,6 +434,10 @@ static int netlink_create(struct net *net, struct socket *sock, int protocol)
- 	if (protocol < 0 || protocol >= MAX_LINKS)
- 		return -EPROTONOSUPPORT;
+This fixes also this warnings:
+
+  drivers/isdn/mISDN/layer1.c:391:8: warning: incorrect type in assignment (different signedness)
+  drivers/isdn/mISDN/layer1.c:391:8:    expected int *static [toplevel] debug
+  drivers/isdn/mISDN/layer1.c:391:8:    got unsigned int [usertype] *deb
+  drivers/isdn/mISDN/layer2.c:2200:8: warning: incorrect type in assignment (different signedness)
+  drivers/isdn/mISDN/layer2.c:2200:8:    expected int *static [toplevel] debug
+  drivers/isdn/mISDN/layer2.c:2200:8:    got unsigned int [usertype] *deb
+  drivers/isdn/mISDN/socket.c:769:8: warning: incorrect type in assignment (different signedness)
+  drivers/isdn/mISDN/socket.c:769:8:    expected int *static [toplevel] debug
+  drivers/isdn/mISDN/socket.c:769:8:    got unsigned int [usertype] *deb
+
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+Acked-by: Karsten Keil <kkeil@suse.de>
+---
+ drivers/isdn/mISDN/layer1.c   |    2 +-
+ drivers/isdn/mISDN/layer2.c   |    2 +-
+ drivers/isdn/mISDN/socket.c   |    2 +-
+ drivers/isdn/mISDN/timerdev.c |    4 ++--
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/isdn/mISDN/layer1.c b/drivers/isdn/mISDN/layer1.c
+index fced1a2..4a55d63 100644
+--- a/drivers/isdn/mISDN/layer1.c
++++ b/drivers/isdn/mISDN/layer1.c
+@@ -21,7 +21,7 @@
+ #include "layer1.h"
+ #include "fsm.h"
  
-+#ifndef CONFIG_AUDIT
-+	if (protocol == NETLINK_AUDIT)
-+		return -EPROTONOSUPPORT;
-+#endif
- 	netlink_lock_table();
- #ifdef CONFIG_MODULES
- 	if (!nl_table[protocol].registered) {
-
-
+-static int *debug;
++static u_int *debug;
+ 
+ struct layer1 {
+ 	u_long			Flags;
+diff --git a/drivers/isdn/mISDN/layer2.c b/drivers/isdn/mISDN/layer2.c
+index a7915a1..77fca3b 100644
+--- a/drivers/isdn/mISDN/layer2.c
++++ b/drivers/isdn/mISDN/layer2.c
+@@ -18,7 +18,7 @@
+ #include "fsm.h"
+ #include "layer2.h"
+ 
+-static int *debug;
++static u_int *debug;
+ 
+ static
+ struct Fsm l2fsm = {NULL, 0, 0, NULL, NULL};
+diff --git a/drivers/isdn/mISDN/socket.c b/drivers/isdn/mISDN/socket.c
+index e5a20f9..37a2de1 100644
+--- a/drivers/isdn/mISDN/socket.c
++++ b/drivers/isdn/mISDN/socket.c
+@@ -18,7 +18,7 @@
+ #include <linux/mISDNif.h>
+ #include "core.h"
+ 
+-static int	*debug;
++static u_int	*debug;
+ 
+ static struct proto mISDN_proto = {
+ 	.name		= "misdn",
+diff --git a/drivers/isdn/mISDN/timerdev.c b/drivers/isdn/mISDN/timerdev.c
+index 875fabe..a8d1d9f 100644
+--- a/drivers/isdn/mISDN/timerdev.c
++++ b/drivers/isdn/mISDN/timerdev.c
+@@ -24,7 +24,7 @@
+ #include <linux/module.h>
+ #include <linux/mISDNif.h>
+ 
+-static int	*debug;
++static u_int	*debug;
+ 
+ 
+ struct mISDNtimerdev {
+@@ -274,7 +274,7 @@ static struct miscdevice mISDNtimer = {
+ };
+ 
+ int
+-mISDN_inittimer(int *deb)
++mISDN_inittimer(u_int *deb)
+ {
+ 	int	err;
+ 
 -- 
-	Evgeniy Polyakov
+1.5.6.3
+
