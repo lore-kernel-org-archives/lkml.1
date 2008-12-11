@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbYLKXtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbYLLAEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757503AbYLKXtT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 18:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbYLKXtK
+	id S1757349AbYLLAEu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 19:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbYLLAEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 18:49:10 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40225 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309AbYLKXtJ (ORCPT
+	Thu, 11 Dec 2008 19:04:41 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:42165 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756390AbYLLAEl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 18:49:09 -0500
-Date: Thu, 11 Dec 2008 18:49:08 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC/PATCH] Add preadv and pwritev system calls.
-Message-ID: <20081211234908.GA11305@infradead.org>
-References: <49419EA7.6050308@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49419EA7.6050308@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 11 Dec 2008 19:04:41 -0500
+Date: Thu, 11 Dec 2008 18:28:21 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH -suspend] Hibernate: Replace unnecessary evaluation of
+ pfn_to_page()
+In-reply-to: <20081208072657.GA2418@ucw.cz>
+X-X-Sender: lenb@localhost.localdomain
+To: Pavel Machek <pavel@suse.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Message-id: <alpine.LFD.2.00.0812111827530.27190@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <200812080052.49604.rjw@sisk.pl> <20081208072657.GA2418@ucw.cz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 12:13:43AM +0100, Gerd Hoffmann wrote:
->   Hi,
-> 
-> The attached patch adds preadv and pwritev system calls.  These syscalls
-> are a pretty straightforward combination of pread and readv (same for
-> write).  They are quite useful for doing vectored I/O in threaded
-> applications.  Using lseek+readv instead opens race windows you'll have
-> to plug with locking.
-> 
-> Other systems have such system calls too, for example NetBSD, check
-> here: http://www.daemon-systems.org/man/preadv.2.html
-> 
-> The patch sports the actual system call implementation and the windup in
-> the x86 system call tables.  Other archs are TBD.
-> 
-> Comments?  Reviews?  Suggestions?  Flames?
 
-Looks good, but you should Cc linux-arch so that arch maintainers get
-a heads up to wire up the syscalls.
+On Mon, 8 Dec 2008, Pavel Machek wrote:
 
-> +	if (ret > 0)
-> +		add_rchar(current, ret);
-> +	inc_syscr(current);
-> +	return ret;
+> On Mon 2008-12-08 00:52:49, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Subject: Hibernate: Replace unnecessary evaluation of pfn_to_page()
+> > 
+> > Replace one evaluation of pfn_to_page() in copy_data_pages() with
+> > the value of a local variable containing the right number already.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Acked-by: Pavel Machek <pavel@suse.cz>
 
-Could it be that these are missing for the compat case both for the existing
-readv/writev and your new syscalls?
+applied to suspend branch
+
+--
+Len Brown, Intel Open Source Technology Center
 
