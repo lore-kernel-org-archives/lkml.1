@@ -1,130 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbYLKAVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbYLKAWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754718AbYLKAVx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 19:21:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbYLKAVn
+	id S1755363AbYLKAWy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 19:22:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYLKAWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 19:21:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35527 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752223AbYLKAVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 19:21:42 -0500
-Message-ID: <49405CB6.6010006@kernel.org>
-Date: Wed, 10 Dec 2008 16:20:06 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Huang Ying <ying.huang@intel.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       "norman@thebacks.co.uk" <norman@thebacks.co.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, Alok Kataria <alokkataria1@gmail.com>,
-       =?ISO-8859-1?Q?Bruno_Pr=E9mont?= <"bruno .premont"@restena.lu>,
-       "xl@xlsigned.net" <xl@xlsigned.net>, "dsd@gentoo.org" <dsd@gentoo.org>
-Subject: Re: [PATCH] Fix VMI crash on boot in 2.6.27+ kernels
-References: <1228870222.8766.15.camel@bodhitayantram.eng.vmware.com>	 <86802c440812091715r775d514eh3acf9add9e24184e@mail.gmail.com> <1228953980.8766.42.camel@bodhitayantram.eng.vmware.com>
-In-Reply-To: <1228953980.8766.42.camel@bodhitayantram.eng.vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Dec 2008 19:22:46 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46614 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751820AbYLKAWp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 19:22:45 -0500
+Date: Thu, 11 Dec 2008 09:21:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 1/6] memcg: fix pre_destory handler
+Message-Id: <20081211092150.b62f8c20.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <6599ad830812101100v4dc7f124jded0d767b92e541a@mail.gmail.com>
+References: <20081209200213.0e2128c1.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081209200647.a1fa76a9.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830812100240g5e549a5cqe29cbea736788865@mail.gmail.com>
+	<29741.10.75.179.61.1228908581.squirrel@webmail-b.css.fujitsu.com>
+	<6599ad830812101035v33dbc6cfh57aa5510f6d65d54@mail.gmail.com>
+	<6599ad830812101100v4dc7f124jded0d767b92e541a@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> On Tue, 2008-12-09 at 17:15 -0800, Yinghai Lu wrote:
+On Wed, 10 Dec 2008 11:00:35 -0800
+Paul Menage <menage@google.com> wrote:
+
+> On Wed, Dec 10, 2008 at 10:35 AM, Paul Menage <menage@google.com> wrote:
+> > On Wed, Dec 10, 2008 at 3:29 AM, KAMEZAWA Hiroyuki
+> > <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> >>
+> >> (BTW, I don't like hierarchy-walk-by-small-locks approarch now because
+> >>  I'd like to implement scan-and-stop-continue routine.
+> >>  See how readdir() aginst /proc scans PID. It's very roboust against
+> >>  very temporal PIDs.)
+> >
+> > So you mean that you want to be able to sleep, and then contine
+> > approximately where you left off, without keeping any kind of
+> > reference count on the last cgroup that you touched? OK, so in that
+> > case I agree that you would need some kind of hierarch
 > 
->> you can not move that late,
->>
->> parse_setup_data==>early_memremap==>__early_ioremap
+> Oops, didn't finish that sentence.
 > 
-> How does this look?
+> I agree that you'd need some kind of hierarchical-restart. But I'd
+> like to play with / look at your cgroup-id patch more closely and see
+> if we can come up with something simpler that still does what you
+> want.
+> 
+Sure, I have to do, too. It's still too young.
+
+> One particular problem with the patch as it stands is that the ids
+> should be per-css, not per-cgroup, since a css can move between
+> hierarchies and hence between cgroups. (Currently only at bind/unbind
+> time, but it still results in a cgroup change).
 > 
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 9d5674f..4c381cb 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -794,6 +794,11 @@ void __init setup_arch(char **cmdline_p)
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
- #endif
- 
-+#ifdef CONFIG_VMI
-+	/* VMI may relocate the fixmap; do this before touching ioremap area */
-+	vmi_init();
-+#endif
-+
- 	early_cpu_init();
- 	early_ioremap_init();
- 
-@@ -880,12 +885,9 @@ void __init setup_arch(char **cmdline_p)
- 	check_efer();
- #endif
- 
--#if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
--	/*
--	 * Must be before kernel pagetables are setup
--	 * or fixmap area is touched.
--	 */
--	vmi_init();
-+#if defined(CONFIG_VMI)
-+	/* Must be before kernel pagetables are setup */
-+	vmi_activate();
- #endif
- 
- 	/* after early param, so could get panic from serial */
-diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-index 8b6c393..22fd657 100644
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -960,8 +960,6 @@ static inline int __init activate_vmi(void)
- 
- void __init vmi_init(void)
- {
--	unsigned long flags;
--
- 	if (!vmi_rom)
- 		probe_vmi_rom();
- 	else
-@@ -973,13 +971,21 @@ void __init vmi_init(void)
- 
- 	reserve_top_address(-vmi_rom->virtual_top);
+If per-css, looking up function will be
+==
+struct cgroup_subsys_state *cgroup_css_lookup(subsys_id, id)
+==
+Do you mean this ? 
+
+ok, I'll implement and see what happens. Maybe I'll move hooks to prepare/destroy IDs
+to subsys layer and assign ID only when subsys want IDs.
+
+-Kame
 
 
-it seems still have some problem.
-you moved reserve_top_address before parse_parameter...
 
-so
-void __init reserve_top_address(unsigned long reserve)
-{
-        BUG_ON(fixmaps_set > 0);
-        printk(KERN_INFO "Reserving virtual address space above 0x%08x\n",
-               (int)-reserve);
-        __FIXADDR_TOP = -reserve - PAGE_SIZE;
-        __VMALLOC_RESERVE += reserve;
-}
-
-/*
- * vmalloc=size forces the vmalloc area to be exactly 'size'
- * bytes. This can be used to increase (or decrease) the
- * vmalloc area - the default is 128m.
- */
-static int __init parse_vmalloc(char *arg)
-{
-        if (!arg)
-                return -EINVAL;
-
-        /* Add VMALLOC_OFFSET to the parsed value due to vm area guard hole*/
-        __VMALLOC_RESERVE = memparse(arg, &arg) + VMALLOC_OFFSET;
-        return 0;
-}
-early_param("vmalloc", parse_vmalloc);
-
-__VMALLOC_RESERVE will be overwriten by vmalloc=...
-
-you may need to split reserve_top_address() to two functions...
-
-YH
 
