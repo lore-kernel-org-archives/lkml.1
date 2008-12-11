@@ -1,52 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbYLKEGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYLKEJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755669AbYLKEGb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 23:06:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbYLKEGU
+	id S1755925AbYLKEJc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 23:09:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbYLKEJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 23:06:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58034 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752814AbYLKEGT (ORCPT
+	Wed, 10 Dec 2008 23:09:22 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45559 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232AbYLKEJV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 23:06:19 -0500
-Date: Wed, 10 Dec 2008 20:06:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: Btrfs trees for linux-next
-Message-Id: <20081210200604.8e190b0d.akpm@linux-foundation.org>
-In-Reply-To: <20081211141436.030c2d65.sfr@canb.auug.org.au>
-References: <1227183484.6161.17.camel@think.oraclecorp.com>
-	<1228962896.21376.11.camel@think.oraclecorp.com>
-	<20081211141436.030c2d65.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 10 Dec 2008 23:09:21 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: Re: [linux-next][PATCH] cpumask:cpumask_of_node-ia64 fix
+Cc: kosaki.motohiro@jp.fujitsu.com, "Luck, Tony" <tony.luck@intel.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20081211105721.4FEE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20081210164659.9ebb8158.sfr@canb.auug.org.au> <20081211105721.4FEE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20081211130833.4FFA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu, 11 Dec 2008 13:09:17 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Dec 2008 14:14:36 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Oops, sorry.
 
-> Hi Andrew,
-> 
-> On Wed, 10 Dec 2008 21:34:56 -0500 Chris Mason <chris.mason@oracle.com> wrote:
-> >
-> > Just an update, while I still have a long todo list and plenty of things
-> > to fix in the code, these src trees have been updated with a disk format
-> > I hope to maintain compatibility with from here on.  There are still
-> > format changes planned, but should go in through the compat mechanisms
-> > in the sources now.
-> > 
-> > The btrfs trees are still at 2.6.28-rc5, but I just tested against
-> > linux-next without problems.
-> 
-> Do you think this is ready to be added to the end of linux-next, yet?  Or
-> is this more -mm material?
+I forgot cc to linux-ia64.
 
-I'd prefer that it go into linux-next in the usual fashion.  But the
-first step is review..
+
+> ===
+> Subject: [PATCH] cpumask:cpumask_of_node-ia64 fix
+> Impact: bug fix
+> 
+> commit 07c636deede53ff3e96d54df0ece2c838e61951f introduce new CPU mask API and change cpu_mask variable type.
+> 
+> -----------------------------------------------
+> -               cpumask_t cpu_mask;
+> +               const struct cpumask *cpu_mask;
+> --------------------------------------------------
+> 
+> 
+> However, its change is incomplete. in build time, compiler output following type mismatch warnings.
+> 
+>   arch/ia64/kernel/iosapic.c:708: warning: passing argument 2 of '__cpu_clear' from incompatible pointer type
+>   arch/ia64/kernel/iosapic.c:711: warning: passing argument 1 of '__cpus_weight' from incompatible pointer type
+>   arch/ia64/kernel/iosapic.c:719: warning: passing argument 1 of '__first_cpu' from incompatible pointer type
+>   arch/ia64/kernel/iosapic.c:720: warning: passing argument 2 of '__next_cpu' from incompatible pointer type
+> 
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: "Luck, Tony" <tony.luck@intel.com>
+> CC: Rusty Russell <rusty@rustcorp.com.au>
+> ---
+>  arch/ia64/kernel/iosapic.c |   10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+> 
+> Index: b/arch/ia64/kernel/iosapic.c
+> ===================================================================
+> --- a/arch/ia64/kernel/iosapic.c
+> +++ b/arch/ia64/kernel/iosapic.c
+> @@ -695,7 +695,7 @@ get_target_cpu (unsigned int gsi, int ir
+>  #ifdef CONFIG_NUMA
+>  	{
+>  		int num_cpus, cpu_index, iosapic_index, numa_cpu, i = 0;
+> -		const struct cpumask *cpu_mask;
+> +		struct cpumask *cpu_mask;
+>  
+>  		iosapic_index = find_iosapic(gsi);
+>  		if (iosapic_index < 0 ||
+> @@ -705,10 +705,10 @@ get_target_cpu (unsigned int gsi, int ir
+>  		cpu_mask = cpumask_of_node(iosapic_lists[iosapic_index].node);
+>  		for_each_cpu_and(numa_cpu, cpu_mask, &domain) {
+>  			if (!cpu_online(numa_cpu))
+> -				cpu_clear(numa_cpu, cpu_mask);
+> +				cpu_clear(numa_cpu, *cpu_mask);
+>  		}
+>  
+> -		num_cpus = cpus_weight(cpu_mask);
+> +		num_cpus = cpus_weight(*cpu_mask);
+>  
+>  		if (!num_cpus)
+>  			goto skip_numa_setup;
+> @@ -716,8 +716,8 @@ get_target_cpu (unsigned int gsi, int ir
+>  		/* Use irq assignment to distribute across cpus in node */
+>  		cpu_index = irq % num_cpus;
+>  
+> -		for (numa_cpu = first_cpu(cpu_mask) ; i < cpu_index ; i++)
+> -			numa_cpu = next_cpu(numa_cpu, cpu_mask);
+> +		for (numa_cpu = first_cpu(*cpu_mask) ; i < cpu_index ; i++)
+> +			numa_cpu = next_cpu(numa_cpu, *cpu_mask);
+>  
+>  		if (numa_cpu != NR_CPUS)
+>  			return cpu_physical_id(numa_cpu);
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+
