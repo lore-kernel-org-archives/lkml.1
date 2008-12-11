@@ -1,139 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbYLKV6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbYLKV65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758553AbYLKV6g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 16:58:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757115AbYLKV61
+	id S1758530AbYLKV65 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 16:58:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758599AbYLKV6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 16:58:27 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:46163 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756521AbYLKV60 (ORCPT
+	Thu, 11 Dec 2008 16:58:44 -0500
+Received: from qmta04.westchester.pa.mail.comcast.net ([76.96.62.40]:58858
+	"EHLO QMTA04.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756826AbYLKV6m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 16:58:26 -0500
-From: Trent Piepho <tpiepho@freescale.com>
-To: linux-kernel@vger.kernel.org
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Trent Piepho <tpiepho@freescale.com>,
-       Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v2 3/4] leds: Let GPIO LEDs keep their current state
-Date: Thu, 11 Dec 2008 13:49:57 -0800
-Message-Id: <1229032198-19775-3-git-send-email-tpiepho@freescale.com>
-X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <Pine.LNX.4.64.0812111326480.28806@t2.domain.actdsltmp>
-References: <Pine.LNX.4.64.0812111326480.28806@t2.domain.actdsltmp>
+	Thu, 11 Dec 2008 16:58:42 -0500
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: [PATCH] e1000e: fix double release of mutex
+To: davem@davemloft.net, akpm@linux-foundation.org
+Cc: frederik.deweerdt@xprog.eu, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, jesse.brandeburg@intel.com,
+       linux-kernel@vger.kernel.org, stable@kernel.org, tglx@linutronix.de,
+       zdenek.kabelac@gmail.com, Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 11 Dec 2008 13:58:07 -0800
+Message-ID: <20081211215806.1173.24413.stgit@lost.foo-projects.org>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let GPIO LEDs get their initial value from whatever the current state of
-the GPIO line is.  On some systems the LEDs are put into some state by the
-firmware or hardware before Linux boots, and it is desired to have them
-keep this state which is otherwise unknown to Linux.
+During a reset, releasing the swflag after it failed to be acquired would
+cause a double unlock of the mutex.  Instead, test whether acquisition of
+the swflag was successful and if not, do not release the swflag.  The reset
+must still be done to bring the device to a quiescent state.
 
-This requires that the underlying GPIO driver support reading the value of
-output GPIOs.  Some drivers support this and some do not.
+This resolves [BUG 12200] BUG: bad unlock balance detected! e1000e
+http://bugzilla.kernel.org/show_bug.cgi?id=12200
 
-The platform data for the platform device binding gets a new field
-'keep_state' which turns this on.  keep_state overrides default_state.
-
-For the OpenFirmware bindings, the "default-state" property gains a new
-allowable setting "keep".
-
-Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
- Documentation/powerpc/dts-bindings/gpio/led.txt |   16 ++++++++++++----
- drivers/leds/leds-gpio.c                        |   12 ++++++++----
- include/linux/leds.h                            |    3 ++-
- 3 files changed, 22 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/powerpc/dts-bindings/gpio/led.txt b/Documentation/powerpc/dts-bindings/gpio/led.txt
-index 5df384d..064db92 100644
---- a/Documentation/powerpc/dts-bindings/gpio/led.txt
-+++ b/Documentation/powerpc/dts-bindings/gpio/led.txt
-@@ -21,10 +21,12 @@ LED sub-node properties:
-     "ide-disk" - LED indicates disk activity
-     "timer" - LED flashes at a fixed, configurable rate
- - default-state:  (optional) The initial state of the LED.  Valid
--  values are "on" and "off".  If the LED is already on or off and the
--  default-state property is set the to same value, then no glitch
--  should be produced where the LED momentarily turns off (or on).
--  The default is off if this property is not present.
-+  values are "on", "off", and "keep".  If the LED is already on or off
-+  and the default-state property is set the to same value, then no
-+  glitch should be produced where the LED momentarily turns off (or
-+  on).  The "keep" setting will keep the LED at whatever its current
-+  state is, without producing a glitch.  The default is off if this
-+  property is not present.
- 
- Examples:
- 
-@@ -35,6 +37,12 @@ leds {
- 		gpios = <&mcu_pio 0 1>; /* Active low */
- 		linux,default-trigger = "ide-disk";
- 	};
-+
-+	fault {
-+		gpios = <&mcu_pio 1 0>;
-+		/* Keep LED on if BIOS detected hardware fault */
-+		default-state = "keep";
-+	};
- };
- 
- run-control {
-diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
-index 1ad96d2..bb9d9ff 100644
---- a/drivers/leds/leds-gpio.c
-+++ b/drivers/leds/leds-gpio.c
-@@ -76,7 +76,7 @@ static int __devinit create_gpio_led(const struct gpio_led *template,
- 	struct gpio_led_data *led_dat, struct device *parent,
- 	int (*blink_set)(unsigned, unsigned long *, unsigned long *))
- {
--	int ret;
-+	int ret, state;
- 
- 	ret = gpio_request(template->gpio, template->name);
- 	if (ret < 0)
-@@ -92,10 +92,13 @@ static int __devinit create_gpio_led(const struct gpio_led *template,
- 		led_dat->cdev.blink_set = gpio_blink_set;
+ drivers/net/e1000e/ich8lan.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
+index 92f2ace..f2a5963 100644
+--- a/drivers/net/e1000e/ich8lan.c
++++ b/drivers/net/e1000e/ich8lan.c
+@@ -1939,12 +1939,17 @@ static s32 e1000_reset_hw_ich8lan(struct e1000_hw *hw)
+ 		ctrl |= E1000_CTRL_PHY_RST;
  	}
- 	led_dat->cdev.brightness_set = gpio_led_set;
--	led_dat->cdev.brightness = template->default_state ? LED_FULL : LED_OFF;
-+	if (template->keep_state)
-+		state = !!gpio_get_value(led_dat->gpio) ^ led_dat->active_low;
-+	else
-+		state = template->default_state;
-+	led_dat->cdev.brightness = state ? LED_FULL : LED_OFF;
+ 	ret_val = e1000_acquire_swflag_ich8lan(hw);
++	/* Whether or not the swflag was acquired, we need to reset the part */
+ 	hw_dbg(hw, "Issuing a global reset to ich8lan\n");
+ 	ew32(CTRL, (ctrl | E1000_CTRL_RST));
+ 	msleep(20);
  
--	ret = gpio_direction_output(led_dat->gpio,
--				led_dat->active_low ^ template->default_state);
-+	ret = gpio_direction_output(led_dat->gpio, led_dat->active_low ^ state);
- 	if (ret < 0)
- 		goto err;
+-	/* release the swflag because it is not reset by hardware reset */
+-	e1000_release_swflag_ich8lan(hw);
++	if (!ret_val) {
++		/* release the swflag because it is not reset by
++		 * hardware reset
++		 */
++		e1000_release_swflag_ich8lan(hw);
++	}
  
-@@ -271,6 +274,7 @@ static int __devinit of_gpio_leds_probe(struct of_device *ofdev,
- 			of_get_property(child, "linux,default-trigger", NULL);
- 		state = of_get_property(child, "default-state", NULL);
- 		led.default_state = state && !strcmp(state, "on");
-+		led.keep_state = state && !strcmp(state, "keep");
- 
- 		ret = create_gpio_led(&led, &pdata->led_data[pdata->num_leds++],
- 				      &ofdev->dev, NULL);
-diff --git a/include/linux/leds.h b/include/linux/leds.h
-index caa3987..c51b625 100644
---- a/include/linux/leds.h
-+++ b/include/linux/leds.h
-@@ -138,7 +138,8 @@ struct gpio_led {
- 	const char *default_trigger;
- 	unsigned 	gpio;
- 	u8 		active_low;
--	u8		default_state;
-+	u8		default_state;	/* 0 = off, 1 = on */
-+	u8		keep_state; /* overrides default_state */
- };
- 
- struct gpio_led_platform_data {
--- 
-1.5.4.1
+ 	ret_val = e1000e_get_auto_rd_done(hw);
+ 	if (ret_val) {
 
