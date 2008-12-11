@@ -1,97 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbYLKST6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbYLKSV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756884AbYLKST6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 13:19:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbYLKSTt
+	id S1756854AbYLKSV4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 13:21:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbYLKSVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 13:19:49 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:56168 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754467AbYLKSTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 13:19:49 -0500
-Message-ID: <494159C2.5020401@sgi.com>
-Date: Thu, 11 Dec 2008 10:19:46 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 11 Dec 2008 13:21:47 -0500
+Received: from fbr02.csee.onr.siteprotect.com ([64.26.60.146]:56663 "EHLO
+	fbr02.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755082AbYLKSVq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 13:21:46 -0500
+X-Greylist: delayed 1409 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Dec 2008 13:21:45 EST
+Date: Thu, 11 Dec 2008 13:02:33 -0500 (EST)
+From: Vince Weaver <vince@deater.net>
+X-X-Sender: vince@pianoman.cluster.toy
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [patch] Performance Counters for Linux, v3
+In-Reply-To: <20081211155230.GA4230@elte.hu>
+Message-ID: <Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
+References: <20081211155230.GA4230@elte.hu>
 MIME-Version: 1.0
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-CC: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] cpumask: use maxcpus=NUM to extend the cpu limit
- as well as restrict the limit
-References: <20081211112806.499831000@polaris-admin.engr.sgi.com> <20081211112807.004085000@polaris-admin.engr.sgi.com> <20081211134131.GB6264@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20081211134131.GB6264@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heiko Carstens wrote:
-> On Thu, Dec 11, 2008 at 03:28:09AM -0800, Mike Travis wrote:
->> Impact: allow adding additional cpus.
->>
->> Use maxcpus=NUM kernel parameter to extend the number of possible cpus as well
->> as (currently) limit them.  Any cpus >= number of present cpus will disabled.
->>
->> The ability to HOTPLUG ON cpus that are "possible" but not "present" is
->> dealt with in a later patch.
-> 
-> Hm.. documentation/kernel-parameters.txt says:
-> 
-> 	maxcpus=	[SMP] Maximum number of processors that an SMP kernel
-> 			should make use of.  maxcpus=n : n >= 0 limits the
-> 			kernel to using 'n' processors.	 n=0 is a special case,
-> 			it is equivalent to "nosmp", which also disables
-> 			the IO APIC.
-> 
-> but documentation/cpu-hotplug.txt says:
-> 
-> maxcpus=n    Restrict boot time cpus to n. Say if you have 4 cpus, using
-> 	     maxcpus=2 will only boot 2. You can choose to bring the
-> 	     other cpus later online, read FAQ's for more info.
-> 
-> It used to be (implementation wise) that maxcpus doesn't influence the number
-> of possible cpus but just indicated how many cpus were brought online at startup
-> of the kernel. Which is what cpu-hotplug.txt describes.
-> 
-> Other present cpus would appear offline and could be brought online later.
-> 
-> For s390 I added the possible_cpus kernel parameter back then, since my
-> understanding back then was that maxcpus doesn't and shouldn't influence the
-> number of possible cpus:
-> 
-> possible_cpus=n		[s390 only] use this to set hotpluggable cpus.
-> 			This option sets possible_cpus bits in
-> 			cpu_possible_map. Thus keeping the numbers of bits set
-> 			constant even if the machine gets rebooted.
-> 
-> Dunno... it all looks like a mess ;)
 
-Hmm, I hadn't noticed that.  For a while the X86 devel kernel had an
-"additional_cpus=n" parameter, which was also a bit confusing.  Say you
-wanted, 64 total, you had to give the increment over how many you already
-had [e.g., (want)64 - (have)16  = (additional_cpus=)48.]
+Can someone tell me which performance counter implementation is likely to 
+get merged into the Kernel?
 
-I just figured that re-using the same kernel parameter was better than adding
-another.  But I'm willing to go either way.
+I have at least 60 machines that I do regular performance counter work on. 
+They involve Pentium Pro, Pentium II, 32-bit Athlon, 64-bit Athlon, 
+Pentium 4, Pentium D, Core, Core2, Atom, MIPS R12k, Niagara T1, 
+and PPC/Playstation 3.
 
-Btw, I did alter the Documentation/kernel-parameters.txt file:
+Perfmon3 works for all of those 60 machines.  This new proposal works on a 
+2 out of the 60.
 
-        maxcpus=        [SMP] Maximum number of processors that an SMP kernel
-                        should make use of.  maxcpus=n : n >= 0 limits the
-                        kernel to using 'n' processors.  n=0 is a special case,
-                        it is equivalent to "nosmp", which also disables
-                        the IO APIC.  On [X86] maxcpus can also be used to
-                        extend the number of possible cpus to overcome ACPI
-                        tables that do not indicate disabled cpus, as well as
-                        allow for additional cpus to be HOT PLUGGED in.
-                        Format: <0-NR_CPUS>
+Who is going to add support for all of those machines?  I've spent a lot 
+of developer time getting prefmon going for all of those configurations. 
+But why should I help out with this new inferior proposal?  It could all 
+be another waste of time.
 
-In modifying the code, I could not find any arch-specific instances and the only
-general case was in the 3 references in init/main.c, so I figured it was pretty
-safe to use.
+So I'd like someone to commit to some performance monitoring architecture. 
+Otherwise we're going to waste thousands of hours of developer time around 
+the world.  It's all pointless.
 
-Thanks,
-Mike
+Also, my primary method of using counters is total aggregate count for a 
+single user-space process.  So I use perfmon's pfmon tool to run an entire 
+lon-running program, gathering full stats only at the very end.  pfmon can 
+do this with pretty much zero overhead (I have lots of data and a few 
+publications using this method).  Can this new infrastructure to this?  I 
+find the documentation/tools support to be very incomplete.
+
+One comment on the patch.
+
+
+> +	/*
+> +	 * Common hardware events, generalized by the kernel:
+> +	 */
+> +	PERF_COUNT_CYCLES		=  0,
+> +	PERF_COUNT_INSTRUCTIONS		=  1,
+> +	PERF_COUNT_CACHE_REFERENCES	=  2,
+> +	PERF_COUNT_CACHE_MISSES		=  3,
+> +	PERF_COUNT_BRANCH_INSTRUCTIONS	=  4,
+> +	PERF_COUNT_BRANCH_MISSES	=  5,
+
+Many machines do not support these counts.  For example, Niagara T1 does 
+not have a CYCLES count.  And good luck if you think you can easily come 
+up with something meaningful for the various kind of CACHE_MISSES on the 
+Pentium 4.  Also, the Pentium D has various flavors of retired instruction 
+count with slightly different semantics.  This kind of abstraction should 
+be done in userspace.
+
+Vince
