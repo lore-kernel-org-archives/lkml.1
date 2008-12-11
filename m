@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYLKI64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYLKI7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbYLKI64 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 03:58:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYLKI6q
+	id S1756152AbYLKI7j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 03:59:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYLKI71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 03:58:46 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:57498 "EHLO relay.atmel.no"
+	Thu, 11 Dec 2008 03:59:27 -0500
+Received: from phunq.net ([64.81.85.152]:45127 "EHLO moonbase.phunq.net"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753924AbYLKI6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 03:58:45 -0500
-X-Greylist: delayed 1719 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Dec 2008 03:58:44 EST
-Date: Thu, 11 Dec 2008 09:29:59 +0100
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-To: Alex Raimondi <mailinglist@miromico.ch>
-Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
-Subject: Re: Segfault in fbcmap.c => Compiler bug?
-Message-ID: <20081211092959.6410c352@hcegtvedt>
-In-Reply-To: <4940CE1F.5080605@miromico.ch>
-References: <4940CE1F.5080605@miromico.ch>
-Organization: Atmel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754116AbYLKI70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 03:59:26 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Tux3 report: Tux3 by Christmas?
+Date: Thu, 11 Dec 2008 00:59:24 -0800
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, tux3@tux3.org
+References: <200812101435.40393.phillips@phunq.net> <20081210233617.ddb3fa30.akpm@linux-foundation.org>
+In-Reply-To: <20081210233617.ddb3fa30.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812110059.25155.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Dec 2008 09:23:59 +0100
-Alex Raimondi <mailinglist@miromico.ch> wrote:
-
-Hi Alex,
-
-> I am using latest atmel avr32 kernel (2.6.27) form
-> git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git.
-> I am on it's master branch. I added a few patches specific to our own
-> board (hammerhead). 
+On Wednesday 10 December 2008 23:36, Andrew Morton wrote:
+> On Wed, 10 Dec 2008 14:35:39 -0800 Daniel Phillips <phillips@phunq.net> wrote:
 > 
-
-Which toolchain are you using? If you have grabbed it from atmel.com
-you have to download Buildroot for AVR32 [1] and build your own
-toolchain. The toolchain on atmel.com is broken.
-
-> When compiling with support for atmel_lcdfb the kernel segfaults at
-> module probe.
+> > The big goals for Christmas (this Christmas!) are:
+> > 
+> >    - SMP locking
+> >    - Atomic commit
+> >    - Posixly complete
+> >    - Rudimentary fsck
+> > 
+> > ...
+> > 
+> > Non-goals for Christmas include:
+> > 
+> >    - Versioning
+> >    - Directory indexing (PHTree)
+> >    - fsck repair
 > 
-> This is the segfault output:
+> If it is your intention to submit this for a mainline merge then I
+> would encourage you to stop feature work at the earliest reasonable
+> stage and then move into the document, submit, review, merge, fixfixfix
+> phase.  That might take as long as several months.
 > 
-> **********************************
-> alg: No test for stdrng (krng)
-> io scheduler noop registered
-> io scheduler cfq registered (default)
-> atmel_lcdfb atmel_lcdfb.0: 225KiB frame buffer at 13940000 (mapped at
-> b3940000) Unable to handle kernel NULL pointer dereference at virtual
+> Once things have stabilised and it's usable and performs respectably,
+> start thinking about features again.
+> 
+> Do NOT fall into the trap of adding more and more and more stuff to an
+> out-of-tree project.  It just makes it harder and harder to get it
+> merged.  There are many examples of this.
 
-Does indeed look like a known GCC bug.
+I think I was getting all geared up to be another example of that.  Ok,
+"usable" to me means with atomic commit and SMP locking, and doesn't
+immediately oops.  And put the versioning and directory index aside for
+the moment, which is not a big question mark because we have done both
+before.
+ 
+> Also, don't feel that a merge would lock you into the current on-disk
+> layout.  I think it would be acceptable to emit a big printk("the
+> format of this fs will change without notice.  Do not yet store any
+> data on a tux3 fs") during mount().   For a while.
 
-<snipp> rest of kernel dump and debugging>
+Got it.
 
-1: www.atmel.no/buildroot
+Regards,
 
--- 
-Best regards,
-Hans-Christian Egtvedt
+Daniel
