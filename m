@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbYLKTdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbYLKT0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759086AbYLKTdE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:33:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757728AbYLKTSr
+	id S1758392AbYLKT0k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:26:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757572AbYLKTS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:18:47 -0500
-Received: from kroah.org ([198.145.64.141]:56274 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:18:29 -0500
+Received: from kroah.org ([198.145.64.141]:56015 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757716AbYLKTSp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:18:45 -0500
-Date: Thu, 11 Dec 2008 11:15:06 -0800
+	id S1756250AbYLKTSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:18:20 -0500
+Date: Thu, 11 Dec 2008 11:14:21 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 42/83] USB: usb-storage: unusual_devs entry for Nikon D2H
-Message-ID: <20081211191506.GP5894@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Dmitry Torokhov <dtor@mail.ru>
+Subject: [patch 24/83] Input: i8042 - add Compal Hel80 laptop to nomux
+	blacklist
+Message-ID: <20081211191421.GX5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline; filename="usb-usb-storage-unusual_devs-entry-for-nikon-d2h.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="input-i8042-add-compal-hel80-laptop-to-nomux-blacklist.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,33 +40,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tobias Kunze Briseño <t@fictive.com>,
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-commit 621b239d75b790ac66854d46b094874f69e6776e upstream
+commit 5f4ba04ffd8fc9f6b15b92270ef0517ae52dcf3a upstream.
 
-This patch adds an unusual_devs entry for the Nikon D2H camera.
-
-From: Tobias Kunze Briseño <t@fictive.com>,
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Reported-by: Jaime Cura <jimyx17@gmail.com>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- drivers/usb/storage/unusual_devs.h |    7 +++++++
+ drivers/input/serio/i8042-x86ia64io.h |    7 +++++++
  1 file changed, 7 insertions(+)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -389,6 +389,13 @@ UNUSUAL_DEV(  0x04b0, 0x0401, 0x0200, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_FIX_CAPACITY),
+--- a/drivers/input/serio/i8042-x86ia64io.h
++++ b/drivers/input/serio/i8042-x86ia64io.h
+@@ -344,6 +344,13 @@ static struct dmi_system_id __initdata i
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "XPS M1530"),
+ 		},
+ 	},
++	{
++		.ident = "Compal HEL80I",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "COMPAL"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "HEL80I"),
++		},
++	},
+ 	{ }
+ };
  
-+/* Reported by Tobias Kunze Briseno <t-linux@fictive.com> */
-+UNUSUAL_DEV(  0x04b0, 0x0403, 0x0200, 0x0200,
-+		"NIKON",
-+		"NIKON DSC D2H",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_FIX_CAPACITY),
-+
- /* Reported by Milinevsky Dmitry <niam.niam@gmail.com> */
- UNUSUAL_DEV(  0x04b0, 0x0409, 0x0100, 0x0100,
- 		"NIKON",
 
