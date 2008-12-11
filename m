@@ -1,102 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758401AbYLKUGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbYLKUM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758401AbYLKUGk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 15:06:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756779AbYLKUG3
+	id S1757164AbYLKUM4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 15:12:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756229AbYLKUMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 15:06:29 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:42637 "EHLO e4.ny.us.ibm.com"
+	Thu, 11 Dec 2008 15:12:47 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58678 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756541AbYLKUG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 15:06:28 -0500
-Subject: Re: [PATCH] JFS: ensure link targets are NULL-terminated
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Dave.Kleikamp.shaggy@austin.ibm.com,
-       jfs-discussion@lists.sourceforge.net
-In-Reply-To: <1229022995-9898-9-git-send-email-duaneg@dghda.com>
-References: <1229022995-9898-1-git-send-email-duaneg@dghda.com>
-	 <1229022995-9898-2-git-send-email-duaneg@dghda.com>
-	 <1229022995-9898-3-git-send-email-duaneg@dghda.com>
-	 <1229022995-9898-4-git-send-email-duaneg@dghda.com>
-	 <1229022995-9898-5-git-send-email-duaneg@dghda.com>
-	 <1229022995-9898-6-git-send-email-duaneg@dghda.com>
-	 <1229022995-9898-7-git-send-email-duaneg@dghda.com>
-	 <1229022995-9898-8-git-send-email-duaneg@dghda.com>
-	 <1229022995-9898-9-git-send-email-duaneg@dghda.com>
-Content-Type: text/plain
-Date: Thu, 11 Dec 2008 14:06:11 -0600
-Message-Id: <1229025971.9245.18.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1756227AbYLKUMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 15:12:46 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.28-rc8
+Date: Thu, 11 Dec 2008 21:12:05 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812112112.05936.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-11 at 19:16 +0000, Duane Griffin wrote:
-> Ensure link targets are NULL-terminated, even if corrupted on-disk.
+On Thursday, 11 of December 2008, Linus Torvalds wrote:
 > 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-> ---
->  fs/jfs/symlink.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+> Nothing overly exciting here. Lots of small things, mostly in drivers 
+> (with some defconfig updates for m68k and mips making the diffs bigger). 
 > 
-> diff --git a/fs/jfs/symlink.c b/fs/jfs/symlink.c
-> index 4af1a05..f5f1b5d 100644
-> --- a/fs/jfs/symlink.c
-> +++ b/fs/jfs/symlink.c
-> @@ -18,6 +18,7 @@
->  
->  #include <linux/fs.h>
->  #include <linux/namei.h>
-> +#include "jfs_filsys.h"
->  #include "jfs_incore.h"
->  #include "jfs_inode.h"
->  #include "jfs_xattr.h"
-> @@ -25,6 +26,7 @@
->  static void *jfs_follow_link(struct dentry *dentry, struct nameidata *nd)
->  {
->  	char *s = JFS_IP(dentry->d_inode)->i_inline;
-> +	s[IDATASIZE - 1] = '\0';
->  	nd_set_link(nd, s);
->  	return NULL;
->  }
+> There's some uncomfortably big changes to the intel DRI code, but most of 
+> that is all about fixes to the new i916 "GEM" code that is only used by 
+> development X servers, and is a new feature, so it shouldn't be able to 
+> cause regressions.
+> 
+> Perhaps more interesting is simply the release scheduling issue. I'm 
+> getting slowly ready to do a real 2.6.28, but I don't think anybody really 
+> wants the merge window to be around the holidays. So the question is 
+> really whether to 
+> 
+>  (a) just make the -rc's go on a few more weeks, and do 2.6.28 after xmas
+> 
+>      I like this, because alledgely people are debugging things, and we'd 
+>      get a more stable 2.6.28.
+> 
+> or
+> 
+>  (b) release in a week or two, but just allow for possibly extending the 
+>      merge window due to people being drunk on eggnog..
+> 
+>      I like this because let's face it, we get more and better bug 
+>      information after releases, and everything _should_ be ready for 
+>      merging *before* the merge window anyway.
 
-Thanks.
+FWIW, I vote for this one.
 
-I came up with an alternate patch that I like slightly better.  This one
-null-terminates the string when the inode is read rather than every time
-the link is followed, and at the proper place (i_size).  It's not a big
-deal, since the symlink will be corrupted either way.  What do you think
-of this patch?
-
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-
-diff --git a/fs/jfs/inode.c b/fs/jfs/inode.c
-index 2103397..b00ee9f 100644
---- a/fs/jfs/inode.c
-+++ b/fs/jfs/inode.c
-@@ -59,8 +59,14 @@ struct inode *jfs_iget(struct super_block *sb, unsigned long ino)
- 		if (inode->i_size >= IDATASIZE) {
- 			inode->i_op = &page_symlink_inode_operations;
- 			inode->i_mapping->a_ops = &jfs_aops;
--		} else
-+		} else {
- 			inode->i_op = &jfs_symlink_inode_operations;
-+			/*
-+			 * The inline data should be null-terminated, but
-+			 * don't let on-disk corruption crash the kernel
-+			 */
-+			JFS_IP(inode)->i_inline[inode->i_size] = '\0';
-+		}
- 	} else {
- 		inode->i_op = &jfs_file_inode_operations;
- 		init_special_inode(inode, inode->i_mode, inode->i_rdev);
-
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+Thanks,
+Rafael
