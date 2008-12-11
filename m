@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbYLKWFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYLKWN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758825AbYLKWFj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 17:05:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758184AbYLKWFR
+	id S1757946AbYLKWN7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 17:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756919AbYLKWNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 17:05:17 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:52272 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758118AbYLKWFQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 17:05:16 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <49418E99.9070202@s5r6.in-berlin.de>
-Date: Thu, 11 Dec 2008 23:05:13 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081116 SeaMonkey/1.1.13
-MIME-Version: 1.0
-To: LINUX NEWBIE <lnxnewbie@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Add new capture device driver in Linux
-References: <55fdf7050812021644o3bffc326n1eedfb699c2a141c@mail.gmail.com>	 <4936B4C7.909@s5r6.in-berlin.de> <55fdf7050812111316q57aca4a2idfe3caae4b1244ce@mail.gmail.com>
-In-Reply-To: <55fdf7050812111316q57aca4a2idfe3caae4b1244ce@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Dec 2008 17:13:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:32828 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756789AbYLKWNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 17:13:48 -0500
+From: Adam Jackson <ajax@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Dave Jones <davej@redhat.com>, Adam Jackson <ajax@redhat.com>
+Subject: [PATCH] net: Remove a noisy printk
+Date: Thu, 11 Dec 2008 17:13:42 -0500
+Message-Id: <1229033625-30825-1-git-send-email-ajax@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LINUX NEWBIE wrote:
->     Thanks.  Where can I find an example of a basic PCIe analog
-> capture driver?  Basically what does a basic PCIe capture driver need?
+From: Dave Jones <davej@redhat.com>
 
-You can look at any PCI capture device driver, since there is no
-difference between PCI and PCIe device drivers.
+These messages are trivial to trigger when running stress tests
+like isic, and add no real value.
+
+Signed-off-by: Dave Jones <davej@redhat.com>
+Signed-off-by: Adam Jackson <ajax@redhat.com>
+---
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+index 4a7c352..0e86d0d 100644
+--- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
++++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+@@ -147,8 +147,6 @@ static unsigned int ipv4_conntrack_local(unsigned int hooknum,
+ 	/* root is playing with raw sockets. */
+ 	if (skb->len < sizeof(struct iphdr) ||
+ 	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
+-		if (net_ratelimit())
+-			printk("ipt_hook: happy cracking.\n");
+ 		return NF_ACCEPT;
+ 	}
+ 	return nf_conntrack_in(dev_net(out), PF_INET, hooknum, skb);
 -- 
-Stefan Richter
--=====-==--- ==-- -=-==
-http://arcgraph.de/sr/
+1.6.0.3
+
