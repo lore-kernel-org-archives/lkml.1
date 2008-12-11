@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbYLKPkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbYLKPkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbYLKPkA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 10:40:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbYLKPjw
+	id S1756824AbYLKPkk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 10:40:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbYLKPkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 10:39:52 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:50870 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756010AbYLKPjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 10:39:51 -0500
-Date: Thu, 11 Dec 2008 15:39:47 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into
-	pcp
-Message-ID: <20081211153947.GA27315@csn.ul.ie>
-References: <Pine.LNX.4.64.0811071244330.5387@quilx.com> <20081205154006.GA19366@csn.ul.ie> <20081207172115.53E1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 11 Dec 2008 10:40:31 -0500
+Received: from n56.bullet.mail.sp1.yahoo.com ([98.136.44.52]:30092 "HELO
+	n56.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756010AbYLKPkb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 10:40:31 -0500
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 892232.99471.bm@omp202.mail.sp1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=0RLMjGvoEekkexjSqMi/rzEhhwQwB5XZnUhvYYZQBse28GLEIQouc1IHM1XKsBP1C15xOpNRIsSVWavcCUASV6SB9LZFugj59Xr0pDkmeHznVCfxWLyj5k8soHeRYcKzgZQopJdUSc7+qCfoEZRCES6c0wcK7uI1E/pUfdPuOZ4=;
+X-YMail-OSG: bvmFdC8VM1nGE7MjoflIcaf5xXWxDqsjhGD1paZ6mqxN33qpZzbIXIyLNuZIhSbjsqDYD_6RZsbJ7M2Iai7V7Byt0bGlw6z4A1dTMDq9._wta_U.7AGpk98lxqKui.ruvHe0qKomQrYrAdn0cica6P.1JUZuZq97vw1ALire6jJyl6oekc2bZyN4AJxOgc2xBmC.i1In9I6HByj.._Kcep.tqJok
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Thu, 11 Dec 2008 07:39:20 -0800 (PST)
+From: H L <swdevyid@yahoo.com>
+Reply-To: swdevyid@yahoo.com
+Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
+To: Yu Zhao <yu.zhao@intel.com>, Grant Grundler <grundler@parisc-linux.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "achiang@hp.com" <achiang@hp.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+In-Reply-To: <20081211043340.GA9783@colo.lackof.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20081207172115.53E1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <772646.16040.qm@web45116.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 07, 2008 at 05:22:48PM +0900, KOSAKI Motohiro wrote:
-> > 
-> > ====== CUT HERE ======
-> > From: Mel Gorman <mel@csn.ul.ie>
-> > Subject: [RFC] Split per-cpu list into one-list-per-migrate-type
-> > 
-> > Currently the per-cpu page allocator searches the PCP list for pages of the
-> > correct migrate-type to reduce the possibility of pages being inappropriate
-> > placed from a fragmentation perspective. This search is potentially expensive
-> > in a fast-path and undesirable. Splitting the per-cpu list into multiple lists
-> > increases the size of a per-cpu structure and this was potentially a major
-> > problem at the time the search was introduced. These problem has been
-> > mitigated as now only the necessary number of structures is allocated for the
-> > running system.
-> > 
-> > This patch replaces a list search in the per-cpu allocator with one list
-> > per migrate type that should be in use by the per-cpu allocator - namely
-> > unmovable, reclaimable and movable.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> 
-> Great.
-> 
-> this patch works well on my box too.
-> and my review didn't find any bug.
-> 
-> very thanks.
-> 
-> 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> 
+--- On Wed, 12/10/08, Grant Grundler <grundler@parisc-linux.org> wrote:
 
-Thanks very much for the review. I guess in principal I should stick
-with this patch then and go with another revision so. Are there any
-concerns about the increase in size of a per-cpu structure or are we
-confident that it'll be kept to a minimum with the cpu_alloc stuff?
+> Date: Wednesday, December 10, 2008, 10:33 PM
+> On Thu, Dec 11, 2008 at 09:43:13AM +0800, Yu Zhao wrote:
+> ...
+> > I believe this is the only problem that preclude us
+> having the run-time
+> > resource rebalance. And I'm not sure how much
+> effort we can fix it. Any
+> > comments?
+> 
+> Figure out the right sequence for driver resume so the
+> probe function
+> can call resume as well?
+> 
+> Document the change and then start modifying drivers
+> one-by-one.
+> API changes are alot of work.
+> 
+> grant
+> --
 
-Similarly, are there suggestions on how to prove more conclusively that
-this is a performance win? I saw between 1% and 2% on tbench on some
-machines but not all so preferably we'd be more confident. Intuitively,
-the patch makes sense that it would be faster to me but I'd prove it for
-sure if possible.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+I've been lurking awaiting to see such a discussion.  Alerting the PCI drivers that their resources have been changed from underneath them by extending the suspend/resume model, or perhaps (heresy?) adding a new callback entry point specifically for instructing PCI drivers to re-read their BARs, etc. would be a step in the right direction to enable this whole re-balancing work; well, granted root/paging devs bound to PCI devs could be tricky.  It seems entirely natural (to me) that Microsoft would shudder at the amount of work and verification of all drivers to do this, but the Linux community's attitude seems to embrace sweeping changes ;-).
+
+--
+LH
+
+
+      
+
