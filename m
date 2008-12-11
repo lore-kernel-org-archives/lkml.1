@@ -1,86 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbYLKTM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbYLKTQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757492AbYLKTM2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbYLKTMN
+	id S1757192AbYLKTQx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbYLKTQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:12:13 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:52529 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751542AbYLKTMM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:12:12 -0500
-Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user
-	space data
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>, linux-scsi@vger.kernel.org,
+	Thu, 11 Dec 2008 14:16:41 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:39554 "EHLO kumera.dghda.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756111AbYLKTQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:16:40 -0500
+From: "Duane Griffin" <duaneg@dghda.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, Boaz Harrosh <bharrosh@panasas.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org
-In-Reply-To: <4941590F.3070705@vlnb.net>
-References: <494009D7.4020602@vlnb.net> <494012C4.7090304@vlnb.net>
-	 <20081210214500.GA24212@ioremap.net>  <4941590F.3070705@vlnb.net>
-Content-Type: text/plain
-Date: Thu, 11 Dec 2008 13:12:14 -0600
-Message-Id: <1229022734.3266.67.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+       Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH 0/11] make link target handling more robust
+Date: Thu, 11 Dec 2008 19:16:24 +0000
+Message-Id: <1229022995-9898-1-git-send-email-duaneg@dghda.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-11 at 21:16 +0300, Vladislav Bolkhovitin wrote:
-> Hi Evgeniy,
-> 
-> Evgeniy Polyakov wrote:
-> > Hi Vladislav.
-> > 
-> > On Wed, Dec 10, 2008 at 10:04:36PM +0300, Vladislav Bolkhovitin (vst@vlnb.net) wrote:
-> >> In the chosen approach new optional field void *net_priv was added to 
-> >> struct page. It is enclosed by
-> > 
-> > There is a huge no-no in networking land on increasing skb.
-> > Reason is simple every skb will carry potentially unneded data as long
-> > as given option is enabled, and most of the time it will.
-> > To break this barrier one has to have (I wanted to write ego, but then
-> > decided to replace it with mojo) so huge reason to do this, that it is
-> > almost impossible to have.
-> > 
-> > Something tells me that increasing page structure with 8 bytes because
-> > of zero-copy iscsi transfer is not that great idea, since basically every
-> > user out there will have it enabled in the distro config and will waste
-> > noticeble amount of ram.
-> 
-> The waste will be only 0.2% of RAM or 2MB per 1GB. Not much. Perhaps, 
-> not noticeable for an average user of distro kernels at all. Embedded 
-> people, who count each byte, almost always don't need iSCSI, so won't 
-> have any problems to disable 
-> TCP_ZERO_COPY_TRANSFER_COMPLETION_NOTIFICATION option.
+These patches fix potential bugs associated with link target handling,
+primarily by NULL-terminating names read from disk.
 
-Actually, there are several other considerations:
+The ext2 and generic page_getlink changes have been tested by listing
+corrupted links and creating and listing valid ones. Other patches have
+been compile-tested only.
 
-     1. struct page is a lowmem structure, so increasing its size
-        becomes problematic on x86 PAE systems.
-     2. The current 64 bit struct page seems to be exactly pushing a
-        cacheline boundary.  Increasing it so it spills over will have a
-        performance impact
-
-It's the performance problems that will be most critical, I suspect, so
-you'll need mm people buy in for doing this.
-
-One thing that leaps immediately to mind is that you could isolate this
-to the net layer by putting it in skb_frag_struct.  However, such a move
-would require a proper API for this in net ... right now it looks like
-you're using the struct page addition to carry this information from
-SCSI to net, which is a bit of a layering violation.
-
-James
-
-
+Cheers,
+Duane.
