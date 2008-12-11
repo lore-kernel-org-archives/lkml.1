@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759154AbYLKWmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYLKWmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759154AbYLKWmP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 17:42:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758830AbYLKWj4
+	id S1759597AbYLKWmx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 17:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759077AbYLKWlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 17:39:56 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:35433 "EHLO
+	Thu, 11 Dec 2008 17:41:00 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:54052 "EHLO
 	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758340AbYLKWjv (ORCPT
+	with ESMTP id S1758258AbYLKWk5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 17:39:51 -0500
-Message-ID: <49419670.2060107@cosmosbay.com>
-Date: Thu, 11 Dec 2008 23:38:40 +0100
+	Thu, 11 Dec 2008 17:40:57 -0500
+Message-ID: <494196DD.5070600@cosmosbay.com>
+Date: Thu, 11 Dec 2008 23:40:29 +0100
 From: Eric Dumazet <dada1@cosmosbay.com>
 User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
@@ -26,277 +26,19 @@ CC: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH v3 0/7] fs: Scalability of sockets/pipes allocation/deallocation
- on SMP
+Subject: [PATCH v3 6/7] fs: struct file move from call_rcu() to SLAB_DESTROY_BY_RCU
 References: <Pine.LNX.4.64.0811201727070.9089@quilx.com> <20081121083044.GL16242@elte.hu> <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <493100B0.6090104@cosmosbay.com>
 In-Reply-To: <493100B0.6090104@cosmosbay.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 11 Dec 2008 23:38:42 +0100 (CET)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 11 Dec 2008 23:40:30 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew
-
-Take v2 of this patch serie got no new feedback, maybe its time for mm
-inclusion for a while ?
-
-In this third version I added last two patches, one intialy from Christoph
-Lameter, and one to avoid dirtying mnt->mnt_count on hardwired fs.
-
-Many thanks to Christoph and Paul for this SLAB_DESTROY_PER_RCU work done
-on "struct file".
-
-Thank you
-
-Short summary : Nice speedups for allocation/deallocation of sockets/pipes
-(From 27.5 seconds to 1.62 s, on a 8 cpus machine)
-
-Long version :
-
-To allocate a socket or a pipe we :
-
-0) Do the usual file table manipulation (pretty scalable these days,
-but would be faster if 'struct file' were using SLAB_DESTROY_BY_RCU
-and avoid call_rcu() cache killer). This point is addressed by 6th
-patch.
-
-1) allocate an inode with new_inode()
-This function :
-- locks inode_lock,
-- dirties nr_inodes counter
-- dirties inode_in_use list  (for sockets/pipes, this is useless)
-- dirties superblock s_inodes.  - dirties last_ino counter
-All these are in different cache lines unfortunatly.
-
-2) allocate a dentry
-d_alloc() takes dcache_lock,
-insert dentry on its parent list (dirtying sock_mnt->mnt_sb->s_root)
-dirties nr_dentry
-
-3) d_instantiate() dentry  (dcache_lock taken again)
-
-4) init_file() -> atomic_inc() on sock_mnt->refcount
-
-
-At close() time, we must undo the things. Its even more expensive because
-of the _atomic_dec_and_lock() that stress a lot, and because of two cache
-lines that are touched when an element is deleted from a list
-(previous and next items)
-
-This is really bad, since sockets/pipes dont need to be visible in dcache
-or an inode list per super block.
-
-This patch series get rid of all but one contended cache lines for
-sockets, pipes and anonymous fd  (signalfd, timerfd, ...)
-
-socketallocbench is a very simple program (attached to this mail) that makes
-a loop :
-
-for (i = 0; i < 1000000; i++)
-    close(socket(AF_INET, SOCK_STREAM, 0));
-
-Cost if one cpu runs the program :
-
-real    1.561s
-user    0.092s
-sys     1.469s
-
-Cost if 8 processes are launched on a 8 CPU machine
-(socketallocbench -n 8) :
-
-real    27.496s   <<<< !!!! >>>>
-user    0.657s
-sys     3m39.092s
-
-Oprofile results (for the 8 process run, 3 times):
-
-CPU: Core 2, speed 3000.03 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit
-mask of 0x00 (Unhalted core cycles) count 100000
-samples  cum. samples  %        cum. %     symbol name
-3347352  3347352       28.0232  28.0232    _atomic_dec_and_lock
-3301428  6648780       27.6388  55.6620    d_instantiate
-2971130  9619910       24.8736  80.5355    d_alloc
-241318   9861228        2.0203  82.5558    init_file
-146190   10007418       1.2239  83.7797    __slab_free
-144149   10151567       1.2068  84.9864    inotify_d_instantiate
-143971   10295538       1.2053  86.1917    inet_create
-137168   10432706       1.1483  87.3401    new_inode
-117549   10550255       0.9841  88.3242    add_partial
-110795   10661050       0.9275  89.2517    generic_drop_inode
-107137   10768187       0.8969  90.1486    kmem_cache_alloc
-94029    10862216       0.7872  90.9358    tcp_close
-82837    10945053       0.6935  91.6293    dput
-67486    11012539       0.5650  92.1943    dentry_iput
-57751    11070290       0.4835  92.6778    iput
-54327    11124617       0.4548  93.1326    tcp_v4_init_sock
-49921    11174538       0.4179  93.5505    sysenter_past_esp
-47616    11222154       0.3986  93.9491    kmem_cache_free
-30792    11252946       0.2578  94.2069    clear_inode
-27540    11280486       0.2306  94.4375    copy_from_user
-26509    11306995       0.2219  94.6594    init_timer
-26363    11333358       0.2207  94.8801    discard_slab
-25284    11358642       0.2117  95.0918    __fput
-22482    11381124       0.1882  95.2800    __percpu_counter_add
-20369    11401493       0.1705  95.4505    sock_alloc
-18501    11419994       0.1549  95.6054    inet_csk_destroy_sock
-17923    11437917       0.1500  95.7555    sys_close
-
-
-This patch serie avoids all contented cache lines and makes this "bench"
-pretty fast.
-
-
-New cost if run on one cpu :
-
-real    1.245s (instead of 1.561s)
-user    0.074s
-sys     1.161s
-
-
-If run on 8 CPUS :
-
-real    1.624s
-user    0.580s
-sys     12.296s
-
-
-On oprofile, we finally can see network stuff coming at the front of
-expensive stuff. (with the exception of kmem_cache_[z]alloc(), because
-it has to clear 192 bytes of file structures, this takes half of the time)
-
-CPU: Core 2, speed 3000.09 MHz (estimated)
-Counted CPU_CLK_UNHALTED events (Clock cycles when not halted) with a unit mask of 0x00 (Unhalted core cycles) count 100
-000
-samples  cum. samples  %        cum. %     symbol name
-176586   176586        10.9376  10.9376    kmem_cache_alloc
-169838   346424        10.5196  21.4572    tcp_close
-105331   451755         6.5241  27.9813    tcp_v4_init_sock
-105146   556901         6.5126  34.4939    tcp_v4_destroy_sock
-83307    640208         5.1600  39.6539    sysenter_past_esp
-80241    720449         4.9701  44.6239    inet_csk_destroy_sock
-74263    794712         4.5998  49.2237    kmem_cache_free
-56806    851518         3.5185  52.7422    __percpu_counter_add
-48619    900137         3.0114  55.7536    copy_from_user
-44803    944940         2.7751  58.5287    init_timer
-28539    973479         1.7677  60.2964    d_alloc
-27795    1001274        1.7216  62.0180    alloc_fd
-26747    1028021        1.6567  63.6747    __fput
-24312    1052333        1.5059  65.1805    sys_close
-24205    1076538        1.4992  66.6798    inet_create
-22409    1098947        1.3880  68.0677    alloc_inode
-21359    1120306        1.3230  69.3907    release_sock
-19865    1140171        1.2304  70.6211    fd_install
-19472    1159643        1.2061  71.8272    lock_sock_nested
-18956    1178599        1.1741  73.0013    sock_init_data
-17301    1195900        1.0716  74.0729    drop_file_write_access
-17113    1213013        1.0600  75.1329    inotify_d_instantiate
-16384    1229397        1.0148  76.1477    dput
-15173    1244570        0.9398  77.0875    local_bh_enable_ip
-15017    1259587        0.9301  78.0176    local_bh_enable
-13354    1272941        0.8271  78.8448    __sock_create
-13139    1286080        0.8138  79.6586    inet_release
-13062    1299142        0.8090  80.4676    sysenter_do_call
-11935    1311077        0.7392  81.2069    iput_single
-
-
-This patch serie contains 7 patches, against linux-2.6 tree,
-plus one patch in mm (fs: filp_cachep can be static in fs/file_table.c)
-
-[PATCH 1/7] fs: Use a percpu_counter to track nr_dentry
-
-Adding a percpu_counter nr_dentry avoids cache line ping pongs
-between cpus to maintain this metric, and dcache_lock is
-no more needed to protect dentry_stat.nr_dentry
-
-We centralize nr_dentry updates at the right place :
-- increments in d_alloc()
-- decrements in d_free()
-
-d_alloc() can avoid taking dcache_lock if parent is NULL
-
-("socketallocbench -n 8" bench result : 27.5s to 25s)
-
-[PATCH 2/7] fs: Use a percpu_counter to track nr_inodes
-
-Avoids cache line ping pongs between cpus and prepare next patch,
-because updates of nr_inodes dont need inode_lock anymore.
-
-("socketallocbench -n 8" bench result : no difference at this point)
-
-[PATCH 3/7] fs: Introduce a per_cpu last_ino allocator
-
-new_inode() dirties a contended cache line to get increasing
-inode numbers.
-
-Solve this problem by providing to each cpu a per_cpu variable,
-feeded by the shared last_ino, but once every 1024 allocations.
-
-This reduce contention on the shared last_ino, and give same
-spreading ino numbers than before.
-(same wraparound after 232 allocations)
-
-("socketallocbench -n 8" result : no difference)
-
-
-[PATCH 4/7] fs: Introduce SINGLE dentries for pipes, socket, anon fd
-
-Sockets, pipes and anonymous fds have interesting properties.
-
-Like other files, they use a dentry and an inode.
-
-But dentries for these kind of files are not hashed into dcache,
-since there is no way someone can lookup such a file in the vfs tree.
-(/proc/{pid}/fd/{number} uses a different mechanism)
-
-Still, allocating and freeing such dentries are expensive processes,
-because we currently take dcache_lock inside d_alloc(), d_instantiate(),
-and dput(). This lock is very contended on SMP machines.
-
-This patch defines a new DCACHE_SINGLE flag, to mark a dentry as
-a single one (for sockets, pipes, anonymous fd), and a new
-d_alloc_single(const struct qstr *name, struct inode *inode)
-method, called by the three subsystems.
-
-Internally, dput() can take a fast path to dput_single() for
-SINGLE dentries. No more atomic_dec_and_lock()
-for such dentries.
-
-
-Differences betwen an SINGLE dentry and a normal one are :
-
-1) SINGLE dentry has the DCACHE_SINGLE flag
-2) SINGLE dentry's parent is itself (DCACHE_DISCONNECTED)
-This to avoid taking a reference on sb 'root' dentry, shared
-by too many dentries.
-3) They are not hashed into global hash table (DCACHE_UNHASHED)
-4) Their d_alias list is empty
-
-(socket8 bench result : from 25s to 19.9s)
-
-[PATCH 5/7] fs: new_inode_single() and iput_single()
-
-Goal of this patch is to not touch inode_lock for socket/pipes/anonfd
-inodes allocation/freeing.
-
-SINGLE dentries are attached to inodes that dont need to be linked
-in a list of inodes, being "inode_in_use" or "sb->s_inodes"
-As inode_lock was taken only to protect these lists, we avoid taking it as well.
-
-Using iput_single() from dput_single() avoids taking inode_lock
-at freeing time.
-
-This patch has a very noticeable effect, because we avoid dirtying of three contended cache lines in new_inode(), and five cache lines
-in iput()
-
-("socketallocbench -n 8" result : from 19.9s to 3.01s)
-
-
-[PATH 6/7] fs: struct file move from call_rcu() to SLAB_DESTROY_BY_RCU
-
 From: Christoph Lameter <cl@linux-foundation.org>
+
+[PATCH] fs: struct file move from call_rcu() to SLAB_DESTROY_BY_RCU
 
 Currently we schedule RCU frees for each file we free separately. That has
 several drawbacks against the earlier file handling (in 2.6.5 f.e.), which
@@ -332,69 +74,141 @@ refcounter does that).
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+ Documentation/filesystems/files.txt |   21 ++++++++++++++--
+ fs/file_table.c                     |   33 ++++++++++++++++++--------
+ include/linux/fs.h                  |    5 ---
+ 3 files changed, 42 insertions(+), 17 deletions(-)
 
-("socketallocbench -n 8" result : from 3.01s to 2.20s)
-
-[PATCH 7/7] fs: MS_NOREFCOUNT
-
-Some fs are hardwired into kernel, and mntput()/mntget() hit a contended
-cache line. We define a new superblock flag, MS_NOREFCOUNT, that is set
-on socket, pipes and anonymous fd superblocks. mntput()/mntget() become
-null ops on these fs.
-
-("socketallocbench -n 8" result : from 2.20s to 1.64s)
-
-cat socketallocbench.c
-/*
- * socketallocbench benchmark
- *
- * Usage : socket [-n procs]  [-l loops]
- */
-#include <sys/socket.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/wait.h>
-
-void dowork(int loops)
-{
-        int i;
-
-        for (i = 0; i < loops; i++)
-                close(socket(AF_INET, SOCK_STREAM, 0));
-}
-
-int main(int argc, char *argv[])
-{
-        int i;
-        int n = 1;
-        int loops = 1000000;
-        pid_t *pidtable;
-
-        while ((i = getopt(argc, argv, "n:l:")) != EOF) {
-                if (i == 'n')
-                        n = atoi(optarg);
-                if (i == 'l')
-                        loops = atoi(optarg);
-        }
-        pidtable = malloc(n * sizeof(pid_t));
-        for (i = 1; i < n; i++) {
-                pidtable[i] = fork();
-                if (pidtable[i] == 0) {
-                        dowork(loops);
-                        _exit(0);
-                }
-                if (pidtable[i] == -1) {
-                        perror("fork");
-                        n = i;
-                        break;
-                }
-        }
-        dowork(loops);
-        for (i = 1; i < n; i++) {
-                int status;
-
-                wait(&status);
-                }
-        return 0;
-}
+diff --git a/Documentation/filesystems/files.txt b/Documentation/filesystems/files.txt
+index ac2facc..6916baa 100644
+--- a/Documentation/filesystems/files.txt
++++ b/Documentation/filesystems/files.txt
+@@ -78,13 +78,28 @@ the fdtable structure -
+    that look-up may race with the last put() operation on the
+    file structure. This is avoided using atomic_long_inc_not_zero()
+    on ->f_count :
++   As file structures are allocated with SLAB_DESTROY_BY_RCU,
++   they can also be freed before a RCU grace period, and reused,
++   but still as a struct file.
++   It is necessary to check again after getting
++   a stable reference (ie after atomic_long_inc_not_zero()),
++   that fcheck_files(files, fd) points to the same file.
+ 
+ 	rcu_read_lock();
+ 	file = fcheck_files(files, fd);
+ 	if (file) {
+-		if (atomic_long_inc_not_zero(&file->f_count))
++		if (atomic_long_inc_not_zero(&file->f_count)) {
+ 			*fput_needed = 1;
+-		else
++			/*
++			 * Now we have a stable reference to an object.
++			 * Check if other threads freed file and reallocated it.
++			 */
++			if (file != fcheck_files(files, fd)) {
++				*fput_needed = 0;
++				put_filp(file);
++				file = NULL;
++			}
++		} else
+ 		/* Didn't get the reference, someone's freed */
+ 			file = NULL;
+ 	}
+@@ -95,6 +110,8 @@ the fdtable structure -
+    atomic_long_inc_not_zero() detects if refcounts is already zero or
+    goes to zero during increment. If it does, we fail
+    fget()/fget_light().
++   The second call to fcheck_files(files, fd) checks that this filp
++   was not freed, then reused by an other thread.
+ 
+ 6. Since both fdtable and file structures can be looked up
+    lock-free, they must be installed using rcu_assign_pointer()
+diff --git a/fs/file_table.c b/fs/file_table.c
+index a46e880..3e9259d 100644
+--- a/fs/file_table.c
++++ b/fs/file_table.c
+@@ -37,17 +37,11 @@ static struct kmem_cache *filp_cachep __read_mostly;
+ 
+ static struct percpu_counter nr_files __cacheline_aligned_in_smp;
+ 
+-static inline void file_free_rcu(struct rcu_head *head)
+-{
+-	struct file *f =  container_of(head, struct file, f_u.fu_rcuhead);
+-	kmem_cache_free(filp_cachep, f);
+-}
+-
+ static inline void file_free(struct file *f)
+ {
+ 	percpu_counter_dec(&nr_files);
+ 	file_check_state(f);
+-	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
++	kmem_cache_free(filp_cachep, f);
+ }
+ 
+ /*
+@@ -306,6 +300,14 @@ struct file *fget(unsigned int fd)
+ 			rcu_read_unlock();
+ 			return NULL;
+ 		}
++		/*
++		 * Now we have a stable reference to an object.
++		 * Check if other threads freed file and re-allocated it.
++		 */
++		if (unlikely(file != fcheck_files(files, fd))) {
++			put_filp(file);
++			file = NULL;
++		}
+ 	}
+ 	rcu_read_unlock();
+ 
+@@ -333,9 +335,19 @@ struct file *fget_light(unsigned int fd, int *fput_needed)
+ 		rcu_read_lock();
+ 		file = fcheck_files(files, fd);
+ 		if (file) {
+-			if (atomic_long_inc_not_zero(&file->f_count))
++			if (atomic_long_inc_not_zero(&file->f_count)) {
+ 				*fput_needed = 1;
+-			else
++				/*
++				 * Now we have a stable reference to an object.
++				 * Check if other threads freed this file and
++				 * re-allocated it.
++				 */
++				if (unlikely(file != fcheck_files(files, fd))) {
++					*fput_needed = 0;
++					put_filp(file);
++					file = NULL;
++				}
++			} else
+ 				/* Didn't get the reference, someone's freed */
+ 				file = NULL;
+ 		}
+@@ -402,7 +414,8 @@ void __init files_init(unsigned long mempages)
+ 	int n; 
+ 
+ 	filp_cachep = kmem_cache_create("filp", sizeof(struct file), 0,
+-			SLAB_HWCACHE_ALIGN | SLAB_PANIC, NULL);
++			SLAB_HWCACHE_ALIGN | SLAB_DESTROY_BY_RCU | SLAB_PANIC,
++			NULL);
+ 
+ 	/*
+ 	 * One file with associated inode and dcache is very roughly 1K. 
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index a702d81..a1f56d4 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -811,13 +811,8 @@ static inline int ra_has_index(struct file_ra_state *ra, pgoff_t index)
+ #define FILE_MNT_WRITE_RELEASED	2
+ 
+ struct file {
+-	/*
+-	 * fu_list becomes invalid after file_free is called and queued via
+-	 * fu_rcuhead for RCU freeing
+-	 */
+ 	union {
+ 		struct list_head	fu_list;
+-		struct rcu_head 	fu_rcuhead;
+ 	} f_u;
+ 	struct path		f_path;
+ #define f_dentry	f_path.dentry
