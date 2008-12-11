@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbYLKAaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbYLKAdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755391AbYLKAaq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 19:30:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYLKAah
+	id S1755991AbYLKAdZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 19:33:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYLKAdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 19:30:37 -0500
-Received: from mail.gmx.net ([213.165.64.20]:46548 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752223AbYLKAah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 19:30:37 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19q4546RgVqr0RXM95JDi2M9flNgGsF6yL23ay+ju
-	To0AKi9dI0CChA
-Date: Thu, 11 Dec 2008 01:30:39 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Dan Williams <dan.j.williams@intel.com>
-cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 1/4 v2] dmaengine: add a tx_free method to struct
- dma_async_tx_descriptor
-In-Reply-To: <e9c3a7c20812101158h3de9c604i1c88bb7c412ccf02@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0812110011440.8273@axis700.grange>
-References: <Pine.LNX.4.64.0812101122250.4578@axis700.grange> 
- <Pine.LNX.4.64.0812101129340.4578@axis700.grange>
- <e9c3a7c20812101158h3de9c604i1c88bb7c412ccf02@mail.gmail.com>
+	Wed, 10 Dec 2008 19:33:16 -0500
+Received: from mail-bw0-f13.google.com ([209.85.218.13]:58527 "EHLO
+	mail-bw0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753089AbYLKAdP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 19:33:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=bffey07p53aeGQj2RVQzilnqkvP+vfL+d+5dzy2UenJEWhfRKn1Mc0mvK9JrzuFnG0
+         Ea8x5o1EktkTb22acqqZHseTVFmZeeS45umQ3J34tZF1Lnp6AZ7PfQqIBNVV5R0SvJgj
+         mf1hNRdGFX+QbnNvj/gNOd+yMqLCiTFAEQWbg=
+Message-ID: <2c0942db0812101633o614390b0ob26e0d83ab78f0cf@mail.gmail.com>
+Date: Wed, 10 Dec 2008 16:33:12 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Task Struct From Hell" <taskstructfromhell@googlemail.com>
+Subject: Re: linux rebooting w/o crash dump
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+In-Reply-To: <ef37ea20812101625u38af0b42q6a23246bc3eb803@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ef37ea20812101623g52a36179g7924683d492e7fa7@mail.gmail.com>
+	 <ef37ea20812101625u38af0b42q6a23246bc3eb803@mail.gmail.com>
+X-Google-Sender-Auth: e10fae42df6969fa
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dan,
+On Wed, Dec 10, 2008 at 4:25 PM, Task Struct From Hell
+<taskstructfromhell@googlemail.com> wrote:
+> Is there any way to debug a kernel that shuts down without leaving any
+> sign of crash, shutdown demand or anything else?
+>
+> I am absolutely sure it's not a power issue, as I am running
+> multi-boot and it's never shutting down on my other OSes,
 
-On Wed, 10 Dec 2008, Dan Williams wrote:
+That means nothing. Linux could be improperly driving the fans or
+processor, and the board may be going into thermal shutdown. It
+wouldn't be a hardware problem, but rather the kernel causing one.
 
-> On Wed, Dec 10, 2008 at 3:36 AM, Guennadi Liakhovetski
-> <g.liakhovetski@gmx.de> wrote:
-> > From: Guennadi Liakhovetski <lg@denx.de>
-> >
-> > Some users reuse DMA transaction descriptors multiple times and need an
-> > explicit call to release them. An example of such a user is Video4Linux, which
-> > has to be able to release descriptors on ioctl(VIDIOC_DQBUF).
-> >
-> > Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
-> 
-> 
-> Hi Guennadi,
-> 
-> Other dmaengine drivers have tasklets that scan the list of completed
-> descriptors and free the "acked" ones.  This happens in the cleanup
-> tasklet...
-> /me looks
-> ...hmm this driver does not have a cleanup routine?  Ideally support
-> for ioctl(VIDIOC_DQBUF) could be achieved through this mechanism
-> without needing to increase the size of dma_async_tx_descriptor (which
-> has cache utilization impacts on other drivers).
+> plus, with a
+> newer kernel everything works like a charm - even with the flag
+> 'noreboot'.
 
-You mean there are drivers, that have struct dma_async_tx_descriptor on 
-stack? Can you give me an example? And you mean, that increasing the size 
-of the struct by one pointer and letting users explicitly free those 
-descriptors when they want is worse than introducing a tasklet that will 
-have to periodically scan the list of descriptors while other hot paths 
-will move elements to and from this list, look for acked elements, lock 
-the list and free those elements? Periodically, because although we have 
-an event when to free them - on ioctl - there is no API to trigger that 
-tasklet. Or am I missing something? I can do this, it just sounds strange 
-to me.
+Confused. You mean a newer linux kernel doesn't show the problem?
+Please explain?
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+> I would seriously love to find the root of this problem,
+> but I'm feeling slightly hand-tied on it, been seeking for hints and
+> trying different configurations for about 2 weeks...
