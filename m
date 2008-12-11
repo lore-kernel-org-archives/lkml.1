@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbYLKBo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbYLKBvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755527AbYLKBo3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 20:44:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbYLKBoS
+	id S1755432AbYLKBvM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 20:51:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYLKBu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 20:44:18 -0500
-Received: from mga09.intel.com ([134.134.136.24]:47077 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752451AbYLKBoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 20:44:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,749,1220252400"; 
-   d="scan'208";a="472952610"
-Date: Thu, 11 Dec 2008 09:43:13 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Greg KH <greg@kroah.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
-Message-ID: <20081211014313.GA4947@yzhao12-linux.sh.intel.com>
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084531.GP3773@yzhao12-linux.sh.intel.com> <20081106043235.GA30292@kroah.com> <4913AA03.5060807@intel.com> <20081107025032.GA12824@kroah.com> <4913B8A5.5010806@intel.com> <20081107041721.GB15439@parisc-linux.org>
+	Wed, 10 Dec 2008 20:50:57 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:52216 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753023AbYLKBu4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 20:50:56 -0500
+X-Sasl-enc: 22q0U9FTGL9W5SnnkWjJJDBAT1QFfUYmz8DXyZKutMec 1228960254
+Date: Wed, 10 Dec 2008 23:50:52 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Adam Belay <abelay@mit.edu>,
+       rjw@sisk.pl
+Subject: Re: [PATCH] PNPACPI: Enable Power Support
+Message-ID: <20081211015052.GA18925@khazad-dum.debian.net>
+References: <493D8A1F.2090907@gmx.net> <20081210095315.GA20627@khazad-dum.debian.net> <494018E9.2060507@gmx.net> <20081210232137.GB7589@khazad-dum.debian.net> <20081211012838.GA18065@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081107041721.GB15439@parisc-linux.org>
+In-Reply-To: <20081211012838.GA18065@khazad-dum.debian.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 12:17:22PM +0800, Matthew Wilcox wrote:
-> On Fri, Nov 07, 2008 at 11:40:21AM +0800, Zhao, Yu wrote:
-> > Greg KH wrote:
-> > >We've thought about this in the past, and even Microsoft said it was
-> > >going to happen for Vista, but they realized in the end, like we did a
-> > >few years previously, that it would require full support of all PCI
-> > >drivers as well (if you rebalance stuff that is already bound to a
-> > >driver.)  So they dropped it.
-> > >
-> > >When would you want to do this kind of rebalancing?  Before any PCI
-> > >driver is bound to any devices?  Or afterwards?
-> > 
-> > I guess if we want the rebalance dynamic, then we should have it full -- 
-> > the rebalance would be functional even after the driver is loaded.
-> > 
-> > But in most cases, there will be problem when we unload driver from a 
-> > hard disk controller, etc. We can mount root on a ramdisk and do the 
-> > rebalance there, but it's complicated for a real user.
-> > 
-> > So looks like doing rebalancing before any driver is bound to any device 
-> > is also a nice idea, if user can get a shell to do rebalance before 
-> > built-in PCI driver grabs device.
+On Wed, 10 Dec 2008, Henrique de Moraes Holschuh wrote:
+> Bah, never mind.  Major issue between the keyboard and the chair, on my
+> end...  Got PR# and PS# confused.  The ThinkPad ACPI DSDT in question has
+> the standard crap for wake device control, and PR# methods, but no PS#
+> methods.
 > 
-> Can we use the suspend/resume code to do this?  Some drivers (sym2 for
-> one) would definitely need to rerun some of their init code to cope with
-> a BAR address changing.
+> The PR0..PR2 nodes for the UHCI and EHCI USB ports on the ThinkPad T43
+> mention a power resource object, and that power resource CAN power on/off
+> the USB ports (and that freaks out the UHCI and EHCI kernel drivers causing
+> over-current reports, but that was to be expected).  The AML code tells the
+> EC to do some magic that probably tells a MOSFET somewhere in the mainboard
+> to stop supplying power to the ports.
+> 
+> And Windows XP (this is not a Vista BIOS and I never tried running Vista in
+> it...) is noticing that power resource (even without PS3 or PR3 nodes) and
+> calling that power resource _OFF handler to power down USB ports when it
+> doesn't need these devices for wakeup reasons, before entering STR.
+> 
+> Anyone has any clue on what part of the ACPI spec could result on that
+> behaviour?  Because otherwise I will just bloody special-case it into
+> thinkpad-acpi's suspend and resume stuff.  It will piss the USB subsystem
+> off if I can't arrange to do it on early resume and late suspend, however.
 
-Yes, that is what I was thinking. But after some grep on the PCI device
-drivers, I feel frustrated because all those drivers only do 'ioremap'
-once at the 'probe' stage.
+Found it.  ACPI 3.0b, page 238, 7.2 Device Power Management Objects.
 
-I believe this is the only problem that preclude us having the run-time
-resource rebalance. And I'm not sure how much effort we can fix it. Any
-comments?
+"For OSPM to put the device in the D3 state, the following must occur:
 
+All Power Resources no longer referenced by any device in the system must
+be in the OFF state"
 
-Thanks,
-Yu
+If you want to put *any* particular ACPI device into D3, you turn off
+*every* unused power resource, be them related or not to that device...
+
+Windows XP seems to do it, and powers down the USB ports. None of them are
+set for wake-from-S3, they all go to D3 and no references to the power
+resources are left.  We probably should be doing the same.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
