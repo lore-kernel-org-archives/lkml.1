@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756299AbYLKHcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbYLKHhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756299AbYLKHcz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 02:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYLKHcq
+	id S1756255AbYLKHhO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 02:37:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbYLKHg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 02:32:46 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:27271 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751094AbYLKHcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 02:32:45 -0500
-Date: Thu, 11 Dec 2008 08:32:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kosaki.motohiro@jp.fujitsu.com, sfr@canb.auug.org.au,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [bug?] bio: add experimental support for inlining a number of bio_vecs inside the bio
-Message-ID: <20081211073226.GW23742@kernel.dk>
-References: <20081210164659.9ebb8158.sfr@canb.auug.org.au> <20081210183059.4FD6.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081210204630.4FE3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081210121237.GQ23742@kernel.dk> <20081210131311.e03d6fc5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081210131311.e03d6fc5.akpm@linux-foundation.org>
+	Thu, 11 Dec 2008 02:36:59 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37866 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754247AbYLKHg6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 02:36:58 -0500
+Date: Wed, 10 Dec 2008 23:36:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, tux3@tux3.org
+Subject: Re: Tux3 report: Tux3 by Christmas?
+Message-Id: <20081210233617.ddb3fa30.akpm@linux-foundation.org>
+In-Reply-To: <200812101435.40393.phillips@phunq.net>
+References: <200812101435.40393.phillips@phunq.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10 2008, Andrew Morton wrote:
-> On Wed, 10 Dec 2008 13:12:38 +0100
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+On Wed, 10 Dec 2008 14:35:39 -0800 Daniel Phillips <phillips@phunq.net> wrote:
+
+> The big goals for Christmas (this Christmas!) are:
 > 
-> > > experimental??
-> > 
-> > Experimental in the sense that it's the first version, not the concept.
-> > It's held up well for me, but just yesterday I received the first bug
-> > report on a ppc platform and now you have this on ia64.
+>    - SMP locking
+>    - Atomic commit
+>    - Posixly complete
+>    - Rudimentary fsck
 > 
+> ...
 > 
-> Well there's another bug report up-list.  "next-20081209: pdflush: page
-> allocation failure (xfs)".
+> Non-goals for Christmas include:
 > 
-> The clearing of (__GFP_WAIT | __GFP_IO) will call the page allocator in the
-> weakest possible mode and will of course spew page allocations warnings
-> with great frequency.  It should at least add in __GFP_NOWARN.
+>    - Versioning
+>    - Directory indexing (PHTree)
+>    - fsck repair
 
-OK, that must be for the change titled
+If it is your intention to submit this for a mainline merge then I
+would encourage you to stop feature work at the earliest reasonable
+stage and then move into the document, submit, review, merge, fixfixfix
+phase.  That might take as long as several months.
 
-"bio: only mempool back the largest bio_vec slab cache"
+Once things have stabilised and it's usable and performs respectably,
+start thinking about features again.
 
-and yes, that does look like it wants a bit more gfp loving, probably
-the same as mempool_alloc() would use anyway. I'll get that fixed.
+Do NOT fall into the trap of adding more and more and more stuff to an
+out-of-tree project.  It just makes it harder and harder to get it
+merged.  There are many examples of this.
 
--- 
-Jens Axboe
 
+Also, don't feel that a merge would lock you into the current on-disk
+layout.  I think it would be acceptable to emit a big printk("the
+format of this fs will change without notice.  Do not yet store any
+data on a tux3 fs") during mount().   For a while.
