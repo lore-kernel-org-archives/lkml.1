@@ -1,83 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbYLKALw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbYLKAVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755333AbYLKALw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 19:11:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbYLKALk
+	id S1754718AbYLKAVx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 19:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbYLKAVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 19:11:40 -0500
-Received: from mail.tmr.com ([64.65.253.246]:39014 "EHLO partygirl.tmr.com"
+	Wed, 10 Dec 2008 19:21:43 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35527 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbYLKALh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 19:11:37 -0500
-Message-ID: <49405A94.8080601@tmr.com>
-Date: Wed, 10 Dec 2008 19:11:00 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081112 Fedora/1.1.13-1.fc9 SeaMonkey/1.1.13
+	id S1752223AbYLKAVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 19:21:42 -0500
+Message-ID: <49405CB6.6010006@kernel.org>
+Date: Wed, 10 Dec 2008 16:20:06 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
-       smartmontools-support@lists.sourceforge.net
-Subject: Re: Have the velociraptors in a test system now, checkout the errors.
-References: <alpine.DEB.1.10.0812060426280.3494@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0812060426280.3494@p34.internal.lan>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Zachary Amsden <zach@vmware.com>
+CC: Huang Ying <ying.huang@intel.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "norman@thebacks.co.uk" <norman@thebacks.co.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Alok Kataria <alokkataria1@gmail.com>,
+       =?ISO-8859-1?Q?Bruno_Pr=E9mont?= <"bruno .premont"@restena.lu>,
+       "xl@xlsigned.net" <xl@xlsigned.net>, "dsd@gentoo.org" <dsd@gentoo.org>
+Subject: Re: [PATCH] Fix VMI crash on boot in 2.6.27+ kernels
+References: <1228870222.8766.15.camel@bodhitayantram.eng.vmware.com>	 <86802c440812091715r775d514eh3acf9add9e24184e@mail.gmail.com> <1228953980.8766.42.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1228953980.8766.42.camel@bodhitayantram.eng.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> Point of thread: Two problems, mentioned in detail below, NCQ in Linux 
-> when used in a RAID configuration and two, something with how Linux 
-> interacts with the drives causes lots of problems as when I run the WD 
-> tools on the disks, they do not show any errors.
->
-> If anyone has/would like me to run any debugging/patches/etc on this 
-> system feel free to suggest/send me things to try out.  After I put 
-> the VR's in a test system, I left NCQ enabled and I made a 10 disk 
-> raid5 to see how fast I could get it to fail, I ran bonnie++ shown 
-> below as a disk benchmark/stress test:
->
-> For the next test I will repeat this one but with NCQ disabled, having 
-> NCQ enabled makes it fail very easily.  Then I want to re-run the test 
-> with RAID6.
->
-> bonnie++ -d /r1/test -s 1000G -m p63 -n 16:100000:16:64
->
-> $ df -h
-> /dev/md3              2.5T  5.5M  2.5T   1% /r1
->
-> And the results?  Two disk "failures" according to md/Linux within a 
-> few hours as shown below:
->
-> Note, the NCQ-related errors are what I talk about all of the time, if 
-> you use
-> NCQ and Linux in a RAID environment with WD drives, well-- good luck.
->
-> Two-disks failed out of the RAID5 and I currentlty cannot even 'see' 
-> one of the drives with smartctl, will reboot the host and check sde 
-> again.
->
-> After a reboot, it comes up and has no errors, really makes one wonder 
-> where/what the bugs is/are, there are two I can see:
-> 1. NCQ issue on at least WD drives in Linux in SW md/RAID
-> 2. Velociraptor/other disks reporting all kinds of sector errors etc, 
-> but when you use the WD 11.x disk tools program and run all of their 
-> tests it says the disks have no problems whatsoever!  The smart 
-> statistics do confirm this.  Currently, TLER is on for all disks, for 
-> the duration of these tests.
+Zachary Amsden wrote:
+> On Tue, 2008-12-09 at 17:15 -0800, Yinghai Lu wrote:
+> 
+>> you can not move that late,
+>>
+>> parse_setup_data==>early_memremap==>__early_ioremap
+> 
+> How does this look?
+> 
 
-Just a few comments on this, I have several RAID arrays built on Seagate 
-using NCQ, and yet to have a problem. I have NCQ on with my WD drives, 
-non-RAID, and haven't had an issue with them either. The WDs run a lot 
-cooler than the SG, but they are probably getting less use, as well. If 
-the WD are still on sale after the holiday I may grab a few more and run 
-RAID, by then I will have some small sense of trusting them.
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 9d5674f..4c381cb 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -794,6 +794,11 @@ void __init setup_arch(char **cmdline_p)
+ 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
+ #endif
+ 
++#ifdef CONFIG_VMI
++	/* VMI may relocate the fixmap; do this before touching ioremap area */
++	vmi_init();
++#endif
++
+ 	early_cpu_init();
+ 	early_ioremap_init();
+ 
+@@ -880,12 +885,9 @@ void __init setup_arch(char **cmdline_p)
+ 	check_efer();
+ #endif
+ 
+-#if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
+-	/*
+-	 * Must be before kernel pagetables are setup
+-	 * or fixmap area is touched.
+-	 */
+-	vmi_init();
++#if defined(CONFIG_VMI)
++	/* Must be before kernel pagetables are setup */
++	vmi_activate();
+ #endif
+ 
+ 	/* after early param, so could get panic from serial */
+diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
+index 8b6c393..22fd657 100644
+--- a/arch/x86/kernel/vmi_32.c
++++ b/arch/x86/kernel/vmi_32.c
+@@ -960,8 +960,6 @@ static inline int __init activate_vmi(void)
+ 
+ void __init vmi_init(void)
+ {
+-	unsigned long flags;
+-
+ 	if (!vmi_rom)
+ 		probe_vmi_rom();
+ 	else
+@@ -973,13 +971,21 @@ void __init vmi_init(void)
+ 
+ 	reserve_top_address(-vmi_rom->virtual_top);
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-  "Woe unto the statesman who makes war without a reason that will still
-  be valid when the war is over..." Otto von Bismark 
 
+it seems still have some problem.
+you moved reserve_top_address before parse_parameter...
+
+so
+void __init reserve_top_address(unsigned long reserve)
+{
+        BUG_ON(fixmaps_set > 0);
+        printk(KERN_INFO "Reserving virtual address space above 0x%08x\n",
+               (int)-reserve);
+        __FIXADDR_TOP = -reserve - PAGE_SIZE;
+        __VMALLOC_RESERVE += reserve;
+}
+
+/*
+ * vmalloc=size forces the vmalloc area to be exactly 'size'
+ * bytes. This can be used to increase (or decrease) the
+ * vmalloc area - the default is 128m.
+ */
+static int __init parse_vmalloc(char *arg)
+{
+        if (!arg)
+                return -EINVAL;
+
+        /* Add VMALLOC_OFFSET to the parsed value due to vm area guard hole*/
+        __VMALLOC_RESERVE = memparse(arg, &arg) + VMALLOC_OFFSET;
+        return 0;
+}
+early_param("vmalloc", parse_vmalloc);
+
+__VMALLOC_RESERVE will be overwriten by vmalloc=...
+
+you may need to split reserve_top_address() to two functions...
+
+YH
 
