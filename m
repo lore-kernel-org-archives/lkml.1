@@ -1,130 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYLKUX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbYLKUXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757354AbYLKUX0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 15:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756690AbYLKUXM
+	id S1756799AbYLKUXm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 15:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbYLKUXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 15:23:12 -0500
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:38807 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756470AbYLKUXK (ORCPT
+	Thu, 11 Dec 2008 15:23:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37656 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756845AbYLKUXR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 15:23:10 -0500
-X-YMail-OSG: odAZqysVM1lwK1vXBOcyIjH7iJoWXVQN23vxfTv5vzCmwYJLu_2YMRJ2HxUibkgx1fBRanSrFEaKbKgSbRCpR4Rl6wP7RPhfdUohNj1n497i6Sdu0oKAk5N5zpVJz2awfOSA_.pHQgw.6EHBjsfQeFk871ofK0PO53eSBgueBTvSCyeLdrESxH1H5t4-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH][RFC 5/23]: SCST /proc interface
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Joel Becker <joel.becker@oracle.com>
-In-Reply-To: <49400C81.3010801@vlnb.net>
-References: <494009D7.4020602@vlnb.net>  <49400C81.3010801@vlnb.net>
-Content-Type: text/plain
-Date: Thu, 11 Dec 2008 12:23:07 -0800
-Message-Id: <1229026987.4153.555.camel@haakon2.linux-iscsi.org>
+	Thu, 11 Dec 2008 15:23:17 -0500
+Date: Thu, 11 Dec 2008 12:22:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Karsten Keil <kkeil@suse.de>
+Cc: hannes@hanneseder.net, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 0/9] mISDN: fix sparse warnings
+Message-Id: <20081211122245.754e7829.akpm@linux-foundation.org>
+In-Reply-To: <20081210173056.GB15810@pingi.kke.suse.de>
+References: <493feaa6.05a0660a.4b69.407f@mx.google.com>
+	<20081210173056.GB15810@pingi.kke.suse.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-10 at 21:37 +0300, Vladislav Bolkhovitin wrote:
-> This patch contains SCST the /proc interface.
-> 
-> A description of this interface can be found in the patch with the
-> SCST core documentation.
-> 
-> Since a procfs-based configuration interface is unacceptable for new 
-> kernel modules, in the next review iteration SCST's configuration 
-> interface will be replaced by a sysfs-based configuration interface. 
-> This patch is not intended to be included in the Linux kernel, but is 
-> posted here, because as of today this configuration interface is 
-> necessary when using SCST.
-> 
-> Unfortunately, configfs is not (yet) suited for configuring SCST. This 
-> is, because configfs is user space driven, so kernel can't create 
-> subdirectories on it, and all files on configfs are limited to 4K in 
-> size. It makes impossible for kernel to show, e.g., a list of connected 
-> initiators. Hence, with configfs it is necessary to have one more 
-> interface to show such data, e.g. sysfs-based. 
+On Wed, 10 Dec 2008 18:30:56 +0100
+Karsten Keil <kkeil@suse.de> wrote:
 
-Btw, please stop spreading FUD about ConfigFS.  ConfigFS works great for
-Target_Core_Mod and LIO-Target v3.0, and is what I have found as the
-*BEST* foundation for generic target mod moving forward.  This is not
-based on a hypothetical discussion or on a long term TODO list, this has
-been determined from actually writing the code, which is located at:
+> On Tue, Dec 09, 2008 at 08:49:30PM +0100, Hannes Eder wrote:
+> > This series of patches fixes a fair amount of sparse warnings in mISDN.
+> > 
+> 
+> Acked-by: Karsten keil <kkeil@suse.de>
+> 
+> to all.
+> 
 
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=blob;f=drivers/lio-core/target_core_configfs.c
+I was going to apply these but
 
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=blob;f=drivers/lio-core/iscsi_target_configfs.c
+a) It's nine patches all with the same title and I can't be bothered
+   thinking up useful titles for each one.  See
+   Documentation/SubmittingPatches
 
-So please, just because you don't want to acknowledge ConfigFS in your
-own work, do not act like there is not already thounsands of lines of
-ConfigFS code up and running for the generic target mode and LIO-Target.
+b) I can't find all the patches on lkml.
 
---nab
-
-> It would lead to 2 
-> interfaces in two different places for configuring SCSI targets: 
-> configfs and sysfs based. Definitely, it is better to have only one, 
-> sysfs-based interface, than 2 interfaces. From other side, sysfs in what 
-> SCST needs provides basically the same possibilities as configfs. And 
-> it's widely used in the kernel to configure various its parameters. See, 
-> for instance, bonding devices or IO schedulers.
-> 
-> The proposed /sys interface would be very similar to the current /proc 
-> layout intact, except cases, where output >PAGE_SIZE is needed. For such 
-> cases each entry, i.e. line, in such files would be presented as a 
-> subdirectory with name the first element in that line and each other 
-> element in it would be presented as a separate file (attribute). For 
-> instance, /proc/scsi_tgt/sessions, which lists connected sessions, would 
-> be converted to:
-> 
-> /sys/scsi_tgt/
->     /sys/scsi_tgt/sessions/
->       /sys/scsi_tgt/sessions/session1_name/
->         /sys/scsi_tgt/sessions/session1_name/target_name
->         /sys/scsi_tgt/sessions/session1_name/initiator_name
->         /sys/scsi_tgt/sessions/session1_name/acl -> ../../acls/aclX
->         /sys/scsi_tgt/sessions/session1_name/commands
->     /sys/scsi_tgt/sessions/session2_name/
->         /sys/scsi_tgt/sessions/session2_name/target_name
->         /sys/scsi_tgt/sessions/session2_name/initiator_name
->         /sys/scsi_tgt/sessions/session2_name/acl -> ../../acls/aclY
->         /sys/scsi_tgt/sessions/session2_name/commands
-> .
-> .
-> .
-> 
-> Addition of new, e.g. vdisk devices, would be done via echo'ing commands 
-> to, in this example, /sys/scsi_tgt/vdisk/mgmt file similarly as it's 
-> currently done with /proc/scsi_tgt/vdisk/vdisk (same commands, actually).
-> 
-> Any comments and suggestions will be greatly appreciated.
-> 
-> Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
-> ---
->   drivers/scst/scst_proc.c | 2196 
-> ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->   1 file changed, 2196 insertions(+)
-> 
-> The patch is too big to be submitted inline. You can find it in 
-> http://scst.sourceforge.net/patches/scst_proc.diff
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+c) Why am I applying misdn patches anyway?  If someone else already
+   applied them then they aren't in linux-next.
 
