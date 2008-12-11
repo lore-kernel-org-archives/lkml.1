@@ -1,103 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYLKCB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756506AbYLKCZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbYLKCB7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Dec 2008 21:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYLKCBv
+	id S1756506AbYLKCZv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Dec 2008 21:25:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbYLKCZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Dec 2008 21:01:51 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:37532 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754101AbYLKCBu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Dec 2008 21:01:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=XWE2tV4va5qBwMjK8E503ekSE8zrCLHx/DP7MA51Z92Cz0/zTDPFBlyLviPkPqCXfG
-         B06qRU3hfTJfa6+l/Zczd3EO1/bKWu0OCLAmPQkY4u7YuQ6iBnENhYkeDQnrxj0HaZ2T
-         N+SAVAyB0Xmh6R/RyAwMnWic9rGivnHi8sV7c=
-Message-ID: <e9c3a7c20812101801r19c8fb40s6b8ce9bd6c565fed@mail.gmail.com>
-Date: Wed, 10 Dec 2008 19:01:49 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 1/4 v2] dmaengine: add a tx_free method to struct dma_async_tx_descriptor
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com, "Sascha Hauer" <s.hauer@pengutronix.de>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <Pine.LNX.4.64.0812110011440.8273@axis700.grange>
+	Wed, 10 Dec 2008 21:25:18 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64800 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754156AbYLKCZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Dec 2008 21:25:16 -0500
+Message-ID: <494079AF.3040704@cn.fujitsu.com>
+Date: Thu, 11 Dec 2008 10:23:43 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] CGroups: Fix a race between rmdir and remount
+References: <6599ad830812101533r6cb007eeu5ef19499e278f6b7@mail.gmail.com>
+In-Reply-To: <6599ad830812101533r6cb007eeu5ef19499e278f6b7@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0812101122250.4578@axis700.grange>
-	 <Pine.LNX.4.64.0812101129340.4578@axis700.grange>
-	 <e9c3a7c20812101158h3de9c604i1c88bb7c412ccf02@mail.gmail.com>
-	 <Pine.LNX.4.64.0812110011440.8273@axis700.grange>
-X-Google-Sender-Auth: 1b2e6e1b583ac457
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 5:30 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> Hi Dan,
->
-> On Wed, 10 Dec 2008, Dan Williams wrote:
->
->> On Wed, Dec 10, 2008 at 3:36 AM, Guennadi Liakhovetski
->> <g.liakhovetski@gmx.de> wrote:
->> > From: Guennadi Liakhovetski <lg@denx.de>
->> >
->> > Some users reuse DMA transaction descriptors multiple times and need an
->> > explicit call to release them. An example of such a user is Video4Linux, which
->> > has to be able to release descriptors on ioctl(VIDIOC_DQBUF).
->> >
->> > Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
->>
->>
->> Hi Guennadi,
->>
->> Other dmaengine drivers have tasklets that scan the list of completed
->> descriptors and free the "acked" ones.  This happens in the cleanup
->> tasklet...
->> /me looks
->> ...hmm this driver does not have a cleanup routine?  Ideally support
->> for ioctl(VIDIOC_DQBUF) could be achieved through this mechanism
->> without needing to increase the size of dma_async_tx_descriptor (which
->> has cache utilization impacts on other drivers).
->
-> You mean there are drivers, that have struct dma_async_tx_descriptor on
-> stack?
+Paul Menage wrote:
+> Fix a race between rmdir and remount
+> 
+> When a cgroup is removed, it's unlinked from its parent's children
+> list, but not actually freed until the last dentry on it is released
+> (at which point cgrp->root->number_of_cgroups is decremented).
+> 
+> Currently rebind_subsystems checks for the top cgroup's child list
+> being empty in order to rebind subsystems into or out of a hierarchy -
+> this can result in the set of subsystems bound to a hierarchy being
+> different than the set of subsystems with state in the
+> removed-but-not-freed cgroup.
+> 
+> The simplest fix for this is to forbid remounts that change the set of
+> subsystems on a hierarchy that has removed-but-not-freed cgroups.
+> 
+> This bug can be reproduced via:
+> 
 
-huh?
+Seems this bug is revealed by my patch:
 
-> And you mean, that increasing the size
-> of the struct by one pointer and letting users explicitly free those
-> descriptors when they want is worse than introducing a tasklet that will
-> have to periodically scan the list of descriptors while other hot paths
-> will move elements to and from this list, look for acked elements, lock
-> the list and free those elements? Periodically, because although we have
-> an event when to free them - on ioctl - there is no API to trigger that
-> tasklet.
+cgroups-remove-some-redundant-null-checks.patch
+(http://marc.info/?l=linux-mm-commits&m=122730918427045&w=2)
 
-There are a few events that trigger this: completion interrupt,
-someone polls is_tx_complete, we run out of descriptors.
+@@ -611,10 +611,8 @@ static void cgroup_diput(struct dentry *
+...
+-		for_each_subsys(cgrp->root, ss) {
+-			if (cgrp->subsys[ss->subsys_id])
+-				ss->destroy(ss, cgrp);
+-		}
++		for_each_subsys(cgrp->root, ss)
++			ss->destroy(ss, cgrp);
 
-> Or am I missing something? I can do this, it just sounds strange
-> to me.
+But this patch is not guilty. :)
 
-You are missing that existing drivers need to do this anyway to to
-handle operation completion actions.  So, while they are at it they
-also free the descriptor which relieves client code from needing to
-track what it has in-flight versus completed, especially since clients
-may not get a handle to each descriptor a driver creates on its
-behalf.
+The original code leaked memory silently due to this race, if the remount
+removes some subsystems from the hierarchy.
 
-What I am suggesting is that other dmaengine drivers would handle this
-implicitly after one of the above events...  can this happen in the
-ipu_idmac case as well?
+> mkdir /mnt/cg
+> mount -t cgroup -o ns,freezer cgroup /mnt/cg
+> mkdir /mnt/cg/foo
+> sleep 1h < /mnt/cg/foo &
+> rmdir /mnt/cg/foo
+> mount -t cgroup -o remount,ns,devices,freezer cgroup /mnt/cg
+> kill $!
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
 
-Thanks,
-Dan
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+
+> ---
+>  kernel/cgroup.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+> ===================================================================
+> --- hierarchy_lock-mmotm-2008-12-09.orig/kernel/cgroup.c
+> +++ hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+> @@ -702,7 +702,7 @@ static int rebind_subsystems(struct cgro
+>  	 * any child cgroups exist. This is theoretically supportable
+>  	 * but involves complex error handling, so it's being left until
+>  	 * later */
+> -	if (!list_empty(&cgrp->children))
+> +	if (root->number_of_cgroups > 1)
+>  		return -EBUSY;
+> 
+>  	/* Process each subsystem */
+
