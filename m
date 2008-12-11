@@ -1,31 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYLKHHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbYLKHIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756204AbYLKHHX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 02:07:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYLKHHK
+	id S1756335AbYLKHIu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 02:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYLKHIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 02:07:10 -0500
-Received: from ns2.suse.de ([195.135.220.15]:35214 "EHLO mx2.suse.de"
+	Thu, 11 Dec 2008 02:08:41 -0500
+Received: from ns2.suse.de ([195.135.220.15]:35294 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751094AbYLKHHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 02:07:09 -0500
-Date: Thu, 11 Dec 2008 08:07:06 +0100
-Message-ID: <s5htz9bgpgl.wl%tiwai@suse.de>
+	id S1751184AbYLKHIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 02:08:40 -0500
+Date: Thu, 11 Dec 2008 08:08:38 +0100
+Message-ID: <s5hskovgpe1.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH 3/3] Sound (HDA Intel): Restore PCI configuration space with interrupts off
-In-Reply-To: <s5hbpvoxqnn.wl%tiwai@suse.de>
-References: <200812020320.31876.rjw@sisk.pl>
-	<200812061505.33815.rjw@sisk.pl>
-	<200812061509.08994.rjw@sisk.pl>
-	<200812062045.35689.jbarnes@virtuousgeek.org>
-	<s5hbpvoxqnn.wl%tiwai@suse.de>
+To: Andres Salomon <dilinger@queued.net>
+Cc: Jeremy Katz <katzj@redhat.com>, jordan@cosmicpenguin.net,
+       Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jordan Crouse <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org,
+       dsaxena@laptop.org
+Subject: Re: [PATCH] ALSA: cs5535audio: only build OLPC support if MGEODE_LX is defined
+In-Reply-To: <20081210134111.1c67466d@ephemeral>
+References: <1226547898.13077.83.camel@aglarond.local>
+	<s5h63msru7z.wl%tiwai@suse.de>
+	<20081113153714.GA1520@ucw.cz>
+	<s5h3ahvhb9w.wl%tiwai@suse.de>
+	<20081113111428.59aa36cb@ephemeral>
+	<20081113163802.GA1734@ucw.cz>
+	<20081113120147.2ecde3c8@ephemeral>
+	<20081113190339.GE17851@elte.hu>
+	<s5hzlk3kxuf.wl%tiwai@suse.de>
+	<20081113213852.16561ed2@ephemeral>
+	<20081114075248.GB8397@atrey.karlin.mff.cuni.cz>
+	<491DB6B9.7030209@cosmicpenguin.net>
+	<1226688350.13086.61.camel@aglarond.local>
+	<20081114161035.786f89ba@ephemeral>
+	<s5hbpvkdlg3.wl%tiwai@suse.de>
+	<20081210134111.1c67466d@ephemeral>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -35,35 +45,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sun, 07 Dec 2008 10:47:56 +0100,
-I wrote:
+At Wed, 10 Dec 2008 13:41:11 -0500,
+Andres Salomon wrote:
 > 
-> At Sat, 6 Dec 2008 20:45:35 -0800,
-> Jesse Barnes wrote:
+> On Wed, 10 Dec 2008 17:49:48 +0100
+> Takashi Iwai <tiwai@suse.de> wrote:
+> [...]
+> > This is really a workaround, and I hope the GPIO stuff will be
+> > fixed in arch/x86 in a better way...
 > > 
-> > On Saturday, December 6, 2008 6:09 am Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > Subject: Sound (HDA Intel): Restore PCI configuration space with interrupts
-> > > off
-> > >
-> > > Move the restoration of the standard PCI configuration registers
-> > > in the snd_hda_intel driver to a ->resume_early() callback executed
-> > > with interrupts disabled, since doing that with interrupts enabled
-> > > may lead to problems in some cases.
-> > >
-> > > This patch addresses the regression from 2.6.26 tracked as
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=12121 .
 > > 
-> > Since I only applied 1 and 2 you'll need to send this one through Takashi.
+> > thanks,
+> > 
+> > Takashi
 > 
-> OK, I merged it to for-next branch now.
-> It should appear in the linux-next tree of tomorrow.
+> 
+> Sorry, I'm still working on it, but it's slow going.  Note that I'm no
+> longer contracted by OLPC, so I'll be working on it in my free time.
 
-There is no build errors at least on linux-next, but I guess the
-testing about PM has been rarely done on linux-next kernel...
-
-BTW, Rafael, is this particular patch (against hda_intel.c) works in
-general or dependent on other two patches?
+No offense intended, I just wanted to emphasize that it's a workaround
+and no real solution.
 
 
 thanks,
