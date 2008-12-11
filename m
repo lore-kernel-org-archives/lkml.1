@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbYLKRgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbYLKRih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757160AbYLKRgy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 12:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756668AbYLKRgp
+	id S1757254AbYLKRih (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 12:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756645AbYLKRi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 12:36:45 -0500
-Received: from rcsinet14.oracle.com ([148.87.113.126]:60126 "EHLO
-	rgminet14.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756659AbYLKRgo (ORCPT
+	Thu, 11 Dec 2008 12:38:28 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:39546 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756622AbYLKRi1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 12:36:44 -0500
-Date: Thu, 11 Dec 2008 09:34:37 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Steven Whitehouse <swhiteho@redhat.com>, linux-kernel@vger.kernel.org,
-       cluster-devel@redhat.com
-Subject: Re: configfs, dlm_controld & lockdep
-Message-ID: <20081211173437.GA25844@ca-server1.us.oracle.com>
-Mail-Followup-To: Steven Whitehouse <swhiteho@redhat.com>,
-	linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-References: <1229005208.3625.26.camel@localhost.localdomain> <20081211144441.GA19128@hawkmoon.kerlabs.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081211144441.GA19128@hawkmoon.kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.49414F39.01C6:SCFSTAT928724,ss=1,fgs=0
+	Thu, 11 Dec 2008 12:38:27 -0500
+Subject: Re: [PATCH 07/15] kmemleak: Add memleak_alloc callback from
+	alloc_large_system_hash
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1229016618.17206.2.camel@nimitz>
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
+	 <20081210182732.30323.39834.stgit@pc1117.cambridge.arm.com>
+	 <1228935860.9737.98.camel@nimitz>
+	 <1228989052.332.12.camel@pc1117.cambridge.arm.com>
+	 <1229016618.17206.2.camel@nimitz>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 11 Dec 2008 17:38:18 +0000
+Message-Id: <1229017098.332.45.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Dec 2008 17:38:21.0057 (UTC) FILETIME=[428ED710:01C95BB7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 03:44:41PM +0100, Louis Rilling wrote:
-> These warnings are known issues. This results from a lack of lockdep annotations
-> in configfs. I must admit that I started to send patches for that a few months
-> ago, and then could not find time to finish this work.
+On Thu, 2008-12-11 at 09:30 -0800, Dave Hansen wrote:
+> On Thu, 2008-12-11 at 09:50 +0000, Catalin Marinas wrote:
+> > > Since alloc_large_system_hash() is using bootmem (and is called early),
+> > > I'm a little surprised that it is OK to call into memleak_alloc() which
+> > > uses kmem_cache_alloc().  Is the slab even set up at this point?
+> > 
+> > It doesn't need to be. Early callbacks like this are logged by kmemleak
+> > in a buffer and properly registered once the slab allocator is fully
+> > initialised (slab initialisation needs to allocate some memory for
+> > itself as well).
 > 
-> The problem is a bit harder than just playing with I_MUTEX_CHILD, I_MUTEX_PARENT
-> and I_MUTEX_NORMAL, since configfs recursively locks variable numbers
-> (this can go to as many as the depth of the whole configfs tree) of
-> config_group inodes during operations like mkdir(), rmdir(), and depend_item().
-> 
-> I was working on two kinds of solutions:
-> 1) insert lockdep_off()/lockdep_on() at the places of recursion,
-> 2) separate default groups inode mutex classes according to their depth under
-> the created group they belong to.
-> 
-> People tend to reject any proposition like 1), but IIRC Joel was tending to
-> accept it.
-> 
-> Solution 2) does not work for depend_item(). This needs to rework the locking
-> scheme of depend_item() by removing the variable lock recursion depth, and I
-> think that it's doable thanks to the configfs_dirent_lock.
-> 	Joel, what do you think about this?
+> Ahh, thanks for the clarification.  Could you add something to the code
+> to this effect?
 
-	I've been waiting for your patch for (1).  I am wary of the (2)
-approach.  Not because it wouldn't work for mkdir(2) - I think it would.
-But rmdir(2) has the same recursive locking, with far more importance
-(live objects), and would print the same error.
-
-Joel
+Do you mean a comment? I can do this.
 
 -- 
+Catalin
 
-Life's Little Instruction Book #267
-
-	"Lie on your back and look at the stars."
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
