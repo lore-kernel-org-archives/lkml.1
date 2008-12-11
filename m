@@ -1,137 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbYLKSn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbYLKSuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757124AbYLKSn3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 13:43:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbYLKSnR
+	id S1756856AbYLKSuG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 13:50:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbYLKStx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 13:43:17 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:46950 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755762AbYLKSnQ (ORCPT
+	Thu, 11 Dec 2008 13:49:53 -0500
+Received: from outbound-mail-306.bluehost.com ([67.222.53.252]:42116 "HELO
+	outbound-mail-306.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754068AbYLKStx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 13:43:16 -0500
-From: Paul Moore <paul.moore@hp.com>
-Subject: [PATCH] netlabel: Compiler warning and NULL pointer dereference fix
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, geert.uytterhoeven@sonycom.com
-Date: Thu, 11 Dec 2008 13:43:12 -0500
-Message-ID: <20081211184312.30832.25526.stgit@flek.lan>
-User-Agent: StGIT/0.14.3
+	Thu, 11 Dec 2008 13:49:53 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=dQbQZp2RHg/2TQfGeSL6WRuOS0lBV8FGtjv7lZ4zc/Elyg4kzm/hAZ810nKfyr+Bt3Y8SZ5k/oXlC+FBYhfmFQ/xAwauS/ic9N2n9XhyXtdwrEC7pjYHAYSDu5RchKyE;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alex Chiang <achiang@hp.com>
+Subject: Re: [PATCH 1/2] PCI Hotplug: acpiphp wants a 64-bit _SUN
+Date: Thu, 11 Dec 2008 10:35:01 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: justin.chen@hp.com, "linux-pci" <linux-pci@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <20081211181242.GD18309@ldl.fc.hp.com> <20081211181644.GE18309@ldl.fc.hp.com>
+In-Reply-To: <20081211181644.GE18309@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812111035.02652.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 216.239.45.19 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the two compiler warnings show below.  Thanks to Geert Uytterhoeven for
-finding and reporting the problem.
+On Thursday, December 11, 2008 10:16 am Alex Chiang wrote:
+> From: Justin Chen <justin.chen@hp.com>
+>
+> Certain HP machines require the full 64 bits of _SUN as allowed
+> by the ACPI spec. Without this change, we get name collisions in
+> the lower 32 bits of the _SUN returned by firmware.
+>
+> Signed-off-by: Justin Chen <justin.chen@hp.com>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
 
- net/netlabel/netlabel_unlabeled.c:567: warning: 'entry' may be used
-   uninitialized in this function
- net/netlabel/netlabel_unlabeled.c:629: warning: 'entry' may be used
-   uninitialized in this function
+It's very late in the cycle, so I'd like to get acks from at least a couple of 
+other testers for this one...  Any volunteers?
 
-Signed-off-by: Paul Moore <paul.moore@hp.com>
----
-
- net/netlabel/netlabel_unlabeled.c |   38 +++++++++++++++++++------------------
- 1 files changed, 20 insertions(+), 18 deletions(-)
-
-diff --git a/net/netlabel/netlabel_unlabeled.c b/net/netlabel/netlabel_unlabeled.c
-index 90c8506..8c03080 100644
---- a/net/netlabel/netlabel_unlabeled.c
-+++ b/net/netlabel/netlabel_unlabeled.c
-@@ -562,7 +562,6 @@ static int netlbl_unlhsh_remove_addr4(struct net *net,
- 				      const struct in_addr *mask,
- 				      struct netlbl_audit *audit_info)
- {
--	int ret_val = 0;
- 	struct netlbl_af4list *list_entry;
- 	struct netlbl_unlhsh_addr4 *entry;
- 	struct audit_buffer *audit_buf;
-@@ -577,7 +576,7 @@ static int netlbl_unlhsh_remove_addr4(struct net *net,
- 	if (list_entry != NULL)
- 		entry = netlbl_unlhsh_addr4_entry(list_entry);
- 	else
--		ret_val = -ENOENT;
-+		entry = NULL;
- 
- 	audit_buf = netlbl_audit_start_common(AUDIT_MAC_UNLBL_STCDEL,
- 					      audit_info);
-@@ -588,19 +587,21 @@ static int netlbl_unlhsh_remove_addr4(struct net *net,
- 					  addr->s_addr, mask->s_addr);
- 		if (dev != NULL)
- 			dev_put(dev);
--		if (entry && security_secid_to_secctx(entry->secid,
--						      &secctx,
--						      &secctx_len) == 0) {
-+		if (entry != NULL &&
-+		    security_secid_to_secctx(entry->secid,
-+					     &secctx, &secctx_len) == 0) {
- 			audit_log_format(audit_buf, " sec_obj=%s", secctx);
- 			security_release_secctx(secctx, secctx_len);
- 		}
--		audit_log_format(audit_buf, " res=%u", ret_val == 0 ? 1 : 0);
-+		audit_log_format(audit_buf, " res=%u", entry != NULL ? 1 : 0);
- 		audit_log_end(audit_buf);
- 	}
- 
--	if (ret_val == 0)
--		call_rcu(&entry->rcu, netlbl_unlhsh_free_addr4);
--	return ret_val;
-+	if (entry == NULL)
-+		return -ENOENT;
-+
-+	call_rcu(&entry->rcu, netlbl_unlhsh_free_addr4);
-+	return 0;
- }
- 
- #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-@@ -624,7 +625,6 @@ static int netlbl_unlhsh_remove_addr6(struct net *net,
- 				      const struct in6_addr *mask,
- 				      struct netlbl_audit *audit_info)
- {
--	int ret_val = 0;
- 	struct netlbl_af6list *list_entry;
- 	struct netlbl_unlhsh_addr6 *entry;
- 	struct audit_buffer *audit_buf;
-@@ -638,7 +638,7 @@ static int netlbl_unlhsh_remove_addr6(struct net *net,
- 	if (list_entry != NULL)
- 		entry = netlbl_unlhsh_addr6_entry(list_entry);
- 	else
--		ret_val = -ENOENT;
-+		entry = NULL;
- 
- 	audit_buf = netlbl_audit_start_common(AUDIT_MAC_UNLBL_STCDEL,
- 					      audit_info);
-@@ -649,19 +649,21 @@ static int netlbl_unlhsh_remove_addr6(struct net *net,
- 					  addr, mask);
- 		if (dev != NULL)
- 			dev_put(dev);
--		if (entry && security_secid_to_secctx(entry->secid,
--						      &secctx,
--						      &secctx_len) == 0) {
-+		if (entry != NULL &&
-+		    security_secid_to_secctx(entry->secid,
-+					     &secctx, &secctx_len) == 0) {
- 			audit_log_format(audit_buf, " sec_obj=%s", secctx);
- 			security_release_secctx(secctx, secctx_len);
- 		}
--		audit_log_format(audit_buf, " res=%u", ret_val == 0 ? 1 : 0);
-+		audit_log_format(audit_buf, " res=%u", entry != NULL ? 1 : 0);
- 		audit_log_end(audit_buf);
- 	}
- 
--	if (ret_val == 0)
--		call_rcu(&entry->rcu, netlbl_unlhsh_free_addr6);
--	return ret_val;
-+	if (entry == NULL)
-+		return -ENOENT;
-+
-+	call_rcu(&entry->rcu, netlbl_unlhsh_free_addr6);
-+	return 0;
- }
- #endif /* IPv6 */
- 
-
+Thanks,
+Jesse
