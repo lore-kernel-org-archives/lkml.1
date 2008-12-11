@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932251AbYLKThc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbYLKTf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932251AbYLKThc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 14:37:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757852AbYLKTTA
+	id S1758588AbYLKTf7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 14:35:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757842AbYLKTS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 14:19:00 -0500
-Received: from kroah.org ([198.145.64.141]:56486 "EHLO coco.kroah.org"
+	Thu, 11 Dec 2008 14:18:56 -0500
+Received: from kroah.org ([198.145.64.141]:56348 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757849AbYLKTS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 14:18:59 -0500
-Date: Thu, 11 Dec 2008 11:15:47 -0800
+	id S1757814AbYLKTSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 14:18:54 -0500
+Date: Thu, 11 Dec 2008 11:15:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Kailang Yang <kailang@realtek.com>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 54/83] ALSA: hda - Add support of ALC272
-Message-ID: <20081211191547.GB5894@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "Robin H. Johnson" <robbat2@gentoo.org>,
+       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>
+Subject: [patch 50/83] ALSA: HDA: patch_analog: Quirk for Asus P5Q
+	Premium/Pro boards.
+Message-ID: <20081211191524.GX5894@kroah.com>
 References: <20081211190201.612240183@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-add-support-of-alc272.patch"
+Content-Disposition: inline; filename="alsa-hda-patch_analog-quirk-for-asus-p5q-premium-pro-boards.patch"
 In-Reply-To: <20081211191014.GA5759@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,37 +41,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Kailang Yang <kailang@realtek.com>
+From: Robin H. Johnson <robbat2@orbis-terrarum.net>
 
-commit 01afd41f55524e8378601dbf33b858d8dd4b3f31 upstream
+commit f51ff9937bc6732ed5fc08088fdbe89ab8ed27c3 upstream
 
-Added the support of ALC272 codec.  It's almost compatible with ALC663.
+Use 6STACK_DIG for the AD2000BX variant of the AD1989B chip used by Asus
+on their Asus P5Q Premium and Pro boards.
 
-Signed-off-by: Kailang Yang <kailang@realtek.com>
+Signed-off-by: Robin H. Johnson <robbat2@gentoo.org>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Jaroslav Kysela <perex@perex.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- sound/pci/hda/patch_realtek.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ sound/pci/hda/patch_analog.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/sound/pci/hda/patch_realtek.c
-+++ b/sound/pci/hda/patch_realtek.c
-@@ -14910,6 +14910,9 @@ static int patch_alc662(struct hda_codec
- 	if (codec->vendor_id == 0x10ec0663) {
- 		spec->stream_name_analog = "ALC663 Analog";
- 		spec->stream_name_digital = "ALC663 Digital";
-+	} else if (codec->vendor_id == 0x10ec0272) {
-+		spec->stream_name_analog = "ALC272 Analog";
-+		spec->stream_name_digital = "ALC272 Digital";
- 	} else {
- 		spec->stream_name_analog = "ALC662 Analog";
- 		spec->stream_name_digital = "ALC662 Digital";
-@@ -14947,6 +14950,7 @@ struct hda_codec_preset snd_hda_preset_r
- 	{ .id = 0x10ec0267, .name = "ALC267", .patch = patch_alc268 },
- 	{ .id = 0x10ec0268, .name = "ALC268", .patch = patch_alc268 },
- 	{ .id = 0x10ec0269, .name = "ALC269", .patch = patch_alc269 },
-+	{ .id = 0x10ec0272, .name = "ALC272", .patch = patch_alc662 },
- 	{ .id = 0x10ec0861, .rev = 0x100340, .name = "ALC660",
- 	  .patch = patch_alc861 },
- 	{ .id = 0x10ec0660, .name = "ALC660-VD", .patch = patch_alc861vd },
+--- a/sound/pci/hda/patch_analog.c
++++ b/sound/pci/hda/patch_analog.c
+@@ -2872,6 +2872,7 @@ static struct snd_pci_quirk ad1988_cfg_t
+ 	SND_PCI_QUIRK(0x1043, 0x81ec, "Asus P5B-DLX", AD1988_6STACK_DIG),
+ 	SND_PCI_QUIRK(0x1043, 0x81f6, "Asus M2N-SLI", AD1988_6STACK_DIG),
+ 	SND_PCI_QUIRK(0x1043, 0x8277, "Asus P5K-E/WIFI-AP", AD1988_6STACK_DIG),
++	SND_PCI_QUIRK(0x1043, 0x8311, "Asus P5Q-Premium/Pro", AD1988_6STACK_DIG),
+ 	{}
+ };
+ 
 
