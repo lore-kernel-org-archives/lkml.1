@@ -1,44 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbYLLNrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbYLLNse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758379AbYLLNrr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 08:47:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbYLLNri
+	id S1759106AbYLLNse (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 08:48:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbYLLNsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 08:47:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36468 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758215AbYLLNrh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 08:47:37 -0500
-To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH mmotm 1/5] nilfs2: fix problems of memory allocation in ioctl
-From: Andi Kleen <andi@firstfloor.org>
-References: <1229059021-9538-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-	<1229059021-9538-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-Date: Fri, 12 Dec 2008 14:47:58 +0100
-In-Reply-To: <1229059021-9538-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp> (Ryusuke Konishi's message of "Fri, 12 Dec 2008 14:16:57 +0900")
-Message-ID: <871vwdcxo1.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Fri, 12 Dec 2008 08:48:25 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46302 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758208AbYLLNsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 08:48:24 -0500
+Message-ID: <49426B2C.9070100@redhat.com>
+Date: Fri, 12 Dec 2008 14:46:20 +0100
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: [PATCH] loop: Do not call loop_unplug for not configured loop device.
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp> writes:
+Do not call loop_unplug for not configured loop device.
 
-> The current memory copy function of nilfs2 ioctl has following
-> problems:
+In loop_unplug() function is expected that mapping is set
+and lo->lo_backing_file is not NULL.
 
-Wouldn't it be easier/faster/more reliable to just use vmalloc for
-those allocations?  The only reason to use kmalloc for such large
-allocations would be if you want to do direct DMA (but even there are
-ways to do this using virtual allocations and scatter-gather)
+Unfortunately loop_set_fd() set the request queue unplug function,
+but loop_clr_fd() doesn't clear that.
 
--Andi
->
+Loop device allows open of non-configured loop in some situations.
+If the unplug on request queue is called, loop module oopses because
+of missing lo_backing_file.
 
--- 
-ak@linux.intel.com
+Simple reproducer:
+	losetup /dev/loop0 /xxx
+	losetup -d /dev/loop0
+	dmsetup create x --table "0 1 linear /dev/loop0 0"
+
+ EIP is at loop_unplug+0x1d/0x3b
+ ...
+  Call Trace:
+   blk_unplug+0x57/0x5e
+   dm_table_unplug_all+0x34/0x77 [dm_mod]
+   destroy_inode+0x27/0x38
+   generic_delete_inode+0xd5/0xd9
+   iput+0x4b/0x4e
+   dm_resume+0xca/0xfe [dm_mod]
+   dev_suspend+0x143/0x165 [dm_mod]
+   dm_ctl_ioctl+0x18e/0x1cf [dm_mod]
+   dev_suspend+0x0/0x165 [dm_mod]
+   dm_ctl_ioctl+0x0/0x1cf [dm_mod]
+   vfs_ioctl+0x22/0x69
+   do_vfs_ioctl+0x39d/0x3c7
+   trace_hardirqs_on+0xb/0xd
+   remove_vma+0x50/0x56
+   do_munmap+0x21c/0x237
+   sys_ioctl+0x2c/0x45
+   sysenter_do_call+0x12/0x31
+
+Several reports here
+http://www.kerneloops.org/search.php?search=loop_unplug
+
+Fix it by simply clear unplug function together with
+removing of backing file.
+
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+---
+ drivers/block/loop.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 90d19df..1e4b41e 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -919,6 +919,7 @@ static int loop_clr_fd(struct loop_device *lo, struct block_device *bdev)
+ 
+ 	kthread_stop(lo->lo_thread);
+ 
++	lo->lo_queue->unplug_fn = NULL;
+ 	lo->lo_backing_file = NULL;
+ 
+ 	loop_release_xfer(lo);
+
+
