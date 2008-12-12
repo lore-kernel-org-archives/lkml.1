@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbYLLTIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbYLLTJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbYLLTIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 14:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbYLLTIJ
+	id S1753223AbYLLTJV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 14:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYLLTJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 14:08:09 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:56738 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbYLLTIH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 14:08:07 -0500
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] x86: don't enable MCE after suspend/resume when system was booted with "nomce"
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081212180650.GS19144@alberich.amd.com>
-	<20081212180827.GT19144@alberich.amd.com>
-Date: Fri, 12 Dec 2008 20:08:28 +0100
-In-Reply-To: <20081212180827.GT19144@alberich.amd.com> (Andreas Herrmann's message of "Fri, 12 Dec 2008 19:08:27 +0100")
-Message-ID: <87y6ylmcsz.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Fri, 12 Dec 2008 14:09:04 -0500
+Received: from virgo.iok.hu ([212.40.97.103]:46694 "EHLO virgo.iok.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751026AbYLLTJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 14:09:03 -0500
+X-Greylist: delayed 912 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Dec 2008 14:09:03 EST
+Date: Fri, 12 Dec 2008 20:09:00 +0100
+From: Miklos Vajna <vmiklos@frugalware.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Simplified GIT usage guide
+Message-ID: <20081212190900.GL5691@genesis.frugalware.org>
+References: <20081212185347.GK5691@genesis.frugalware.org> <20081212182827.28408.40963.stgit@warthog.procyon.org.uk> <28996.1229108561@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="JMKEfAmnQy+WzDHS"
+Content-Disposition: inline
+In-Reply-To: <28996.1229108561@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Herrmann <andreas.herrmann3@amd.com> writes:
 
-> Impact: fix suspend/resume bug with MCE
->
-> A suspend/resume cycle unconditionally enables MCE
-> for the boot CPU if MCE is compiled into the kernel.
-> I.e. even a system booted with "nomce" configures MCE for the boot CPU.
->
-> This patch ensures that MCE is not turned on for systems booted with
-> "nomce".
+--JMKEfAmnQy+WzDHS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I have that fixed in a better way in
+On Fri, Dec 12, 2008 at 07:02:41PM +0000, David Howells <dhowells@redhat.co=
+m> wrote:
+> > Is there any reason you hide the tag object?
+>=20
+> What's a tag object?
 
-http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-x86.git;a=commit;h=81c7af997dafbabad464ccefba89af2b247899da
+http://www.kernel.org/pub/software/scm/git/docs/gitglossary.html#def_tag_ob=
+ject
 
-I believe
+> > Using git clone --mirror would be much efficient, I think.
+>=20
+> 	warthog>man git-clone | grep mirror
+> 	warthog1>
 
+It's new in v1.6.0. You can just use git --bare init; git remote
+add --mirror in older versions.
 
--Andi
+--JMKEfAmnQy+WzDHS
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
--- 
-ak@linux.intel.com
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklCtswACgkQe81tAgORUJZdQgCgo9MZsAtjMJfHnxE+w2sEZf8G
+wX8AnjbECEqU6+VXubsHOOx2NK7Bp42U
+=RkPN
+-----END PGP SIGNATURE-----
+
+--JMKEfAmnQy+WzDHS--
