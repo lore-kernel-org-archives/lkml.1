@@ -1,64 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbYLLI35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbYLLIaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757807AbYLLI35 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 03:29:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYLLI3t
+	id S1758038AbYLLIaf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 03:30:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYLLIa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 03:29:49 -0500
-Received: from viefep12-int.chello.at ([62.179.121.32]:40949 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753871AbYLLI3t (ORCPT
+	Fri, 12 Dec 2008 03:30:27 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55587 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753871AbYLLIa1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 03:29:49 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [patch] Performance Counters for Linux, v3
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20081211193439.GA25986@elte.hu>
-References: <20081211155230.GA4230@elte.hu>
-	 <12c511ca0812111111t2992dd2cw8b4d57ac57bd0700@mail.gmail.com>
-	 <20081211193439.GA25986@elte.hu>
-Content-Type: text/plain
-Date: Fri, 12 Dec 2008 09:29:30 +0100
-Message-Id: <1229070570.12883.14.camel@twins>
+	Fri, 12 Dec 2008 03:30:27 -0500
+Date: Fri, 12 Dec 2008 17:29:30 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [BUGFIX][PATCH mmotm] memcg fix swap accounting leak
+Message-Id: <20081212172930.282caa38.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-11 at 20:34 +0100, Ingo Molnar wrote:
 
->  struct perf_counter_hw_event {
->         s64                     type;
-> 
->         u64                     irq_period;
->         u32                     record_type;
-> 
->         u32                     disabled     :  1, /* off by default */
->                                 nmi          :  1, /* NMI sampling   */
->                                 raw          :  1, /* raw event type */
->                                 __reserved_1 : 29;
-> 
->         u64                     __reserved_2;
->  };
-> 
-> if the hw_event.raw bit is set to 1, then the hw_event.type is fully 
-> 'raw'. The default is for raw to be 0. So negative numbers can be used 
-> for sw events, positive numbers for hw events. Both can be extended 
-> gradually, without arbitrarily limits introduced.
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-On that, I still don't think its a good idea to use bitfields in an ABI.
-The C std is just not strict enough on them, and I guess that is the
-reason this would be the first such usage.
+Fix swap-page-fault charge leak of memcg.
+
+Now, memcg has hooks to swap-out operation and checks SwapCache is really
+unused or not. That check depends on contents of struct page.
+I.e. If PageAnon(page) && page_mapped(page), the page is recoginized as
+still-in-use.
+
+Now, reuse_swap_page() calles delete_from_swap_cache() before establishment
+of any rmap. Then, in followinig sequence
+
+	(Page fault with WRITE)
+	Assume the page is SwapCache "on memory (still charged)"
+	try_charge() (charge += PAGESIZE)
+	commit_charge()
+	   => (Check page_cgroup and found PCG_USED bit, charge-=PAGE_SIZE
+	       because it seems already charged.)
+	reuse_swap_page()
+		-> delete_from_swapcache()
+			-> mem_cgroup_uncharge_swapcache() (charge -= PAGESIZE)
+	......
+
+too much uncharge.....
+
+To avoid this,  move commit_charge() after page_mapcount() goes up to 1.
+By this,
+        Assume the page is SwapCache "on memory"
+	try_charge()		(charge += PAGESIZE)
+	reuse_swap_page()	(may charge -= PAGESIZE if PCG_USED is set)
+	commit_charge()		(Ony if page_cgroup is marked as PCG_USED,
+				 charge -= PAGESIZE)
+Accounting will be correct.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/memory.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: mmotm-2.6.28-Dec11/mm/memory.c
+===================================================================
+--- mmotm-2.6.28-Dec11.orig/mm/memory.c
++++ mmotm-2.6.28-Dec11/mm/memory.c
+@@ -2433,17 +2433,17 @@ static int do_swap_page(struct mm_struct
+ 	 * which may delete_from_swap_cache().
+ 	 */
+ 
+-	mem_cgroup_commit_charge_swapin(page, ptr);
+ 	inc_mm_counter(mm, anon_rss);
+ 	pte = mk_pte(page, vma->vm_page_prot);
+ 	if (write_access && reuse_swap_page(page)) {
+ 		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
+ 		write_access = 0;
+ 	}
+-
+ 	flush_icache_page(vma, page);
+ 	set_pte_at(mm, address, page_table, pte);
+ 	page_add_anon_rmap(page, vma, address);
++	/* It's better to call commit-charge after rmap is established */
++	mem_cgroup_commit_charge_swapin(page, ptr);
+ 
+ 	swap_free(entry);
+ 	if (vm_swap_full() || (vma->vm_flags & VM_LOCKED) || PageMlocked(page))
 
