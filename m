@@ -1,152 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbYLLItl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbYLLIud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758016AbYLLItl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 03:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbYLLItd
+	id S1758215AbYLLIud (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 03:50:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755681AbYLLIuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 03:49:33 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:19882 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755681AbYLLItb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 03:49:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=vHdlkDJfxgdX6HO1vU9wDeOd1DSiibYDfR1vrRTKYZj9cfEaZY3mj/izpf2jHgfpOT
-         zyYnrkjuYwU6OcjqzhOny51JT1YZNjTTAsQ6Y9I373/zXUFC39wDVk3SrYaeEGEJcTFL
-         nZ7EGtKQzpzRrCjvw17PHSIQyNSVsRqsF7hhk=
-Message-ID: <386072610812120049n4483b892j2e26ab4a8ece23c@mail.gmail.com>
-Date: Fri, 12 Dec 2008 16:49:30 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: [alsa-devel] [Question] Can I open a substream in kernel space without attach to a file pointer?
-Cc: "ALSA devel" <alsa-devel@alsa-project.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <s5hej0ddgk5.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 12 Dec 2008 03:50:20 -0500
+Received: from mga09.intel.com ([134.134.136.24]:42969 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756150AbYLLIuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 03:50:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,210,1228118400"; 
+   d="scan'208";a="473393264"
+Subject: Re: [RFC PATCH 08/11] clocksource: allow usage independent of
+	timekeeping.c
+From: Patrick Ohly <patrick.ohly@intel.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, Magnus Damm <magnus.damm@gmail.com>
+In-Reply-To: <1229034208.6801.32.camel@localhost.localdomain>
+References: <1227096528-24150-1-git-send-email-patrick.ohly@intel.com>
+	 <1227096528-24150-2-git-send-email-patrick.ohly@intel.com>
+	 <1227096528-24150-3-git-send-email-patrick.ohly@intel.com>
+	 <1227096528-24150-4-git-send-email-patrick.ohly@intel.com>
+	 <1227096528-24150-5-git-send-email-patrick.ohly@intel.com>
+	 <1227096528-24150-6-git-send-email-patrick.ohly@intel.com>
+	 <1227096528-24150-7-git-send-email-patrick.ohly@intel.com>
+	 <1227096528-24150-8-git-send-email-patrick.ohly@intel.com>
+	 <1227096528-24150-9-git-send-email-patrick.ohly@intel.com>
+	 <1f1b08da0812051305hdca5b4bs1662368cda86255d@mail.gmail.com>
+	 <1228997497.26315.106.camel@ecld0pohly>
+	 <1229034208.6801.32.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 12 Dec 2008 09:50:14 +0100
+Message-Id: <1229071814.18038.38.camel@ecld0pohly>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <386072610811190200l576d7735rb0188ab53f5185fa@mail.gmail.com>
-	 <s5h63mjddvj.wl%tiwai@suse.de>
-	 <386072610811190742ycab0dbasc585376dc6ac47db@mail.gmail.com>
-	 <s5hljvfbt8h.wl%tiwai@suse.de>
-	 <386072610812110240l7af568f9h40c672036abe49f6@mail.gmail.com>
-	 <s5hoczidimg.wl%tiwai@suse.de>
-	 <386072610812110519j78aa8971ga37635658741b021@mail.gmail.com>
-	 <s5hiqpqdeuw.wl%tiwai@suse.de>
-	 <386072610812110612u6eed650bpe302b663a692b3bf@mail.gmail.com>
-	 <s5hej0ddgk5.wl%tiwai@suse.de>
-X-Google-Sender-Auth: a3682f16cef8e147
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 2:59 PM, Takashi Iwai <tiwai@suse.de> wrote:
-> At Thu, 11 Dec 2008 22:12:56 +0800,
-> Bryan Wu wrote:
->>
->> On Thu, Dec 11, 2008 at 9:24 PM, Takashi Iwai <tiwai@suse.de> wrote:
->> > At Thu, 11 Dec 2008 21:19:21 +0800,
->> > Bryan Wu wrote:
->> >>
->> >> On Thu, Dec 11, 2008 at 8:03 PM, Takashi Iwai <tiwai@suse.de> wrote:
->> >> > At Thu, 11 Dec 2008 18:40:38 +0800,
->> >> > Bryan Wu wrote:
->> >> >>
->> >> >> Hi Takashi,
->> >> >>
->> >> >> I just made some progress about this USB audio gadget driver. But I
->> >> >> still got some questions about the audio playback.
->> >> >> Please kindly help me to work out here, as you're the best one to ask, -:)
->> >> >>
->> >> >> I can receive ISO transfer packets from PC host. The packet includes
->> >> >> 192 bytes audio data.
->> >> >> So I tried to use vfs_write() function to write this 192 bytes to the
->> >> >> opened snd card.
->> >> >> There is no sound.
->> >> >>
->> >> >> Then I create a buffer which is 6K bytes size and a workqueue. I will
->> >> >> fill the 6K buffer with the ISO packets data.
->> >> >> When the 6K buffer is full, in the workqueue handler I will call
->> >> >> vfs_write() function to write these 6K bytes data to the sound card.
->> >> >> This time, sound played and it works although it is not very smooth.
->> >> >>
->> >> >> So I guess the audio buffer I great is very important to playback audio.
->> >> >> How to choose the buffer size? If the size < 6K, there is no sound.
->> >> >> I guess it depends on the sound card hardware, but I failed to find
->> >> >> any info from hw_params and sw_params.
->> >> >
->> >> > Well, this pretty much depends on the "sound card" you are accessing.
->> >> > You mentioned about AD1980 but the question is rather what
->> >> > controller is used.  The codec chip is basically independent from the
->> >> > DMA transfer parameter.
->> >> >
->> >>
->> >> Right, currently I'm trying AD1980 which using DMA transfer by
->> >> Blackfin BF54x processor.
->> >
->> > Is it an ASoC one?
->> >
->>
->> Yes, it's.
->
-> Then another possibility is to create a sort of machine driver
-> communicates with ASoC codec driver instead of accessing to the
-> generic ALSA PCM core.
->
+On Thu, 2008-12-11 at 22:23 +0000, john stultz wrote:
+> On Thu, 2008-12-11 at 13:11 +0100, Patrick Ohly wrote:
+> > That's true. I could keep the code separate, if that helps. I just
+> > didn't want to duplicate the whole structure definition.
+> 
+> I think either keeping it separate, using your own structure, or
+> properly splitting out the  counter / time-clock interface would be the
+> way to go.
 
-I hope this driver independents on low level ALSA card implementation.
-Because on some embedded machine, they don't use ASoC.
-And I want to push this driver to upstream mainline finally.
+Okay, will do that. I'll try to do it so that later the clocksource can
+be rewritten so that it uses the same definition.
 
->> >> >> Actually, I want to remove the audio buffer here, just write the 192
->> >> >> audio data to sound card directly. Is that possible?
->> >> >
->> >> > Also depends on the hardware.  If the audio chip requires the DMA
->> >> > transfer, you'd need anyway a buffer.
->> >> >
->> >>
->> >> So how to determine the buffer size based on the DMA hardware configuration?
->> >
->> > This should be done via usual hw_refine / hw_params ioctls.
->> >
->>
->> in struct snd_pcm_hw_params, I guess only fifo_size is useful for me
->> to choose my buffer size, right?
->
-> No, fifo_size is just a place holder, existing only for historical
-> reasons as now.
->
->> If the fifo_size == 1K, so how big is OK for my buffer size?
->>
->> The buffer size is so tricky here, I try to make my driver is
->> independent with the lower card hardware.
->> So I need to find a algorithm to choose the buffer size here.
->>
->> >> I tried to change the period_size and buffer_size of the runtime struct.
->> >> It also didn't work.
->> >
->> > Well, the constraint is rather the "slave" sound card.  You are
->> > actually creating a tunnel driver.  The period size and buffer size
->> > are issues of the controller, thus you cannot change the parameters of
->> > the tunnel driver freely.
->> >
->>
->> Exactly. And another question is whether is it possible using
->> nonblocking writing in my driver?
->
-> Why your driver needs to care about non-blocking write?  Usually PCM
-> core stuff cares the writing mode and other tasks.
->
+> > There are two additional ways of using the counter:
+> > * Get nanosecond delay measurements (clocksource_read_ns). Calling this
+> >   "resets" the counter.
+> 
+> Just so I understand, do you mean clocksource_read_ns() returns the
+> number of nanoseconds since the last call to clocksource_read_ns()?
 
-Currently, because this sound playback is not very smooth. I guess
-there some underrun when I write the USB audio data chuck to the card.
-So maybe we need 2 buffers as a pingpang buffer  to do data buffering.
-You know, vfs_write() is blocking operation and before it returns we
-can not fill the buffer if you just have one buffer.
+Yes.
 
--Bryan
+> Why exactly is this useful, as opposed to creating a monotonically
+> increasing function which can be sampled and the state is managed by the
+> users of the interface?
+
+The monotonically increasing function already is based on a stateful
+function which calculcates the delta; calculating the original delta
+based on a derived value didn't seem right. But I don't really care much
+about this part of the API, so I'll just make it internal.
+
+> > * Get a continously increasing timer value 
+> >   (clocksource_init_time/clocksource_read_time). The clock is only reset
+> >   when calling clocksource_init_time().
+> 
+> So a monotonic 64bit wide counter. Close to what I described above. Is
+> there actually a  need for it to reset ever?
+
+Perhaps. A device might decide to reset the time each time hardware time
+stamping is activated.
+
+> > Some additional members must be moved to struct counter:
+> > * cycle_last (for the overflow handling)
+> > * xtime_nsec (for the continously increasing timer)
+> 
+> Hmm. I'd still prefer those values to be stored elsewhere. As you add
+> state to the structure, that limits how the structure can be used. For
+> instance, if cycles_last and xtime_nsec are in the counter structure,
+> then that means one counter could not be used for both timekeeping and
+> the hardware time-stamping you're doing.
+
+The clean solution would be
+* struct cyclecounter: abstract API to access hardware cycle counter
+  The cycle counter may roll over relatively quickly. The implementor
+  needs to provide information about the width of the counter and its
+  frequency.
+* struct timecounter: turns cycles from one cyclecounter into a 
+  nanosecond count
+  Must detect and deal with cycle counter overflows. Uses a 64 bit
+  counter for time, so it itself doesn't overflow (unless we build
+  hardware that runs for a *really* long time).
+
+Now, should struct timecounter contain a struct cyclecounter or a
+pointer to it? A pointer is more flexible, but overkill for the usage I
+had in mind. I'll use a pointer anyway, just in case.
+
+> Instead that state should be stored in the timekeeping and timestamping
+> structures respectively.
+
+I'm not sure whether timestamping can be separated from timekeeping: it
+depends on the same cycle counter state as the timekeeping.
+
+> > > You dodged this accumulation infrastructure in your patch, by just
+> > > accumulating at read time. This works, as long as you can guarantee
+> > > that read events occur more often then the wrap frequency.
+> > 
+> > Exactly. My plan was that the user of such a custom clocksource is
+> > responsible for querying it often enough so that clocksource_read_ns()
+> > can detect the wrap around.
+> 
+> Right, however my point quoted below was that this will likely break in
+> the -rt kernel, since those users may be deferred for a undefined amount
+> of time. So we'll need to do something here.
+
+If the code isn't called often enough to deal with the regular PTP Sync
+messages (sent every two seconds), then such a system would already have
+quite a few other problems.
+
+> > >  And in most
+> > > cases that's probably not too hard, but with some in-developement
+> > > work, like the -rt patches, kernel work (even most interrupt
+> > > processing) can be deferred by high priority tasks for an unlimited
+> > > amount of time.
+> > 
+> > I'm not sure what can be done in such a case. Use decent hardware which
+> > doesn't wrap around so quickly, I guess. It's not an issue with the
+> > Intel NIC (sorry for the advertising... ;-)
+> 
+> Well, I think it would be good to create a infrastructure that will work
+> on most hardware.
+
+Most hardware doesn't have hardware time stamping. Is there any hardware
+which has hardware time stamping, but only with such a limited counter
+that we run into this problem?
+
+I agree that this problem needs to be taken into account now (while
+designing these data structures) and be addressed as soon as it becomes
+necessary - but not sooner. Otherwise we might end up with dead code
+that isn't used at all.
+
+> And I think it can work, but in order to make it work cleanly, we'll
+> have to have some form of accumulation infrastructure, which will not be
+> able to be deferred.
+> 
+> However, some careful thought will be needed here, so that we don't
+> create latencies by wasting time sampling unused hardware counters in
+> the hardirq context.
+
+Currently the structures are owned by the device driver which owns the
+hardware. Perhaps the device driver could register the structure with
+such an accumulation infrastructure if the driver itself cannot
+guarantee that it will check the cycle counter often enough. Concurrent
+access to the cycle counter hardware and state could make this tricky.
+
+This goes into areas where I have no experience at all, so I would
+depend on others to provide that code.
+
+-- 
+Best Regards, Patrick Ohly
+
+The content of this message is my personal opinion only and although
+I am an employee of Intel, the statements I make here in no way
+represent Intel's position on the issue, nor am I authorized to speak
+on behalf of Intel on this matter.
+
