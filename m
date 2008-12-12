@@ -1,173 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbYLLJmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYLLJmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758619AbYLLJmU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 04:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYLLJmL
+	id S1759300AbYLLJmb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 04:42:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758407AbYLLJmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 04:42:11 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:40514 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751586AbYLLJmJ (ORCPT
+	Fri, 12 Dec 2008 04:42:17 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:42773 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758118AbYLLJmO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 04:42:09 -0500
-Date: Fri, 12 Dec 2008 10:41:54 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] block: Fix LSF default inconsistency
-Message-ID: <20081212104154.0206d8a9@hyperion.delvare>
-In-Reply-To: <20081212075431.GG23742@kernel.dk>
-References: <20081211111614.493d2a62@hyperion.delvare>
-	<20081211104109.GF23742@kernel.dk>
-	<20081211115844.1b1dbf49@hyperion.delvare>
-	<20081211110839.GH23742@kernel.dk>
-	<20081211134438.6d871834@hyperion.delvare>
-	<20081211125000.GL23742@kernel.dk>
-	<20081212084850.1b56529f@hyperion.delvare>
-	<20081212075431.GG23742@kernel.dk>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Dec 2008 04:42:14 -0500
+Date: Fri, 12 Dec 2008 10:42:12 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: 2.6.28-rc7: oldish top core dumps (in its meminfo() function)
+Message-ID: <20081212094212.GA14641@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+Hi,
 
-On Fri, 12 Dec 2008 08:54:33 +0100, Jens Axboe wrote:
-> Agree, it's pretty ugly. Modified patch below, it drops CONFIG_LSF
-> completely as it's basically only used in a single spot.
+just wanted to report that top (at least the one of an older procps 2.0.17,
+as shipped by RHEL3) acted up on a system here.
 
-> On Fri, Dec 12 2008, Jean Delvare wrote:
-> > As a side note, someone will have to tell me why changing the value of
-> > option LSF triggers a full kernel rebuild.
-> 
-> It changes types.h, I guess pretty much everything has that included :-)
+It's somewhat likely that this problem occured after S2R resume only,
+since I most likely have been running top before already
+(I'm doing this all the time...).
 
-Indeed, that was the reason.
+No issues whatsoever on 2.6.27.7 which I've been running before
+(until I upgraded to -rc7 last week and suspended
+and then resumed it today).
 
-> diff --git a/block/Kconfig b/block/Kconfig
-> index 1ab7c15..195968e 100644
-> --- a/block/Kconfig
-> +++ b/block/Kconfig
-> @@ -24,21 +24,17 @@ menuconfig BLOCK
->  if BLOCK
->  
->  config LBD
-> -	bool "Support for Large Block Devices"
-> +	bool "Support for large block devices and files"
->  	depends on !64BIT
->  	help
-> -	  Enable block devices of size 2TB and larger.
-> +	  Enable block devices or files of size 2TB and larger.
->  
->  	  This option is required to support the full capacity of large
->  	  (2TB+) block devices, including RAID, disk, Network Block Device,
->  	  Logical Volume Manager (LVM) and loopback.
-> -
-> -	  For example, RAID devices are frequently bigger than the capacity
-> -	  of the largest individual hard drive.
-> -
-> -	  This option is not required if you have individual disk drives
-> -	  which total 2TB+ and you are not aggregating the capacity into
-> -	  a large block device (e.g. using RAID or LVM).
-> +	
-> +	  This option also enables support for single files larger than
-> +	  2TB.
->  
->  	  If unsure, say N.
->  
-> @@ -57,15 +53,6 @@ config BLK_DEV_IO_TRACE
->  
->  	  If unsure, say N.
->  
-> -config LSF
-> -	bool "Support for Large Single Files"
-> -	depends on !64BIT
-> -	help
-> -	  Say Y here if you want to be able to handle very large files (2TB
-> -	  and larger), otherwise say N.
-> -
-> -	  If unsure, say Y.
-> -
->  config BLK_DEV_BSG
->  	bool "Block layer SG support v4 (EXPERIMENTAL)"
->  	depends on EXPERIMENTAL
-> diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-> index e4a241c..04158ad 100644
-> --- a/fs/ext4/super.c
-> +++ b/fs/ext4/super.c
-> @@ -1721,7 +1721,7 @@ static loff_t ext4_max_size(int blkbits, int has_huge_files)
->  	/* small i_blocks in vfs inode? */
->  	if (!has_huge_files || sizeof(blkcnt_t) < sizeof(u64)) {
->  		/*
-> -		 * CONFIG_LSF is not enabled implies the inode
-> +		 * CONFIG_LBD is not enabled implies the inode
->  		 * i_block represent total blocks in 512 bytes
->  		 * 32 == size of vfs inode i_blocks * 8
->  		 */
-> @@ -1764,7 +1764,7 @@ static loff_t ext4_max_bitmap_size(int bits, int has_huge_files)
->  
->  	if (!has_huge_files || sizeof(blkcnt_t) < sizeof(u64)) {
->  		/*
-> -		 * !has_huge_files or CONFIG_LSF is not enabled
-> +		 * !has_huge_files or CONFIG_LBD is not enabled
->  		 * implies the inode i_block represent total blocks in
->  		 * 512 bytes 32 == size of vfs inode i_blocks * 8
->  		 */
-> @@ -2021,13 +2021,13 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
->  	if (has_huge_files) {
->  		/*
->  		 * Large file size enabled file system can only be
-> -		 * mount if kernel is build with CONFIG_LSF
-> +		 * mount if kernel is build with CONFIG_LBD
->  		 */
->  		if (sizeof(root->i_blocks) < sizeof(u64) &&
->  				!(sb->s_flags & MS_RDONLY)) {
->  			printk(KERN_ERR "EXT4-fs: %s: Filesystem with huge "
->  					"files cannot be mounted read-write "
-> -					"without CONFIG_LSF.\n", sb->s_id);
-> +					"without CONFIG_LBD.\n", sb->s_id);
->  			goto failed_mount;
->  		}
->  	}
-> diff --git a/include/linux/types.h b/include/linux/types.h
-> index 1d98330..121f349 100644
-> --- a/include/linux/types.h
-> +++ b/include/linux/types.h
-> @@ -135,19 +135,14 @@ typedef		__s64		int64_t;
->   *
->   * Linux always considers sectors to be 512 bytes long independently
->   * of the devices real block size.
-> + *
-> + * blkcnt_t is the type of the inode's block count.
->   */
+...BUT it could perhaps be cosmic S2R corruption within this week,
+who knows (although this system has been rock stable all the time before).
 
-You might want to edit the start of this comment a bit, as it currently
-says "The type used for...". You probably want instead "sector_t is the
-type...". And drop the extra "*" while you're here, as this is a
-regular comment and not a kerneldoc thing.
 
->  #ifdef CONFIG_LBD
->  typedef u64 sector_t;
-> -#else
-> -typedef unsigned long sector_t;
-> -#endif
-> -
-> -/*
-> - * The type of the inode's block count.
-> - */
-> -#ifdef CONFIG_LSF
->  typedef u64 blkcnt_t;
->  #else
-> +typedef unsigned long sector_t;
->  typedef unsigned long blkcnt_t;
->  #endif
->  
 
-Acked-by: Jean Delvare <khali@linux-fr.org>
+!!! NOTE: unusual environment - a full 4GB RAM on x86_32 (P4 2.4GHz) here !!!
 
--- 
-Jean Delvare
+
+
+Will try -rc8 next.
+
+
+Oh, dito vmstat (but exactly at the same address in /lib/libproc.so.2.0.17):
+
+procs                      memory      swap          io     system
+cpu
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy
+wa id
+
+Program received signal SIGSEGV, Segmentation fault.
+0xb7f4e7b7 in meminfo () from /lib/libproc.so.2.0.17
+(gdb) bt
+#0  0xb7f4e7b7 in meminfo () from /lib/libproc.so.2.0.17
+#1  0x08048d61 in ?? ()
+#2  0xbfb86ad0 in ?? ()
+#3  0xbfb86c84 in ?? ()
+#4  0x080498dc in _IO_stdin_used ()
+#5  0xbfb86a40 in ?? ()
+#6  0x00000000 in ?? ()
+
+
+
+
+
+gdb top:
+ 10:26:08  up 6 days, 20:13, 14 users,  load average: 3.78, 3.80, 2.65
+124 processes: 115 sleeping, 9 running, 0 zombie, 0 stopped
+CPU states:  cpu    user    nice  system    irq  softirq  iowait    idle
+           total   94.6%    0.0%    5.3%   0.0%     0.0%    0.0%    0.0%
+           cpu00   95.1%    0.0%    4.8%   0.0%     0.0%    0.0%    0.0%
+           cpu01   93.2%    0.0%    6.7%   0.0%     0.0%    0.0%    0.0%
+
+Program received signal SIGSEGV, Segmentation fault.
+0xb80c27b7 in meminfo () from /lib/libproc.so.2.0.17
+(gdb) bt
+#0  0xb80c27b7 in meminfo () from /lib/libproc.so.2.0.17
+#1  0x0804d3b8 in ?? ()
+#2  0xbfbfca10 in ?? ()
+#3  0xb806c003 in __libc_ptyname2 () from /lib/tls/libc.so.6
+#4  0x00000000 in ?? ()
+(gdb) inf loc
+No symbol table info available.
+
+
+
+
+top[8063]: segfault at b7edb000 ip b7ed47b7 sp bfe0d380 error 4 in
+libproc.so.2.0.17[b7ece000+9000]
+
+
+
+
+
+# cat /proc/meminfo
+MemTotal:        3854752 kB
+MemFree:         2736664 kB
+Buffers:           88324 kB
+Cached:           391328 kB
+SwapCached:        11724 kB
+Active:           395092 kB
+Inactive:         411004 kB
+Active(anon):     171388 kB
+Inactive(anon):   159460 kB
+Active(file):     223704 kB
+Inactive(file):   251544 kB
+Unevictable:        2612 kB
+Mlocked:            2612 kB
+HighTotal:       2990024 kB
+HighFree:        2290060 kB
+LowTotal:         864728 kB
+LowFree:          446604 kB
+SwapTotal:       1465120 kB
+SwapFree:        1426960 kB
+Dirty:              1708 kB
+Writeback:             0 kB
+AnonPages:        321408 kB
+Mapped:            43200 kB
+Slab:             299256 kB
+SReclaimable:     269684 kB
+SUnreclaim:        29572 kB
+PageTables:         2284 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:     3392496 kB
+Committed_AS:     506384 kB
+VmallocTotal:     122880 kB
+VmallocUsed:        2180 kB
+VmallocChunk:     118452 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       4096 kB
+DirectMap4k:       20472 kB
+DirectMap4M:      888832 kB
+
+
+
+
+# cat /proc/slabinfo
+slabinfo - version: 2.1
+# name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <sharedfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
+smb_inode_cache       19     34    472   17    2 : tunables    0    0    0 : slabdata      2      2      0
+cifs_request           7      7  16512    1    8 : tunables    0    0    0 : slabdata      7      7      0
+cifs_inode_cache   39552  39632    488   16    2 : tunables    0    0    0 : slabdata   2477   2477      0
+flow_cache             0      0     80   51    1 : tunables    0    0    0 : slabdata      0      0      0
+mqueue_inode_cache      1     21    768   21    4 : tunables    0    0    0 : slabdata      1      1      0
+romfs_inode_cache      0      0    456   17    2 : tunables    0    0    0 : slabdata      0      0      0
+isofs_inode_cache      0      0    480   17    2 : tunables    0    0    0 : slabdata      0      0      0
+hugetlbfs_inode_cache      1     18    448   18    2 : tunables    0    0    0 : slabdata      1      1      0
+ext2_inode_cache       0      0    648   12    2 : tunables    0    0    0 : slabdata      0      0      0
+journal_handle       340    340     24  170    1 : tunables    0    0    0 : slabdata      2      2      0
+journal_head         172    657     56   73    1 : tunables    0    0    0 : slabdata      9      9      0
+revoke_record        512    512     16  256    1 : tunables    0    0    0 : slabdata      2      2      0
+ext3_inode_cache  319620 319620    640   12    2 : tunables    0    0    0 : slabdata  26635  26635      0
+ext3_xattr             0      0     48   85    1 : tunables    0    0    0 : slabdata      0      0      0
+dquot                  0      0    256   16    1 : tunables    0    0    0 : slabdata      0      0      0
+shmem_inode_cache     28     28    560   14    2 : tunables    0    0    0 : slabdata      2      2      0
+UDP                  202    204    640   12    2 : tunables    0    0    0 : slabdata     17     17      0
+TCP                   69     69   1408   23    8 : tunables    0    0    0 : slabdata      3      3      0
+blkdev_queue          18     22   1464   22    8 : tunables    0    0    0 : slabdata      1      1      0
+blkdev_requests       44     54    224   18    1 : tunables    0    0    0 : slabdata      3      3      0
+biovec-256            10     10   3072   10    8 : tunables    0    0    0 : slabdata      1      1      0
+biovec-128            42     42   1536   21    8 : tunables    0    0    0 : slabdata      2      2      0
+biovec-64             49     63    768   21    4 : tunables    0    0    0 : slabdata      3      3      0
+sock_inode_cache     257    272    512   16    2 : tunables    0    0    0 : slabdata     17     17      0
+file_lock_cache       68     68    120   34    1 : tunables    0    0    0 : slabdata      2      2      0
+Acpi-Operand         612    612     40  102    1 : tunables    0    0    0 : slabdata      6      6      0
+Acpi-Namespace       847    850     24  170    1 : tunables    0    0    0 : slabdata      5      5      0
+proc_inode_cache     635    663    472   17    2 : tunables    0    0    0 : slabdata     39     39      0
+sigqueue              56     56    144   28    1 : tunables    0    0    0 : slabdata      2      2      0
+radix_tree_node    13220  19604    296   13    1 : tunables    0    0    0 : slabdata   1508   1508      0
+bdev_cache            13     24    640   12    2 : tunables    0    0    0 : slabdata      2      2      0
+sysfs_dir_cache     5777   5780     48   85    1 : tunables    0    0    0 : slabdata     68     68      0
+inode_cache         1080   1098    448   18    2 : tunables    0    0    0 : slabdata     61     61      0
+dentry            159325 159348    144   28    1 : tunables    0    0    0 : slabdata   5691   5691      0
+avc_node              78    146     56   73    1 : tunables    0    0    0 : slabdata      2      2      0
+buffer_head        74206 116800     64   64    1 : tunables    0    0    0 : slabdata   1825   1825      0
+vm_area_struct      4735   4876     88   46    1 : tunables    0    0    0 : slabdata    106    106      0
+files_cache          113    147    384   21    2 : tunables    0    0    0 : slabdata      7      7      0
+sighand_cache        141    161   1408   23    8 : tunables    0    0    0 : slabdata      7      7      0
+task_struct          143    160   3120   10    8 : tunables    0    0    0 : slabdata     16     16      0
+anon_vma            2169   2304     32  128    1 : tunables    0    0    0 : slabdata     18     18      0
+idr_layer_cache      130    130    152   26    1 : tunables    0    0    0 : slabdata      5      5      0
+kmalloc-4096          42     56   4096    8    8 : tunables    0    0    0 : slabdata      7      7      0
+kmalloc-2048         308    368   2048   16    8 : tunables    0    0    0 : slabdata     23     23      0
+kmalloc-1024         238    272   1024   16    4 : tunables    0    0    0 : slabdata     17     17      0
+kmalloc-512          652    688    512   16    2 : tunables    0    0    0 : slabdata     43     43      0
+kmalloc-256         2780   3120    256   16    1 : tunables    0    0    0 : slabdata    195    195      0
+kmalloc-128         1062   1344    128   32    1 : tunables    0    0    0 : slabdata     42     42      0
+kmalloc-64        369191 391872     64   64    1 : tunables    0    0    0 : slabdata   6123   6123      0
+kmalloc-32          1109   1152     32  128    1 : tunables    0    0    0 : slabdata      9      9      0
+kmalloc-16          4077   5376     16  256    1 : tunables    0    0    0 : slabdata     21     21      0
+kmalloc-8           2039   2048      8  512    1 : tunables    0    0    0 : slabdata      4      4      0
+kmalloc-192          124    126    192   21    1 : tunables    0    0    0 : slabdata      6      6      0
+kmalloc-96           487    546     96   42    1 : tunables    0    0    0 : slabdata     13     13      0
+
+
+
+
+
+# cat /proc/mtrr
+reg00: base=0x000000000 (    0MB), size= 2048MB, count=1: write-back
+reg01: base=0x080000000 ( 2048MB), size= 1024MB, count=1: write-back
+reg02: base=0x0c0000000 ( 3072MB), size=  512MB, count=1: write-back
+reg03: base=0x0e0000000 ( 3584MB), size=  128MB, count=1: write-back
+reg04: base=0x0e8000000 ( 3712MB), size=   64MB, count=1: write-back
+reg05: base=0x0ec000000 ( 3776MB), size=   32MB, count=1: write-back
+reg06: base=0x0feda0000 ( 4077MB), size=  128KB, count=1: write-back
+reg07: base=0x0f0000000 ( 3840MB), size=  128MB, count=1:
+write-combining
+
+
+
+Thanks,
+
+Andreas Mohr
