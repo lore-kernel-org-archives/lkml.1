@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752174AbYLLS4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbYLLS4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752174AbYLLS4c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 13:56:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbYLLS4Q
+	id S1752886AbYLLS4q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 13:56:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYLLS4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 13:56:16 -0500
-Received: from mail.gmx.net ([213.165.64.20]:44955 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750877AbYLLS4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 13:56:15 -0500
-X-Authenticated: #1490710
-X-Provags-ID: V01U2FsdGVkX1/T4W1/GxfTOeb2gFYHL6wLzsQhHzf1Ds4x+Kcdn8
-	1K5+QySzzuE+Ef
-Date: Fri, 12 Dec 2008 19:57:38 +0100 (CET)
-From: Johannes Schindelin <Johannes.Schindelin@gmx.de>
-X-X-Sender: user@eeepc-johanness
-To: David Howells <dhowells@redhat.com>
-cc: torvalds@osdl.org, git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Simplified GIT usage guide
-In-Reply-To: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
-Message-ID: <alpine.DEB.1.00.0812121952320.5873@eeepc-johanness>
-References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 12 Dec 2008 13:56:23 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49171 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751603AbYLLS4V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 13:56:21 -0500
+Date: Fri, 12 Dec 2008 19:58:03 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: smartmontools-support@lists.sourceforge.net,
+       smartmontools-database-owner@lists.sourceforge.net,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, xfs@oss.sgi.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: Intel X25-E running Linux using XFS
+Message-ID: <20081212185803.GE11974@elf.ucw.cz>
+References: <alpine.DEB.1.10.0811271257470.2233@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.63
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0811271257470.2233@p34.internal.lan>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Fri, 12 Dec 2008, David Howells wrote:
+Hi!
 
->  Documentation/git-haters-guide.txt | 1283 ++++++++++++++++++++++++++++++++++++
+> Due to the 100k write cycle lifetime, I will not be performing any more 
+> benchmarks on the SSD itself, such benchmarks are available on  
+> techreport.com but just wanted to send out the smart data for the  
+> smartmontools list and point out it is working with linux+ich7+xfs.
+>
+> Overall, whenever I do anything now its just like the entire machine is
+> sitting in a ramdisk (similar when you boot knoppix and load to ramdisk).
+>
+> The techreport benchmarks are here:
+> http://techreport.com/articles.x/15931
 
-I am sure we want to have something like that in git.git.
+Actually I'd like to know... how does it behave during powerfails
+while it is being written to?
 
-> +I don't really know what I'm doing with GIT either.
-
-Strike the "either".
-
-> +===============
-> +OVERVIEW OF GIT
-> +===============
-
-Your overview seems to be what "Git from the bottom up" is all about (see 
-the Git Wiki for more information where to find it).
-
->From my experience with new users, this is exactly the wrong way to go 
-about it.  You don't introduce object types of the Git database before 
-telling the users what the heck they are good for.  And most users do not 
-need to bother with tree objects either, anyway.  So maybe you just tell 
-them what the heck the object types are good for, without even teaching 
-them the object types at all.
-
-So I think that your document might do a good job scaring people away from 
-Git.  But I do not believe that your document, especially in the tone it 
-is written, does a good job of helping Git newbies.
-
-Ciao,
-Dscho
-
-P.S.: No, I haven't read the whole document.  Still, I think I am 
-qualified enough to estimate what the average reader's first impression 
-would be.
+Flashes I seen (USB / SD) developed bad sectors in that case, and
+ext2/ext3 can't handle that. (And I don't think xfs can handle that
+either).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
