@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbYLLTiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbYLLTif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753059AbYLLTiI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 14:38:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYLLThu
+	id S1753576AbYLLTif (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 14:38:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYLLTiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 14:37:50 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:35430 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751093AbYLLTht (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 14:37:49 -0500
-Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user
-	space data
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>, linux-scsi@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org
-In-Reply-To: <4942BAB8.4050007@vlnb.net>
-References: <494009D7.4020602@vlnb.net> <494012C4.7090304@vlnb.net>
-	 <20081210214500.GA24212@ioremap.net>  <4941590F.3070705@vlnb.net>
-	 <1229022734.3266.67.camel@localhost.localdomain>
-	 <4942BAB8.4050007@vlnb.net>
-Content-Type: text/plain
-Date: Fri, 12 Dec 2008 13:37:53 -0600
-Message-Id: <1229110673.3262.94.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Dec 2008 14:38:14 -0500
+Received: from kroah.org ([198.145.64.141]:37857 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753197AbYLLTiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 14:38:11 -0500
+Date: Fri, 12 Dec 2008 11:07:30 -0800
+From: Greg KH <greg@kroah.com>
+To: Mark McLoughlin <markmc@redhat.com>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-s390@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 4/4] s390: remove s390_root_dev_*()
+Message-ID: <20081212190730.GB2950@kroah.com>
+References: <1229012203.7968.79.camel@blaa> <1229012216-4211-1-git-send-email-markmc@redhat.com> <1229012216-4211-2-git-send-email-markmc@redhat.com> <1229012216-4211-3-git-send-email-markmc@redhat.com> <1229012216-4211-4-git-send-email-markmc@redhat.com> <20081211180025.045b9b4a@gondolin> <20081212102951.01446f22@gondolin> <1229074546.4041.8.camel@blaa>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1229074546.4041.8.camel@blaa>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-12 at 22:25 +0300, Vladislav Bolkhovitin wrote:
-> > One thing that leaps immediately to mind is that you could isolate this
-> > to the net layer by putting it in skb_frag_struct.  However, such a move
-> > would require a proper API for this in net ...
+On Fri, Dec 12, 2008 at 09:35:46AM +0000, Mark McLoughlin wrote:
+> On Fri, 2008-12-12 at 10:29 +0100, Cornelia Huck wrote:
+> > On Thu, 11 Dec 2008 18:00:25 +0100,
+> > Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> > > On Thu, 11 Dec 2008 16:16:56 +0000,
+> > > Mark McLoughlin <markmc@redhat.com> wrote:
+> > > 
+> > > > Replace s390_root_dev_register() with root_device_register() etc.
+> > > 
+> > > Nice, one more special case generalized :) I'll give it a run.
+> > 
+> > You missed one occurrence in iucv (see below);
 > 
-> To have net_priv analog in skb was the first idea I was tried. But I 
-> quickly gave up, because it would required that all the pages in each 
-> skb_frag_struct be from the same originator, i.e. with the same 
-> net_priv. It is unpractical to change all the operations with skb's to 
-> forbid merging them, if they have different net_priv. There are too many 
-> such places in very not obvious code pieces.
-
-Actually, I said carry in skb_frag_struct not skb ... that allows for
-merging of skbs with different page sources.  The API changes would have
-to allow setting at this level.
-
-> > right now it looks like
-> > you're using the struct page addition to carry this information from
-> > SCSI to net, which is a bit of a layering violation.
+> Oops.
 > 
-> I don't think there is any layering violation here. Just lower layer 
-> notifies upper layer that transmission of a page has finished. It's done 
-> a bit not straightforward, but still basically the same as, for 
-> instance, on_free_cmd() callbacks which SCST core uses to notify target 
-> drivers and dev handlers that the corresponding command is about to be 
-> freed, so they can free associated with it data as well.
+> >  with that patch applied,
+> > everything seems to work as expected, both for root devices created by
+> > built-ins and by modules.
+> 
+> Thanks,
+> Mark.
+> 
+> From: Mark McLoughlin <markmc@redhat.com>
+> Subject: [PATCH] s390: remove s390_root_dev_*()
+> 
+> Replace s390_root_dev_register() with root_device_register() etc.
 
-The way you transmit the information you want notification is done by a
-private tag in struct page, so you're carrying the information on an
-object that belongs to neither layer ... that's the violation.  It's
-essentially an extension of the net API that goes via the mm layer.
+Can you resend this whole series, I see lots of replacements in this
+thread and it would be good to know exactly what I should be
+reviewing/applying.
 
-James
+thanks,
 
-
+greg k-h
