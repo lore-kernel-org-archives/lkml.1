@@ -1,78 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758843AbYLLJ6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbYLLKBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758843AbYLLJ6W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 04:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757980AbYLLJ5z
+	id S1757870AbYLLKBS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 05:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYLLKBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 04:57:55 -0500
-Received: from rn-out-0910.google.com ([64.233.170.184]:27979 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757907AbYLLJ5y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 04:57:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=x3vQU26TkyTWLnCLIIAy9pTRXr5MchDSG1DQLDar60EEMjLKoI3c2b8cCC3vyIDMpG
-         kbNaE5GQWMsdYXYUUd9rCltBcda7hm6CZeR396KPr5k8tP6VOFrKEdyydFTtqP5LX8td
-         TlwFJX+9YXpavSjdMyQ9jkf8C9N2zrcRdXIXQ=
-Message-ID: <aec7e5c30812120157k2fc800d9xc094f84b80d90945@mail.gmail.com>
-Date: Fri, 12 Dec 2008 18:57:52 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: "John Stultz" <johnstul@us.ibm.com>
-Subject: Re: [PATCH] clocksource: pass clocksource to read() callback
-Cc: linux-kernel@vger.kernel.org, rmk+lkml@arm.linux.org.uk,
-       tony.luck@intel.com, tglx@linutronix.de, akpm@linux-foundation.org,
-       hskinnemoen@atmel.com, jdike@addtoit.com, wli@holomorphy.com,
-       cooloney@kernel.org, ralf@linux-mips.org, lethal@linux-sh.org,
-       geert@linux-m68k.org, gerg@uclinux.org, schwidefsky@de.ibm.com,
-       paulus@samba.org, mingo@redhat.com, davem@davemloft.net
-In-Reply-To: <1229014876.8699.6.camel@jstultz-laptop>
+	Fri, 12 Dec 2008 05:01:06 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40940 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750892AbYLLKBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 05:01:05 -0500
+Date: Fri, 12 Dec 2008 11:00:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: fix another race when reading /proc/sched_debug
+Message-ID: <20081212100044.GB18152@elte.hu>
+References: <494234B0.5@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081211114802.17622.54609.sendpatchset@rx1.opensource.se>
-	 <1229014876.8699.6.camel@jstultz-laptop>
+In-Reply-To: <494234B0.5@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 2:01 AM, John Stultz <johnstul@us.ibm.com> wrote:
-> On Thu, 2008-12-11 at 20:48 +0900, Magnus Damm wrote:
->> From: Magnus Damm <damm@igel.co.jp>
->>
->> Pass clocksource pointer to the read() callback for clocksources.
->> This allows us to share the callback between multiple instances.
->>
->> Signed-off-by: Magnus Damm <damm@igel.co.jp>
->
-> Acked-by: John Stultz <johnstul@us.ibm.com>
->
->> ---
->>
->>  Applies to linux-next 87602124ea74da54ae39e713a28d5593af9ad5ef
->>  May conflict with the arch_gettimeoffset patches on SuperH and Sparc.
->
-> Don't worry about the arch_gettimeoffset conflict, its a low priority
-> cleanup patch, so I can rework it on top of this.
 
-Thank you, John. I don't mind either way.
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-I tried hard not to introduce any breakage with this patch, but I have
-not cross-compiled it for anything except SuperH. So please test your
-platform. Let me know if I managed to break something and I'll fix
-things up.
+> I fixed an oops with the following commit:
+> 
+> | commit 24eb089950ce44603b30a3145a2c8520e2b55bb1
+> | Author: Li Zefan <lizf@cn.fujitsu.com>
+> | Date:   Thu Nov 6 12:53:32 2008 -0800
+> |
+> |    cgroups: fix invalid cgrp->dentry before cgroup has been completely removed
+> |
+> |    This fixes an oops when reading /proc/sched_debug.
+> 
+> The above commit fixed a race that reading /proc/sched_debug may access
+> NULL cgrp->dentry if a cgroup is being removed.
+> 
+> But I found there's another different race, in that reading sched_debug
+> may access a cgroup which hasn't been completed created, and thus
+> dereference NULL cgrp->dentry!
+> 
+> cgroup_create()
+>   cpu_cgroup_create()
+>     register_fair_sched_group()
+>       list_add_rcu(...)
+> 				print_cfs_stats()
+> 				  for_each_leaf_cfs_rq()
+> 				    print_cfs_rq()
+> 				      cgroup_path()
+>   cgroup->dentry = dentry;
+> 
+> task_group is added to the global list before the cgroup has been created
+> completely, if at this time print_cfs_stats() is called, it will access
+> the half-created cgroup.
+> 
+> This patch fixes the bug by holding cgroup_lock() to wait the cgroup to
+> be created completely before calling cgroup_path().
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-I'm not sure exactly how and when this patch should be applied, but I
-assume it's fairly late in the in the merge window?
+applied to tip/sched/urgent, thanks!
 
-I guess the liklieness of breakage will increase over time from now
-on, so when the time is right please ping me and I'll up-port this
-patch straight away.
+> The patch is based on linus's git tree, and should go into 2.6.28,
+> but it conflicts with the cleanup patch in sched/core:
+> 	0a0db8f5c9d4bbb9bbfcc2b6cb6bce2d0ef4d73d
 
-Thank you.
+i merged it up in tip/master, could you please check whether it's ok?
 
-/ magnus
+	Ingo
