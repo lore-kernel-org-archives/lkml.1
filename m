@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbYLLAtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbYLLBIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757604AbYLLAtk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 19:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbYLLAtc
+	id S1757514AbYLLBIV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 20:08:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756701AbYLLBIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 19:49:32 -0500
-Received: from ozlabs.org ([203.10.76.45]:48986 "EHLO ozlabs.org"
+	Thu, 11 Dec 2008 20:08:09 -0500
+Received: from sith.mimuw.edu.pl ([193.0.96.4]:38056 "EHLO sith.mimuw.edu.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754907AbYLLAtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 19:49:31 -0500
+	id S1756541AbYLLBII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 20:08:08 -0500
+Date: Fri, 12 Dec 2008 02:08:06 +0100
+From: Jan Rekorajski <baggins@sith.mimuw.edu.pl>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: Holger Hoffstaette <holger@wizards.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: Nasty regression from .27.7 to .27.8: idle samba goes crazy
+Message-ID: <20081212010806.GA1007@sith.mimuw.edu.pl>
+Mail-Followup-To: Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+	Manfred Spraul <manfred@colorfullife.com>,
+	Holger Hoffstaette <holger@wizards.de>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	linux-kernel@vger.kernel.org, stable@kernel.org
+References: <pan.2008.12.08.06.18.57.357875@wizards.de> <200812080834.22924.rjw@sisk.pl> <pan.2008.12.08.08.07.29.439625@wizards.de> <493D4F5C.7020606@s5r6.in-berlin.de> <493D7349.10200@s5r6.in-berlin.de> <20081208222246.GA29232@sith.mimuw.edu.pl> <20081209123703.043067eb@dhcp-100-2-144.bos.redhat.com> <493FFE5E.2000404@colorfullife.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18753.46301.944770.779390@cargo.ozlabs.ibm.com>
-Date: Fri, 12 Dec 2008 11:48:29 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yuri Tikhonov <yur@emcraft.com>, wd@denx.de, dzu@denx.de,
-       linux-kernel@vger.kernel.org, miltonm@bga.com, linuxppc-dev@ozlabs.org,
-       viro@zeniv.linux.org.uk, Geert.Uytterhoeven@sonycom.com,
-       yanok@emcraft.com
-Subject: Re: [PATCH][v2] fork_init: fix division by zero
-In-Reply-To: <20081211121635.ff58193f.akpm@linux-foundation.org>
-References: <200812101950.51958.yur@emcraft.com>
-	<20081211121635.ff58193f.akpm@linux-foundation.org>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <493FFE5E.2000404@colorfullife.com>
+X-Operating-System: Linux 2.6.26.5 i686
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton writes:
+On Wed, 10 Dec 2008, Manfred Spraul wrote:
 
-> > +#if (8 * THREAD_SIZE) > PAGE_SIZE
-> >  	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
-> > +#else
-> > +	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
-> > +#endif
-> 
-> The expression you've chosen here can be quite inacccurate, because
-> ((PAGE_SIZE / (8 * THREAD_SIZE)) is a small number.  The way to
-> preserve accuracy is
+>> On Mon, 8 Dec 2008 23:22:46 +0100
+>> Jan Rekorajski <baggins@sith.mimuw.edu.pl> wrote:
+>>
+>>> I think you can safely rule out NIC, I'm also seeing this behaviour on a
+>>> brand new server with imap hanging in some busy-loop.
+>>> Network card in my case:
+>>> Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
+>>>
+>>> What I observer was one CPU doing 100% system work, and the number of
+>>> timer interrupts went from 1k per second to 4k (for the whole system).
+>>>
+>>>     
+> Could you try the attached patch?
+> It should fix the bug.
 
-The assumption is that THREAD_SIZE is a power of 2, as is PAGE_SIZE.
+Thank you, I'm currently running 2.6.27.8 with your patch, I'll report
+after 12-24 hours.
 
-I think Yuri should be increasing THREAD_SIZE for the larger page
-sizes he's implementing, because we have on-stack arrays whose size
-depends on the page size.  I suspect that having THREAD_SIZE less than
-1/8 of PAGE_SIZE risks stack overflows, and the better fix is for Yuri
-to make sure THREAD_SIZE is at least 1/8 of PAGE_SIZE.  (In fact, more
-may be needed - someone should work out what fraction is actually
-needed.)
-
-Paul.
+Jan
+-- 
+Jan Rekorajski            |  ALL SUSPECTS ARE GUILTY. PERIOD!
+baggins<at>mimuw.edu.pl   |  OTHERWISE THEY WOULDN'T BE SUSPECTS, WOULD THEY?
+BOFH, MANIAC              |                   -- TROOPS by Kevin Rubio
