@@ -1,210 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757767AbYLLL3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757767AbYLLLbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757767AbYLLL3w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 06:29:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbYLLL3o
+	id S1757767AbYLLLbf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 06:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbYLLLb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 06:29:44 -0500
-Received: from viefep13-int.chello.at ([62.179.121.33]:50764 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751391AbYLLL3n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 06:29:43 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH] percpu_counter: use local_t and atomic_long_t if
- possible
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Theodore Tso <tytso@mit.edu>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, Mingming Cao <cmm@us.ibm.com>,
-       linux-ext4@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <49424637.3010107@cosmosbay.com>
-References: <4936D287.6090206@cosmosbay.com>
-	 <20081209214921.b3944687.akpm@linux-foundation.org>
-	 <49404925.7090902@cosmosbay.com> <200812121847.06432.rusty@rustcorp.com.au>
-	 <49424637.3010107@cosmosbay.com>
-Content-Type: text/plain
-Date: Fri, 12 Dec 2008 12:29:37 +0100
-Message-Id: <1229081377.12883.134.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Fri, 12 Dec 2008 06:31:26 -0500
+Received: from blaine.gmane.org ([80.91.229.8]:41404 "EHLO hugh.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751391AbYLLLb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 06:31:26 -0500
+Message-ID: <49424B7A.9060700@redhat.com>
+Date: Fri, 12 Dec 2008 12:31:06 +0100
+From: Zdenek Kabelac <zkabelac@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: "Alexander E. Patrakov" <patrakov@gmail.com>
+CC: reinette chatre 
+	<public-reinette.chatre-ral2JQCrhuEAvxtiuMwx3w@hugh.gmane.org>,
+       "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" 
+	<public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
+       "linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" 
+	<public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>
+Subject: Re: iwlagn interrupt problem
+References: <c072ca310812100638k6c15473brb89632a9c175a028@mail.gmail.com>	 <c072ca310812100710o58c38a27rba16ad2318a1cb95@mail.gmail.com>	 <1228929548.18730.21.camel@rc-desk>	 <c072ca310812110548s64612ac7icd6e9187aa4af75a@mail.gmail.com>	 <49424419.1090103@redhat.com> <c072ca310812120323r2c92420di5a138ae6265d567f@mail.gmail.com>
+In-Reply-To: <c072ca310812120323r2c92420di5a138ae6265d567f@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-12 at 12:08 +0100, Eric Dumazet wrote:
-> After discussions on percpu_counter subject, I cooked following patch
+
+
+Alexander E. Patrakov napsal(a):
+> 2008/12/12 Zdenek Kabelac <zkabelac@redhat.com>:
+>> I assume that this backtrace I've got with 2.6.28-rc7 is the same issue ?
 > 
-> My goals were :
+> No, this is different. My issue is with unacceptable latency when
+> bringing the interface down. In your dmesg, the interface was never
+> brought up or down.
 > 
-> - IRQ safe percpu_counter (needed for net-next-2.6)
-> z- 64bit platforms can avoid spin_lock and reduce size of percpu_counter
-> - No increase of API
-> 
-> Final result, on x86_64, __percpu_counter_add() is really fast and irq safe :
 
-> Changes are :
-> 
-> We use local_t instead of s32 for the local storage (for each cpu)
+Hmm - it was something like an hour after resume when the problem started,
 
-do enough arches have a sane enough local_t implementation so this
-doesn't make things worse for them?
+Here is timed part of the same backtrace:
 
-> We use atomic_long_t instead of s64 on 64bit arches, to avoid spin_lock.
-> 
-> On 32bit arches, we guard the shared s64 value with an irqsafe spin_lock.
-> As this spin_lock is not taken in fast path, this should not make a real
-> difference.
-
-Cycles are cycles, and spin_lock_irqsave is more expensive than
-spin_lock_irq is more expensive than spin_lock, but sure, it looks good.
-
-I really like the code, however my worry is that we don't regress weird
-archs too much.
-
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> ---
->  include/linux/percpu_counter.h |   38 +++++++++--
->  lib/percpu_counter.c           |  104 ++++++++++++++++++-------------
->  2 files changed, 94 insertions(+), 48 deletions(-)
-> 
-> diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
-> index 9007ccd..f5133ce 100644
-> --- a/include/linux/percpu_counter.h
-> +++ b/include/linux/percpu_counter.h
-> @@ -12,16 +12,42 @@
->  #include <linux/threads.h>
->  #include <linux/percpu.h>
->  #include <linux/types.h>
-> +#include <asm/local.h>
->  
->  #ifdef CONFIG_SMP
->  
-> +#ifdef CONFIG_64BIT
-> +struct s64_counter {
-> +	atomic_long_t val;
-> +};
-> +
-> +static inline s64 s64c_read(struct s64_counter *c)
-> +{
-> +	return atomic_long_read(&c->val);
-> +}
-> +#else
-> +struct s64_counter {
-> +	spinlock_t	lock;
-> +	s64		val;
-> +};
-> +
-> +static inline s64 s64c_read(struct s64_counter *c)
-> +{
-> +	/*
-> +	 * Previous percpu_counter implementation used to
-> +	 * read s64 without locking. Thats racy.
-> +	 */
-
-Does this comment have any value besides archelogical? but yeah, that
-was a known issue, there were some seqlock patches floating around
-trying to address this.
-
-Here I'd suggest taking that lock and fixing that race.
-
-> +	return c->val;
-> +}
-> +
-> +#endif
-
-> diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
-> index b255b93..6ef4a44 100644
-> --- a/lib/percpu_counter.c
-> +++ b/lib/percpu_counter.c
-> @@ -14,35 +14,58 @@ static LIST_HEAD(percpu_counters);
->  static DEFINE_MUTEX(percpu_counters_lock);
->  #endif
->  
-> +#ifdef CONFIG_64BIT
-> +static inline void s64c_add(s64 amount, struct s64_counter *c)
-> +{
-> +	atomic_long_add(amount, &c->val);
-> +}
-> +
-> +static inline void s64c_set(struct s64_counter *c, s64 amount)
-> +{
-> +	atomic_long_set(&c->val, amount);
-> +}
-> +
-> +#else
-> +
-> +static inline void s64c_add(s64 amount, struct s64_counter *c)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&c->lock, flags);
-> +	c->val += amount;
-> +	spin_unlock_irqrestore(&c->lock, flags);
-> +}
-> +
-> +static inline void s64c_set(struct s64_counter *c, s64 amount)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&c->lock, flags);
-> +	c->val = amount;
-> +	spin_unlock_irqrestore(&c->lock, flags);
-> +}
-> +#endif /* CONFIG_64BIT */
-
-Since they're inline's anyway, does it look better to stick them in the
-header along with s64c_read() ?
-
->  void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
->  {
->  	int cpu;
->  
-> +	for_each_possible_cpu(cpu)
-> +		local_set(per_cpu_ptr(fbc->counters, cpu), 0);
-> +	s64c_set(&fbc->counter, amount);
->  }
-
-Did we document somewhere that this function is racy and only meant as
-initialization?
-
-> +void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, long batch)
->  {
-> +	long count;
-> +	local_t *pcount;
-> +
-> +	pcount = per_cpu_ptr(fbc->counters, get_cpu());
-> +	count = local_add_return(amount, pcount);
-> +	if (unlikely(count >= batch || count <= -batch)) {
-> +		local_sub(count, pcount);
-> +		s64c_add(count, &fbc->counter);
->  	}
->  	put_cpu();
->  }
-
-very neat.
+[65627.782972] wlan0: associate with AP 00:11:d8:da:65:40
+[65627.785569] wlan0: RX ReassocResp from 00:11:d8:da:65:40 (capab=0x401 
+status=0 aid=8)
+[65627.785576] wlan0: associated
+[69541.209873] wlan0: No ProbeResp from current AP 00:11:d8:da:65:40 - assume 
+out of range
+[69541.810104] iwl3945: Error sending REPLY_SCAN_CMD: time out after 500ms.
+[69542.309861] iwl3945: Error sending REPLY_RXON_ASSOC: time out after 500ms.
 
 
-> @@ -91,8 +111,13 @@ int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount)
->  	int err;
->  
->  	err = percpu_counter_init(fbc, amount);
-> -	if (!err)
-> -		lockdep_set_class(&fbc->lock, &percpu_counter_irqsafe);
-> +#ifndef CONFIG_64BIT
-> +	if (!err) {
-> +		static struct lock_class_key percpu_counter_irqsafe;
-> +
-> +		lockdep_set_class(&fbc->counter.lock, &percpu_counter_irqsafe);
-> +	}
-> +#endif
+The begging of my trace looked similar.
 
-Since they're all irqsafe can this be removed?
+Should I open new bugzilla separately ?
 
->  	return err;
->  }
-
+Zdenek
 
