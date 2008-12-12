@@ -1,85 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757806AbYLLBZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbYLLBtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757806AbYLLBZf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 20:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbYLLBZS
+	id S1757836AbYLLBtV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 20:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbYLLBtC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 20:25:18 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39924 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756687AbYLLBZL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 20:25:11 -0500
-Date: Fri, 12 Dec 2008 10:24:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH] memcg: show real limit under hierarchy
-Message-Id: <20081212102413.533057f0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <661de9470812110600i6097ca0q7a2d7250f6c493dc@mail.gmail.com>
-References: <20081211121135.e00f6a2d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081211122237.4FF7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<661de9470812110600i6097ca0q7a2d7250f6c493dc@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Dec 2008 20:49:02 -0500
+Received: from mail.tpi.com ([198.107.51.143]:2195 "EHLO mail.tpi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755210AbYLLBtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 20:49:00 -0500
+Message-ID: <4941C301.3050909@canonical.com>
+Date: Thu, 11 Dec 2008 17:48:49 -0800
+From: Tim Gardner <tim.gardner@canonical.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+MIME-Version: 1.0
+To: Michael Halcrow <mhalcrow@us.ibm.com>
+CC: Duane Griffin <duaneg@dghda.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Boaz Harrosh <bharrosh@panasas.com>,
+       Mike.Halcrow.mhalcrow@us.ibm.com,
+       Phillip.Hellewell.phillip@hellewell.homeip.net,
+       ecryptfs-devel@lists.sourceforge.net, stable@kernel.org
+Subject: Re: [PATCH] eCryptfs: check readlink result was not an error	before
+ using it
+References: <1229022995-9898-1-git-send-email-duaneg@dghda.com> <1229022995-9898-2-git-send-email-duaneg@dghda.com> <1229022995-9898-3-git-send-email-duaneg@dghda.com> <20081211193228.GA13627@halcrowt61p.lan>
+In-Reply-To: <20081211193228.GA13627@halcrowt61p.lan>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Dec 2008 19:30:46 +0530
-"Balbir Singh" <balbir@linux.vnet.ibm.com> wrote:
-
-> On Thu, Dec 11, 2008 at 8:54 AM, KOSAKI Motohiro
-> <kosaki.motohiro@jp.fujitsu.com> wrote:
-> >> I wonder other people who debugs memcg's hierarchy may use similar patches.
-> >> this is my one.
-> >> comments ?
-> >> ==
-> >> From:KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >>
-> >> Show "real" limit of memcg.
-> >> This helps my debugging and maybe useful for users.
-> >>
-> >> While testing hierarchy like this
-> >>
-> >>       mount -t cgroup none /cgroup -t memory
-> >>       mkdir /cgroup/A
-> >>       set use_hierarchy==1 to "A"
-> >>       mkdir /cgroup/A/01
-> >>       mkdir /cgroup/A/01/02
-> >>       mkdir /cgroup/A/01/03
-> >>       mkdir /cgroup/A/01/03/04
-> >>       mkdir /cgroup/A/08
-> >>       mkdir /cgroup/A/08/01
-> >>       ....
-> >> and set each own limit to them, "real" limit of each memcg is unclear.
-> >> This patch shows real limit by checking all ancestors in memory.stat.
-> >>
-> >> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >
-> > Great!
-> >
-> > I hoped to use this patch at hierarchy inactive_ratio debugging ;)
+Michael Halcrow wrote:
+> On Thu, Dec 11, 2008 at 07:16:26PM +0000, Duane Griffin wrote:
+>> The result from readlink is being used to index into the link name
+>> buffer without checking whether it is a valid length. If readlink
+>> returns an error this will fault or cause memory corruption.
+>>
+>> Signed-off-by: Duane Griffin <duaneg@dghda.com>
 > 
-> I like this very much too
+> Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
 > 
-> I would prefer to use
-> 
-> min_limit = min(tmp, min_limit); and similarly for min_memsw_limit
-> 
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-Thanks, I'll upadte this and forward to Andrew.
-
--Kame
-
-
-> Balbir
+>> ---
+>>  fs/ecryptfs/inode.c |    3 ++-
+>>  1 files changed, 2 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
+>> index 89209f0..5e78fc1 100644
+>> --- a/fs/ecryptfs/inode.c
+>> +++ b/fs/ecryptfs/inode.c
+>> @@ -673,10 +673,11 @@ static void *ecryptfs_follow_link(struct dentry *dentry, struct nameidata *nd)
+>>  	ecryptfs_printk(KERN_DEBUG, "Calling readlink w/ "
+>>  			"dentry->d_name.name = [%s]\n", dentry->d_name.name);
+>>  	rc = dentry->d_inode->i_op->readlink(dentry, (char __user *)buf, len);
+>> -	buf[rc] = '\0';
+>>  	set_fs(old_fs);
+>>  	if (rc < 0)
+>>  		goto out_free;
+>> +	else
+>> +		buf[rc] = '\0';
+>>  	rc = 0;
+>>  	nd_set_link(nd, buf);
+>>  	goto out;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
 
+Please add 'Cc: stable@kernel.org' in the commit message. This looks
+like a good candidate.
+
+rtg
+-- 
+Tim Gardner tim.gardner@canonical.com
