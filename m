@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbYLLO1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758395AbYLLO2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758895AbYLLO1v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 09:27:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbYLLO1n
+	id S1758395AbYLLO2L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 09:28:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbYLLO1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 09:27:43 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45453 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758230AbYLLO1m (ORCPT
+	Fri, 12 Dec 2008 09:27:49 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:34959 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758638AbYLLO1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 09:27:42 -0500
-Date: Fri, 12 Dec 2008 15:39:30 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, "Ma, Chinang" <chinang.ma@intel.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>
-Subject: Re: CFS scheduler OLTP perforamnce
-Message-ID: <20081212143930.GI25779@one.firstfloor.org>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E80030A74A5FF@azsmsx501.amr.corp.intel.com> <1229083933.12883.179.camel@twins> <87wse5bhu4.fsf@basil.nowhere.org> <1229091735.25485.8.camel@twins>
+	Fri, 12 Dec 2008 09:27:48 -0500
+Subject: Re: [PATCH 03/15] kmemleak: Add the slab memory allocation/freeing
+	hooks
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <494184AA.8090509@cs.helsinki.fi>
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
+	 <20081210182710.30323.57396.stgit@pc1117.cambridge.arm.com>
+	 <494184AA.8090509@cs.helsinki.fi>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 12 Dec 2008 14:27:45 +0000
+Message-Id: <1229092065.15045.35.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1229091735.25485.8.camel@twins>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Dec 2008 14:27:46.0130 (UTC) FILETIME=[CD393320:01C95C65]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 03:22:15PM +0100, Peter Zijlstra wrote:
-> On Fri, 2008-12-12 at 15:15 +0100, Andi Kleen wrote:
-> > Peter Zijlstra <peterz@infradead.org> writes:
-> > >> 
-> > >> It seems that in this case renice to higher priority with CFS did not
-> > >> reduce scheduling latency as well as SCHED_RR.
-> > >
-> > > Is there a question in this email?
-> > 
-> > The question is how to make nice perform as well as SCHED_RR.
+On Thu, 2008-12-11 at 23:22 +0200, Pekka Enberg wrote:
+> Catalin Marinas wrote:
+> > @@ -2610,6 +2611,13 @@ static struct slab *alloc_slabmgmt(struct kmem_cache *cachep, void *objp,
+> >  		/* Slab management obj is off-slab. */
+> >  		slabp = kmem_cache_alloc_node(cachep->slabp_cache,
+> >  					      local_flags & ~GFP_THISNODE, nodeid);
+> > +		/*
+> > +		 * Only scan the list member to avoid false negatives
+> > +		 * (especially caused by the s_mem pointer)
+> > +		 */
 > 
-> Depending on the circumstances, you can't - SCHED_RR doesn't bother with
-> fairness.
+> Heh, I run into this part again and as I have a long term memory of a 
+> goldfish I had to look up the discussion we had. So may I suggest you 
+> change the comment to:
+> 
+> /*
+>   * If the first object in the slab is leaked (it's allocated but no
+>   * one has a reference to it), we want to make sure kmemleak does not
+>   * treat the ->s_mem pointer as a reference to the object. Otherwise
+>   * we will not report the leak.
+>   */
 
-When the spread between nice levels (negative/positive) is large enough
-at least the log writer should be able to schedule soon most of the
-time, no?
+OK, thanks. It's more verbose but it makes it pretty clear.
 
-At least that doesn't seem to work.
+> > +		memleak_scan_area(slabp, offsetof(struct slab, list),
+> > +				  sizeof(struct list_head),
+> > +				  local_flags & ~GFP_THISNODE);
+> >  		if (!slabp)
+> >  			return NULL;
+> >  	} else {
+> > @@ -3195,6 +3203,8 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+> >  		STATS_INC_ALLOCMISS(cachep);
+> >  		objp = cache_alloc_refill(cachep, flags);
+> >  	}
+> > +	/* avoid false negatives */
+> > +	memleak_erase(&ac->entry[ac->avail]);
+> 
+> For this, maybe something like this:
+> 
+> /*
+>   * To avoid a false negative, if an object that is in one of the
+>   * per-CPU caches is leaked, we need to make sure kmemleak doesn't
+>   * treat the array pointers as a reference to the object.
+>   */
 
-Also in general there seems to be a starvation issue here between
-producer and consumer.
+OK.
 
--Andi
+> >  	return objp;
+> >  }
+> >  
+> 
+> Do you take care of the per-node lists as well?
+
+I can't figure out what other location should be erased.
+
+-- 
+Catalin
+
