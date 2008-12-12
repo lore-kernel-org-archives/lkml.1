@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754935AbYLLLBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbYLLLFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754935AbYLLLBW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 06:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYLLLBM
+	id S1757460AbYLLLFB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 06:05:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYLLLEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 06:01:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51917 "EHLO mx2.mail.elte.hu"
+	Fri, 12 Dec 2008 06:04:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60781 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753869AbYLLLBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 06:01:11 -0500
-Date: Fri, 12 Dec 2008 12:00:49 +0100
+	id S1753869AbYLLLEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 06:04:53 -0500
+Date: Fri, 12 Dec 2008 12:04:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: uaccess: return value of __{get|put}_user() can
-	be int
-Message-ID: <20081212110049.GB32640@elte.hu>
-References: <493DE38E.60505@ct.jp.nec.com>
+Subject: Re: [PATCH] x86: kill #ifdef for exit_idle()
+Message-ID: <20081212110444.GC32640@elte.hu>
+References: <493DE3AB.4090409@ct.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <493DE38E.60505@ct.jp.nec.com>
+In-Reply-To: <493DE3AB.4090409@ct.jp.nec.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -42,20 +41,16 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > 
 > Impact: cleanup
 > 
-> The type of return value of __{get|put}_user() can be int.
-> There is no user to refer the return value of __{get|put}_user() as long.
-> This reduces code size a bit on 64-bit.
-> 
-> $ size vmlinux.*
->    text	   data	    bss	    dec	    hex	filename
-> 4509265	 479988	 673588	5662841	 566879	vmlinux.new
-> 4511462	 479988	 673588	5665038	 56710e	vmlinux.old
+> Introduce helper incline function in arch/x86/include/asm/idle.h
+> to remove #ifdefs around exit_idle().
 > 
 > Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > ---
->  arch/x86/include/asm/uaccess.h |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+>  arch/x86/include/asm/idle.h |    5 +++++
+>  arch/x86/kernel/apic.c      |    6 ------
+>  arch/x86/kernel/io_apic.c   |    3 +--
+>  3 files changed, 6 insertions(+), 8 deletions(-)
 
-applied to tip/x86/mm, thanks!
+applied to tip/x86/idle, thanks!
 
 	Ingo
