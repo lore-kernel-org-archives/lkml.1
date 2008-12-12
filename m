@@ -1,40 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759036AbYLLJnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYLLJp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759036AbYLLJnT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 04:43:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYLLJnG
+	id S1758602AbYLLJp3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 04:45:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbYLLJpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 04:43:06 -0500
-Received: from ns2.suse.de ([195.135.220.15]:46532 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751133AbYLLJnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 04:43:04 -0500
-Date: Fri, 12 Dec 2008 10:43:02 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [rfc][patch] SLQB slab allocator
-Message-ID: <20081212094302.GC14225@wotan.suse.de>
-References: <20081212002518.GH8294@wotan.suse.de> <4941F8D2.4060807@cosmosbay.com> <20081212055051.GE15804@wotan.suse.de> <49420DAB.7090604@cosmosbay.com> <20081212072355.GG15804@wotan.suse.de>
+	Fri, 12 Dec 2008 04:45:21 -0500
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:48781 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752367AbYLLJpU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 04:45:20 -0500
+Subject: Re: [PATCH 4/4] s390: remove s390_root_dev_*()
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Mark McLoughlin <markmc@redhat.com>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-s390@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+In-Reply-To: <1229074546.4041.8.camel@blaa>
+References: <1229012203.7968.79.camel@blaa>
+	 <1229012216-4211-1-git-send-email-markmc@redhat.com>
+	 <1229012216-4211-2-git-send-email-markmc@redhat.com>
+	 <1229012216-4211-3-git-send-email-markmc@redhat.com>
+	 <1229012216-4211-4-git-send-email-markmc@redhat.com>
+	 <20081211180025.045b9b4a@gondolin>  <20081212102951.01446f22@gondolin>
+	 <1229074546.4041.8.camel@blaa>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Fri, 12 Dec 2008 10:45:16 +0100
+Message-Id: <1229075116.28887.4.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081212072355.GG15804@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 08:23:55AM +0100, Nick Piggin wrote:
-> Anyway, I'll see if I can work out why SLQB is slower. Do you have
-> socketallocbench online?
+On Fri, 2008-12-12 at 09:35 +0000, Mark McLoughlin wrote:
+> From: Mark McLoughlin <markmc@redhat.com>
+> Subject: [PATCH] s390: remove s390_root_dev_*()
+> 
+> Replace s390_root_dev_register() with root_device_register() etc.
+> 
+> [Includes fix from Cornelia Huck]
+> 
+> Signed-off-by: Mark McLoughlin <markmc@redhat.com>
 
-Hmph, it seems to be in the noise (I'm testing with an AMD system
-though). Some boots SLAB is faster, other boots, SLQB is. Could be
-a matter of luck in cacheline placement maybe?
+I can carry the patch in my patch queue. Thanks.
 
-I think this benchmark (after the slab rcu patch) will be pretty
-trivial for any slab allocator because it will basically be each
-CPU allocating then freeing an object.
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
 
