@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbYLLRA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759324AbYLLRD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759280AbYLLRA3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 12:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbYLLRAS
+	id S1759324AbYLLRD6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 12:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757773AbYLLRDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 12:00:18 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33135 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757408AbYLLRAR (ORCPT
+	Fri, 12 Dec 2008 12:03:49 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:50476 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757646AbYLLRDs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 12:00:17 -0500
-Date: Fri, 12 Dec 2008 16:59:48 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
+	Fri, 12 Dec 2008 12:03:48 -0500
+Date: Fri, 12 Dec 2008 10:03:47 -0700
+From: Matthew Wilcox <matthew@wil.cx>
 To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Ulrich Drepper <drepper@redhat.com>
 Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
-Message-ID: <20081212165948.GA5774@flint.arm.linux.org.uk>
-Mail-Followup-To: Gerd Hoffmann <kraxel@redhat.com>,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <1229090440-32120-1-git-send-email-kraxel@redhat.com>
-Mime-Version: 1.0
+Message-ID: <20081212170347.GR26095@parisc-linux.org>
+References: <1229090440-32120-1-git-send-email-kraxel@redhat.com> <20081212152929.GM26095@parisc-linux.org> <494287D4.2070909@redhat.com> <20081212155113.GO26095@parisc-linux.org> <49428AFD.5090009@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229090440-32120-1-git-send-email-kraxel@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <49428AFD.5090009@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 03:00:40PM +0100, Gerd Hoffmann wrote:
-> diff --git a/fs/read_write.c b/fs/read_write.c
-> index 969a6d9..89f273d 100644
-> --- a/fs/read_write.c
-> +++ b/fs/read_write.c
-> @@ -701,6 +701,54 @@ sys_writev(unsigned long fd, const struct iovec __user *vec, unsigned long vlen)
->  	return ret;
->  }
->  
-> +asmlinkage ssize_t sys_preadv(unsigned long fd, const struct iovec __user *vec,
-> +                              unsigned long vlen, loff_t pos)
+On Fri, Dec 12, 2008 at 05:02:05PM +0100, Gerd Hoffmann wrote:
+> I'd *really* hate it to have the same system call with different
+> argument ordering on different systems though.  Especially when swapping
+> two integer values, so gcc wouldn't error out on wrong usage.
 
-For ARM, I'd prefer this to be:
+We can always permute it further:
 
-	unsigned long fd, const struct iovec __user *vec,
-		loff_t pos, unsigned long vlen
-
-to avoid any variance in ABIness which will occur with the argument
-layout as it currently stands, but that creates a silly argument
-order.  The other option would be for us to define our own version
-in an ARM ABI independent manner:
-
-ssize_t sys_arm_preadv(unsigned long fd, const struct iovec __user *vec,
-	unsigned long vlen, unsigned long low_pos, unsigned long high_pos)
+int fd, int vlen, loff_t pos, const struct *
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
