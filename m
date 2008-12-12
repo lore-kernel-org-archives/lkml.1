@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759124AbYLLRMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbYLLRMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759124AbYLLRMO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 12:12:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758119AbYLLRMA
+	id S1759461AbYLLRMl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 12:12:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758119AbYLLRMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 12:12:00 -0500
-Received: from viefep17-int.chello.at ([62.179.121.37]:65455 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758023AbYLLRL7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 12:11:59 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [patch] Performance Counters for Linux, v3
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: Vince Weaver <vince@deater.net>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20081212170336.GJ5413@const.bordeaux.inria.fr>
-References: <20081211155230.GA4230@elte.hu>
-	 <Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
-	 <1229070345.12883.12.camel@twins>
-	 <20081212170336.GJ5413@const.bordeaux.inria.fr>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Dec 2008 18:11:50 +0100
-Message-Id: <1229101910.13566.7.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 8bit
+	Fri, 12 Dec 2008 12:12:30 -0500
+Received: from lucidpixels.com ([75.144.35.66]:35469 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756880AbYLLRM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 12:12:29 -0500
+Date: Fri, 12 Dec 2008 12:12:27 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+cc: Alan Piszcz <ap@solarrain.com>
+Subject: Re: 2.6.27.8: OOM killer: [swapper: page allocation failure]
+In-Reply-To: <alpine.DEB.1.10.0812120708080.9826@p34.internal.lan>
+Message-ID: <alpine.DEB.1.10.0812121211580.5119@p34.internal.lan>
+References: <alpine.DEB.1.10.0812120708080.9826@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-12 at 18:03 +0100, Samuel Thibault wrote:
-> Peter Zijlstra, le Fri 12 Dec 2008 09:25:45 +0100, a écrit :
-> > On Thu, 2008-12-11 at 13:02 -0500, Vince Weaver wrote:
-> > > Also, my primary method of using counters is total aggregate count for a 
-> > > single user-space process. 
-> > 
-> > Process, as in single thread, or multi-threaded? I'll assume
-> > single-thread.
-> 
-> BTW, just to make sure it is taken into account (I haven't followed the
-> thread up to here, just saw a "pid_t" somwhere that alarmed me): for our
-> uses, we _do_ need per-kernelthread counters.
 
-Yes, counters are per task - not sure on the exact interface thingy
-though - I guess it should be tid_t but glibc does a bit weird there or
-something.
+
+On Fri, 12 Dec 2008, Justin Piszcz wrote:
+
+> Kernel: 2.6.27.8
+>
+> I have a RAID-6 volume with 6 disks:
+> mdadm --create -v /dev/md0 --level=6 -n 6 -e 0.90 /dev/sd[e-j]1
+>
+> While it is building...
+
+Removed the extra disks, put them in another host but thought it was an
+interesting bug.? so sent it to the list.
+
+Justin.
 
