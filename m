@@ -1,44 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758418AbYLLFcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757709AbYLLFhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758418AbYLLFcc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 00:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbYLLFcH
+	id S1757709AbYLLFhV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 00:37:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYLLFhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 00:32:07 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37848
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757570AbYLLFb7 (ORCPT
+	Fri, 12 Dec 2008 00:37:07 -0500
+Received: from vms173007pub.verizon.net ([206.46.173.7]:50708 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbYLLFhF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 00:31:59 -0500
-Date: Thu, 11 Dec 2008 21:32:00 -0800 (PST)
-Message-Id: <20081211.213200.180924446.davem@davemloft.net>
-To: paul.moore@hp.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       geert.uytterhoeven@sonycom.com
-Subject: Re: [PATCH] netlabel: Compiler warning and NULL pointer
- dereference fix
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081211184312.30832.25526.stgit@flek.lan>
-References: <20081211184312.30832.25526.stgit@flek.lan>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Dec 2008 00:37:05 -0500
+Date: Fri, 12 Dec 2008 00:36:50 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH]  ACPI: Check _PSS invalidation when BIOS report _PSS with
+ all 0x80000000
+In-reply-to: <20081124230208.GA21491@youquan-linux.bj.intel.com>
+X-X-Sender: lenb@localhost.localdomain
+To: "Youquan,Song" <youquan.song@linux.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.2.00.0812120029260.27968@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <3606.172.16.183.72.1227236916.squirrel@linux.intel.com>
+ <20081121150839.58dbedfa.akpm@linux-foundation.org>
+ <20081124230208.GA21491@youquan-linux.bj.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Moore <paul.moore@hp.com>
-Date: Thu, 11 Dec 2008 13:43:12 -0500
+On Mon, 24 Nov 2008, Youquan,Song wrote:
 
-> Fix the two compiler warnings show below.  Thanks to Geert Uytterhoeven for
-> finding and reporting the problem.
+> On Fri, Nov 21, 2008 at 03:08:39PM -0800, Andrew Morton wrote:
+> > On Thu, 20 Nov 2008 19:08:36 -0800 (PST)
+> > youquan_song@linux.intel.com wrote:
+> > 
+> > > Subject: Check _PSS invalidation when BIOS report _PSS with 0x80000000
+> > > 
+> > > When cpu frequencey scaling disable,some BIOS report _PSS with all
+> > > 0x80000000.
+> > > If kernel treat this case as valid, the kernel will boot crash when load
+> > > cpufreq govenors.
+> > > 
+> > > So in order to cover more buggy BIOSs, the patch just check _PSS core
+> > > frequencey invalidtion.
+> > > 
+> > 
+> > It's unclear how many machines this will affect, and what the effects
+> > of not having the patch are upon those machines.  That is useful
+> > information for people who are deciding whcih kernel versions this
+> > patch should be merged into.
 > 
->  net/netlabel/netlabel_unlabeled.c:567: warning: 'entry' may be used
->    uninitialized in this function
->  net/netlabel/netlabel_unlabeled.c:629: warning: 'entry' may be used
->    uninitialized in this function
-> 
-> Signed-off-by: Paul Moore <paul.moore@hp.com>
+> I meet 2 machines that if the P-states is disabled in BIOS, the kernel
+> will boot crash at loading cpufreq_userspace governor because kernel
+> consider that P-states validate. I know there are some other machines
+> also exist this bug.
 
-Applied, thanks Paul.
+What does _PPC say when P-states are disabled on these machines?
+If it is disabling the _PSS, maybe we should not be looking at the _PSS?
+
+This would be a good patch if 0x80000000 were actually documented
+in the ACPI spec as disabling P-states, but it isn't.
+
+Can you open a bugzilla and attach the acpidump output for
+the two failing machines?  Are those machines shipped with
+P-states enabled by default, or disabled by default?
+
+Also, how, exactly, do we crash when we see these values?
+
+> > Do you think this fix is needed in 2.6.28?  2.6.27.x?  2.6.26.x?  etc?
+> > 
+> 
+> I know that the bug exists in kernel as old as 2.6.18 and also exits on
+> 2.6.28, 2.6.27 etc. 
+
+So we've been exposed to this BIOS bug for more than 10 releases
+and the world has not ended.  Unless we're about to be exposed to
+a raft of new machines with this BIOS issue, and they have P-states
+disabled by default, I'd say this workaround in not urgent.
+
+-- 
+Len Brown, Intel Open Source Technology Center
+
