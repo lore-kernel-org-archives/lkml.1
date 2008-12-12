@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYLLFTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbYLLFU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958AbYLLFTe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 00:19:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbYLLFTY
+	id S1757153AbYLLFU6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 00:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYLLFUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 00:19:24 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:38748 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750795AbYLLFTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 00:19:23 -0500
-Date: Thu, 11 Dec 2008 21:17:59 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Vorobiev Dmitri <dmitri.vorobiev@movial.fi>, Julia Lawall <julia@diku.dk>,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/28] drivers/base/platform.c: Drop return value from
-	platform_driver remove functions
-Message-ID: <20081212051759.GA12563@suse.de>
-References: <Pine.LNX.4.64.0812101725540.21998@ask.diku.dk> <8bd0f97a0812100928l2c75d373n7eba5aa0cc3882fd@mail.gmail.com> <53806.88.114.236.15.1228947522.squirrel@webmail.movial.fi> <8bd0f97a0812101437r4abb9346p8bc8d512ddc02cde@mail.gmail.com>
+	Fri, 12 Dec 2008 00:20:48 -0500
+Received: from qmta02.westchester.pa.mail.comcast.net ([76.96.62.24]:41603
+	"EHLO QMTA02.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750892AbYLLFUr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 00:20:47 -0500
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: [PATCH] e1000e: fix double release of mutex
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, stable@kernel.org, linux-kernel@vger.kernel.org,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 11 Dec 2008 21:20:26 -0800
+Message-ID: <20081212052025.3298.151.stgit@lost.foo-projects.org>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8bd0f97a0812101437r4abb9346p8bc8d512ddc02cde@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 10, 2008 at 05:37:42PM -0500, Mike Frysinger wrote:
-> On Wed, Dec 10, 2008 at 17:18, Vorobiev Dmitri wrote:
-> >> On Wed, Dec 10, 2008 at 11:26, Julia Lawall wrote:
-> >>> The return value of the remove function of a driver structure, and thus
-> >>> of
-> >>> a platform_driver structure, is ultimately ignored, and is thus
-> >>> unnecessary.  The goal of this patch is to make it possible to convert
-> >>> the
-> >>> platform_driver functions stored in the remove field such that they
-> >>> return
-> >>> void.  This patch introduces a temporary field remove_new with return
-> >>> type
-> >>> void into the platform_driver structure, and updates the only place that
-> >>> the remove function is called to call the function in the remove_new
-> >>> field,
-> >>> if one is available.  The subsequent patches update some drivers to use
-> >>> the
-> >>> remove_new field.
-> >>
-> >> why bother with remove -> remove_new convention ?
-> >
-> > Please see this email for the background:
-> >
-> > http://lkml.org/lkml/2008/12/10/231
-> >
-> >>  you'll get a
-> >> warning in C about the assignment, but you wont get a build failure,
-> >
-> > ...unless you compile with -Werror, which frequently the case.
-> 
-> anyone crazy enough to build with -Werror is crazy enough to send in a fix ;)
+During a reset, releasing the swflag after it failed to be acquired would
+cause a double unlock of the mutex.  Instead, test whether acquisition of
+the swflag was successful and if not, do not release the swflag.  The reset
+must still be done to bring the device to a quiescent state.
 
-Hm, have you noted that some arches have that flag enabled in their
-build?
+This resolves [BUG 12200] BUG: bad unlock balance detected! e1000e
+http://bugzilla.kernel.org/show_bug.cgi?id=12200
 
-And it's not ok to add a couple of hundred build warnings to the system,
-sorry.
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+---
 
-thanks,
+ drivers/net/e1000e/ich8lan.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-greg k-h
+diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
+index 523b971..d115a6d 100644
+--- a/drivers/net/e1000e/ich8lan.c
++++ b/drivers/net/e1000e/ich8lan.c
+@@ -1893,12 +1893,17 @@ static s32 e1000_reset_hw_ich8lan(struct e1000_hw *hw)
+ 		ctrl |= E1000_CTRL_PHY_RST;
+ 	}
+ 	ret_val = e1000_acquire_swflag_ich8lan(hw);
++	/* Whether or not the swflag was acquired, we need to reset the part */
+ 	hw_dbg(hw, "Issuing a global reset to ich8lan");
+ 	ew32(CTRL, (ctrl | E1000_CTRL_RST));
+ 	msleep(20);
+ 
+-	/* release the swflag because it is not reset by hardware reset */
+-	e1000_release_swflag_ich8lan(hw);
++	if (!ret_val) {
++		/* release the swflag because it is not reset by
++		 * hardware reset
++		 */
++		e1000_release_swflag_ich8lan(hw);
++	}
+ 
+ 	ret_val = e1000e_get_auto_rd_done(hw);
+ 	if (ret_val) {
+
