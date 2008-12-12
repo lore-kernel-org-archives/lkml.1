@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbYLLUAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbYLLUC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754374AbYLLUAq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 15:00:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYLLUAg
+	id S1754100AbYLLUC4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 15:02:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYLLUCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 15:00:36 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:47732 "EHLO mail.dvmed.net"
+	Fri, 12 Dec 2008 15:02:48 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37843 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752083AbYLLUAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 15:00:35 -0500
-Message-ID: <4942C2D1.4090309@garzik.org>
-Date: Fri, 12 Dec 2008 15:00:17 -0500
-From: Jeff Garzik <jeff@garzik.org>
+	id S1751093AbYLLUCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 15:02:47 -0500
+Message-ID: <4942C357.4060801@redhat.com>
+Date: Fri, 12 Dec 2008 21:02:31 +0100
+From: Gerd Hoffmann <kraxel@redhat.com>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: torvalds@osdl.org, git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Simplified GIT usage guide
-References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
+References: <1229090440-32120-1-git-send-email-kraxel@redhat.com> <20081212152929.GM26095@parisc-linux.org> <200812122047.31405.arnd@arndb.de>
+In-Reply-To: <200812122047.31405.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> Add a guide to using GIT's simpler features.
+Arnd Bergmann wrote:
+> Aside from that, have you considered doing something even more flexible,
+> like this?
 > 
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
+> struct piovec {
+> 	void __user *iov_base;
+> 	__kernel_size_t	iov_len;
+> 	__kernel_loff_t pos;
+> };
 > 
->  Documentation/git-haters-guide.txt | 1283 ++++++++++++++++++++++++++++++++++++
->  1 files changed, 1283 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/git-haters-guide.txt
+> asmlinkage ssize_t sys_pwritev(unsigned long fd,
+>                                const struct piovec __user *vec,
+>                                unsigned long vlen);
 
-What do you feel is missing from the Kernel Hackers' Guide to Git?  :)
+There is little point in doing so because I *really* want the
+user-visible API being identical to the existing ones in the *BSD
+family.  Anything else is just a PITA for the applications using this.
 
-http://linux.yyz.us/git-howto.html
-
-	Jeff
-
-
+cheers,
+  Gerd
