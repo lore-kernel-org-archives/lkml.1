@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbYLLKPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbYLLKTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757972AbYLLKPI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 05:15:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYLLKOz
+	id S1757460AbYLLKTe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 05:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbYLLKTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 05:14:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44955 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892AbYLLKOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 05:14:54 -0500
-Date: Fri, 12 Dec 2008 11:14:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] tracing/function-graph-tracer: signal interrupt
-	triggering on output
-Message-ID: <20081212101448.GE18152@elte.hu>
-References: <493EF64D.50804@gmail.com> <493EF797.7090603@gmail.com>
+	Fri, 12 Dec 2008 05:19:24 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:26422 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751150AbYLLKTW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 05:19:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=aizEJXXQ9XV3gtkVOeu+Spd6pN2TJgbmBlpocFSAoi+6QPfFRbIYA1XP1rldf/I9X5
+         wU6mc9pp8omLRwf5hMK6esbRV2sBLxcdhdD0DYP0G0Ju+xdzTIO4A/DY/ZSZ99vWaStn
+         rK9kV1aFpdjTYq09zj3ZTlIkp/i085p4nh75k=
+Message-ID: <e9e943910812120219k54e46330hc82add29a7fda455@mail.gmail.com>
+Date: Fri, 12 Dec 2008 10:19:20 +0000
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH, v2] ext3: ensure link targets are NULL-terminated
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "Boaz Harrosh" <bharrosh@panasas.com>, sct@redhat.com, adilger@sun.com,
+       linux-ext4@vger.kernel.org
+In-Reply-To: <e9e943910812120140j356d9e1g972dfddbb4f14369@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <493EF797.7090603@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <1229022995-9898-1-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-2-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-3-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-4-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-5-git-send-email-duaneg@dghda.com>
+	 <1229022995-9898-6-git-send-email-duaneg@dghda.com>
+	 <20081211222605.GB18665@dastardly.home.dghda.com>
+	 <20081211193228.51c34114.akpm@linux-foundation.org>
+	 <e9e943910812120140j356d9e1g972dfddbb4f14369@mail.gmail.com>
+X-Google-Sender-Auth: b8c6c2b414494f2f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/12/12 Duane Griffin <duaneg@dghda.com>:
+> 2008/12/12 Andrew Morton <akpm@linux-foundation.org>:
+>> Really?  The ext2 on-disk format requires that the fast symlink be
+>> null-terminated on disk?  Even though the length is already in i_size?
+>>
+>> It seems that's true.  How un-ext2-like.
+>>
+>> ext2 and ext4 need the same fix, yes?
+>
+> Yes. I've sent them out already, but thanks to a monumental cock-up
+> with the CCs they may not have made it to the list. I'll check and
+> resend to real addresses if necessary.
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+Seems they did make it:
+http://marc.info/?l=linux-kernel&m=122903437006575&w=2
+http://marc.info/?l=linux-kernel&m=122903451306859&w=2
 
-> Frederic Weisbecker wrote:
-> > This patchset adds all the features to draw hardirq triggering on output
-> > for the function graph tracer.
-> > An example is given on the third patch.
-> > 
-> > Just one question, on recordmcount.pl:
-> > 
-> > my %text_sections = (
-> >       ".text" => 1,
-> >       ".sched.text" => 1,
-> >       ".spinlock.text" => 1,
-> > 
-> > The .sched.text section is included inside .text, it's a subsection, I'm not sure
-> > it's necessary to add it in text_sections. In doubt I added the new .irqentry.text
-> > 
-> > The stat of the patchset:
-> > 
-> >  arch/x86/kernel/apic.c               |    3 +-
-> >  arch/x86/kernel/irq_64.c             |    3 +-
-> >  arch/x86/kernel/vmlinux_64.lds.S     |    1 +
-> >  include/asm-generic/vmlinux.lds.h    |   10 +++++
-> >  include/linux/ftrace.h               |   11 ++++++
-> >  kernel/trace/trace_functions_graph.c |   66 +++++++++++++++++++++++++++++++--
-> >  scripts/recordmcount.pl              |    1 +
-> >  7 files changed, 89 insertions(+), 6 deletions(-)
+Cheers,
+Duane.
 
-applied to tip/tracing/function-graph-tracer, thanks Frederic!
-
-The output looks really nice.
-
-	Ingo
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
