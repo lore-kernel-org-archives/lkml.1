@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759684AbYLLSTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbYLLSWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759684AbYLLSTU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 13:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758405AbYLLSTL
+	id S1759848AbYLLSWU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 13:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758693AbYLLSWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 13:19:11 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:6482 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758376AbYLLSTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 13:19:10 -0500
-Date: Fri, 12 Dec 2008 19:18:50 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] block: Fix LSF default inconsistency
-Message-ID: <20081212181850.GJ23742@kernel.dk>
-References: <20081211111614.493d2a62@hyperion.delvare> <20081211104109.GF23742@kernel.dk> <20081211115844.1b1dbf49@hyperion.delvare> <20081211110839.GH23742@kernel.dk> <20081211134438.6d871834@hyperion.delvare> <20081211125000.GL23742@kernel.dk> <20081212084850.1b56529f@hyperion.delvare> <20081212075431.GG23742@kernel.dk> <20081212104154.0206d8a9@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081212104154.0206d8a9@hyperion.delvare>
+	Fri, 12 Dec 2008 13:22:11 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38016 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758376AbYLLSWJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 13:22:09 -0500
+Date: Fri, 12 Dec 2008 18:21:42 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Gerd Hoffmann <kraxel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
+Message-ID: <20081212182142.46dcf220@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081212170347.GR26095@parisc-linux.org>
+References: <1229090440-32120-1-git-send-email-kraxel@redhat.com>
+	<20081212152929.GM26095@parisc-linux.org>
+	<494287D4.2070909@redhat.com>
+	<20081212155113.GO26095@parisc-linux.org>
+	<49428AFD.5090009@redhat.com>
+	<20081212170347.GR26095@parisc-linux.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12 2008, Jean Delvare wrote:
-> > diff --git a/include/linux/types.h b/include/linux/types.h
-> > index 1d98330..121f349 100644
-> > --- a/include/linux/types.h
-> > +++ b/include/linux/types.h
-> > @@ -135,19 +135,14 @@ typedef		__s64		int64_t;
-> >   *
-> >   * Linux always considers sectors to be 512 bytes long independently
-> >   * of the devices real block size.
-> > + *
-> > + * blkcnt_t is the type of the inode's block count.
-> >   */
+On Fri, 12 Dec 2008 10:03:47 -0700
+Matthew Wilcox <matthew@wil.cx> wrote:
+
+> On Fri, Dec 12, 2008 at 05:02:05PM +0100, Gerd Hoffmann wrote:
+> > I'd *really* hate it to have the same system call with different
+> > argument ordering on different systems though.  Especially when swapping
+> > two integer values, so gcc wouldn't error out on wrong usage.
 > 
-> You might want to edit the start of this comment a bit, as it currently
-> says "The type used for...". You probably want instead "sector_t is the
-> type...". And drop the extra "*" while you're here, as this is a
-> regular comment and not a kerneldoc thing.
-
-Agree, that'll make it cleaner. I'll make those changes next time I have
-to shuffle the patches.
-
-> >  #ifdef CONFIG_LBD
-> >  typedef u64 sector_t;
-> > -#else
-> > -typedef unsigned long sector_t;
-> > -#endif
-> > -
-> > -/*
-> > - * The type of the inode's block count.
-> > - */
-> > -#ifdef CONFIG_LSF
-> >  typedef u64 blkcnt_t;
-> >  #else
-> > +typedef unsigned long sector_t;
-> >  typedef unsigned long blkcnt_t;
-> >  #endif
-> >  
+> We can always permute it further:
 > 
-> Acked-by: Jean Delvare <khali@linux-fr.org>
+> int fd, int vlen, loff_t pos, const struct *
 
-Thanks, I added your Acked-by.
+Or you could add cobol calling syntax or pass the arguments in XML
+format ?
 
--- 
-Jens Axboe
+Any particular reason you want to make things hell for programmers and
+the standard people. Follow the BSD one at least to user space. Anything
+else will just lead to pain and suffering later on the standardisation
+front.
 
+Alan
