@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbYLLTs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbYLLTtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753262AbYLLTs4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 14:48:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYLLTso
+	id S1752502AbYLLTtU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 14:49:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYLLTs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 14:48:44 -0500
-Received: from oak.highrise.ca ([70.38.99.169]:50404 "EHLO oak.highrise.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751585AbYLLTsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 14:48:43 -0500
-X-Greylist: delayed 576 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Dec 2008 14:48:43 EST
-Date: Fri, 12 Dec 2008 14:40:47 -0500
-From: Aidan Van Dyk <aidan@highrise.ca>
-To: sverre@rabbelier.nl
-Cc: David Howells <dhowells@redhat.com>,
-       Johannes Schindelin <Johannes.Schindelin@gmx.de>, torvalds@osdl.org,
-       git@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Miklos Vajna <vmiklos@frugalware.org>
-Subject: Re: [PATCH] Simplified GIT usage guide
-Message-ID: <20081212194047.GJ26596@yugib.highrise.ca>
-References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk> <alpine.DEB.1.00.0812121952320.5873@eeepc-johanness> <29095.1229109133@redhat.com> <bd6139dc0812121124j49c80bbdhca22ddbdabc14cee@mail.gmail.com>
+	Fri, 12 Dec 2008 14:48:59 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:64779 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754170AbYLLTs5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 14:48:57 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
+Date: Fri, 12 Dec 2008 20:47:30 +0100
+User-Agent: KMail/1.9.9
+Cc: Gerd Hoffmann <kraxel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+References: <1229090440-32120-1-git-send-email-kraxel@redhat.com> <20081212152929.GM26095@parisc-linux.org>
+In-Reply-To: <20081212152929.GM26095@parisc-linux.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="aQ0uMxgwPa7LG1Pw"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <bd6139dc0812121124j49c80bbdhca22ddbdabc14cee@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200812122047.31405.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+obr6Bwgd8AI+RYP0JEnEYw381EHQYmQtW8WU
+ UGMsq9uLBLUqpSl2SqOcSODVd7WgGicXllSlBUMCWpYLGAwrnM
+ lmB2dy3mHBslONyQrZmoA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---aQ0uMxgwPa7LG1Pw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-* Sverre Rabbelier <alturin@gmail.com> [081201 00:00]:
-> On Fri, Dec 12, 2008 at 20:12, David Howells <dhowells@redhat.com> wrote:
-> > In my opinion, it's much easier to deal with if you can visualise how it
-> > works
+On Friday 12 December 2008, Matthew Wilcox wrote:
+> Things will go much better if we can prototype these as:
 > 
-> Ah, this is of course why they teach you how an engine works at the
-> driving schools!
+> asmlinkage ssize_t sys_preadv(unsigned int fd, const struct iovec __user *vec,
+>                                 loff_t pos, unsigned long vlen);
+> asmlinkage ssize_t sys_pwritev(unsigned int fd, const struct iovec __user *vec,
+>                                 loff_t pos, unsigned long vlen);
 
-No, but all the people I've taught to drive have suddenly "got it" after
-a gentle introduction as to how the clutch clutch and engine speed work
-together in the transmission to accellerate/decellerate the car...
+I would vote for doing it the same way as sys_llseek, which avoids
+this issue entirely by passing the upper half of pos sepearately:
 
-So, a bit of "understanding" of what's actually going on helped them,
-not the "push that pedal towards the floor and pop the other one out!".
 
-But... everyone learns differently...
+asmlinkage ssize_t sys_preadv(unsigned long fd,
+                               const struct iovec __user *vec,
+                               unsigned long vlen,
+			       unsigned long pos_high, unsigned long pos_low);
+asmlinkage ssize_t sys_pwritev(unsigned long fd,
+                               const struct iovec __user *vec,
+                               unsigned long vlen,
+			       unsigned long pos_high, unsigned long pos_low);
 
-a.
+This is the only way I can see that lets us use a shared 
+compat_sys_preadv/pwritev across all 64 bit architectures.
 
--- 
-Aidan Van Dyk                                             Create like a god,
-aidan@highrise.ca                                       command like a king,
-http://www.highrise.ca/                                   work like a slave.
+The libc can then add a trivial wrapper around the syscalls
+to get the regular calling conventions.
 
---aQ0uMxgwPa7LG1Pw
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Aside from that, have you considered doing something even more flexible,
+like this?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+struct piovec {
+	void __user *iov_base;
+	__kernel_size_t	iov_len;
+	__kernel_loff_t pos;
+};
 
-iD8DBQFJQr4/uVxNPsxNPScRAjMeAJ4/eib7YW7bVhX90VQUvoz3RWBwcwCdFR3V
-vufGhdJmRmBJ9gAN69rYfBk=
-=yhGm
------END PGP SIGNATURE-----
+asmlinkage ssize_t sys_pwritev(unsigned long fd,
+                               const struct piovec __user *vec,
+                               unsigned long vlen);
 
---aQ0uMxgwPa7LG1Pw--
+	Arnd <><
