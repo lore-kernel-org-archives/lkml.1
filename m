@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbYLLDfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbYLLDgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757310AbYLLDfA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 22:35:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755628AbYLLDex
+	id S1757484AbYLLDgT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 22:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755628AbYLLDgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 22:34:53 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:52758 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755521AbYLLDew (ORCPT
+	Thu, 11 Dec 2008 22:36:10 -0500
+Received: from smtp120.mail.mud.yahoo.com ([209.191.84.77]:25394 "HELO
+	smtp120.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755521AbYLLDgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 22:34:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NxHsCcArRZ4et/X+Ge2JM+woydQxXoPNA60G6y51/bKT+eL/klm5abkJ5fdvqECvlz
-         RLHkzg3eulqj5mLme+5n7XIbKMyR8/XC31JVHW0mjIprFgJzM02xlGKT5V1i+B+zXuaq
-         JWNJXCHF21HmfF7xc2irCq4bPlC+3v973gsdo=
-Message-ID: <aec7e5c30812111934w50b263e0pe35c1152963fed61@mail.gmail.com>
-Date: Fri, 12 Dec 2008 12:34:50 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] clocksource: add enable() and disable() callbacks
-Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com, lethal@linux-sh.org,
-       tglx@linutronix.de, mingo@redhat.com
-In-Reply-To: <20081211190821.9f4b5a5c.akpm@linux-foundation.org>
+	Thu, 11 Dec 2008 22:36:09 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=Nrh0Y8A/Vb1dI58Eg9K/PPElh1I+JrPIXQRkvWNoTiUkQ3kvlCUF9aXboLP4RvkNTBS+a8jwYZdLBe5CX8M1VlBqNpC3E4dKUy797YkULSDicInK3KzL9tvMM1YQYKXyGzySUN4PzqKdi85r6n+SpG7nTrMpA2EbqOA7XTTP3xI=  ;
+X-YMail-OSG: IQ1aiA4VM1nnbRsUhmln_QvlmfDQ39XNwYTowePg2cixwh3A7mVpT0Z9oyIUOKjpj1eTY4bvsM9i4N7g7VCl4ZJ8ftzbJqVJf3pjGolJjce35r0DQDh34CYSEwNZqRfa7OlhhNsKuzopMgxcrLNDz00LYhBhjWEXnqydeJcO6VaIXKe0n.4MaV7YjBgR
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][v2] fork_init: fix division by zero
+Date: Fri, 12 Dec 2008 13:36:02 +1000
+User-Agent: KMail/1.9.5
+Cc: Al Viro <viro@zeniv.linux.org.uk>, yur@emcraft.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Geert.Uytterhoeven@sonycom.com, dhowells@redhat.com, miltonm@bga.com,
+       wd@denx.de, dzu@denx.de, yanok@emcraft.com
+References: <200812101950.51958.yur@emcraft.com> <200812121331.34602.nickpiggin@yahoo.com.au> <20081211184753.97d0db7a.akpm@linux-foundation.org>
+In-Reply-To: <20081211184753.97d0db7a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081211114909.17624.85712.sendpatchset@rx1.opensource.se>
-	 <20081211190821.9f4b5a5c.akpm@linux-foundation.org>
+Message-Id: <200812121436.03177.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 12:08 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Thu, 11 Dec 2008 20:49:09 +0900 Magnus Damm <magnus.damm@gmail.com> wrote:
+On Friday 12 December 2008 13:47, Andrew Morton wrote:
+> On Fri, 12 Dec 2008 12:31:33 +1000 Nick Piggin <nickpiggin@yahoo.com.au> 
+wrote:
+> > On Friday 12 December 2008 07:43, Andrew Morton wrote:
+> > > On Thu, 11 Dec 2008 20:28:00 +0000
+> > >
+> > > >  Do they actually cross the page boundaries?
+> > >
+> > > Some flavours of slab have at times done an order-1 allocation for
+> > > objects which would fit into an order-0 page (etc) if it looks like
+> > > that will be beneficial from a packing POV.  I'm unsure whether that
+> > > still happens - I tried to get it stamped out for reliability reasons.
+> >
+> > Hmph, SLUB uses order-3 allocations for 832 byte sized objects
+> > by default here (mm struct).
 >
->> From: Magnus Damm <damm@igel.co.jp>
->>
->> Add enable() and disable() callbacks for clocksources. This allows
->> us to put unused clocksources in power save mode. The functions
->> clocksource_enable() and clocksource_disable() wrap the callbacks
->> and are inserted in the timekeeping code to enable before use and
->> disable after switching to a new clocksource.
->>
->> Signed-off-by: Magnus Damm <damm@igel.co.jp>
->> Acked-by: John Stultz <johnstul@us.ibm.com>
->> ---
->>
->>  Same as before, but applies on top of the new read() patch.
->
-> I asusme we'll be seeing some patches which _use_ these changes?
+> That sucks, but at least it's <= PAGE_ALLOC_COSTLY_ORDER.
 
-I've send a few iterations of my SuperH CMT timer patches to the
-linux-sh list, but I'd be happy to post next version to lkml instead
-if you prefer that!
+Which is somewhat arbitrary a value. order-1 is costly compared to
+order-0...
 
-The CMT driver also needs the following patches:
+After running my system here for a while and doing various things
+with it, I have the ability to allocate 898 order-0 pages (3592K),
+or 36 order-3 pages (1152K).
 
-[PATCH] clocksource: pass clocksource to read() callback
-[PATCH][RFC] early platform driver support
+Not as bad as I expected, but the system's only been up for an hour,
+and not exactly doing anything unusual (and it has nearly 30MB free,
+out of 4GB).
 
-Any comments on the early platform driver code?
 
-Thanks,
+> It's fortunate that everyone has more than 128GB of memory.
 
-/ magnus
+And that SLAB still works quite well :)
