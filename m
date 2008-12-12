@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbYLLSWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759842AbYLLS1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759848AbYLLSWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 13:22:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758693AbYLLSWL
+	id S1759842AbYLLS1A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 13:27:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758628AbYLLS0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 13:22:11 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38016 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758376AbYLLSWJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 13:22:09 -0500
-Date: Fri, 12 Dec 2008 18:21:42 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Gerd Hoffmann <kraxel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
-Message-ID: <20081212182142.46dcf220@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081212170347.GR26095@parisc-linux.org>
-References: <1229090440-32120-1-git-send-email-kraxel@redhat.com>
-	<20081212152929.GM26095@parisc-linux.org>
-	<494287D4.2070909@redhat.com>
-	<20081212155113.GO26095@parisc-linux.org>
-	<49428AFD.5090009@redhat.com>
-	<20081212170347.GR26095@parisc-linux.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Dec 2008 13:26:52 -0500
+Received: from sith.mimuw.edu.pl ([193.0.96.4]:45228 "EHLO sith.mimuw.edu.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757802AbYLLS0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 13:26:51 -0500
+Date: Fri, 12 Dec 2008 19:26:50 +0100
+From: Jan Rekorajski <baggins@sith.mimuw.edu.pl>
+To: Manfred Spraul <manfred@colorfullife.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: Nasty regression from .27.7 to .27.8: idle samba goes crazy
+Message-ID: <20081212182650.GA6383@sith.mimuw.edu.pl>
+Mail-Followup-To: Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+	Manfred Spraul <manfred@colorfullife.com>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	linux-kernel@vger.kernel.org, stable@kernel.org
+References: <pan.2008.12.08.06.18.57.357875@wizards.de> <200812080834.22924.rjw@sisk.pl> <pan.2008.12.08.08.07.29.439625@wizards.de> <493D4F5C.7020606@s5r6.in-berlin.de> <493D7349.10200@s5r6.in-berlin.de> <20081208222246.GA29232@sith.mimuw.edu.pl> <20081209123703.043067eb@dhcp-100-2-144.bos.redhat.com> <493FFE5E.2000404@colorfullife.com> <20081212010806.GA1007@sith.mimuw.edu.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081212010806.GA1007@sith.mimuw.edu.pl>
+X-Operating-System: Linux 2.6.26.5 i686
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Dec 2008 10:03:47 -0700
-Matthew Wilcox <matthew@wil.cx> wrote:
+On Fri, 12 Dec 2008, Jan Rekorajski wrote:
 
-> On Fri, Dec 12, 2008 at 05:02:05PM +0100, Gerd Hoffmann wrote:
-> > I'd *really* hate it to have the same system call with different
-> > argument ordering on different systems though.  Especially when swapping
-> > two integer values, so gcc wouldn't error out on wrong usage.
+> On Wed, 10 Dec 2008, Manfred Spraul wrote:
 > 
-> We can always permute it further:
+> >> On Mon, 8 Dec 2008 23:22:46 +0100
+> >> Jan Rekorajski <baggins@sith.mimuw.edu.pl> wrote:
+> >>
+> >>> I think you can safely rule out NIC, I'm also seeing this behaviour on a
+> >>> brand new server with imap hanging in some busy-loop.
+> >>> Network card in my case:
+> >>> Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
+> >>>
+> >>> What I observer was one CPU doing 100% system work, and the number of
+> >>> timer interrupts went from 1k per second to 4k (for the whole system).
+> >>>
+> >>>     
+> > Could you try the attached patch?
+> > It should fix the bug.
 > 
-> int fd, int vlen, loff_t pos, const struct *
+> Thank you, I'm currently running 2.6.27.8 with your patch, I'll report
+> after 12-24 hours.
 
-Or you could add cobol calling syntax or pass the arguments in XML
-format ?
+top - 19:20:59 up 17:22, 34 users,  load average: 0.34, 0.41, 0.33
 
-Any particular reason you want to make things hell for programmers and
-the standard people. Follow the BSD one at least to user space. Anything
-else will just lead to pain and suffering later on the standardisation
-front.
+So, it seems that your patch cured my problem, as that server couldn't
+survive more than 8 hours previously (2-3 was norm).
 
-Alan
+Jan
+-- 
+Jan Rekorajski            |  ALL SUSPECTS ARE GUILTY. PERIOD!
+baggins<at>mimuw.edu.pl   |  OTHERWISE THEY WOULDN'T BE SUSPECTS, WOULD THEY?
+BOFH, MANIAC              |                   -- TROOPS by Kevin Rubio
