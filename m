@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbYLLQgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbYLLQhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758746AbYLLQgE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 11:36:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbYLLQfx
+	id S1759034AbYLLQhX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 11:37:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbYLLQhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 11:35:53 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:42808 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757133AbYLLQfw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 11:35:52 -0500
-Subject: Re: Auto generate .config.
-From: Jon Masters <jonathan@jonmasters.org>
-To: Marcello Henrique <faraohh@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <f5cc88f60812120820i4252962er2fa6d3483c2ae412@mail.gmail.com>
-References: <f5cc88f60812120747w47c762a7qcee62fdfa10d6ac6@mail.gmail.com>
-	 <49428DF8.2090205@diamondcut.com.br>
-	 <f5cc88f60812120820i4252962er2fa6d3483c2ae412@mail.gmail.com>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Fri, 12 Dec 2008 11:34:59 -0500
-Message-Id: <1229099699.7923.4.camel@jcmlaptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Fri, 12 Dec 2008 11:37:10 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:56299 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757408AbYLLQhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 11:37:09 -0500
+Message-ID: <49429332.8030105@sgi.com>
+Date: Fri, 12 Dec 2008 08:37:06 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] x86: fix cpu_mask_to_apicid_and to include cpu_online_mask
+References: <20081211112806.499831000@polaris-admin.engr.sgi.com> <20081211112806.873424000@polaris-admin.engr.sgi.com> <200812122136.34780.rusty@rustcorp.com.au>
+In-Reply-To: <200812122136.34780.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-12 at 14:20 -0200, Marcello Henrique wrote:
-
-> I understand that this is possible, but would not be possible to
-> generate one .config of modules that are running to compile a kernel
-> optimized?
+Rusty Russell wrote:
+> On Thursday 11 December 2008 21:58:08 Mike Travis wrote:
+>> Impact: fix potential problem.
+>>
+>> In determining the destination apicid, there are usually three cpumasks
+>> that are considered: the incoming cpumask arg, cfg->domain and the
+>> cpu_online_mask.  Since we are just introducing the cpu_mask_to_apicid_and
+>> function, make sure it includes the cpu_online_mask in it's evaluation.
 > 
-> The idea is that the kernel of my distribution is too fat and I only
-> generate a kernel module that I use automatically from a kernel fat.
-> understand?
+> Yerk.  Can we really "fail" cpu_mask_to_apicid_and with no repercussions?
+> And does it make sense to try to fix this there?
 
-Several people have written scripts over the years to do this. I don't
-have one handy, but I suspect the LKML (linux-kernel) archives know.
+Fail?  The only failure is if there is not a cpu that satisfies the conjunction
+of the three masks, in which case it returns BAD_APICID.
 
-Note that module overhead is not /too/ bad these days. It used to be
-that loading modules significantly affected boot time, but some recent
-improvements have helped - including a few fixes to module-init-tools:
-binary trie based index files (v3.5), shortened naming (v3.6), etc. I
-think that, really, at this point module loading overhead is small.
+The old procedure was to:
 
-Jon.
+function(..., cpumask_t mask)
+{
+	cpumask_t tmp;
 
+	cpus_and(tmp, mask, cfg->domain);
+	...
+	cpus_and(tmp, tmp, cpu_online_map);
+	dest = cpu_mask_to_apicid(tmp);
+	...
+}
 
+So making cpu_mask_to_apicid_and return:
+
+	dest = cpu_mask_to_apicid(mask1 & mask2 & cpu_online_mask);
+
+maintains this compatibility.
+
+Turns out that there are two functions that did not AND all three masks,
+but those two used TARGET_CPUS as one of the arguments.  All the x86
+variations except NUMAQ, only return TARGET_CPUS which are online
+(and that's probably a mistake in NUMAQ.)  So the above AND'ing is a
+NOP in these cases and harmless.
+
+> 
+> This is not a new problem with the cpumask patches is it?  I toyed with a
+> patch which converts flush_tlb_others, and it actually ensures that those
+> cases never hand an offline mask to cpu_mask_to_apicid_and as a side
+> effect (others still might).
+
+No, I introduced the problem when I added cpu_mask_to_apicid_and(), and I
+wanted to fix it before it was "officially" released.  I've been doing
+benchmark testing with random HOTPLUG off and on events, and it's becoming
+clear that setting the destination apicid to an off line cpu is definitely
+a no-no. ;-)
+
+Thanks,
+Mike
