@@ -1,62 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbYLLLgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbYLLLgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757956AbYLLLgW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 06:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbYLLLgO
+	id S1758266AbYLLLgq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 06:36:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbYLLLgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 06:36:14 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:46877 "EHLO
-	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751391AbYLLLgN (ORCPT
+	Fri, 12 Dec 2008 06:36:37 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:47493 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751391AbYLLLgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 06:36:13 -0500
-X-BigFish: VPS-42(zz1432R62a3L98dR936eQ1805M936fOzzzzz32i6bh43j64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0KBRHJZ-01-33K-01
-Date: Fri, 12 Dec 2008 12:35:20 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Christoph Hellwig <hch@infradead.org>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, eranian@gmail.com,
-       Vince Weaver <vince@deater.net>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [patch] Performance Counters for Linux, v3
-Message-ID: <20081212113520.GF30490@erda.amd.com>
-References: <20081211155230.GA4230@elte.hu> <Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy> <1229070345.12883.12.camel@twins> <7c86c4470812120059s7f8e64a6h91ebeadbf938858d@mail.gmail.com> <1229073834.12883.41.camel@twins> <20081212102111.GE30490@erda.amd.com> <20081212105938.GA2685@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20081212105938.GA2685@infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 12 Dec 2008 11:36:01.0510 (UTC) FILETIME=[CF30F860:01C95C4D]
+	Fri, 12 Dec 2008 06:36:36 -0500
+Subject: Re: [PATCH 01/15] kmemleak: Add the base support
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <84144f020812111401n78f980a3v101b3518ab5a3b20@mail.gmail.com>
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
+	 <20081210182659.30323.43898.stgit@pc1117.cambridge.arm.com>
+	 <84144f020812111401n78f980a3v101b3518ab5a3b20@mail.gmail.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 12 Dec 2008 11:36:17 +0000
+Message-Id: <1229081777.15045.8.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Dec 2008 11:36:18.0022 (UTC) FILETIME=[D9088060:01C95C4D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12.12.08 05:59:38, Christoph Hellwig wrote:
-> On Fri, Dec 12, 2008 at 11:21:11AM +0100, Robert Richter wrote:
-> > I agree with Stephane. There are already many different PMU
-> > descriptions depending on family, model and steppping and with *every*
-> > new cpu revision you will get one more update. Implementing this in
-> > the kernel would require kernel updates where otherwise no changes
-> > would be necessary.
+On Fri, 2008-12-12 at 00:01 +0200, Pekka Enberg wrote:
+> On Wed, Dec 10, 2008 at 8:26 PM, Catalin Marinas
+> <catalin.marinas@arm.com> wrote:
+> > +static void put_object(struct memleak_object *object)
+> > +{
+> > +       if (!atomic_dec_and_test(&object->use_count))
+> > +               return;
+> > +
+> > +       /* should only get here after delete_object was called */
+> > +       BUG_ON(object->flags & OBJECT_ALLOCATED);
 > 
-> Please stop the Bullshit.  You have to update _something_.  It makes a
-> lot of sense to update the thing you need to udpate anyway for new
-> hardware support, and not some piece of junk library like libperfmon.
+> This could be
+> 
+>     if (WARN_ON(object->flags & OBJECT_ALLOCATED))
+>             return;
 
-New hardware does not always mean to implement new hardware
-support. Sometimes it is sufficient to simply program the same
-registers in another way. Why changing the kernel for this?
+I'm not sure just warning would be enough. If this happens, its a severe
+bug in kmemleak and the tool is no longer useful (it could even leak
+memory or free already freed blocks). I could change it to a
+memleak_panic call but if the object use_count isn't reliable, the
+memleak_disable call wouldn't work properly either.
 
--Robert
+> > +static void create_object(unsigned long ptr, size_t size, int min_count,
+> > +                         gfp_t gfp)
+> > +{
+> > +       unsigned long flags;
+> > +       struct memleak_object *object;
+> > +       struct prio_tree_node *node;
+> > +       struct stack_trace trace;
+> > +
+> > +       object = kmem_cache_alloc(object_cache, gfp);
+> > +       if (!object)
+> > +               memleak_panic("kmemleak: Cannot allocate a memleak_object "
+> > +                             "structure\n");
+> 
+> Don't you want to exit early here if object == NULL?
+
+Yes, indeed. That omission was caused by s/panic/memleak_panic/
+
+> > +       if (node != &object->tree_node) {
+> > +               unsigned long flags;
+> > +
+> > +               pr_warning("kmemleak: Existing pointer\n");
+> > +               dump_stack();
+> 
+> How come you don't dump_stack() or even WARN_ON() unconditionally in
+> kmemleak_panic() which is called bit later so you can remove this kind
+> of ad hoc logging?
+
+Yes, I'll unify these via the memleak_panic() macro.
+
+> > +static void delete_object(unsigned long ptr)
+> > +{
+> > +       unsigned long flags;
+> > +       struct memleak_object *object;
+> > +
+> > +       write_lock_irqsave(&memleak_lock, flags);
+> > +       object = lookup_object(ptr, 0);
+> > +       if (!object) {
+> > +               pr_warning("kmemleak: Freeing unknown object at 0x%08lx\n",
+> > +                          ptr);
+> > +               dump_stack();
+> 
+> Hmm, dump_stack() is called in quite a few places. Might make sense to
+> add a memleak_report() function that does this in an uniform way.
+
+Yes.
+
+> > +               write_unlock_irqrestore(&memleak_lock, flags);
+> > +               return;
+> > +       }
+> > +       prio_tree_remove(&object_tree_root, &object->tree_node);
+> > +       list_del_rcu(&object->object_list);
+> > +       write_unlock_irqrestore(&memleak_lock, flags);
+> > +
+> > +       BUG_ON(!(object->flags & OBJECT_ALLOCATED));
+> > +       BUG_ON(atomic_read(&object->use_count) < 1);
+> 
+> These could be converted to WARN_ON() calls, I think?
+
+See my comment above, these are genuine kmemleak bugs and it shouldn't
+just warn. Hopefully they will never happen unless a get/put_object is
+missing.
+
+Thanks.
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Catalin
 
