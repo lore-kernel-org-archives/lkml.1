@@ -1,105 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbYLLHtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYLLHun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756981AbYLLHtU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 02:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbYLLHtI
+	id S1757335AbYLLHun (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 02:50:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbYLLHue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 02:49:08 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:15653 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbYLLHtH (ORCPT
+	Fri, 12 Dec 2008 02:50:34 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:19137 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbYLLHud (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 02:49:07 -0500
-Date: Fri, 12 Dec 2008 08:48:50 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] block: Fix LSF default inconsistency
-Message-ID: <20081212084850.1b56529f@hyperion.delvare>
-In-Reply-To: <20081211125000.GL23742@kernel.dk>
-References: <20081211111614.493d2a62@hyperion.delvare>
-	<20081211104109.GF23742@kernel.dk>
-	<20081211115844.1b1dbf49@hyperion.delvare>
-	<20081211110839.GH23742@kernel.dk>
-	<20081211134438.6d871834@hyperion.delvare>
-	<20081211125000.GL23742@kernel.dk>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 12 Dec 2008 02:50:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=CmxM7AIp884rXpMZ7a0yQ0zf5k1gIb7PfmX3f8vSLv5N7+N0ex8wUkHodieiEJpzHe
+         rhXwR1cZvrexzNKkBXlwp+zaXafKna1h9K60P7/mv+KYd6xW002NLmy5Y3s9TARgmYZK
+         5ze4QMr5LYIUmhaZZcDvRREP2ABbhtf/1BWy0=
+Message-ID: <84144f020812112350m6c5f4ccbyded45b6ca50f699d@mail.gmail.com>
+Date: Fri, 12 Dec 2008 09:50:31 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Ryusuke Konishi" <konishi.ryusuke@lab.ntt.co.jp>
+Subject: Re: [PATCH mmotm 3/5] nilfs2: avoid double error caused by nilfs_transaction_end
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1229059021-9538-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1229059021-9538-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+	 <1229059021-9538-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+	 <1229059021-9538-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+	 <1229059021-9538-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+X-Google-Sender-Auth: f1fc8fb9616dc970
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+Hi Ryusuke,
 
-On Thu, 11 Dec 2008 13:50:01 +0100, Jens Axboe wrote:
-> Oh right, that's pretty dumb. Lets just do the former, then a later
-> patch can replace it completely if wanted.
-> 
-> diff --git a/block/Kconfig b/block/Kconfig
-> index 1ab7c15..a785e65 100644
-> --- a/block/Kconfig
-> +++ b/block/Kconfig
-> @@ -23,22 +23,22 @@ menuconfig BLOCK
->  
->  if BLOCK
->  
-> +config LSF
-> +	bool
-> +
->  config LBD
-> -	bool "Support for Large Block Devices"
-> +	bool "Support for Large Block Devices and files"
+On Fri, Dec 12, 2008 at 7:16 AM, Ryusuke Konishi
+<konishi.ryusuke@lab.ntt.co.jp> wrote:
+> Pekka Enberg pointed out that double error handlings found after
+> nilfs_transaction_end() can be avoided by separating abort operation:
+>
+>  OK, I don't understand this. The only way nilfs_transaction_end() can
+>  fail is if we have NILFS_TI_SYNC set and we fail to construct the
+>  segment. But why do we want to construct a segment if we don't commit?
+>
+>  I guess what I'm asking is why don't we have a separate
+>  nilfs_transaction_abort() function that can't fail for the erroneous
+>  case to avoid this double error value tracking thing?
+>
+> This does the separation and renames nilfs_transaction_end() to
+> nilfs_transaction_commit() for clarification.
+>
+> Since, some calls of these functions were used just for exclusion
+> control against the segment constructor, they are replaced with
+> semaphore operations.
+>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+> Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 
-It might be the right time to drop the extra capital letters, for
-consistency.
+Nice cleanup!
 
->  	depends on !64BIT
-> +	select LSF
->  	help
-> -	  Enable block devices of size 2TB and larger.
-> +	  Enable block devices or files of size 2TB and larger.
->  
->  	  This option is required to support the full capacity of large
->  	  (2TB+) block devices, including RAID, disk, Network Block Device,
->  	  Logical Volume Manager (LVM) and loopback.
-> -
-> -	  For example, RAID devices are frequently bigger than the capacity
-> -	  of the largest individual hard drive.
-> -
-> -	  This option is not required if you have individual disk drives
-> -	  which total 2TB+ and you are not aggregating the capacity into
-> -	  a large block device (e.g. using RAID or LVM).
-> +	
-> +	  This option also enables support for single files larger than
-> +	  2TB.
->  
->  	  If unsure, say N.
->  
-> @@ -57,15 +57,6 @@ config BLK_DEV_IO_TRACE
->  
->  	  If unsure, say N.
->  
-> -config LSF
-> -	bool "Support for Large Single Files"
-> -	depends on !64BIT
-> -	help
-> -	  Say Y here if you want to be able to handle very large files (2TB
-> -	  and larger), otherwise say N.
-> -
-> -	  If unsure, say Y.
-> -
->  config BLK_DEV_BSG
->  	bool "Block layer SG support v4 (EXPERIMENTAL)"
->  	depends on EXPERIMENTAL
-> 
-
-Acked-by: Jean Delvare <khali@linux-fr.org>
-
-As a side note, someone will have to tell me why changing the value of
-option LSF triggers a full kernel rebuild.
-
--- 
-Jean Delvare
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
