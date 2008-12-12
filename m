@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbYLLTtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbYLLTtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752502AbYLLTtU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 14:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYLLTs7
+	id S1754506AbYLLTtw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 14:49:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYLLTti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 14:48:59 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:64779 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754170AbYLLTs5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 14:48:57 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
-Date: Fri, 12 Dec 2008 20:47:30 +0100
-User-Agent: KMail/1.9.9
-Cc: Gerd Hoffmann <kraxel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-References: <1229090440-32120-1-git-send-email-kraxel@redhat.com> <20081212152929.GM26095@parisc-linux.org>
-In-Reply-To: <20081212152929.GM26095@parisc-linux.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 12 Dec 2008 14:49:38 -0500
+Received: from nauticaltech.com ([64.34.252.43]:60426 "EHLO nauticaltech.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751700AbYLLTth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 14:49:37 -0500
+Message-ID: <4942BEC0.2070809@nauticaltech.com>
+Date: Fri, 12 Dec 2008 11:42:56 -0800
+From: Michael Spiegle <mike@nauticaltech.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200812122047.31405.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+obr6Bwgd8AI+RYP0JEnEYw381EHQYmQtW8WU
- UGMsq9uLBLUqpSl2SqOcSODVd7WgGicXllSlBUMCWpYLGAwrnM
- lmB2dy3mHBslONyQrZmoA==
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: bugme-daemon@bugzilla.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [Bugme-new] [Bug 12201] New: long wait in call_usermodehelper()
+ / queue_work() / wait_for_completion()
+References: <bug-12201-10286@http.bugzilla.kernel.org/> <20081211143758.510b51b6.akpm@linux-foundation.org>
+In-Reply-To: <20081211143758.510b51b6.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 December 2008, Matthew Wilcox wrote:
-> Things will go much better if we can prototype these as:
-> 
-> asmlinkage ssize_t sys_preadv(unsigned int fd, const struct iovec __user *vec,
->                                 loff_t pos, unsigned long vlen);
-> asmlinkage ssize_t sys_pwritev(unsigned int fd, const struct iovec __user *vec,
->                                 loff_t pos, unsigned long vlen);
+> It'd be great if you could test something more recent please.
 
-I would vote for doing it the same way as sys_llseek, which avoids
-this issue entirely by passing the upper half of pos sepearately:
+Will do.  It takes a little bit of time to reproduce, so I'll respond 
+now with information from my current kernel and update once the new 
+kernel is running.
+
+> Please attach a copy of the config to
+> http://bugzilla.kernel.org/show_bug.cgi?id=12201
+
+Done: http://bugzilla.kernel.org/attachment.cgi?id=19263
+
+> Please get sysrq working then get us a task trace, so we can see who is
+> sleeping where.  Do this:
+
+Done: http://bugzilla.kernel.org/attachment.cgi?id=19264
+
+I wanted to get the call to /sbin/modprobe in there as well, so I had to 
+do it about 10 times before I could catch it.  I also stopped 
+unimportant processes on that box to eliminate additional variables.
+
+There is one other variable I didn't mention.  The machine is diskless 
+and running on an nfs root.  I have tried to eliminate this variable via 
+simple testing (just running /sbin/modprobe at the commandline returns 
+instantly), but wanted to mention it.
+
+The box was 100% idle before starting the pilot program and running the 
+task trace.  I added gettimeofday() around my socket() call and got 
+about 1290000us - 1490000us on average.  Using a socket() call with 
+protocol NETLINK_ROUTE returns in about 5us - 8us.  Certain other 
+protocol types like NETLINK_FIREWALL also have the same long delay.
 
 
-asmlinkage ssize_t sys_preadv(unsigned long fd,
-                               const struct iovec __user *vec,
-                               unsigned long vlen,
-			       unsigned long pos_high, unsigned long pos_low);
-asmlinkage ssize_t sys_pwritev(unsigned long fd,
-                               const struct iovec __user *vec,
-                               unsigned long vlen,
-			       unsigned long pos_high, unsigned long pos_low);
-
-This is the only way I can see that lets us use a shared 
-compat_sys_preadv/pwritev across all 64 bit architectures.
-
-The libc can then add a trivial wrapper around the syscalls
-to get the regular calling conventions.
-
-Aside from that, have you considered doing something even more flexible,
-like this?
-
-struct piovec {
-	void __user *iov_base;
-	__kernel_size_t	iov_len;
-	__kernel_loff_t pos;
-};
-
-asmlinkage ssize_t sys_pwritev(unsigned long fd,
-                               const struct piovec __user *vec,
-                               unsigned long vlen);
-
-	Arnd <><
+Michael Spiegle
+mike@nauticaltech.com
