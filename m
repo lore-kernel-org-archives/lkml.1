@@ -1,98 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbYLLIZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbYLLI0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757468AbYLLIZc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 03:25:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYLLIZZ
+	id S1757876AbYLLI0K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 03:26:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYLLIZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 03:25:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37274 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750870AbYLLIZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 03:25:24 -0500
-Date: Fri, 12 Dec 2008 09:24:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Eric Anholt <eric@anholt.net>,
-       nix.or.die@googlemail.com, linux-kernel@vger.kernel.org, rjw@sisk.pl,
-       Arjan van de Ven <arjan@infradead.org>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: Linux 2.6.28-rc8
-Message-ID: <20081212082456.GA25106@elte.hu>
-References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain> <49407CE1.9090600@googlemail.com> <1228979963.3254.8.camel@gaiman.anholt.net> <200812111707.20857.elendil@planet.nl> <alpine.LFD.2.00.0812110814360.3340@localhost.localdomain> <20081211163548.GA11859@elte.hu> <alpine.LFD.2.00.0812110902450.3340@localhost.localdomain> <20081211203604.GA14817@elte.hu> <84144f020812111246m7f6470f2n8b09283f54ead81@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020812111246m7f6470f2n8b09283f54ead81@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 12 Dec 2008 03:25:56 -0500
+Received: from viefep11-int.chello.at ([62.179.121.31]:52082 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbYLLIZz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 03:25:55 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [patch] Performance Counters for Linux, v3
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Vince Weaver <vince@deater.net>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
+References: <20081211155230.GA4230@elte.hu>
+	 <Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
+Content-Type: text/plain
+Date: Fri, 12 Dec 2008 09:25:45 +0100
+Message-Id: <1229070345.12883.12.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-12-11 at 13:02 -0500, Vince Weaver wrote:
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> I have at least 60 machines that I do regular performance counter work on. 
+> They involve Pentium Pro, Pentium II, 32-bit Athlon, 64-bit Athlon, 
+> Pentium 4, Pentium D, Core, Core2, Atom, MIPS R12k, Niagara T1, 
+> and PPC/Playstation 3.
 
-> Hi Ingo,
+Good.
+
+> Perfmon3 works for all of those 60 machines.  This new proposal works on a 
+> 2 out of the 60.
+
+s/works/is implemented/
+
+> Who is going to add support for all of those machines?  I've spent a lot 
+> of developer time getting prefmon going for all of those configurations. 
+> But why should I help out with this new inferior proposal?  It could all 
+> be another waste of time.
+
+So much for constructive critisism.. have you tried taking the design to
+its limits, if so, where do you see problems?
+
+I read the above as: I invested a lot of time in something of dubious
+statue (out of tree patch), and now expect it to be merged because I
+have invested in it.
+
+> Also, my primary method of using counters is total aggregate count for a 
+> single user-space process. 
+
+Process, as in single thread, or multi-threaded? I'll assume
+single-thread.
+
+> Can this new infrastructure to this? 
+
+Yes, afaict it can.
+
+You can group counters in v3, a read out of such a group will be an
+atomic read out and provide vectored output that contains all the data
+in one stream.
+
+> I find the documentation/tools support to be very incomplete.
+
+Gosh, what does one expect from something that is hardly a week old..
+
+> One comment on the patch.
+>
+> > +	/*
+> > +	 * Common hardware events, generalized by the kernel:
+> > +	 */
+> > +	PERF_COUNT_CYCLES		=  0,
+> > +	PERF_COUNT_INSTRUCTIONS		=  1,
+> > +	PERF_COUNT_CACHE_REFERENCES	=  2,
+> > +	PERF_COUNT_CACHE_MISSES		=  3,
+> > +	PERF_COUNT_BRANCH_INSTRUCTIONS	=  4,
+> > +	PERF_COUNT_BRANCH_MISSES	=  5,
 > 
-> On Thu, Dec 11, 2008 at 10:36 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > ok. In this case i'd suggest we should just remove the warning. People do
-> > get scared by needless kernel stack dumps - no matter whether it's marked
-> > informational or not.
-> >
-> > So how about the patch below, queued up in tip/x86/debug? Arjan, what do
-> > you think?
-> 
-> How come we don't put it under CONFIG_X86_DEBUG or something and hide 
-> somewhere in the "Kernel debugging" menu?
+> Many machines do not support these counts.  For example, Niagara T1 does 
+> not have a CYCLES count.  And good luck if you think you can easily come 
+> up with something meaningful for the various kind of CACHE_MISSES on the 
+> Pentium 4.  Also, the Pentium D has various flavors of retired instruction 
+> count with slightly different semantics.  This kind of abstraction should 
+> be done in userspace.
 
-okay - how about the following then instead - we still keep the warning, 
-but do various things to make it appear less scary.
+I'll argue to disagree, sure such events might not be supported by any
+particular hardware implementation - but the fact that PAPI gives a list
+of 'common' events means that they are, well, common. So unifying them
+between those archs that do implement them seems like a sane choice, no?
 
-	Ingo
+For those archs that do not support it, it will just fail to open. No
+harm done.
 
------------------>
->From 8808500f26a61757cb414da76b271bbd09d5958c Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 12 Dec 2008 09:20:12 +0100
-Subject: [PATCH] x86: soften multi-BAR mapping sanity check warning message
-
-Impact: make debug warning less scary
-
-The ioremap() time multi-BAR map warning has been causing false
-positives:
-
-  http://lkml.org/lkml/2008/12/10/432
-  http://lkml.org/lkml/2008/12/11/136
-
-So make it less scary by making it once-per-boot, by making it KERN_INFO
-and by adding this text:
-
-  "Info: mapping multiple BARs. Your kernel is fine."
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/ioremap.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index d4c4307..bd85d42 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -223,7 +223,8 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 	 * Check if the request spans more than any BAR in the iomem resource
- 	 * tree.
- 	 */
--	WARN_ON(iomem_map_sanity_check(phys_addr, size));
-+	WARN_ONCE(iomem_map_sanity_check(phys_addr, size),
-+		  KERN_INFO "Info: mapping multiple BARs. Your kernel is fine.");
- 
- 	/*
- 	 * Don't allow anybody to remap normal RAM that we're using..
+The proposal allows for you to specify raw hardware events, so you can
+just totally ignore this part of the abstraction.
 
