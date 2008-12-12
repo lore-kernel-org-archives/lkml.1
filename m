@@ -1,124 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbYLLL1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757767AbYLLL3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757333AbYLLL1o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 06:27:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbYLLL1f
+	id S1757767AbYLLL3w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 06:29:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbYLLL3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 06:27:35 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:63851 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751391AbYLLL1e (ORCPT
+	Fri, 12 Dec 2008 06:29:44 -0500
+Received: from viefep13-int.chello.at ([62.179.121.33]:50764 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751391AbYLLL3n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 06:27:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=yCJStJNz8/QNWtly188gPsvRA0Z55uyCpDcQLhDq1I7TENhMhMnentsHoWL013FXRi
-         UlyzRFGkZAXInf8q8gPmx0lACtKoSHUL3o50IcO5CuMmgEK5Xw772uZphCaODmE9D4W/
-         HFuvUtS2WBSSlEZkOvXofRlzOIBtgTt6PQpEM=
-Message-ID: <c62985530812120327l369abf7eud17e2a06c7d2bd12@mail.gmail.com>
-Date: Fri, 12 Dec 2008 12:27:32 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 0/3] tracing/function-graph-tracer: signal interrupt triggering on output
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081212101448.GE18152@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 12 Dec 2008 06:29:43 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH] percpu_counter: use local_t and atomic_long_t if
+ possible
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Theodore Tso <tytso@mit.edu>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, Mingming Cao <cmm@us.ibm.com>,
+       linux-ext4@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <49424637.3010107@cosmosbay.com>
+References: <4936D287.6090206@cosmosbay.com>
+	 <20081209214921.b3944687.akpm@linux-foundation.org>
+	 <49404925.7090902@cosmosbay.com> <200812121847.06432.rusty@rustcorp.com.au>
+	 <49424637.3010107@cosmosbay.com>
+Content-Type: text/plain
+Date: Fri, 12 Dec 2008 12:29:37 +0100
+Message-Id: <1229081377.12883.134.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <493EF64D.50804@gmail.com> <493EF797.7090603@gmail.com>
-	 <20081212101448.GE18152@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/12 Ingo Molnar <mingo@elte.hu>:
->
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
->
->> Frederic Weisbecker wrote:
->> > This patchset adds all the features to draw hardirq triggering on output
->> > for the function graph tracer.
->> > An example is given on the third patch.
->> >
->> > Just one question, on recordmcount.pl:
->> >
->> > my %text_sections = (
->> >       ".text" => 1,
->> >       ".sched.text" => 1,
->> >       ".spinlock.text" => 1,
->> >
->> > The .sched.text section is included inside .text, it's a subsection, I'm not sure
->> > it's necessary to add it in text_sections. In doubt I added the new .irqentry.text
->> >
->> > The stat of the patchset:
->> >
->> >  arch/x86/kernel/apic.c               |    3 +-
->> >  arch/x86/kernel/irq_64.c             |    3 +-
->> >  arch/x86/kernel/vmlinux_64.lds.S     |    1 +
->> >  include/asm-generic/vmlinux.lds.h    |   10 +++++
->> >  include/linux/ftrace.h               |   11 ++++++
->> >  kernel/trace/trace_functions_graph.c |   66 +++++++++++++++++++++++++++++++--
->> >  scripts/recordmcount.pl              |    1 +
->> >  7 files changed, 89 insertions(+), 6 deletions(-)
->
-> applied to tip/tracing/function-graph-tracer, thanks Frederic!
->
-> The output looks really nice.
->
->        Ingo
->
+On Fri, 2008-12-12 at 12:08 +0100, Eric Dumazet wrote:
+> After discussions on percpu_counter subject, I cooked following patch
+> 
+> My goals were :
+> 
+> - IRQ safe percpu_counter (needed for net-next-2.6)
+> z- 64bit platforms can avoid spin_lock and reduce size of percpu_counter
+> - No increase of API
+> 
+> Final result, on x86_64, __percpu_counter_add() is really fast and irq safe :
 
-Thanks :-)
+> Changes are :
+> 
+> We use local_t instead of s32 for the local storage (for each cpu)
 
-If anyone  has other needs or suggestions about this tracer, don't
-hesitate to request it.
-I remember Peter suggested that the preempt count could be output.
-Actually, to make the things more humans, I would suggest to simply
-output the fact that preempt is disabled or not.
+do enough arches have a sane enough local_t implementation so this
+doesn't make things worse for them?
 
-I could for example give three more fields with one letter for each
-(as a default-off trace option):
+> We use atomic_long_t instead of s64 on 64bit arches, to avoid spin_lock.
+> 
+> On 32bit arches, we guard the shared s64 value with an irqsafe spin_lock.
+> As this spin_lock is not taken in fast path, this should not make a real
+> difference.
 
-_interrupt disabled
-_preempt disabled
-_in atomic context
+Cycles are cycles, and spin_lock_irqsave is more expensive than
+spin_lock_irq is more expensive than spin_lock, but sure, it looks good.
 
-I guess those could help for the -rt tree for example.
-What do you think?
+I really like the code, however my worry is that we don't regress weird
+archs too much.
 
-When I worked on this hardirq signal, I wanted to print the current
-code context for each function:
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> ---
+>  include/linux/percpu_counter.h |   38 +++++++++--
+>  lib/percpu_counter.c           |  104 ++++++++++++++++++-------------
+>  2 files changed, 94 insertions(+), 48 deletions(-)
+> 
+> diff --git a/include/linux/percpu_counter.h b/include/linux/percpu_counter.h
+> index 9007ccd..f5133ce 100644
+> --- a/include/linux/percpu_counter.h
+> +++ b/include/linux/percpu_counter.h
+> @@ -12,16 +12,42 @@
+>  #include <linux/threads.h>
+>  #include <linux/percpu.h>
+>  #include <linux/types.h>
+> +#include <asm/local.h>
+>  
+>  #ifdef CONFIG_SMP
+>  
+> +#ifdef CONFIG_64BIT
+> +struct s64_counter {
+> +	atomic_long_t val;
+> +};
+> +
+> +static inline s64 s64c_read(struct s64_counter *c)
+> +{
+> +	return atomic_long_read(&c->val);
+> +}
+> +#else
+> +struct s64_counter {
+> +	spinlock_t	lock;
+> +	s64		val;
+> +};
+> +
+> +static inline s64 s64c_read(struct s64_counter *c)
+> +{
+> +	/*
+> +	 * Previous percpu_counter implementation used to
+> +	 * read s64 without locking. Thats racy.
+> +	 */
 
-Interrupt:
-_ Hardirq
-_ Softirq (with subclasses like tasklets)
-_ Nmi (not yet traced, if there are still plans for the ring buffer to
-be lockless, that will be easy).
+Does this comment have any value besides archelogical? but yeah, that
+was a known issue, there were some seqlock patches floating around
+trying to address this.
 
-Task:
-_Syscall
-_Workqueue
-_kernel thread
+Here I'd suggest taking that lock and fixing that race.
 
-But actually, those things are easy to find if the current task/pid is
-output. "ksoftirqd", "events" are here to give
-the hints about the softirq and workqueue context. Syscalls are easy
-to find along the code flow. Kernel threads are
-recognized through their name. And hardirqs have their arrows....
+> +	return c->val;
+> +}
+> +
+> +#endif
 
-But if you think such a column could be useful for you or anyone, just tell me.
+> diff --git a/lib/percpu_counter.c b/lib/percpu_counter.c
+> index b255b93..6ef4a44 100644
+> --- a/lib/percpu_counter.c
+> +++ b/lib/percpu_counter.c
+> @@ -14,35 +14,58 @@ static LIST_HEAD(percpu_counters);
+>  static DEFINE_MUTEX(percpu_counters_lock);
+>  #endif
+>  
+> +#ifdef CONFIG_64BIT
+> +static inline void s64c_add(s64 amount, struct s64_counter *c)
+> +{
+> +	atomic_long_add(amount, &c->val);
+> +}
+> +
+> +static inline void s64c_set(struct s64_counter *c, s64 amount)
+> +{
+> +	atomic_long_set(&c->val, amount);
+> +}
+> +
+> +#else
+> +
+> +static inline void s64c_add(s64 amount, struct s64_counter *c)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&c->lock, flags);
+> +	c->val += amount;
+> +	spin_unlock_irqrestore(&c->lock, flags);
+> +}
+> +
+> +static inline void s64c_set(struct s64_counter *c, s64 amount)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&c->lock, flags);
+> +	c->val = amount;
+> +	spin_unlock_irqrestore(&c->lock, flags);
+> +}
+> +#endif /* CONFIG_64BIT */
 
-There is still some work remaining, the braces on leaf functions have
-to disappear on the trace_pipe (but it requires
-to read the ring-buffer on more than one entry forward, just two actually).
+Since they're inline's anyway, does it look better to stick them in the
+header along with s64c_read() ?
 
-And a port to other archs. I will try to acquire a low cost arm board
-if I can (I wouldn't feel comfortable with qemu).
+>  void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
+>  {
+>  	int cpu;
+>  
+> +	for_each_possible_cpu(cpu)
+> +		local_set(per_cpu_ptr(fbc->counters, cpu), 0);
+> +	s64c_set(&fbc->counter, amount);
+>  }
 
-Anyway, most of these things will be for 2.6.30 I guess :-)
+Did we document somewhere that this function is racy and only meant as
+initialization?
+
+> +void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, long batch)
+>  {
+> +	long count;
+> +	local_t *pcount;
+> +
+> +	pcount = per_cpu_ptr(fbc->counters, get_cpu());
+> +	count = local_add_return(amount, pcount);
+> +	if (unlikely(count >= batch || count <= -batch)) {
+> +		local_sub(count, pcount);
+> +		s64c_add(count, &fbc->counter);
+>  	}
+>  	put_cpu();
+>  }
+
+very neat.
+
+
+> @@ -91,8 +111,13 @@ int percpu_counter_init_irq(struct percpu_counter *fbc, s64 amount)
+>  	int err;
+>  
+>  	err = percpu_counter_init(fbc, amount);
+> -	if (!err)
+> -		lockdep_set_class(&fbc->lock, &percpu_counter_irqsafe);
+> +#ifndef CONFIG_64BIT
+> +	if (!err) {
+> +		static struct lock_class_key percpu_counter_irqsafe;
+> +
+> +		lockdep_set_class(&fbc->counter.lock, &percpu_counter_irqsafe);
+> +	}
+> +#endif
+
+Since they're all irqsafe can this be removed?
+
+>  	return err;
+>  }
+
+
