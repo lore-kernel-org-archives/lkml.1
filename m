@@ -1,104 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759843AbYLLSLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbYLLSLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759843AbYLLSLT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 13:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759296AbYLLSKy
+	id S1759925AbYLLSLl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 13:11:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbYLLSLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 13:10:54 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:41755 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758964AbYLLSKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 13:10:53 -0500
-Message-ID: <4942A92A.2010306@sgi.com>
-Date: Fri, 12 Dec 2008 10:10:50 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 12 Dec 2008 13:11:31 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:32473 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758566AbYLLSLa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 13:11:30 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:cc:
+	content-type:content-transfer-encoding;
+	b=XemHPWp1v9qnihZX1ZwTe30Xo6QZfavAHhcGN1La1D3hCwOvGXTs9Kj9jc2kEf5xj
+	3Ol3CyHXJWcy+iIOLBDTw==
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] x86: fix assign_irq_vector boot up problem
-References: <20081211112806.499831000@polaris-admin.engr.sgi.com> <20081211112806.740820000@polaris-admin.engr.sgi.com> <200812121857.55929.rusty@rustcorp.com.au> <20081212092041.GH25106@elte.hu>
-In-Reply-To: <20081212092041.GH25106@elte.hu>
+Date: Fri, 12 Dec 2008 10:11:26 -0800
+Message-ID: <35c90d960812121011u6ced652xde4fb5315288a745@mail.gmail.com>
+Subject: Clock control of a Bluetooth UART via hci_ll.c
+From: Nick Pelly <npelly@google.com>
+To: linux-kernel@vger.kernel.org
+Cc: alan@redhat.com
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Rusty Russell <rusty@rustcorp.com.au> wrote:
-> 
->> On Thursday 11 December 2008 21:58:07 Mike Travis wrote:
->>> Impact: fix boot up problem.
->>>
->>> Fix a problem encountered with the Intel SATA-AHCI disk driver
->>> right at system startup.  Cpumask_intersects really needs to be
->>> a 3-way intersect, and since we need a cpumask_var_t later on,
->>> then just use it for the 3-way intersect as well.
->> This one looks fine.
->>
->> My plan was for Ingo to pull that for-ingo tree into his cpus4096 tree 
->> and take the x86 patches from there.  But he hasn't so maybe I should 
->> take this chance to fold that patch in?
-> 
-> i have no objections against the bits - just the sparseirq complication 
-> came in. A lot of effort went into irq/sparseirq's io_apic.c changes and 
-> cleanup.
-> 
-> So to do this cleanly, i merged those bits into cpus4096 and the 
-> x86/reboot bits as well - now the plan would be for Mike to send a 
-> (rebased) series against that base. I tried a plain merge and the 
-> conflicts in io_apic.c were a horrendous 76 rejects due to the 
-> irq/sparseirq interaction. Also, some of the commits subjects looked a 
-> bit raw so this bit of the tree needs to be redone.
-> 
-> (Note that the existing cpumask-base+scheduler bits in cpus4096 are 
-> golden already and we dont have to touch them in any way, it's just the 
-> new x86 bits and new cpumask infrastructure bits that look odd or 
-> clashy.)
-> 
-> 	Ingo
+Hi,
 
-I have the merged result for io_apic and I believe it should also be
-very clean in respect that it maintains the logic of of both patchsets
-accurately. (About 6 hours to work through the complete file.)
+On embedded architectures we need to perform clk_enable() and
+clk_disable() on the bluetooth uart when the bluetooth chip enters and
+exists low power mode. This needs to be independent of traditional
+linux cpu suspend/resume modes that correspond to the linux CPU power
+state, because many Bluetooth chips (eg TI BRF6300) have low power
+modes that are independent of the linux cpu..
 
-What I'm confused about is how I'm to send this re-basing?  Do you only
-want the patches in:
+drivers/bluetooth/hci_ll.c knows when the bt chip has entered low
+power mode, as it
+contains the HCILL state machine. But the clk_enable() and
+clk_disable() should be done from the uart driver since that driver
+owns the uart clock.
 
-	.../pub/scm/linux/kernel/git/rusty/linux-2.6-for-ingo.git
+The question is - what interface should hci_ll.c use to tell the uart
+driver when to enter and exit low power modes?
 
-And I've no clue how to cause a git tree to rebase.  What I can do is extract
-them into quilt patches, reapply and fix conflicts, and then send them
-(as quilt patches).  I'll do that today, and if you need a git tree to pull from,
-then we'll figure out how to do that (with Rusty's help as again, I do not
-have an external source to provide one.)
+Right now we call new functions in our uart driver directly from
+hci_ll.c. We know this not going to get accepted upstream, because we
+have bypassed the tty and serial_core layers. We are looking for a
+better designed solution, which I expect would have to pass through
+these layers and use an existing uart_ops (serial_core.h).
 
-Also, you mention in separate mail:
+A requirements for this interface are that it cannot sleep (hci_ll.c
+needs to make these clock requests while holding a spinlock). This
+eliminates many uart_ops including .ioctl (uart_ioctl() grabs a
+mutex).
 
-    Please tidy up the commit logs of new cpumask bits and dont leave bits in 
-    it like:
+.pm is no good because it gets called during suspend() and resume().
 
-     e861b55: cpumask: Add CONFIG_CPUMASK_OFFSTACK
-     65bda29: cpumask:clock_event_device-takes-cpumask-ptr
-     07d73a8: cpumask:irq-functions-take-cpumask_t-ptr
-     01fdd7d: cpumask:convert-few-difficult-cpumask_t-users
-     9cc67bb: cpumask:centralize-common-maps
+>From our investigation, the only really promising option amongst the
+existing set of uart_ops seems to be to use .set_termios with a baud
+rate of zero. It seems API compliant for the uart driver to then
+clk_disable().
 
-These patches went in via linux-next/rr, and are not part of the x86 patchset that
-I'm working on.  I can only offer to help resolve the conflicts though again, I'm
-not sure how I send them to you?  Would it be the commit from a "merge conflict
-resolution" sent as a git-bundle?  [I've not done this yet so I'm really guessing.]
+clk_enable() could be triggered by hci_ll.c by restoring the old baud
+rate. Unfortunately this means hci_ll would need to track the old baud
+rate. Also, wakeup can occur via RX traffic on the bluetooth chip in
+which case the uart driver needs to trigger the clk_enable(). It would
+have to restore the baud rate itself, which may not be API friendly.
+It also leaves the question of what happens if userspace changes the
+baud rate while the uart is clocked off.
 
-The tree for these changes are in:
+So this approach has its issues, but is the only workable solution we
+have right now that uses an existing uart operation.
 
-	.../pub/scm/linux/kernel/git/rusty/linux-2.6-cpumask.git
+Any thoughts on this approach? Any other ideas?
 
-and they include many, many non-x86 arch files, so sending them to you is not what
-should be done, yes?
-
-Rusty - can you fix these subject lines in your git tree?
-
-Thanks!
-Mike
+Thanks,
+Nick
