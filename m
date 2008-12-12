@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbYLLFlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbYLLFuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757887AbYLLFlx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 00:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbYLLFlp
+	id S1757195AbYLLFuT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 00:50:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbYLLFuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 00:41:45 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36646 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750703AbYLLFlp (ORCPT
+	Fri, 12 Dec 2008 00:50:05 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59272 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbYLLFuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 00:41:45 -0500
-Date: Thu, 11 Dec 2008 21:40:21 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Miller <davem@davemloft.net>
-cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.28-rc8
-In-Reply-To: <20081211.191949.05090709.davem@davemloft.net>
-Message-ID: <alpine.LFD.2.00.0812112138510.3340@localhost.localdomain>
-References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain> <24401.1229009346@redhat.com> <20081211.191949.05090709.davem@davemloft.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 12 Dec 2008 00:50:04 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH] vmscan: skip freeing memory from zones with lots free
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <493D82A6.9070104@redhat.com>
+References: <20081208220016.53FB.KOSAKI.MOTOHIRO@jp.fujitsu.com> <493D82A6.9070104@redhat.com>
+Message-Id: <20081212144445.297A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Fri, 12 Dec 2008 14:50:00 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 11 Dec 2008, David Miller wrote:
-
-> From: David Howells <dhowells@redhat.com>
-> Date: Thu, 11 Dec 2008 15:29:06 +0000
+> Index: linux-2.6.28-rc7/include/linux/mmzone.h
+> ===================================================================
+> --- linux-2.6.28-rc7.orig/include/linux/mmzone.h        2008-12-02 
+> 15:04:33.000000000 -0500
+> +++ linux-2.6.28-rc7/include/linux/mmzone.h     2008-12-08 
+> 15:24:25.000000000 -0500
+> @@ -58,7 +58,6 @@ static inline int get_pageblock_migratet
 > 
-> > Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > 
-> > >  (a) just make the -rc's go on a few more weeks, and do 2.6.28 after xmas
-> > > 
-> > >      I like this, because alledgely people are debugging things, and we'd 
-> > >      get a more stable 2.6.28.
-> > 
-> > Which would perhaps mean that the merge window is open during LCA, which will
-> > be inconvenient for some people.  On the other hand, it might put the culprits
-> > where you can lay your hands on them.
+>   struct free_area {
+>          struct list_head        free_list[MIGRATE_TYPES];
+> -       unsigned long           nr_free;
+>   };
 > 
-> That happened in Melbourne and it wasn't pleasant.  Instead
-> of enjoying talks at the conference some of us were stressing
-> out on our laptops dealing with our merges instead.
+>   struct pglist_data;
+> @@ -296,6 +295,7 @@ struct zone {
+>          seqlock_t               span_seqlock;
+>   #endif
+>          struct free_area        free_area[MAX_ORDER];
+> +       struct nr_free          [MAX_ORDER];
+> 
+>   #ifndef CONFIG_SPARSEMEM
+>          /*
 
-Yes. I definitely want to close the 29 merge window before LCA. In fact, I 
-want to close it far enough before that we can fix up any worst issues.
+mesurement result:
 
-Which does argue for opening it up during the holidays, I guess. 
+% tbench 8
 
-		Linus
+                 2.6.28-rc6              +rvr free area restructure
+
+	throughput     max latency	throughput	max latency
+	------------------------------------------------------------
+	1480.920 	20.896 		742.470 	 30.401 
+	1483.940 	19.202		791.648 	635.623 
+	1478.930 	22.215		733.433 	 92.515 
+
+avg	1481.263 	20.771		755.850 	252.846 
+std	   2.060 	 1.233		 25.580 	271.849 
+min	1478.930 	19.202		733.433 	 30.401 
+max	1483.940 	22.215		791.648 	635.623 
+
+
+I think nick is right. I drop this idea.
+
+
+
+
