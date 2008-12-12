@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYLLF5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbYLLGWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbYLLF5i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 00:57:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYLLF53
+	id S1757215AbYLLGWj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 01:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYLLGW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 00:57:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55406 "EHLO mx2.mail.elte.hu"
+	Fri, 12 Dec 2008 01:22:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35529 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbYLLF52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 00:57:28 -0500
-Date: Fri, 12 Dec 2008 06:57:17 +0100
+	id S1751411AbYLLGW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 01:22:29 -0500
+Date: Fri, 12 Dec 2008 07:22:00 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Robert Richter <robert.richter@amd.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/9] oprofile: port to the new ring buffer
-Message-ID: <20081212055717.GB12451@elte.hu>
-References: <1229013723-8191-1-git-send-email-robert.richter@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, eranian@googlemail.com,
+       dada1@cosmosbay.com, robert.richter@amd.com, arjan@infradead.org,
+       hpa@zytor.com, a.p.zijlstra@chello.nl, paulus@samba.org,
+       davem@davemloft.net
+Subject: Re: [patch] Performance Counters for Linux, v3
+Message-ID: <20081212062200.GD12451@elte.hu>
+References: <20081211155230.GA4230@elte.hu> <20081211103504.73ecabdd.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229013723-8191-1-git-send-email-robert.richter@amd.com>
+In-Reply-To: <20081211103504.73ecabdd.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,26 +37,36 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Robert Richter <robert.richter@amd.com> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> This patch set ports cpu buffers in oprofile to the new ring buffer 
-> provided by the tracing framework. The motivation here is to leave the 
-> pain of implementing ring buffers to others. Oh, no, there are more 
-> advantages. Main reason is the support of different sample sizes that 
-> could be stored in the buffer. Use cases for this are IBS and Cell spu 
-> profiling. Using the new ring buffer ensures valid and complete samples 
-> and allows copying the cpu buffer stateless without knowing its 
-> content. Second it will use generic kernel API and also reduce code 
-> size. And hopefully, there are less bugs.
+> On Thu, 11 Dec 2008 16:52:30 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> The patch set is also available here:
+> > To: linux-kernel@vger.kernel.org
+> > Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Stephane Eranian <eranian@googlemail.com>, Eric Dumazet <dada1@cosmosbay.com>, Robert Richter <robert.richter@amd.com>, Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git ring_buffer
+> Please copy perfctr-devel@lists.sourceforge.net on all this.  That is 
+> where the real-world people who use these facilities on a regular basis 
+> hang out.
 
-Pulled into tip/oprofile, thanks Robert - very nice stuff!
+Sure, we'll do that for v4.
 
-I've changed the exports to _GPL because these are really internal APIs 
-with a high flux, so the practical requirement for code relying on it to 
-be in-tree (or at least be source-available) is evident.
+The reason we kept posting this to lkml initially was because there is a 
+visible detachment of this community from kernel developers. And that is 
+at least in part because this stuff has never been made interesting 
+enough to kernel developers. I dont remember a _single_ perfmon-generated 
+profile (be that user-space or kernel-space) in my mailbox before - and 
+optimizing the kernel is supposed to be one of the most important aspects 
+of performance tuning.
+
+That's why we concentrate on making this useful and interesting to kernel 
+developers too via KernelTop, that's why we made the BTS/[PEBS] hardware 
+tracer available via an ftrace plugin, etc.
+
+Furthermore, kernel developers tend to be quite good at co-designing, 
+influencing [and flaming ;-) ] such APIs at the early prototype stages, 
+so the main early technical feedback we were looking for on the kernel 
+side structure was lkml. But the wider community is not ignored either, 
+of course - with v4 it might be useful already for wider circulation.
 
 	Ingo
