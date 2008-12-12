@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759415AbYLLSot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbYLLSsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759415AbYLLSot (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 13:44:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbYLLSol
+	id S1759448AbYLLSsf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 13:48:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbYLLSs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 13:44:41 -0500
-Received: from 65-115-68-195.dia.static.qwest.net ([65.115.68.195]:30393 "EHLO
-	chronus.3leafnetworks.corp" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757884AbYLLSok (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 13:44:40 -0500
-X-Greylist: delayed 910 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Dec 2008 13:44:40 EST
-Date: Fri, 12 Dec 2008 10:29:29 -0800
-From: Scott Lurndal <scott.lurndal@3leafsystems.com>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
-Message-ID: <20081212182929.GA9631@pendragon.3leafnetworks.com>
-References: <1229090440-32120-1-git-send-email-kraxel@redhat.com> <20081212152929.GM26095@parisc-linux.org> <494287D4.2070909@redhat.com> <20081212155113.GO26095@parisc-linux.org> <49428AFD.5090009@redhat.com>
+	Fri, 12 Dec 2008 13:48:26 -0500
+Received: from sh.osrg.net ([192.16.179.4]:49019 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756249AbYLLSsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 13:48:25 -0500
+Date: Sat, 13 Dec 2008 03:48:08 +0900 (JST)
+Message-Id: <20081213.034808.104867584.ryusuke@osrg.net>
+To: andi@firstfloor.org
+Cc: konishi.ryusuke@lab.ntt.co.jp, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH mmotm 1/5] nilfs2: fix problems of memory allocation in
+ ioctl
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <871vwdcxo1.fsf@basil.nowhere.org>
+References: <1229059021-9538-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+	<1229059021-9538-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+	<871vwdcxo1.fsf@basil.nowhere.org>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49428AFD.5090009@redhat.com>
-User-Agent: Mutt/1.4.2.2i
-X-OriginalArrivalTime: 12 Dec 2008 18:29:29.0584 (UTC) FILETIME=[91F4A700:01C95C87]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 05:02:05PM +0100, Gerd Hoffmann wrote:
-> Matthew Wilcox wrote:
-> > On the other hand, NetBSD have approximately 0% market share.
-> > We shouldn't let them lock us into making a bad decision.  Is there
-> > anyone other than NetBSD who has added these syscalls?
+Hi, 
+On Fri, 12 Dec 2008 14:47:58 +0100, Andi Kleen <andi@firstfloor.org> wrote:
+> Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp> writes:
 > 
-> Free- and OpenBSD have it too.  For Solaris I've found a feature request
-> only.  Dunno about MacOS/Darwin.  Other un*xes which are important these
-> days?
+> > The current memory copy function of nilfs2 ioctl has following
+> > problems:
 > 
-> I'd *really* hate it to have the same system call with different
-> argument ordering on different systems though.  Especially when swapping
-> two integer values, so gcc wouldn't error out on wrong usage.
+> Wouldn't it be easier/faster/more reliable to just use vmalloc for
+> those allocations?  The only reason to use kmalloc for such large
+> allocations would be if you want to do direct DMA (but even there are
+> ways to do this using virtual allocations and scatter-gather)
+> 
+> -Andi
 
-I would suggest that from the end-users perspective, the user-mode API
-should be similar to pread/pwrite, e.g:
+Thanks. Using vmalloc seems worthy of consideration.
+I'll try to rewrite and test it to confirm whether it can make the
+code simpler and robust enough.
 
-    int preadv(fd, iovec, iovec_size, offset)
+By the way, is there any recommended way to exchange such a large
+amount of data items between user space and kernel space?
 
-scott
+In the current interface, each data item is copied twice: one is to
+the allocated memory from user space (via copy_from_user), and another
+is to on-memory structures or to buffers/pages from the allocated
+memory.
+
+This looks somehow inefficient.
+
+Regards,
+Ryusuke
