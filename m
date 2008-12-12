@@ -1,77 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbYLLBtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbYLLB7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757836AbYLLBtV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 20:49:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbYLLBtC
+	id S1757911AbYLLB7U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 20:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbYLLB7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 20:49:02 -0500
-Received: from mail.tpi.com ([198.107.51.143]:2195 "EHLO mail.tpi.com"
+	Thu, 11 Dec 2008 20:59:09 -0500
+Received: from gw.goop.org ([64.81.55.164]:48219 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755210AbYLLBtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 20:49:00 -0500
-Message-ID: <4941C301.3050909@canonical.com>
-Date: Thu, 11 Dec 2008 17:48:49 -0800
-From: Tim Gardner <tim.gardner@canonical.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	id S1756466AbYLLB7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 20:59:08 -0500
+Message-ID: <4941C568.4070207@goop.org>
+Date: Thu, 11 Dec 2008 17:59:04 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-To: Michael Halcrow <mhalcrow@us.ibm.com>
-CC: Duane Griffin <duaneg@dghda.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Boaz Harrosh <bharrosh@panasas.com>,
-       Mike.Halcrow.mhalcrow@us.ibm.com,
-       Phillip.Hellewell.phillip@hellewell.homeip.net,
-       ecryptfs-devel@lists.sourceforge.net, stable@kernel.org
-Subject: Re: [PATCH] eCryptfs: check readlink result was not an error	before
- using it
-References: <1229022995-9898-1-git-send-email-duaneg@dghda.com> <1229022995-9898-2-git-send-email-duaneg@dghda.com> <1229022995-9898-3-git-send-email-duaneg@dghda.com> <20081211193228.GA13627@halcrowt61p.lan>
-In-Reply-To: <20081211193228.GA13627@halcrowt61p.lan>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH RFC] vm_unmap_aliases: allow callers to inhibit TLB flush
+References: <49416494.6040009@goop.org> <200707241052.13825.nickpiggin@yahoo.com.au>
+In-Reply-To: <200707241052.13825.nickpiggin@yahoo.com.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Halcrow wrote:
-> On Thu, Dec 11, 2008 at 07:16:26PM +0000, Duane Griffin wrote:
->> The result from readlink is being used to index into the link name
->> buffer without checking whether it is a valid length. If readlink
->> returns an error this will fault or cause memory corruption.
+Nick Piggin wrote:
+> Hi,
+>
+> On Friday 12 December 2008 06:05, Jeremy Fitzhardinge wrote:
+>   
+>> Hi Nick,
 >>
->> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-> 
-> Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
-> 
->> ---
->>  fs/ecryptfs/inode.c |    3 ++-
->>  1 files changed, 2 insertions(+), 1 deletions(-)
->>
->> diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
->> index 89209f0..5e78fc1 100644
->> --- a/fs/ecryptfs/inode.c
->> +++ b/fs/ecryptfs/inode.c
->> @@ -673,10 +673,11 @@ static void *ecryptfs_follow_link(struct dentry *dentry, struct nameidata *nd)
->>  	ecryptfs_printk(KERN_DEBUG, "Calling readlink w/ "
->>  			"dentry->d_name.name = [%s]\n", dentry->d_name.name);
->>  	rc = dentry->d_inode->i_op->readlink(dentry, (char __user *)buf, len);
->> -	buf[rc] = '\0';
->>  	set_fs(old_fs);
->>  	if (rc < 0)
->>  		goto out_free;
->> +	else
->> +		buf[rc] = '\0';
->>  	rc = 0;
->>  	nd_set_link(nd, buf);
->>  	goto out;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+>> In Xen when we're killing the lazy vmalloc aliases, we're only concerned
+>> about the pagetable references to the mapped pages, not the TLB entries.
+>>     
+>
+> Hm? Why is that? Why wouldn't it matter if some page table page gets
+> written to via a stale TLB?
+>   
 
-Please add 'Cc: stable@kernel.org' in the commit message. This looks
-like a good candidate.
+No.  Well, yes, it would, but Xen itself will do whatever tlb flushes 
+are necessary to keep it safe (it must, since it doesn't trust guest 
+kernels).  It's fairly clever about working out which cpus need flushing 
+and if other flushes have already done the job.
 
-rtg
--- 
-Tim Gardner tim.gardner@canonical.com
+>> For the most part eliminating the TLB flushes would be a performance
+>> optimisation, but there's at least one case where we need to shoot down
+>> aliases in an interrupt-disabled section, so the TLB shootdown IPIs
+>> would potentially deadlock.
+>>     
+>
+> So... 2.6.28 is deadlocky for you?
+>   
+
+No.  The deadlock is in the new dom0 code I'm working on.  I haven't 
+posted it yet (well, it hasn't been merged).
+
+In this case, I'm swizzling the physical pages underlying a piece of 
+guest pseudo-physical memory so that it is physically contiguous and/or 
+under the device limit, so I can set up DMA buffers, swiotlb memory, 
+etc.  This requires removing the mappings to the old pages and replacing 
+them with new mappings, but I need to make sure the old pages have no 
+other aliases before I can release them back to Xen.  (This can all 
+happen in dma_alloc_coherent in a device driver with interrupts 
+disabled, so the IPI causes deadlock warnings.)
+
+The TLB is irrelevant because Xen will make sure any stale entries are 
+flushed appropriately before giving those pages out to any other domain.
+
+>> I'm wondering what your thoughts are about this approach?
+>>     
+>
+> Doesn't work, because that's allowing virtual addresses to be reused
+> before they have TLBs flushed.
+>   
+
+Right, I see.  It's a question of flush on unmap or flush on map.
+
+> You could have a xen specific function which goes through the lazy maps
+> and unmaps their page tables, but leaves them in the virtual address
+> allocator (so a subsequent lazy flush will still do the TLB flush before
+> allowing the addresses to be reused).
+>   
+
+Yes, that would work.
+
+    J
