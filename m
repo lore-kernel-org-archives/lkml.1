@@ -1,127 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbYLLJxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbYLLJzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758203AbYLLJxq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 04:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbYLLJxi
+	id S1758404AbYLLJzd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 04:55:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbYLLJz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 04:53:38 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57998 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756694AbYLLJxh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 04:53:37 -0500
-Date: Fri, 12 Dec 2008 18:43:41 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>, nishimura@mxp.nes.nec.co.jp
-Subject: Re: [BUGFIX][PATCH mmotm] memcg fix swap accounting leak
-Message-Id: <20081212184341.b62903a7.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20081212172930.282caa38.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081212172930.282caa38.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 12 Dec 2008 04:55:26 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52497 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756486AbYLLJzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 04:55:25 -0500
+Message-ID: <494234B0.5@cn.fujitsu.com>
+Date: Fri, 12 Dec 2008 17:53:52 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched: fix another race when reading /proc/sched_debug
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(add CC: Hugh Dickins <hugh@veritas.com>)
+I fixed an oops with the following commit:
 
-On Fri, 12 Dec 2008 17:29:30 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Fix swap-page-fault charge leak of memcg.
-> 
-> Now, memcg has hooks to swap-out operation and checks SwapCache is really
-> unused or not. That check depends on contents of struct page.
-> I.e. If PageAnon(page) && page_mapped(page), the page is recoginized as
-> still-in-use.
-> 
-> Now, reuse_swap_page() calles delete_from_swap_cache() before establishment
-> of any rmap. Then, in followinig sequence
-> 
-> 	(Page fault with WRITE)
-> 	Assume the page is SwapCache "on memory (still charged)"
-> 	try_charge() (charge += PAGESIZE)
-> 	commit_charge()
-> 	   => (Check page_cgroup and found PCG_USED bit, charge-=PAGE_SIZE
-> 	       because it seems already charged.)
-> 	reuse_swap_page()
-> 		-> delete_from_swapcache()
-> 			-> mem_cgroup_uncharge_swapcache() (charge -= PAGESIZE)
-> 	......
-> 
-> too much uncharge.....
-> 
-> To avoid this,  move commit_charge() after page_mapcount() goes up to 1.
-> By this,
->         Assume the page is SwapCache "on memory"
-> 	try_charge()		(charge += PAGESIZE)
-> 	reuse_swap_page()	(may charge -= PAGESIZE if PCG_USED is set)
-> 	commit_charge()		(Ony if page_cgroup is marked as PCG_USED,
-> 				 charge -= PAGESIZE)
-> Accounting will be correct.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+| commit 24eb089950ce44603b30a3145a2c8520e2b55bb1
+| Author: Li Zefan <lizf@cn.fujitsu.com>
+| Date:   Thu Nov 6 12:53:32 2008 -0800
+|
+|    cgroups: fix invalid cgrp->dentry before cgroup has been completely removed
+|
+|    This fixes an oops when reading /proc/sched_debug.
 
-I've confirmed that the problem you reported offline is fixed, but...
+The above commit fixed a race that reading /proc/sched_debug may access
+NULL cgrp->dentry if a cgroup is being removed.
 
-> ---
->  mm/memory.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: mmotm-2.6.28-Dec11/mm/memory.c
-> ===================================================================
-> --- mmotm-2.6.28-Dec11.orig/mm/memory.c
-> +++ mmotm-2.6.28-Dec11/mm/memory.c
-> @@ -2433,17 +2433,17 @@ static int do_swap_page(struct mm_struct
->  	 * which may delete_from_swap_cache().
->  	 */
->  
-The comment here says:
+But I found there's another different race, in that reading sched_debug
+may access a cgroup which hasn't been completed created, and thus
+dereference NULL cgrp->dentry!
 
-        /*
-         * The page isn't present yet, go ahead with the fault.
-         *
-         * Be careful about the sequence of operations here.
-         * To get its accounting right, reuse_swap_page() must be called
-         * while the page is counted on swap but not yet in mapcount i.e.
-         * before page_add_anon_rmap() and swap_free(); try_to_free_swap()
-         * must be called after the swap_free(), or it will never succeed.
-         * And mem_cgroup_commit_charge_swapin(), which uses the swp_entry
-         * in page->private, must be called before reuse_swap_page(),
-         * which may delete_from_swap_cache().
-         */
+cgroup_create()
+  cpu_cgroup_create()
+    register_fair_sched_group()
+      list_add_rcu(...)
+				print_cfs_stats()
+				  for_each_leaf_cfs_rq()
+				    print_cfs_rq()
+				      cgroup_path()
+  cgroup->dentry = dentry;
 
-Hmm.. should we save page->private before calling reuse_swap_page and pass it
-to mem_cgroup_commit_charge_swapin(I think it cannot be changed because the page
-is locked)?
+task_group is added to the global list before the cgroup has been created
+completely, if at this time print_cfs_stats() is called, it will access
+the half-created cgroup.
 
+This patch fixes the bug by holding cgroup_lock() to wait the cgroup to
+be created completely before calling cgroup_path().
 
-Thanks,
-Daisuke Nishimura. 
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
 
-> -	mem_cgroup_commit_charge_swapin(page, ptr);
->  	inc_mm_counter(mm, anon_rss);
->  	pte = mk_pte(page, vma->vm_page_prot);
->  	if (write_access && reuse_swap_page(page)) {
->  		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
->  		write_access = 0;
->  	}
-> -
->  	flush_icache_page(vma, page);
->  	set_pte_at(mm, address, page_table, pte);
->  	page_add_anon_rmap(page, vma, address);
-> +	/* It's better to call commit-charge after rmap is established */
-> +	mem_cgroup_commit_charge_swapin(page, ptr);
->  
->  	swap_free(entry);
->  	if (vm_swap_full() || (vma->vm_flags & VM_LOCKED) || PageMlocked(page))
-> 
+The patch is based on linus's git tree, and should go into 2.6.28,
+but it conflicts with the cleanup patch in sched/core:
+	0a0db8f5c9d4bbb9bbfcc2b6cb6bce2d0ef4d73d
+
+---
+ kernel/sched_debug.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+index 26ed8e3..01abf5b 100644
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -127,8 +127,11 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
+ 	if (tg)
+ 		cgroup = tg->css.cgroup;
+ 
+-	if (cgroup)
++	if (cgroup) {
++		cgroup_lock();
+ 		cgroup_path(cgroup, path, sizeof(path));
++		cgroup_unlock();
++	}
+ 
+ 	SEQ_printf(m, "\ncfs_rq[%d]:%s\n", cpu, path);
+ #else
+@@ -181,8 +184,11 @@ void print_rt_rq(struct seq_file *m, int cpu, struct rt_rq *rt_rq)
+ 	if (tg)
+ 		cgroup = tg->css.cgroup;
+ 
+-	if (cgroup)
++	if (cgroup) {
++		cgroup_lock();
+ 		cgroup_path(cgroup, path, sizeof(path));
++		cgroup_unlock();
++	}
+ 
+ 	SEQ_printf(m, "\nrt_rq[%d]:%s\n", cpu, path);
+ #else
+-- 
+1.5.4.rc3
