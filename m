@@ -1,114 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbYLLPzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbYLLPz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758789AbYLLPzo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 10:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbYLLPze
+	id S1757773AbYLLPz6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 10:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758591AbYLLPzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 10:55:34 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:47327 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757267AbYLLPzd (ORCPT
+	Fri, 12 Dec 2008 10:55:43 -0500
+Received: from fk-out-0910.google.com ([209.85.128.186]:50238 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758379AbYLLPzl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 10:55:33 -0500
-Date: Fri, 12 Dec 2008 15:56:02 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Oleg Nesterov <oleg@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Jay Lan <jlan@sgi.com>,
-       Jiri Pirko <jpirko@redhat.com>, Jonathan Lim <jlim@sgi.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RESEND] introduce get_mm_hiwater_xxx(), fix
- taskstats->hiwater_xxx accounting
-In-Reply-To: <20081212140524.GA29488@redhat.com>
-Message-ID: <Pine.LNX.4.64.0812121553530.19722@blonde.anvils>
-References: <20081212140524.GA29488@redhat.com>
+	Fri, 12 Dec 2008 10:55:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=PbB0BcOofvPmoSpjYFuDem7ofy2lmioiBJp1aOrOkcR/YBuw5e5Sk9X/g65x4BsizQ
+         Mmzh/nUXxNDERg/YiQOoIWXUoGj8OKhRR0J8E+6tWPrhdg9sYBU7ZGUyicic+s4OIZ4a
+         ++y0lLl5Z7IenUthSI71WOI/qlyTyM4/S0QaI=
+Message-ID: <f5cc88f60812120747w47c762a7qcee62fdfa10d6ac6@mail.gmail.com>
+Date: Fri, 12 Dec 2008 13:47:36 -0200
+From: "Marcello Henrique" <faraohh@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Auto generate .config.
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Dec 2008, Oleg Nesterov wrote:
+Hello all,
 
-> (changes: update the changelog/comments)
-> 
-> xacct_add_tsk() relies on do_exit()->update_hiwater_xxx() and uses
-> mm->hiwater_xxx directly, this leads to 2 problems:
-> 
-> 	- taskstats_user_cmd() can call fill_pid()->xacct_add_tsk()
-> 	  at any moment before the task exits, so we should check the
-> 	  current values of rss/vm anyway.
-> 
-> 	- do_exit()->update_hiwater_xxx() calls are racy. An exiting
-> 	  thread can be preempted right before mm->hiwater_xxx = new_val,
-> 	  and another thread can use A_LOT of memory and exit in between.
-> 	  When the first thread resumes it can be the last thread in the
-> 	  thread group, in that case we report the wrong hiwater_xxx
-> 	  values which do not take A_LOT into account.
-> 
-> Introduce get_mm_hiwater_rss() and get_mm_hiwater_vm() helpers and
-> change xacct_add_tsk() to use them. The first helper will also be
-> used by rusage->ru_maxrss accounting.
-> 
-> Kill do_exit()->update_hiwater_xxx() calls. Unless we are going to
-> decrease rss/vm there is no point to update mm->hiwater_xxx, and
-> nobody can look at this mm_struct when exit_mmap() actually unmaps
-> the memory.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Is possible to generate .config automatically, for example: I use one
+distribution with many modules a default for any distribution, however
+I use only some of them. I want to optimize my kernel without select
+all modules with make menuconfig. I want generate this file from just
+run default kernel. This is possible?
 
-Acked-by: Hugh Dickins <hugh@veritas.com>
+How make to generate the file .config from my distribution to compile
+new optimized kernel?
 
-> 
-> --- K-28/include/linux/sched.h~HIWATER	2008-12-02 17:12:40.000000000 +0100
-> +++ K-28/include/linux/sched.h	2008-12-03 18:17:18.000000000 +0100
-> @@ -388,6 +388,9 @@ extern void arch_unmap_area_topdown(stru
->  		(mm)->hiwater_vm = (mm)->total_vm;	\
->  } while (0)
->  
-> +#define get_mm_hiwater_rss(mm)	max((mm)->hiwater_rss, get_mm_rss(mm))
-> +#define get_mm_hiwater_vm(mm)	max((mm)->hiwater_vm, (mm)->total_vm)
-> +
->  extern void set_dumpable(struct mm_struct *mm, int value);
->  extern int get_dumpable(struct mm_struct *mm);
->  
-> --- K-28/kernel/tsacct.c~HIWATER	2008-10-10 00:13:53.000000000 +0200
-> +++ K-28/kernel/tsacct.c	2008-12-03 18:24:28.000000000 +0100
-> @@ -90,8 +90,8 @@ void xacct_add_tsk(struct taskstats *sta
->  	mm = get_task_mm(p);
->  	if (mm) {
->  		/* adjust to KB unit */
-> -		stats->hiwater_rss   = mm->hiwater_rss * PAGE_SIZE / KB;
-> -		stats->hiwater_vm    = mm->hiwater_vm * PAGE_SIZE / KB;
-> +		stats->hiwater_rss   = get_mm_hiwater_rss(mm) * PAGE_SIZE / KB;
-> +		stats->hiwater_vm    = get_mm_hiwater_vm(mm)  * PAGE_SIZE / KB;
->  		mmput(mm);
->  	}
->  	stats->read_char	= p->ioac.rchar;
-> --- K-28/kernel/exit.c~HIWATER	2008-12-02 17:12:40.000000000 +0100
-> +++ K-28/kernel/exit.c	2008-12-03 18:21:06.000000000 +0100
-> @@ -1048,10 +1048,7 @@ NORET_TYPE void do_exit(long code)
->  				preempt_count());
->  
->  	acct_update_integrals(tsk);
-> -	if (tsk->mm) {
-> -		update_hiwater_rss(tsk->mm);
-> -		update_hiwater_vm(tsk->mm);
-> -	}
-> +
->  	group_dead = atomic_dec_and_test(&tsk->signal->live);
->  	if (group_dead) {
->  		hrtimer_cancel(&tsk->signal->real_timer);
-> --- K-28/mm/mmap.c~HIWATER	2008-12-02 17:12:40.000000000 +0100
-> +++ K-28/mm/mmap.c	2008-12-11 09:13:07.000000000 +0100
-> @@ -2103,7 +2103,7 @@ void exit_mmap(struct mm_struct *mm)
->  	lru_add_drain();
->  	flush_cache_mm(mm);
->  	tlb = tlb_gather_mmu(mm, 1);
-> -	/* Don't update_hiwater_rss(mm) here, do_exit already did */
-> +	/* update_hiwater_rss(mm) here? but nobody should be looking */
->  	/* Use -1 here to ensure all VMAs in the mm are unmapped */
->  	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
->  	vm_unacct_memory(nr_accounted);
+Thanks for any helps!
+--
+Marcello Henrique
+Associação Software Livre de Goiás (www.aslgo.org.br)
+Cercomp - UFG (www.cercomp.ufg.br)
