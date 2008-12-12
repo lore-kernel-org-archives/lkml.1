@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYLLTYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbYLLT0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbYLLTYx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 14:24:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYLLTYn
+	id S1753740AbYLLT0X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 14:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYLLT0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 14:24:43 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:57447 "EHLO
+	Fri, 12 Dec 2008 14:26:10 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:59837 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751596AbYLLTYm (ORCPT
+	with ESMTP id S1751320AbYLLT0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 14:24:42 -0500
-Message-ID: <4942BA85.3070408@vlnb.net>
-Date: Fri, 12 Dec 2008 22:24:53 +0300
+	Fri, 12 Dec 2008 14:26:08 -0500
+Message-ID: <4942BADE.5010907@vlnb.net>
+Date: Fri, 12 Dec 2008 22:26:22 +0300
 From: Vladislav Bolkhovitin <vst@vlnb.net>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 CC: linux-scsi@vger.kernel.org,
        James Bottomley <James.Bottomley@HansenPartnership.com>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -24,99 +24,58 @@ CC: linux-scsi@vger.kernel.org,
        Boaz Harrosh <bharrosh@panasas.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH][RFC 2/23]: SCST core
-References: <494009D7.4020602@vlnb.net> <49400ACD.3070502@vlnb.net> <20081210191213.GA15273@uranus.ravnborg.org> <49414DBE.6070801@vlnb.net> <20081211210917.GB27010@uranus.ravnborg.org>
-In-Reply-To: <20081211210917.GB27010@uranus.ravnborg.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+       Bart Van Assche <bart.vanassche@gmail.com>, netdev@vger.kernel.org,
+       Rafiu Fakunle <rafiu@openfiler.com>
+Subject: Re: [PATCH][RFC 21/23]: iSCSI target driver
+References: <494009D7.4020602@vlnb.net>  <49401205.8010207@vlnb.net> <1229036109.4153.585.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1229036109.4153.585.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/7VFuLRaMNxGdkXMC6UJ4fdN9L5Ei1IPjt4wL
- bHXxO/wVLZmAp+r4mDy9OHT00tBXdPLCrK9dECYzHact3B7jTL
- h+z//v0etdrQI+mJ+qs0Q==
+X-Provags-ID: V01U2FsdGVkX19B0sgFMp7GF6Mt5UtI+zTqAsfgJQOZbyIlJHG
+ ZOYDQYqTCjStxejXKDLkNnN2UZdBAV38RGiYljHzCS3Ke6BGpx
+ WI2JfAthDt0QUkUrzFe+g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
->>>>  drivers/scst/scst_lib.c      | 3689 
->>>>  +++++++++++++++++++++++++++++++++++++
->>>>  drivers/scst/scst_main.c     | 1919 +++++++++++++++++++
->>>>  drivers/scst/scst_module.c   |   69
->>>>  drivers/scst/scst_priv.h     |  513 +++++
->>>>  drivers/scst/scst_targ.c     | 5458 
->>>>  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->>>>  8 files changed, 12435 insertions(+)
->>> There was a lot af TRACE_ENTRY() / TRACE_EXIT() noise.
->>> We should have proper tools for that by now (I hope).
->> Sorry, I don't see such tools with, for instance, a possibility to be 
->> compiled out in non-debug builds.
+Nicholas A. Bellinger wrote:
+> On Wed, 2008-12-10 at 22:01 +0300, Vladislav Bolkhovitin wrote:
+>> This patch contains iSCSI-SCST target driver. This driver is a heavily 
+>> modified forked with all respects IET 
+>> (http://iscsitarget.sourceforge.net). Modifications were aimed to make a 
+>> clearer, more reviewable and maintainable code as well as to fix many 
+>> problems and make many improvements. See 
+>> http://scst.sourceforge.net/target_iscsi.html for more details.
 >>
->> From one side, I can agree, those TRACE_ENTRY()/TRACE_EXIT() statements 
->> *may* look like a noise (I personally don't notice them), but, from 
->> other side, in past times they have proved how usable they are. If an 
->> SCST user has a problem, I simply ask him to make a debug build, then 
->> enable entry_exit and some other logging levels, then reproduce the 
->> problem and send me the logs. Then in most cases I can see what's wrong 
->> and provide a fix without additional actions and questions.
+>> It has split user/kernel space architecture, where all management, 
+>> sessions creation, parameters negotiation, etc. made in user space and 
+>> data are transferred in the kernel space. Such architecture for iSCSI 
+>> processing was many times acknowledged as the right one. Particularly, 
+>> in-kernel iSCSI initiator (open-iscsi) has such architecture.
+>>
 > 
-> I had ftrace in mind but it has not hit mainline yet.
-> But will do before this patchset does.
+> Just as with the Open/iSCSI Initiator, IMHO I believe the split
+> architecture design is difficult both to improve, debug and maintain,
+> and provides *ZERO* additional benefit in the context of traditional
+> iSCSI target mode for doing login and connection/session setup in
+> userspace.
+> 
+> Also, I appericate that you spent alot of time porting over IET code to
+> your engine, but during our previous discussion you did not seem
+> terribly interested in validation against core-iscsi-dv
+> (http://linux-iscsi.org/index.php/Core-iscsi-dv) to test RFC-3720
+> interopt and stability.  Because the Core-iSCSI Initiator supports every
+> possible parameter combination up to ErrorRecoveryLevel=0 defined in
+> RFC-3720, the Core-iSCSI-Dv tests can run badblocks (or any too) to
+> check data integrity for *EVERY* possible traditional iSCSI key
+> combination and functionality for your iSCSI-SCST work, and any type of
+> serious iSCSI-SCST production deployments.
 
-Unfortunately, ftrace at the moment can't fully replace 
-TRACE_ENTRY()/TRACE_EXIT() statements, because it lacks:
+The fact that nobody so far cared to do all those complicated and time 
+consuming rather academic tests doesn't mean that iSCSI-SCST won't pass 
+them. IET/iSCSI-SCST have been used for a long time in very different 
+setups, including xBSD and Solaris initiators on non-x86 architectures, 
+without any problems.
 
-1. Doing trace in only some modules or source files. Noise from tracing 
-of the whole kernel is not needed if we investigate problem in only one 
-module (SCST in this case).
-
-2. Ability to inject own messages in the output stream. It's needed to 
-have synchronized stream of output messages about both functions tracing 
-and what those functions doing. For instance:
-
-entry in func1()
-adding cmd C to list L
-exit from func1()
-
-Otherwise there would be 2 traces:
-
-entry in func1()
-exit from func1()
-
-and
-
-adding cmd C to list L
-
-which almost impossible to merge to analyze.
-
-(Steven Rostedt added on CC)
-
->>> We often ask for exported symbols to be documented - so one has
->>> a slight idea of their purpose.
->> They are documented, near their prototypes in the public header files, 
->> particularly, scst.h. It was done so, because it was supposed that one, 
->> writing a target driver or dev handler will have on hands the header 
->> files, not source code.
->>
->> Should we move those comments from the functions prototypes to the 
->> functions definitions?
-> If there will be multiple implmentations of the same prototype
-> we generally recommend to stick the comment in a .H file.
-> But otherwise keep it close to the source it describe with the
-> minimal hope that it gets updated.
-
-OK, we will move descriptions of functions from prototypes to definitions.
-
-> Oh - and we do not distribute a stripped down headers only
-> version of the kernel. Users will see full kernel source.
-
-Those headers are not stripped down. Better analogy is with C++ private 
-and public class interfaces. Public SCST headers have public symbols for 
-external modules (target drivers mainly), but private headers are for 
-internal SCST use only. They are needed to better draw a boundary 
-between public and internal private interfaces.
-
-Thanks,
 Vlad
 
