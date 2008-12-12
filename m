@@ -1,90 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbYLLUuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbYLLUxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755155AbYLLUuy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 15:50:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYLLUun
+	id S1754759AbYLLUxP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 15:53:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYLLUw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 15:50:43 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:52172 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752944AbYLLUum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 15:50:42 -0500
-Date: Fri, 12 Dec 2008 14:50:40 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86 : UV fix for global physical addresses
-Message-ID: <20081212205040.GA25739@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Fri, 12 Dec 2008 15:52:59 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34079 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752555AbYLLUw7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 15:52:59 -0500
+Date: Fri, 12 Dec 2008 15:52:56 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       fweisbec <fweisbec@gmail.com>
+Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
+In-Reply-To: <20081212204724.GA26194@localhost>
+Message-ID: <alpine.DEB.1.10.0812121552360.19351@gandalf.stny.rr.com>
+References: <20081212184136.GB14192@localhost> <1229113167.32623.12.camel@localhost.localdomain> <20081212204724.GA26194@localhost>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a UV bug related to generating global memory addresses
-on partitioned systems. Partition systems do not have physical memory
-at address 0. Instead, a chunk of high memory is remapped by the chipset
-so that it appears to be at address 0. This remapping is INVISIBLE to most
-of the OS. The only OS functions that need to be aware of the remaping are
-functions that directly interface to the chipset. The GRU is one example.
 
-Also, delete a couple of unused macros related to global memory addresses.
+On Fri, 12 Dec 2008, Cyrill Gorcunov wrote:
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+> [Steven Rostedt - Fri, Dec 12, 2008 at 03:19:27PM -0500]
+> | 
+> ... 
+> | > 
+> | > Ah, the patch is on top of -tip e3bdf48
+> | 
+> | If you have tested this with and without dynamic ftrace, for both the
+> | function tracer and the function graph tracer, then you have my...
+> | 
+> | Acked-by: Steven Rostedt <srostedt@redhat.com>
+> | 
+> | -- Steve
+> ...
+> 
+> Thanks Steven! Actually just catched a bug :) I placed
+> these macros under CONFIG_DYNAMIC_FTRACE but have them
+> used even if it was undefined -- will fix shortly.
+> 
+> Well... I think the macros should be placed in differen
+> location (maybe in header) to not overload the source.
 
+You can put them in arch/x86/include/asm/ftrace.h That's assembly safe.
 
----
- arch/x86/include/asm/uv/uv_hub.h |   16 ++--------------
- arch/x86/kernel/genx2apic_uv_x.c |    3 +--
- 2 files changed, 3 insertions(+), 16 deletions(-)
+-- Steve
 
-Index: linux/arch/x86/include/asm/uv/uv_hub.h
-===================================================================
---- linux.orig/arch/x86/include/asm/uv/uv_hub.h	2008-12-08 08:29:29.000000000 -0600
-+++ linux/arch/x86/include/asm/uv/uv_hub.h	2008-12-11 16:16:19.000000000 -0600
-@@ -211,7 +211,7 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
- static inline unsigned long uv_soc_phys_ram_to_gpa(unsigned long paddr)
- {
- 	if (paddr < uv_hub_info->lowmem_remap_top)
--		paddr += uv_hub_info->lowmem_remap_base;
-+		paddr |= uv_hub_info->lowmem_remap_base;
- 	return paddr | uv_hub_info->gnode_upper;
- }
- 
-@@ -219,19 +219,7 @@ static inline unsigned long uv_soc_phys_
- /* socket virtual --> UV global physical address */
- static inline unsigned long uv_gpa(void *v)
- {
--	return __pa(v) | uv_hub_info->gnode_upper;
--}
--
--/* socket virtual --> UV global physical address */
--static inline void *uv_vgpa(void *v)
--{
--	return (void *)uv_gpa(v);
--}
--
--/* UV global physical address --> socket virtual */
--static inline void *uv_va(unsigned long gpa)
--{
--	return __va(gpa & uv_hub_info->gpa_mask);
-+	return uv_soc_phys_ram_to_gpa(__pa(v));
- }
- 
- /* pnode, offset --> socket virtual */
-Index: linux/arch/x86/kernel/genx2apic_uv_x.c
-===================================================================
---- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-12-11 13:27:24.000000000 -0600
-+++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-12-11 16:19:24.000000000 -0600
-@@ -535,8 +535,7 @@ void __init uv_system_init(void)
- 		uv_blade_info[blade].nr_possible_cpus++;
- 
- 		uv_cpu_hub_info(cpu)->lowmem_remap_base = lowmem_redir_base;
--		uv_cpu_hub_info(cpu)->lowmem_remap_top =
--					lowmem_redir_base + lowmem_redir_size;
-+		uv_cpu_hub_info(cpu)->lowmem_remap_top = lowmem_redir_size;
- 		uv_cpu_hub_info(cpu)->m_val = m_val;
- 		uv_cpu_hub_info(cpu)->n_val = m_val;
- 		uv_cpu_hub_info(cpu)->numa_blade_id = blade;
