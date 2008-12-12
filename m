@@ -1,82 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbYLLTNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbYLLTNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753546AbYLLTNT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 14:13:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbYLLTNF
+	id S1752402AbYLLTNn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 14:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYLLTNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 14:13:05 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38080 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbYLLTNC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 14:13:02 -0500
-Date: Fri, 12 Dec 2008 19:07:28 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Scott Lurndal <scott.lurndal@3leafsystems.com>
-Cc: Gerd Hoffmann <kraxel@redhat.com>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
-Message-ID: <20081212190728.GC5774@flint.arm.linux.org.uk>
-Mail-Followup-To: Scott Lurndal <scott.lurndal@3leafsystems.com>,
-	Gerd Hoffmann <kraxel@redhat.com>, Matthew Wilcox <matthew@wil.cx>,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	Ulrich Drepper <drepper@redhat.com>
-References: <1229090440-32120-1-git-send-email-kraxel@redhat.com> <20081212152929.GM26095@parisc-linux.org> <494287D4.2070909@redhat.com> <20081212155113.GO26095@parisc-linux.org> <49428AFD.5090009@redhat.com> <20081212182929.GA9631@pendragon.3leafnetworks.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 12 Dec 2008 14:13:32 -0500
+Received: from virgo.iok.hu ([212.40.97.103]:57056 "EHLO virgo.iok.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751026AbYLLTNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 14:13:31 -0500
+Date: Fri, 12 Dec 2008 19:53:47 +0100
+From: Miklos Vajna <vmiklos@frugalware.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Simplified GIT usage guide
+Message-ID: <20081212185347.GK5691@genesis.frugalware.org>
+References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="PyWBHxIrsGpYNMFw"
 Content-Disposition: inline
-In-Reply-To: <20081212182929.GA9631@pendragon.3leafnetworks.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 10:29:29AM -0800, Scott Lurndal wrote:
-> On Fri, Dec 12, 2008 at 05:02:05PM +0100, Gerd Hoffmann wrote:
-> > Matthew Wilcox wrote:
-> > > On the other hand, NetBSD have approximately 0% market share.
-> > > We shouldn't let them lock us into making a bad decision.  Is there
-> > > anyone other than NetBSD who has added these syscalls?
-> > 
-> > Free- and OpenBSD have it too.  For Solaris I've found a feature request
-> > only.  Dunno about MacOS/Darwin.  Other un*xes which are important these
-> > days?
-> > 
-> > I'd *really* hate it to have the same system call with different
-> > argument ordering on different systems though.  Especially when swapping
-> > two integer values, so gcc wouldn't error out on wrong usage.
-> 
-> I would suggest that from the end-users perspective, the user-mode API
-> should be similar to pread/pwrite, e.g:
-> 
->     int preadv(fd, iovec, iovec_size, offset)
 
-Yes, and that's easy for glibc to achieve.
+--PyWBHxIrsGpYNMFw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-What's hard is that the user <-> kernel API firstly has a limited number
-of registers available to it for passing arguments without indirection
-from user space into kernel space.
+On Fri, Dec 12, 2008 at 06:28:27PM +0000, David Howells <dhowells@redhat.com> wrote:
+> + (1) File objects.
+> +
+> +     A file object contains the contents of a source file and the attributes of
+> +     that file (such as file mode).
 
-Secondly, the user <-> kernel argument register allocation can vary
-depending on the ABI version which user space or kernel space is built
-for.  On ARM we have two ABIs, one where 64-bit arguments can be placed
-in any two consecutive registers, and one where 64-bit arguments must
-be placed in an even,odd register pair (not an odd,even pair.)
+This is incorrect, a 'blob' contains only the contents of the blob, the
+file mode is stored in the 'tree' object.
 
-That leads to the above being:
+> + (2) Directory objects.
+> +
+> +     A directory object contains the attributes of that directory plus a list
+> +     of file and directory objects that are members of this directory.  The
+> +     list includes the names of the entries within that directory and the
+> +     object ID of each object.
+> +
+> + (3) Commit objects.
+> +
+> +     A commit object contains the attribute of that commit (the author and the
+> +     date for instance), a textual description of the change imposed by that
+> +     commit as provided by the committer, a list of object IDs for the commits
+> +     on which this commit is based, and the object ID of the root directory
+> +     object representing the result of this commit.
+> +
+> +     Note that a commit does not literally describe the changes that have been
+> +     made in the way that, say, a diff file does; it merely carries the current
+> +     state of the sources after that change, and points to the commits that
+> +     describe the state of the sources before that change.  GIT's tools then
+> +     infer the changes when asked.
+> +
+> +     A commit object will typically refer to one base commit when someone has
+> +     merely committed some changes on top of the current state, and two base
+> +     commits when a couple of trees have been merged.
 
-fd	r0	r0
-iovec	r1	r1
-vecsz	r2	r2
-offset	r3,r4	r4,r5
+Is there any reason you hide the tag object?
 
-Notice the different register allocation for the 64-bit offset.
+> +where %HOUR is the hour you want it to go off every day.  For my local mirror
+> +of Linus's upstream kernel, I use:
+> +
+> +	#!/bin/sh
+> +	cd /warthog/git/linux-2.6 || exit $?
+> +	exec git pull >/tmp/git-pull.log
+> +
+> +and:
+> +
+> +	0 6 * * *       /home/dhowells/bin/do-git-pull.sh
+> +
+> +which will do the update every day at 6am.
 
-This problem of register-aligned argument placement is not limited
-to just ARM, but several other Linux supported architectures.
+Using git clone --mirror would be much efficient, I think.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+> +The "-l" tells git clone that the source (mirror) repository is on the local
+> +machine, that it shouldn't go over the internet for it, and that it should
+> +hardlink GIT objects from the source repository rather than copying them where
+> +possible.
+
+Here and later below, IIRC -l is the default for local clones.
+
+> +	cd /my/git/trees
+> +	git clone -n --bare %UPSTREAM_REPO %MY_DIR
+
+--bare implies -n.
+
+> +If you haven't yet committed your changes, you'll have to siphon them off into
+> +a file:
+> +
+> +	git diff >a.diff
+> +
+> +and deapply them:
+> +
+> +	patch -p1 -R <a.diff
+> +
+> +You can then update your tree from the upstream tree with no fear of a conflict
+> +(assuming you don't also have changes that you have committed).  Once you've
+> +updated your tree, you can reapply your changes:
+> +
+> +	patch -p1 <a.diff
+
+Why not using git stash and git stash pop?
+
+Or at least git apply and git checkout - leaving out patch(1) from the
+game.
+
+--PyWBHxIrsGpYNMFw
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklCszsACgkQe81tAgORUJaxZwCglotfKRzufazRLtPg9Eq4xOmw
+2usAnjyUgTeJ0gzE5D7EZDFdf2kmW7oM
+=VKpR
+-----END PGP SIGNATURE-----
+
+--PyWBHxIrsGpYNMFw--
