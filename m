@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbYLLDkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbYLLDtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757297AbYLLDkI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 22:40:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYLLDj4
+	id S1757321AbYLLDtv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 22:49:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbYLLDtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 22:39:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58738 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751138AbYLLDjz (ORCPT
+	Thu, 11 Dec 2008 22:49:42 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60082
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751838AbYLLDtl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 22:39:55 -0500
-Date: Thu, 11 Dec 2008 19:39:27 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.28-rc8
-Message-Id: <20081211193927.2aa5ca83.akpm@linux-foundation.org>
-In-Reply-To: <200812121407.02599.nickpiggin@yahoo.com.au>
-References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain>
-	<200812111945.53399.nickpiggin@yahoo.com.au>
-	<20081211190225.0de48422.akpm@linux-foundation.org>
-	<200812121407.02599.nickpiggin@yahoo.com.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 11 Dec 2008 22:49:41 -0500
+Date: Thu, 11 Dec 2008 19:49:42 -0800 (PST)
+Message-Id: <20081211.194942.151992963.davem@davemloft.net>
+To: gregkh@suse.de
+Cc: s.L-H@gmx.de, linux-kernel@vger.kernel.org, stable@kernel.org,
+       rolandd@cisco.com, jgarzik@redhat.com
+Subject: Re: [patch 03/83] cxgb3: Fix kernel crash caused by uninitialized
+ l2t_entry.arpq
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081211234155.GA6791@suse.de>
+References: <20081211191334.GC5894@kroah.com>
+	<200812112212.35832.s.L-H@gmx.de>
+	<20081211234155.GA6791@suse.de>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id mBC3nudq001521
 
-On Fri, 12 Dec 2008 13:07:02 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+From: Greg KH <gregkh@suse.de>
+Date: Thu, 11 Dec 2008 15:41:55 -0800
 
-> On Friday 12 December 2008 14:02, Andrew Morton wrote:
-> > On Thu, 11 Dec 2008 19:45:53 +1100 Nick Piggin <nickpiggin@yahoo.com.au> 
-> wrote:
-> > > > > I still have one fix for a reported regression (softlink code doesn't
-> > > > > honour GFP_NOFS, caused by a patch of mine). Posted a couple of weeks
-> > > > > ago, but it didn't get anywhere.
-> > > >
-> > > > I don't have a clue what you're talking about.
-> > > >
-> > > > <greps the tree>
-> > > >
-> > > > ./fs/affs/inode.c:      case ST_SOFTLINK:
-> > > > ./fs/affs/namei.c:      error = affs_add_entry(dir, inode, dentry,
-> > > > ST_SOFTLINK); ./include/linux/amigaffs.h:#define ST_SOFTLINK  3
-> > > >
-> > > > really?
-> > >
-> > > Oh, I thought I cc'ed you...
-> > >
-> > > http://marc.info/?l=linux-fsdevel&m=122777850302085&w=2
-> > > http://marc.info/?l=linux-fsdevel&m=122777852502093&w=2
-> >
-> > yes, but that stuff went round and round in circles and ended up all in
-> > the air.
+> On Thu, Dec 11, 2008 at 10:12:34PM +0100, Stefan Lippers-Hollmann wrote:
+> >   CC [M]  drivers/net/cxgb3/l2t.o
+> > drivers/net/cxgb3/l2t.c: In function â€˜t3_init_l2tâ€™:
+> > drivers/net/cxgb3/l2t.c:439: error: implicit declaration of function â€˜__skb_queue_head_initâ€™
+> > drivers/net/cxgb3/l2t.c:439: error: â€˜struct l2t_entryâ€™ has no member named â€˜arpqâ€™
+ ...
+> > It seems to depend on
+> > 
+> > commit 147e70e62fdd5af6263106ad634b03c5154c1e56
+> > Author: David S. Miller <davem@davemloft.net>
+> > Date:   Mon Sep 22 01:29:52 2008 -0700
+> > 
+> >     cxgb3: Use SKB list interfaces instead of home-grown implementation.
+> > 
+> >     Signed-off-by: David S. Miller <davem@davemloft.net>
+> > 
+> > Regards
+> > 	Stefan Lippers-Hollmann
 > 
-> Hmm, OK. I think we ended up agreeing after some review and things
-> fixed since my original posting.
 > 
-> But it was an honest question -- is this too late to go in 2.6.28,
-> given that it has been present in earlier releases too? Maybe if the
-> release date is pushed to after Christmas, then there is enough time.
-> Otherwise, perhaps it should go upstream afterwards, then filter into
-> -stable?
+> Crap, missed this one.  Thanks, I'll respin a -rc2 in a bit after some
+> more testing.  I found a Cell problem that should also be addressed...
 
-Well we could do either.
-
-But it's not completely obvious what the actual bug is.  Deadlock? 
-Suboptimal memory allocation mode?  Arbitrary stack windup?  Other?
-
-> Anyway, I'll repost them, in case you'd care to put them in -mm in
-> the meantime.
-
-Sure..
+Sorry my bad, I checked the dependencies wrongly :-/
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
