@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbYLLFU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752255AbYLLFVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757153AbYLLFU6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 00:20:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYLLFUs
+	id S1752255AbYLLFVk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 00:21:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbYLLFVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 00:20:48 -0500
-Received: from qmta02.westchester.pa.mail.comcast.net ([76.96.62.24]:41603
-	"EHLO QMTA02.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750892AbYLLFUr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 00:20:47 -0500
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [PATCH] e1000e: fix double release of mutex
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, stable@kernel.org, linux-kernel@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 11 Dec 2008 21:20:26 -0800
-Message-ID: <20081212052025.3298.151.stgit@lost.foo-projects.org>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Dec 2008 00:21:25 -0500
+Received: from sh.osrg.net ([192.16.179.4]:37935 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750892AbYLLFVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 00:21:24 -0500
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH mmotm 0/5] nilfs2 filesystem updates
+Date: Fri, 12 Dec 2008 14:16:56 +0900
+Message-Id: <1229059021-9538-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.5
+X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-During a reset, releasing the swflag after it failed to be acquired would
-cause a double unlock of the mutex.  Instead, test whether acquisition of
-the swflag was successful and if not, do not release the swflag.  The reset
-must still be done to bring the device to a quiescent state.
+This is a patch set to update nilfs2 filesystem in mmotm (applicable
+to mmotm-2008-Dec-12).
 
-This resolves [BUG 12200] BUG: bad unlock balance detected! e1000e
-http://bugzilla.kernel.org/show_bug.cgi?id=12200
+The following bugfix and changes which follow comments offered in the
+previous submission:
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+* fix problems around nilfs2 ioctl which may cause system memory shortage.
+* avoid double error handlings brought by nilfs_transaction_end() by
+  separating nilfs_transaction_abort() function.
+* insert description of gcinode in the source file.
+* add a maintainer entry of nilfs2 to the MAINTAINERS file (to apply as
+  needed).
+
+Regards,
+Ryusuke Konishi
 ---
 
- drivers/net/e1000e/ich8lan.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+ MAINTAINERS           |    7 ++++
+ fs/nilfs2/gcinode.c   |   21 +++++++++++++-
+ fs/nilfs2/inode.c     |   23 +++++++++------
+ fs/nilfs2/ioctl.c     |   75 ++++++++++++++++++++++++++++++-------------------
+ fs/nilfs2/mdt.c       |    5 ++-
+ fs/nilfs2/namei.c     |   74 +++++++++++++++++++++++++++++++++---------------
+ fs/nilfs2/nilfs.h     |    3 +-
+ fs/nilfs2/segment.c   |   43 ++++++++++++++++++----------
+ fs/nilfs2/super.c     |   11 +------
+ fs/nilfs2/the_nilfs.h |    4 +-
+ 10 files changed, 175 insertions(+), 91 deletions(-)
 
-diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
-index 523b971..d115a6d 100644
---- a/drivers/net/e1000e/ich8lan.c
-+++ b/drivers/net/e1000e/ich8lan.c
-@@ -1893,12 +1893,17 @@ static s32 e1000_reset_hw_ich8lan(struct e1000_hw *hw)
- 		ctrl |= E1000_CTRL_PHY_RST;
- 	}
- 	ret_val = e1000_acquire_swflag_ich8lan(hw);
-+	/* Whether or not the swflag was acquired, we need to reset the part */
- 	hw_dbg(hw, "Issuing a global reset to ich8lan");
- 	ew32(CTRL, (ctrl | E1000_CTRL_RST));
- 	msleep(20);
- 
--	/* release the swflag because it is not reset by hardware reset */
--	e1000_release_swflag_ich8lan(hw);
-+	if (!ret_val) {
-+		/* release the swflag because it is not reset by
-+		 * hardware reset
-+		 */
-+		e1000_release_swflag_ich8lan(hw);
-+	}
- 
- 	ret_val = e1000e_get_auto_rd_done(hw);
- 	if (ret_val) {
 
