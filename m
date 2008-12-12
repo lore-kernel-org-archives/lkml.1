@@ -1,21 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbYLLVvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbYLLVwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755381AbYLLVvp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 16:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbYLLVvg
+	id S1754092AbYLLVwE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 16:52:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbYLLVvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 16:51:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55934 "EHLO mx2.redhat.com"
+	Fri, 12 Dec 2008 16:51:37 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55936 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753873AbYLLVvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 16:51:35 -0500
+	id S1753876AbYLLVvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 16:51:36 -0500
 From: Eric Paris <eparis@redhat.com>
-Subject: [RFC PATCH -v4 00/14] fsnotify, dnotify, and inotify
+Subject: [RFC PATCH -v4 02/14] fsnotify: pass a file instead of an inode to
+	open, read, and write
 To: linux-kernel@vger.kernel.org
 Cc: a.p.zijlstra@chello.nl, viro@ZenIV.linux.org.uk, hch@infradead.org,
        zbr@ioremap.net, akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Date: Fri, 12 Dec 2008 16:51:14 -0500
-Message-ID: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
+Date: Fri, 12 Dec 2008 16:51:25 -0500
+Message-ID: <20081212215125.27112.76262.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
+References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -24,110 +27,142 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following series implements a new generic in kernel filesystem
-notification system, fsnotify.  On top of fsnotify I reimplement dnotify and
-inotify.  I have not finished with the change from inotify although I think
-inotify_user should be completed.  In kernel inotify users (aka audit) still
-(until I get positive feedback) relay on the old inotify backend.  This can be
-'easily' fixed.
+fanotify, the upcoming notification system actually needs a f_path so it can
+do opens in the context of listeners, and it needs a file so it can get f_flags
+from the original process.  Close already was passing a file.
 
-All of this is in preperation for fanotify and using fanotify as an on access
-file scanner.   So you better know it's coming.
-
-Why is this useful?  Because I actually shrank the struct inode.  That's
-right, my code is smaller and faster.  Eat that.
-
-struct inode went from:
-        unsigned long           i_dnotify_mask; /* Directory notify events */
-        struct dnotify_struct   *i_dnotify; /* for directory notifications */
-        struct list_head        inotify_watches; /* watches on this inode */
-        struct mutex            inotify_mutex;  /* protects the watches list */
-
-to:
-        __u64                   i_fsnotify_mask; /* all events this inode cares about */
-        struct list_head        i_fsnotify_mark_entries; /* fsnotify mark entries */
-
-This is just an RFC as I haven't tested it heavily I might still be able to 
-split patches.  I think there are some problem at the moment trying to build
-fsnotify out.  I need to send patch 3 and 4 seperately.  Actually I think it's
-perfectly reasonable to take patches 1-4 as is right now.
-
-if you ever want to see more up2date patches check out:
-http://people.redhat.com/~eparis/fsnotify
-
+Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
-Eric Paris (14):
-      shit on top for debugging
-      inotify: reimplement inotify using fsnotify
-      fsnotify: add correlations between events
-      fsnotify: include pathnames with entries when possible
-      fsnotify: generic notification queue and waitq
-      dnotify: reimplement dnotify using fsnotify
-      fsnotify: parent event notification
-      fsnotify: add in inode fsnotify markings
-      fsnotify: add group priorities
-      fsnotify: unified filesystem notification backend
-      fsnotify: use the new open-exec hook for inotify and dnotify
-      fsnotify: sys_execve and sys_uselib do not call into fsnotify
-      fsnotify: pass a file instead of an inode to open, read, and write
-      filesystem notification: create fs/notify to contain all fs notification
+ fs/compat.c              |    5 ++---
+ fs/nfsd/vfs.c            |    4 ++--
+ fs/open.c                |    2 +-
+ fs/read_write.c          |    8 ++++----
+ include/linux/fsnotify.h |    9 ++++++---
+ 5 files changed, 15 insertions(+), 13 deletions(-)
 
+diff --git a/fs/compat.c b/fs/compat.c
+index e5f49f5..4a7788f 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1158,11 +1158,10 @@ out:
+ 	if (iov != iovstack)
+ 		kfree(iov);
+ 	if ((ret + (type == READ)) > 0) {
+-		struct dentry *dentry = file->f_path.dentry;
+ 		if (type == READ)
+-			fsnotify_access(dentry);
++			fsnotify_access(file);
+ 		else
+-			fsnotify_modify(dentry);
++			fsnotify_modify(file);
+ 	}
+ 	return ret;
+ }
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index 4433c8f..f4bc1e6 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -940,7 +940,7 @@ nfsd_vfs_read(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
+ 		nfsdstats.io_read += host_err;
+ 		*count = host_err;
+ 		err = 0;
+-		fsnotify_access(file->f_path.dentry);
++		fsnotify_access(file);
+ 	} else 
+ 		err = nfserrno(host_err);
+ out:
+@@ -1007,7 +1007,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
+ 	set_fs(oldfs);
+ 	if (host_err >= 0) {
+ 		nfsdstats.io_write += cnt;
+-		fsnotify_modify(file->f_path.dentry);
++		fsnotify_modify(file);
+ 	}
+ 
+ 	/* clear setuid/setgid flag after write */
+diff --git a/fs/open.c b/fs/open.c
+index 83cdb9d..9d69dd9 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -1020,7 +1020,7 @@ long do_sys_open(int dfd, const char __user *filename, int flags, int mode)
+ 				put_unused_fd(fd);
+ 				fd = PTR_ERR(f);
+ 			} else {
+-				fsnotify_open(f->f_path.dentry);
++				fsnotify_open(f);
+ 				fd_install(fd, f);
+ 			}
+ 		}
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 969a6d9..7eb2949 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -280,7 +280,7 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
+ 		else
+ 			ret = do_sync_read(file, buf, count, pos);
+ 		if (ret > 0) {
+-			fsnotify_access(file->f_path.dentry);
++			fsnotify_access(file);
+ 			add_rchar(current, ret);
+ 		}
+ 		inc_syscr(current);
+@@ -335,7 +335,7 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
+ 		else
+ 			ret = do_sync_write(file, buf, count, pos);
+ 		if (ret > 0) {
+-			fsnotify_modify(file->f_path.dentry);
++			fsnotify_modify(file);
+ 			add_wchar(current, ret);
+ 		}
+ 		inc_syscw(current);
+@@ -626,9 +626,9 @@ out:
+ 		kfree(iov);
+ 	if ((ret + (type == READ)) > 0) {
+ 		if (type == READ)
+-			fsnotify_access(file->f_path.dentry);
++			fsnotify_access(file);
+ 		else
+-			fsnotify_modify(file->f_path.dentry);
++			fsnotify_modify(file);
+ 	}
+ 	return ret;
+ }
+diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
+index 00fbd5b..dec1afb 100644
+--- a/include/linux/fsnotify.h
++++ b/include/linux/fsnotify.h
+@@ -136,8 +136,9 @@ static inline void fsnotify_mkdir(struct inode *inode, struct dentry *dentry)
+ /*
+  * fsnotify_access - file was read
+  */
+-static inline void fsnotify_access(struct dentry *dentry)
++static inline void fsnotify_access(struct file *file)
+ {
++	struct dentry *dentry = file->f_path.dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	u32 mask = IN_ACCESS;
+ 
+@@ -152,8 +153,9 @@ static inline void fsnotify_access(struct dentry *dentry)
+ /*
+  * fsnotify_modify - file was modified
+  */
+-static inline void fsnotify_modify(struct dentry *dentry)
++static inline void fsnotify_modify(struct file *file)
+ {
++	struct dentry *dentry = file->f_path.dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	u32 mask = IN_MODIFY;
+ 
+@@ -168,8 +170,9 @@ static inline void fsnotify_modify(struct dentry *dentry)
+ /*
+  * fsnotify_open - file was opened
+  */
+-static inline void fsnotify_open(struct dentry *dentry)
++static inline void fsnotify_open(struct file *file)
+ {
++	struct dentry *dentry = file->f_path.dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	u32 mask = IN_OPEN;
+ 
 
- fs/Kconfig                           |   39 -
- fs/Makefile                          |    5 
- fs/compat.c                          |    5 
- fs/dnotify.c                         |  194 -------
- fs/exec.c                            |    5 
- fs/fcntl.c                           |    4 
- fs/inode.c                           |    7 
- fs/inotify.c                         |  913 ----------------------------------
- fs/inotify_user.c                    |  778 -----------------------------
- fs/nfsd/vfs.c                        |    4 
- fs/notify/Kconfig                    |   14 +
- fs/notify/Makefile                   |    4 
- fs/notify/dnotify/Kconfig            |   11 
- fs/notify/dnotify/Makefile           |    1 
- fs/notify/dnotify/dnotify.c          |  350 +++++++++++++
- fs/notify/fsnotify.c                 |   92 +++
- fs/notify/fsnotify.h                 |  115 ++++
- fs/notify/group.c                    |  222 ++++++++
- fs/notify/inode_mark.c               |  279 ++++++++++
- fs/notify/inotify/Kconfig            |   31 +
- fs/notify/inotify/Makefile           |    2 
- fs/notify/inotify/inotify.c          |  913 ++++++++++++++++++++++++++++++++++
- fs/notify/inotify/inotify.h          |  117 ++++
- fs/notify/inotify/inotify_fsnotify.c |  190 +++++++
- fs/notify/inotify/inotify_kernel.c   |  299 +++++++++++
- fs/notify/inotify/inotify_user.c     |  502 +++++++++++++++++++
- fs/notify/notification.c             |  279 ++++++++++
- fs/open.c                            |    2 
- fs/read_write.c                      |    8 
- include/linux/dcache.h               |    3 
- include/linux/dnotify.h              |   29 -
- include/linux/fs.h                   |    6 
- include/linux/fsnotify.h             |  271 ++++++++--
- include/linux/fsnotify_backend.h     |  152 ++++++
- include/linux/inotify.h              |    1 
- 35 files changed, 3818 insertions(+), 2029 deletions(-)
- delete mode 100644 fs/dnotify.c
- delete mode 100644 fs/inotify.c
- delete mode 100644 fs/inotify_user.c
- create mode 100644 fs/notify/Kconfig
- create mode 100644 fs/notify/Makefile
- create mode 100644 fs/notify/dnotify/Kconfig
- create mode 100644 fs/notify/dnotify/Makefile
- create mode 100644 fs/notify/dnotify/dnotify.c
- create mode 100644 fs/notify/fsnotify.c
- create mode 100644 fs/notify/fsnotify.h
- create mode 100644 fs/notify/group.c
- create mode 100644 fs/notify/inode_mark.c
- create mode 100644 fs/notify/inotify/Kconfig
- create mode 100644 fs/notify/inotify/Makefile
- create mode 100644 fs/notify/inotify/inotify.c
- create mode 100644 fs/notify/inotify/inotify.h
- create mode 100644 fs/notify/inotify/inotify_fsnotify.c
- create mode 100644 fs/notify/inotify/inotify_kernel.c
- create mode 100644 fs/notify/inotify/inotify_user.c
- create mode 100644 fs/notify/notification.c
- create mode 100644 include/linux/fsnotify_backend.h
