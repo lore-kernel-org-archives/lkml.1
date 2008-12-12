@@ -1,129 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbYLLTNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbYLLTRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752402AbYLLTNn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 14:13:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYLLTNc
+	id S1753190AbYLLTRS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 14:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYLLTRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 14:13:32 -0500
-Received: from virgo.iok.hu ([212.40.97.103]:57056 "EHLO virgo.iok.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751026AbYLLTNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 14:13:31 -0500
-Date: Fri, 12 Dec 2008 19:53:47 +0100
-From: Miklos Vajna <vmiklos@frugalware.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Simplified GIT usage guide
-Message-ID: <20081212185347.GK5691@genesis.frugalware.org>
-References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
+	Fri, 12 Dec 2008 14:17:01 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:59602 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750847AbYLLTRA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 14:17:00 -0500
+Message-ID: <4942B874.3070107@vlnb.net>
+Date: Fri, 12 Dec 2008 22:16:04 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PyWBHxIrsGpYNMFw"
-Content-Disposition: inline
-In-Reply-To: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: Re: [PATCH][RFC 13/23]: Export of alloc_io_context() function
+References: <494009D7.4020602@vlnb.net> <49400F2F.4050603@vlnb.net> <20081211133424.GU23742@kernel.dk> <4941592E.8070303@vlnb.net> <20081211184100.GX23742@kernel.dk> <4941636A.3050303@vlnb.net> <20081211190627.GA23742@kernel.dk>
+In-Reply-To: <20081211190627.GA23742@kernel.dk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+vdUB45e/ZFryC9734shenPmRwh3y3egIlHks
+ 9L1858DUFfLNHaC9ogZFacOc7XuvlUVdq/bPNolRYhSrNcCoTn
+ Wd9JDZKa+pVC6QuY/3hkw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jens Axboe wrote:
+> On Thu, Dec 11 2008, Vladislav Bolkhovitin wrote:
+>> Jens Axboe wrote:
+>>> On Thu, Dec 11 2008, Vladislav Bolkhovitin wrote:
+>>>> Jens Axboe wrote:
+>>>>> On Wed, Dec 10 2008, Vladislav Bolkhovitin wrote:
+>>>>>> This patch exports alloc_io_context() function. For performance reasons 
+>>>>>> SCST queues commands using a pool of IO threads. It is considerably 
+>>>>>> better for performance (>30% increase on sequential reads) if threads 
+>>>>>> in a pool have the same IO context. Since SCST can be built as a 
+>>>>>> module, it needs alloc_io_context() function exported.
+>>>>>>
+>>>>>> Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+>>>>>> ---
+>>>>>> block/blk-ioc.c |    1 +
+>>>>>> 1 file changed, 1 insertion(+)
+>>>>>>
+>>>>>> diff -upkr linux-2.6.27.2/block/blk-ioc.c linux-2.6.27.2/block/blk-ioc.c
+>>>>>> --- linux-2.6.27.2/block/blk-ioc.c	2008-10-10 02:13:53.000000000 +0400
+>>>>>> +++ linux-2.6.27.2/block/blk-ioc.c	2008-11-25 21:27:01.000000000 +0300
+>>>>>> @@ -105,6 +105,7 @@ struct io_context *alloc_io_context(gfp_
+>>>>>>
+>>>>>> 	return ret;
+>>>>>> }
+>>>>>> +EXPORT_SYMBOL(alloc_io_context);
+>>>>> Why is this needed, can't you just use CLONE_IO?
+>>>> There are two reasons for that:
+>>>>
+>>>> 1. kthread interface doesn't support passing CLONE_IO flag.
+>>> Then you fix that instead of working around it! :-)
+>> It doesn't worth the effort, because of (2) below.
+>>
+>>>> 2. Each (virtual) device has own pool of threads, which serves it. 
+>>>> Threads in each such pools should have a common IO context, but 
+>>>> different pools should have different IO contexts. So, it would be 
+>>>> necessary to implement two levels start of IO threads in each pool. At 
+>>>> first, one thread would be started. Then it would call get_io_context() 
+>>>> to gain io_context. Then it would create the remaining threads with 
+>>>> CLONE_IO flag. Definitely, it's a lot more complicated than a simple 
+>>>> call of alloc_io_context() and assignment of the returned context to 
+>>>> each just created thread in a loop before they were ran.
+>>> Just start the first thread without CLONE_IO, and subsequent threads
+>>> fork off that with CLONE_IO set? 
+>> Yes, that would be the two stages threads creation. A *LOT* more 
+>> complicated, than with the direct io_context assignment using 
+>> alloc_io_context().
+>>
+>>> I think we need to make sure that we
+>>> allocate an IO context for the 'parent' if it doesn't have one already
+>>> and CLONE_IO is set, but that is something that can easily be rectified.
+>> Sorry, I don't feel I understood you here..
+> 
+> Sure I understand that it's then a two-stage rocket for the first
+> context you fork off. I don't see how you qualify that as a *LOT* more
+> complicated...
 
---PyWBHxIrsGpYNMFw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+It would be a split of logic, which can be handled in one place to be 
+handled in two places. Hence, harder to implement, understand and 
+maintain. It's always something to avoid.
 
-On Fri, Dec 12, 2008 at 06:28:27PM +0000, David Howells <dhowells@redhat.com> wrote:
-> + (1) File objects.
-> +
-> +     A file object contains the contents of a source file and the attributes of
-> +     that file (such as file mode).
+Actually, there is another, simpler method to achieve the same what 
+alloc_io_context() does, without exporting it:
 
-This is incorrect, a 'blob' contains only the contents of the blob, the
-file mode is stored in the 'tree' object.
+struct io_context *ioc, *t;
+*t = current->io_context;
+current->io_context = NULL;
+ioc = get_io_context(GFP_KERNEL, -1);
+current->io_context = t;
 
-> + (2) Directory objects.
-> +
-> +     A directory object contains the attributes of that directory plus a list
-> +     of file and directory objects that are members of this directory.  The
-> +     list includes the names of the entries within that directory and the
-> +     object ID of each object.
-> +
-> + (3) Commit objects.
-> +
-> +     A commit object contains the attribute of that commit (the author and the
-> +     date for instance), a textual description of the change imposed by that
-> +     commit as provided by the committer, a list of object IDs for the commits
-> +     on which this commit is based, and the object ID of the root directory
-> +     object representing the result of this commit.
-> +
-> +     Note that a commit does not literally describe the changes that have been
-> +     made in the way that, say, a diff file does; it merely carries the current
-> +     state of the sources after that change, and points to the commits that
-> +     describe the state of the sources before that change.  GIT's tools then
-> +     infer the changes when asked.
-> +
-> +     A commit object will typically refer to one base commit when someone has
-> +     merely committed some changes on top of the current state, and two base
-> +     commits when a couple of trees have been merged.
+But, I believe, you won't like such dirty hacking even more ;-)
 
-Is there any reason you hide the tag object?
+>>> It may seem more complex, but if you use this approach you are pretty
+>>> much free to worry about any changes in the future there.
+>> Worrying about future changes is regular in Linux kernel, where there is 
+>> no stable API ;-)
+> 
+> Sure, but if your stuff gets merged then *I* have to fiddle with your
+> stuff as well when making changes. If you plan to keep your stuff out of
+> the kernel and maintain it there, fine, but I think you probably don't.
+> 
+> It's not a HUGE deal for this case, since you basically just want to use
+> alloc_io_context() and ioc_task_link(). So we can make the export and be
+> done with it.
 
-> +where %HOUR is the hour you want it to go off every day.  For my local mirror
-> +of Linus's upstream kernel, I use:
-> +
-> +	#!/bin/sh
-> +	cd /warthog/git/linux-2.6 || exit $?
-> +	exec git pull >/tmp/git-pull.log
-> +
-> +and:
-> +
-> +	0 6 * * *       /home/dhowells/bin/do-git-pull.sh
-> +
-> +which will do the update every day at 6am.
+Thanks!
 
-Using git clone --mirror would be much efficient, I think.
 
-> +The "-l" tells git clone that the source (mirror) repository is on the local
-> +machine, that it shouldn't go over the internet for it, and that it should
-> +hardlink GIT objects from the source repository rather than copying them where
-> +possible.
 
-Here and later below, IIRC -l is the default for local clones.
-
-> +	cd /my/git/trees
-> +	git clone -n --bare %UPSTREAM_REPO %MY_DIR
-
---bare implies -n.
-
-> +If you haven't yet committed your changes, you'll have to siphon them off into
-> +a file:
-> +
-> +	git diff >a.diff
-> +
-> +and deapply them:
-> +
-> +	patch -p1 -R <a.diff
-> +
-> +You can then update your tree from the upstream tree with no fear of a conflict
-> +(assuming you don't also have changes that you have committed).  Once you've
-> +updated your tree, you can reapply your changes:
-> +
-> +	patch -p1 <a.diff
-
-Why not using git stash and git stash pop?
-
-Or at least git apply and git checkout - leaving out patch(1) from the
-game.
-
---PyWBHxIrsGpYNMFw
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklCszsACgkQe81tAgORUJaxZwCglotfKRzufazRLtPg9Eq4xOmw
-2usAnjyUgTeJ0gzE5D7EZDFdf2kmW7oM
-=VKpR
------END PGP SIGNATURE-----
-
---PyWBHxIrsGpYNMFw--
