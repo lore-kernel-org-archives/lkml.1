@@ -1,63 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbYLLIsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbYLLItl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758112AbYLLIsW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 03:48:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756946AbYLLIsJ
+	id S1758016AbYLLItl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 03:49:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbYLLItd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 03:48:09 -0500
-Received: from sh.osrg.net ([192.16.179.4]:50265 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756926AbYLLIsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 03:48:08 -0500
-Date: Fri, 12 Dec 2008 17:47:49 +0900
-To: jens.axboe@oracle.com
-Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, linux-kernel@vger.kernel.org,
-       linux-alpha@vger.kernel.org
-Subject: [RESEND] [PATCH] alpha: remove dead BIO_VMERGE_BOUNDARY
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 12 Dec 2008 03:49:33 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:19882 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755681AbYLLItb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 03:49:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=vHdlkDJfxgdX6HO1vU9wDeOd1DSiibYDfR1vrRTKYZj9cfEaZY3mj/izpf2jHgfpOT
+         zyYnrkjuYwU6OcjqzhOny51JT1YZNjTTAsQ6Y9I373/zXUFC39wDVk3SrYaeEGEJcTFL
+         nZ7EGtKQzpzRrCjvw17PHSIQyNSVsRqsF7hhk=
+Message-ID: <386072610812120049n4483b892j2e26ab4a8ece23c@mail.gmail.com>
+Date: Fri, 12 Dec 2008 16:49:30 +0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: [alsa-devel] [Question] Can I open a substream in kernel space without attach to a file pointer?
+Cc: "ALSA devel" <alsa-devel@alsa-project.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <s5hej0ddgk5.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081212174824M.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+References: <386072610811190200l576d7735rb0188ab53f5185fa@mail.gmail.com>
+	 <s5h63mjddvj.wl%tiwai@suse.de>
+	 <386072610811190742ycab0dbasc585376dc6ac47db@mail.gmail.com>
+	 <s5hljvfbt8h.wl%tiwai@suse.de>
+	 <386072610812110240l7af568f9h40c672036abe49f6@mail.gmail.com>
+	 <s5hoczidimg.wl%tiwai@suse.de>
+	 <386072610812110519j78aa8971ga37635658741b021@mail.gmail.com>
+	 <s5hiqpqdeuw.wl%tiwai@suse.de>
+	 <386072610812110612u6eed650bpe302b663a692b3bf@mail.gmail.com>
+	 <s5hej0ddgk5.wl%tiwai@suse.de>
+X-Google-Sender-Auth: a3682f16cef8e147
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a resend of:
+On Fri, Dec 12, 2008 at 2:59 PM, Takashi Iwai <tiwai@suse.de> wrote:
+> At Thu, 11 Dec 2008 22:12:56 +0800,
+> Bryan Wu wrote:
+>>
+>> On Thu, Dec 11, 2008 at 9:24 PM, Takashi Iwai <tiwai@suse.de> wrote:
+>> > At Thu, 11 Dec 2008 21:19:21 +0800,
+>> > Bryan Wu wrote:
+>> >>
+>> >> On Thu, Dec 11, 2008 at 8:03 PM, Takashi Iwai <tiwai@suse.de> wrote:
+>> >> > At Thu, 11 Dec 2008 18:40:38 +0800,
+>> >> > Bryan Wu wrote:
+>> >> >>
+>> >> >> Hi Takashi,
+>> >> >>
+>> >> >> I just made some progress about this USB audio gadget driver. But I
+>> >> >> still got some questions about the audio playback.
+>> >> >> Please kindly help me to work out here, as you're the best one to ask, -:)
+>> >> >>
+>> >> >> I can receive ISO transfer packets from PC host. The packet includes
+>> >> >> 192 bytes audio data.
+>> >> >> So I tried to use vfs_write() function to write this 192 bytes to the
+>> >> >> opened snd card.
+>> >> >> There is no sound.
+>> >> >>
+>> >> >> Then I create a buffer which is 6K bytes size and a workqueue. I will
+>> >> >> fill the 6K buffer with the ISO packets data.
+>> >> >> When the 6K buffer is full, in the workqueue handler I will call
+>> >> >> vfs_write() function to write these 6K bytes data to the sound card.
+>> >> >> This time, sound played and it works although it is not very smooth.
+>> >> >>
+>> >> >> So I guess the audio buffer I great is very important to playback audio.
+>> >> >> How to choose the buffer size? If the size < 6K, there is no sound.
+>> >> >> I guess it depends on the sound card hardware, but I failed to find
+>> >> >> any info from hw_params and sw_params.
+>> >> >
+>> >> > Well, this pretty much depends on the "sound card" you are accessing.
+>> >> > You mentioned about AD1980 but the question is rather what
+>> >> > controller is used.  The codec chip is basically independent from the
+>> >> > DMA transfer parameter.
+>> >> >
+>> >>
+>> >> Right, currently I'm trying AD1980 which using DMA transfer by
+>> >> Blackfin BF54x processor.
+>> >
+>> > Is it an ASoC one?
+>> >
+>>
+>> Yes, it's.
+>
+> Then another possibility is to create a sort of machine driver
+> communicates with ASoC codec driver instead of accessing to the
+> generic ALSA PCM core.
+>
 
-http://marc.info/?l=linux-kernel&m=122482703716610&w=2
+I hope this driver independents on low level ALSA card implementation.
+Because on some embedded machine, they don't use ASoC.
+And I want to push this driver to upstream mainline finally.
 
-Jens, can you merge this via your tree? There is no tree for Alpha.
+>> >> >> Actually, I want to remove the audio buffer here, just write the 192
+>> >> >> audio data to sound card directly. Is that possible?
+>> >> >
+>> >> > Also depends on the hardware.  If the audio chip requires the DMA
+>> >> > transfer, you'd need anyway a buffer.
+>> >> >
+>> >>
+>> >> So how to determine the buffer size based on the DMA hardware configuration?
+>> >
+>> > This should be done via usual hw_refine / hw_params ioctls.
+>> >
+>>
+>> in struct snd_pcm_hw_params, I guess only fifo_size is useful for me
+>> to choose my buffer size, right?
+>
+> No, fifo_size is just a place holder, existing only for historical
+> reasons as now.
+>
+>> If the fifo_size == 1K, so how big is OK for my buffer size?
+>>
+>> The buffer size is so tricky here, I try to make my driver is
+>> independent with the lower card hardware.
+>> So I need to find a algorithm to choose the buffer size here.
+>>
+>> >> I tried to change the period_size and buffer_size of the runtime struct.
+>> >> It also didn't work.
+>> >
+>> > Well, the constraint is rather the "slave" sound card.  You are
+>> > actually creating a tunnel driver.  The period size and buffer size
+>> > are issues of the controller, thus you cannot change the parameters of
+>> > the tunnel driver freely.
+>> >
+>>
+>> Exactly. And another question is whether is it possible using
+>> nonblocking writing in my driver?
+>
+> Why your driver needs to care about non-blocking write?  Usually PCM
+> core stuff cares the writing mode and other tasks.
+>
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] alpha: remove dead BIO_VMERGE_BOUNDARY
+Currently, because this sound playback is not very smooth. I guess
+there some underrun when I write the USB audio data chuck to the card.
+So maybe we need 2 buffers as a pingpang buffer  to do data buffering.
+You know, vfs_write() is blocking operation and before it returns we
+can not fill the buffer if you just have one buffer.
 
-The block layer dropped the virtual merge feature
-(b8b3e16cfe6435d961f6aaebcfd52a1ff2a988c5). BIO_VMERGE_BOUNDARY
-definition is meaningless now.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
----
- arch/alpha/include/asm/io.h |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
-
-diff --git a/arch/alpha/include/asm/io.h b/arch/alpha/include/asm/io.h
-index e971ab0..eda9b90 100644
---- a/arch/alpha/include/asm/io.h
-+++ b/arch/alpha/include/asm/io.h
-@@ -96,9 +96,6 @@ static inline dma_addr_t __deprecated isa_page_to_bus(struct page *page)
- 	return page_to_phys(page);
- }
- 
--/* This depends on working iommu.  */
--#define BIO_VMERGE_BOUNDARY	(alpha_mv.mv_pci_tbi ? PAGE_SIZE : 0)
--
- /* Maximum PIO space address supported?  */
- #define IO_SPACE_LIMIT 0xffff
- 
--- 
-1.5.6.5
-
+-Bryan
