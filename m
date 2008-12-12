@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbYLLTtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbYLLTwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506AbYLLTtw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 14:49:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYLLTti
+	id S1753967AbYLLTwS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 14:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbYLLTv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 14:49:38 -0500
-Received: from nauticaltech.com ([64.34.252.43]:60426 "EHLO nauticaltech.com"
+	Fri, 12 Dec 2008 14:51:59 -0500
+Received: from nauticaltech.com ([64.34.252.43]:50831 "EHLO nauticaltech.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751700AbYLLTth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 14:49:37 -0500
-Message-ID: <4942BEC0.2070809@nauticaltech.com>
-Date: Fri, 12 Dec 2008 11:42:56 -0800
+	id S1751190AbYLLTv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 14:51:59 -0500
+Message-ID: <4942C0DD.50602@nauticaltech.com>
+Date: Fri, 12 Dec 2008 11:51:57 -0800
 From: Michael Spiegle <mike@nauticaltech.com>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: bugme-daemon@bugzilla.kernel.org, netdev@vger.kernel.org,
+To: Evgeniy Polyakov <zbr@ioremap.net>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
 Subject: Re: [Bugme-new] [Bug 12201] New: long wait in call_usermodehelper()
  / queue_work() / wait_for_completion()
-References: <bug-12201-10286@http.bugzilla.kernel.org/> <20081211143758.510b51b6.akpm@linux-foundation.org>
-In-Reply-To: <20081211143758.510b51b6.akpm@linux-foundation.org>
+References: <bug-12201-10286@http.bugzilla.kernel.org/> <20081211143758.510b51b6.akpm@linux-foundation.org> <20081211225158.GA2169@ioremap.net> <20081211230521.GA2392@ioremap.net>
+In-Reply-To: <20081211230521.GA2392@ioremap.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It'd be great if you could test something more recent please.
+> Btw, does this ugly hack fix the problem?
+> According to your description it may be the case.
+> 
+> diff --git a/net/netlink/af_netlink.c b/net/netlink/af_netlink.c
+> index 480184a..2b64eb5 100644
+> --- a/net/netlink/af_netlink.c
+> +++ b/net/netlink/af_netlink.c
+> @@ -434,6 +434,10 @@ static int netlink_create(struct net *net, struct socket *sock, int protocol)
+>  	if (protocol < 0 || protocol >= MAX_LINKS)
+>  		return -EPROTONOSUPPORT;
+>  
+> +#ifndef CONFIG_AUDIT
+> +	if (protocol == NETLINK_AUDIT)
+> +		return -EPROTONOSUPPORT;
+> +#endif
+>  	netlink_lock_table();
+>  #ifdef CONFIG_MODULES
+>  	if (!nl_table[protocol].registered) {
+> 
+> 
 
-Will do.  It takes a little bit of time to reproduce, so I'll respond 
-now with information from my current kernel and update once the new 
-kernel is running.
+Yes, that would take care of it.  My original workaround was to disable 
+CONFIG_KMOD.  I only have a few modules compiled (for servers that 
+require those modules), but most of my servers don't need any modules. 
+This would allow me to manually load modules myself and never have to 
+worry about the kernel forking stuff in userspace.  Unfortunately, it 
+appears that CONFIG_KMOD is being deprecated soon and I didn't want to 
+rely on it.
 
-> Please attach a copy of the config to
-> http://bugzilla.kernel.org/show_bug.cgi?id=12201
-
-Done: http://bugzilla.kernel.org/attachment.cgi?id=19263
-
-> Please get sysrq working then get us a task trace, so we can see who is
-> sleeping where.  Do this:
-
-Done: http://bugzilla.kernel.org/attachment.cgi?id=19264
-
-I wanted to get the call to /sbin/modprobe in there as well, so I had to 
-do it about 10 times before I could catch it.  I also stopped 
-unimportant processes on that box to eliminate additional variables.
-
-There is one other variable I didn't mention.  The machine is diskless 
-and running on an nfs root.  I have tried to eliminate this variable via 
-simple testing (just running /sbin/modprobe at the commandline returns 
-instantly), but wanted to mention it.
-
-The box was 100% idle before starting the pilot program and running the 
-task trace.  I added gettimeofday() around my socket() call and got 
-about 1290000us - 1490000us on average.  Using a socket() call with 
-protocol NETLINK_ROUTE returns in about 5us - 8us.  Certain other 
-protocol types like NETLINK_FIREWALL also have the same long delay.
-
+What is the core reason for removing CONFIG_KMOD?  I personally would 
+rather have the choice as to whether my kernel tries to find its own 
+modules or not.
 
 Michael Spiegle
 mike@nauticaltech.com
