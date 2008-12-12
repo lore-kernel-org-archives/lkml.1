@@ -1,247 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755021AbYLLVfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYLLVlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755021AbYLLVfu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 16:35:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYLLVfn
+	id S1754919AbYLLVlU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 16:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbYLLVlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 16:35:43 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:62310 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752944AbYLLVfm (ORCPT
+	Fri, 12 Dec 2008 16:41:12 -0500
+Received: from mailrelay002.isp.belgacom.be ([195.238.6.175]:15609 "EHLO
+	mailrelay002.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752944AbYLLVlL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 16:35:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=UsrlIm3/x+svos+eSbDsTwzLzm22Lnii87j2xgJKwZOtYOB4vpIUf1pSXWTGzSwEhq
-         S42WgHNfXD4HY5DLGxWze4ZW+VhuocH8+ufA05tOd86+Qz9qkdwSDUmHI9aI9cq1363I
-         WntmyIx3Zy5QdMXmrOp0jwKgoFafWkmvmc4TQ=
-Date: Sat, 13 Dec 2008 00:35:38 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       fweisbec <fweisbec@gmail.com>
-Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
-Message-ID: <20081212213538.GA731@localhost>
-References: <20081212184136.GB14192@localhost> <1229113167.32623.12.camel@localhost.localdomain> <20081212204724.GA26194@localhost> <alpine.DEB.1.10.0812121552360.19351@gandalf.stny.rr.com> <20081212205729.GA28554@localhost> <alpine.DEB.1.10.0812121620520.19351@gandalf.stny.rr.com>
+	Fri, 12 Dec 2008 16:41:11 -0500
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhUBAEtoQklR8VSS/2dsb2JhbAAIz2OCfQ
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/1] MAINTAINERS: mark linux-uvc-devel as subscribers only
+Date: Fri, 12 Dec 2008 22:41:13 +0100
+User-Agent: KMail/1.9.9
+Cc: mchehab@infradead.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+References: <1228910967-25548-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1228910967-25548-1-git-send-email-jirislaby@gmail.com>
+X-Face: 4Mf^tnii7k\_EnR5aobBm6Di[DZ9@AX1wJ"okBdX-UoJ>:SRn]c6DDU"qUIwfs98vF>=?utf-8?q?Tnf=0A=09SacR=7B?=(0Du"N%_.#X]"TXx)A'gKB1i7SK$CTLuy{h})c=g:'w3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0812121620520.19351@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200812122241.13266.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Steven Rostedt - Fri, Dec 12, 2008 at 04:22:49PM -0500]
-...
-| > Index: linux-2.6.git/arch/x86/include/asm/ftrace.h
-| > ===================================================================
-| > --- linux-2.6.git.orig/arch/x86/include/asm/ftrace.h
-| > +++ linux-2.6.git/arch/x86/include/asm/ftrace.h
-| > @@ -1,6 +1,33 @@
-| >  #ifndef _ASM_X86_FTRACE_H
-| >  #define _ASM_X86_FTRACE_H
-| >  
-| > +#ifdef __ASSEMBLY__
-| 
-| Why add assembly condition? We only want this if CONFIG_FUNCTION_TRACER 
-| is enabled, right?  We could combine it with the current #ifndef inside 
-| the CONFIG_FUNCTION_TRACER. But I would make do:
-| 
-| #ifdef __ASSEMBLY__
-| <your stuff>
-| #else
-| < C stuff >
-| #endif
-| 
-| -- Steve
+Hi Jiri,
 
-Steve, here is how it could look like:
-(I liked first proposal more :)
+thanks for the patch.
 
----
- arch/x86/include/asm/ftrace.h |   36 ++++++++++++++++++++++----
- arch/x86/kernel/entry_64.S    |   57 +++++-------------------------------------
- 2 files changed, 37 insertions(+), 56 deletions(-)
+On Wednesday 10 December 2008, Jiri Slaby wrote:
+> Posting to linux-uvc-devel is restricted to members.
+> You can subscribe to the list at ...
 
-Index: linux-2.6.git/arch/x86/include/asm/ftrace.h
-===================================================================
---- linux-2.6.git.orig/arch/x86/include/asm/ftrace.h
-+++ linux-2.6.git/arch/x86/include/asm/ftrace.h
-@@ -1,11 +1,37 @@
- #ifndef _ASM_X86_FTRACE_H
- #define _ASM_X86_FTRACE_H
- 
-+#ifdef __ASSEMBLY__
-+
-+	.macro FTRACE_SAVE_FRAME
-+	/* taken from glibc */
-+	subq $0x38, %rsp
-+	movq %rax, (%rsp)
-+	movq %rcx, 8(%rsp)
-+	movq %rdx, 16(%rsp)
-+	movq %rsi, 24(%rsp)
-+	movq %rdi, 32(%rsp)
-+	movq %r8, 40(%rsp)
-+	movq %r9, 48(%rsp)
-+	.endm
-+
-+	.macro FTRACE_RESTORE_FRAME
-+	movq 48(%rsp), %r9
-+	movq 40(%rsp), %r8
-+	movq 32(%rsp), %rdi
-+	movq 24(%rsp), %rsi
-+	movq 16(%rsp), %rdx
-+	movq 8(%rsp), %rcx
-+	movq (%rsp), %rax
-+	addq $0x38, %rsp
-+	.endm
-+
-+#else /* !__ASSEMBLY__ */
-+
- #ifdef CONFIG_FUNCTION_TRACER
- #define MCOUNT_ADDR		((long)(mcount))
- #define MCOUNT_INSN_SIZE	5 /* sizeof mcount call */
- 
--#ifndef __ASSEMBLY__
- extern void mcount(void);
- 
- static inline unsigned long ftrace_call_adjust(unsigned long addr)
-@@ -25,13 +51,10 @@ struct dyn_arch_ftrace {
- };
- 
- #endif /*  CONFIG_DYNAMIC_FTRACE */
--#endif /* __ASSEMBLY__ */
- #endif /* CONFIG_FUNCTION_TRACER */
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- 
--#ifndef __ASSEMBLY__
--
- /*
-  * Stack of return addresses for functions
-  * of a thread.
-@@ -46,11 +69,12 @@ struct ftrace_ret_stack {
- /*
-  * Primary handler of a function return.
-  * It relays on ftrace_return_to_handler.
-- * Defined in entry32.S
-+ * Defined in entry_32/64.S
-  */
- extern void return_to_handler(void);
- 
--#endif /* __ASSEMBLY__ */
- #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
- 
-+#endif /* !__ASSEMBLY__ */
-+
- #endif /* _ASM_X86_FTRACE_H */
-Index: linux-2.6.git/arch/x86/kernel/entry_64.S
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/entry_64.S
-+++ linux-2.6.git/arch/x86/kernel/entry_64.S
-@@ -70,15 +70,7 @@ ENTRY(ftrace_caller)
- 	cmpl $0, function_trace_stop
- 	jne  ftrace_stub
- 
--	/* taken from glibc */
--	subq $0x38, %rsp
--	movq %rax, (%rsp)
--	movq %rcx, 8(%rsp)
--	movq %rdx, 16(%rsp)
--	movq %rsi, 24(%rsp)
--	movq %rdi, 32(%rsp)
--	movq %r8, 40(%rsp)
--	movq %r9, 48(%rsp)
-+	FTRACE_SAVE_FRAME
- 
- 	movq 0x38(%rsp), %rdi
- 	movq 8(%rbp), %rsi
-@@ -88,14 +80,7 @@ ENTRY(ftrace_caller)
- ftrace_call:
- 	call ftrace_stub
- 
--	movq 48(%rsp), %r9
--	movq 40(%rsp), %r8
--	movq 32(%rsp), %rdi
--	movq 24(%rsp), %rsi
--	movq 16(%rsp), %rdx
--	movq 8(%rsp), %rcx
--	movq (%rsp), %rax
--	addq $0x38, %rsp
-+	FTRACE_RESTORE_FRAME
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- .globl ftrace_graph_call
-@@ -129,15 +114,7 @@ ftrace_stub:
- 	retq
- 
- trace:
--	/* taken from glibc */
--	subq $0x38, %rsp
--	movq %rax, (%rsp)
--	movq %rcx, 8(%rsp)
--	movq %rdx, 16(%rsp)
--	movq %rsi, 24(%rsp)
--	movq %rdi, 32(%rsp)
--	movq %r8, 40(%rsp)
--	movq %r9, 48(%rsp)
-+	FTRACE_SAVE_FRAME
- 
- 	movq 0x38(%rsp), %rdi
- 	movq 8(%rbp), %rsi
-@@ -145,14 +122,7 @@ trace:
- 
- 	call   *ftrace_trace_function
- 
--	movq 48(%rsp), %r9
--	movq 40(%rsp), %r8
--	movq 32(%rsp), %rdi
--	movq 24(%rsp), %rsi
--	movq 16(%rsp), %rdx
--	movq 8(%rsp), %rcx
--	movq (%rsp), %rax
--	addq $0x38, %rsp
-+	FTRACE_RESTORE_FRAME
- 
- 	jmp ftrace_stub
- END(mcount)
-@@ -164,14 +134,7 @@ ENTRY(ftrace_graph_caller)
- 	cmpl $0, function_trace_stop
- 	jne ftrace_stub
- 
--	subq $0x38, %rsp
--	movq %rax, (%rsp)
--	movq %rcx, 8(%rsp)
--	movq %rdx, 16(%rsp)
--	movq %rsi, 24(%rsp)
--	movq %rdi, 32(%rsp)
--	movq %r8, 40(%rsp)
--	movq %r9, 48(%rsp)
-+	FTRACE_SAVE_FRAME
- 
- 	leaq 8(%rbp), %rdi
- 	movq 0x38(%rsp), %rsi
-@@ -179,14 +142,8 @@ ENTRY(ftrace_graph_caller)
- 
- 	call	prepare_ftrace_return
- 
--	movq 48(%rsp), %r9
--	movq 40(%rsp), %r8
--	movq 32(%rsp), %rdi
--	movq 24(%rsp), %rsi
--	movq 16(%rsp), %rdx
--	movq 8(%rsp), %rcx
--	movq (%rsp), %rax
--	addq $0x38, %rsp
-+	FTRACE_RESTORE_FRAME
-+
- 	retq
- END(ftrace_graph_caller)
- 
-		- Cyrill -
+https://lists.berlios.de/mailman/listinfo/linux-uvc-devel
+
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Cc: Laurent Pinchart <laurent.pinchart@skynet.be>
+> Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+
+Acked-by: Laurent Pinchart <laurent.pinchart@skynet.be>
+
+> ---
+>  MAINTAINERS |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index d7de513..ec5a7c3 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4571,7 +4571,7 @@ S:	Maintained
+>  USB VIDEO CLASS
+>  P:	Laurent Pinchart
+>  M:	laurent.pinchart@skynet.be
+> -L:	linux-uvc-devel@lists.berlios.de
+> +L:	linux-uvc-devel@lists.berlios.de (subscribers-only)
+>  L:	video4linux-list@redhat.com
+>  W:	http://linux-uvc.berlios.de
+>  S:	Maintained
+
+Mauro, can you please apply this ?
+
+Regards,
+
+Laurent Pinchart
