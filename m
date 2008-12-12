@@ -1,141 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758207AbYLLJZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbYLLJ1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758207AbYLLJZE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 04:25:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbYLLJYq
+	id S1758260AbYLLJ1V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 04:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbYLLJ1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 04:24:46 -0500
-Received: from viefep13-int.chello.at ([62.179.121.33]:37846 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755894AbYLLJYo (ORCPT
+	Fri, 12 Dec 2008 04:27:05 -0500
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:20803 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756699AbYLLJ1B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 04:24:44 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [patch] Performance Counters for Linux, v3
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: eranian@gmail.com
-Cc: Vince Weaver <vince@deater.net>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <7c86c4470812120059s7f8e64a6h91ebeadbf938858d@mail.gmail.com>
-References: <20081211155230.GA4230@elte.hu>
-	 <Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
-	 <1229070345.12883.12.camel@twins>
-	 <7c86c4470812120059s7f8e64a6h91ebeadbf938858d@mail.gmail.com>
+	Fri, 12 Dec 2008 04:27:01 -0500
+X-YMail-OSG: 3pG1OaoVM1m8opa0sU7z.xOl2LK.fJG04XrivDc2ZYVOzxSIE65mSKypVQPg8WZsrwnp_E52HlZv8pxu3OkpBHPCyBKHvvXonzHZH_Gw3UiMigBDFUXbjhwoq8.8UF3JsWCG_tvqnmSsSaEowX6uS6V4EZFAWaV2EDt3VLDOpuSGU8xTztlcOeZgEKc-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH Target_Core_Mod 0/12]: Make v3.0 storage engine code generic
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Hannes Reinecke <hare@suse.de>,
+       Ming Zhang <blackmagic02881@gmail.com>,
+       "Ross S. W. Walker" <rswwalker@gmail.com>,
+       Arne Redlich <agr@powerkom-dd.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain
-Date: Fri, 12 Dec 2008 10:23:54 +0100
-Message-Id: <1229073834.12883.41.camel@twins>
+Date: Fri, 12 Dec 2008 01:26:58 -0800
+Message-Id: <1229074018.4153.630.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-12 at 09:59 +0100, stephane eranian wrote:
-> Peter,
-> 
-> On Fri, Dec 12, 2008 at 9:25 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > On Thu, 2008-12-11 at 13:02 -0500, Vince Weaver wrote:
-> >
-> 
-> >> Perfmon3 works for all of those 60 machines.  This new proposal works on a
-> >> 2 out of the 60.
-> >
-> > s/works/is implemented/
-> >
-> >> Who is going to add support for all of those machines?  I've spent a lot
-> >> of developer time getting prefmon going for all of those configurations.
-> >> But why should I help out with this new inferior proposal?  It could all
-> >> be another waste of time.
-> >
-> > So much for constructive critisism.. have you tried taking the design to
-> > its limits, if so, where do you see problems?
-> >
-> People have pointed out problems, but you keep forgetting to answer them.
+Greetings all,
 
-I thought some of that (and surely more to follow) has been
-incorporated.
+This patch series adds generic se_portal_group_t and se_node_acl_t
+functionality.  It also removes virtually all LIO-Target and iSCSI
+target code from Target_Core_Mod/ConfigFS.  They are made against
+against lio-core-2.6.git/master and tested on
+v2.6.28-rc7.
 
-> For instance, people have pointed out that your design necessarily implies
-> pulling into the kernel the event table for all PMU models out there. This
-> is not just data, this is also complex algorithms to assign events to counters.
-> The constraints between events can be very tricky to solve. If you get this
-> wrong, this leads to silent errors, and that is really bad.
+To see the bleeding edge of generic target development using multiple
+Linux storage subsystems using ConfigFS, please have a look at:
 
-(well, its not my design - I'm just trying to see how far we can push it
-out of sheer curiosity)
+http://linux-iscsi.org/index.php/Target_Core_Mod/ConfigFS
 
-This has to be done anyway, and getting it wrong in userspace is just as
-bad no? 
+Here are the patches:
 
-The _ONLY_ technical argument I've seen to do this in userspace is that
-these tables and text segments are unswappable in-kernel - which doesn't
-count too heavily in my book.
+[Target_Core_Mod 1/12] Add generic target portal group infrastructure
+[Target_Core_Mod 2/12]: Add generic target se_device_t and LUN ACL infrastructure
+[Target_Core_Mod 3/12]: Update struct target_core_fabric_ops API
+[Target_Core_Mod 4/12]: Updates for target_core_base.h
+[Target_Core_Mod 5/12]: Remove iSCSI includes from target_core_seobj.c
+[Target_Core_Mod 6/12]: Updates for target_core_hba.c
+[Target_Core_Mod 7/12]: Update generic REPORT_LUN code
+[Target_Core_Mod 8/12]: Update SE Object code for target_core_base.h
+[Target_Core_Mod 9/12]: Update PSCSI, IBLOCK, FILEIO and RAMDISK subsystem plugins
+[Target_Core_Mod/MIB 10/12]: Update SCSI MIBs
+[Target_Core_Mod 11/12]: Update target_core_transport.c for new generic code
+[Target_Core_Mod/ConfigFS 12/12]: Remove do_configfs_mkdir() and do_configfs_rmdir()
 
-> Looking at Intel Core, Nehalem, or AMD64 does not reflect the reality of
-> the complexity of this. Paul pointed out earlier the complexity on Power.
-> I can relate to the complexity on Itanium (I implemented all the code in
-> the user level libpfm for them).  Read the Itanium PMU description and I
-> hope you'll understand.
 
-Again, I appreciate the fact that multi-dimensional constraint solving
-isn't easy. But any which way we turn this thing, it still needs to be
-done.
+Here is what it looks from dmesg:
 
-> Events constraints are not going away anytime soon, quite the contrary.
-> 
-> Furthermore, event tables are not always correct. In fact, they are
-> always bogus.
-> Event semantics varies between steppings. New events shows up, others
-> get removed.
-> Constraints are discovered later on.
-> 
-> If you have all of that in the kernel, it means you'll have to
-> generate a kernel patch each
-> time. Even if that can be encapsulated into a kernel module, you will
-> still have problems.
+TARGET_CORE[0]: Loading Generic Kernel Storage Engine: v3.0.0 on Linux/i686 on 2.6.28-rc7
+TARGET_CORE[0]: Initialized ConfigFS Fabric Infrastructure: v1.0.0 on Linux/i686 on 2.6.28-rc7
+SE_PC[1] - Registered Plugin Class: TRANSPORT
+PLUGIN_TRANSPORT[1] - pscsi registered
+PLUGIN_TRANSPORT[4] - iblock registered
+PLUGIN_TRANSPORT[5] - rd_dr registered
+PLUGIN_TRANSPORT[6] - rd_mcp registered
+PLUGIN_TRANSPORT[7] - fileio registered
+SE_PC[2] - Registered Plugin Class: OBJ
+PLUGIN_OBJ[1] - dev registered
+Target_Core_ConfigFS: Located se_plugin: ca3c1090 plugin_name: iblock hba_type: 4 plugin_dep_id: 0
+CORE_HBA[0] - Linux-iSCSI.org iBlock HBA Driver v3.0 on Generic Target Core Stack v3.0.0
+CORE_HBA[0] - Attached iBlock HBA: 0 to Generic Target Core TCQ Depth: 512
+CORE_HBA[0] - Attached HBA to Generic Target Core
+IBLOCK: Allocated ib_dev for lvm_test0
+Target_Core_ConfigFS: Allocated se_subsystem_dev_t: cfab7400 se_dev_su_ptr: cf38f600
+IBLOCK: Claiming struct block_device: cf636f00
+IBLOCK: Created bio_set() for major/minor: 254:2
+CORE_iBLOCK[0] - Activating Device with TCQ: 0 at Major: 254 Minor 2
+  Vendor: LIO-ORG   Model: IBLOCK            Revision: v3.0
+  Type:   Direct-Access                      ANSI SCSI revision: 02
+T10 EVPD Unit Serial Number: 1234567890:0_254_2
+T10 EVPD Device Identifier: LIO-ORG IBLOCK:1234567890:0_254_2
+Target_Core_ConfigFS: Registered iblock se_dev->se_dev_ptr: c8a4e000 from fd
+Target_Core_ConfigFS: Located se_plugin: ca3c1024 plugin_name: pscsi hba_type: 1 plugin_dep_id: 0
+CORE_HBA[1] - Linux-iSCSI.org Parallel SCSI HBA Driver v3.0 on Generic Target Core Stack v3.0.0
+CORE_HBA[1] - MPT SPI Host
+CORE_HBA[1] - Attached Parallel SCSI HBA to Generic Target Core with TCQ Depth: 127 MaxSectors: 8192
+CORE_HBA[1] - Attached HBA to Generic Target Core
+PSCSI: Allocated pdv: c7d63220 for sdd
+Target_Core_ConfigFS: Allocated se_subsystem_dev_t: c8b7f200 se_dev_su_ptr: c7d63220
+PSCSI: Claiming cf3f0000 Major:Minor - 8:48
+CORE_PSCSI[0] - Activating Device with TCQ: 32 at Parallel SCSI Location (Channel/Target/LUN) 0/3/0
+  Vendor: VMware,   Model: VMware Virtual S  Revision: 1.0 
+  Type:   Direct-Access                      ANSI SCSI revision: 02
+PSCSI Status Byte exception at task: cf9ee400 CDB: 0x12 Result: 0x08000002
+CORE_PSCSI[0] - Added TYPE_DISK for 0:3:0
+Target_Core_ConfigFS: Registered pscsi se_dev->se_dev_ptr: cedca400 from fd
 
-How is updating a kernel module (esp one that only contains constraint
-tables) more difficult than upgrading a user-space library? That just
-doesn't make sense.
+Comments..?
 
-> Furthermore, Linux commercial distribution release cycles do not
-> align well with new processor
-> releases. I can boot my RHEL5 kernel on a Nehalem system and it would
-> be  nice not to have to
-> wait for a new kernel update to get the full Nehalem PMU event table,
-> so I can program more than
-> the basic 6 architected events of Intel X86.
+--nab
 
-Talking with my community hat on, that is an artificial problem created
-by distributions, tell them to fix it.
-
-All it requires is a new kernel module that describes the new chip,
-surely that can be shipped as easily as a new library.
-
-> I know the argument about the fact that you'll have a patch with 24h
-> on kernel.org. The problem
-> is that no end-user runs a kernel.org kernel, nobody. Changing the
-> kernel is not an option for
-> many end-users, it may even require re-certifications for many customers.
-> 
-> I believe many people would like to see how you plan on addressing those issues.
-
-You're talking to LKML here - we don't care about stuff older than -git
-(well, only a little, but not much more beyond n-1).
-
-What we do care about is technical arguments, and last time I checked,
-hardware resource scheduling was an OS level job.
-
-But if the PMU control is critical to the enterprise deployment of
-$customer, then he would have to re-certify on the library update too.
-
-If its only development phase stuff, then the deployment machines won't
-even load the module so there'd be no problem anyway.
 
