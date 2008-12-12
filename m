@@ -1,91 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758395AbYLLO2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbYLLO2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758395AbYLLO2L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 09:28:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbYLLO1t
+	id S1759307AbYLLO2a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 09:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbYLLO2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 09:27:49 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:34959 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758638AbYLLO1s (ORCPT
+	Fri, 12 Dec 2008 09:28:16 -0500
+Received: from mga03.intel.com ([143.182.124.21]:36411 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758469AbYLLO2N convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 09:27:48 -0500
-Subject: Re: [PATCH 03/15] kmemleak: Add the slab memory allocation/freeing
-	hooks
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <494184AA.8090509@cs.helsinki.fi>
-References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
-	 <20081210182710.30323.57396.stgit@pc1117.cambridge.arm.com>
-	 <494184AA.8090509@cs.helsinki.fi>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 12 Dec 2008 14:27:45 +0000
-Message-Id: <1229092065.15045.35.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Dec 2008 14:27:46.0130 (UTC) FILETIME=[CD393320:01C95C65]
+	Fri, 12 Dec 2008 09:28:13 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,211,1228118400"; 
+   d="scan'208";a="89521957"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+CC: "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
+       "g.liakhovetski@gmx.de" <g.liakhovetski@gmx.de>,
+       "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
+Date: Fri, 12 Dec 2008 14:27:57 +0000
+Subject: RE: [PATCH 00/13] dmaengine redux
+Thread-Topic: [PATCH 00/13] dmaengine redux
+Thread-Index: AclGoMsU6YZ+Hxk4TYeyc70tVt3p6wVwfqpg
+Message-ID: <129600E5E5FB004392DDC3FB599660D70C8F3402@irsmsx504.ger.corp.intel.com>
+References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-11 at 23:22 +0200, Pekka Enberg wrote:
-> Catalin Marinas wrote:
-> > @@ -2610,6 +2611,13 @@ static struct slab *alloc_slabmgmt(struct kmem_cache *cachep, void *objp,
-> >  		/* Slab management obj is off-slab. */
-> >  		slabp = kmem_cache_alloc_node(cachep->slabp_cache,
-> >  					      local_flags & ~GFP_THISNODE, nodeid);
-> > +		/*
-> > +		 * Only scan the list member to avoid false negatives
-> > +		 * (especially caused by the s_mem pointer)
-> > +		 */
+Williams, Dan J wrote:
+> The dmaengine subsystem collects and advertises dma channels for two
+> classes of users in the kernel, memory-to-memory offload and
+> traditional device-to-memory DMA.  The original design was driven by
+> the memory-to-memory case and is starting to show its limitations now
+> that more device-to-memory DMA users are being planned.  The primary
+> difference between the two classes is that memory-to-memory offload
+> is very amenable to channel sharing and is tolerant of dynamic
+> channel changes.  Compare this to the device-to-memory case where a
+> channel must be dedicated to a device and may have platform-specific
+> reasons why it cannot talk to a different device. 
 > 
-> Heh, I run into this part again and as I have a long term memory of a 
-> goldfish I had to look up the discussion we had. So may I suggest you 
-> change the comment to:
+> This rework allows channels to be targeted to a public (mem-to-mem)
+> pool or be reserved for an exclusive private (dev-to-mem) allocation.
+> See [PATCH 1/13] for documentation of the changes.  A nice side
+> effect of the rework is: 
 > 
-> /*
->   * If the first object in the slab is leaked (it's allocated but no
->   * one has a reference to it), we want to make sure kmemleak does not
->   * treat the ->s_mem pointer as a reference to the object. Otherwise
->   * we will not report the leak.
->   */
-
-OK, thanks. It's more verbose but it makes it pretty clear.
-
-> > +		memleak_scan_area(slabp, offsetof(struct slab, list),
-> > +				  sizeof(struct list_head),
-> > +				  local_flags & ~GFP_THISNODE);
-> >  		if (!slabp)
-> >  			return NULL;
-> >  	} else {
-> > @@ -3195,6 +3203,8 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
-> >  		STATS_INC_ALLOCMISS(cachep);
-> >  		objp = cache_alloc_refill(cachep, flags);
-> >  	}
-> > +	/* avoid false negatives */
-> > +	memleak_erase(&ac->entry[ac->avail]);
+>  24 files changed, 679 insertions(+), 1108 deletions(-)
 > 
-> For this, maybe something like this:
+> All review welcomed, especially around the dma_slave changes, or
+> performance impacts of dma_find_channel.
 > 
-> /*
->   * To avoid a false negative, if an object that is in one of the
->   * per-CPU caches is leaked, we need to make sure kmemleak doesn't
->   * treat the array pointers as a reference to the object.
->   */
-
-OK.
-
-> >  	return objp;
-> >  }
-> >  
+> These patches are currently on async_tx.git/upstream, and barring any
+> brown-paper-bag issues will move to linux-next via async_tx.git/next.
 > 
-> Do you take care of the per-node lists as well?
+>   git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git
+> upstream 
+> 
+> ---
+> Dan Williams (13):
+>       dmaengine: kill enum dma_state_client
+>       dmaengine: remove 'bigref' infrastructure
+>       dmaengine: kill struct dma_client and supporting infrastructure
+>       dmaengine: replace dma_async_client_register with dmaengine_get
+>       atmel-mci: convert to dma_request_channel and down-level
+>       dma_slave dmatest: convert to dma_request_channel
+>       dmaengine: introduce dma_request_channel and private channels
+>       net_dma: convert to dma_find_channel
+>       dmaengine: provide a common 'issue_pending_all' implementation
+>       dmaengine: centralize channel allocation, introduce
+>       dma_find_channel dmaengine: up-level reference counting to the
+>       module level dmaengine: remove dependency on async_tx
+>       async_tx, dmaengine: document channel allocation and api rework
+> 
+>  Documentation/crypto/async-tx-api.txt |  135 +++----
+>  Documentation/dmaengine.txt           |    1
+>  arch/avr32/include/asm/atmel-mci.h    |    6
+>  arch/avr32/mach-at32ap/at32ap700x.c   |   15 -
+>  crypto/async_tx/async_tx.c            |  350 ------------------
+>  drivers/dma/Kconfig                   |    2
+>  drivers/dma/dmaengine.c               |  637
+>  +++++++++++++++++++++++---------- drivers/dma/dmatest.c             
+>  |  111 ++---- drivers/dma/dw_dmac.c                 |   28 -
+>  drivers/dma/fsldma.c                  |    3
+>  drivers/dma/ioat_dma.c                |    5
+>  drivers/dma/iop-adma.c                |   11 -
+>  drivers/dma/mv_xor.c                  |   11 -
+>  drivers/mmc/host/atmel-mci.c          |  103 +----
+>  include/linux/async_tx.h              |   17 -
+>  include/linux/dmaengine.h             |  148 ++------
+>  include/linux/dw_dmac.h               |   31 +-
+>  include/linux/netdevice.h             |    3
+>  include/net/netdma.h                  |   11 -
+>  net/core/dev.c                        |  148 --------
+>  net/ipv4/tcp.c                        |    5
+>  net/ipv4/tcp_input.c                  |    2
+>  net/ipv4/tcp_ipv4.c                   |    2
+>  net/ipv6/tcp_ipv6.c                   |    2
+>  24 files changed, 679 insertions(+), 1108 deletions(-)
+>  create mode 100644 Documentation/dmaengine.txt
 
-I can't figure out what other location should be erased.
+Dan,
 
--- 
-Catalin
+First of all sorry for delay in my feedback on this.
+I have been absent for couple of weeks and last days
+I was struggling with some ioatdma hot issues.
 
+I have walked through these patches and generally
+I like the whole redesign/reduction idea.
+There are couple of concerns/questions (+ minor comments) from my side
+to three of these patches: 3, 7 and 11.
+I will send them in a minute.
+The rest of them looks good to me at this point.
+
+Next week I am planning to run some tests on my I/OAT setup,
+to see how this new dmaengine would behave in this environment.
+I will let you know.
+
+Regards,
+Maciej
