@@ -1,629 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758739AbYLLFXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbYLLFY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758739AbYLLFXR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 00:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbYLLFVr
+	id S1758081AbYLLFY5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 00:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYLLFYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 00:21:47 -0500
-Received: from sh.osrg.net ([192.16.179.4]:37947 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757945AbYLLFVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 00:21:41 -0500
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH mmotm 3/5] nilfs2: avoid double error caused by nilfs_transaction_end
-Date: Fri, 12 Dec 2008 14:16:59 +0900
-Message-Id: <1229059021-9538-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1229059021-9538-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-References: <1229059021-9538-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1229059021-9538-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1229059021-9538-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Dispatcher: imput version 20050308(IM148)
+	Fri, 12 Dec 2008 00:24:46 -0500
+Received: from rn-out-0910.google.com ([64.233.170.191]:12605 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbYLLFYp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 00:24:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=J5fSvnK/yBvazO2OOFaFGLX3V0FcA9Pum56kzQHKDm4h2Xx7cHSGf2vNwH0GJlVMvZ
+         gx1X8Ysuno6dscetQQ/bhYhSwBXkNs3AJ7UjFXFQfVjbxLG/NiDXuGM2Cccq7/awJgi2
+         SCC8eknHvXvnhfWfyQe4VWSFRKrk+twJkTc9E=
+Message-ID: <9929d2390812112124r3632d551we7c95237c23d9137@mail.gmail.com>
+Date: Thu, 11 Dec 2008 21:24:43 -0800
+From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
+To: davem@davemloft.net
+Subject: Re: [PATCH] e1000e: fix double release of mutex
+Cc: netdev@vger.kernel.org, stable@kernel.org, linux-kernel@vger.kernel.org,
+       "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
+In-Reply-To: <20081212052025.3298.151.stgit@lost.foo-projects.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081212052025.3298.151.stgit@lost.foo-projects.org>
+X-Google-Sender-Auth: bd8219f963f1707e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg pointed out that double error handlings found after
-nilfs_transaction_end() can be avoided by separating abort operation:
+On Thu, Dec 11, 2008 at 9:20 PM, Jeff Kirsher
+<jeffrey.t.kirsher@intel.com> wrote:
+> During a reset, releasing the swflag after it failed to be acquired would
+> cause a double unlock of the mutex.  Instead, test whether acquisition of
+> the swflag was successful and if not, do not release the swflag.  The reset
+> must still be done to bring the device to a quiescent state.
+>
+> This resolves [BUG 12200] BUG: bad unlock balance detected! e1000e
+> http://bugzilla.kernel.org/show_bug.cgi?id=12200
+>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> ---
+>
+>  drivers/net/e1000e/ich8lan.c |    9 +++++++--
+>  1 files changed, 7 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/e1000e/ich8lan.c b/drivers/net/e1000e/ich8lan.c
+> index 523b971..d115a6d 100644
+> --- a/drivers/net/e1000e/ich8lan.c
+> +++ b/drivers/net/e1000e/ich8lan.c
+> @@ -1893,12 +1893,17 @@ static s32 e1000_reset_hw_ich8lan(struct e1000_hw *hw)
+>                ctrl |= E1000_CTRL_PHY_RST;
+>        }
+>        ret_val = e1000_acquire_swflag_ich8lan(hw);
+> +       /* Whether or not the swflag was acquired, we need to reset the part */
+>        hw_dbg(hw, "Issuing a global reset to ich8lan");
+>        ew32(CTRL, (ctrl | E1000_CTRL_RST));
+>        msleep(20);
+>
+> -       /* release the swflag because it is not reset by hardware reset */
+> -       e1000_release_swflag_ich8lan(hw);
+> +       if (!ret_val) {
+> +               /* release the swflag because it is not reset by
+> +                * hardware reset
+> +                */
+> +               e1000_release_swflag_ich8lan(hw);
+> +       }
+>
+>        ret_val = e1000e_get_auto_rd_done(hw);
+>        if (ret_val) {
+>
+> --
+>
 
- OK, I don't understand this. The only way nilfs_transaction_end() can
- fail is if we have NILFS_TI_SYNC set and we fail to construct the
- segment. But why do we want to construct a segment if we don't commit?
+I meant to put [RESPIN] in the title, but I did not.  So here is the respin.
 
- I guess what I'm asking is why don't we have a separate
- nilfs_transaction_abort() function that can't fail for the erroneous
- case to avoid this double error value tracking thing?
-
-This does the separation and renames nilfs_transaction_end() to
-nilfs_transaction_commit() for clarification.
-
-Since, some calls of these functions were used just for exclusion
-control against the segment constructor, they are replaced with
-semaphore operations.
-
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
----
- fs/nilfs2/inode.c     |   23 +++++++++------
- fs/nilfs2/ioctl.c     |   58 ++++++++++++++++++++++----------------
- fs/nilfs2/mdt.c       |    5 ++-
- fs/nilfs2/namei.c     |   74 +++++++++++++++++++++++++++++++++---------------
- fs/nilfs2/nilfs.h     |    3 +-
- fs/nilfs2/segment.c   |   43 ++++++++++++++++++----------
- fs/nilfs2/the_nilfs.h |    4 +-
- 7 files changed, 135 insertions(+), 75 deletions(-)
-
-diff --git a/fs/nilfs2/inode.c b/fs/nilfs2/inode.c
-index b4697d9..e29e329 100644
---- a/fs/nilfs2/inode.c
-+++ b/fs/nilfs2/inode.c
-@@ -76,7 +76,6 @@ int nilfs_get_block(struct inode *inode, sector_t blkoff,
- 			goto out;
- 		err = nilfs_bmap_insert(ii->i_bmap, (unsigned long)blkoff,
- 					(unsigned long)bh_result);
--		nilfs_transaction_end(inode->i_sb, !err);
- 		if (unlikely(err != 0)) {
- 			if (err == -EEXIST) {
- 				/*
-@@ -99,8 +98,10 @@ int nilfs_get_block(struct inode *inode, sector_t blkoff,
- 					    inode->i_ino);
- 				err = -EIO;
- 			}
-+			nilfs_transaction_abort(inode->i_sb);
- 			goto out;
- 		}
-+		nilfs_transaction_commit(inode->i_sb); /* never fails */
- 		/* Error handling should be detailed */
- 		set_buffer_new(bh_result);
- 		map_bh(bh_result, inode->i_sb, 0); /* dbn must be changed
-@@ -196,7 +197,7 @@ static int nilfs_write_begin(struct file *file, struct address_space *mapping,
- 	err = block_write_begin(file, mapping, pos, len, flags, pagep,
- 				fsdata, nilfs_get_block);
- 	if (unlikely(err))
--		nilfs_transaction_end(inode->i_sb, 0);
-+		nilfs_transaction_abort(inode->i_sb);
- 	return err;
- }
- 
-@@ -214,7 +215,7 @@ static int nilfs_write_end(struct file *file, struct address_space *mapping,
- 	copied = generic_write_end(file, mapping, pos, len, copied, page,
- 				   fsdata);
- 	nilfs_set_file_dirty(NILFS_SB(inode->i_sb), inode, nr_dirty);
--	err = nilfs_transaction_end(inode->i_sb, 1);
-+	err = nilfs_transaction_commit(inode->i_sb);
- 	return err ? : copied;
- }
- 
-@@ -639,7 +640,7 @@ void nilfs_truncate(struct inode *inode)
- 		nilfs_set_transaction_flag(NILFS_TI_SYNC);
- 
- 	nilfs_set_file_dirty(NILFS_SB(sb), inode, 0);
--	nilfs_transaction_end(sb, 1);
-+	nilfs_transaction_commit(sb);
- 	/* May construct a logical segment and may fail in sync mode.
- 	   But truncate has no return value. */
- }
-@@ -667,7 +668,7 @@ void nilfs_delete_inode(struct inode *inode)
- 	/* nilfs_free_inode() marks inode buffer dirty */
- 	if (IS_SYNC(inode))
- 		nilfs_set_transaction_flag(NILFS_TI_SYNC);
--	nilfs_transaction_end(sb, 1);
-+	nilfs_transaction_commit(sb);
- 	/* May construct a logical segment and may fail in sync mode.
- 	   But delete_inode has no return value. */
- }
-@@ -677,7 +678,7 @@ int nilfs_setattr(struct dentry *dentry, struct iattr *iattr)
- 	struct nilfs_transaction_info ti;
- 	struct inode *inode = dentry->d_inode;
- 	struct super_block *sb = inode->i_sb;
--	int err, err2;
-+	int err;
- 
- 	err = inode_change_ok(inode, iattr);
- 	if (err)
-@@ -689,8 +690,12 @@ int nilfs_setattr(struct dentry *dentry, struct iattr *iattr)
- 	err = inode_setattr(inode, iattr);
- 	if (!err && (iattr->ia_valid & ATTR_MODE))
- 		err = nilfs_acl_chmod(inode);
--	err2 = nilfs_transaction_end(sb, 1);
--	return err ? : err2;
-+	if (likely(!err))
-+		err = nilfs_transaction_commit(sb);
-+	else
-+		nilfs_transaction_abort(sb);
-+
-+	return err;
- }
- 
- int nilfs_load_inode_block(struct nilfs_sb_info *sbi, struct inode *inode,
-@@ -815,5 +820,5 @@ void nilfs_dirty_inode(struct inode *inode)
- 	nilfs_transaction_begin(inode->i_sb, &ti, 0);
- 	if (likely(inode->i_ino != NILFS_SKETCH_INO))
- 		nilfs_mark_inode_dirty(inode);
--	nilfs_transaction_end(inode->i_sb, 1); /* never fails */
-+	nilfs_transaction_commit(inode->i_sb); /* never fails */
- }
-diff --git a/fs/nilfs2/ioctl.c b/fs/nilfs2/ioctl.c
-index 5ba6e4e..216bb30 100644
---- a/fs/nilfs2/ioctl.c
-+++ b/fs/nilfs2/ioctl.c
-@@ -116,7 +116,11 @@ static int nilfs_ioctl_change_cpmode(struct inode *inode, struct file *filp,
- 	nilfs_transaction_begin(inode->i_sb, &ti, 0);
- 	ret = nilfs_cpfile_change_cpmode(
- 		cpfile, cpmode.cm_cno, cpmode.cm_mode);
--	nilfs_transaction_end(inode->i_sb, !ret);
-+	if (unlikely(ret < 0)) {
-+		nilfs_transaction_abort(inode->i_sb);
-+		return ret;
-+	}
-+	nilfs_transaction_commit(inode->i_sb); /* never fails */
- 	return ret;
- }
- 
-@@ -136,7 +140,11 @@ nilfs_ioctl_delete_checkpoint(struct inode *inode, struct file *filp,
- 
- 	nilfs_transaction_begin(inode->i_sb, &ti, 0);
- 	ret = nilfs_cpfile_delete_checkpoint(cpfile, cno);
--	nilfs_transaction_end(inode->i_sb, !ret);
-+	if (unlikely(ret < 0)) {
-+		nilfs_transaction_abort(inode->i_sb);
-+		return ret;
-+	}
-+	nilfs_transaction_commit(inode->i_sb); /* never fails */
- 	return ret;
- }
- 
-@@ -153,16 +161,17 @@ static int nilfs_ioctl_get_cpinfo(struct inode *inode, struct file *filp,
- {
- 	struct the_nilfs *nilfs = NILFS_SB(inode->i_sb)->s_nilfs;
- 	struct nilfs_argv argv;
--	struct nilfs_transaction_info ti;
- 	int ret;
- 
- 	if (copy_from_user(&argv, argp, sizeof(argv)))
- 		return -EFAULT;
- 
--	nilfs_transaction_begin(inode->i_sb, &ti, 0);
-+	down_read(&nilfs->ns_segctor_sem);
- 	ret = nilfs_ioctl_wrap_copy(nilfs, &argv, _IOC_DIR(cmd),
- 				    nilfs_ioctl_do_get_cpinfo);
--	nilfs_transaction_end(inode->i_sb, 0);
-+	up_read(&nilfs->ns_segctor_sem);
-+	if (ret < 0)
-+		return ret;
- 
- 	if (copy_to_user(argp, &argv, sizeof(argv)))
- 		ret = -EFAULT;
-@@ -172,14 +181,13 @@ static int nilfs_ioctl_get_cpinfo(struct inode *inode, struct file *filp,
- static int nilfs_ioctl_get_cpstat(struct inode *inode, struct file *filp,
- 				  unsigned int cmd, void __user *argp)
- {
--	struct inode *cpfile = NILFS_SB(inode->i_sb)->s_nilfs->ns_cpfile;
-+	struct the_nilfs *nilfs = NILFS_SB(inode->i_sb)->s_nilfs;
- 	struct nilfs_cpstat cpstat;
--	struct nilfs_transaction_info ti;
- 	int ret;
- 
--	nilfs_transaction_begin(inode->i_sb, &ti, 0);
--	ret = nilfs_cpfile_get_stat(cpfile, &cpstat);
--	nilfs_transaction_end(inode->i_sb, 0);
-+	down_read(&nilfs->ns_segctor_sem);
-+	ret = nilfs_cpfile_get_stat(nilfs->ns_cpfile, &cpstat);
-+	up_read(&nilfs->ns_segctor_sem);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -200,16 +208,17 @@ static int nilfs_ioctl_get_suinfo(struct inode *inode, struct file *filp,
- {
- 	struct the_nilfs *nilfs = NILFS_SB(inode->i_sb)->s_nilfs;
- 	struct nilfs_argv argv;
--	struct nilfs_transaction_info ti;
- 	int ret;
- 
- 	if (copy_from_user(&argv, argp, sizeof(argv)))
- 		return -EFAULT;
- 
--	nilfs_transaction_begin(inode->i_sb, &ti, 0);
-+	down_read(&nilfs->ns_segctor_sem);
- 	ret = nilfs_ioctl_wrap_copy(nilfs, &argv, _IOC_DIR(cmd),
- 				    nilfs_ioctl_do_get_suinfo);
--	nilfs_transaction_end(inode->i_sb, 0);
-+	up_read(&nilfs->ns_segctor_sem);
-+	if (ret < 0)
-+		return ret;
- 
- 	if (copy_to_user(argp, &argv, sizeof(argv)))
- 		ret = -EFAULT;
-@@ -219,14 +228,13 @@ static int nilfs_ioctl_get_suinfo(struct inode *inode, struct file *filp,
- static int nilfs_ioctl_get_sustat(struct inode *inode, struct file *filp,
- 				  unsigned int cmd, void __user *argp)
- {
--	struct inode *sufile = NILFS_SB(inode->i_sb)->s_nilfs->ns_sufile;
-+	struct the_nilfs *nilfs = NILFS_SB(inode->i_sb)->s_nilfs;
- 	struct nilfs_sustat sustat;
--	struct nilfs_transaction_info ti;
- 	int ret;
- 
--	nilfs_transaction_begin(inode->i_sb, &ti, 0);
--	ret = nilfs_sufile_get_stat(sufile, &sustat);
--	nilfs_transaction_end(inode->i_sb, 0);
-+	down_read(&nilfs->ns_segctor_sem);
-+	ret = nilfs_sufile_get_stat(nilfs->ns_sufile, &sustat);
-+	up_read(&nilfs->ns_segctor_sem);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -247,16 +255,17 @@ static int nilfs_ioctl_get_vinfo(struct inode *inode, struct file *filp,
- {
- 	struct the_nilfs *nilfs = NILFS_SB(inode->i_sb)->s_nilfs;
- 	struct nilfs_argv argv;
--	struct nilfs_transaction_info ti;
- 	int ret;
- 
- 	if (copy_from_user(&argv, argp, sizeof(argv)))
- 		return -EFAULT;
- 
--	nilfs_transaction_begin(inode->i_sb, &ti, 0);
-+	down_read(&nilfs->ns_segctor_sem);
- 	ret = nilfs_ioctl_wrap_copy(nilfs, &argv, _IOC_DIR(cmd),
- 				    nilfs_ioctl_do_get_vinfo);
--	nilfs_transaction_end(inode->i_sb, 0);
-+	up_read(&nilfs->ns_segctor_sem);
-+	if (ret < 0)
-+		return ret;
- 
- 	if (copy_to_user(argp, &argv, sizeof(argv)))
- 		ret = -EFAULT;
-@@ -291,16 +300,17 @@ static int nilfs_ioctl_get_bdescs(struct inode *inode, struct file *filp,
- {
- 	struct the_nilfs *nilfs = NILFS_SB(inode->i_sb)->s_nilfs;
- 	struct nilfs_argv argv;
--	struct nilfs_transaction_info ti;
- 	int ret;
- 
- 	if (copy_from_user(&argv, argp, sizeof(argv)))
- 		return -EFAULT;
- 
--	nilfs_transaction_begin(inode->i_sb, &ti, 0);
-+	down_read(&nilfs->ns_segctor_sem);
- 	ret = nilfs_ioctl_wrap_copy(nilfs, &argv, _IOC_DIR(cmd),
- 				    nilfs_ioctl_do_get_bdescs);
--	nilfs_transaction_end(inode->i_sb, 0);
-+	up_read(&nilfs->ns_segctor_sem);
-+	if (ret < 0)
-+		return ret;
- 
- 	if (copy_to_user(argp, &argv, sizeof(argv)))
- 		ret = -EFAULT;
-diff --git a/fs/nilfs2/mdt.c b/fs/nilfs2/mdt.c
-index 6ab8475..e0a632b 100644
---- a/fs/nilfs2/mdt.c
-+++ b/fs/nilfs2/mdt.c
-@@ -123,7 +123,10 @@ static int nilfs_mdt_create_block(struct inode *inode, unsigned long block,
- 	brelse(bh);
- 
-  failed_unlock:
--	nilfs_transaction_end(sb, !err);
-+	if (likely(!err))
-+		err = nilfs_transaction_commit(sb);
-+	else
-+		nilfs_transaction_abort(sb);
- 	if (writer)
- 		nilfs_put_writer(nilfs);
-  out:
-diff --git a/fs/nilfs2/namei.c b/fs/nilfs2/namei.c
-index 95d1b29..df70dad 100644
---- a/fs/nilfs2/namei.c
-+++ b/fs/nilfs2/namei.c
-@@ -109,7 +109,7 @@ static int nilfs_create(struct inode *dir, struct dentry *dentry, int mode,
- {
- 	struct inode *inode;
- 	struct nilfs_transaction_info ti;
--	int err, err2;
-+	int err;
- 
- 	err = nilfs_transaction_begin(dir->i_sb, &ti, 1);
- 	if (err)
-@@ -123,8 +123,12 @@ static int nilfs_create(struct inode *dir, struct dentry *dentry, int mode,
- 		mark_inode_dirty(inode);
- 		err = nilfs_add_nondir(dentry, inode);
- 	}
--	err2 = nilfs_transaction_end(dir->i_sb, !err);
--	return err ? : err2;
-+	if (!err)
-+		err = nilfs_transaction_commit(dir->i_sb);
-+	else
-+		nilfs_transaction_abort(dir->i_sb);
-+
-+	return err;
- }
- 
- static int
-@@ -132,7 +136,7 @@ nilfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t rdev)
- {
- 	struct inode *inode;
- 	struct nilfs_transaction_info ti;
--	int err, err2;
-+	int err;
- 
- 	if (!new_valid_dev(rdev))
- 		return -EINVAL;
-@@ -147,8 +151,12 @@ nilfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t rdev)
- 		mark_inode_dirty(inode);
- 		err = nilfs_add_nondir(dentry, inode);
- 	}
--	err2 = nilfs_transaction_end(dir->i_sb, !err);
--	return err ? : err2;
-+	if (!err)
-+		err = nilfs_transaction_commit(dir->i_sb);
-+	else
-+		nilfs_transaction_abort(dir->i_sb);
-+
-+	return err;
- }
- 
- static int nilfs_symlink(struct inode *dir, struct dentry *dentry,
-@@ -158,7 +166,7 @@ static int nilfs_symlink(struct inode *dir, struct dentry *dentry,
- 	struct super_block *sb = dir->i_sb;
- 	unsigned l = strlen(symname)+1;
- 	struct inode *inode;
--	int err, err2;
-+	int err;
- 
- 	if (l > sb->s_blocksize)
- 		return -ENAMETOOLONG;
-@@ -184,8 +192,12 @@ static int nilfs_symlink(struct inode *dir, struct dentry *dentry,
- 
- 	err = nilfs_add_nondir(dentry, inode);
- out:
--	err2 = nilfs_transaction_end(dir->i_sb, !err);
--	return err ? : err2;
-+	if (!err)
-+		err = nilfs_transaction_commit(dir->i_sb);
-+	else
-+		nilfs_transaction_abort(dir->i_sb);
-+
-+	return err;
- 
- out_fail:
- 	inode_dec_link_count(inode);
-@@ -198,7 +210,7 @@ static int nilfs_link(struct dentry *old_dentry, struct inode *dir,
- {
- 	struct inode *inode = old_dentry->d_inode;
- 	struct nilfs_transaction_info ti;
--	int err, err2;
-+	int err;
- 
- 	if (inode->i_nlink >= NILFS_LINK_MAX)
- 		return -EMLINK;
-@@ -212,15 +224,19 @@ static int nilfs_link(struct dentry *old_dentry, struct inode *dir,
- 	atomic_inc(&inode->i_count);
- 
- 	err = nilfs_add_nondir(dentry, inode);
--	err2 = nilfs_transaction_end(dir->i_sb, !err);
--	return err ? : err2;
-+	if (!err)
-+		err = nilfs_transaction_commit(dir->i_sb);
-+	else
-+		nilfs_transaction_abort(dir->i_sb);
-+
-+	return err;
- }
- 
- static int nilfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- {
- 	struct inode *inode;
- 	struct nilfs_transaction_info ti;
--	int err, err2;
-+	int err;
- 
- 	if (dir->i_nlink >= NILFS_LINK_MAX)
- 		return -EMLINK;
-@@ -252,8 +268,12 @@ static int nilfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- 
- 	d_instantiate(dentry, inode);
- out:
--	err2 = nilfs_transaction_end(dir->i_sb, !err);
--	return err ? : err2;
-+	if (!err)
-+		err = nilfs_transaction_commit(dir->i_sb);
-+	else
-+		nilfs_transaction_abort(dir->i_sb);
-+
-+	return err;
- 
- out_fail:
- 	inode_dec_link_count(inode);
-@@ -270,7 +290,7 @@ static int nilfs_unlink(struct inode *dir, struct dentry *dentry)
- 	struct nilfs_dir_entry *de;
- 	struct page *page;
- 	struct nilfs_transaction_info ti;
--	int err, err2;
-+	int err;
- 
- 	err = nilfs_transaction_begin(dir->i_sb, &ti, 0);
- 	if (err)
-@@ -300,15 +320,19 @@ static int nilfs_unlink(struct inode *dir, struct dentry *dentry)
- 	inode_dec_link_count(inode);
- 	err = 0;
- out:
--	err2 = nilfs_transaction_end(dir->i_sb, !err);
--	return err ? : err2;
-+	if (!err)
-+		err = nilfs_transaction_commit(dir->i_sb);
-+	else
-+		nilfs_transaction_abort(dir->i_sb);
-+
-+	return err;
- }
- 
- static int nilfs_rmdir(struct inode *dir, struct dentry *dentry)
- {
- 	struct inode *inode = dentry->d_inode;
- 	struct nilfs_transaction_info ti;
--	int err, err2;
-+	int err;
- 
- 	err = nilfs_transaction_begin(dir->i_sb, &ti, 0);
- 	if (err)
-@@ -323,8 +347,12 @@ static int nilfs_rmdir(struct inode *dir, struct dentry *dentry)
- 			inode_dec_link_count(dir);
- 		}
- 	}
--	err2 = nilfs_transaction_end(dir->i_sb, !err);
--	return err ? : err2;
-+	if (!err)
-+		err = nilfs_transaction_commit(dir->i_sb);
-+	else
-+		nilfs_transaction_abort(dir->i_sb);
-+
-+	return err;
- }
- 
- static int nilfs_rename(struct inode *old_dir, struct dentry *old_dentry,
-@@ -404,7 +432,7 @@ static int nilfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 		inode_dec_link_count(old_dir);
- 	}
- 
--	err = nilfs_transaction_end(old_dir->i_sb, 1);
-+	err = nilfs_transaction_commit(old_dir->i_sb);
- 	return err;
- 
- out_dir:
-@@ -416,7 +444,7 @@ out_old:
- 	kunmap(old_page);
- 	page_cache_release(old_page);
- out:
--	nilfs_transaction_end(old_dir->i_sb, 0);
-+	nilfs_transaction_abort(old_dir->i_sb);
- 	return err;
- }
- 
-diff --git a/fs/nilfs2/nilfs.h b/fs/nilfs2/nilfs.h
-index c33b8db..30c5341 100644
---- a/fs/nilfs2/nilfs.h
-+++ b/fs/nilfs2/nilfs.h
-@@ -166,7 +166,8 @@ struct nilfs_transaction_info {
- 
- int nilfs_transaction_begin(struct super_block *,
- 			    struct nilfs_transaction_info *, int);
--int nilfs_transaction_end(struct super_block *, int);
-+int nilfs_transaction_commit(struct super_block *);
-+void nilfs_transaction_abort(struct super_block *);
- 
- static inline void nilfs_set_transaction_flag(unsigned int flag)
- {
-diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
-index 2b6e44b..182fb26 100644
---- a/fs/nilfs2/segment.c
-+++ b/fs/nilfs2/segment.c
-@@ -163,8 +163,8 @@ static int nilfs_prepare_segment_lock(struct nilfs_transaction_info *ti)
- 		else {
- 			/*
- 			 * If journal_info field is occupied by other FS,
--			 * we save it and restore on nilfs_transaction_end().
--			 * But this should never happen.
-+			 * it is saved and will be restored on
-+			 * nilfs_transaction_commit().
- 			 */
- 			printk(KERN_WARNING
- 			       "NILFS warning: journal info from a different "
-@@ -195,7 +195,7 @@ static int nilfs_prepare_segment_lock(struct nilfs_transaction_info *ti)
-  *
-  * nilfs_transaction_begin() acquires a reader/writer semaphore, called
-  * the segment semaphore, to make a segment construction and write tasks
-- * exclusive.  The function is used with nilfs_transaction_end() in pairs.
-+ * exclusive.  The function is used with nilfs_transaction_commit() in pairs.
-  * The region enclosed by these two functions can be nested.  To avoid a
-  * deadlock, the semaphore is only acquired or released in the outermost call.
-  *
-@@ -212,8 +212,6 @@ static int nilfs_prepare_segment_lock(struct nilfs_transaction_info *ti)
-  *
-  * %-ENOMEM - Insufficient memory available.
-  *
-- * %-ERESTARTSYS - Interrupted
-- *
-  * %-ENOSPC - No space left on device
-  */
- int nilfs_transaction_begin(struct super_block *sb,
-@@ -248,16 +246,17 @@ int nilfs_transaction_begin(struct super_block *sb,
- }
- 
- /**
-- * nilfs_transaction_end - end indivisible file operations.
-+ * nilfs_transaction_commit - commit indivisible file operations.
-  * @sb: super block
-- * @commit: commit flag (0 for no change)
-  *
-- * nilfs_transaction_end() releases the read semaphore which is
-- * acquired by nilfs_transaction_begin(). Its releasing is only done
-- * in outermost call of this function. If the nilfs_transaction_info
-- * was allocated dynamically, it is given back to a slab cache.
-+ * nilfs_transaction_commit() releases the read semaphore which is
-+ * acquired by nilfs_transaction_begin(). This is only performed
-+ * in outermost call of this function.  If a commit flag is set,
-+ * nilfs_transaction_commit() sets a timer to start the segment
-+ * constructor.  If a sync flag is set, it starts construction
-+ * directly.
-  */
--int nilfs_transaction_end(struct super_block *sb, int commit)
-+int nilfs_transaction_commit(struct super_block *sb)
- {
- 	struct nilfs_transaction_info *ti = current->journal_info;
- 	struct nilfs_sb_info *sbi;
-@@ -265,9 +264,7 @@ int nilfs_transaction_end(struct super_block *sb, int commit)
- 	int err = 0;
- 
- 	BUG_ON(ti == NULL || ti->ti_magic != NILFS_TI_MAGIC);
--
--	if (commit)
--		ti->ti_flags |= NILFS_TI_COMMIT;
-+	ti->ti_flags |= NILFS_TI_COMMIT;
- 	if (ti->ti_count > 0) {
- 		ti->ti_count--;
- 		return 0;
-@@ -291,6 +288,22 @@ int nilfs_transaction_end(struct super_block *sb, int commit)
- 	return err;
- }
- 
-+void nilfs_transaction_abort(struct super_block *sb)
-+{
-+	struct nilfs_transaction_info *ti = current->journal_info;
-+
-+	BUG_ON(ti == NULL || ti->ti_magic != NILFS_TI_MAGIC);
-+	if (ti->ti_count > 0) {
-+		ti->ti_count--;
-+		return;
-+	}
-+	up_read(&NILFS_SB(sb)->s_nilfs->ns_segctor_sem);
-+
-+	current->journal_info = ti->ti_save;
-+	if (ti->ti_flags & NILFS_TI_DYNAMIC_ALLOC)
-+		kmem_cache_free(nilfs_transaction_cachep, ti);
-+}
-+
- void nilfs_relax_pressure_in_lock(struct super_block *sb)
- {
- 	struct nilfs_sb_info *sbi = NILFS_SB(sb);
-diff --git a/fs/nilfs2/the_nilfs.h b/fs/nilfs2/the_nilfs.h
-index dee8d83..9cd3c11 100644
---- a/fs/nilfs2/the_nilfs.h
-+++ b/fs/nilfs2/the_nilfs.h
-@@ -112,8 +112,8 @@ struct the_nilfs {
- 	/*
- 	 * Following fields are dedicated to a writable FS-instance.
- 	 * Except for the period seeking checkpoint, code outside the segment
--	 * constructor must lock a segment semaphore with transaction_begin()
--	 * and transaction_end(), when accessing these fields.
-+	 * constructor must lock a segment semaphore while accessing these
-+	 * fields.
- 	 * The writable FS-instance is sole during a lifetime of the_nilfs.
- 	 */
- 	u64			ns_seg_seq;
 -- 
-1.5.6.5
-
+Cheers,
+Jeff
