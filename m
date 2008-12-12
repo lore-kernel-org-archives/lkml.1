@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758618AbYLLNie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbYLLNkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758618AbYLLNie (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 08:38:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758127AbYLLNi0
+	id S1758730AbYLLNkB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 08:40:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758127AbYLLNjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 08:38:26 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52252 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758131AbYLLNiZ (ORCPT
+	Fri, 12 Dec 2008 08:39:53 -0500
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:60393 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757040AbYLLNjx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 08:38:25 -0500
-Subject: Re: CFS scheduler OLTP perforamnce
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Ma, Chinang" <chinang.ma@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>
-In-Reply-To: <1229083933.12883.179.camel@twins>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E80030A74A5FF@azsmsx501.amr.corp.intel.com>
-	 <1229083933.12883.179.camel@twins>
+	Fri, 12 Dec 2008 08:39:53 -0500
+Subject: [PATCH] netfilter: remove padding from struct xt_match on 64bit
+	builds
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: coreteam@netfilter.org
+Cc: lkml <linux-kernel@vger.kernel.org>, netfilter@vger.kernel.org
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 12 Dec 2008 14:38:20 +0100
-Message-Id: <1229089100.25485.5.camel@twins>
+Date: Fri, 12 Dec 2008 13:39:50 +0000
+Message-Id: <1229089190.2921.7.camel@castor.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-12 at 13:12 +0100, Peter Zijlstra wrote:
-> On Thu, 2008-12-11 at 16:25 -0700, Ma, Chinang wrote:
-> > We are evaluating the CFS OLTP performance with 2.6.28-c7 kernel. In
-> > this workload once a database foreground process commit a transaction
-> > it will signal the log writer process to write to the log file.
-> > Foreground processes will wait until log writer finish writing and
-> > wake them up. With hundreds of foreground process running in the
-> > system, it is important that the log writer get to run as soon as data
-> > is available. 
-> > 
-> > Here are the experiments we have done with 2.6.28-rc7.
-> > 1. Increase log writer priority "renice -20 <log writer pid>" while
-> > keeping all other processes running in default CFS priority. We get a
-> > baseline performance with log latency (scheduling + i/o) at 7 ms.
-> 
-> Is this better or the same than nice-0 ?
-> 
-> > 2. To reduce log latency, we set log writer to SCHED_RR with higher
-> > priority. We tried "chrt -p 49  <log writer pid>" and got 0.7% boost
-> > in performance with log latency reduced to 6.4 ms.
+reorder struct xt_match to remove 8 bytes of padding and make its size
+128 bytes.
 
-BTW, 6.4ms schedule latency sounds insanely long for a RR task, are you
-running a PREEMPT=n kernel or something?
+This saves a small amount of data space in each of the xt netfilter
+modules and fits xt_match in one 128 byte cache line.
 
-How would you characterize the log tasks behaviour?
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+----
 
- - does it run long/short (any quantization)
- - does it sleep long/short - how does it compare to its runtime?
- - does it wake others?
-   - if so, always the one who woke it, or multiple others?
+patch against v2.6.28-rc8
+Compiled & running on AMD X2 desktop machine.
+regards
+Richard
+
+
+
+diff --git a/include/linux/netfilter/x_tables.h b/include/linux/netfilter/x_tables.h
+index e52ce47..c7ee874 100644
+--- a/include/linux/netfilter/x_tables.h
++++ b/include/linux/netfilter/x_tables.h
+@@ -270,6 +270,7 @@ struct xt_match
+ 	struct list_head list;
+ 
+ 	const char name[XT_FUNCTION_MAXNAMELEN-1];
++	u_int8_t revision;
+ 
+ 	/* Return true or false: return FALSE and set *hotdrop = 1 to
+            force immediate packet drop. */
+@@ -302,7 +303,6 @@ struct xt_match
+ 	unsigned short proto;
+ 
+ 	unsigned short family;
+-	u_int8_t revision;
+ };
+ 
+ /* Registration hooks for targets. */
 
 
