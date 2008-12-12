@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbYLLLFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbYLLLFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757460AbYLLLFB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 06:05:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYLLLEy
+	id S1757948AbYLLLFh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 06:05:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYLLLF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 06:04:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60781 "EHLO mx3.mail.elte.hu"
+	Fri, 12 Dec 2008 06:05:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39689 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753869AbYLLLEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 06:04:53 -0500
-Date: Fri, 12 Dec 2008 12:04:44 +0100
+	id S1751377AbYLLLF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 06:05:28 -0500
+Date: Fri, 12 Dec 2008 12:05:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: kill #ifdef for exit_idle()
-Message-ID: <20081212110444.GC32640@elte.hu>
-References: <493DE3AB.4090409@ct.jp.nec.com>
+Subject: Re: [PATCH] x86: hardirq: introduce inc_irq_stat()
+Message-ID: <20081212110519.GD32640@elte.hu>
+References: <493DE3BE.9070202@ct.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <493DE3AB.4090409@ct.jp.nec.com>
+In-Reply-To: <493DE3BE.9070202@ct.jp.nec.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,16 +41,20 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > 
 > Impact: cleanup
 > 
-> Introduce helper incline function in arch/x86/include/asm/idle.h
-> to remove #ifdefs around exit_idle().
+> Introduce inc_irq_stat() macro and unify irq_stat accounting code.
 > 
 > Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > ---
->  arch/x86/include/asm/idle.h |    5 +++++
->  arch/x86/kernel/apic.c      |    6 ------
->  arch/x86/kernel/io_apic.c   |    3 +--
->  3 files changed, 6 insertions(+), 8 deletions(-)
+>  arch/x86/include/asm/hardirq_32.h  |    2 ++
+>  arch/x86/include/asm/hardirq_64.h  |    2 ++
+>  arch/x86/kernel/apic.c             |   13 +++----------
+>  arch/x86/kernel/cpu/perf_counter.c |    6 +-----
+>  arch/x86/kernel/smp.c              |   18 +++---------------
+>  arch/x86/kernel/traps.c            |    6 +-----
+>  6 files changed, 12 insertions(+), 35 deletions(-)
 
-applied to tip/x86/idle, thanks!
+applied to tip/x86/irq, thanks!
+
+This is a very nice cleanup - those #ifdefs were very ugly.
 
 	Ingo
