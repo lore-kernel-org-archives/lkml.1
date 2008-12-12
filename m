@@ -1,110 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbYLLVp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbYLLVvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbYLLVp0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 16:45:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbYLLVpQ
+	id S1755381AbYLLVvp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 16:51:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbYLLVvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 16:45:16 -0500
-Received: from mga01.intel.com ([192.55.52.88]:37574 "EHLO mga01.intel.com"
+	Fri, 12 Dec 2008 16:51:36 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55934 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753285AbYLLVpO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 16:45:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.36,213,1228118400"; 
-   d="scan'208";a="649366831"
-From: "Ma, Chinang" <chinang.ma@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       Chris Mason <chris.mason@oracle.com>
-Date: Fri, 12 Dec 2008 14:45:11 -0700
-Subject: RE: CFS scheduler OLTP perforamnce
-Thread-Topic: CFS scheduler OLTP perforamnce
-Thread-Index: AclcXu8UmHw0LQQaSdyRiwUXQknLtgAPggwg
-Message-ID: <BC02C49EEB98354DBA7F5DD76F2A9E80030A789771@azsmsx501.amr.corp.intel.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E80030A74A5FF@azsmsx501.amr.corp.intel.com>
-	 <1229083933.12883.179.camel@twins> <1229089100.25485.5.camel@twins>
-In-Reply-To: <1229089100.25485.5.camel@twins>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1753873AbYLLVvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 16:51:35 -0500
+From: Eric Paris <eparis@redhat.com>
+Subject: [RFC PATCH -v4 00/14] fsnotify, dnotify, and inotify
+To: linux-kernel@vger.kernel.org
+Cc: a.p.zijlstra@chello.nl, viro@ZenIV.linux.org.uk, hch@infradead.org,
+       zbr@ioremap.net, akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Date: Fri, 12 Dec 2008 16:51:14 -0500
+Message-ID: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following series implements a new generic in kernel filesystem
+notification system, fsnotify.  On top of fsnotify I reimplement dnotify and
+inotify.  I have not finished with the change from inotify although I think
+inotify_user should be completed.  In kernel inotify users (aka audit) still
+(until I get positive feedback) relay on the old inotify backend.  This can be
+'easily' fixed.
+
+All of this is in preperation for fanotify and using fanotify as an on access
+file scanner.   So you better know it's coming.
+
+Why is this useful?  Because I actually shrank the struct inode.  That's
+right, my code is smaller and faster.  Eat that.
+
+struct inode went from:
+        unsigned long           i_dnotify_mask; /* Directory notify events */
+        struct dnotify_struct   *i_dnotify; /* for directory notifications */
+        struct list_head        inotify_watches; /* watches on this inode */
+        struct mutex            inotify_mutex;  /* protects the watches list */
+
+to:
+        __u64                   i_fsnotify_mask; /* all events this inode cares about */
+        struct list_head        i_fsnotify_mark_entries; /* fsnotify mark entries */
+
+This is just an RFC as I haven't tested it heavily I might still be able to 
+split patches.  I think there are some problem at the moment trying to build
+fsnotify out.  I need to send patch 3 and 4 seperately.  Actually I think it's
+perfectly reasonable to take patches 1-4 as is right now.
+
+if you ever want to see more up2date patches check out:
+http://people.redhat.com/~eparis/fsnotify
+
+---
+
+Eric Paris (14):
+      shit on top for debugging
+      inotify: reimplement inotify using fsnotify
+      fsnotify: add correlations between events
+      fsnotify: include pathnames with entries when possible
+      fsnotify: generic notification queue and waitq
+      dnotify: reimplement dnotify using fsnotify
+      fsnotify: parent event notification
+      fsnotify: add in inode fsnotify markings
+      fsnotify: add group priorities
+      fsnotify: unified filesystem notification backend
+      fsnotify: use the new open-exec hook for inotify and dnotify
+      fsnotify: sys_execve and sys_uselib do not call into fsnotify
+      fsnotify: pass a file instead of an inode to open, read, and write
+      filesystem notification: create fs/notify to contain all fs notification
 
 
->-----Original Message-----
->From: Peter Zijlstra [mailto:peterz@infradead.org]
->Sent: Friday, December 12, 2008 5:38 AM
->To: Ma, Chinang
->Cc: Ingo Molnar; linux-kernel@vger.kernel.org; Wilcox, Matthew R; Van De
->Ven, Arjan; Styner, Douglas W; Chilukuri, Harita; Wang, Peter Xihong;
->Nueckel, Hubert
->Subject: Re: CFS scheduler OLTP perforamnce
->
->On Fri, 2008-12-12 at 13:12 +0100, Peter Zijlstra wrote:
->> On Thu, 2008-12-11 at 16:25 -0700, Ma, Chinang wrote:
->> > We are evaluating the CFS OLTP performance with 2.6.28-c7 kernel. In
->> > this workload once a database foreground process commit a transaction
->> > it will signal the log writer process to write to the log file.
->> > Foreground processes will wait until log writer finish writing and
->> > wake them up. With hundreds of foreground process running in the
->> > system, it is important that the log writer get to run as soon as data
->> > is available.
->> >
->> > Here are the experiments we have done with 2.6.28-rc7.
->> > 1. Increase log writer priority "renice -20 <log writer pid>" while
->> > keeping all other processes running in default CFS priority. We get a
->> > baseline performance with log latency (scheduling + i/o) at 7 ms.
->>
->> Is this better or the same than nice-0 ?
-
-I left out one detail of the database processes. There are also data writers that responsible for write back dirty buffers to free up buffer for new transactions. These processes also need to be renice to higher priority (-19). When data writers are left at nice-0, the workload was throttle by the limited number of free buffers and we cannot even fully utilize the system. I had to renice data writer and log writer process.
-
->>
->> > 2. To reduce log latency, we set log writer to SCHED_RR with higher
->> > priority. We tried "chrt -p 49  <log writer pid>" and got 0.7% boost
->> > in performance with log latency reduced to 6.4 ms.
->
->BTW, 6.4ms schedule latency sounds insanely long for a RR task, are you
->running a PREEMPT=n kernel or something?
-
-The 6.4ms log write latency was measured in the foreground process. It went like this:
-1. Foreground progress get start time and post log writer, foreground wait and sleep.
-2. log writer was scheduled and collect log data. 
-3. log writer write to log file and wait for i/o.
-4. Write completed. log writer use vector post to wake up all the waiting foreground process.
-5. Foreground process wake up and get end time.
-
->
->How would you characterize the log tasks behaviour?
->
-> - does it run long/short (any quantization)
-
-There were 371 log writes per second so ~2.7ms per log writer execution. Out of this we know ~2.13 ms was spent waiting for log file i/o. Log writer was running for (2.7ms - 2.13ms) = 0.57ms  
-	
-> - does it sleep long/short - how does it compare to its runtime?
-
-
-With the current throughput, log writer should be constantly writing log and rarely sleep.
-
-> - does it wake others?
->   - if so, always the one who woke it, or multiple others?
->
-
-Log writer wake multiple foreground processes using vector post.
-
--Chinang
+ fs/Kconfig                           |   39 -
+ fs/Makefile                          |    5 
+ fs/compat.c                          |    5 
+ fs/dnotify.c                         |  194 -------
+ fs/exec.c                            |    5 
+ fs/fcntl.c                           |    4 
+ fs/inode.c                           |    7 
+ fs/inotify.c                         |  913 ----------------------------------
+ fs/inotify_user.c                    |  778 -----------------------------
+ fs/nfsd/vfs.c                        |    4 
+ fs/notify/Kconfig                    |   14 +
+ fs/notify/Makefile                   |    4 
+ fs/notify/dnotify/Kconfig            |   11 
+ fs/notify/dnotify/Makefile           |    1 
+ fs/notify/dnotify/dnotify.c          |  350 +++++++++++++
+ fs/notify/fsnotify.c                 |   92 +++
+ fs/notify/fsnotify.h                 |  115 ++++
+ fs/notify/group.c                    |  222 ++++++++
+ fs/notify/inode_mark.c               |  279 ++++++++++
+ fs/notify/inotify/Kconfig            |   31 +
+ fs/notify/inotify/Makefile           |    2 
+ fs/notify/inotify/inotify.c          |  913 ++++++++++++++++++++++++++++++++++
+ fs/notify/inotify/inotify.h          |  117 ++++
+ fs/notify/inotify/inotify_fsnotify.c |  190 +++++++
+ fs/notify/inotify/inotify_kernel.c   |  299 +++++++++++
+ fs/notify/inotify/inotify_user.c     |  502 +++++++++++++++++++
+ fs/notify/notification.c             |  279 ++++++++++
+ fs/open.c                            |    2 
+ fs/read_write.c                      |    8 
+ include/linux/dcache.h               |    3 
+ include/linux/dnotify.h              |   29 -
+ include/linux/fs.h                   |    6 
+ include/linux/fsnotify.h             |  271 ++++++++--
+ include/linux/fsnotify_backend.h     |  152 ++++++
+ include/linux/inotify.h              |    1 
+ 35 files changed, 3818 insertions(+), 2029 deletions(-)
+ delete mode 100644 fs/dnotify.c
+ delete mode 100644 fs/inotify.c
+ delete mode 100644 fs/inotify_user.c
+ create mode 100644 fs/notify/Kconfig
+ create mode 100644 fs/notify/Makefile
+ create mode 100644 fs/notify/dnotify/Kconfig
+ create mode 100644 fs/notify/dnotify/Makefile
+ create mode 100644 fs/notify/dnotify/dnotify.c
+ create mode 100644 fs/notify/fsnotify.c
+ create mode 100644 fs/notify/fsnotify.h
+ create mode 100644 fs/notify/group.c
+ create mode 100644 fs/notify/inode_mark.c
+ create mode 100644 fs/notify/inotify/Kconfig
+ create mode 100644 fs/notify/inotify/Makefile
+ create mode 100644 fs/notify/inotify/inotify.c
+ create mode 100644 fs/notify/inotify/inotify.h
+ create mode 100644 fs/notify/inotify/inotify_fsnotify.c
+ create mode 100644 fs/notify/inotify/inotify_kernel.c
+ create mode 100644 fs/notify/inotify/inotify_user.c
+ create mode 100644 fs/notify/notification.c
+ create mode 100644 include/linux/fsnotify_backend.h
