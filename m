@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbYLLWvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbYLLWxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301AbYLLWvf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 17:51:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbYLLWv0
+	id S1755436AbYLLWxk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 17:53:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbYLLWxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 17:51:26 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:36368 "EHLO smtps.tip.net.au"
+	Fri, 12 Dec 2008 17:53:32 -0500
+Received: from crmm.lgl.lu ([158.64.72.228]:45538 "EHLO lll.lu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753973AbYLLWv0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 17:51:26 -0500
-Date: Sat, 13 Dec 2008 09:51:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: [PATCH] uio: make uio_info's name and version const
-Message-Id: <20081213095118.b34aaf03.sfr@canb.auug.org.au>
-In-Reply-To: <20081212104420.GA3084@local>
-References: <20081212163041.7bc16261.sfr@canb.auug.org.au>
-	<20081212104420.GA3084@local>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__13_Dec_2008_09_51_18_+1100_oaXI1AfMdR+Fmojr"
+	id S1753167AbYLLWxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 17:53:32 -0500
+Message-ID: <4942EB67.60608@knaff.lu>
+Date: Fri, 12 Dec 2008 23:53:27 +0100
+From: Alain Knaff <alain@knaff.lu>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+MIME-Version: 1.0
+To: devzero@web.de, "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: update7 [PATCH 1/5] init: bzip2 or lzma -compressed kernels and
+References: <516858439@web.de>
+In-Reply-To: <516858439@web.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__13_Dec_2008_09_51_18_+1100_oaXI1AfMdR+Fmojr
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Any news?
 
-Hi Hans,
+Thanks,
 
-On Fri, 12 Dec 2008 11:44:21 +0100 "Hans J. Koch" <hjk@linutronix.de> wrote:
->
-> @Greg: Stephen's patch will only apply with some fuzz since you've
-> accepted my portio patches in your queue. Below there's a version
-> that should apply cleanly.
+Alain
 
-Thanks for that.
+devzero@web.de wrote:
+> oh, that explains a lot, thanks!
+> 
+> just asked because i feared this would get lost...
+> 
+> i wish you much luck with finding a new job, peter !
+> 
+> regards
+> roland
+> 
+> 
+>> -----Ursprüngliche Nachricht-----
+>> Von: "H. Peter Anvin" <hpa@zytor.com>
+>> Gesendet: 23.11.08 21:09:25
+>> An: devzero@web.de
+>> CC: linux-kernel@vger.kernel.org, Alain Knaff <alain@knaff.lu>,        Willy Tarreau <w@1wt.eu>
+>> Betreff: Re: update7 [PATCH 1/5] init: bzip2 or lzma -compressed kernels and
+> 
+> 
+>> devzero@web.de wrote:
+>>> does anybody have a status update on this one? 
+>>> (just being curious/impatient as the last mail in this thread was posted one month ago)
+>> Sorry about this.  I lost my job and job hunting has taken priority.  It
+>> is on my list of things to take care of, but it's not the highest
+>> priority, obviously.
+>>
+>> I will try to get to it within the next week.
+>>
+>> 	-hpa
+>>
+> 
+> 
+> _________________________________________________________________________
+> Sensationsangebot nur bis 30.11: WEB.DE FreeDSL - Telefonanschluss + DSL 
+> für nur 16,37 Euro/mtl.!* http://dsl.web.de/?ac=OM.AD.AD008K13805B7069a
+> 
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__13_Dec_2008_09_51_18_+1100_oaXI1AfMdR+Fmojr
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklC6uYACgkQjjKRsyhoI8wexACgunAqMYH6mOkknjbBTCnGs6gH
-TEEAoLdNBNMnMKRhyXyEBvB/6rnORO4X
-=j5W5
------END PGP SIGNATURE-----
-
---Signature=_Sat__13_Dec_2008_09_51_18_+1100_oaXI1AfMdR+Fmojr--
