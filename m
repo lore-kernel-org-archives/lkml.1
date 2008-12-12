@@ -1,200 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbYLLVJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbYLLVPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbYLLVJW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 16:09:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbYLLVJN
+	id S1754816AbYLLVPN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 16:15:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbYLLVPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 16:09:13 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:3864 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752641AbYLLVJM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 16:09:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=PT3Iwofl+pwVysetro9YZhtfzzXS7AXnDTwD1leloGPktVpwplkTBcvVyc0R80VexG
-         fWAZqpQcQ3yau2xzMbMIp/cbLNUXiW4riZVYZmVz9N1q3gq2mXGWP4aNoUxtIKtLmUM8
-         xlnaTDHPfShqbwyt+jyaGnHjHFOGX6AAQl638=
-Date: Sat, 13 Dec 2008 00:09:08 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <srostedt@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH] x86: entry_64 - introduce FTRACE_ frame macro v2
-Message-ID: <20081212210908.GA30557@localhost>
+	Fri, 12 Dec 2008 16:15:00 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55657 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752886AbYLLVO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 16:14:59 -0500
+Message-ID: <4942D42A.9060303@kernel.org>
+Date: Fri, 12 Dec 2008 13:14:18 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sparseirq: fix !SMP building #2
+References: <49397CD0.9030301@kernel.org> <20081208142307.GE14856@elte.hu> <20081208150129.GA21496@elte.hu> <20081208174506.GA30398@elte.hu> <20081209031351.GA9092@elte.hu> <493EBECB.4020106@kernel.org> <20081209192622.GA8595@elte.hu> <493ECD64.5060508@kernel.org> <20081209200317.GA16787@elte.hu> <493EDA86.8030702@kernel.org> <20081212113514.GI32640@elte.hu>
+In-Reply-To: <20081212113514.GI32640@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: clean up
 
-Itroduce FTRACE_SAVE/RESTORE_FRAME which allow us to
-save a number of lines on source level.
+Impact: fix compiling
 
-Also fix a comment in ftrace.h.
+make intr_remapping.c to include smp.h, so could use boot_cpu_id there
+
+also remove old change that disabling sparseirq with !SMP
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
 ---
+ arch/x86/Kconfig             |    2 +-
+ drivers/pci/intr_remapping.c |    1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-Didn't add Steve's Ack since it's a new version
-
- arch/x86/include/asm/ftrace.h |   29 ++++++++++++++++++++-
- arch/x86/kernel/entry_64.S    |   57 +++++-------------------------------------
- 2 files changed, 35 insertions(+), 51 deletions(-)
-
-Index: linux-2.6.git/arch/x86/include/asm/ftrace.h
+Index: linux-2.6/drivers/pci/intr_remapping.c
 ===================================================================
---- linux-2.6.git.orig/arch/x86/include/asm/ftrace.h
-+++ linux-2.6.git/arch/x86/include/asm/ftrace.h
-@@ -1,6 +1,33 @@
- #ifndef _ASM_X86_FTRACE_H
- #define _ASM_X86_FTRACE_H
+--- linux-2.6.orig/drivers/pci/intr_remapping.c
++++ linux-2.6/drivers/pci/intr_remapping.c
+@@ -5,6 +5,7 @@
+ #include <linux/pci.h>
+ #include <linux/irq.h>
+ #include <asm/io_apic.h>
++#include <asm/smp.h>
+ #include <linux/intel-iommu.h>
+ #include "intr_remapping.h"
  
-+#ifdef __ASSEMBLY__
-+
-+	.macro FTRACE_SAVE_FRAME
-+	/* taken from glibc */
-+	subq $0x38, %rsp
-+	movq %rax, (%rsp)
-+	movq %rcx, 8(%rsp)
-+	movq %rdx, 16(%rsp)
-+	movq %rsi, 24(%rsp)
-+	movq %rdi, 32(%rsp)
-+	movq %r8, 40(%rsp)
-+	movq %r9, 48(%rsp)
-+	.endm
-+
-+	.macro FTRACE_RESTORE_FRAME
-+	movq 48(%rsp), %r9
-+	movq 40(%rsp), %r8
-+	movq 32(%rsp), %rdi
-+	movq 24(%rsp), %rsi
-+	movq 16(%rsp), %rdx
-+	movq 8(%rsp), %rcx
-+	movq (%rsp), %rax
-+	addq $0x38, %rsp
-+	.endm
-+
-+#endif
-+
- #ifdef CONFIG_FUNCTION_TRACER
- #define MCOUNT_ADDR		((long)(mcount))
- #define MCOUNT_INSN_SIZE	5 /* sizeof mcount call */
-@@ -46,7 +73,7 @@ struct ftrace_ret_stack {
- /*
-  * Primary handler of a function return.
-  * It relays on ftrace_return_to_handler.
-- * Defined in entry32.S
-+ * Defined in entry_32/64.S
-  */
- extern void return_to_handler(void);
- 
-Index: linux-2.6.git/arch/x86/kernel/entry_64.S
+Index: linux-2.6/arch/x86/Kconfig
 ===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/entry_64.S
-+++ linux-2.6.git/arch/x86/kernel/entry_64.S
-@@ -70,15 +70,7 @@ ENTRY(ftrace_caller)
- 	cmpl $0, function_trace_stop
- 	jne  ftrace_stub
+--- linux-2.6.orig/arch/x86/Kconfig
++++ linux-2.6/arch/x86/Kconfig
+@@ -245,7 +245,7 @@ config X86_HAS_BOOT_CPU_ID
  
--	/* taken from glibc */
--	subq $0x38, %rsp
--	movq %rax, (%rsp)
--	movq %rcx, 8(%rsp)
--	movq %rdx, 16(%rsp)
--	movq %rsi, 24(%rsp)
--	movq %rdi, 32(%rsp)
--	movq %r8, 40(%rsp)
--	movq %r9, 48(%rsp)
-+	FTRACE_SAVE_FRAME
- 
- 	movq 0x38(%rsp), %rdi
- 	movq 8(%rbp), %rsi
-@@ -88,14 +80,7 @@ ENTRY(ftrace_caller)
- ftrace_call:
- 	call ftrace_stub
- 
--	movq 48(%rsp), %r9
--	movq 40(%rsp), %r8
--	movq 32(%rsp), %rdi
--	movq 24(%rsp), %rsi
--	movq 16(%rsp), %rdx
--	movq 8(%rsp), %rcx
--	movq (%rsp), %rax
--	addq $0x38, %rsp
-+	FTRACE_RESTORE_FRAME
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- .globl ftrace_graph_call
-@@ -129,15 +114,7 @@ ftrace_stub:
- 	retq
- 
- trace:
--	/* taken from glibc */
--	subq $0x38, %rsp
--	movq %rax, (%rsp)
--	movq %rcx, 8(%rsp)
--	movq %rdx, 16(%rsp)
--	movq %rsi, 24(%rsp)
--	movq %rdi, 32(%rsp)
--	movq %r8, 40(%rsp)
--	movq %r9, 48(%rsp)
-+	FTRACE_SAVE_FRAME
- 
- 	movq 0x38(%rsp), %rdi
- 	movq 8(%rbp), %rsi
-@@ -145,14 +122,7 @@ trace:
- 
- 	call   *ftrace_trace_function
- 
--	movq 48(%rsp), %r9
--	movq 40(%rsp), %r8
--	movq 32(%rsp), %rdi
--	movq 24(%rsp), %rsi
--	movq 16(%rsp), %rdx
--	movq 8(%rsp), %rcx
--	movq (%rsp), %rax
--	addq $0x38, %rsp
-+	FTRACE_RESTORE_FRAME
- 
- 	jmp ftrace_stub
- END(mcount)
-@@ -164,14 +134,7 @@ ENTRY(ftrace_graph_caller)
- 	cmpl $0, function_trace_stop
- 	jne ftrace_stub
- 
--	subq $0x38, %rsp
--	movq %rax, (%rsp)
--	movq %rcx, 8(%rsp)
--	movq %rdx, 16(%rsp)
--	movq %rsi, 24(%rsp)
--	movq %rdi, 32(%rsp)
--	movq %r8, 40(%rsp)
--	movq %r9, 48(%rsp)
-+	FTRACE_SAVE_FRAME
- 
- 	leaq 8(%rbp), %rdi
- 	movq 0x38(%rsp), %rsi
-@@ -179,14 +142,8 @@ ENTRY(ftrace_graph_caller)
- 
- 	call	prepare_ftrace_return
- 
--	movq 48(%rsp), %r9
--	movq 40(%rsp), %r8
--	movq 32(%rsp), %rdi
--	movq 24(%rsp), %rsi
--	movq 16(%rsp), %rdx
--	movq 8(%rsp), %rcx
--	movq (%rsp), %rax
--	addq $0x38, %rsp
-+	FTRACE_RESTORE_FRAME
-+
- 	retq
- END(ftrace_graph_caller)
- 
+ config SPARSE_IRQ
+ 	bool "Support sparse irq numbering"
+-	depends on (PCI_MSI || HT_IRQ) && SMP
++	depends on PCI_MSI || HT_IRQ
+ 	default y
+ 	help
+ 	  This enables support for sparse irq, esp for msi/msi-x. You may need
+
