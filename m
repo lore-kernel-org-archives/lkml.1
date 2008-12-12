@@ -1,219 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbYLLVXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbYLLVXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228AbYLLVXA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 16:23:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbYLLVWv
+	id S1754976AbYLLVXl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 16:23:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYLLVXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 16:22:51 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45254 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbYLLVWv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 16:22:51 -0500
-Date: Fri, 12 Dec 2008 16:22:49 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       fweisbec <fweisbec@gmail.com>
-Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
-In-Reply-To: <20081212205729.GA28554@localhost>
-Message-ID: <alpine.DEB.1.10.0812121620520.19351@gandalf.stny.rr.com>
-References: <20081212184136.GB14192@localhost> <1229113167.32623.12.camel@localhost.localdomain> <20081212204724.GA26194@localhost> <alpine.DEB.1.10.0812121552360.19351@gandalf.stny.rr.com> <20081212205729.GA28554@localhost>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 12 Dec 2008 16:23:32 -0500
+Received: from gw.goop.org ([64.81.55.164]:34266 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751099AbYLLVXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 16:23:31 -0500
+Message-ID: <4942D651.1050306@goop.org>
+Date: Fri, 12 Dec 2008 13:23:29 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Help interpreting AHCI failure messages
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Fri, 12 Dec 2008, Cyrill Gorcunov wrote:
+I'm trying to bring up the AHCI driver on a Xen dom0 kernel.  There's 
+almost certainly some problem with my DMA handling somewhere - or 
+perhaps interrupt routing - which is causing the AHCI driver to fail thus:
 
-> [Steven Rostedt - Fri, Dec 12, 2008 at 03:52:56PM -0500]
-> | 
-> ... 
-> | You can put them in arch/x86/include/asm/ftrace.h That's assembly safe.
-> | 
-> | -- Steve
-> | 
-> 
-> Yep, while you were typing the message I was testing the change :)
-> Do you like it?
-> 
-> 		- Cyrill -
-> 
-> ---
->  arch/x86/include/asm/ftrace.h |   29 ++++++++++++++++++++-
->  arch/x86/kernel/entry_64.S    |   57 +++++-------------------------------------
->  2 files changed, 35 insertions(+), 51 deletions(-)
-> 
-> Index: linux-2.6.git/arch/x86/include/asm/ftrace.h
-> ===================================================================
-> --- linux-2.6.git.orig/arch/x86/include/asm/ftrace.h
-> +++ linux-2.6.git/arch/x86/include/asm/ftrace.h
-> @@ -1,6 +1,33 @@
->  #ifndef _ASM_X86_FTRACE_H
->  #define _ASM_X86_FTRACE_H
->  
-> +#ifdef __ASSEMBLY__
-
-Why add assembly condition? We only want this if CONFIG_FUNCTION_TRACER 
-is enabled, right?  We could combine it with the current #ifndef inside 
-the CONFIG_FUNCTION_TRACER. But I would make do:
-
-#ifdef __ASSEMBLY__
-<your stuff>
-#else
-< C stuff >
-#endif
-
--- Steve
+xen_set_ioapic_routing: irq 31 gsi 18 vector 184 ioapic 0 pin 18
+triggering 0 polarity 1ahci 0000:00:1f.2: PCI INT C -> GSI 18 (level, low) -> IRQ 31
+xen: PCI device 0000:00:1f.2 pin 3 -> irq 31
+ahci 0000:00:1f.2: AHCI 0001.0200 32 slots 6 ports 3 Gbps 0x27 impl SATA mode
+ahci 0000:00:1f.2: flags: 64bit ncq sntf pm led clo pmp pio slum part ems
+scsi0 : ahci
+scsi1 : ahci
+scsi2 : ahci
+scsi3 : ahci
+scsi4 : ahci
+scsi5 : ahci
+ata1: SATA max UDMA/133 abar m2048@0xff970000 port 0xff970100 irq 31
+ata2: SATA max UDMA/133 abar m2048@0xff970000 port 0xff970180 irq 31
+ata3: SATA max UDMA/133 abar m2048@0xff970000 port 0xff970200 irq 31
+ata4: DUMMY
+ata5: DUMMY
+ata6: SATA max UDMA/133 abar m2048@0xff970000 port 0xff970380 irq 31
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata1.00: qc timeout (cmd 0xec)
+ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata1.00: qc timeout (cmd 0xec)
+ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata1.00: qc timeout (cmd 0xec)
+ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+ata2.00: ATAPI: HL-DT-ST DVD+/-RW GSA-H73N, B103, max UDMA/100
+ata2.00: configured for UDMA/100
+ata3: SATA link down (SStatus 4 SControl 300)
+ata6: SATA link down (SStatus 4 SControl 300)
+scsi 1:0:0:0: CD-ROM            HL-DT-ST DVD+-RW GSA-H73N B103 PQ: 0 ANSI: 5
+sr0: scsi3-mmc drive: 48x/48x writer cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 1:0:0:0: Attached scsi generic sg0 type 5
 
 
-> +
-> +	.macro FTRACE_SAVE_FRAME
-> +	/* taken from glibc */
-> +	subq $0x38, %rsp
-> +	movq %rax, (%rsp)
-> +	movq %rcx, 8(%rsp)
-> +	movq %rdx, 16(%rsp)
-> +	movq %rsi, 24(%rsp)
-> +	movq %rdi, 32(%rsp)
-> +	movq %r8, 40(%rsp)
-> +	movq %r9, 48(%rsp)
-> +	.endm
-> +
-> +	.macro FTRACE_RESTORE_FRAME
-> +	movq 48(%rsp), %r9
-> +	movq 40(%rsp), %r8
-> +	movq 32(%rsp), %rdi
-> +	movq 24(%rsp), %rsi
-> +	movq 16(%rsp), %rdx
-> +	movq 8(%rsp), %rcx
-> +	movq (%rsp), %rax
-> +	addq $0x38, %rsp
-> +	.endm
-> +
-> +#endif
-> +
->  #ifdef CONFIG_FUNCTION_TRACER
->  #define MCOUNT_ADDR		((long)(mcount))
->  #define MCOUNT_INSN_SIZE	5 /* sizeof mcount call */
-> @@ -46,7 +73,7 @@ struct ftrace_ret_stack {
->  /*
->   * Primary handler of a function return.
->   * It relays on ftrace_return_to_handler.
-> - * Defined in entry32.S
-> + * Defined in entry_32/64.S
->   */
->  extern void return_to_handler(void);
->  
-> Index: linux-2.6.git/arch/x86/kernel/entry_64.S
-> ===================================================================
-> --- linux-2.6.git.orig/arch/x86/kernel/entry_64.S
-> +++ linux-2.6.git/arch/x86/kernel/entry_64.S
-> @@ -70,15 +70,7 @@ ENTRY(ftrace_caller)
->  	cmpl $0, function_trace_stop
->  	jne  ftrace_stub
->  
-> -	/* taken from glibc */
-> -	subq $0x38, %rsp
-> -	movq %rax, (%rsp)
-> -	movq %rcx, 8(%rsp)
-> -	movq %rdx, 16(%rsp)
-> -	movq %rsi, 24(%rsp)
-> -	movq %rdi, 32(%rsp)
-> -	movq %r8, 40(%rsp)
-> -	movq %r9, 48(%rsp)
-> +	FTRACE_SAVE_FRAME
->  
->  	movq 0x38(%rsp), %rdi
->  	movq 8(%rbp), %rsi
-> @@ -88,14 +80,7 @@ ENTRY(ftrace_caller)
->  ftrace_call:
->  	call ftrace_stub
->  
-> -	movq 48(%rsp), %r9
-> -	movq 40(%rsp), %r8
-> -	movq 32(%rsp), %rdi
-> -	movq 24(%rsp), %rsi
-> -	movq 16(%rsp), %rdx
-> -	movq 8(%rsp), %rcx
-> -	movq (%rsp), %rax
-> -	addq $0x38, %rsp
-> +	FTRACE_RESTORE_FRAME
->  
->  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
->  .globl ftrace_graph_call
-> @@ -129,15 +114,7 @@ ftrace_stub:
->  	retq
->  
->  trace:
-> -	/* taken from glibc */
-> -	subq $0x38, %rsp
-> -	movq %rax, (%rsp)
-> -	movq %rcx, 8(%rsp)
-> -	movq %rdx, 16(%rsp)
-> -	movq %rsi, 24(%rsp)
-> -	movq %rdi, 32(%rsp)
-> -	movq %r8, 40(%rsp)
-> -	movq %r9, 48(%rsp)
-> +	FTRACE_SAVE_FRAME
->  
->  	movq 0x38(%rsp), %rdi
->  	movq 8(%rbp), %rsi
-> @@ -145,14 +122,7 @@ trace:
->  
->  	call   *ftrace_trace_function
->  
-> -	movq 48(%rsp), %r9
-> -	movq 40(%rsp), %r8
-> -	movq 32(%rsp), %rdi
-> -	movq 24(%rsp), %rsi
-> -	movq 16(%rsp), %rdx
-> -	movq 8(%rsp), %rcx
-> -	movq (%rsp), %rax
-> -	addq $0x38, %rsp
-> +	FTRACE_RESTORE_FRAME
->  
->  	jmp ftrace_stub
->  END(mcount)
-> @@ -164,14 +134,7 @@ ENTRY(ftrace_graph_caller)
->  	cmpl $0, function_trace_stop
->  	jne ftrace_stub
->  
-> -	subq $0x38, %rsp
-> -	movq %rax, (%rsp)
-> -	movq %rcx, 8(%rsp)
-> -	movq %rdx, 16(%rsp)
-> -	movq %rsi, 24(%rsp)
-> -	movq %rdi, 32(%rsp)
-> -	movq %r8, 40(%rsp)
-> -	movq %r9, 48(%rsp)
-> +	FTRACE_SAVE_FRAME
->  
->  	leaq 8(%rbp), %rdi
->  	movq 0x38(%rsp), %rsi
-> @@ -179,14 +142,8 @@ ENTRY(ftrace_graph_caller)
->  
->  	call	prepare_ftrace_return
->  
-> -	movq 48(%rsp), %r9
-> -	movq 40(%rsp), %r8
-> -	movq 32(%rsp), %rdi
-> -	movq 24(%rsp), %rsi
-> -	movq 16(%rsp), %rdx
-> -	movq 8(%rsp), %rcx
-> -	movq (%rsp), %rax
-> -	addq $0x38, %rsp
-> +	FTRACE_RESTORE_FRAME
-> +
->  	retq
->  END(ftrace_graph_caller)
->  
-> 
-> 
+I'm wondering if you can give me a clue as to what might be failing on 
+the AHCI side to give these symptoms, so I have some idea where I need 
+to fix things in my code?
+
+Thanks,
+    J
