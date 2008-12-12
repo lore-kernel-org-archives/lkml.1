@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbYLLE2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbYLLEb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757754AbYLLE2z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 23:28:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbYLLE2r
+	id S1757515AbYLLEb3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 23:31:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbYLLEbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 23:28:47 -0500
-Received: from mu-out-0910.google.com ([209.85.134.186]:47046 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756229AbYLLE2q (ORCPT
+	Thu, 11 Dec 2008 23:31:18 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45195
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755894AbYLLEbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 23:28:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hPAyPnZgk5JeV+m4r2rv6CDxzbnWtahNLrPirGrBwoBTw5Mu77l49+rFnjhRG7FD5+
-         SNkd1FKW43YrNuIY3TN3KbXng+7k8mc7QwJ0G0IDa7uncgpBrlJSYcFUyjhLYfdB4mk0
-         p1B3k79gxBci8L4fDhgx7OwWxR3cWyTMh4/20=
-Date: Fri, 12 Dec 2008 07:25:03 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: rydberg@bitmath.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, mjg@redhat.com, nicolas@boichat.ch,
-       rydberg@euromail.se, linux-kernel@vger.kernel.org
-Subject: Re: [patch 18/19] Define MODULE_SYSTEM_TABLE for mbp_nvidia_bl.o
-	and applesmc.o
-Message-ID: <20081212042503.GA14668@x200.localdomain>
-References: <200812092114.mB9LETsI027215@imap1.linux-foundation.org> <493F1C96.5070400@bitmath.org> <200812120305.mBC35vh8078366@www262.sakura.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812120305.mBC35vh8078366@www262.sakura.ne.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 11 Dec 2008 23:31:18 -0500
+Date: Thu, 11 Dec 2008 20:31:19 -0800 (PST)
+Message-Id: <20081211.203119.180062878.davem@davemloft.net>
+To: jeffrey.t.kirsher@intel.com
+Cc: akpm@linux-foundation.org, frederik.deweerdt@xprog.eu,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org,
+       stable@kernel.org, tglx@linutronix.de, zdenek.kabelac@gmail.com
+Subject: Re: [PATCH] e1000e: fix double release of mutex
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081211215806.1173.24413.stgit@lost.foo-projects.org>
+References: <20081211215806.1173.24413.stgit@lost.foo-projects.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -MODULE_DEVICE_TABLE(dmi, applesmc_whitelist);
-> +MODULE_SYSTEM_TABLE(dmi, applesmc_whitelist);
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 11 Dec 2008 13:58:07 -0800
 
-I sent patch which does "#define dmi_device_id dmi_system_id" and thus
-avoids yet another wrapper.
+> During a reset, releasing the swflag after it failed to be acquired would
+> cause a double unlock of the mutex.  Instead, test whether acquisition of
+> the swflag was successful and if not, do not release the swflag.  The reset
+> must still be done to bring the device to a quiescent state.
+> 
+> This resolves [BUG 12200] BUG: bad unlock balance detected! e1000e
+> http://bugzilla.kernel.org/show_bug.cgi?id=12200
+> 
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+
+If we're fixing a regression like this, you should make the
+patch against net-2.6, and this one is against net-next-2.6
+
+Please respin this for me, thanks Jeff.
