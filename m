@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbYLLVwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbYLLVw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092AbYLLVwE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 16:52:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbYLLVvh
+	id S1755717AbYLLVw1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 16:52:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbYLLVvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 16:51:37 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55936 "EHLO mx2.redhat.com"
+	Fri, 12 Dec 2008 16:51:38 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55937 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753876AbYLLVvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753877AbYLLVvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Dec 2008 16:51:36 -0500
 From: Eric Paris <eparis@redhat.com>
-Subject: [RFC PATCH -v4 02/14] fsnotify: pass a file instead of an inode to
-	open, read, and write
+Subject: [RFC PATCH -v4 01/14] filesystem notification: create fs/notify to
+	contain all fs notification
 To: linux-kernel@vger.kernel.org
 Cc: a.p.zijlstra@chello.nl, viro@ZenIV.linux.org.uk, hch@infradead.org,
        zbr@ioremap.net, akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Date: Fri, 12 Dec 2008 16:51:25 -0500
-Message-ID: <20081212215125.27112.76262.stgit@paris.rdu.redhat.com>
+Date: Fri, 12 Dec 2008 16:51:19 -0500
+Message-ID: <20081212215119.27112.97015.stgit@paris.rdu.redhat.com>
 In-Reply-To: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
 References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -27,142 +27,204 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fanotify, the upcoming notification system actually needs a f_path so it can
-do opens in the context of listeners, and it needs a file so it can get f_flags
-from the original process.  Close already was passing a file.
+Adding yet another filesystem notification system it seemed like a good
+idea to clean up fs/ by creating an fs/notify and putting everything
+there.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- fs/compat.c              |    5 ++---
- fs/nfsd/vfs.c            |    4 ++--
- fs/open.c                |    2 +-
- fs/read_write.c          |    8 ++++----
- include/linux/fsnotify.h |    9 ++++++---
- 5 files changed, 15 insertions(+), 13 deletions(-)
+ fs/Kconfig                       |   39 --
+ fs/Makefile                      |    5 
+ fs/dnotify.c                     |  194 --------
+ fs/inotify.c                     |  913 --------------------------------------
+ fs/inotify_user.c                |  778 --------------------------------
+ fs/notify/Kconfig                |    2 
+ fs/notify/Makefile               |    2 
+ fs/notify/dnotify/Kconfig        |   10 
+ fs/notify/dnotify/Makefile       |    1 
+ fs/notify/dnotify/dnotify.c      |  194 ++++++++
+ fs/notify/inotify/Kconfig        |   27 +
+ fs/notify/inotify/Makefile       |    2 
+ fs/notify/inotify/inotify.c      |  913 ++++++++++++++++++++++++++++++++++++++
+ fs/notify/inotify/inotify_user.c |  778 ++++++++++++++++++++++++++++++++
+ 14 files changed, 1931 insertions(+), 1927 deletions(-)
+ delete mode 100644 fs/dnotify.c
+ delete mode 100644 fs/inotify.c
+ delete mode 100644 fs/inotify_user.c
+ create mode 100644 fs/notify/Kconfig
+ create mode 100644 fs/notify/Makefile
+ create mode 100644 fs/notify/dnotify/Kconfig
+ create mode 100644 fs/notify/dnotify/Makefile
+ create mode 100644 fs/notify/dnotify/dnotify.c
+ create mode 100644 fs/notify/inotify/Kconfig
+ create mode 100644 fs/notify/inotify/Makefile
+ create mode 100644 fs/notify/inotify/inotify.c
+ create mode 100644 fs/notify/inotify/inotify_user.c
 
-diff --git a/fs/compat.c b/fs/compat.c
-index e5f49f5..4a7788f 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1158,11 +1158,10 @@ out:
- 	if (iov != iovstack)
- 		kfree(iov);
- 	if ((ret + (type == READ)) > 0) {
--		struct dentry *dentry = file->f_path.dentry;
- 		if (type == READ)
--			fsnotify_access(dentry);
-+			fsnotify_access(file);
- 		else
--			fsnotify_modify(dentry);
-+			fsnotify_modify(file);
- 	}
- 	return ret;
- }
-diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
-index 4433c8f..f4bc1e6 100644
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -940,7 +940,7 @@ nfsd_vfs_read(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
- 		nfsdstats.io_read += host_err;
- 		*count = host_err;
- 		err = 0;
--		fsnotify_access(file->f_path.dentry);
-+		fsnotify_access(file);
- 	} else 
- 		err = nfserrno(host_err);
- out:
-@@ -1007,7 +1007,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, struct svc_fh *fhp, struct file *file,
- 	set_fs(oldfs);
- 	if (host_err >= 0) {
- 		nfsdstats.io_write += cnt;
--		fsnotify_modify(file->f_path.dentry);
-+		fsnotify_modify(file);
- 	}
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 522469a..ff0e819 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -270,44 +270,7 @@ config OCFS2_COMPAT_JBD
  
- 	/* clear setuid/setgid flag after write */
-diff --git a/fs/open.c b/fs/open.c
-index 83cdb9d..9d69dd9 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -1020,7 +1020,7 @@ long do_sys_open(int dfd, const char __user *filename, int flags, int mode)
- 				put_unused_fd(fd);
- 				fd = PTR_ERR(f);
- 			} else {
--				fsnotify_open(f->f_path.dentry);
-+				fsnotify_open(f);
- 				fd_install(fd, f);
- 			}
- 		}
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 969a6d9..7eb2949 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -280,7 +280,7 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
- 		else
- 			ret = do_sync_read(file, buf, count, pos);
- 		if (ret > 0) {
--			fsnotify_access(file->f_path.dentry);
-+			fsnotify_access(file);
- 			add_rchar(current, ret);
- 		}
- 		inc_syscr(current);
-@@ -335,7 +335,7 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
- 		else
- 			ret = do_sync_write(file, buf, count, pos);
- 		if (ret > 0) {
--			fsnotify_modify(file->f_path.dentry);
-+			fsnotify_modify(file);
- 			add_wchar(current, ret);
- 		}
- 		inc_syscw(current);
-@@ -626,9 +626,9 @@ out:
- 		kfree(iov);
- 	if ((ret + (type == READ)) > 0) {
- 		if (type == READ)
--			fsnotify_access(file->f_path.dentry);
-+			fsnotify_access(file);
- 		else
--			fsnotify_modify(file->f_path.dentry);
-+			fsnotify_modify(file);
- 	}
- 	return ret;
- }
-diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
-index 00fbd5b..dec1afb 100644
---- a/include/linux/fsnotify.h
-+++ b/include/linux/fsnotify.h
-@@ -136,8 +136,9 @@ static inline void fsnotify_mkdir(struct inode *inode, struct dentry *dentry)
- /*
-  * fsnotify_access - file was read
-  */
--static inline void fsnotify_access(struct dentry *dentry)
-+static inline void fsnotify_access(struct file *file)
- {
-+	struct dentry *dentry = file->f_path.dentry;
- 	struct inode *inode = dentry->d_inode;
- 	u32 mask = IN_ACCESS;
+ endif # BLOCK
  
-@@ -152,8 +153,9 @@ static inline void fsnotify_access(struct dentry *dentry)
- /*
-  * fsnotify_modify - file was modified
-  */
--static inline void fsnotify_modify(struct dentry *dentry)
-+static inline void fsnotify_modify(struct file *file)
- {
-+	struct dentry *dentry = file->f_path.dentry;
- 	struct inode *inode = dentry->d_inode;
- 	u32 mask = IN_MODIFY;
+-config DNOTIFY
+-	bool "Dnotify support"
+-	default y
+-	help
+-	  Dnotify is a directory-based per-fd file change notification system
+-	  that uses signals to communicate events to user-space.  There exist
+-	  superior alternatives, but some applications may still rely on
+-	  dnotify.
+-
+-	  If unsure, say Y.
+-
+-config INOTIFY
+-	bool "Inotify file change notification support"
+-	default y
+-	---help---
+-	  Say Y here to enable inotify support.  Inotify is a file change
+-	  notification system and a replacement for dnotify.  Inotify fixes
+-	  numerous shortcomings in dnotify and introduces several new features
+-	  including multiple file events, one-shot support, and unmount
+-	  notification.
+-
+-	  For more information, see <file:Documentation/filesystems/inotify.txt>
+-
+-	  If unsure, say Y.
+-
+-config INOTIFY_USER
+-	bool "Inotify support for userspace"
+-	depends on INOTIFY
+-	default y
+-	---help---
+-	  Say Y here to enable inotify support for userspace, including the
+-	  associated system calls.  Inotify allows monitoring of both files and
+-	  directories via a single open fd.  Events are read from the file
+-	  descriptor, which is also select()- and poll()-able.
+-
+-	  For more information, see <file:Documentation/filesystems/inotify.txt>
+-
+-	  If unsure, say Y.
++source "fs/notify/Kconfig"
  
-@@ -168,8 +170,9 @@ static inline void fsnotify_modify(struct dentry *dentry)
- /*
-  * fsnotify_open - file was opened
-  */
--static inline void fsnotify_open(struct dentry *dentry)
-+static inline void fsnotify_open(struct file *file)
- {
-+	struct dentry *dentry = file->f_path.dentry;
- 	struct inode *inode = dentry->d_inode;
- 	u32 mask = IN_OPEN;
+ config QUOTA
+ 	bool "Quota support"
+diff --git a/fs/Makefile b/fs/Makefile
+index d9f8afe..e6f423d 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -20,8 +20,7 @@ obj-y +=	no-block.o
+ endif
  
+ obj-$(CONFIG_BLK_DEV_INTEGRITY) += bio-integrity.o
+-obj-$(CONFIG_INOTIFY)		+= inotify.o
+-obj-$(CONFIG_INOTIFY_USER)	+= inotify_user.o
++obj-y				+= notify/
+ obj-$(CONFIG_EPOLL)		+= eventpoll.o
+ obj-$(CONFIG_ANON_INODES)	+= anon_inodes.o
+ obj-$(CONFIG_SIGNALFD)		+= signalfd.o
+@@ -57,8 +56,6 @@ obj-$(CONFIG_QFMT_V1)		+= quota_v1.o
+ obj-$(CONFIG_QFMT_V2)		+= quota_v2.o
+ obj-$(CONFIG_QUOTACTL)		+= quota.o
+ 
+-obj-$(CONFIG_DNOTIFY)		+= dnotify.o
+-
+ obj-$(CONFIG_PROC_FS)		+= proc/
+ obj-y				+= partitions/
+ obj-$(CONFIG_SYSFS)		+= sysfs/
+diff --git a/fs/notify/Kconfig b/fs/notify/Kconfig
+new file mode 100644
+index 0000000..50914d7
+--- /dev/null
++++ b/fs/notify/Kconfig
+@@ -0,0 +1,2 @@
++source "fs/notify/dnotify/Kconfig"
++source "fs/notify/inotify/Kconfig"
+diff --git a/fs/notify/Makefile b/fs/notify/Makefile
+new file mode 100644
+index 0000000..5a95b60
+--- /dev/null
++++ b/fs/notify/Makefile
+@@ -0,0 +1,2 @@
++obj-y			+= dnotify/
++obj-y			+= inotify/
+diff --git a/fs/notify/dnotify/Kconfig b/fs/notify/dnotify/Kconfig
+new file mode 100644
+index 0000000..26adf5d
+--- /dev/null
++++ b/fs/notify/dnotify/Kconfig
+@@ -0,0 +1,10 @@
++config DNOTIFY
++	bool "Dnotify support"
++	default y
++	help
++	  Dnotify is a directory-based per-fd file change notification system
++	  that uses signals to communicate events to user-space.  There exist
++	  superior alternatives, but some applications may still rely on
++	  dnotify.
++
++	  If unsure, say Y.
+diff --git a/fs/notify/dnotify/Makefile b/fs/notify/dnotify/Makefile
+new file mode 100644
+index 0000000..f145251
+--- /dev/null
++++ b/fs/notify/dnotify/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_DNOTIFY)		+= dnotify.o
+diff --git a/fs/dnotify.c b/fs/notify/dnotify/dnotify.c
+similarity index 100%
+rename from fs/dnotify.c
+rename to fs/notify/dnotify/dnotify.c
+diff --git a/fs/notify/inotify/Kconfig b/fs/notify/inotify/Kconfig
+new file mode 100644
+index 0000000..4467928
+--- /dev/null
++++ b/fs/notify/inotify/Kconfig
+@@ -0,0 +1,27 @@
++config INOTIFY
++	bool "Inotify file change notification support"
++	default y
++	---help---
++	  Say Y here to enable inotify support.  Inotify is a file change
++	  notification system and a replacement for dnotify.  Inotify fixes
++	  numerous shortcomings in dnotify and introduces several new features
++	  including multiple file events, one-shot support, and unmount
++	  notification.
++
++	  For more information, see <file:Documentation/filesystems/inotify.txt>
++
++	  If unsure, say Y.
++
++config INOTIFY_USER
++	bool "Inotify support for userspace"
++	depends on INOTIFY
++	default y
++	---help---
++	  Say Y here to enable inotify support for userspace, including the
++	  associated system calls.  Inotify allows monitoring of both files and
++	  directories via a single open fd.  Events are read from the file
++	  descriptor, which is also select()- and poll()-able.
++
++	  For more information, see <file:Documentation/filesystems/inotify.txt>
++
++	  If unsure, say Y.
+diff --git a/fs/notify/inotify/Makefile b/fs/notify/inotify/Makefile
+new file mode 100644
+index 0000000..e290f3b
+--- /dev/null
++++ b/fs/notify/inotify/Makefile
+@@ -0,0 +1,2 @@
++obj-$(CONFIG_INOTIFY)		+= inotify.o
++obj-$(CONFIG_INOTIFY_USER)	+= inotify_user.o
+diff --git a/fs/inotify.c b/fs/notify/inotify/inotify.c
+similarity index 100%
+rename from fs/inotify.c
+rename to fs/notify/inotify/inotify.c
+diff --git a/fs/inotify_user.c b/fs/notify/inotify/inotify_user.c
+similarity index 100%
+rename from fs/inotify_user.c
+rename to fs/notify/inotify/inotify_user.c
 
