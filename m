@@ -1,94 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbYLLLlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbYLLLns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757937AbYLLLlw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 06:41:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYLLLlo
+	id S1758123AbYLLLns (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 06:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbYLLLnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 06:41:44 -0500
-Received: from ozlabs.org ([203.10.76.45]:55182 "EHLO ozlabs.org"
+	Fri, 12 Dec 2008 06:43:40 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:25426 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752841AbYLLLlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 06:41:44 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH 3/4] cpumask: use maxcpus=NUM to extend the cpu limit as well as restrict the limit
-Date: Fri, 12 Dec 2008 22:11:35 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; i686; ; )
-Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-References: <20081211112806.499831000@polaris-admin.engr.sgi.com> <20081211112807.004085000@polaris-admin.engr.sgi.com>
-In-Reply-To: <20081211112807.004085000@polaris-admin.engr.sgi.com>
+	id S1752575AbYLLLnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 06:43:39 -0500
+Date: Fri, 12 Dec 2008 12:43:19 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Milan Broz <mbroz@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: Re: [PATCH] loop: Flush possible running bios when loop device is released.
+Message-ID: <20081212114319.GP23742@kernel.dk>
+References: <494179EE.8060009@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812122211.36590.rusty@rustcorp.com.au>
+In-Reply-To: <494179EE.8060009@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 December 2008 21:58:09 Mike Travis wrote:
-> Impact: allow adding additional cpus.
+On Thu, Dec 11 2008, Milan Broz wrote:
+> Flush possible running bios when loop device is released.
 > 
-> Use maxcpus=NUM kernel parameter to extend the number of possible cpus as well
-> as (currently) limit them.  Any cpus >= number of present cpus will disabled.
-...
-
-These two bits of logic are very similar: can we merge them?
-
-> -	possible = num_processors + disabled_cpus;
-> -	if (possible > NR_CPUS)
-> -		possible = NR_CPUS;
-> +	if (setup_max_cpus == -1)	/* not specified */
-> +		possible = num_processors + disabled_cpus;
-> +	else if (setup_max_cpus == 0)	/* UP mode forced */
-> +		possible = 1;
-> +	else				/* user specified */
-> +		possible = setup_max_cpus;
-> +
-> +	if (possible > CONFIG_NR_CPUS) {
-> +		printk(KERN_WARNING
-> +			"%d Processors exceeds NR_CPUS limit of %d\n",
-> +			possible, CONFIG_NR_CPUS);
-> +		possible = CONFIG_NR_CPUS;
-> +	}
-...
-> -extern unsigned int setup_max_cpus;
-> +extern int setup_max_cpus;
-> +static inline int maxcpus(void)
+> When there are still queued bios and reference count
+> drops to zero, loop device must flush all queued bios.
+> 
+> Otherwise it can lead to situation that caller
+> closes the device, but some bios are still running
+> and endio() function call later oopses when uses
+> unallocated mempool.
+> 
+> This happens for example when running dm-crypt over loop,
+> here is typical oops backtrace:
+> 
+>  Oops: 0000 [#1] PREEMPT SMP
+>  EIP is at mempool_free+0x12/0x6b
+> ...
+>  crypt_dec_pending+0x50/0x54 [dm_crypt]
+>  crypt_endio+0x9f/0xa7 [dm_crypt]
+>  crypt_endio+0x0/0xa7 [dm_crypt]
+>  bio_endio+0x2b/0x2e
+>  loop_thread+0x37a/0x3b1
+>  do_lo_send_aops+0x0/0x165
+>  autoremove_wake_function+0x0/0x33
+>  loop_thread+0x0/0x3b1
+>  kthread+0x3b/0x61
+>  kthread+0x0/0x61
+>  kernel_thread_helper+0x7/0x10
+> 
+> (But crash is reproducible with different dm targets 
+> running over loop device too.)
+> 
+> Patch fixes it by flushing the bios in release call,
+> reusing the flush mechanism for switching backing store.
+> 
+> Signed-off-by: Milan Broz <mbroz@redhat.com>
+> ---
+>  drivers/block/loop.c |   17 ++++++++++++++++-
+>  1 files changed, 16 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+> index 5c4ee70..0ccf2ae 100644
+> --- a/drivers/block/loop.c
+> +++ b/drivers/block/loop.c
+> @@ -624,20 +624,33 @@ static int loop_switch(struct loop_device *lo, struct file *file)
+>  }
+>  
+>  /*
+> + * Helper to flush the IOs in loop, but keeping loop thread running
+> + */
+> +static int loop_flush(struct loop_device *lo)
 > +{
-> +	int maxcpus = setup_max_cpus;
-> +
-> +	if (maxcpus == -1 || maxcpus > CONFIG_NR_CPUS)
-> +		maxcpus = CONFIG_NR_CPUS;
-> +	else if (maxcpus == 0)
-> +		maxcpus = 1;
-> +
-> +	return maxcpus;
+> +	return loop_switch(lo, NULL);
 > +}
-
-If this didn't trunacte to CONFIG_NR_CPUS, it could still be used here:
-
-> @@ -425,7 +423,7 @@ static void __init smp_init(void)
+> +
+> +/*
+>   * Do the actual switch; called from the BIO completion routine
+>   */
+>  static void do_loop_switch(struct loop_device *lo, struct switch_request *p)
+>  {
+>  	struct file *file = p->file;
+>  	struct file *old_file = lo->lo_backing_file;
+> -	struct address_space *mapping = file->f_mapping;
+> +	struct address_space *mapping;
+> +
+> +	if (!file)
+> +		goto out;
 >  
->  	/* FIXME: This should be done in userspace --RR */
->  	for_each_present_cpu(cpu) {
-> -		if (num_online_cpus() >= setup_max_cpus)
-> +		if (num_online_cpus() >= maxcpus())
->  			break;
->  		if (!cpu_online(cpu))
->  			cpu_up(cpu);
-
-And it turns out noone actually uses the smp_cpus_done() arg, so
-I don't know what the semantics are supposed to be.
-
-> @@ -433,7 +431,7 @@ static void __init smp_init(void)
+> +	mapping = file->f_mapping;
+>  	mapping_set_gfp_mask(old_file->f_mapping, lo->old_gfp_mask);
+>  	lo->lo_backing_file = file;
+>  	lo->lo_blocksize = S_ISBLK(mapping->host->i_mode) ?
+>  		mapping->host->i_bdev->bd_block_size : PAGE_SIZE;
+>  	lo->old_gfp_mask = mapping_gfp_mask(mapping);
+>  	mapping_set_gfp_mask(mapping, lo->old_gfp_mask & ~(__GFP_IO|__GFP_FS));
+> +out:
+>  	complete(&p->wait);
+>  }
 >  
->  	/* Any cleanup work */
->  	printk(KERN_INFO "Brought up %ld CPUs\n", (long)num_online_cpus());
-> -	smp_cpus_done(setup_max_cpus);
-> +	smp_cpus_done(maxcpus());
+> @@ -1347,6 +1360,8 @@ static int lo_release(struct gendisk *disk, fmode_t mode)
+>  
+>  	if ((lo->lo_flags & LO_FLAGS_AUTOCLEAR) && !lo->lo_refcnt)
+>  		loop_clr_fd(lo, NULL);
+> +	else if (!lo->lo_refcnt && lo->lo_thread)
+> +		loop_flush(lo);
+>  
+>  	mutex_unlock(&lo->lo_ctl_mutex);
 
-Cheers,
-Rusty.
+Looks very good to me. I have nothing further to add except what Andrew
+already detailed. Care to rediff with those changes and resend? Then
+I'll queue it up.
+
+-- 
+Jens Axboe
+
