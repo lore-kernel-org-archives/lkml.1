@@ -1,74 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758384AbYLLF0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbYLLF2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758384AbYLLF0J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 00:26:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758081AbYLLFZK
+	id S1758318AbYLLF2j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 00:28:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbYLLF22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 00:25:10 -0500
-Received: from kroah.org ([198.145.64.141]:37012 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752235AbYLLFZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 00:25:07 -0500
-Date: Thu, 11 Dec 2008 21:24:01 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, Eugene Teo <eteo@redhat.com>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>, Jake Edge <jake@lwn.net>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk,
-       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
-       Chuck Wolber <chuckw@quantumlinux.com>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Dave Chinner <david@fromorbit.com>,
-       Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Lachlan McIlroy <lachlan@sgi.com>
-Subject: [patch 85/83] XFS: Fix hang after disallowed rename across
-	directory quota domains
-Message-ID: <20081212052401.GC9024@kroah.com>
-References: <20081211191014.GA5759@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081211191014.GA5759@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 12 Dec 2008 00:28:28 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45601
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751075AbYLLF21 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 00:28:27 -0500
+Date: Thu, 11 Dec 2008 21:28:28 -0800 (PST)
+Message-Id: <20081211.212828.49279391.davem@davemloft.net>
+To: jeffrey.t.kirsher@intel.com
+Cc: netdev@vger.kernel.org, stable@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] e1000e: fix double release of mutex
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081212052025.3298.151.stgit@lost.foo-projects.org>
+References: <20081212052025.3298.151.stgit@lost.foo-projects.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Chinner <david@fromorbit.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 11 Dec 2008 21:20:26 -0800
 
-commit 576a488a27f267af203f3ea69c700a1612335e9f upstream.
+> During a reset, releasing the swflag after it failed to be acquired would
+> cause a double unlock of the mutex.  Instead, test whether acquisition of
+> the swflag was successful and if not, do not release the swflag.  The reset
+> must still be done to bring the device to a quiescent state.
+> 
+> This resolves [BUG 12200] BUG: bad unlock balance detected! e1000e
+> http://bugzilla.kernel.org/show_bug.cgi?id=12200
+> 
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-When project quota is active and is being used for directory tree
-quota control, we disallow rename outside the current directory
-tree. This requires a check to be made after all the inodes
-involved in the rename are locked. We fail to unlock the inodes
-correctly if we disallow the rename when the target is outside the
-current directory tree. This results in a hang on the next access
-to the inodes involved in failed rename.
-
-Reported-by: Arkadiusz Miskiewicz <arekm@maven.pl>
-Signed-off-by: Dave Chinner <david@fromorbit.com>
-Tested-by: Arkadiusz Miskiewicz <arekm@maven.pl>
-Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/xfs/xfs_rename.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/fs/xfs/xfs_rename.c
-+++ b/fs/xfs/xfs_rename.c
-@@ -212,7 +212,7 @@ xfs_rename(
- 	if (unlikely((target_dp->i_d.di_flags & XFS_DIFLAG_PROJINHERIT) &&
- 		     (target_dp->i_d.di_projid != src_ip->i_d.di_projid))) {
- 		error = XFS_ERROR(EXDEV);
--		xfs_rename_unlock4(inodes, XFS_ILOCK_SHARED);
-+		xfs_rename_unlock4(inodes, XFS_ILOCK_EXCL);
- 		xfs_trans_cancel(tp, cancel_flags);
- 		goto std_return;
- 	}
+Applied, thanks for respinning this.
