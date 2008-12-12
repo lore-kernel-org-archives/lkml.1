@@ -1,104 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbYLLJzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbYLLJ57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758404AbYLLJzd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 04:55:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbYLLJz0
+	id S1758561AbYLLJ57 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 04:57:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbYLLJ5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 04:55:26 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52497 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756486AbYLLJzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 04:55:25 -0500
-Message-ID: <494234B0.5@cn.fujitsu.com>
-Date: Fri, 12 Dec 2008 17:53:52 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sched: fix another race when reading /proc/sched_debug
-Content-Type: text/plain; charset=UTF-8
+	Fri, 12 Dec 2008 04:57:51 -0500
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:60021 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751411AbYLLJ5u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 04:57:50 -0500
+Subject: Re: [PATCH 4/4] s390: remove s390_root_dev_*()
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Mark McLoughlin <markmc@redhat.com>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-s390@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+In-Reply-To: <1229075116.28887.4.camel@localhost>
+References: <1229012203.7968.79.camel@blaa>
+	 <1229012216-4211-1-git-send-email-markmc@redhat.com>
+	 <1229012216-4211-2-git-send-email-markmc@redhat.com>
+	 <1229012216-4211-3-git-send-email-markmc@redhat.com>
+	 <1229012216-4211-4-git-send-email-markmc@redhat.com>
+	 <20081211180025.045b9b4a@gondolin>  <20081212102951.01446f22@gondolin>
+	 <1229074546.4041.8.camel@blaa>  <1229075116.28887.4.camel@localhost>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Fri, 12 Dec 2008 10:54:05 +0100
+Message-Id: <1229075645.28887.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I fixed an oops with the following commit:
+On Fri, 2008-12-12 at 10:45 +0100, Martin Schwidefsky wrote:
+> On Fri, 2008-12-12 at 09:35 +0000, Mark McLoughlin wrote:
+> > From: Mark McLoughlin <markmc@redhat.com>
+> > Subject: [PATCH] s390: remove s390_root_dev_*()
+> > 
+> > Replace s390_root_dev_register() with root_device_register() etc.
+> > 
+> > [Includes fix from Cornelia Huck]
+> > 
+> > Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+> 
+> I can carry the patch in my patch queue. Thanks.
 
-| commit 24eb089950ce44603b30a3145a2c8520e2b55bb1
-| Author: Li Zefan <lizf@cn.fujitsu.com>
-| Date:   Thu Nov 6 12:53:32 2008 -0800
-|
-|    cgroups: fix invalid cgrp->dentry before cgroup has been completely removed
-|
-|    This fixes an oops when reading /proc/sched_debug.
+Oops, this depends on another patch. If the other patch is missing it
+doesn't compile.. So I better not add that patch to my queue. It should
+be sent together with the patch it depends on.
 
-The above commit fixed a race that reading /proc/sched_debug may access
-NULL cgrp->dentry if a cgroup is being removed.
-
-But I found there's another different race, in that reading sched_debug
-may access a cgroup which hasn't been completed created, and thus
-dereference NULL cgrp->dentry!
-
-cgroup_create()
-  cpu_cgroup_create()
-    register_fair_sched_group()
-      list_add_rcu(...)
-				print_cfs_stats()
-				  for_each_leaf_cfs_rq()
-				    print_cfs_rq()
-				      cgroup_path()
-  cgroup->dentry = dentry;
-
-task_group is added to the global list before the cgroup has been created
-completely, if at this time print_cfs_stats() is called, it will access
-the half-created cgroup.
-
-This patch fixes the bug by holding cgroup_lock() to wait the cgroup to
-be created completely before calling cgroup_path().
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
-
-The patch is based on linus's git tree, and should go into 2.6.28,
-but it conflicts with the cleanup patch in sched/core:
-	0a0db8f5c9d4bbb9bbfcc2b6cb6bce2d0ef4d73d
-
----
- kernel/sched_debug.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index 26ed8e3..01abf5b 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -127,8 +127,11 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
- 	if (tg)
- 		cgroup = tg->css.cgroup;
- 
--	if (cgroup)
-+	if (cgroup) {
-+		cgroup_lock();
- 		cgroup_path(cgroup, path, sizeof(path));
-+		cgroup_unlock();
-+	}
- 
- 	SEQ_printf(m, "\ncfs_rq[%d]:%s\n", cpu, path);
- #else
-@@ -181,8 +184,11 @@ void print_rt_rq(struct seq_file *m, int cpu, struct rt_rq *rt_rq)
- 	if (tg)
- 		cgroup = tg->css.cgroup;
- 
--	if (cgroup)
-+	if (cgroup) {
-+		cgroup_lock();
- 		cgroup_path(cgroup, path, sizeof(path));
-+		cgroup_unlock();
-+	}
- 
- 	SEQ_printf(m, "\nrt_rq[%d]:%s\n", cpu, path);
- #else
 -- 
-1.5.4.rc3
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
