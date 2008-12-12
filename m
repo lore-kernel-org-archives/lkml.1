@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbYLLQCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758802AbYLLQMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759230AbYLLQCa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 11:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbYLLQCW
+	id S1758802AbYLLQMe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 11:12:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbYLLQMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 11:02:22 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43506 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757280AbYLLQCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 11:02:21 -0500
-Message-ID: <49428AFD.5090009@redhat.com>
-Date: Fri, 12 Dec 2008 17:02:05 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Fri, 12 Dec 2008 11:12:25 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40052 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757133AbYLLQMZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 11:12:25 -0500
+Date: Fri, 12 Dec 2008 08:11:35 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Frans Pop <elendil@planet.nl>, Eric Anholt <eric@anholt.net>,
+       nix.or.die@googlemail.com, linux-kernel@vger.kernel.org, rjw@sisk.pl,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: Linux 2.6.28-rc8
+In-Reply-To: <20081212075746.4ddc9349@infradead.org>
+Message-ID: <alpine.LFD.2.00.0812120808200.3340@localhost.localdomain>
+References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain> <49407CE1.9090600@googlemail.com> <1228979963.3254.8.camel@gaiman.anholt.net> <200812111707.20857.elendil@planet.nl> <alpine.LFD.2.00.0812110814360.3340@localhost.localdomain>
+ <20081211163548.GA11859@elte.hu> <alpine.LFD.2.00.0812110902450.3340@localhost.localdomain> <20081211203604.GA14817@elte.hu> <84144f020812111246m7f6470f2n8b09283f54ead81@mail.gmail.com> <20081212082456.GA25106@elte.hu>
+ <20081212075746.4ddc9349@infradead.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
-References: <1229090440-32120-1-git-send-email-kraxel@redhat.com> <20081212152929.GM26095@parisc-linux.org> <494287D4.2070909@redhat.com> <20081212155113.GO26095@parisc-linux.org>
-In-Reply-To: <20081212155113.GO26095@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On the other hand, NetBSD have approximately 0% market share.
-> We shouldn't let them lock us into making a bad decision.  Is there
-> anyone other than NetBSD who has added these syscalls?
 
-Free- and OpenBSD have it too.  For Solaris I've found a feature request
-only.  Dunno about MacOS/Darwin.  Other un*xes which are important these
-days?
 
-I'd *really* hate it to have the same system call with different
-argument ordering on different systems though.  Especially when swapping
-two integer values, so gcc wouldn't error out on wrong usage.
+On Fri, 12 Dec 2008, Arjan van de Ven wrote:
+> 
+> another thing we could do is try to only warn if you cross bar
+> boundaries but not if you cross other user-of-the-resource boundaries.
 
-cheers,
-  Gerd
+Hmm. We could use the res->flags for this. But I'm not sure non-PCI 
+resources fill those in correctly.
+
+A pure "busy" allocation (ie a driver marker) would generally have just 
+the IORESOURCE_BUSY bit set, while a real PCI hardware resource will have 
+other bits set (ie the IORESOURCE_IO/MEM bits) and not be marked BUSY.
+
+Maybe just ignoring resources with BUSY set, as they are driver markers 
+rather than actual HW resources.
+
+			Linus
