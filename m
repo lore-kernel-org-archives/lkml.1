@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbYLLHVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbYLLHX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757476AbYLLHVW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 02:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYLLHVL
+	id S1757076AbYLLHX4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 02:23:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYLLHXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 02:21:11 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:9414 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbYLLHVK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 02:21:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vzbt58CFRWjRpMIVYkdrd02UAf7Pe4GXWr+Lr1xvGV/+edDhNsrg5RdZsGnPwGE26p
-         Tm5Ak0zGT8CFLutI/OOW7/TgkKYP0QAJI2Ww59ZD78yOSq8Oj26NEoaoiMpoF90+Ata7
-         fO+Brtogoxy20rXeuKKIAI9JKldoxTD3QMTZs=
-Message-ID: <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>
-Date: Fri, 12 Dec 2008 08:21:08 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: linux-iscsi-target-dev@googlegroups.com
-Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Christoph Hellwig" <hch@lst.de>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Mike Christie" <michaelc@cs.wisc.edu>,
-       "Hannes Reinecke" <hare@suse.de>, "Jens Axboe" <jens.axboe@oracle.com>
-In-Reply-To: <1229025513.4153.542.camel@haakon2.linux-iscsi.org>
+	Fri, 12 Dec 2008 02:23:48 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46574 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750795AbYLLHXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 02:23:48 -0500
+Date: Fri, 12 Dec 2008 08:23:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Markus Metzger <markus.t.metzger@intel.com>
+Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       markus.t.metzger@gmail.com, roland@redhat.com,
+       akpm@linux-foundation.org, eranian@googlemail.com
+Subject: [PATCH] x86, bts: fix build error
+Message-ID: <20081212072324.GA10705@elte.hu>
+References: <20081211134959.A13599@sedona.ch.intel.com> <20081212070932.GB7589@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>
-	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <20081212070932.GB7589@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 8:58 PM, Nicholas A. Bellinger
-<nab@linux-iscsi.org> wrote:
->
-> On Thu, 2008-12-11 at 20:24 +0100, Bart Van Assche wrote:
->> On Thu, Dec 11, 2008 at 4:14 AM, Nicholas A. Bellinger
->> <nab@linux-iscsi.org> wrote:
->> > Things are moving quickly for Target_Core_Mod/ConfigFS and LIO-Target
->> > v3.0 development, and I invite folks to have a look at the code.  To
->> > dive into the rest of the v3.0 code via git-web, check out:
->> >
->> > http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=tree;f=drivers/lio-core
->>
->> I didn't have a look at the LIO code, but I ran it through checkpatch.
->> The result summary is as follows:
->>
-> Thanks for the note, but checkpatch output on the entire tree (not just
-> the patchs I posted) does not really help the discussion.  Obviously
-> this is on my list before submission for Target_Core_Mod/ConfigFS for
-> v2.6.29.  However, what would be nice if you actually sent a kernel
-> patch for these issues.
 
-I ran checkpatch on the files in drivers/lio-core ONLY. I did this by
-converting all the files in drivers/lio-core through a script into a
-patch, and by running checkpatch on the generated patch.
+Markus,
 
-And as you already know I'm not going to work on LIO.
+i fixed a build failure via the commit below - but the recursion in that 
+code is really nasty. Could you please clean it all up to plain flat 
+code?
 
-Bart.
+	Ingo
+
+----------------->
+>From ffc2238af8431d930d2c15f16feecf1fd6d75642 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 12 Dec 2008 08:21:19 +0100
+Subject: [PATCH] x86, bts: fix build error
+
+Impact: build fix
+
+ arch/x86/kernel/ds.c: In function 'ds_request':
+ arch/x86/kernel/ds.c:236: sorry, unimplemented: inlining failed in call to 'ds_get_context': recursive inlining
+
+but the recursion here is scary ...
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/ds.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
+index f058300..dc1e712 100644
+--- a/arch/x86/kernel/ds.c
++++ b/arch/x86/kernel/ds.c
+@@ -232,7 +232,7 @@ static DEFINE_PER_CPU(struct ds_context *, system_context_array);
+ 
+ #define system_context per_cpu(system_context_array, smp_processor_id())
+ 
+-static inline struct ds_context *ds_get_context(struct task_struct *task)
++static struct ds_context *ds_get_context(struct task_struct *task)
+ {
+ 	struct ds_context **p_context =
+ 		(task ? &task->thread.ds_ctx : &system_context);
