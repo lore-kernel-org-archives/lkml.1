@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbYLLVAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbYLLVA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755022AbYLLVAE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 16:00:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYLLU7y
+	id S1753523AbYLLVA1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 16:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbYLLVAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 15:59:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:9808 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751464AbYLLU7x (ORCPT
+	Fri, 12 Dec 2008 16:00:06 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:6187 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755009AbYLLVAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 15:59:53 -0500
+	Fri, 12 Dec 2008 16:00:03 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oJ2qFX38lhfrTEB6e5382ciO1XShtk+0vwIyLw+AQhNZX5ry384y25et69XBhiiBn6
-         B1Nf65dq2qe9nfVA0wXFYsYDy9mbQ2eki2Ns7Mevh+KTPhluAwGr5jYQSVLaTrQLzt+J
-         6lBWNJWnNzgy0YDSVsqy9nyGxCoTR1KbLPcQk=
-Date: Fri, 12 Dec 2008 23:59:49 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>, Steven Rostedt <srostedt@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       fweisbec <fweisbec@gmail.com>
-Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
-Message-ID: <20081212205949.GB28554@localhost>
-References: <20081212184136.GB14192@localhost> <1229113167.32623.12.camel@localhost.localdomain> <20081212204724.GA26194@localhost> <alpine.DEB.1.10.0812121552360.19351@gandalf.stny.rr.com> <20081212205729.GA28554@localhost>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HZkWyfxmUdSEVhDvSccomPYjDSFmtx7FVDhdOZ0JWhE2KFA58r/oMwFk475gThAUv2
+         K2gbffWj8kcQSFpBHpovSdVvyOkWg834KeRNNk98N+7i5fx05xiZcPhPfpjPK1paq/jV
+         LjjeTmWTtLCtJqOyAQAwEJrURLmyUOdB30xHk=
+Message-ID: <8bd0f97a0812121300p6c509336pde936b7f8c5ca6a@mail.gmail.com>
+Date: Fri, 12 Dec 2008 16:00:02 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: [PATCH 1/28] drivers/base/platform.c: Drop return value from platform_driver remove functions
+Cc: "Vorobiev Dmitri" <dmitri.vorobiev@movial.fi>,
+       "Julia Lawall" <julia@diku.dk>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+In-Reply-To: <20081212051759.GA12563@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081212205729.GA28554@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <Pine.LNX.4.64.0812101725540.21998@ask.diku.dk>
+	 <8bd0f97a0812100928l2c75d373n7eba5aa0cc3882fd@mail.gmail.com>
+	 <53806.88.114.236.15.1228947522.squirrel@webmail.movial.fi>
+	 <8bd0f97a0812101437r4abb9346p8bc8d512ddc02cde@mail.gmail.com>
+	 <20081212051759.GA12563@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Fri, Dec 12, 2008 at 11:57:29PM +0300]
-| [Steven Rostedt - Fri, Dec 12, 2008 at 03:52:56PM -0500]
-| | 
-| ... 
-| | You can put them in arch/x86/include/asm/ftrace.h That's assembly safe.
-| | 
-| | -- Steve
-| | 
-| 
-| Yep, while you were typing the message I was testing the change :)
-| Do you like it?
-| 
-| 		- Cyrill -
+On Fri, Dec 12, 2008 at 00:17, Greg KH wrote:
+> On Wed, Dec 10, 2008 at 05:37:42PM -0500, Mike Frysinger wrote:
+>> On Wed, Dec 10, 2008 at 17:18, Vorobiev Dmitri wrote:
+>> >> On Wed, Dec 10, 2008 at 11:26, Julia Lawall wrote:
+>> >>  you'll get a
+>> >> warning in C about the assignment, but you wont get a build failure,
+>> >
+>> > ...unless you compile with -Werror, which frequently the case.
+>>
+>> anyone crazy enough to build with -Werror is crazy enough to send in a fix ;)
+>
+> Hm, have you noted that some arches have that flag enabled in their
+> build?
 
-By "testing" I mean "to compare objdump output".
+i dont see anyone building things beyond a select dir or two (none of
+which contain platform drivers) with -Werror.  where are you seeing
+this ?
 
-		- Cyrill -
+besides, while using -Werror in development may make sense, sticking
+it into the release for end users is just plain mean.  gcc is so
+unreliable with warnings across versions.
+-mike
