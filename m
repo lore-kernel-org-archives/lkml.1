@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbYLLHX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbYLLHYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757076AbYLLHX4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 02:23:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYLLHXs
+	id S1757939AbYLLHYU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 02:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756972AbYLLHX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 02:23:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46574 "EHLO mx2.mail.elte.hu"
+	Fri, 12 Dec 2008 02:23:57 -0500
+Received: from ns1.suse.de ([195.135.220.2]:41859 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750795AbYLLHXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 02:23:48 -0500
-Date: Fri, 12 Dec 2008 08:23:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Markus Metzger <markus.t.metzger@intel.com>
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       markus.t.metzger@gmail.com, roland@redhat.com,
-       akpm@linux-foundation.org, eranian@googlemail.com
-Subject: [PATCH] x86, bts: fix build error
-Message-ID: <20081212072324.GA10705@elte.hu>
-References: <20081211134959.A13599@sedona.ch.intel.com> <20081212070932.GB7589@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1757093AbYLLHX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 02:23:56 -0500
+Date: Fri, 12 Dec 2008 08:23:55 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [rfc][patch] SLQB slab allocator
+Message-ID: <20081212072355.GG15804@wotan.suse.de>
+References: <20081212002518.GH8294@wotan.suse.de> <4941F8D2.4060807@cosmosbay.com> <20081212055051.GE15804@wotan.suse.de> <49420DAB.7090604@cosmosbay.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20081212070932.GB7589@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49420DAB.7090604@cosmosbay.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Dec 12, 2008 at 08:07:23AM +0100, Eric Dumazet wrote:
+> Nick Piggin a écrit :
+> > Is SLAB still bad at the test with the slab-rcu patch in place?
+> > SLAB has a pretty optimal fastpath as well, although if its queues
+> > start overflowing, it can run into contention quite easily.
+> 
+> Yes, I forgot I applied Christoph patch (SLAB_DESTROY_BY_RCU for struct file) 
+> in the meantime, silly me, this was with the v2 of my serie, with only 5 patches.
+> 
+> With SLAB, results are quite good !
+> 
+> # time ./socketallocbench
+> 
+> real    0m1.201s
+> user    0m0.071s
+> sys     0m1.122s
+> # time ./socketallocbench -n8
+> 
+> real    0m1.616s
+> user    0m0.578s
+> sys     0m12.220s
 
-Markus,
+Yeah, SLAB is actually very hard to beat, much of the time.
 
-i fixed a build failure via the commit below - but the recursion in that 
-code is really nasty. Could you please clean it all up to plain flat 
-code?
 
-	Ingo
+> >> c0281e10 <kmem_cache_alloc>: /* kmem_cache_alloc total: 140659 10.8277 */
+> > 
+> > I guess you're compiling with -Os? I find gcc can pack the fastpath
+> > much better with -O2, and actually decrease the effective icache
+> > footprint size even if the total text size increases...
+> 
+> No, I dont use -Os, unless something got wrong
+> 
+> # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+> # CONFIG_OPTIMIZE_INLINING is not set
 
------------------>
->From ffc2238af8431d930d2c15f16feecf1fd6d75642 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 12 Dec 2008 08:21:19 +0100
-Subject: [PATCH] x86, bts: fix build error
+Oh OK. Hmm, you do have SLQB debugging compiled in by the looks. I
+haven't really been looking at code generation in that case. I don't
+expect that would cause a significant difference in your case,
+though.
 
-Impact: build fix
+Anyway, I'll see if I can work out why SLQB is slower. Do you have
+socketallocbench online?
 
- arch/x86/kernel/ds.c: In function 'ds_request':
- arch/x86/kernel/ds.c:236: sorry, unimplemented: inlining failed in call to 'ds_get_context': recursive inlining
-
-but the recursion here is scary ...
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/ds.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
-index f058300..dc1e712 100644
---- a/arch/x86/kernel/ds.c
-+++ b/arch/x86/kernel/ds.c
-@@ -232,7 +232,7 @@ static DEFINE_PER_CPU(struct ds_context *, system_context_array);
- 
- #define system_context per_cpu(system_context_array, smp_processor_id())
- 
--static inline struct ds_context *ds_get_context(struct task_struct *task)
-+static struct ds_context *ds_get_context(struct task_struct *task)
- {
- 	struct ds_context **p_context =
- 		(task ? &task->thread.ds_ctx : &system_context);
