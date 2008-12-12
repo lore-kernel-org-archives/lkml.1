@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYLLHun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbYLLHy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757335AbYLLHun (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 02:50:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbYLLHue
+	id S1757236AbYLLHy0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 02:54:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbYLLHyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 02:50:34 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:19137 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbYLLHud (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 02:50:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=CmxM7AIp884rXpMZ7a0yQ0zf5k1gIb7PfmX3f8vSLv5N7+N0ex8wUkHodieiEJpzHe
-         rhXwR1cZvrexzNKkBXlwp+zaXafKna1h9K60P7/mv+KYd6xW002NLmy5Y3s9TARgmYZK
-         5ze4QMr5LYIUmhaZZcDvRREP2ABbhtf/1BWy0=
-Message-ID: <84144f020812112350m6c5f4ccbyded45b6ca50f699d@mail.gmail.com>
-Date: Fri, 12 Dec 2008 09:50:31 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ryusuke Konishi" <konishi.ryusuke@lab.ntt.co.jp>
-Subject: Re: [PATCH mmotm 3/5] nilfs2: avoid double error caused by nilfs_transaction_end
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+	Fri, 12 Dec 2008 02:54:18 -0500
+Received: from 8bytes.org ([88.198.83.132]:51305 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750795AbYLLHyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 02:54:18 -0500
+Date: Fri, 12 Dec 2008 08:54:15 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, dhowells@redhat.com,
        linux-kernel@vger.kernel.org
-In-Reply-To: <1229059021-9538-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+Subject: Re: Linux 2.6.28-rc8
+Message-ID: <20081212075414.GF24323@8bytes.org>
+References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain> <24401.1229009346@redhat.com> <20081211.191949.05090709.davem@davemloft.net> <alpine.LFD.2.00.0812112138510.3340@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1229059021-9538-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-	 <1229059021-9538-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-	 <1229059021-9538-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-	 <1229059021-9538-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Google-Sender-Auth: f1fc8fb9616dc970
+In-Reply-To: <alpine.LFD.2.00.0812112138510.3340@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ryusuke,
+On Thu, Dec 11, 2008 at 09:40:21PM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 11 Dec 2008, David Miller wrote:
+> 
+> > From: David Howells <dhowells@redhat.com>
+> > Date: Thu, 11 Dec 2008 15:29:06 +0000
+> > 
+> > > Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > > 
+> > > >  (a) just make the -rc's go on a few more weeks, and do 2.6.28 after xmas
+> > > > 
+> > > >      I like this, because alledgely people are debugging things, and we'd 
+> > > >      get a more stable 2.6.28.
+> > > 
+> > > Which would perhaps mean that the merge window is open during LCA, which will
+> > > be inconvenient for some people.  On the other hand, it might put the culprits
+> > > where you can lay your hands on them.
+> > 
+> > That happened in Melbourne and it wasn't pleasant.  Instead
+> > of enjoying talks at the conference some of us were stressing
+> > out on our laptops dealing with our merges instead.
+> 
+> Yes. I definitely want to close the 29 merge window before LCA. In fact, I 
+> want to close it far enough before that we can fix up any worst issues.
+> 
+> Which does argue for opening it up during the holidays, I guess.
 
-On Fri, Dec 12, 2008 at 7:16 AM, Ryusuke Konishi
-<konishi.ryusuke@lab.ntt.co.jp> wrote:
-> Pekka Enberg pointed out that double error handlings found after
-> nilfs_transaction_end() can be avoided by separating abort operation:
->
->  OK, I don't understand this. The only way nilfs_transaction_end() can
->  fail is if we have NILFS_TI_SYNC set and we fail to construct the
->  segment. But why do we want to construct a segment if we don't commit?
->
->  I guess what I'm asking is why don't we have a separate
->  nilfs_transaction_abort() function that can't fail for the erroneous
->  case to avoid this double error value tracking thing?
->
-> This does the separation and renames nilfs_transaction_end() to
-> nilfs_transaction_commit() for clarification.
->
-> Since, some calls of these functions were used just for exclusion
-> control against the segment constructor, they are replaced with
-> semaphore operations.
->
-> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+You can do a release around 29th/30th December. This gives the people
+who are on vacation until the new year still a week for merging stuff
+and the merge window closes 4-5 days before people are leaving for
+LCA.
 
-Nice cleanup!
+Joerg
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
