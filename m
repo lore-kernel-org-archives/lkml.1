@@ -1,103 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYLLLQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbYLLLW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbYLLLQS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 06:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbYLLLQK
+	id S1757287AbYLLLW4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 06:22:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbYLLLWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 06:16:10 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43534 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbYLLLQJ (ORCPT
+	Fri, 12 Dec 2008 06:22:46 -0500
+Received: from mailhost.ics.forth.gr ([139.91.157.55]:36645 "EHLO
+	mailhost.ics.forth.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbYLLLWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 06:16:09 -0500
-Message-ID: <46730.10.75.179.61.1229080565.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <20081212184341.b62903a7.nishimura@mxp.nes.nec.co.jp>
-References: <20081212172930.282caa38.kamezawa.hiroyu@jp.fujitsu.com>
-    <20081212184341.b62903a7.nishimura@mxp.nes.nec.co.jp>
-Date: Fri, 12 Dec 2008 20:16:05 +0900 (JST)
-Subject: Re: [BUGFIX][PATCH mmotm] memcg fix swap accounting leak
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Hugh Dickins" <hugh@veritas.com>, nishimura@mxp.nes.nec.co.jp
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Fri, 12 Dec 2008 06:22:45 -0500
+X-Greylist: delayed 6395 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Dec 2008 06:22:45 EST
+X-DKIM: Sendmail DKIM Filter v2.3.2 mailhost.ics.forth.gr mBC9a7jQ000977
+X-AuditID: 8b5b9d37-a35c3bb000001a42-e7-494230878aee 
+Message-ID: <4942314E.80408@ics.forth.gr>
+Date: Fri, 12 Dec 2008 11:39:26 +0200
+From: Thanos Makatos <mcatos@ics.forth.gr>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=us-ascii
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+To: linux-kernel@vger.kernel.org
+Subject: Inexplicable I/O latency using worker threads
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daisuke Nishimura said:
->
->         /*
->          * The page isn't present yet, go ahead with the fault.
->          *
->          * Be careful about the sequence of operations here.
->          * To get its accounting right, reuse_swap_page() must be called
->          * while the page is counted on swap but not yet in mapcount i.e.
->          * before page_add_anon_rmap() and swap_free(); try_to_free_swap()
->          * must be called after the swap_free(), or it will never succeed.
->          * And mem_cgroup_commit_charge_swapin(), which uses the swp_entry
->          * in page->private, must be called before reuse_swap_page(),
->          * which may delete_from_swap_cache().
->          */
->
-> Hmm.. should we save page->private before calling reuse_swap_page and pass
-> it
-> to mem_cgroup_commit_charge_swapin(I think it cannot be changed because
-> the page
-> is locked)?
->
-seems not necessary (see below).  I'll fix comment if I uses my pc tomorrow..
+Hello all.
 
-Considering 2 cases,
- A. the SwapCache is already chareged before try_charge_swapin()
- B. the SwapCache is very new and not charged before try_charge_swapin()
+I am facing a weird problem with a virtual block driver I made concerning excessive I/O latency.
 
-Case A.
-   0. We have charge of PAGE_SIZE to this page before reach here.
-   1. try_charge_swapin() is called and charge += PAGE_SIZE
-   2. reuse_swap_page() is called.
-          when delete_from_swap_cache() is called..
-          2-a. if already mapped, no change in charges.
-          2-b. if not mapped, charge-=PAGE_SIZE. PCG_USED bit is cleared.
-               and charge-record is written into swap_cgroup
-          not called.
-          2-c. no changes in charge.
-   3. commit_charge is called.
-          3-a. PCG_USED bit is set, so charge -= PAGE_SIZE.
-          3-b. PCG_USED bit is cleared and so we set PCG_USED bit and no
-               changes in charge.
-          3-c. no changes in charge.
-   4-b. swap_free() will clear record in swap_cgroup.
+My block driver intercepts requests and redirects them to a real block device,
+but not just be setting the bio->bi_bdev field, I create new bios.
 
-   Then, finally we have PAGE_SIZE of charge to this page.
+Anyway, my problem is that for load balancing reasons I need per-CPU worker threads
+where I enqueue requests and let them do all the work. If I use 2 threads in a round
+robin manner (request 1 served by CPU 0, 2 by CPU1, 3 by CPU0 and so on), performance
+is inexplicably low.
 
-Case B.
-   0. We have no charges to this page.
-   1. try_charge_swapin() is called and charge += PAGE_SIZE.
-   2. reuse_swap_page() is called.
-         2-a if delete_from_swap_cache() is called.
-         the page is not mapped. but PCG_USED bit is not set.
-         so, no change in charges finally. (just recorded in swap_cgroup)
-         2-b. not called ... no changes in charge.
-   3. commit_charge() is called and set PCG_USED bit. no changes in charnge.
-   4. swap_free() is called and clear record in swap_cgroup.
+If I choose only one CPU to act as a worker the problem is gone. The difference of measured
+I/O latency is more than 30 times.
 
-   Then, finally we have PAGE_SIZE of charge to this page.
+What could be happening?
 
+I'm using a vanilla 2.6.18.8.
 
-
-Thanks,
--Kame
-
-
-
+Thanx in advance.
