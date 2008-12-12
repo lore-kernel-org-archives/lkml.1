@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYLLVxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbYLLVxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbYLLVxf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 16:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbYLLVv6
+	id S1755636AbYLLVxv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 16:53:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbYLLVv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 16:51:58 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55971 "EHLO mx2.redhat.com"
+	Fri, 12 Dec 2008 16:51:59 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55974 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755490AbYLLVv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755499AbYLLVv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Dec 2008 16:51:57 -0500
 From: Eric Paris <eparis@redhat.com>
-Subject: [RFC PATCH -v4 06/14] fsnotify: add group priorities
+Subject: [RFC PATCH -v4 04/14] fsnotify: use the new open-exec hook for
+	inotify and dnotify
 To: linux-kernel@vger.kernel.org
 Cc: a.p.zijlstra@chello.nl, viro@ZenIV.linux.org.uk, hch@infradead.org,
        zbr@ioremap.net, akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Date: Fri, 12 Dec 2008 16:51:46 -0500
-Message-ID: <20081212215146.27112.47156.stgit@paris.rdu.redhat.com>
+Date: Fri, 12 Dec 2008 16:51:35 -0500
+Message-ID: <20081212215135.27112.64080.stgit@paris.rdu.redhat.com>
 In-Reply-To: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
 References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -26,117 +27,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In preperation for blocking fsnotify calls group priorities must be added.
-When multiple groups request the same event type the lowest priority group
-will receive the notification first.
+inotify and dnotify did not get access events when their children were
+accessed for shlib or exec purposes.  Trigger on those events as well.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- fs/notify/group.c                |   30 ++++++++++++++++++++++++------
- include/linux/fsnotify_backend.h |    4 +++-
- 2 files changed, 27 insertions(+), 7 deletions(-)
+ include/linux/fsnotify.h |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/fs/notify/group.c b/fs/notify/group.c
-index 40935c3..0dd6e82 100644
---- a/fs/notify/group.c
-+++ b/fs/notify/group.c
-@@ -49,7 +49,21 @@ void fsnotify_recalc_global_mask(void)
- 
- static void fsnotify_add_group(struct fsnotify_group *group)
+diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
+index ffe787f..6fbf455 100644
+--- a/include/linux/fsnotify.h
++++ b/include/linux/fsnotify.h
+@@ -172,6 +172,12 @@ static inline void fsnotify_modify(struct file *file)
+  */
+ static inline void fsnotify_open_exec(struct file *file)
  {
--	list_add_rcu(&group->group_list, &fsnotify_groups);
-+	int priority = group->priority;
-+	struct fsnotify_group *group_iter;
++	struct dentry *dentry = file->f_path.dentry;
++	struct inode *inode = dentry->d_inode;
 +
-+	list_for_each_entry(group_iter, &fsnotify_groups, group_list) {
-+		BUG_ON(list_empty(&fsnotify_groups));
-+		/* insert in front of this one? */
-+		if (priority < group_iter->priority) {
-+			/* I used list_add_tail() to insert in front of group_iter...  */
-+			list_add_tail_rcu(&group->group_list, &group_iter->group_list);
-+			return;
-+		}
-+	}
-+
-+	/* apparently we need to be the last entry */
-+	list_add_tail_rcu(&group->group_list, &fsnotify_groups);
++	dnotify_parent(dentry, DN_ACCESS);
++	inotify_dentry_parent_queue_event(dentry, IN_ACCESS, 0, dentry->d_name.name);
++	inotify_inode_queue_event(inode, IN_ACCESS, 0, NULL, NULL);
  }
  
- void fsnotify_get_group(struct fsnotify_group *group)
-@@ -91,14 +105,16 @@ void fsnotify_put_group(struct fsnotify_group *group)
- 	}
- }
- 
--static struct fsnotify_group *fsnotify_find_group(unsigned int group_num, __u64 mask, const struct fsnotify_ops *ops)
-+static struct fsnotify_group *fsnotify_find_group(unsigned int priority, unsigned int group_num,
-+						  __u64 mask, const struct fsnotify_ops *ops)
- {
- 	struct fsnotify_group *group_iter;
- 	struct fsnotify_group *group = NULL;
- 
- 	list_for_each_entry_rcu(group_iter, &fsnotify_groups, group_list) {
--		if (group_iter->group_num == group_num) {
-+		if (group_iter->priority == priority) {
- 			if ((group_iter->mask == mask) &&
-+			    (group_iter->group_num == group_num) &&
- 			    (group_iter->ops == ops)) {
- 				fsnotify_get_group(group_iter);
- 				group = group_iter;
-@@ -109,13 +125,14 @@ static struct fsnotify_group *fsnotify_find_group(unsigned int group_num, __u64
- 	return group;
- }
- 
--struct fsnotify_group *fsnotify_obtain_group(unsigned int group_num, __u64 mask, const struct fsnotify_ops *ops)
-+struct fsnotify_group *fsnotify_obtain_group(unsigned int priority, unsigned int group_num,
-+					     __u64 mask, const struct fsnotify_ops *ops)
- {
- 	struct fsnotify_group *group, *tgroup;
- 	int idx;
- 
- 	idx = srcu_read_lock(&fsnotify_grp_srcu_struct);
--	group = fsnotify_find_group(group_num, mask, ops);
-+	group = fsnotify_find_group(priority, group_num, mask, ops);
- 	srcu_read_unlock(&fsnotify_grp_srcu_struct, idx);
- 	if (group)
- 		return group;
-@@ -126,6 +143,7 @@ struct fsnotify_group *fsnotify_obtain_group(unsigned int group_num, __u64 mask,
- 
- 	atomic_set(&group->refcnt, 1);
- 
-+	group->priority = priority;
- 	group->group_num = group_num;
- 	group->mask = mask;
- 
-@@ -133,7 +151,7 @@ struct fsnotify_group *fsnotify_obtain_group(unsigned int group_num, __u64 mask,
- 	group->private = NULL;
- 
- 	mutex_lock(&fsnotify_grp_mutex);
--	tgroup = fsnotify_find_group(group_num, mask, ops);
-+	tgroup = fsnotify_find_group(priority, group_num, mask, ops);
- 	/* we raced and something else inserted the same group */
- 	if (tgroup) {
- 		mutex_unlock(&fsnotify_grp_mutex);
-diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
-index 5264db1..924902e 100644
---- a/include/linux/fsnotify_backend.h
-+++ b/include/linux/fsnotify_backend.h
-@@ -85,6 +85,8 @@ struct fsnotify_group {
- 
- 	const struct fsnotify_ops *ops;	/* how this group handles things */
- 
-+	unsigned int priority;		/* order this group should receive msgs.  low first */
-+
- 	void *private;			/* private data for implementers (dnotify, inotify, fanotify) */
- };
- 
-@@ -95,7 +97,7 @@ extern void fsnotify(struct inode *to_tell, __u64 mask, void *data, int data_is)
- 
- /* called from fsnotify interfaces, such as fanotify or dnotify */
- extern void fsnotify_recalc_global_mask(void);
--extern struct fsnotify_group *fsnotify_obtain_group(unsigned int group_num, __u64 mask, const struct fsnotify_ops *ops);
-+extern struct fsnotify_group *fsnotify_obtain_group(unsigned int priority, unsigned int group_num, __u64 mask, const struct fsnotify_ops *ops);
- extern void fsnotify_put_group(struct fsnotify_group *group);
- extern void fsnotify_get_group(struct fsnotify_group *group);
- 
+ /*
 
