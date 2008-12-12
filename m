@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757000AbYLLIXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbYLLIZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757000AbYLLIXs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 03:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbYLLIXh
+	id S1757468AbYLLIZc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 03:25:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYLLIZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 03:23:37 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:36419 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750806AbYLLIXg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 03:23:36 -0500
-Message-ID: <49421F62.8000401@cosmosbay.com>
-Date: Fri, 12 Dec 2008 09:22:58 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Fri, 12 Dec 2008 03:25:25 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37274 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870AbYLLIZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 03:25:24 -0500
+Date: Fri, 12 Dec 2008 09:24:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Eric Anholt <eric@anholt.net>,
+       nix.or.die@googlemail.com, linux-kernel@vger.kernel.org, rjw@sisk.pl,
+       Arjan van de Ven <arjan@infradead.org>, Yinghai Lu <yinghai@kernel.org>
+Subject: Re: Linux 2.6.28-rc8
+Message-ID: <20081212082456.GA25106@elte.hu>
+References: <alpine.LFD.2.00.0812101651130.3340@localhost.localdomain> <49407CE1.9090600@googlemail.com> <1228979963.3254.8.camel@gaiman.anholt.net> <200812111707.20857.elendil@planet.nl> <alpine.LFD.2.00.0812110814360.3340@localhost.localdomain> <20081211163548.GA11859@elte.hu> <alpine.LFD.2.00.0812110902450.3340@localhost.localdomain> <20081211203604.GA14817@elte.hu> <84144f020812111246m7f6470f2n8b09283f54ead81@mail.gmail.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Theodore Tso <tytso@mit.edu>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, Mingming Cao <cmm@us.ibm.com>,
-       linux-ext4@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] percpu_counter: Fix __percpu_counter_sum()
-References: <4936D287.6090206@cosmosbay.com> <20081209214921.b3944687.akpm@linux-foundation.org> <49404925.7090902@cosmosbay.com> <200812121847.06432.rusty@rustcorp.com.au>
-In-Reply-To: <200812121847.06432.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 12 Dec 2008 09:22:58 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020812111246m7f6470f2n8b09283f54ead81@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell a écrit :
-> On Thursday 11 December 2008 09:26:37 Eric Dumazet wrote:
->> But then, some (all but x86 ;) ) arches dont have true local_t and we fallback
->> to plain atomic_long_t, and this is wrong because it would add a LOCKED
->> instruction in fast path.
->>
->> I remember Christoph added FAST_CMPXCHG_LOCAL, but no more uses of it in current
->> tree.
->>
->> Ie : using local_t only if CONFIG_FAST_CMPXCHG_LOCAL, else something like :
->>
->> void __percpu_counter_add_irqsafe(struct percpu_counter *fbc, s64 amount, s32 batch)
->> {
->>         s64 count;
->>         s32 *pcount = per_cpu_ptr(fbc->counters, get_cpu());
->>         unsigned long flags;
->>
->>         local_irq_save(flags);
->>         count = *pcount + amount;
-> 
-> This is dumb though.  If local_irq_save(), add, local_irq_restore() is faster
-> than atomic_long_add on some arch, *that* is what that arch's local_add()
-> should do!
-> 
-> Open coding it like this is obviously wrong.
 
-Hum... so you vote for using local_t instead of s32 then ?
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
+> Hi Ingo,
 > 
-> Now, archs local.h need attention (x86-32 can be optimized today, for
-> example), but that's not directly related.
+> On Thu, Dec 11, 2008 at 10:36 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > ok. In this case i'd suggest we should just remove the warning. People do
+> > get scared by needless kernel stack dumps - no matter whether it's marked
+> > informational or not.
+> >
+> > So how about the patch below, queued up in tip/x86/debug? Arjan, what do
+> > you think?
 > 
-> Hope that clarifies,
-> Rusty.
-> PS.  Yes, I should produce a documentation patch and fix the x86 version.
-> Added to TODO list.
-> 
+> How come we don't put it under CONFIG_X86_DEBUG or something and hide 
+> somewhere in the "Kernel debugging" menu?
 
-Thanks
+okay - how about the following then instead - we still keep the warning, 
+but do various things to make it appear less scary.
 
+	Ingo
+
+----------------->
+>From 8808500f26a61757cb414da76b271bbd09d5958c Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 12 Dec 2008 09:20:12 +0100
+Subject: [PATCH] x86: soften multi-BAR mapping sanity check warning message
+
+Impact: make debug warning less scary
+
+The ioremap() time multi-BAR map warning has been causing false
+positives:
+
+  http://lkml.org/lkml/2008/12/10/432
+  http://lkml.org/lkml/2008/12/11/136
+
+So make it less scary by making it once-per-boot, by making it KERN_INFO
+and by adding this text:
+
+  "Info: mapping multiple BARs. Your kernel is fine."
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/mm/ioremap.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index d4c4307..bd85d42 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -223,7 +223,8 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
+ 	 * Check if the request spans more than any BAR in the iomem resource
+ 	 * tree.
+ 	 */
+-	WARN_ON(iomem_map_sanity_check(phys_addr, size));
++	WARN_ONCE(iomem_map_sanity_check(phys_addr, size),
++		  KERN_INFO "Info: mapping multiple BARs. Your kernel is fine.");
+ 
+ 	/*
+ 	 * Don't allow anybody to remap normal RAM that we're using..
 
