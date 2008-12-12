@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbYLLUC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbYLLUIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbYLLUC4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 15:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYLLUCs
+	id S1753988AbYLLUIV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 15:08:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbYLLUIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 15:02:48 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37843 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751093AbYLLUCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 15:02:47 -0500
-Message-ID: <4942C357.4060801@redhat.com>
-Date: Fri, 12 Dec 2008 21:02:31 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
-References: <1229090440-32120-1-git-send-email-kraxel@redhat.com> <20081212152929.GM26095@parisc-linux.org> <200812122047.31405.arnd@arndb.de>
-In-Reply-To: <200812122047.31405.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Dec 2008 15:08:05 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:47757 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751625AbYLLUID (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 15:08:03 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 12 Dec 2008 15:07:38 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Simplified GIT usage guide
+In-reply-to: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
+Message-id: <alpine.LFD.2.00.0812121459400.30035@xanadu.home>
+References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> Aside from that, have you considered doing something even more flexible,
-> like this?
-> 
-> struct piovec {
-> 	void __user *iov_base;
-> 	__kernel_size_t	iov_len;
-> 	__kernel_loff_t pos;
-> };
-> 
-> asmlinkage ssize_t sys_pwritev(unsigned long fd,
->                                const struct piovec __user *vec,
->                                unsigned long vlen);
 
-There is little point in doing so because I *really* want the
-user-visible API being identical to the existing ones in the *BSD
-family.  Anything else is just a PITA for the applications using this.
+Another obvious correction...
 
-cheers,
-  Gerd
+On Fri, 12 Dec 2008, David Howells wrote:
+
+> +     A commit object will typically refer to one base commit when someone has
+> +     merely committed some changes on top of the current state, and two base
+> +     commits when a couple of trees have been merged.
+
+If you have two bases, then only two trees were merged together.  If you 
+merged a "couple" of trees, then a "couple" of bases are registered.
+
+
+Nicolas
+
