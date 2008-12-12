@@ -1,222 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbYLLP3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbYLLP3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758397AbYLLP3W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 10:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578AbYLLP3P
+	id S1757290AbYLLP3m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 10:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758240AbYLLP3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 10:29:15 -0500
-Received: from bohort.kerlabs.com ([62.160.40.57]:57902 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755341AbYLLP3O (ORCPT
+	Fri, 12 Dec 2008 10:29:31 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:54102 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756578AbYLLP3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 10:29:14 -0500
-From: Louis Rilling <louis.rilling@kerlabs.com>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
-       swhiteho@redhat.com, Louis Rilling <louis.rilling@kerlabs.com>
-Subject: [PATCH] configfs: Silence lockdep on mkdir(), rmdir() and configfs_depend_item()
-Date: Fri, 12 Dec 2008 16:29:11 +0100
-Message-Id: <1229095751-23984-1-git-send-email-louis.rilling@kerlabs.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20081212100615.GD19128@hawkmoon.kerlabs.com>
-References: <20081212100615.GD19128@hawkmoon.kerlabs.com>
+	Fri, 12 Dec 2008 10:29:30 -0500
+Date: Fri, 12 Dec 2008 08:29:29 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
+Message-ID: <20081212152929.GM26095@parisc-linux.org>
+References: <1229090440-32120-1-git-send-email-kraxel@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1229090440-32120-1-git-send-email-kraxel@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When attaching default groups (subdirs) of a new group (in mkdir() or
-in configfs_register()), configfs recursively takes inode's mutexes
-along the path from the parent of the new group to the default
-subdirs. This is needed to ensure that the VFS will not race with
-operations on these sub-dirs. This is safe for the following reasons:
+On Fri, Dec 12, 2008 at 03:00:40PM +0100, Gerd Hoffmann wrote:
+> The patch sports the actual system call implementation and the windup in
+> the x86 system call tables.  Other archs are TBD.
 
-- the VFS allows one to lock first an inode and second one of its
-  children (The lock subclasses for this pattern are respectively
-  I_MUTEX_PARENT and I_MUTEX_CHILD);
-- from this rule any inode path can be recursively locked in
-  descending order as long as it stays under a single mountpoint and
-  does not follow symlinks.
+> +asmlinkage ssize_t sys_preadv(unsigned long fd, const struct iovec __user *vec,
+> +                              unsigned long vlen, loff_t pos)
+> +asmlinkage ssize_t sys_pwritev(unsigned long fd, const struct iovec __user *vec,
+> +                               unsigned long vlen, loff_t pos)
 
-Unfortunately lockdep does not know (yet?) how to handle such
-recursion.
+Are these prototypes required?  MIPS and PARISC will need wrappers to
+fix them if they are.  These two architectures have an ABI which
+requires 64-bit arguments to be passed in aligned pairs of registers,
+but glibc doesn't know that (and given the existence of syscall(3),
+can't do much about it even if it knew), so some of the arguments end up
+in the wrong registers.
 
-I've tried to use Peter Zijlstra's lock_set_subclass() helper to
-upgrade i_mutexes from I_MUTEX_CHILD to I_MUTEX_PARENT when we know
-that we might recursively lock some of their descendant, but this
-usage does not seem to fit the purpose of lock_set_subclass() because
-it leads to several i_mutex locked with subclass I_MUTEX_PARENT by
-the same task.
+Things will go much better if we can prototype these as:
 
->From inside configfs it is not possible to serialize those recursive
-locking with a top-level one, because mkdir() and rmdir() are already
-called with inodes locked by the VFS. So using some
-mutex_lock_nest_lock() is not an option.
+asmlinkage ssize_t sys_preadv(unsigned int fd, const struct iovec __user *vec,
+				loff_t pos, unsigned long vlen);
+asmlinkage ssize_t sys_pwritev(unsigned int fd, const struct iovec __user *vec,
+				loff_t pos, unsigned long vlen);
 
-I am proposing two solutions:
-1) one that wraps recursive mutex_lock()s with
-   lockdep_off()/lockdep_on().
-2) (as suggested earlier by Peter Zijlstra) one that puts the
-   i_mutexes recursively locked in different classes based on their
-   depth from the top-level config_group created. This
-   induces an arbitrary limit (MAX_LOCK_DEPTH - 2 == 46) on the
-   nesting of configfs default groups whenever lockdep is activated
-   but this limit looks reasonably high. Unfortunately, this alos
-   isolates VFS operations on configfs default groups from the others
-   and thus lowers the chances to detect locking issues.
+That way 'pos' ends up split between arg2 and arg3 and vlen ends up in
+arg4 instead of having vlen in arg2 and pos in arg3 and arg4 which then
+have to be munged to be in arg4 and arg5 by a compat wrapper.
 
-This patch implements solution 1).
+I seem to recall the s390 folks having some concerns with this kind of
+thing too, but I forget what they are, so I'll let them weigh in on
+this.
 
-Solution 2) looks better from lockdep's point of view, but fails with
-configfs_depend_item(). This needs to rework the locking
-scheme of configfs_depend_item() by removing the variable lock recursion
-depth, and I think that it's doable thanks to the configfs_dirent_lock.
-For now, let's stick to solution 1).
+By the way, why did you make 'fd' an unsigned long?  The rest of the
+kernel uses unsigned int.
 
-Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
----
- fs/configfs/dir.c |   59 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 59 insertions(+), 0 deletions(-)
-
-diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
-index 8e93341..9c23583 100644
---- a/fs/configfs/dir.c
-+++ b/fs/configfs/dir.c
-@@ -553,12 +553,24 @@ static void detach_groups(struct config_group *group)
- 
- 		child = sd->s_dentry;
- 
-+		/*
-+		 * Note: we hide this from lockdep since we have no way
-+		 * to teach lockdep about recursive
-+		 * I_MUTEX_PARENT -> I_MUTEX_CHILD patterns along a path
-+		 * in an inode tree, which are valid as soon as
-+		 * I_MUTEX_PARENT -> I_MUTEX_CHILD is valid from a
-+		 * parent inode to one of its children.
-+		 */
-+		lockdep_off();
- 		mutex_lock(&child->d_inode->i_mutex);
-+		lockdep_on();
- 
- 		configfs_detach_group(sd->s_element);
- 		child->d_inode->i_flags |= S_DEAD;
- 
-+		lockdep_off();
- 		mutex_unlock(&child->d_inode->i_mutex);
-+		lockdep_on();
- 
- 		d_delete(child);
- 		dput(child);
-@@ -748,11 +760,22 @@ static int configfs_attach_item(struct config_item *parent_item,
- 			 * We are going to remove an inode and its dentry but
- 			 * the VFS may already have hit and used them. Thus,
- 			 * we must lock them as rmdir() would.
-+			 *
-+			 * Note: we hide this from lockdep since we have no way
-+			 * to teach lockdep about recursive
-+			 * I_MUTEX_PARENT -> I_MUTEX_CHILD patterns along a path
-+			 * in an inode tree, which are valid as soon as
-+			 * I_MUTEX_PARENT -> I_MUTEX_CHILD is valid from a
-+			 * parent inode to one of its children.
- 			 */
-+			lockdep_off();
- 			mutex_lock(&dentry->d_inode->i_mutex);
-+			lockdep_on();
- 			configfs_remove_dir(item);
- 			dentry->d_inode->i_flags |= S_DEAD;
-+			lockdep_off();
- 			mutex_unlock(&dentry->d_inode->i_mutex);
-+			lockdep_on();
- 			d_delete(dentry);
- 		}
- 	}
-@@ -787,14 +810,25 @@ static int configfs_attach_group(struct config_item *parent_item,
- 		 *
- 		 * We must also lock the inode to remove it safely in case of
- 		 * error, as rmdir() would.
-+		 *
-+		 * Note: we hide this from lockdep since we have no way
-+		 * to teach lockdep about recursive
-+		 * I_MUTEX_PARENT -> I_MUTEX_CHILD patterns along a path
-+		 * in an inode tree, which are valid as soon as
-+		 * I_MUTEX_PARENT -> I_MUTEX_CHILD is valid from a
-+		 * parent inode to one of its children.
- 		 */
-+		lockdep_off();
- 		mutex_lock_nested(&dentry->d_inode->i_mutex, I_MUTEX_CHILD);
-+		lockdep_on();
- 		ret = populate_groups(to_config_group(item));
- 		if (ret) {
- 			configfs_detach_item(item);
- 			dentry->d_inode->i_flags |= S_DEAD;
- 		}
-+		lockdep_off();
- 		mutex_unlock(&dentry->d_inode->i_mutex);
-+		lockdep_on();
- 		if (ret)
- 			d_delete(dentry);
- 	}
-@@ -956,7 +990,17 @@ static int configfs_depend_prep(struct dentry *origin,
- 	BUG_ON(!origin || !sd);
- 
- 	/* Lock this guy on the way down */
-+	/*
-+	 * Note: we hide this from lockdep since we have no way
-+	 * to teach lockdep about recursive
-+	 * I_MUTEX_PARENT -> I_MUTEX_CHILD patterns along a path
-+	 * in an inode tree, which are valid as soon as
-+	 * I_MUTEX_PARENT -> I_MUTEX_CHILD is valid from a
-+	 * parent inode to one of its children.
-+	 */
-+	lockdep_off();
- 	mutex_lock(&sd->s_dentry->d_inode->i_mutex);
-+	lockdep_on();
- 	if (sd->s_element == target)  /* Boo-yah */
- 		goto out;
- 
-@@ -970,7 +1014,9 @@ static int configfs_depend_prep(struct dentry *origin,
- 	}
- 
- 	/* We looped all our children and didn't find target */
-+	lockdep_off();
- 	mutex_unlock(&sd->s_dentry->d_inode->i_mutex);
-+	lockdep_on();
- 	ret = -ENOENT;
- 
- out:
-@@ -990,11 +1036,16 @@ static void configfs_depend_rollback(struct dentry *origin,
- 	struct dentry *dentry = item->ci_dentry;
- 
- 	while (dentry != origin) {
-+		/* See comments in configfs_depend_prep() */
-+		lockdep_off();
- 		mutex_unlock(&dentry->d_inode->i_mutex);
-+		lockdep_on();
- 		dentry = dentry->d_parent;
- 	}
- 
-+	lockdep_off();
- 	mutex_unlock(&origin->d_inode->i_mutex);
-+	lockdep_on();
- }
- 
- int configfs_depend_item(struct configfs_subsystem *subsys,
-@@ -1329,8 +1380,16 @@ static int configfs_rmdir(struct inode *dir, struct dentry *dentry)
- 			}
- 
- 			/* Wait until the racing operation terminates */
-+			/*
-+			 * Note: we hide this from lockdep since we are locked
-+			 * with subclass I_MUTEX_NORMAL from vfs_rmdir() (why
-+			 * not I_MUTEX_CHILD?), and I_MUTEX_XATTR or
-+			 * I_MUTEX_QUOTA are not relevant for the locked inode.
-+			 */
-+			lockdep_off();
- 			mutex_lock(wait_mutex);
- 			mutex_unlock(wait_mutex);
-+			lockdep_on();
- 		}
- 	} while (ret == -EAGAIN);
- 
 -- 
-1.5.6.5
-
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
