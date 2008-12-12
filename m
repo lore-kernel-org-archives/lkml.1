@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYLLLbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYLLLed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755925AbYLLLbx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 06:31:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbYLLLbm
+	id S1758067AbYLLLed (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 06:34:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYLLLeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 06:31:42 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51115 "EHLO mx3.mail.elte.hu"
+	Fri, 12 Dec 2008 06:34:25 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51662 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755875AbYLLLbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 06:31:41 -0500
-Date: Fri, 12 Dec 2008 12:31:26 +0100
+	id S1752344AbYLLLeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 06:34:24 -0500
+Date: Fri, 12 Dec 2008 12:34:15 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: [PATCH 1/3] tracing/function-graph-tracer:
-	introduce __notrace_funcgraph to filter special functions
-Message-ID: <20081212113126.GG32640@elte.hu>
-References: <4939E600.804@gmail.com> <20081208141406.GA14856@elte.hu> <c62985530812080725i1f144c21td5b121749f507b09@mail.gmail.com> <20081208155018.GB405@elte.hu> <20081209023822.GA3602@elte.hu> <c62985530812090059g27bcb36dg8318123d16a15664@mail.gmail.com> <c62985530812091205r5b5afb29o5d9282076c7094c3@mail.gmail.com> <alpine.DEB.1.10.0812091639390.19875@gandalf.stny.rr.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] RT scheduler updates for tip
+Message-ID: <20081212113415.GH32640@elte.hu>
+References: <493939B1.40506@novell.com> <20081208143228.GF14856@elte.hu> <20081208161246.GB4570@elte.hu> <493E8246.1090309@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0812091639390.19875@gandalf.stny.rr.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <493E8246.1090309@novell.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,61 +37,43 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Gregory Haskins <ghaskins@novell.com> wrote:
 
+> Ingo Molnar wrote:
+> > okay, this series is quite bad so i'm disabling it for now. I sent a 
+> > build fix earlier today, then i triggered this build failure:
+> >
+> > kernel/built-in.o: In function `dequeue_pushable_task':
+> > sched.c:(.text+0x4a9f): undefined reference to `plist_del'
+> > kernel/built-in.o: In function `enqueue_pushable_task':
+> > sched.c:(.text+0x5734): undefined reference to `plist_del'
+> > sched.c:(.text+0x5747): undefined reference to `plist_add'
+> >
+> > and then this:
+> >
+> > kernel/sched_rt.c: In function ‘next_prio’:
+> > kernel/sched_rt.c:574: error: ‘struct rq’ has no member named ‘cpu’
+> > kernel/sched_rt.c: In function ‘inc_rt_tasks’:
+> > kernel/sched_rt.c:619: error: ‘rq’ undeclared (first use in this function)
+> > kernel/sched_rt.c:619: error: (Each undeclared identifier is reported only once
+> > kernel/sched_rt.c:619: error: for each function it appears in.)
+> > kernel/sched_rt.c: In function ‘dec_rt_tasks’:
+> > kernel/sched_rt.c:667: error: ‘rq’ undeclared (first use in this function)
+> >
+> >
+> >   
 > 
-> On Tue, 9 Dec 2008, Fr?d?ric Weisbecker wrote:
-> > 2008/12/9 Fr?d?ric Weisbecker <fweisbec@gmail.com>:
-> > 
-> > 
-> > I built this config on an smp x86-64 and booted several times (and
-> > tested the function tracer manually) with and without the following
-> > options:
-> > 
-> > initcall_debug apic=verbose sysrq_always_enabled ignore_loglevel
-> > selinux=0 nmi_watchdog=2 idle=poll
-> > 
-> > And I can't reproduce this bug.... That might be a very nasty race condition...
-> 
-> Neither can I :-(
-> 
-> Ingo, is this on the box that stresses NMIs?
+> Hi Ingo,
+>   I was able to reproduce your first error (in the previous mail) by 
+> turning off CONFIG_SMP.  I have folded your fix into my series and got 
+> past it.  However, I was not able to reproduce these two new errors.  I 
+> was thinking that perhaps something merged improperly between my 
+> (older) tip/master and the merge point in cpus4096.  So I rebased the 
+> series on your latest tip/master as of this morning, but it still 
+> builds fine for me.  Could you send me the .config that causes this to 
+> blow up?  I will get it straightened out for you ASAP.  Sorry for the 
+> inconvenience.
 
-yes. You could try to inject even more NMIs than i normally do, 
-artificially, by picking up tip/master and running KernelTop with a 
-100,000 cycles IRQ interval:
-
-    http://redhat.com/~mingo/perfcounters/kerneltop.c
-
-run it like this:
-
-    ./kerneltop -c 100000
-
-and run an infinite loop per process:
-
-    while :; do :; done &
-
-to get the NMIs going intensely:
-
-------------------------------------------------------------------------------
- KernelTop:  115437 irqs/sec  [NMI, 100000 cycles],  (all, 16 CPUs)
-------------------------------------------------------------------------------
-
-             events         RIP          kernel function
-  ______     ______   ________________   _______________
-
-           81224.00 - ffffffffff6001a4 : vread_hpet
-            3119.00 - ffffffff8027cf99 : perf_read
-            2484.00 - ffffffff802227d5 : read_hpet
-            1157.00 - ffffffff8056b69a : mutex_lock
-            1041.00 - ffffffffff600000 : vgettimeofday
-             986.00 - ffffffff80333db5 : avc_has_perm_noaudit
-             896.00 - ffffffff8026be2d : audit_syscall_exit
-             653.00 - ffffffff8056c8f5 : _spin_lock
-             577.00 - ffffffff802ecd14 : dnotify_parent
-             528.00 - ffffffff8033679c : file_has_perm
-             489.00 - ffffffff802bc060 : dput
-             470.00 - ffffffff8026c366 : audit_syscall_entry
-
+Could you send a delta fix against cpus4096 for that bug you fixed?
 
 	Ingo
