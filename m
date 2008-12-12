@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbYLLLAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754935AbYLLLBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbYLLLAr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 06:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757846AbYLLLAN
+	id S1754935AbYLLLBW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 06:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYLLLBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 06:00:13 -0500
-Received: from smtp.movial.fi ([62.236.91.34]:51552 "EHLO smtp.movial.fi"
+	Fri, 12 Dec 2008 06:01:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51917 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757625AbYLLLAL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 06:00:11 -0500
-Message-ID: <49424438.7030205@movial.fi>
-Date: Fri, 12 Dec 2008 13:00:08 +0200
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-Organization: Movial Creative Technologies
-User-Agent: Icedove 1.5.0.14eol (X11/20080724)
+	id S1753869AbYLLLBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 06:01:11 -0500
+Date: Fri, 12 Dec 2008 12:00:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: uaccess: return value of __{get|put}_user() can
+	be int
+Message-ID: <20081212110049.GB32640@elte.hu>
+References: <493DE38E.60505@ct.jp.nec.com>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Mike Frysinger <vapier.adi@gmail.com>, Julia Lawall <julia@diku.dk>,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/28] drivers/base/platform.c: Drop return value from
- platform_driver remove functions
-References: <Pine.LNX.4.64.0812101725540.21998@ask.diku.dk> <8bd0f97a0812100928l2c75d373n7eba5aa0cc3882fd@mail.gmail.com> <53806.88.114.236.15.1228947522.squirrel@webmail.movial.fi> <8bd0f97a0812101437r4abb9346p8bc8d512ddc02cde@mail.gmail.com> <20081212051759.GA12563@suse.de>
-In-Reply-To: <20081212051759.GA12563@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <493DE38E.60505@ct.jp.nec.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Dec 10, 2008 at 05:37:42PM -0500, Mike Frysinger wrote:
->> On Wed, Dec 10, 2008 at 17:18, Vorobiev Dmitri wrote:
->>>> On Wed, Dec 10, 2008 at 11:26, Julia Lawall wrote:
->>>>> The return value of the remove function of a driver structure, and thus
->>>>> of
->>>>> a platform_driver structure, is ultimately ignored, and is thus
->>>>> unnecessary.  The goal of this patch is to make it possible to convert
->>>>> the
->>>>> platform_driver functions stored in the remove field such that they
->>>>> return
->>>>> void.  This patch introduces a temporary field remove_new with return
->>>>> type
->>>>> void into the platform_driver structure, and updates the only place that
->>>>> the remove function is called to call the function in the remove_new
->>>>> field,
->>>>> if one is available.  The subsequent patches update some drivers to use
->>>>> the
->>>>> remove_new field.
->>>> why bother with remove -> remove_new convention ?
->>> Please see this email for the background:
->>>
->>> http://lkml.org/lkml/2008/12/10/231
->>>
->>>>  you'll get a
->>>> warning in C about the assignment, but you wont get a build failure,
->>> ...unless you compile with -Werror, which frequently the case.
->> anyone crazy enough to build with -Werror is crazy enough to send in a fix ;)
-> 
-> Hm, have you noted that some arches have that flag enabled in their
-> build?
-> 
-> And it's not ok to add a couple of hundred build warnings to the system,
-> sorry.
 
-Still, what about the whole series? What do you think about int->void migration for the remove() callback?
+* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-Thanks,
-Dmitri
-
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > 
-> thanks,
+> Impact: cleanup
 > 
-> greg k-h
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> The type of return value of __{get|put}_user() can be int.
+> There is no user to refer the return value of __{get|put}_user() as long.
+> This reduces code size a bit on 64-bit.
+> 
+> $ size vmlinux.*
+>    text	   data	    bss	    dec	    hex	filename
+> 4509265	 479988	 673588	5662841	 566879	vmlinux.new
+> 4511462	 479988	 673588	5665038	 56710e	vmlinux.old
+> 
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  arch/x86/include/asm/uaccess.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 
+applied to tip/x86/mm, thanks!
+
+	Ingo
