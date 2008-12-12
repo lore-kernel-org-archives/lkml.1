@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYLLVlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbYLLVnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755330AbYLLVlw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 16:41:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYLLVln
+	id S1755237AbYLLVnL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 16:43:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYLLVm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 16:41:43 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:6517 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753160AbYLLVlm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 16:41:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=AFTSid8sMgANjuJJvwkrFC71WtUAZDbGQFTv+uj+xWSDZlWgqQVqrfUk/Drtsv/wWV
-         ku00jiLO1Y5Oy5SlcALDlrT1a6Acm19b3CfrWHJYhghtTlF1dsjRE9gQSlHyQAFYW3Jd
-         FL5Q3ByiGm+jTpXIFEEyIA+XW+mgKp7KWJtbo=
-Date: Sat, 13 Dec 2008 00:41:37 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>, Steven Rostedt <srostedt@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       fweisbec <fweisbec@gmail.com>
-Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
-Message-ID: <20081212214137.GB731@localhost>
-References: <20081212184136.GB14192@localhost> <1229113167.32623.12.camel@localhost.localdomain> <20081212204724.GA26194@localhost> <alpine.DEB.1.10.0812121552360.19351@gandalf.stny.rr.com> <20081212205729.GA28554@localhost> <alpine.DEB.1.10.0812121620520.19351@gandalf.stny.rr.com> <20081212213538.GA731@localhost>
+	Fri, 12 Dec 2008 16:42:57 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:56883 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753327AbYLLVm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 16:42:57 -0500
+Date: Fri, 12 Dec 2008 15:42:56 -0600
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Intel x86_64 llc_shared_map/cpu_llc_id anomolies
+Message-ID: <20081212214256.GA20559@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081212213538.GA731@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sat, Dec 13, 2008 at 12:35:38AM +0300]
-| 
-...
-| | Why add assembly condition? We only want this if CONFIG_FUNCTION_TRACER 
-| | is enabled, right?  We could combine it with the current #ifndef inside 
-| | the CONFIG_FUNCTION_TRACER. But I would make do:
-| | 
-| | #ifdef __ASSEMBLY__
-| | <your stuff>
-| | #else
-| | < C stuff >
-| | #endif
-| | 
-| | -- Steve
-| 
-| Steve, here is how it could look like:
-| (I liked first proposal more :)
+I'm seeing some behavior on a multiblade Intel x86_64 that does not
+appear to be correct.
 
-If you meant to put them under CONFIG_FUNCTION_TRACER only it would
-lead to more hard to parse by human representation I believe :)
-That is why I put __ASSEMBLY__ in that way (I mean only two sections
-__ASSEMBLY__ and #else and all original stuff here) Btw there was an
-error in ftrace.h. Iirc gas know nothing about (long) so MCOUNT_ADDR
-should be under #ifndef actually. But that is not that serious since
-we dont use it now in *.S (don't we?).
+My x86_64 multiblade configuration has llc_shared_map (last level
+cache shared map) showing cpus on different blades sharing a last
+level cache.  With 2 cpus/blade and 4 blades (8 cpus total), I show
+cpus 1,3,5,7 sharing llc, and 0,2,4,6 sharing llc.
 
-		- Cyrill -
+The llc_shared_map is set based on matching values of cpu_llc_id
+(last level cache ID).  The cpu_llc_id is set based on
+cpuinfo_x86->apicid.  This value is set to cpuinfo_x86->initial_apicid.
+
+The value of cpuinfo_x86->initial_apicid appears to be set twice
+during startup:
+
+- In generic_identify(), using the value returned by cpuid_ebx(1).
+  This is the initial_apicid set at poweron, and results in
+  cpuinfo_x86->initial_apicid having a value that is not unique across
+  blades (where the blades do not share a cpu bus).
+
+- Later, in detect_extended_topology() using the value for edx returned
+  by cpuid_count(0xb,..).  This results in cpuinfo_x86->initial_apicid
+  having a value that appears to be unique across blades.
+
+Between those two assignments, cpuinfo_x86->apicid is set to
+cpuinfo_x86->initial_apicid, so it is non-unique.  Then cpu_llc_id gets
+set in init_intel_cacheinfo(), so cpu_llc_id winds up with a value that
+is non-unique across blades, and llc_shared_map winds up showing cpus
+on different blades as sharing last level cache.
+
+Is cpu_llc_id supposed to be unique across blades?  I assume
+llc_shared_map should not be showing shared cache across blades.
