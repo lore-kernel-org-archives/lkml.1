@@ -1,127 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYLLUuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbYLLUuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbYLLUuh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 15:50:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbYLLUt6
+	id S1755155AbYLLUuy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 15:50:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYLLUun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 15:49:58 -0500
-Received: from mail.inf.tu-dresden.de ([141.76.2.1]:61834 "EHLO
-	mail.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752776AbYLLUt5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 15:49:57 -0500
-Message-ID: <4942CE40.5080905@inf.tu-dresden.de>
-Date: Fri, 12 Dec 2008 21:49:04 +0100
-From: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
-MIME-Version: 1.0
-To: Matthew Garrett <mjg@redhat.com>, Richard Purdie <rpurdie@rpsys.net>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] video: mbp_nvidia_bl: Add a debug switch
-References: <2e9ff482f36dc7e7694141df51ea977a52474089.1229087880.git.mario@snoopy.(none)>
-In-Reply-To: <2e9ff482f36dc7e7694141df51ea977a52474089.1229087880.git.mario@snoopy.(none)>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Dec 2008 15:50:43 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:52172 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752944AbYLLUum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 15:50:42 -0500
+Date: Fri, 12 Dec 2008 14:50:40 -0600
+From: Jack Steiner <steiner@sgi.com>
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86 : UV fix for global physical addresses
+Message-ID: <20081212205040.GA25739@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a debug switch to enable (little) diagnostic
-output, to help to trace down the remaining problems.
+This fixes a UV bug related to generating global memory addresses
+on partitioned systems. Partition systems do not have physical memory
+at address 0. Instead, a chunk of high memory is remapped by the chipset
+so that it appears to be at address 0. This remapping is INVISIBLE to most
+of the OS. The only OS functions that need to be aware of the remaping are
+functions that directly interface to the chipset. The GRU is one example.
 
-Signed-off-by: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
+Also, delete a couple of unused macros related to global memory addresses.
+
+Signed-off-by: Jack Steiner <steiner@sgi.com>
+
+
 ---
- drivers/video/backlight/mbp_nvidia_bl.c |   37 +++++++++++++++++++++++++++++-
- 1 files changed, 35 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/uv/uv_hub.h |   16 ++--------------
+ arch/x86/kernel/genx2apic_uv_x.c |    3 +--
+ 2 files changed, 3 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/backlight/mbp_nvidia_bl.c b/drivers/video/backlight/mbp_nvidia_bl.c
-index 559daf0..f014399 100644
---- a/drivers/video/backlight/mbp_nvidia_bl.c
-+++ b/drivers/video/backlight/mbp_nvidia_bl.c
-@@ -33,6 +33,11 @@ struct dmi_match_data {
- 	struct backlight_ops backlight_ops;
- };
-
-+/* Module parameters. */
-+static int debug;
-+module_param_named(debug, debug, int, 0644);
-+MODULE_PARM_DESC(debug, "Set to one to enable debugging messages.");
-+
- /*
-  * Implementation for MacBooks with Intel chipset.
-  */
-@@ -40,6 +45,10 @@ static int intel_chipset_send_intensity(struct backlight_device *bd)
+Index: linux/arch/x86/include/asm/uv/uv_hub.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/uv/uv_hub.h	2008-12-08 08:29:29.000000000 -0600
++++ linux/arch/x86/include/asm/uv/uv_hub.h	2008-12-11 16:16:19.000000000 -0600
+@@ -211,7 +211,7 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
+ static inline unsigned long uv_soc_phys_ram_to_gpa(unsigned long paddr)
  {
- 	int intensity = bd->props.brightness;
-
-+	if (debug)
-+		printk(KERN_DEBUG "mbp_nvidia_bl: setting brightness to %d\n",
-+		       intensity);
-+
- 	outb(0x04 | (intensity << 4), 0xb3);
- 	outb(0xbf, 0xb2);
- 	return 0;
-@@ -47,9 +56,17 @@ static int intel_chipset_send_intensity(struct backlight_device *bd)
-
- static int intel_chipset_get_intensity(struct backlight_device *bd)
- {
-+	int intensity;
-+
- 	outb(0x03, 0xb3);
- 	outb(0xbf, 0xb2);
--	return inb(0xb3) >> 4;
-+	intensity = inb(0xb3) >> 4;
-+
-+	if (debug)
-+		printk(KERN_DEBUG "mbp_nvidia_bl: read brightness of %d\n",
-+		       intensity);
-+
-+	return intensity;
+ 	if (paddr < uv_hub_info->lowmem_remap_top)
+-		paddr += uv_hub_info->lowmem_remap_base;
++		paddr |= uv_hub_info->lowmem_remap_base;
+ 	return paddr | uv_hub_info->gnode_upper;
  }
-
- static const struct dmi_match_data intel_chipset_data = {
-@@ -72,6 +89,10 @@ static int nvidia_chipset_send_intensity(struct backlight_device *bd)
+ 
+@@ -219,19 +219,7 @@ static inline unsigned long uv_soc_phys_
+ /* socket virtual --> UV global physical address */
+ static inline unsigned long uv_gpa(void *v)
  {
- 	int intensity = bd->props.brightness;
-
-+	if (debug)
-+		printk(KERN_DEBUG "mbp_nvidia_bl: setting brightness to %d\n",
-+		       intensity);
-+
- 	outb(0x04 | (intensity << 4), 0x52f);
- 	outb(0xbf, 0x52e);
- 	return 0;
-@@ -79,9 +100,17 @@ static int nvidia_chipset_send_intensity(struct backlight_device *bd)
-
- static int nvidia_chipset_get_intensity(struct backlight_device *bd)
- {
-+	int intensity;
-+
- 	outb(0x03, 0x52f);
- 	outb(0xbf, 0x52e);
--	return inb(0x52f) >> 4;
-+	intensity = inb(0x52f) >> 4;
-+
-+	if (debug)
-+		printk(KERN_DEBUG "mbp_nvidia_bl: read brightness of %d\n",
-+		       intensity);
-+
-+	return intensity;
+-	return __pa(v) | uv_hub_info->gnode_upper;
+-}
+-
+-/* socket virtual --> UV global physical address */
+-static inline void *uv_vgpa(void *v)
+-{
+-	return (void *)uv_gpa(v);
+-}
+-
+-/* UV global physical address --> socket virtual */
+-static inline void *uv_va(unsigned long gpa)
+-{
+-	return __va(gpa & uv_hub_info->gpa_mask);
++	return uv_soc_phys_ram_to_gpa(__pa(v));
  }
-
- static const struct dmi_match_data nvidia_chipset_data = {
-@@ -211,6 +240,10 @@ static int mbp_resume(struct platform_device *pdev)
- 	 */
- 	struct backlight_device *bd = platform_get_drvdata(pdev);
-
-+	if (debug)
-+		printk(KERN_DEBUG "mbp_nvidia_bl: resuming with"
-+		       " brightness %d\n", bd->props.brightness);
-+
- 	backlight_update_status(bd);
- 	return 0;
- }
--- 
-1.5.6.3
-
+ 
+ /* pnode, offset --> socket virtual */
+Index: linux/arch/x86/kernel/genx2apic_uv_x.c
+===================================================================
+--- linux.orig/arch/x86/kernel/genx2apic_uv_x.c	2008-12-11 13:27:24.000000000 -0600
++++ linux/arch/x86/kernel/genx2apic_uv_x.c	2008-12-11 16:19:24.000000000 -0600
+@@ -535,8 +535,7 @@ void __init uv_system_init(void)
+ 		uv_blade_info[blade].nr_possible_cpus++;
+ 
+ 		uv_cpu_hub_info(cpu)->lowmem_remap_base = lowmem_redir_base;
+-		uv_cpu_hub_info(cpu)->lowmem_remap_top =
+-					lowmem_redir_base + lowmem_redir_size;
++		uv_cpu_hub_info(cpu)->lowmem_remap_top = lowmem_redir_size;
+ 		uv_cpu_hub_info(cpu)->m_val = m_val;
+ 		uv_cpu_hub_info(cpu)->n_val = m_val;
+ 		uv_cpu_hub_info(cpu)->numa_blade_id = blade;
