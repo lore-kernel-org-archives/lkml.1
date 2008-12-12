@@ -1,71 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758363AbYLLJV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbYLLJXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758363AbYLLJV0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 04:21:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758075AbYLLJVG
+	id S1758178AbYLLJXW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 04:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYLLJXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 04:21:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35960 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758030AbYLLJVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 04:21:02 -0500
-Date: Fri, 12 Dec 2008 10:20:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] x86: fix assign_irq_vector boot up problem
-Message-ID: <20081212092041.GH25106@elte.hu>
-References: <20081211112806.499831000@polaris-admin.engr.sgi.com> <20081211112806.740820000@polaris-admin.engr.sgi.com> <200812121857.55929.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812121857.55929.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 12 Dec 2008 04:23:10 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:59662 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751818AbYLLJXH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 04:23:07 -0500
+Date: Fri, 12 Dec 2008 10:23:02 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Mark McLoughlin <markmc@redhat.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 1/4] driver core: add root_device_register()
+Message-ID: <20081212102302.2a2671e2@gondolin>
+In-Reply-To: <1229072209.4041.5.camel@blaa>
+References: <1229012203.7968.79.camel@blaa>
+	<1229012216-4211-1-git-send-email-markmc@redhat.com>
+	<20081211175604.511fc6ae@gondolin>
+	<1229019807.7968.87.camel@blaa>
+	<20081212094246.5692d0ca@gondolin>
+	<1229072209.4041.5.camel@blaa>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 12 Dec 2008 08:56:49 +0000,
+Mark McLoughlin <markmc@redhat.com> wrote:
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+> Yeah, I just figured it was a little overkill given the structure
+> definition is three lines away. Here it is, though.
 
-> On Thursday 11 December 2008 21:58:07 Mike Travis wrote:
-> > Impact: fix boot up problem.
-> > 
-> > Fix a problem encountered with the Intel SATA-AHCI disk driver
-> > right at system startup.  Cpumask_intersects really needs to be
-> > a 3-way intersect, and since we need a cpumask_var_t later on,
-> > then just use it for the 3-way intersect as well.
+As you use it twice, I think it makes the code more readable.
+
 > 
-> This one looks fine.
+> Cheers,
+> Mark.
 > 
-> My plan was for Ingo to pull that for-ingo tree into his cpus4096 tree 
-> and take the x86 patches from there.  But he hasn't so maybe I should 
-> take this chance to fold that patch in?
+> From: Mark McLoughlin <markmc@redhat.com>
+> Subject: [PATCH] driver core: add root_device_register()
+> 
+> Add support for allocating root device objects which group
+> device objects under /sys/devices directories.
+> 
+> Also add a sysfs 'module' symlink which points to the owner
+> of the root device object. This symlink will be used in virtio
+> to allow userspace to determine which virtio bus implementation
+> a given device is associated with.
+> 
+> [Includes suggestions from Cornelia Huck]
+> 
+> Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-i have no objections against the bits - just the sparseirq complication 
-came in. A lot of effort went into irq/sparseirq's io_apic.c changes and 
-cleanup.
-
-So to do this cleanly, i merged those bits into cpus4096 and the 
-x86/reboot bits as well - now the plan would be for Mike to send a 
-(rebased) series against that base. I tried a plain merge and the 
-conflicts in io_apic.c were a horrendous 76 rejects due to the 
-irq/sparseirq interaction. Also, some of the commits subjects looked a 
-bit raw so this bit of the tree needs to be redone.
-
-(Note that the existing cpumask-base+scheduler bits in cpus4096 are 
-golden already and we dont have to touch them in any way, it's just the 
-new x86 bits and new cpumask infrastructure bits that look odd or 
-clashy.)
-
-	Ingo
+> ---
+>  drivers/base/core.c    |   89 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/device.h |   11 ++++++
+>  2 files changed, 100 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 8c2cc26..05320af 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -1196,6 +1196,95 @@ EXPORT_SYMBOL_GPL(put_device);
+>  EXPORT_SYMBOL_GPL(device_create_file);
+>  EXPORT_SYMBOL_GPL(device_remove_file);
+> 
+> +struct root_device
+> +{
+> +	struct device dev;
+> +	struct module *owner;
+> +};
+> +
+> +#define to_root_device(dev) container_of(dev, struct root_device, dev)
+> +
+> +static void root_device_release(struct device *dev)
+> +{
+> +	kfree(to_root_device(dev));
+> +}
+> +
+> +/**
+> + * __root_device_register - allocate and register a root device
+> + * @name: root device name
+> + * @owner: owner module of the root device, usually THIS_MODULE
+> + *
+> + * This function allocates a root device and registers it
+> + * using device_register(). In order to free the returned
+> + * device, use root_device_unregister().
+> + *
+> + * Root devices are dummy devices which allow other devices
+> + * to be grouped under /sys/devices. Use this function to
+> + * allocate a root device and then use it as the parent of
+> + * any device which should appear under /sys/devices/{name}
+> + *
+> + * The /sys/devices/{name} directory will also contain a
+> + * 'module' symlink which points to the @owner directory
+> + * in sysfs.
+> + *
+> + * Note: You probably want to use root_device_register().
+> + */
+> +struct device *__root_device_register(const char *name, struct module *owner)
+> +{
+> +	struct root_device *root;
+> +	int err = -ENOMEM;
+> +
+> +	root = kzalloc(sizeof(struct root_device), GFP_KERNEL);
+> +	if (!root)
+> +		return ERR_PTR(err);
+> +
+> +	err = dev_set_name(&root->dev, name);
+> +	if (err) {
+> +		kfree(root);
+> +		return ERR_PTR(err);
+> +	}
+> +
+> +	root->dev.release = root_device_release;
+> +
+> +	err = device_register(&root->dev);
+> +	if (err) {
+> +		put_device(&root->dev);
+> +		return ERR_PTR(err);
+> +	}
+> +
+> +	if (owner) {
+> +		struct module_kobject *mk = &owner->mkobj;
+> +
+> +		err = sysfs_create_link(&root->dev.kobj, &mk->kobj, "module");
+> +		if (err) {
+> +			device_unregister(&root->dev);
+> +			return ERR_PTR(err);
+> +		}
+> +		root->owner = owner;
+> +	}
+> +
+> +	return &root->dev;
+> +}
+> +EXPORT_SYMBOL_GPL(__root_device_register);
+> +
+> +/**
+> + * root_device_unregister - unregister and free a root device
+> + * @root: device going away.
+> + *
+> + * This function unregisters and cleans up a device that was created by
+> + * root_device_register().
+> + */
+> +void root_device_unregister(struct device *dev)
+> +{
+> +	struct root_device *root = to_root_device(dev);
+> +
+> +	if (root->owner)
+> +		sysfs_remove_link(&root->dev.kobj, "module");
+> +
+> +	device_unregister(dev);
+> +}
+> +EXPORT_SYMBOL_GPL(root_device_unregister);
+> +
+> 
+>  static void device_create_release(struct device *dev)
+>  {
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 1a3686d..9e02980 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -483,6 +483,17 @@ extern int device_rename(struct device *dev, char *new_name);
+>  extern int device_move(struct device *dev, struct device *new_parent);
+> 
+>  /*
+> + * Root device objects for grouping under /sys/devices
+> + */
+> +extern struct device *__root_device_register(const char *name,
+> +					     struct module *owner);
+> +static inline struct device *root_device_register(const char *name)
+> +{
+> +	return __root_device_register(name, THIS_MODULE);
+> +}
+> +extern void root_device_unregister(struct device *root);
+> +
+> +/*
+>   * Manual binding of a device to driver. See drivers/base/bus.c
+>   * for information on use.
+>   */
+> -- 
+> 1.6.0.3
+> 
