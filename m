@@ -1,107 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbYLLSCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbYLLSF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759490AbYLLSCi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 13:02:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757133AbYLLSC3
+	id S1759525AbYLLSF0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 13:05:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757802AbYLLSFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 13:02:29 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42431 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757203AbYLLSC3 (ORCPT
+	Fri, 12 Dec 2008 13:05:13 -0500
+Received: from mail-bw0-f13.google.com ([209.85.218.13]:51413 "EHLO
+	mail-bw0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757915AbYLLSFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 13:02:29 -0500
-Subject: Re: [PATCH 12/15] kmemleak: Enable the building of the memory leak
-	detector
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1229102826.15045.75.camel@pc1117.cambridge.arm.com>
-References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
-	 <20081210182800.30323.49209.stgit@pc1117.cambridge.arm.com>
-	 <1228936817.9737.102.camel@nimitz>
-	 <1229102826.15045.75.camel@pc1117.cambridge.arm.com>
+	Fri, 12 Dec 2008 13:05:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=cZ5Rs/G8W9vCfUV2QnkN2cYgaQOAsX51aJtHE8v4t8tvQxY25ZghGU3L+delsEtJ7A
+         KI3FzzZwt3ddL1VtallZScqvDGhqe5iYsLLcPVoXtEv0aCn6SgTaLqKpCH83XLoOvAY+
+         xdRJXgbZRtNlLlgQ4DF0l5TSWQ7ZsoAt/J+s8=
+Message-ID: <7c86c4470812121001i765d663bq6db3080b633a1eef@mail.gmail.com>
+Date: Fri, 12 Dec 2008 19:01:20 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [patch] Performance Counters for Linux, v3
+Cc: "Vince Weaver" <vince@deater.net>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Robert Richter" <robert.richter@amd.com>,
+       "Arjan van de Veen" <arjan@infradead.org>,
+       "Peter Anvin" <hpa@zytor.com>, "Paul Mackerras" <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <7c86c4470812120942x607a74f7w9f823adecbd73b85@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 12 Dec 2008 10:02:18 -0800
-Message-Id: <1229104938.17206.86.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081211155230.GA4230@elte.hu>
+	 <Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
+	 <1229070345.12883.12.camel@twins>
+	 <7c86c4470812120059s7f8e64a6h91ebeadbf938858d@mail.gmail.com>
+	 <1229073834.12883.41.camel@twins>
+	 <7c86c4470812120942x607a74f7w9f823adecbd73b85@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-12 at 17:27 +0000, Catalin Marinas wrote:
-> On Wed, 2008-12-10 at 11:20 -0800, Dave Hansen wrote:
-> > On Wed, 2008-12-10 at 18:28 +0000, Catalin Marinas wrote:
-> > > +config DEBUG_MEMLEAK
-> > > +       bool "Kernel memory leak detector"
-> > > +       default n
-> > > +       depends on EXPERIMENTAL
-> > > +       select DEBUG_SLAB if SLAB
-> > > +       select SLUB_DEBUG if SLUB
-> > > +       select DEBUG_FS
-> > > +       select STACKTRACE
-> > > +       select FRAME_POINTER
-> > > +       select KALLSYMS
-> > 
-> > So, not all architectures have STACKTRACE or FRAME_POINTER.  I think a
-> > few of these should at least be done with depends.
-> 
-> I think it could depend on STACKTRACE_SUPPORT. Alternatively, it could
-> select STACKTRACE only if it is supported, though for architectures
-> without it, the kmemleak reports wouldn't be very useful.
+Hi,
 
-I think they'd still be pretty useful.  They would be certainly harder
-to track down, but "something allocating N bytes from the slab is
-leaking" is certainly better than nothing.  
+Given the level of abstractions you are using for the API, and given
+your argument
+that the kernel can do the HW resource scheduling better than anybody else.
 
-> Does FRAME_POINTER even matter? I think STACKTRACE should be enough to
-> get the backtrace. I even have some ARM patches for stack unwinding
-> where FRAME_POINTER is disabled (and shouldn't be enabled).
+What happens in the following test case:
 
-It is supposed to give cleaner stack traces.  But if you don't strictly
-require it, I'd leave it up to whatever the user had set before.  If
-people are getting crappy stack traces from anywhere in the kernel, I
-think they know where to go to fix it. ;)
+   - 2-way system (cpu0, cpu1)
 
-> > Is this feature accessible if DEBUG_FS=n?  It seems to compile OK, but I
-> > wonder if it is useful.
-> 
-> Well, it is recommended. If you don't have this, you can't trigger a
-> scan manually by reading the /sys/kernel/debug/memleak file (have to
-> rely on the automatic thread). In my local tree (not published yet), I
-> also added support for run-time configuration by writing to this file.
-> Is there any disadvantage in always selecting DEBUG_FS?
+   - on cpu0, two processes P1, P2, each self-monitoring and counting event E1.
+     Event E1 can only be measured on counter C1.
 
-I was just worried that debugfs was the only mechanism for this feature
-to get its data in and out of the kernel.  If it was not there, that
-this feature was useless.
+   - on cpu1, there is a cpu-wide session, monitoring event E1, thus using C1
 
-The problem with 'select' when it is "mixed" with 'depends':
+   - the scheduler decides to migrate P1 onto CPU1. You now have a
+conflict on C1.
 
-config DEBUG_FS
-        bool "Debug Filesystem"
-        depends on SYSFS
-
-When you 'select DEBUG_FS' it will *not* turn on SYSFS:
-
-$ egrep 'DEBUG_FS|MEMLEAK|G_SYSFS' .config
-# CONFIG_SYSFS is not set
-CONFIG_DEBUG_FS=y
-CONFIG_DEBUG_MEMLEAK=y
-CONFIG_DEBUG_MEMLEAK_TEST=y
-
-I also tried compiling your feature with a bunch of things turned off in
-my .config: http://sr71.net/~dave/linux/kmemleak.config
-
-I got a compile error:
-
-/home/dave/work/temp/linux-2.6/mm/memleak-test.c: In function ‘memleak_test_init’:
-/home/dave/work/temp/linux-2.6/mm/memleak-test.c:61: error: ‘files_cachep’ undeclared (first use in this function)
-/home/dave/work/temp/linux-2.6/mm/memleak-test.c:61: error: (Each undeclared identifier is reported only once
-/home/dave/work/temp/linux-2.6/mm/memleak-test.c:61: error: for each function it appears in.)
-
-make allnoconfig is cool. :)
-
--- Dave
-
+How is this managed?
