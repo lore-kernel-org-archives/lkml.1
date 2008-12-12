@@ -1,70 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753410AbYLLTMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbYLLTNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753410AbYLLTMk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 14:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbYLLTM3
+	id S1753546AbYLLTNT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 14:13:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbYLLTNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 14:12:29 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56829 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750877AbYLLTM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 14:12:28 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.DEB.1.00.0812121952320.5873@eeepc-johanness>
-References: <alpine.DEB.1.00.0812121952320.5873@eeepc-johanness> <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
-To: Johannes Schindelin <Johannes.Schindelin@gmx.de>
-Cc: dhowells@redhat.com, torvalds@osdl.org, git@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Miklos Vajna <vmiklos@frugalware.org>
-Subject: Re: [PATCH] Simplified GIT usage guide
-Date: Fri, 12 Dec 2008 19:12:13 +0000
-Message-ID: <29095.1229109133@redhat.com>
+	Fri, 12 Dec 2008 14:13:05 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38080 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750847AbYLLTNC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 14:13:02 -0500
+Date: Fri, 12 Dec 2008 19:07:28 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Scott Lurndal <scott.lurndal@3leafsystems.com>
+Cc: Gerd Hoffmann <kraxel@redhat.com>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
+Message-ID: <20081212190728.GC5774@flint.arm.linux.org.uk>
+Mail-Followup-To: Scott Lurndal <scott.lurndal@3leafsystems.com>,
+	Gerd Hoffmann <kraxel@redhat.com>, Matthew Wilcox <matthew@wil.cx>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	Ulrich Drepper <drepper@redhat.com>
+References: <1229090440-32120-1-git-send-email-kraxel@redhat.com> <20081212152929.GM26095@parisc-linux.org> <494287D4.2070909@redhat.com> <20081212155113.GO26095@parisc-linux.org> <49428AFD.5090009@redhat.com> <20081212182929.GA9631@pendragon.3leafnetworks.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081212182929.GA9631@pendragon.3leafnetworks.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Schindelin <Johannes.Schindelin@gmx.de> wrote:
-
-> > +I don't really know what I'm doing with GIT either.
+On Fri, Dec 12, 2008 at 10:29:29AM -0800, Scott Lurndal wrote:
+> On Fri, Dec 12, 2008 at 05:02:05PM +0100, Gerd Hoffmann wrote:
+> > Matthew Wilcox wrote:
+> > > On the other hand, NetBSD have approximately 0% market share.
+> > > We shouldn't let them lock us into making a bad decision.  Is there
+> > > anyone other than NetBSD who has added these syscalls?
+> > 
+> > Free- and OpenBSD have it too.  For Solaris I've found a feature request
+> > only.  Dunno about MacOS/Darwin.  Other un*xes which are important these
+> > days?
+> > 
+> > I'd *really* hate it to have the same system call with different
+> > argument ordering on different systems though.  Especially when swapping
+> > two integer values, so gcc wouldn't error out on wrong usage.
 > 
-> Strike the "either".
-
-The whole point of the introduction is that this is aimed at someone who
-doesn't know what they're doing, so IMO the "either" is quite correct here.
-
-> > +===============
-> > +OVERVIEW OF GIT
-> > +===============
+> I would suggest that from the end-users perspective, the user-mode API
+> should be similar to pread/pwrite, e.g:
 > 
-> Your overview seems to be what "Git from the bottom up" is all about (see 
-> the Git Wiki for more information where to find it).
+>     int preadv(fd, iovec, iovec_size, offset)
 
-The problem is I need to describe some terminology, and the best way to do
-that is with some pictures.  I was wondering if I should break this out into a
-separate document and simplify what I keep.
+Yes, and that's easy for glibc to achieve.
 
-In my opinion, it's much easier to deal with if you can visualise how it
-works, even if that visualisation isn't a true representation of reality,
-which references Miklos's points.
+What's hard is that the user <-> kernel API firstly has a limited number
+of registers available to it for passing arguments without indirection
+from user space into kernel space.
 
-> From my experience with new users, this is exactly the wrong way to go 
-> about it.  You don't introduce object types of the Git database before 
-> telling the users what the heck they are good for.  And most users do not 
-> need to bother with tree objects either, anyway.  So maybe you just tell 
-> them what the heck the object types are good for, without even teaching 
-> them the object types at all.
+Secondly, the user <-> kernel argument register allocation can vary
+depending on the ABI version which user space or kernel space is built
+for.  On ARM we have two ABIs, one where 64-bit arguments can be placed
+in any two consecutive registers, and one where 64-bit arguments must
+be placed in an even,odd register pair (not an odd,even pair.)
 
-Perhaps.  The main thing I want to introduce is the idea of a tree with three
-levels, as it were: commits, directories, files.
+That leads to the above being:
 
-> So I think that your document might do a good job scaring people away from 
-> Git.  But I do not believe that your document, especially in the tone it 
-> is written, does a good job of helping Git newbies.
+fd	r0	r0
+iovec	r1	r1
+vecsz	r2	r2
+offset	r3,r4	r4,r5
 
-Hmmm.  So what would you suggest is a good way to write for GIT newbies?  Is
-it just that the overview should be canned or drastically simplified?
+Notice the different register allocation for the 64-bit offset.
 
-David
+This problem of register-aligned argument placement is not limited
+to just ARM, but several other Linux supported architectures.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
