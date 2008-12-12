@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757761AbYLLEcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbYLLEfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757761AbYLLEcy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Dec 2008 23:32:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbYLLEcn
+	id S1757575AbYLLEfx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Dec 2008 23:35:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbYLLEfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Dec 2008 23:32:43 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45203
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756161AbYLLEcm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Dec 2008 23:32:42 -0500
-Date: Thu, 11 Dec 2008 20:32:43 -0800 (PST)
-Message-Id: <20081211.203243.124017657.davem@davemloft.net>
-To: ajax@redhat.com
-Cc: linux-kernel@vger.kernel.org, davej@redhat.com, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, kaber@trash.net
-Subject: Re: [PATCH] net: Remove a noisy printk
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1229033625-30825-1-git-send-email-ajax@redhat.com>
-References: <1229033625-30825-1-git-send-email-ajax@redhat.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 11 Dec 2008 23:35:45 -0500
+Received: from home.keithp.com ([63.227.221.253]:50180 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756161AbYLLEfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Dec 2008 23:35:45 -0500
+Subject: USB interrupt handler routine
+From: Keith Packard <keithp@keithp.com>
+To: Greg Kroah-Hartman <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: keithp@keithp.com
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-tntCDw6plXxT8aoIb0E8"
+Date: Thu, 11 Dec 2008 20:35:37 -0800
+Message-Id: <1229056537.4137.10.camel@aiko.keithp.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adam Jackson <ajax@redhat.com>
-Date: Thu, 11 Dec 2008 17:13:42 -0500
 
-> From: Dave Jones <davej@redhat.com>
-> 
-> These messages are trivial to trigger when running stress tests
-> like isic, and add no real value.
-> 
-> Signed-off-by: Dave Jones <davej@redhat.com>
-> Signed-off-by: Adam Jackson <ajax@redhat.com>
+--=-tntCDw6plXxT8aoIb0E8
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-If you don't send this to the netfilter developers nor the networking
-developers, noboby knowledgable can even look at this patch.
+We recently made a patch in the Intel DRM driver:
 
-CC:'d
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
+it;h=3Db60678a75d44fa9d5969f79781bd856ad5858609
 
-> ---
->  net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-> index 4a7c352..0e86d0d 100644
-> --- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-> +++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-> @@ -147,8 +147,6 @@ static unsigned int ipv4_conntrack_local(unsigned int hooknum,
->  	/* root is playing with raw sockets. */
->  	if (skb->len < sizeof(struct iphdr) ||
->  	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
-> -		if (net_ratelimit())
-> -			printk("ipt_hook: happy cracking.\n");
->  		return NF_ACCEPT;
->  	}
->  	return nf_conntrack_in(dev_net(out), PF_INET, hooknum, skb);
-> -- 
-> 1.6.0.3
+This switches from non-MSI to MSI-mode.
+
+It "should" have had no effect, but our concern is that what we're
+really seeing is interrupt sharing troubles. We've had several people
+say that they got an interrupt flood when plugging in a USB stick or
+external disk. Switching the graphics driver to MSI mode "cures" the
+bug, but that sure seems like a work-around rather than a bug fix to me.
+
+When our driver is active, it can generate a lot of interrupts,
+potentially thousands per second. Is it possible that the UHCI or EHCI
+drivers could get confused if checking for interrupt status this often?
+
+Eric noted that the USB driver appears to not check and ACK interrupt
+status unconditionally, preferring to check the software state
+beforehand. I'm wondering if this may open up a potential race between
+hardware state change and ISR bit setting.
+=09
+--=20
+keith.packard@intel.com
+
+--=-tntCDw6plXxT8aoIb0E8
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBJQeoYQp8BWwlsTdMRAkmZAKDFResltOiuP55QiENdue1t2G3TbwCeLfzd
+i0MfCCpArHgYDjx2xOstHjE=
+=rcfN
+-----END PGP SIGNATURE-----
+
+--=-tntCDw6plXxT8aoIb0E8--
+
