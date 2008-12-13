@@ -1,59 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbYLMXTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbYLMXUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752658AbYLMXTN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 18:19:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbYLMXSo
+	id S1753741AbYLMXUu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 18:20:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYLMXUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 18:18:44 -0500
-Received: from mu-out-0910.google.com ([209.85.134.188]:4549 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752136AbYLMXSm (ORCPT
+	Sat, 13 Dec 2008 18:20:42 -0500
+Received: from wf-out-1314.google.com ([209.85.200.172]:51868 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752079AbYLMXUl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 18:18:42 -0500
+	Sat, 13 Dec 2008 18:20:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=lR+G9VtDqP++MlxlJ3ns2O90lqmNRtXBPIIqnQacvqHAboix2vFxuyTf3jEnlzTMDS
-         9oKxKRuOY+H7XOFgq9nOe732CQk2a37D957ugOk4ICzkxere61W7L22yCGDIXzdNgpUE
-         Q2tVYazAfOYhnDhutNTTGnwAqc8W1/5Zr8BVM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-Subject: Re: [PATCH 2/3] ide: add ide_[un]lock_hwgroup() helpers
-Date: Sun, 14 Dec 2008 00:15:51 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rc6-next-20081128; KDE/4.1.3; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Elias Oltmanns <eo@nebensachen.de>
-References: <200811182116.00351.bzolnier@gmail.com>  <alpine.DEB.1.00.0811190236550.24738@zirkon.biophys.uni-duesseldorf.de>
-In-Reply-To: <alpine.DEB.1.00.0811190236550.24738@zirkon.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200812140015.51978.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=FYHUJWfRpqIF79h7fQKM1UTq++VyNzUXE3O53s5r5rtiPPa1IImmiQ5tV5uNiOEKG9
+         keSsvcSXkI+YQRD9OM+/w4h9F7Db6SJbF7sfHmgVRefzUjg5RMHp17xsZceZB/OH7d52
+         wamSp0Sk2M6kGQ5fwU8/4POhL/eEWV0i/rADw=
+Subject: [PATCH 1/2] ieee1394: dv1394 annotate frame input/output structs
+ as little endian
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 13 Dec 2008 15:20:39 -0800
+Message-Id: <1229210439.11257.15.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+No Functional changes.
 
-[ Sorry for the late reply. ]
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/ieee1394/dv1394-private.h |   44 ++++++++++++++++++------------------
+ drivers/ieee1394/dv1394.c         |    4 +-
+ 2 files changed, 24 insertions(+), 24 deletions(-)
 
-On Wednesday 19 November 2008, Michael Schmitz wrote:
-> > -	while (!hwgroup->busy) {
-> > -		hwgroup->busy = 1;
-> > -		/* for atari only */
-> > -		ide_get_lock(ide_intr, hwgroup);
-> > +	while (!ide_lock_hwgroup(hwgroup)) {
-> 
-> Something I've run into while working on the locking stuff: what happens if the 
-> above ide_lock_hwgroup(hwgroup) sleeps for long enough to trigger the request 
-> timer? 
+diff --git a/drivers/ieee1394/dv1394-private.h b/drivers/ieee1394/dv1394-private.h
+index 7d1d284..18b92cb 100644
+--- a/drivers/ieee1394/dv1394-private.h
++++ b/drivers/ieee1394/dv1394-private.h
+@@ -77,11 +77,11 @@ static inline void fill_cip_header(struct CIP_header *cip,
+    See the Texas Instruments OHCI 1394 chipset documentation.
+ */
+ 
+-struct output_more_immediate { u32 q[8]; };
+-struct output_more { u32 q[4]; };
+-struct output_last { u32 q[4]; };
+-struct input_more { u32 q[4]; };
+-struct input_last { u32 q[4]; };
++struct output_more_immediate { __le32 q[8]; };
++struct output_more { __le32 q[4]; };
++struct output_last { __le32 q[4]; };
++struct input_more { __le32 q[4]; };
++struct input_last { __le32 q[4]; };
+ 
+ /* outputs */
+ 
+@@ -92,9 +92,9 @@ static inline void fill_output_more_immediate(struct output_more_immediate *omi,
+ 					      unsigned int  payload_size)
+ {
+ 	omi->q[0] = cpu_to_le32(0x02000000 | 8); /* OUTPUT_MORE_IMMEDIATE; 8 is the size of the IT header */
+-	omi->q[1] = 0;
+-	omi->q[2] = 0;
+-	omi->q[3] = 0;
++	omi->q[1] = cpu_to_le32(0);
++	omi->q[2] = cpu_to_le32(0);
++	omi->q[3] = cpu_to_le32(0);
+ 
+ 	/* IT packet header */
+ 	omi->q[4] = cpu_to_le32(  (0x0 << 16)  /* IEEE1394_SPEED_100 */
+@@ -106,8 +106,8 @@ static inline void fill_output_more_immediate(struct output_more_immediate *omi,
+ 	/* reserved field; mimic behavior of my Sony DSR-40 */
+ 	omi->q[5] = cpu_to_le32((payload_size << 16) | (0x7F << 8) | 0xA0);
+ 
+-	omi->q[6] = 0;
+-	omi->q[7] = 0;
++	omi->q[6] = cpu_to_le32(0);
++	omi->q[7] = cpu_to_le32(0);
+ }
+ 
+ static inline void fill_output_more(struct output_more *om,
+@@ -116,8 +116,8 @@ static inline void fill_output_more(struct output_more *om,
+ {
+ 	om->q[0] = cpu_to_le32(data_size);
+ 	om->q[1] = cpu_to_le32(data_phys_addr);
+-	om->q[2] = 0;
+-	om->q[3] = 0;
++	om->q[2] = cpu_to_le32(0);
++	om->q[3] = cpu_to_le32(0);
+ }
+ 
+ static inline void fill_output_last(struct output_last *ol,
+@@ -140,8 +140,8 @@ static inline void fill_output_last(struct output_last *ol,
+ 
+ 	ol->q[0] = cpu_to_le32(temp);
+ 	ol->q[1] = cpu_to_le32(data_phys_addr);
+-	ol->q[2] = 0;
+-	ol->q[3] = 0;
++	ol->q[2] = cpu_to_le32(0);
++	ol->q[3] = cpu_to_le32(0);
+ }
+ 
+ /* inputs */
+@@ -161,8 +161,8 @@ static inline void fill_input_more(struct input_more *im,
+ 
+ 	im->q[0] = cpu_to_le32(temp);
+ 	im->q[1] = cpu_to_le32(data_phys_addr);
+-	im->q[2] = 0; /* branchAddress and Z not use in packet-per-buffer mode */
+-	im->q[3] = 0; /* xferStatus & resCount, resCount must be initialize to data_size */
++	im->q[2] = cpu_to_le32(0); /* branchAddress and Z not use in packet-per-buffer mode */
++	im->q[3] = cpu_to_le32(0); /* xferStatus & resCount, resCount must be initialize to data_size */
+ }
+  
+ static inline void fill_input_last(struct input_last *il,
+@@ -331,7 +331,7 @@ struct frame {
+ 
+ 	/* points to status/timestamp field of first DMA packet */
+ 	/* (we'll check it later to monitor timestamp accuracy) */
+-	u32 *frame_begin_timestamp;
++	__le32 *frame_begin_timestamp;
+ 
+ 	/* the timestamp we assigned to the first packet in the frame */
+ 	u32 assigned_timestamp;
+@@ -348,15 +348,15 @@ struct frame {
+ 	   that can cause interrupts. We'll check these from the
+ 	   interrupt handler.
+ 	*/
+-	u32 *mid_frame_timestamp;
+-	u32 *frame_end_timestamp;
++	__le32 *mid_frame_timestamp;
++	__le32 *frame_end_timestamp;
+ 
+ 	/* branch address field of final packet. This is effectively
+ 	   the "tail" in the chain of DMA descriptor blocks.
+ 	   We will fill it with the address of the first DMA descriptor
+ 	   block in the subsequent frame, once it is ready.
+ 	*/
+-	u32 *frame_end_branch;
++	__le32 *frame_end_branch;
+ 
+ 	/* the number of descriptors in the first descriptor block
+ 	   of the frame. Needed to start DMA */
+@@ -365,10 +365,10 @@ struct frame {
+ 
 
-AFAICS this happens before the hwgroup timeout timer is armed and IDE is not
-using block layer request timers yet so we should be fine here..
+ struct packet {
+-	u16	timestamp;
++	__le16	timestamp;
+ 	u16	invalid;
+ 	u16	iso_header;
+-	u16	data_length;
++	__le16	data_length;
+ 	u32	cip_h1;
+ 	u32	cip_h2;
+ 	unsigned char data[480];
+diff --git a/drivers/ieee1394/dv1394.c b/drivers/ieee1394/dv1394.c
+index c19f232..f258e61 100644
+--- a/drivers/ieee1394/dv1394.c
++++ b/drivers/ieee1394/dv1394.c
+@@ -265,7 +265,7 @@ static void frame_prepare(struct video_card *video, unsigned int this_frame)
+ 	/* these flags denote packets that need special attention */
+ 	int empty_packet, first_packet, last_packet, mid_packet;
+ 
+-	u32 *branch_address, *last_branch_address = NULL;
++	__le32 *branch_address, *last_branch_address = NULL;
+ 	unsigned long data_p;
+ 	int first_packet_empty = 0;
+ 	u32 cycleTimer, ct_sec, ct_cyc, ct_off;
+@@ -848,7 +848,7 @@ static void receive_packets(struct video_card *video)
+ 	dma_addr_t block_dma = 0;
+ 	struct packet *data = NULL;
+ 	dma_addr_t data_dma = 0;
+-	u32 *last_branch_address = NULL;
++	__le32 *last_branch_address = NULL;
+ 	unsigned long irq_flags;
+ 	int want_interrupt = 0;
+ 	struct frame *f = NULL;
+-- 
+1.6.1.rc2.306.ge5d5e
 
-Thanks,
-Bart
+
