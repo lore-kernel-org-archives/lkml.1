@@ -1,103 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757861AbYLMPfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbYLMPiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757861AbYLMPfJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 10:35:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbYLMPez
+	id S1758149AbYLMPiT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 10:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYLMPiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 10:34:55 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:53531 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750975AbYLMPey (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 10:34:54 -0500
-Message-ID: <4943D62A.4060900@vlnb.net>
-Date: Sat, 13 Dec 2008 18:35:06 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sat, 13 Dec 2008 10:38:06 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:50252 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751119AbYLMPiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Dec 2008 10:38:04 -0500
+Date: Sat, 13 Dec 2008 16:37:59 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: rmk@arm.linux.org.uk, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] arch/arm/common/sa1111.c: Correct error handling code
+Message-ID: <Pine.LNX.4.64.0812131637330.20442@pc-004.diku.dk>
 MIME-Version: 1.0
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-CC: linux-iscsi-target-dev@googlegroups.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       scst-devel <scst-devel@lists.sourceforge.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
-References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>	 <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>	 <54939.1229149205@turing-police.cc.vt.edu>	 <e2e108260812130141o3d21bbbdob9e7c9f95d309a74@mail.gmail.com>	 <1229162907.4153.857.camel@haakon2.linux-iscsi.org>	 <e2e108260812130223q13fd98d8gc1e55881a92b939@mail.gmail.com> <1229167118.4153.930.camel@haakon2.linux-iscsi.org>
-In-Reply-To: <1229167118.4153.930.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18fXn5fJoxvQgi3/1UDuaGRCXr6ChSRq3na6bE
- 9slY345GD4m/I88hNI2s3Dqr/ByWn1APkDeTu9jv68RP+vQzcE
- otoAcfUOIgmJlhUuAEHXg==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Julia Lawall <julia@diku.dk>
 
+If it is reasonable to apply PTR_ERR to the result of calling clk_get, then
+that result should first be tested with IS_ERR, not with !.
 
-Nicholas A. Bellinger wrote:
-> On Sat, 2008-12-13 at 11:23 +0100, Bart Van Assche wrote:
->> On Sat, Dec 13, 2008 at 11:08 AM, Nicholas A. Bellinger <nab@kernel.org> wrote:
->>>> See also:
->>>> * February 1, 2008, LIO kernel panic during configuration,
->>>> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/74c8b37f24b84e59/d94c07626bd20521?lnk=gst&q=kernel+panic#d94c07626bd20521.
->>>> * February 8, 2008, kernel crash triggered by LIO,
->>>> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/30835aede1028188/5708e16a23367fb4?lnk=gst&q=kernel+crash#5708e16a23367fb4.
->>>> * February 13, 2008, LIO target kernel code triggers memory
->>>> corruption, http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/ddc1bf7666372972/2150a09f9ed3d1cd?lnk=gst&q=ipoib#2150a09f9ed3d1cd.
->>>> * February 18, 2008, LIO target makes entire system hang,
->>>> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/6a76f9efd9409fc5/55bd8840b6a5f757?lnk=gst&q=lio+target+hangs#55bd8840b6a5f757.
->>>>
->>> I have no idea why why you keep bringing up a minor BUG (completely
->>> unrelated to Target_Core_Mod/ConfigFS and LIO-Target v3.0 btw) that was
->>> fixed 10 months ago..?  Perhaps if you spent half the time looking at
->>> actual lio-core-2.6.git code that you do bringing up minor closed bugs
->>> from months ago [ ... ]
->> I won't comment on the fact that you consider a kernel crash or a
->> system hang as a minor bug.
->>
-> 
-> The problem is that you like to handwave on the technical issues, just
-> like you are doing here.  :-)  Of course I fix bugs when people report
-> them, but when people like yourself yell and scream and handwave, it
-> makes me not want to fix it as quickly if someone wrote a nice and
-> thoughful email and said 'thank you'.
-> 
-> Anyways, I am not going to debate the development process with you, and
-> as folks on the LIO-devel list can tell you, I am very quick to produce
-> patches when a issue is located.  
-> 
->> I reported four bugs instead of one. Only two of these have been
->> reported to be fixed.
->>
-> 
-> Considering you said earlier that you have not actually looked at any
-> recently LIO code, how could you know these bugs are fixed..?   Back
-> here in the land of reality, these *TWO* bugs where fixed in back Feb.
-> One was related to iSCSI discovery, and one related to v2.6.24 kernel
-> breakage and struct scatterlist->page_link, so what..?  Do you honestly
-> think handwaving about bugs from 10 months ago will get you anywhere
-> here..?  If you are so certain these bugs still exist or have any effect
-> on my upstream work, then please, go ahead and prove it.  No..? I did
-> not think so.
-> 
-> What does any of this have to do with lio-core-2.6.git,
-> Target_Core_Mod/ConfigFS and LIO-Target v3.0 btw..?  Are you actually
-> going to write a thoughtful or relivent comment on the v3.0 design
-> and/or code, because that would be nice out of your for once.  Otherwise
-> I am going to ignore you again, just the like conversation where you
-> said:
-> 
-> "Zero-copy means that data is copied as few times as possible".
-> 
-> when I was attempting to explain the finer pointers of
-> Target_Core_Mod/ConfigFS design to you and Vlad.  Remember that one..?
-> 
-> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/8cff61671cd2de6b/37ade00e607dd8c8
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-You know, that thread was finished when you refused to name which real 
-life tasks you are going to solve with your super advanced features. 
-I.e. answer, why are they needed at all?
+// <smpl>
+@@
+expression E,E1;
+@@
 
-Vlad
+if (
+-   E == NULL
++   IS_ERR(E)
+   ) { <+... when != E = E1
+        PTR_ERR(E)
+       ...+> }
+// </smpl>
 
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ arch/arm/common/sa1111.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -u -p a/arch/arm/common/sa1111.c b/arch/arm/common/sa1111.c
+--- a/arch/arm/common/sa1111.c
++++ b/arch/arm/common/sa1111.c
+@@ -630,7 +630,7 @@ __sa1111_probe(struct device *me, struct
+ 		return -ENOMEM;
+ 
+ 	sachip->clk = clk_get(me, "SA1111_CLK");
+-	if (!sachip->clk) {
++	if (IS_ERR(sachip->clk)) {
+ 		ret = PTR_ERR(sachip->clk);
+ 		goto err_free;
+ 	}
