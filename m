@@ -1,109 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbYLMXOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbYLMXPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbYLMXOd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 18:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYLMXOZ
+	id S1753397AbYLMXPl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 18:15:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYLMXPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 18:14:25 -0500
-Received: from rn-out-0910.google.com ([64.233.170.190]:6824 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752049AbYLMXOY convert rfc822-to-8bit (ORCPT
+	Sat, 13 Dec 2008 18:15:33 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:58812 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751884AbYLMXPc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 18:14:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NtEy96ET0wfPveYTGin+9psP0DlUAx7IjJ46wHAOCXQR82qgVtkAEbe8KpOqsjTrsK
-         VY6GYGhDubghUbbHQQVe5o+Vh9clO1qF+66glRlGOyLGuveJ+LTYwEYgKgfOmTpz06nm
-         /cW4lfkQVZDTlkmANvNad9hb0YSU7v/83/IOs=
-Message-ID: <21d7e9970812131514v328eff11o9a2fcaa0b2cce1db@mail.gmail.com>
-Date: Sun, 14 Dec 2008 09:14:23 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "=?ISO-8859-1?Q?C=E9dric_Godin?=" <cedric@belbone.be>
-Subject: Re: Xorg crash at first start
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <493CF58F.9080503@belbone.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 13 Dec 2008 18:15:32 -0500
+Date: Sun, 14 Dec 2008 00:16:54 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       zippel@linux-m68k.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Better way to force a rebuild
+Message-ID: <20081213231654.GA32446@uranus.ravnborg.org>
+References: <alpine.DEB.1.10.0812101443550.11805@gandalf.stny.rr.com> <20081210200242.GA15692@uranus.ravnborg.org> <20081210212821.GA18348@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4937E87C.6030106@belbone.be>
-	 <21d7e9970812042027w13271ceas91ecab87aa60562e@mail.gmail.com>
-	 <49391512.4000604@belbone.be>
-	 <21d7e9970812072029w2b5f47ecoeb1d042880e4bff1@mail.gmail.com>
-	 <493CF58F.9080503@belbone.be>
+In-Reply-To: <20081210212821.GA18348@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 8, 2008 at 8:23 PM, Cédric Godin <cedric@belbone.be> wrote:
-> Dave Airlie wrote:
->> On Fri, Dec 5, 2008 at 9:48 PM, Cédric Godin <cedric@belbone.be> wrote:
->>
->>> Dave Airlie wrote:
->>>
->>>> On Fri, Dec 5, 2008 at 12:26 AM, Cédric Godin <cedric@belbone.be> wrote:
->>>>
->>>>
->>>>> Hello,
->>>>>
->>>>> With the v2.6.28-rc7-105-gfeaf384 kernel, when booting my compaq with
->>>>> attached config, the screen switches in graphical mode but then switches
->>>>> back in textual mode with an 'irq10 nobody cared' error in dmesg (attached).
->>>>>
->>>>> If I restart kdm by hand, all is ok (i have my kdm) but the error yet
->>>>> appears in dmesg (at each X start in fact).
->>>>>
->>>>> I bisected the problem (git bisect log attached) and found the following
->>>>> commit as "culprit" :
->>>>>
->>>>> commit 52440211dcdc52c0b757f8b34d122e11b12cdd50
->>>>> Author: Keith Packard <keithp@keithp.com>
->>>>> Date:   Tue Nov 18 09:30:25 2008 -0800
->>>>>
->>>>>    drm: move drm vblank initialization/cleanup to driver load/unload
->>>>>
->>>>>    drm vblank initialization keeps track of the changes in driver-supplied
->>>>>    frame counts across vt switch and mode setting, but only if you let
->>>>> it by
->>>>>    not tearing down the drm vblank structure.
->>>>>
->>>>>    Signed-off-by: Keith Packard <keithp@keithp.com>
->>>>>    Signed-off-by: Dave Airlie <airlied@redhat.com>
->>>>>
->>>>> Reverting it brings back my X screen at first start.
->>>>>
->>>>>
->>>> Just for testing, can you try without using vesafb....
->>>>
->>>> so remove the vga= line from the commandline or build the kernel
->>>> without vesafb support.
->>>>
->>>>
->>> I can confirm the problem without vesafb
->>>
->>
->> Can you boot to a runlevel with no X running
->> do
->> modprobe drm debug=1
->> or if drm is loaded
->> echo 1 > /sys/module/drm/parameters/debug
->> and then start X
->>
->> and attach the dmesg here.
->>
->> I've some ideas but no concrete reason for what might be going wrong.
->>
->> Dave.
->>
->
-> First sorry for late answer.
-> Here is the dmesg asked in attach (modprobe + startx).
-> Hope it helps.
->
+On Wed, Dec 10, 2008 at 10:28:21PM +0100, Sam Ravnborg wrote:
+> 
+> I made the following quick hack.
+> I think it should do the trick.
+> 
+> 	Sam
+> 
+> diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+> index 468fbc9..8b5bf43 100644
+> --- a/scripts/Makefile.build
+> +++ b/scripts/Makefile.build
+> @@ -215,7 +215,8 @@ define rule_cc_o_c
+>  	$(call echo-cmd,cc_o_c) $(cmd_cc_o_c);				  \
+>  	$(cmd_modversions)						  \
+>  	$(cmd_record_mcount)						  \
+> -	scripts/basic/fixdep $(depfile) $@ '$(call make-cmd,cc_o_c)' >    \
+> +	scripts/basic/fixdep $(depfile) $@                                \
+> +	'$(call make-cmd,cc_o_c) $(call make-cmd,record_mcount)' >        \
+>  	                                              $(dot-target).tmp;  \
+>  	rm -f $(depfile);						  \
+>  	mv -f $(dot-target).tmp $(dot-target).cmd
 
-Can you check out latest Linus git and retry this.
+Hi Steven.
 
-Dave.
+Did you try the above?
+If it works I will add it to kbuild-next.git
+
+	Sam
