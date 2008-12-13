@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758543AbYLMPBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758686AbYLMPBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758543AbYLMPBB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 10:01:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYLMPAw
+	id S1758686AbYLMPBs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 10:01:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYLMPBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 10:00:52 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:58569 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752667AbYLMPAv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 10:00:51 -0500
-Message-ID: <4943CE34.9020302@vlnb.net>
-Date: Sat, 13 Dec 2008 18:01:08 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-CC: Bart Van Assche <bart.vanassche@gmail.com>, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       scst-devel <scst-devel@lists.sourceforge.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [PATCH][RFC 21/23]: iSCSI target driver
-References: <494009D7.4020602@vlnb.net> <49401205.8010207@vlnb.net>	 <1229036109.4153.585.camel@haakon2.linux-iscsi.org>	 <4942BADE.5010907@vlnb.net>	 <1229162586.4153.851.camel@haakon2.linux-iscsi.org>	 <e2e108260812130211m396649c5k94117f0ce8017b5e@mail.gmail.com> <1229163388.4153.867.camel@haakon2.linux-iscsi.org>
-In-Reply-To: <1229163388.4153.867.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
+	Sat, 13 Dec 2008 10:01:40 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46395 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752667AbYLMPBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Dec 2008 10:01:40 -0500
+Subject: Re: [RFC PATCH -v4 05/14] fsnotify: unified filesystem
+ notification backend
+From: Eric Paris <eparis@redhat.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       viro@ZenIV.linux.org.uk, hch@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <20081213025417.GC807@ioremap.net>
+References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
+	 <20081212215140.27112.67859.stgit@paris.rdu.redhat.com>
+	 <20081213025417.GC807@ioremap.net>
+Content-Type: text/plain
+Date: Sat, 13 Dec 2008 10:01:15 -0500
+Message-Id: <1229180475.29167.6.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19pPicy6u3WcN4LhrLyo8rAjT9oFlIqAvGtGaE
- i+kQXR5QUJckCpve3Acd16igSTFU0lvOMeWwrIbEKm5sbIG0eT
- gj+NUNa2JNtO/v8tHv5XQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicholas A. Bellinger wrote:
-> On Sat, 2008-12-13 at 11:11 +0100, Bart Van Assche wrote:
->> On Sat, Dec 13, 2008 at 11:03 AM, Nicholas A. Bellinger
->> <nab@linux-iscsi.org> wrote:
->>> To this day I have not seen a single iSCSI-SCST production setup anywhere, nor
->>> have I heard anyone considering moving into it into any serious production
->>> environments.
->> Many people are using iSCSI-SCST in a production setup. Which planet
->> do you live on ?
->>
+On Sat, 2008-12-13 at 05:54 +0300, Evgeniy Polyakov wrote:
+> > +struct fsnotify_event *fsnotify_create_event(struct inode *to_tell, __u64 mask, void *data, int data_is)
+> > +{
+> > +	struct fsnotify_event *event;
+> > +
+> > +	event = kmem_cache_alloc(event_kmem_cache, GFP_KERNEL);
+> > +	if (!event)
+> > +		return NULL;
+> > +
+> > +	atomic_set(&event->refcnt, 1);
+> > +
+> > +	spin_lock_init(&event->lock);
+> > +
+> > +	event->path.dentry = NULL;
+> > +	event->path.mnt = NULL;
+> > +	event->inode = NULL;
+> > +
+> > +	INIT_LIST_HEAD(&event->private_data_list);
+> > +
+> > +	event->to_tell = to_tell;
 > 
-> You can continue to gloss over the real issues at hand here, but your
-> generic handwaving certainly will not get you past RFC-3720 domain
-> validation.
+> What prevents this inode to be released?
 
-Please stop flooding. If you believe that iSCSI-SCST is so bad so it 
-won't pass some test, prove it! Run your test and show us your the 
-failures. Otherwise your words worth nothing.
+Absolutely nothing and I need to document that.  Two things,
+event->to_tell and event->data if event->data_is == INODE are ONLY valid
+during the call to group-?event_to_notif().  As soon as all groups
+return from that call those are not valid fields.  I could set them NULL
+when they aren't allowed to be used any more, but it's a wasted
+operation on a VERY hot path (fsnotify())
 
-> Best Regards,
-> 
-> --nab
-> 
->> Bart.
->>
-> 
-> 
+As a side note event->data if event->data_is == FILE is perfectly
+allowed to be used until the event is freed.  That's totally pointless
+for this patch set and I might drop it on the next submission, but it is
+needed for my fanotify notify patches that I keep in mind as I'm doing
+this.
+
+I'll remember to better document this 'quirk' in case anyone tries to
+write a new notifier.
+
+-Eric
 
