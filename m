@@ -1,102 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbYLMDff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbYLMDtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755476AbYLMDff (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 22:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbYLMDfO
+	id S1756043AbYLMDtT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 22:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbYLMDtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 22:35:14 -0500
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:63347 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753282AbYLMDfN (ORCPT
+	Fri, 12 Dec 2008 22:49:09 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:34269 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751702AbYLMDtI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 22:35:13 -0500
-From: Junio C Hamano <junio@pobox.com>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Simplified GIT usage guide
-References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
-Date: Fri, 12 Dec 2008 19:35:03 -0800
-In-Reply-To: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk> (David
- Howells's message of "Fri, 12 Dec 2008 18:28:27 +0000")
-Message-ID: <7v1vwc928o.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 12 Dec 2008 22:49:08 -0500
+Date: Sat, 13 Dec 2008 09:18:50 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>, Jay Lan <jlan@sgi.com>,
+       Jiri Pirko <jpirko@redhat.com>, Jonathan Lim <jlim@sgi.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RESEND] introduce get_mm_hiwater_xxx(), fix
+	taskstats->hiwater_xxx accounting
+Message-ID: <20081213034850.GE4365@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Oleg Nesterov <oleg@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Hugh Dickins <hugh@veritas.com>, Jay Lan <jlan@sgi.com>,
+	Jiri Pirko <jpirko@redhat.com>, Jonathan Lim <jlim@sgi.com>,
+	linux-kernel@vger.kernel.org
+References: <20081212140524.GA29488@redhat.com> <2f11576a0812121834n4125d053xcc85a5aa87264b66@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: 0B9A22BE-C8C7-11DD-8958-5720C92D7133-77302942!a-sasl-fastnet.pobox.com
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <2f11576a0812121834n4125d053xcc85a5aa87264b66@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> writes:
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2008-12-13 11:34:53]:
 
-> Add a guide to using GIT's simpler features.
->
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
->
->  Documentation/git-haters-guide.txt | 1283 ++++++++++++++++++++++++++++++++++++
->  1 files changed, 1283 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/git-haters-guide.txt
->
->
-> diff --git a/Documentation/git-haters-guide.txt b/Documentation/git-haters-guide.txt
-> new file mode 100644
-> index 0000000..51e4dac
-> --- /dev/null
-> +++ b/Documentation/git-haters-guide.txt
-> @@ -0,0 +1,1283 @@
-> +		      ===================================
-> +		      THE GIT HATER'S GUIDE TO THE GALAXY
-> +		      ===================================
-> +
-> +By David Howells <dhowells@redhat.com>
-> +
-> +Contents:
-> ...
-> +============
-> +INTRODUCTION
-> +============
-> +
-> +So, you want to do some Linux kernel development?  And you hear there's this
-> +piece of software called 'GIT' that you probably ought to be using when dealing
-> +with the kernel community?  Then you find out that not only was Linux started
-> +by this Linus Torvalds person, but GIT was too!  Perhaps it doesn't seem fair:
-> +Linus has not just _one_ huge piece of software named after himself, but _two_!
-> +And on top of that, globe spanning hardware vendors just queue up to give him
-> +all the herring he can eat!!
-> +
-> +Then you look at webpages about GIT.  You look at the manpages!  You run the
-> +commands with --help!  And you *still* don't know how to do anything complex
-> +with it!!  You feel certain that there's some secret rite you have to perform
-> +to become a GIT initiate - probably something involving two goats, an altar and
-> +a full moon - oh, and lots of beer (we *are* talking about kernel developers
-> +after all).
-> +
-> +Then you ask around, and people look at you blankly, hedge or say that it's
-> +easy and obvious (they should know - they wrote the damned thing).  You realise
-> +that the manpages are more an aide-memoire and that what you really want is
-> +some sort of crib sheet; something that can hold your hand whilst you cut and
-> +paste things from of it until you can see the point.
-> +
-> +Well, let's see if I can help...
-> +
-> +
-> +DISCLAIMER
-> +----------
-> +
-> +I don't really know what I'm doing with GIT...
+> > (changes: update the changelog/comments)
+> >
+> > xacct_add_tsk() relies on do_exit()->update_hiwater_xxx() and uses
+> > mm->hiwater_xxx directly, this leads to 2 problems:
+> >
+> >        - taskstats_user_cmd() can call fill_pid()->xacct_add_tsk()
+> >          at any moment before the task exits, so we should check the
+> >          current values of rss/vm anyway.
+> >
+> >        - do_exit()->update_hiwater_xxx() calls are racy. An exiting
+> >          thread can be preempted right before mm->hiwater_xxx = new_val,
+> >          and another thread can use A_LOT of memory and exit in between.
+> >          When the first thread resumes it can be the last thread in the
+> >          thread group, in that case we report the wrong hiwater_xxx
+> >          values which do not take A_LOT into account.
+> >
+> > Introduce get_mm_hiwater_rss() and get_mm_hiwater_vm() helpers and
+> > change xacct_add_tsk() to use them. The first helper will also be
+> > used by rusage->ru_maxrss accounting.
+> >
+> > Kill do_exit()->update_hiwater_xxx() calls. Unless we are going to
+> > decrease rss/vm there is no point to update mm->hiwater_xxx, and
+> > nobody can look at this mm_struct when exit_mmap() actually unmaps
+> > the memory.
+> >
+> > Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+> 
+> Thanks! looks good to me.
+>    Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-I think this patch is good up to this point.  It is mildly funny and there
-would exist some people who share the same sense of humor as the above
-paragraphs (I am unfortunately one of them, though).
+Me too, I am acking it, but you already have all the acks you need :)
 
-I've only skimmed the remainder of the patch, and found there are quite a
-few technical errors and deviations from standard terminologies that I do
-not care to enumerate (I do not have infinite amount of time).  They make
-me suspect that anybody who tries to learn from this document would be
-harmed rather than helped in the longer run.
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-The document could be a good addition if the remainder of the patch is
-replaced by a collection of links to better introductory documents that
-are already available on the net, IMHO.
-
+-- 
+	Balbir
