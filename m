@@ -1,70 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751753AbYLMRlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbYLMRnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751753AbYLMRlU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 12:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbYLMRlL
+	id S1751823AbYLMRnU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 12:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYLMRnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 12:41:11 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56149 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750933AbYLMRlK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 12:41:10 -0500
-Date: Sat, 13 Dec 2008 09:41:05 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alex Chiang <achiang@hp.com>
-cc: matthew@wil.cx, justin.chen@hp.com, linux-kernel@vger.kernel.org
-Subject: Re: PCI BAR mem resource allocation "regression"
-In-Reply-To: <alpine.LFD.2.00.0812130901370.3340@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0812130929100.3340@localhost.localdomain>
-References: <20081213000538.GC9947@ldl.fc.hp.com> <alpine.LFD.2.00.0812130901370.3340@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 13 Dec 2008 12:43:10 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40578 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750933AbYLMRnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Dec 2008 12:43:09 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: Bugs on aspire one A150
+Date: Sat, 13 Dec 2008 18:42:27 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       ath5k-devel@venema.h4ckr.net, alsa-devel@alsa-project.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+References: <491506DB.1070000@gmail.com> <200812131435.34072.rjw@sisk.pl> <1229178097.4936.1.camel@maxim-laptop>
+In-Reply-To: <1229178097.4936.1.camel@maxim-laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812131842.28420.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 13 Dec 2008, Linus Torvalds wrote:
+On Saturday, 13 of December 2008, Maxim Levitsky wrote:
+> On Sat, 2008-12-13 at 14:35 +0100, Rafael J. Wysocki wrote:
+> > On Saturday, 13 of December 2008, Maxim Levitsky wrote:
+> > > 
+> > > So, big thanks for everything.
+> > > 
+> > > Now aspire one linux support is very close to perfect,
+> > > (only problem left is that wireless is limited to 18Mbits/s raw rate,
+> > > but at some point I or developers of ath5k will get to the bottom of
+> > > this)
+> > > 
+> > > I also noticed, that now the SD only card reader is always enabled
+> > > regardless of card been there while booting, and same happens in
+> > > windows, I suspect that this is permanent hardware change, which worries
+> > > me, but this reader works fine otherwise.
+> > > (This is another reason why binary bioses are evil, go and find out why
+> > > it enables it)
+> > > 
+> > > 
+> > > Also forgot to mention that both readers ignore write protect tab on SD
+> > > card, and I will report this to correct mailing list soon.
+> > > Everything else works fine
+> > > 
+> > > please include acpiphp fix in 2.6.28.
+> > 
+> > Which one is this?
 > 
-> I'm missing some pieces I'd like to see: /proc/iomem before and after, and 
-> lspci output before and after (you do give lspci output, but only one, and 
-> I can't tell if it's before or after).
 > 
-> Also, is it just the error message, or does it actually affect 
-> functionality?
+> 
+> acpiphp: Identify more removable slots
+>     
+>     According to section 6.3.6 of the ACPI spec, the presence of an _RMV
+>     method that evaluates to 1 is sufficient to indicate that a slot is
+>     removable without needing an eject method. This patch refactors the
+>     ejectable slot detection code a little in order to flag these slots as
+>     ejectable and register them. Acpihp therefore binds to the expresscard
+>     slot on my HP test machine.
+>     
+>     Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> 
+> 
+> this makes acpiphp handle hotplug of (now one, sd reader is somehow
+> always present) card reader.
 
-Oh - one more thing. Your revert is very complex, and a simpler revert 
-(that _should_ revert just the actual behavioral change) is just the 
-two-liner that removes these two lines:
+This is
+http://git.kernel.org/?p=linux/kernel/git/jbarnes/pci-2.6.git;a=commit;h=db9fe9a7230d65916c9938c4f91c75f9c5e00cb7
+in the PCI tree.
 
-		if ((first->start == new->start) && (first->end == new->end))
-			break;
+It's scheduled for 2.6.29 and may be included into 2.6.28 -stable, but please
+remember to notify the stable team as soon as this patch gets merged into the
+mainline.
 
-in __insert_resource.
-
-So can you check if your more complex revert really has the same behaviour 
-as just removing those two lines?
-
-Matthew: I do suspect that the "insert below" patch is wrong. Look at 
-"pci_claim_resource()", for example: it uses insert_resource() to insert 
-the PCI device resource into the resource tree. But if the PCI device 
-resource has the same size as the bus window, that commit changes it to 
-insert it as the _parent_ of the bus window, no?
-
-Of course, on a PC, the only user of pci_claim_resource() would be some 
-PCI quirks that should never trigger this, but it's an example of the kind 
-of behavioural change that that commit introduced, and which looks 
-like it could result in a wrong resource tree.
-
-I'm not finding the original discussion that resulted in that patch, 
-though, so I have a somewhat hard time to judge the reasoning. It's from 
-almost three years ago, I don't remember details even if I had been 
-involved with it (and judging by the sign-off path, I hadn't).
-
-Matthew, do you remember the context of that commmit d33b6fba2?
-
-		Linus
+Thanks,
+Rafael
