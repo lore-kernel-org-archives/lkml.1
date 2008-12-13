@@ -1,111 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbYLMLnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYLMLoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756676AbYLMLnQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 06:43:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbYLMLnD
+	id S1757357AbYLMLoj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 06:44:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYLMLo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 06:43:03 -0500
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:44358
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752343AbYLMLnB (ORCPT
+	Sat, 13 Dec 2008 06:44:28 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37732 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752343AbYLMLo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 06:43:01 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhUBANAuQ0l8qszs/2dsb2JhbAAIxByGNoUggn0
-X-IronPort-AV: E=Sophos;i="4.36,216,1228057200"; 
-   d="scan'208";a="363830807"
-Message-ID: <49439FBD.20504@uts.edu.au>
-Date: Sat, 13 Dec 2008 22:42:53 +1100
-From: Matthew Arnold <Matthew.Arnold-1@uts.edu.au>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Sat, 13 Dec 2008 06:44:27 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <49439FF9.50202@s5r6.in-berlin.de>
+Date: Sat, 13 Dec 2008 12:43:53 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081116 SeaMonkey/1.1.13
 MIME-Version: 1.0
-To: greg@kroah.com
-CC: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Re: [Bug 12212] add 5372:2303 to /drivers/usb/serial/pl2303
-References: <20081213085654.5CBFB108040@picon.linux-foundation.org>
-In-Reply-To: <20081213085654.5CBFB108040@picon.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: Pavel Machek <pavel@suse.cz>, smartmontools-support@lists.sourceforge.net,
+       smartmontools-database-owner@lists.sourceforge.net,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, xfs@oss.sgi.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: Intel X25-E running Linux using XFS
+References: <alpine.DEB.1.10.0811271257470.2233@p34.internal.lan> <20081212185803.GE11974@elf.ucw.cz> <alpine.DEB.1.10.0812121516190.17857@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0812121516190.17857@p34.internal.lan>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bugme-daemon@bugzilla.kernel.org wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=12212
->
->
->
->
->
-> ------- Comment #1 from greg@kroah.com  2008-12-13 00:56 -------
-> On Sat, Dec 13, 2008 at 12:29:04AM -0800, bugme-daemon@bugzilla.kernel.org
-> wrote:
->   
->> Problem: an unbranded USB-serial converter is not detected
->> Steps taken to resolve the problem: 
->> (unsuccessful) force usb-serial detection by adding (Debian?) udev rules -
->> detects device but incorrectly defaults to generic which doesn't work
->> (successful) added vendor:product to pl2303 / recompile / insert module
->>     
->
-> Can you send me the patch that you made, in the format described in
-> Documentation/SubmittingPatches, through email, and I will be able to
-> apply it and give you the proper credit.
->
->
->   
-ok, I'm not at all familiar with kernel development but here's my 
-contribution.
-I got the idea from:
-http://www.linuxquestions.org/questions/linux-hardware-18/obscure-usb-serial-adapter-368278/
+Justin Piszcz wrote:
+> On Fri, 12 Dec 2008, Pavel Machek wrote:
+>> Actually I'd like to know... how does it behave during powerfails
+>> while it is being written to?
+>>
+>> Flashes I seen (USB / SD) developed bad sectors in that case, and
+>> ext2/ext3 can't handle that. (And I don't think xfs can handle that
+>> either).
+> 
+> I have a UPS for all of my machines, so that will not be a problem in my
+> case.
 
-This patch adds the "Superial" USB-Serial converter to pl2303 so that it 
-is detected, by the correct driver.
-Adds the relevant vendor:product (5372:2303) to the device tables in 
-pl2303.c & pl2303.h.
-The patch has been tested against 2.6.24-22-generic.
+UPSs fail too.
 
-Signed-off-by: Matthew D Arnold <matthew.arnold-1[AT]uts.edu[DOT]au>
+...
+> With barriers, presumably it would be safe
 
-
-------------------------------------------------------------------------------------------
-diff -uprN -X ./linux-source-2.6.24-vanilla/Documentation/dontdiff 
-./linux-sourc
-e-2.6.24-vanilla/drivers/usb/serial/pl2303.c 
-./linux-source-2.6.24-patched/drive
-rs/usb/serial/pl2303.c
---- ./linux-source-2.6.24-vanilla/drivers/usb/serial/pl2303.c    
-2008-11-25 04:46
-:05.000000000 +1100
-+++ ./linux-source-2.6.24-patched/drivers/usb/serial/pl2303.c    
-2008-12-13 21:52
-:36.000000000 +1100
-@@ -90,6 +90,7 @@ static struct usb_device_id id_table []
-     { USB_DEVICE(HL340_VENDOR_ID, HL340_PRODUCT_ID) },
-     { USB_DEVICE(YCCABLE_VENDOR_ID, YCCABLE_PRODUCT_ID) },
-     { USB_DEVICE(SANWA_VENDOR_ID, SANWA_PRODUCT_ID) },
-+    { USB_DEVICE(SUPERIAL_VENDOR_ID, SUPERIAL_PRODUCT_ID) },
-     { }                    /* Terminating entry */
- };
- 
-diff -uprN -X ./linux-source-2.6.24-vanilla/Documentation/dontdiff 
-./linux-sourc
-e-2.6.24-vanilla/drivers/usb/serial/pl2303.h 
-./linux-source-2.6.24-patched/drive
-rs/usb/serial/pl2303.h
---- ./linux-source-2.6.24-vanilla/drivers/usb/serial/pl2303.h    
-2008-11-25 04:46
-:05.000000000 +1100
-+++ ./linux-source-2.6.24-patched/drivers/usb/serial/pl2303.h    
-2008-12-13 21:52
-:09.000000000 +1100
-@@ -116,3 +116,8 @@
- /* Sanwa KB-USB2 multimeter cable (ID: 11ad:0001) */
- #define SANWA_VENDOR_ID        0x11ad
- #define SANWA_PRODUCT_ID    0x0001
-+
-+/* "Superial" USB - Serial */
-+#define SUPERIAL_VENDOR_ID    0x5372
-+#define SUPERIAL_PRODUCT_ID    0x2303
-+
-
+There are other opinions:  http://lwn.net/Articles/309576/
+(Magnetic disks are discussed there.)
+-- 
+Stefan Richter
+-=====-==--- ==-- -==-=
+http://arcgraph.de/sr/
