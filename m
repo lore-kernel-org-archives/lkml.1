@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbYLMSXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbYLMShc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751971AbYLMSXT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 13:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYLMSXI
+	id S1751959AbYLMShc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 13:37:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbYLMShV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 13:23:08 -0500
-Received: from kroah.org ([198.145.64.141]:38098 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750834AbYLMSXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 13:23:08 -0500
-Date: Sat, 13 Dec 2008 10:16:53 -0800
-From: Greg KH <greg@kroah.com>
-To: tom.leiming@gmail.com
-Cc: kay.sievers@vrfy.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] driver core: don't pass cls->name as format string in
-	sysdev_class_register()
-Message-ID: <20081213181653.GD6953@kroah.com>
-References: <1229164440-4631-1-git-send-email-tom.leiming@gmail.com>
+	Sat, 13 Dec 2008 13:37:21 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40695 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750885AbYLMShS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Dec 2008 13:37:18 -0500
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Chris Snook" <csnook@redhat.com>,
+       "Kumar Gala" <galak@kernel.crashing.org>,
+       "Max Krasnyansky" <maxk@qualcomm.com>,
+       "Scott Wood" <scottwood@freescale.com>
+References: <u7kfEgp36eE.A.qpG.Y4_QJB@chimera>
+In-Reply-To: <u7kfEgp36eE.A.qpG.Y4_QJB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229164440-4631-1-git-send-email-tom.leiming@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <T1gm2CtAHBF.A.TS.56_QJB@chimera>
+Subject: [Bug #11849] default IRQ affinity change in v2.6.27 (breaking several SMP PPC based systems)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sat, 13 Dec 2008 17:29:56 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 13, 2008 at 06:34:00PM +0800, tom.leiming@gmail.com wrote:
-> From: Ming Lei <tom.leiming@gmail.com>
-> 
-> If cls->name contains substring which can be interpreted as
-> format,maybe it causes oops, so fix it.
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-Why not fix the code that would set cls->name to such a wrong field?  I
-don't see any in-kernel code that does this, do you?
+The following bug entry is on the current list of known regressions
+from 2.6.27.  Please verify if it still should be listed and let me know
+(either way).
 
-thanks,
 
-greg k-h
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11849
+Subject		: default IRQ affinity change in v2.6.27 (breaking several SMP PPC based systems)
+Submitter	: Kumar Gala <galak@kernel.crashing.org>
+Date		: 2008-10-24 12:45 (51 days old)
+References	: http://marc.info/?l=linux-kernel&m=122485245924125&w=4
+
+
