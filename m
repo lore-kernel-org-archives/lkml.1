@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbYLMIVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbYLMIX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756173AbYLMIVP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 03:21:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbYLMIVD
+	id S1756551AbYLMIX5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 03:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbYLMIXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 03:21:03 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:63749 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbYLMIVB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 03:21:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WWB/715wJPsNA39vE0F8t2GGBN/3qp8RtFk+KaLen7BNGBmOdxK0xbuHJhlXjhI4Td
-         RquxSp2WL3kPbNeJELvAjhc3AM7O1tR/E8B3oy6TjgJujgjwnMDMq8iusXFzIiH2He3j
-         eEXBexXdo9x3wLqLnuLHMqXB+JNum0zTJ3d/o=
-Date: Sat, 13 Dec 2008 11:20:54 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       fweisbec <fweisbec@gmail.com>
-Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
-Message-ID: <20081213082054.GA7559@localhost>
-References: <20081212184136.GB14192@localhost> <1229113167.32623.12.camel@localhost.localdomain> <20081212204724.GA26194@localhost> <alpine.DEB.1.10.0812121552360.19351@gandalf.stny.rr.com> <20081212205729.GA28554@localhost> <alpine.DEB.1.10.0812121620520.19351@gandalf.stny.rr.com> <20081212213538.GA731@localhost> <alpine.DEB.1.10.0812121655090.19351@gandalf.stny.rr.com>
+	Sat, 13 Dec 2008 03:23:49 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51881 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752767AbYLMIXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Dec 2008 03:23:49 -0500
+Message-ID: <494370C0.4050005@cn.fujitsu.com>
+Date: Sat, 13 Dec 2008 16:22:24 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0812121655090.19351@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Bharata B Rao <bharata.rao@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: fix another race when reading /proc/sched_debug
+References: <494234B0.5@cn.fujitsu.com> <344eb09a0812120338h29e1088pac7f9a22e37bf609@mail.gmail.com>
+In-Reply-To: <344eb09a0812120338h29e1088pac7f9a22e37bf609@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Steven Rostedt - Fri, Dec 12, 2008 at 04:56:47PM -0500]
-...
-| > Steve, here is how it could look like:
-| > (I liked first proposal more :)
-| 
-| I see the confusion. In ftrace.h the function graph tracer config is not 
-| inside CONFIG_FUNCTION_TRACER, even though it is dependent on it (or 
-| was). OK, just do your first proposal then.
-| 
-| -- Steve
-| 
+Bharata B Rao wrote:
+> On Fri, Dec 12, 2008 at 3:23 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>>  kernel/sched_debug.c |   10 ++++++++--
+>>  1 files changed, 8 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+>> index 26ed8e3..01abf5b 100644
+>> --- a/kernel/sched_debug.c
+>> +++ b/kernel/sched_debug.c
+>> @@ -127,8 +127,11 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
+>>        if (tg)
+>>                cgroup = tg->css.cgroup;
+>>
+>> -       if (cgroup)
+>> +       if (cgroup) {
+>> +               cgroup_lock();
+>>                cgroup_path(cgroup, path, sizeof(path));
+>> +               cgroup_unlock();
+>> +       }
+>>
+>>        SEQ_printf(m, "\ncfs_rq[%d]:%s\n", cpu, path);
+>>  #else
+>> @@ -181,8 +184,11 @@ void print_rt_rq(struct seq_file *m, int cpu, struct rt_rq *rt_rq)
+>>        if (tg)
+>>                cgroup = tg->css.cgroup;
+>>
+>> -       if (cgroup)
+>> +       if (cgroup) {
+>> +               cgroup_lock();
+>>                cgroup_path(cgroup, path, sizeof(path));
+>> +               cgroup_unlock();
+>> +       }
+>>
+>>        SEQ_printf(m, "\nrt_rq[%d]:%s\n", cpu, path);
+>>  #else
+> 
+> The comment in cgroup_path() routine says that it needs to be called
+> with cgroup_mutex held. With the above fix, print_task() in
+> sched_debug.c remains the last caller of cgroup_path() which calls it
+> without holding cgroup_mutex. Does this also need a fix ?
+> 
 
-ok, I sent it yesterday as
+You mean:
 
-	http://lkml.org/lkml/2008/12/12/301
-	[PATCH] x86: entry_64 - introduce FTRACE_ frame macro v2
+print_task(struct seq_file *m, struct rq *rq, struct task_struct *p)
+{
+	...
+		cgroup_path(task_group(p)->css.cgroup, path, sizeof(path));
+	...
+}
 
-Ingo, will you pick it up?
+Hmm...Normally we have to take task_lock() or rcu_read_lock() to retrieve
+the cgroup from the task, and as long as we hold either lock, we don't need
+to take cgroup_lock().
 
-		- Cyrill -
+I noticed neither task_lock() nor rcu is held before calling cgroup_path,
+so I wrote a test program to see if I can trigger a but here, but it didn't
+happen. I'll dig more.
