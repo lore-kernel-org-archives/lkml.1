@@ -1,62 +1,38 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbYLIIUY (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 9 Dec 2008 03:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYLIIUG
+	id S1755494AbYLMBms (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 12 Dec 2008 20:42:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYLMBmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Dec 2008 03:20:06 -0500
-Received: from mk-outboundfilter-2.mail.uk.tiscali.com ([212.74.114.38]:21102
-	"EHLO mk-outboundfilter-2.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751593AbYLIIUF (ORCPT
+	Fri, 12 Dec 2008 20:42:37 -0500
+Received: from host77.dhms-domainmanagement.net ([91.199.51.77]:49809 "EHLO
+	host77.dhms-domainmanagement.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750764AbYLMBmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Dec 2008 03:20:05 -0500
-X-Greylist: delayed 594 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Dec 2008 03:20:04 EST
-X-Trace: 169387457/mk-outboundfilter-2.mail.uk.tiscali.com/PIPEX/$PIPEX-MX-ACCEPTED/pipex-infrastructure/62.241.162.43
-X-SBRS: None
-X-RemoteIP: 62.241.162.43
-X-IP-MAIL-FROM: andresolev00@mail.ee
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah8PADq2PUk+8aIr/2dsb2JhbACMIIgjuyuDBQ
-X-IronPort-AV: E=Sophos;i="4.33,740,1220223600"; 
-   d="scan'208";a="169387457"
-X-IP-Direction: IN
-Message-ID: <1228810197.493e27d5bf89a@netmail.pipex.net>
-Date: Tue, 09 Dec 2008 08:09:57 +0000
-From: andres olev <andresolev00@mail.ee>
-Reply-to: andresolev00@aim.com
-Subject: Hello
+	Fri, 12 Dec 2008 20:42:37 -0500
+X-Greylist: delayed 1728 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Dec 2008 20:42:36 EST
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Pipex Webmail (IMP3.1)
-X-Originating-IP: 82.128.46.45
-X-Pipex-Username: emma.bridge@dial.pipex.com
-X-Usage: Pipex Webmail is subject to the standard Pipex terms and conditions of use
-To: unlisted-recipients:; (no To-header on input)
+From: Knecht Ruprecht <KnechtRuprecht@Tuerchen-oeffne-dich.net>
+User-Agent: Microsoft-Entourage/10.1.4.3763372.0
+X-BounceID: a133f366d2c64c079e3ed971a4621401
+Subject: Adventskalender=?UTF-8?Q?=20=C3=B6ffnen?=
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Message-ID: <kbsjds.me33th@localhost>
+To: linux-kernel@vger.kernel.org
+Date: Sat, 13 Dec 2008 02:13:04 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753258AbYLIIUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755494AbYLMBms@vger.kernel.org>
+
+Ho ho ho! Es weihnachtet sehr.
+
+Öffne jetzt Dein Türchen beim Adventskalender:
+
+http://www.Tuerchen-oeffne-dich.net/
+
+Es erwarten Dich haufenweise Überraschungen!
 
 
 
--- 
-Dear Friend,
-
-
-I am sending you this email through the internet with reservations,basically 
-because you may perceive my intentions wrongly. 
-The issue I want to reveal to you is a very classified and sensitive one. On 
-your response I will send you the details and more information about myself and 
-this mutually beneficial business.
-
-
-Yours sincerely,
-
-Andres Olev
-
--------------------------------------------------
-Visit Pipex Business: The homepage for UK Small Businesses
-
-Go to http://www.pipex.co.uk/business-services
 
