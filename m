@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbYLMOjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbYLMOqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758229AbYLMOjS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 09:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756034AbYLMOjA
+	id S1757951AbYLMOqU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 09:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbYLMOqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 09:39:00 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:1875 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758063AbYLMOi7 (ORCPT
+	Sat, 13 Dec 2008 09:46:07 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:51427 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752022AbYLMOqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 09:38:59 -0500
+	Sat, 13 Dec 2008 09:46:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=H9uVog/3VSWW+B8oqv8LUKPIkQJRNgfybuuM3wcaF5dyJlWmlL5YAuUn9bsn4CgFKP
-         Ob/U+aMdqxrh0gTmiFSoGJMYPLDPdpW4+8Zqen7poAS9JleuiEzK3FqHZ+c3bTyGHMH0
-         1BE2yssNoO5Gp5ANpg0/7KHvNxteSx/46qoSg=
-Subject: Re: [ath5k-devel] Bugs on aspire one A150
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Nick Kossifidis <mickflemm@gmail.com>
-Cc: Bob Copeland <me@bobcopeland.com>, linux-pm@lists.linux-foundation.org,
-       ath5k-devel@venema.h4ckr.net, linux-kernel@vger.kernel.org,
-       alsa-devel@alsa-project.org
-In-Reply-To: <1229179013.4936.20.camel@maxim-laptop>
-References: <491506DB.1070000@gmail.com>
-	 <b6c5339f0811100851t1fd9a180pfe24312081885467@mail.gmail.com>
-	 <4918A8C5.3050607@gmail.com>
-	 <40f31dec0811101412n1a4faf86sf4b1f37bb41caef9@mail.gmail.com>
-	 <1229174904.4964.5.camel@maxim-laptop>
-	 <40f31dec0812130608x73266375n7b3367938ad687b8@mail.gmail.com>
-	 <1229179013.4936.20.camel@maxim-laptop>
-Content-Type: text/plain
-Date: Sat, 13 Dec 2008 16:38:50 +0200
-Message-Id: <1229179130.4936.22.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=T4KjCW1gDyQcMe8xYuyhwJjTb7sgZXbJU/fWqO0op7YPERZlhufR0KTA9HSyHbigAx
+         xxyPieL7ICFRxNazusMXz5DURcxlpVwgFlQJfcQwLvxpVWQJeB9xnW2RMcdaDpmtm4Hx
+         kjgvGx9/HrMDPMJGiRTCeiVG9uYFmOiLpda3c=
+Message-ID: <c62985530812130646r6bcdf424o752f16458dd22914@mail.gmail.com>
+Date: Sat, 13 Dec 2008 15:46:03 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Steven Rostedt" <srostedt@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Alexander van Heukelum" <heukelum@fastmail.fm>
+In-Reply-To: <20081213082054.GA7559@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081212184136.GB14192@localhost>
+	 <1229113167.32623.12.camel@localhost.localdomain>
+	 <20081212204724.GA26194@localhost>
+	 <alpine.DEB.1.10.0812121552360.19351@gandalf.stny.rr.com>
+	 <20081212205729.GA28554@localhost>
+	 <alpine.DEB.1.10.0812121620520.19351@gandalf.stny.rr.com>
+	 <20081212213538.GA731@localhost>
+	 <alpine.DEB.1.10.0812121655090.19351@gandalf.stny.rr.com>
+	 <20081213082054.GA7559@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-13 at 16:36 +0200, Maxim Levitsky wrote:
-> On Sat, 2008-12-13 at 16:08 +0200, Nick Kossifidis wrote:
-> > 2008/12/13 Maxim Levitsky <maximlevitsky@gmail.com>:
-> > >
-> > > Hi,
-> > >
-> > > Indeed gpio #3 controls the led.
-> > > I patched ath5k to use it, and led works now fine.
-> > >
-> > >
-> > 
-> > Please share your patch with the rest and also post an lspci -vnn for
-> > your card so we can handle this in a generic way
-> 
-> This just a one liner hack
-> 
-> diff --git a/drivers/net/wireless/ath5k/base.c
-> b/drivers/net/wireless/ath5k/base.c
-> index 9d2c597..a447937 100644
-> --- a/drivers/net/wireless/ath5k/base.c
-> +++ b/drivers/net/wireless/ath5k/base.c
-> @@ -2595,6 +2595,11 @@ ath5k_init_leds(struct ath5k_softc *sc)
->  		sc->led_pin = 1;
->  		sc->led_on = 1;  /* active high */
->  	}
-> +
-> +	__set_bit(ATH_STAT_LEDSOFT, sc->status);
-> +	sc->led_pin = 3;
-> +	sc->led_on = 1;
-> +
->  	if (!test_bit(ATH_STAT_LEDSOFT, sc->status))
->  		goto out;
-> 
-> 
-> 
+2008/12/13 Cyrill Gorcunov <gorcunov@gmail.com>:
+> [Steven Rostedt - Fri, Dec 12, 2008 at 04:56:47PM -0500]
+> ...
+> | > Steve, here is how it could look like:
+> | > (I liked first proposal more :)
+> |
+> | I see the confusion. In ftrace.h the function graph tracer config is not
+> | inside CONFIG_FUNCTION_TRACER, even though it is dependent on it (or
+> | was). OK, just do your first proposal then.
+> |
+> | -- Steve
+> |
+>
+> ok, I sent it yesterday as
+>
+>        http://lkml.org/lkml/2008/12/12/301
+>        [PATCH] x86: entry_64 - introduce FTRACE_ frame macro v2
+>
+> Ingo, will you pick it up?
+>
+>                - Cyrill -
+>
 
-> 
-> Best regards,
-> 	Maxim Levitsky
-> 
+Hi,
 
-Note: thus makes led to be off by default, otherwise set
-sc->led_on = 0
+Looks good and clarify the asm bits.
 
-this also works
-
-Regards,
-	Maxim Levitsky
-
+I wonder if the function_graph_tracer should continue to necessarily
+depend on the function tracer.
+It was more simplier to do so but perhaps that could be avoided with
+small modifications.
