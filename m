@@ -1,19 +1,16 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751588AbYLMSEv (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 13 Dec 2008 13:04:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbYLMSEl
+	id S1751439AbYLMSKU (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 13 Dec 2008 13:10:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYLMSKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 13:04:41 -0500
-Received: from mxsrv1.tranzpeer.net ([202.180.66.214]:58155 "EHLO
-	mxsrv1.tranzpeer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967AbYLMSEk convert rfc822-to-8bit (ORCPT
+	Sat, 13 Dec 2008 13:10:04 -0500
+Received: from mxsrv4.tranzpeer.net ([202.180.66.217]:57977 "EHLO
+	mxsrv4.tranzpeer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbYLMSKD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 13:04:40 -0500
-X-Greylist: delayed 1391 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Dec 2008 13:04:40 EST
-X-IronPort-AV: E=Sophos;i="4.36,216,1228042800"; 
-   d="scan'208";a="188719735"
-Message-ID: <20081214064121.8ul0ws4ww004w044@webmail.slingshot.co.nz>
-Date: Sun, 14 Dec 2008 06:41:21 +1300
+	Sat, 13 Dec 2008 13:10:03 -0500
+Message-ID: <20081214070958.finjsw4kg0480goc@webmail.slingshot.co.nz>
+Date: Sun, 14 Dec 2008 07:09:58 +1300
 From: ADMIN <admin@slu.se>
 Reply-to: webbredaktionen01@gmail.com
 To: undisclosed-recipients:;
@@ -28,8 +25,7 @@ X-Originating-IP: 81.199.59.186
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1751588AbYLMSEv@vger.kernel.org>
-
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1751439AbYLMSKU@vger.kernel.org>
 
 
 
@@ -65,6 +61,7 @@ SLU Management
 Copyright © 2008 Regents av Nya Sveriges lantbruksuniversitet, alla
 rättigheter
 reserverade.
+
 
 
 
