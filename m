@@ -1,50 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbYLMCMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbYLMCe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755776AbYLMCMe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 21:12:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbYLMCM0
+	id S1755731AbYLMCe6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 21:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbYLMCer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 21:12:26 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:26935 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753569AbYLMCMZ (ORCPT
+	Fri, 12 Dec 2008 21:34:47 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:47091 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753611AbYLMCeq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 21:12:25 -0500
-Message-ID: <494319FC.1040908@oracle.com>
-Date: Fri, 12 Dec 2008 18:12:12 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Fri, 12 Dec 2008 21:34:46 -0500
+Date: Fri, 12 Dec 2008 20:34:35 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, bcrl@kvack.org,
+       list-linux-mm@kvack.org
+Subject: Re: [rfc][patch] SLQB slab allocator
+In-Reply-To: <20081212002518.GH8294@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0812122013390.15781@quilx.com>
+References: <20081212002518.GH8294@wotan.suse.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm <akpm@linux-foundation.org>
-Subject: Re: mmotm 2008-12-11-19-42 uploaded (watchdog lib?)
-References: <200812120345.mBC3jSnt017980@imap1.linux-foundation.org>
-In-Reply-To: <200812120345.mBC3jSnt017980@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020B.494319FD.0132:SCFSTAT928724,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2008-12-11-19-42 has been uploaded to
-> 
->    http://userweb.kernel.org/~akpm/mmotm/
-> 
-> It contains the following patches against 2.6.28-rc8:
+On Fri, 12 Dec 2008, Nick Piggin wrote:
+
+> + * SLQB : A slab allocator with object queues.
+> + *
+> + * (C) 2008 Nick Piggin <npiggin@suse.de>
+
+My copyright notice is missing. Most of this is directly copied from SLUB.
+And I am not CCed? What should I be thinking?
+
+> +/*
+> + * SLQB: A slab allocator that focuses on per-CPU scaling, and good performance
+> + * with order-0 allocations. Fastpaths emphasis is placed on local allocaiton
+> + * and freeing, but with a secondary goal of good remote freeing (freeing on
+> + * another CPU from that which allocated).
+
+Good idea. I like new ideas based on SLUB.
+
+> + *
+> + * Using ideas and code from mm/slab.c, mm/slob.c, and mm/slub.c.
+
+Thats not right. The code was copied from mm/slub.c and then modified.
+
+It seems that the SLUB skeleton is very useful. Maybe we could abstract
+the common code out in order to make more creative variants possible in
+the future?
+
+> +/*
+> + * Issues still to be resolved:
+> + *
+> + * - Support PAGE_ALLOC_DEBUG. Should be easy to do.
+> + *
+> + * - Variable sizing of the per node arrays
+> + */
+
+These are outdated SLUB comments....
+
+> +	/* XXX: might disobey node parameter here */
+> +	if (!NUMA_BUILD || likely(slqb_page_to_nid(page) == numa_node_id())) {
+
+You can only decide not to obey if __GFP_THISNODE is not set.
+
+> +static __always_inline void *__slab_alloc(struct kmem_cache *s,
+> +		gfp_t gfpflags, int node)
+> +{
+> +	void *object;
+> +	struct kmem_cache_cpu *c;
+> +	struct kmem_cache_list *l;
+> +
+> +again:
+> +#ifdef CONFIG_NUMA
+> +	if (unlikely(node != -1) && unlikely(node != numa_node_id())) {
+> +		object = __remote_slab_alloc(s, node);
+> +		if (unlikely(!object))
+> +			goto alloc_new;
+> +		return object;
+> +	}
+> +#endif
+
+Does this mean that SLQB is less efficient than SLUB for off node
+allocations? SLUB can do off node allocations from the per cpu objects. It
+does not need to make the distinction for allocation.
 
 
-All of my mmotm-2008-1211-1942 builds end with:
+> +	c = get_cpu_slab(s, smp_processor_id());
+> +	VM_BUG_ON(!c);
 
-kernel/time/clocksource.c:108: error: too few arguments to function 'watchdog->read'
-kernel/time/clocksource.c:113: error: too few arguments to function 'cs->read'
-kernel/time/clocksource.c:173: error: too few arguments to function 'watchdog->read'
-kernel/time/clocksource.c:194: error: too few arguments to function 'watchdog->read'
-make[3]: *** [kernel/time/clocksource.o] Error
+if c = NULL then the deref will fail anyways with a NULL deref error. No
+need to have a VM_BUG_ON here.
 
 
-~Randy
+> +	l = &c->list;
+> +	object = __cache_list_get_object(s, l);
 
+Hmmm... __cache_list_get_object() is quite a bunch of heavy processing.
+This is all inline?
+
+
+> +static __always_inline void __slab_free(struct kmem_cache *s, struct slqb_page *page, void *object)
+> +{
+> +	struct kmem_cache_cpu *c;
+> +	struct kmem_cache_list *l;
+> +	int thiscpu = smp_processor_id();
+> +
+> +	__count_slqb_event(SLQB_FREE);
+> +
+> +	c = get_cpu_slab(s, thiscpu);
+> +	l = &c->list;
+> +
+> +	if (!NUMA_BUILD || !numa_platform ||
+> +			likely(slqb_page_to_nid(page) == numa_node_id())) {
+
+SLUB does not need a node check. The page struct pointer comparison is
+enough.
+
+This also means that SLQB cannot do fast frees to remote node objects that
+were just allocated. per cpu queue is bound to the local numa node which
+is quite bad for memoryless nodes. In that case you always need to do
+remote allocs.
+
+In general I am a bit concerned that you kept the linked object list. You
+may be able to do much better by creating arrays of object pointers. That
+way you can allocate and free multiple objects by only accessing the
+cacheline that contains the object pointers. Only works if the objects are
+not immediately writen to before and after free.
+
+AFAICT this is the special case that matters in terms of the database
+test you are trying to improve. The case there is likely  the result
+of bad cache unfriendly programming. You may actually improve the
+benchmark more if the cachelines would be kept hot there in the right
+way.
