@@ -1,82 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbYLMGmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbYLMHER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756688AbYLMGmm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 01:42:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYLMGmg
+	id S1755216AbYLMHER (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 02:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbYLMHEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 01:42:36 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:36374 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751115AbYLMGmf (ORCPT
+	Sat, 13 Dec 2008 02:04:09 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50879 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750829AbYLMHEI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 01:42:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=pRXWVkEHvt+ZVOK+qn+mm2iGxxfRH5HniNXclo7QRxXuxlJfbqdqjXWbcEsBcdvoez
-         X9FBjVKr9MVO/Uz7/hsZH9VAc0fAEZyvEAjwyy+q//YLX7/f7Ki7CizH3dZvbcn6v5Px
-         /fMT2bLn/T0TIszf56ah3J9fXA76qIHIZT8wg=
-Subject: [PATCH] Fix genius pensketch 12x9 tablet
-From: Matt Helsley <matt.helsley@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 12 Dec 2008 22:42:28 -0800
-Message-Id: <1229150548.11171.6.camel@molly>
+	Sat, 13 Dec 2008 02:04:08 -0500
+Date: Sat, 13 Dec 2008 16:03:10 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Hugh Dickins" <hugh@veritas.com>
+Subject: [BUGFIX][PATCH mmotm] memcg fix swap accounting leak (v2)
+Message-Id: <20081213160310.e9501cd9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <46730.10.75.179.61.1229080565.squirrel@webmail-b.css.fujitsu.com>
+References: <20081212172930.282caa38.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081212184341.b62903a7.nishimura@mxp.nes.nec.co.jp>
+	<46730.10.75.179.61.1229080565.squirrel@webmail-b.css.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Genius PenSketch 12x9 tablet has a puck (labeled a
-"Tablet Mouse") in addition to a pen. Without registering a quirk
-the tablet appears to be a single input device that reports the
-wrong axis information in /proc/bus/input/devices, and sends
-incorrect events (e.g. ABS_Z instead of ABS_Y). This information
-confuses the X evdev driver and makes the device impossible to
-use.
+Updated explanation and fixed comment.
+==
 
-The quirk fixes events and splits the device into multiple input
-event devices so that at least the puck is useful.
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Signed-off-by: Matt Helsley <matt.helsley@gmail.com>
+Fix swapin charge operation of memcg.
+
+Now, memcg has hooks to swap-out operation and checks SwapCache is really
+unused or not. That check depends on contents of struct page.
+I.e. If PageAnon(page) && page_mapped(page), the page is recoginized as
+still-in-use.
+
+Now, reuse_swap_page() calles delete_from_swap_cache() before establishment
+of any rmap. Then, in followinig sequence
+
+	(Page fault with WRITE)
+	try_charge() (charge += PAGESIZE)
+	commit_charge() (Check page_cgroup is used or not..)
+	reuse_swap_page()
+		-> delete_from_swapcache()
+			-> mem_cgroup_uncharge_swapcache() (charge -= PAGESIZE)
+	......
+New charge is uncharged soon....
+To avoid this,  move commit_charge() after page_mapcount() goes up to 1.
+By this,
+
+	try_charge()		(usage += PAGESIZE)
+	reuse_swap_page()	(may usage -= PAGESIZE if PCG_USED is set)
+	commit_charge()		(If page_cgroup is not marked as PCG_USED,
+				 add new charge.)
+Accounting will be correct.
+
+Changelog (v1) -> (v2)
+  - fixed comment.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
-NOTE: xinput lists the puck but not the pen. I've been using a
-python script to verify the contents of the events independently
-of X and, as far as I can tell, the remaining problems are in X
-itself.
+ Documentation/controllers/memcg_test.txt |   50 +++++++++++++++++++++++++++++--
+ mm/memory.c                              |   11 +++---
+ 2 files changed, 54 insertions(+), 7 deletions(-)
 
-Tested on: 2.6.24, 2.6.25, 2.6.27, 2.6.28-rc8
-
-Index: linux-2.6.28-rc8/drivers/hid/hid-ids.h
+Index: mmotm-2.6.28-Dec12/mm/memory.c
 ===================================================================
---- linux-2.6.28-rc8.orig/drivers/hid/hid-ids.h	2008-12-12 16:27:19.000000000 -0800
-+++ linux-2.6.28-rc8/drivers/hid/hid-ids.h	2008-12-12 16:30:35.000000000 -0800
-@@ -386,6 +386,9 @@
- #define USB_VENDOR_ID_TURBOX		0x062a
- #define USB_DEVICE_ID_TURBOX_KEYBOARD	0x0201
+--- mmotm-2.6.28-Dec12.orig/mm/memory.c
++++ mmotm-2.6.28-Dec12/mm/memory.c
+@@ -2428,22 +2428,23 @@ static int do_swap_page(struct mm_struct
+ 	 * while the page is counted on swap but not yet in mapcount i.e.
+ 	 * before page_add_anon_rmap() and swap_free(); try_to_free_swap()
+ 	 * must be called after the swap_free(), or it will never succeed.
+-	 * And mem_cgroup_commit_charge_swapin(), which uses the swp_entry
+-	 * in page->private, must be called before reuse_swap_page(),
+-	 * which may delete_from_swap_cache().
++	 * Because delete_from_swap_page() may be called by reuse_swap_page(),
++	 * mem_cgroup_commit_charge_swapin() may not be able to find swp_entry
++	 * in page->private. In this case, a record in swap_cgroup  is silently
++	 * discarded at swap_free().
+ 	 */
  
-+#define USB_VENDOR_ID_UCLOGIC		0x5543
-+#define USB_DEVICE_ID_UCLOGIC_TABLET_PF1209	0x0042
+-	mem_cgroup_commit_charge_swapin(page, ptr);
+ 	inc_mm_counter(mm, anon_rss);
+ 	pte = mk_pte(page, vma->vm_page_prot);
+ 	if (write_access && reuse_swap_page(page)) {
+ 		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
+ 		write_access = 0;
+ 	}
+-
+ 	flush_icache_page(vma, page);
+ 	set_pte_at(mm, address, page_table, pte);
+ 	page_add_anon_rmap(page, vma, address);
++	/* It's better to call commit-charge after rmap is established */
++	mem_cgroup_commit_charge_swapin(page, ptr);
+ 
+ 	swap_free(entry);
+ 	if (vm_swap_full() || (vma->vm_flags & VM_LOCKED) || PageMlocked(page))
+Index: mmotm-2.6.28-Dec12/Documentation/controllers/memcg_test.txt
+===================================================================
+--- mmotm-2.6.28-Dec12.orig/Documentation/controllers/memcg_test.txt
++++ mmotm-2.6.28-Dec12/Documentation/controllers/memcg_test.txt
+@@ -1,6 +1,6 @@
+ Memory Resource Controller(Memcg)  Implementation Memo.
+-Last Updated: 2008/12/10
+-Base Kernel Version: based on 2.6.28-rc7-mm.
++Last Updated: 2008/12/13
++Base Kernel Version: based on 2.6.28-rc8-mm.
+ 
+ Because VM is getting complex (one of reasons is memcg...), memcg's behavior
+ is complex. This is a document for memcg's internal behavior.
+@@ -115,6 +115,52 @@ Under below explanation, we assume CONFI
+ 	(But racy state between (a) and (b) exists. We do check it.)
+ 	At charging, a charge recorded in swap_cgroup is moved to page_cgroup.
+ 
++	In case (a), reuse_swap_page() may call delete_from_swap_cache() if
++	the page can drop swp_entry and be reused for "WRITE".
++	Note: If the page may be accounted before (A), if it isn't kicked out
++	      to disk before page fault.
 +
- #define USB_VENDOR_ID_VERNIER		0x08f7
- #define USB_DEVICE_ID_VERNIER_LABPRO	0x0001
- #define USB_DEVICE_ID_VERNIER_GOTEMP	0x0002
-Index: linux-2.6.28-rc8/drivers/hid/usbhid/hid-quirks.c
-===================================================================
---- linux-2.6.28-rc8.orig/drivers/hid/usbhid/hid-quirks.c	2008-12-12 17:22:59.000000000 -0800
-+++ linux-2.6.28-rc8/drivers/hid/usbhid/hid-quirks.c	2008-12-12 17:30:44.000000000 -0800
-@@ -54,6 +54,7 @@
- 	{ USB_VENDOR_ID_ELO, USB_DEVICE_ID_ELO_TS2700, HID_QUIRK_NOGET },
- 	{ USB_VENDOR_ID_SUN, USB_DEVICE_ID_RARITAN_KVM_DONGLE, HID_QUIRK_NOGET },
- 	{ USB_VENDOR_ID_TURBOX, USB_DEVICE_ID_TURBOX_KEYBOARD, HID_QUIRK_NOGET },
-+	{ USB_VENDOR_ID_UCLOGIC, USB_DEVICE_ID_UCLOGIC_TABLET_PF1209, HID_QUIRK_MULTI_INPUT },
- 	{ USB_VENDOR_ID_WISEGROUP, USB_DEVICE_ID_DUAL_USB_JOYPAD, HID_QUIRK_NOGET | HID_QUIRK_MULTI_INPUT | HID_QUIRK_SKIP_OUTPUT_REPORTS },
- 	{ USB_VENDOR_ID_WISEGROUP, USB_DEVICE_ID_QUAD_USB_JOYPAD, HID_QUIRK_NOGET | HID_QUIRK_MULTI_INPUT },
++	case A) the page is not accounted as SwapCache and SwapCache is deleted
++		by reuse_swap_page().
++		1. try_charge_swapin() is called and
++			- charge_for_memory +=1.
++			- charge_for_memsw  +=1.
++		2. reuse_swap_page -> delete_from_swap_cache() is called.
++			because the page is not accounted as SwapCache,
++			no changes in accounting.
++		3. commit_charge_swapin() finds PCG_USED bit is not set and
++		   set PCG_USED bit.
++		   Because page->private is empty by 2. no changes in charge.
++		4. swap_free(entry) is called.
++			- charge_for_memsw -= 1.
++
++		Finally, charge_for_memory +=1, charge_for_memsw = +-0.
++
++	case B) the page is accounted as SwapCache and SwapCache is deleted
++		by reuse_swap_page.
++		1. try_charge_swapin() is called.
++			- charge_for_memory += 1.
++			- charge_for_memsw += 1.
++		2. reuse_swap_page -> delete_from_swap_cache() is called.
++			PCG_USED bit is found and cleared.
++			- charge_for_memory -= 1. (swap_cgroup is recorded.)
++		3. commit_charge_swapin() finds PCG_USED bit is not set.
++		4. swap_free(entry) is called and
++			- charge_for_memsw -= 1.
++
++		Finally, charge_for_memory = +-0, charge_for_memsw = +-0.
++
++	case C) the page is not accounted as SwapCache and reuse_swap_page
++		doesn't call delete_from_swap_cache()
++		1. try_charge_swapin() is called.
++			- charge_for_memory += 1.
++			- charge_for_memsw += 1.
++		2. commit_charge_swapin() finds PCG_USED bit is not set
++		   and finds swap_cgroup records this entry.
++			- charge_for_memsw -= 1.
++
++		Finally, charge_for_memory +=1, charge_for_memsw = +-0
++
+ 	4.2 Swap-out.
+ 	At swap-out, typical state transition is below.
  
-
 
