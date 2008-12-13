@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbYLMXCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbYLMXDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753491AbYLMXCr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 18:02:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbYLMXCh
+	id S1753555AbYLMXDV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 18:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbYLMXDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 18:02:37 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:55139 "EHLO
+	Sat, 13 Dec 2008 18:03:11 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:58302 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753295AbYLMXCg (ORCPT
+	with ESMTP id S1752064AbYLMXDJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 18:02:36 -0500
+	Sat, 13 Dec 2008 18:03:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=YtSCACJNUtSZoWHTrf2ouTJKkfa91CgI1wPlBc9cdv2UUhSdblRDWmbKp1PZaxT3ag
-         5AKQruqK06IquqOyzPWyr7OAkfoIU35sOV5iUQw3o/OPExwdJRaqKepvjc/k1X14G5hO
-         7J8pNCzLk57wNvVh34USZaPU7HY6mwK9RyFx8=
-Subject: [PATCH 3/4] ieee1394: mark bus_info_data was a __be32 array
+        b=Ac7RXwBexi1D0iqMHMgFPOmIOEWHvuer30w8SPdbHWTYP75JtkAtbUD6nrNBTyt9wS
+         nvfZKpL/vu9D93BlzUg2R9va5cF89ey+6sDxRatHCNgDlbKLx6gbwJsKup/2sshZuQFl
+         djIXFmuboOvQ5s1TucmgHTFBeyxomookZjcKA=
+Subject: [PATCH 4/4] ieee1394: eth1394 trivial sparse annotations
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Sat, 13 Dec 2008 15:02:34 -0800
-Message-Id: <1229209354.11257.11.camel@brick>
+Date: Sat, 13 Dec 2008 15:03:06 -0800
+Message-Id: <1229209386.11257.12.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
@@ -31,81 +31,175 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two access functions get_max_rom and set_hw_config_rom are
-changed to take __be32 as well.  Only bus_info_data was
-ever passed in so this is OK.  All other uses of bus_info_data
-treated it as a be32 value already.
+Mostly annotations of ether_type as a be16.
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/ieee1394/csr1212.h  |    4 ++--
- drivers/ieee1394/hosts.h    |    2 +-
- drivers/ieee1394/nodemgr.c  |    2 +-
- drivers/ieee1394/ohci1394.c |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/ieee1394/eth1394.c |   26 +++++++++++++-------------
+ drivers/ieee1394/eth1394.h |   16 ++++++++--------
+ 2 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/ieee1394/csr1212.h b/drivers/ieee1394/csr1212.h
-index 043039f..55ab4cc 100644
---- a/drivers/ieee1394/csr1212.h
-+++ b/drivers/ieee1394/csr1212.h
-@@ -181,7 +181,7 @@ struct csr1212_csr_rom_cache {
- struct csr1212_csr {
- 	size_t bus_info_len;	/* bus info block length in bytes */
- 	size_t crc_len;		/* crc length in bytes */
--	u32 *bus_info_data;	/* bus info data incl bus name and EUI */
-+	__be32 *bus_info_data;	/* bus info data incl bus name and EUI */
+diff --git a/drivers/ieee1394/eth1394.c b/drivers/ieee1394/eth1394.c
+index 7ae8bce..a074bfd 100644
+--- a/drivers/ieee1394/eth1394.c
++++ b/drivers/ieee1394/eth1394.c
+@@ -92,7 +92,7 @@ struct partial_datagram {
+ 	struct list_head list;
+ 	u16 dgl;
+ 	u16 dg_size;
+-	u16 ether_type;
++	__be16 ether_type;
+ 	struct sk_buff *skb;
+ 	char *pbuf;
+ 	struct list_head frag_info;
+@@ -767,7 +767,7 @@ static int ether1394_header_parse(const struct sk_buff *skb,
+ static int ether1394_header_cache(const struct neighbour *neigh,
+ 				  struct hh_cache *hh)
+ {
+-	unsigned short type = hh->hh_type;
++	__be16 type = hh->hh_type;
+ 	struct net_device *dev = neigh->dev;
+ 	struct eth1394hdr *eth =
+ 		(struct eth1394hdr *)((u8 *)hh->hh_data + 16 - ETH1394_HLEN);
+@@ -795,7 +795,7 @@ static void ether1394_header_cache_update(struct hh_cache *hh,
+  ******************************************/
  
- 	void *private;		/* private, bus specific data */
- 	struct csr1212_bus_ops *ops;
-@@ -215,7 +215,7 @@ struct csr1212_bus_ops {
- 	/* This function is used by csr1212 to determine the max read request
- 	 * supported by a remote node when reading the ConfigROM space.  Must
- 	 * return 0, 1, or 2 per IEEE 1212.  */
--	int (*get_max_rom) (u32 *bus_info, void *private);
-+	int (*get_max_rom) (__be32 *bus_info, void *private);
+ /* Copied from net/ethernet/eth.c */
+-static u16 ether1394_type_trans(struct sk_buff *skb, struct net_device *dev)
++static __be16 ether1394_type_trans(struct sk_buff *skb, struct net_device *dev)
+ {
+ 	struct eth1394hdr *eth;
+ 	unsigned char *rawp;
+@@ -829,17 +829,17 @@ static u16 ether1394_type_trans(struct sk_buff *skb, struct net_device *dev)
+ 
+ /* Parse an encapsulated IP1394 header into an ethernet frame packet.
+  * We also perform ARP translation here, if need be.  */
+-static u16 ether1394_parse_encap(struct sk_buff *skb, struct net_device *dev,
++static __be16 ether1394_parse_encap(struct sk_buff *skb, struct net_device *dev,
+ 				 nodeid_t srcid, nodeid_t destid,
+-				 u16 ether_type)
++				 __be16 ether_type)
+ {
+ 	struct eth1394_priv *priv = netdev_priv(dev);
+-	u64 dest_hw;
+-	unsigned short ret = 0;
++	__be64 dest_hw;
++	__be16 ret = 0;
+ 
+ 	/* Setup our hw addresses. We use these to build the ethernet header. */
+ 	if (destid == (LOCAL_BUS | ALL_NODES))
+-		dest_hw = ~0ULL;  /* broadcast */
++		dest_hw = ~cpu_to_be64(0);  /* broadcast */
+ 	else
+ 		dest_hw = cpu_to_be64((u64)priv->host->csr.guid_hi << 32 |
+ 				      priv->host->csr.guid_lo);
+@@ -873,7 +873,7 @@ static u16 ether1394_parse_encap(struct sk_buff *skb, struct net_device *dev,
+ 		node = eth1394_find_node_guid(&priv->ip_node_list,
+ 					      be64_to_cpu(guid));
+ 		if (!node)
+-			return 0;
++			return cpu_to_be16(0);
+ 
+ 		node_info =
+ 		    (struct eth1394_node_info *)node->ud->device.driver_data;
+@@ -1063,7 +1063,7 @@ static int ether1394_data_handler(struct net_device *dev, int srcid, int destid,
+ 	unsigned long flags;
+ 	struct eth1394_priv *priv = netdev_priv(dev);
+ 	union eth1394_hdr *hdr = (union eth1394_hdr *)buf;
+-	u16 ether_type = 0;  /* initialized to clear warning */
++	__be16 ether_type = cpu_to_be16(0);  /* initialized to clear warning */
+ 	int hdr_len;
+ 	struct unit_directory *ud = priv->ud_list[NODEID_TO_NODE(srcid)];
+ 	struct eth1394_node_info *node_info;
+@@ -1259,7 +1259,7 @@ static int ether1394_write(struct hpsb_host *host, int srcid, int destid,
+ 
+ static void ether1394_iso(struct hpsb_iso *iso)
+ {
+-	quadlet_t *data;
++	__be32 *data;
+ 	char *buf;
+ 	struct eth1394_host_info *hi;
+ 	struct net_device *dev;
+@@ -1283,7 +1283,7 @@ static void ether1394_iso(struct hpsb_iso *iso)
+ 	for (i = 0; i < nready; i++) {
+ 		struct hpsb_iso_packet_info *info =
+ 			&iso->infos[(iso->first_packet + i) % iso->buf_packets];
+-		data = (quadlet_t *)(iso->data_buf.kvirt + info->offset);
++		data = (__be32 *)(iso->data_buf.kvirt + info->offset);
+ 
+ 		/* skip over GASP header */
+ 		buf = (char *)data + 8;
+@@ -1614,7 +1614,7 @@ static int ether1394_tx(struct sk_buff *skb, struct net_device *dev)
+ 		if (max_payload < dg_size + hdr_type_len[ETH1394_HDR_LF_UF])
+ 			priv->bc_dgl++;
+ 	} else {
+-		__be64 guid = get_unaligned((u64 *)hdr_buf.h_dest);
++		__be64 guid = get_unaligned((__be64 *)hdr_buf.h_dest);
+ 
+ 		node = eth1394_find_node_guid(&priv->ip_node_list,
+ 					      be64_to_cpu(guid));
+diff --git a/drivers/ieee1394/eth1394.h b/drivers/ieee1394/eth1394.h
+index 4f3e2dd..e1b5ea8 100644
+--- a/drivers/ieee1394/eth1394.h
++++ b/drivers/ieee1394/eth1394.h
+@@ -82,7 +82,7 @@ struct eth1394_priv {
+ 
+ struct eth1394hdr {
+ 	unsigned char	h_dest[ETH1394_ALEN];	/* destination eth1394 addr	*/
+-	unsigned short	h_proto;		/* packet type ID field	*/
++	__be16		h_proto;		/* packet type ID field	*/
+ }  __attribute__((packed));
+ 
+ static inline struct eth1394hdr *eth1394_hdr(const struct sk_buff *skb)
+@@ -99,13 +99,13 @@ typedef enum {ETH1394_GASP, ETH1394_WRREQ} eth1394_tx_type;
+ struct eth1394_uf_hdr {
+ 	u16 lf:2;
+ 	u16 res:14;
+-	u16 ether_type;		/* Ethernet packet type */
++	__be16 ether_type;		/* Ethernet packet type */
+ } __attribute__((packed));
+ #elif defined __LITTLE_ENDIAN_BITFIELD
+ struct eth1394_uf_hdr {
+ 	u16 res:14;
+ 	u16 lf:2;
+-	u16 ether_type;
++	__be16 ether_type;
+ } __attribute__((packed));
+ #else
+ #error Unknown bit field type
+@@ -117,7 +117,7 @@ struct eth1394_ff_hdr {
+ 	u16 lf:2;
+ 	u16 res1:2;
+ 	u16 dg_size:12;		/* Datagram size */
+-	u16 ether_type;		/* Ethernet packet type */
++	__be16 ether_type;		/* Ethernet packet type */
+ 	u16 dgl;		/* Datagram label */
+ 	u16 res2;
+ } __attribute__((packed));
+@@ -126,7 +126,7 @@ struct eth1394_ff_hdr {
+ 	u16 dg_size:12;
+ 	u16 res1:2;
+ 	u16 lf:2;
+-	u16 ether_type;
++	__be16 ether_type;
+ 	u16 dgl;
+ 	u16 res2;
+ } __attribute__((packed));
+@@ -207,11 +207,11 @@ struct eth1394_arp {
+ 	u16 opcode;		/* ARP Opcode	*/
+ 	/* Above is exactly the same format as struct arphdr */
+ 
+-	u64 s_uniq_id;		/* Sender's 64bit EUI			*/
++	__be64 s_uniq_id;	/* Sender's 64bit EUI		*/
+ 	u8 max_rec;		/* Sender's max packet size		*/
+ 	u8 sspd;		/* Sender's max speed			*/
+-	u16 fifo_hi;		/* hi 16bits of sender's FIFO addr	*/
+-	u32 fifo_lo;		/* lo 32bits of sender's FIFO addr	*/
++	__be16 fifo_hi;		/* hi 16bits of sender's FIFO addr	*/
++	__be32 fifo_lo;		/* lo 32bits of sender's FIFO addr	*/
+ 	u32 sip;		/* Sender's IP Address			*/
+ 	u32 tip;		/* IP Address of requested hw addr	*/
  };
- 
-
-diff --git a/drivers/ieee1394/hosts.h b/drivers/ieee1394/hosts.h
-index dd22995..49c3590 100644
---- a/drivers/ieee1394/hosts.h
-+++ b/drivers/ieee1394/hosts.h
-@@ -154,7 +154,7 @@ struct hpsb_host_driver {
- 	 * to set the hardware ConfigROM if the hardware supports handling
- 	 * reads to the ConfigROM on its own. */
- 	void (*set_hw_config_rom)(struct hpsb_host *host,
--				  quadlet_t *config_rom);
-+				  __be32 *config_rom);
- 
- 	/* This function shall implement packet transmission based on
- 	 * packet->type.  It shall CRC both parts of the packet (unless
-diff --git a/drivers/ieee1394/nodemgr.c b/drivers/ieee1394/nodemgr.c
-index 175a9d4..92c8b8d 100644
---- a/drivers/ieee1394/nodemgr.c
-+++ b/drivers/ieee1394/nodemgr.c
-@@ -115,7 +115,7 @@ static int nodemgr_bus_read(struct csr1212_csr *csr, u64 addr, u16 length,
- 	return error;
- }
- 
--static int nodemgr_get_max_rom(quadlet_t *bus_info_data, void *__ci)
-+static int nodemgr_get_max_rom(__be32 *bus_info_data, void *__ci)
- {
- 	return (be32_to_cpu(bus_info_data[2]) >> 8) & 0x3;
- }
-diff --git a/drivers/ieee1394/ohci1394.c b/drivers/ieee1394/ohci1394.c
-index 066726b..b3116d0 100644
---- a/drivers/ieee1394/ohci1394.c
-+++ b/drivers/ieee1394/ohci1394.c
-@@ -2973,7 +2973,7 @@ alloc_dma_trm_ctx(struct ti_ohci *ohci, struct dma_trm_ctx *d,
- 	return 0;
- }
- 
--static void ohci_set_hw_config_rom(struct hpsb_host *host, quadlet_t *config_rom)
-+static void ohci_set_hw_config_rom(struct hpsb_host *host, __be32 *config_rom)
- {
- 	struct ti_ohci *ohci = host->hostdata;
- 
 -- 
 1.6.1.rc2.306.ge5d5e
-
 
