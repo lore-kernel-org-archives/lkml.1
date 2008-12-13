@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751487AbYLMQll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751597AbYLMQnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751487AbYLMQll (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 11:41:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbYLMQld
+	id S1751597AbYLMQnP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 11:43:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbYLMQnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 11:41:33 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55828 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbYLMQlc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 11:41:32 -0500
-Date: Sat, 13 Dec 2008 16:41:23 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>, stable@kernel.org
-Subject: [BUG] Upon hitting ^c, inotify blocks on mutex_lock
-Message-ID: <20081213164123.GB7639@flint.arm.linux.org.uk>
+	Sat, 13 Dec 2008 11:43:00 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:49038 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750885AbYLMQm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Dec 2008 11:42:59 -0500
+Subject: Re: [RFC PATCH -v4 11/14] fsnotify: include pathnames with entries
+ when possible
+From: Eric Paris <eparis@redhat.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       viro@ZenIV.linux.org.uk, hch@infradead.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <20081213031920.GG807@ioremap.net>
+References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
+	 <20081212215212.27112.73418.stgit@paris.rdu.redhat.com>
+	 <20081213031920.GG807@ioremap.net>
+Content-Type: text/plain
+Date: Sat, 13 Dec 2008 11:42:42 -0500
+Message-Id: <1229186562.29167.108.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27.8.
+On Sat, 2008-12-13 at 06:19 +0300, Evgeniy Polyakov wrote:
+> On Fri, Dec 12, 2008 at 04:52:12PM -0500, Eric Paris (eparis@redhat.com) wrote:
+> > When inotify wants to send events to a directory about a child it includes
+> > the name of the original file.  This patch collects that filename and makes
+> > it available for notification.
+> 
+> What about extending fsnotify with attributes so that there would be no
+> problems extending it with new events and data sent to userspace?
 
-Today, having had gthumb running for a while, I hit ^c expecting it to
-quit.  The result was a process with zero VSZ and RSS, and it sitting
-in run state.  Only possible recovery action seems to be a reboot.
+Since struct fsnotify_event is not exported to userspace information may
+be collected in there at event creation time.  I actually have a number
+of later patches that do this for information that I want to send for
+fanotify.
 
-A sysrq-t reveals the following backtrace for gthumb:
+Information can also be stored in the event->private area if only one
+group really cares....   (kinda how I store wd for inotify)
 
-gthumb        R running   2052 26500  25452
-       ce631030 00200046 00000005 00000058 ce631290 0d179289 000043e8 c0691a7a
-       c06f007b f6d299a0 f794c5c8 f6d299a0 e3a9def0 c041b36d c06109d2 c0610eda
-       f794c5c8 f6d29980 c048aa70 00000001 40000010 f6d29400 de0ae880 f6d29418
-Call Trace:
- [<c041b36d>] __cond_resched+0x22/0x37
- [<c06109d2>] _cond_resched+0x21/0x2a
- [<c0610eda>] mutex_lock+0x1a/0x28
- [<c048aa70>] inotify_destroy+0x13/0xa9
- [<c048af3c>] inotify_release+0x14/0x7c
- [<c04688f2>] __fput+0xab/0x158
- [<c04663c0>] filp_close+0x4d/0x53
- [<c041efca>] put_files_struct+0x5f/0xa7
- [<c04201c1>] do_exit+0x1b8/0x6c8
- [<c0425636>] __dequeue_signal+0xd/0xce
- [<c042072c>] do_group_exit+0x5b/0x83
- [<c0427842>] get_signal_to_deliver+0x2e2/0x322
- [<c0402aa3>] do_notify_resume+0x62/0x691
- [<c05fce6c>] unix_ioctl+0xa6/0xaf
- [<c05a0c2d>] sock_ioctl+0x1ad/0x1d1
- [<c05a0a80>] sock_ioctl+0x0/0x1d1
- [<c0406f9c>] read_tsc+0x6/0x22
- [<c04301df>] getnstimeofday+0x32/0xb1
- [<c04722ea>] sys_poll+0x3b/0x6e
- [<c040384a>] work_notifysig+0x13/0x19
+Information which is useful to more than 1 group should be added to
+struct fsnotify_event and its up to the individual listeners to export
+that to userspace anyway they want to.
 
+So absolutely this is completely extensible.
 
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
