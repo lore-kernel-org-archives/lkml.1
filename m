@@ -1,88 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbYLMIX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbYLMI1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbYLMIX5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 03:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbYLMIXt
+	id S1756654AbYLMI1V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 03:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbYLMI1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 03:23:49 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51881 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752767AbYLMIXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 03:23:49 -0500
-Message-ID: <494370C0.4050005@cn.fujitsu.com>
-Date: Sat, 13 Dec 2008 16:22:24 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Bharata B Rao <bharata.rao@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: fix another race when reading /proc/sched_debug
-References: <494234B0.5@cn.fujitsu.com> <344eb09a0812120338h29e1088pac7f9a22e37bf609@mail.gmail.com>
-In-Reply-To: <344eb09a0812120338h29e1088pac7f9a22e37bf609@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 13 Dec 2008 03:27:11 -0500
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:39398 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752767AbYLMI1J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Dec 2008 03:27:09 -0500
+X-YMail-OSG: d91NzaUVM1kAVdNnEzBHladY.pgLXPh.Y5i8RMhtl8OnmUgQfqRlGXrtP__tG.J4cWyE_gwvR7XO0ThQdh3XbPy4VJIoJV20I.AdDYe9jEF0vRqPAjg6P9fzWGM38ayRV360ur3pylQvPMbeAj5SFYJBYAdQgRjT9SlhMKVFRQF39xB2mte_3Krt3ggs0Hn3Sz9gQ9xXQxyBTtpAvPKstp.c
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
+From: "Nicholas A. Bellinger" <nab@kernel.org>
+Reply-To: nab@kernel.org
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-iscsi-target-dev@googlegroups.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@lst.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Mike Christie <michaelc@cs.wisc.edu>, Hannes Reinecke <hare@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <54939.1229149205@turing-police.cc.vt.edu>
+References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>
+	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>
+	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>
+	 <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>
+	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>
+	 <54939.1229149205@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Sat, 13 Dec 2008 00:27:05 -0800
+Message-Id: <1229156825.4153.754.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bharata B Rao wrote:
-> On Fri, Dec 12, 2008 at 3:23 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->>  kernel/sched_debug.c |   10 ++++++++--
->>  1 files changed, 8 insertions(+), 2 deletions(-)
->>
->> diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
->> index 26ed8e3..01abf5b 100644
->> --- a/kernel/sched_debug.c
->> +++ b/kernel/sched_debug.c
->> @@ -127,8 +127,11 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
->>        if (tg)
->>                cgroup = tg->css.cgroup;
->>
->> -       if (cgroup)
->> +       if (cgroup) {
->> +               cgroup_lock();
->>                cgroup_path(cgroup, path, sizeof(path));
->> +               cgroup_unlock();
->> +       }
->>
->>        SEQ_printf(m, "\ncfs_rq[%d]:%s\n", cpu, path);
->>  #else
->> @@ -181,8 +184,11 @@ void print_rt_rq(struct seq_file *m, int cpu, struct rt_rq *rt_rq)
->>        if (tg)
->>                cgroup = tg->css.cgroup;
->>
->> -       if (cgroup)
->> +       if (cgroup) {
->> +               cgroup_lock();
->>                cgroup_path(cgroup, path, sizeof(path));
->> +               cgroup_unlock();
->> +       }
->>
->>        SEQ_printf(m, "\nrt_rq[%d]:%s\n", cpu, path);
->>  #else
+On Sat, 2008-12-13 at 01:20 -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Fri, 12 Dec 2008 01:40:09 PST, "Nicholas A. Bellinger" said:
 > 
-> The comment in cgroup_path() routine says that it needs to be called
-> with cgroup_mutex held. With the above fix, print_task() in
-> sched_debug.c remains the last caller of cgroup_path() which calls it
-> without holding cgroup_mutex. Does this also need a fix ?
+> > Too bad, because you are missing out on the most advanced ConfigFS
+> > enabled storage engine on the planet.
+> 
+> OK. I *have* to ask.. ;)
+> 
+> What's the *second* most advanced configfs-enabled storage engine?
+> 
+> The only in-tree users of configfs I could find (grepping for the string
+> 'config_item_init') were drivers/net/netconsole, fs/ocfs2, and fs/dlm, so
+> "most advanced configfs" is well into "world's tallest midget" territory...
 > 
 
-You mean:
+It is advanced in the sense that it is the only user of ConfigFS that
+spans across multiple kernel modules.  In the context of the generic
+target engine, this means that ConfigFS symlinks are used to create
+Target Ports from the $FABRIC_MOD (like LIO-Target) to registered
+$STORAGE_OBJECTS (storage devices available from Linux/SCSI, Linux/BLOCK
+and Linux/VFS) within the generic target engine.  The idea is that any
+$FABRIC_MOD can create ConfigFS symlinks to the same $STORAGE_OBJECT,
+and said $STORAGE_OBJECT can be shared across multiple $FABRIC_MODs.
 
-print_task(struct seq_file *m, struct rq *rq, struct task_struct *p)
-{
-	...
-		cgroup_path(task_group(p)->css.cgroup, path, sizeof(path));
-	...
-}
+Also, I cannot emphesize enough how much I think ConfigFS is the proper
+direction for controlling a generic kernel level target engine, and
+$FABRIC_MODs.  It has made my work in lio-core-2.6.git simpler, and the
+code easier to maintain and improve.  I have implemented my own IOCTL,
+Proc and SYSFS code for drivers over the years, and ConfigFS is the best
+method that I have found to date for controlling a complex kernel
+infrastructure across multiple plugin modules where config is driven by
+userspace.
 
-Hmm...Normally we have to take task_lock() or rcu_read_lock() to retrieve
-the cgroup from the task, and as long as we hold either lock, we don't need
-to take cgroup_lock().
+So I really invite folks to take a look at the ConfigFS for the generic
+engine to see for themselves:
 
-I noticed neither task_lock() nor rcu is held before calling cgroup_path,
-so I wrote a test program to see if I can trigger a but here, but it didn't
-happen. I'll dig more.
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=blob;f=drivers/lio-core/target_core_configfs.c
+
+and the LIO-Target iSCSI $FABRIC_MOD:
+
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=blob;f=drivers/lio-core/iscsi_target_configfs.c
+
+Unfortuately the detractors of ConfigFS on this list (who obviously have
+their own motivations) can only offer hypothetical scenarios for
+problems they forsee without writing a single line of ConfigFS code.  I
+however have no problems with the above running ConfigFS code, but these
+folks have no interest in debating real running ConfigFS code, only
+handwaving about their perceived limitiations of ConfigFS without
+attempting to take the techincal points to linuxfs-devel, or contact the
+ConfigFS author, etc.
+
+Anyways, I appericate the comments, and invite you to have a look at the
+running code for yourself.
+
+Many thanks for your most valuable of time,
+
+--nab
+
+
+
