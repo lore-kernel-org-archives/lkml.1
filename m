@@ -1,155 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbYLMMdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYLMNFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757546AbYLMMdb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 07:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbYLMMdV
+	id S1756108AbYLMNFm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 08:05:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbYLMNFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 07:33:21 -0500
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:31816 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754226AbYLMMdT (ORCPT
+	Sat, 13 Dec 2008 08:05:33 -0500
+Received: from mail-bw0-f13.google.com ([209.85.218.13]:47862 "EHLO
+	mail-bw0-f13.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754069AbYLMNFd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 07:33:19 -0500
-X-YMail-OSG: 9APPlXwVM1lbfRQTzZTRZehqN_7Ap1R93ztYaEj1kfi9Dm2kkFEvEmYnvcFtof0XDySo9XTf_J8bq.XGMiTdIrX51MJMM8p9fpCTu_5PfnrR5uvraoxvveQyhZPzRDHV7G9MUlKsZZunn6bh0h2sattcQp0XMo6eAf660q09GKH7zf.dsLVC0epUlnZqNqUveTBO9KGet5dHxg6a_TgZDLHIPPW47Tc-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: linux-iscsi-target-dev@googlegroups.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <e2e108260812130356y1fe60713xf844a35c775e161d@mail.gmail.com>
-References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>
-	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>
-	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>
-	 <54939.1229149205@turing-police.cc.vt.edu>
-	 <e2e108260812130141o3d21bbbdob9e7c9f95d309a74@mail.gmail.com>
-	 <1229162907.4153.857.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812130223q13fd98d8gc1e55881a92b939@mail.gmail.com>
-	 <1229167118.4153.930.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812130356y1fe60713xf844a35c775e161d@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 13 Dec 2008 04:33:17 -0800
-Message-Id: <1229171597.4153.981.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 13 Dec 2008 08:05:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:content-type
+         :content-transfer-encoding:message-id;
+        b=W4dVo3Ap9xVJJ9t7Yi07ye0F0eCUalnKTonyPT09UAAK0rAQEkpeePMkIJ/fImzZxP
+         jR0YE8qvk6a/tZ5OWXTX36Hr64y69HdEca4JqWZ6SJ8z4OuL1LfdCCxMEn2o7h6Mbwp0
+         Vj0cgjhD35p22QHMZKunIoTq7nqFpYkPip6gk=
+From: Florian Fainelli <florian@openwrt.org>
+To: Hugo Villeneuve <hugo@hugovil.com>
+Subject: Re: FPGA programming driver architecture
+Date: Sat, 13 Dec 2008 13:58:01 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+References: <20081212150314.6ea24996.hugo@hugovil.com>
+In-Reply-To: <20081212150314.6ea24996.hugo@hugovil.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200812131358.03010.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-13 at 12:56 +0100, Bart Van Assche wrote:
-> On Sat, Dec 13, 2008 at 12:18 PM, Nicholas A. Bellinger
-> <nab@linux-iscsi.org> wrote:
-> > Of course I fix bugs when people report them.
-> 
-> Things have changed then since the beginning of this year. As anyone
-> can see in the threads I referred to, you have done your best to deny
-> that the crashes and system hangs were caused by LIO, although I had
-> posted exact instructions on how to reproduce the bugs. Regarding
-> kernel integration and subsystem maintainership: one of the important
-> tasks of a maintainer is to verify whether reported bugs are
-> reproducible, and if so, to resolve them. I'm happy none of the
-> current kernel maintainers has the habitude of denying bug reports
-> that are 100% reproducible and which contain exact instructions about
-> how to reproduce the bug.
+(CC'ing linux-embedded)
 
-Heh, so I guess that means that you cannot show me where in
-lio-core-2.6.git that the issues still exist.  Why am I not suprised..? 
+Salut Hugo,
 
-Can you at least even back up your claim that the 10 month old BUGs you
-posted have not been fixed, or was that just handwaving as well. Again
-Bart, the only reason took a bit of extra time responding to you
-because:
+Le Friday 12 December 2008 21:03:14 Hugo Villeneuve, vous avez écrit :
+> Hi,
+> I have written some code to program a FPGA in Linux, for two different
+> types of boards: one uses a serial interface (SPI) and the second a
+> parallel interface. I have been able to sucessfully program both boards.
+> I'm now trying to clean my code and make it more generic, as well as better
+> in line with the Linux driver model. I would also like to include it in the
+> mainline kernel if there is interest.
 
-1) I was busy helping other people, and
-2) The of the disrespectful tone of your emails turns me off
+Is it a platform-driver ? What do you provide in platform_data ?
 
-If this is the reasoning you cite for ignoring and badmouthing
-Target_Core_Mod/ConfigFS, LIO-Target v3.0 and myself to the kernel
-community at large, and making false claims about LIO stability (without
-looking at an code, by your own admission!?), all I can say is:  WoW!!
+>
+> Here is a description of the current architecture (refer to diagrams
+> below): The fpgaload module controls one output GPIOs (PROG), and two input
+> GPIOs (INIT and DONE). These GPIOs are specified in board setup code. Both
+> fpgaload_ser and fpgaload_par modules export a single function to write a
+> byte. The fpgaload driver is a char device to which we can write
+> (/dev/fpgaload) to program a bitstream (FPGA firmware) inside the FPGA. 
 
-> 
-> > "Zero-copy means that data is copied as few times as possible".
-> >
-> > when I was attempting to explain the finer pointers of
-> > Target_Core_Mod/ConfigFS design to you and Vlad.  Remember that one..?
-> >
-> > http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/8cff61671cd2de6b/37ade00e607dd8c8
-> 
-> You are going off topic -- the above statement has nothing to do with
-> this thread.
-> 
+You should probably consider using request_firmware to load the bitstream from 
+the userspace and possibly add a /sys interface to export some attributes 
+like :
 
-Heh, and posting URLs to 10 month old BUGs that have been fixed 10
-months ago in v2.9 on-topic for the Target_Core_Mod/ConfigFS v3.0
-discussion..?
+- GPIOs being used between the host and the FPGA
+- status (i.e : programmed, not programmed ...)
+- FPGA vendor, type ...
 
-Like I said, if you would spend a fraction of the time you use trying to
-discredit LIO code on trying to understand ConfigFS, or my points why I
-decided not to use SCST as a base for Target_Core_Mod, perhaps you would
-be apple to make real comments on worthwhile comments here, instead of
-just your usual handwaving.
+> The 
+> fpgaload driver will toggle the GPIOs to initiate programming and the then
+> call the corresponding write_byte function based on the interface type
+> specified in board setup code (serial or parallel, or any future interface
+> desired).
 
-> Regarding the statement itself: it's incorrect to quote that sentence
-> out of its context. In that thread, as anyone can see who looks up the
-> URL, I was using the word copies to refer to transfers between
-> hardware and RAM, not to copying data from RAM to RAM. Looking at that
-> statement now I agree that that was misleading, and that I should have
-> written that statement in another way.
-> 
+> The problem with that approach is that when loading the fpgaload module
+> with modprobe, it will automatically try to load the fpgaload_ser and
+> fpgaload_par modules, even if only serial interface was specified in board
+> setup code for example. This is not good when building a kernel for similar
+> but different boards.
 
-The point is that neither you nor Vlad would acknowledge any of the
-issues on that thread, or communicate with me in a professional manner
-without the handwaving.  How do you expect me to work with you if you
-can't even acknowledge the short comings, or offer me a roadmap to get
-them resolved when all you guys do is handwave..?
+What about something like that :
 
-> Do you think people like it to discuss with you when you try to make
-> them appear ridiculous all the time ?
-> 
+- fpgaload-core which contains all the code that can be shared between the 
+drivers like requesting firmware, providing sysfs attributes, 
+- fpgaload-spi would handle the low-level SPI connection
+- fpgaload-par would handle the low-level parallel connection
 
-I think that your definition of Zero-copy as "data is copied as few
-times as possible" speaks for itself.  I don't exactly know how that can
-be taken out of context.  Of course, that was just the tip of the
-iceberg on that thread.  Lets not even get into how you claimed RDMA
-meant only userspace ops on virtual memory addresses using a vendor
-specific API, or that RDMA using virtual addresses would be
-communicating with drivers/scsi or block/ (which obviously use struct
-page).
+fpgaload-ser and par would register with fpgaload-core and they could register 
+a fpga loading callback which is low-level specific for instance. Platform 
+code would instantiate the core driver. That way, adding support for other 
+loading protocols like slave serial or master serial can be done easily.
 
-So honestly, I was much more concerned about the responses I got from
-you and Vlad about core SCST core lacking important functionality for
-$FABRIC_MODs using generic target infrastructure, and your inability to
-acknowledge anything that you cannot or do not want to understand when
-it comes to interface with linux storage subsystems  in the context on
-generic target mod.
-
-Do you actually think people care about hearing that it look me an extra
-day to address your issue 10 months ago..?  :-) If you honestly think me
-talking an extra day to address your issue (while I was busy with other
-things at the same time) has any relivance to the upstream code
-discussion, your are sorely mistaken.
-
-> And what I do not understand is that you are playing games with the CC
-> list all of the time. It's considered impolite to leave out people
-> from a CC list unless someone asked explicitly to be left out.
-> 
-
-Bart, no one wants to hear us argue, that is why I am saving them the
-pain and removing them from the CC list.  Any until you can start
-showing me some real techincal content in a professional manner, I am
-going to simply ignore your clumsy attempts at attacking me and m work.
-
---nab
-
-> Bart.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
+>
+> Probably a better approach would be for the fpgaload_Ser and fpgaload_par
+> modules to register themselves with the fpgaload module. Then, should the
+> fpgaload module be built using a BUS driver structure? Or anyone having any
+> suggestions on how it should be implemented?
+-- 
+Best regards, Florian Fainelli
+Email : florian@openwrt.org
+http://openwrt.org
+-------------------------------
