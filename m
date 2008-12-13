@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbYLMVtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbYLMWJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbYLMVtW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 16:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYLMVtO
+	id S1752621AbYLMWJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 17:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYLMWJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 16:49:14 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:33740 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbYLMVtN (ORCPT
+	Sat, 13 Dec 2008 17:09:19 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49150 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751372AbYLMWJT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 16:49:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=hItNp2lfSh4BDQ6RcUWnXFMTT7whVPp1Gy2TBoILBpt/+1QRnpi3VsqNtUHQxo0gAE
-         V162gsl0v74Dqql1e1VCt7pA2Q1sfudRpY1P8b14V2VfNwqOuTDK5gg+8TL35q5eAPAH
-         rSQFKauRmtUwW1uKSHsgySn9TocZXTWOKhQP0=
-Date: Sun, 14 Dec 2008 00:49:11 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Alexander Viro <aviro@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fs - fix name overwrite in __register_chrdev_region
-Message-ID: <20081213214911.GI16354@localhost>
+	Sat, 13 Dec 2008 17:09:19 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 13 Dec 2008 23:09:12 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 1/2] ieee1394: add quirk fix for Freecom HDD
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <49441769.1060209@s5r6.in-berlin.de>
+Message-ID: <tkrat.aa600853dd4a55d9@s5r6.in-berlin.de>
+References: <20081212220902.10115108040@picon.linux-foundation.org>
+ <4942E4E0.2030109@s5r6.in-berlin.de>
+ <tkrat.cf2109296e2ea177@s5r6.in-berlin.de>
+ <49441769.1060209@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's possible to register chdev with a name size
-exactly the same as was allocated in structure.
-It seems it was not intedned behaviour.
+Date: Sat, 13 Dec 2008 01:43:59 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: ieee1394: add quirk fix for Freecom HDD
 
-At least chrdev_show does not like it.
+According to http://bugzilla.kernel.org/show_bug.cgi?id=12206, Freecom
+FireWire Hard Drive 1TB reports max_rom=2 but returns garbage if block
+read requests are used to read the config ROM.  Force max_rom=0 to limit
+them to quadlet read requests.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Reported-by: Christian Mueller <cm1@mumac.de>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
 
- fs/char_dev.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Candidate patch for 2.6.28 and 2.6.27.y.
+Christian, please test  and confirm that I got this right.
 
-Index: linux-2.6.git/fs/char_dev.c
+ drivers/ieee1394/nodemgr.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+Index: linux/drivers/ieee1394/nodemgr.c
 ===================================================================
---- linux-2.6.git.orig/fs/char_dev.c
-+++ linux-2.6.git/fs/char_dev.c
-@@ -120,7 +120,7 @@ __register_chrdev_region(unsigned int ma
- 	cd->major = major;
- 	cd->baseminor = baseminor;
- 	cd->minorct = minorct;
--	strncpy(cd->name,name, 64);
-+	strncpy(cd->name, name, sizeof(cd->name) - 1);
+--- linux.orig/drivers/ieee1394/nodemgr.c
++++ linux/drivers/ieee1394/nodemgr.c
+@@ -115,8 +115,14 @@ static int nodemgr_bus_read(struct csr12
+ 	return error;
+ }
  
- 	i = major_to_index(major);
++#define OUI_FREECOM_TECHNOLOGIES_GMBH 0x0001db
++
+ static int nodemgr_get_max_rom(quadlet_t *bus_info_data, void *__ci)
+ {
++	/* Freecom FireWire Hard Drive firmware bug */
++	if (be32_to_cpu(bus_info_data[3]) >> 8 == OUI_FREECOM_TECHNOLOGIES_GMBH)
++		return 0;
++
+ 	return (be32_to_cpu(bus_info_data[2]) >> 8) & 0x3;
+ }
  
+
+-- 
+Stefan Richter
+-=====-==--- ==-- -==-=
+http://arcgraph.de/sr/
+
