@@ -1,80 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbYLMWVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbYLMWu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbYLMWVp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 17:21:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYLMWVg
+	id S1752886AbYLMWu2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 17:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYLMWuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 17:21:36 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:56995 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751926AbYLMWVg (ORCPT
+	Sat, 13 Dec 2008 17:50:11 -0500
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:40442 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752039AbYLMWuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 17:21:36 -0500
-Date: Sat, 13 Dec 2008 23:22:59 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Nick Andrew <nick@nick-andrew.net>, Matthew Wilcox <matthew@wil.cx>,
-       Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] headerdep: a tool for detecting inclusion cycles in header files
-Message-ID: <20081213222259.GB29080@uranus.ravnborg.org>
-References: <20080503202718.GA9996@damson>
+	Sat, 13 Dec 2008 17:50:09 -0500
+X-YMail-OSG: NGvb15kVM1my0b4ZUnT.6bOsVDdeaPVrEutuK6bBVEGmytH9hTG2.ZJmg4eXDndwzinwYrz6fsEMGjzJYOjkCavEBtfKJ7AD.Hvksq.i.hYWKM9VsI7rx4ITO4SwQBCPJY3tOVI8nYN07ZYYJ8pW0tZAwow6lBUJL9r3tMO6yWhTU.uS6D7AQUL9W_SEiWRK2r5rO5m6zofFiSahdmRTjBkrnbexg17aVbBoSiXr_zE92Q--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-iscsi-target-dev@googlegroups.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <1229181896.3258.27.camel@localhost.localdomain>
+References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>
+	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>
+	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>
+	 <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>
+	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>
+	 <54939.1229149205@turing-police.cc.vt.edu>
+	 <e2e108260812130141o3d21bbbdob9e7c9f95d309a74@mail.gmail.com>
+	 <1229162907.4153.857.camel@haakon2.linux-iscsi.org>
+	 <e2e108260812130223q13fd98d8gc1e55881a92b939@mail.gmail.com>
+	 <1229167118.4153.930.camel@haakon2.linux-iscsi.org>
+	 <e2e108260812130356y1fe60713xf844a35c775e161d@mail.gmail.com>
+	 <1229181896.3258.27.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 13 Dec 2008 14:50:06 -0800
+Message-Id: <1229208606.4153.1069.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080503202718.GA9996@damson>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 03, 2008 at 10:27:18PM +0200, Vegard Nossum wrote:
-> Hi,
+On Sat, 2008-12-13 at 09:24 -0600, James Bottomley wrote:
+> On Sat, 2008-12-13 at 12:56 +0100, Bart Van Assche wrote:
+> > On Sat, Dec 13, 2008 at 12:18 PM, Nicholas A. Bellinger
+> > <nab@linux-iscsi.org> wrote:
+> > > Of course I fix bugs when people report them.
+
+Hi James,
+
+> OK, All of you on this thread, why don't you take time out to step back
+> and think about the effects this descent into trench warfare is having
+> on your observers.
 > 
-> Here comes v2 of this tool. I've addressed most of your nitpicks and specific
-> comments. Running 'make headerdep', will go through all headers (instead of
-> source files as v1 did). Running with the --graph option will produce a
-> dependency graph in the 'dot' language (GraphViz).
+
+Yes, I think this reflects very poorly on both of us.  I would like to
+apologize for my part in thread, and would like to start making forward
+progress again.  (eg: more patch bombs :-)
+
+>      1. You're both saying the other side isn't production ready ...
+>         it's not a stretch for the rest of us to take this at face
+>         value ... about both of you.
+
+So, as some of these larger LIO-Target customers come online in 2009
+(including a 500 TB -> 1 PB installation), folks will be able to hear
+for themselves how Linux-iSCSI.org code is being used for production.
+
+Also, there will be full-time engineering resources put on
+Target_Core_Mod/ConfigFS and LIO_Target v3.0 code in 2009, as we
+continue to work towards code submission.
+
+>      2. This ideological opposition to features the other side
+>         implements tells me that if it came to a choice, by going with
+>         either one of you I'd get an incomplete feature set.
+
+Well, I have no ideological opposition to SCST, just technical concerns
+that never get to be addressed.  Which is fine with me, as the pieces I
+need for LIO-iSER for generic struct page zero-copy mapping using a
+single codepath to Linux storage subsystem that can be shared across
+$FABRIC_MODs are already in place for Target_Core_Mod/ConfigFS.  Its
+simply a matter of hooking them (the $FABRIC_MODs) up now.
+
+On the other side however, the SCST guys are completely opposed to any
+usage of ConfigFS, which is a shame because it really does rock for this
+type of usage: lots of groups, attributes, and $STORAGE_OBJECTS
+representing Target Ports across multiple $FABRIC_MODs using ConfigFS
+symlinks.  Having written a bunch of ConfigFS code that has been up and
+running for a few months (most of which was done at LPC), and yet still
+some people make noise on their precieved limitiations of ConfigFS.,
+without actually ever looking at the code in question.  This obviously
+is a bit of a let down.
+
+The good news however is that there are folks in the kernel community
+who have given me positive feedback about the use of ConfigFS for target
+mode (and the actual code), and related to me that they believe ConfigFS
+is the right choice moving forward. (A big thanks to people :-)
+
+>      3. Making obvious partisans of your user base also tells me that if
+>         I had to make a choice, whatever it was I'd piss off a large
+>         number of people who'd be very vocal about it.
 > 
-> Note that I am not really making an attempt to include this in the kernel
-> itself; I am submitting it in the hope that somebody will find it useful.
+
+Honestly, I think our respective userbases just want the best upstream
+kernel code possible, which is the only thing I am interested in.  
+
+> Since we have a working target solution in the kernel already (STGT),
+> why on earth would I be stupid enough to want to even consider either of
+> you, coming as you do with the above mentioned baggage?
+>
+> So stop fighting ... you're not going to backstab your way to inclusion.
 > 
-> For Sam: Writing this in sparse is a waste of time. Sparse is good for parsing
-> C code; this script only cares about a subset of the C _preprocessor_ parsing.
-> Perl is good at this, and the script was finished in a couple of hours. Sparse
-> is C and would require a bit more work, I'm sure.
+
+Definately not.
+
+> The only identified failing of STGT (and it's theoretical, not
+> demonstrated, although I can agree the theory looks correct) is that the
+> user space packet processing may cause performance problems on high
+> speed networks.  We know from practical tests that these networks have
+> to be above 1Gbit because the results were identical for STGT and SCST
+> on a 1G network, so it's infiniband or 10Gbit ethernet.
 > 
-> The most useful tool, as suggested by several people (Matthew Wilcox,
-> Sam Ravnborg), would be the one that detects unused headers and missing
-> (implicit) includes. That is indeed a job for sparse. But not a job for me,
-> or at least not yet :-)
+
+As I mentioned during our discussion @ LPC, I am still interested in
+including support for STGT and userspace fabric modules in
+Target_Core_Mod/ConfigFS using existing STGT code.
+
+So, I am currently at the point where I am bringing LIO-Target v3.0
+online using a generic target API on top of Target_Core_Mod/ConfigFS.
+At this point, I am creating my own 'template' of function pointers that
+generic target code calls into $FABRIC_MOD.  However, I have been
+considering using an existing 'template', and I am leaning to use the
+existing the STGT template (moved up to kernel space).  I think that
+using an existing 'template' would help $FABRIC_MODs maintainers port
+over their code.  Same goes for STGT's struct iscsi_transport for the
+LIO-iSER bits..
+
+> So, what it comes down to is that if we had a kernel side protocol
+> accelerator for STGT, the project would no longer suffer from this
+> theoretical failing.  *Both* of you have such a thing embedded in your
+> respective submissions (all 74k LOC of them) so can't you just enhance
+> STGT with whichever one is better ..
+
+Ok, in terms of LOC, I am looking at ~22k LOC for
+Target_Core_Mod/Configfs (which will be submitted first), and ~18K LOC
+for LIO-Target v3.0 (submitted later)
+
+> . actually, if you'd both bury the
+> hatchet and work on the enhancement together taking the best of each
+> project, we'd have something that worked much better and a unified user
+> base and neither side would be able to claim sole credit ... just a
+> thought.
 > 
-> So again, I have no expectations for this to go in the kernel -- but in my
-> opinion a tool that could be used on the kernel headers with some advantage.
 
-Hi Vegard.
+I really do apperciate your thoughtful comments, but as long as ConfigFS
+is being used, I do not believe the SCST folks have any interest in
+working with me, which is OK.  On the bit about claiming sole credit, I
+very much understand that it 'takes a village' for something as complex
+as what we are discussing here, and I am very much willing to share
+credit where credit is due.  I am 100% commited for the long haul to the
+best generic kernel target infrastructure and $FABRIC_MODs, and am very
+much looking forward to working with people who share this same passion
+to produce the best possible code.
 
-Digging through my mailbox I found this patch of yours.
-I tried to apply it and saw following output:
-In file included from linux/mmzone.h,
-                from linux/topology.h
-                from linux/mmzone.h
-                from linux/gfp.h
-                from linux/slub_def.h
-                from linux/slab.h
-                from linux/percpu.h
-                from asm-generic/irq_regs.h
-include/asm-xtensa/irq_regs.h: warning: recursive header inclusion
+Many thanks for your most valuable of time,
 
-But looking at the file (include/asm-xtensa/irq_regs.h) did
-not help me understand where to look to fix it.
+--nab
 
-Can you pinpoint the culprint better so this is becoming useful?
 
-I would also like to see this integrated with checkincludes.pl
-as both script do some simple static checks of the header files.
-
-Additional bonus if we can reuse this to do better check of
-our exported headers.
-
-	Sam
