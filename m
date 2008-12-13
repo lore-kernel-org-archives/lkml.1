@@ -1,72 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYLMDe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbYLMDff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756062AbYLMDe6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Dec 2008 22:34:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbYLMDeq
+	id S1755476AbYLMDff (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Dec 2008 22:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbYLMDfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Dec 2008 22:34:46 -0500
-Received: from virgo.iok.hu ([212.40.97.103]:58082 "EHLO virgo.iok.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751640AbYLMDeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Dec 2008 22:34:46 -0500
-Date: Sat, 13 Dec 2008 04:34:43 +0100
-From: Miklos Vajna <vmiklos@frugalware.org>
+	Fri, 12 Dec 2008 22:35:14 -0500
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:63347 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753282AbYLMDfN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Dec 2008 22:35:13 -0500
+From: Junio C Hamano <junio@pobox.com>
 To: David Howells <dhowells@redhat.com>
 Cc: torvalds@osdl.org, git@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] Simplified GIT usage guide
-Message-ID: <20081213033443.GP5691@genesis.frugalware.org>
-References: <20081212190900.GL5691@genesis.frugalware.org> <20081212185347.GK5691@genesis.frugalware.org> <20081212182827.28408.40963.stgit@warthog.procyon.org.uk> <28996.1229108561@redhat.com> <32096.1229130776@redhat.com>
+References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
+Date: Fri, 12 Dec 2008 19:35:03 -0800
+In-Reply-To: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk> (David
+ Howells's message of "Fri, 12 Dec 2008 18:28:27 +0000")
+Message-ID: <7v1vwc928o.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="YZa61AII3s1sGKYx"
-Content-Disposition: inline
-In-Reply-To: <32096.1229130776@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: 0B9A22BE-C8C7-11DD-8958-5720C92D7133-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Howells <dhowells@redhat.com> writes:
 
---YZa61AII3s1sGKYx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> Add a guide to using GIT's simpler features.
+>
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
+>
+>  Documentation/git-haters-guide.txt | 1283 ++++++++++++++++++++++++++++++++++++
+>  1 files changed, 1283 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/git-haters-guide.txt
+>
+>
+> diff --git a/Documentation/git-haters-guide.txt b/Documentation/git-haters-guide.txt
+> new file mode 100644
+> index 0000000..51e4dac
+> --- /dev/null
+> +++ b/Documentation/git-haters-guide.txt
+> @@ -0,0 +1,1283 @@
+> +		      ===================================
+> +		      THE GIT HATER'S GUIDE TO THE GALAXY
+> +		      ===================================
+> +
+> +By David Howells <dhowells@redhat.com>
+> +
+> +Contents:
+> ...
+> +============
+> +INTRODUCTION
+> +============
+> +
+> +So, you want to do some Linux kernel development?  And you hear there's this
+> +piece of software called 'GIT' that you probably ought to be using when dealing
+> +with the kernel community?  Then you find out that not only was Linux started
+> +by this Linus Torvalds person, but GIT was too!  Perhaps it doesn't seem fair:
+> +Linus has not just _one_ huge piece of software named after himself, but _two_!
+> +And on top of that, globe spanning hardware vendors just queue up to give him
+> +all the herring he can eat!!
+> +
+> +Then you look at webpages about GIT.  You look at the manpages!  You run the
+> +commands with --help!  And you *still* don't know how to do anything complex
+> +with it!!  You feel certain that there's some secret rite you have to perform
+> +to become a GIT initiate - probably something involving two goats, an altar and
+> +a full moon - oh, and lots of beer (we *are* talking about kernel developers
+> +after all).
+> +
+> +Then you ask around, and people look at you blankly, hedge or say that it's
+> +easy and obvious (they should know - they wrote the damned thing).  You realise
+> +that the manpages are more an aide-memoire and that what you really want is
+> +some sort of crib sheet; something that can hold your hand whilst you cut and
+> +paste things from of it until you can see the point.
+> +
+> +Well, let's see if I can help...
+> +
+> +
+> +DISCLAIMER
+> +----------
+> +
+> +I don't really know what I'm doing with GIT...
 
-On Sat, Dec 13, 2008 at 01:12:56AM +0000, David Howells <dhowells@redhat.com> wrote:
-> Okay.  I do mention tags.  How they're stored in the database is irrelevant.
-> As far as most users need be concerned, a tag is a symbolic representation of
-> a particular commit in the tree; a particular state of the source tree.
+I think this patch is good up to this point.  It is mildly funny and there
+would exist some people who share the same sense of humor as the above
+paragraphs (I am unfortunately one of them, though).
 
-Actually I think it matters, that's why a 'tag' differs to a 'tag
-object'. Also, a tag can point to any other object, not just to a
-commit. (Though usually it does.)
+I've only skimmed the remainder of the patch, and found there are quite a
+few technical errors and deviations from standard terminologies that I do
+not care to enumerate (I do not have infinite amount of time).  They make
+me suspect that anybody who tries to learn from this document would be
+harmed rather than helped in the longer run.
 
-> Think of symbolic links as an analogy.  Most users just need to know that a
-> symlink represents the location of another part of the VFS tree; actually most
-> users will just think of them as a pointer to the name of a file, if even that
-> much.  The fact that, say, ReiserFS tail packs them because they tend to be
-> small, or that AFS symlinks have weird properties that encode mountpoints is
-> irrelevant to most users.  You don't need to know that to use them.
+The document could be a good addition if the remainder of the patch is
+replaced by a collection of links to better introductory documents that
+are already available on the net, IMHO.
 
-Won't it be confusing that a symlink can be stored as a blob, tags are
-refs, but refs are not blobs?
-
-> Yes, GIT's database has blob objects, tree objects, commit objects and tag
-> objects; but as far as the normal user is concerned, it stores files, lists of
-> files (directories or, more probably, folders), commits and tags.  The
-> physical low-level stuff is completely irrelevant.
-
-Agreed, the object database is not interesting for a beginner.
-
---YZa61AII3s1sGKYx
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklDLVMACgkQe81tAgORUJbiOwCdFU1NRtmQp+rH9XF2Hyc7GYN3
-PIoAn0tWKYPBEtWCVTP8eL9oW8ChjlTV
-=7x97
------END PGP SIGNATURE-----
-
---YZa61AII3s1sGKYx--
