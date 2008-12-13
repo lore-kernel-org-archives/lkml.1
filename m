@@ -1,102 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbYLMTdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbYLMTnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752457AbYLMTdr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 14:33:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYLMTdi
+	id S1752537AbYLMTnU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 14:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbYLMTnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 14:33:38 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:60371 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbYLMTdi (ORCPT
+	Sat, 13 Dec 2008 14:43:09 -0500
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:56386 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751190AbYLMTnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 14:33:38 -0500
-Date: Sat, 13 Dec 2008 20:35:06 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Airlie <airlied@linux.ie>,
-       dri-devel <dri-devel@lists.sourceforge.net>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: BUG: via_drmclient.h is referenced but does not exist
-Message-ID: <20081213193506.GA22969@uranus.ravnborg.org>
+	Sat, 13 Dec 2008 14:43:07 -0500
+Subject: [PATCH] x86 Fix VMI crash on boot in 2.6.28-rc8
+From: Zachary Amsden <zach@vmware.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Greg KH <gregkh@suse.de>
+Content-Type: multipart/mixed; boundary="=-h1n8Lkk4iCSq04Qrx+mn"
+Date: Sat, 13 Dec 2008 12:36:58 -0800
+Message-Id: <1229200618.8766.92.camel@bodhitayantram.eng.vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David et al.
 
-After improving the headers_check.pl script to do a
-check for files included with:
+--=-h1n8Lkk4iCSq04Qrx+mn
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-	#include "foo.h"
+Recent kernels crash on boot under VMware when VMI is enabled.  Here is
+the fix... please apply.
 
-it reported the following error:
+Thanks,
 
-/home/sam/kernel/knext.git/usr/include/drm/via_drm.h:34: included file '/home/sam/kernel/knext.git/usr/include/drm/via_drmclient.h' is not exported
+Zach
 
-And indeed the file via_drmclient.h does not exist in the kernel source.
-We do not see any issue in the kernel as the include is guarded by:
+--=-h1n8Lkk4iCSq04Qrx+mn
+Content-Disposition: attachment; filename=x86-vmi-boot-ioremap-fix-take-4.patch
+Content-Type: text/x-patch; name=x86-vmi-boot-ioremap-fix-take-4.patch; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-#ifndef __KERNEL__
-#include "via_drmclient.h"
-#endif
+VMI initialiation can relocate the fixmap, causing early_ioremap
+to malfunction if it is initialized before the relocation.
+To fix this, VMI activation is split into two phases; the detection,
+which must happen before setting up ioremap, and the activation,
+which must happen after parsing early boot parameters.
 
-But referring to a non-existing file is not the right thing to to.
+This fixes a crash on boot when VMI is enabled under VMware.
 
-We need this check as we have several places where we do:
+Signed-off-by: Zachary Amsden <zach@vmware.com>
 
-	#include "foo.h"
-
-in our exported headers.
-
-So we need to fix drm somehow.
-
-The headers_check.pl patch is included for reference.
-
-	Sam
-
-diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
-index 488a3b1..b97341e 100644
---- a/scripts/headers_check.pl
-+++ b/scripts/headers_check.pl
-@@ -32,7 +32,7 @@ foreach my $file (@files) {
- 	$lineno = 0;
- 	while ($line = <FH>) {
- 		$lineno++;
--		check_include();
-+		check_include($filename);
- 	}
- 	close FH;
- }
-@@ -40,7 +40,8 @@ exit $ret;
+diff --git a/arch/x86/include/asm/vmi.h b/arch/x86/include/asm/vmi.h
+index b7c0dea..61e08c0 100644
+--- a/arch/x86/include/asm/vmi.h
++++ b/arch/x86/include/asm/vmi.h
+@@ -223,9 +223,15 @@ struct pci_header {
+ } __attribute__((packed));
  
- sub check_include
+ /* Function prototypes for bootstrapping */
++#ifdef CONFIG_VMI
+ extern void vmi_init(void);
++extern void vmi_activate(void);
+ extern void vmi_bringup(void);
+-extern void vmi_apply_boot_page_allocations(void);
++#else
++static inline void vmi_init(void) {}
++static inline void vmi_activate(void) {}
++static inline void vmi_bringup(void) {}
++#endif
+ 
+ /* State needed to start an application processor in an SMP system. */
+ struct vmi_ap_state {
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 9d5674f..bdec76e 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -794,6 +794,9 @@ void __init setup_arch(char **cmdline_p)
+ 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
+ #endif
+ 
++	/* VMI may relocate the fixmap; do this before touching ioremap area */
++	vmi_init();
++
+ 	early_cpu_init();
+ 	early_ioremap_init();
+ 
+@@ -880,13 +883,8 @@ void __init setup_arch(char **cmdline_p)
+ 	check_efer();
+ #endif
+ 
+-#if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
+-	/*
+-	 * Must be before kernel pagetables are setup
+-	 * or fixmap area is touched.
+-	 */
+-	vmi_init();
+-#endif
++	/* Must be before kernel pagetables are setup */
++	vmi_activate();
+ 
+ 	/* after early param, so could get panic from serial */
+ 	reserve_early_setup_data();
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 7b10933..f71f96f 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -294,9 +294,7 @@ static void __cpuinit start_secondary(void *unused)
+ 	 * fragile that we want to limit the things done here to the
+ 	 * most necessary things.
+ 	 */
+-#ifdef CONFIG_VMI
+ 	vmi_bringup();
+-#endif
+ 	cpu_init();
+ 	preempt_disable();
+ 	smp_callin();
+diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
+index 8b6c393..22fd657 100644
+--- a/arch/x86/kernel/vmi_32.c
++++ b/arch/x86/kernel/vmi_32.c
+@@ -960,8 +960,6 @@ static inline int __init activate_vmi(void)
+ 
+ void __init vmi_init(void)
  {
--	if ($line =~ m/^\s*#\s*include\s+<((asm|linux).*)>/) {
-+	my ($filename) = @_;
-+	if ($line =~ m/^\s*#\s*include\s+<((asm|linux)[_a-zA-Z0-9\/.]+)>/) {
- 		my $inc = $1;
- 		my $found;
- 		$found = stat($dir . "/" . $inc);
-@@ -52,5 +53,18 @@ sub check_include
- 			printf STDERR "$filename:$lineno: included file '$inc' is not exported\n";
- 			$ret = 1;
- 		}
-+	} elsif ($line =~ m/^\s*#\s*include\s+"([_a-zA-Z0-9.]+)"/) {
-+		my $inc = $1;
-+		my $filedir = $filename;
-+		my $found;
+-	unsigned long flags;
+-
+ 	if (!vmi_rom)
+ 		probe_vmi_rom();
+ 	else
+@@ -973,13 +971,21 @@ void __init vmi_init(void)
+ 
+ 	reserve_top_address(-vmi_rom->virtual_top);
+ 
+-	local_irq_save(flags);
+-	activate_vmi();
+-
+ #ifdef CONFIG_X86_IO_APIC
+ 	/* This is virtual hardware; timer routing is wired correctly */
+ 	no_timer_check = 1;
+ #endif
++}
 +
-+		# drop filename part so we have only the dir part
-+		$filedir =~ s/\/[_a-zA-Z0-9.]+$//;
++void vmi_activate(void)
++{
++	unsigned long flags;
 +
-+		$found = stat($filedir . "/" . $inc);
-+		if (!$found) {
-+			printf STDERR "$filename:$lineno: included file '$filedir/$inc' is not exported\n";
-+			$ret = 1;
-+		}
- 	}
++	if (!vmi_rom)
++		return;
++
++	local_irq_save(flags);
++	activate_vmi();
+ 	local_irq_restore(flags & X86_EFLAGS_IF);
  }
+ 
+
+--=-h1n8Lkk4iCSq04Qrx+mn--
+
