@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751980AbYLMQof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751312AbYLMQpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751980AbYLMQof (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 11:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbYLMQo1
+	id S1751312AbYLMQpS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 11:45:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbYLMQpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 11:44:27 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49060 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750855AbYLMQo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 11:44:27 -0500
-Subject: Re: [RFC PATCH -v4 13/14] inotify: reimplement inotify using
- fsnotify
-From: Eric Paris <eparis@redhat.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       viro@ZenIV.linux.org.uk, hch@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20081213032255.GH807@ioremap.net>
-References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
-	 <20081212215222.27112.33426.stgit@paris.rdu.redhat.com>
-	 <20081213032255.GH807@ioremap.net>
-Content-Type: text/plain
-Date: Sat, 13 Dec 2008 11:44:01 -0500
-Message-Id: <1229186641.29167.110.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Sat, 13 Dec 2008 11:45:04 -0500
+Received: from rn-out-0910.google.com ([64.233.170.187]:45745 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbYLMQpB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Dec 2008 11:45:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vPXs2a/2V/oKtdFuzAQwobQ3/RAfmA7P/l7r2r/Xcp6ZVhsvdfwIFNZQUJMcOFvGIt
+         +WuDcmSXl+OjVGo1SlkEZYrTHtlmgvBO3cITjwV/q8FG9YAM/q3KRRVA/xRjtPBDWFlU
+         /f+dsG6K63PwXgMlZN2kYyWti/iWw0Kyf3wvQ=
+Message-ID: <ca2dc2820812130844i6b3ca8d2n39af8383b6f428d@mail.gmail.com>
+Date: Sat, 13 Dec 2008 17:44:59 +0100
+From: "Miguel Ojeda" <miguel.ojeda.sandonis@gmail.com>
+To: "Giangiacomo Mariotti" <giangiacomo.mariotti@gmail.com>
+Subject: Re: [PATCH] Misuse of sizeof
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <2aac3c260812130831m3ec4aa5cm3abd729499727873@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2aac3c260812130831m3ec4aa5cm3abd729499727873@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-13 at 06:22 +0300, Evgeniy Polyakov wrote:
-> On Fri, Dec 12, 2008 at 04:52:23PM -0500, Eric Paris (eparis@redhat.com) wrote:
-> > Yes, holy shit, I'm trying to reimplement inotify as fsnotify...
-> 
-> While you are at it, please update inode_setattr() so that it dropped
-> inotify watches if new permissions do not allow to read data.
+On Sat, Dec 13, 2008 at 5:31 PM, Giangiacomo Mariotti
+<giangiacomo.mariotti@gmail.com> wrote:
+> IMO there's a bug in the use of sizeof in /arch/x86/boot/main.c, it's
+> also a strange style.
+>
 
-Now this isn't so easy....   Do you have suggestions how to do this with
-inotify as it stands today?  the vfs needs to know what's hanging on the
-open fd in userspace...    Not a bad idea.  I'll look, but clearly not a
-core patch....
-
--Eric
-
+It is not a bug. You don't need to use parenthesis when used on
+variables. See 6.5.3.4.
