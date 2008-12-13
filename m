@@ -1,58 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555AbYLMVbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbYLMVrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752555AbYLMVbA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 16:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYLMVav
+	id S1752438AbYLMVrP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 16:47:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbYLMVq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 16:30:51 -0500
-Received: from wilson.telenet-ops.be ([195.130.132.42]:54923 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbYLMVau (ORCPT
+	Sat, 13 Dec 2008 16:46:59 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:33187 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751372AbYLMVq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 16:30:50 -0500
-Date: Sat, 13 Dec 2008 22:30:48 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: =?UTF-8?Q?Kolbj=C3=B8rn_Barmen?= <linux-m68k@kolla.no>
-cc: Andreas Bombe <aeb@debian.org>, Linux/m68k <linux-m68k@vger.kernel.org>,
+	Sat, 13 Dec 2008 16:46:58 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAOm7Q0lMROB9/2dsb2JhbACBbM0vgn0
+Date: Sat, 13 Dec 2008 16:46:46 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: ltt-dev@lists.casi.polymtl.ca
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] amiflop: get rid of sleep_on calls
-In-Reply-To: <alpine.LNX.2.00.0812131614360.20992@firda.kolla.no>
-Message-ID: <Pine.LNX.4.64.0812132229560.5728@anakin>
-References: <1228755578-26069-1-git-send-email-aeb@debian.org>
- <Pine.LNX.4.64.0812090927580.29640@anakin> <alpine.LNX.2.00.0812131614360.20992@firda.kolla.no>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Subject: LTTng 0.66 (dynamic channel allocation, markers modifications)
+Message-ID: <20081213214646.GA23687@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:30:37 up 26 days, 22:11,  5 users,  load average: 1.70, 0.81,
+	0.61
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Dec 2008, Kolbjørn Barmen wrote:
-> On Tue, 9 Dec 2008, Geert Uytterhoeven wrote:
-> > > The complete_all() with INIT_COMPLETION() was because I'm not sure about
-> > > whether fd_motor_on() might run concurrently.  Better safe than sorry.
-> > 
-> > I'm afraid my Amiga floppy drive doesn't work anymore...
-> > Any other testers available?
-> 
-> I have some, even enough external ones to chain up to the max of 4
-> floppy drives (floppy raid anyone? :)). What needs to be tested?
+Hi,
 
-That the floppy drive still works(tm)? ;-)
+I just finished a big development iteration on LTTng/markers. It updates
+the following tools :
 
-> I havent updated kernel for quite some time (still running 2.6.22),
-> should I now pull sources from git or what?
+LTTng 0.66, ltt-control 0.60, LTTV 0.12.0
 
-I haven't applied Andreas' patch yet, so you should pull the sources from git
-and apply his patch.
+And it changes the trace version number to 2.3.
 
-Gr{oetje,eeting}s,
+Those were the last major changes I had to do to LTTng before releasing
+it to LKML. It includes :
 
-						Geert
+- Dynamic allocation of channels.
+- Channels are declared in a supplementary marker parameter.
+- Event IDs are now managed by the marker infrastructure.
+- Event IDs are now dynamically allocated per-channel.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+With these changes, changing any tracer so it uses the LTTng buffering
+mechanism becomes as trivial as declaring a marker (DECLARE_MARKER())
+and using the reference to the marker structure in a probe callback to
+send the information into LTTng trace buffers. Many traces can be active
+at once, each with their own set of active channels. Therefore, a given
+tracer might only want to enable its own channel and the metadata
+channel so it only gets its own information.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+So in the current marker implementation, the marker declaration is
+responsible for associating a data source with a :
+
+- Channel
+- Event ID within this channel
+- Field types (format string)
+
+Currently, the last element missing is the ltt-ascii.ko kernel module
+which pretty-prints the information from within the kernel. The trace
+clock time-base might not be as shiny as people would want it to
+(especially wrt non-synchronized TSCs), but it works. I guess I'll have
+to give it another good look before I resubmit it though.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
