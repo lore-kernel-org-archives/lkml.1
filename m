@@ -1,80 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbYLMOqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbYLMOrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757951AbYLMOqU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 09:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbYLMOqH
+	id S1758142AbYLMOrS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 09:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbYLMOq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 09:46:07 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:51427 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752022AbYLMOqG (ORCPT
+	Sat, 13 Dec 2008 09:46:59 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:56872 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754054AbYLMOq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 09:46:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=T4KjCW1gDyQcMe8xYuyhwJjTb7sgZXbJU/fWqO0op7YPERZlhufR0KTA9HSyHbigAx
-         xxyPieL7ICFRxNazusMXz5DURcxlpVwgFlQJfcQwLvxpVWQJeB9xnW2RMcdaDpmtm4Hx
-         kjgvGx9/HrMDPMJGiRTCeiVG9uYFmOiLpda3c=
-Message-ID: <c62985530812130646r6bcdf424o752f16458dd22914@mail.gmail.com>
-Date: Sat, 13 Dec 2008 15:46:03 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Steven Rostedt" <srostedt@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Alexander van Heukelum" <heukelum@fastmail.fm>
-In-Reply-To: <20081213082054.GA7559@localhost>
+	Sat, 13 Dec 2008 09:46:58 -0500
+Message-ID: <4943CAAB.4050008@vlnb.net>
+Date: Sat, 13 Dec 2008 17:46:04 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Steven Rostedt <srostedt@redhat.com>
+CC: Sam Ravnborg <sam@ravnborg.org>, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       fweisbec <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH][RFC 2/23]: SCST core
+References: <494009D7.4020602@vlnb.net> <49400ACD.3070502@vlnb.net>	 <20081210191213.GA15273@uranus.ravnborg.org> <49414DBE.6070801@vlnb.net>	 <20081211210917.GB27010@uranus.ravnborg.org>  <4942BA85.3070408@vlnb.net> <1229118607.24995.18.camel@localhost.localdomain>
+In-Reply-To: <1229118607.24995.18.camel@localhost.localdomain>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081212184136.GB14192@localhost>
-	 <1229113167.32623.12.camel@localhost.localdomain>
-	 <20081212204724.GA26194@localhost>
-	 <alpine.DEB.1.10.0812121552360.19351@gandalf.stny.rr.com>
-	 <20081212205729.GA28554@localhost>
-	 <alpine.DEB.1.10.0812121620520.19351@gandalf.stny.rr.com>
-	 <20081212213538.GA731@localhost>
-	 <alpine.DEB.1.10.0812121655090.19351@gandalf.stny.rr.com>
-	 <20081213082054.GA7559@localhost>
+X-Provags-ID: V01U2FsdGVkX19uiUO0NmhOxVBzbhWHq4Z0ArV884RZrwLmSBo
+ dJ8VRSXOFmc0DsxSoF+bx+JFqUhQ0vjsNdqJcs53Ywx3fEppA9
+ C9cz7inWmV9NBjxRQaTkw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/13 Cyrill Gorcunov <gorcunov@gmail.com>:
-> [Steven Rostedt - Fri, Dec 12, 2008 at 04:56:47PM -0500]
-> ...
-> | > Steve, here is how it could look like:
-> | > (I liked first proposal more :)
-> |
-> | I see the confusion. In ftrace.h the function graph tracer config is not
-> | inside CONFIG_FUNCTION_TRACER, even though it is dependent on it (or
-> | was). OK, just do your first proposal then.
-> |
-> | -- Steve
-> |
->
-> ok, I sent it yesterday as
->
->        http://lkml.org/lkml/2008/12/12/301
->        [PATCH] x86: entry_64 - introduce FTRACE_ frame macro v2
->
-> Ingo, will you pick it up?
->
->                - Cyrill -
->
+Steven Rostedt wrote:
+> (Added Ingo and Frederic)
+> 
+> On Fri, 2008-12-12 at 22:24 +0300, Vladislav Bolkhovitin wrote: 
+>> Sam Ravnborg wrote:
+>>>>>>  drivers/scst/scst_lib.c      | 3689 
+>>>>>>  +++++++++++++++++++++++++++++++++++++
+>>>>>>  drivers/scst/scst_main.c     | 1919 +++++++++++++++++++
+>>>>>>  drivers/scst/scst_module.c   |   69
+>>>>>>  drivers/scst/scst_priv.h     |  513 +++++
+>>>>>>  drivers/scst/scst_targ.c     | 5458 
+>>>>>>  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>>>>>>  8 files changed, 12435 insertions(+)
+>>>>> There was a lot af TRACE_ENTRY() / TRACE_EXIT() noise.
+>>>>> We should have proper tools for that by now (I hope).
+>>>> Sorry, I don't see such tools with, for instance, a possibility to be 
+>>>> compiled out in non-debug builds.
+>>>>
+>>>> From one side, I can agree, those TRACE_ENTRY()/TRACE_EXIT() statements 
+>>>> *may* look like a noise (I personally don't notice them), but, from 
+>>>> other side, in past times they have proved how usable they are. If an 
+>>>> SCST user has a problem, I simply ask him to make a debug build, then 
+>>>> enable entry_exit and some other logging levels, then reproduce the 
+>>>> problem and send me the logs. Then in most cases I can see what's wrong 
+>>>> and provide a fix without additional actions and questions.
+>>> I had ftrace in mind but it has not hit mainline yet.
+> 
+> I'm assuming you are talking about previous kernels. ftrace is in
+> 2.6.27, and dynamic ftrace is back in 2.6.28-rcX
+> 
+>>> But will do before this patchset does.
+>> Unfortunately, ftrace at the moment can't fully replace 
+>> TRACE_ENTRY()/TRACE_EXIT() statements, because it lacks:
+>>
+>> 1. Doing trace in only some modules or source files. Noise from tracing 
+>> of the whole kernel is not needed if we investigate problem in only one 
+>> module (SCST in this case)
+> 
+> With dynamic ftrace you can pick and choose the what functions you want
+> to trace. 2.6.28 will not have the exit tracing, but 2.6.29 will (see
+> linux-tip for latest ftrace)
+> 
+> Here, for current 2.6.28, I can do:
+> 
+> # awk '$2=="t" && $4=="[e1000]" { print $3; }' \
+>    /proc/kallsyms  > /debug/tracing/set_ftrace_filter
+> 
+> and now only the e1000 functions will be traced.
+> 
+> # echo function > /debug/tracing/current_tracer
+> 
+> [root@bxrhel51 ~]# cat /debug/tracing/trace |head
+> # tracer: function
+> #
+> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> #              | |       |          |         |
+>             sshd-3411  [000]   567.748887: e1000_xmit_frame <-dev_hard_start_xmit
+>             sshd-3411  [000]   567.748890: e1000_maybe_stop_tx <-e1000_xmit_frame
+>             sshd-3411  [000]   567.748893: e1000_maybe_stop_tx <-e1000_xmit_frame
+>           <idle>-0     [000]   567.748943: e1000_intr <-handle_IRQ_event
+>           <idle>-0     [000]   567.748948: e1000_clean <-net_rx_action
+>           <idle>-0     [000]   567.748949: e1000_unmap_and_free_tx_resource <-e1000_clean
+> 
+> 
+> I can pick any function I want to trace. The list of available functions
+> to trace is in /debug/tracing/available_filter_functions.
+> 
+> 
+>> .
+>>
+>> 2. Ability to inject own messages in the output stream. It's needed to 
+>> have synchronized stream of output messages about both functions tracing 
+>> and what those functions doing. For instance:
+>>
+>> entry in func1()
+>> adding cmd C to list L
+>> exit from func1()
+> 
+> Is this from within the driver?
+> 
+> By adding this simply patch:
+> 
+> diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+> index 872799b..b198dac 100644
+> --- a/drivers/net/e1000/e1000_main.c
+> +++ b/drivers/net/e1000/e1000_main.c
+> @@ -29,6 +29,8 @@
+>  #include "e1000.h"
+>  #include <net/ip6_checksum.h>
+>  
+> +#include <linux/ftrace.h>
+> +
+>  char e1000_driver_name[] = "e1000";
+>  static char e1000_driver_string[] = "Intel(R) PRO/1000 Network Driver";
+>  #define DRV_VERSION "7.3.20-k3-NAPI"
+> @@ -3810,6 +3812,8 @@ static int e1000_clean(struct napi_struct *napi, int budget)
+>  	if (tx_cleaned)
+>  		work_done = budget;
+>  
+> +	ftrace_printk("adapter is %p work_done: %d\n", adapter, work_done);
+> +
+>  	/* If budget not fully consumed, exit the polling mode */
+>  	if (work_done < budget) {
+>  		if (likely(adapter->itr_setting & 3))
+> 
+> 
+> I could do:
+> 
+> # awk '$2=="t" && $4=="[e1000]" { print $3; }' \
+>   /proc/kallsyms  > /debug/tracing/set_ftrace_filter
+> # echo 0 > /debug/tracing/tracing_enabled
+> # echo ftrace_printk > /debug/tracing/iter_ctrl
+> # echo function > /debug/tracing/current_tracer
+> # echo 1 > /debug/tracing/tracing_enabled
+> [wait]
+> # echo 0 > /debug/tracing/tracing_enabled
+> # cat /debug/tracing/trace | head
+> # tracer: function
+> #
+> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> #              | |       |          |         |
+>             bash-3393  [000]   469.809904: e1000_clean_rx_irq <-e1000_clean
+>             bash-3393  [000]   469.809939: e1000_alloc_rx_buffers <-e1000_clean_rx_irq
+>             bash-3393  [000]   469.809940: e1000_check_64k_bound <-e1000_alloc_rx_buffers
+>             bash-3393  [000]   469.809945: e1000_clean: adapter is ffff88003d13a900 work_done: 64
+>             bash-3393  [000]   469.809946: e1000_clean <-net_rx_action
+> 
+> 
+> 
+> Note in 2.6.29 (and current tip): s/iter_ctrl/tracing_options/
+> 
+> 
+> 
+>> Otherwise there would be 2 traces:
+>>
+>> entry in func1()
+>> exit from func1()
+>>
+>> and
+>>
+>> adding cmd C to list L
+>>
+>> which almost impossible to merge to analyze.
+> 
+> Perhaps you need to do it from userspace?
+> 
+> # echo 1 > /debug/tracing/tracing_enabled ; \
+>  echo hi > /debug/tracing/trace_marker ; \
+>  sleep 1 ; \
+>  echo bye > /debug/tracing/trace_marker ; \
+>  echo 0 > /debug/tracing/tracing_enabled 
+> # cat /debug/tracing/trace
+> # tracer: function
+> #
+> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> #              | |       |          |         |
+>             bash-3393  [003]  1068.636510: 0: hi
+>           <idle>-0     [002]  1069.039891: e1000_intr <-handle_IRQ_event
+>           <idle>-0     [002]  1069.039898: e1000_clean <-net_rx_action
+>           <idle>-0     [002]  1069.039901: e1000_clean_rx_irq <-e1000_clean
+>           <idle>-0     [002]  1069.039950: e1000_alloc_rx_buffers <-e1000_clean_rx_irq
+>           <idle>-0     [002]  1069.039951: e1000_check_64k_bound <-e1000_alloc_rx_buffers
+>           <idle>-0     [002]  1069.039952: e1000_update_itr <-e1000_clean
+> [...]
+>           <idle>-0     [002]  1069.487184: e1000_intr <-handle_IRQ_event
+>           <idle>-0     [002]  1069.487190: e1000_clean <-net_rx_action
+>           <idle>-0     [002]  1069.487191: e1000_clean_rx_irq <-e1000_clean
+>           <idle>-0     [002]  1069.487192: e1000_update_itr <-e1000_clean
+>           <idle>-0     [002]  1069.487192: e1000_update_itr <-e1000_clean
+>             bash-3393  [003]  1069.638193: 0: bye
+> 
 
-Hi,
+All the above functionality is almost what we need. The only thing left, 
+which I forgot to mention, is possibility to log also functions return 
+value on exit. This is what TRACE_EXIT_RES() in SCST does. Is it 
+possible to add those?
 
-Looks good and clarify the asm bits.
+Also (maybe I simply miss something) looks like ftrace doesn't trace 
+exit from functions, only entrance to them. Is it true? Is it possibly 
+to log exit from functions as well?
 
-I wonder if the function_graph_tracer should continue to necessarily
-depend on the function tracer.
-It was more simplier to do so but perhaps that could be avoided with
-small modifications.
+And one more question. Is it possible to redirect ftrace tracing to 
+serial console or any other console (netconsole?)? It can be helpful to 
+investigate hard lockups in IRQ or with IRQs disabled.
+
+Thanks!
+Vlad
