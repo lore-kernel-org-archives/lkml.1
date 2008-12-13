@@ -1,159 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbYLMTnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbYLMUQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752537AbYLMTnU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 14:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbYLMTnJ
+	id S1752570AbYLMUQQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 15:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYLMUP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 14:43:09 -0500
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:56386 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751190AbYLMTnH (ORCPT
+	Sat, 13 Dec 2008 15:15:58 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:13373 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751413AbYLMUP6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 14:43:07 -0500
-Subject: [PATCH] x86 Fix VMI crash on boot in 2.6.28-rc8
-From: Zachary Amsden <zach@vmware.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, Greg KH <gregkh@suse.de>
-Content-Type: multipart/mixed; boundary="=-h1n8Lkk4iCSq04Qrx+mn"
-Date: Sat, 13 Dec 2008 12:36:58 -0800
-Message-Id: <1229200618.8766.92.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Sat, 13 Dec 2008 15:15:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=erb0mAPaj6MhEptT1hE/ZkLkfDuz9oLsvrC8NpWQpfWftN+4FOQh5DMGsWMDY6Naza
+         pvd/Oh3VlhwxgtGS3LqwZXDn1G1jmF4m6oZuOM3eqCNRszz8XNPz/hWVjS54CzuBe4MA
+         MiYmxv4ccBKqOKRF634MDtW5gR6mh/O8vlTVM=
+Message-ID: <494417FF.7010501@gmail.com>
+Date: Sat, 13 Dec 2008 21:15:59 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+MIME-Version: 1.0
+To: drzeus@drzeus.cx
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mmc: balanc pci_iomap with pci_iounmap
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+balance pci_iomap with pci_iounmap, not iounmap
 
---=-h1n8Lkk4iCSq04Qrx+mn
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-Recent kernels crash on boot under VMware when VMI is enabled.  Here is
-the fix... please apply.
-
-Thanks,
-
-Zach
-
---=-h1n8Lkk4iCSq04Qrx+mn
-Content-Disposition: attachment; filename=x86-vmi-boot-ioremap-fix-take-4.patch
-Content-Type: text/x-patch; name=x86-vmi-boot-ioremap-fix-take-4.patch; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-
-VMI initialiation can relocate the fixmap, causing early_ioremap
-to malfunction if it is initialized before the relocation.
-To fix this, VMI activation is split into two phases; the detection,
-which must happen before setting up ioremap, and the activation,
-which must happen after parsing early boot parameters.
-
-This fixes a crash on boot when VMI is enabled under VMware.
-
-Signed-off-by: Zachary Amsden <zach@vmware.com>
-
-diff --git a/arch/x86/include/asm/vmi.h b/arch/x86/include/asm/vmi.h
-index b7c0dea..61e08c0 100644
---- a/arch/x86/include/asm/vmi.h
-+++ b/arch/x86/include/asm/vmi.h
-@@ -223,9 +223,15 @@ struct pci_header {
- } __attribute__((packed));
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/mmc/host/sdricoh_cs.c b/drivers/mmc/host/sdricoh_cs.c
+index 1df44d9..d4d86be 100644
+--- a/drivers/mmc/host/sdricoh_cs.c
++++ b/drivers/mmc/host/sdricoh_cs.c
+@@ -463,7 +463,7 @@ static int sdricoh_init_mmc(struct pci_dev *pci_dev,
  
- /* Function prototypes for bootstrapping */
-+#ifdef CONFIG_VMI
- extern void vmi_init(void);
-+extern void vmi_activate(void);
- extern void vmi_bringup(void);
--extern void vmi_apply_boot_page_allocations(void);
-+#else
-+static inline void vmi_init(void) {}
-+static inline void vmi_activate(void) {}
-+static inline void vmi_bringup(void) {}
-+#endif
+ err:
+ 	if (iobase)
+-		iounmap(iobase);
++		pci_iounmap(iobase);
+ 	if (mmc)
+ 		mmc_free_host(mmc);
  
- /* State needed to start an application processor in an SMP system. */
- struct vmi_ap_state {
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 9d5674f..bdec76e 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -794,6 +794,9 @@ void __init setup_arch(char **cmdline_p)
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
- #endif
- 
-+	/* VMI may relocate the fixmap; do this before touching ioremap area */
-+	vmi_init();
-+
- 	early_cpu_init();
- 	early_ioremap_init();
- 
-@@ -880,13 +883,8 @@ void __init setup_arch(char **cmdline_p)
- 	check_efer();
- #endif
- 
--#if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
--	/*
--	 * Must be before kernel pagetables are setup
--	 * or fixmap area is touched.
--	 */
--	vmi_init();
--#endif
-+	/* Must be before kernel pagetables are setup */
-+	vmi_activate();
- 
- 	/* after early param, so could get panic from serial */
- 	reserve_early_setup_data();
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 7b10933..f71f96f 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -294,9 +294,7 @@ static void __cpuinit start_secondary(void *unused)
- 	 * fragile that we want to limit the things done here to the
- 	 * most necessary things.
- 	 */
--#ifdef CONFIG_VMI
- 	vmi_bringup();
--#endif
- 	cpu_init();
- 	preempt_disable();
- 	smp_callin();
-diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-index 8b6c393..22fd657 100644
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -960,8 +960,6 @@ static inline int __init activate_vmi(void)
- 
- void __init vmi_init(void)
- {
--	unsigned long flags;
--
- 	if (!vmi_rom)
- 		probe_vmi_rom();
- 	else
-@@ -973,13 +971,21 @@ void __init vmi_init(void)
- 
- 	reserve_top_address(-vmi_rom->virtual_top);
- 
--	local_irq_save(flags);
--	activate_vmi();
--
- #ifdef CONFIG_X86_IO_APIC
- 	/* This is virtual hardware; timer routing is wired correctly */
- 	no_timer_check = 1;
- #endif
-+}
-+
-+void vmi_activate(void)
-+{
-+	unsigned long flags;
-+
-+	if (!vmi_rom)
-+		return;
-+
-+	local_irq_save(flags);
-+	activate_vmi();
- 	local_irq_restore(flags & X86_EFLAGS_IF);
- }
- 
-
---=-h1n8Lkk4iCSq04Qrx+mn--
 
