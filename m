@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751592AbYLMQ4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751087AbYLMQ4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751592AbYLMQ4Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 11:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbYLMQz7
+	id S1751087AbYLMQ4a (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 11:56:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYLMQ4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 11:55:59 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:60340 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750834AbYLMQz6 (ORCPT
+	Sat, 13 Dec 2008 11:56:15 -0500
+Received: from mu-out-0910.google.com ([209.85.134.191]:64590 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751411AbYLMQ4N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 11:55:58 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=aqAbLLq-Bwo4eiGZH8MA:9 a=QJB4N6rcCAJVedhoF2P0fkj8yeIA:4 a=6Mjz-bRUWdkA:10 a=zZfqtP59WncA:10
-Date: Sat, 13 Dec 2008 08:55:55 -0800 (PST)
-From: Zwane Mwaikambo <zwane@infradead.org>
-To: pl ice <telent997@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: when interrupt came, the kernel save pt_regs->eip always the
- same?
-In-Reply-To: <41d311580812130748o262fdb31se647e840977d90a9@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0812130854380.28394@montezuma.windriver.com>
-References: <41d311580812130732u58f480ecgc21cb6f16365d45a@mail.gmail.com> <41d311580812130740k6e0c139kacb5bad33b5b8fd4@mail.gmail.com> <41d311580812130748o262fdb31se647e840977d90a9@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 13 Dec 2008 11:56:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=lYUNVMBSZaLCuVUo6IFL+X4L+k0fKbFYcWAqSW8tlqfFiXuUq3yudhxucflSKJQg4K
+         9nKjlIhdvwWSjs++8GBt088bQQOsXVmJ9pFbocvFhieB2Xt5biafKqlkAIwHhPKzJVzv
+         pXLVoCQdKHQJUa5LEaB6V869hNo1iC10RBPoI=
+Date: Sat, 13 Dec 2008 19:48:45 +0300
+From: Gregory Petrosyan <gregory.petrosyan@gmail.com>
+To: Giangiacomo Mariotti <giangiacomo.mariotti@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Misuse of sizeof
+Message-ID: <20081213164845.GA19407@home>
+Mail-Followup-To: Giangiacomo Mariotti <giangiacomo.mariotti@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <2aac3c260812130831m3ec4aa5cm3abd729499727873@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2aac3c260812130831m3ec4aa5cm3abd729499727873@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-12-10)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Dec 2008, pl ice wrote:
+On Sat, Dec 13, 2008 at 05:31:06PM +0100, Giangiacomo Mariotti wrote:
+> IMO there's a bug in the use of sizeof in /arch/x86/boot/main.c, it's
+> also a strange style.
 
-> HI,
->     These day i wanted get cpu context ,when interrupt came.BUT i
-> found when interrupt came kernel saved cpu context in struct pt_regs
-> and delivered to do_IRQ ,and i print the pt_regs->eip,they alway same
-> on the same interrupt?
->      The interrupt can come anytime,i think the eip will be very
-> different every time.BUT i debug kernel ,print eip in the function
-> do_IRQ,found it didn't run as i thought.Can anybody tell me why?
+> -	BUILD_BUG_ON(sizeof boot_params != 4096);
+> -	memcpy(&boot_params.hdr, &hdr, sizeof hdr);
+> +	BUILD_BUG_ON(sizeof(boot_params) != 4096);
+> +	memcpy(&boot_params.hdr, &hdr, sizeof(hdr));
 
-If the cpu is idle, you have a higher probability that the idle function 
-is in regs->eip
+The 'sizeof xxx' style is perfectly valid.
 
-	Zwane
+	Gregory
