@@ -1,101 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbYLMPZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbYLMP1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756851AbYLMPZQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 10:25:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYLMPY6
+	id S1757303AbYLMP1A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 10:27:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYLMP0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 10:24:58 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:43520 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750975AbYLMPY5 (ORCPT
+	Sat, 13 Dec 2008 10:26:51 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:14594 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119AbYLMP0v convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 10:24:57 -0500
-Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: linux-iscsi-target-dev@googlegroups.com,
+	Sat, 13 Dec 2008 10:26:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ErI6bF/Ksx2IY2r+hbXaAAQ2F79oO2IiifmAuxrLujcBlDLeeMQTiIutj9H1sUDFaT
+         L2pZ6JldXzQsqlbZCai6+OmmthXCdyzpf73VWW8qdpeFnLSxE0zm8wdQsC967TGpPRly
+         sfj3dWRpGGjbqbkjf90/S5qWpXlVjr1AXH29s=
+Message-ID: <c62985530812130726k1ee69c9dof67260f479fd8263@mail.gmail.com>
+Date: Sat, 13 Dec 2008 16:26:49 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Steven Rostedt" <srostedt@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
        LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Hannes Reinecke <hare@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>
-In-Reply-To: <e2e108260812130356y1fe60713xf844a35c775e161d@mail.gmail.com>
-References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>
-	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>
-	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>
-	 <54939.1229149205@turing-police.cc.vt.edu>
-	 <e2e108260812130141o3d21bbbdob9e7c9f95d309a74@mail.gmail.com>
-	 <1229162907.4153.857.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812130223q13fd98d8gc1e55881a92b939@mail.gmail.com>
-	 <1229167118.4153.930.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812130356y1fe60713xf844a35c775e161d@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 13 Dec 2008 09:24:56 -0600
-Message-Id: <1229181896.3258.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+       "Alexander van Heukelum" <heukelum@fastmail.fm>
+In-Reply-To: <20081213151600.GA12556@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20081212184136.GB14192@localhost>
+	 <20081212204724.GA26194@localhost>
+	 <alpine.DEB.1.10.0812121552360.19351@gandalf.stny.rr.com>
+	 <20081212205729.GA28554@localhost>
+	 <alpine.DEB.1.10.0812121620520.19351@gandalf.stny.rr.com>
+	 <20081212213538.GA731@localhost>
+	 <alpine.DEB.1.10.0812121655090.19351@gandalf.stny.rr.com>
+	 <20081213082054.GA7559@localhost>
+	 <c62985530812130646r6bcdf424o752f16458dd22914@mail.gmail.com>
+	 <20081213151600.GA12556@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-13 at 12:56 +0100, Bart Van Assche wrote:
-> On Sat, Dec 13, 2008 at 12:18 PM, Nicholas A. Bellinger
-> <nab@linux-iscsi.org> wrote:
-> > Of course I fix bugs when people report them.
-> 
-> Things have changed then since the beginning of this year. As anyone
-> can see in the threads I referred to, you have done your best to deny
-> that the crashes and system hangs were caused by LIO, although I had
-> posted exact instructions on how to reproduce the bugs. Regarding
-> kernel integration and subsystem maintainership: one of the important
-> tasks of a maintainer is to verify whether reported bugs are
-> reproducible, and if so, to resolve them. I'm happy none of the
-> current kernel maintainers has the habitude of denying bug reports
-> that are 100% reproducible and which contain exact instructions about
-> how to reproduce the bug.
-
-OK, All of you on this thread, why don't you take time out to step back
-and think about the effects this descent into trench warfare is having
-on your observers.
-
-     1. You're both saying the other side isn't production ready ...
-        it's not a stretch for the rest of us to take this at face
-        value ... about both of you.
-     2. This ideological opposition to features the other side
-        implements tells me that if it came to a choice, by going with
-        either one of you I'd get an incomplete feature set.
-     3. Making obvious partisans of your user base also tells me that if
-        I had to make a choice, whatever it was I'd piss off a large
-        number of people who'd be very vocal about it.
-
-Since we have a working target solution in the kernel already (STGT),
-why on earth would I be stupid enough to want to even consider either of
-you, coming as you do with the above mentioned baggage?
-
-So stop fighting ... you're not going to backstab your way to inclusion.
-
-The only identified failing of STGT (and it's theoretical, not
-demonstrated, although I can agree the theory looks correct) is that the
-user space packet processing may cause performance problems on high
-speed networks.  We know from practical tests that these networks have
-to be above 1Gbit because the results were identical for STGT and SCST
-on a 1G network, so it's infiniband or 10Gbit ethernet.
-
-So, what it comes down to is that if we had a kernel side protocol
-accelerator for STGT, the project would no longer suffer from this
-theoretical failing.  *Both* of you have such a thing embedded in your
-respective submissions (all 74k LOC of them) so can't you just enhance
-STGT with whichever one is better ... actually, if you'd both bury the
-hatchet and work on the enhancement together taking the best of each
-project, we'd have something that worked much better and a unified user
-base and neither side would be able to claim sole credit ... just a
-thought.
-
-James
+2008/12/13 Cyrill Gorcunov <gorcunov@gmail.com>:
+> Hi Frédéric,
+>
+> I didn't play with tracer internals since was more concerned about
+> asm part of code. If you find that we better should introduce
+> additional deps here or change a "deps graph" itself - I think it
+> will be easy to place a new patch on top of this (or replace my
+> patch) :)
+>
+> The only thing I would change in mine patch is -- subq/addq $0x38, %rsp
+> since the following code uses decimal system but not a big deal anyway.
+>
+>                - Cyrill -
 
 
+Yes, don't worry, these comments weren't relied on your patch :-)
+If some work has to be done on deps, it will be on top of your patch
+if Ingo applies it.
