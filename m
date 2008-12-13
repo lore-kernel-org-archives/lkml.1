@@ -1,104 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbYLMXuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbYLMXw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753367AbYLMXuq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 18:50:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYLMXug
+	id S1753610AbYLMXw2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 18:52:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYLMXwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 18:50:36 -0500
-Received: from fk-out-0910.google.com ([209.85.128.191]:39159 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbYLMXuf (ORCPT
+	Sat, 13 Dec 2008 18:52:19 -0500
+Received: from mailout-venus.uni-duesseldorf.de ([134.99.128.32]:54757 "EHLO
+	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751372AbYLMXwS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 18:50:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=RcoqrXfCXJ0UwU7ghvX/HEkdacvnD3RucPfqKv5/skI8U0Rgwdiqfbnza+cJKoPmg8
-         2hCvBRfHa+ivdICoRvfMubOq4ReWBoAKLTz3qzAoARMSCmcXjzb04Wl3wQn2Ewxs+dY7
-         O+MG4gMwIVv/7G4XUL6KppprlpOBMmanhwUv8=
-Message-ID: <49444A44.3030206@gmail.com>
-Date: Sun, 14 Dec 2008 00:50:28 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] rt/workqueue: fix an early crash and some warnings
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+	Sat, 13 Dec 2008 18:52:18 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 14 Dec 2008 00:52:15 +0100 (CET)
+From: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+Subject: Re: [PATCH 2/3] ide: add ide_[un]lock_hwgroup() helpers
+In-reply-to: <200812140015.51978.bzolnier@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Elias Oltmanns <eo@nebensachen.de>
+Message-id: <alpine.DEB.1.00.0812140042360.10340@zirkon.biophys.uni-duesseldorf.de>
+References: <200811182116.00351.bzolnier@gmail.com>
+ <alpine.DEB.1.00.0811190236550.24738@zirkon.biophys.uni-duesseldorf.de>
+ <200812140015.51978.bzolnier@gmail.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix early crash and build warnings
+Hi,
 
-While building the broken/rt/workqueue topic, I got various warnings:
+> [ Sorry for the late reply. ]
 
-kernel/workqueue.c: In function ‘delayed_work_timer_fn’:
-kernel/workqueue.c:214: attention : passing argument 3 of ‘__queue_work’ makes integer from pointer without a cast
+No worries - I haven't been very active either. It's home improvement season 
+down under...
 
-This one is the cause of an early crash: the adress of the priority is passed instead of its
-value, hence the following BUG_ON() triggering on sched.c:rt_mutex_setprio()
+> > Something I've run into while working on the locking stuff: what happens if the 
+> > above ide_lock_hwgroup(hwgroup) sleeps for long enough to trigger the request 
+> > timer? 
+> 
+> AFAICS this happens before the hwgroup timeout timer is armed and IDE is not
+> using block layer request timers yet so we should be fine here..
 
-BUG_ON(prio < 0 || prio > MAX_PRIO)
+OK; I'll just let it block while SCSI requests are in flight. Thanks for 
+pondering this :-)
 
-Various warnings are displayed because of confusion between common linked-list and priority
-sorted linked-list:
+There's another change I'll send via Geert: since in Falcon, IDE uses stdma_intr 
+as interrupt handler (interrupts dispatched there to whichever driver has 
+exclusive use of the ST-DMA and associated interrupt), and this handler has been 
+registered prior to IDE setup it is not necessary to request the IDE interrupt 
+on Falcon when probing the IDE interface. In fact, this results in the IDE 
+interrupt possibly getting run while the lock is not being held by IDE. 
 
-kernel/workqueue.c: In function ‘flush_work’:
-kernel/workqueue.c:527: attention : passing argument 1 of ‘list_empty’ from incompatible pointer type
-kernel/workqueue.c:535: attention : assignment from incompatible pointer type
-kernel/workqueue.c:539: attention : assignment from incompatible pointer type
+Other than that it all seems to work fine. 
 
-This patch fixes them (hopefully correctly).
-
-broken/rt/workqueue boots correctly now.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index f0c32ff..b704c40 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -211,7 +211,7 @@ static void delayed_work_timer_fn(unsigned long __data)
- 	struct workqueue_struct *wq = cwq->wq;
- 
- 	__queue_work(wq_per_cpu(wq, smp_processor_id()),
--		     &dwork->work, &dwork->prio);
-+		     &dwork->work, dwork->prio);
- }
- 
- /**
-@@ -511,7 +511,7 @@ EXPORT_SYMBOL_GPL(flush_workqueue);
- int flush_work(struct work_struct *work)
- {
- 	struct cpu_workqueue_struct *cwq;
--	struct list_head *prev;
-+	struct plist_head *prev;
- 	struct wq_barrier barr;
- 
- 	might_sleep();
-@@ -524,7 +524,7 @@ int flush_work(struct work_struct *work)
- 
- 	prev = NULL;
- 	spin_lock_irq(&cwq->lock);
--	if (!list_empty(&work->entry)) {
-+	if (!plist_node_empty(&work->entry)) {
- 		/*
- 		 * See the comment near try_to_grab_pending()->smp_rmb().
- 		 * If it was re-queued under us we are not going to wait.
-@@ -532,7 +532,7 @@ int flush_work(struct work_struct *work)
- 		smp_rmb();
- 		if (unlikely(cwq != get_wq_data(work)))
- 			goto out;
--		prev = &work->entry;
-+		prev = &work->entry.plist;
- 	} else {
- 		if (cwq->current_work != work)
- 			goto out;
--- 
-1.6.0.4
+	Michael
 
