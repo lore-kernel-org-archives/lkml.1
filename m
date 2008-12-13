@@ -1,72 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758686AbYLMPBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbYLMPQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758686AbYLMPBs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 10:01:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYLMPBk
+	id S1758056AbYLMPQS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 10:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYLMPQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 10:01:40 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:46395 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752667AbYLMPBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 10:01:40 -0500
-Subject: Re: [RFC PATCH -v4 05/14] fsnotify: unified filesystem
- notification backend
-From: Eric Paris <eparis@redhat.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       viro@ZenIV.linux.org.uk, hch@infradead.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20081213025417.GC807@ioremap.net>
-References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com>
-	 <20081212215140.27112.67859.stgit@paris.rdu.redhat.com>
-	 <20081213025417.GC807@ioremap.net>
-Content-Type: text/plain
-Date: Sat, 13 Dec 2008 10:01:15 -0500
-Message-Id: <1229180475.29167.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Sat, 13 Dec 2008 10:16:05 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:18320 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752444AbYLMPQD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Dec 2008 10:16:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=eyBIHxEYlKVCxz2RH++AC6p1NSdrwZ8RBpE6hRB7ZBRxXVvOYsaAW70/VgPR6JpdiG
+         ztFCQNZuW15Q2bP8jKJqRURQlbbq4d/sC7i9Kz/C4d+uY7VIp0XRfdOhudeYCiAXSRB1
+         oHbYiDPylxNlkowNmMiToInRTb1qyIdg5q2os=
+Date: Sat, 13 Dec 2008 18:16:00 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Steven Rostedt <srostedt@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
+Message-ID: <20081213151600.GA12556@localhost>
+References: <20081212184136.GB14192@localhost> <1229113167.32623.12.camel@localhost.localdomain> <20081212204724.GA26194@localhost> <alpine.DEB.1.10.0812121552360.19351@gandalf.stny.rr.com> <20081212205729.GA28554@localhost> <alpine.DEB.1.10.0812121620520.19351@gandalf.stny.rr.com> <20081212213538.GA731@localhost> <alpine.DEB.1.10.0812121655090.19351@gandalf.stny.rr.com> <20081213082054.GA7559@localhost> <c62985530812130646r6bcdf424o752f16458dd22914@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530812130646r6bcdf424o752f16458dd22914@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-13 at 05:54 +0300, Evgeniy Polyakov wrote:
-> > +struct fsnotify_event *fsnotify_create_event(struct inode *to_tell, __u64 mask, void *data, int data_is)
-> > +{
-> > +	struct fsnotify_event *event;
-> > +
-> > +	event = kmem_cache_alloc(event_kmem_cache, GFP_KERNEL);
-> > +	if (!event)
-> > +		return NULL;
-> > +
-> > +	atomic_set(&event->refcnt, 1);
-> > +
-> > +	spin_lock_init(&event->lock);
-> > +
-> > +	event->path.dentry = NULL;
-> > +	event->path.mnt = NULL;
-> > +	event->inode = NULL;
-> > +
-> > +	INIT_LIST_HEAD(&event->private_data_list);
-> > +
-> > +	event->to_tell = to_tell;
-> 
-> What prevents this inode to be released?
+[Frédéric Weisbecker - Sat, Dec 13, 2008 at 03:46:03PM +0100]
+| 2008/12/13 Cyrill Gorcunov <gorcunov@gmail.com>:
+| > [Steven Rostedt - Fri, Dec 12, 2008 at 04:56:47PM -0500]
+| > ...
+| > | > Steve, here is how it could look like:
+| > | > (I liked first proposal more :)
+| > |
+| > | I see the confusion. In ftrace.h the function graph tracer config is not
+| > | inside CONFIG_FUNCTION_TRACER, even though it is dependent on it (or
+| > | was). OK, just do your first proposal then.
+| > |
+| > | -- Steve
+| > |
+| >
+| > ok, I sent it yesterday as
+| >
+| >        http://lkml.org/lkml/2008/12/12/301
+| >        [PATCH] x86: entry_64 - introduce FTRACE_ frame macro v2
+| >
+| > Ingo, will you pick it up?
+| >
+| >                - Cyrill -
+| >
+| 
+| Hi,
+| 
+| Looks good and clarify the asm bits.
+| 
+| I wonder if the function_graph_tracer should continue to necessarily
+| depend on the function tracer.
+| It was more simplier to do so but perhaps that could be avoided with
+| small modifications.
+| 
 
-Absolutely nothing and I need to document that.  Two things,
-event->to_tell and event->data if event->data_is == INODE are ONLY valid
-during the call to group-?event_to_notif().  As soon as all groups
-return from that call those are not valid fields.  I could set them NULL
-when they aren't allowed to be used any more, but it's a wasted
-operation on a VERY hot path (fsnotify())
+Hi Frédéric,
 
-As a side note event->data if event->data_is == FILE is perfectly
-allowed to be used until the event is freed.  That's totally pointless
-for this patch set and I might drop it on the next submission, but it is
-needed for my fanotify notify patches that I keep in mind as I'm doing
-this.
+I didn't play with tracer internals since was more concerned about
+asm part of code. If you find that we better should introduce
+additional deps here or change a "deps graph" itself - I think it
+will be easy to place a new patch on top of this (or replace my
+patch) :)
 
-I'll remember to better document this 'quirk' in case anyone tries to
-write a new notifier.
+The only thing I would change in mine patch is -- subq/addq $0x38, %rsp
+since the following code uses decimal system but not a big deal anyway.
 
--Eric
-
+		- Cyrill -
