@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752228AbYLMSt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbYLMSub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752228AbYLMSt5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 13:49:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbYLMStt
+	id S1752727AbYLMSub (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 13:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYLMSuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 13:49:49 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45570 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbYLMStt (ORCPT
+	Sat, 13 Dec 2008 13:50:18 -0500
+Received: from mailbackup.inode.at ([213.229.60.24]:38412 "EHLO
+	mailbackup.inode.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751078AbYLMSuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 13:49:49 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <494403C9.4070200@s5r6.in-berlin.de>
-Date: Sat, 13 Dec 2008 19:49:45 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081116 SeaMonkey/1.1.13
+	Sat, 13 Dec 2008 13:50:17 -0500
+X-Greylist: delayed 315 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Dec 2008 13:50:17 EST
+Message-ID: <4944026B.40301@sbg.ac.at>
+Date: Sat, 13 Dec 2008 19:43:55 +0100
+From: Alexander Huemer <alexander.huemer@sbg.ac.at>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081121)
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ieee1394: consolidate uses of IEEE1934_BUSID_MAGIC
-References: <1229147871.11257.3.camel@brick>
-In-Reply-To: <1229147871.11257.3.camel@brick>
-X-Enigmail-Version: 0.95.7
+To: linux-kernel@vger.kernel.org
+Subject: kernel panics with net_rx_action on kernels >2.6.26
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
-> Move the definition out of nodemgr.h and use it in csr.c/pcilynx.c
+hi,
 
-Committed to linux1394-2.6.git.
+one of my machines (x86) crashes under heavy network load with kernels
+>2.6.26, i tried quite everything possible between 2.6.27 and 2.6.28-rc8.
+
+lspci -vv: http://xx.vu/~ahuemer/lspci_vv.txt
+of the quad nic 2 ports are used, the machine is acting as a iptables
+firewall/router.
+
+kernel config (2.6.26) http://xx.vu/~ahuemer/config
+screenshot of the panic:
+http://xx.vu/~ahuemer/kernel_panic_net_rx_action.jpg
+
+as i do not have any problems with kernels <=2.6.26, i doubt that this
+is a hardware problem.
+in case of the panic, nothing is written to the system log.
+
+any hints welcome.
+please CC me on replies, i am not subscribed to the  mailing list.
+
+thanks in advance.
+
 -- 
-Stefan Richter
--=====-==--- ==-- -==-=
-http://arcgraph.de/sr/
+alex
