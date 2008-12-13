@@ -1,121 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751110AbYLMSFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbYLMSJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751110AbYLMSFI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 13:05:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYLMSEw
+	id S1751994AbYLMSJT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 13:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYLMSJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 13:04:52 -0500
-Received: from mu-out-0910.google.com ([209.85.134.186]:4013 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751774AbYLMSEv (ORCPT
+	Sat, 13 Dec 2008 13:09:09 -0500
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:43848 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbYLMSJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 13:04:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=w8nyeP6ZqFTUPVosKLfmEj0s0IobXrl5X/oE+3y0sMOI6iEcpq9rZ2hn/sG6K1YOCA
-         Mm3tSF8fmo4Njl42/Cu8x7A8TxrvT6mds3H9/L3oW0Ov/aQaHyFnNsfabMewvObMRt2I
-         jC40Uc2KNy2uTm4aH/o/ArL4meMpgSgnBVxig=
-Subject: Re: Bugs on aspire one A150
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       ath5k-devel@venema.h4ckr.net, alsa-devel@alsa-project.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-In-Reply-To: <200812131842.28420.rjw@sisk.pl>
-References: <491506DB.1070000@gmail.com> <200812131435.34072.rjw@sisk.pl>
-	 <1229178097.4936.1.camel@maxim-laptop>  <200812131842.28420.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sat, 13 Dec 2008 20:04:39 +0200
-Message-Id: <1229191479.13970.6.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Sat, 13 Dec 2008 13:09:08 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4943FA3E.9090507@cam.ac.uk>
+Date: Sat, 13 Dec 2008 18:09:02 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+CC: felipe.balbi@nokia.com, Liam Girdwood <lrg@kernel.org>,
+       Mark Brown <broonie@sirena.org.uk>, Mike Rapoport <mike@compulab.co.il>
+Subject: [PATCH] mfd: DA9030 USB charge pump mode selection support
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-13 at 18:42 +0100, Rafael J. Wysocki wrote:
-> On Saturday, 13 of December 2008, Maxim Levitsky wrote:
-> > On Sat, 2008-12-13 at 14:35 +0100, Rafael J. Wysocki wrote:
-> > > On Saturday, 13 of December 2008, Maxim Levitsky wrote:
-> > > > 
-> > > > So, big thanks for everything.
-> > > > 
-> > > > Now aspire one linux support is very close to perfect,
-> > > > (only problem left is that wireless is limited to 18Mbits/s raw rate,
-> > > > but at some point I or developers of ath5k will get to the bottom of
-> > > > this)
-> > > > 
-> > > > I also noticed, that now the SD only card reader is always enabled
-> > > > regardless of card been there while booting, and same happens in
-> > > > windows, I suspect that this is permanent hardware change, which worries
-> > > > me, but this reader works fine otherwise.
-> > > > (This is another reason why binary bioses are evil, go and find out why
-> > > > it enables it)
-> > > > 
-> > > > 
-> > > > Also forgot to mention that both readers ignore write protect tab on SD
-> > > > card, and I will report this to correct mailing list soon.
-> > > > Everything else works fine
-> > > > 
-> > > > please include acpiphp fix in 2.6.28.
-> > > 
-> > > Which one is this?
-> > 
-> > 
-> > 
-> > acpiphp: Identify more removable slots
-> >     
-> >     According to section 6.3.6 of the ACPI spec, the presence of an _RMV
-> >     method that evaluates to 1 is sufficient to indicate that a slot is
-> >     removable without needing an eject method. This patch refactors the
-> >     ejectable slot detection code a little in order to flag these slots as
-> >     ejectable and register them. Acpihp therefore binds to the expresscard
-> >     slot on my HP test machine.
-> >     
-> >     Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> > 
-> > 
-> > this makes acpiphp handle hotplug of (now one, sd reader is somehow
-> > always present) card reader.
-> 
-> This is
-> http://git.kernel.org/?p=linux/kernel/git/jbarnes/pci-2.6.git;a=commit;h=db9fe9a7230d65916c9938c4f91c75f9c5e00cb7
-> in the PCI tree.
-> 
-> It's scheduled for 2.6.29 and may be included into 2.6.28 -stable, but please
-> remember to notify the stable team as soon as this patch gets merged into the
-> mainline.
+From: Jonathan Cameron <jic23@cam.ac.uk>
 
-I will, sure.
+Add support for changing the mode of the da9030 usb charge pump
 
+Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 
-Just to note, that I might not need that patch as I told that now one of
-readers is permanently enabled, I don't know why but this seems to be
-hardware failure.
+--
+This simple driver is intended to allow board configs to control
+the mode in which the usb charge pump on th da9030 pmic is
+running (typically as part of usb enable callbacks).
 
-I disconnected power/battery, no cards are in slots, and yet on boot
-there is a sd reader in lspci.
-Same happens in windows.
-It could happen due to suspend/resume, If I remember correctly I put
-card once in slot, and then for whole week system wasn't rebooted, but
-instead went through suspend/resume cycles.
+The 3 options are:
 
-One thing for sure, nobody will fix this (I mean no point to call acer
-support, this is too minor problem)
+auto - controlled entirely by hardware signals.
+100mA charge pump manual enable
+10mA current source manual enable 
 
+Note this function is completely separate from the usb charging
+functionality (which will need a much more sophisticated driver).
 
-What I worry about is that second one could show same behavier.
-I like this hotplug, as it allows me to test pci hotplug code for real.
-Besides, this isn't done without purpose, device might draw less power
-this way.
+As ever, all comments welcomed.
 
+The main question on this is whether it should just be rolled into
+the core mfd driver.  I'm inclined to keep it separate and decidedly
+optional as the fact it isn't already in the driver implies that
+it may not be commonly used. (Intel Stargate 2 does need this
+functionality though, hence the submission as I'm hoping to get
+the relevant board code in soonish.)
 
-Best regards,
-	Maxim Levitsky
+I don't have the da9034 data sheet, so not a clue if this is
+relevant for that as well?
 
+Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+ drivers/mfd/Kconfig              |    7 +++
+ drivers/mfd/Makefile             |    3 +-
+ drivers/mfd/da9030-usb.c         |   79 ++++++++++++++++++++++++++++++++++++++
+ include/linux/mfd/da9030-usbcp.h |   20 ++++++++++
+ 4 files changed, 108 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 2572773..d53e82d 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -114,6 +114,13 @@ config PMIC_DA903X
+ 	  individual components like LCD backlight, voltage regulators,
+ 	  LEDs and battery-charger under the corresponding menus.
+ 
++config PMIC_DA9030_USBCP
++       bool "DA9030 USB charge pump mode control"
++       depends on PMIC_DA903X
++       help
++         Say yes here to support control of the USB charge pump on
++	 the DA9030 PMIC.
++
+ config MFD_WM8400
+ 	tristate "Support Wolfson Microelectronics WM8400"
+ 	depends on I2C
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index 9a5ad8a..eeb86c9 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -31,4 +31,5 @@ obj-$(CONFIG_MCP_UCB1200)	+= ucb1x00-assabet.o
+ endif
+ obj-$(CONFIG_UCB1400_CORE)	+= ucb1400_core.o
+ 
+-obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
+\ No newline at end of file
++obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
++obj-$(CONFIG_PMIC_DA9030_USBCP)	+= da9030-usb.o
+\ No newline at end of file
+diff --git a/drivers/mfd/da9030-usb.c b/drivers/mfd/da9030-usb.c
+new file mode 100644
+index 0000000..f1160c6
+--- /dev/null
++++ b/drivers/mfd/da9030-usb.c
+@@ -0,0 +1,79 @@
++/* mfd/da9030-usb.c
++ *
++ * Minimal control driver for the da9030 usb charge pump.
++ *
++ * Jonathan Cameron <jic23@cam.ac.uk> 2008
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/interrupt.h>
++#include <linux/platform_device.h>
++#include <linux/mfd/da903x.h>
++#include <linux/mfd/da9030-usbcp.h>
++
++/* Single device assumption */
++struct device *da9030_mfd;
++
++int da9030_set_usb_charge_pump_mode(int mode)
++{
++	uint8_t val = 0;
++
++	switch (mode) {
++	case DA9030_USBPUMP_AUTO:
++		val = 0;
++		break;
++	case DA9030_USBPUMP_CHARGE_PUMP:
++		val = 0x40;
++		break;
++	case DA9030_USBPUMP_CURRENT_SOURCE:
++		val = 0x80;
++		break;
++	}
++
++	return da903x_write(da9030_mfd, DA9030_USBPUMP_REG, val);
++}
++EXPORT_SYMBOL_GPL(da9030_set_usb_charge_pump_mode);
++
++static int __devinit da9030_usb_probe(struct platform_device *pdev)
++{
++	da9030_mfd = pdev->dev.parent;
++
++	return 0;
++}
++
++static int __devexit da9030_usb_remove(struct platform_device *pdev)
++{
++	da9030_mfd = NULL;
++	return 0;
++}
++
++static struct platform_driver da9030_usb_driver = {
++	.driver = {
++		.name = "da9030-usb",
++		.owner = THIS_MODULE,
++	},
++	.probe = da9030_usb_probe,
++	.remove = __devexit_p(da9030_usb_remove),
++};
++
++static int __init da9030_usb_init(void)
++{
++	return platform_driver_register(&da9030_usb_driver);
++}
++module_init(da9030_usb_init);
++
++static void __exit da9030_usb_exit(void)
++{
++	platform_driver_unregister(&da9030_usb_driver);
++}
++module_exit(da9030_usb_exit);
++
++MODULE_DESCRIPTION("USB charge pump control driver for Dialog DA9030");
++MODULE_AUTHOR("Jonathan Cameron <jic23@cam.ac.uk>");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform::da9030-usb");
+diff --git a/include/linux/mfd/da9030-usbcp.h b/include/linux/mfd/da9030-usbcp.h
+new file mode 100644
+index 0000000..62af5a7
+--- /dev/null
++++ b/include/linux/mfd/da9030-usbcp.h
+@@ -0,0 +1,20 @@
++/* linux/mfd/da9030-usbcp.h
++ *
++ * Minimal control driver for the da9030 usb charge pump.
++ *
++ * Jonathan Cameron <jic23@cam.ac.uk> 2008
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#define DA9030_USBPUMP_AUTO 1
++#define DA9030_USBPUMP_CHARGE_PUMP 2
++#define DA9030_USBPUMP_CURRENT_SOURCE 3
++
++#define DA9030_USBPUMP_REG 0x19
++
++int da9030_set_usb_charge_pump_mode(int mode);
++
++
