@@ -1,38 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbYLMP1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbYLMP24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757303AbYLMP1A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 10:27:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYLMP0v
+	id S1757476AbYLMP24 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 10:28:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbYLMP2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 10:26:51 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:14594 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751119AbYLMP0v convert rfc822-to-8bit (ORCPT
+	Sat, 13 Dec 2008 10:28:48 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:62239 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119AbYLMP2r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 10:26:51 -0500
+	Sat, 13 Dec 2008 10:28:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=ErI6bF/Ksx2IY2r+hbXaAAQ2F79oO2IiifmAuxrLujcBlDLeeMQTiIutj9H1sUDFaT
-         L2pZ6JldXzQsqlbZCai6+OmmthXCdyzpf73VWW8qdpeFnLSxE0zm8wdQsC967TGpPRly
-         sfj3dWRpGGjbqbkjf90/S5qWpXlVjr1AXH29s=
-Message-ID: <c62985530812130726k1ee69c9dof67260f479fd8263@mail.gmail.com>
-Date: Sat, 13 Dec 2008 16:26:49 +0100
+        b=l7eRAA74RVI4bWa1ITEPJKvSMlgFih2fqbiTa1Et49Yts+7bvX4AuBdhmylZOa6QSs
+         XBwQi7+wc7QvAMHOyTXpfQ9hvI4mtolaeu2g4XQLAHVaYYEScOr9+YSOIi7Bm6DcFvWF
+         Jwk4Z7ecU/3KvleffG7p9i4xsBR7igbFbvZFA=
+Message-ID: <c62985530812130728w12230974u1a19d674b429a3e3@mail.gmail.com>
+Date: Sat, 13 Dec 2008 16:28:45 +0100
 From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
 Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+Cc: "Cyrill Gorcunov" <gorcunov@gmail.com>,
        "Steven Rostedt" <srostedt@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
        "H. Peter Anvin" <hpa@zytor.com>,
        "Thomas Gleixner" <tglx@linutronix.de>,
        LKML <linux-kernel@vger.kernel.org>,
        "Alexander van Heukelum" <heukelum@fastmail.fm>
-In-Reply-To: <20081213151600.GA12556@localhost>
+In-Reply-To: <alpine.DEB.1.10.0812130956350.17344@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <20081212184136.GB14192@localhost>
 	 <20081212204724.GA26194@localhost>
@@ -43,26 +43,20 @@ References: <20081212184136.GB14192@localhost>
 	 <alpine.DEB.1.10.0812121655090.19351@gandalf.stny.rr.com>
 	 <20081213082054.GA7559@localhost>
 	 <c62985530812130646r6bcdf424o752f16458dd22914@mail.gmail.com>
-	 <20081213151600.GA12556@localhost>
+	 <alpine.DEB.1.10.0812130956350.17344@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/13 Cyrill Gorcunov <gorcunov@gmail.com>:
-> Hi Frédéric,
+2008/12/13 Steven Rostedt <rostedt@goodmis.org>:
+> It could be, but remember, the dynamic ftrace gives the ability to specify
+> which function can be chosen.
 >
-> I didn't play with tracer internals since was more concerned about
-> asm part of code. If you find that we better should introduce
-> additional deps here or change a "deps graph" itself - I think it
-> will be easy to place a new patch on top of this (or replace my
-> patch) :)
+> But on the other hand, I guess it would be fine to have it separate. There
+> is no reason that it can not be. I would still keep the dynamic part
+> dependent on function tracer. At least for now.
 >
-> The only thing I would change in mine patch is -- subq/addq $0x38, %rsp
-> since the following code uses decimal system but not a big deal anyway.
->
->                - Cyrill -
+> -- Steve
 
-
-Yes, don't worry, these comments weren't relied on your patch :-)
-If some work has to be done on deps, it will be on top of your patch
-if Ingo applies it.
+I agree. I don't think it will require much modifications.
+I think I will change it for 2.6.30....
