@@ -1,79 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbYLMLSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022AbYLMLSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756397AbYLMLSH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 06:18:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbYLMLRx
+	id S1757022AbYLMLSv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 06:18:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYLMLSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 06:17:53 -0500
-Received: from viefep17-int.chello.at ([62.179.121.37]:49199 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750724AbYLMLRw (ORCPT
+	Sat, 13 Dec 2008 06:18:42 -0500
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:21232 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752395AbYLMLSk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 06:17:52 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [patch] Performance Counters for Linux, v3
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: eranian@gmail.com
-Cc: Vince Weaver <vince@deater.net>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <7c86c4470812120942x607a74f7w9f823adecbd73b85@mail.gmail.com>
-References: <20081211155230.GA4230@elte.hu>
-	 <Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
-	 <1229070345.12883.12.camel@twins>
-	 <7c86c4470812120059s7f8e64a6h91ebeadbf938858d@mail.gmail.com>
-	 <1229073834.12883.41.camel@twins>
-	 <7c86c4470812120942x607a74f7w9f823adecbd73b85@mail.gmail.com>
+	Sat, 13 Dec 2008 06:18:40 -0500
+X-YMail-OSG: kTj79pQVM1ngY8UQ7oqJ0H7tFtqCzq3P.cSKtKu.weX.ykRXFZ9UY1WvYEoIGhewsi3ehnF6Suu7Q0FiOp8OqPf.wWbpzFhf3MVumslv2hhBkgZ9iAyW1.5EgoPE4PqKpEyi4XhMsbdoLU8joT3NVGAEF4O8GxBOkMokTDW9U4kXfXtaaCSNL1yv2gn4ndlPrQabeYHNGrRxMPnU8qP3Sz75Nd_enDA-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: linux-iscsi-target-dev@googlegroups.com
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <e2e108260812130223q13fd98d8gc1e55881a92b939@mail.gmail.com>
+References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>
+	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>
+	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>
+	 <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>
+	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>
+	 <54939.1229149205@turing-police.cc.vt.edu>
+	 <e2e108260812130141o3d21bbbdob9e7c9f95d309a74@mail.gmail.com>
+	 <1229162907.4153.857.camel@haakon2.linux-iscsi.org>
+	 <e2e108260812130223q13fd98d8gc1e55881a92b939@mail.gmail.com>
 Content-Type: text/plain
-Date: Sat, 13 Dec 2008 12:17:28 +0100
-Message-Id: <1229167048.13566.119.camel@twins>
+Date: Sat, 13 Dec 2008 03:18:38 -0800
+Message-Id: <1229167118.4153.930.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-12 at 18:42 +0100, stephane eranian wrote:
-> In fact, I know tools which do not even need a library. 
-
-By your own saying, the problem solved by libperfmon is a hard problem
-(and I fully understand that).
-
-Now you say there is software out there that doesn't use libperfmon,
-that means they'll have to duplicate that functionality.
-
-And only commercial software has a clear gain by wastefully duplicating
-that effort. This means there is an active commercial interest to not
-make perfmon the best technical solution there is, which is contrary to
-the very thing Linux is about.
-
-What is worse, you defend that:
-
-> Go ask end-users what they think of that?
+On Sat, 2008-12-13 at 11:23 +0100, Bart Van Assche wrote:
+> On Sat, Dec 13, 2008 at 11:08 AM, Nicholas A. Bellinger <nab@kernel.org> wrote:
+> >> See also:
+> >> * February 1, 2008, LIO kernel panic during configuration,
+> >> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/74c8b37f24b84e59/d94c07626bd20521?lnk=gst&q=kernel+panic#d94c07626bd20521.
+> >> * February 8, 2008, kernel crash triggered by LIO,
+> >> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/30835aede1028188/5708e16a23367fb4?lnk=gst&q=kernel+crash#5708e16a23367fb4.
+> >> * February 13, 2008, LIO target kernel code triggers memory
+> >> corruption, http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/ddc1bf7666372972/2150a09f9ed3d1cd?lnk=gst&q=ipoib#2150a09f9ed3d1cd.
+> >> * February 18, 2008, LIO target makes entire system hang,
+> >> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/6a76f9efd9409fc5/55bd8840b6a5f757?lnk=gst&q=lio+target+hangs#55bd8840b6a5f757.
+> >>
+> >
+> > I have no idea why why you keep bringing up a minor BUG (completely
+> > unrelated to Target_Core_Mod/ConfigFS and LIO-Target v3.0 btw) that was
+> > fixed 10 months ago..?  Perhaps if you spent half the time looking at
+> > actual lio-core-2.6.git code that you do bringing up minor closed bugs
+> > from months ago [ ... ]
 > 
-> You don't even need a library. All of this could be integrated into the tool.
-> New processor, just go download the updated version of the tool.
+> I won't comment on the fact that you consider a kernel crash or a
+> system hang as a minor bug.
+> 
 
-No! what people want is their problem fixed - no matter how. That is one
-of the powers of FOSS, you can fix your problems in any way suitable.
+The problem is that you like to handwave on the technical issues, just
+like you are doing here.  :-)  Of course I fix bugs when people report
+them, but when people like yourself yell and scream and handwave, it
+makes me not want to fix it as quickly if someone wrote a nice and
+thoughful email and said 'thank you'.
 
-Would it not be much better if those folks duped into using a binary
-only product only had to upgrade their FOSS kernel, instead of possibly
-forking over more $$$ for an upgrade?
+Anyways, I am not going to debate the development process with you, and
+as folks on the LIO-devel list can tell you, I am very quick to produce
+patches when a issue is located.  
 
-You have just irrevocably proven to me this needs to go into the kernel,
-as the design of perfmon is little more than a GPL circumvention device
-- independent of whether you are aware of that or not.
+> I reported four bugs instead of one. Only two of these have been
+> reported to be fixed.
+> 
 
-For that I hereby fully NAK perfmon
+Considering you said earlier that you have not actually looked at any
+recently LIO code, how could you know these bugs are fixed..?   Back
+here in the land of reality, these *TWO* bugs where fixed in back Feb.
+One was related to iSCSI discovery, and one related to v2.6.24 kernel
+breakage and struct scatterlist->page_link, so what..?  Do you honestly
+think handwaving about bugs from 10 months ago will get you anywhere
+here..?  If you are so certain these bugs still exist or have any effect
+on my upstream work, then please, go ahead and prove it.  No..? I did
+not think so.
 
-Nacked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+What does any of this have to do with lio-core-2.6.git,
+Target_Core_Mod/ConfigFS and LIO-Target v3.0 btw..?  Are you actually
+going to write a thoughtful or relivent comment on the v3.0 design
+and/or code, because that would be nice out of your for once.  Otherwise
+I am going to ignore you again, just the like conversation where you
+said:
 
+"Zero-copy means that data is copied as few times as possible".
 
+when I was attempting to explain the finer pointers of
+Target_Core_Mod/ConfigFS design to you and Vlad.  Remember that one..?
+
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/8cff61671cd2de6b/37ade00e607dd8c8
+
+Perhaps you should clarify the techincal points I raised in that thread
+(that where never answered) when I actually explained *WHY* I ended up
+not using SCST as a base for Target_Core_Mod/ConfigFS.  Perhaps folks
+would like know why I found SCST Core's memory mapping and allocating
+algortihms to be incomplete for my purposes, and that I had to give up
+the discussion because neither you or Vlad would acknowledge the issues,
+and would rather handwave and steamroll.
+
+Perhaps you would like to address these points here and now, considering
+you seem so jazzed on bringing up threads previously threads.  How does
+it make sense for you to bring up bugs from 10 months ago that where
+fixed then months ago, when you guys don't even want to acknowledge any
+techinical issues I bring up to you..? 
+
+Are you going to continue to refuse to acknowledge techincal concerns
+about design fundementals about your memory pre-allocation and mapping
+logic now that you have posted your patches to LKML..?  Care to address
+the issues in public where everyone can see, or would you rather keep
+that on the SCST and LIO lists..?
+
+Surely this type of behaviour is frowned upon by a subsystem maintainer.
+
+Best regards,
+
+--nab
+
+> Bart.
+> 
+> --~--~---------~--~----~------------~-------~--~----~
+> You received this message because you are subscribed to the Google Groups "Linux-iSCSI.org Target Development" group.
+> To post to this group, send email to linux-iscsi-target-dev@googlegroups.com
+> To unsubscribe from this group, send email to linux-iscsi-target-dev+unsubscribe@googlegroups.com
+> For more options, visit this group at http://groups.google.com/group/linux-iscsi-target-dev?hl=en
+> -~----------~----~----~----~------~----~------~--~---
+> 
 
