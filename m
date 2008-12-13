@@ -1,136 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022AbYLMLSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbYLMLnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757022AbYLMLSv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 06:18:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYLMLSm
+	id S1756676AbYLMLnQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 06:43:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbYLMLnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 06:18:42 -0500
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:21232 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752395AbYLMLSk (ORCPT
+	Sat, 13 Dec 2008 06:43:03 -0500
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:44358
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752343AbYLMLnB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 06:18:40 -0500
-X-YMail-OSG: kTj79pQVM1ngY8UQ7oqJ0H7tFtqCzq3P.cSKtKu.weX.ykRXFZ9UY1WvYEoIGhewsi3ehnF6Suu7Q0FiOp8OqPf.wWbpzFhf3MVumslv2hhBkgZ9iAyW1.5EgoPE4PqKpEyi4XhMsbdoLU8joT3NVGAEF4O8GxBOkMokTDW9U4kXfXtaaCSNL1yv2gn4ndlPrQabeYHNGrRxMPnU8qP3Sz75Nd_enDA-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: linux-iscsi-target-dev@googlegroups.com
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <e2e108260812130223q13fd98d8gc1e55881a92b939@mail.gmail.com>
-References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>
-	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>
-	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>
-	 <54939.1229149205@turing-police.cc.vt.edu>
-	 <e2e108260812130141o3d21bbbdob9e7c9f95d309a74@mail.gmail.com>
-	 <1229162907.4153.857.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812130223q13fd98d8gc1e55881a92b939@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 13 Dec 2008 03:18:38 -0800
-Message-Id: <1229167118.4153.930.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 13 Dec 2008 06:43:01 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhUBANAuQ0l8qszs/2dsb2JhbAAIxByGNoUggn0
+X-IronPort-AV: E=Sophos;i="4.36,216,1228057200"; 
+   d="scan'208";a="363830807"
+Message-ID: <49439FBD.20504@uts.edu.au>
+Date: Sat, 13 Dec 2008 22:42:53 +1100
+From: Matthew Arnold <Matthew.Arnold-1@uts.edu.au>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+MIME-Version: 1.0
+To: greg@kroah.com
+CC: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Re: [Bug 12212] add 5372:2303 to /drivers/usb/serial/pl2303
+References: <20081213085654.5CBFB108040@picon.linux-foundation.org>
+In-Reply-To: <20081213085654.5CBFB108040@picon.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-13 at 11:23 +0100, Bart Van Assche wrote:
-> On Sat, Dec 13, 2008 at 11:08 AM, Nicholas A. Bellinger <nab@kernel.org> wrote:
-> >> See also:
-> >> * February 1, 2008, LIO kernel panic during configuration,
-> >> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/74c8b37f24b84e59/d94c07626bd20521?lnk=gst&q=kernel+panic#d94c07626bd20521.
-> >> * February 8, 2008, kernel crash triggered by LIO,
-> >> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/30835aede1028188/5708e16a23367fb4?lnk=gst&q=kernel+crash#5708e16a23367fb4.
-> >> * February 13, 2008, LIO target kernel code triggers memory
-> >> corruption, http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/ddc1bf7666372972/2150a09f9ed3d1cd?lnk=gst&q=ipoib#2150a09f9ed3d1cd.
-> >> * February 18, 2008, LIO target makes entire system hang,
-> >> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/6a76f9efd9409fc5/55bd8840b6a5f757?lnk=gst&q=lio+target+hangs#55bd8840b6a5f757.
-> >>
-> >
-> > I have no idea why why you keep bringing up a minor BUG (completely
-> > unrelated to Target_Core_Mod/ConfigFS and LIO-Target v3.0 btw) that was
-> > fixed 10 months ago..?  Perhaps if you spent half the time looking at
-> > actual lio-core-2.6.git code that you do bringing up minor closed bugs
-> > from months ago [ ... ]
-> 
-> I won't comment on the fact that you consider a kernel crash or a
-> system hang as a minor bug.
-> 
+bugme-daemon@bugzilla.kernel.org wrote:
+> http://bugzilla.kernel.org/show_bug.cgi?id=12212
+>
+>
+>
+>
+>
+> ------- Comment #1 from greg@kroah.com  2008-12-13 00:56 -------
+> On Sat, Dec 13, 2008 at 12:29:04AM -0800, bugme-daemon@bugzilla.kernel.org
+> wrote:
+>   
+>> Problem: an unbranded USB-serial converter is not detected
+>> Steps taken to resolve the problem: 
+>> (unsuccessful) force usb-serial detection by adding (Debian?) udev rules -
+>> detects device but incorrectly defaults to generic which doesn't work
+>> (successful) added vendor:product to pl2303 / recompile / insert module
+>>     
+>
+> Can you send me the patch that you made, in the format described in
+> Documentation/SubmittingPatches, through email, and I will be able to
+> apply it and give you the proper credit.
+>
+>
+>   
+ok, I'm not at all familiar with kernel development but here's my 
+contribution.
+I got the idea from:
+http://www.linuxquestions.org/questions/linux-hardware-18/obscure-usb-serial-adapter-368278/
 
-The problem is that you like to handwave on the technical issues, just
-like you are doing here.  :-)  Of course I fix bugs when people report
-them, but when people like yourself yell and scream and handwave, it
-makes me not want to fix it as quickly if someone wrote a nice and
-thoughful email and said 'thank you'.
+This patch adds the "Superial" USB-Serial converter to pl2303 so that it 
+is detected, by the correct driver.
+Adds the relevant vendor:product (5372:2303) to the device tables in 
+pl2303.c & pl2303.h.
+The patch has been tested against 2.6.24-22-generic.
 
-Anyways, I am not going to debate the development process with you, and
-as folks on the LIO-devel list can tell you, I am very quick to produce
-patches when a issue is located.  
+Signed-off-by: Matthew D Arnold <matthew.arnold-1[AT]uts.edu[DOT]au>
 
-> I reported four bugs instead of one. Only two of these have been
-> reported to be fixed.
-> 
 
-Considering you said earlier that you have not actually looked at any
-recently LIO code, how could you know these bugs are fixed..?   Back
-here in the land of reality, these *TWO* bugs where fixed in back Feb.
-One was related to iSCSI discovery, and one related to v2.6.24 kernel
-breakage and struct scatterlist->page_link, so what..?  Do you honestly
-think handwaving about bugs from 10 months ago will get you anywhere
-here..?  If you are so certain these bugs still exist or have any effect
-on my upstream work, then please, go ahead and prove it.  No..? I did
-not think so.
-
-What does any of this have to do with lio-core-2.6.git,
-Target_Core_Mod/ConfigFS and LIO-Target v3.0 btw..?  Are you actually
-going to write a thoughtful or relivent comment on the v3.0 design
-and/or code, because that would be nice out of your for once.  Otherwise
-I am going to ignore you again, just the like conversation where you
-said:
-
-"Zero-copy means that data is copied as few times as possible".
-
-when I was attempting to explain the finer pointers of
-Target_Core_Mod/ConfigFS design to you and Vlad.  Remember that one..?
-
-http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/8cff61671cd2de6b/37ade00e607dd8c8
-
-Perhaps you should clarify the techincal points I raised in that thread
-(that where never answered) when I actually explained *WHY* I ended up
-not using SCST as a base for Target_Core_Mod/ConfigFS.  Perhaps folks
-would like know why I found SCST Core's memory mapping and allocating
-algortihms to be incomplete for my purposes, and that I had to give up
-the discussion because neither you or Vlad would acknowledge the issues,
-and would rather handwave and steamroll.
-
-Perhaps you would like to address these points here and now, considering
-you seem so jazzed on bringing up threads previously threads.  How does
-it make sense for you to bring up bugs from 10 months ago that where
-fixed then months ago, when you guys don't even want to acknowledge any
-techinical issues I bring up to you..? 
-
-Are you going to continue to refuse to acknowledge techincal concerns
-about design fundementals about your memory pre-allocation and mapping
-logic now that you have posted your patches to LKML..?  Care to address
-the issues in public where everyone can see, or would you rather keep
-that on the SCST and LIO lists..?
-
-Surely this type of behaviour is frowned upon by a subsystem maintainer.
-
-Best regards,
-
---nab
-
-> Bart.
-> 
-> --~--~---------~--~----~------------~-------~--~----~
-> You received this message because you are subscribed to the Google Groups "Linux-iSCSI.org Target Development" group.
-> To post to this group, send email to linux-iscsi-target-dev@googlegroups.com
-> To unsubscribe from this group, send email to linux-iscsi-target-dev+unsubscribe@googlegroups.com
-> For more options, visit this group at http://groups.google.com/group/linux-iscsi-target-dev?hl=en
-> -~----------~----~----~----~------~----~------~--~---
-> 
+------------------------------------------------------------------------------------------
+diff -uprN -X ./linux-source-2.6.24-vanilla/Documentation/dontdiff 
+./linux-sourc
+e-2.6.24-vanilla/drivers/usb/serial/pl2303.c 
+./linux-source-2.6.24-patched/drive
+rs/usb/serial/pl2303.c
+--- ./linux-source-2.6.24-vanilla/drivers/usb/serial/pl2303.c    
+2008-11-25 04:46
+:05.000000000 +1100
++++ ./linux-source-2.6.24-patched/drivers/usb/serial/pl2303.c    
+2008-12-13 21:52
+:36.000000000 +1100
+@@ -90,6 +90,7 @@ static struct usb_device_id id_table []
+     { USB_DEVICE(HL340_VENDOR_ID, HL340_PRODUCT_ID) },
+     { USB_DEVICE(YCCABLE_VENDOR_ID, YCCABLE_PRODUCT_ID) },
+     { USB_DEVICE(SANWA_VENDOR_ID, SANWA_PRODUCT_ID) },
++    { USB_DEVICE(SUPERIAL_VENDOR_ID, SUPERIAL_PRODUCT_ID) },
+     { }                    /* Terminating entry */
+ };
+ 
+diff -uprN -X ./linux-source-2.6.24-vanilla/Documentation/dontdiff 
+./linux-sourc
+e-2.6.24-vanilla/drivers/usb/serial/pl2303.h 
+./linux-source-2.6.24-patched/drive
+rs/usb/serial/pl2303.h
+--- ./linux-source-2.6.24-vanilla/drivers/usb/serial/pl2303.h    
+2008-11-25 04:46
+:05.000000000 +1100
++++ ./linux-source-2.6.24-patched/drivers/usb/serial/pl2303.h    
+2008-12-13 21:52
+:09.000000000 +1100
+@@ -116,3 +116,8 @@
+ /* Sanwa KB-USB2 multimeter cable (ID: 11ad:0001) */
+ #define SANWA_VENDOR_ID        0x11ad
+ #define SANWA_PRODUCT_ID    0x0001
++
++/* "Superial" USB - Serial */
++#define SUPERIAL_VENDOR_ID    0x5372
++#define SUPERIAL_PRODUCT_ID    0x2303
++
 
