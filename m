@@ -1,41 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbYLMPaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757861AbYLMPfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758060AbYLMPaG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 10:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbYLMP3z
+	id S1757861AbYLMPfJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 10:35:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbYLMPez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 10:29:55 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52871 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751119AbYLMP3z (ORCPT
+	Sat, 13 Dec 2008 10:34:55 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:53531 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750975AbYLMPey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 10:29:55 -0500
-Date: Sat, 13 Dec 2008 10:29:51 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       viro@ZenIV.linux.org.uk, hch@infradead.org, zbr@ioremap.net,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [RFC PATCH -v4 04/14] fsnotify: use the new open-exec hook for
-	inotify and dnotify
-Message-ID: <20081213152951.GA22802@infradead.org>
-References: <20081212213915.27112.57526.stgit@paris.rdu.redhat.com> <20081212215135.27112.64080.stgit@paris.rdu.redhat.com>
+	Sat, 13 Dec 2008 10:34:54 -0500
+Message-ID: <4943D62A.4060900@vlnb.net>
+Date: Sat, 13 Dec 2008 18:35:06 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081212215135.27112.64080.stgit@paris.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+CC: linux-iscsi-target-dev@googlegroups.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       scst-devel <scst-devel@lists.sourceforge.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
+References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>	 <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>	 <54939.1229149205@turing-police.cc.vt.edu>	 <e2e108260812130141o3d21bbbdob9e7c9f95d309a74@mail.gmail.com>	 <1229162907.4153.857.camel@haakon2.linux-iscsi.org>	 <e2e108260812130223q13fd98d8gc1e55881a92b939@mail.gmail.com> <1229167118.4153.930.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1229167118.4153.930.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18fXn5fJoxvQgi3/1UDuaGRCXr6ChSRq3na6bE
+ 9slY345GD4m/I88hNI2s3Dqr/ByWn1APkDeTu9jv68RP+vQzcE
+ otoAcfUOIgmJlhUuAEHXg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 04:51:35PM -0500, Eric Paris wrote:
-> inotify and dnotify did not get access events when their children were
-> accessed for shlib or exec purposes.  Trigger on those events as well.
 
-And requesting it about the third time:  Can you please submit this (and
-the required previous patch) as a bug fix?  We'd like to have this in
-ASAP even if the rest will need some more work.
+
+Nicholas A. Bellinger wrote:
+> On Sat, 2008-12-13 at 11:23 +0100, Bart Van Assche wrote:
+>> On Sat, Dec 13, 2008 at 11:08 AM, Nicholas A. Bellinger <nab@kernel.org> wrote:
+>>>> See also:
+>>>> * February 1, 2008, LIO kernel panic during configuration,
+>>>> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/74c8b37f24b84e59/d94c07626bd20521?lnk=gst&q=kernel+panic#d94c07626bd20521.
+>>>> * February 8, 2008, kernel crash triggered by LIO,
+>>>> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/30835aede1028188/5708e16a23367fb4?lnk=gst&q=kernel+crash#5708e16a23367fb4.
+>>>> * February 13, 2008, LIO target kernel code triggers memory
+>>>> corruption, http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/ddc1bf7666372972/2150a09f9ed3d1cd?lnk=gst&q=ipoib#2150a09f9ed3d1cd.
+>>>> * February 18, 2008, LIO target makes entire system hang,
+>>>> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/6a76f9efd9409fc5/55bd8840b6a5f757?lnk=gst&q=lio+target+hangs#55bd8840b6a5f757.
+>>>>
+>>> I have no idea why why you keep bringing up a minor BUG (completely
+>>> unrelated to Target_Core_Mod/ConfigFS and LIO-Target v3.0 btw) that was
+>>> fixed 10 months ago..?  Perhaps if you spent half the time looking at
+>>> actual lio-core-2.6.git code that you do bringing up minor closed bugs
+>>> from months ago [ ... ]
+>> I won't comment on the fact that you consider a kernel crash or a
+>> system hang as a minor bug.
+>>
+> 
+> The problem is that you like to handwave on the technical issues, just
+> like you are doing here.  :-)  Of course I fix bugs when people report
+> them, but when people like yourself yell and scream and handwave, it
+> makes me not want to fix it as quickly if someone wrote a nice and
+> thoughful email and said 'thank you'.
+> 
+> Anyways, I am not going to debate the development process with you, and
+> as folks on the LIO-devel list can tell you, I am very quick to produce
+> patches when a issue is located.  
+> 
+>> I reported four bugs instead of one. Only two of these have been
+>> reported to be fixed.
+>>
+> 
+> Considering you said earlier that you have not actually looked at any
+> recently LIO code, how could you know these bugs are fixed..?   Back
+> here in the land of reality, these *TWO* bugs where fixed in back Feb.
+> One was related to iSCSI discovery, and one related to v2.6.24 kernel
+> breakage and struct scatterlist->page_link, so what..?  Do you honestly
+> think handwaving about bugs from 10 months ago will get you anywhere
+> here..?  If you are so certain these bugs still exist or have any effect
+> on my upstream work, then please, go ahead and prove it.  No..? I did
+> not think so.
+> 
+> What does any of this have to do with lio-core-2.6.git,
+> Target_Core_Mod/ConfigFS and LIO-Target v3.0 btw..?  Are you actually
+> going to write a thoughtful or relivent comment on the v3.0 design
+> and/or code, because that would be nice out of your for once.  Otherwise
+> I am going to ignore you again, just the like conversation where you
+> said:
+> 
+> "Zero-copy means that data is copied as few times as possible".
+> 
+> when I was attempting to explain the finer pointers of
+> Target_Core_Mod/ConfigFS design to you and Vlad.  Remember that one..?
+> 
+> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/8cff61671cd2de6b/37ade00e607dd8c8
+
+You know, that thread was finished when you refused to name which real 
+life tasks you are going to solve with your super advanced features. 
+I.e. answer, why are they needed at all?
+
+Vlad
 
