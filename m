@@ -1,123 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYLMF0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbYLMF6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbYLMF0e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 00:26:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYLMF0Z
+	id S1756415AbYLMF6I (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 00:58:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbYLMF5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 00:26:25 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33973 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751191AbYLMF0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 00:26:24 -0500
-Date: Sat, 13 Dec 2008 00:26:06 -0500
-From: Valerie Aurora Henson <vaurora@redhat.com>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       mingo@redhat.com, val.henson@gmail.com
-Subject: Re: [PATCH] relatime: Let relatime update atime at least once per day
-Message-ID: <20081213052606.GE19216@shell>
-References: <20081126195457.GA3541@srcf.ucam.org> <20081202171926.GB20405@srcf.ucam.org>
+	Sat, 13 Dec 2008 00:57:54 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:30078 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbYLMF5x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Dec 2008 00:57:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=ls6bwz93eB9gGXwT0E8ybQ0Zd5Fbx6IDgnQPC5xFAE8ftfVeEDmceWmceB9WKxcYGe
+         NRZuij+Nvxn86uSRizRqF7C6f1ks50+fTeXUrx6WvZTIH4L4VXeH3HLVKk/fMm1JXh/J
+         A6iXZMzHrvLgr2+rlm9yENxESrjxLaUZHFZ64=
+Subject: [PATCH] ieee1394: consolidate uses of IEEE1934_BUSID_MAGIC
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 12 Dec 2008 21:57:50 -0800
+Message-Id: <1229147871.11257.3.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081202171926.GB20405@srcf.ucam.org>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 02, 2008 at 05:19:26PM +0000, Matthew Garrett wrote:
-> Allow atime to be updated once per day even with relatime. This lets
-> utilities like tmpreaper (which delete files based on last access time)
-> continue working.
->     
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> Acked-by: Ingo Molnar <mingo@redhat.com>
-> Acked-by: Alan Cox <alan@redhat.com>
+Move the definition out of nodemgr.h and use it in csr.c/pcilynx.c
 
-My name is Valerie Aurora Henson, and I endorse this patch.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/ieee1394/csr.c      |    4 ++--
+ drivers/ieee1394/ieee1394.h |    3 +++
+ drivers/ieee1394/nodemgr.h  |    3 ---
+ drivers/ieee1394/pcilynx.c  |    2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
-Acked-by: Valerie Aurora Henson <vaurora@redhat.com>
+diff --git a/drivers/ieee1394/csr.c b/drivers/ieee1394/csr.c
+index 9029b68..31400c8 100644
+--- a/drivers/ieee1394/csr.c
++++ b/drivers/ieee1394/csr.c
+@@ -217,7 +217,7 @@ static void add_host(struct hpsb_host *host)
+ 
+ 	host->csr.generation = 2;
+ 
+-	bus_info[1] = __constant_cpu_to_be32(0x31333934);
++	bus_info[1] = IEEE1394_BUSID_MAGIC;
+ 	bus_info[2] = cpu_to_be32((hpsb_disable_irm ? 0 : 1 << CSR_IRMC_SHIFT) |
+ 				  (1 << CSR_CMC_SHIFT) |
+ 				  (1 << CSR_ISC_SHIFT) |
+@@ -250,7 +250,7 @@ static void remove_host(struct hpsb_host *host)
+ {
+ 	quadlet_t bus_info[CSR_BUS_INFO_SIZE];
+ 
+-	bus_info[1] = __constant_cpu_to_be32(0x31333934);
++	bus_info[1] = IEEE1394_BUSID_MAGIC;
+ 	bus_info[2] = cpu_to_be32((0 << CSR_IRMC_SHIFT) |
+ 				  (0 << CSR_CMC_SHIFT) |
+ 				  (0 << CSR_ISC_SHIFT) |
+diff --git a/drivers/ieee1394/ieee1394.h b/drivers/ieee1394/ieee1394.h
+index 4049207..976d1a8 100644
+--- a/drivers/ieee1394/ieee1394.h
++++ b/drivers/ieee1394/ieee1394.h
+@@ -121,6 +121,9 @@ extern const char *hpsb_speedto_str[];
+ 
+ #include <asm/byteorder.h>
+ 
++/* '1' '3' '9' '4' in ASCII */
++#define IEEE1394_BUSID_MAGIC	cpu_to_be32(0x31333934)
++
+ #ifdef __BIG_ENDIAN_BITFIELD
+ 
+ struct selfid {
+diff --git a/drivers/ieee1394/nodemgr.h b/drivers/ieee1394/nodemgr.h
+index d9391ef..ee5acdb 100644
+--- a/drivers/ieee1394/nodemgr.h
++++ b/drivers/ieee1394/nodemgr.h
+@@ -33,9 +33,6 @@ struct csr1212_keyval;
+ struct hpsb_host;
+ struct ieee1394_device_id;
+ 
+-/* '1' '3' '9' '4' in ASCII */
+-#define IEEE1394_BUSID_MAGIC	__constant_cpu_to_be32(0x31333934)
+-
+ /* This is the start of a Node entry structure. It should be a stable API
+  * for which to gather info from the Node Manager about devices attached
+  * to the bus.  */
+diff --git a/drivers/ieee1394/pcilynx.c b/drivers/ieee1394/pcilynx.c
+index 7aee1ac..dc15cad 100644
+--- a/drivers/ieee1394/pcilynx.c
++++ b/drivers/ieee1394/pcilynx.c
+@@ -1463,7 +1463,7 @@ static int __devinit add_card(struct pci_dev *dev,
+ 
+                                 /* info_length, crc_length and 1394 magic number to check, if it is really a bus info block */
+ 				if (((be32_to_cpu(lynx->bus_info_block[0]) & 0xffff0000) == 0x04040000) &&
+-				    (lynx->bus_info_block[1] == __constant_cpu_to_be32(0x31333934)))
++				    (lynx->bus_info_block[1] == IEEE1394_BUSID_MAGIC))
+                                 {
+                                         PRINT(KERN_DEBUG, lynx->id, "read a valid bus info block from");
+                                 } else {
+-- 
+1.6.1.rc2.306.ge5d5e
 
--VAL
 
-> ---
-> 
-> I've removed the adjustable time code, since nobody's come up with a 
-> terribly good use case for it. This makes relatime more useful in the 
-> generic case - there may be situations where it still doesn't satisfy 
-> people, but that's not a regression over the current situation.
-> 
-> diff --git a/fs/inode.c b/fs/inode.c
-> index 0487ddb..057c92b 100644
-> --- a/fs/inode.c
-> +++ b/fs/inode.c
-> @@ -1179,6 +1179,40 @@ sector_t bmap(struct inode * inode, sector_t block)
->  }
->  EXPORT_SYMBOL(bmap);
->  
-> +/*
-> + * With relative atime, only update atime if the previous atime is
-> + * earlier than either the ctime or mtime or if at least a day has
-> + * passed since the last atime update.
-> + */
-> +static int relatime_need_update(struct vfsmount *mnt, struct inode *inode,
-> +			     struct timespec now)
-> +{
-> +
-> +	if (!(mnt->mnt_flags & MNT_RELATIME))
-> +		return 1;
-> +	/*
-> +	 * Is mtime younger than atime? If yes, update atime:
-> +	 */
-> +	if (timespec_compare(&inode->i_mtime, &inode->i_atime) >= 0)
-> +		return 1;
-> +	/*
-> +	 * Is ctime younger than atime? If yes, update atime:
-> +	 */
-> +	if (timespec_compare(&inode->i_ctime, &inode->i_atime) >= 0)
-> +		return 1;
-> +
-> +	/*
-> +	 * Is the previous atime value older than a day? If yes,
-> +	 * update atime:
-> +	 */
-> +	if ((long)(now.tv_sec - inode->i_atime.tv_sec) >= 24*60*60)
-> +		return 1;
-> +	/*
-> +	 * Good, we can skip the atime update:
-> +	 */
-> +	return 0;
-> +}
-> +
->  /**
->   *	touch_atime	-	update the access time
->   *	@mnt: mount the inode is accessed on
-> @@ -1206,17 +1240,12 @@ void touch_atime(struct vfsmount *mnt, struct dentry *dentry)
->  		goto out;
->  	if ((mnt->mnt_flags & MNT_NODIRATIME) && S_ISDIR(inode->i_mode))
->  		goto out;
-> -	if (mnt->mnt_flags & MNT_RELATIME) {
-> -		/*
-> -		 * With relative atime, only update atime if the previous
-> -		 * atime is earlier than either the ctime or mtime.
-> -		 */
-> -		if (timespec_compare(&inode->i_mtime, &inode->i_atime) < 0 &&
-> -		    timespec_compare(&inode->i_ctime, &inode->i_atime) < 0)
-> -			goto out;
-> -	}
->  
->  	now = current_fs_time(inode->i_sb);
-> +
-> +	if (!relatime_need_update(mnt, inode, now))
-> +		goto out;
-> +
->  	if (timespec_equal(&inode->i_atime, &now))
->  		goto out;
-> 
-> -- 
-> Matthew Garrett | mjg59@srcf.ucam.org
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
