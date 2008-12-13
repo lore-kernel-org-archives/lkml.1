@@ -1,184 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbYLMShw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbYLMSj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752449AbYLMShw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 13:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbYLMShW
+	id S1752116AbYLMSj1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 13:39:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbYLMSjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 13:37:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40698 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750859AbYLMShT convert rfc822-to-8bit (ORCPT
+	Sat, 13 Dec 2008 13:39:20 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:45419 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbYLMSjT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 13:37:19 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: 2.6.28-rc8-git1: Reported regressions from 2.6.27
-Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
+	Sat, 13 Dec 2008 13:39:19 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sat, 13 Dec 2008 10:39:13 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Scott James Remnant <scott@netsplit.com>
+cc: Casey Dahlin <cdahlin@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] waitfd: file descriptor to wait on child processes
+In-Reply-To: <1229157789.6128.0.camel@warcraft>
+Message-ID: <alpine.DEB.1.10.0812131026120.28976@alien.or.mcafeemobile.com>
+References: <493EA441.1070706@redhat.com>  <alpine.DEB.1.10.0812091127160.17144@alien.or.mcafeemobile.com>  <1229124491.12618.5.camel@warcraft>  <alpine.DEB.1.10.0812122025180.27751@alien.or.mcafeemobile.com> <1229157789.6128.0.camel@warcraft>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <u7kfEgp36eE.A.qpG.Y4_QJB@chimera>
-Date: Sat, 13 Dec 2008 17:29:48 +0100 (CET)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message contains a list of some regressions from 2.6.27, for which there
-are no fixes in the mainline I know of.  If any of them have been fixed already,
-please let me know.
+On Sat, 13 Dec 2008, Scott James Remnant wrote:
 
-If you know of any other unresolved regressions from 2.6.27, please let me know
-either and I'll add them to the list.  Also, please let me know if any of the
-entries below are invalid.
+> On Fri, 2008-12-12 at 20:29 -0800, Davide Libenzi wrote:
+> 
+> > And how about this?
+> > 
+> > 	sfd = signalfd(SIGCHLD);
+> > 
+> > 	for (;;) {
+> > 		poll(sfd, POLLIN);
+> > 		while ((pid = waitpid(0, &status, WNOHANG)) != -1)
+> > 			process_child_death(pid);
+> > 	}
+> > 
+> At this point, why have signalfd()'s read() return siginfo_t at all?
+> 
+> You have to discard the entire information since it's only ever the
+> first signal that matched, all subsequent ones are thrown away.
 
-Each entry from the list will be sent additionally in an automatic reply to
-this message with CCs to the people involved in reporting and handling the
-issue.
-
-
-Listed regressions statistics:
-
-  Date          Total  Pending  Unresolved
-  ----------------------------------------
-  2008-12-13      111       14          13
-  2008-12-07      106       20          17
-  2008-12-04      106       29          21
-  2008-11-22       93       25          15
-  2008-11-16       89       32          18
-  2008-11-09       73       40          27
-  2008-11-02       55       41          29
-  2008-10-25       26       25          20
-
-
-Unresolved regressions
-----------------------
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12210
-Subject		: 2.6.28-rc8 big regression in VM
-Submitter	: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Date		: 2008-12-12 18:38 (2 days old)
-References	: http://marc.info/?l=linux-kernel&m=122910711005135&w=4
-Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
+Signalfd is a wakeup gate available to the poll/select/epoll subsystems.
+Signals that are queued inside the kernel, get de-queueing behavior, while 
+signals that are overlapping, get overlapping behavior.
+The code above enable you to wait for signals inside a poll/select/epoll 
+dispatch loop, and get all the info waitpid() can return to you - w/out 
+missing anything.
+In a real app case, you're probably waiting for more than simple SIGCHLD, 
+so you likely will have one (or more) read(2) of the signalfd to find out 
+which signal you got, and do the waitpid(WNOHANG) loop in case of SIGCHLD.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12209
-Subject		: oldish top core dumps (in its meminfo() function)
-Submitter	: Andreas Mohr <andi@lisas.de>
-Date		: 2008-12-12 18:49 (2 days old)
-References	: http://marc.info/?l=linux-kernel&m=122910784006472&w=4
-		  http://marc.info/?l=linux-kernel&m=122907511319288&w=4
 
+- Davide
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12208
-Subject		: uml is very slow on 2.6.28 host
-Submitter	: Miklos Szeredi <miklos@szeredi.hu>
-Date		: 2008-12-12 9:35 (2 days old)
-References	: http://marc.info/?l=linux-kernel&m=122907463518593&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12195
-Subject		: "dd" make kernel panic
-Submitter	: alexs <alex.shi@intel.com>
-Date		: 2008-12-10 18:07 (4 days old)
-Handled-By	: James Bottomley <James.Bottomley@HansenPartnership.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12178
-Subject		: Xorg crash at first start
-Submitter	: Cédric Godin <cedric@belbone.be>
-Date		: 2008-12-04 14:26 (10 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=52440211dcdc52c0b757f8b34d122e11b12cdd50
-References	: http://marc.info/?l=linux-kernel&m=122840082828098&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12160
-Subject		: networking oops after resume from s2ram (2.6.28-rc6)
-Submitter	: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date		: 2008-11-28 21:15 (16 days old)
-References	: http://marc.info/?l=linux-kernel&m=122790701615723&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12159
-Subject		: 2.6.28-rc6-git1 -- No sound produced from Intel HDA ALSA driver
-Submitter	: Miles Lane <miles.lane@gmail.com>
-Date		: 2008-11-27 20:33 (17 days old)
-References	: http://marc.info/?l=linux-kernel&m=122781805620212&w=4
-Handled-By	: Takashi Iwai <tiwai@suse.de>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12156
-Subject		: v2.6.28-rc2: x86_32 relocation regression?
-Submitter	: Vegard Nossum <vegard.nossum@gmail.com>
-Date		: 2008-11-24 21:19 (20 days old)
-References	: http://marc.info/?l=linux-kernel&m=122756158220966&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12155
-Subject		: Regression in 2.6.28-rc and 2.6.27-stable - hibernate related
-Submitter	: Fabio Comolli <fabio.comolli@gmail.com>
-Date		: 2008-11-23 16:17 (21 days old)
-References	: http://marc.info/?l=linux-kernel&m=122745709926361&w=4
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12100
-Subject		: resume (S2R) broken by Intel microcode module, on A110L
-Submitter	: Andreas Mohr <andi@lisas.de>
-Date		: 2008-11-25 08:48 (19 days old)
-Handled-By	: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12061
-Subject		: snd_hda_intel: power_save: sound cracks on powerdown
-Submitter	: Jens Weibler <bugzilla-kernel@jensthebrain.de>
-Date		: 2008-11-18 12:07 (26 days old)
-Handled-By	: Takashi Iwai <tiwai@suse.de>
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12028
-Subject		: i915 DRM is broken in 2.6.28-rc4
-Submitter	: Adam Tkac <vonsch@gmail.com>
-Date		: 2008-11-14 01:50 (30 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11849
-Subject		: default IRQ affinity change in v2.6.27 (breaking several SMP PPC based systems)
-Submitter	: Kumar Gala <galak@kernel.crashing.org>
-Date		: 2008-10-24 12:45 (51 days old)
-References	: http://marc.info/?l=linux-kernel&m=122485245924125&w=4
-
-
-Regressions with patches
-------------------------
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12047
-Subject		: ACPI toshiba: only register rfkill if bt is enabled
-Submitter	: Andrey Borzenkov <arvidjaar@mail.ru>
-Date		: 2008-10-28 19:10 (47 days old)
-References	: http://marc.info/?l=linux-kernel&m=122522113619025&w=2
-Handled-By	: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-Patch		: http://marc.info/?l=linux-kernel&m=122526843117478&w=2
-
-
-For details, please visit the bug entries and follow the links given in
-references.
-
-As you can see, there is a Bugzilla entry for each of the listed regressions.
-There also is a Bugzilla entry used for tracking the regressions from 2.6.27,
-unresolved as well as resolved, at:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=11808
-
-Please let me know if there are any Bugzilla entries that should be added to
-the list in there.
-
-Thanks,
-Rafael
 
