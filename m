@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbYLMPQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbYLMPWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758056AbYLMPQS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 10:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYLMPQF
+	id S1757317AbYLMPWh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 10:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYLMPW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 10:16:05 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:18320 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752444AbYLMPQD (ORCPT
+	Sat, 13 Dec 2008 10:22:27 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:14160 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbYLMPW0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 10:16:03 -0500
+	Sat, 13 Dec 2008 10:22:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=eyBIHxEYlKVCxz2RH++AC6p1NSdrwZ8RBpE6hRB7ZBRxXVvOYsaAW70/VgPR6JpdiG
-         ztFCQNZuW15Q2bP8jKJqRURQlbbq4d/sC7i9Kz/C4d+uY7VIp0XRfdOhudeYCiAXSRB1
-         oHbYiDPylxNlkowNmMiToInRTb1qyIdg5q2os=
-Date: Sat, 13 Dec 2008 18:16:00 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Steven Rostedt <srostedt@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: Re: [RFC] x86: entry_64 - introduce FTRACE_ frame macro
-Message-ID: <20081213151600.GA12556@localhost>
-References: <20081212184136.GB14192@localhost> <1229113167.32623.12.camel@localhost.localdomain> <20081212204724.GA26194@localhost> <alpine.DEB.1.10.0812121552360.19351@gandalf.stny.rr.com> <20081212205729.GA28554@localhost> <alpine.DEB.1.10.0812121620520.19351@gandalf.stny.rr.com> <20081212213538.GA731@localhost> <alpine.DEB.1.10.0812121655090.19351@gandalf.stny.rr.com> <20081213082054.GA7559@localhost> <c62985530812130646r6bcdf424o752f16458dd22914@mail.gmail.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YHEV6gMmj+g2MzPAx7JOo+BTl9aDLlgJkctQeGVteEy4Rel5BxXx7mcDND6odbgP4z
+         +oZGUhQVvXqbIMb4+jEaZqSLxuBdYjFKBtLNdBgcLMJBXqCTqXtrxPg8gXTykKsX6rVx
+         22K44mwXvCwhjXLP+LGtIcN8F6RAiDCUpdmkU=
+Message-ID: <c62985530812130722u5a4fbfcayd8c61dadbc5b1792@mail.gmail.com>
+Date: Sat, 13 Dec 2008 16:22:25 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 0/3] tracing/function-graph-tracer: signal interrupt triggering on output
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081213074930.GA4205@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530812130646r6bcdf424o752f16458dd22914@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <493EF64D.50804@gmail.com> <493EF797.7090603@gmail.com>
+	 <20081212101448.GE18152@elte.hu>
+	 <c62985530812120327l369abf7eud17e2a06c7d2bd12@mail.gmail.com>
+	 <20081213074930.GA4205@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Frédéric Weisbecker - Sat, Dec 13, 2008 at 03:46:03PM +0100]
-| 2008/12/13 Cyrill Gorcunov <gorcunov@gmail.com>:
-| > [Steven Rostedt - Fri, Dec 12, 2008 at 04:56:47PM -0500]
-| > ...
-| > | > Steve, here is how it could look like:
-| > | > (I liked first proposal more :)
-| > |
-| > | I see the confusion. In ftrace.h the function graph tracer config is not
-| > | inside CONFIG_FUNCTION_TRACER, even though it is dependent on it (or
-| > | was). OK, just do your first proposal then.
-| > |
-| > | -- Steve
-| > |
-| >
-| > ok, I sent it yesterday as
-| >
-| >        http://lkml.org/lkml/2008/12/12/301
-| >        [PATCH] x86: entry_64 - introduce FTRACE_ frame macro v2
-| >
-| > Ingo, will you pick it up?
-| >
-| >                - Cyrill -
-| >
-| 
-| Hi,
-| 
-| Looks good and clarify the asm bits.
-| 
-| I wonder if the function_graph_tracer should continue to necessarily
-| depend on the function tracer.
-| It was more simplier to do so but perhaps that could be avoided with
-| small modifications.
-| 
+2008/12/13 Ingo Molnar <mingo@elte.hu>:
+> Another thing, i just noticed that ftrace_print() is broken in certain
+> situations, for example a plain newline:
+>
+>        ftrace_printk("\n");
+>
+> printed via trace_pipe will print some weirdly concatenated line:
+>
+>           <...>-2994  [007]   406.498986: debug_show:          <...>-2994  [007]   406.498986:            <...>-2994  [007]   406.498986: debug_show:
+>
+> not via a separate, standalone, empty line.
 
-Hi Frédéric,
+I just tested with latest -tip and I don't any problem with it.
+With a single ftrace_printk("\n") on might_sleep() I get:
 
-I didn't play with tracer internals since was more concerned about
-asm part of code. If you find that we better should introduce
-additional deps here or change a "deps graph" itself - I think it
-will be easy to place a new patch on top of this (or replace my
-patch) :)
+           <...>-2739  [000]   145.692153: __might_sleep:
+           <...>-2739  [000]   145.692155: __might_sleep:
+           <...>-2739  [000]   145.692157: __might_sleep:
+           <...>-2739  [000]   145.692158: __might_sleep:
 
-The only thing I would change in mine patch is -- subq/addq $0x38, %rsp
-since the following code uses decimal system but not a big deal anyway.
-
-		- Cyrill -
+with trace or trace_iter file.
+Does it always occur or in rare situations?
