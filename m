@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbYLMJaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbYLMJmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756120AbYLMJaT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 04:30:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbYLMJaD
+	id S1756416AbYLMJmL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 04:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbYLMJl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 04:30:03 -0500
-Received: from mirapoint3.brutele.be ([212.68.199.148]:7967 "EHLO
-	mirapoint3.brutele.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753859AbYLMJaA (ORCPT
+	Sat, 13 Dec 2008 04:41:57 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:12919 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754458AbYLMJl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 04:30:00 -0500
-Message-ID: <49438093.9030809@tvcablenet.be>
-Date: Sat, 13 Dec 2008 10:29:55 +0100
-From: =?ISO-8859-1?Q?Fran=E7ois_Valenduc?= 
-	<francois.valenduc@tvcablenet.be>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081123)
+	Sat, 13 Dec 2008 04:41:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=UjKdvUiDcBHqxdjmKr9LifoNE3NM6SJJhwrulOP9gcgoODLy3Z6/JaYMNWzOQoqeQp
+         X2sfJltNcrtvqRiNBuuZxELxOoVjF97whvwrY+4ldr4/xkMkiHSsYjKfXcizV4nktEcl
+         U0+O2uuxW9vRuAoOGIhi6RHRL3FXa+mZoU6f0=
+Message-ID: <e2e108260812130141o3d21bbbdob9e7c9f95d309a74@mail.gmail.com>
+Date: Sat, 13 Dec 2008 10:41:53 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
+Cc: nab@kernel.org, linux-iscsi-target-dev@googlegroups.com,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Christoph Hellwig" <hch@lst.de>,
+       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Mike Christie" <michaelc@cs.wisc.edu>,
+       "Hannes Reinecke" <hare@suse.de>, "Jens Axboe" <jens.axboe@oracle.com>
+In-Reply-To: <54939.1229149205@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/83] 2.6.27.9-stable review
-References: <20081211191014.GA5759@suse.de>
-In-Reply-To: <20081211191014.GA5759@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Junkmail-Status: score=10/50, host=mirapoint3.brutele.be
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A0B0208.49438095.01B0,ss=1,fgs=0,
-	ip=192.168.1.2,
-	so=2008-05-01 23:44:25,
-	dmn=5.7.1/2008-09-02
-X-Junkmail-IWF: false
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>
+	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>
+	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>
+	 <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>
+	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>
+	 <54939.1229149205@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH a écrit :
-> This is the start of the stable review cycle for the 2.6.27.9 release.
-> There are 83 patches in this series, all will be posted as a response to
-> this one.  If anyone has any issues with these being applied, please let
-> us know.  If anyone is a maintainer of the proper subsystem, and wants
-> to add a Signed-off-by: line to the patch, please respond with it.
-> 
-> These patches are sent out with a number of different people on the Cc:
-> line.  If you wish to be a reviewer, please email stable@kernel.org to
-> add your name to the list.  If you want to be off the reviewer list,
-> also email us.
-> 
-> Responses should be made by December 13, 2008, 20:00:00 UTC.
-> Anything received after that time might be too late.
-> 
-> The whole patch series can be found in one patch at:
-> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.9-rc1.gz
-> and the diffstat can be found below.
-> 
-> 
-> thanks,
-> 
-> greg k-h
+On Sat, Dec 13, 2008 at 7:20 AM,  <Valdis.Kletnieks@vt.edu> wrote:
+> On Fri, 12 Dec 2008 01:40:09 PST, "Nicholas A. Bellinger" said:
+>
+>> Too bad, because you are missing out on the most advanced ConfigFS
+>> enabled storage engine on the planet.
+>
+> OK. I *have* to ask.. ;)
+>
+> What's the *second* most advanced configfs-enabled storage engine?
 
-Would it be possible to add these two patches ?
+Please don't let Nicholas Bellinger mislead you. The most important
+aspect of a storage engine is stability. Last January I ran
+performance tests on IET, STGT, SCST and LIO. I quickly found out not
+only that SCST had the highest throughput and the lowest latency, but
+also that the performance tests on LIO triggered several kernel
+crashes. I have reported these crashes to the linux-iscsi-target-dev
+mailing list, but even as of today, it's not yet clear whether all of
+these crashes have been fixed. During the last ten years I have filed
+bug reports for many open source projects, and the LIO project is the
+only project where the (kernel) crashes I reported were not addressed
+immediately.
 
-commit 8258becf07e71236aac8cf5406a1345712f9ac25
-Author: Johannes Berg <johannes@sipsolutions.net>
-Date:   Tue Sep 23 19:18:43 2008 +0200
+See also:
+* February 1, 2008, LIO kernel panic during configuration,
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/74c8b37f24b84e59/d94c07626bd20521?lnk=gst&q=kernel+panic#d94c07626bd20521.
+* February 8, 2008, kernel crash triggered by LIO,
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/30835aede1028188/5708e16a23367fb4?lnk=gst&q=kernel+crash#5708e16a23367fb4.
+* February 13, 2008, LIO target kernel code triggers memory
+corruption, http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/ddc1bf7666372972/2150a09f9ed3d1cd?lnk=gst&q=ipoib#2150a09f9ed3d1cd.
+* February 18, 2008, LIO target makes entire system hang,
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/6a76f9efd9409fc5/55bd8840b6a5f757?lnk=gst&q=lio+target+hangs#55bd8840b6a5f757.
 
-     iwlagn: downgrade BUG_ON in interrupt
-
-commit 199d9de726ff2f949405279665a9c8b38966239b
-Author: Johannes Berg <johannes@sipsolutions.net>
-Date:   Tue Nov 18 01:47:21 2008 +0100
-
-     iwlagn: fix RX skb alignment
-
-Without these ones, my computer freezes very frequently (see bugs 11393, 
-11983 and 12173 which in fact is a duplicate of the previous one).
-These two patches can be applied without any rejects on kernel 2.6.27.8.
-
-Thanks,
-François Valenduc
+Bart.
