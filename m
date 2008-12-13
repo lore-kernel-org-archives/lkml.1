@@ -1,165 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbYLMOtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbYLMOuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758529AbYLMOtW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 09:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756376AbYLMOtJ
+	id S1756366AbYLMOuT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 09:50:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756376AbYLMOuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 09:49:09 -0500
-Received: from mu-out-0910.google.com ([209.85.134.187]:58584 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758294AbYLMOtH (ORCPT
+	Sat, 13 Dec 2008 09:50:05 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:49270 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756325AbYLMOuD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 09:49:07 -0500
+	Sat, 13 Dec 2008 09:50:03 -0500
+X-Greylist: delayed 374 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Dec 2008 09:49:47 EST
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=QM4+WI8rnmbd6aJJYzUG5vOhCco6xnLr86OwBmd0YUpLC6xx0gEJq9R+kcndqQ/7xA
-         BR8rBCtVQMvTniLCXUONdkkaZekAGbuRlEBunnhK2zfbObXcXJyvcolFmo0shb5KV7Gv
-         +umMjEgJIxQadVtNjffrTpIz6IUPusrsy1DhI=
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=PM1FhTm0qfCp38+u2F3Jj0ZD8mCTutAOBhN9iY99kA2cEYZJSC9o/wP3XsrWWEkBzM
+         /b+23EZrh4DNZeS9atDbgq0dTL2BDVQSwdy/NH2rfzFPN2Y7C5J/XJqqqO0Pd9Lb1HPp
+         ahI2xviwScjvh7FVFFgePmI+4IOS4oEI2mhyE=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: vanilla kernels hang randomly under Fedora 10 on system with Radeon card
-Date: Sat, 13 Dec 2008 15:12:43 +0100
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] nohz: add missing handling of clocksource watchdog
+Date: Sat, 13 Dec 2008 15:41:31 +0100
 User-Agent: KMail/1.10.3 (Linux/2.6.28-rc6-next-20081128; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Benny Amorsen <benny+usenet@amorsen.dk>
-References: <200812012342.32575.bzolnier@gmail.com> <200812042118.17921.bzolnier@gmail.com> <200812072021.38931.bzolnier@gmail.com>
-In-Reply-To: <200812072021.38931.bzolnier@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>,
+       Lars Winterfeld <lars.winterfeld@tu-ilmenau.de>,
+       linux-kernel@vger.kernel.org
+References: <200812080015.22793.bzolnier@gmail.com> <200812080124.37944.bzolnier@gmail.com> <alpine.LFD.2.00.0812080308140.3325@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0812080308140.3325@localhost.localdomain>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200812131541.31990.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812131512.43868.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 07 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 04 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> > On Thursday 04 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> > > On Thursday 04 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> > > > On Wednesday 03 December 2008, Bartlomiej Zolnierkiewicz wrote:
-> > > > > On Tuesday 02 December 2008, Dave Airlie wrote:
-> > > > > > On Tue, Dec 2, 2008 at 8:42 AM, Bartlomiej Zolnierkiewicz
-> > > > > > <bzolnier@gmail.com> wrote:
-> > > > > > >
-> > > > > > > Hi,
-> > > > > > >
-> > > > > > > After Fedora 9 -> Fedora 10 upgrade vanilla kernels which previously
-> > > > > > > worked fine (next-20081128 and next-20081121) started to hang randomly
-> > > > > > > on my Pentium M / 855PM / RV350 laptop.  Since (surprisingly) stock
-> > > > > > > Fedora kernel (2.6.27.5-117.fc10.i686) was not affected I got the idea
-> > > > > > > that either userspace changes uncovered some kernel regression or some
-> > > > > > > Fedora specific patch must be fixing the issue.  Unfortunately vanilla
-> > > > > > > 2.6.27 also freezed so after the usual pain caused by hitting bunch of
-> > > > > > > unrelated problems [1] it turned out that drm-modesetting-radeon.patch
-> > > > > > > is the magic patch and CONFIG_DRM_RADEON_KMS is the magic change.  With
-> > > > > > > the patch and enabling the option next-20081128 works stable again...
-> > > > > > >
-> > > > > > > Since the following error gets logged by kernel:
-> > > > > > >
-> > > > > > > [drm:drm_buffer_object_validate] *ERROR* Failed moving buffer. cef578c0 1444 4000027 10000a0
-> > > > > > > [drm:drm_buffer_object_validate] *ERROR* Out of aperture space or DRM memory quota.
-> > > > > > >
-> > > > > > > and it also seems that system is more responsive now (it was kind of
-> > > > > > > sluggish previously) my draft theory is that F9 -> F10 triggered some
-> > > > > > > AGP memory management bug and CONFIG_DRM_RADEON_KMS happens to fix it
-> > > > > > > but I'll leave figuring this up to the more knowledgeable people... ;)
-> > > > > > 
-> > > > > > Well KMS is a purely Fedora thing, and enabling it completely avoids
-> > > > > > the old driver codepaths so
-> > > > > > while it might fix it, its more by accident than design.
-> > > > > > 
-> > > > > > I'm trying to track down the rv3xx hangs with hpa at the moment as he
-> > > > > > sees them also, something in
-> > > > > >  the 2.6.26->2.6.27 timeframe. I'm hoping running the 2.6.26 drm on
-> > > > > > the 2.6.27 will help narrow it down.
-> > > > > > 
-> > > > > > Bisecting 2.6.26->2.6.27 might also help.
-> > > > > 
-> > > > > It could be a different issue.  I tried 2.6.26, 2.6.25 and 2.6.24
-> > > > > and they all hang (they all worked fine with Fedora 9)...
-> > > > > 
-> > > > > I will try some older kernels but I start thinking that the xorg's ati
-> > > > > driver update is the main cause (xorg-x11-drv-ati-6.8.0-19.fc9.i386.rpm
-> > > > > -> xorg-x11-drv-ati-6.9.0-54.fc10.i386.rpm).
-> > > > 
-> > > > I just went straight to trying downgrading the driver and the older driver
-> > > > indeed works fine.  Then I tried to narrow down the problem and the lucky
-> > > > winner this time is the cute (== undocumented and unsigned-off) patch
-> > > > called radeon-6.9.0-remove-limit-heuristics.patch.  The newer driver with
-> > > > only this patch reverted fixes hangs for vanilla kernels and drm errors
-> > > > for Fedora kernel.  Also performance problems that I've noticed in the
-> > > > meantime (slower playback of 720p videos, sluggish window scrolling in
-> > > > kmail) are completely gone.  That being said I'm not entirely sure whether
+On Monday 08 December 2008, Thomas Gleixner wrote:
+> On Mon, 8 Dec 2008, Bartlomiej Zolnierkiewicz wrote:
+> 
+> > On Monday 08 December 2008, Sergei Shtylyov wrote:
+> > > Hello.
 > > > 
-> > > I was too quick here -- performance problems are still present with
-> > > _Fedora_ kernel.
+> > > R. J. Wysocki wrote:
+> > > > On Monday, 8 of December 2008, Bartlomiej Zolnierkiewicz wrote:
+> > > >   
+> > > >> Fixes "Clocksource tsc unstable (delta = -974982308 ns)" problem.
+> > > >>     
+> > > >
+> > > > Where can I find the description of the problem?
+> > > >   
 > > > 
-> > > Reassuming: what I currently need to do to get my gfx working properly
-> > > with F10 is reverting radeon-6.9.0-remove-limit-heuristics.patch from
-> > > xorg-x11-drv-ati and using vanilla kernel instead of Fedora's one.
+> > >    Kernel.org bug #10216 (it's not about this issue though).
 > > 
-> > Heh, and it just hang on me after sending the above mail (it took like
-> > 1h or so for hang to occur) => the patch is just a very good trigger for
-> > the "real" bug.  I'll now be running vanilla 6.9.0 to see how it goes...
+> > Looking back at bug #10216 the patch is unlikely to help Lars' system
+> > since it doesn't use nohz and there are also warnings about unsynced
+> > TSCs (I just don't know why not for 2.6.27-rc kernels)...
+> >  
+> > > > Rafael
+> > > >
+> > > >   
+> > > >> [ IDE was unlucky to be initialized at the same time that
+> > > >>   clocksource watchdog triggers and was blamed for the issue. ]
+> > > >>     
+> > > 
+> > >    I think it might well have been blamed correctly -- the clocksource 
+> > > watchdog timer gets run every half second.
+> > 
+> > AFAICS this is a special one for measuring stability of the clocksource
+> > only -- by comparing the value returned by a given clocksource with the
+> > reference clocksource.  Normal drivers have no bussiness there...
+> > 
+> > Anyway I forgot to add that it fixes the issue for me under QEMU (on my
+> > laptop TSC is unstable due to halts in idle) and it could be as well QEMU's
+> > oddity (although it looks like a legit kernel problem).  v2 of the patch
+> > below (updated patch description).
+> > 
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH v2] nohz: add missing handling of clocksource watchdog
+> > 
+> > Fixes "Clocksource tsc unstable (delta = -974982308 ns)" problem
+> > under QEMU.
+> > 
+> > Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> > Cc: Lars Winterfeld <lars.winterfeld@tu-ilmenau.de>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> >  kernel/time/tick-sched.c |    2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > Index: b/kernel/time/tick-sched.c
+> > ===================================================================
+> > --- a/kernel/time/tick-sched.c
+> > +++ b/kernel/time/tick-sched.c
+> > @@ -21,6 +21,7 @@
+> >  #include <linux/sched.h>
+> >  #include <linux/tick.h>
+> >  #include <linux/module.h>
+> > +#include <linux/clocksource.h>
+> >  
+> >  #include <asm/irq_regs.h>
+> >  
+> > @@ -153,6 +154,7 @@ void tick_nohz_update_jiffies(void)
+> >  	local_irq_restore(flags);
+> >  
+> >  	touch_softlockup_watchdog();
+> > +	clocksource_touch_watchdog();
 > 
-> It went well, "vanilla" in this case was xorg-x11-drv-ati-6.9.0-54.fc10
-> content _without_ radeon-modeset.patch and _with_ patch containing commit
-> da021c36bbdf3bca31ee50ebe01cdb9495c09b36 ("radeon_drm.h: remove kernel
-> defines") from xf86-video-ati git tree (needed to make things compile).
+> NAK. 
 > 
-> I tried to bisect it futher using radeon-gem-cs branch (using edge commit
-> deduced from radeon-modeset.patch) and managed to narrow it down further to
-> somewhere between
+> If this happens then the watchdog logic did not manage to schedule the
+> watchdog timer in time. This patch just papers over the real problem.
 > 
-> commit 44fb767aa95e5f0725386106b89d0782fd53b768
-> ("radeon: fixup modesetting code after rebasing to master")
-> 
-> and 
-> 
-> commit 12e71eaf7999520d23d50cfbcfc0299b2bdf7a9d
-> ("port to using drm header files")
-> 
-> which left 66 commits which are completely unbisectable because of build
-> problems and bugfixes.   I tried continuing with exporting commits from git
-> to patches, importing patches to quilt and shuffling them around to make
-> things bisectable again...  Unfortunately this turned out to be more time
-> consuming than expected and I run out of time for this exercise...
-> 
-> Dave, do you have some ideas how can this be debugged further?
-> (i.e. rebuilding radeon-gem-cs tree would greatly help)
-> 
-> Or maybe it is not worth it until trying some updates/fixes first?
+> We do not fix QEMU problems in the kernel, as we would miss real
+> hardware wreckage that way.
 
-FWIW all issues are still there with kernel-2.6.27.7-134.fc10.i686
-and xorg-x11-drv-ati-6.9.0-61.fc10.i386.
+I know that and I'm not proposing it.  However sometimes things that look
+like QEMU specific problems indicate the real deficiencies of the kernel.
 
-Anyway I got a bit impatient by a lack of follow-up on this and resumed
-the "rebuild radeon-gem-cs bisectability" operation (luckily the problem
-was narrowed down to the second part of changes so I didn't have to do
-100% of the work)...
+I did more debugging and the reason for marking tsc clocksource as an
+unstable is that the reference clocksource (acpi_pm) itself is bad.
+The similar problems seem to also happen with the real hardware, i.e.
+please see:
 
-Hangs seem to be caused by commit 5c5736604e6a1bc280821bd92f3714e0c9e7d7d3
-("radeon: no need for this anymore"):
+http://lkml.indiana.edu/hypermail/linux/kernel/0802.3/0589.html
 
---- a/src/radeon_driver.c
-+++ b/src/radeon_driver.c
-@@ -1621,9 +1621,7 @@ static Bool RADEONPreInitVRAM(ScrnInfoPtr pScrn)
+I cooked up a debug patch which uses timer interval as a reference for
+checking stability of the watchdog clocksource (I think it could be useful
+for debugging similar issues, it is not a generic solution since it doesn't
+handle the situation when both watchdog and watched clocksources are bad).
+
+I'm also wondering whether it would be a good idea to modify our clocksource
+watchdog code to just always use timer interval as reference for checking
+clocksource stability.  It will allow us to check all clocksources (including
+watchdog one) and should simplify the code a bit.  I can make a patch for it
+if you think that this is good idea...
+
+---
+ kernel/time/clocksource.c |   39 +++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 37 insertions(+), 2 deletions(-)
+
+Index: b/kernel/time/clocksource.c
+===================================================================
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -79,8 +79,9 @@ static unsigned long watchdog_resumed;
+ /*
+  * Interval: 0.5sec Threshold: 0.0625s
+  */
+-#define WATCHDOG_INTERVAL (HZ >> 1)
+-#define WATCHDOG_THRESHOLD (NSEC_PER_SEC >> 4)
++#define WATCHDOG_INTERVAL	(HZ >> 1)
++#define WATCHDOG_INTERVAL_NSEC	500000000
++#define WATCHDOG_THRESHOLD	(NSEC_PER_SEC >> 4)
  
-     pScrn->videoRam  &= ~1023;
+ static void clocksource_ratewd(struct clocksource *cs, int64_t delta)
+ {
+@@ -94,6 +95,34 @@ static void clocksource_ratewd(struct cl
+ 	list_del(&cs->wd_list);
+ }
  
--    /* half video RAM for TTM */
-     info->FbMapSize  = pScrn->videoRam * 1024;
--    info->FbMapSize /= 2;
- 
-     /* if the card is PCI Express reserve the last 32k for the gart table */
- #ifdef XF86DRI
-
-I'm now running Fedora's xorg-x11-drv-ati with only the above patch reverted
-and so far it is rock stable.
-
-Thanks,
-Bart
++static int watchdog_check(struct clocksource *wd,
++			  int64_t wd_nsec, int64_t cs_nsec)
++{
++	int64_t delta;
++
++	/* check if watchdog seems good */
++	delta = wd_nsec - WATCHDOG_INTERVAL_NSEC;
++	if (delta > -WATCHDOG_THRESHOLD && delta < WATCHDOG_THRESHOLD)
++		return 0;
++
++	/* check if clocksource seems bad */
++	delta = cs_nsec - WATCHDOG_INTERVAL_NSEC;
++	if (delta < -WATCHDOG_THRESHOLD || delta > WATCHDOG_THRESHOLD)
++		return 0;
++
++	printk(KERN_WARNING "Watchdog clocksource %s unstable (delta = "
++		"%lld ns)\n", wd->name, wd_nsec - WATCHDOG_INTERVAL_NSEC);
++
++	wd->flags &= ~(CLOCK_SOURCE_VALID_FOR_HRES | CLOCK_SOURCE_WATCHDOG);
++	clocksource_change_rating(wd, 0);
++
++	/* disable watchdog */
++	watchdog = NULL;
++
++	/* don't add next timer */
++	return 1;
++}
++
+ static void clocksource_watchdog(unsigned long data)
+ {
+ 	struct clocksource *cs, *tmp;
+@@ -135,6 +164,11 @@ static void clocksource_watchdog(unsigne
+ 		} else {
+ 			cs_nsec = cyc2ns(cs, (csnow - cs->wd_last) & cs->mask);
+ 			cs->wd_last = csnow;
++
++			/* Check reference clock stability first. */
++			if (watchdog_check(watchdog, wd_nsec, cs_nsec))
++				goto out_unlock;
++
+ 			/* Check the delta. Might remove from the list ! */
+ 			clocksource_ratewd(cs, cs_nsec - wd_nsec);
+ 		}
+@@ -152,6 +186,7 @@ static void clocksource_watchdog(unsigne
+ 		watchdog_timer.expires += WATCHDOG_INTERVAL;
+ 		add_timer_on(&watchdog_timer, next_cpu);
+ 	}
++out_unlock:
+ 	spin_unlock(&watchdog_lock);
+ }
+ static void clocksource_resume_watchdog(void)
