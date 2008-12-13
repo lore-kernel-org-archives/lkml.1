@@ -1,39 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751521AbYLMRdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751753AbYLMRlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751521AbYLMRdh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 12:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbYLMRd1
+	id S1751753AbYLMRlU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 12:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbYLMRlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 12:33:27 -0500
-Received: from mail-ew0-f17.google.com ([209.85.219.17]:35980 "EHLO
-	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750913AbYLMRd1 (ORCPT
+	Sat, 13 Dec 2008 12:41:11 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56149 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750933AbYLMRlK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 12:33:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=JoMPTC4XeEbRxT6LGGOmPo3RIFfsZFczhjXMtFwbDkicTyWsHaW2bXAHfY3iIimtKE
-         2TIf5JeyRyXHqIhql/xZjbsmdAOoloQX97qUCp/pXwP4BKHGvdtkEZr+2SngugqDYf5Y
-         u4JqwYd7V3YkEwc50zh/4qn4CY10wnwBdmGus=
-Message-ID: <2aac3c260812130933o7af36a56m12fef2d1c2cfa501@mail.gmail.com>
-Date: Sat, 13 Dec 2008 18:33:25 +0100
-From: "Giangiacomo Mariotti" <giangiacomo.mariotti@gmail.com>
-To: "=?UTF-8?Q?Fr=C3=A9d=C3=A9ric_Weisbecker?=" <fweisbec@gmail.com>
-Subject: Re: [PATCH] Misuse of sizeof
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <c62985530812130843q21142a2uf8e24482da90a8ae@mail.gmail.com>
+	Sat, 13 Dec 2008 12:41:10 -0500
+Date: Sat, 13 Dec 2008 09:41:05 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alex Chiang <achiang@hp.com>
+cc: matthew@wil.cx, justin.chen@hp.com, linux-kernel@vger.kernel.org
+Subject: Re: PCI BAR mem resource allocation "regression"
+In-Reply-To: <alpine.LFD.2.00.0812130901370.3340@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0812130929100.3340@localhost.localdomain>
+References: <20081213000538.GC9947@ldl.fc.hp.com> <alpine.LFD.2.00.0812130901370.3340@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <2aac3c260812130831m3ec4aa5cm3abd729499727873@mail.gmail.com>
-	 <c62985530812130843q21142a2uf8e24482da90a8ae@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mBDHXmdq025304
 
-On 12/13/08, Fr√©d√©ric Weisbecker <fweisbec@gmail.com> wrote:> 2008/12/13 Giangiacomo Mariotti <giangiacomo.mariotti@gmail.com>:>> IMO there's a bug in the use of sizeof in /arch/x86/boot/main.c, it's>> also a strange style.>>>> Hi,>> No this is not a bug, sizeof is a unary operator which can be used> with or without parenthesis :-)>> Note: don't forget to put your Signed-off-by and some explanations> along your patches.> Also, not all maintainers accept patches as attachment.>You're right, I was wrong.ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+
+
+On Sat, 13 Dec 2008, Linus Torvalds wrote:
+> 
+> I'm missing some pieces I'd like to see: /proc/iomem before and after, and 
+> lspci output before and after (you do give lspci output, but only one, and 
+> I can't tell if it's before or after).
+> 
+> Also, is it just the error message, or does it actually affect 
+> functionality?
+
+Oh - one more thing. Your revert is very complex, and a simpler revert 
+(that _should_ revert just the actual behavioral change) is just the 
+two-liner that removes these two lines:
+
+		if ((first->start == new->start) && (first->end == new->end))
+			break;
+
+in __insert_resource.
+
+So can you check if your more complex revert really has the same behaviour 
+as just removing those two lines?
+
+Matthew: I do suspect that the "insert below" patch is wrong. Look at 
+"pci_claim_resource()", for example: it uses insert_resource() to insert 
+the PCI device resource into the resource tree. But if the PCI device 
+resource has the same size as the bus window, that commit changes it to 
+insert it as the _parent_ of the bus window, no?
+
+Of course, on a PC, the only user of pci_claim_resource() would be some 
+PCI quirks that should never trigger this, but it's an example of the kind 
+of behavioural change that that commit introduced, and which looks 
+like it could result in a wrong resource tree.
+
+I'm not finding the original discussion that resulted in that patch, 
+though, so I have a somewhat hard time to judge the reasoning. It's from 
+almost three years ago, I don't remember details even if I had been 
+involved with it (and judging by the sign-off path, I hadn't).
+
+Matthew, do you remember the context of that commmit d33b6fba2?
+
+		Linus
