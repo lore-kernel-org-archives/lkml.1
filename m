@@ -1,81 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbYLMJmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbYLMJqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756416AbYLMJmL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 04:42:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbYLMJl5
+	id S1756662AbYLMJqt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 04:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbYLMJqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 04:41:57 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:12919 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754458AbYLMJl4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 04:41:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=UjKdvUiDcBHqxdjmKr9LifoNE3NM6SJJhwrulOP9gcgoODLy3Z6/JaYMNWzOQoqeQp
-         X2sfJltNcrtvqRiNBuuZxELxOoVjF97whvwrY+4ldr4/xkMkiHSsYjKfXcizV4nktEcl
-         U0+O2uuxW9vRuAoOGIhi6RHRL3FXa+mZoU6f0=
-Message-ID: <e2e108260812130141o3d21bbbdob9e7c9f95d309a74@mail.gmail.com>
-Date: Sat, 13 Dec 2008 10:41:53 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
-Cc: nab@kernel.org, linux-iscsi-target-dev@googlegroups.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Christoph Hellwig" <hch@lst.de>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Mike Christie" <michaelc@cs.wisc.edu>,
-       "Hannes Reinecke" <hare@suse.de>, "Jens Axboe" <jens.axboe@oracle.com>
-In-Reply-To: <54939.1229149205@turing-police.cc.vt.edu>
+	Sat, 13 Dec 2008 04:46:40 -0500
+Received: from mail.work.de ([212.12.32.20]:47737 "EHLO mail.work.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754458AbYLMJqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Dec 2008 04:46:40 -0500
+X-Greylist: delayed 742 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Dec 2008 04:46:39 EST
+Message-ID: <49438190.4060405@gmail.com>
+Date: Sat, 13 Dec 2008 13:34:08 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: MSI messages
+X-Enigmail-Version: 0.94.0.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>
-	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>
-	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>
-	 <54939.1229149205@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 13, 2008 at 7:20 AM,  <Valdis.Kletnieks@vt.edu> wrote:
-> On Fri, 12 Dec 2008 01:40:09 PST, "Nicholas A. Bellinger" said:
->
->> Too bad, because you are missing out on the most advanced ConfigFS
->> enabled storage engine on the planet.
->
-> OK. I *have* to ask.. ;)
->
-> What's the *second* most advanced configfs-enabled storage engine?
+Hi,
 
-Please don't let Nicholas Bellinger mislead you. The most important
-aspect of a storage engine is stability. Last January I ran
-performance tests on IET, STGT, SCST and LIO. I quickly found out not
-only that SCST had the highest throughput and the lowest latency, but
-also that the performance tests on LIO triggered several kernel
-crashes. I have reported these crashes to the linux-iscsi-target-dev
-mailing list, but even as of today, it's not yet clear whether all of
-these crashes have been fixed. During the last ten years I have filed
-bug reports for many open source projects, and the LIO project is the
-only project where the (kernel) crashes I reported were not addressed
-immediately.
+I am wondering how to handle this:
 
-See also:
-* February 1, 2008, LIO kernel panic during configuration,
-http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/74c8b37f24b84e59/d94c07626bd20521?lnk=gst&q=kernel+panic#d94c07626bd20521.
-* February 8, 2008, kernel crash triggered by LIO,
-http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/30835aede1028188/5708e16a23367fb4?lnk=gst&q=kernel+crash#5708e16a23367fb4.
-* February 13, 2008, LIO target kernel code triggers memory
-corruption, http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/ddc1bf7666372972/2150a09f9ed3d1cd?lnk=gst&q=ipoib#2150a09f9ed3d1cd.
-* February 18, 2008, LIO target makes entire system hang,
-http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/6a76f9efd9409fc5/55bd8840b6a5f757?lnk=gst&q=lio+target+hangs#55bd8840b6a5f757.
+Does the kernel somehow handle MSI message readback from the PCI config space 
+for the MSI message as described in 6.8.1 of the PCI Bus specification 2.3 or 
+does a device specific driver have to read the Message Address and Data ?
 
-Bart.
+To put it short: i am wondering how i should read the MSI messages.
+
+Thanks,
+Manu
+
