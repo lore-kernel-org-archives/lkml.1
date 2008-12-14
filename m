@@ -1,104 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbYLNUF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbYLNUPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbYLNUF5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 15:05:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYLNUFr
+	id S1753271AbYLNUPg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 15:15:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYLNUPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 15:05:47 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:60881 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751353AbYLNUFp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 15:05:45 -0500
-Date: Mon, 15 Dec 2008 01:38:43 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>
-Subject: Re: [RFC PATCH v5 0/7] Tunable sched_mc_power_savings=n
-Message-ID: <20081214200843.GO5457@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Pavel Machek <pavel@suse.cz>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Collier-Brown <davecb@sun.com>,
-	Tim Connors <tconnors@astro.swin.edu.au>,
-	Max Krasnyansky <maxk@qualcomm.com>,
-	Gregory Haskins <gregory.haskins@gmail.com>
-References: <20081211173831.2020.57550.stgit@drishya.in.ibm.com> <19700101001343.GA1440@ucw.cz>
+	Sun, 14 Dec 2008 15:15:24 -0500
+Received: from smtp0.kfki.hu ([148.6.0.25]:47155 "EHLO smtp0.kfki.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751353AbYLNUPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 15:15:22 -0500
+Date: Sun, 14 Dec 2008 21:15:20 +0100 (CET)
+From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+To: Jan Engelhardt <jengelh@medozas.de>
+cc: David Miller <davem@davemloft.net>, ajax@redhat.com,
+       linux-kernel@vger.kernel.org, davej@redhat.com, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, Patrick McHardy <kaber@trash.net>
+Subject: Re: [PATCH] net: Remove a noisy printk
+In-Reply-To: <alpine.LNX.1.10.0812141905490.10355@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.DEB.2.00.0812142056520.2621@blackhole.kfki.hu>
+References: <1229033625-30825-1-git-send-email-ajax@redhat.com> <20081211.203243.124017657.davem@davemloft.net> <alpine.LNX.1.10.0812132310080.27276@fbirervta.pbzchgretzou.qr> <alpine.DEB.2.00.0812141745550.2447@blackhole.kfki.hu>
+ <alpine.LNX.1.10.0812141905490.10355@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <19700101001343.GA1440@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pavel Machek <pavel@suse.cz> [1970-01-01 01:13:43]:
+On Sun, 14 Dec 2008, Jan Engelhardt wrote:
 
+> On Sunday 2008-12-14 18:09, Jozsef Kadlecsik wrote:
+> >> 
+> >> >> @@ -147,8 +147,6 @@ static unsigned int ipv4_conntrack_local(unsigned int hooknum,
+> >> >>  	/* root is playing with raw sockets. */
+> >> >>  	if (skb->len < sizeof(struct iphdr) ||
+> >> >>  	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
+> >> >> -		if (net_ratelimit())
+> >> >> -			printk("ipt_hook: happy cracking.\n");
+> >> >>  		return NF_ACCEPT;
+> >> >>  	}
+> >> >>  	return nf_conntrack_in(dev_net(out), PF_INET, hooknum, skb);
+> >> 
+> >> I think this change is ok.
+> >
+> >In a >normal< system one usually does not use raw sockets. So if a root 
+> >process do use raw socket, at least netfilter sends a notification and 
+> >there's a chance that someone take notice it by checking the kernel logs.
+> >[...]
+> >But should we remove them due to nuisances on >test< systems?
+> >
+> >Rather make it a kernel compile option but do not remove.
 > 
-> > Results:
-> > --------
-> > 
-> > Basic functionality of the code has not changed and the power vs
-> > performance benefits for kernbench are similar to the ones posted
-> > earlier.
-> > 
-> > KERNBENCH Runs: make -j4 on a x86 8 core, dual socket quad core cpu
-> > package system
-> > 
-> > SchedMC Run Time     Package Idle    Energy  Power
-> > 0	81.28	     52.43% 53.53%  1.00x J 1.00y W
-> > 1	80.71	     37.35% 68.91%  0.96x J 0.97y W
-> > 2	76.05	     23.81% 82.65%  0.92x J 0.98y W
-> > 
-> > *** This is RFC code and not for inclusion ***
-> 
-> Hmm, so it makes it compile faster _and_ it saves power? Why to keep
-> it tunable at all if it is win-win? Or are there other benchmarks?
+> This warning is in the conntrack calling code. Iff you play with
+> raw sockets and do something wrong, the generic network code
+> should barf IMHO, not nf_conntrack, and not [nf_conntrack_ipv4 only].
 
-Hi Pavel,
+It is not about doing something wrong at using raw sockets - it's about 
+using raw sockets.
 
-The performance and power gain depends on the nature of the
-application.  If the processor cache is large enough, then
-consolidation improves cache sharing and makes the system finish the
-job faster.  I would expect applications with larger cache foot print
-and no data sharing may experience degradation in performance.
+I'm not quite convinced the generic network code should warn about raw 
+sockets. I believe it belongs to the security-related subsystems - 
+netfilter and (or) the security frameworks. [But as netfilter is much more 
+widely used, the 'or' is just theoretical.)
 
-I am open to suggestion on any interesting workload that should be
-tested.  I have tested ebizzy and SPECjbb for power savings.  I am
-also looking forward to test reports from others having different
-system topology and processor power saving features.
+But back to netfilter: this is more than strange. The logging is already 
+removed from iptable_filter|mangle.c - and left in 
+ip6table_filter|mangle.c. The only place in the IPv4 path where the 
+checking happens is in nf_conntrack_l3proto_ipv4.c. IPv6 conntrack does
+it as well, but uses another message text:
 
-The idea behind the tunable is to have power saving as higher priority
-in scheduling relative to performance.  At higher sched_mc(2) settings
-(aggressive power save mode), we should save power even if there is
-a slight degradation in application performance.  If we save power and
-improve performance, then it is a best case scenario.  However I would
-expect certain workloads to sacrifice performance for the power
-consumption.
+        if (skb->len < sizeof(struct ipv6hdr)) {
+                if (net_ratelimit())
+                        printk("ipv6_conntrack_local: packet too short\n");
 
-At sched_mc = 0 the scheduler would not optimise for power savings
-and provide maximum performance for any application.
+[ISIC should check IPv6 too ;-).]
 
-Kernel compile is a representative workload where my additional
-optimisations for sched_mc=2 improves over the default sched_mc=1
-implementation in the kernel.
-
---Vaidy
+Best regards,
+Jozsef
+-
+E-mail  : kadlec@blackhole.kfki.hu, kadlec@mail.kfki.hu
+PGP key : http://www.kfki.hu/~kadlec/pgp_public_key.txt
+Address : KFKI Research Institute for Particle and Nuclear Physics
+          H-1525 Budapest 114, POB. 49, Hungary
