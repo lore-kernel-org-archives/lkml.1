@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYLNLhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbYLNLhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755597AbYLNLhf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 06:37:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbYLNLfn
+	id S1755874AbYLNLhw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 06:37:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbYLNLfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 06:35:43 -0500
-Received: from mail.openmoko.org ([88.198.124.205]:34178 "EHLO
+	Sun, 14 Dec 2008 06:35:45 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:34180 "EHLO
 	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754593AbYLNLfl (ORCPT
+	with ESMTP id S1754657AbYLNLfn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 06:35:41 -0500
+	Sun, 14 Dec 2008 06:35:43 -0500
 From: Balaji Rao <balajirrao@openmoko.org>
-Subject: [PATCH 5/7] power_supply: PCF50633 battery charger driver
+Subject: [PATCH 7/7] regulator: PCF50633 pmic driver
 To: linux-kernel@vger.kernel.org
 Cc: Balaji Rao <balajirrao@openmoko.org>, Andy Green <andy@openmoko.com>,
-       Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>
-Date: Sun, 14 Dec 2008 16:33:23 +0530
-Message-ID: <20081214110323.3307.84154.stgit@cff.thadambail>
+       Liam Girdwood <lrg@simlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Sun, 14 Dec 2008 16:34:00 +0530
+Message-ID: <20081214110400.3307.57681.stgit@cff.thadambail>
 In-Reply-To: <20081214110152.3307.50843.stgit@cff.thadambail>
 References: <20081214110152.3307.50843.stgit@cff.thadambail>
 User-Agent: StGIT/0.14.3.270.g0f36
@@ -29,54 +30,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
 Cc: Andy Green <andy@openmoko.com>
-Cc: Anton Vorontsov <cbou@mail.ru>
-Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Liam Girdwood <lrg@simlogic.co.uk>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- drivers/power/Kconfig            |    6 +
- drivers/power/Makefile           |    2 
- drivers/power/pcf50633-charger.c |  285 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 293 insertions(+), 0 deletions(-)
- create mode 100644 drivers/power/pcf50633-charger.c
+ drivers/regulator/Kconfig              |    7 +
+ drivers/regulator/Makefile             |    1 
+ drivers/regulator/pcf50633-regulator.c |  338 ++++++++++++++++++++++++++++++++
+ 3 files changed, 346 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/regulator/pcf50633-regulator.c
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 52f8676..04f6316 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -75,4 +75,10 @@ config BATTERY_BQ27x00
- 	help
- 	  Say Y here to enable support for batteries with BQ27200(I2C) chip.
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index 39360e2..e7e0cf1 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -73,4 +73,11 @@ config REGULATOR_DA903X
+ 	  Say y here to support the BUCKs and LDOs regulators found on
+ 	  Dialog Semiconductor DA9030/DA9034 PMIC.
  
-+config CHARGER_PCF50633
-+	tristate "NXP PCF50633 MBC"
-+	depends on MFD_PCF50633
++config REGULATOR_PCF50633
++	tristate "PCF50633 regulator driver"
++        depends on MFD_PCF50633
 +	help
-+	 Say Y to include support for NXP PCF50633 Main Battery Charger.
++	 Say Y here to support the voltage regulators and convertors
++	 on PCF50633
 +
- endif # POWER_SUPPLY
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index e6f6865..62bcb76 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -24,3 +24,5 @@ obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
- obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
- obj-$(CONFIG_BATTERY_WM97XX)	+= wm97xx_battery.o
- obj-$(CONFIG_BATTERY_BQ27x00)	+= bq27x00_battery.o
-+
-+obj-$(CONFIG_CHARGER_PCF50633)	+= pcf50633-charger.o
-diff --git a/drivers/power/pcf50633-charger.c b/drivers/power/pcf50633-charger.c
+ endif
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 254d40c..61b30c6 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -11,5 +11,6 @@ obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
+ obj-$(CONFIG_REGULATOR_WM8350) += wm8350-regulator.o
+ obj-$(CONFIG_REGULATOR_WM8400) += wm8400-regulator.o
+ obj-$(CONFIG_REGULATOR_DA903X)	+= da903x.o
++obj-$(CONFIG_REGULATOR_PCF50633) += pcf50633-regulator.o
+ 
+ ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
+diff --git a/drivers/regulator/pcf50633-regulator.c b/drivers/regulator/pcf50633-regulator.c
 new file mode 100644
-index 0000000..d4a0de5
+index 0000000..5277760
 --- /dev/null
-+++ b/drivers/power/pcf50633-charger.c
-@@ -0,0 +1,285 @@
-+/* NXP PCF50633 Main Battery Charger Driver
++++ b/drivers/regulator/pcf50633-regulator.c
+@@ -0,0 +1,338 @@
++/* NXP PCF50633 PMIC Driver
 + *
 + * (C) 2006-2008 by Openmoko, Inc.
 + * Author: Balaji Rao <balajirrao@openmoko.org>
 + * All rights reserved.
 + *
 + * Broken down from monstrous PCF50633 driver mainly by
-+ * Harald Welte, Andy Green and Werner Almesberger
++ * Harald Welte and Andy Green and Werner Almesberger
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License as
@@ -94,264 +97,317 @@ index 0000000..d4a0de5
 + * MA 02111-1307 USA
 + */
 +
++#include <linux/regulator/driver.h>
++#include <linux/platform_device.h>
++#include <linux/err.h>
++
 +#include <linux/mfd/pcf50633/core.h>
-+#include <linux/mfd/pcf50633/mbc.h>
++#include <linux/mfd/pcf50633/pmic.h>
 +
-+void pcf50633_mbc_usb_curlim_set(struct pcf50633 *pcf, int ma)
++#define PCF50633_REGULATOR(_name, _id) 		\
++	{					\
++		.name = _name, 			\
++		.id = _id,			\
++		.ops = &pcf50633_regulator_ops,	\
++		.type = REGULATOR_VOLTAGE, 	\
++		.owner = THIS_MODULE, 		\
++	}
++
++const u8 pcf50633_regulator_registers[PCF50633_NUM_REGULATORS] = {
++	[PCF50633_REGULATOR_AUTO]	= PCF50633_REG_AUTOOUT,
++	[PCF50633_REGULATOR_DOWN1]	= PCF50633_REG_DOWN1OUT,
++	[PCF50633_REGULATOR_DOWN2]	= PCF50633_REG_DOWN2OUT,
++	[PCF50633_REGULATOR_MEMLDO]	= PCF50633_REG_MEMLDOOUT,
++	[PCF50633_REGULATOR_LDO1]	= PCF50633_REG_LDO1OUT,
++	[PCF50633_REGULATOR_LDO2]	= PCF50633_REG_LDO2OUT,
++	[PCF50633_REGULATOR_LDO3]	= PCF50633_REG_LDO3OUT,
++	[PCF50633_REGULATOR_LDO4]	= PCF50633_REG_LDO4OUT,
++	[PCF50633_REGULATOR_LDO5]	= PCF50633_REG_LDO5OUT,
++	[PCF50633_REGULATOR_LDO6]	= PCF50633_REG_LDO6OUT,
++	[PCF50633_REGULATOR_HCLDO]	= PCF50633_REG_HCLDOOUT,
++};
++
++/* Bits from voltage value */
++static u8 auto_voltage_bits(unsigned int millivolts)
 +{
-+	int ret;
-+	u8 bits;
++	if (millivolts < 1800)
++		return 0;
++	if (millivolts > 3800)
++		return 0xff;
 +
-+	if (ma >= 1000)
-+		bits = PCF50633_MBCC7_USB_1000mA;
-+	else if (ma >= 500)
-+		bits = PCF50633_MBCC7_USB_500mA;
-+	else if (ma >= 100)
-+		bits = PCF50633_MBCC7_USB_100mA;
-+	else
-+		bits = PCF50633_MBCC7_USB_SUSPEND;
++	millivolts -= 625;
 +
-+	ret = pcf50633_reg_set_bit_mask(pcf, PCF50633_REG_MBCC7,
-+					PCF50633_MBCC7_USB_MASK, bits);
-+	if (ret)
-+		dev_err(pcf->dev, "error setting usb curlim to %d mA\n", ma);
-+	else
-+		dev_info(pcf->dev, "usb curlim to %d mA\n", ma);
-+
-+	power_supply_changed(&pcf->mbc.usb);
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_mbc_usb_curlim_set);
-+
-+static ssize_t
-+show_chgmode(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct pcf50633 *pcf = dev_get_drvdata(dev);
-+
-+	u8 mbcs2 = pcf50633_reg_read(pcf, PCF50633_REG_MBCS2);
-+	u8 chgmod = (mbcs2 & PCF50633_MBCS2_MBC_MASK);
-+
-+	return sprintf(buf, "%d\n", chgmod);
-+}
-+static DEVICE_ATTR(chgmode, S_IRUGO, show_chgmode, NULL);
-+
-+static ssize_t
-+show_usblim(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct pcf50633 *pcf = dev_get_drvdata(dev);
-+	u8 usblim = pcf50633_reg_read(pcf, PCF50633_REG_MBCC7) &
-+						PCF50633_MBCC7_USB_MASK;
-+	unsigned int ma;
-+
-+	if (usblim == PCF50633_MBCC7_USB_1000mA)
-+		ma = 1000;
-+	else if (usblim == PCF50633_MBCC7_USB_500mA)
-+		ma = 500;
-+	else if (usblim == PCF50633_MBCC7_USB_100mA)
-+		ma = 100;
-+	else
-+		ma = 0;
-+
-+	return sprintf(buf, "%u\n", ma);
++	return millivolts / 25;
 +}
 +
-+static ssize_t set_usblim(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t count)
++static u8 down_voltage_bits(unsigned int millivolts)
 +{
-+	struct pcf50633 *pcf = dev_get_drvdata(dev);
-+	unsigned long ma;
-+	int ret;
++	if (millivolts < 625)
++		return 0;
++	else if (millivolts > 3000)
++		return 0xff;
 +
-+	ret = strict_strtoul(buf, 10, &ma);
-+	if (ret)
++	millivolts -= 625;
++
++	return millivolts / 25;
++}
++
++static u8 ldo_voltage_bits(unsigned int millivolts)
++{
++	if (millivolts < 900)
++		return 0;
++	else if (millivolts > 3600)
++		return 0x1f;
++
++	millivolts -= 900;
++	return millivolts / 100;
++}
++
++/* Obtain voltage value from bits */
++
++static unsigned int auto_voltage_value(u8 bits)
++{
++	if (bits < 0x2f)
++		return 0;
++
++	return 625 + (bits * 25);
++}
++
++
++static unsigned int down_voltage_value(u8 bits)
++{
++	return 625 + (bits * 25);
++}
++
++
++static unsigned int ldo_voltage_value(u8 bits)
++{
++	bits &= 0x1f;
++
++	return 900 + (bits * 100);
++}
++
++static int pcf50633_regulator_set_voltage(struct regulator_dev *rdev,
++						int min_uV, int max_uV)
++{
++	struct pcf50633 *pcf;
++	int regulator_id, millivolts;
++	u8 volt_bits, regnr;
++
++	pcf = rdev_get_drvdata(rdev);
++
++	regulator_id = rdev_get_id(rdev);
++	if (regulator_id >= PCF50633_NUM_REGULATORS)
 +		return -EINVAL;
 +
-+	pcf50633_mbc_usb_curlim_set(pcf, ma);
++	millivolts = min_uV / 1000;
 +
-+	return count;
-+}
++	regnr = pcf50633_regulator_registers[regulator_id];
 +
-+static DEVICE_ATTR(usb_curlim, S_IRUGO | S_IWUSR, show_usblim, set_usblim);
-+
-+static struct attribute *pcf50633_mbc_sysfs_entries[] = {
-+	&dev_attr_chgmode.attr,
-+	&dev_attr_usb_curlim.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group mbc_attr_group = {
-+	.name	= NULL,			/* put in device directory */
-+	.attrs	= pcf50633_mbc_sysfs_entries,
-+};
-+
-+static void
-+pcf50633_mbc_irq_handler(struct pcf50633 *pcf, int irq, void *unused)
-+{
-+	struct pcf50633_mbc *mbc;
-+
-+	mbc = &pcf->mbc;
-+
-+	/* USB */
-+	if (irq == PCF50633_IRQ_USBINS) {
-+		mbc->usb_online = 1;
-+	} else if (irq == PCF50633_IRQ_USBREM) {
-+		mbc->usb_online = 0;
-+		mbc->usb_active = 0;
-+		pcf50633_mbc_usb_curlim_set(pcf, 0);
-+	}
-+
-+	/* Adapter */
-+	if (irq == PCF50633_IRQ_ADPINS) {
-+		pcf->mbc.adapter_online = 1;
-+		pcf->mbc.adapter_active = 1;
-+	} else if (irq == PCF50633_IRQ_ADPREM) {
-+		mbc->adapter_online = 0;
-+		mbc->adapter_active = 0;
-+	}
-+
-+	if (irq == PCF50633_IRQ_BATFULL) {
-+		mbc->usb_active = 0;
-+		mbc->adapter_active = 0;
-+	}
-+
-+	power_supply_changed(&mbc->usb);
-+	power_supply_changed(&mbc->adapter);
-+
-+	if (pcf->pdata->mbc_event_callback)
-+		pcf->pdata->mbc_event_callback(pcf, irq);
-+}
-+
-+static int adapter_get_property(struct power_supply *psy,
-+			enum power_supply_property psp,
-+			union power_supply_propval *val)
-+{
-+	int ret = 0;
-+	struct pcf50633_mbc *mbc = container_of(psy, struct pcf50633_mbc, usb);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		val->intval =  mbc->adapter_online;
++	switch (regulator_id) {
++	case PCF50633_REGULATOR_AUTO:
++		volt_bits = auto_voltage_bits(millivolts);
++		break;
++	case PCF50633_REGULATOR_DOWN1:
++		volt_bits = down_voltage_bits(millivolts);
++		break;
++	case PCF50633_REGULATOR_DOWN2:
++		volt_bits = down_voltage_bits(millivolts);
++		break;
++	case PCF50633_REGULATOR_LDO1:
++	case PCF50633_REGULATOR_LDO2:
++	case PCF50633_REGULATOR_LDO3:
++	case PCF50633_REGULATOR_LDO4:
++	case PCF50633_REGULATOR_LDO5:
++	case PCF50633_REGULATOR_LDO6:
++	case PCF50633_REGULATOR_HCLDO:
++		volt_bits = ldo_voltage_bits(millivolts);
 +		break;
 +	default:
-+		ret = -EINVAL;
-+		break;
++		return -EINVAL;
 +	}
-+	return ret;
++
++	return pcf50633_reg_write(pcf, regnr, volt_bits);
 +}
 +
-+static int usb_get_property(struct power_supply *psy,
-+			enum power_supply_property psp,
-+			union power_supply_propval *val)
++static int pcf50633_regulator_get_voltage(struct regulator_dev *rdev)
 +{
-+	int ret = 0;
-+	struct pcf50633_mbc *mbc = container_of(psy, struct pcf50633_mbc, usb);
++	struct pcf50633 *pcf;
++	int regulator_id, millivolts, volt_bits;
++	u8 regnr;
 +
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		val->intval = mbc->usb_online;
++	pcf = rdev_get_drvdata(rdev);;
++
++	regulator_id = rdev_get_id(rdev);
++	if (regulator_id >= PCF50633_NUM_REGULATORS)
++		return -EINVAL;
++
++	regnr = pcf50633_regulator_registers[regulator_id];
++
++	volt_bits = pcf50633_reg_read(pcf, regnr);
++	if (volt_bits < 0)
++		return -1;
++
++	switch (regulator_id) {
++	case PCF50633_REGULATOR_AUTO:
++		millivolts = auto_voltage_value(volt_bits);
++		break;
++	case PCF50633_REGULATOR_DOWN1:
++		millivolts = down_voltage_value(volt_bits);
++		break;
++	case PCF50633_REGULATOR_DOWN2:
++		millivolts = down_voltage_value(volt_bits);
++		break;
++	case PCF50633_REGULATOR_LDO1:
++	case PCF50633_REGULATOR_LDO2:
++	case PCF50633_REGULATOR_LDO3:
++	case PCF50633_REGULATOR_LDO4:
++	case PCF50633_REGULATOR_LDO5:
++	case PCF50633_REGULATOR_LDO6:
++	case PCF50633_REGULATOR_HCLDO:
++		millivolts = ldo_voltage_value(volt_bits);
 +		break;
 +	default:
-+		ret = -EINVAL;
-+		break;
++		return -EINVAL;
 +	}
-+	return ret;
++
++	return millivolts * 1000;
 +}
 +
-+static enum power_supply_property power_props[] = {
-+	POWER_SUPPLY_PROP_ONLINE,
-+};
-+
-+static const u8 mbc_irq_handlers[] = {
-+	PCF50633_IRQ_ADPINS,
-+	PCF50633_IRQ_ADPREM,
-+	PCF50633_IRQ_USBINS,
-+	PCF50633_IRQ_USBREM,
-+	PCF50633_IRQ_BATFULL,
-+	PCF50633_IRQ_CHGHALT,
-+	PCF50633_IRQ_THLIMON,
-+	PCF50633_IRQ_THLIMOFF,
-+	PCF50633_IRQ_USBLIMON,
-+	PCF50633_IRQ_USBLIMOFF,
-+	PCF50633_IRQ_LOWSYS,
-+	PCF50633_IRQ_LOWBAT,
-+};
-+
-+int __init pcf50633_mbc_probe(struct platform_device *pdev)
++static int pcf50633_regulator_enable(struct regulator_dev *rdev)
 +{
-+	struct pcf50633 *pcf;
-+	struct pcf50633_mbc *mbc;
-+	int ret, i;
++	struct pcf50633 *pcf = rdev_get_drvdata(rdev);
++	int regulator_id;
++	u8 regnr;
 +
-+	pcf = platform_get_drvdata(pdev);
-+	mbc = &pcf->mbc;
++	regulator_id = rdev_get_id(rdev);
++	if (regulator_id >= PCF50633_NUM_REGULATORS)
++		return -EINVAL;
 +
-+	/* Set up IRQ handlers */
-+	for (i = 0; i < ARRAY_SIZE(mbc_irq_handlers); i++)
-+		pcf->irq_handler[mbc_irq_handlers[i]] =
-+					pcf50633_mbc_irq_handler;
++	/* The *ENA register is always one after the *OUT register */
++	regnr = pcf50633_regulator_registers[regulator_id] + 1;
 +
-+	/* Create power supplies */
-+	mbc->adapter.name		= "adapter";
-+	mbc->adapter.type		= POWER_SUPPLY_TYPE_MAINS;
-+	mbc->adapter.properties		= power_props;
-+	mbc->adapter.num_properties	= ARRAY_SIZE(power_props);
-+	mbc->adapter.get_property	= &adapter_get_property;
-+	mbc->adapter.supplied_to	= pcf->pdata->batteries;
-+	mbc->adapter.num_supplicants	= pcf->pdata->num_batteries;
++	return pcf50633_reg_set_bit_mask(pcf, regnr, PCF50633_REGULATOR_ON,
++						       PCF50633_REGULATOR_ON);
 +
-+	mbc->usb.name			= "usb";
-+	mbc->usb.type			= POWER_SUPPLY_TYPE_USB;
-+	mbc->usb.properties		= power_props;
-+	mbc->usb.num_properties		= ARRAY_SIZE(power_props);
-+	mbc->usb.get_property		= usb_get_property;
-+	mbc->usb.supplied_to		= pcf->pdata->batteries;
-+	mbc->usb.num_supplicants	= pcf->pdata->num_batteries;
-+
-+	ret = power_supply_register(&pdev->dev, &mbc->adapter);
-+	if (ret)
-+		dev_err(pcf->dev, "failed to register adapter\n");
-+
-+	ret = power_supply_register(&pdev->dev, &mbc->usb);
-+	if (ret)
-+		dev_err(pcf->dev, "failed to register usb\n");
-+
-+	return sysfs_create_group(&pdev->dev.kobj, &mbc_attr_group);
 +}
 +
-+static int __devexit pcf50633_mbc_remove(struct platform_device *pdev)
++static int pcf50633_regulator_disable(struct regulator_dev *rdev)
 +{
++	struct pcf50633 *pcf = rdev_get_drvdata(rdev);
++	int regulator_id;
++	u8 regnr;
++
++	regulator_id = rdev_get_id(rdev);
++	if (regulator_id >= PCF50633_NUM_REGULATORS)
++		return -EINVAL;
++
++	/* the *ENA register is always one after the *OUT register */
++	regnr = pcf50633_regulator_registers[regulator_id] + 1;
++
++	return pcf50633_reg_set_bit_mask(pcf, regnr,
++					PCF50633_REGULATOR_ON, 0);
++}
++
++static int pcf50633_regulator_is_enabled(struct regulator_dev *rdev)
++{
++	struct pcf50633 *pcf = rdev_get_drvdata(rdev);
++	int regulator_id = rdev_get_id(rdev);
++	u8 regnr;
++
++	regulator_id = rdev_get_id(rdev);
++	if (regulator_id >= PCF50633_NUM_REGULATORS)
++		return -EINVAL;
++
++	/* the *ENA register is always one after the *OUT register */
++	regnr = pcf50633_regulator_registers[regulator_id] + 1;
++
++	return pcf50633_reg_read(pcf, regnr) & PCF50633_REGULATOR_ON;
++}
++
++struct regulator_ops pcf50633_regulator_ops = {
++	.set_voltage = pcf50633_regulator_set_voltage,
++	.get_voltage = pcf50633_regulator_get_voltage,
++	.enable = pcf50633_regulator_enable,
++	.disable = pcf50633_regulator_disable,
++	.is_enabled = pcf50633_regulator_is_enabled,
++	.set_suspend_enable = pcf50633_regulator_enable,
++	.set_suspend_disable = pcf50633_regulator_disable,
++};
++
++static struct regulator_desc regulators[] = {
++	[PCF50633_REGULATOR_AUTO] =
++		PCF50633_REGULATOR("auto", PCF50633_REGULATOR_AUTO),
++	[PCF50633_REGULATOR_DOWN1] =
++		PCF50633_REGULATOR("down1", PCF50633_REGULATOR_DOWN1),
++	[PCF50633_REGULATOR_DOWN2] =
++		PCF50633_REGULATOR("down2", PCF50633_REGULATOR_DOWN2),
++	[PCF50633_REGULATOR_LDO1] =
++		PCF50633_REGULATOR("ldo1", PCF50633_REGULATOR_LDO1),
++	[PCF50633_REGULATOR_LDO2] =
++		PCF50633_REGULATOR("ldo2", PCF50633_REGULATOR_LDO2),
++	[PCF50633_REGULATOR_LDO3] =
++		PCF50633_REGULATOR("ldo3", PCF50633_REGULATOR_LDO3),
++	[PCF50633_REGULATOR_LDO4] =
++		PCF50633_REGULATOR("ldo4", PCF50633_REGULATOR_LDO4),
++	[PCF50633_REGULATOR_LDO5] =
++		PCF50633_REGULATOR("ldo5", PCF50633_REGULATOR_LDO5),
++	[PCF50633_REGULATOR_LDO6] =
++		PCF50633_REGULATOR("ldo6", PCF50633_REGULATOR_LDO6),
++	[PCF50633_REGULATOR_HCLDO] =
++		PCF50633_REGULATOR("hcldo", PCF50633_REGULATOR_HCLDO),
++	[PCF50633_REGULATOR_MEMLDO] =
++		PCF50633_REGULATOR("memldo", PCF50633_REGULATOR_MEMLDO),
++};
++
++int __init pcf50633_regulator_probe(struct platform_device *pdev)
++{
++	struct regulator_dev *rdev;
 +	struct pcf50633 *pcf;
 +
-+	pcf = platform_get_drvdata(pdev);
++	pcf = pdev->dev.driver_data;
 +
-+	/* Remove IRQ handlers */
-+	for (i = 0; i < ARRAY_SIZE(mbc_irq_handlers); i++)
-+		pcf->irq_handler[mbc_irq_handlers[i]] = NULL;
++	rdev = regulator_register(&regulators[pdev->id], &pdev->dev, pcf);
++	if (IS_ERR(rdev))
++		return PTR_ERR(rdev);
++
++	if (pcf->pdata->regulator_registered)
++		pcf->pdata->regulator_registered(pcf, pdev->id);
 +
 +	return 0;
 +}
 +
-+struct platform_driver pcf50633_mbc_driver = {
++static int __devexit pcf50633_regulator_remove(struct platform_device *pdev)
++{
++	struct regulator_dev *rdev = platform_get_drvdata(pdev);
++
++	regulator_unregister(rdev);
++
++	return 0;
++}
++
++struct platform_driver pcf50633_regulator_driver = {
 +	.driver = {
-+		.name = "pcf50633-mbc",
++		.name = "pcf50633-regltr",
 +	},
-+	.probe = pcf50633_mbc_probe,
-+	.remove = __devexit_p(pcf50633_mbc_remove),
++	.probe = pcf50633_regulator_probe,
++	.remove = __devexit_p(pcf50633_regulator_remove),
 +};
 +
-+static int __init pcf50633_mbc_init(void)
++static int __init pcf50633_regulator_init(void)
 +{
-+		return platform_driver_register(&pcf50633_mbc_driver);
++	return platform_driver_register(&pcf50633_regulator_driver);
 +}
-+module_init(pcf50633_mbc_init);
++module_init(pcf50633_regulator_init);
 +
-+static void __exit pcf50633_mbc_exit(void)
++static void __exit pcf50633_regulator_exit(void)
 +{
-+		platform_driver_unregister(&pcf50633_mbc_driver);
++	platform_driver_unregister(&pcf50633_regulator_driver);
 +}
-+module_exit(pcf50633_mbc_exit);
++module_exit(pcf50633_regulator_exit);
 +
 +MODULE_AUTHOR("Balaji Rao <balajirrao@openmoko.org>");
-+MODULE_DESCRIPTION("PCF50633 mbc driver");
++MODULE_DESCRIPTION("PCF50633 regulator driver");
 +MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:pcf50633-mbc");
++MODULE_ALIAS("platform:pcf50633-regulator");
 
