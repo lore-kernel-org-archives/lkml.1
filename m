@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbYLNUsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbYLNUws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754928AbYLNUsY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 15:48:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbYLNUsE
+	id S1753436AbYLNUws (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 15:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbYLNUwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 15:48:04 -0500
-Received: from mx02.qsc.de ([213.148.130.14]:33992 "EHLO mx02.qsc.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754755AbYLNUsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 15:48:01 -0500
-X-Greylist: delayed 1159 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Dec 2008 15:48:01 EST
-Message-ID: <49456C76.20006@wizards.de>
-Date: Sun, 14 Dec 2008 21:28:38 +0100
-From: =?ISO-8859-1?Q?Holger_Hoffst=E4tte?= <holger@wizards.de>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Sun, 14 Dec 2008 15:52:40 -0500
+Received: from relay3.ptmail.sapo.pt ([212.55.154.23]:59783 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1750719AbYLNUwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 15:52:39 -0500
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Sun, 14 Dec 2008 20:52:18 +0000
+From: Luis Henriques <henrix@sapo.pt>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <pzijlstr@redhat.com>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Conditional compilation updates in kernel/lockdep.c
+Message-ID: <20081214205218.GA10877@hades.domain.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: Linux 2.6.27.9
-References: <20081214001029.GA915@kroah.com> <pan.2008.12.14.08.06.53.334750@wizards.de> <20081214190829.GA31396@kroah.com>
-In-Reply-To: <20081214190829.GA31396@kroah.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Sun, Dec 14, 2008 at 09:06:53AM +0100, Holger Hoffstaette wrote:
->> On Sat, 13 Dec 2008 16:10:29 -0800, Greg KH wrote:
->>
->>> We (the -stable team) are announcing the release of the 2.6.27.9 kernel.
->> This is still missing the fix for the regression from .7 to .8 that I
->> reported here:
->> http://lkml.indiana.edu/hypermail/linux/kernel/0812.1/00006.html
->>
->> The fix is here:
->> http://lkml.indiana.edu/hypermail/linux/kernel/0812.1/00998.html
->>
->> Been running that on top of -stable and it does fix the problem. It also
->> seems to work for other people. Is there some particular reason why this
->> was not included? I tested and cc'ed stable@ for a reason. :(
-> 
-> The patch is not in Linus's tree yet, right?  That is a requirement to
-> go into the -stable releases.
+This patch removes the following warning:
 
-It is: http://tinyurl.com/5gpqkj
+kernel/lockdep.c:580: warning: ‘print_lock_dependencies’ defined but not used
 
-> Also, it is not exactly obvious why a change for idr is needed.  The
-> "new" drm code in Fedora releases is understandable, but that is not
-> code that is in the main 2.6.27-stable tree, right?
+Now functions print_lock_dependencies and print_lock_class_header are now
+compiled only if both CONFIG_TRACE_IRQFLAGS and CONFIG_PROVE_LOCKING
+are defined; function lockdep_dependency_visit and variable
+lockdep_dependency_gen_id are compiled only if CONFIG_PROVE_LOCKING
+is defined
 
-Looking at the log it seems that it fixes a regression introduced by the
-previous commit, which seems to affect RCU in general (how or why? no
-idea). The Bugzilla bug mentions SysV shared memory and other generic
-things, so I'm not the least surprised that samba and apparently other
-things as well go bonkers.
+Signed-off-by: Luis Henriques <henrix@sapo.pt>
+---
+ kernel/lockdep.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-That's really all I know.
-
-thanks
-Holger
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 46a4041..f2eebc7 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -381,6 +381,7 @@ unsigned int nr_process_chains;
+ unsigned int max_lockdep_depth;
+ unsigned int max_recursion_depth;
+ 
++#ifdef CONFIG_PROVE_LOCKING
+ static unsigned int lockdep_dependency_gen_id;
+ 
+ static bool lockdep_dependency_visit(struct lock_class *source,
+@@ -393,6 +394,7 @@ static bool lockdep_dependency_visit(struct lock_class *source,
+ 	source->dep_gen_id = lockdep_dependency_gen_id;
+ 	return false;
+ }
++#endif
+ 
+ #ifdef CONFIG_DEBUG_LOCKDEP
+ /*
+@@ -549,6 +551,8 @@ static void lockdep_print_held_locks(struct task_struct *curr)
+ 	}
+ }
+ 
++#if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_PROVE_LOCKING)
++
+ static void print_lock_class_header(struct lock_class *class, int depth)
+ {
+ 	int bit;
+@@ -599,6 +603,7 @@ static void print_lock_dependencies(struct lock_class *class, int depth)
+ 		printk("\n");
+ 	}
+ }
++#endif
+ 
+ static void print_kernel_version(void)
+ {
+-- 
+Luis Henriques
 
