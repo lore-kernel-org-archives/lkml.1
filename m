@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYLNW61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbYLNXCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbYLNW61 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 17:58:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYLNW6T
+	id S1754858AbYLNXCE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 18:02:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYLNXBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 17:58:19 -0500
-Received: from smtp2.ono.com ([62.42.230.20]:21519 "EHLO resmaa12.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750983AbYLNW6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 17:58:18 -0500
-Date: Sun, 14 Dec 2008 23:57:53 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Bugs on aspire one A150
-Message-ID: <20081214235753.7cd11c51@werewolf.home>
-In-Reply-To: <1229174138.24940.9.camel@maxim-laptop>
-References: <491506DB.1070000@gmail.com>
-	<1229174138.24940.9.camel@maxim-laptop>
-X-Mailer: Claws Mail 3.6.1cvs75 (GTK+ 2.14.5; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 14 Dec 2008 18:01:52 -0500
+Received: from mx28.mail.ru ([194.67.23.67]:10752 "EHLO mx28.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750983AbYLNXBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 18:01:52 -0500
+Date: Mon, 15 Dec 2008 00:12:47 +0300
+From: Evgeniy Dushistov <dushistov@mail.ru>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Boaz Harrosh <bharrosh@panasas.com>
+Subject: Re: [PATCH, v2] ufs: ensure link targets are NUL-terminated
+Message-ID: <20081214211246.GA7743@rain>
+Mail-Followup-To: Duane Griffin <duaneg@dghda.com>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	Boaz Harrosh <bharrosh@panasas.com>
+References: <1229022995-9898-4-git-send-email-duaneg@dghda.com> <1229022995-9898-5-git-send-email-duaneg@dghda.com> <1229022995-9898-6-git-send-email-duaneg@dghda.com> <1229022995-9898-7-git-send-email-duaneg@dghda.com> <1229022995-9898-8-git-send-email-duaneg@dghda.com> <1229022995-9898-9-git-send-email-duaneg@dghda.com> <1229022995-9898-10-git-send-email-duaneg@dghda.com> <1229022995-9898-11-git-send-email-duaneg@dghda.com> <1229022995-9898-12-git-send-email-duaneg@dghda.com> <20081211223608.GE18665@dastardly.home.dghda.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081211223608.GE18665@dastardly.home.dghda.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Spam: Not detected
+X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Dec 2008 15:15:38 +0200, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-
+On Thu, Dec 11, 2008 at 10:36:08PM +0000, Duane Griffin wrote:
+> Ensure link targets are NUL-terminated, even if corrupted on-disk.
 > 
-> I also noticed, that now the SD only card reader is always enabled
-> regardless of card been there while booting, and same happens in
-> windows, I suspect that this is permanent hardware change, which worries
-> me, but this reader works fine otherwise.
-> (This is another reason why binary bioses are evil, go and find out why
-> it enables it)
+> Signed-off-by: Duane Griffin <duaneg@dghda.com>
+> ---
 > 
+> V2: terminate when the link is read instead of every time it is
+> followed, as suggested by Dave Kleikamp.
+> 
+> diff --git a/fs/ufs/inode.c b/fs/ufs/inode.c
+> index 39f8778..a22f64d 100644
+> --- a/fs/ufs/inode.c
+> +++ b/fs/ufs/inode.c
+> @@ -606,9 +606,11 @@ static void ufs_set_inode_ops(struct inode *inode)
+>  		inode->i_fop = &ufs_dir_operations;
+>  		inode->i_mapping->a_ops = &ufs_aops;
+>  	} else if (S_ISLNK(inode->i_mode)) {
+> -		if (!inode->i_blocks)
+> +		if (!inode->i_blocks) {
+> +			char *link = UFS_I(inode)->i_u1.i_symlink;
+>  			inode->i_op = &ufs_fast_symlink_inode_operations;
+> -		else {
+> +			link[inode->i_size] = '\0';
+> +		} else {
+>  			inode->i_op = &page_symlink_inode_operations;
+>  			inode->i_mapping->a_ops = &ufs_aops;
+>  		}
 
-Which BIOS ? Mine is 3304, kernel is 2.6.28-rc8, and LEFT card is not detected
-unless I use this option:
-
-options sdhci debug_quirks=1
-
-I have downloaded BIOS 3308, but it is to big to fit in my 1.4 floppy image
-(I still have a flooy image I dd on a USB flash, but have not managed to grow
-it - wouldn't you know how to do it ?)
-
+if we talk about corrupted file system, may be also ensure
+that inode->i_size <= sizeof(i_u1)-1 before write '\0' to it.
 
 -- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2009.1 (Cooker) for x86_64
-Linux 2.6.27.5-desktop-1mnb (gcc 4.3.2 (GCC) #1 Sun Nov
+/Evgeniy
+
