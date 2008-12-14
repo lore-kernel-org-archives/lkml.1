@@ -1,87 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYLNBFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbYLNBMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbYLNBFr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 20:05:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYLNBFj
+	id S1753299AbYLNBMX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 20:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYLNBMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 20:05:39 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:48822 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751087AbYLNBFg (ORCPT
+	Sat, 13 Dec 2008 20:12:13 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:18408 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087AbYLNBML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 20:05:36 -0500
-Date: Sat, 13 Dec 2008 18:05:34 -0700
+	Sat, 13 Dec 2008 20:12:11 -0500
+Date: Sat, 13 Dec 2008 18:12:10 -0700
 From: Alex Chiang <achiang@hp.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: matthew@wil.cx, justin.chen@hp.com, linux-kernel@vger.kernel.org
 Subject: Re: PCI BAR mem resource allocation "regression"
-Message-ID: <20081214010534.GB22302@ldl.fc.hp.com>
+Message-ID: <20081214011210.GC22302@ldl.fc.hp.com>
 Mail-Followup-To: Alex Chiang <achiang@hp.com>,
 	Linus Torvalds <torvalds@linux-foundation.org>, matthew@wil.cx,
 	justin.chen@hp.com, linux-kernel@vger.kernel.org
-References: <20081213000538.GC9947@ldl.fc.hp.com> <alpine.LFD.2.00.0812130901370.3340@localhost.localdomain>
+References: <20081213000538.GC9947@ldl.fc.hp.com> <alpine.LFD.2.00.0812130901370.3340@localhost.localdomain> <alpine.LFD.2.00.0812130929100.3340@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0812130901370.3340@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0812130929100.3340@localhost.localdomain>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Linus Torvalds <torvalds@linux-foundation.org>:
-> 
-> 
-> On Fri, 12 Dec 2008, Alex Chiang wrote:
+> On Sat, 13 Dec 2008, Linus Torvalds wrote:
 > > 
-> > I've been chasing a bug for the past week or so that I can't
-> > seem to figure out, and was hoping to get your eyes on it.
+> > I'm missing some pieces I'd like to see: /proc/iomem before and after, and 
+> > lspci output before and after (you do give lspci output, but only one, and 
+> > I can't tell if it's before or after).
 > > 
-> > The basic summary is, we can't allocate a memory resource for
-> > our BAR after a PCI hotplug operation. We've been able to
-> > bisect it down to d33b6fba2c4350651f3f61ff2ab858a2f116e9a4
-> > (Resources: insert identical resources above existing
-> > resources).
+> > Also, is it just the error message, or does it actually affect 
+> > functionality?
 > 
-> I'm missing some pieces I'd like to see: /proc/iomem before and
-> after, and lspci output before and after (you do give lspci
-> output, but only one, and I can't tell if it's before or
-> after).
+> Oh - one more thing. Your revert is very complex, and a simpler revert 
+> (that _should_ revert just the actual behavioral change) is just the 
+> two-liner that removes these two lines:
+> 
+> 		if ((first->start == new->start) && (first->end == new->end))
+> 			break;
+> 
+> in __insert_resource.
+> 
+> So can you check if your more complex revert really has the same behaviour 
+> as just removing those two lines?
 
-Yeah, I knew I forgot to send the contents of /proc/iomem. I'll
-include them below.
+Yes, the two-liner above does result in the same success (aka,
+lack of an error message ;) as my complex revert.
 
-I'll also include the lspci output for after. The one I included
-in the last mail was for 'before'.
-
-> Also, is it just the error message, or does it actually affect 
-> functionality?
-
-Hm, that is a good question. ;) The particular device I was
-testing with was an infiniband device, and I have never actually
-pushed any traffic over it; just used it to reproduce the error.
-
-I can try and hook the card up to something and push traffic over
-it, but that will have to wait until Monday. Maybe Justin (cc'ed)
-knows, since he was the one who first reported this to me.
-
-Lots of data follows. The revert output I'm including is with my
-complex revert patch. I'll try the 2-liner next and respond in a
-separate mail.
-
-	(a) mainline /proc/iomem before hotplug
-	(b) mainline /proc/iomem after successful hot-remove
-	(c) mainline /proc/iomem after hot-add + BAR error printk
-	(d) mainline lspci -vv after operation (c)
-	(e) revert /proc/iomem before hotplug
-	(f) revert /proc/iomem after successful hot-remove
-	(g) revert /proc/iomem after successful hot-add
+	(a) /proc/iomem before hot remove
+	(b) /proc/iomem after hot remove
+	(c) /proc/iomem after hot add
+	(d) lspci -vv after hot add
 
 Thanks.
 
 /ac
 
-# (a) mainline /proc/iomem before hotplug
+# (a) /proc/iomem before hot remove
 00000000-00000fff : System RAM
 00001000-0009ffff : System RAM
 000a0000-000fffff : PCI Bus 0000:00
@@ -89,8 +71,8 @@ Thanks.
 00100000-00100fff : System RAM
 00101000-03ffffff : System RAM
 04000000-06c0ffff : System RAM
-  04000000-0485b72f : Kernel code
-  0485b730-053b9aef : Kernel data
+  04000000-0485b70f : Kernel code
+  0485b710-053b9aef : Kernel data
   053b9af0-06c0fcc0 : Kernel bss
 06c10000-3dc3bfff : System RAM
 3dc3c000-3ddd7fff : reserved
@@ -133,8 +115,8 @@ Thanks.
   90120000-9013ffff : 0000:01:02.0
     90120000-9013ffff : e1000
 a0000000-afffffff : PCI Bus 0000:0a
-b0000000-bfffffff : PCI Bus 0000:10
-  b0000000-bfffffff : PCI Bus 0000:0f
+b0000000-bfffffff : PCI Bus 0000:0f
+  b0000000-bfffffff : PCI Bus 0000:10
     b0000000-b003ffff : 0000:10:00.1
     b0040000-b007ffff : 0000:10:00.0
     b0080000-b00800ff : 0000:10:00.1
@@ -157,11 +139,11 @@ c0000000-cfffffff : PCI Bus 0000:48
   c0120000-c013ffff : 0000:48:02.0
     c0120000-c013ffff : e1000
 d0000000-dfffffff : PCI Bus 0000:49
-e0000000-efffffff : PCI Bus 0000:50
+e0000000-efffffff : PCI Bus 0000:4e
   e0000000-efffffff : PCI Bus 0000:4f
-    e0000000-efffffff : PCI Bus 0000:4e
-      e0000000-e7ffffff : PCI Bus 0000:52
-        e0000000-e7ffffff : PCI Bus 0000:51
+    e0000000-efffffff : PCI Bus 0000:50
+      e0000000-e7ffffff : PCI Bus 0000:51
+        e0000000-e7ffffff : PCI Bus 0000:52
           e0000000-e3ffffff : PCI Bus 0000:54
           e0000000-e03fffff : 0000:54:00.1
           e0400000-e07fffff : 0000:54:00.0
@@ -178,8 +160,8 @@ e0000000-efffffff : PCI Bus 0000:50
         e8100000-e813ffff : 0000:89:00.0
         e8140000-e8140fff : 0000:89:00.0
           e8140000-e8140fff : cciss
-f0000000-fdffffff : PCI Bus 0000:c3
-  f0000000-fdffffff : PCI Bus 0000:c2
+f0000000-fdffffff : PCI Bus 0000:c2
+  f0000000-fdffffff : PCI Bus 0000:c3
     f0000000-f00fffff : 0000:c3:00.0
 ff5d8004-ff5d8007 : ACPI PM_TMR
 ff5d8008-ff5d800b : ACPI PM1a_EVT_BLK
@@ -221,10 +203,10 @@ ff5e2000-ff5e2007 : PCI Bus 0000:00
 80504000000-805ffffffff : PCI Bus 0000:49
 80600000000-80603ffffff : PCI Bus 0000:4e I/O Ports 07000000-0700ffff
 80604000000-806ffffffff : PCI Bus 0000:4e
-  80680000000-806ffffffff : PCI Bus 0000:50
-    80680000000-806ffffffff : PCI Bus 0000:4f
-      80680000000-806bfffffff : PCI Bus 0000:52
-        80680000000-806bfffffff : PCI Bus 0000:51
+  80680000000-806ffffffff : PCI Bus 0000:4f
+    80680000000-806ffffffff : PCI Bus 0000:50
+      80680000000-806bfffffff : PCI Bus 0000:51
+        80680000000-806bfffffff : PCI Bus 0000:52
           80680000000-8069fffffff : PCI Bus 0000:53
           806a0000000-806bfffffff : PCI Bus 0000:54
       806c0000000-806ffffffff : PCI Bus 0000:89
@@ -234,7 +216,7 @@ ff5e2000-ff5e2007 : PCI Bus 0000:00
     80780000000-80787ffffff : 0000:c3:00.0
     80788000000-807887fffff : 0000:c3:00.0
 
-# (b) mainline /proc/iomem after successful hot-remove
+# (b) /proc/iomem after hot remove
 00000000-00000fff : System RAM
 00001000-0009ffff : System RAM
 000a0000-000fffff : PCI Bus 0000:00
@@ -242,8 +224,8 @@ ff5e2000-ff5e2007 : PCI Bus 0000:00
 00100000-00100fff : System RAM
 00101000-03ffffff : System RAM
 04000000-06c0ffff : System RAM
-  04000000-0485b72f : Kernel code
-  0485b730-053b9aef : Kernel data
+  04000000-0485b70f : Kernel code
+  0485b710-053b9aef : Kernel data
   053b9af0-06c0fcc0 : Kernel bss
 06c10000-3dc3bfff : System RAM
 3dc3c000-3ddd7fff : reserved
@@ -286,8 +268,8 @@ ff5e2000-ff5e2007 : PCI Bus 0000:00
   90120000-9013ffff : 0000:01:02.0
     90120000-9013ffff : e1000
 a0000000-afffffff : PCI Bus 0000:0a
-b0000000-bfffffff : PCI Bus 0000:10
-  b0000000-bfffffff : PCI Bus 0000:0f
+b0000000-bfffffff : PCI Bus 0000:0f
+  b0000000-bfffffff : PCI Bus 0000:10
     b0000000-b003ffff : 0000:10:00.1
     b0040000-b007ffff : 0000:10:00.0
     b0080000-b00800ff : 0000:10:00.1
@@ -310,11 +292,11 @@ c0000000-cfffffff : PCI Bus 0000:48
   c0120000-c013ffff : 0000:48:02.0
     c0120000-c013ffff : e1000
 d0000000-dfffffff : PCI Bus 0000:49
-e0000000-efffffff : PCI Bus 0000:50
+e0000000-efffffff : PCI Bus 0000:4e
   e0000000-efffffff : PCI Bus 0000:4f
-    e0000000-efffffff : PCI Bus 0000:4e
-      e0000000-e7ffffff : PCI Bus 0000:52
-        e0000000-e7ffffff : PCI Bus 0000:51
+    e0000000-efffffff : PCI Bus 0000:50
+      e0000000-e7ffffff : PCI Bus 0000:51
+        e0000000-e7ffffff : PCI Bus 0000:52
           e0000000-e3ffffff : PCI Bus 0000:54
           e0000000-e03fffff : 0000:54:00.1
           e0400000-e07fffff : 0000:54:00.0
@@ -331,8 +313,8 @@ e0000000-efffffff : PCI Bus 0000:50
         e8100000-e813ffff : 0000:89:00.0
         e8140000-e8140fff : 0000:89:00.0
           e8140000-e8140fff : cciss
-f0000000-fdffffff : PCI Bus 0000:c3
-  f0000000-fdffffff : PCI Bus 0000:c2
+f0000000-fdffffff : PCI Bus 0000:c2
+  f0000000-fdffffff : PCI Bus 0000:c3
 ff5d8004-ff5d8007 : ACPI PM_TMR
 ff5d8008-ff5d800b : ACPI PM1a_EVT_BLK
 ff5d800c-ff5d800d : ACPI PM1a_CNT_BLK
@@ -373,10 +355,10 @@ ff5e2000-ff5e2007 : PCI Bus 0000:00
 80504000000-805ffffffff : PCI Bus 0000:49
 80600000000-80603ffffff : PCI Bus 0000:4e I/O Ports 07000000-0700ffff
 80604000000-806ffffffff : PCI Bus 0000:4e
-  80680000000-806ffffffff : PCI Bus 0000:50
-    80680000000-806ffffffff : PCI Bus 0000:4f
-      80680000000-806bfffffff : PCI Bus 0000:52
-        80680000000-806bfffffff : PCI Bus 0000:51
+  80680000000-806ffffffff : PCI Bus 0000:4f
+    80680000000-806ffffffff : PCI Bus 0000:50
+      80680000000-806bfffffff : PCI Bus 0000:51
+        80680000000-806bfffffff : PCI Bus 0000:52
           80680000000-8069fffffff : PCI Bus 0000:53
           806a0000000-806bfffffff : PCI Bus 0000:54
       806c0000000-806ffffffff : PCI Bus 0000:89
@@ -384,7 +366,7 @@ ff5e2000-ff5e2007 : PCI Bus 0000:00
 80704000000-807ffffffff : PCI Bus 0000:c2
   80780000000-807ffffffff : PCI Bus 0000:c3
 
-# (c) mainline /proc/iomem after hot-add + BAR error printk
+# (c) /proc/iomem after hot add
 00000000-00000fff : System RAM
 00001000-0009ffff : System RAM
 000a0000-000fffff : PCI Bus 0000:00
@@ -392,8 +374,8 @@ ff5e2000-ff5e2007 : PCI Bus 0000:00
 00100000-00100fff : System RAM
 00101000-03ffffff : System RAM
 04000000-06c0ffff : System RAM
-  04000000-0485b72f : Kernel code
-  0485b730-053b9aef : Kernel data
+  04000000-0485b70f : Kernel code
+  0485b710-053b9aef : Kernel data
   053b9af0-06c0fcc0 : Kernel bss
 06c10000-3dc3bfff : System RAM
 3dc3c000-3ddd7fff : reserved
@@ -436,8 +418,8 @@ ff5e2000-ff5e2007 : PCI Bus 0000:00
   90120000-9013ffff : 0000:01:02.0
     90120000-9013ffff : e1000
 a0000000-afffffff : PCI Bus 0000:0a
-b0000000-bfffffff : PCI Bus 0000:10
-  b0000000-bfffffff : PCI Bus 0000:0f
+b0000000-bfffffff : PCI Bus 0000:0f
+  b0000000-bfffffff : PCI Bus 0000:10
     b0000000-b003ffff : 0000:10:00.1
     b0040000-b007ffff : 0000:10:00.0
     b0080000-b00800ff : 0000:10:00.1
@@ -460,11 +442,11 @@ c0000000-cfffffff : PCI Bus 0000:48
   c0120000-c013ffff : 0000:48:02.0
     c0120000-c013ffff : e1000
 d0000000-dfffffff : PCI Bus 0000:49
-e0000000-efffffff : PCI Bus 0000:50
+e0000000-efffffff : PCI Bus 0000:4e
   e0000000-efffffff : PCI Bus 0000:4f
-    e0000000-efffffff : PCI Bus 0000:4e
-      e0000000-e7ffffff : PCI Bus 0000:52
-        e0000000-e7ffffff : PCI Bus 0000:51
+    e0000000-efffffff : PCI Bus 0000:50
+      e0000000-e7ffffff : PCI Bus 0000:51
+        e0000000-e7ffffff : PCI Bus 0000:52
           e0000000-e3ffffff : PCI Bus 0000:54
           e0000000-e03fffff : 0000:54:00.1
           e0400000-e07fffff : 0000:54:00.0
@@ -481,8 +463,9 @@ e0000000-efffffff : PCI Bus 0000:50
         e8100000-e813ffff : 0000:89:00.0
         e8140000-e8140fff : 0000:89:00.0
           e8140000-e8140fff : cciss
-f0000000-fdffffff : PCI Bus 0000:c3
-  f0000000-fdffffff : PCI Bus 0000:c2
+f0000000-fdffffff : PCI Bus 0000:c2
+  f0000000-fdffffff : PCI Bus 0000:c3
+    f0000000-f00fffff : 0000:c3:00.0
 ff5d8004-ff5d8007 : ACPI PM_TMR
 ff5d8008-ff5d800b : ACPI PM1a_EVT_BLK
 ff5d800c-ff5d800d : ACPI PM1a_CNT_BLK
@@ -523,10 +506,10 @@ ff5e2000-ff5e2007 : PCI Bus 0000:00
 80504000000-805ffffffff : PCI Bus 0000:49
 80600000000-80603ffffff : PCI Bus 0000:4e I/O Ports 07000000-0700ffff
 80604000000-806ffffffff : PCI Bus 0000:4e
-  80680000000-806ffffffff : PCI Bus 0000:50
-    80680000000-806ffffffff : PCI Bus 0000:4f
-      80680000000-806bfffffff : PCI Bus 0000:52
-        80680000000-806bfffffff : PCI Bus 0000:51
+  80680000000-806ffffffff : PCI Bus 0000:4f
+    80680000000-806ffffffff : PCI Bus 0000:50
+      80680000000-806bfffffff : PCI Bus 0000:51
+        80680000000-806bfffffff : PCI Bus 0000:52
           80680000000-8069fffffff : PCI Bus 0000:53
           806a0000000-806bfffffff : PCI Bus 0000:54
       806c0000000-806ffffffff : PCI Bus 0000:89
@@ -536,7 +519,7 @@ ff5e2000-ff5e2007 : PCI Bus 0000:00
     80780000000-80787ffffff : 0000:c3:00.0
     80788000000-807887fffff : 0000:c3:00.0
 
-# (d) mainline lspci -vv after operation (c)
+# (d) lspci -vv after hot add
 00:01.0 Class ff00: Hewlett-Packard Company RMP-3 (Remote Management Processor)
 	Subsystem: Hewlett-Packard Company RMP-3 (Remote Management Processor)
 	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B- DisINTx-
@@ -1248,7 +1231,7 @@ c3:00.0 InfiniBand: Mellanox Technologies MT25208 InfiniHost III Ex (Tavor compa
 	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
 	Interrupt: pin A routed to IRQ 0
-	Region 0: Memory at <unassigned> (64-bit, non-prefetchable) [disabled]
+	Region 0: Memory at f0000000 (64-bit, non-prefetchable) [disabled] [size=1M]
 	Region 2: Memory at 80788000000 (64-bit, prefetchable) [disabled] [size=8M]
 	Region 4: Memory at 80780000000 (64-bit, prefetchable) [disabled] [size=128M]
 	Capabilities: [40] Power Management version 2
@@ -1273,458 +1256,3 @@ c3:00.0 InfiniBand: Mellanox Technologies MT25208 InfiniHost III Ex (Tavor compa
 			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
 		LnkSta:	Speed 2.5GT/s, Width x8, TrErr- Train- SlotClk- DLActive- BWMgmt- ABWMgmt-
 
-# (e) revert /proc/iomem before hotplug
-00000000-00000fff : System RAM
-00001000-0009ffff : System RAM
-000a0000-000fffff : PCI Bus 0000:00
-  000c0000-000fffff : reserved
-00100000-00100fff : System RAM
-00101000-03ffffff : System RAM
-04000000-06c0ffff : System RAM
-  04000000-0485b70f : Kernel code
-  0485b710-053b9aef : Kernel data
-  053b9af0-06c0fcc0 : Kernel bss
-06c10000-3dc3bfff : System RAM
-3dc3c000-3ddd7fff : reserved
-3ddd8000-3ddd9fff : reserved
-3ddda000-3e199fff : reserved
-3e19a000-3e527fff : System RAM
-3e528000-3f7fffff : reserved
-3f800000-3fbfffff : reserved
-3fc00000-3fd5dfff : System RAM
-3fd5e000-3fd5ffff : reserved
-3fd60000-3fd60fff : System RAM
-3fd61000-3fd65fff : System RAM
-3fd66000-3fdc7fff : reserved
-3fdc8000-3fdcdfff : System RAM
-3fdce000-3fdf7fff : reserved
-3fdf8000-3fdfffff : reserved
-3fe00000-3fffffff : reserved
-80000000-8fffffff : PCI Bus 0000:00
-  80000000-83ffffff : 0000:00:04.0
-  84000000-8401ffff : 0000:00:04.0
-  84020000-8402ffff : 0000:00:04.0
-  84030000-840300ff : 0000:00:02.2
-    84030000-840300ff : ehci_hcd
-  84031000-84031fff : 0000:00:02.1
-    84031000-84031fff : ohci_hcd
-  84032000-84032fff : 0000:00:02.0
-    84032000-84032fff : ohci_hcd
-  84033000-84033fff : 0000:00:01.2
-    84033000-84033007 : serial
-  84034000-84034fff : 0000:00:01.1
-90000000-9fffffff : PCI Bus 0000:01
-  90000000-9003ffff : 0000:01:02.1
-  90040000-9007ffff : 0000:01:02.1
-    90040000-9007ffff : e1000
-  90080000-900bffff : 0000:01:02.0
-  900c0000-900fffff : 0000:01:02.0
-    900c0000-900fffff : e1000
-  90100000-9011ffff : 0000:01:02.1
-    90100000-9011ffff : e1000
-  90120000-9013ffff : 0000:01:02.0
-    90120000-9013ffff : e1000
-a0000000-afffffff : PCI Bus 0000:0a
-b0000000-bfffffff : PCI Bus 0000:0f
-  b0000000-bfffffff : PCI Bus 0000:10
-    b0000000-b003ffff : 0000:10:00.1
-    b0040000-b007ffff : 0000:10:00.0
-    b0080000-b00800ff : 0000:10:00.1
-      b0080000-b00800ff : lpfc
-    b0081000-b0081fff : 0000:10:00.1
-      b0081000-b0081fff : lpfc
-    b0082000-b00820ff : 0000:10:00.0
-      b0082000-b00820ff : lpfc
-    b0083000-b0083fff : 0000:10:00.0
-      b0083000-b0083fff : lpfc
-c0000000-cfffffff : PCI Bus 0000:48
-  c0000000-c003ffff : 0000:48:02.1
-  c0040000-c007ffff : 0000:48:02.1
-    c0040000-c007ffff : e1000
-  c0080000-c00bffff : 0000:48:02.0
-  c00c0000-c00fffff : 0000:48:02.0
-    c00c0000-c00fffff : e1000
-  c0100000-c011ffff : 0000:48:02.1
-    c0100000-c011ffff : e1000
-  c0120000-c013ffff : 0000:48:02.0
-    c0120000-c013ffff : e1000
-d0000000-dfffffff : PCI Bus 0000:49
-e0000000-efffffff : PCI Bus 0000:4e
-  e0000000-efffffff : PCI Bus 0000:4f
-    e0000000-efffffff : PCI Bus 0000:50
-      e0000000-e7ffffff : PCI Bus 0000:51
-        e0000000-e7ffffff : PCI Bus 0000:52
-          e0000000-e3ffffff : PCI Bus 0000:54
-          e0000000-e03fffff : 0000:54:00.1
-          e0400000-e07fffff : 0000:54:00.0
-          e0800000-e081ffff : 0000:54:00.1
-          e0820000-e083ffff : 0000:54:00.0
-          e4000000-e7ffffff : PCI Bus 0000:53
-          e4000000-e43fffff : 0000:53:00.1
-          e4400000-e47fffff : 0000:53:00.0
-          e4800000-e481ffff : 0000:53:00.1
-          e4820000-e483ffff : 0000:53:00.0
-      e8000000-efffffff : PCI Bus 0000:89
-        e8000000-e80fffff : 0000:89:00.0
-          e8000000-e80fffff : cciss
-        e8100000-e813ffff : 0000:89:00.0
-        e8140000-e8140fff : 0000:89:00.0
-          e8140000-e8140fff : cciss
-f0000000-fdffffff : PCI Bus 0000:c2
-  f0000000-fdffffff : PCI Bus 0000:c3
-    f0000000-f00fffff : 0000:c3:00.0
-ff5d8004-ff5d8007 : ACPI PM_TMR
-ff5d8008-ff5d800b : ACPI PM1a_EVT_BLK
-ff5d800c-ff5d800d : ACPI PM1a_CNT_BLK
-ff5d8010-ff5d8013 : ACPI GPE0_BLK
-ff5d8014-ff5d8017 : ACPI GPE1_BLK
-ff5e2000-ff5e2007 : PCI Bus 0000:00
-  ff5e2000-ff5e2007 : serial
-100000000-5ffffffff : System RAM
-10040000000-100fede3fff : System RAM
-100fede4000-100ff19ffff : System RAM
-  100fede4010-100fede47f0 : EFI Memory Map
-  100fede6010-100fede6060 : Boot parameter
-100ff1a0000-100ff1fdfff : System RAM
-100ff1fe000-100ff1fffff : reserved
-100ff200000-100ff453fff : System RAM
-100ff454000-100ff800fff : System RAM
-100ff801000-100ff94dfff : System RAM
-100ff94e000-100ff977fff : System RAM
-100ff978000-100ff97bfff : System RAM
-100ff97c000-100ff97ffff : System RAM
-100ff980000-100ff981fff : System RAM
-100ff982000-100ffbfffff : System RAM
-100ffc00000-100ffe74fff : System RAM
-100ffe75000-100ffffffff : System RAM
-80000000000-80003ffffff : PCI Bus 0000:00 I/O Ports 01000000-0100ffff
-80004000000-800ffffffff : PCI Bus 0000:00
-  80080000000-8008001ffff : 0000:00:01.1
-80100000000-80103ffffff : PCI Bus 0000:01 I/O Ports 02000000-0200ffff
-80104000000-801ffffffff : PCI Bus 0000:01
-80200000000-80203ffffff : PCI Bus 0000:0a I/O Ports 03000000-0300ffff
-80204000000-802ffffffff : PCI Bus 0000:0a
-80300000000-80303ffffff : PCI Bus 0000:0f I/O Ports 04000000-0400ffff
-80304000000-803ffffffff : PCI Bus 0000:0f
-  80380000000-803ffffffff : PCI Bus 0000:10
-80400000000-80403ffffff : PCI Bus 0000:48 I/O Ports 05000000-0500ffff
-80404000000-804ffffffff : PCI Bus 0000:48
-80500000000-80503ffffff : PCI Bus 0000:49 I/O Ports 06000000-0600ffff
-80504000000-805ffffffff : PCI Bus 0000:49
-80600000000-80603ffffff : PCI Bus 0000:4e I/O Ports 07000000-0700ffff
-80604000000-806ffffffff : PCI Bus 0000:4e
-  80680000000-806ffffffff : PCI Bus 0000:4f
-    80680000000-806ffffffff : PCI Bus 0000:50
-      80680000000-806bfffffff : PCI Bus 0000:51
-        80680000000-806bfffffff : PCI Bus 0000:52
-          80680000000-8069fffffff : PCI Bus 0000:53
-          806a0000000-806bfffffff : PCI Bus 0000:54
-      806c0000000-806ffffffff : PCI Bus 0000:89
-80700000000-80703ffffff : PCI Bus 0000:c2 I/O Ports 08000000-0800ffff
-80704000000-807ffffffff : PCI Bus 0000:c2
-  80780000000-807ffffffff : PCI Bus 0000:c3
-    80780000000-80787ffffff : 0000:c3:00.0
-    80788000000-807887fffff : 0000:c3:00.0
-
-# (f) revert /proc/iomem after successful hot-remove
-00000000-00000fff : System RAM
-00001000-0009ffff : System RAM
-000a0000-000fffff : PCI Bus 0000:00
-  000c0000-000fffff : reserved
-00100000-00100fff : System RAM
-00101000-03ffffff : System RAM
-04000000-06c0ffff : System RAM
-  04000000-0485b70f : Kernel code
-  0485b710-053b9aef : Kernel data
-  053b9af0-06c0fcc0 : Kernel bss
-06c10000-3dc3bfff : System RAM
-3dc3c000-3ddd7fff : reserved
-3ddd8000-3ddd9fff : reserved
-3ddda000-3e199fff : reserved
-3e19a000-3e527fff : System RAM
-3e528000-3f7fffff : reserved
-3f800000-3fbfffff : reserved
-3fc00000-3fd5dfff : System RAM
-3fd5e000-3fd5ffff : reserved
-3fd60000-3fd60fff : System RAM
-3fd61000-3fd65fff : System RAM
-3fd66000-3fdc7fff : reserved
-3fdc8000-3fdcdfff : System RAM
-3fdce000-3fdf7fff : reserved
-3fdf8000-3fdfffff : reserved
-3fe00000-3fffffff : reserved
-80000000-8fffffff : PCI Bus 0000:00
-  80000000-83ffffff : 0000:00:04.0
-  84000000-8401ffff : 0000:00:04.0
-  84020000-8402ffff : 0000:00:04.0
-  84030000-840300ff : 0000:00:02.2
-    84030000-840300ff : ehci_hcd
-  84031000-84031fff : 0000:00:02.1
-    84031000-84031fff : ohci_hcd
-  84032000-84032fff : 0000:00:02.0
-    84032000-84032fff : ohci_hcd
-  84033000-84033fff : 0000:00:01.2
-    84033000-84033007 : serial
-  84034000-84034fff : 0000:00:01.1
-90000000-9fffffff : PCI Bus 0000:01
-  90000000-9003ffff : 0000:01:02.1
-  90040000-9007ffff : 0000:01:02.1
-    90040000-9007ffff : e1000
-  90080000-900bffff : 0000:01:02.0
-  900c0000-900fffff : 0000:01:02.0
-    900c0000-900fffff : e1000
-  90100000-9011ffff : 0000:01:02.1
-    90100000-9011ffff : e1000
-  90120000-9013ffff : 0000:01:02.0
-    90120000-9013ffff : e1000
-a0000000-afffffff : PCI Bus 0000:0a
-b0000000-bfffffff : PCI Bus 0000:0f
-  b0000000-bfffffff : PCI Bus 0000:10
-    b0000000-b003ffff : 0000:10:00.1
-    b0040000-b007ffff : 0000:10:00.0
-    b0080000-b00800ff : 0000:10:00.1
-      b0080000-b00800ff : lpfc
-    b0081000-b0081fff : 0000:10:00.1
-      b0081000-b0081fff : lpfc
-    b0082000-b00820ff : 0000:10:00.0
-      b0082000-b00820ff : lpfc
-    b0083000-b0083fff : 0000:10:00.0
-      b0083000-b0083fff : lpfc
-c0000000-cfffffff : PCI Bus 0000:48
-  c0000000-c003ffff : 0000:48:02.1
-  c0040000-c007ffff : 0000:48:02.1
-    c0040000-c007ffff : e1000
-  c0080000-c00bffff : 0000:48:02.0
-  c00c0000-c00fffff : 0000:48:02.0
-    c00c0000-c00fffff : e1000
-  c0100000-c011ffff : 0000:48:02.1
-    c0100000-c011ffff : e1000
-  c0120000-c013ffff : 0000:48:02.0
-    c0120000-c013ffff : e1000
-d0000000-dfffffff : PCI Bus 0000:49
-e0000000-efffffff : PCI Bus 0000:4e
-  e0000000-efffffff : PCI Bus 0000:4f
-    e0000000-efffffff : PCI Bus 0000:50
-      e0000000-e7ffffff : PCI Bus 0000:51
-        e0000000-e7ffffff : PCI Bus 0000:52
-          e0000000-e3ffffff : PCI Bus 0000:54
-          e0000000-e03fffff : 0000:54:00.1
-          e0400000-e07fffff : 0000:54:00.0
-          e0800000-e081ffff : 0000:54:00.1
-          e0820000-e083ffff : 0000:54:00.0
-          e4000000-e7ffffff : PCI Bus 0000:53
-          e4000000-e43fffff : 0000:53:00.1
-          e4400000-e47fffff : 0000:53:00.0
-          e4800000-e481ffff : 0000:53:00.1
-          e4820000-e483ffff : 0000:53:00.0
-      e8000000-efffffff : PCI Bus 0000:89
-        e8000000-e80fffff : 0000:89:00.0
-          e8000000-e80fffff : cciss
-        e8100000-e813ffff : 0000:89:00.0
-        e8140000-e8140fff : 0000:89:00.0
-          e8140000-e8140fff : cciss
-f0000000-fdffffff : PCI Bus 0000:c2
-  f0000000-fdffffff : PCI Bus 0000:c3
-ff5d8004-ff5d8007 : ACPI PM_TMR
-ff5d8008-ff5d800b : ACPI PM1a_EVT_BLK
-ff5d800c-ff5d800d : ACPI PM1a_CNT_BLK
-ff5d8010-ff5d8013 : ACPI GPE0_BLK
-ff5d8014-ff5d8017 : ACPI GPE1_BLK
-ff5e2000-ff5e2007 : PCI Bus 0000:00
-  ff5e2000-ff5e2007 : serial
-100000000-5ffffffff : System RAM
-10040000000-100fede3fff : System RAM
-100fede4000-100ff19ffff : System RAM
-  100fede4010-100fede47f0 : EFI Memory Map
-  100fede6010-100fede6060 : Boot parameter
-100ff1a0000-100ff1fdfff : System RAM
-100ff1fe000-100ff1fffff : reserved
-100ff200000-100ff453fff : System RAM
-100ff454000-100ff800fff : System RAM
-100ff801000-100ff94dfff : System RAM
-100ff94e000-100ff977fff : System RAM
-100ff978000-100ff97bfff : System RAM
-100ff97c000-100ff97ffff : System RAM
-100ff980000-100ff981fff : System RAM
-100ff982000-100ffbfffff : System RAM
-100ffc00000-100ffe74fff : System RAM
-100ffe75000-100ffffffff : System RAM
-80000000000-80003ffffff : PCI Bus 0000:00 I/O Ports 01000000-0100ffff
-80004000000-800ffffffff : PCI Bus 0000:00
-  80080000000-8008001ffff : 0000:00:01.1
-80100000000-80103ffffff : PCI Bus 0000:01 I/O Ports 02000000-0200ffff
-80104000000-801ffffffff : PCI Bus 0000:01
-80200000000-80203ffffff : PCI Bus 0000:0a I/O Ports 03000000-0300ffff
-80204000000-802ffffffff : PCI Bus 0000:0a
-80300000000-80303ffffff : PCI Bus 0000:0f I/O Ports 04000000-0400ffff
-80304000000-803ffffffff : PCI Bus 0000:0f
-  80380000000-803ffffffff : PCI Bus 0000:10
-80400000000-80403ffffff : PCI Bus 0000:48 I/O Ports 05000000-0500ffff
-80404000000-804ffffffff : PCI Bus 0000:48
-80500000000-80503ffffff : PCI Bus 0000:49 I/O Ports 06000000-0600ffff
-80504000000-805ffffffff : PCI Bus 0000:49
-80600000000-80603ffffff : PCI Bus 0000:4e I/O Ports 07000000-0700ffff
-80604000000-806ffffffff : PCI Bus 0000:4e
-  80680000000-806ffffffff : PCI Bus 0000:4f
-    80680000000-806ffffffff : PCI Bus 0000:50
-      80680000000-806bfffffff : PCI Bus 0000:51
-        80680000000-806bfffffff : PCI Bus 0000:52
-          80680000000-8069fffffff : PCI Bus 0000:53
-          806a0000000-806bfffffff : PCI Bus 0000:54
-      806c0000000-806ffffffff : PCI Bus 0000:89
-80700000000-80703ffffff : PCI Bus 0000:c2 I/O Ports 08000000-0800ffff
-80704000000-807ffffffff : PCI Bus 0000:c2
-  80780000000-807ffffffff : PCI Bus 0000:c3
-
-# (g) revert /proc/iomem after successful hot-add
-00000000-00000fff : System RAM
-00001000-0009ffff : System RAM
-000a0000-000fffff : PCI Bus 0000:00
-  000c0000-000fffff : reserved
-00100000-00100fff : System RAM
-00101000-03ffffff : System RAM
-04000000-06c0ffff : System RAM
-  04000000-0485b70f : Kernel code
-  0485b710-053b9aef : Kernel data
-  053b9af0-06c0fcc0 : Kernel bss
-06c10000-3dc3bfff : System RAM
-3dc3c000-3ddd7fff : reserved
-3ddd8000-3ddd9fff : reserved
-3ddda000-3e199fff : reserved
-3e19a000-3e527fff : System RAM
-3e528000-3f7fffff : reserved
-3f800000-3fbfffff : reserved
-3fc00000-3fd5dfff : System RAM
-3fd5e000-3fd5ffff : reserved
-3fd60000-3fd60fff : System RAM
-3fd61000-3fd65fff : System RAM
-3fd66000-3fdc7fff : reserved
-3fdc8000-3fdcdfff : System RAM
-3fdce000-3fdf7fff : reserved
-3fdf8000-3fdfffff : reserved
-3fe00000-3fffffff : reserved
-80000000-8fffffff : PCI Bus 0000:00
-  80000000-83ffffff : 0000:00:04.0
-  84000000-8401ffff : 0000:00:04.0
-  84020000-8402ffff : 0000:00:04.0
-  84030000-840300ff : 0000:00:02.2
-    84030000-840300ff : ehci_hcd
-  84031000-84031fff : 0000:00:02.1
-    84031000-84031fff : ohci_hcd
-  84032000-84032fff : 0000:00:02.0
-    84032000-84032fff : ohci_hcd
-  84033000-84033fff : 0000:00:01.2
-    84033000-84033007 : serial
-  84034000-84034fff : 0000:00:01.1
-90000000-9fffffff : PCI Bus 0000:01
-  90000000-9003ffff : 0000:01:02.1
-  90040000-9007ffff : 0000:01:02.1
-    90040000-9007ffff : e1000
-  90080000-900bffff : 0000:01:02.0
-  900c0000-900fffff : 0000:01:02.0
-    900c0000-900fffff : e1000
-  90100000-9011ffff : 0000:01:02.1
-    90100000-9011ffff : e1000
-  90120000-9013ffff : 0000:01:02.0
-    90120000-9013ffff : e1000
-a0000000-afffffff : PCI Bus 0000:0a
-b0000000-bfffffff : PCI Bus 0000:0f
-  b0000000-bfffffff : PCI Bus 0000:10
-    b0000000-b003ffff : 0000:10:00.1
-    b0040000-b007ffff : 0000:10:00.0
-    b0080000-b00800ff : 0000:10:00.1
-      b0080000-b00800ff : lpfc
-    b0081000-b0081fff : 0000:10:00.1
-      b0081000-b0081fff : lpfc
-    b0082000-b00820ff : 0000:10:00.0
-      b0082000-b00820ff : lpfc
-    b0083000-b0083fff : 0000:10:00.0
-      b0083000-b0083fff : lpfc
-c0000000-cfffffff : PCI Bus 0000:48
-  c0000000-c003ffff : 0000:48:02.1
-  c0040000-c007ffff : 0000:48:02.1
-    c0040000-c007ffff : e1000
-  c0080000-c00bffff : 0000:48:02.0
-  c00c0000-c00fffff : 0000:48:02.0
-    c00c0000-c00fffff : e1000
-  c0100000-c011ffff : 0000:48:02.1
-    c0100000-c011ffff : e1000
-  c0120000-c013ffff : 0000:48:02.0
-    c0120000-c013ffff : e1000
-d0000000-dfffffff : PCI Bus 0000:49
-e0000000-efffffff : PCI Bus 0000:4e
-  e0000000-efffffff : PCI Bus 0000:4f
-    e0000000-efffffff : PCI Bus 0000:50
-      e0000000-e7ffffff : PCI Bus 0000:51
-        e0000000-e7ffffff : PCI Bus 0000:52
-          e0000000-e3ffffff : PCI Bus 0000:54
-          e0000000-e03fffff : 0000:54:00.1
-          e0400000-e07fffff : 0000:54:00.0
-          e0800000-e081ffff : 0000:54:00.1
-          e0820000-e083ffff : 0000:54:00.0
-          e4000000-e7ffffff : PCI Bus 0000:53
-          e4000000-e43fffff : 0000:53:00.1
-          e4400000-e47fffff : 0000:53:00.0
-          e4800000-e481ffff : 0000:53:00.1
-          e4820000-e483ffff : 0000:53:00.0
-      e8000000-efffffff : PCI Bus 0000:89
-        e8000000-e80fffff : 0000:89:00.0
-          e8000000-e80fffff : cciss
-        e8100000-e813ffff : 0000:89:00.0
-        e8140000-e8140fff : 0000:89:00.0
-          e8140000-e8140fff : cciss
-f0000000-fdffffff : PCI Bus 0000:c2
-  f0000000-fdffffff : PCI Bus 0000:c3
-    f0000000-f00fffff : 0000:c3:00.0
-ff5d8004-ff5d8007 : ACPI PM_TMR
-ff5d8008-ff5d800b : ACPI PM1a_EVT_BLK
-ff5d800c-ff5d800d : ACPI PM1a_CNT_BLK
-ff5d8010-ff5d8013 : ACPI GPE0_BLK
-ff5d8014-ff5d8017 : ACPI GPE1_BLK
-ff5e2000-ff5e2007 : PCI Bus 0000:00
-  ff5e2000-ff5e2007 : serial
-100000000-5ffffffff : System RAM
-10040000000-100fede3fff : System RAM
-100fede4000-100ff19ffff : System RAM
-  100fede4010-100fede47f0 : EFI Memory Map
-  100fede6010-100fede6060 : Boot parameter
-100ff1a0000-100ff1fdfff : System RAM
-100ff1fe000-100ff1fffff : reserved
-100ff200000-100ff453fff : System RAM
-100ff454000-100ff800fff : System RAM
-100ff801000-100ff94dfff : System RAM
-100ff94e000-100ff977fff : System RAM
-100ff978000-100ff97bfff : System RAM
-100ff97c000-100ff97ffff : System RAM
-100ff980000-100ff981fff : System RAM
-100ff982000-100ffbfffff : System RAM
-100ffc00000-100ffe74fff : System RAM
-100ffe75000-100ffffffff : System RAM
-80000000000-80003ffffff : PCI Bus 0000:00 I/O Ports 01000000-0100ffff
-80004000000-800ffffffff : PCI Bus 0000:00
-  80080000000-8008001ffff : 0000:00:01.1
-80100000000-80103ffffff : PCI Bus 0000:01 I/O Ports 02000000-0200ffff
-80104000000-801ffffffff : PCI Bus 0000:01
-80200000000-80203ffffff : PCI Bus 0000:0a I/O Ports 03000000-0300ffff
-80204000000-802ffffffff : PCI Bus 0000:0a
-80300000000-80303ffffff : PCI Bus 0000:0f I/O Ports 04000000-0400ffff
-80304000000-803ffffffff : PCI Bus 0000:0f
-  80380000000-803ffffffff : PCI Bus 0000:10
-80400000000-80403ffffff : PCI Bus 0000:48 I/O Ports 05000000-0500ffff
-80404000000-804ffffffff : PCI Bus 0000:48
-80500000000-80503ffffff : PCI Bus 0000:49 I/O Ports 06000000-0600ffff
-80504000000-805ffffffff : PCI Bus 0000:49
-80600000000-80603ffffff : PCI Bus 0000:4e I/O Ports 07000000-0700ffff
-80604000000-806ffffffff : PCI Bus 0000:4e
-  80680000000-806ffffffff : PCI Bus 0000:4f
-    80680000000-806ffffffff : PCI Bus 0000:50
-      80680000000-806bfffffff : PCI Bus 0000:51
-        80680000000-806bfffffff : PCI Bus 0000:52
-          80680000000-8069fffffff : PCI Bus 0000:53
-          806a0000000-806bfffffff : PCI Bus 0000:54
-      806c0000000-806ffffffff : PCI Bus 0000:89
-80700000000-80703ffffff : PCI Bus 0000:c2 I/O Ports 08000000-0800ffff
-80704000000-807ffffffff : PCI Bus 0000:c2
-  80780000000-807ffffffff : PCI Bus 0000:c3
-    80780000000-80787ffffff : 0000:c3:00.0
-    80788000000-807887fffff : 0000:c3:00.0
