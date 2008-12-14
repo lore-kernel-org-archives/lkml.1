@@ -1,94 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbYLNRw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752425AbYLNR7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753005AbYLNRw5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 12:52:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbYLNRwt
+	id S1752425AbYLNR7D (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 12:59:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbYLNR6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 12:52:49 -0500
-Received: from mail-qy0-f22.google.com ([209.85.221.22]:53397 "EHLO
-	mail-qy0-f22.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbYLNRws (ORCPT
+	Sun, 14 Dec 2008 12:58:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57375 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750950AbYLNR6v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 12:52:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qpICnjcgOqyl5kx3g717LvbgwaBTiEzRswwPw2kKH41HzWzZPM8jXtd91f8S9ZOpXn
-         680/SMJP0+pR51DV4hf4l1dgarr0UaWYe+yNy4Q/LebWJLPLnSpDGWcgt6ItliD6/RpU
-         Qx+511w3B8INwoZf0KAdvggc0uElL1oHvMSP0=
-Message-ID: <c62985530812140952q7874046dl19c6f9e62cefc0b5@mail.gmail.com>
-Date: Sun, 14 Dec 2008 18:52:46 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH] tracing/ftrace: add the printk-msg-only option
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.1.10.0812141200230.20467@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 14 Dec 2008 12:58:51 -0500
+Date: Sun, 14 Dec 2008 09:58:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [RFC] remove linux/hardirq.h from asm-generic/local.h
+Message-Id: <20081214095803.9d16e85f.akpm@linux-foundation.org>
+In-Reply-To: <20081214133941.GA18035@flint.arm.linux.org.uk>
+References: <20081214133941.GA18035@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <49440A75.301@gmail.com>
-	 <alpine.DEB.1.10.0812141200230.20467@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/14 Steven Rostedt <rostedt@goodmis.org>:
->
-> On Sat, 13 Dec 2008, Frederic Weisbecker wrote:
->
->> Impact: display ftrace_printk messages "as is"
->>
->> By default, ftrace_printk() messages find their output with some other
->> informations like pid, caller, ...
->> Sometimes a developer just want to have the ftrace_printk left "as is", without
->> other information.
->>
->> This is done by providing a default-off option called printk-msg-only.
->> To enable it, just do `echo printk-msg-only > /debugfs/tracing/trace_options`
->>
->> Before the patch:
->>
->>            <...>-2739  [000]   145.692153: __might_sleep: I'm an ftrace_printk msg in __might_sleep
->>            <...>-2739  [000]   145.692155: __might_sleep: I'm another ftrace_printk msg in __might_sleep
->>
->> After the patch and the printk-msg-only option enabled:
->>
->> I'm an ftrace_printk msg in __might_sleep
->> I'm another ftrace_printk msg in __might_sleep
->>
->> Cc: Steven Rostedt <rostedt@goodmis.org>
->> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->> ---
->> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
->> index 8fd3c5a..cd4dbf2 100644
->> --- a/kernel/trace/trace.c
->> +++ b/kernel/trace/trace.c
->> @@ -287,6 +287,7 @@ static const char *trace_options[] = {
->>       "annotate",
->>       "userstacktrace",
->>       "sym-userobj",
->> +     "printk-msg-only",
->
-> Hmm, I'm a bit apprehensive about this approach. We are adding a lot of
-> options that I'm not sure will be used. Is this needed because you added a
-> ftrace printk that you want to not have the header, or because there are
-> ftrace printks that exist that you want to turn on and off. Or perhaps,
-> you want to see the header sometimes and sometimes you do not?
->
-> If it is the later two, then sure we could have this option. But if it is
-> the former, then we probably should have another type of ftrace_printk
-> that takes an option to make another event type to tell the output not to
-> print?
->
-> Oh well, I have patches in mind to clean up the output code anyway.
->
-> -- Steve
->
+On Sun, 14 Dec 2008 13:39:41 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-Actually, it's not for my needs but Ingo requested it to have only the
-message output without
-the headers while debugging with ftrace_printk.
+> While looking at reducing the amount of architecture namespace pollution
+> in the generic kernel, I found that asm/irq.h is included in the vast
+> majority of compilations on ARM (around 650 files.)
+> 
+> Since asm/irq.h includes a sub-architecture include file on ARM, this
+> causes a negative impact on the ccache's ability to re-use the build
+> results from other sub-architectures, so we have a desire to reduce
+> the dependencies on asm/irq.h.
+> 
+> It turns out that a major cause of this is the needless include of
+> linux/hardirq.h into asm-generic/local.h.  The patch below removes this
+> include, resulting in some 250 to 300 files (around half) of the kernel
+> then omitting asm/irq.h.
+> 
+> My test builds still succeed, provided two ARM files are fixed
+> (arch/arm/kernel/traps.c and arch/arm/mm/fault.c) - so there may be
+> negative impacts for this on other architectures.
+> 
+> Note that x86 does not include asm/irq.h nor linux/hardirq.h in its
+> asm/local.h, so this patch can be viewed as bringing the generic version
+> into line with the x86 version.
+
+Sure.  Includes are easy to add and hard to remove.  I'll queue it up
+and see if there's fallout.
+
+btw,
+
+> From: Russell King <rmk+lkml@arm.linux.org.uk>
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+
+that will result in the two rmk's getting separate akpm spam, different
+Author from Signer-offer, etc.  Adding an explicit From: line would
+improve things.
+
