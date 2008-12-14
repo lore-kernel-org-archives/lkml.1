@@ -1,187 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYLNBiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbYLNBjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753214AbYLNBiT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 20:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYLNBiF
+	id S1753706AbYLNBjS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 20:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYLNBjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 20:38:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54287 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751141AbYLNBiE (ORCPT
+	Sat, 13 Dec 2008 20:39:05 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51724 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbYLNBjD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 20:38:04 -0500
-Date: Sat, 13 Dec 2008 17:37:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alex Chiang <achiang@hp.com>
-cc: Matthew Wilcox <matthew@wil.cx>, Justin Chen <justin.chen@hp.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: PCI BAR mem resource allocation "regression"
-In-Reply-To: <20081214010534.GB22302@ldl.fc.hp.com>
-Message-ID: <alpine.LFD.2.00.0812131708240.3340@localhost.localdomain>
-References: <20081213000538.GC9947@ldl.fc.hp.com> <alpine.LFD.2.00.0812130901370.3340@localhost.localdomain> <20081214010534.GB22302@ldl.fc.hp.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 13 Dec 2008 20:39:03 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 14 Dec 2008 02:38:04 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: "BUG: MAX_STACK_TRACE_ENTRIES too low!" - reason for concern?
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.7ea353e737215fa2@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Is the following anything that anybody should do something about?
+
+# unloading IEEE 1394 drivers (as slightly before linux1394-2.6.git)
+
+Dec 14 01:23:24 stein ieee1394: Node removed: ID:BUS[3-00:1023]  GUID[00d0f5200800613d]
+Dec 14 01:23:24 stein ieee1394: Node removed: ID:BUS[2-00:1023]  GUID[0010dc5600fed2d4]
+Dec 14 01:23:24 stein ieee1394: Node removed: ID:BUS[1-01:1023]  GUID[0030bd051800064f]
+Dec 14 01:23:24 stein ieee1394: Node removed: ID:BUS[1-00:1023]  GUID[0012870035000f94]
+Dec 14 01:23:24 stein ieee1394: Node removed: ID:BUS[0-08:1023]  GUID[080028560000319b]
+
+# reloading IEEE 1394 drivers (as in linux1394-2.6.git)
+
+Dec 14 01:23:29 stein BUG: MAX_STACK_TRACE_ENTRIES too low!
+Dec 14 01:23:29 stein turning off the locking correctness validator.
+Dec 14 01:23:29 stein Pid: 12654, comm: modprobe Not tainted 2.6.28-rc7 #8
+Dec 14 01:23:29 stein Call Trace:
+Dec 14 01:23:29 stein [<c014293e>] save_trace+0x8e/0xa0
+Dec 14 01:23:29 stein [<c0142990>] add_lock_to_list+0x40/0xb0
+Dec 14 01:23:29 stein [<c0143c10>] check_noncircular+0x70/0xf0
+Dec 14 01:23:29 stein [<c02feb61>] klist_add_tail+0x21/0x40
+Dec 14 01:23:29 stein [<c0145bf4>] validate_chain+0x964/0xec0
+Dec 14 01:23:29 stein [<c02feb61>] klist_add_tail+0x21/0x40
+Dec 14 01:23:29 stein [<c014639a>] __lock_acquire+0x24a/0x990
+Dec 14 01:23:29 stein [<c030dfee>] mutex_lock_nested+0x1ae/0x290
+Dec 14 01:23:29 stein [<c0146b3f>] lock_acquire+0x5f/0x80
+Dec 14 01:23:29 stein [<c02feb61>] klist_add_tail+0x21/0x40
+Dec 14 01:23:29 stein [<c030f61a>] _spin_lock+0x3a/0x50
+Dec 14 01:23:29 stein [<c02feb61>] klist_add_tail+0x21/0x40
+Dec 14 01:23:29 stein [<c02feb61>] klist_add_tail+0x21/0x40
+Dec 14 01:23:29 stein [<c026445a>] device_add+0x40a/0x4b0
+Dec 14 01:23:29 stein [<f8d68806>] hpsb_alloc_host+0x1e6/0x210 [ieee1394]
+Dec 14 01:23:29 stein [<f9aae3c9>] ohci1394_pci_probe+0x59/0x7a5 [ohci1394]
+Dec 14 01:23:29 stein [<c020a406>] pci_match_device+0x16/0xc0
+Dec 14 01:23:29 stein [<c030fb75>] _spin_unlock+0x25/0x40
+Dec 14 01:23:29 stein [<c020a498>] pci_match_device+0xa8/0xc0
+Dec 14 01:23:29 stein [<c020a836>] pci_device_probe+0x56/0x80
+Dec 14 01:23:29 stein [<c0266438>] driver_probe_device+0x88/0x180
+Dec 14 01:23:29 stein [<c0144b64>] trace_hardirqs_on_caller+0xb4/0x130
+Dec 14 01:23:29 stein [<c02665b4>] __driver_attach+0x84/0x90
+Dec 14 01:23:29 stein [<c0265aec>] bus_for_each_dev+0x3c/0x60
+Dec 14 01:23:29 stein [<c0266296>] driver_attach+0x16/0x20
+Dec 14 01:23:29 stein [<c0266530>] __driver_attach+0x0/0x90
+Dec 14 01:23:29 stein [<c0265f42>] bus_add_driver+0xb2/0x230
+Dec 14 01:23:29 stein [<c020a330>] pci_device_shutdown+0x0/0x20
+Dec 14 01:23:29 stein [<c020a780>] pci_device_remove+0x0/0x40
+Dec 14 01:23:29 stein [<c026673d>] driver_register+0x4d/0x120
+Dec 14 01:23:29 stein [<c0204232>] __spin_lock_init+0x32/0x60
+Dec 14 01:23:29 stein [<f8d9b000>] ohci1394_init+0x0/0x14 [ohci1394]
+Dec 14 01:23:29 stein [<c020aa88>] __pci_register_driver+0x58/0xa0
+Dec 14 01:23:29 stein [<f8d9b000>] ohci1394_init+0x0/0x14 [ohci1394]
+Dec 14 01:23:29 stein [<c0101126>] do_one_initcall+0x36/0x1b0
+Dec 14 01:23:29 stein [<c0144b64>] trace_hardirqs_on_caller+0xb4/0x130
+Dec 14 01:23:29 stein [<c014f4d4>] load_module+0x1624/0x1760
+Dec 14 01:23:29 stein [<c01383e0>] autoremove_wake_function+0x0/0x50
+Dec 14 01:23:29 stein [<f8d66260>] hpsb_bus_reset+0x0/0x110 [ieee1394]
+Dec 14 01:23:29 stein [<c030db79>] mutex_lock_interruptible_nested+0x1c9/0x330
+Dec 14 01:23:29 stein [<c030dd99>] __mutex_unlock_slowpath+0xb9/0x150
+Dec 14 01:23:29 stein [<c014f699>] sys_init_module+0x89/0x1b0
+Dec 14 01:23:29 stein [<c0144b64>] trace_hardirqs_on_caller+0xb4/0x130
+Dec 14 01:23:29 stein [<c01ffff4>] trace_hardirqs_on_thunk+0xc/0x10
+Dec 14 01:23:29 stein [<c0103349>] sysenter_do_call+0x12/0x35
+Dec 14 01:23:30 stein ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[18]  MMIO=[fd8ff000-fd8ff7ff]  Max Packet=[4096]  IR/IT contexts=[4/8]
+Dec 14 01:23:30 stein ohci1394: fw-host1: OHCI-1394 1.1 (PCI): IRQ=[18]  MMIO=[fbffc000-fbffc7ff]  Max Packet=[2048]  IR/IT contexts=[4/8]
+Dec 14 01:23:30 stein ohci1394: fw-host2: OHCI-1394 1.1 (PCI): IRQ=[20]  MMIO=[fbff9000-fbff97ff]  Max Packet=[2048]  IR/IT contexts=[4/8]
+Dec 14 01:23:30 stein ohci1394: fw-host3: OHCI-1394 1.0 (PCI): IRQ=[17]  MMIO=[f0000000-f00007ff]  Max Packet=[1024]  IR/IT contexts=[4/4]
+Dec 14 01:23:31 stein ieee1394: The root node is not cycle master capable; selecting a new root node and resetting...
+Dec 14 01:23:31 stein ieee1394: The root node is not cycle master capable; selecting a new root node and resetting...
+Dec 14 01:23:31 stein ieee1394: Host added: ID:BUS[2-00:1023]  GUID[0010dc5600fed2d4]
+Dec 14 01:23:31 stein ieee1394: Host added: ID:BUS[0-08:1023]  GUID[080028560000319b]
+Dec 14 01:23:31 stein ieee1394: Host added: ID:BUS[3-00:1023]  GUID[00d0f5200800613d]
+Dec 14 01:23:31 stein ieee1394: Node added: ID:BUS[1-00:1023]  GUID[0012870035000f94]
+Dec 14 01:23:31 stein ieee1394: Host added: ID:BUS[1-01:1023]  GUID[0030bd051800064f]
+Dec 14 01:23:31 stein input: FireDTV remote control as /devices/pci0000:00/0000:00:1e.0/0000:05:00.4/fw-host1/input/input7
+Dec 14 01:23:31 stein DVB: registering new adapter (FireDTV T/CI)
+Dec 14 01:23:31 stein DVB: registering adapter 0 frontend 0 (FireDTV T/CI)...
+Dec 14 01:23:31 stein firedtv 0012870035000f94-0: Conditional Access Module not enabled
 
 
-On Sat, 13 Dec 2008, Alex Chiang wrote:
-> 
-> Yeah, I knew I forgot to send the contents of /proc/iomem. I'll
-> include them below.
+Thanks,
+-- 
+Stefan Richter
+-=====-==--- ==-- -===-
+http://arcgraph.de/sr/
 
-Ok, this definitely shows that the commit in question generates a bogus 
-resource tree:
-
-> # (a) mainline /proc/iomem before hotplug
-...
-> e0000000-efffffff : PCI Bus 0000:50
->   e0000000-efffffff : PCI Bus 0000:4f
->     e0000000-efffffff : PCI Bus 0000:4e
->       e0000000-e7ffffff : PCI Bus 0000:52
->         e0000000-e7ffffff : PCI Bus 0000:51
-
-This is _not_ the correct nesting. PCI bus 50 is inside 4f, which is 
-inside 4e. Yet the resource tree has these reversed, and shows 4e inside 
-4f inside 50 (and 51 inside 52). And yes, the reversal happens exactly 
-when the size of the inner resource has the same size as the size of the 
-outer one - and then the inner one has been inserted "too high" in the 
-resource tree.
-
-So this is very clearly the direct (and intended, but incorrect) result of 
-that commit d33b6fba2c4350651f3f61ff2ab858a2f116e9a4. Reverting it (using 
-my two-liner rather than your version, though) is almost certainly the 
-right thing.
-
-We have the exact same issue here:
-
-> 80604000000-806ffffffff : PCI Bus 0000:4e
->   80680000000-806ffffffff : PCI Bus 0000:50
->     80680000000-806ffffffff : PCI Bus 0000:4f
->       80680000000-806bfffffff : PCI Bus 0000:52
->         80680000000-806bfffffff : PCI Bus 0000:51
->           80680000000-8069fffffff : PCI Bus 0000:53
->           806a0000000-806bfffffff : PCI Bus 0000:54
-
-Again, the nesting is wrong, adn for the exact same reason, even if the 
-pattern is slightly different (ie noe bus #4e is in the right spot in the 
-hierarchy, because it has a different size).
-
-Here's the relevant parts of the lspci that show the bus hierarchy 
-(very aggressively snipped from your huge lspci output):
-
-> 4e:00.0 PCI bridge: Hewlett-Packard Company PCIe Root Port (prog-if 00 [Normal decode])
-> 	Bus: primary=4e, secondary=4f, subordinate=c1, sec-latency=0
-> 
-> 4f:00.0 PCI bridge: Integrated Device Technology, Inc. Unknown device 801c (rev 04) (prog-if 00 [Normal decode])
-> 	Bus: primary=4f, secondary=50, subordinate=c1, sec-latency=0
-> 
-> 50:00.0 PCI bridge: Integrated Device Technology, Inc. Unknown device 801c (rev 04) (prog-if 00 [Normal decode])
-> 	Bus: primary=50, secondary=51, subordinate=88, sec-latency=0
-> 
-> 50:01.0 PCI bridge: Integrated Device Technology, Inc. Unknown device 801c (rev 04) (prog-if 00 [Normal decode])
-> 	Bus: primary=50, secondary=89, subordinate=c1, sec-latency=0
-> 
-> 51:00.0 PCI bridge: Integrated Device Technology, Inc. Unknown device 8018 (rev 0e) (prog-if 00 [Normal decode])
-> 	Bus: primary=51, secondary=52, subordinate=54, sec-latency=0
-> 
-> 52:02.0 PCI bridge: Integrated Device Technology, Inc. Unknown device 8018 (rev 0e) (prog-if 00 [Normal decode])
-> 	Bus: primary=52, secondary=53, subordinate=53, sec-latency=0
-
-ie the bus number allocation really is that bus #53 is inside #52, which 
-is inside #51, which is inside #50, inside #4f, inside #4e.. 
-
-Your machine is an insane mess of PCI bridges, which is probably why you 
-see this, while most other people probably never will. But I bet it 
-happens on other machines, and I also bet it generally doesn't really 
-result in any problems.
-
-Because in practice, the fact that the resource tree has been nested the 
-wrong way around probably almost never actually matters: especially as it 
-happens only when the nesting resources are the same size, which also 
-means that there can be no _other_ resources that would fit inside the 
-true outer one.
-
-So even if lots of other people see some of the same issues, it doesn't 
-cause any other symptoms, and that in turn explains why we've had this 
-going on for such a long time (since 2.6.16 or whatever).
-
-> # (e) revert /proc/iomem before hotplug
-...
-> e0000000-efffffff : PCI Bus 0000:4e
->   e0000000-efffffff : PCI Bus 0000:4f
->     e0000000-efffffff : PCI Bus 0000:50
->       e0000000-e7ffffff : PCI Bus 0000:51
->         e0000000-e7ffffff : PCI Bus 0000:52
->           e0000000-e3ffffff : PCI Bus 0000:54
->           e0000000-e03fffff : 0000:54:00.1
->           e0400000-e07fffff : 0000:54:00.0
->           e0800000-e081ffff : 0000:54:00.1
->           e0820000-e083ffff : 0000:54:00.0
->           e4000000-e7ffffff : PCI Bus 0000:53
->           e4000000-e43fffff : 0000:53:00.1
->           e4400000-e47fffff : 0000:53:00.0
->           e4800000-e481ffff : 0000:53:00.1
->           e4820000-e483ffff : 0000:53:00.0
->       e8000000-efffffff : PCI Bus 0000:89
->         e8000000-e80fffff : 0000:89:00.0
->           e8000000-e80fffff : cciss
->         e8100000-e813ffff : 0000:89:00.0
->         e8140000-e8140fff : 0000:89:00.0
->           e8140000-e8140fff : cciss
-...
-> 80604000000-806ffffffff : PCI Bus 0000:4e
->   80680000000-806ffffffff : PCI Bus 0000:4f
->     80680000000-806ffffffff : PCI Bus 0000:50
->       80680000000-806bfffffff : PCI Bus 0000:51
->         80680000000-806bfffffff : PCI Bus 0000:52
->           80680000000-8069fffffff : PCI Bus 0000:53
->           806a0000000-806bfffffff : PCI Bus 0000:54
->       806c0000000-806ffffffff : PCI Bus 0000:89
-
-And yes, now the resources nest the right way, and match the actual 
-physical topology of the bus.
-
-So yes, that commit really is causing problems. At the same time, I would 
-worry about even the trivial two-liner removal before the release of 
-2.6.28, because while we clearly need to do it, equally clearly this 
-doesn't seem to be a _huge_ problem, and I worry that the brokenness of 
-insert_resource() might have other subtler results.
-
-So my inclination would be to prepare the appended patch for the 2.6.29 
-merge window, but not commit it yet. At least as long as you can't 
-actually show any real devices misbehaving (ie the resource tree is 
-clearly not right, but since I suspect that everything _works_ despite 
-that, this is not a high-priority issue and the unlikely but potential 
-pain is thus much bigger than the negligible gain of fixing it at this 
-point in the 2.6.28 release cycle).
-
-Oh, and it would still be good to know why Matthew wanted it this way to 
-begin with.
-
-Jesse? Matthew?
-
-			Linus
-
----
- kernel/resource.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 4337063..a464082 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -381,8 +381,6 @@ static struct resource * __insert_resource(struct resource *parent, struct resou
- 
- 		if ((first->start > new->start) || (first->end < new->end))
- 			break;
--		if ((first->start == new->start) && (first->end == new->end))
--			break;
- 	}
- 
- 	for (next = first; ; next = next->sibling) {
