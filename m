@@ -1,95 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYLNAfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753377AbYLNAi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753214AbYLNAfd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Dec 2008 19:35:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYLNAfV
+	id S1753377AbYLNAi3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Dec 2008 19:38:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYLNAiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 19:35:21 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:3056 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751879AbYLNAfT (ORCPT
+	Sat, 13 Dec 2008 19:38:22 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51170 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751879AbYLNAiW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 19:35:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=TNQw/+76DZaMNnpRbs0TpzV7vk2Q6TloOc6pV6NVrwhVEombu6fR8BchPLS0GWF4Tu
-         TTh4eDOILXkj+ZyAlWYx81udje//EA263+VlpPOUOr5QpNnGO2aPHEP/i9PVRxP1lxat
-         pcccQS/tu+I3EfiJb83u6w8xeTmMPwaI8Pzwo=
-Message-ID: <c62985530812131635k362fc8d2q3c65e8284141f491@mail.gmail.com>
-Date: Sun, 14 Dec 2008 01:35:18 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Vladislav Bolkhovitin" <vst@vlnb.net>
-Subject: Re: [PATCH][RFC 2/23]: SCST core
-Cc: "Steven Rostedt" <srostedt@redhat.com>, "Sam Ravnborg" <sam@ravnborg.org>,
-       linux-scsi@vger.kernel.org,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       "Mike Christie" <michaelc@cs.wisc.edu>, "Jeff Garzik" <jeff@garzik.org>,
-       "Boaz Harrosh" <bharrosh@panasas.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       "Bart Van Assche" <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <4943CAAB.4050008@vlnb.net>
+	Sat, 13 Dec 2008 19:38:22 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4944557A.7060902@s5r6.in-berlin.de>
+Date: Sun, 14 Dec 2008 01:38:18 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.18) Gecko/20081116 SeaMonkey/1.1.13
 MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/4] ieee1394: mark bus_info_data was a __be32 array
+References: <1229209354.11257.11.camel@brick>
+In-Reply-To: <1229209354.11257.11.camel@brick>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <494009D7.4020602@vlnb.net> <49400ACD.3070502@vlnb.net>
-	 <20081210191213.GA15273@uranus.ravnborg.org>
-	 <49414DBE.6070801@vlnb.net>
-	 <20081211210917.GB27010@uranus.ravnborg.org>
-	 <4942BA85.3070408@vlnb.net>
-	 <1229118607.24995.18.camel@localhost.localdomain>
-	 <4943CAAB.4050008@vlnb.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/13 Vladislav Bolkhovitin <vst@vlnb.net>:
-> Also (maybe I simply miss something) looks like ftrace doesn't trace exit
-> from functions, only entrance to them. Is it true? Is it possibly to log
-> exit from functions as well?
+Harvey Harrison wrote:
+> Two access functions get_max_rom and set_hw_config_rom are
+> changed to take __be32 as well.  Only bus_info_data was
+> ever passed in so this is OK.  All other uses of bus_info_data
+> treated it as a be32 value already.
 
+I pushed the following out to linux1394-2.6.git:
 
-That's true with 2.6.28, the function tracer traces on function entries only.
-But there is an add-on on ftrace which let one to trace on entry and
-on return, the function
-graph tracer. This tracer uses this facility to output a graph of
-function calls and measure
-the time elapsed during each function call.
-You can also register two custom handlers to do some things you need
-on entry and on return.
+Harvey Harrison (6):
+      ieee1394: pcilynx: trivial endian annotation
+      ieee1394: replace CSR_SET_BUS_INFO_GENERATION macro
+      ieee1394: mark bus_info_data as a __be32 array
+      ieee1394: eth1394: trivial sparse annotations
+      ieee1394: dv1394 annotate frame input/output structs as little endian
+      ieee1934: dv1394: interrupt enabling/disabling broken on big-endian
 
+Note, I dropped two hunks from "mark bus_info_data..." due to another
+change which I posted only a few hours ago.  Please check:
+http://git.kernel.org/?p=linux/kernel/git/ieee1394/linux1394-2.6.git;a=commitdiff;h=d88b81b772c6db76eb3b9f9564034f55d0dcdd09
+This interfered with your patch:
+http://git.kernel.org/?p=linux/kernel/git/ieee1394/linux1394-2.6.git;a=commitdiff;h=6b09b72cbdcba8da71b85651eb37e0156aa65def
 
-> All the above functionality is almost what we need. The only thing left,
-> which I forgot to mention, is possibility to log also functions return value
-> on exit. This is what TRACE_EXIT_RES() in SCST does. Is it possible to add
-> those?
-
-
-I want to add that on the function graph tracer. That can be done
-pretty easily. The only
-problem comes with the type of the return value. Would this tracer be
-supposed to always
-return a 64 bits value regardless of the real typ of the value? There
-would be some pointless bytes
-on most return values. I don't know how to proceed for this problem.
-
-> And one more question. Is it possible to redirect ftrace tracing to serial
-> console or any other console (netconsole?)? It can be helpful to investigate
-> hard lockups in IRQ or with IRQs disabled.
->
-> Thanks!
-> Vlad
->
-
-I would find it useful too. I thought about something like using
-early_printk or something like
-that...I don't know. That would be good to redirect the output to the
-tty device of the user choice.
+I pulled your patches into my master branch but not yet into my for-next
+branch (awaiting possible feedback on what I enqueued before your patches).
+-- 
+Stefan Richter
+-=====-==--- ==-- -===-
+http://arcgraph.de/sr/
