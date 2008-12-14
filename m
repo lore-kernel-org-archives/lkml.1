@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYLNPfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbYLNPvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbYLNPfs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 10:35:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbYLNPfi
+	id S1754337AbYLNPvR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 10:51:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYLNPu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 10:35:38 -0500
-Received: from rv-out-0506.google.com ([209.85.198.228]:53579 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753340AbYLNPfh (ORCPT
+	Sun, 14 Dec 2008 10:50:59 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:3474 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752677AbYLNPu6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 10:35:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=pvrCNCjWmj1qTZZy5Ws9bg9xPbC722IiPwqBjErzdeIFSB/5SQ1752/FFVyjoZgl4F
-         piP0XjCgHdicZrqEJaTvvucnob6IRAk/oWTRS+GTTmObUUdxkvYL7ynfLAaHBVh7+RjN
-         rE51MMvOZx5GqB7fZ5M7UZ3Yv3CZ9R5tSC8K0=
-References: <20081214031659.4b700a2d@liberty.rlwhome.lan> <1229263715.330.29.camel@pc.interlinx.bc.ca>
-Message-Id: <9695C60B-CC91-41B3-87BB-D687E764BE30@gmail.com>
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-To: "Brian J. Murrell" <brian@interlinx.bc.ca>
-In-Reply-To: <1229263715.330.29.camel@pc.interlinx.bc.ca>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (5G77)
-Mime-Version: 1.0 (iPhone Mail 5G77)
-Subject: Re: suspend/resume fails on second attempt in LNXVIDEO:00
-Date: Sun, 14 Dec 2008 07:35:21 -0800
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Sun, 14 Dec 2008 10:50:58 -0500
+Date: Sun, 14 Dec 2008 10:50:56 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Keith Packard <keithp@keithp.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: USB interrupt handler routine
+In-Reply-To: <20081214044112.GA28733@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0812141041350.22595-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is there quite possibly another
-Graphics module you can plug-in,
-Just to see
+On Sat, 13 Dec 2008, Greg KH wrote:
 
-justin P. Mattock
+> <added linux-usb list, that's the proper place for it...)
+> 
+> On Thu, Dec 11, 2008 at 08:35:37PM -0800, Keith Packard wrote:
+> > We recently made a patch in the Intel DRM driver:
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b60678a75d44fa9d5969f79781bd856ad5858609
+> > 
+> > This switches from non-MSI to MSI-mode.
+> > 
+> > It "should" have had no effect, but our concern is that what we're
+> > really seeing is interrupt sharing troubles. We've had several people
+> > say that they got an interrupt flood when plugging in a USB stick or
+> > external disk.
 
+Which drivers are using the IRQ that gets flooded?  Can we see a dmesg 
+log from a kernel built with CONFIG_USB_DEBUG enabled?
 
+> > Switching the graphics driver to MSI mode "cures" the
+> > bug, but that sure seems like a work-around rather than a bug fix to me.
+> > 
+> > When our driver is active, it can generate a lot of interrupts,
+> > potentially thousands per second. Is it possible that the UHCI or EHCI
+> > drivers could get confused if checking for interrupt status this often?
 
-On Dec 14, 2008, at 6:08 AM, "Brian J. Murrell"  
-<brian@interlinx.bc.ca> wrote:
+I don't think so.
 
-> On Sun, 2008-12-14 at 03:16 -0600, Robby Workman wrote:
->> In linux.kernel, Brian J. Murrell wrote:
->>> I'm trying to debug a resume problem on a compaq presario C700  
->>> laptop
->>> on the Ubuntu 2.6.24-22-generic kernel.
->>>
->>> SNIPPED
->>>
->>> These symptoms mirror a lot of other reports with this machine in  
->>> that
->>> the first suspend/resume cycle works but a second attempts
->>> (apparently) suspends fine but fails on resume.  The backlight on  
->>> the
->>> video does not come back and neither does the wireless connection,  
->>> so
->>> I'm not positive the problems are purely video related.
->>>
->>> How can I proceed from here to further debug what kind of  
->>> workarounds
->>> or solutions I might be able to use to get reliable suspend/resume
->>> functionality?
->>
->>
->> Assuming Ubuntu uses pm-utils for suspend/hibernate operations,  
->> then I
->> suspect you're needing this patch - the symptoms fit (suspend works
->> the first time, but fails thereafter), especially if a reboot causes
->> suspend to work fine again the first time...
->>
->> http://cgit.freedesktop.org/pm-utils/commit/?id=6c9f2959a36e608e4d1f71230a9eaaa77940c54e
->
-> I wish (and was hoping) it was that simple.  The problem is the nature
-> of that patch really has no effect on my system because $acpi_flag  
-> == 0
-> when the sysctl on line 147 is applied.  Presumably this patch has  
-> more
-> effect if $acpi_flag != 0, by nature of either $QUIRK_S3_BIOS or
-> $QUIRK_S3_MODE being == true, neither of which is in my case.  Maybe  
-> one
-> or both should be.  I dunno.  I'm not sure how these "video quirks"
-> work.
->
-> b.
->
+> > Eric noted that the USB driver
+
+Which USB driver?  Does this refer to usb_hcd_irq()?
+
+> > appears to not check and ACK interrupt
+> > status unconditionally, preferring to check the software state
+> > beforehand. I'm wondering if this may open up a potential race between
+> > hardware state change and ISR bit setting.
+
+Not if the drivers are written correctly.  As far as I know, they are.
+
+Alan Stern
+
