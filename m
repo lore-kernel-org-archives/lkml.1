@@ -1,67 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbYLNXCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbYLNXEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858AbYLNXCE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 18:02:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYLNXBw
+	id S1755053AbYLNXEU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 18:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbYLNXEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 18:01:52 -0500
-Received: from mx28.mail.ru ([194.67.23.67]:10752 "EHLO mx28.mail.ru"
+	Sun, 14 Dec 2008 18:04:11 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53630 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750983AbYLNXBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 18:01:52 -0500
-Date: Mon, 15 Dec 2008 00:12:47 +0300
-From: Evgeniy Dushistov <dushistov@mail.ru>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Boaz Harrosh <bharrosh@panasas.com>
-Subject: Re: [PATCH, v2] ufs: ensure link targets are NUL-terminated
-Message-ID: <20081214211246.GA7743@rain>
-Mail-Followup-To: Duane Griffin <duaneg@dghda.com>,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	Boaz Harrosh <bharrosh@panasas.com>
-References: <1229022995-9898-4-git-send-email-duaneg@dghda.com> <1229022995-9898-5-git-send-email-duaneg@dghda.com> <1229022995-9898-6-git-send-email-duaneg@dghda.com> <1229022995-9898-7-git-send-email-duaneg@dghda.com> <1229022995-9898-8-git-send-email-duaneg@dghda.com> <1229022995-9898-9-git-send-email-duaneg@dghda.com> <1229022995-9898-10-git-send-email-duaneg@dghda.com> <1229022995-9898-11-git-send-email-duaneg@dghda.com> <1229022995-9898-12-git-send-email-duaneg@dghda.com> <20081211223608.GE18665@dastardly.home.dghda.com>
-MIME-Version: 1.0
+	id S1751083AbYLNXEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 18:04:10 -0500
+Date: Mon, 15 Dec 2008 00:04:07 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>, bcrl@kvack.org,
+       list-linux-mm@kvack.org
+Subject: Re: [rfc][patch] SLQB slab allocator
+Message-ID: <20081214230407.GB7318@wotan.suse.de>
+References: <20081212002518.GH8294@wotan.suse.de> <Pine.LNX.4.64.0812122013390.15781@quilx.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081211223608.GE18665@dastardly.home.dghda.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Spam: Not detected
-X-Mras: OK
+In-Reply-To: <Pine.LNX.4.64.0812122013390.15781@quilx.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 10:36:08PM +0000, Duane Griffin wrote:
-> Ensure link targets are NUL-terminated, even if corrupted on-disk.
+On Fri, Dec 12, 2008 at 08:34:35PM -0600, Christoph Lameter wrote:
+> On Fri, 12 Dec 2008, Nick Piggin wrote:
 > 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-> ---
+> > + * SLQB : A slab allocator with object queues.
+> > + *
+> > + * (C) 2008 Nick Piggin <npiggin@suse.de>
 > 
-> V2: terminate when the link is read instead of every time it is
-> followed, as suggested by Dave Kleikamp.
-> 
-> diff --git a/fs/ufs/inode.c b/fs/ufs/inode.c
-> index 39f8778..a22f64d 100644
-> --- a/fs/ufs/inode.c
-> +++ b/fs/ufs/inode.c
-> @@ -606,9 +606,11 @@ static void ufs_set_inode_ops(struct inode *inode)
->  		inode->i_fop = &ufs_dir_operations;
->  		inode->i_mapping->a_ops = &ufs_aops;
->  	} else if (S_ISLNK(inode->i_mode)) {
-> -		if (!inode->i_blocks)
-> +		if (!inode->i_blocks) {
-> +			char *link = UFS_I(inode)->i_u1.i_symlink;
->  			inode->i_op = &ufs_fast_symlink_inode_operations;
-> -		else {
-> +			link[inode->i_size] = '\0';
-> +		} else {
->  			inode->i_op = &page_symlink_inode_operations;
->  			inode->i_mapping->a_ops = &ufs_aops;
->  		}
+> My copyright notice is missing. Most of this is directly copied from SLUB.
 
-if we talk about corrupted file system, may be also ensure
-that inode->i_size <= sizeof(i_u1)-1 before write '\0' to it.
+I did definitely attribute sources.... ah, you noticed further down.
 
--- 
-/Evgeniy
+
+> And I am not CCed? What should I be thinking?
+
+Linux-mm is cc'ed and you're subscribed, right? linux-mm has good S/N,
+so I get lazy with cc lists if my audience is subscribed there ;) No
+ill intention.
+
+
+> > +/*
+> > + * SLQB: A slab allocator that focuses on per-CPU scaling, and good performance
+> > + * with order-0 allocations. Fastpaths emphasis is placed on local allocaiton
+> > + * and freeing, but with a secondary goal of good remote freeing (freeing on
+> > + * another CPU from that which allocated).
+> 
+> Good idea. I like new ideas based on SLUB.
+
+Well, thanks. The core allocator is more based on SLAB, but with linked
+list of objects from SLOB, rather than arrays. But whatever; it is what
+it is.
+
+Actually, the boot-time debugging idea is from SLUB, which is useful. 
+ 
+
+> > + *
+> > + * Using ideas and code from mm/slab.c, mm/slob.c, and mm/slub.c.
+> 
+> Thats not right. The code was copied from mm/slub.c and then modified.
+
+I definitely took ideas and code from mm/slab.c, and ideas if not
+code from mm/slob.c too so I need to attribute them as well.
+
+ 
+> It seems that the SLUB skeleton is very useful. Maybe we could abstract
+> the common code out in order to make more creative variants possible in
+> the future?
+
+I think it wasn't hard to take the code and change it.
+
+ 
+> > +/*
+> > + * Issues still to be resolved:
+> > + *
+> > + * - Support PAGE_ALLOC_DEBUG. Should be easy to do.
+> > + *
+> > + * - Variable sizing of the per node arrays
+> > + */
+> 
+> These are outdated SLUB comments....
+
+Thanks, probably quite a bit of SLUB cruft  left ;)
+
+ 
+> > +	/* XXX: might disobey node parameter here */
+> > +	if (!NUMA_BUILD || likely(slqb_page_to_nid(page) == numa_node_id())) {
+> 
+> You can only decide not to obey if __GFP_THISNODE is not set.
+
+I think that's outdated. Basically I think I was previously caching
+numa_node_id across the allocation. The code used to be structured
+differently...
+
+ 
+> > +static __always_inline void *__slab_alloc(struct kmem_cache *s,
+> > +		gfp_t gfpflags, int node)
+> > +{
+> > +	void *object;
+> > +	struct kmem_cache_cpu *c;
+> > +	struct kmem_cache_list *l;
+> > +
+> > +again:
+> > +#ifdef CONFIG_NUMA
+> > +	if (unlikely(node != -1) && unlikely(node != numa_node_id())) {
+> > +		object = __remote_slab_alloc(s, node);
+> > +		if (unlikely(!object))
+> > +			goto alloc_new;
+> > +		return object;
+> > +	}
+> > +#endif
+> 
+> Does this mean that SLQB is less efficient than SLUB for off node
+> allocations? SLUB can do off node allocations from the per cpu objects. It
+> does not need to make the distinction for allocation.
+
+I haven't measured them, but that could be the case. However I haven't
+found a workload that does a lot of off-node allocations (short lived
+allocations are better on-node, and long lived ones are not going to
+be so numerous).
+
+It's easy to suck up several objects at a time and put them onto a
+remote-node list on the per-cpu structure, but I don't want to prematurely
+optimise.
+
+
+> > +	l = &c->list;
+> > +	object = __cache_list_get_object(s, l);
+> 
+> Hmmm... __cache_list_get_object() is quite a bunch of heavy processing.
+> This is all inline?
+
+Yes. I've looked at the fastpath assembly and it's pretty good. gcc
+can reorder things so the effective icache footprint is pretty small.
+That becomes harder if things are out of line.
+
+
+> > +static __always_inline void __slab_free(struct kmem_cache *s, struct slqb_page *page, void *object)
+> > +{
+> > +	struct kmem_cache_cpu *c;
+> > +	struct kmem_cache_list *l;
+> > +	int thiscpu = smp_processor_id();
+> > +
+> > +	__count_slqb_event(SLQB_FREE);
+> > +
+> > +	c = get_cpu_slab(s, thiscpu);
+> > +	l = &c->list;
+> > +
+> > +	if (!NUMA_BUILD || !numa_platform ||
+> > +			likely(slqb_page_to_nid(page) == numa_node_id())) {
+> 
+> SLUB does not need a node check. The page struct pointer comparison is
+> enough.
+> 
+> This also means that SLQB cannot do fast frees to remote node objects that
+> were just allocated. per cpu queue is bound to the local numa node which
+> is quite bad for memoryless nodes. In that case you always need to do
+> remote allocs.
+
+I'm not very worried about that case yet. As I said, it's not hard
+to add something for it, but I don't know if it is worthwhile yet.
+
+ 
+> In general I am a bit concerned that you kept the linked object list. You
+> may be able to do much better by creating arrays of object pointers. That
+> way you can allocate and free multiple objects by only accessing the
+> cacheline that contains the object pointers. Only works if the objects are
+> not immediately writen to before and after free.
+
+That's more complexity, though. Given that objects are often hot when
+they are freed, and need to be touched after they are allocated anyway,
+the simple queue seems to be reasonable.
+
+ 
+> AFAICT this is the special case that matters in terms of the database
+> test you are trying to improve. The case there is likely  the result
+> of bad cache unfriendly programming. You may actually improve the
+> benchmark more if the cachelines would be kept hot there in the right
+> way.
+
+This case does improve the database score by around 1.5-2%, yes. I
+don't know what you mean exactly, though. What case, and what do you
+mean by bad cache unfriendly programming? I would be very interested
+in improving that benchmark of course, but I don't know what you
+suggest by keeping cachelines hot in the right way?
+
+Thanks,
+Nick
 
