@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752228AbYLNTJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbYLNTNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752228AbYLNTJw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 14:09:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbYLNTJm
+	id S1752524AbYLNTNv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 14:13:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYLNTNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 14:09:42 -0500
-Received: from kroah.org ([198.145.64.141]:47041 "EHLO coco.kroah.org"
+	Sun, 14 Dec 2008 14:13:43 -0500
+Received: from kroah.org ([198.145.64.141]:38727 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750910AbYLNTJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 14:09:42 -0500
-Date: Sun, 14 Dec 2008 11:08:29 -0800
+	id S1751241AbYLNTNn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 14:13:43 -0500
+Date: Sun, 14 Dec 2008 11:12:33 -0800
 From: Greg KH <greg@kroah.com>
-To: Holger Hoffstaette <holger@wizards.de>
+To: Coly Li <coly.li@suse.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.27.9
-Message-ID: <20081214190829.GA31396@kroah.com>
-References: <20081214001029.GA915@kroah.com> <pan.2008.12.14.08.06.53.334750@wizards.de>
+Subject: Re: [PATCH] avoid unnecessary assignment in lookup_bdev()
+Message-ID: <20081214191233.GB31396@kroah.com>
+References: <49455170.6080307@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <pan.2008.12.14.08.06.53.334750@wizards.de>
+In-Reply-To: <49455170.6080307@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 14, 2008 at 09:06:53AM +0100, Holger Hoffstaette wrote:
-> On Sat, 13 Dec 2008 16:10:29 -0800, Greg KH wrote:
+On Mon, Dec 15, 2008 at 02:33:20AM +0800, Coly Li wrote:
+> In normal cases, lookup_bdev() should return successfully, therefore it's not a good idea to always
+> assign error values before checking truth/false conditions. This patch modifies code to only assign
+> error value in necessary false conditions.
 > 
-> > We (the -stable team) are announcing the release of the 2.6.27.9 kernel.
-> 
-> This is still missing the fix for the regression from .7 to .8 that I
-> reported here:
-> http://lkml.indiana.edu/hypermail/linux/kernel/0812.1/00006.html
-> 
-> The fix is here:
-> http://lkml.indiana.edu/hypermail/linux/kernel/0812.1/00998.html
-> 
-> Been running that on top of -stable and it does fix the problem. It also
-> seems to work for other people. Is there some particular reason why this
-> was not included? I tested and cc'ed stable@ for a reason. :(
+> If I missed something, please correct me.
 
-The patch is not in Linus's tree yet, right?  That is a requirement to
-go into the -stable releases.
+I don't understand, is there some way that the current code could
+incorrectly return an error value?
 
-Also, it is not exactly obvious why a change for idr is needed.  The
-"new" drm code in Fedora releases is understandable, but that is not
-code that is in the main 2.6.27-stable tree, right?
-
-Also, please cc: the stable developers if you want them to pay attention
-to messages like this.
+Is your change somehow faster?  I don't think this is on any fast-path
+code, right?
 
 thanks,
 
