@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbYLNWaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbYLNWah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754816AbYLNWaG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 17:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYLNW3w
+	id S1755139AbYLNWah (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 17:30:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYLNWaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 17:29:52 -0500
-Received: from mail-gx0-f12.google.com ([209.85.217.12]:47946 "EHLO
-	mail-gx0-f12.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751889AbYLNW3v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 17:29:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=kioAYSOzVUXmr0+wfitIsIqmfTMEwFrxxpToAkeD9rwFHktg7LegWyCekQPfyzotCU
-         hyyFXDOn86RLRPm3PkUxd1d/N/zXQPwP/I5s64QVoY4gWsGMP7BzD6SnTwEw+nDLgoLf
-         ApVKNxARx5QDeb7LYfPDRbyAcxT2yBQyVUEFM=
-Message-ID: <494588DA.6040801@gmail.com>
-Date: Sun, 14 Dec 2008 14:29:46 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
-MIME-Version: 1.0
-To: "Brian J. Murrell" <brian@interlinx.bc.ca>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: suspend/resume fails on second attempt in LNXVIDEO:00
-References: <gi247o$iog$1@ger.gmane.org> <4944AAFD.1060105@gmail.com> <gi3rsp$iog$2@ger.gmane.org>
-In-Reply-To: <gi3rsp$iog$2@ger.gmane.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 14 Dec 2008 17:30:01 -0500
+Received: from smtp2.ono.com ([62.42.230.20]:9900 "EHLO resmaa12.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753662AbYLNWaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 17:30:00 -0500
+Date: Sun, 14 Dec 2008 23:29:33 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Bugs on aspire one A150
+Message-ID: <20081214232933.5dcf5331@werewolf.home>
+In-Reply-To: <1229174138.24940.9.camel@maxim-laptop>
+References: <491506DB.1070000@gmail.com>
+	<1229174138.24940.9.camel@maxim-laptop>
+X-Mailer: Claws Mail 3.6.1cvs75 (GTK+ 2.14.5; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian J. Murrell wrote:
-> On Sat, 13 Dec 2008 22:43:09 -0800, Justin P. Mattock wrote:
->
->   
->> not too sure what the situation is for you, but if  you're deciding to
->> stay with 2.6.24.* then look through the commits to see if this has been
->> resolved. if not then load the latest git to see if this has been
->> committed for the fix.
->>     
->
-> Well, I've just built and installed 2.6.28-rc8 and the problem persists.
->
->   
->> if it's just debugging then hmm.. maybe ssh (but
->> you don't have intranet upon wakeup);
->>     
->
-> Right.  It's for all intents and purposes "dead" on resume.  Even 
-> CAPSLOCK on the console does not active the LED.
->
->   
->> maybe usb or some other hard wired
->> mechanism?
->>     
->
-> I'd hoped to do serial console, but sadly, this laptop, like many today 
-> doesn't have even a single serial port.  I had considered a USB serial 
-> and making it console (if even possible) but now I am just spending more 
-> money trying to get this stupid laptop working.  ~sigh~
->
-> b.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->   
- From over here with a macbook(no serial port as well)
-making debugging intricate to the extent.
-With running radeon it's weired,
- if I do an echo mem > /sys/power/state
-upon wakeup I'll have a black screen,(intranet works)
-but if I do a  s2ram "poof" like magic it works.
-if using (sorry for the word) fglrx, echo mem
-works. haven't tried s2ram with that though.
-Aside note glad to see you're running the latest kernel.
-for the past week or so there was posts about suspend
-but haven't kept up(was busy looking at SELinux refpolicy UBAC)
-maybe there was some talks or even some patches submitted
-for what you're dealing with?
+On Sat, 13 Dec 2008 15:15:38 +0200, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 
-regards;
+> 
+> So, big thanks for everything.
+> 
+> Now aspire one linux support is very close to perfect,
+> (only problem left is that wireless is limited to 18Mbits/s raw rate,
+> but at some point I or developers of ath5k will get to the bottom of
+> this)
+> 
 
-Justin P. Mattock
+I have seen ine gone to 24 and 36 Mb/s, doing a copy in gnome GUI via
+sftp (at a couple feet from the router ;).
 
+But at some point, the copy blocked and dmesg said:
+
+ath5k phy0: unsupported jumbo
+ath5k phy0: unsupported jumbo
+
+Apart from that, and the led problem, wifi works pretty fine.
+
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.1 (Cooker) for x86_64
+Linux 2.6.27.5-desktop-1mnb (gcc 4.3.2 (GCC) #1 Sun Nov
