@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYLNX21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYLNXaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbYLNX21 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 18:28:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYLNX2U
+	id S1755290AbYLNXaR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 18:30:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYLNXaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 18:28:20 -0500
-Received: from mail.inf.tu-dresden.de ([141.76.2.1]:47457 "EHLO
-	mail.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751774AbYLNX2T (ORCPT
+	Sun, 14 Dec 2008 18:30:04 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:37289 "EHLO
+	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbYLNXaD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 18:28:19 -0500
-Message-ID: <4945968D.7050300@inf.tu-dresden.de>
-Date: Mon, 15 Dec 2008 00:28:13 +0100
-From: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Sun, 14 Dec 2008 18:30:03 -0500
+Date: Mon, 15 Dec 2008 04:59:46 +0530
+From: Balaji Rao <balajirrao@openmoko.org>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
+       Andy Green <andy@openmoko.com>
+Subject: Re: [rtc-linux] Re: [PATCH 4/7] rtc: PCF50633 rtc driver
+Message-ID: <20081214232945.GC2741@cff.thadambail>
+References: <20081214110152.3307.50843.stgit@cff.thadambail> <20081214110304.3307.53502.stgit@cff.thadambail> <20081214202956.1f97b906@i1501.lan.towertech.it> <20081214220428.GA2741@cff.thadambail> <20081214232128.5c886379@i1501.lan.towertech.it>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] ide: Fix drive's DWORD-IO handling
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081214232128.5c886379@i1501.lan.towertech.it>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According the documentation, id[ATA_ID_DWORD_IO] is non-zero if
-the drive supports dword IO, while the code disables support by
-setting IDE_DFLAG_NO_IO_32BIT. In addition, this word has been
-reused by the ATA8 specification. This patch fixes both cases.
----
- drivers/ide/ide-probe.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Sun, Dec 14, 2008 at 11:21:28PM +0100, Alessandro Zummo wrote:
+> On Mon, 15 Dec 2008 03:34:30 +0530
+> Balaji Rao <balajirrao@openmoko.org> wrote:
+> 
+> > Hmm. This patch is included in [PATCH 1/7] of the series - which
+> > implements the core driver. This core driver needs this file to compile
+> > and not including there is going to break the bisectability of the
+> > series. Isn't this what I'm supposed to do ? Please correct me if I'm
+> > wrong.
+> 
+>  ok, then don't break.
+>  
 
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index c55bdbd..859b0e5 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -856,7 +856,7 @@ static void ide_port_tune_devices(ide_hwif_t *hwif)
- 		ide_drive_t *drive = &hwif->drives[unit];
+OK, thinking more about this, I realised that this series, has to be
+taken in together, as rtc-pcf50633.c alone wouldn't compile for you..
 
- 		if ((hwif->host_flags & IDE_HFLAG_NO_IO_32BIT) ||
--		    drive->id[ATA_ID_DWORD_IO])
-+		    !ata_id_has_dword_io(drive->id))
- 			drive->dev_flags |= IDE_DFLAG_NO_IO_32BIT;
- 		else
- 			drive->dev_flags &= ~IDE_DFLAG_NO_IO_32BIT;
--- 
-1.5.6.3
+Probably it could be taken into the MFD tree once you ACK this ? I don't
+know.. If this is not a problem at all, please feel free to ignore me!
 
+> > > > +	pcf = platform_get_drvdata(pdev);
+> > > 
+> > >  uh? where did you set up the pointer?
+> > > 
+> > > 
+> > > > +	/* Set up IRQ handlers */
+> > > > +	pcf->irq_handler[PCF50633_IRQ_ALARM].handler = pcf50633_rtc_irq;
+> > > > +	pcf->irq_handler[PCF50633_IRQ_SECOND].handler = pcf50633_rtc_irq;
+> > > > +
+> > > > +	pcf->rtc.rtc_dev = rtc;
+> > > 
+> > >  ??
+> > > 
+> > 
+> > It's done in the core driver - [PATCH 1/7] of this series.
+> 
+>  mm. that's strange. a platform driver is supposed to receive informational
+>  structures (regions, irqs, ...) and init driver data by itself. you shouldn't need
+>  to mess with the drvdata pointer.
+> 
+
+Oh, ok. I now see how I can do better. Will wait for comments for the
+rest of the series and post a improved version.
+
+>  I do not also feel fine with the irq handlers setup. Your core should export
+>  a function for irq registration.
+>
+
+Yes, ok.
+ 
+> > Thank you for the review. Will send again after resolving the issues.
+> 
+>  thanks for your contribution. you are doing great things at openmoko.
+> 
+
+You're welcome.
+
+	- Balaji
