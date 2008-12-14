@@ -1,142 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbYLNGTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbYLNGnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbYLNGTM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 01:19:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbYLNGS5
+	id S1752897AbYLNGnZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 01:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbYLNGnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 01:18:57 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47885 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750699AbYLNGS4 (ORCPT
+	Sun, 14 Dec 2008 01:43:14 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:20101 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750860AbYLNGnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 01:18:56 -0500
-Date: Sat, 13 Dec 2008 22:18:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] add command line init_start_cpus
-Message-Id: <20081213221842.583f1e38.akpm@linux-foundation.org>
-In-Reply-To: <4944A279.5020009@kernel.org>
-References: <4944A279.5020009@kernel.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 14 Dec 2008 01:43:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Ecgh+0lZQWKFREEWqPeULXVfwWnfvVe3JQ38Dy2LbD7S1IrCpkaHuAhlaE2W+EKOLD
+         9Ji9mICXH9nkZCta5224NX142XaITvAOWeoeDi9ex+vRzJS6cF/m02rvwNSgwDYycvO3
+         gbcezs9xKj/ySeNVwMWod3hd8iGKG/kQaqHmY=
+Message-ID: <4944AAFD.1060105@gmail.com>
+Date: Sat, 13 Dec 2008 22:43:09 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+MIME-Version: 1.0
+To: "Brian J. Murrell" <brian@interlinx.bc.ca>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: suspend/resume fails on second attempt in LNXVIDEO:00
+References: <gi247o$iog$1@ger.gmane.org>
+In-Reply-To: <gi247o$iog$1@ger.gmane.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Dec 2008 22:06:49 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
+Brian J. Murrell wrote:
+> I'm trying to debug a resume problem on a compaq presario C700 laptop on 
+> the Ubuntu 2.6.24-22-generic kernel.
+>
+> I've used the /sys/power/pm_trace facility to debug the problem to the
+> following:
+>
+> [   31.212062]   Magic number: 0:716:374
+> [   31.212115]   hash matches /build/buildd/linux-2.6.24/drivers/base/power/main.c:97
+> [   31.212255]   hash matches device LNXVIDEO:00
+>
+> Not sure where to go from here though.  Devices in this machine are:
+>
+> 00:00.0 Host bridge: Intel Corporation Mobile PM965/GM965/GL960 Memory Controller Hub (rev 03)
+> 00:02.0 VGA compatible controller: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller (rev 03)
+> 00:02.1 Display controller: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller (rev 03)
+> 00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio Controller (rev 03)
+> 00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 1 (rev 03)
+> 00:1d.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Controller #1 (rev 03)
+> 00:1d.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Controller #2 (rev 03)
+> 00:1d.2 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Controller #3 (rev 03)
+> 00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI Controller #1 (rev 03)
+> 00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev f3)
+> 00:1f.0 ISA bridge: Intel Corporation 82801HEM (ICH8M) LPC Interface Controller (rev 03)
+> 00:1f.1 IDE interface: Intel Corporation 82801HBM/HEM (ICH8M/ICH8M-E) IDE Controller (rev 03)
+> 00:1f.2 SATA controller: Intel Corporation 82801HBM/HEM (ICH8M/ICH8M-E) SATA AHCI Controller (rev 03)
+> 00:1f.3 SMBus: Intel Corporation 82801H (ICH8 Family) SMBus Controller (rev 03)
+> 01:00.0 Ethernet controller: Atheros Communications Inc. AR242x 802.11abg Wireless PCI Express Adapter (rev 01)
+> 02:01.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL-8139/8139C/8139C+ (rev 10)
+>
+> These symptoms mirror a lot of other reports with this machine in that 
+> the first suspend/resume cycle works but a second attempts (apparently) 
+> suspends fine but fails on resume.  The backlight on the video does not 
+> come back and neither does the wireless connection, so I'm not positive 
+> the problems are purely video related.
+>
+> How can I proceed from here to further debug what kind of workarounds or
+> solutions I might be able to use to get reliable suspend/resume 
+> functionality?
+>
+> Thanx,
+> b.
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>   
+not too sure what the situation is for you, but
+if  you're deciding to stay with 2.6.24.* then
+look through the commits to see if this has been resolved.
+if not then load the latest git to see if this has been committed
+for the fix. if it's just debugging then hmm.. maybe ssh
+(but you don't have intranet upon wakeup); maybe usb
+or some other hard wired mechanism?
 
-> 
-> Impact: new command line
-> 
-> so could select cpus to be started during init stage
-> 
+regards;
 
-Please always always always provide a description of the *reason* for
-making a change to the kernel.  For patches other than bugfixes, this
-is the most important part of the patch, because without a reason, why
-should we even look at the code changes?
-
-> 
-> ---
->  Documentation/kernel-parameters.txt |   14 ++++++++++++++
->  init/main.c                         |   29 ++++++++++++++++++++++++++++-
->  2 files changed, 42 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/Documentation/kernel-parameters.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/kernel-parameters.txt
-> +++ linux-2.6/Documentation/kernel-parameters.txt
-> @@ -918,6 +918,20 @@ and is between 256 and 4096 characters.
->  		forcesac
->  		soft
->  
-> +	init_start_cpus=	[KNL,SMP] set CPUs that will be started during
-> +			init stage.
-> +			Format:
-> +			<cpu number>,...,<cpu number>
-> +			or
-> +			<cpu number>-<cpu number>
-> +			(must be a positive range in ascending order)
-> +			or a mixture
-> +			<cpu number>,...,<cpu number>-<cpu number>
-> +
-> +			This option can be used to specify one or more CPUs
-> +			to be started during init stage.
-> +			<cpu number> begins at 0 and the maximum value is
-> +			"number of CPUs in system - 1".
-
-I can't even begin to imagine why would we want this feature.
-
->  	intel_iommu=	[DMAR] Intel IOMMU driver (DMAR) option
->  		off
-> Index: linux-2.6/init/main.c
-> ===================================================================
-> --- linux-2.6.orig/init/main.c
-> +++ linux-2.6/init/main.c
-
-Can we put this all somewhere else? init/main.c is a random dumping ground.
-
-Perhaps kernel/cpu.c would be appropriate.  There's a bunch of other
-cpumasky stuff in init/main.c which could also be moved into cpu.c
-(and tidied up - it's a godawful ifdef mess).
-
-> @@ -413,11 +413,35 @@ static void __init setup_per_cpu_areas(v
->  }
->  #endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
->  
-> +static __initdata cpumask_var_t cpu_init_start_mask;
-> +
-> +/* Setup the mask of cpus configured for init start */
-> +static int __init init_start_cpu_setup(char *str)
-> +{
-> +	cpulist_parse(str, *cpu_init_start_mask);
-> +
-> +	return 1;
-> +}
-> +
-> +__setup("init_start_cpus=", init_start_cpu_setup);
-> +
->  /* Called by boot processor to activate the rest. */
->  static void __init smp_init(void)
->  {
->  	unsigned int cpu;
-> +	struct cpumask *start_mask;
-> +
-> +	if (cpumask_empty(cpu_init_start_mask))
-> +		start_mask = &cpu_present_map;
-> +	else {
-> +		start_mask = kmalloc(cpumask_size(), GFP_KERNEL);
-
-Why is this dynamically allocated?  I'd have though that a simple
-__initdata static store would suit?
+Justin P. Mattock
 
 
-> +		if (!start_mask)
-> +			start_mask = &cpu_present_map;
-> +		else
-> +			cpumask_and(start_mask, cpu_init_start_mask,
-> +					 &cpu_present_map);
-> +	}
->  	/*
->  	 * Set up the current CPU as possible to migrate to.
->  	 * The other ones will be done by cpu_up/cpu_down()
-> @@ -426,13 +450,16 @@ static void __init smp_init(void)
->  	cpu_set(cpu, cpu_active_map);
->  
->  	/* FIXME: This should be done in userspace --RR */
-> -	for_each_present_cpu(cpu) {
-> +	for_each_cpu_mask_nr(cpu, *start_mask) {
->  		if (num_online_cpus() >= setup_max_cpus)
->  			break;
->  		if (!cpu_online(cpu))
->  			cpu_up(cpu);
->  	}
->  
-> +	if (start_mask != &cpu_present_map)
-> +		kfree(start_mask);
-> +
+
+ 
 
