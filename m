@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbYLNJfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbYLNJFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754516AbYLNJfW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 04:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYLNJfH
+	id S1754435AbYLNJFj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 04:05:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbYLNJFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 04:35:07 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36326 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751087AbYLNJfE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 04:35:04 -0500
-Date: Sun, 14 Dec 2008 10:28:27 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arjan van de Ven <arjan@infradead.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Takashi Iwai <tiwai@suse.de>,
-       Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH 1/3] PCI: Rework default handling of suspend
-	and resume
-Message-ID: <20081214092827.GA1445@ucw.cz>
-References: <Pine.LNX.4.44L0.0812061324260.13426-100000@netrider.rowland.org> <alpine.LFD.2.00.0812062157590.3425@nehalem.linux-foundation.org> <alpine.LFD.2.00.0812062201230.3425@nehalem.linux-foundation.org> <200812071439.27712.rjw@sisk.pl> <alpine.LFD.2.00.0812070824260.3425@nehalem.linux-foundation.org>
+	Sun, 14 Dec 2008 04:05:15 -0500
+Received: from lucidpixels.com ([75.144.35.66]:42696 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751827AbYLNJFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 04:05:12 -0500
+Date: Sun, 14 Dec 2008 04:05:11 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Redeeman <redeeman@metanurb.dk>
+cc: Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       smartmontools-support@lists.sourceforge.net
+Subject: Re: Have the velociraptors in a test system now, checkout the
+ errors.
+In-Reply-To: <1229225303.16555.149.camel@localhost>
+Message-ID: <alpine.DEB.1.10.0812140404090.28949@p34.internal.lan>
+References: <alpine.DEB.1.10.0812060426280.3494@p34.internal.lan>  <49405A94.8080601@tmr.com> <1229225303.16555.149.camel@localhost>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0812070824260.3425@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-12-07 08:34:43, Linus Torvalds wrote:
-> On Sun, 7 Dec 2008, Rafael J. Wysocki wrote:
-> > 
-> > So, can we just say that PCI drivers shouldn't free IRQs during suspend and
-> > request them during resume, and if there's any problem that leads to, then it
-> > should be solved differently?
-> 
-> Well, there are reasons why _individual_ drivers might want to free and 
-> re-request irq's during suspend, so I wouldn't say it's wrong either.
 
-Another (not too good) reason why you may want to unregister the
-interrupt is similarity between suspend and rmmod (and resume and
-insmod).
 
-In some cases you can get away with sharing code between those two
-paths...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Sun, 14 Dec 2008, Redeeman wrote:
+
+> On Wed, 2008-12-10 at 19:11 -0500, Bill Davidsen wrote:
+>> Justin Piszcz wrote:
+>>> Point of thread: Two problems, mentioned in detail below, NCQ in Linux
+>>> when used in a RAID configuration and two, something with how Linux
+>>> interacts with the drives causes lots of problems as when I run the WD
+>>> tools on the disks, they do not show any errors.
+>>>
+>>> If anyone has/would like me to run any debugging/patches/etc on this
+>>> system feel free to suggest/send me things to try out.  After I put
+>>> the VR's in a test system, I left NCQ enabled and I made a 10 disk
+>>> raid5 to see how fast I could get it to fail, I ran bonnie++ shown
+>>> below as a disk benchmark/stress test:
+>>>
+>>> For the next test I will repeat this one but with NCQ disabled, having
+>>> NCQ enabled makes it fail very easily.  Then I want to re-run the test
+>>> with RAID6.
+>>>
+>>> bonnie++ -d /r1/test -s 1000G -m p63 -n 16:100000:16:64
+>>>
+>>> $ df -h
+>>> /dev/md3              2.5T  5.5M  2.5T   1% /r1
+>>>
+>>> And the results?  Two disk "failures" according to md/Linux within a
+>>> few hours as shown below:
+>>>
+>>> Note, the NCQ-related errors are what I talk about all of the time, if
+>>> you use
+>>> NCQ and Linux in a RAID environment with WD drives, well-- good luck.
+>>>
+>>> Two-disks failed out of the RAID5 and I currentlty cannot even 'see'
+>>> one of the drives with smartctl, will reboot the host and check sde
+>>> again.
+>>>
+>>> After a reboot, it comes up and has no errors, really makes one wonder
+>>> where/what the bugs is/are, there are two I can see:
+>>> 1. NCQ issue on at least WD drives in Linux in SW md/RAID
+>>> 2. Velociraptor/other disks reporting all kinds of sector errors etc,
+>>> but when you use the WD 11.x disk tools program and run all of their
+>>> tests it says the disks have no problems whatsoever!  The smart
+>>> statistics do confirm this.  Currently, TLER is on for all disks, for
+>>> the duration of these tests.
+>>
+>> Just a few comments on this, I have several RAID arrays built on Seagate
+>> using NCQ, and yet to have a problem. I have NCQ on with my WD drives,
+>> non-RAID, and haven't had an issue with them either. The WDs run a lot
+>> cooler than the SG, but they are probably getting less use, as well. If
+>> the WD are still on sale after the holiday I may grab a few more and run
+>> RAID, by then I will have some small sense of trusting them.
+> Velociraptors, or which WD?
+Velociraptors or Raptors or 750GiB disks (in Linux SW Raid) the NCQ issue 
+does not appear to occur on Raptors on a 3ware card though, only in 
+Linux+SW_raid.  The regular raptor/750gib also run just fine as standalone 
+with NCQ.
+
+Justin.
