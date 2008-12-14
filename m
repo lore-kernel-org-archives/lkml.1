@@ -1,102 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbYLNWu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYLNW61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbYLNWu0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 17:50:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbYLNWuO
+	id S1754300AbYLNW61 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 17:58:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYLNW6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 17:50:14 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39080 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750870AbYLNWuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 17:50:12 -0500
-X-Authenticated: #527675
-X-Provags-ID: V01U2FsdGVkX19OaQQRaUNOsTNtvegFWd51ax3c5QyxI01+9ILTnP
-	diXhr4iCb+ZtI5
-Message-ID: <49458D9C.5080906@gmx.de>
-Date: Sun, 14 Dec 2008 23:50:04 +0100
-From: Reinhard Nissl <rnissl@gmx.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.8.1.17) Gecko/20080922 SUSE/2.0.0.17-0.1 Thunderbird/2.0.0.17 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: greg@kroah.com
-Subject: PATCH: mvsas: increase port type detection delay to suit Seagate's
- 15k6 drive ST3450856SS 0003
-Content-Type: multipart/mixed;
- boundary="------------060706070003030309080708"
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
+	Sun, 14 Dec 2008 17:58:19 -0500
+Received: from smtp2.ono.com ([62.42.230.20]:21519 "EHLO resmaa12.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750983AbYLNW6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 17:58:18 -0500
+Date: Sun, 14 Dec 2008 23:57:53 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Bugs on aspire one A150
+Message-ID: <20081214235753.7cd11c51@werewolf.home>
+In-Reply-To: <1229174138.24940.9.camel@maxim-laptop>
+References: <491506DB.1070000@gmail.com>
+	<1229174138.24940.9.camel@maxim-laptop>
+X-Mailer: Claws Mail 3.6.1cvs75 (GTK+ 2.14.5; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060706070003030309080708
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+On Sat, 13 Dec 2008 15:15:38 +0200, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 
-Hi Greg,
-
-I hope you don't mind following your suggestion:
-
-> Also, please cc: the stable developers if you want them to pay attention
-> to messages like this.
-
--------- Original-Nachricht --------
-Betreff: Re: PATCH: mvsas: increase port type detection delay to
-suit Seagate's 15k6 drive ST3450856SS 0003
-Datum: Fri, 12 Dec 2008 21:23:45 +0100
-Von: Reinhard Nissl <rnissl@gmx.de>
-An: linux-scsi@vger.kernel.org
-CC: Ke Wei <kewei@marvell.com>, Jeff Garzik
-<jgarzik@redhat.com>,	James Bottomley
-<James.Bottomley@hansenpartnership.com>
-Referenzen: <493BC76F.3060105@gmx.de> <49405137.9000902@gmx.de>
-
-Hi,
-
-I wonder why no one has dropped me a line so far. I hope you
-don't mind CCing you directly. I found your email addresses on
-mailing list entries regarding mvsas. I attach the little patch
-again for ease of use.
-
-Reinhard Nissl schrieb:
-
-> I increased the delay step by step until loading of mvsas
-> reliably detected the drive 200 times in sequence. A much better
-> approach would be to monitor the hardware for some flag which
-> indicates that port detection has finished, but I do not have any
-> hardware documentation.
 > 
-> BTW: patch is against
-> git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
+> I also noticed, that now the SD only card reader is always enabled
+> regardless of card been there while booting, and same happens in
+> windows, I suspect that this is permanent hardware change, which worries
+> me, but this reader works fine otherwise.
+> (This is another reason why binary bioses are evil, go and find out why
+> it enables it)
 > 
-> Signed-off-by: Reinhard Nissl <rnissl@gmx.de>
 
-Bye.
+Which BIOS ? Mine is 3304, kernel is 2.6.28-rc8, and LEFT card is not detected
+unless I use this option:
+
+options sdhci debug_quirks=1
+
+I have downloaded BIOS 3308, but it is to big to fit in my 1.4 floppy image
+(I still have a flooy image I dd on a USB flash, but have not managed to grow
+it - wouldn't you know how to do it ?)
+
+
 -- 
-Dipl.-Inform. (FH) Reinhard Nissl
-mailto:rnissl@gmx.de
-
---------------060706070003030309080708
-Content-Type: text/x-patch;
- name="mvsas.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mvsas.diff"
-
-diff --git a/drivers/scsi/mvsas.c b/drivers/scsi/mvsas.c
-index 1dd70d7..23e5a87 100644
---- a/drivers/scsi/mvsas.c
-+++ b/drivers/scsi/mvsas.c
-@@ -2959,7 +2959,7 @@ static int __devinit mvs_hw_init(struct mvs_info *mvi)
- 
- 	/* enable auto port detection */
- 	mw32(GBL_PORT_TYPE, MODE_AUTO_DET_EN);
--	msleep(100);
-+	msleep(1100);
- 	/* init and reset phys */
- 	for (i = 0; i < mvi->chip->n_phy; i++) {
- 		u32 lo = be32_to_cpu(*(u32 *)&mvi->sas_addr[4]);
-
-
---------------060706070003030309080708--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.1 (Cooker) for x86_64
+Linux 2.6.27.5-desktop-1mnb (gcc 4.3.2 (GCC) #1 Sun Nov
