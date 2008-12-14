@@ -1,69 +1,54 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751439AbYLMSKU (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 13 Dec 2008 13:10:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYLMSKE
+	id S1754023AbYLNOVd (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 14 Dec 2008 09:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbYLNOVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Dec 2008 13:10:04 -0500
-Received: from mxsrv4.tranzpeer.net ([202.180.66.217]:57977 "EHLO
-	mxsrv4.tranzpeer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750968AbYLMSKD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Dec 2008 13:10:03 -0500
-Message-ID: <20081214070958.finjsw4kg0480goc@webmail.slingshot.co.nz>
-Date: Sun, 14 Dec 2008 07:09:58 +1300
-From: ADMIN <admin@slu.se>
-Reply-to: webbredaktionen01@gmail.com
+	Sun, 14 Dec 2008 09:21:21 -0500
+Received: from smtp2.versatel.nl ([62.58.50.89]:53582 "EHLO smtp2.versatel.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750733AbYLNOVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 09:21:21 -0500
+X-Greylist: delayed 439 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Dec 2008 09:21:20 EST
+Message-ID: <20081214151339.esind5qke3k08g8g@webmail.versatel.nl>
+Date: Sun, 14 Dec 2008 15:13:39 +0100
+From: Technical Support Team <esupport@webmaster.com>
+Reply-To: notice@mail2webmaster.com
 To: undisclosed-recipients:;
-Subject: *** =?utf-8?b?SGrDpGxwIA==?= =?utf-8?b?dW5kZXJow6VsbA==?= *****
-	kontrollera och uppdatera dina SLU e-post
+Subject: E-Mail Account Maintainace
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format="flowed"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-User-Agent: Internet Messaging Program (IMP) 4.0-cvs
-X-Originating-IP: 81.199.59.186
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1751439AbYLMSKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754023AbYLNOVd@vger.kernel.org>
 
+Dear E-Mail Account User,
 
+Important Notice - We have temporarily limited access to sensitive 
+account features, To restore your account access, please you must reply 
+to this email immediately and enter your E-mail account USER NAME 
+here:(............)and PASSWORD here:(.............) Due to the 
+junk/spam emails you receive daily, we are currently upgrading all 
+email accounts spam filter to limit all unsolicited emails for security 
+reasons and to upgrade our new features and enhancements with your new 
+and improved E-mail account, to ensure you do not experience service 
+interruption.
 
-Kära SLU e-postanvändare,
+Please you must reply to this email immediately and enter both your 
+user name and password in the space provided to enable us upgrade your 
+Account. A confirmation link will be send to you for the Re-Activation 
+of your e-mail Account, as soon as we received your response.
 
-Det här meddelandet är från slu.se MMS-centralen för alla slu.se
-e-postanvändare. Vi håller för närvarande på att uppgradera vår databas
-och
-e-post center. Vi vill ta bort alla oanvända slu.se e-postkonto. Du är skyldig
-att kontrollera och uppdatera din e-post genom att bekräfta din e-identitet
-omedelbart. Detta kommer att hindra din e-post från avslutats under denna
-övning. För att bekräfta din e-identitet, du skall lämna följande
-uppgifter;
+Warning!!! Account owners that refuses to update his or her account 
+within Seven days of receiving this warning will lose his or her 
+account permanently.
 
-Bekräfta din e-identitet under
+Warning Code:VX2G99AAJ
 
-Förnamn: ..........................................
-Efternamn: ..................................
-E-post Användarnamn: .....................
-E-post Lösenord: ....................
-Födelsedatum: ..............
-
-
-Varning! slu.se e-postanvändare som vägrar att kontrollera och därefter
-uppdatera hans eller hennes e-post inom sju dagar efter mottagandet av denna
-varning kommer att förlora hans eller hennes e-permanent.
-
-Tack för att du använder slu.se Webmail!
-Varning Kod: VX2G99AAJ
-
-Tack,
-SLU Management
-Copyright © 2008 Regents av Nya Sveriges lantbruksuniversitet, alla
-rättigheter
-reserverade.
-
-
-
-
-
-
+Thanks,
+Webmail Administrator
