@@ -1,76 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbYLNTxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbYLNUF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbYLNTxc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 14:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbYLNTxX
+	id S1753175AbYLNUF5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 15:05:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYLNUFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 14:53:23 -0500
-Received: from nelson.telenet-ops.be ([195.130.133.66]:60771 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751284AbYLNTxW (ORCPT
+	Sun, 14 Dec 2008 15:05:47 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:60881 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751353AbYLNUFp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 14:53:22 -0500
-Date: Sun, 14 Dec 2008 20:53:13 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] remove linux/hardirq.h from asm-generic/local.h
-In-Reply-To: <20081214133941.GA18035@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0812142050280.5936@anakin>
-References: <20081214133941.GA18035@flint.arm.linux.org.uk>
+	Sun, 14 Dec 2008 15:05:45 -0500
+Date: Mon, 15 Dec 2008 01:38:43 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>
+Subject: Re: [RFC PATCH v5 0/7] Tunable sched_mc_power_savings=n
+Message-ID: <20081214200843.GO5457@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Pavel Machek <pavel@suse.cz>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Collier-Brown <davecb@sun.com>,
+	Tim Connors <tconnors@astro.swin.edu.au>,
+	Max Krasnyansky <maxk@qualcomm.com>,
+	Gregory Haskins <gregory.haskins@gmail.com>
+References: <20081211173831.2020.57550.stgit@drishya.in.ibm.com> <19700101001343.GA1440@ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <19700101001343.GA1440@ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Dec 2008, Russell King wrote:
-> While looking at reducing the amount of architecture namespace pollution
-> in the generic kernel, I found that asm/irq.h is included in the vast
-> majority of compilations on ARM (around 650 files.)
+* Pavel Machek <pavel@suse.cz> [1970-01-01 01:13:43]:
+
 > 
-> Since asm/irq.h includes a sub-architecture include file on ARM, this
-> causes a negative impact on the ccache's ability to re-use the build
-> results from other sub-architectures, so we have a desire to reduce
-> the dependencies on asm/irq.h.
+> > Results:
+> > --------
+> > 
+> > Basic functionality of the code has not changed and the power vs
+> > performance benefits for kernbench are similar to the ones posted
+> > earlier.
+> > 
+> > KERNBENCH Runs: make -j4 on a x86 8 core, dual socket quad core cpu
+> > package system
+> > 
+> > SchedMC Run Time     Package Idle    Energy  Power
+> > 0	81.28	     52.43% 53.53%  1.00x J 1.00y W
+> > 1	80.71	     37.35% 68.91%  0.96x J 0.97y W
+> > 2	76.05	     23.81% 82.65%  0.92x J 0.98y W
+> > 
+> > *** This is RFC code and not for inclusion ***
 > 
-> It turns out that a major cause of this is the needless include of
-> linux/hardirq.h into asm-generic/local.h.  The patch below removes this
-> include, resulting in some 250 to 300 files (around half) of the kernel
-> then omitting asm/irq.h.
-> 
-> My test builds still succeed, provided two ARM files are fixed
-> (arch/arm/kernel/traps.c and arch/arm/mm/fault.c) - so there may be
-> negative impacts for this on other architectures.
+> Hmm, so it makes it compile faster _and_ it saves power? Why to keep
+> it tunable at all if it is win-win? Or are there other benchmarks?
 
-I gave it a try on m68k/atari_defconfig, but no ill effects.
+Hi Pavel,
 
-> Note that x86 does not include asm/irq.h nor linux/hardirq.h in its
-> asm/local.h, so this patch can be viewed as bringing the generic version
-> into line with the x86 version.
-> 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> 
-> diff --git a/include/asm-generic/local.h b/include/asm-generic/local.h
-> index 33d7d04..43c0b81 100644
-> --- a/include/asm-generic/local.h
-> +++ b/include/asm-generic/local.h
-> @@ -2,7 +2,6 @@
->  #define _ASM_GENERIC_LOCAL_H
->  
->  #include <linux/percpu.h>
-> -#include <linux/hardirq.h>
->  #include <asm/atomic.h>
->  #include <asm/types.h>
+The performance and power gain depends on the nature of the
+application.  If the processor cache is large enough, then
+consolidation improves cache sharing and makes the system finish the
+job faster.  I would expect applications with larger cache foot print
+and no data sharing may experience degradation in performance.
 
-Gr{oetje,eeting}s,
+I am open to suggestion on any interesting workload that should be
+tested.  I have tested ebizzy and SPECjbb for power savings.  I am
+also looking forward to test reports from others having different
+system topology and processor power saving features.
 
-						Geert
+The idea behind the tunable is to have power saving as higher priority
+in scheduling relative to performance.  At higher sched_mc(2) settings
+(aggressive power save mode), we should save power even if there is
+a slight degradation in application performance.  If we save power and
+improve performance, then it is a best case scenario.  However I would
+expect certain workloads to sacrifice performance for the power
+consumption.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+At sched_mc = 0 the scheduler would not optimise for power savings
+and provide maximum performance for any application.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Kernel compile is a representative workload where my additional
+optimisations for sched_mc=2 improves over the default sched_mc=1
+implementation in the kernel.
+
+--Vaidy
