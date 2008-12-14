@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbYLNIQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbYLNIQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757321AbYLNIQl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 03:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYLNIHz
+	id S1757425AbYLNIQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 03:16:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYLNIH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 03:07:55 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59939 "EHLO mx2.redhat.com"
+	Sun, 14 Dec 2008 03:07:59 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59938 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754096AbYLNIHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754091AbYLNIHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 14 Dec 2008 03:07:17 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 13/36] KVM: VMX: fix sparse warning
-Date: Sun, 14 Dec 2008 10:06:46 +0200
-Message-Id: <1229242029-13410-14-git-send-email-avi@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Eduardo Habkost <ehabkost@redhat.com>
+Subject: [PATCH 36/36] x86: KVM guest: kvm_get_tsc_khz: return khz, not lpj
+Date: Sun, 14 Dec 2008 10:07:09 +0200
+Message-Id: <1229242029-13410-37-git-send-email-avi@redhat.com>
 In-Reply-To: <1229242029-13410-1-git-send-email-avi@redhat.com>
 References: <1229242029-13410-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hannes Eder <hannes@hanneseder.net>
+From: Eduardo Habkost <ehabkost@redhat.com>
 
-Impact: make global function static
+kvm_get_tsc_khz() currently returns the previously-calculated preset_lpj
+value, but it is in loops-per-jiffy, not kHz. The current code works
+correctly only when HZ=1000.
 
-  arch/x86/kvm/vmx.c:134:3: warning: symbol 'vmx_capability' was not declared. Should it be static?
-
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/vmx.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/kernel/kvmclock.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 7ea4855..e446f23 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -128,7 +128,7 @@ static struct vmcs_config {
- 	u32 vmentry_ctrl;
- } vmcs_config;
+diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
+index b38e801..652fce6 100644
+--- a/arch/x86/kernel/kvmclock.c
++++ b/arch/x86/kernel/kvmclock.c
+@@ -89,17 +89,17 @@ static cycle_t kvm_clock_read(void)
+  */
+ static unsigned long kvm_get_tsc_khz(void)
+ {
+-	return preset_lpj;
++	struct pvclock_vcpu_time_info *src;
++	src = &per_cpu(hv_clock, 0);
++	return pvclock_tsc_khz(src);
+ }
  
--struct vmx_capability {
-+static struct vmx_capability {
- 	u32 ept;
- 	u32 vpid;
- } vmx_capability;
+ static void kvm_get_preset_lpj(void)
+ {
+-	struct pvclock_vcpu_time_info *src;
+ 	unsigned long khz;
+ 	u64 lpj;
+ 
+-	src = &per_cpu(hv_clock, 0);
+-	khz = pvclock_tsc_khz(src);
++	khz = kvm_get_tsc_khz();
+ 
+ 	lpj = ((u64)khz * 1000);
+ 	do_div(lpj, HZ);
 -- 
 1.6.0.3
 
