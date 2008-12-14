@@ -1,59 +1,304 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbYLNLPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbYLNLbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbYLNLPi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 06:15:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYLNLP3
+	id S1754336AbYLNLbL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 06:31:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYLNLa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 06:15:29 -0500
-Received: from mail.work.de ([212.12.32.20]:41769 "EHLO mail.work.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752901AbYLNLP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 06:15:28 -0500
-Message-ID: <4944EAC3.1020407@gmail.com>
-Date: Sun, 14 Dec 2008 15:15:15 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Sun, 14 Dec 2008 06:30:56 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:43887 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752447AbYLNLay (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 06:30:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=XyiVKLSoPFO6RaINczquu8J4nvoUHLTH3wjO8UPBl+kDkX6Gx/kUKkw7O0MQJ0KSl3
+         1cLQ+FgM9U9gBiLzj0DaeSqKvnrMaVZEK3PTnEbpsOenI6q6vfXNxl/cNkcGI/jCf1Kc
+         D7kAYSzbMab8TKwHhmFOMfbuViNwQaw9opiqA=
+Message-ID: <3f9a31f40812140330w7aa55e55n2159f095cbafd018@mail.gmail.com>
+Date: Sun, 14 Dec 2008 17:00:52 +0530
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: BUG - HDA Intel very low audio with breaking voice in 2.6.28-rc8
+Cc: linux-kernel@vger.kernel.org, matt.jared@intel.com, andy.kopp@intel.com,
+       dan.d.kogan@intel.com, pshou@realtek.com.tw
+In-Reply-To: <s5hr64b151n.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: Grant Grundler <grundler@parisc-linux.org>
-CC: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: MSI messages
-References: <49438290.1080502@gmail.com> <20081214081210.GC13371@colo.lackof.org>
-In-Reply-To: <20081214081210.GC13371@colo.lackof.org>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_31392_2842450.1229254252537"
+References: <3f9a31f40812132358x27df1788re521e47b8dbe2cd1@mail.gmail.com>
+	 <s5hr64b151n.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Grundler wrote:
-> On Sat, Dec 13, 2008 at 01:38:24PM +0400, Manu Abraham wrote:
->> Hi,
+------=_Part_31392_2842450.1229254252537
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hello Takashi,
+
+On Sun, Dec 14, 2008 at 2:56 PM, Takashi Iwai <tiwai@suse.de> wrote:
 >>
->> I am wondering how to handle this:
->>
->> Does the kernel somehow handle MSI message readback from the PCI config space 
->> for the MSI message as described in 6.8.1 of the PCI Bus specification 2.3 or 
->> does a device specific driver have to read the Message Address and Data ?
->>
->> To put it short: i am wondering how i should read the MSI messages.
-> 
-> The "message" is actually mapped to an the interrupt vector by the core
-> generic interrupt handling code in the kernel.
-> 
-> A "GSI" (Generic Sys Interrupt?) is associated with each entry in
-> the MSI-X table. Driver then calls request_irq() to bind an interrupt
-> handler to each GSI. So the driver never directly sees the "message".
+>> I am facing problem in 2.6.28-rc8, HDA Intel audio is very low and
+>> with breaking voice, may be it seems like HD effect ;)
+>
+> What do you mean "breaking voice"?  Please be more specific.
+>
 
-Oh, you mean the array of irq_handlers in the MSI-X table should 
-correspond to a particular message ?
+1. It seems like few frames are dropping and it gives like crackling sound.
+2. Audio volume is very low, I can only hear it if I increase the volume > 85%
 
-I remember sometime back somebody stated that one might not get 
-the requested number of handlers what you requested. 
+> Run alsa-info.sh with --no-upload option, and attach the generated
+> file.  This will contain the detailed hardware information.  The
+> script is found at
+>    http://www.alsa-project.org/alsa-info.sh
+>
 
-In such a case, if the irq_handlers are mapped in a static fashion, one 
-might not get any interrupt callbacks for a specific functionality of 
-the hardware. Or is there something missing in what i understood ?
+I am attaching output file by using sound git kernel.
 
-Regards,
-Manu
+> Is this a regression from the older kernel?
+
+I have no idea, I have checked many trees and versions but all are
+giving same problem.
+
+> If yes, please run
+> alsa-info on both working and non-working kernels and attach the both
+> outputs.
+
+http://www.alsa-project.org/db/?f=ef63766d74e6a7aa7fe246b62dafa2711aae109a
+by using sound git kernel.
+
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
+>
+> Also, try the latest sound git tree whether the problem persists on
+> the latest version.
+>
+
+sound-2.6 git is also giving same problem, its dmesg is :
+
+[    3.927195] Advanced Linux Sound Architecture Driver Version 1.0.18a.
+[    3.929171] HDA Intel 0000:00:14.2: PCI INT A -> GSI 16 (level,
+low) -> IRQ 16
+[    3.929698] HDA Intel 0000:00:14.2: setting latency timer to 64
+[    3.936487] input: AT Translated Set 2 keyboard as
+/devices/platform/i8042/serio0/input/input5
+[    3.941096] usb 1-3: new high speed USB device using ehci_hcd and address 2
+[    3.994132] ehci_hcd 0000:00:12.2: port 3 high speed
+[    3.994148] ehci_hcd 0000:00:12.2: GetStatus port 3 status 001005
+POWER sig=se0 PE CONNECT
+[    3.994816] input: HDA ATI SB at 0xd2400000 irq 16 Line In at Ext
+Rear Jack as /devices/pci0000:00/0000:00:14.2/input/input6
+[    3.997629] input: HDA ATI SB at 0xd2400000 irq 16 Mic at Ext Front
+Jack as /devices/pci0000:00/0000:00:14.2/input/input7
+[    4.000630] input: HDA ATI SB at 0xd2400000 irq 16 Line In at Ext
+Rear Jack as /devices/pci0000:00/0000:00:14.2/input/input8
+[    4.003629] input: HDA ATI SB at 0xd2400000 irq 16 HP Out at Ext
+Front Jack as /devices/pci0000:00/0000:00:14.2/input/input9
+[    4.009588] HDA Intel 0000:01:05.1: PCI INT B -> GSI 19 (level,
+low) -> IRQ 19
+[    4.009588] HDA Intel 0000:01:05.1: setting latency timer to 64
+[    4.035961] ALSA device list:
+[    4.036079]   #0: HDA ATI SB at 0xd2400000 irq 16
+[    4.036335]   #1: HDA ATI HDMI at 0xd2310000 irq 19
+..
+[   47.642943] hda-intel: Invalid position buffer, using LPIB read
+method instead.
+..
+[  113.786524] hda_intel: azx_get_response timeout, switching to
+polling mode: last cmd=0x021f000a
+..
+[  114.787522] hda_intel: azx_get_response timeout, switching to
+single_cmd mode: last cmd=0x021f000a
+
+Thank you,
+
+Jaswinder Singh.
+
+------=_Part_31392_2842450.1229254252537
+Content-Type: text/plain; name=alsa-info.txt
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fopm77xz0
+Content-Disposition: attachment; filename=alsa-info.txt
+
+dXBsb2FkPXRydWUmc2NyaXB0PXRydWUmY2FyZGluZm89CiEhIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMKISFBTFNBIEluZm9ybWF0aW9uIFNjcmlwdCB2IDAuNC41MgohISMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCgohIVNjcmlwdCByYW4gb246IFN1biBEZWMgMTQgMTY6
+Mzk6MTIgSVNUIDIwMDgKCgohIUxpbnV4IERpc3RyaWJ1dGlvbgohIS0tLS0tLS0tLS0tLS0tLS0t
+LQoKRmVkb3JhIHJlbGVhc2UgMTAgKENhbWJyaWRnZSkgRmVkb3JhIHJlbGVhc2UgMTAgKENhbWJy
+aWRnZSkgRmVkb3JhIHJlbGVhc2UgMTAgKENhbWJyaWRnZSkgRmVkb3JhIHJlbGVhc2UgMTAgKENh
+bWJyaWRnZSkKCgohIUtlcm5lbCBJbmZvcm1hdGlvbgohIS0tLS0tLS0tLS0tLS0tLS0tLQoKS2Vy
+bmVsIHJlbGVhc2U6ICAgIDIuNi4yOC1yYzcKT3BlcmF0aW5nIFN5c3RlbTogIEdOVS9MaW51eApB
+cmNoaXRlY3R1cmU6ICAgICAgeDg2XzY0ClByb2Nlc3NvcjogICAgICAgICB4ODZfNjQKU01QIEVu
+YWJsZWQ6ICAgICAgIFllcwoKCiEhQUxTQSBWZXJzaW9uCiEhLS0tLS0tLS0tLS0tCgpEcml2ZXIg
+dmVyc2lvbjogICAgIDEuMC4xOGEKTGlicmFyeSB2ZXJzaW9uOiAgICAxLjAuMThyYzMKVXRpbGl0
+aWVzIHZlcnNpb246ICAxLjAuMTgKCgohIUxvYWRlZCBBTFNBIG1vZHVsZXMKISEtLS0tLS0tLS0t
+LS0tLS0tLS0tCgoKCiEhU291bmRjYXJkcyByZWNvZ25pc2VkIGJ5IEFMU0EKISEtLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLQoKIDAgW1NCICAgICAgICAgICAgIF06IEhEQS1JbnRlbCAtIEhE
+QSBBVEkgU0IKICAgICAgICAgICAgICAgICAgICAgIEhEQSBBVEkgU0IgYXQgMHhkMjQwMDAwMCBp
+cnEgMTYKIDEgW0hETUkgICAgICAgICAgIF06IEhEQS1JbnRlbCAtIEhEQSBBVEkgSERNSQogICAg
+ICAgICAgICAgICAgICAgICAgSERBIEFUSSBIRE1JIGF0IDB4ZDIzMTAwMDAgaXJxIDE5CgoKISFQ
+Q0kgU291bmRjYXJkcyBpbnN0YWxsZWQgaW4gdGhlIHN5c3RlbQohIS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tCgowMDoxNC4yIEF1ZGlvIGRldmljZTogQVRJIFRlY2hub2xv
+Z2llcyBJbmMgU0J4MDAgQXphbGlhCjAxOjA1LjEgQXVkaW8gZGV2aWNlOiBBVEkgVGVjaG5vbG9n
+aWVzIEluYyBSUzc4MCBBemFsaWEgY29udHJvbGxlcgoKCiEhQWR2YW5jZWQgaW5mb3JtYXRpb24g
+LSBQQ0kgVmVuZG9yL0RldmljZS9TdXNic3lzdGVtIElEJ3MKISEtLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKMDA6MTQuMiAwNDAzOiAxMDAy
+OjQzODMKCVN1YnN5c3RlbTogMTAzYzozMGYyCi0tCjAxOjA1LjEgMDQwMzogMTAwMjo5NjBmCglT
+dWJzeXN0ZW06IDEwM2M6MzBmMgoKCiEhTG9hZGVkIHNvdW5kIG1vZHVsZSBvcHRpb25zCiEhLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCgohIUhEQS1JbnRlbCBDb2RlYyBpbmZvcm1hdGlvbgoh
+IS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQotLXN0YXJ0Y29sbGFwc2UtLQoKQ29kZWM6IElE
+VCA5MkhENzFCN1gKQWRkcmVzczogMApWZW5kb3IgSWQ6IDB4MTExZDc2YjIKU3Vic3lzdGVtIElk
+OiAweDEwM2MzMGYyClJldmlzaW9uIElkOiAweDEwMDMwMgpObyBNb2RlbSBGdW5jdGlvbiBHcm91
+cCBmb3VuZApEZWZhdWx0IFBDTToKICAgIHJhdGVzIFsweDdlMF06IDQ0MTAwIDQ4MDAwIDg4MjAw
+IDk2MDAwIDE3NjQwMCAxOTIwMDAKICAgIGJpdHMgWzB4ZV06IDE2IDIwIDI0CiAgICBmb3JtYXRz
+IFsweDFdOiBQQ00KRGVmYXVsdCBBbXAtSW4gY2Fwczogb2ZzPTB4MDAsIG5zdGVwcz0weDAwLCBz
+dGVwc2l6ZT0weDAwLCBtdXRlPTEKRGVmYXVsdCBBbXAtT3V0IGNhcHM6IG9mcz0weDdmLCBuc3Rl
+cHM9MHg3Ziwgc3RlcHNpemU9MHgwMiwgbXV0ZT0xCkdQSU86IGlvPTgsIG89MCwgaT0wLCB1bnNv
+bGljaXRlZD0xLCB3YWtlPTEKICBJT1swXTogZW5hYmxlPTEsIGRpcj0xLCB3YWtlPTAsIHN0aWNr
+eT0wLCBkYXRhPTEsIHVuc29sPTAKICBJT1sxXTogZW5hYmxlPTAsIGRpcj0wLCB3YWtlPTAsIHN0
+aWNreT0wLCBkYXRhPTAsIHVuc29sPTAKICBJT1syXTogZW5hYmxlPTAsIGRpcj0wLCB3YWtlPTAs
+IHN0aWNreT0wLCBkYXRhPTAsIHVuc29sPTAKICBJT1szXTogZW5hYmxlPTAsIGRpcj0wLCB3YWtl
+PTAsIHN0aWNreT0wLCBkYXRhPTAsIHVuc29sPTAKICBJT1s0XTogZW5hYmxlPTAsIGRpcj0wLCB3
+YWtlPTAsIHN0aWNreT0wLCBkYXRhPTAsIHVuc29sPTAKICBJT1s1XTogZW5hYmxlPTAsIGRpcj0w
+LCB3YWtlPTAsIHN0aWNreT0wLCBkYXRhPTAsIHVuc29sPTAKICBJT1s2XTogZW5hYmxlPTAsIGRp
+cj0wLCB3YWtlPTAsIHN0aWNreT0wLCBkYXRhPTAsIHVuc29sPTAKICBJT1s3XTogZW5hYmxlPTAs
+IGRpcj0wLCB3YWtlPTAsIHN0aWNreT0wLCBkYXRhPTAsIHVuc29sPTAKUG93ZXItTWFwOiAweDAx
+CkFuYWxvZyBMb29wYmFjazogMHgwMApOb2RlIDB4MGEgW1BpbiBDb21wbGV4XSB3Y2FwcyAweDQw
+MDE4MTogU3RlcmVvCiAgUGluY2FwIDB4MDAwMDAwMWM6IE9VVCBIUCBEZXRlY3QKICBQaW4gRGVm
+YXVsdCAweDAyMjExMDFmOiBbSmFja10gSFAgT3V0IGF0IEV4dCBGcm9udAogICAgQ29ubiA9IDEv
+OCwgQ29sb3IgPSBCbGFjawogICAgRGVmQXNzb2NpYXRpb24gPSAweDEsIFNlcXVlbmNlID0gMHhm
+CiAgUGluLWN0bHM6IDB4MDA6CiAgVW5zb2xpY2l0ZWQ6IHRhZz0wMSwgZW5hYmxlZD0xCiAgQ29u
+bmVjdGlvbjogMwogICAgIDB4MTAgMHgxMSogMHgxNwpOb2RlIDB4MGIgW1BpbiBDb21wbGV4XSB3
+Y2FwcyAweDQwMDA4MTogU3RlcmVvCiAgUGluY2FwIDB4MDAwMDE3MjQ6IElOIERldGVjdAogICAg
+VnJlZiBjYXBzOiBISVogNTAgR1JEIDgwCiAgUGluIERlZmF1bHQgMHgwMmExMTAyMDogW0phY2td
+IE1pYyBhdCBFeHQgRnJvbnQKICAgIENvbm4gPSAxLzgsIENvbG9yID0gQmxhY2sKICAgIERlZkFz
+c29jaWF0aW9uID0gMHgyLCBTZXF1ZW5jZSA9IDB4MAogIFBpbi1jdGxzOiAweDI0OiBJTiBWUkVG
+XzgwCiAgVW5zb2xpY2l0ZWQ6IHRhZz0wMiwgZW5hYmxlZD0xCk5vZGUgMHgwYyBbUGluIENvbXBs
+ZXhdIHdjYXBzIDB4NDAwMDgxOiBTdGVyZW8KICBQaW5jYXAgMHgwMDAwMTcyNDogSU4gRGV0ZWN0
+CiAgICBWcmVmIGNhcHM6IEhJWiA1MCBHUkQgODAKICBQaW4gRGVmYXVsdCAweDQwZjAwMGYwOiBb
+Ti9BXSBPdGhlciBhdCBFeHQgTi9BCiAgICBDb25uID0gVW5rbm93biwgQ29sb3IgPSBVbmtub3du
+CiAgICBEZWZBc3NvY2lhdGlvbiA9IDB4ZiwgU2VxdWVuY2UgPSAweDAKICBQaW4tY3RsczogMHgw
+MDogVlJFRl9ISVoKICBVbnNvbGljaXRlZDogdGFnPTAwLCBlbmFibGVkPTAKTm9kZSAweDBkIFtQ
+aW4gQ29tcGxleF0gd2NhcHMgMHg0MDAxODE6IFN0ZXJlbwogIFBpbmNhcCAweDAwMDAwMDE0OiBP
+VVQgRGV0ZWN0CiAgUGluIERlZmF1bHQgMHg5MDE3MTExMDogW0ZpeGVkXSBTcGVha2VyIGF0IElu
+dCBOL0EKICAgIENvbm4gPSBBbmFsb2csIENvbG9yID0gQmxhY2sKICAgIERlZkFzc29jaWF0aW9u
+ID0gMHgxLCBTZXF1ZW5jZSA9IDB4MAogICAgTWlzYyA9IE5PX1BSRVNFTkNFCiAgUGluLWN0bHM6
+IDB4NDA6IE9VVAogIFVuc29saWNpdGVkOiB0YWc9MDAsIGVuYWJsZWQ9MAogIENvbm5lY3Rpb246
+IDMKICAgICAweDEwKiAweDExIDB4MTcKTm9kZSAweDBlIFtQaW4gQ29tcGxleF0gd2NhcHMgMHg0
+MDAwODE6IFN0ZXJlbwogIFBpbmNhcCAweDAwMDAxNzI0OiBJTiBEZXRlY3QKICAgIFZyZWYgY2Fw
+czogSElaIDUwIEdSRCA4MAogIFBpbiBEZWZhdWx0IDB4MDE4MTMwNDA6IFtKYWNrXSBMaW5lIElu
+IGF0IEV4dCBSZWFyCiAgICBDb25uID0gMS84LCBDb2xvciA9IEJsdWUKICAgIERlZkFzc29jaWF0
+aW9uID0gMHg0LCBTZXF1ZW5jZSA9IDB4MAogIFBpbi1jdGxzOiAweDI0OiBJTiBWUkVGXzgwCiAg
+VW5zb2xpY2l0ZWQ6IHRhZz0wMywgZW5hYmxlZD0xCk5vZGUgMHgwZiBbUGluIENvbXBsZXhdIHdj
+YXBzIDB4NDAwMTgxOiBTdGVyZW8KICBQaW5jYXAgMHgwMDAwMDAxNDogT1VUIERldGVjdAogIFBp
+biBEZWZhdWx0IDB4NDBmMDAwZjI6IFtOL0FdIE90aGVyIGF0IEV4dCBOL0EKICAgIENvbm4gPSBV
+bmtub3duLCBDb2xvciA9IFVua25vd24KICAgIERlZkFzc29jaWF0aW9uID0gMHhmLCBTZXF1ZW5j
+ZSA9IDB4MgogIFBpbi1jdGxzOiAweDAwOgogIFVuc29saWNpdGVkOiB0YWc9MDAsIGVuYWJsZWQ9
+MAogIENvbm5lY3Rpb246IDMKICAgICAweDEwIDB4MTEgMHgxNyoKTm9kZSAweDEwIFtBdWRpbyBP
+dXRwdXRdIHdjYXBzIDB4ZDBjMDU6IFN0ZXJlbyBBbXAtT3V0IFIvTAogIEFtcC1PdXQgY2Fwczog
+Ti9BCiAgQW1wLU91dCB2YWxzOiAgWzB4NGYgMHg0Zl0KICBDb252ZXJ0ZXI6IHN0cmVhbT0wLCBj
+aGFubmVsPTAKICBQb3dlcjogc2V0dGluZz1EMCwgYWN0dWFsPUQwCiAgRGVsYXk6IDEzIHNhbXBs
+ZXMKTm9kZSAweDExIFtBdWRpbyBPdXRwdXRdIHdjYXBzIDB4ZDBjMDU6IFN0ZXJlbyBBbXAtT3V0
+IFIvTAogIEFtcC1PdXQgY2FwczogTi9BCiAgQW1wLU91dCB2YWxzOiAgWzB4M2EgMHgzYV0KICBD
+b252ZXJ0ZXI6IHN0cmVhbT0wLCBjaGFubmVsPTAKICBQb3dlcjogc2V0dGluZz1EMCwgYWN0dWFs
+PUQwCiAgRGVsYXk6IDEzIHNhbXBsZXMKTm9kZSAweDEyIFtBdWRpbyBJbnB1dF0gd2NhcHMgMHgx
+ZDA1NDE6IFN0ZXJlbwogIENvbnZlcnRlcjogc3RyZWFtPTAsIGNoYW5uZWw9MAogIFNESS1TZWxl
+Y3Q6IDAKICBQb3dlcjogc2V0dGluZz1EMywgYWN0dWFsPUQzCiAgRGVsYXk6IDEzIHNhbXBsZXMK
+ICBDb25uZWN0aW9uOiAxCiAgICAgMHgxYwogIFByb2Nlc3NpbmcgY2FwczogYmVuaWduPTAsIG5j
+b2VmZj0wCk5vZGUgMHgxMyBbQXVkaW8gSW5wdXRdIHdjYXBzIDB4MWQwNTQxOiBTdGVyZW8KICBD
+b252ZXJ0ZXI6IHN0cmVhbT0wLCBjaGFubmVsPTAKICBTREktU2VsZWN0OiAwCiAgUG93ZXI6IHNl
+dHRpbmc9RDMsIGFjdHVhbD1EMwogIERlbGF5OiAxMyBzYW1wbGVzCiAgQ29ubmVjdGlvbjogMQog
+ICAgIDB4MWQKICBQcm9jZXNzaW5nIGNhcHM6IGJlbmlnbj0wLCBuY29lZmY9MApOb2RlIDB4MTQg
+W1BpbiBDb21wbGV4XSB3Y2FwcyAweDQwMDEwMDogTW9ubwogIFBpbmNhcCAweDAwMDAwMDEwOiBP
+VVQKICBQaW4gRGVmYXVsdCAweDQwZjAwMGYzOiBbTi9BXSBPdGhlciBhdCBFeHQgTi9BCiAgICBD
+b25uID0gVW5rbm93biwgQ29sb3IgPSBVbmtub3duCiAgICBEZWZBc3NvY2lhdGlvbiA9IDB4Ziwg
+U2VxdWVuY2UgPSAweDMKICBQaW4tY3RsczogMHgwMDoKICBDb25uZWN0aW9uOiAxCiAgICAgMHgx
+NgpOb2RlIDB4MTUgW0F1ZGlvIFNlbGVjdG9yXSB3Y2FwcyAweDMwMDEwMTogU3RlcmVvCiAgQ29u
+bmVjdGlvbjogMwogICAgIDB4MTAqIDB4MTEgMHgxNwpOb2RlIDB4MTYgW0F1ZGlvIE1peGVyXSB3
+Y2FwcyAweDIwMDEwMDogTW9ubwogIENvbm5lY3Rpb246IDEKICAgICAweDE1Ck5vZGUgMHgxNyBb
+QXVkaW8gTWl4ZXJdIHdjYXBzIDB4MjAwMTBiOiBTdGVyZW8gQW1wLUluCiAgQW1wLUluIGNhcHM6
+IG9mcz0weDE3LCBuc3RlcHM9MHgxZiwgc3RlcHNpemU9MHgwNSwgbXV0ZT0xCiAgQW1wLUluIHZh
+bHM6ICBbMHg5NyAweDk3XSBbMHg5NyAweDk3XSBbMHg5NyAweDk3XSBbMHg5NyAweDk3XSBbMHg5
+NyAweDk3XQogIENvbm5lY3Rpb246IDUKICAgICAweDEwIDB4MTEgMHgyNyAweDFhIDB4MWIKTm9k
+ZSAweDE4IFtQaW4gQ29tcGxleF0gd2NhcHMgMHg0MDAwMGQ6IFN0ZXJlbyBBbXAtT3V0CiAgQW1w
+LU91dCBjYXBzOiBvZnM9MHgwMCwgbnN0ZXBzPTB4MDMsIHN0ZXBzaXplPTB4MjcsIG11dGU9MAog
+IEFtcC1PdXQgdmFsczogIFsweDAwIDB4MDBdCiAgUGluY2FwIDB4MDAwMDAwMjA6IElOCiAgUGlu
+IERlZmF1bHQgMHg5MGE2MDM3MDogW0ZpeGVkXSBNaWMgYXQgSW50IE4vQQogICAgQ29ubiA9IERp
+Z2l0YWwsIENvbG9yID0gVW5rbm93bgogICAgRGVmQXNzb2NpYXRpb24gPSAweDcsIFNlcXVlbmNl
+ID0gMHgwCiAgICBNaXNjID0gTk9fUFJFU0VOQ0UKICBQaW4tY3RsczogMHgwMDoKTm9kZSAweDE5
+IFtQaW4gQ29tcGxleF0gd2NhcHMgMHg0MDAwMGQ6IFN0ZXJlbyBBbXAtT3V0CiAgQW1wLU91dCBj
+YXBzOiBvZnM9MHgwMCwgbnN0ZXBzPTB4MDMsIHN0ZXBzaXplPTB4MjcsIG11dGU9MAogIEFtcC1P
+dXQgdmFsczogIFsweDAwIDB4MDBdCiAgUGluY2FwIDB4MDAwMDAwMjA6IElOCiAgUGluIERlZmF1
+bHQgMHg0MGYwMDBmNTogW04vQV0gT3RoZXIgYXQgRXh0IE4vQQogICAgQ29ubiA9IFVua25vd24s
+IENvbG9yID0gVW5rbm93bgogICAgRGVmQXNzb2NpYXRpb24gPSAweGYsIFNlcXVlbmNlID0gMHg1
+CiAgUGluLWN0bHM6IDB4MDA6Ck5vZGUgMHgxYSBbQXVkaW8gU2VsZWN0b3JdIHdjYXBzIDB4MzAw
+MTBkOiBTdGVyZW8gQW1wLU91dAogIEFtcC1PdXQgY2Fwczogb2ZzPTB4MDAsIG5zdGVwcz0weDAz
+LCBzdGVwc2l6ZT0weDI3LCBtdXRlPTAKICBBbXAtT3V0IHZhbHM6ICBbMHgwMCAweDAwXQogIENv
+bm5lY3Rpb246IDMKICAgICAweDBiKiAweDBjIDB4MGUKTm9kZSAweDFiIFtBdWRpbyBTZWxlY3Rv
+cl0gd2NhcHMgMHgzMDAxMGQ6IFN0ZXJlbyBBbXAtT3V0CiAgQW1wLU91dCBjYXBzOiBvZnM9MHgw
+MCwgbnN0ZXBzPTB4MDMsIHN0ZXBzaXplPTB4MjcsIG11dGU9MAogIEFtcC1PdXQgdmFsczogIFsw
+eDAwIDB4MDBdCiAgQ29ubmVjdGlvbjogMwogICAgIDB4MGIqIDB4MGMgMHgwZQpOb2RlIDB4MWMg
+W0F1ZGlvIFNlbGVjdG9yXSB3Y2FwcyAweDMwMDkwZDogU3RlcmVvIEFtcC1PdXQgUi9MCiAgQW1w
+LU91dCBjYXBzOiBvZnM9MHgwMCwgbnN0ZXBzPTB4MGYsIHN0ZXBzaXplPTB4MDUsIG11dGU9MQog
+IEFtcC1PdXQgdmFsczogIFsweDBkIDB4MGRdCiAgQ29ubmVjdGlvbjogNAogICAgIDB4MWEqIDB4
+MTcgMHgxOCAweDE5Ck5vZGUgMHgxZCBbQXVkaW8gU2VsZWN0b3JdIHdjYXBzIDB4MzAwOTBkOiBT
+dGVyZW8gQW1wLU91dCBSL0wKICBBbXAtT3V0IGNhcHM6IG9mcz0weDAwLCBuc3RlcHM9MHgwZiwg
+c3RlcHNpemU9MHgwNSwgbXV0ZT0xCiAgQW1wLU91dCB2YWxzOiAgWzB4ODAgMHg4MF0KICBDb25u
+ZWN0aW9uOiA0CiAgICAgMHgxYiogMHgxNyAweDE4IDB4MTkKTm9kZSAweDFlIFtQaW4gQ29tcGxl
+eF0gd2NhcHMgMHg0MDAzMDE6IFN0ZXJlbyBEaWdpdGFsCiAgUGluY2FwIDB4MDAwMDAwMTA6IE9V
+VAogIFBpbiBEZWZhdWx0IDB4MjE0NDEwYTA6IFtKYWNrXSBTUERJRiBPdXQgYXQgU2VwIFJlYXIK
+ICAgIENvbm4gPSBSQ0EsIENvbG9yID0gQmxhY2sKICAgIERlZkFzc29jaWF0aW9uID0gMHhhLCBT
+ZXF1ZW5jZSA9IDB4MAogIFBpbi1jdGxzOiAweDQwOiBPVVQKICBDb25uZWN0aW9uOiAxCiAgICAg
+MHgyNApOb2RlIDB4MWYgW1BpbiBDb21wbGV4XSB3Y2FwcyAweDQwMDcwMTogU3RlcmVvIERpZ2l0
+YWwKICBQaW5jYXAgMHgwMDAxMDAxMDogT1VUIEVBUEQKICBFQVBEIDB4MDoKICBQaW4gRGVmYXVs
+dCAweDQwZjEwMGY1OiBbTi9BXSBPdGhlciBhdCBFeHQgTi9BCiAgICBDb25uID0gMS84LCBDb2xv
+ciA9IFVua25vd24KICAgIERlZkFzc29jaWF0aW9uID0gMHhmLCBTZXF1ZW5jZSA9IDB4NQogIFBp
+bi1jdGxzOiAweDAwOgogIFBvd2VyOiBzZXR0aW5nPUQwLCBhY3R1YWw9RDAKICBDb25uZWN0aW9u
+OiAyCiAgICAgMHgyNCogMHgyNQpOb2RlIDB4MjAgW1BpbiBDb21wbGV4XSB3Y2FwcyAweDQwMDMw
+MTogU3RlcmVvIERpZ2l0YWwKICBQaW5jYXAgMHgwMDAwMDAxMDogT1VUCiAgUGluIERlZmF1bHQg
+MHg0MGYxMDBmNjogW04vQV0gT3RoZXIgYXQgRXh0IE4vQQogICAgQ29ubiA9IDEvOCwgQ29sb3Ig
+PSBVbmtub3duCiAgICBEZWZBc3NvY2lhdGlvbiA9IDB4ZiwgU2VxdWVuY2UgPSAweDYKICBQaW4t
+Y3RsczogMHgwMDoKICBDb25uZWN0aW9uOiAxCiAgICAgMHgyNQpOb2RlIDB4MjEgW0F1ZGlvIE91
+dHB1dF0gd2NhcHMgMHg0MDIxMTogU3RlcmVvIERpZ2l0YWwKICBDb252ZXJ0ZXI6IHN0cmVhbT0w
+LCBjaGFubmVsPTAKICBEaWdpdGFsOgogIERpZ2l0YWwgY2F0ZWdvcnk6IDB4MAogIFBDTToKICAg
+IHJhdGVzIFsweDdlMF06IDQ0MTAwIDQ4MDAwIDg4MjAwIDk2MDAwIDE3NjQwMCAxOTIwMDAKICAg
+IGJpdHMgWzB4ZV06IDE2IDIwIDI0CiAgICBmb3JtYXRzIFsweDVdOiBQQ00gQUMzCiAgRGVsYXk6
+IDQgc2FtcGxlcwpOb2RlIDB4MjIgW0F1ZGlvIE91dHB1dF0gd2NhcHMgMHg0MDIxMTogU3RlcmVv
+IERpZ2l0YWwKICBDb252ZXJ0ZXI6IHN0cmVhbT0wLCBjaGFubmVsPTAKICBEaWdpdGFsOgogIERp
+Z2l0YWwgY2F0ZWdvcnk6IDB4MAogIFBDTToKICAgIHJhdGVzIFsweDdlMF06IDQ0MTAwIDQ4MDAw
+IDg4MjAwIDk2MDAwIDE3NjQwMCAxOTIwMDAKICAgIGJpdHMgWzB4ZV06IDE2IDIwIDI0CiAgICBm
+b3JtYXRzIFsweDVdOiBQQ00gQUMzCiAgRGVsYXk6IDQgc2FtcGxlcwpOb2RlIDB4MjMgW1ZlbmRv
+ciBEZWZpbmVkIFdpZGdldF0gd2NhcHMgMHhmMDAwMDA6IE1vbm8KTm9kZSAweDI0IFtBdWRpbyBT
+ZWxlY3Rvcl0gd2NhcHMgMHgzMDAxMDE6IFN0ZXJlbwogIENvbm5lY3Rpb246IDMKICAgICAweDIx
+KiAweDFjIDB4MWQKTm9kZSAweDI1IFtBdWRpbyBTZWxlY3Rvcl0gd2NhcHMgMHgzMDAxMDE6IFN0
+ZXJlbwogIENvbm5lY3Rpb246IDMKICAgICAweDIyKiAweDFjIDB4MWQKTm9kZSAweDI2IFtCZWVw
+IEdlbmVyYXRvciBXaWRnZXRdIHdjYXBzIDB4NzAwMDBjOiBNb25vIEFtcC1PdXQKICBBbXAtT3V0
+IGNhcHM6IG9mcz0weDAzLCBuc3RlcHM9MHgwMywgc3RlcHNpemU9MHgxNywgbXV0ZT0xCiAgQW1w
+LU91dCB2YWxzOiAgWzB4MDBdCk5vZGUgMHgyNyBbUGluIENvbXBsZXhdIHdjYXBzIDB4NDAwMDAw
+OiBNb25vCiAgUGluY2FwIDB4MDAwMDAwMjA6IElOCiAgUGluIERlZmF1bHQgMHg0MGYwMDBmNzog
+W04vQV0gT3RoZXIgYXQgRXh0IE4vQQogICAgQ29ubiA9IFVua25vd24sIENvbG9yID0gVW5rbm93
+bgogICAgRGVmQXNzb2NpYXRpb24gPSAweGYsIFNlcXVlbmNlID0gMHg3CiAgUGluLWN0bHM6IDB4
+MDA6Ck5vZGUgMHgyOCBbVm9sdW1lIEtub2IgV2lkZ2V0XSB3Y2FwcyAweDYwMDAwMDogTW9ubwog
+IFZvbHVtZS1Lbm9iOiBkZWx0YT0xLCBzdGVwcz0xMjcsIGRpcmVjdD0xLCB2YWw9MTI3CiAgQ29u
+bmVjdGlvbjogMgogICAgIDB4MTAqIDB4MTEKQ29kZWM6IExTSSBJRCAxMDQwCkFkZHJlc3M6IDEK
+VmVuZG9yIElkOiAweDExYzExMDQwClN1YnN5c3RlbSBJZDogMHgxMDNjMTM3ZQpSZXZpc2lvbiBJ
+ZDogMHgxMDAyMDAKTW9kZW0gRnVuY3Rpb24gR3JvdXA6IDB4MQpDb2RlYzogQVRJIEFUSSBSUzY5
+MC83ODAgSERNSQpBZGRyZXNzOiAwClZlbmRvciBJZDogMHgxMDAyNzkxYQpTdWJzeXN0ZW0gSWQ6
+IDB4NzkxYTAwClJldmlzaW9uIElkOiAweDEwMDAwMApObyBNb2RlbSBGdW5jdGlvbiBHcm91cCBm
+b3VuZApEZWZhdWx0IFBDTToKICAgIHJhdGVzIFsweDQwXTogNDgwMDAKICAgIGJpdHMgWzB4Ml06
+IDE2CiAgICBmb3JtYXRzIFsweDFdOiBQQ00KRGVmYXVsdCBBbXAtSW4gY2FwczogTi9BCkRlZmF1
+bHQgQW1wLU91dCBjYXBzOiBOL0EKR1BJTzogaW89MCwgbz0wLCBpPTAsIHVuc29saWNpdGVkPTAs
+IHdha2U9MApOb2RlIDB4MDIgW0F1ZGlvIE91dHB1dF0gd2NhcHMgMHgyMDE6IFN0ZXJlbyBEaWdp
+dGFsCiAgQ29udmVydGVyOiBzdHJlYW09MCwgY2hhbm5lbD0wCiAgRGlnaXRhbDoKICBEaWdpdGFs
+IGNhdGVnb3J5OiAweDAKTm9kZSAweDAzIFtQaW4gQ29tcGxleF0gd2NhcHMgMHg0MDAzODE6IFN0
+ZXJlbyBEaWdpdGFsCiAgUGluY2FwIDB4MDAwMDAwOTQ6IE9VVCBEZXRlY3QgSERNSQogIFBpbiBE
+ZWZhdWx0IDB4MTg1NjAwMTA6IFtKYWNrXSBEaWdpdGFsIE91dCBhdCBJbnQgSERNSQogICAgQ29u
+biA9IERpZ2l0YWwsIENvbG9yID0gVW5rbm93bgogICAgRGVmQXNzb2NpYXRpb24gPSAweDEsIFNl
+cXVlbmNlID0gMHgwCiAgUGluLWN0bHM6IDB4NDA6IE9VVAogIFVuc29saWNpdGVkOiB0YWc9MDAs
+IGVuYWJsZWQ9MAogIENvbm5lY3Rpb246IDEKICAgICAweDAyCi0tZW5kY29sbGFwc2UtLQoKCg==
+
+------=_Part_31392_2842450.1229254252537--
