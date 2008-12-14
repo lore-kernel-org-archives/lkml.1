@@ -1,116 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbYLNH3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYLNHzE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753315AbYLNH3X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 02:29:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYLNH3O
+	id S1753960AbYLNHzE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 02:55:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYLNHyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 02:29:14 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48514 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751034AbYLNH3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 02:29:13 -0500
-Message-ID: <4944B5A4.9060706@kernel.org>
-Date: Sat, 13 Dec 2008 23:28:36 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	Sun, 14 Dec 2008 02:54:50 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:26265 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751034AbYLNHys (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 02:54:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=K3rqs5rl6YDmH0PE55EQfiejAMOqOl3SiN5Qdw7D8WwuBryNQwUEuCHezF/KZe9t3y
+         iML0ZqIOFCtxJ+HodQ3yjW/KqexBuCzJ6lxuF/6ry3P1SMhaQeuIcP/rtOzznPGoxy9d
+         O9aTApicNNZ3h4ORK02RQoWDDi0gtYxviW7no=
+Message-ID: <3f9a31f40812132354k6f9e7b80o30d3236687dffba0@mail.gmail.com>
+Date: Sun, 14 Dec 2008 13:24:47 +0530
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       lrodriguez@atheros.com, jmalinen@atheros.com,
+       linux-wireless@vger.kernel.org, ath9k-devel@venema.h4ckr.net
+Subject: BUG - ath9k keep on disconnecting in 2.6.28-rc8
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] add init_start_cpus to config boot cpus -v2
-References: <4944A279.5020009@kernel.org> <20081213221842.583f1e38.akpm@linux-foundation.org>
-In-Reply-To: <20081213221842.583f1e38.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello all,
 
-Impact: new command line
+I am facing problem with 2.6.28-rc8, ath9k keep on disconnecting.
 
-so could select cpus to be started during init stage.
+dmesg :
+ath9k: 0.1
+ath9k 0000:08:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+ath9k 0000:08:00.0: setting latency timer to 64
+phy0: Selected rate control algorithm 'ath9k_rate_control'
+Registered led device: ath9k-phy0:radio
+Registered led device: ath9k-phy0:assoc
+Registered led device: ath9k-phy0:tx
+Registered led device: ath9k-phy0:rx
+phy0: Atheros 9280: mem=0xffffc20006200000, irq=17
 
-example:
-init_start_cpus=2,4,6
-to start core 0 only on every node or thread 0 or all cores
+/sbin/lspci -vv :
+08:00.0 Network controller: Atheros Communications Inc. Device 002a (rev 01)
+	Subsystem: Hewlett-Packard Company Device 1381
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 128 bytes
+	Interrupt: pin A routed to IRQ 17
+	Region 0: Memory at d1100000 (64-bit, non-prefetchable) [size=64K]
+	Capabilities: [40] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2- AuxCurrent=375mA PME(D0+,D1+,D2-,D3hot+,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit- Count=1/1 Enable-
+		Address: 00000000  Data: 0000
+	Capabilities: [60] Express (v1) Legacy Endpoint, MSI 00
+		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, L1 <64us
+			ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
+		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
+			MaxPayload 128 bytes, MaxReadReq 512 bytes
+		DevSta:	CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr- TransPend-
+		LnkCap:	Port #0, Speed 2.5GT/s, Width x1, ASPM unknown, Latency L0
+<512ns, L1 <64us
+			ClockPM- Suprise- LLActRep- BwNot-
+		LnkCtl:	ASPM Disabled; RCB 128 bytes Disabled- Retrain- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive-
+BWMgmt- ABWMgmt-
+	Capabilities: [90] MSI-X: Enable- Mask- TabSize=1
+		Vector table: BAR=0 offset=00000000
+		PBA: BAR=0 offset=00000000
+	Capabilities: [100] Advanced Error Reporting
+		UESta:	DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF-
+MalfTLP- ECRC- UnsupReq+ ACSVoil-
+		UEMsk:	DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF-
+MalfTLP- ECRC- UnsupReq- ACSVoil-
+		UESvrt:	DLP+ SDES- TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+
+MalfTLP+ ECRC- UnsupReq- ACSVoil-
+		CESta:	RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
+		CESta:	RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
+		AERCap:	First Error Pointer: 14, GenCap+ CGenEn- ChkCap+ ChkEn-
+	Capabilities: [140] Virtual Channel <?>
+	Capabilities: [160] Device Serial Number 00-00-00-00-00-00-00-00
+	Kernel driver in use: ath9k
+	Kernel modules: ath9k
 
-init_start_cpus=0
-not start other APs, and later let user to use
- echo 1 > /sys/devices/cpu/cpu2
-to start them in user space.
+Here are kernel messages telling disconnecting info :
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+ForceXPAon: 0
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+wlan0: authentication with AP 00:11:95:9e:df:f6 timed out
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+ForceXPAon: 0
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+wlan0: authentication with AP 00:11:95:9e:df:f6 timed out
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+ForceXPAon: 0
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+ForceXPAon: 0
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+wlan0: authenticate with AP 00:11:95:9e:df:f6
+wlan0: authentication with AP 00:11:95:9e:df:f6 timed out
+wlan0: direct probe to AP 00:11:95:9e:df:f6 try 1
+ForceXPAon: 0
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+If you need more information please let me know.
 
----
- Documentation/kernel-parameters.txt |   14 ++++++++++++++
- init/main.c                         |   19 ++++++++++++++++++-
- 2 files changed, 32 insertions(+), 1 deletion(-)
+Thank you,
 
-Index: linux-2.6/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6/Documentation/kernel-parameters.txt
-@@ -918,6 +918,20 @@ and is between 256 and 4096 characters.
- 		forcesac
- 		soft
- 
-+	init_start_cpus=	[KNL,SMP] set CPUs that will be started during
-+			init stage.
-+			Format:
-+			<cpu number>,...,<cpu number>
-+			or
-+			<cpu number>-<cpu number>
-+			(must be a positive range in ascending order)
-+			or a mixture
-+			<cpu number>,...,<cpu number>-<cpu number>
-+
-+			This option can be used to specify one or more CPUs
-+			to be started during init stage.
-+			<cpu number> begins at 0 and the maximum value is
-+			"number of CPUs in system - 1".
- 
- 	intel_iommu=	[DMAR] Intel IOMMU driver (DMAR) option
- 		off
-Index: linux-2.6/init/main.c
-===================================================================
---- linux-2.6.orig/init/main.c
-+++ linux-2.6/init/main.c
-@@ -413,11 +413,28 @@ static void __init setup_per_cpu_areas(v
- }
- #endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
- 
-+static __initdata cpumask_var_t cpu_init_start_mask;
-+
-+/* Setup the mask of cpus configured for init start */
-+static int __init init_start_cpu_setup(char *str)
-+{
-+	cpulist_parse(str, *cpu_init_start_mask);
-+
-+	return 1;
-+}
-+
-+__setup("init_start_cpus=", init_start_cpu_setup);
-+
- /* Called by boot processor to activate the rest. */
- static void __init smp_init(void)
- {
- 	unsigned int cpu;
- 
-+	if (cpumask_empty(cpu_init_start_mask))
-+		cpumask_copy(cpu_init_start_mask, &cpu_present_map);
-+	else
-+		cpumask_and(cpu_init_start_mask, cpu_init_start_mask,
-+					 &cpu_present_map);
- 	/*
- 	 * Set up the current CPU as possible to migrate to.
- 	 * The other ones will be done by cpu_up/cpu_down()
-@@ -426,7 +443,7 @@ static void __init smp_init(void)
- 	cpu_set(cpu, cpu_active_map);
- 
- 	/* FIXME: This should be done in userspace --RR */
--	for_each_present_cpu(cpu) {
-+	for_each_cpu_mask_nr(cpu, *cpu_init_start_mask) {
- 		if (num_online_cpus() >= setup_max_cpus)
- 			break;
- 		if (!cpu_online(cpu))
-
+Jaswinder Singh.
