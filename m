@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbYLNK7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbYLNLPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbYLNK7u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 05:59:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYLNK7k
+	id S1754219AbYLNLPi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 06:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYLNLP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 05:59:40 -0500
-Received: from imag.imag.fr ([129.88.30.1]:60612 "EHLO imag.imag.fr"
+	Sun, 14 Dec 2008 06:15:29 -0500
+Received: from mail.work.de ([212.12.32.20]:41769 "EHLO mail.work.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752438AbYLNK7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 05:59:39 -0500
-X-Greylist: delayed 1383 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Dec 2008 05:59:39 EST
-To: David Howells <dhowells@redhat.com>
-Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Simplified GIT usage guide
-References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
-From: Matthieu Moy <Matthieu.Moy@imag.fr>
-Date: Sun, 14 Dec 2008 11:33:38 +0100
-In-Reply-To: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk> (David Howells's message of "Fri\, 12 Dec 2008 18\:28\:27 +0000")
-Message-ID: <vpq7i63nj0d.fsf@bauges.imag.fr>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.60 (gnu/linux)
+	id S1752901AbYLNLP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 06:15:28 -0500
+Message-ID: <4944EAC3.1020407@gmail.com>
+Date: Sun, 14 Dec 2008 15:15:15 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (imag.imag.fr [129.88.30.1]); Sun, 14 Dec 2008 11:33:39 +0100 (CET)
-X-IMAG-MailScanner-Information: Please contact MI2S MIM for more information
-X-IMAG-MailScanner: Found to be clean
-X-IMAG-MailScanner-SpamCheck: 
-X-IMAG-MailScanner-From: moy@imag.fr
+To: Grant Grundler <grundler@parisc-linux.org>
+CC: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: MSI messages
+References: <49438290.1080502@gmail.com> <20081214081210.GC13371@colo.lackof.org>
+In-Reply-To: <20081214081210.GC13371@colo.lackof.org>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> writes:
+Grant Grundler wrote:
+> On Sat, Dec 13, 2008 at 01:38:24PM +0400, Manu Abraham wrote:
+>> Hi,
+>>
+>> I am wondering how to handle this:
+>>
+>> Does the kernel somehow handle MSI message readback from the PCI config space 
+>> for the MSI message as described in 6.8.1 of the PCI Bus specification 2.3 or 
+>> does a device specific driver have to read the Message Address and Data ?
+>>
+>> To put it short: i am wondering how i should read the MSI messages.
+> 
+> The "message" is actually mapped to an the interrupt vector by the core
+> generic interrupt handling code in the kernel.
+> 
+> A "GSI" (Generic Sys Interrupt?) is associated with each entry in
+> the MSI-X table. Driver then calls request_irq() to bind an interrupt
+> handler to each GSI. So the driver never directly sees the "message".
 
-> +So, you want to do some Linux kernel development?  And you hear there's this
-> +piece of software called 'GIT' that you probably ought to be using when dealing
-> +with the kernel community?
+Oh, you mean the array of irq_handlers in the MSI-X table should 
+correspond to a particular message ?
 
-I'm afraid too many people read this as "Git is only about kernel
-hacking, if you're not a kernel hacker, find something else".
+I remember sometime back somebody stated that one might not get 
+the requested number of handlers what you requested. 
 
-(and I think far too many people already think that indeed)
+In such a case, if the irq_handlers are mapped in a static fashion, one 
+might not get any interrupt callbacks for a specific functionality of 
+the hardware. Or is there something missing in what i understood ?
 
--- 
-Matthieu
+Regards,
+Manu
