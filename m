@@ -1,114 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756417AbYLNINj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbYLNIN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756417AbYLNINj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 03:13:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbYLNIHe
+	id S1756590AbYLNIN4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 03:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbYLNIHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 03:07:34 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59915 "EHLO mx2.redhat.com"
+	Sun, 14 Dec 2008 03:07:36 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59924 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752884AbYLNIHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 03:07:15 -0500
+	id S1753166AbYLNIHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 03:07:16 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-       Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: [PATCH 03/36] KVM: s390: Fix refcounting and allow module unload
-Date: Sun, 14 Dec 2008 10:06:36 +0200
-Message-Id: <1229242029-13410-4-git-send-email-avi@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Mark McLoughlin <markmc@redhat.com>
+Subject: [PATCH 16/36] KVM: don't fee an unallocated irq source id
+Date: Sun, 14 Dec 2008 10:06:49 +0200
+Message-Id: <1229242029-13410-17-git-send-email-avi@redhat.com>
 In-Reply-To: <1229242029-13410-1-git-send-email-avi@redhat.com>
 References: <1229242029-13410-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+From: Mark McLoughlin <markmc@redhat.com>
 
-Currently it is impossible to unload the kvm module on s390.
-This patch fixes kvm_arch_destroy_vm to release all cpus.
-This make it possible to unload the module.
+Set assigned_dev->irq_source_id to -1 so that we can avoid freeing
+a source ID which we never allocated.
 
-In addition we stop messing with the module refcount in arch code.
-
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Acked-by: Carsten Otte <cotte@de.ibm.com>
+Signed-off-by: Mark McLoughlin <markmc@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/s390/kvm/kvm-s390.c |   35 +++++++++++++++++++++--------------
- 1 files changed, 21 insertions(+), 14 deletions(-)
+ virt/kvm/kvm_main.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 8b00eb2..3db9e5d 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -185,8 +185,6 @@ struct kvm *kvm_arch_create_vm(void)
- 	debug_register_view(kvm->arch.dbf, &debug_sprintf_view);
- 	VM_EVENT(kvm, 3, "%s", "vm created");
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 8dab7ce..63fd882 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -210,7 +210,10 @@ static void kvm_free_assigned_device(struct kvm *kvm,
+ 		pci_disable_msi(assigned_dev->dev);
  
--	try_module_get(THIS_MODULE);
--
- 	return kvm;
- out_nodbf:
- 	free_page((unsigned long)(kvm->arch.sca));
-@@ -196,13 +194,32 @@ out_nokvm:
- 	return ERR_PTR(rc);
- }
- 
-+void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
-+{
-+	VCPU_EVENT(vcpu, 3, "%s", "free cpu");
-+	free_page((unsigned long)(vcpu->arch.sie_block));
-+	kfree(vcpu);
-+}
+ 	kvm_unregister_irq_ack_notifier(&assigned_dev->ack_notifier);
+-	kvm_free_irq_source_id(kvm, assigned_dev->irq_source_id);
 +
-+static void kvm_free_vcpus(struct kvm *kvm)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
-+		if (kvm->vcpus[i]) {
-+			kvm_arch_vcpu_destroy(kvm->vcpus[i]);
-+			kvm->vcpus[i] = NULL;
-+		}
-+	}
-+}
-+
- void kvm_arch_destroy_vm(struct kvm *kvm)
- {
--	debug_unregister(kvm->arch.dbf);
-+	kvm_free_vcpus(kvm);
- 	kvm_free_physmem(kvm);
- 	free_page((unsigned long)(kvm->arch.sca));
-+	debug_unregister(kvm->arch.dbf);
- 	kfree(kvm);
--	module_put(THIS_MODULE);
- }
++	if (assigned_dev->irq_source_id != -1)
++		kvm_free_irq_source_id(kvm, assigned_dev->irq_source_id);
++	assigned_dev->irq_source_id = -1;
  
- /* Section: vcpu related */
-@@ -308,8 +325,6 @@ struct kvm_vcpu *kvm_arch_vcpu_create(struct kvm *kvm,
- 	VM_EVENT(kvm, 3, "create cpu %d at %p, sie block at %p", id, vcpu,
- 		 vcpu->arch.sie_block);
- 
--	try_module_get(THIS_MODULE);
+ 	if (cancel_work_sync(&assigned_dev->interrupt_work))
+ 		/* We had pending work. That means we will have to take
+@@ -466,7 +469,7 @@ static int kvm_vm_ioctl_assign_device(struct kvm *kvm,
+ 	match->host_busnr = assigned_dev->busnr;
+ 	match->host_devfn = assigned_dev->devfn;
+ 	match->dev = dev;
 -
- 	return vcpu;
- out_free_cpu:
- 	kfree(vcpu);
-@@ -317,14 +332,6 @@ out_nomem:
- 	return ERR_PTR(rc);
- }
++	match->irq_source_id = -1;
+ 	match->kvm = kvm;
  
--void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
--{
--	VCPU_EVENT(vcpu, 3, "%s", "destroy cpu");
--	free_page((unsigned long)(vcpu->arch.sie_block));
--	kfree(vcpu);
--	module_put(THIS_MODULE);
--}
--
- int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
- {
- 	/* kvm common code refers to this, but never calls it */
+ 	list_add(&match->list, &kvm->arch.assigned_dev_head);
 -- 
 1.6.0.3
 
