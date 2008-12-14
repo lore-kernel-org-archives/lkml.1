@@ -1,51 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbYLNIOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbYLNIPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699AbYLNIOo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 03:14:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbYLNIHh
+	id S1756099AbYLNIPD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 03:15:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbYLNIHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 03:07:37 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59930 "EHLO mx2.redhat.com"
+	Sun, 14 Dec 2008 03:07:39 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59928 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753992AbYLNIHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 03:07:17 -0500
+	id S1753901AbYLNIHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 03:07:16 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 12/36] KVM: fix sparse warning
-Date: Sun, 14 Dec 2008 10:06:45 +0200
-Message-Id: <1229242029-13410-13-git-send-email-avi@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Mark McLoughlin <markmc@redhat.com>
+Subject: [PATCH 18/36] KVM: split out kvm_free_assigned_irq()
+Date: Sun, 14 Dec 2008 10:06:51 +0200
+Message-Id: <1229242029-13410-19-git-send-email-avi@redhat.com>
 In-Reply-To: <1229242029-13410-1-git-send-email-avi@redhat.com>
 References: <1229242029-13410-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hannes Eder <hannes@hanneseder.net>
+From: Mark McLoughlin <markmc@redhat.com>
 
-Impact: make global function static
+Split out the logic corresponding to undoing assign_irq() and
+clean it up a bit.
 
-  virt/kvm/kvm_main.c:85:6: warning: symbol 'kvm_rebooting' was not declared. Should it be static?
-
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+Signed-off-by: Mark McLoughlin <markmc@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- virt/kvm/kvm_main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ virt/kvm/kvm_main.c |   29 ++++++++++++++++++++++-------
+ 1 files changed, 22 insertions(+), 7 deletions(-)
 
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 54d25e6..8dab7ce 100644
+index 63fd882..e41d39d 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -82,7 +82,7 @@ struct dentry *kvm_debugfs_dir;
- static long kvm_vcpu_ioctl(struct file *file, unsigned int ioctl,
- 			   unsigned long arg);
+@@ -200,14 +200,11 @@ static void kvm_assigned_dev_ack_irq(struct kvm_irq_ack_notifier *kian)
+ 	enable_irq(dev->host_irq);
+ }
  
--bool kvm_rebooting;
-+static bool kvm_rebooting;
+-static void kvm_free_assigned_device(struct kvm *kvm,
+-				     struct kvm_assigned_dev_kernel
+-				     *assigned_dev)
++static void kvm_free_assigned_irq(struct kvm *kvm,
++				  struct kvm_assigned_dev_kernel *assigned_dev)
+ {
+-	if (irqchip_in_kernel(kvm) && assigned_dev->irq_requested_type)
+-		free_irq(assigned_dev->host_irq, (void *)assigned_dev);
+-	if (assigned_dev->irq_requested_type & KVM_ASSIGNED_DEV_HOST_MSI)
+-		pci_disable_msi(assigned_dev->dev);
++	if (!irqchip_in_kernel(kvm))
++		return;
  
- #ifdef KVM_CAP_DEVICE_ASSIGNMENT
+ 	kvm_unregister_irq_ack_notifier(&assigned_dev->ack_notifier);
  
+@@ -215,12 +212,30 @@ static void kvm_free_assigned_device(struct kvm *kvm,
+ 		kvm_free_irq_source_id(kvm, assigned_dev->irq_source_id);
+ 	assigned_dev->irq_source_id = -1;
+ 
++	if (!assigned_dev->irq_requested_type)
++		return;
++
+ 	if (cancel_work_sync(&assigned_dev->interrupt_work))
+ 		/* We had pending work. That means we will have to take
+ 		 * care of kvm_put_kvm.
+ 		 */
+ 		kvm_put_kvm(kvm);
+ 
++	free_irq(assigned_dev->host_irq, (void *)assigned_dev);
++
++	if (assigned_dev->irq_requested_type & KVM_ASSIGNED_DEV_HOST_MSI)
++		pci_disable_msi(assigned_dev->dev);
++
++	assigned_dev->irq_requested_type = 0;
++}
++
++
++static void kvm_free_assigned_device(struct kvm *kvm,
++				     struct kvm_assigned_dev_kernel
++				     *assigned_dev)
++{
++	kvm_free_assigned_irq(kvm, assigned_dev);
++
+ 	pci_reset_function(assigned_dev->dev);
+ 
+ 	pci_release_regions(assigned_dev->dev);
 -- 
 1.6.0.3
 
