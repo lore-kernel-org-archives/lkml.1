@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbYLNQxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbYLNREj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667AbYLNQxV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 11:53:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbYLNQxI
+	id S1754683AbYLNREj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 12:04:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYLNREa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 11:53:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:5834 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753349AbYLNQxG (ORCPT
+	Sun, 14 Dec 2008 12:04:30 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59800 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753387AbYLNRE3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 11:53:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=aAPYbGZqk5lENmqmCi+TVdABJJM895BVzLmnncYWx8ULtCRgAyR+gGfKR7Wnmsv1VB
-         lyxVYuSZs6tT1iHBNSXVBcq5urj+aXW/N3g5jeJGKg4Db+9rMSH73ZhcXX1YdJg9UyVO
-         PT/AI9fnaoxccMhlpVThKY5T8R6NO2poPuRko=
-Message-ID: <e2e108260812140853l21be5a0cxe436bef8c47ccbba@mail.gmail.com>
-Date: Sun, 14 Dec 2008 17:53:04 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: linux-iscsi-target-dev@googlegroups.com
-Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
-Cc: James.Bottomley@hansenpartnership.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       "Mike Christie" <michaelc@cs.wisc.edu>,
-       "Hannes Reinecke" <hare@suse.de>, "Jens Axboe" <jens.axboe@oracle.com>,
-       "Vladislav Bolkhovitin" <vst@vlnb.net>
-In-Reply-To: <1229208606.4153.1069.camel@haakon2.linux-iscsi.org>
+	Sun, 14 Dec 2008 12:04:29 -0500
+Date: Sun, 14 Dec 2008 12:04:26 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/ftrace: add the printk-msg-only option
+In-Reply-To: <49440A75.301@gmail.com>
+Message-ID: <alpine.DEB.1.10.0812141200230.20467@gandalf.stny.rr.com>
+References: <49440A75.301@gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>
-	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>
-	 <54939.1229149205@turing-police.cc.vt.edu>
-	 <e2e108260812130141o3d21bbbdob9e7c9f95d309a74@mail.gmail.com>
-	 <1229162907.4153.857.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812130223q13fd98d8gc1e55881a92b939@mail.gmail.com>
-	 <1229167118.4153.930.camel@haakon2.linux-iscsi.org>
-	 <e2e108260812130356y1fe60713xf844a35c775e161d@mail.gmail.com>
-	 <1229181896.3258.27.camel@localhost.localdomain>
-	 <1229208606.4153.1069.camel@haakon2.linux-iscsi.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 13, 2008 at 11:50 PM, Nicholas A. Bellinger
-<nab@linux-iscsi.org> wrote:
-> On the other side however, the SCST guys are completely opposed to any
-> usage of ConfigFS [ ... ]
 
-It's sad to see that a few hours after James Bottomley asked to stop
-fighting, that you are again spreading half truths about Vladislav and
-myself. We are not opposed to any usage of configfs, but as Vladislav
-carefully explained, we consider it unfortunate that the current
-version of configfs doesn't suit SCST's needs.
+On Sat, 13 Dec 2008, Frederic Weisbecker wrote:
 
-Bart.
+> Impact: display ftrace_printk messages "as is"
+> 
+> By default, ftrace_printk() messages find their output with some other
+> informations like pid, caller, ...
+> Sometimes a developer just want to have the ftrace_printk left "as is", without
+> other information.
+> 
+> This is done by providing a default-off option called printk-msg-only.
+> To enable it, just do `echo printk-msg-only > /debugfs/tracing/trace_options`
+> 
+> Before the patch:
+> 
+>            <...>-2739  [000]   145.692153: __might_sleep: I'm an ftrace_printk msg in __might_sleep
+>            <...>-2739  [000]   145.692155: __might_sleep: I'm another ftrace_printk msg in __might_sleep
+> 
+> After the patch and the printk-msg-only option enabled:
+> 
+> I'm an ftrace_printk msg in __might_sleep
+> I'm another ftrace_printk msg in __might_sleep
+> 
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 8fd3c5a..cd4dbf2 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -287,6 +287,7 @@ static const char *trace_options[] = {
+>  	"annotate",
+>  	"userstacktrace",
+>  	"sym-userobj",
+> +	"printk-msg-only",
+
+Hmm, I'm a bit apprehensive about this approach. We are adding a lot of 
+options that I'm not sure will be used. Is this needed because you added a 
+ftrace printk that you want to not have the header, or because there are 
+ftrace printks that exist that you want to turn on and off. Or perhaps, 
+you want to see the header sometimes and sometimes you do not?
+
+If it is the later two, then sure we could have this option. But if it is 
+the former, then we probably should have another type of ftrace_printk 
+that takes an option to make another event type to tell the output not to 
+print?
+
+Oh well, I have patches in mind to clean up the output code anyway.
+
+-- Steve
