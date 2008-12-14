@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbYLNRmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbYLNRuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbYLNRmZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 12:42:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbYLNRmO
+	id S1752308AbYLNRuT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 12:50:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996AbYLNRuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 12:42:14 -0500
-Received: from smtp0.kfki.hu ([148.6.0.25]:60784 "EHLO smtp0.kfki.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750914AbYLNRmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 12:42:13 -0500
-X-Greylist: delayed 1972 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Dec 2008 12:42:12 EST
-Date: Sun, 14 Dec 2008 18:09:17 +0100 (CET)
-From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-To: Jan Engelhardt <jengelh@medozas.de>
-cc: David Miller <davem@davemloft.net>, ajax@redhat.com,
-       linux-kernel@vger.kernel.org, davej@redhat.com, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, Patrick McHardy <kaber@trash.net>
-Subject: Re: [PATCH] net: Remove a noisy printk
-In-Reply-To: <alpine.LNX.1.10.0812132310080.27276@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.DEB.2.00.0812141745550.2447@blackhole.kfki.hu>
-References: <1229033625-30825-1-git-send-email-ajax@redhat.com> <20081211.203243.124017657.davem@davemloft.net> <alpine.LNX.1.10.0812132310080.27276@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 14 Dec 2008 12:50:06 -0500
+Received: from mail.gmx.net ([213.165.64.20]:39870 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750963AbYLNRuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 12:50:05 -0500
+X-Authenticated: #34473864
+X-Provags-ID: V01U2FsdGVkX1978Es3Med7JFQYeDJXtJ63/HldDX+GngyLA13vwN
+	QWnrLINfB3sk+T
+Message-ID: <49454749.2030901@gmx.de>
+Date: Sun, 14 Dec 2008 18:50:01 +0100
+From: Philipp Kohlbecher <xt28@gmx.de>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: Ian Campbell <ijc@hellion.org.uk>, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: documentation fix regarding boot protocol
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Dec 2008, Jan Engelhardt wrote:
+Documentation/x86/boot.txt describes payload_offset as the offset
+from the end of the real-mode code. In fact, it is more accurately
+described as the offset from the beginning of the protected-mode
+code, as (a) this is how it is actually calculated and (b) the padding
+after the real-mode code is not included in the offset.
 
-> On Friday 2008-12-12 05:32, David Miller wrote:
-> >From: Adam Jackson <ajax@redhat.com>
-> >Date: Thu, 11 Dec 2008 17:13:42 -0500
-> >
-> >> From: Dave Jones <davej@redhat.com>
-> >> 
-> >> These messages are trivial to trigger when running stress tests
-> >> like isic, and add no real value.
-> >> 
-> >> Signed-off-by: Dave Jones <davej@redhat.com>
-> >> Signed-off-by: Adam Jackson <ajax@redhat.com>
-> >
-> >If you don't send this to the netfilter developers nor the networking
-> >developers, noboby knowledgable can even look at this patch.
-> 
-> (For the archive, it's not the Internation Student Identity Card)
-> http://www.packetfactory.net/Projects/ISIC/ :
-> 
-> ?ISIC is a suite of utilities to exercise the stability of an IP
-> Stack and its component stacks (TCP, UDP, ICMP et. al.) It generates
-> piles of pseudo random packets of the target protocol.?
-> 
-> >> @@ -147,8 +147,6 @@ static unsigned int ipv4_conntrack_local(unsigned int hooknum,
-> >>  	/* root is playing with raw sockets. */
-> >>  	if (skb->len < sizeof(struct iphdr) ||
-> >>  	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
-> >> -		if (net_ratelimit())
-> >> -			printk("ipt_hook: happy cracking.\n");
-> >>  		return NF_ACCEPT;
-> >>  	}
-> >>  	return nf_conntrack_in(dev_net(out), PF_INET, hooknum, skb);
-> 
-> I think this change is ok.
+Signed-off-by: Philipp Kohlbecher <xt28@gmx.de>
 
-In a >normal< system one usually does not use raw sockets. So if a root 
-process do use raw socket, at least netfilter sends a notification and 
-there's a chance that someone take notice it by checking the kernel logs.
+---
 
-Yes, if the machine is compromized then the logs can be tampered, if 
-netfilter is compiled as a module, the module can be replaced by another 
-one, and so on. A careful cracker can take care of all the alarms, trip 
-wires. But should we remove them due to nuisances on >test< systems?
+  Documentation/x86/boot.txt |    4 ++--
+  1 files changed, 2 insertions(+), 2 deletions(-)
 
-Rather make it a kernel compile option but do not remove.
+diff --git a/Documentation/x86/boot.txt b/Documentation/x86/boot.txt
+index 83c0033..414b6fb 100644
+--- a/Documentation/x86/boot.txt
++++ b/Documentation/x86/boot.txt
+@@ -537,8 +537,8 @@ Type:		read
+  Offset/size:	0x248/4
+  Protocol:	2.08+
 
-Best regards,
-Jozsef
--
-E-mail  : kadlec@blackhole.kfki.hu, kadlec@mail.kfki.hu
-PGP key : http://www.kfki.hu/~kadlec/pgp_public_key.txt
-Address : KFKI Research Institute for Particle and Nuclear Physics
-          H-1525 Budapest 114, POB. 49, Hungary
+-  If non-zero then this field contains the offset from the end of the
+-  real-mode code to the payload.
++  If non-zero then this field contains the offset from the beginning
++  of the protected-mode code to the payload.
+
+    The payload may be compressed. The format of both the compressed and
+    uncompressed data should be determined using the standard magic
