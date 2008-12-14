@@ -1,84 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbYLNUPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121AbYLNUpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753271AbYLNUPg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 15:15:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYLNUPY
+	id S1753121AbYLNUpB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 15:45:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYLNUow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 15:15:24 -0500
-Received: from smtp0.kfki.hu ([148.6.0.25]:47155 "EHLO smtp0.kfki.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751353AbYLNUPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 15:15:22 -0500
-Date: Sun, 14 Dec 2008 21:15:20 +0100 (CET)
-From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-To: Jan Engelhardt <jengelh@medozas.de>
-cc: David Miller <davem@davemloft.net>, ajax@redhat.com,
-       linux-kernel@vger.kernel.org, davej@redhat.com, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, Patrick McHardy <kaber@trash.net>
-Subject: Re: [PATCH] net: Remove a noisy printk
-In-Reply-To: <alpine.LNX.1.10.0812141905490.10355@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.DEB.2.00.0812142056520.2621@blackhole.kfki.hu>
-References: <1229033625-30825-1-git-send-email-ajax@redhat.com> <20081211.203243.124017657.davem@davemloft.net> <alpine.LNX.1.10.0812132310080.27276@fbirervta.pbzchgretzou.qr> <alpine.DEB.2.00.0812141745550.2447@blackhole.kfki.hu>
- <alpine.LNX.1.10.0812141905490.10355@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 14 Dec 2008 15:44:52 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:38693 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751353AbYLNUov (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 15:44:51 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 14 Dec 2008 21:44:37 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 0/4] firewire: trivia
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.aa7114dbd92c6a7d@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Dec 2008, Jan Engelhardt wrote:
+Following:
+1/4 firewire: core: remove obsolete assertions
+2/4 firewire: standardize a variable name
+3/4 firewire: remove line breaks before function names
+4/4 firewire: core: remove unused definitions
 
-> On Sunday 2008-12-14 18:09, Jozsef Kadlecsik wrote:
-> >> 
-> >> >> @@ -147,8 +147,6 @@ static unsigned int ipv4_conntrack_local(unsigned int hooknum,
-> >> >>  	/* root is playing with raw sockets. */
-> >> >>  	if (skb->len < sizeof(struct iphdr) ||
-> >> >>  	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
-> >> >> -		if (net_ratelimit())
-> >> >> -			printk("ipt_hook: happy cracking.\n");
-> >> >>  		return NF_ACCEPT;
-> >> >>  	}
-> >> >>  	return nf_conntrack_in(dev_net(out), PF_INET, hooknum, skb);
-> >> 
-> >> I think this change is ok.
-> >
-> >In a >normal< system one usually does not use raw sockets. So if a root 
-> >process do use raw socket, at least netfilter sends a notification and 
-> >there's a chance that someone take notice it by checking the kernel logs.
-> >[...]
-> >But should we remove them due to nuisances on >test< systems?
-> >
-> >Rather make it a kernel compile option but do not remove.
-> 
-> This warning is in the conntrack calling code. Iff you play with
-> raw sockets and do something wrong, the generic network code
-> should barf IMHO, not nf_conntrack, and not [nf_conntrack_ipv4 only].
+ drivers/firewire/fw-card.c        |   68 ++++---------
+ drivers/firewire/fw-cdev.c        |  132 +++++++++++---------------
+ drivers/firewire/fw-device.c      |   40 +++----
+ drivers/firewire/fw-device.h      |    3
+ drivers/firewire/fw-iso.c         |   40 +++----
+ drivers/firewire/fw-ohci.c        |  151 +++++++++++++-----------------
+ drivers/firewire/fw-sbp2.c        |   57 ++++-------
+ drivers/firewire/fw-topology.c    |   28 ++---
+ drivers/firewire/fw-topology.h    |   13 --
+ drivers/firewire/fw-transaction.c |  117 ++++++++---------------
+ drivers/firewire/fw-transaction.h |  121 +++++++-----------------
+ 11 files changed, 310 insertions(+), 460 deletions(-)
+-- 
+Stefan Richter
+-=====-==--- ==-- -===-
+http://arcgraph.de/sr/
 
-It is not about doing something wrong at using raw sockets - it's about 
-using raw sockets.
-
-I'm not quite convinced the generic network code should warn about raw 
-sockets. I believe it belongs to the security-related subsystems - 
-netfilter and (or) the security frameworks. [But as netfilter is much more 
-widely used, the 'or' is just theoretical.)
-
-But back to netfilter: this is more than strange. The logging is already 
-removed from iptable_filter|mangle.c - and left in 
-ip6table_filter|mangle.c. The only place in the IPv4 path where the 
-checking happens is in nf_conntrack_l3proto_ipv4.c. IPv6 conntrack does
-it as well, but uses another message text:
-
-        if (skb->len < sizeof(struct ipv6hdr)) {
-                if (net_ratelimit())
-                        printk("ipv6_conntrack_local: packet too short\n");
-
-[ISIC should check IPv6 too ;-).]
-
-Best regards,
-Jozsef
--
-E-mail  : kadlec@blackhole.kfki.hu, kadlec@mail.kfki.hu
-PGP key : http://www.kfki.hu/~kadlec/pgp_public_key.txt
-Address : KFKI Research Institute for Particle and Nuclear Physics
-          H-1525 Budapest 114, POB. 49, Hungary
