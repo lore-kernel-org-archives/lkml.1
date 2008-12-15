@@ -1,67 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751876AbYLOMX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752000AbYLOM0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751876AbYLOMX3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 07:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbYLOMXR
+	id S1752000AbYLOM0S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 07:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbYLOM0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 07:23:17 -0500
-Received: from stinky.trash.net ([213.144.137.162]:54754 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbYLOMXQ (ORCPT
+	Mon, 15 Dec 2008 07:26:09 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:34534 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbYLOM0H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 07:23:16 -0500
-Message-ID: <49464C2C.6030009@trash.net>
-Date: Mon, 15 Dec 2008 13:23:08 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Mon, 15 Dec 2008 07:26:07 -0500
+Date: Mon, 15 Dec 2008 17:55:29 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>
+Subject: Re: [RFC PATCH v5 4/7] sched: bias task wakeups to preferred
+	semi-idle packages
+Message-ID: <20081215122529.GR5457@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Collier-Brown <davecb@sun.com>,
+	Tim Connors <tconnors@astro.swin.edu.au>,
+	Max Krasnyansky <maxk@qualcomm.com>,
+	Gregory Haskins <gregory.haskins@gmail.com>
+References: <20081211173831.2020.57550.stgit@drishya.in.ibm.com> <20081211174304.2020.14746.stgit@drishya.in.ibm.com> <20081215070139.GE18403@balbir.in.ibm.com> <1229329521.14605.17.camel@twins> <1229329984.14605.18.camel@twins> <20081215084642.GJ18403@balbir.in.ibm.com>
 MIME-Version: 1.0
-To: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-CC: Jan Engelhardt <jengelh@medozas.de>, David Miller <davem@davemloft.net>,
-       ajax@redhat.com, linux-kernel@vger.kernel.org, davej@redhat.com,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH] net: Remove a noisy printk
-References: <1229033625-30825-1-git-send-email-ajax@redhat.com> <20081211.203243.124017657.davem@davemloft.net> <alpine.LNX.1.10.0812132310080.27276@fbirervta.pbzchgretzou.qr> <alpine.DEB.2.00.0812141745550.2447@blackhole.kfki.hu> <alpine.LNX.1.10.0812141905490.10355@fbirervta.pbzchgretzou.qr> <alpine.DEB.2.00.0812142056520.2621@blackhole.kfki.hu>
-In-Reply-To: <alpine.DEB.2.00.0812142056520.2621@blackhole.kfki.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20081215084642.GJ18403@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jozsef Kadlecsik wrote:
-> On Sun, 14 Dec 2008, Jan Engelhardt wrote:
-> 
->>> In a >normal< system one usually does not use raw sockets. So if a root 
->>> process do use raw socket, at least netfilter sends a notification and 
->>> there's a chance that someone take notice it by checking the kernel logs.
->>> [...]
->>> But should we remove them due to nuisances on >test< systems?
->>>
->>> Rather make it a kernel compile option but do not remove.
->> This warning is in the conntrack calling code. Iff you play with
->> raw sockets and do something wrong, the generic network code
->> should barf IMHO, not nf_conntrack, and not [nf_conntrack_ipv4 only].
-> 
-> It is not about doing something wrong at using raw sockets - it's about 
-> using raw sockets.
-> 
-> I'm not quite convinced the generic network code should warn about raw 
-> sockets. I believe it belongs to the security-related subsystems - 
-> netfilter and (or) the security frameworks. [But as netfilter is much more 
-> widely used, the 'or' is just theoretical.)
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2008-12-15 14:16:42]:
 
-I agree that it doesn't belong to the generic networking code.
-But the way its handled in netfilter is far from perfect as well.
-Currently multiple modules will spam the ringbuffer repeatedly,
-but offer no possibility to change anything in the behaviour of
-how these packets are treated. Unfortunately we can't handle this
-in the ruleset (which is exactly the reason why we're spamming
-the ringbuffer), so how about we add a module option controlling
-how to treat those packets and remove the printk?
+> * Peter Zijlstra <peterz@infradead.org> [2008-12-15 09:33:04]:
+> 
+> > On Mon, 2008-12-15 at 09:25 +0100, Peter Zijlstra wrote:
+> > > On Mon, 2008-12-15 at 12:31 +0530, Balbir Singh wrote:
+> > > 
+> > > > >  kernel/sched_fair.c |   17 +++++++++++++++++
+> > > > >  1 files changed, 17 insertions(+), 0 deletions(-)
+> > > > > 
+> > > > > diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> > > > > index 98345e4..939f2a1 100644
+> > > > > --- a/kernel/sched_fair.c
+> > > > > +++ b/kernel/sched_fair.c
+> > > > > @@ -1027,6 +1027,23 @@ static int wake_idle(int cpu, struct task_struct *p)
+> > > > >  	cpumask_t tmp;
+> > > > >  	struct sched_domain *sd;
+> > > > >  	int i;
+> > > > > +	unsigned int chosen_wakeup_cpu;
+> > > > > +	int this_cpu;
+> > > > > +
+> > > > > +	/*
+> > > > > +	 * At POWERSAVINGS_BALANCE_WAKEUP level, if both this_cpu and prev_cpu
+> > > > > +	 * are idle and this is not a kernel thread and this task's affinity
+> > > > > +	 * allows it to be moved to preferred cpu, then just move!
+> > > > > +	 */
+> > > > > +
+> > > > > +	this_cpu = smp_processor_id();
+> > > > > +	chosen_wakeup_cpu =
+> > > > > +		cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu;
+> > > > > +
+> > > > > +	if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP &&
+> > > > > +		idle_cpu(cpu) && idle_cpu(this_cpu) && p->mm &&
+> > > > 
+> > > > The p->mm check is racy, it needs to be done under task_lock(). The
+> > > > best way to check for a kernel thread is get_task_mm(), followed by
+> > > > put_task_mm() is the mm is not NULL. We also need to check to see if
+> > > > the task is _hot_ on cpu. We should negate this optimization in case
+> > > > chosen_wakeup_cpu is idle, so check for that as well.
+> > > 
+> > > Sure its racy, but so what?
+> > > 
+> > > The worst I can see it that we exclude a dying task from this logic,
+> > > which isn't a problem at all, since its dying anyway.
+> > 
+> > At which point I seriously doubt it'd still be on the rq anyway.
+> >
+> 
+> I forgot to mention that, the check should be (p->mm && !(p->flags & PF_KTHREAD))
 
-In the case of conntrack I would even argue that the message
-makes no sense at all since tracking doesn't matter as long as
-the state isn't used. And for that the table code can warn or
-offer controls.
+I can check for PF_KTHREAD for now.  However, I should reduce the
+number of checks since this may slow down wake_idle for sched_mc=2.
 
+We can tolerate p->mm check on a dying process as Peter has suggested,
+hence we don't need to protect it.  We are not going to access any
+contents of the mm struct.
+
+If PF_KTHREAD is only being used by AIO, then I feel we can drop the
+check since the threads will not have affinity and they can be moved
+to other cpus anyway.
+
+The main reason for skipping kthread is that they may be using per-cpu
+variables and sleep/preempted.  I did not want the wake_idle() logic
+to move them around forcefully.  This is not the general case and this
+situation should not happen.  
+
+Second reason is to optimise on the affinity check since most of the
+kthreads have affinity and cannot be moved.
+
+This condition check needs optimisation after getting the framework
+functionally correct and useful.
+
+--Vaidy
 
