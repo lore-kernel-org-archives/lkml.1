@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYLOQzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYLOQ42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755570AbYLOQzg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 11:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYLOQza
+	id S1755952AbYLOQ42 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 11:56:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbYLOQ4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 11:55:30 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55179 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752547AbYLOQz3 (ORCPT
+	Mon, 15 Dec 2008 11:56:21 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43459 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754003AbYLOQ4U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 11:55:29 -0500
-Subject: [PATCH] x86: process_64.c declare __switch_to and sys_arch_prctl
-	before they get used
+	Mon, 15 Dec 2008 11:56:20 -0500
+Subject: [PATCH] x86: signal.c declare do_notify_resume before they get used
 From: Jaswinder Singh <jaswinder@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
        Andi Kleen <andi@firstfloor.org>
 Content-Type: text/plain
-Date: Mon, 15 Dec 2008 22:23:54 +0530
-Message-Id: <1229360034.15326.2.camel@jaswinder.satnam>
+Date: Mon, 15 Dec 2008 22:24:48 +0530
+Message-Id: <1229360088.15326.3.camel@jaswinder.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -25,49 +24,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
 
-In asm/system.h moved out __switch_to from CONFIG_X86_32 as it is common for both 32 and 64 bit.
-
-In asm/pctl.h defined sys_arch_prctl
+In asm/signal.h moved out do_notify_resume from __i386__ as it is common for both 32 and 64 bit.
 ---
- arch/x86/include/asm/prctl.h  |    3 +++
- arch/x86/include/asm/system.h |    4 ++--
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/signal.h |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/prctl.h b/arch/x86/include/asm/prctl.h
-index fe68114..a889464 100644
---- a/arch/x86/include/asm/prctl.h
-+++ b/arch/x86/include/asm/prctl.h
-@@ -6,5 +6,8 @@
- #define ARCH_GET_FS 0x1003
- #define ARCH_GET_GS 0x1004
+diff --git a/arch/x86/include/asm/signal.h b/arch/x86/include/asm/signal.h
+index 96ac44f..7761a5d 100644
+--- a/arch/x86/include/asm/signal.h
++++ b/arch/x86/include/asm/signal.h
+@@ -121,6 +121,10 @@ typedef unsigned long sigset_t;
  
-+#ifdef CONFIG_X86_64
-+extern long sys_arch_prctl(int, unsigned long);
-+#endif /* CONFIG_X86_64 */
+ #ifndef __ASSEMBLY__
  
- #endif /* _ASM_X86_PRCTL_H */
-diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
-index f2025b0..2f6340a 100644
---- a/arch/x86/include/asm/system.h
-+++ b/arch/x86/include/asm/system.h
-@@ -17,12 +17,12 @@
- # define AT_VECTOR_SIZE_ARCH 1
- #endif
- 
--#ifdef CONFIG_X86_32
--
- struct task_struct; /* one of the stranger aspects of C forward declarations */
- struct task_struct *__switch_to(struct task_struct *prev,
- 				struct task_struct *next);
- 
-+#ifdef CONFIG_X86_32
++# ifdef __KERNEL__
++extern void do_notify_resume(struct pt_regs *, void *, __u32);
++# endif /* __KERNEL__ */
 +
- /*
-  * Saving eflags is important. It switches not only IOPL between tasks,
-  * it also protects other tasks from NT leaking through sysenter etc.
+ #ifdef __i386__
+ # ifdef __KERNEL__
+ struct old_sigaction {
+@@ -141,8 +145,6 @@ struct k_sigaction {
+ 	struct sigaction sa;
+ };
+ 
+-extern void do_notify_resume(struct pt_regs *, void *, __u32);
+-
+ # else /* __KERNEL__ */
+ /* Here we must cater to libcs that poke about in kernel headers.  */
+ 
 -- 
 1.5.5.1
 
