@@ -1,100 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYLOIq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbYLOI5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754763AbYLOIq6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 03:46:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYLOIqu
+	id S1754183AbYLOI5w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 03:57:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYLOI5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 03:46:50 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:51074 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752312AbYLOIqt (ORCPT
+	Mon, 15 Dec 2008 03:57:43 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:58607 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752018AbYLOI5m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 03:46:49 -0500
-Date: Mon, 15 Dec 2008 14:16:42 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>
-Subject: Re: [RFC PATCH v5 4/7] sched: bias task wakeups to preferred
-	semi-idle packages
-Message-ID: <20081215084642.GJ18403@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
-	Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Collier-Brown <davecb@sun.com>,
-	Tim Connors <tconnors@astro.swin.edu.au>,
-	Max Krasnyansky <maxk@qualcomm.com>,
-	Gregory Haskins <gregory.haskins@gmail.com>
-References: <20081211173831.2020.57550.stgit@drishya.in.ibm.com> <20081211174304.2020.14746.stgit@drishya.in.ibm.com> <20081215070139.GE18403@balbir.in.ibm.com> <1229329521.14605.17.camel@twins> <1229329984.14605.18.camel@twins>
+	Mon, 15 Dec 2008 03:57:42 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: linux-kernel@vger.kernel.org, reiserfs-devel@vger.kernel.org
+Subject: locking checker reported on reiserfs in 2.6.28-rc8
+Date: Mon, 15 Dec 2008 09:59:33 +0100
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1229329984.14605.18.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200812150959.33392.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <peterz@infradead.org> [2008-12-15 09:33:04]:
+Hi,
 
-> On Mon, 2008-12-15 at 09:25 +0100, Peter Zijlstra wrote:
-> > On Mon, 2008-12-15 at 12:31 +0530, Balbir Singh wrote:
-> > 
-> > > >  kernel/sched_fair.c |   17 +++++++++++++++++
-> > > >  1 files changed, 17 insertions(+), 0 deletions(-)
-> > > > 
-> > > > diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> > > > index 98345e4..939f2a1 100644
-> > > > --- a/kernel/sched_fair.c
-> > > > +++ b/kernel/sched_fair.c
-> > > > @@ -1027,6 +1027,23 @@ static int wake_idle(int cpu, struct task_struct *p)
-> > > >  	cpumask_t tmp;
-> > > >  	struct sched_domain *sd;
-> > > >  	int i;
-> > > > +	unsigned int chosen_wakeup_cpu;
-> > > > +	int this_cpu;
-> > > > +
-> > > > +	/*
-> > > > +	 * At POWERSAVINGS_BALANCE_WAKEUP level, if both this_cpu and prev_cpu
-> > > > +	 * are idle and this is not a kernel thread and this task's affinity
-> > > > +	 * allows it to be moved to preferred cpu, then just move!
-> > > > +	 */
-> > > > +
-> > > > +	this_cpu = smp_processor_id();
-> > > > +	chosen_wakeup_cpu =
-> > > > +		cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu;
-> > > > +
-> > > > +	if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP &&
-> > > > +		idle_cpu(cpu) && idle_cpu(this_cpu) && p->mm &&
-> > > 
-> > > The p->mm check is racy, it needs to be done under task_lock(). The
-> > > best way to check for a kernel thread is get_task_mm(), followed by
-> > > put_task_mm() is the mm is not NULL. We also need to check to see if
-> > > the task is _hot_ on cpu. We should negate this optimization in case
-> > > chosen_wakeup_cpu is idle, so check for that as well.
-> > 
-> > Sure its racy, but so what?
-> > 
-> > The worst I can see it that we exclude a dying task from this logic,
-> > which isn't a problem at all, since its dying anyway.
-> 
-> At which point I seriously doubt it'd still be on the rq anyway.
->
+I got this in the log. No noticeable ill effect. 2.6.28-rc8 on x86_64.
 
-I forgot to mention that, the check should be (p->mm && !(p->flags & PF_KTHREAD))
--- 
-	Balbir
+	Regards
+		Oliver
+
+Dec 15 09:50:53 vanamonde kernel:
+Dec 15 09:50:53 vanamonde kernel: =======================================================
+Dec 15 09:50:53 vanamonde kernel: [ INFO: possible circular locking dependency detected ]
+Dec 15 09:50:53 vanamonde kernel: 2.6.28-rc8-default #3
+Dec 15 09:50:53 vanamonde kernel: -------------------------------------------------------
+Dec 15 09:50:53 vanamonde kernel: kmail/3204 is trying to acquire lock:
+Dec 15 09:50:53 vanamonde kernel:  (&sb->s_type->i_mutex_key#12){--..}, at: [<ffffffff802beb25>] vfs_rmdir+0x8b/0x104
+Dec 15 09:50:53 vanamonde kernel:
+Dec 15 09:50:53 vanamonde kernel: but task is already holding lock:
+Dec 15 09:50:53 vanamonde kernel:  (&REISERFS_SB(s)->xattr_dir_sem){----}, at: [<ffffffffa04b25f5>] reiserfs_delete_xattrs+0xff/0x16b [reiserfs]
+Dec 15 09:50:53 vanamonde kernel:
+Dec 15 09:50:53 vanamonde kernel: which lock already depends on the new lock.
+Dec 15 09:50:53 vanamonde kernel:
+Dec 15 09:50:53 vanamonde kernel:
+Dec 15 09:50:53 vanamonde kernel: the existing dependency chain (in reverse order) is:
+Dec 15 09:50:53 vanamonde kernel:
+Dec 15 09:50:53 vanamonde kernel: -> #1 (&REISERFS_SB(s)->xattr_dir_sem){----}:
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff8026231b>] __lock_acquire+0x1291/0x15be
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff802626d5>] lock_acquire+0x8d/0xba
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff804716f9>] down_read+0x45/0x52
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffffa04b3b94>] reiserfs_acl_chmod+0x69/0x1c0 [reiserfs]
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffffa0496c30>] reiserfs_setattr+0x243/0x26b [reiserfs]
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff802c92ba>] notify_change+0x194/0x2da
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff802b518c>] sys_fchmodat+0x91/0xbd
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff802b51cb>] sys_chmod+0x13/0x15
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff8020c05a>] system_call_fastpath+0x16/0x1b
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffffffffffff>] 0xffffffffffffffff
+Dec 15 09:50:53 vanamonde kernel:
+Dec 15 09:50:53 vanamonde kernel: -> #0 (&sb->s_type->i_mutex_key#12){--..}:
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff8026202c>] __lock_acquire+0xfa2/0x15be
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff802626d5>] lock_acquire+0x8d/0xba
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff80470e24>] mutex_lock_nested+0xf9/0x2a0
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff802beb25>] vfs_rmdir+0x8b/0x104
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffffa04b2601>] reiserfs_delete_xattrs+0x10b/0x16b [reiserfs]
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffffa049a65e>] reiserfs_delete_inode+0x75/0x11b [reiserfs]
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff802c89bc>] generic_delete_inode+0xb8/0x145
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff802c8a60>] generic_drop_inode+0x17/0x17c
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff802c7aa1>] iput+0x61/0x65
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff802c0b40>] do_unlinkat+0x103/0x159
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff802c0ba7>] sys_unlink+0x11/0x13
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffff8020c05a>] system_call_fastpath+0x16/0x1b
+Dec 15 09:50:53 vanamonde kernel:        [<ffffffffffffffff>] 0xffffffffffffffff
+Dec 15 09:50:53 vanamonde kernel:
+Dec 15 09:50:53 vanamonde kernel: other info that might help us debug this:
+Dec 15 09:50:53 vanamonde kernel:
+Dec 15 09:50:53 vanamonde kernel: 1 lock held by kmail/3204:
+Dec 15 09:50:53 vanamonde kernel:  #0:  (&REISERFS_SB(s)->xattr_dir_sem){----}, at: [<ffffffffa04b25f5>] reiserfs_delete_xattrs+0xff/0x16b [reiserfs]
+Dec 15 09:50:53 vanamonde kernel:
+Dec 15 09:50:53 vanamonde kernel: stack backtrace:
+Dec 15 09:50:53 vanamonde kernel: Pid: 3204, comm: kmail Not tainted 2.6.28-rc8-default #3
+Dec 15 09:50:53 vanamonde kernel: Call Trace:
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff80260ccc>] print_circular_bug_tail+0xb8/0xc3
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff8026202c>] __lock_acquire+0xfa2/0x15be
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802626d5>] lock_acquire+0x8d/0xba
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802beb25>] ? vfs_rmdir+0x8b/0x104
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff80470e24>] mutex_lock_nested+0xf9/0x2a0
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802beb25>] ? vfs_rmdir+0x8b/0x104
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802beb25>] ? vfs_rmdir+0x8b/0x104
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff804729fa>] ? _spin_unlock_irq+0x2b/0x37
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802be128>] ? may_delete+0x65/0x147
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802beb25>] vfs_rmdir+0x8b/0x104
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffffa04b2601>] reiserfs_delete_xattrs+0x10b/0x16b [reiserfs]
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffffa049a65e>] reiserfs_delete_inode+0x75/0x11b [reiserfs]
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff80345a17>] ? _raw_spin_unlock+0x8e/0x94
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffffa049a5e9>] ? reiserfs_delete_inode+0x0/0x11b [reiserfs]
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802c89bc>] generic_delete_inode+0xb8/0x145
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802c8a60>] generic_drop_inode+0x17/0x17c
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802c7aa1>] iput+0x61/0x65
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802c0b40>] do_unlinkat+0x103/0x159
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff8020c0aa>] ? sysret_check+0x46/0x81
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff8026073b>] ? trace_hardirqs_on_caller+0xf6/0x11a
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff804725f3>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802c0543>] ? do_path_lookup+0x47/0x1c8
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff802c0ba7>] sys_unlink+0x11/0x13
+Dec 15 09:50:53 vanamonde kernel:  [<ffffffff8020c05a>] system_call_fastpath+0x16/0x1b
