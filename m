@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbYLOOSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbYLOOTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbYLOOSz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 09:18:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYLOOSU
+	id S1755283AbYLOOTT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 09:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbYLOOSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 09:18:20 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:53642 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753282AbYLOOSS (ORCPT
+	Mon, 15 Dec 2008 09:18:23 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:53944 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753460AbYLOOSW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 09:18:18 -0500
-X-BigFish: VPS3(zzzzzzz32i43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KBX924-03-GLF-01
+	Mon, 15 Dec 2008 09:18:22 -0500
+X-BigFish: VPS3(zzzzzzz32i43j63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KBX926-04-RH8-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 CC: Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 01/22] AMD IOMMU: add a domain flag for default domains
-Date: Mon, 15 Dec 2008 15:17:44 +0100
-Message-ID: <1229350685-3816-2-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 09/22] AMD IOMMU: add necessary header defines for stats counting
+Date: Mon, 15 Dec 2008 15:17:52 +0100
+Message-ID: <1229350685-3816-10-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1229350685-3816-1-git-send-email-joerg.roedel@amd.com>
 References: <1229350685-3816-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 15 Dec 2008 14:18:05.0822 (UTC) FILETIME=[F29279E0:01C95EBF]
+X-OriginalArrivalTime: 15 Dec 2008 14:18:06.0147 (UTC) FILETIME=[F2C41130:01C95EBF]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: adds a new protection domain flag
+Impact: add defines to make iommu stats collection configurable
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/amd_iommu_types.h |    2 ++
- arch/x86/kernel/amd_iommu.c            |    1 +
- 2 files changed, 3 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/amd_iommu_types.h |   26 ++++++++++++++++++++++++++
+ 1 files changed, 26 insertions(+), 0 deletions(-)
 
 diff --git a/arch/x86/include/asm/amd_iommu_types.h b/arch/x86/include/asm/amd_iommu_types.h
-index 1c769f4..6adc702 100644
+index 7abf9cf..1379c5f 100644
 --- a/arch/x86/include/asm/amd_iommu_types.h
 +++ b/arch/x86/include/asm/amd_iommu_types.h
-@@ -192,6 +192,8 @@
+@@ -396,4 +396,30 @@ static inline u16 calc_devid(u8 bus, u8 devfn)
+ 	return (((u16)bus) << 8) | devfn;
+ }
  
- /* Protection domain flags */
- #define PD_DMA_OPS_MASK		(1UL << 0) /* domain used for dma_ops */
-+#define PD_DEFAULT_MASK		(1UL << 1) /* domain is a default dma_ops
-+					      domain for an IOMMU */
- 
- /*
-  * This structure contains generic data for  IOMMU protection domains
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index cc78834..1694415 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -1573,6 +1573,7 @@ int __init amd_iommu_init_dma_ops(void)
- 		iommu->default_dom = dma_ops_domain_alloc(iommu, order);
- 		if (iommu->default_dom == NULL)
- 			return -ENOMEM;
-+		iommu->default_dom->domain.flags |= PD_DEFAULT_MASK;
- 		ret = iommu_init_unity_mappings(iommu);
- 		if (ret)
- 			goto free_domains;
++#ifdef CONFIG_AMD_IOMMU_STATS
++
++struct __iommu_counter {
++	char *name;
++	struct dentry *dent;
++	u64 value;
++};
++
++#define DECLARE_STATS_COUNTER(nm) \
++	static struct __iommu_counter nm = {	\
++		.name = #nm,			\
++	}
++
++#define INC_STATS_COUNTER(name)		name.value += 1
++#define ADD_STATS_COUNTER(name, x)	name.value += (x)
++#define SUB_STATS_COUNTER(name, x)	name.value -= (x)
++
++#else /* CONFIG_AMD_IOMMU_STATS */
++
++#define DECLARE_STATS_COUNTER(name)
++#define INC_STATS_COUNTER(name)
++#define ADD_STATS_COUNTER(name, x)
++#define SUB_STATS_COUNTER(name, x)
++
++#endif /* CONFIG_AMD_IOMMU_STATS */
++
+ #endif /* _ASM_X86_AMD_IOMMU_TYPES_H */
 -- 
 1.5.6.4
 
