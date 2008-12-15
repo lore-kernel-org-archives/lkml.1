@@ -1,229 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbYLOJCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYLOJIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754563AbYLOJCe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 04:02:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbYLOJCU
+	id S1754672AbYLOJIJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 04:08:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYLOJHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 04:02:20 -0500
-Received: from 89.6b.364a.static.theplanet.com ([74.54.107.137]:45994 "EHLO
-	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752521AbYLOJCT (ORCPT
+	Mon, 15 Dec 2008 04:07:54 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:50529 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752692AbYLOJHx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 04:02:19 -0500
-Message-ID: <49461CFB.9080108@compulab.co.il>
-Date: Mon, 15 Dec 2008 11:01:47 +0200
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
+	Mon, 15 Dec 2008 04:07:53 -0500
+Date: Mon, 15 Dec 2008 10:07:45 +0100
+From: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [RFC PATCH crypto] AES: Add support to Intel AES-NI
+	instructions
+Message-ID: <20081215090745.GA4991@Chamillionaire.breakpoint.cc>
+References: <1229054926.5936.160.camel@yhuang-dev.sh.intel.com> <20081212195722.GA24489@Chamillionaire.breakpoint.cc> <1229307542.5936.204.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-To: Jonathan Cameron <jic23@cam.ac.uk>
-CC: LKML <linux-kernel@vger.kernel.org>, felipe.balbi@nokia.com,
-       Liam Girdwood <lrg@kernel.org>, Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [PATCH] mfd: DA9030 USB charge pump mode selection support
-References: <4943FA3E.9090507@cam.ac.uk>
-In-Reply-To: <4943FA3E.9090507@cam.ac.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - cathcart.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1229307542.5936.204.camel@yhuang-dev.sh.intel.com>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Huang Ying | 2008-12-15 10:19:02 [+0800]:
 
+>> Nice work. A few things:
+>> - Did you rename the "old" x86 functions to avoid a clash?
+>>   So you bypass the crypto layer in case you can't handle the operation.
+>>   Does this improve the performace or just saves key strokes? Not sure
+>>   what the best sollution could be....
+>
+>The general x86 implementation is used as the fall back for new AES-NI
+>based implementation. Because AES-NI can not be used in kernel soft_irq
+>context. If crypto layer is used to access general x86 implementation,
+>we will have tfm_ctx alignment issue, because AES-NI need tfm_ctx to be
+>16 byte aligned.
+>
+>> - unless I've read the code too fast, it does not work if someone sets the
+>>   key in user context and starts an encryption in softirq context.
+>
+>Oh, I should use struct crypto_aes_ctx instead of define struct aes_ctx.
+>The tfm_ctx definition is different. I will fix this. Except that, is
+>there any other issue?
+Now I see what you have done. You are sharing the same tfm between your
+aes version and the "old" asm version. Both assume different private
+data (aes_ctx vs crypto_aes_ctx) so this should not work.
 
-Jonathan Cameron wrote:
-> From: Jonathan Cameron <jic23@cam.ac.uk>
-> 
-> Add support for changing the mode of the da9030 usb charge pump
-> 
-> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
-> 
-> --
-> This simple driver is intended to allow board configs to control
-> the mode in which the usb charge pump on th da9030 pmic is
-> running (typically as part of usb enable callbacks).
-> 
-> The 3 options are:
-> 
-> auto - controlled entirely by hardware signals.
-> 100mA charge pump manual enable
-> 10mA current source manual enable 
-> 
-> Note this function is completely separate from the usb charging
-> functionality (which will need a much more sophisticated driver).
-> 
-> As ever, all comments welcomed.
-> 
-> The main question on this is whether it should just be rolled into
-> the core mfd driver.  I'm inclined to keep it separate and decidedly
-> optional as the fact it isn't already in the driver implies that
-> it may not be commonly used. (Intel Stargate 2 does need this
-> functionality though, hence the submission as I'm hoping to get
-> the relevant board code in soonish.)
+>> - aes_ctx is somehow bad. You are using this for a function and a
+>>   struct. An Intel prefix would be nice (in case of the struct). On a
+>>   second thought, any reason why you can't use crypto_aes_ctx?
+>
+>Yes. I will use that. The only issue is that AES-NI need scheduled key
+>to be 16 bytes aligned, so we need move key_length in struct
+>crypto_aes_ctx to the end of the struct.
+You have to it if you want to bypass the crypto layer and call asm
+functions directly and I'm not sure whether bypassing the crypto layer
+is a good thing. Both asm routines (the 32bit and 64bit) assume that
+keylen ist at +0 followed by enc key, dec key. Ach and they don't do the
+ALIGN thing.
 
-I'm for adding "da9030_set_usb_charge_pump_mode" to the core mfd driver.
+Herbert what do you thing?
 
-> I don't have the da9034 data sheet, so not a clue if this is
-> relevant for that as well?
-> 
-> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
->  drivers/mfd/Kconfig              |    7 +++
->  drivers/mfd/Makefile             |    3 +-
->  drivers/mfd/da9030-usb.c         |   79 ++++++++++++++++++++++++++++++++++++++
->  include/linux/mfd/da9030-usbcp.h |   20 ++++++++++
->  4 files changed, 108 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> index 2572773..d53e82d 100644
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -114,6 +114,13 @@ config PMIC_DA903X
->  	  individual components like LCD backlight, voltage regulators,
->  	  LEDs and battery-charger under the corresponding menus.
->  
-> +config PMIC_DA9030_USBCP
-> +       bool "DA9030 USB charge pump mode control"
-> +       depends on PMIC_DA903X
-> +       help
-> +         Say yes here to support control of the USB charge pump on
-> +	 the DA9030 PMIC.
-> +
->  config MFD_WM8400
->  	tristate "Support Wolfson Microelectronics WM8400"
->  	depends on I2C
-> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-> index 9a5ad8a..eeb86c9 100644
-> --- a/drivers/mfd/Makefile
-> +++ b/drivers/mfd/Makefile
-> @@ -31,4 +31,5 @@ obj-$(CONFIG_MCP_UCB1200)	+= ucb1x00-assabet.o
->  endif
->  obj-$(CONFIG_UCB1400_CORE)	+= ucb1400_core.o
->  
-> -obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
-> \ No newline at end of file
-> +obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
-> +obj-$(CONFIG_PMIC_DA9030_USBCP)	+= da9030-usb.o
-> \ No newline at end of file
-> diff --git a/drivers/mfd/da9030-usb.c b/drivers/mfd/da9030-usb.c
-> new file mode 100644
-> index 0000000..f1160c6
-> --- /dev/null
-> +++ b/drivers/mfd/da9030-usb.c
-> @@ -0,0 +1,79 @@
-> +/* mfd/da9030-usb.c
-> + *
-> + * Minimal control driver for the da9030 usb charge pump.
-> + *
-> + * Jonathan Cameron <jic23@cam.ac.uk> 2008
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/mfd/da903x.h>
-> +#include <linux/mfd/da9030-usbcp.h>
-> +
-> +/* Single device assumption */
-> +struct device *da9030_mfd;
-> +
-> +int da9030_set_usb_charge_pump_mode(int mode)
-> +{
-> +	uint8_t val = 0;
-> +
-> +	switch (mode) {
-> +	case DA9030_USBPUMP_AUTO:
-> +		val = 0;
-> +		break;
-> +	case DA9030_USBPUMP_CHARGE_PUMP:
-> +		val = 0x40;
-> +		break;
-> +	case DA9030_USBPUMP_CURRENT_SOURCE:
-> +		val = 0x80;
-> +		break;
-> +	}
-> +
-> +	return da903x_write(da9030_mfd, DA9030_USBPUMP_REG, val);
-> +}
-> +EXPORT_SYMBOL_GPL(da9030_set_usb_charge_pump_mode);
-> +
-> +static int __devinit da9030_usb_probe(struct platform_device *pdev)
-> +{
-> +	da9030_mfd = pdev->dev.parent;
-> +
-> +	return 0;
-> +}
-> +
-> +static int __devexit da9030_usb_remove(struct platform_device *pdev)
-> +{
-> +	da9030_mfd = NULL;
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver da9030_usb_driver = {
-> +	.driver = {
-> +		.name = "da9030-usb",
-> +		.owner = THIS_MODULE,
-> +	},
-> +	.probe = da9030_usb_probe,
-> +	.remove = __devexit_p(da9030_usb_remove),
-> +};
-> +
-> +static int __init da9030_usb_init(void)
-> +{
-> +	return platform_driver_register(&da9030_usb_driver);
-> +}
-> +module_init(da9030_usb_init);
-> +
-> +static void __exit da9030_usb_exit(void)
-> +{
-> +	platform_driver_unregister(&da9030_usb_driver);
-> +}
-> +module_exit(da9030_usb_exit);
-> +
-> +MODULE_DESCRIPTION("USB charge pump control driver for Dialog DA9030");
-> +MODULE_AUTHOR("Jonathan Cameron <jic23@cam.ac.uk>");
-> +MODULE_LICENSE("GPL");
-> +MODULE_ALIAS("platform::da9030-usb");
-> diff --git a/include/linux/mfd/da9030-usbcp.h b/include/linux/mfd/da9030-usbcp.h
-> new file mode 100644
-> index 0000000..62af5a7
-> --- /dev/null
-> +++ b/include/linux/mfd/da9030-usbcp.h
-> @@ -0,0 +1,20 @@
-> +/* linux/mfd/da9030-usbcp.h
-> + *
-> + * Minimal control driver for the da9030 usb charge pump.
-> + *
-> + * Jonathan Cameron <jic23@cam.ac.uk> 2008
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#define DA9030_USBPUMP_AUTO 1
-> +#define DA9030_USBPUMP_CHARGE_PUMP 2
-> +#define DA9030_USBPUMP_CURRENT_SOURCE 3
-> +
-> +#define DA9030_USBPUMP_REG 0x19
-> +
-> +int da9030_set_usb_charge_pump_mode(int mode);
-> +
-> +
-> 
+>> - Is this an Intel thing or is going to be part of X86 and also
+>>   available to others (like mmx). In that case the Intel prefix may be
+>>   "wrong".
+>
+>Now it is an Intel thing. But in the future it may become part of x86.
+>Intel named it as AES-NI (AES New Instructions), but name like
+>aes_ni_aes_set_key is not good too. Does aes_ni_set_key sound better?
+The latter is fine. I just want to avoid having several and different
+aes_set_key() around.
 
--- 
-Sincerely yours,
-Mike.
+>> - does the cpu support more than just pure aes e.g. block modes? In case
+>>   it does not, does the perfomance improve if you implement lets say
+>>   cbc(aes) and do the xor with sse in order to save a few
+>>   kernel_fpu_begin() calls? I'm just asking because I saw a similar
+>>   thing and PowerPC and the AltiVec unit. Maybe it is cheap on x86 :)
+>
+>Yes. AES-NI can benefit not only block modes. And the pipeline
+>implementation of AES-NI can benefit cbc(aes) decryption and ctr(aes)
+>even more (described in detail in white paper). We will work on that.
+Ah okay. So depending on how expensive kernel_fpu_begin() really is it
+might be slower for just the cipher (i.e. in xts(aes) where xts calls
+you for every 16bytes).
 
+>
+>Best Regards,
+>Huang Ying
+>
+
+Sebastian
