@@ -1,45 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYLOOxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYLOOze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbYLOOxk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 09:53:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbYLOOxV
+	id S1754919AbYLOOze (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 09:55:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbYLOOzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 09:53:21 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:35778 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754903AbYLOOxU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 09:53:20 -0500
-Message-Id: <20081215143437.843064041@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 15 Dec 2008 15:34:37 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: mingo@elte.hu, akpm@linux-foundation.org
-Cc: maxk@qualcomm.com, schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org
-Subject: [PATCH/RESEND 0/2] sched: re-add removed arch_update_cpu_topology call
+	Mon, 15 Dec 2008 09:55:05 -0500
+Received: from mga09.intel.com ([134.134.136.24]:26559 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753416AbYLOOzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 09:55:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,224,1228118400"; 
+   d="scan'208";a="370995387"
+From: Patrick Ohly <patrick.ohly@intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       John Stultz <johnstul@us.ibm.com>, linux-api@vger.kernel.org
+Subject: hardware time stamping with optional structs in data area
+Date: Mon, 15 Dec 2008 15:54:47 +0100
+Message-Id: <1229352899-31330-1-git-send-email-patrick.ohly@intel.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a regression introduced with
-e761b7725234276a802322549cee5255305a0930 ("cpu hotplug, sched:
-Introduce cpu_active_map and redo sched domain managment (take 2)":
+This is the third iteration of a patch series which adds a user space
+API for hardware time stamping of network packets and the
+infrastructure that implements that API. The igb driver is used as
+example for how a network driver can use this new infrastructure.
+The patches are based on net-next as of today.
 
-arch_reinit_sched_domains used to call arch_update_cpu_topology
-via arch_init_sched_domains. This call got lost with the above
-mentioned patch.
+This proposal is based on adding just a short flag field to struct
+sk_buff itself, with the actual new information stored in the data
+area if indicated by the flags. This is based on the suggestion by
+Oliver Hartkopp and modelled after the way how skb_shared_info is
+stored. The previous two revisions of the patch reused skb->tstamp
+resp. added skb->hwtstamp.
 
-So we might end up with outdated and missing cpus in the cpu core
-maps (s390 used to call arch_reinit_sched_domains if cpu topology changed).
+The latest approach is more flexible: it allows adding more optional
+information in the future. It turned out to be a bit harder to use by
+drivers, though. The igb driver allocates the skb for incoming packets
+in advance. At that time it is not yet known which packets will need
+the extra space for hardware time stamps. The current example igb
+patch just allocates that space for all packets, all the time. More
+efficient solutions would be possible.
 
-This patch set changes arch_update_cpu_topology so that it can indicate
-if the cpu topology changed and adds a call to arch_update_cpu_topology
-in partition_sched_domains which gets called whenever scheduling domains
-get updated.
-So whenever architecture code detects that cpu topology changed it might
-force an update of the scheduling domains by calling arch_reinit_sched_domains
-or rebuild_sched_domains.
+The functions which allocate an skb had to be modified so that
+the new flags can be passed down to __netdev_alloc_skb(). I renamed
+functions as necessary, so that existing code should continue to
+work without changes. In sock_alloc_send_skb_flags() (formerly
+known as sock_alloc_send_skb_pskb()) I removed some dead code (see
+patch 04/12).
 
-Besides that the first patch also adds a comment to arch_update_cpu_topology
-so that its purpose gets described, since most people seem to expect that
-cpu core mappings are stable which isn't necessarily the case.
+As discussed with John Stultz, the changes to clocksource.[ch]
+now adds new structures as needed. John, I chose not to add new files
+for these. Please let me know whether you agree with that approach,
+see patch 09/12 for details.
+
+The user space API is still as it was designed for the previous two
+implementations. IMHO this shows that it was flexible enough to cope
+with changes in the implementation. On the other hand some of its
+aspects (user space has fine-grained control over what information
+is gathered and provided by the kernel) might be seen as overkill
+now that drivers can add this information more easily.
+
+I think the API still makes sense because the additional information
+might be used for optimizations in the future (drivers could
+skip time stamp conversion if no-one is interested).
+
+Also fixed in this iteration:
+* comment style, too many/large inline functions (pointed out by Andrew Morton)
+* __KERNEL__ instead __kernel__, user space API now in linux/net_tstamp.h (David Miller)
+
+Bye, Patrick
+
+ Documentation/networking/timestamping.txt          |  180 ++++++++
+ Documentation/networking/timestamping/.gitignore   |    1 +
+ Documentation/networking/timestamping/Makefile     |    3 +
+ .../networking/timestamping/timestamping.c         |  469 ++++++++++++++++++++
+ arch/x86/include/asm/socket.h                      |    3 +
+ drivers/net/igb/e1000_82575.h                      |    1 +
+ drivers/net/igb/e1000_defines.h                    |    1 +
+ drivers/net/igb/e1000_regs.h                       |   68 +++
+ drivers/net/igb/igb.h                              |    8 +
+ drivers/net/igb/igb_main.c                         |  397 ++++++++++++++++-
+ fs/compat_ioctl.c                                  |    1 +
+ include/linux/clocksource.h                        |   99 ++++
+ include/linux/clocksync.h                          |   85 ++++
+ include/linux/errqueue.h                           |    1 +
+ include/linux/net_tstamp.h                         |  104 +++++
+ include/linux/skbuff.h                             |  196 ++++++++-
+ include/linux/sockios.h                            |    3 +
+ include/net/ip.h                                   |    1 +
+ include/net/sock.h                                 |   57 ++-
+ kernel/time/Makefile                               |    2 +-
+ kernel/time/clocksource.c                          |   76 ++++
+ kernel/time/clocksync.c                            |  182 ++++++++
+ net/can/raw.c                                      |   14 +-
+ net/compat.c                                       |   19 +-
+ net/core/dev.c                                     |   36 ++-
+ net/core/skbuff.c                                  |  139 +++++-
+ net/core/sock.c                                    |  129 +++---
+ net/ipv4/icmp.c                                    |    2 +
+ net/ipv4/ip_output.c                               |   18 +-
+ net/ipv4/raw.c                                     |    1 +
+ net/ipv4/udp.c                                     |    4 +
+ net/socket.c                                       |   86 +++-
+ 32 files changed, 2258 insertions(+), 128 deletions(-)
