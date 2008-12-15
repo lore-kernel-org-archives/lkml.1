@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYLONdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753540AbYLONrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbYLONdQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 08:33:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYLONc4
+	id S1753540AbYLONrq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 08:47:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYLONri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 08:32:56 -0500
-Received: from stinky.trash.net ([213.144.137.162]:56704 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751971AbYLONcz (ORCPT
+	Mon, 15 Dec 2008 08:47:38 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:46550 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752312AbYLONri (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 08:32:55 -0500
-Message-ID: <49465C7E.8050103@trash.net>
-Date: Mon, 15 Dec 2008 14:32:46 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Mon, 15 Dec 2008 08:47:38 -0500
+Date: Mon, 15 Dec 2008 08:47:35 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: local_add_return
+Message-ID: <alpine.DEB.1.10.0812150823370.18692@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-CC: Jan Engelhardt <jengelh@medozas.de>, David Miller <davem@davemloft.net>,
-       ajax@redhat.com, linux-kernel@vger.kernel.org, davej@redhat.com,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH] net: Remove a noisy printk
-References: <1229033625-30825-1-git-send-email-ajax@redhat.com> <20081211.203243.124017657.davem@davemloft.net> <alpine.LNX.1.10.0812132310080.27276@fbirervta.pbzchgretzou.qr> <alpine.DEB.2.00.0812141745550.2447@blackhole.kfki.hu> <alpine.LNX.1.10.0812141905490.10355@fbirervta.pbzchgretzou.qr> <alpine.DEB.2.00.0812142056520.2621@blackhole.kfki.hu> <49464C2C.6030009@trash.net> <alpine.DEB.2.00.0812151419380.4114@blackhole.kfki.hu>
-In-Reply-To: <alpine.DEB.2.00.0812151419380.4114@blackhole.kfki.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jozsef Kadlecsik wrote:
-> On Mon, 15 Dec 2008, Patrick McHardy wrote:
-> 
->> I agree that it doesn't belong to the generic networking code.
->> But the way its handled in netfilter is far from perfect as well.
->> Currently multiple modules will spam the ringbuffer repeatedly,
->> but offer no possibility to change anything in the behaviour of
->> how these packets are treated. Unfortunately we can't handle this
->> in the ruleset (which is exactly the reason why we're spamming
->> the ringbuffer), so how about we add a module option controlling
->> how to treat those packets and remove the printk?
-> 
-> How about this: let the printk be removed from conntrack and the mangle 
-> table but put (back) into the filter table with a module option, which 
-> controls the behaviour (drop/accept & log/nolog)?
+Hi Rusty,
 
-Sounds fine to me. We can't log it in the usual way though
-(ipt_LOG/nfnetlink_log) and spamming the ringbuffer should
-really be a last resort, so I'd prefer to limit it to print
-the message exactly once.
+I'm trying to make the ring buffers lockless and reentrant. It is slowly 
+going that way. The local_add_return is to reserve a part of the ring 
+buffer even when an interrupt can come in and reserver part of that same 
+ring buffer. The atomic add here has to only be atomic with respect to 
+interrupts.
+
+On intel, there is no reason to use a LOCK increment, since the ring 
+buffers are per cpu. A simple asm inc would work. I was thinking that is 
+what local_add_return gives me. I could replace the local_add_returns with 
+atomic_add_return, but that just seems to be adding overhead for archs 
+that do not need it.
+
+Shouldn't local_add_return be a way for archs that can increment a memory 
+location atomically against interrupts to use that infrastructure? It can 
+simply fall back to atomic_add_return for those archs that do not have 
+a lesser equivalent of atomic_add_return.
+
+-- Steve
+
+
