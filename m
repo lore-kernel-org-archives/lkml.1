@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYLOUIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756677AbYLOUJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbYLOUIS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 15:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYLOUIK
+	id S1756677AbYLOUJW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 15:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbYLOUJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 15:08:10 -0500
-Received: from lug-owl.de ([195.71.106.12]:49817 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752156AbYLOUIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 15:08:09 -0500
-Date: Mon, 15 Dec 2008 21:08:06 +0100
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Surname change, how to proceed?
-Message-ID: <20081215200806.GI11087@lug-owl.de>
-Mail-Followup-To: Dmitry Baryshkov <dbaryshkov@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <20081208170627.GA18196@doriath.ww600.siemens.net>
+	Mon, 15 Dec 2008 15:09:13 -0500
+Received: from smtp-vbr17.xs4all.nl ([194.109.24.37]:1779 "EHLO
+	smtp-vbr17.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbYLOUJM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 15:09:12 -0500
+Date: Mon, 15 Dec 2008 21:08:05 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Theodore Tso <tytso@mit.edu>, Chris Friesen <cfriesen@nortel.com>,
+       mikulas@artax.karlin.mff.cuni.cz, clock@atrey.karlin.mff.cuni.cz,
+       kernel list <linux-kernel@vger.kernel.org>, aviro@redhat.com
+Subject: Re: writing file to disk: not as easy as it looks
+Message-ID: <20081215200805.GI7083@vanheusden.com>
+References: <20081202094059.GA2585@elf.ucw.cz> <20081202140439.GF16172@mit.edu> <20081202152618.GA1646@ucw.cz> <20081202163720.GB18162@mit.edu> <49356EF2.7060806@nortel.com> <20081202205558.GD20858@mit.edu> <20081215110310.GA10274@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="DwoPkXS38qd3dnhB"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081208170627.GA18196@doriath.ww600.siemens.net>
-X-Operating-System: Linux mail 2.6.18-5-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-message-flag: Please send plain text messages only. Do not send HTML emails. Thank you. 
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081215110310.GA10274@elf.ucw.cz>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Tue Dec 16 16:43:49 CET 2008
+X-Message-Flag: MultiTail - tail on steroids
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > There are certainly things you can do.  Put your fileservers's on
+> > UPS's.  Use RAID.  Make backups.   Do all three.  :-)
+> 
+> Okay, so we pretty much	know that ext3 journalling helps in "user hit
+> the reset button" case. (And we are pretty sure ext2/ext3 works in
+> "clean unmount" case). Otherwise
+> 
+> *) kernel bug -> journalling does not help.
+> 
+> *) sudden powerfail -> journalling helps works on SGI high-end
+> hardware. It may or may not help on PC-class hardware.
+> 
+> We already do periodic checks, even on ext3. Maybe we should do fsck
+> more often if we see evidence of unclean shutdowns (because we know
+> PC hardware is crap...).
 
---DwoPkXS38qd3dnhB
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+What we might need is on-line fsck. E.g. fsck while the fs is still
+mounted.
 
-On Mon, 2008-12-08 20:06:28 +0300, Dmitry Baryshkov <dbaryshkov@gmail.com> =
-wrote:
->=20
-> My surname has recently changed due to marriage. How should I proceed in
-> respect to Signed-off-by's, copyrights, etc?
+Might be tricky to implement.
 
-Just use your currently correct, formal name, thus the new one.
 
-MfG, JBG
-PS: Congrats!
 
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
- Signature of:                      http://perl.plover.com/Questions.html
- the second  :
+Folkert van Heusden
 
---DwoPkXS38qd3dnhB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFJRrkmHb1edYOZ4bsRAmXQAJ9o+dTmINiShLecQBB3DHs6ORbGFwCfW157
-DcVI8BRw1ryJBdSKbvMmaDQ=
-=7XvC
------END PGP SIGNATURE-----
-
---DwoPkXS38qd3dnhB--
+-- 
+MultiTail is a versatile tool for watching logfiles and output of
+commands. Filtering, coloring, merging, diff-view, etc.
+http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
