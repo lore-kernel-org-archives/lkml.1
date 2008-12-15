@@ -1,132 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbYLOGM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYLOGNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700AbYLOGM2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 01:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYLOGMS
+	id S1753381AbYLOGNU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 01:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYLOGNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 01:12:18 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:58645 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbYLOGMQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 01:12:16 -0500
-Date: Mon, 15 Dec 2008 11:42:09 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Vatsa <vatsa@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>
-Subject: Re: [RFC PATCH v5 2/7] sched: favour lower logical cpu number for
-	sched_mc balance
-Message-ID: <20081215061209.GB18403@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Collier-Brown <davecb@sun.com>,
-	Tim Connors <tconnors@astro.swin.edu.au>,
-	Max Krasnyansky <maxk@qualcomm.com>,
-	Gregory Haskins <gregory.haskins@gmail.com>
-References: <20081211173831.2020.57550.stgit@drishya.in.ibm.com> <20081211174247.2020.63646.stgit@drishya.in.ibm.com>
+	Mon, 15 Dec 2008 01:13:12 -0500
+Received: from kroah.org ([198.145.64.141]:53758 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751125AbYLOGNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 01:13:11 -0500
+Date: Sun, 14 Dec 2008 22:05:31 -0800
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.27.9
+Message-ID: <20081215060531.GA2981@kroah.com>
+References: <20081214001029.GA915@kroah.com> <pan.2008.12.14.08.06.53.334750@wizards.de> <20081214190829.GA31396@kroah.com> <49456C76.20006@wizards.de> <20081214211127.GC3928@tatooine.rebelbase.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20081211174247.2020.63646.stgit@drishya.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081214211127.GC3928@tatooine.rebelbase.local>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-12-11 23:12:48]:
-
-> Just in case two groups have identical load, prefer to move load to lower
-> logical cpu number rather than the present logic of moving to higher logical
-> number.
+On Sun, Dec 14, 2008 at 10:11:27PM +0100, markus reichelt wrote:
+> * Holger Hoffstätte <holger@wizards.de> wrote:
 > 
-> find_busiest_group() tries to look for a group_leader that has spare capacity
-> to take more tasks and freeup an appropriate least loaded group.  Just in case
-> there is a tie and the load is equal, then the group with higher logical number
-> is favoured.  This conflicts with user space irqbalance daemon that will move
-> interrupts to lower logical number if the system utilisation is very low.
->
-
-This patch will work well with irqbalance only when irqbalance decides
-to switch to power mode and if the interrupt rate is high and
-irqbalance is in performance mode and sched_mc > 1, what is the impact
-of this patch?
- 
-> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> ---
+> > That's really all I know.
 > 
->  kernel/sched.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 322cd2a..6bea99b 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -3264,7 +3264,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
->  		 */
->  		if ((sum_nr_running < min_nr_running) ||
->  		    (sum_nr_running == min_nr_running &&
-> -		     first_cpu(group->cpumask) <
-> +		     first_cpu(group->cpumask) >
->  		     first_cpu(group_min->cpumask))) {
+> Apart from all the mainline excuses why patches aren't accepted - I'd
+> REALLY like to know why each and every 2.6.27 kernel so totally fails
+> on me when it comes to X ... the vesa driver refuses to come up
+> with the magic to do its 75 Hz wonders of the pre .27 series.
 
-The first_cpu logic worries me a bit. This has existed for a while
-already, but with the topology I see on my system, I find the cpu
-numbers interleaved on my system (0,2,4 and 6) belong to one core and
-odd numbers to the other.
+So 2.6.26 works, but 2.6.27 does not?
 
-So for a topology like (assume dual core, dual socket)
+Can you run git bisect to try to track this down?
 
-            0-3
-          /     \
-        0-1     2-3
-       /   \   /   \
-      0     1 2     3
+thanks,
 
-
-If group_min is the domain with (2-3) and we are looking at
-group(0-1). first_cpu of (0-1) is 0 and (2-3) is 2, how does changing
-"<" to ">" help push the tasks to the lower ordered group? In the case
-described above group_min continues to be (2-3).
-
-Shouldn't the check be if (first_cpu(group->cpumask) <=
-first_cpu(group_min->cpumask)?
-
-
->  			group_min = group;
->  			min_nr_running = sum_nr_running;
-> @@ -3280,7 +3280,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
->  		if (sum_nr_running <= group_capacity - 1) {
->  			if (sum_nr_running > leader_nr_running ||
->  			    (sum_nr_running == leader_nr_running &&
-> -			     first_cpu(group->cpumask) >
-> +			     first_cpu(group->cpumask) <
->  			      first_cpu(group_leader->cpumask))) {
->  				group_leader = group;
->  				leader_nr_running = sum_nr_running;
-> 
->
-
-All these changes are good, I would like to see additional statistics
-that show how many decisions were taken due to new power aware
-balancing logic, so that I spot the bad and corner cases based on the
-statistics I see.
- 
-
--- 
-	Balbir
+greg k-h
