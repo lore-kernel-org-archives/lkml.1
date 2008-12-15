@@ -1,81 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbYLOL65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbYLOL7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751964AbYLOL65 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 06:58:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbYLOL6t
+	id S1752560AbYLOL7f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 06:59:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYLOL71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 06:58:49 -0500
-Received: from dovecot.org ([82.118.211.50]:52405 "EHLO dovecot.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751029AbYLOL6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 06:58:48 -0500
-X-Greylist: delayed 1629 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Dec 2008 06:58:48 EST
-Message-Id: <E459FC1E-BD45-459A-A9BD-AC682DBCD2D2@iki.fi>
-From: Timo Sirainen <tss@iki.fi>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=pgp-sha1; boundary="Apple-Mail-60--222096787"
+	Mon, 15 Dec 2008 06:59:27 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:53280 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbYLOL70 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 06:59:26 -0500
+Date: Mon, 15 Dec 2008 12:31:28 +0100
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Jean Pierre Dion <jean-pierre.dion@bull.net>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Gilles Carry <Gilles.Carry@ext.bull.net>
+Subject: Re: [RFC][PATCH] Fix cpu hotplug hang
+Message-ID: <20081215123128.172b21be@bull.net>
+In-Reply-To: <20081201140907.56743abd@bull.net>
+References: <20081201140907.56743abd@bull.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: 2.6.27 inotify causes unkillable processes with 100% CPU usage
-Date: Mon, 15 Dec 2008 13:31:29 +0200
-Cc: nuitari-dovecot@nuitari.net, Arno Wald <arno.wald@netcologne.de>,
-       David Rosenstrauch <darose@darose.net>
-X-Pgp-Agent: GPGMail d51 (Leopard)
-X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---Apple-Mail-60--222096787
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
+On Mon, 1 Dec 2008 14:09:07 +0100 Sebastien Dugue <sebastien.dugue@bull.net> wrote:
 
-There appears to be a bug in 2.6.27 and inotify where it causes  
-processes in running state to eat 100% CPU and they can't be killed  
-with kill -9, requiring a reboot to get rid of them.
+> 
+>   Hi Thomas, Ingo,
+> 
+>   here is a patch that fixes a CPU hotplug hang I get on a Power6 box. It may
+> not be the only possible fix but it appears to be the cleanest I can think of
+> at the moment.
+> 
+>   Comments welcomed.
 
-3 people (Cc'd) so far have reported this to me, all of them last  
-week. The problem shows up when running my Dovecot IMAP server. Its  
-imap processes start hanging, apparently it can happen after running  
-for only a couple of minutes:
+  Ingo, Thomas, anybody care to comment on the hang and this possible fix?
 
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-6717 arno      20   0  2964 1608 1192 R  100  0.2   1158:05 imap
-
-Only the imap processes hang (Dovecot has a few others). The only  
-thing special about it is that it uses inotify. After disabling  
-Dovecot's inotify support at least one of the people (Arno) reported  
-that he can't reprocuce the bug anymore. He also couldn't reproduce  
-the bug with 2.6.26 kernel.
-
-I don't think Dovecot does anything special with its inotify code. It  
-just listens on two directories. You can find the code here: http://hg.dovecot.org/dovecot-1.1/file/f9a000ee400d/src/lib/ioloop-notify-inotify.c
-
-Kernels causing the hang:
-
-2.6.27-9.slh.1-sidux-686
-Arch Linux, kernel 2.6.27.8
-Gentoo with 2.6.27-gentoo-r5, amd64, 2 dual core opterons
-
-Not causing the hang:
-
-2.6.26-6.slh.1-sidux-686
-
-
---Apple-Mail-60--222096787
-content-type: application/pgp-signature; x-mac-type=70674453;
-	name=PGP.sig
-content-description: This is a digitally signed message part
-content-disposition: inline; filename=PGP.sig
-content-transfer-encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (Darwin)
-
-iEYEARECAAYFAklGQBEACgkQyUhSUUBVislAQwCdELIvIxggRRFjSLVHxR1nN/MU
-0TwAoJHq9DTELgo2Gyb/Y0VXZG800FW1
-=CjPd
------END PGP SIGNATURE-----
-
---Apple-Mail-60--222096787--
+> 
+>   Thanks,
+> 
+>   Sebastien.
+> 
+> 
+> From b3bf273f7a91a686db25112278fc554b47aa30c6 Mon Sep 17 00:00:00 2001
+> From: Sebastien Dugue <sebastien.dugue@bull.net>
+> Date: Mon, 1 Dec 2008 12:22:06 +0100
+> Subject: [PATCH] Fix cpu hotplug hang
+> 
+>   On architectures that support offlining all cpus (at least powerpc/pseries),
+> hot-unpluging the tick_do_timer_cpu can result in a system hang.
+> 
+>   This comes from the fact that if the cpu going down happens to be the
+> cpu doing the tick, then as the tick_do_timer_cpu handover happens after the
+> cpu is dead (via the CPU_DEAD notification), we're left without ticks,
+> jiffies are frozen and any task relying on timers (msleep, ...) is stuck.
+> That's particularly the case for the cpu looping in __cpu_die() waiting
+> for the dying cpu to be dead.
+> 
+>   This patch addresses this by having the tick_do_timer_cpu handover happen
+> earlier during the CPU_DYING notification. For this, a new clockevent
+> notification type is introduced (CLOCK_EVT_NOTIFY_CPU_DYING) which is triggered
+> in hrtimer_cpu_notify().
+> 
+> Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> ---
+>  include/linux/clockchips.h |    1 +
+>  kernel/hrtimer.c           |    4 ++++
+>  kernel/time/tick-common.c  |   26 +++++++++++++++++++-------
+>  3 files changed, 24 insertions(+), 7 deletions(-)
+> 
+> diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
+> index ed3a5d4..c6de413 100644
+> --- a/include/linux/clockchips.h
+> +++ b/include/linux/clockchips.h
+> @@ -36,6 +36,7 @@ enum clock_event_nofitiers {
+>  	CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+>  	CLOCK_EVT_NOTIFY_SUSPEND,
+>  	CLOCK_EVT_NOTIFY_RESUME,
+> +	CLOCK_EVT_NOTIFY_CPU_DYING,
+>  	CLOCK_EVT_NOTIFY_CPU_DEAD,
+>  };
+>  
+> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> index 47e6334..b870bd0 100644
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+> @@ -1794,6 +1794,10 @@ static int __cpuinit hrtimer_cpu_notify(struct notifier_block *self,
+>  		break;
+>  
+>  #ifdef CONFIG_HOTPLUG_CPU
+> +	case CPU_DYING:
+> +	case CPU_DYING_FROZEN:
+> +		clockevents_notify(CLOCK_EVT_NOTIFY_CPU_DYING, &cpu);
+> +		break;
+>  	case CPU_DEAD:
+>  	case CPU_DEAD_FROZEN:
+>  		clockevents_notify(CLOCK_EVT_NOTIFY_CPU_DEAD, &cpu);
+> diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
+> index df12434..152871c 100644
+> --- a/kernel/time/tick-common.c
+> +++ b/kernel/time/tick-common.c
+> @@ -274,6 +274,21 @@ out_bc:
+>  }
+>  
+>  /*
+> + * Transfer the do_timer job away from a dying cpu.
+> + *
+> + * Called with interrupts disabled.
+> + */
+> +static void tick_handover_do_timer(unsigned int *cpup)
+> +{
+> +	if (*cpup == tick_do_timer_cpu) {
+> +		int cpu = first_cpu(cpu_online_map);
+> +
+> +		tick_do_timer_cpu = (cpu != NR_CPUS) ? cpu :
+> +			TICK_DO_TIMER_NONE;
+> +	}
+> +}
+> +
+> +/*
+>   * Shutdown an event device on a given cpu:
+>   *
+>   * This is called on a life CPU, when a CPU is dead. So we cannot
+> @@ -297,13 +312,6 @@ static void tick_shutdown(unsigned int *cpup)
+>  		clockevents_exchange_device(dev, NULL);
+>  		td->evtdev = NULL;
+>  	}
+> -	/* Transfer the do_timer job away from this cpu */
+> -	if (*cpup == tick_do_timer_cpu) {
+> -		int cpu = first_cpu(cpu_online_map);
+> -
+> -		tick_do_timer_cpu = (cpu != NR_CPUS) ? cpu :
+> -			TICK_DO_TIMER_NONE;
+> -	}
+>  	spin_unlock_irqrestore(&tick_device_lock, flags);
+>  }
+>  
+> @@ -357,6 +365,10 @@ static int tick_notify(struct notifier_block *nb, unsigned long reason,
+>  		tick_broadcast_oneshot_control(reason);
+>  		break;
+>  
+> +	case CLOCK_EVT_NOTIFY_CPU_DYING:
+> +		tick_handover_do_timer(dev);
+> +		break;
+> +
+>  	case CLOCK_EVT_NOTIFY_CPU_DEAD:
+>  		tick_shutdown_broadcast_oneshot(dev);
+>  		tick_shutdown_broadcast(dev);
+> -- 
+> 1.6.0.1.308.gede4c
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
