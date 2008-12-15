@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbYLOL1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYLOL3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346AbYLOL1h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 06:27:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbYLOL12
+	id S1755521AbYLOL3Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 06:29:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbYLOL3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 06:27:28 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36763 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753116AbYLOL12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 06:27:28 -0500
-X-Authenticated: #34473864
-X-Provags-ID: V01U2FsdGVkX18x9Rd5YBMxXVqUoUREsDsDM2MFm4roc2viUL24yf
-	7XsjzSUmq9RIjV
-Message-ID: <49463F1C.1070401@gmx.de>
-Date: Mon, 15 Dec 2008 12:27:24 +0100
-From: Philipp Kohlbecher <xt28@gmx.de>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Mon, 15 Dec 2008 06:29:00 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:37594 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753116AbYLOL27 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 06:28:59 -0500
+Date: Mon, 15 Dec 2008 22:28:46 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
+Cc: Huang Ying <ying.huang@intel.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [RFC PATCH crypto] AES: Add support to Intel AES-NI
+	instructions
+Message-ID: <20081215112846.GA31804@gondor.apana.org.au>
+References: <1229054926.5936.160.camel@yhuang-dev.sh.intel.com> <20081212195722.GA24489@Chamillionaire.breakpoint.cc> <1229307542.5936.204.camel@yhuang-dev.sh.intel.com> <20081215090745.GA4991@Chamillionaire.breakpoint.cc>
 MIME-Version: 1.0
-To: Ian Campbell <ijc@hellion.org.uk>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: documentation fix regarding boot protocol
-References: <49454749.2030901@gmx.de> <1229332954.25349.78.camel@zakaz.uk.xensource.com>
-In-Reply-To: <1229332954.25349.78.camel@zakaz.uk.xensource.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.52
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081215090745.GA4991@Chamillionaire.breakpoint.cc>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
-> On Sun, 2008-12-14 at 18:50 +0100, Philipp Kohlbecher wrote:
->> Documentation/x86/boot.txt describes payload_offset as the offset
->> from the end of the real-mode code. In fact, it is more accurately
->> described as the offset from the beginning of the protected-mode
->> code, as (a) this is how it is actually calculated and (b) the padding
->> after the real-mode code is not included in the offset.
->>
->> Signed-off-by: Philipp Kohlbecher <xt28@gmx.de>
+On Mon, Dec 15, 2008 at 10:07:45AM +0100, Sebastian Andrzej Siewior wrote:
+>
+> You have to it if you want to bypass the crypto layer and call asm
+> functions directly and I'm not sure whether bypassing the crypto layer
+> is a good thing. Both asm routines (the 32bit and 64bit) assume that
+> keylen ist at +0 followed by enc key, dec key. Ach and they don't do the
+> ALIGN thing.
 > 
-> Acked-by: Ian Campbell <ijc@hellion.org.uk>
-> 
-> The padding after the real-mode code which you mention is just the
-> implicit padding because the size of the real-mode code is specified in
-> sectors (and hence is rounded up), isn't it?
+> Herbert what do you thing?
 
-Yes, it is. You can certainly view the padding as an implicit part of 
-the real-mode code, which is why the current statement isn't wrong -- 
-there is simply room for improvement.
+I think it would be OK if it called the assembly routine directly
+and we moved this under asm/x86-64.  We should do the latter anyway
+regardless of what we decide.
 
-> Is it worth saying that the payload_offset is relative to (setup_sectors
-> +1) * 512?
+However, I'm skeptical about whether we should use of a fallback at
+all rather than making this work in softirq context.
 
-The fact that the protected-mode code starts at that address is already 
-mentioned under the heading "LOADING THE REST OF THE KERNEL" (where 
-protected mode is for some reason referred to as "non-real-mode").
-(Please note that the header field is called "setup_sects", not 
-"setup_sectors".)
-
->> ---
->>
->>   Documentation/x86/boot.txt |    4 ++--
->>   1 files changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/Documentation/x86/boot.txt b/Documentation/x86/boot.txt
->> index 83c0033..414b6fb 100644
->> --- a/Documentation/x86/boot.txt
->> +++ b/Documentation/x86/boot.txt
->> @@ -537,8 +537,8 @@ Type:		read
->>   Offset/size:	0x248/4
->>   Protocol:	2.08+
->>
->> -  If non-zero then this field contains the offset from the end of the
->> -  real-mode code to the payload.
->> +  If non-zero then this field contains the offset from the beginning
->> +  of the protected-mode code to the payload.
->>
->>     The payload may be compressed. The format of both the compressed and
->>     uncompressed data should be determined using the standard magic
->>
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
