@@ -1,80 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbYLOJXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbYLOJ12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbYLOJXP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 04:23:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYLOJW6
+	id S1754873AbYLOJ12 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 04:27:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYLOJ1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 04:22:58 -0500
-Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:9035 "EHLO
-	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752131AbYLOJW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 04:22:57 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Philipp Kohlbecher <xt28@gmx.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <49454749.2030901@gmx.de>
-References: <49454749.2030901@gmx.de>
-Content-Type: text/plain
-Date: Mon, 15 Dec 2008 09:22:34 +0000
-Message-Id: <1229332954.25349.78.camel@zakaz.uk.xensource.com>
+	Mon, 15 Dec 2008 04:27:17 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33016
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752308AbYLOJ1Q convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 04:27:16 -0500
+Date: Mon, 15 Dec 2008 01:27:17 -0800 (PST)
+Message-Id: <20081215.012717.70229556.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 62.200.22.2
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH] x86: documentation fix regarding boot protocol
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=SzA6YOMSqwYA:10 a=v75ATkktc-UA:10 a=B-iTP8YmfzJTdInPYUkA:9 a=MihhZElx3d1iKgXUw8UA:7 a=80aN9PdB53BtKTK49ip-81G1TC0A:4 a=LY0hPdMaydYA:10
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-12-14 at 18:50 +0100, Philipp Kohlbecher wrote:
-> Documentation/x86/boot.txt describes payload_offset as the offset
-> from the end of the real-mode code. In fact, it is more accurately
-> described as the offset from the beginning of the protected-mode
-> code, as (a) this is how it is actually calculated and (b) the padding
-> after the real-mode code is not included in the offset.
-> 
-> Signed-off-by: Philipp Kohlbecher <xt28@gmx.de>
 
-Acked-by: Ian Campbell <ijc@hellion.org.uk>
+1) Neil Horman fixes a race in netpoll resulting in corruption
+   and crashes.
 
-The padding after the real-mode code which you mention is just the
-implicit padding because the size of the real-mode code is specified in
-sectors (and hence is rounded up), isn't it?
+2) Packet scheduler comment fix from Jesper Brouer.
 
-Is it worth saying that the payload_offset is relative to (setup_sectors
-+1) * 512?
+3) Thanks to reports, patches, and testing by Hermann Lauer
+   the sungem driver PCS phy support is in at least some
+   state of working.
 
-> 
-> ---
-> 
->   Documentation/x86/boot.txt |    4 ++--
->   1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/x86/boot.txt b/Documentation/x86/boot.txt
-> index 83c0033..414b6fb 100644
-> --- a/Documentation/x86/boot.txt
-> +++ b/Documentation/x86/boot.txt
-> @@ -537,8 +537,8 @@ Type:		read
->   Offset/size:	0x248/4
->   Protocol:	2.08+
-> 
-> -  If non-zero then this field contains the offset from the end of the
-> -  real-mode code to the payload.
-> +  If non-zero then this field contains the offset from the beginning
-> +  of the protected-mode code to the payload.
-> 
->     The payload may be compressed. The format of both the compressed and
->     uncompressed data should be determined using the standard magic
-> 
--- 
-Ian Campbell
+4) IPV6 raw socket usage can spam the logs with multicast
+   warnings, patch from Jan Sembera.
 
-* weasel wonders how stupid one has to be to spam alt.anonymous.messages
- weasel: about half as stupid as one has to be to harvest it.
+5) Another TCP Vegas fix from Doug Leith.
 
+6) Mutex double-release fix in e1000e from Jeff Kirsher.
+
+7) Fix another potential NULL deref in netlabel code, from
+   Paul Moore.
+
+8) Fix stray TX queue references after device is brought down
+   in phonet layer, fix from Rémi Denis-Courmont.
+
+9) rwlock initializer fix in netfilter from Steven Rostedt.
+
+10) HP_SIMETH network driver doesn't depend upon NET, fix from
+    Alexander Beregalov.
+
+Please pull, thanks a lot!
+
+The following changes since commit c49b9f295e513753e6d9bb4444ba502f1aa59b29:
+  Balazs Scheidler (1):
+        tproxy: fixe a possible read from an invalid location in the socket match
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Alexander Beregalov (1):
+      IA64: HP_SIMETH needs to depend upon NET
+
+David S. Miller (1):
+      sungem: Make PCS PHY support partially work again.
+
+Doug Leith (1):
+      tcp: tcp_vegas cong avoid fix
+
+Hermann Lauer (1):
+      sungem: improve ethtool output with internal pcs and serdes
+
+Jan Sembera (1):
+      ipv6: silence log messages for locally generated multicast
+
+Jeff Kirsher (1):
+      e1000e: fix double release of mutex
+
+Jesper Dangaard Brouer (1):
+      SCHED: netem: Correct documentation comment in code.
+
+Neil Horman (1):
+      netpoll: fix race on poll_list resulting in garbage entry
+
+Paul Moore (1):
+      netlabel: Compiler warning and NULL pointer dereference fix
+
+Rémi Denis-Courmont (1):
+      Phonet: keep TX queue disabled when the device is off
+
+Steven Rostedt (1):
+      netfilter: update rwlock initialization for nat_table
+
+ arch/ia64/hp/sim/Kconfig          |    1 +
+ drivers/net/e1000e/ich8lan.c      |    9 ++-
+ drivers/net/sungem.c              |  144 ++++++++++++++++++++++--------------
+ include/linux/netdevice.h         |    7 ++
+ net/core/netpoll.c                |    2 +
+ net/ipv4/netfilter/nf_nat_rule.c  |    2 +-
+ net/ipv4/tcp_vegas.c              |   80 +++------------------
+ net/ipv6/ndisc.c                  |    7 ++-
+ net/netlabel/netlabel_unlabeled.c |   38 +++++-----
+ net/phonet/pep-gprs.c             |   27 ++++++--
+ net/sched/sch_netem.c             |    3 -
+ 11 files changed, 164 insertions(+), 156 deletions(-)
