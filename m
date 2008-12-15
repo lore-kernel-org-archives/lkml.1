@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYLOQqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYLOQzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbYLOQqJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 11:46:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756309AbYLOQps
+	id S1755570AbYLOQzg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 11:55:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYLOQza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 11:45:48 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:45482 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756282AbYLOQpq (ORCPT
+	Mon, 15 Dec 2008 11:55:30 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55179 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbYLOQz3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 11:45:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=GvUsKkqn6B8VQPwQQhE+MT1q1PSuFrKI+49WodxLVxsWz1kz+9VHEMThPqB+DaTyVZ
-         73XwSovURef6Pnu7TmOaKAmb+g4IttiGnh+x/ds4kNu/sjOUfzxJPPihte7RibgrEKIP
-         Zdj6pvzz4fRzX7yP3aYgF8BFjNFwEXXgT9HEE=
-Message-ID: <84144f020812150845g10a1ce26ke2844ab495d2591b@mail.gmail.com>
-Date: Mon, 15 Dec 2008 18:45:44 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ottavio Campana" <ottavio.campana@dei.unipd.it>
-Subject: Re: Oops when trying to create more than 16000 timers
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <49468024.1020700@dei.unipd.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 15 Dec 2008 11:55:29 -0500
+Subject: [PATCH] x86: process_64.c declare __switch_to and sys_arch_prctl
+	before they get used
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Content-Type: text/plain
+Date: Mon, 15 Dec 2008 22:23:54 +0530
+Message-Id: <1229360034.15326.2.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <49468024.1020700@dei.unipd.it>
-X-Google-Sender-Auth: b0712e6afec1b328
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ottavio,
 
-On Mon, Dec 15, 2008 at 6:04 PM, Ottavio Campana
-<ottavio.campana@dei.unipd.it> wrote:
-> I am currently developing a software that needs approx 60k timers. I
-> currently use timer_create and all the relative functions to manage timers.
->
-> I've noticed that after having created 16039 timers I always get an oops
-> from the kernel, which are always of the same kind:
->
-> Dec 15 15:20:00 evolution kernel: [601680.417064] BUG: unable to handle
-> kernel NULL pointer dereference at 0000000000000040 .
+Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
 
-This would be a kernel bug so can you please post the full oops. See
-REPORTING-BUGS and Documentation/oops-tracing.txt for details.
+In asm/system.h moved out __switch_to from CONFIG_X86_32 as it is common for both 32 and 64 bit.
+
+In asm/pctl.h defined sys_arch_prctl
+---
+ arch/x86/include/asm/prctl.h  |    3 +++
+ arch/x86/include/asm/system.h |    4 ++--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/include/asm/prctl.h b/arch/x86/include/asm/prctl.h
+index fe68114..a889464 100644
+--- a/arch/x86/include/asm/prctl.h
++++ b/arch/x86/include/asm/prctl.h
+@@ -6,5 +6,8 @@
+ #define ARCH_GET_FS 0x1003
+ #define ARCH_GET_GS 0x1004
+ 
++#ifdef CONFIG_X86_64
++extern long sys_arch_prctl(int, unsigned long);
++#endif /* CONFIG_X86_64 */
+ 
+ #endif /* _ASM_X86_PRCTL_H */
+diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
+index f2025b0..2f6340a 100644
+--- a/arch/x86/include/asm/system.h
++++ b/arch/x86/include/asm/system.h
+@@ -17,12 +17,12 @@
+ # define AT_VECTOR_SIZE_ARCH 1
+ #endif
+ 
+-#ifdef CONFIG_X86_32
+-
+ struct task_struct; /* one of the stranger aspects of C forward declarations */
+ struct task_struct *__switch_to(struct task_struct *prev,
+ 				struct task_struct *next);
+ 
++#ifdef CONFIG_X86_32
++
+ /*
+  * Saving eflags is important. It switches not only IOPL between tasks,
+  * it also protects other tasks from NT leaking through sysenter etc.
+-- 
+1.5.5.1
+
+
+
