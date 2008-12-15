@@ -1,84 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbYLOOuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbYLOOxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754190AbYLOOuk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 09:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYLOOuc
+	id S1754564AbYLOOxB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 09:53:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbYLOOwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 09:50:32 -0500
-Received: from fk-out-0910.google.com ([209.85.128.188]:11107 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752850AbYLOOub (ORCPT
+	Mon, 15 Dec 2008 09:52:53 -0500
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:39582 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753399AbYLOOww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 09:50:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=W5EeRkD53nESTcv+S7i/3DHta7QJ+rf+XIMoMm/csorX/iQmFJ0YaxLzxvXlDSluI8
-         jc4vAOHr/Q9nTg1HdOVdaU5OGXkS3eDrV/axf8KpkQSzo9an2K7e720KZBRFN3g5LRtM
-         ruO4KhMfqlFGIm/iOYl04qppNl7coiJw+q4iU=
-Message-ID: <7c86c4470812150650t3b96d571nba14be2028fa9d0c@mail.gmail.com>
-Date: Mon, 15 Dec 2008 15:50:29 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: [patch] Performance Counters for Linux, v3
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Vince Weaver" <vince@deater.net>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Robert Richter" <robert.richter@amd.com>,
-       "Arjan van de Veen" <arjan@infradead.org>,
-       "Peter Anvin" <hpa@zytor.com>, "Paul Mackerras" <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <4942BF69.4030402@nortel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081211155230.GA4230@elte.hu>
-	 <Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
-	 <1229070345.12883.12.camel@twins>
-	 <7c86c4470812120059s7f8e64a6h91ebeadbf938858d@mail.gmail.com>
-	 <1229073834.12883.41.camel@twins>
-	 <7c86c4470812120942x607a74f7w9f823adecbd73b85@mail.gmail.com>
-	 <7c86c4470812121001i765d663bq6db3080b633a1eef@mail.gmail.com>
-	 <4942BF69.4030402@nortel.com>
+	Mon, 15 Dec 2008 09:52:52 -0500
+Message-Id: <20081215145249.579042637@de.ibm.com>
+References: <20081215143437.843064041@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 15 Dec 2008 15:34:38 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: mingo@elte.hu, akpm@linux-foundation.org
+Cc: maxk@qualcomm.com, schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [PATCH/RESEND 1/2] sched: let arch_update_cpu_topology indicate if topology changed
+Content-Disposition: inline; filename=001_arch_topology.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 8:45 PM, Chris Friesen <cfriesen@nortel.com> wrote:
-> stephane eranian wrote:
->
->> What happens in the following test case:
->>
->>   - 2-way system (cpu0, cpu1)
->>
->>   - on cpu0, two processes P1, P2, each self-monitoring and counting event
->> E1.
->>     Event E1 can only be measured on counter C1.
->>
->>   - on cpu1, there is a cpu-wide session, monitoring event E1, thus using
->> C1
->>
->>   - the scheduler decides to migrate P1 onto CPU1. You now have a
->> conflict on C1.
->>
->> How is this managed?
->
-> Prevent the load balancer from moving P1 onto cpu1?
->
-You don't want to do that.
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-There was a reason why the scheduler decided to move the task.
-Now, because of monitoring you would change the behavior of the task
-and scheduler.
-Monitoring should be unintrusive. You want the task/scheduler to
-behave as if no monitoring
-was present otherwise what is it you are actually measuring?
+Change arch_update_cpu_topology so it returns 1 if the cpu topology changed
+and 0 if it didn't change. This will be useful for the next patch which adds
+a call to this function in partition_sched_domains.
 
-Changing or forcing the affinity because of monitoring is also a bad
-idea, for the same reason.
+Cc: Max Krasnyansky <maxk@qualcomm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ arch/s390/kernel/topology.c |    5 +++--
+ include/linux/topology.h    |    2 +-
+ kernel/sched.c              |    8 +++++++-
+ 3 files changed, 11 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -7712,8 +7712,14 @@ static struct sched_domain_attr *dattr_c
+  */
+ static cpumask_t fallback_doms;
+ 
+-void __attribute__((weak)) arch_update_cpu_topology(void)
++/*
++ * arch_update_cpu_topology lets virtualized architectures update the
++ * cpu core maps. It is supposed to return 1 if the topology changed
++ * or 0 if it stayed the same.
++ */
++int __attribute__((weak)) arch_update_cpu_topology(void)
+ {
++	return 0;
+ }
+ 
+ /*
+Index: linux-2.6/arch/s390/kernel/topology.c
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/topology.c
++++ linux-2.6/arch/s390/kernel/topology.c
+@@ -212,7 +212,7 @@ static void update_cpu_core_map(void)
+ 		cpu_core_map[cpu] = cpu_coregroup_map(cpu);
+ }
+ 
+-void arch_update_cpu_topology(void)
++int arch_update_cpu_topology(void)
+ {
+ 	struct tl_info *info = tl_info;
+ 	struct sys_device *sysdev;
+@@ -221,7 +221,7 @@ void arch_update_cpu_topology(void)
+ 	if (!machine_has_topology) {
+ 		update_cpu_core_map();
+ 		topology_update_polarization_simple();
+-		return;
++		return 0;
+ 	}
+ 	stsi(info, 15, 1, 2);
+ 	tl_to_cores(info);
+@@ -230,6 +230,7 @@ void arch_update_cpu_topology(void)
+ 		sysdev = get_cpu_sysdev(cpu);
+ 		kobject_uevent(&sysdev->kobj, KOBJ_CHANGE);
+ 	}
++	return 1;
+ }
+ 
+ static void topology_work_fn(struct work_struct *work)
+Index: linux-2.6/include/linux/topology.h
+===================================================================
+--- linux-2.6.orig/include/linux/topology.h
++++ linux-2.6/include/linux/topology.h
+@@ -49,7 +49,7 @@
+ 	for_each_online_node(node)			\
+ 		if (nr_cpus_node(node))
+ 
+-void arch_update_cpu_topology(void);
++int arch_update_cpu_topology(void);
+ 
+ /* Conform to ACPI 2.0 SLIT distance definitions */
+ #define LOCAL_DISTANCE		10
+
+-- 
