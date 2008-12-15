@@ -1,99 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbYLOWVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbYLOW0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbYLOWVT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 17:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYLOWVI
+	id S1754081AbYLOW0Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 17:26:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYLOW0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 17:21:08 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:38839 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbYLOWVH (ORCPT
+	Mon, 15 Dec 2008 17:26:17 -0500
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:55878 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751810AbYLOW0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 17:21:07 -0500
-Date: Mon, 15 Dec 2008 23:33:10 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] x86: re-enable MCE on secondary CPUS after suspend/resume
-Message-ID: <20081215223310.GX25779@one.firstfloor.org>
-References: <20081212180650.GS19144@alberich.amd.com> <20081212181021.GU19144@alberich.amd.com> <873agtnrgy.fsf@basil.nowhere.org> <20081215190509.GB5620@alberich.amd.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 15 Dec 2008 17:26:16 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 69.181.40.92
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX18WO/kVVvj4sF/+nZtvLX9B
+Date: Mon, 15 Dec 2008 14:26:13 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-omap@vger.kernel.org
+Subject: git pull request for omap mmc init changes (Re: [PATCH 0/5] Omap
+	MMC init updates and new controller for 2.6.29 merge window)
+Message-ID: <20081215222612.GA19551@atomide.com>
+References: <20081207213617.10456.43951.stgit@localhost>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="YZ5djTAD1cGYuMQK"
 Content-Disposition: inline
-In-Reply-To: <20081215190509.GB5620@alberich.amd.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081207213617.10456.43951.stgit@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
-> {
->         static cpumask_t mce_cpus = CPU_MASK_NONE;
+
+--YZ5djTAD1cGYuMQK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+* Tony Lindgren <tony@atomide.com> [081207 13:45]:
+> Hi Pierre & Russell,
 > 
->         mce_cpu_quirks(c);
+> This series contains a better platform init for omap MMC as discussed earlier
+> on the linux-omap mailing list. The last patch in the series adds support for
+> a newer omap MMC controller available on 2430 and 34xx omaps.
 > 
->         if (mce_dont_init ||
->             cpu_test_and_set(smp_processor_id(), mce_cpus) ||
->             !mce_available(c))
->   =>             return;
+> The first four patches should get merged via Russell. The last one adding
+> the new controller depends on comments from Pierre, so I can separate
+> that out if desired.
 > 
->         mce_init(NULL);
->         mce_cpu_features(c);
-> }
+> The third patch in the series depends on the "Omap3 updates for 2.6.29
+> merge window" series for the changes to Pandora board support.
 > 
-> But we need to call mce_init to clear all MCE state.
-> IMHO the best location to call mce_init for APs is the cpu notifier.
+> Comments welcome as always!
 
-Ah got it. Thanks that makes sense. 
+Russell, here's a pull request for the first four patches in this
+series for the mmc init changes. This depends on the omap3-upstream
+pull request posted earlier today.
 
-But I think the better fix is to just drop the mce_cpus check and
-then handly it naturally in the standard bootup path. I'm not
-sure what it was good for anyways. I copied it into the 64bit code
-from 32bit, but I suppose even there it isn't really needed and on 
-32bit it is already gone even.
+I'm not including the actual driver in this series, that should go via
+Pierre. Or at least we should have an ack from Pierre first.
 
-How about this patch. Does it fix the problem for you too?
+Regards,
 
--Andi
+Tony
 
---
+--YZ5djTAD1cGYuMQK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="pull-mmc-init.txt"
 
+The following changes since commit 2619bc327417f549f1c89d5ef9b4a4aa768f41a2:
+  Arun KS (1):
+        ARM: OMAP3: Pin multiplexing updates for 24xx and 34xx
 
-Don't prevent multiple initialization of MCEs.
+are available in the git repository at:
 
-Back from early prehistory mcheck_init() has a reentry check. Presumably
-that was needed in very old kernels to prevent it entering twice.
+  git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git hsmmc-init
 
-But as Andreas points out this prevents CPU hotplug (and therefore resume)
-to correctly reinitialize MCEs when a AP boots again after being
-offlined. 
+Kevin Hilman (1):
+      omap mmc: force MMC module reset on boot
 
-Just drop the check.
+Tony Lindgren (3):
+      omap mmc: Remove broken MMC init code
+      omap mmc: Add better MMC low-level init
+      omap mmc: Add low-level initialization for hsmmc controller
 
-Based on a report from Andreas Herrmann
+ arch/arm/mach-omap1/board-h2-mmc.c         |   89 +++----
+ arch/arm/mach-omap1/board-h2.c             |   25 +-
+ arch/arm/mach-omap1/board-h3-mmc.c         |  100 ++-----
+ arch/arm/mach-omap1/board-h3.c             |   10 -
+ arch/arm/mach-omap1/board-innovator.c      |   50 +++-
+ arch/arm/mach-omap1/board-nokia770.c       |   74 ++++-
+ arch/arm/mach-omap1/board-palmte.c         |    1 -
+ arch/arm/mach-omap1/board-palmz71.c        |   11 -
+ arch/arm/mach-omap1/board-sx1-mmc.c        |   80 +-----
+ arch/arm/mach-omap1/board-sx1.c            |   10 -
+ arch/arm/mach-omap1/board-voiceblue.c      |   10 +-
+ arch/arm/mach-omap1/clock.h                |    3 +-
+ arch/arm/mach-omap1/devices.c              |   90 ++++++
+ arch/arm/mach-omap2/Makefile               |   15 +-
+ arch/arm/mach-omap2/board-2430sdp.c        |   48 ++++
+ arch/arm/mach-omap2/board-apollon.c        |   11 -
+ arch/arm/mach-omap2/board-generic.c        |   11 -
+ arch/arm/mach-omap2/board-h4.c             |   11 -
+ arch/arm/mach-omap2/board-ldp.c            |   40 +++-
+ arch/arm/mach-omap2/board-omap3beagle.c    |   90 ++++++
+ arch/arm/mach-omap2/board-omap3pandora.c   |   32 +++
+ arch/arm/mach-omap2/board-overo.c          |   43 +++
+ arch/arm/mach-omap2/clock24xx.h            |    9 +-
+ arch/arm/mach-omap2/clock34xx.h            |   10 +-
+ arch/arm/mach-omap2/devices.c              |  169 ++++++++++++
+ arch/arm/mach-omap2/mmc-twl4030.c          |  408 ++++++++++++++++++++++++++++
+ arch/arm/mach-omap2/mmc-twl4030.h          |   29 ++
+ arch/arm/plat-omap/devices.c               |  225 +++-------------
+ arch/arm/plat-omap/include/mach/board-h2.h |    6 +-
+ arch/arm/plat-omap/include/mach/board.h    |   22 --
+ arch/arm/plat-omap/include/mach/control.h  |   17 ++
+ arch/arm/plat-omap/include/mach/mmc.h      |   74 +++++-
+ drivers/mmc/host/omap.c                    |    7 +-
+ 33 files changed, 1282 insertions(+), 548 deletions(-)
+ create mode 100644 arch/arm/mach-omap2/mmc-twl4030.c
+ create mode 100644 arch/arm/mach-omap2/mmc-twl4030.h
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- arch/x86/kernel/cpu/mcheck/mce_64.c |    3 ---
- 1 file changed, 3 deletions(-)
-
-Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2008-12-15 23:13:02.000000000 +0100
-+++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2008-12-15 23:13:44.000000000 +0100
-@@ -510,12 +510,9 @@
-  */
- void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
- {
--	static cpumask_t mce_cpus = CPU_MASK_NONE;
--
- 	mce_cpu_quirks(c);
- 
- 	if (mce_dont_init ||
--	    cpu_test_and_set(smp_processor_id(), mce_cpus) ||
- 	    !mce_available(c))
- 		return;
- 
+--YZ5djTAD1cGYuMQK--
