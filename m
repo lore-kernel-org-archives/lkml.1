@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbYLOKWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYLOKXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607AbYLOKWy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 05:22:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYLOKWn
+	id S1755282AbYLOKXV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 05:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbYLOKXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 05:22:43 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:24280 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752630AbYLOKWl (ORCPT
+	Mon, 15 Dec 2008 05:23:04 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:50766 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752606AbYLOKXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 05:22:41 -0500
-Date: Mon, 15 Dec 2008 11:22:26 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: David Brownell <david-b@pacbell.net>, Ben Dooks <ben-linux@fluff.org>,
-       linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
-Subject: Re: GPIO: Fix probe() error return in gpio driver probes
-Message-ID: <20081215112226.18f7fb29@hyperion.delvare>
-In-Reply-To: <20081215101616.GB12431@fluff.org.uk>
-References: <20081212152426.745254309@fluff.org.uk>
-	<20081214213349.GA19483@fluff.org.uk>
-	<200812141611.17555.david-b@pacbell.net>
-	<20081215084600.5d237fea@hyperion.delvare>
-	<20081215101616.GB12431@fluff.org.uk>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Dec 2008 05:23:03 -0500
+Message-ID: <49462FF1.2040104@s5r6.in-berlin.de>
+Date: Mon, 15 Dec 2008 11:22:41 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.17) Gecko/20080829 SeaMonkey/1.1.12
+MIME-Version: 1.0
+To: devzero@web.de
+CC: linux-kernel@vger.kernel.org
+Subject: Re: problem with git.kernel.org
+References: <542818697@web.de>
+In-Reply-To: <542818697@web.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Dec 2008 10:16:16 +0000, Ben Dooks wrote:
-> On Mon, Dec 15, 2008 at 08:46:00AM +0100, Jean Delvare wrote:
-> > On Sun, 14 Dec 2008 16:11:17 -0800, David Brownell wrote:
-> > > On Sunday 14 December 2008, Ben Dooks wrote:
-> > > > Has anyone reveiwed this patch? Are there any comments, or can this
-> > > > be commited at somepoint (even if it is during the next merge window)?
-> > > 
-> > > I was thinking that -EINVAL is almost the least informative
-> > > diagnostic code possible, since so many places return it
-> > > that it's usually hard to find out *which* invalid parameter
-> > > triggered ...
-> > > 
-> > > Is there a less-overloaded code you could return?
-> > 
-> > -EINVAL sounds right to me, all that's really missing is dev_dbg()
-> > messages in the drivers to log what the exact problem was. 
+devzero@web.de wrote:
+> I´m trying to download a btrfs snapshot via http ( http://git.kernel.org/?p=linux/kernel/git/mason/btrfs-unstable-standalone.git;a=snapshot;h=HEAD
+> )  to be able to try btrfs with current kernel, but i get no tar.gz but just see "Generating....." for a long time and then getting a timeout.
 > 
-> It might be more acceptable to be dev_err(), that way it will get
-> printed no matter what debug options have been selected. If so, a
-> seperate patch is probably in order to make the change.
+> this seems to apply to all git repositories hosted on kernel.org.
+> 
+> For comparison, this one behaves as expected:
+> http://gitweb.opencompositing.org/?p=fusion/decorators/emerald;a=snapshot;h=HEAD
 
-As far as I can see, such errors would be caused by development-time
-mistakes, so dev_dbg() seems appropriate. dev_err() would make the
-binaries larger for all end-users.
+The kernel repo is more than 100 times as big as this emerald repo, 400
+times as big perhaps.  Try to download with git.
 
+> As there is no adress how to contact, can someone confirm and/or please forward this mail to the gitweb admin ?
+
+www.kernel.org lists a contact address.
 -- 
-Jean Delvare
+Stefan Richter
+-=====-==--- ==-- -====
+http://arcgraph.de/sr/
