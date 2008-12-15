@@ -1,110 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbYLOJ12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbYLOJoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754873AbYLOJ12 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 04:27:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYLOJ1R
+	id S1754793AbYLOJoA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 04:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYLOJnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 04:27:17 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33016
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752308AbYLOJ1Q convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 04:27:16 -0500
-Date: Mon, 15 Dec 2008 01:27:17 -0800 (PST)
-Message-Id: <20081215.012717.70229556.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 15 Dec 2008 04:43:52 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:46161 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752288AbYLOJnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 04:43:51 -0500
+Date: Mon, 15 Dec 2008 10:44:09 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28-rc8 big regression in VM
+Message-ID: <20081215094409.GA4422@ics.muni.cz>
+References: <20081212183810.GA4390@ics.muni.cz> <20081213012115.GA6250@localhost> <20081213095815.GA7143@ics.muni.cz> <20081215011645.GA9707@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081215011645.GA9707@localhost>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 15 Dec 2008 10:43:46 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Dec 15, 2008 at 09:16:45AM +0800, Wu Fengguang wrote:
+> Lukas, could you apply the attached patch, recompile and do
+> 
+> modprobe filecache
+> free; cp /proc/filecache /tmp/a;
+> echo 3 > /proc/sys/vm/drop_caches
+> free; cp /proc/filecache /tmp/b;
+> 
+> and send me the outputs a and b?
 
-1) Neil Horman fixes a race in netpoll resulting in corruption
-   and crashes.
+unfortunately, it causes an oops (0000 [#1] SMP) in d_path + 0x31/0x110, code
+48 85 c0 74 2f <48> 8b 40 30 48
+rax = 0x100000001
 
-2) Packet scheduler comment fix from Jesper Brouer.
+(it does not save the oops into any log, thus I only wrote down possibly most
+important clues)
 
-3) Thanks to reports, patches, and testing by Hermann Lauer
-   the sungem driver PCS phy support is in at least some
-   state of working.
-
-4) IPV6 raw socket usage can spam the logs with multicast
-   warnings, patch from Jan Sembera.
-
-5) Another TCP Vegas fix from Doug Leith.
-
-6) Mutex double-release fix in e1000e from Jeff Kirsher.
-
-7) Fix another potential NULL deref in netlabel code, from
-   Paul Moore.
-
-8) Fix stray TX queue references after device is brought down
-   in phonet layer, fix from Rémi Denis-Courmont.
-
-9) rwlock initializer fix in netfilter from Steven Rostedt.
-
-10) HP_SIMETH network driver doesn't depend upon NET, fix from
-    Alexander Beregalov.
-
-Please pull, thanks a lot!
-
-The following changes since commit c49b9f295e513753e6d9bb4444ba502f1aa59b29:
-  Balazs Scheidler (1):
-        tproxy: fixe a possible read from an invalid location in the socket match
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Alexander Beregalov (1):
-      IA64: HP_SIMETH needs to depend upon NET
-
-David S. Miller (1):
-      sungem: Make PCS PHY support partially work again.
-
-Doug Leith (1):
-      tcp: tcp_vegas cong avoid fix
-
-Hermann Lauer (1):
-      sungem: improve ethtool output with internal pcs and serdes
-
-Jan Sembera (1):
-      ipv6: silence log messages for locally generated multicast
-
-Jeff Kirsher (1):
-      e1000e: fix double release of mutex
-
-Jesper Dangaard Brouer (1):
-      SCHED: netem: Correct documentation comment in code.
-
-Neil Horman (1):
-      netpoll: fix race on poll_list resulting in garbage entry
-
-Paul Moore (1):
-      netlabel: Compiler warning and NULL pointer dereference fix
-
-Rémi Denis-Courmont (1):
-      Phonet: keep TX queue disabled when the device is off
-
-Steven Rostedt (1):
-      netfilter: update rwlock initialization for nat_table
-
- arch/ia64/hp/sim/Kconfig          |    1 +
- drivers/net/e1000e/ich8lan.c      |    9 ++-
- drivers/net/sungem.c              |  144 ++++++++++++++++++++++--------------
- include/linux/netdevice.h         |    7 ++
- net/core/netpoll.c                |    2 +
- net/ipv4/netfilter/nf_nat_rule.c  |    2 +-
- net/ipv4/tcp_vegas.c              |   80 +++------------------
- net/ipv6/ndisc.c                  |    7 ++-
- net/netlabel/netlabel_unlabeled.c |   38 +++++-----
- net/phonet/pep-gprs.c             |   27 ++++++--
- net/sched/sch_netem.c             |    3 -
- 11 files changed, 164 insertions(+), 156 deletions(-)
+-- 
+Luká¹ Hejtmánek
