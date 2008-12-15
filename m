@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbYLOVNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYLOVgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbYLOVNS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 16:13:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755854AbYLOVNE
+	id S1756858AbYLOVgW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 16:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbYLOVgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 16:13:04 -0500
-Received: from wm56.inbox.com ([64.135.83.56]:1564 "HELO WM56.inbox.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755689AbYLOVNC convert rfc822-to-8bit (ORCPT
+	Mon, 15 Dec 2008 16:36:06 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:24963 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755855AbYLOVgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 16:13:02 -0500
-X-Greylist: delayed 605 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Dec 2008 16:13:01 EST
-Mime-Version: 1.0
-Date: Mon, 15 Dec 2008 13:03:28 -0800
-Message-ID: <CCCA86B6E10.000005AEeuphoria@inbox.com>
-From: euphoria@inbox.com
-Subject: losing a menuconfig session to a typo
-To: linux-kernel@vger.kernel.org
-X-Mailer: INBOX.COM
-X-Originating-IP: 169.139.26.98
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-IWM-ACU: PLUtcUJobOPyyuW56TwQMhoCelcXThhKPzeyaCbNI2vYlZcH_1MQaDZKMspc
-  AosNU6pyADpwqDfZKn1oHRP1uKOQy_Ala9WW-AIZ6TMN5m08ouBnbpM964Rr
-  gQehHZMuRAT7wyqxr
+	Mon, 15 Dec 2008 16:36:03 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for December 15 (netlabel)
+Date: Mon, 15 Dec 2008 16:35:58 -0500
+User-Agent: KMail/1.9.10
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+References: <20081216020642.fc1007d9.sfr@canb.auug.org.au> <4946AE5C.9040207@oracle.com>
+In-Reply-To: <4946AE5C.9040207@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812151635.59170.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's easy to accidentally lose a menuconfig session.  Scenarios start with a
-user being accustomed to hitting [right-arrow][return] to exit from a typical
-menu.  Perhaps the user prefers his underutilized numeric keypad over adding to
-the beating [escape] takes.  Scenarios finish with the user accidentally
-issuing [right-arrow][return] to "Do you wish to save? <Yes> <No>".  I only
-lost a quick change, but it's easy to imagine how a few hours of menuconfig
-time might go away.  "It'll just take a few minutes to whip my distro's kernel
-into shape."  Yeah right.  Four hours of guesswork and research later, you're
-tired, thinking about the make command to follow, [right-arrow][return] as
-usual, wait! no! damndamndamn!, yer snookered.
+On Monday 15 December 2008 2:22:04 pm Randy Dunlap wrote:
+> netlabel_domainhash fails to build when IPV6 is not enabled:
+>
+> build-r7133.out:/local/linsrc/linux-next-20081215/net/netlabel/netlab
+>el_domainhash.c:527: error: implicit declaration of function
+> 'netlbl_af6list_foreach_rcu'
+> build-r7133.out:/local/linsrc/linux-next-20081215/net/netlabel/netlab
+>el_domainhash.c:528: error: expected ';' before 'goto'
+> build-r7133.out:make[3]: *** [net/netlabel/netlabel_domainhash.o]
+> Error 1
 
-There are a variety of simple ways to address this.  First, change the menu.
-Swapping the order of the <Yes> and <No> would be begging for even more
-trouble.  However, the <Yes>/<No> decision could be made a <Yes>/<Maybe>/<No>
-decision.  This leaves <Yes>, the predominant choice, in place.  <Maybe>, in
-the disputed position, could simply present the same menu.  Someone might even
-have a little well-deserved fun with <Maybe> menus.  This doesn't seem all that
-intrusive to me.  Second, print the diff.  When changes aren't saved, a diff of
-the original config and one that would've been saved could simply be written to
-stdout followed by a little blurb, "Those were the changes you didn't save.".
-Third, add a save command.  I save at comfortable intervals when editing
-everything else, why not kernel configurations?  This reduces the scope of
-lossage in general.
+Thanks.  I just fixed this and update the lblnet-2.6_next tree; it 
+should be in tomorrow's next.
 
-Regards, [Ag]   Andy Gaynor   euphoria@inbox.com
+-- 
+paul moore
+linux @ hp
