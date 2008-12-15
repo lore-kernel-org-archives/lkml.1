@@ -1,104 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYLOJIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbYLOJW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYLOJIJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 04:08:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYLOJHy
+	id S1754546AbYLOJW1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 04:22:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYLOJWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 04:07:54 -0500
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:50529 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752692AbYLOJHx (ORCPT
+	Mon, 15 Dec 2008 04:22:19 -0500
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:45812 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752131AbYLOJWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 04:07:53 -0500
-Date: Mon, 15 Dec 2008 10:07:45 +0100
-From: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: [RFC PATCH crypto] AES: Add support to Intel AES-NI
-	instructions
-Message-ID: <20081215090745.GA4991@Chamillionaire.breakpoint.cc>
-References: <1229054926.5936.160.camel@yhuang-dev.sh.intel.com> <20081212195722.GA24489@Chamillionaire.breakpoint.cc> <1229307542.5936.204.camel@yhuang-dev.sh.intel.com>
+	Mon, 15 Dec 2008 04:22:19 -0500
+Date: Mon, 15 Dec 2008 09:21:43 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, peterz@infradead.org, arjan@infradead.org,
+       dave@linux.vnet.ibm.com, containers@lists.osdl.org,
+       ebiederm@xmission.com, sukadev@linux.vnet.ibm.com, serue@us.ibm.com,
+       srostedt@redhat.com
+Subject: Re: [PATCH 1/3] ftrace: graph of a single function
+Message-ID: <20081215092143.GF7593@shadowen.org>
+References: <20081203203656.776893226@goodmis.org> <20081203203828.920111079@goodmis.org> <20081203130859.fcf5a51e.akpm@linux-foundation.org> <alpine.DEB.1.10.0812031611000.29045@gandalf.stny.rr.com> <20081204084118.GG32594@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229307542.5936.204.camel@yhuang-dev.sh.intel.com>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081204084118.GG32594@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Huang Ying | 2008-12-15 10:19:02 [+0800]:
+On Thu, Dec 04, 2008 at 09:41:18AM +0100, Ingo Molnar wrote:
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > 
+> > On Wed, 3 Dec 2008, Andrew Morton wrote:
+> > 
+> > > On Wed, 03 Dec 2008 15:36:57 -0500
+> > > Steven Rostedt <rostedt@goodmis.org> wrote:
+> > > 
+> > > > +static struct seq_operations ftrace_graph_seq_ops = {
+> > > > +	.start = g_start,
+> > > > +	.next = g_next,
+> > > > +	.stop = g_stop,
+> > > > +	.show = g_show,
+> > > > +};
+> > > 
+> > > This could be static I think.
+> > 
+> > s/static/const/
+> > 
+> > Damn damn damn damn!!!! I said to myself, I need to add const there and 
+> > still forgot :-(
+> 
+> No need to get stressed up about such details - we need checkpatch help 
+> for this.
 
->> Nice work. A few things:
->> - Did you rename the "old" x86 functions to avoid a clash?
->>   So you bypass the crypto layer in case you can't handle the operation.
->>   Does this improve the performace or just saves key strokes? Not sure
->>   what the best sollution could be....
->
->The general x86 implementation is used as the fall back for new AES-NI
->based implementation. Because AES-NI can not be used in kernel soft_irq
->context. If crypto layer is used to access general x86 implementation,
->we will have tfm_ctx alignment issue, because AES-NI need tfm_ctx to be
->16 byte aligned.
->
->> - unless I've read the code too fast, it does not work if someone sets the
->>   key in user context and starts an encryption in softirq context.
->
->Oh, I should use struct crypto_aes_ctx instead of define struct aes_ctx.
->The tfm_ctx definition is different. I will fix this. Except that, is
->there any other issue?
-Now I see what you have done. You are sharing the same tfm between your
-aes version and the "old" asm version. Both assume different private
-data (aes_ctx vs crypto_aes_ctx) so this should not work.
+This seems similar to the file_operations check we added recently.  As in
+should we be suggesting that seq_operations should generally be const.
+That seems consistant at least to my mind.
 
->> - aes_ctx is somehow bad. You are using this for a function and a
->>   struct. An Intel prefix would be nice (in case of the struct). On a
->>   second thought, any reason why you can't use crypto_aes_ctx?
->
->Yes. I will use that. The only issue is that AES-NI need scheduled key
->to be 16 bytes aligned, so we need move key_length in struct
->crypto_aes_ctx to the end of the struct.
-You have to it if you want to bypass the crypto layer and call asm
-functions directly and I'm not sure whether bypassing the crypto layer
-is a good thing. Both asm routines (the 32bit and 64bit) assume that
-keylen ist at +0 followed by enc key, dec key. Ach and they don't do the
-ALIGN thing.
-
-Herbert what do you thing?
-
->> - Is this an Intel thing or is going to be part of X86 and also
->>   available to others (like mmx). In that case the Intel prefix may be
->>   "wrong".
->
->Now it is an Intel thing. But in the future it may become part of x86.
->Intel named it as AES-NI (AES New Instructions), but name like
->aes_ni_aes_set_key is not good too. Does aes_ni_set_key sound better?
-The latter is fine. I just want to avoid having several and different
-aes_set_key() around.
-
->> - does the cpu support more than just pure aes e.g. block modes? In case
->>   it does not, does the perfomance improve if you implement lets say
->>   cbc(aes) and do the xor with sse in order to save a few
->>   kernel_fpu_begin() calls? I'm just asking because I saw a similar
->>   thing and PowerPC and the AltiVec unit. Maybe it is cheap on x86 :)
->
->Yes. AES-NI can benefit not only block modes. And the pipeline
->implementation of AES-NI can benefit cbc(aes) decryption and ctr(aes)
->even more (described in detail in white paper). We will work on that.
-Ah okay. So depending on how expensive kernel_fpu_begin() really is it
-might be slower for just the cipher (i.e. in xts(aes) where xts calls
-you for every 16bytes).
-
->
->Best Regards,
->Huang Ying
->
-
-Sebastian
+-apw
