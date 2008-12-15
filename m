@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757009AbYLOVm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbYLOVnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757009AbYLOVm6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 16:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbYLOVmu
+	id S1756962AbYLOVnY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 16:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757191AbYLOVnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 16:42:50 -0500
-Received: from ozlabs.org ([203.10.76.45]:32845 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754480AbYLOVmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 16:42:50 -0500
+	Mon, 15 Dec 2008 16:43:13 -0500
+Received: from ns2.gothnet.se ([82.193.160.251]:58879 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755855AbYLOVnL convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 16:43:11 -0500
+X-Greylist: delayed 1006 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Dec 2008 16:43:10 EST
+Message-ID: <4946CB83.2000507@tungstengraphics.com>
+Date: Mon, 15 Dec 2008 22:26:27 +0100
+From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18758.53072.197695.277198@cargo.ozlabs.ibm.com>
-Date: Tue, 16 Dec 2008 08:42:40 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Vince Weaver <vince@deater.net>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "David S. Miller" <davem@davemloft.net>,
-       perfctr-devel@lists.sourceforge.net
-Subject: Re: [patch] Performance Counters for Linux, v4
-In-Reply-To: <Pine.LNX.4.64.0812151243130.2773@pianoman.cluster.toy>
-References: <20081214212829.GA9435@elte.hu>
-	<Pine.LNX.4.64.0812151243130.2773@pianoman.cluster.toy>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>,
+       David Airlie <airlied@linux.ie>,
+       dri-devel <dri-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: BUG: via_drmclient.h is referenced but does not exist
+References: <20081213193506.GA22969@uranus.ravnborg.org>	<49452CEE.1090909@shipmail.org> <20081215210227.GA14396@uranus.ravnborg.org>
+In-Reply-To: <20081215210227.GA14396@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-BitDefender-Scanner: Mail not scanned due to license constraints
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vince Weaver writes:
+Hi!
 
-> I see a large (2300 instruction) fixed overhead when measuring
-> retired instruction count using the "timec" command
-> compared to the "pfmon" tool that comes with perfmon3
-> (the pfmon tool has essentially no overhead when
-> doing aggragate counts).
+Sam Ravnborg wrote:
+> On Sun, Dec 14, 2008 at 04:57:34PM +0100, Thomas Hellström wrote:
+>   
+>> Hi!
+>>
+>> The intention is for via_drm.h to be self-containing when included both 
+>> for a kernel build and for a user-space build. In this particular case, 
+>> via_drmclient.h lives in the user-space clients and includes stdint.h to 
+>> get access to uint32_t and friends.
+>>
+>> Of course, the user-space clients could
+>> #include "uint32.h"
+>> #include "via_drm.h"
+>>
+>> but shouldn't really the tools be mimicing what the compiler does in 
+>> this case?
+>>     
+>
+> The kernel headers and thus the kernel ABI is separate and ideally
+> they should not depend on any other header files to provide anything.
+>
+> This is why __u32, __u64 etc are preferred in the kernel ABI
+> and not uint32_t as used by the drm headers.
+>
+> We do not adhere to this as a strict rule (yet).
+> But if you do:
+>
+> grep -l uint32_t usr/include/linux
+>
+> then you will only see 7 hits. Out of 368 files.
+> So we are not bad in this respect.
+>
+> For drm the fix seems simple - just replace all of uint32_t with __u32.
+> likewise for the other 32 bit and the 64 bit variants.
+>   
+I'm not sure that's possible, as these header files are shared with *BSD 
+(and possibly Solaris).
+> For the specific case where drm includes a non-existing file I suggest
+> that we get this fixed in some way soon.
+>   
+It's a bit non-trivial, since all via drm user-space clients need to be 
+fixed, but definitiely doable.
+/Thomas
 
-Looks like timec will be counting the fork() and execvp() system calls
-that are used to run your executable, as well as the executable
-itself.  The fork() overhead could be removed fairly easily I think,
-the execvp would be hard to get rid of without using ptrace() - and
-the use of ptrace was one of the things that Ingo et al. objected to
-in perfmon3.
 
-Paul.
+
