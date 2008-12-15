@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYLOO6L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbYLOO6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbYLOO6L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 09:58:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbYLOOzj
+	id S1756911AbYLOO6y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 09:58:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbYLOOzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 09:55:39 -0500
-Received: from mga09.intel.com ([134.134.136.24]:28650 "EHLO mga09.intel.com"
+	Mon, 15 Dec 2008 09:55:32 -0500
+Received: from mga09.intel.com ([134.134.136.24]:26559 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754850AbYLOOz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 09:55:26 -0500
+	id S1754809AbYLOOzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 09:55:23 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.36,224,1228118400"; 
-   d="scan'208";a="370995534"
+   d="scan'208";a="370995516"
 From: Patrick Ohly <patrick.ohly@intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
        John Stultz <johnstul@us.ibm.com>, linux-api@vger.kernel.org,
        Patrick Ohly <patrick.ohly@intel.com>
-Subject: [RFC PATCH 09/12] clocksource: allow usage independent of timekeeping.c
-Date: Mon, 15 Dec 2008 15:54:56 +0100
-Message-Id: <1229352899-31330-10-git-send-email-patrick.ohly@intel.com>
+Subject: [RFC PATCH 08/12] igb: stub support for SIOCSHWTSTAMP
+Date: Mon, 15 Dec 2008 15:54:55 +0100
+Message-Id: <1229352899-31330-9-git-send-email-patrick.ohly@intel.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1229352899-31330-9-git-send-email-patrick.ohly@intel.com>
+In-Reply-To: <1229352899-31330-8-git-send-email-patrick.ohly@intel.com>
 References: <1229352899-31330-1-git-send-email-patrick.ohly@intel.com>
  <1229352899-31330-2-git-send-email-patrick.ohly@intel.com>
  <1229352899-31330-3-git-send-email-patrick.ohly@intel.com>
@@ -30,239 +30,71 @@ References: <1229352899-31330-1-git-send-email-patrick.ohly@intel.com>
  <1229352899-31330-6-git-send-email-patrick.ohly@intel.com>
  <1229352899-31330-7-git-send-email-patrick.ohly@intel.com>
  <1229352899-31330-8-git-send-email-patrick.ohly@intel.com>
- <1229352899-31330-9-git-send-email-patrick.ohly@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So far struct clocksource acted as the interface between time/timekeeping.c
-and hardware. This patch generalizes the concept so that a similar
-interface can also be used in other contexts. For that it introduces
-new structures and related functions *without* touching the existing
-struct clocksource.
-
-The reasons for adding these new structures to clocksource.[ch] are
-* the APIs are clearly related
-* struct clocksource could be cleaned up to use the new structs
-* avoids proliferation of files with similar names (timesource.h?
-  timecounter.h?)
-
-As outlined in the discussion with John Stultz, this patch adds
-* struct cyclecounter: stateless API to hardware which counts clock cycles
-* struct timecounter: stateful utility code built on a cyclecounter which
-  provides a nanosecond counter
-* only the function to read the nanosecond counter; deltas are used internally
-  and not exposed to users of timecounter
-
-The code does no locking of the shared state. It must be called at least
-as often as the cycle counter wraps around to detect these wrap arounds.
-Both is the responsibility of the timecounter user.
 
 Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
 ---
- include/linux/clocksource.h |   99 +++++++++++++++++++++++++++++++++++++++++++
- kernel/time/clocksource.c   |   76 +++++++++++++++++++++++++++++++++
- 2 files changed, 175 insertions(+), 0 deletions(-)
+ drivers/net/igb/igb_main.c |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index f88d32f..d379189 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -22,8 +22,107 @@ typedef u64 cycle_t;
- struct clocksource;
+diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
+index 25df7c9..e9ad560 100644
+--- a/drivers/net/igb/igb_main.c
++++ b/drivers/net/igb/igb_main.c
+@@ -34,6 +34,7 @@
+ #include <linux/ipv6.h>
+ #include <net/checksum.h>
+ #include <net/ip6_checksum.h>
++#include <linux/net_tstamp.h>
+ #include <linux/mii.h>
+ #include <linux/ethtool.h>
+ #include <linux/if_vlan.h>
+@@ -4121,6 +4122,33 @@ static int igb_mii_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
+ }
  
  /**
-+ * struct cyclecounter - hardware abstraction for a free running counter
-+ *	Provides completely state-free accessors to the underlying hardware.
-+ *	Depending on which hardware it reads, the cycle counter may wrap
-+ *	around quickly. Locking rules (if necessary) have to be defined
-+ *	by the implementor and user of specific instances of this API.
++ * igb_hwtstamp_ioctl - control hardware time stamping
++ * @netdev:
++ * @ifreq:
++ * @cmd:
 + *
-+ * @read:		returns the current cycle value
-+ * @mask:		bitmask for two's complement
-+ *			subtraction of non 64 bit counters,
-+ *			see CLOCKSOURCE_MASK() helper macro
-+ * @mult:		cycle to nanosecond multiplier
-+ * @shift:		cycle to nanosecond divisor (power of two)
-+ */
-+struct cyclecounter {
-+	cycle_t (*read)(const struct cyclecounter *cc);
-+	cycle_t mask;
-+	u32 mult;
-+	u32 shift;
-+};
-+
-+/**
-+ * struct timecounter - layer above a %struct cyclecounter which counts nanoseconds
-+ *	Contains the state needed by timecounter_read() to detect
-+ *	cycle counter wrap around. Initialize with
-+ *	timecounter_init(). Also used to convert cycle counts into the
-+ *	corresponding nanosecond counts with timecounter_cyc2time(). Users
-+ *	of this code are responsible for initializing the underlying
-+ *	cycle counter hardware, locking issues and reading the time
-+ *	more often than the cycle counter wraps around. The nanosecond
-+ *	counter will only wrap around after ~585 years.
-+ *
-+ * @cc:			the cycle counter used by this instance
-+ * @cycle_last:		most recent cycle counter value seen by timecounter_read()
-+ * @nsec:		
-+ */
-+struct timecounter {
-+	const struct cyclecounter *cc;
-+	cycle_t cycle_last;
-+	u64 nsec;
-+};
-+
-+/**
-+ * cyclecounter_cyc2ns - converts cycle counter cycles to nanoseconds
-+ * @tc:		Pointer to cycle counter.
-+ * @cycles:	Cycles
-+ *
-+ * XXX - This could use some mult_lxl_ll() asm optimization. Same code
-+ * as in cyc2ns, but with unsigned result.
-+ */
-+static inline u64 cyclecounter_cyc2ns(const struct cyclecounter *cc, cycle_t cycles)
++ * Currently cannot enable any kind of hardware time stamping, but
++ * supports SIOCSHWTSTAMP in general.
++ **/
++static int igb_hwtstamp_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
 +{
-+	u64 ret = (u64)cycles;
-+	ret = (ret * cc->mult) >> cc->shift;
-+	return ret;
++	struct hwtstamp_config config;
++
++	if (copy_from_user(&config, ifr->ifr_data, sizeof(config)))
++		return -EFAULT;
++
++	/* reserved for future extensions */
++	if (config.flags)
++		return -EINVAL;
++
++	if (config.tx_type == HWTSTAMP_TX_OFF &&
++		config.rx_filter == HWTSTAMP_FILTER_NONE)
++		return 0;
++
++	return -ERANGE;
 +}
 +
 +/**
-+ * timecounter_init - initialize a time counter
-+ * @tc:			Pointer to time counter which is to be initialized/reset
-+ * @cc:			A cycle counter, ready to be used.
-+ * @start_tstamp:	Arbitrary initial time stamp.
-+ *
-+ * After this call the current cycle register (roughly) corresponds to
-+ * the initial time stamp. Every call to timecounter_read() increments
-+ * the time stamp counter by the number of elapsed nanoseconds.
-+ */
-+extern void timecounter_init(struct timecounter *tc,
-+			const struct cyclecounter *cc,
-+			u64 start_tstamp);
-+
-+/**
-+ * timecounter_read - return nanoseconds elapsed since timecounter_init()
-+ *                         plus the initial time stamp
-+ * @tc:          Pointer to time counter.
-+ *
-+ * In other words, keeps track of time since the same epoch as
-+ * the function which generated the initial time stamp.
-+ */
-+extern u64 timecounter_read(struct timecounter *tc);
-+
-+/**
-+ * timecounter_cyc2time - convert a cycle counter to same
-+ *                        time base as values returned by
-+ *                        timecounter_read()
-+ * @tc:		Pointer to time counter.
-+ * @cycle:	a value returned by tc->cc->read()
-+ *
-+ * Cycle counts that are converted correctly as long as they
-+ * fall into the interval [-1/2 max cycle count, +1/2 max cycle count],
-+ * with "max cycle count" == cs->mask+1.
-+ *
-+ * This allows conversion of cycle counter values which were generated
-+ * in the past.
-+ */
-+extern u64 timecounter_cyc2time(struct timecounter *tc,
-+				cycle_t cycle_tstamp);
-+
-+/**
-  * struct clocksource - hardware abstraction for a free running counter
-  *	Provides mostly state-free accessors to the underlying hardware.
-+ *	This is the structure used for system time.
-  *
-  * @name:		ptr to clocksource name
-  * @list:		list head for registration
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 9ed2eec..0d7a2cb 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -31,6 +31,82 @@
- #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
- #include <linux/tick.h>
- 
-+void timecounter_init(struct timecounter *tc,
-+		const struct cyclecounter *cc,
-+		u64 start_tstamp)
-+{
-+	tc->cc = cc;
-+	tc->cycle_last = cc->read(cc);
-+	tc->nsec = start_tstamp;
-+}
-+EXPORT_SYMBOL(timecounter_init);
-+
-+/**
-+ * clocksource_read_ns - get nanoseconds since last call of this function
-+ * @tc:         Pointer to time counter
-+ *
-+ * When the underlying cycle counter runs over, this will be handled
-+ * correctly as long as it does not run over more than once between
-+ * calls.
-+ *
-+ * The first call to this function for a new time counter initializes
-+ * the time tracking and returns bogus results.
-+ */
-+static u64 timecounter_read_delta(struct timecounter *tc)
-+{
-+	cycle_t cycle_now, cycle_delta;
-+	u64 ns_offset;
-+
-+	/* read cycle counter: */
-+	cycle_now = tc->cc->read(tc->cc);
-+
-+	/* calculate the delta since the last timecounter_read_delta(): */
-+	cycle_delta = (cycle_now - tc->cycle_last) & tc->cc->mask;
-+
-+	/* convert to nanoseconds: */
-+	ns_offset = cyclecounter_cyc2ns(tc->cc, cycle_delta);
-+
-+	/* update time stamp of timecounter_read_delta() call: */
-+	tc->cycle_last = cycle_now;
-+
-+	return ns_offset;
-+}
-+
-+u64 timecounter_read(struct timecounter *tc)
-+{
-+	u64 nsec;
-+
-+	/* increment time by nanoseconds since last call */
-+	nsec = timecounter_read_delta(tc);
-+	nsec += tc->nsec;
-+	tc->nsec = nsec;
-+
-+	return nsec;
-+}
-+EXPORT_SYMBOL(timecounter_read);
-+
-+u64 timecounter_cyc2time(struct timecounter *tc,
-+			cycle_t cycle_tstamp)
-+{
-+	u64 cycle_delta = (cycle_tstamp - tc->cycle_last) & tc->cc->mask;
-+	u64 nsec;
-+
-+	/*
-+	 * Instead of always treating cycle_tstamp as more recent
-+	 * than tc->cycle_last, detect when it is too far in the
-+	 * future and treat it as old time stamp instead.
-+	 */
-+	if (cycle_delta > tc->cc->mask / 2) {
-+		cycle_delta = (tc->cycle_last - cycle_tstamp) & tc->cc->mask;
-+		nsec = tc->nsec - cyclecounter_cyc2ns(tc->cc, cycle_delta);
-+	} else {
-+		nsec = cyclecounter_cyc2ns(tc->cc, cycle_delta) + tc->nsec;
-+	}
-+
-+	return nsec;
-+}
-+EXPORT_SYMBOL(timecounter_cyc2time);
-+
- /* XXX - Would like a better way for initializing curr_clocksource */
- extern struct clocksource clocksource_jiffies;
- 
+  * igb_ioctl -
+  * @netdev:
+  * @ifreq:
+@@ -4133,6 +4161,8 @@ static int igb_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
+ 	case SIOCGMIIREG:
+ 	case SIOCSMIIREG:
+ 		return igb_mii_ioctl(netdev, ifr, cmd);
++	case SIOCSHWTSTAMP:
++		return igb_hwtstamp_ioctl(netdev, ifr, cmd);
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
 -- 
 1.5.5.3
 
