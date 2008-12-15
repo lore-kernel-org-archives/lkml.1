@@ -1,171 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYLOROx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYLOReA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbYLOROx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 12:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbYLOROn
+	id S1755992AbYLOReA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 12:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbYLORdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 12:14:43 -0500
-Received: from mail43.e.nsc.no ([193.213.115.43]:59653 "EHLO mail43.e.nsc.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754687AbYLOROn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 12:14:43 -0500
-X-Greylist: delayed 1023 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Dec 2008 12:14:42 EST
-Date: Mon, 15 Dec 2008 17:57:16 +0100
-From: Henrik Austad <henrik@austad.us>
-To: "Ma, Chinang" <chinang.ma@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>
-Subject: Re: CFS scheduler OLTP perforamnce
-Message-ID: <20081215165716.GA27776@januz.myftp.org>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E80030A74A5FF@azsmsx501.amr.corp.intel.com> <1229089100.25485.5.camel@twins> <BC02C49EEB98354DBA7F5DD76F2A9E80030A789771@azsmsx501.amr.corp.intel.com> <200812141543.06846.henrik@austad.us> <BC02C49EEB98354DBA7F5DD76F2A9E80030A7DCC55@azsmsx501.amr.corp.intel.com>
+	Mon, 15 Dec 2008 12:33:52 -0500
+Received: from fk-out-0910.google.com ([209.85.128.188]:35031 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751624AbYLORdv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 12:33:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=E1pZ32TbnCjDV0oNPZm3k7haqYLm4TWDNVEmw/r+HQIyJxl0GW9rfBGG5/B0Emc4PW
+         TprF8I0RseYz3uQ7P5sOlGu+Rqb/A+oHeQIWj6hqge/+j+7Ls13WXL+D5vzKTAqvsgFu
+         UA/6B9g7RYH8CeZWDJNWYVFxPHxogqTH4Xqb0=
+Message-ID: <494694F8.6080004@gmail.com>
+Date: Mon, 15 Dec 2008 20:33:44 +0300
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BC02C49EEB98354DBA7F5DD76F2A9E80030A7DCC55@azsmsx501.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Brian J. Murrell" <brian@interlinx.bc.ca>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: suspend/resume fails on second attempt in LNXVIDEO:00
+References: <gi247o$iog$1@ger.gmane.org> <20081215155655.GA1535@ucw.cz> <gi62fj$bnf$5@ger.gmane.org>
+In-Reply-To: <gi62fj$bnf$5@ger.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 15, 2008 at 08:32:41AM -0700, Ma, Chinang wrote:
-> 
-> 
-> >-----Original Message-----
-> >From: Henrik Austad [mailto:henrik@austad.us]
-> >Sent: Sunday, December 14, 2008 6:43 AM
-> >To: Ma, Chinang
-> >Cc: Peter Zijlstra; Ingo Molnar; linux-kernel@vger.kernel.org; Wilcox,
-> >Matthew R; Van De Ven, Arjan; Styner, Douglas W; Chilukuri, Harita; Wang,
-> >Peter Xihong; Nueckel, Hubert; Chris Mason
-> >Subject: Re: CFS scheduler OLTP perforamnce
-> >
-> >On Friday 12 December 2008 22:45:11 Ma, Chinang wrote:
-> >
-> >*snip*
-> >
-> >> >> > We are evaluating the CFS OLTP performance with 2.6.28-c7 kernel. In
-> >> >> > this workload once a database foreground process commit a
-> >transaction
-> >> >> > it will signal the log writer process to write to the log file.
-> >> >> > Foreground processes will wait until log writer finish writing and
-> >> >> > wake them up. With hundreds of foreground process running in the
-> >> >> > system, it is important that the log writer get to run as soon as
-> >data
-> >> >> > is available.
-> >> >> >
-> >> >> > Here are the experiments we have done with 2.6.28-rc7.
-> >> >> > 1. Increase log writer priority "renice -20 <log writer pid>" while
-> >> >> > keeping all other processes running in default CFS priority. We get
-> >a
-> >> >> > baseline performance with log latency (scheduling + i/o) at 7 ms.
-> >> >>
-> >> >> Is this better or the same than nice-0 ?
-> >>
-> >> I left out one detail of the database processes. There are also data
-> >> writers that responsible for write back dirty buffers to free up buffer
-> >for
-> >> new transactions. These processes also need to be renice to higher
-> >priority
-> >> (-19). When data writers are left at nice-0, the workload was throttle by
-> >> the limited number of free buffers and we cannot even fully utilize the
-> >> system. I had to renice data writer and log writer process.
-> >>
-> >> >> > 2. To reduce log latency, we set log writer to SCHED_RR with higher
-> >> >> > priority. We tried "chrt -p 49  <log writer pid>" and got 0.7% boost
-> >> >> > in performance with log latency reduced to 6.4 ms.
-> >
-> >What is the time needed to actually write the data to disk?
-> From the iostat, the log file write latency is 1.62ms. DBMD has stats for log file write of 2.17ms, that is including latency of io_submit, physical i/o and io_getevents.
-> 
-> >
-> >> >
-> >> >BTW, 6.4ms schedule latency sounds insanely long for a RR task, are you
-> >> >running a PREEMPT=n kernel or something?
-> >>
-> >> The 6.4ms log write latency was measured in the foreground process. It
-> >went
-> >> like this:
-> >> 1. Foreground progress get start time and post log writer,
-> >> foreground wait and sleep.
-> >> 2. log writer was scheduled and collect log
-> >> data.
-> >> 3. log writer write to log file and wait for i/o.
-> >> 4. Write completed. log writer use vector post to wake up all the waiting
-> >> foreground process.
-> >> 5. Foreground process wake up and get end time.
-> >
-> >OK, let me see if I got this right:
-> >- You have a foreground process that runs with normal priority (i.e. +19
-> >to -20)
-> >- This process appends data to a buffer, records the time and signals the
-> >log-writer to flush the buffer to disk as soon as possible
-> >- The log-writer is awoken, writes the buffer to disk, signals the
-> >foreground
-> >process that the job is done and exits.
-> >- The foregorund process records the time when it is awoken.
-> >
-> >Is this really a kernel-scheduler problem? Or is it an error in the way the
-> >timestamps are recoreded?
-> >
-> >Does not the time recorded then depend upon how the foreground process is
-> >scheduled, and not the log-writer? What happens if you log the time at the
-> >start and end of the log-writer function? Then you would get the time-delta
-> >between signaling and rr-wakeup, as well as time spent writing buffer to
-> >disk. By using the final timestamp in the foreground process, you'd get the
-> >latency for the last foreground-process wakeup as well.
-> >
-> >Or am I completely missing the point here?
-> 
-> Since I don't have access to the source code, I cannot make the about change to the foreground or log writer. 
+Brian J. Murrell wrote:
+> On Mon, 15 Dec 2008 16:56:55 +0100, Pavel Machek wrote:
+>  
+>   
+>> Sounds like acpi video driver to me. So you may want to rmmod it before
+>> suspend at see what happens. (and cc linux-acpi).
+>>     
+>
+> Please forgive my ignorance.  Which driver would that be?  I currently
+> have:
+>
+> $ lsmod
+> Module                  Size  Used by
+> af_packet              25088  2 
+> i915                   64004  2 
+> drm                    93736  3 i915
+> rfcomm                 41744  2 
+> l2cap                  29312  13 rfcomm
+> bluetooth              62436  4 rfcomm,l2cap
+> ppdev                  15620  0 
+> ipv6                  254836  24 
+> acpi_cpufreq           16268  1 
+> cpufreq_conservative    14472  0 
+> cpufreq_powersave       9856  0 
+> cpufreq_ondemand       15244  1 
+> cpufreq_userspace      11268  0 
+> cpufreq_stats          13188  0 
+> freq_table             12672  3 acpi_cpufreq,cpufreq_ondemand,cpufreq_stats
+> container              11648  0 
+> pci_slot               12680  0 
+> sbs                    18952  0 
+> sbshc                  13568  1 sbs
+> iptable_filter         11008  0 
+> ip_tables              19216  1 iptable_filter
+> x_tables               22916  1 ip_tables
+> parport_pc             40356  0 
+> lp                     17156  0 
+> parport                42348  3 ppdev,parport_pc,lp
+> joydev                 17856  0 
+> snd_hda_intel         416052  0 
+> snd_seq_dummy          11012  0 
+> snd_pcsp               17832  0 
+> snd_seq_oss            37248  0 
+> snd_pcm_oss            44928  0 
+> snd_mixer_oss          22272  1 snd_pcm_oss
+> psmouse                49168  0 
+> snd_seq_midi           14464  0 
+> snd_rawmidi            29184  1 snd_seq_midi
+> snd_seq_midi_event     15232  2 snd_seq_oss,snd_seq_midi
+> evdev                  17696  6 
+> snd_seq                55984  6 snd_seq_dummy,snd_seq_oss,snd_seq_midi,snd_seq_midi_event
+> snd_pcm                81156  3 snd_hda_intel,snd_pcsp,snd_pcm_oss
+> serio_raw              13444  0 
+> snd_timer              28808  2 snd_seq,snd_pcm
+> snd_seq_device         15244  5 snd_seq_dummy,snd_seq_oss,snd_seq_midi,snd_rawmidi,snd_seq
+> iTCO_wdt               19236  0 
+> iTCO_vendor_support    11908  1 iTCO_wdt
+> video                  25360  0 
+>   
+this one ^^^^^
+> output                 11136  1 video
+> snd                    61476  10 snd_hda_intel,snd_pcsp,snd_seq_oss,snd_pcm_oss,snd_mixer_oss,snd_rawmidi,snd_seq,snd_pcm,snd_timer,snd_seq_device
+> soundcore              15328  1 snd
+> ac                     12420  0 
+> snd_page_alloc         17160  2 snd_hda_intel,snd_pcm
+> wmi                    14888  0 
+> battery                18436  0 
+> shpchp                 39828  0 
+> pci_hotplug            34976  1 shpchp
+> intel_agp              33596  1 
+> agpgart                41928  3 drm,intel_agp
+> button                 14480  0 
+> ext3                  130568  1 
+> jbd                    53908  1 ext3
+> mbcache                16004  1 ext3
+> loop                   22540  2 
+> usb_storage            78656  0 
+> libusual               30356  1 usb_storage
+> sd_mod                 41240  2 
+> crc_t10dif             10112  1 sd_mod
+> sr_mod                 21956  0 
+> cdrom                  42272  1 sr_mod
+> sg                     36148  0 
+> ahci                   37260  1 
+> ata_piix               29700  0 
+> pata_acpi              12288  0 
+> ata_generic            13060  0 
+> 8139too                31744  0 
+> 8139cp                 27776  0 
+> mii                    13440  2 8139too,8139cp
+> libata                176160  4 ahci,ata_piix,pata_acpi,ata_generic
+> scsi_mod              156948  5 usb_storage,sd_mod,sr_mod,sg,libata
+> ehci_hcd               41996  0 
+> uhci_hcd               30352  0 
+> usbcore               149392  5 usb_storage,libusual,ehci_hcd,uhci_hcd
+> thermal                23708  0 
+> processor              49708  4 acpi_cpufreq,thermal
+> fan                    12676  0 
+> fuse                   58780  3 
+>
+> Do you mean the i915 driver?  I don't think I will be able to rmmod that
+> one given the number of references on it.
+>
+> Thanx!
+>
+> b.
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>   
 
-Aha, then it makes sense :-)
-
-What about, as a test, set the foreground process as rt-prio (not a good thing 
-for a production environment, but as a test, it should give you an indication 
-to how long time the wakeup-time is.
-
-> 
-> >
-> >> >How would you characterize the log tasks behaviour?
-> >> >
-> >> > - does it run long/short (any quantization)
-> >>
-> >> There were 371 log writes per second so ~2.7ms per log writer execution.
-> >> Out of this we know ~2.13 ms was spent waiting for log file i/o. Log
-> >writer
-> >> was running for (2.7ms - 2.13ms) = 0.57ms
-> >>
-> >> > - does it sleep long/short - how does it compare to its runtime?
-> >>
-> >> With the current throughput, log writer should be constantly writing log
-> >> and rarely sleep.
-> >>
-> >> > - does it wake others?
-> >> >   - if so, always the one who woke it, or multiple others?
-> >>
-> >> Log writer wake multiple foreground processes using vector post.
-> >
-> >So, you don't really know if the initial process that recorded the
-> >timestamp
-> >is the one who is awoken - so the time taken could be *very* long?
-> >
-> Yes. If we only look at the timestamp in just one foreground process. The reported log latency is an average of the sum of all foreground stats. Since this average went down with the log writer set to SCHED_RR, I took that as log writer get to do its job sooner. 
-
-Ah, I guess the time went down because the writer was scheduler much earlier,
-and this lead to decreased time, but as the foreground process needs to be 
-waken up and scheduled *after* the writer has finished, you will still see 
-some latencies here.
-
-I'm suspecting you record a lot of time waiting for the foreground process 
-to be scheduled again.
-
-
-henrik
