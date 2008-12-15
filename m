@@ -1,123 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752000AbYLOM0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751836AbYLOMiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752000AbYLOM0S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 07:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbYLOM0J
+	id S1751836AbYLOMiY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 07:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750902AbYLOMiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 07:26:09 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:34534 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbYLOM0H (ORCPT
+	Mon, 15 Dec 2008 07:38:16 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:33172 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750805AbYLOMiP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 07:26:07 -0500
-Date: Mon, 15 Dec 2008 17:55:29 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>
-Subject: Re: [RFC PATCH v5 4/7] sched: bias task wakeups to preferred
-	semi-idle packages
-Message-ID: <20081215122529.GR5457@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Collier-Brown <davecb@sun.com>,
-	Tim Connors <tconnors@astro.swin.edu.au>,
-	Max Krasnyansky <maxk@qualcomm.com>,
-	Gregory Haskins <gregory.haskins@gmail.com>
-References: <20081211173831.2020.57550.stgit@drishya.in.ibm.com> <20081211174304.2020.14746.stgit@drishya.in.ibm.com> <20081215070139.GE18403@balbir.in.ibm.com> <1229329521.14605.17.camel@twins> <1229329984.14605.18.camel@twins> <20081215084642.GJ18403@balbir.in.ibm.com>
+	Mon, 15 Dec 2008 07:38:15 -0500
+Date: Mon, 15 Dec 2008 23:38:01 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [RFC PATCH crypto] AES: Add support to Intel AES-NI
+	instructions
+Message-ID: <20081215123801.GA32485@gondor.apana.org.au>
+References: <1229054926.5936.160.camel@yhuang-dev.sh.intel.com> <20081212195722.GA24489@Chamillionaire.breakpoint.cc> <1229307542.5936.204.camel@yhuang-dev.sh.intel.com> <20081215033842.GA28499@gondor.apana.org.au> <1229318099.5936.224.camel@yhuang-dev.sh.intel.com> <20081215052106.GA29324@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081215084642.GJ18403@balbir.in.ibm.com>
+In-Reply-To: <20081215052106.GA29324@gondor.apana.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> [2008-12-15 14:16:42]:
-
-> * Peter Zijlstra <peterz@infradead.org> [2008-12-15 09:33:04]:
-> 
-> > On Mon, 2008-12-15 at 09:25 +0100, Peter Zijlstra wrote:
-> > > On Mon, 2008-12-15 at 12:31 +0530, Balbir Singh wrote:
-> > > 
-> > > > >  kernel/sched_fair.c |   17 +++++++++++++++++
-> > > > >  1 files changed, 17 insertions(+), 0 deletions(-)
-> > > > > 
-> > > > > diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> > > > > index 98345e4..939f2a1 100644
-> > > > > --- a/kernel/sched_fair.c
-> > > > > +++ b/kernel/sched_fair.c
-> > > > > @@ -1027,6 +1027,23 @@ static int wake_idle(int cpu, struct task_struct *p)
-> > > > >  	cpumask_t tmp;
-> > > > >  	struct sched_domain *sd;
-> > > > >  	int i;
-> > > > > +	unsigned int chosen_wakeup_cpu;
-> > > > > +	int this_cpu;
-> > > > > +
-> > > > > +	/*
-> > > > > +	 * At POWERSAVINGS_BALANCE_WAKEUP level, if both this_cpu and prev_cpu
-> > > > > +	 * are idle and this is not a kernel thread and this task's affinity
-> > > > > +	 * allows it to be moved to preferred cpu, then just move!
-> > > > > +	 */
-> > > > > +
-> > > > > +	this_cpu = smp_processor_id();
-> > > > > +	chosen_wakeup_cpu =
-> > > > > +		cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu;
-> > > > > +
-> > > > > +	if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP &&
-> > > > > +		idle_cpu(cpu) && idle_cpu(this_cpu) && p->mm &&
-> > > > 
-> > > > The p->mm check is racy, it needs to be done under task_lock(). The
-> > > > best way to check for a kernel thread is get_task_mm(), followed by
-> > > > put_task_mm() is the mm is not NULL. We also need to check to see if
-> > > > the task is _hot_ on cpu. We should negate this optimization in case
-> > > > chosen_wakeup_cpu is idle, so check for that as well.
-> > > 
-> > > Sure its racy, but so what?
-> > > 
-> > > The worst I can see it that we exclude a dying task from this logic,
-> > > which isn't a problem at all, since its dying anyway.
+On Mon, Dec 15, 2008 at 04:21:06PM +1100, Herbert Xu wrote:
+>
+> > a. Do not touch SSE state in soft_irq
+> > b. Disable/restore soft_irq in kernel_fpu_begin/kernel_fpu_end
+> > c. Use a per-CPU data structure to save kernel FPU state during
+> > soft_irq.
 > > 
-> > At which point I seriously doubt it'd still be on the rq anyway.
-> >
+> > The mothod a is used in patch.
 > 
-> I forgot to mention that, the check should be (p->mm && !(p->flags & PF_KTHREAD))
+> Could you run the tcrypt speed test on this and measure the
+> difference between the native AES vs. the fallback? Depending
+> on the difference I think we'd want to consider b) or c).
 
-I can check for PF_KTHREAD for now.  However, I should reduce the
-number of checks since this may slow down wake_idle for sched_mc=2.
+Here's another option
 
-We can tolerate p->mm check on a dying process as Peter has suggested,
-hence we don't need to protect it.  We are not going to access any
-contents of the mm struct.
+d. When we're in interrupt context, schedule a task to perform
+the encryption asynchronously.
 
-If PF_KTHREAD is only being used by AIO, then I feel we can drop the
-check since the threads will not have affinity and they can be moved
-to other cpus anyway.
-
-The main reason for skipping kthread is that they may be using per-cpu
-variables and sleep/preempted.  I did not want the wake_idle() logic
-to move them around forcefully.  This is not the general case and this
-situation should not happen.  
-
-Second reason is to optimise on the affinity check since most of the
-kthreads have affinity and cannot be moved.
-
-This condition check needs optimisation after getting the framework
-functionally correct and useful.
-
---Vaidy
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
