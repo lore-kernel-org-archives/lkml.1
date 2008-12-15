@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbYLOODR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbYLOOFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753877AbYLOODR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 09:03:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYLOODE
+	id S1753718AbYLOOFU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 09:05:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbYLOOFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 09:03:04 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:49266 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753160AbYLOODD (ORCPT
+	Mon, 15 Dec 2008 09:05:09 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:33876 "EHLO
+	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751060AbYLOOFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 09:03:03 -0500
-Date: Mon, 15 Dec 2008 08:02:47 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>, bcrl@kvack.org,
-       list-linux-mm@kvack.org
-Subject: Re: [rfc][patch] SLQB slab allocator
-In-Reply-To: <20081214230407.GB7318@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0812150758020.16821@quilx.com>
-References: <20081212002518.GH8294@wotan.suse.de> <Pine.LNX.4.64.0812122013390.15781@quilx.com>
- <20081214230407.GB7318@wotan.suse.de>
+	Mon, 15 Dec 2008 09:05:08 -0500
+Date: Mon, 15 Dec 2008 19:34:50 +0530
+From: Balaji Rao <balajirrao@openmoko.org>
+To: Mark Brown <broonie@sirena.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andy Green <andy@openmoko.com>,
+       Liam Girdwood <lrg@simlogic.co.uk>
+Subject: Re: [PATCH 7/7] regulator: PCF50633 pmic driver
+Message-ID: <20081215140448.GA2625@cff.thadambail>
+References: <20081214110152.3307.50843.stgit@cff.thadambail> <20081214110400.3307.57681.stgit@cff.thadambail> <20081215113547.GC31145@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081215113547.GC31145@sirena.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Dec 2008, Nick Piggin wrote:
+On Mon, Dec 15, 2008 at 11:35:49AM +0000, Mark Brown wrote:
+> On Sun, Dec 14, 2008 at 04:34:00PM +0530, Balaji Rao wrote:
+> 
+> > +struct regulator_ops pcf50633_regulator_ops = {
+> > +	.set_voltage = pcf50633_regulator_set_voltage,
+> > +	.get_voltage = pcf50633_regulator_get_voltage,
+> > +	.enable = pcf50633_regulator_enable,
+> > +	.disable = pcf50633_regulator_disable,
+> > +	.is_enabled = pcf50633_regulator_is_enabled,
+> > +	.set_suspend_enable = pcf50633_regulator_enable,
+> > +	.set_suspend_disable = pcf50633_regulator_disable,
+> > +};
+> 
+> Are you sure that the suspend variants of the operations should be the
+> same as the regular versions?
+> 
 
-> > Does this mean that SLQB is less efficient than SLUB for off node
-> > allocations? SLUB can do off node allocations from the per cpu objects. It
-> > does not need to make the distinction for allocation.
->
-> I haven't measured them, but that could be the case. However I haven't
-> found a workload that does a lot of off-node allocations (short lived
-> allocations are better on-node, and long lived ones are not going to
-> be so numerous).
+Yes, basically the chip doesn't change state during suspend/resume.
+We just enable or disable them the usual way.
 
-A memoryless node is a case where all allocations will be like that.
+> > +struct platform_driver pcf50633_regulator_driver = {
+> > +	.driver = {
+> > +		.name = "pcf50633-regltr",
+> > +	},
+> > +	.probe = pcf50633_regulator_probe,
+> > +	.remove = __devexit_p(pcf50633_regulator_remove),
+> > +};
+> 
+> Not that it matters too much but I have a hard time liking "regltr".
 
-> That's more complexity, though. Given that objects are often hot when
-> they are freed, and need to be touched after they are allocated anyway,
-> the simple queue seems to be reasonable.
+Ha! The name pcf50633-regulator exceeds 20 chars and there is no space
+remaining for the ".0" or ".1" at the end. This gave me a sysfs warning
+and so I changed it.
 
-Yup.
-
-> This case does improve the database score by around 1.5-2%, yes. I
-> don't know what you mean exactly, though. What case, and what do you
-> mean by bad cache unfriendly programming? I would be very interested
-> in improving that benchmark of course, but I don't know what you
-> suggest by keeping cachelines hot in the right way?
-
-What I was told about the database test is that it collects lists of
-objects from various processors that are then freed on a different
-processor. This means all objects are cache cold.
+	- Balaji
