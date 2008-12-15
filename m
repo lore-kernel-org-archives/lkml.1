@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbYLOU5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbYLOU6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756925AbYLOU5n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 15:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbYLOU5c
+	id S1756654AbYLOU6X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 15:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbYLOU6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 15:57:32 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55450 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751604AbYLOU5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 15:57:30 -0500
-Message-ID: <4946C4B4.1020605@redhat.com>
-Date: Mon, 15 Dec 2008 21:57:24 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Mon, 15 Dec 2008 15:58:14 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:56509 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbYLOU6N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 15:58:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=ZEYkPps5Va+o38+kxWMTftCxDtt4M7p29eco5sgBQms17pPbmbWcUIdXXS5uPVzz3z
+         Ur/mshOngE2ws3rtZD9Z4jc6si4+dmwB2z4itNtZLBQXZBCMWLrm5RtDnEq8LyuWihqU
+         U/8G5pgfKaU4ta3YXC/JxKPNkx5HbeBmCeig8=
+Message-ID: <7c86c4470812151258m11b7185sbd629a82c91778bb@mail.gmail.com>
+Date: Mon, 15 Dec 2008 21:58:10 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] Performance Counters for Linux, v3
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Vince Weaver" <vince@deater.net>, linux-kernel@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Robert Richter" <robert.richter@amd.com>,
+       "Arjan van de Veen" <arjan@infradead.org>,
+       "Peter Anvin" <hpa@zytor.com>, "Paul Mackerras" <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20081214231332.GA26942@elte.hu>
 MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>
-CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: Re: [PATCH v3 0/3] preadv & pwritev syscalls.
-References: <1229340977-24345-1-git-send-email-kraxel@redhat.com> <20081215160311.GA23153@linux-mips.org>
-In-Reply-To: <20081215160311.GA23153@linux-mips.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081211155230.GA4230@elte.hu>
+	 <Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
+	 <1229070345.12883.12.camel@twins>
+	 <7c86c4470812120059s7f8e64a6h91ebeadbf938858d@mail.gmail.com>
+	 <1229073834.12883.41.camel@twins>
+	 <7c86c4470812120942x607a74f7w9f823adecbd73b85@mail.gmail.com>
+	 <7c86c4470812121001i765d663bq6db3080b633a1eef@mail.gmail.com>
+	 <20081214231332.GA26942@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ralf Baechle wrote:
-> On Mon, Dec 15, 2008 at 12:36:14PM +0100, Gerd Hoffmann wrote:
-> 
->> Next revision of the patch series, with the alignment issue fixed by
->> swapping the last two arguments as suggested by arch maintainers.
->>
->> I've dropped the now-obsolete wrappers for mips.  Ralf, please
->> double-check.
-> 
-> It fixes the alignment issue but still won't work; on MIPS 32-bit userspace
-> will pass the 64-bit argument in two registers but the 64-bit kernel code
-> will assume it to be passed in a single registers.  It'd be ugly but passing
-> a pointer to a 64-bit argument would solve the issue; something like this:
+Hi,
+
+On Mon, Dec 15, 2008 at 12:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> We've implemented the essence of these variants, with sharing the resource
+> being the sane default, and with the sysadmin also having a configuration
+> vector to reserve the resource to himself permanently. (There could be
+> more variations of this.)
 >
-> sys_preadv(unsigned long fd, const struct iovec __user *vec,
->                   unsigned long vlen, loff_t __user *pos);
-> compat_sys_preadv(unsigned long fd, const struct compat_iovec __user *vec,
->                   unsigned long vlen, loff_t __user *pos);
-
-Suggestion from the s390 front was to explicitly pass high and low part
-of pos as two arguments.  A bit ugly too, but should work fine as well
-and it avoids the user pointer dereference.  What do you think about this?
-
-> sys_splice uses loff_t __user * arguments as well and that's why it's
-> doesn't need any compat wrapper.
-
-Well, avoiding the compat wrapper altogether unfortunately isn't going
-to work because struct iovec looks different in 32 and 64 bit.
-
-> I'm surprised this works for x86; does x86-64 code really expect 64-bit
-> arguments as 2 32-bit arguments?
-
-Args are passed on the stack, not in registers.
-
-> Patch 1/3 looks like it's a bug fix and you may want to submit this
-> separate from the remainder of the series for 2.6.28?
-
-Yep, it is a separate bugfix.  Spotted by Christoph while reviewing v1,
-but there are no other dependencies to this patch series.
-
-cheers,
-  Gerd
-
+Reading the v4 code, it does not appear the sysadmin can specify which
+resource to reserve. The current code reserves a number of counters.
+This is problematic with hardware where not all counters can measure
+everything, or when not all PMU registers are counters.
