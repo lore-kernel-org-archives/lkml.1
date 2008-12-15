@@ -1,118 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbYLOAux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYLOBG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752563AbYLOAux (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 19:50:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbYLOAup
+	id S1752842AbYLOBG7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 20:06:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYLOBGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 19:50:45 -0500
-Received: from ozlabs.org ([203.10.76.45]:55168 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbYLOAuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 19:50:44 -0500
+	Sun, 14 Dec 2008 20:06:51 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:47668 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637AbYLOBGu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 20:06:50 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: oleg@tv-sign.ru, kenchen@google.com,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+References: <494581D7.6000203@gmail.com>
+Date: Sun, 14 Dec 2008 17:02:05 -0800
+In-Reply-To: <494581D7.6000203@gmail.com> (Jiri Slaby's message of "Sun, 14
+	Dec 2008 22:59:51 +0100")
+Message-ID: <m1wse29roy.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18757.43477.613501.291292@drongo.ozlabs.ibm.com>
-Date: Mon, 15 Dec 2008 11:50:29 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, eranian@gmail.com,
-       Vince Weaver <vince@deater.net>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [patch] Performance Counters for Linux, v3
-In-Reply-To: <20081214223756.GA21808@elte.hu>
-References: <20081211155230.GA4230@elte.hu>
-	<Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
-	<1229070345.12883.12.camel@twins>
-	<7c86c4470812120059s7f8e64a6h91ebeadbf938858d@mail.gmail.com>
-	<1229073834.12883.41.camel@twins>
-	<7c86c4470812120942x607a74f7w9f823adecbd73b85@mail.gmail.com>
-	<1229167048.13566.119.camel@twins>
-	<18756.23327.478759.5970@cargo.ozlabs.ibm.com>
-	<20081214223756.GA21808@elte.hu>
-X-Mailer: VM 8.0.11 under Emacs 22.2.1 (powerpc-unknown-linux-gnu)
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: jirislaby@gmail.com, linux-kernel@vger.kernel.org, kenchen@google.com, oleg@tv-sign.ru
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Jiri Slaby <jirislaby@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: broken do_each_pid_{thread,task}
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+Jiri Slaby <jirislaby@gmail.com> writes:
 
-> * Paul Mackerras <paulus@samba.org> wrote:
-> 
-> > Peter Zijlstra writes:
-> > 
-> > > On Fri, 2008-12-12 at 18:42 +0100, stephane eranian wrote:
-> > > > In fact, I know tools which do not even need a library. 
-> > > 
-> > > By your own saying, the problem solved by libperfmon is a hard problem
-> > > (and I fully understand that).
-> > > 
-> > > Now you say there is software out there that doesn't use libperfmon,
-> > > that means they'll have to duplicate that functionality.
-> > > 
-> > > And only commercial software has a clear gain by wastefully duplicating
-> > > that effort. This means there is an active commercial interest to not
-> > > make perfmon the best technical solution there is, which is contrary to
-> > > the very thing Linux is about.
-> > > 
-> > > What is worse, you defend that:
-> > > 
-> > > > Go ask end-users what they think of that?
-> > > > 
-> > > > You don't even need a library. All of this could be integrated into the tool.
-> > > > New processor, just go download the updated version of the tool.
-> > > 
-> > > No! what people want is their problem fixed - no matter how. That is one
-> > > of the powers of FOSS, you can fix your problems in any way suitable.
-> > > 
-> > > Would it not be much better if those folks duped into using a binary
-> > > only product only had to upgrade their FOSS kernel, instead of possibly
-> > > forking over more $$$ for an upgrade?
-> > > 
-> > > You have just irrevocably proven to me this needs to go into the kernel,
-> > > as the design of perfmon is little more than a GPL circumvention device
-> > > - independent of whether you are aware of that or not.
-> > 
-> > I'm sorry, but that is a pretty silly argument.
-> > 
-> > By that logic, the kernel module loader should include an in-kernel copy 
-> > of gcc and binutils, and the fact that it doesn't proves that the module 
-> > loader is little more than a GPL circumvention device - independent of 
-> > whether you are aware of that or not.  8-)
-> 
-> i'm not sure how your example applies: the kernel module loader is not an 
-> application that needs to be updated to new versions of syscalls. Nor is 
-> it a needless duplication of infrastructure - it runs in a completely 
-> different protection domain - just to name one of the key differences.
+> Hi,
+>
+> I'm getting
+> `if (type == PIDTYPE_PID)' is unreachable
+> warning from kernel/exit.c. The preprocessed code looks like:
+> do {
+>          struct hlist_node *pos___;
+>          if (pgrp != ((void *)0))
+>                  for (LIST ITERATION) {
+>                          {
+>                           if (!((p->state & 4) != 0))
+>                            continue;
+>                           retval = 1;
+>                           break;
+>                          }
+>                          if (PIDTYPE_PGID == PIDTYPE_PID)
+>                                  break;
+>                  }
+> } while (0);
+> and it's obviously wrong.
 
-Peter's argument was in essence that since using perfmon3 involves some
-userspace computation that can be done by proprietary software instead
-of a GPL'd library (libpfm), that makes perfmon3 a GPL-circumvention
-device.
+Actually the test: 
+>                          if (PIDTYPE_PGID == PIDTYPE_PID)
+>                                  break;
+Is technically ok.  The compiler should optimize it out instead of warning.
+Although seeing the unexpected corner case it gets us into I think it would
+be good to reconsider this test.
 
-I was trying to point out that that argument is silly by applying it
-to the kernel module loader.  There the userspace component is gcc and
-binutils, and the computation they do can be done alternatively by
-proprietary software such as icc or xlc.  That of itself doesn't make
-the module loader a GPL-circumvention device (though it may be for
-other reasons).
+The break statement is also fine because the outer loop is only executed
+once so it simply functions as an enclosing block, and the break transfers
+control to where it should go.
 
-And if the argument is silly in that case (which it is), it is even
-more silly in the case of perfmon3, where what is being computed and
-passed to the kernel is just a few register values, not instructions.
+> After investigating this code usage all around, it's broken on many places
+> this or similar way.
+>
+> For do_each_pid_thread(), even this code snippet from fs/ioprio.c is broken
+> due to double do {} while expansion:
+> do_each_pid_thread(pgrp, PIDTYPE_PGID, p) {
+>   ret = set_task_ioprio(p, ioprio);
+>   if (ret)
+>     break;
+> } while_each_pid_thread(pgrp, PIDTYPE_PGID, p);
+>
+> Any idea how to get rid of this issue?
 
-> Applications going to complex raw syscalls and avoiding a neutral hw 
-> infrastructure library that implements a non-trivial job is quite typical 
-> for FOSS-library-shy bin-only apps. The "you cannot infringe what you do 
-> not link to at all" kind of defensive thinking.
+The double loop there is certainly an issue.  I'm not quite convinced that
+the error handling is correct even with the break statement.  But the
+break statement was written when the code was just a single loop, so the
+behavior is definitely not what we intended.
 
-FOSS is about freedom - we don't force anyone to use our code.  If
-someone wants to use their own code instead of glibc or libpfm on the
-user-space side of the syscall interface, that's fine.
+However I also agree with Ken Chen's assessment that we need to loop over
+threads and not just the process group leaders in some cases such as
+setting the io-priority.
 
-Paul.
+With respect to error handling and IO priorities can we fix the error handling
+by doing what we do when we send a signal to a process group?  That is note
+that there was an error, finish processing all of the other processes and then
+return the error?
+
+Eric
+
