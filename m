@@ -1,108 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYLOBG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbYLOBL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752842AbYLOBG7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 20:06:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYLOBGv
+	id S1753141AbYLOBL0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 20:11:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYLOBLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 20:06:51 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:47668 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637AbYLOBGu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 20:06:50 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: oleg@tv-sign.ru, kenchen@google.com,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <494581D7.6000203@gmail.com>
-Date: Sun, 14 Dec 2008 17:02:05 -0800
-In-Reply-To: <494581D7.6000203@gmail.com> (Jiri Slaby's message of "Sun, 14
-	Dec 2008 22:59:51 +0100")
-Message-ID: <m1wse29roy.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 14 Dec 2008 20:11:11 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53615 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751005AbYLOBLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 20:11:09 -0500
+Message-ID: <4945AEE0.4000104@cn.fujitsu.com>
+Date: Mon, 15 Dec 2008 09:12:00 +0800
+From: Wei Yongjun <yjwei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: jirislaby@gmail.com, linux-kernel@vger.kernel.org, kenchen@google.com, oleg@tv-sign.ru
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jiri Slaby <jirislaby@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: broken do_each_pid_{thread,task}
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+To: Michal Hocko <mhocko@suse.cz>
+CC: linux-sctp@vger.kernel.org, vladislav.yasevich@hp.com, sri@us.ibm.com,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: [RFC] Add /proc/sys/net/sctp/sctp_ecn ECN control
+References: <20081212125828.GE10284@dhcp35.suse.cz>
+In-Reply-To: <20081212125828.GE10284@dhcp35.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> writes:
-
+Hi Michal Hocko:
+> [Resending again with lkml and netdev in CC for broader audience]
+>
 > Hi,
 >
-> I'm getting
-> `if (type == PIDTYPE_PID)' is unreachable
-> warning from kernel/exit.c. The preprocessed code looks like:
-> do {
->          struct hlist_node *pos___;
->          if (pgrp != ((void *)0))
->                  for (LIST ITERATION) {
->                          {
->                           if (!((p->state & 4) != 0))
->                            continue;
->                           retval = 1;
->                           break;
->                          }
->                          if (PIDTYPE_PGID == PIDTYPE_PID)
->                                  break;
->                  }
-> } while (0);
-> and it's obviously wrong.
-
-Actually the test: 
->                          if (PIDTYPE_PGID == PIDTYPE_PID)
->                                  break;
-Is technically ok.  The compiler should optimize it out instead of warning.
-Although seeing the unexpected corner case it gets us into I think it would
-be good to reconsider this test.
-
-The break statement is also fine because the outer loop is only executed
-once so it simply functions as an enclosing block, and the break transfers
-control to where it should go.
-
-> After investigating this code usage all around, it's broken on many places
-> this or similar way.
+> could you have look at the patch bellow which adds
+> /proc/sys/net/sctp/sctp_ecn interface for explicit control over ECN
+> usage?
 >
-> For do_each_pid_thread(), even this code snippet from fs/ioprio.c is broken
-> due to double do {} while expansion:
-> do_each_pid_thread(pgrp, PIDTYPE_PGID, p) {
->   ret = set_task_ioprio(p, ioprio);
->   if (ret)
->     break;
-> } while_each_pid_thread(pgrp, PIDTYPE_PGID, p);
+> I have close to zero experiences with the SCTP so I assume that there
+> are some things to fix (I just mimicked tcp_ecn implementation), however
+> I thought that your ideas can help me to speed up with this to be
+> implemented. 
 >
-> Any idea how to get rid of this issue?
+> The patch is based on top of Linus git
+> 7f0f598a0069d1ab072375965a4b69137233169c).
+>
+> Just for background. We have customers who do have problems with routes
+> throwing out their packets because of ECT bits set and they need some
+> control over it (like for TCP protocol).
+>
+> What do you think about the idea? What do you think about upstream
+> merging of this feature?
+>
+> Thanks for any hints/comments
+>
+> Best regards
+>
+> ---
+> commit 70525bca4ec7c86c7560405005f93ff89f642af6
+> Author: Michal Hocko <mhocko@suse.cz>
+> Date:   Thu Nov 20 14:03:27 2008 +0100
+>
+>     [RFC] add /proc/sys/net/sctp/sctp_ecn
+>     
+>     Current sctp ECN implementation doesn't contain any way how to
+>     explicitly disable this flag for ECN capable devices. This makes sense
+>     when "dumb" routers are in the path which could drop all packets with
+>     this flag set.
+>     
+>     This implementation is motivated by sysctl_tcp_ecn and it basically
+>     exports sysctl_sctp_ecn (set to 1 by default) symbol and enables sysctl
+>     and /proc/sys/sctp interface for its value manipulation.
+>     
+>     sctp_v4_ecn_capable and sctp_v6_ecn_capable then use this value to
+>     determine whether enable standard path or not.
+>     
+>     Signed-off-by: Michal Hocko <mhocko@suse.cz>
+>   
 
-The double loop there is certainly an issue.  I'm not quite convinced that
-the error handling is correct even with the break statement.  But the
-break statement was written when the code was just a single loop, so the
-behavior is definitely not what we intended.
+If you disabled the ECN capable, I think you should disable to send ECN
+capable paramater in INIT/INIT-ACK.
 
-However I also agree with Ken Chen's assessment that we need to loop over
-threads and not just the process group leaders in some cases such as
-setting the io-priority.
+And also we will ignore the ECN mark in recv DATA chunk. The send/recv of
+ECN-ECHO and ECN-CWR need to disabled too.
 
-With respect to error handling and IO priorities can we fix the error handling
-by doing what we do when we send a signal to a process group?  That is note
-that there was an error, finish processing all of the other processes and then
-return the error?
+> diff --git a/include/net/sctp/sctp.h b/include/net/sctp/sctp.h
+> index ed71b11..0dd762a 100644
+> --- a/include/net/sctp/sctp.h
+> +++ b/include/net/sctp/sctp.h
+> @@ -187,6 +187,8 @@ void sctp_remaddr_proc_exit(void);
+>   * Module global variables
+>   */
+>  
+> +extern int sysctl_sctp_ecn;
+>   
 
-Eric
+This should defined in include/net/sctp/structs.h like other var do.
+
+> +
+>   /*
+>    * sctp/protocol.c
+>    */
+> diff --git a/net/sctp/ipv6.c b/net/sctp/ipv6.c
+> index 4124bbb..d621a52 100644
+> --- a/net/sctp/ipv6.c
+> +++ b/net/sctp/ipv6.c
+> @@ -732,7 +732,8 @@ static void sctp_v6_seq_dump_addr(struct seq_file *seq, union sctp_addr *addr)
+>  
+>  static void sctp_v6_ecn_capable(struct sock *sk)
+>  {
+> -	inet6_sk(sk)->tclass |= INET_ECN_ECT_0;
+> +	if (sysctl_sctp_ecn)
+> +		inet6_sk(sk)->tclass |= INET_ECN_ECT_0;
+>  }
+>  
+>  /* Initialize a PF_INET6 socket msg_name. */
+> diff --git a/net/sctp/output.c b/net/sctp/output.c
+> index c3f417f..740d171 100644
+> --- a/net/sctp/output.c
+> +++ b/net/sctp/output.c
+> @@ -547,7 +547,8 @@ int sctp_packet_transmit(struct sctp_packet *packet)
+>  	 *   data sender to indicate that the end-points of the
+>  	 *   transport protocol are ECN-capable."
+>  	 *
+> -	 * Now setting the ECT bit all the time, as it should not cause
+> +	 * Now setting the ECT bit all the time (except when forbidden
+> +	 * explicitly by sysctl_sctp_ecn), as it should not cause
+>  	 * any problems protocol-wise even if our peer ignores it.
+>  	 *
+>  	 * Note: The works for IPv6 layer checks this bit too later
+> diff --git a/net/sctp/protocol.c b/net/sctp/protocol.c
+> index 0b65354..5a1a7ce 100644
+> --- a/net/sctp/protocol.c
+> +++ b/net/sctp/protocol.c
+> @@ -651,7 +651,8 @@ static void sctp_v4_seq_dump_addr(struct seq_file *seq, union sctp_addr *addr)
+>  
+>  static void sctp_v4_ecn_capable(struct sock *sk)
+>  {
+> -	INET_ECN_xmit(sk);
+> +	if (sysctl_sctp_ecn)
+> +		INET_ECN_xmit(sk);
+>  }
+>  
+>  /* Event handler for inet address addition/deletion events.
+> diff --git a/net/sctp/sysctl.c b/net/sctp/sysctl.c
+> index 5291069..e76f423 100644
+> --- a/net/sctp/sysctl.c
+> +++ b/net/sctp/sysctl.c
+> @@ -55,6 +55,7 @@ static long sack_timer_max = 500;
+>  extern int sysctl_sctp_mem[3];
+>  extern int sysctl_sctp_rmem[3];
+>  extern int sysctl_sctp_wmem[3];
+> +int sysctl_sctp_ecn=1;
+>  
+>  static ctl_table sctp_table[] = {
+>  	{
+> @@ -272,6 +273,14 @@ static ctl_table sctp_table[] = {
+>  		.proc_handler	= &proc_dointvec,
+>  		.strategy	= &sysctl_intvec
+>  	},
+> +	{
+> +		.ctl_name	= CTL_UNNUMBERED,
+> +		.procname	= "sctp_ecn",
+> +		.data		= &sysctl_sctp_ecn,
+> +		.maxlen		= sizeof(int),
+> +		.mode		= 0644,
+> +		.proc_handler	= &proc_dointvec
+> +	},
+>  	{ .ctl_name = 0 }
+>  };
+>  
+> @@ -294,3 +303,5 @@ void sctp_sysctl_unregister(void)
+>  {
+>  	unregister_sysctl_table(sctp_sysctl_header);
+>  }
+> +
+> +EXPORT_SYMBOL(sysctl_sctp_ecn);
+>
+>   
 
