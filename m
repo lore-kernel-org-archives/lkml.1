@@ -1,181 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbYLOQG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbYLOQ1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbYLOQG3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 11:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYLOQGR
+	id S1754949AbYLOQ1c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 11:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYLOQ1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 11:06:17 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:23638 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbYLOQGQ (ORCPT
+	Mon, 15 Dec 2008 11:27:24 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:47070 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753244AbYLOQ1X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 11:06:16 -0500
-Message-ID: <4946804E.4000907@hp.com>
-Date: Mon, 15 Dec 2008 11:05:34 -0500
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Michal Hocko <mhocko@suse.cz>
-CC: linux-sctp@vger.kernel.org, sri@us.ibm.com,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: [RFC] Add /proc/sys/net/sctp/sctp_ecn ECN control
-References: <20081212125828.GE10284@dhcp35.suse.cz>
-In-Reply-To: <20081212125828.GE10284@dhcp35.suse.cz>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 15 Dec 2008 11:27:23 -0500
+Subject: Re: [RFC PATCH 09/12] clocksource: allow usage independent of
+ timekeeping.c
+From: John Stultz <johnstul@us.ibm.com>
+To: Patrick Ohly <patrick.ohly@intel.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       David Miller <davem@davemloft.net>, linux-api@vger.kernel.org
+In-Reply-To: <1229352899-31330-10-git-send-email-patrick.ohly@intel.com>
+References: <1229352899-31330-1-git-send-email-patrick.ohly@intel.com>
+	 <1229352899-31330-2-git-send-email-patrick.ohly@intel.com>
+	 <1229352899-31330-3-git-send-email-patrick.ohly@intel.com>
+	 <1229352899-31330-4-git-send-email-patrick.ohly@intel.com>
+	 <1229352899-31330-5-git-send-email-patrick.ohly@intel.com>
+	 <1229352899-31330-6-git-send-email-patrick.ohly@intel.com>
+	 <1229352899-31330-7-git-send-email-patrick.ohly@intel.com>
+	 <1229352899-31330-8-git-send-email-patrick.ohly@intel.com>
+	 <1229352899-31330-9-git-send-email-patrick.ohly@intel.com>
+	 <1229352899-31330-10-git-send-email-patrick.ohly@intel.com>
+Content-Type: text/plain
+Date: Mon, 15 Dec 2008 08:26:50 -0800
+Message-Id: <1229358410.8699.13.camel@jstultz-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Hocko wrote:
-> [Resending again with lkml and netdev in CC for broader audience]
+On Mon, 2008-12-15 at 15:54 +0100, Patrick Ohly wrote:
+> So far struct clocksource acted as the interface between time/timekeeping.c
+> and hardware. This patch generalizes the concept so that a similar
+> interface can also be used in other contexts. For that it introduces
+> new structures and related functions *without* touching the existing
+> struct clocksource.
 > 
-> Hi,
+> The reasons for adding these new structures to clocksource.[ch] are
+> * the APIs are clearly related
+> * struct clocksource could be cleaned up to use the new structs
+> * avoids proliferation of files with similar names (timesource.h?
+>   timecounter.h?)
 > 
-> could you have look at the patch bellow which adds
-> /proc/sys/net/sctp/sctp_ecn interface for explicit control over ECN
-> usage?
+> As outlined in the discussion with John Stultz, this patch adds
+> * struct cyclecounter: stateless API to hardware which counts clock cycles
+> * struct timecounter: stateful utility code built on a cyclecounter which
+>   provides a nanosecond counter
+> * only the function to read the nanosecond counter; deltas are used internally
+>   and not exposed to users of timecounter
 > 
-> I have close to zero experiences with the SCTP so I assume that there
-> are some things to fix (I just mimicked tcp_ecn implementation), however
-> I thought that your ideas can help me to speed up with this to be
-> implemented. 
+> The code does no locking of the shared state. It must be called at least
+> as often as the cycle counter wraps around to detect these wrap arounds.
+> Both is the responsibility of the timecounter user.
 > 
-> The patch is based on top of Linus git
-> 7f0f598a0069d1ab072375965a4b69137233169c).
-> 
-> Just for background. We have customers who do have problems with routes
-> throwing out their packets because of ECT bits set and they need some
-> control over it (like for TCP protocol).
-> 
-> What do you think about the idea? What do you think about upstream
-> merging of this feature?
-> 
-> Thanks for any hints/comments
-> 
-> Best regards
-> 
+> Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
+
+
+Nice. The cyclecounter struct can work as a good base that I can shift
+the clocksource bits over to as I clean that up.
+
+We will probably want to split this out down the road, but for now its
+small enough and related enough that I think its fine in the
+clocksource.h/c.
+
+Also since Magnus has been working on it, does enable/disable accessors
+in the cyclecounter struct make sense for your hardware as well?
+
+Also the corner cases on overflows (how we manage the state, should
+reads be deferred for too long) will need to be addressed, but I guess
+we can solve that when it becomes an issue. Just to be clear: none of
+the hardware you're submitting this round has wrapping issues? Or is
+that not the case?
+
+Otherwise,
+Acked-by: John Stultz <johnstul@us.ibm.com>
+
+thanks
+-john
+
+
 > ---
-> commit 70525bca4ec7c86c7560405005f93ff89f642af6
-> Author: Michal Hocko <mhocko@suse.cz>
-> Date:   Thu Nov 20 14:03:27 2008 +0100
+>  include/linux/clocksource.h |   99 +++++++++++++++++++++++++++++++++++++++++++
+>  kernel/time/clocksource.c   |   76 +++++++++++++++++++++++++++++++++
+>  2 files changed, 175 insertions(+), 0 deletions(-)
 > 
->     [RFC] add /proc/sys/net/sctp/sctp_ecn
->     
->     Current sctp ECN implementation doesn't contain any way how to
->     explicitly disable this flag for ECN capable devices. This makes sense
->     when "dumb" routers are in the path which could drop all packets with
->     this flag set.
->     
->     This implementation is motivated by sysctl_tcp_ecn and it basically
->     exports sysctl_sctp_ecn (set to 1 by default) symbol and enables sysctl
->     and /proc/sys/sctp interface for its value manipulation.
->     
->     sctp_v4_ecn_capable and sctp_v6_ecn_capable then use this value to
->     determine whether enable standard path or not.
->     
->     Signed-off-by: Michal Hocko <mhocko@suse.cz>
+> diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+> index f88d32f..d379189 100644
+> --- a/include/linux/clocksource.h
+> +++ b/include/linux/clocksource.h
+> @@ -22,8 +22,107 @@ typedef u64 cycle_t;
+>  struct clocksource;
 > 
-> diff --git a/include/net/sctp/sctp.h b/include/net/sctp/sctp.h
-> index ed71b11..0dd762a 100644
-> --- a/include/net/sctp/sctp.h
-> +++ b/include/net/sctp/sctp.h
-> @@ -187,6 +187,8 @@ void sctp_remaddr_proc_exit(void);
->   * Module global variables
->   */
->  
-> +extern int sysctl_sctp_ecn;
+>  /**
+> + * struct cyclecounter - hardware abstraction for a free running counter
+> + *	Provides completely state-free accessors to the underlying hardware.
+> + *	Depending on which hardware it reads, the cycle counter may wrap
+> + *	around quickly. Locking rules (if necessary) have to be defined
+> + *	by the implementor and user of specific instances of this API.
+> + *
+> + * @read:		returns the current cycle value
+> + * @mask:		bitmask for two's complement
+> + *			subtraction of non 64 bit counters,
+> + *			see CLOCKSOURCE_MASK() helper macro
+> + * @mult:		cycle to nanosecond multiplier
+> + * @shift:		cycle to nanosecond divisor (power of two)
+> + */
+> +struct cyclecounter {
+> +	cycle_t (*read)(const struct cyclecounter *cc);
+> +	cycle_t mask;
+> +	u32 mult;
+> +	u32 shift;
+> +};
 > +
-
-The convention for this is to add an item to sctp_globals structure.
-
->   /*
->    * sctp/protocol.c
->    */
-> diff --git a/net/sctp/ipv6.c b/net/sctp/ipv6.c
-> index 4124bbb..d621a52 100644
-> --- a/net/sctp/ipv6.c
-> +++ b/net/sctp/ipv6.c
-> @@ -732,7 +732,8 @@ static void sctp_v6_seq_dump_addr(struct seq_file *seq, union sctp_addr *addr)
->  
->  static void sctp_v6_ecn_capable(struct sock *sk)
->  {
-> -	inet6_sk(sk)->tclass |= INET_ECN_ECT_0;
-> +	if (sysctl_sctp_ecn)
-> +		inet6_sk(sk)->tclass |= INET_ECN_ECT_0;
->  }
->  
->  /* Initialize a PF_INET6 socket msg_name. */
-> diff --git a/net/sctp/output.c b/net/sctp/output.c
-> index c3f417f..740d171 100644
-> --- a/net/sctp/output.c
-> +++ b/net/sctp/output.c
-> @@ -547,7 +547,8 @@ int sctp_packet_transmit(struct sctp_packet *packet)
->  	 *   data sender to indicate that the end-points of the
->  	 *   transport protocol are ECN-capable."
->  	 *
-> -	 * Now setting the ECT bit all the time, as it should not cause
-> +	 * Now setting the ECT bit all the time (except when forbidden
-> +	 * explicitly by sysctl_sctp_ecn), as it should not cause
->  	 * any problems protocol-wise even if our peer ignores it.
->  	 *
->  	 * Note: The works for IPv6 layer checks this bit too later
-> diff --git a/net/sctp/protocol.c b/net/sctp/protocol.c
-> index 0b65354..5a1a7ce 100644
-> --- a/net/sctp/protocol.c
-> +++ b/net/sctp/protocol.c
-> @@ -651,7 +651,8 @@ static void sctp_v4_seq_dump_addr(struct seq_file *seq, union sctp_addr *addr)
->  
->  static void sctp_v4_ecn_capable(struct sock *sk)
->  {
-> -	INET_ECN_xmit(sk);
-> +	if (sysctl_sctp_ecn)
-> +		INET_ECN_xmit(sk);
->  }
->  
->  /* Event handler for inet address addition/deletion events.
-> diff --git a/net/sctp/sysctl.c b/net/sctp/sysctl.c
-> index 5291069..e76f423 100644
-> --- a/net/sctp/sysctl.c
-> +++ b/net/sctp/sysctl.c
-> @@ -55,6 +55,7 @@ static long sack_timer_max = 500;
->  extern int sysctl_sctp_mem[3];
->  extern int sysctl_sctp_rmem[3];
->  extern int sysctl_sctp_wmem[3];
-> +int sysctl_sctp_ecn=1;
->  
->  static ctl_table sctp_table[] = {
->  	{
-> @@ -272,6 +273,14 @@ static ctl_table sctp_table[] = {
->  		.proc_handler	= &proc_dointvec,
->  		.strategy	= &sysctl_intvec
->  	},
-> +	{
-> +		.ctl_name	= CTL_UNNUMBERED,
-> +		.procname	= "sctp_ecn",
-> +		.data		= &sysctl_sctp_ecn,
-> +		.maxlen		= sizeof(int),
-> +		.mode		= 0644,
-> +		.proc_handler	= &proc_dointvec
-> +	},
->  	{ .ctl_name = 0 }
->  };
->  
-> @@ -294,3 +303,5 @@ void sctp_sysctl_unregister(void)
->  {
->  	unregister_sysctl_table(sctp_sysctl_header);
->  }
+> +/**
+> + * struct timecounter - layer above a %struct cyclecounter which counts nanoseconds
+> + *	Contains the state needed by timecounter_read() to detect
+> + *	cycle counter wrap around. Initialize with
+> + *	timecounter_init(). Also used to convert cycle counts into the
+> + *	corresponding nanosecond counts with timecounter_cyc2time(). Users
+> + *	of this code are responsible for initializing the underlying
+> + *	cycle counter hardware, locking issues and reading the time
+> + *	more often than the cycle counter wraps around. The nanosecond
+> + *	counter will only wrap around after ~585 years.
+> + *
+> + * @cc:			the cycle counter used by this instance
+> + * @cycle_last:		most recent cycle counter value seen by timecounter_read()
+> + * @nsec:		
+> + */
+> +struct timecounter {
+> +	const struct cyclecounter *cc;
+> +	cycle_t cycle_last;
+> +	u64 nsec;
+> +};
 > +
-> +EXPORT_SYMBOL(sysctl_sctp_ecn);
+> +/**
+> + * cyclecounter_cyc2ns - converts cycle counter cycles to nanoseconds
+> + * @tc:		Pointer to cycle counter.
+> + * @cycles:	Cycles
+> + *
+> + * XXX - This could use some mult_lxl_ll() asm optimization. Same code
+> + * as in cyc2ns, but with unsigned result.
+> + */
+> +static inline u64 cyclecounter_cyc2ns(const struct cyclecounter *cc, cycle_t cycles)
+> +{
+> +	u64 ret = (u64)cycles;
+> +	ret = (ret * cc->mult) >> cc->shift;
+> +	return ret;
+> +}
+> +
+> +/**
+> + * timecounter_init - initialize a time counter
+> + * @tc:			Pointer to time counter which is to be initialized/reset
+> + * @cc:			A cycle counter, ready to be used.
+> + * @start_tstamp:	Arbitrary initial time stamp.
+> + *
+> + * After this call the current cycle register (roughly) corresponds to
+> + * the initial time stamp. Every call to timecounter_read() increments
+> + * the time stamp counter by the number of elapsed nanoseconds.
+> + */
+> +extern void timecounter_init(struct timecounter *tc,
+> +			const struct cyclecounter *cc,
+> +			u64 start_tstamp);
+> +
+> +/**
+> + * timecounter_read - return nanoseconds elapsed since timecounter_init()
+> + *                         plus the initial time stamp
+> + * @tc:          Pointer to time counter.
+> + *
+> + * In other words, keeps track of time since the same epoch as
+> + * the function which generated the initial time stamp.
+> + */
+> +extern u64 timecounter_read(struct timecounter *tc);
+> +
+> +/**
+> + * timecounter_cyc2time - convert a cycle counter to same
+> + *                        time base as values returned by
+> + *                        timecounter_read()
+> + * @tc:		Pointer to time counter.
+> + * @cycle:	a value returned by tc->cc->read()
+> + *
+> + * Cycle counts that are converted correctly as long as they
+> + * fall into the interval [-1/2 max cycle count, +1/2 max cycle count],
+> + * with "max cycle count" == cs->mask+1.
+> + *
+> + * This allows conversion of cycle counter values which were generated
+> + * in the past.
+> + */
+> +extern u64 timecounter_cyc2time(struct timecounter *tc,
+> +				cycle_t cycle_tstamp);
+> +
+> +/**
+>   * struct clocksource - hardware abstraction for a free running counter
+>   *	Provides mostly state-free accessors to the underlying hardware.
+> + *	This is the structure used for system time.
+>   *
+>   * @name:		ptr to clocksource name
+>   * @list:		list head for registration
+> diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+> index 9ed2eec..0d7a2cb 100644
+> --- a/kernel/time/clocksource.c
+> +++ b/kernel/time/clocksource.c
+> @@ -31,6 +31,82 @@
+>  #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
+>  #include <linux/tick.h>
 > 
-
-If you are going to make ECN support configurable, then this is not really enough.
-
-You need to make sure that ECN capability is only turned on when you enable this feature.
-You also need to take into account of what happens when one peer has it turned on while
-the other does not.
-
--vlad
-
+> +void timecounter_init(struct timecounter *tc,
+> +		const struct cyclecounter *cc,
+> +		u64 start_tstamp)
+> +{
+> +	tc->cc = cc;
+> +	tc->cycle_last = cc->read(cc);
+> +	tc->nsec = start_tstamp;
+> +}
+> +EXPORT_SYMBOL(timecounter_init);
+> +
+> +/**
+> + * clocksource_read_ns - get nanoseconds since last call of this function
+> + * @tc:         Pointer to time counter
+> + *
+> + * When the underlying cycle counter runs over, this will be handled
+> + * correctly as long as it does not run over more than once between
+> + * calls.
+> + *
+> + * The first call to this function for a new time counter initializes
+> + * the time tracking and returns bogus results.
+> + */
+> +static u64 timecounter_read_delta(struct timecounter *tc)
+> +{
+> +	cycle_t cycle_now, cycle_delta;
+> +	u64 ns_offset;
+> +
+> +	/* read cycle counter: */
+> +	cycle_now = tc->cc->read(tc->cc);
+> +
+> +	/* calculate the delta since the last timecounter_read_delta(): */
+> +	cycle_delta = (cycle_now - tc->cycle_last) & tc->cc->mask;
+> +
+> +	/* convert to nanoseconds: */
+> +	ns_offset = cyclecounter_cyc2ns(tc->cc, cycle_delta);
+> +
+> +	/* update time stamp of timecounter_read_delta() call: */
+> +	tc->cycle_last = cycle_now;
+> +
+> +	return ns_offset;
+> +}
+> +
+> +u64 timecounter_read(struct timecounter *tc)
+> +{
+> +	u64 nsec;
+> +
+> +	/* increment time by nanoseconds since last call */
+> +	nsec = timecounter_read_delta(tc);
+> +	nsec += tc->nsec;
+> +	tc->nsec = nsec;
+> +
+> +	return nsec;
+> +}
+> +EXPORT_SYMBOL(timecounter_read);
+> +
+> +u64 timecounter_cyc2time(struct timecounter *tc,
+> +			cycle_t cycle_tstamp)
+> +{
+> +	u64 cycle_delta = (cycle_tstamp - tc->cycle_last) & tc->cc->mask;
+> +	u64 nsec;
+> +
+> +	/*
+> +	 * Instead of always treating cycle_tstamp as more recent
+> +	 * than tc->cycle_last, detect when it is too far in the
+> +	 * future and treat it as old time stamp instead.
+> +	 */
+> +	if (cycle_delta > tc->cc->mask / 2) {
+> +		cycle_delta = (tc->cycle_last - cycle_tstamp) & tc->cc->mask;
+> +		nsec = tc->nsec - cyclecounter_cyc2ns(tc->cc, cycle_delta);
+> +	} else {
+> +		nsec = cyclecounter_cyc2ns(tc->cc, cycle_delta) + tc->nsec;
+> +	}
+> +
+> +	return nsec;
+> +}
+> +EXPORT_SYMBOL(timecounter_cyc2time);
+> +
+>  /* XXX - Would like a better way for initializing curr_clocksource */
+>  extern struct clocksource clocksource_jiffies;
+> 
 
