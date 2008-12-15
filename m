@@ -1,106 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbYLOOxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYLOOx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbYLOOxB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 09:53:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbYLOOwx
+	id S1755146AbYLOOx0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 09:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbYLOOwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 09:52:53 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:39582 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753399AbYLOOww (ORCPT
+	Mon, 15 Dec 2008 09:52:54 -0500
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:60489 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753409AbYLOOwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 09:52:52 -0500
-Message-Id: <20081215145249.579042637@de.ibm.com>
+	Mon, 15 Dec 2008 09:52:53 -0500
+Message-Id: <20081215145250.204875669@de.ibm.com>
 References: <20081215143437.843064041@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 15 Dec 2008 15:34:38 +0100
+Date: Mon, 15 Dec 2008 15:34:39 +0100
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 To: mingo@elte.hu, akpm@linux-foundation.org
 Cc: maxk@qualcomm.com, schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
        Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH/RESEND 1/2] sched: let arch_update_cpu_topology indicate if topology changed
-Content-Disposition: inline; filename=001_arch_topology.diff
+Subject: [PATCH/RESEND 2/2] sched: re-add missing arch_update_cpu_topology call
+Content-Disposition: inline; filename=002_partition_update.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Change arch_update_cpu_topology so it returns 1 if the cpu topology changed
-and 0 if it didn't change. This will be useful for the next patch which adds
-a call to this function in partition_sched_domains.
+arch_reinit_sched_domains used to call arch_update_cpu_topology
+via arch_init_sched_domains. This call got lost with
+e761b7725234276a802322549cee5255305a0930 ("cpu hotplug, sched: Introduce
+cpu_active_map and redo sched domain managment (take 2)".
+
+So we might end up with outdated and missing cpus in the cpu core
+maps (architecture used to call arch_reinit_sched_domains if cpu
+topology changed).
+
+This adds a call to arch_update_cpu_topology in partition_sched_domains
+which gets called whenever scheduling domains get updated. Which is
+what is supposed to happen when cpu topology changes.
+
+Since arch_update_cpu_topology returns 0 if the cpu topology didn't
+change this is a NOP for all architectures but s390 (currently).
+
+If arch_update_cpu_topology returns 1 this causes all scheduling domains
+to be destroyed and rebuilt.
 
 Cc: Max Krasnyansky <maxk@qualcomm.com>
 Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
- arch/s390/kernel/topology.c |    5 +++--
- include/linux/topology.h    |    2 +-
- kernel/sched.c              |    8 +++++++-
- 3 files changed, 11 insertions(+), 4 deletions(-)
+ kernel/sched.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
 Index: linux-2.6/kernel/sched.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched.c
 +++ linux-2.6/kernel/sched.c
-@@ -7712,8 +7712,14 @@ static struct sched_domain_attr *dattr_c
-  */
- static cpumask_t fallback_doms;
- 
--void __attribute__((weak)) arch_update_cpu_topology(void)
-+/*
-+ * arch_update_cpu_topology lets virtualized architectures update the
-+ * cpu core maps. It is supposed to return 1 if the topology changed
-+ * or 0 if it stayed the same.
-+ */
-+int __attribute__((weak)) arch_update_cpu_topology(void)
+@@ -7813,17 +7813,21 @@ void partition_sched_domains(int ndoms_n
+ 			     struct sched_domain_attr *dattr_new)
  {
-+	return 0;
- }
+ 	int i, j, n;
++	int top_changed;
  
- /*
-Index: linux-2.6/arch/s390/kernel/topology.c
-===================================================================
---- linux-2.6.orig/arch/s390/kernel/topology.c
-+++ linux-2.6/arch/s390/kernel/topology.c
-@@ -212,7 +212,7 @@ static void update_cpu_core_map(void)
- 		cpu_core_map[cpu] = cpu_coregroup_map(cpu);
- }
+ 	mutex_lock(&sched_domains_mutex);
  
--void arch_update_cpu_topology(void)
-+int arch_update_cpu_topology(void)
- {
- 	struct tl_info *info = tl_info;
- 	struct sys_device *sysdev;
-@@ -221,7 +221,7 @@ void arch_update_cpu_topology(void)
- 	if (!machine_has_topology) {
- 		update_cpu_core_map();
- 		topology_update_polarization_simple();
--		return;
-+		return 0;
- 	}
- 	stsi(info, 15, 1, 2);
- 	tl_to_cores(info);
-@@ -230,6 +230,7 @@ void arch_update_cpu_topology(void)
- 		sysdev = get_cpu_sysdev(cpu);
- 		kobject_uevent(&sysdev->kobj, KOBJ_CHANGE);
- 	}
-+	return 1;
- }
+ 	/* always unregister in case we don't destroy any domains */
+ 	unregister_sched_domain_sysctl();
  
- static void topology_work_fn(struct work_struct *work)
-Index: linux-2.6/include/linux/topology.h
-===================================================================
---- linux-2.6.orig/include/linux/topology.h
-+++ linux-2.6/include/linux/topology.h
-@@ -49,7 +49,7 @@
- 	for_each_online_node(node)			\
- 		if (nr_cpus_node(node))
++	/* Let architecture update cpu core mappings. */
++	top_changed = arch_update_cpu_topology();
++
+ 	n = doms_new ? ndoms_new : 0;
  
--void arch_update_cpu_topology(void);
-+int arch_update_cpu_topology(void);
+ 	/* Destroy deleted domains */
+ 	for (i = 0; i < ndoms_cur; i++) {
+-		for (j = 0; j < n; j++) {
++		for (j = 0; j < n && !top_changed; j++) {
+ 			if (cpus_equal(doms_cur[i], doms_new[j])
+ 			    && dattrs_equal(dattr_cur, i, dattr_new, j))
+ 				goto match1;
+@@ -7843,7 +7847,7 @@ match1:
  
- /* Conform to ACPI 2.0 SLIT distance definitions */
- #define LOCAL_DISTANCE		10
+ 	/* Build new domains */
+ 	for (i = 0; i < ndoms_new; i++) {
+-		for (j = 0; j < ndoms_cur; j++) {
++		for (j = 0; j < ndoms_cur && !top_changed; j++) {
+ 			if (cpus_equal(doms_new[i], doms_cur[j])
+ 			    && dattrs_equal(dattr_new, i, dattr_cur, j))
+ 				goto match2;
 
 -- 
