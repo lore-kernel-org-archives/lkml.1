@@ -1,95 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbYLOXz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbYLOX5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756114AbYLOXz1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 18:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbYLOXzK
+	id S1756581AbYLOX5b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 18:57:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYLOX5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 18:55:10 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:10959 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753622AbYLOXzI (ORCPT
+	Mon, 15 Dec 2008 18:57:22 -0500
+Received: from dew2.atmos.washington.edu ([128.95.89.42]:37240 "EHLO
+	dew2.atmos.washington.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752340AbYLOX5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 18:55:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=wjY0HSN4jPDhi5T2NOR6x6asrdJ8jKxCH6y9QBDTiOjUumEGErxxHWaJfBRfqCwc+e
-         Q8Z+PsEQ6VXV/87kP4mu5CIJ8tXZzZJM7BwQf8syDQnruuhvLe9wDLj/YOZpJkzhzjP5
-         YpCaoX33T8XO7u43ACt1FBf2ih/aClXxIOnXY=
-Message-ID: <e9c3a7c20812151555g14080561q18cf2d0db4c1813b@mail.gmail.com>
-Date: Mon, 15 Dec 2008 16:55:06 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-Subject: Re: [PATCH 07/13] dmaengine: introduce dma_request_channel and private channels
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
-       "g.liakhovetski@gmx.de" <g.liakhovetski@gmx.de>,
-       "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
-In-Reply-To: <129600E5E5FB004392DDC3FB599660D70C8F3406@irsmsx504.ger.corp.intel.com>
+	Mon, 15 Dec 2008 18:57:21 -0500
+X-Greylist: delayed 720 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Dec 2008 18:57:21 EST
+Message-ID: <4946EBFA.60700@atmos.washington.edu>
+Date: Mon, 15 Dec 2008 15:44:58 -0800
+From: Harry Edmon <harry@atmos.washington.edu>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: Max Kellermann <max@duempel.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: High load in 2.6.27, NFS / rpcauth_lookup_credcache()?
+References: <20081022091207.GA12996@squirrel.roonstrasse.net>	 <20081023123628.GA18549@squirrel.roonstrasse.net> <1224773745.7625.4.camel@localhost>
+In-Reply-To: <1224773745.7625.4.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
-	 <20081114213453.32354.53002.stgit@dwillia2-linux.ch.intel.com>
-	 <129600E5E5FB004392DDC3FB599660D70C8F3406@irsmsx504.ger.corp.intel.com>
-X-Google-Sender-Auth: 7700419af256e692
+X-Spam-Score: -102.6 () BAYES_00,SPF_PASS,USER_IN_WHITELIST
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 7:29 AM, Sosnowski, Maciej
-<maciej.sosnowski@intel.com> wrote:
->>       clear_bit(DMA_INTERRUPT, dma_cap_mask_all.bits);
->> +     clear_bit(DMA_PRIVATE, dma_cap_mask_all.bits);
->>       clear_bit(DMA_SLAVE, dma_cap_mask_all.bits);
+Trond Myklebust wrote:
+> On Thu, 2008-10-23 at 14:36 +0200, Max Kellermann wrote:
+>   
+>> On 2008/10/22 11:12, Max Kellermann <max@duempel.org> wrote:
+>>     
+>>> after I was able to fix http://lkml.org/lkml/2008/10/17/147, the
+>>> server which was already upgraded to 2.6.27.2 still gets very high
+>>> load.  It is a web server with NFS file storage (NetApp), and while
+>>> the others in the cluster (kernel 2.6.25) have a load of 1-3, 2.6.27.2
+>>> gets 30-50.
+>>>
+>>> I did an oprofile, with the following results (server just started,
+>>> load "only" 5-10):
+>>>
+>>> 87593    56.1116  (no location information)   vmlinux
+>>> vmlinux                  rpcauth_lookup_credcache
+>>> 16037    10.2732  auth_generic.c:0            vmlinux
+>>> vmlinux                  generic_match
+>>> 6460      4.1382  (no location information)   php4
+>>> php4                     (no symbols)
+>>> 2478      1.5874  (no location information)   libc-2.7.so
+>>> libc-2.7.so              (no symbols)
+>>> [...]
+>>>
+>>> We havn't configured any special authentication method.  It is a NFSv3
+>>> over UDP mount, but the kernel has NFSv4 and therefore KRB5 enabled.
+>>>
+>>> Any ideas why rpcauth_lookup_credcache() goes overboard with CPU
+>>> usage?
+>>>       
+>> I have bisected the problem: 98a8e323 is the result ("SUNRPC: Add a
+>> helper rpcauth_lookup_generic_cred()").  5c691044 is ok.
+>>
+>> See the attached oprofile annotation data for both commits.  I guess
+>> that the function rpcauth_lookup_credcache() is waiting for a spinlock
+>> too often and too long.  Trond, any idea?
+>>     
 >
-> The comment above should be updated according to this change:
-> -/* 'interrupt' and 'slave' are channel capabilities, but are not
-> +/* 'interrupt', 'private' and 'slave' are channel capabilities, but are not
+> Can you add a '-v' to the rpc.gssd daemon startup line? I'd like to see
+> how often you are creating new gss contexts.
 >
-
-ok.
-
->> +static struct dma_chan *private_candidate(dma_cap_mask_t *mask,
->> struct dma_device *dev) +{
->> +     struct dma_chan *chan;
->> +     struct dma_chan *ret = NULL;
->> +
->> +     /* devices with multiple channels need special handling as we need
->> to +   * ensure that all channels are either private or public.
->> +      */
->> +     if (dev->chancnt > 1 && !dma_has_cap(DMA_PRIVATE, dev->cap_mask))
->> +             list_for_each_entry(chan, &dev->channels, device_node) {
->> +                     /* some channels are already publicly allocated */
->> +                     if (chan->client_count)
->> +                             return NULL;
->> +             }
+>   
+>> Harry: added you to Cc because your problem sounds similar.
+>>     
 >
-> Isn't it a dangerous approach to let clients consume for their exclusive usage channels
-> meant for general-purpose ("pubilc" ones)?
-> Why not to limit private_candidate to devices with DMA_PRIVATE capability only?
+> Harry's problem is should be unrelated. afaik, he is seeing a problem
+> with userland RPC code, not kernel rpc code.
 >
-
-This allows unused channels to be claimed by dma_request_channel().
-It is not dangerous as long as ->client_count is zero.
-
->> +
->> +     list_for_each_entry(chan, &dev->channels, device_node) {
->> +             if (!__dma_chan_satisfies_mask(chan, mask)) {
->> +                     pr_debug("%s: %s wrong capabilities\n",
->> +                              __func__, dev_name(&chan->dev));
->> +                     continue;
->> +             }
+> Trond
 >
-> As capabilities are per device, this check could be performed just once
-> before list_for_each_entry(chan, &dev->channels, device_node).
->
+>   
+I am finally getting some time to look at my problem that I originally 
+reported in October (SUNRPC problem with 2.6.26 and beyond), and I am 
+seeing the same behavior as Max Kellermann when my machine slows as I 
+described earlier.  The system in question is currently running 
+2.6.27.7.  Here is what I see when it is misbehaving:
 
-Yes, changed.
+samples  %        image name               app name                 
+symbol name
+11380517 57.4191  sunrpc.ko                sunrpc                   
+rpcauth_lookup_credcache
+3263657  16.4664  sunrpc.ko                sunrpc                   
+generic_match
+1081287   5.4555  vmlinux                  vmlinux                  
+copy_user_generic_string
+499407    2.5197  vmlinux                  vmlinux                  
+__posix_lock_file
+[...]
 
-Thanks,
-Dan
+And here is what I see when I stop the programs that are chewing up all 
+the system time, and then starting them up again:
+
+samples  %        image name               app name                 
+symbol name
+6372650  21.7978  vmlinux                  vmlinux                  
+copy_user_generic_string
+5401386  18.4755  sunrpc.ko                sunrpc                   
+rpcauth_lookup_credcache
+3018753  10.3257  vmlinux                  vmlinux                  
+__posix_lock_file
+1050095   3.5919  sunrpc.ko                sunrpc                   
+generic_match
+
+
+and I am not using Kerberos with NFSv4 (i.e. no rpc.gssd).  Did you ever 
+find a solution for this problem with rpcauth_lookup_credcache?
+
+-- 
+
+ Dr. Harry Edmon			E-MAIL: harry@atmos.washington.edu
+ 206-543-0547				harry@washington.edu
+ Dept of Atmospheric Sciences		FAX:	206-543-0308
+ University of Washington, Box 351640, Seattle, WA 98195-1640
+
