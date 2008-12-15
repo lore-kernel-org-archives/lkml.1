@@ -1,87 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752340AbYLOWyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756381AbYLOWzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752340AbYLOWyZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 17:54:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbYLOWxu
+	id S1756381AbYLOWzf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 17:55:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYLOWzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 17:53:50 -0500
-Received: from ozlabs.org ([203.10.76.45]:50645 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752356AbYLOWxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 17:53:49 -0500
+	Mon, 15 Dec 2008 17:55:24 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:64620 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751810AbYLOWzX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 17:55:23 -0500
+Message-ID: <ac3eb2510812151455h27b790av9579b670edbca7ab@mail.gmail.com>
+Date: Mon, 15 Dec 2008 23:55:20 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Andreas Dilger" <adilger@sun.com>
+Subject: Re: Btrfs trees for linux-next
+Cc: "Chris Mason" <chris.mason@oracle.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20081215210323.GB5000@webber.adilger.int>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-ID: <18758.57327.966434.840755@cargo.ozlabs.ibm.com>
-Date: Tue, 16 Dec 2008 09:53:35 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: eranian@gmail.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vince Weaver <vince@deater.net>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [patch] Performance Counters for Linux, v3
-In-Reply-To: <20081214231332.GA26942@elte.hu>
-References: <20081211155230.GA4230@elte.hu>
-	<Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
-	<1229070345.12883.12.camel@twins>
-	<7c86c4470812120059s7f8e64a6h91ebeadbf938858d@mail.gmail.com>
-	<1229073834.12883.41.camel@twins>
-	<7c86c4470812120942x607a74f7w9f823adecbd73b85@mail.gmail.com>
-	<7c86c4470812121001i765d663bq6db3080b633a1eef@mail.gmail.com>
-	<20081214231332.GA26942@elte.hu>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+References: <1227183484.6161.17.camel@think.oraclecorp.com>
+	 <1228962896.21376.11.camel@think.oraclecorp.com>
+	 <20081211141436.030c2d65.sfr@canb.auug.org.au>
+	 <20081210200604.8e190b0d.akpm@linux-foundation.org>
+	 <1229006596.22236.46.camel@think.oraclecorp.com>
+	 <20081215210323.GB5000@webber.adilger.int>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+On Mon, Dec 15, 2008 at 22:03, Andreas Dilger <adilger@sun.com> wrote:
+> On Dec 11, 2008  09:43 -0500, Chris Mason wrote:
+>> The multi-device code uses a very simple brute force scan from userland
+>> to populate the list of devices that belong to a given FS.  Kay Sievers
+>> has some ideas on hotplug magic to make this less dumb.  (The scan isn't
+>> required for single device filesystems).
+>
+> This should use libblkid to do the scanning of the devices, and it can
+> cache the results for efficiency.  Best would be to have the same LABEL+UUID
+> for all devices in the same filesystem, and then once any of these devices
+> are found the mount.btrfs code can query the rest of the devices to find
+> the remaining parts of the filesystem.
 
-> If there's a single unit of sharable resource [such as an event counter, 
-> or a physical CPU], then there's just three main possibilities: either 
-> user 1 gets it all, or user 2 gets it all, or they share it.
-> 
-> We've implemented the essence of these variants, with sharing the resource 
-> being the sane default, and with the sysadmin also having a configuration 
-> vector to reserve the resource to himself permanently. (There could be 
-> more variations of this.)
+Which is another way to do something you should not do that way in the
+first place, just with a library instead of your own code.
 
-Thinking about this a bit more, it seems to me that there is an
-unstated assumption that dealing with performance counters is mostly a
-scheduling problem - that the hardware resource of a fixed number of
-performance counters can be virtualized to provide a larger number of
-software counters in much the same way that a fixed number of physical
-cpus are virtualized to support a larger number of tasks.
+Brute-force scanning /dev with a single thread will not work reliably
+in many setups we need to support. Sure, it's good to have it for a
+rescue system, it will work fine or your workstation, but definitely
+not for boxes with many devices where you don't know how they behave.
 
-Put another way, your assumption seems to be that software counters
-can be transparently time-multiplexed onto the physical counters,
-without affecting the end results.  In other words, you assume that
-time-multiplexing is a reasonable way to implement sharing of hardware
-performance counters, and that users shouldn't have to know or care
-that their counters are being time-multiplexed.  Is that an accurate
-statement of your belief?
+Just do:
+  $ modprobe scsi_debug max_luns=8 num_parts=2
+  $ echo 1 > /sys/module/scsi_debug/parameters/every_nth
+  $ echo 4 > /sys/module/scsi_debug/parameters/opts
 
-If it is (and the code you've posted seems to indicate that it is)
-then you are going to have unhappy users, because counting part of the
-time is not at all the same thing as counting all the time.  As just
-one example, imagine that the period over which you are counting is
-shorter than the counter timeslice period (for example because the
-executable you are measuring doesn't run for very long).  If you have
-N software counters but only M < N hardware counters, then only the
-first M software counters will report anything useful, and the
-remaining M - N will report zero!
+  $ ls -l /sys/class/block/ | wc -l
+  45
+and then call any binary doing /dev scanning, and wait (in this case)
+for ~2 hours to return.
 
-Sampling, as opposed to counting, may be more tolerant of
-time-multiplexing of counters, particularly for long-running programs,
-but even there time-multiplexing will affect the results and users
-need to know about it.
+Also, the blkid cache file uses major/minor numbers or kernel device
+names, which will also not help in many setups we have to support
+today.
 
-It seems to me that this assumption is pretty deeply rooted in the
-design of your performance counter subsystem, and I'm not sure at this
-point what is the best way to fix it.
+The original btrfs topic, leading to this, is here:
+  http://www.mail-archive.com/linux-btrfs@vger.kernel.org/msg01048.html
 
-Paul.
+Thanks,
+Kay
