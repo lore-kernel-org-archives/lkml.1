@@ -1,68 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbYLOFV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbYLOF1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752532AbYLOFV2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 00:21:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYLOFVS
+	id S1752594AbYLOF1T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 00:27:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbYLOF1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 00:21:18 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:53176 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750816AbYLOFVS (ORCPT
+	Mon, 15 Dec 2008 00:27:09 -0500
+Received: from sineb-mail-1.sun.com ([192.18.19.6]:52732 "EHLO
+	sineb-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbYLOF1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 00:21:18 -0500
-Date: Mon, 15 Dec 2008 16:21:06 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: [RFC PATCH crypto] AES: Add support to Intel AES-NI
-	instructions
-Message-ID: <20081215052106.GA29324@gondor.apana.org.au>
-References: <1229054926.5936.160.camel@yhuang-dev.sh.intel.com> <20081212195722.GA24489@Chamillionaire.breakpoint.cc> <1229307542.5936.204.camel@yhuang-dev.sh.intel.com> <20081215033842.GA28499@gondor.apana.org.au> <1229318099.5936.224.camel@yhuang-dev.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1229318099.5936.224.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 15 Dec 2008 00:27:08 -0500
+X-Greylist: delayed 859 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Dec 2008 00:27:08 EST
+Date: Mon, 15 Dec 2008 13:08:53 +0800
+From: Jike Song <albcamus@gmail.com>
+Subject: Re: MSI messages
+In-reply-to: <20081214081210.GC13371@colo.lackof.org>
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: Manu Abraham <abraham.manu@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Message-id: <4945E665.8090707@gmail.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+Content-transfer-encoding: 7BIT
+References: <49438290.1080502@gmail.com>
+ <20081214081210.GC13371@colo.lackof.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081014)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 15, 2008 at 01:14:59PM +0800, Huang Ying wrote:
-> 
-> The PadLock instructions don't use/touch SSE registers, but might cause
-> DNA fault when CR0.TS is set. So it is sufficient just to clear CR0.TS
-> before executed.
-> 
-> The AES-NI instructions do use SSE registers. Considering the following
+Grant Grundler wrote:
+>  A "GSI" (Generic Sys Interrupt?)
 
-This really sucks as more than half of the kernel AES users are
-in softirq context.  Someone hit the guy who designed this with
-a clue-bat please!
+Should be "Global System Interrupt", as described in Section 5.2.12 of 
+ACPIspec3.0b ;-)
 
-> To solve the above issue, the following methods can be used:
-> 
-> a. Do not touch SSE state in soft_irq
-> b. Disable/restore soft_irq in kernel_fpu_begin/kernel_fpu_end
-> c. Use a per-CPU data structure to save kernel FPU state during
-> soft_irq.
-> 
-> The mothod a is used in patch.
 
-Could you run the tcrypt speed test on this and measure the
-difference between the native AES vs. the fallback? Depending
-on the difference I think we'd want to consider b) or c).
-
-Of course the best solution would be to fix the hardware.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
