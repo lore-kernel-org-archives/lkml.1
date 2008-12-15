@@ -1,48 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbYLOE5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752357AbYLOFPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753163AbYLOE5b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 23:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYLOE5U
+	id S1752357AbYLOFPT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 00:15:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYLOFPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 23:57:20 -0500
-Received: from ozlabs.org ([203.10.76.45]:54658 "EHLO ozlabs.org"
+	Mon, 15 Dec 2008 00:15:05 -0500
+Received: from mga02.intel.com ([134.134.136.20]:16445 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbYLOE5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 23:57:20 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18757.55706.609537.196994@drongo.ozlabs.ibm.com>
-Date: Mon, 15 Dec 2008 15:14:18 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Gerd Hoffmann <kraxel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
-In-Reply-To: <20081212152929.GM26095@parisc-linux.org>
-References: <1229090440-32120-1-git-send-email-kraxel@redhat.com>
-	<20081212152929.GM26095@parisc-linux.org>
-X-Mailer: VM 8.0.11 under Emacs 22.2.1 (powerpc-unknown-linux-gnu)
+	id S1750746AbYLOFPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 00:15:03 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,221,1228118400"; 
+   d="asc'?scan'208";a="370874642"
+Subject: Re: [RFC PATCH crypto] AES: Add support to Intel AES-NI
+	instructions
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+In-Reply-To: <20081215033842.GA28499@gondor.apana.org.au>
+References: <1229054926.5936.160.camel@yhuang-dev.sh.intel.com>
+	 <20081212195722.GA24489@Chamillionaire.breakpoint.cc>
+	 <1229307542.5936.204.camel@yhuang-dev.sh.intel.com>
+	 <20081215033842.GA28499@gondor.apana.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3knk14zbL8iGHq744xav"
+Date: Mon, 15 Dec 2008 13:14:59 +0800
+Message-Id: <1229318099.5936.224.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox writes:
 
-> On Fri, Dec 12, 2008 at 03:00:40PM +0100, Gerd Hoffmann wrote:
-> > The patch sports the actual system call implementation and the windup in
-> > the x86 system call tables.  Other archs are TBD.
-> 
-> > +asmlinkage ssize_t sys_preadv(unsigned long fd, const struct iovec __user *vec,
-> > +                              unsigned long vlen, loff_t pos)
-> > +asmlinkage ssize_t sys_pwritev(unsigned long fd, const struct iovec __user *vec,
-> > +                               unsigned long vlen, loff_t pos)
-> 
-> Are these prototypes required?  MIPS and PARISC will need wrappers to
-> fix them if they are.  These two architectures have an ABI which
-> requires 64-bit arguments to be passed in aligned pairs of registers,
+--=-3knk14zbL8iGHq744xav
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-As does 32-bit PowerPC, so I also would prefer the alternate argument
-order for the syscall (pos as the 3rd argument).
+On Mon, 2008-12-15 at 11:38 +0800, Herbert Xu wrote:
+> On Mon, Dec 15, 2008 at 10:19:02AM +0800, Huang Ying wrote:
+> >=20
+> > The general x86 implementation is used as the fall back for new AES-NI
+> > based implementation. Because AES-NI can not be used in kernel soft_irq
+> > context. If crypto layer is used to access general x86 implementation,
+>=20
+> Why is that? The VIA PadLock also "touches" the SSE state but we still
+> use it on softirq paths.
+>=20
+> In fact Suresh told me earlier that your AES instruction wasn't
+> going to have the SSE problems that VIA had, is this not the case?
 
-Paul.
+The PadLock instructions don't use/touch SSE registers, but might cause
+DNA fault when CR0.TS is set. So it is sufficient just to clear CR0.TS
+before executed.
+
+The AES-NI instructions do use SSE registers. Considering the following
+situation:
+
+1. In kernel, code path using SSE registers are executed, user space SSE
+state is saved if necessary.
+2. An interrupt/soft_irq comes, and encrypt/decrypt with AES-NI is
+executed. The SSE state of code path 1 is destroyed.
+
+To solve the above issue, the following methods can be used:
+
+a. Do not touch SSE state in soft_irq
+b. Disable/restore soft_irq in kernel_fpu_begin/kernel_fpu_end
+c. Use a per-CPU data structure to save kernel FPU state during
+soft_irq.
+
+The mothod a is used in patch.
+
+Best Regards,
+Huang Ying
+
+
+--=-3knk14zbL8iGHq744xav
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklF59EACgkQKhFGF+eHlpgjVQCgmjx4n+Vqzx/CO7UJeiSBqp3k
+X3MAniUEuXswKYo2uRjLE1P1K+QMU2YD
+=xQ4I
+-----END PGP SIGNATURE-----
+
+--=-3knk14zbL8iGHq744xav--
+
