@@ -1,47 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbYLOVs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbYLOVtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384AbYLOVs6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 16:48:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbYLOVsv
+	id S1757477AbYLOVtb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 16:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbYLOVtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 16:48:51 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44901 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756378AbYLOVsu (ORCPT
+	Mon, 15 Dec 2008 16:49:22 -0500
+Received: from mga02.intel.com ([134.134.136.20]:20342 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756658AbYLOVtV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 16:48:50 -0500
-Message-ID: <4946CFCC.7040805@cs.helsinki.fi>
-Date: Mon, 15 Dec 2008 23:44:44 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
+	Mon, 15 Dec 2008 16:49:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,226,1228118400"; 
+   d="scan'208";a="474214025"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 15 Dec 2008 13:50:05 -0800
+Subject: RE: [patch 0/7] x86 PAT: v2 - track pfnmap mappings with
+ remap_pfn_range and vm_insert_pfn
+Thread-Topic: [patch 0/7] x86 PAT: v2 - track pfnmap mappings with
+ remap_pfn_range and vm_insert_pfn
+Thread-Index: AclPXfMhx6On1dDbSIa6A6ZjJPtTzwPoNiWQ
+Message-ID: <7E82351C108FA840AB1866AC776AEC464338C11E@orsmsx505.amr.corp.intel.com>
+References: <20081126002157.475142000@intel.com>
+In-Reply-To: <20081126002157.475142000@intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Ottavio Campana <ottavio.campana@dei.unipd.it>
-CC: linux-kernel@vger.kernel.org, error27@gmail.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, Greg KH <greg@kroah.com>
-Subject: Re: Oops when trying to create more than 16000 timers
-References: <49468024.1020700@dei.unipd.it>	 <84144f020812150845g10a1ce26ke2844ab495d2591b@mail.gmail.com>	 <4946CEF1.6060405@dei.unipd.it> <84144f020812151337r79268169xf77f2e6f547a51e5@mail.gmail.com> <4946DE5C.8060504@dei.unipd.it>
-In-Reply-To: <4946DE5C.8060504@dei.unipd.it>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ottavio,
 
-Pekka Enberg wrote:
->> I think you're simply hitting RLIMIT_SIGPENDING and then tripping over
->> a bug in alloc_posix_timer() that's fixed by commit
->> aa94fbd5ccd840c8ab26d02439ec799b03a72547 ("fix error-path NULL deref
->> in alloc_posix_timer()") in 2.6.28-rc8.
->>
->> Dan, can you please send your patch to the -stable queue as well?
+Ingo,
 
-Ottavio Campana wrote:
-> Pekka, can this RLIMIT_SIGPENDING be modified? For my application, I
-> will need 60k timers.
+Haven't seen any comments on the patches here. Can you push these patches along to tip.
 
-I'd assume you can do that via the setrlimit() system call. See the man 
-page for details.
+Thanks,
+Venki
+
+>-----Original Message-----
+>From: Pallipadi, Venkatesh
+>Sent: Tuesday, November 25, 2008 4:22 PM
+>To: akpm@linux-foundation.org; npiggin@suse.de;
+>hugh@veritas.com; mingo@elte.hu; hpa@zytor.com; tglx@linutronix.de
+>Cc: rdreier@cisco.com; jeremy@goop.org;
+>jbarnes@virtuousgeek.org; arjan@infradead.org; linux-kernel@;
+>Siddha, Suresh B
+>Subject: [patch 0/7] x86 PAT: v2 - track pfnmap mappings with
+>remap_pfn_range and vm_insert_pfn
+>
+>Followup for the patches posted earlier here:
+>http://marc.info/?l=linux-kernel&m=122653213110404&w=2
+>
+>Drivers use mmap followed by pgprot_* and remap_pfn_range or
+>vm_insert_pfn,
+>in order to export reserved memory to userspace. Currently,
+>such mappings are
+>not tracked and hence not kept consistent with other mappings
+>(/dev/mem,
+>pci resource, ioremap) for the sme memory, that may exist in
+>the system.
+>
+>The following patchset adds x86 PAT attribute tracking and
+>untracking for
+>pfnmap related APIs.
+>
+>First three patches in the patchset are changing the generic
+>mm code to fit
+>in this tracking. Last four patches are x86 specific to make
+>things work
+>with x86 PAT code. The patchset aso introduces
+>pgprot_writecombine interface,
+>which gives writecombine mapping when enabled, falling back to
+>pgprot_noncached otherwise.
+>
+>
+>--
+>
+>
