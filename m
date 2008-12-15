@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYLOQ42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbYLOQ5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbYLOQ42 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 11:56:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbYLOQ4V
+	id S1756070AbYLOQ5X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 11:57:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYLOQ5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 11:56:21 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43459 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754003AbYLOQ4U (ORCPT
+	Mon, 15 Dec 2008 11:57:15 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55191 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753912AbYLOQ5P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 11:56:20 -0500
-Subject: [PATCH] x86: signal.c declare do_notify_resume before they get used
+	Mon, 15 Dec 2008 11:57:15 -0500
+Subject: [PATCH] x86: traps.c declare functions before they get used
 From: Jaswinder Singh <jaswinder@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
        Andi Kleen <andi@firstfloor.org>
 Content-Type: text/plain
-Date: Mon, 15 Dec 2008 22:24:48 +0530
-Message-Id: <1229360088.15326.3.camel@jaswinder.satnam>
+Date: Mon, 15 Dec 2008 22:25:45 +0530
+Message-Id: <1229360145.15326.5.camel@jaswinder.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -26,34 +26,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
 
-In asm/signal.h moved out do_notify_resume from __i386__ as it is common for both 32 and 64 bit.
+In asm/traps.h :-
+do_double_fault : added under X86_64
+sync_regs : added under X86_64
+math_error : moved out from X86_32 as it is common for both 32 and 64 bit
+smp_thermal_interrupt : added under X86_64
+mce_threshold_interrupt : added under X86_64
+math_emulate : moved from X86_32 to MATH_EMULATION
 ---
- arch/x86/include/asm/signal.h |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/traps.h |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/signal.h b/arch/x86/include/asm/signal.h
-index 96ac44f..7761a5d 100644
---- a/arch/x86/include/asm/signal.h
-+++ b/arch/x86/include/asm/signal.h
-@@ -121,6 +121,10 @@ typedef unsigned long sigset_t;
+diff --git a/arch/x86/include/asm/traps.h b/arch/x86/include/asm/traps.h
+index 45dee28..d8a201b 100644
+--- a/arch/x86/include/asm/traps.h
++++ b/arch/x86/include/asm/traps.h
+@@ -46,6 +46,10 @@ dotraplinkage void do_coprocessor_segment_overrun(struct pt_regs *, long);
+ dotraplinkage void do_invalid_TSS(struct pt_regs *, long);
+ dotraplinkage void do_segment_not_present(struct pt_regs *, long);
+ dotraplinkage void do_stack_segment(struct pt_regs *, long);
++#ifdef CONFIG_X86_64
++dotraplinkage void do_double_fault(struct pt_regs *, long);
++asmlinkage __kprobes struct pt_regs *sync_regs(struct pt_regs *);
++#endif
+ dotraplinkage void do_general_protection(struct pt_regs *, long);
+ dotraplinkage void do_page_fault(struct pt_regs *, unsigned long);
+ dotraplinkage void do_spurious_interrupt_bug(struct pt_regs *, long);
+@@ -72,9 +76,14 @@ static inline int get_si_code(unsigned long condition)
+ extern int panic_on_unrecovered_nmi;
+ extern int kstack_depth_to_print;
  
- #ifndef __ASSEMBLY__
- 
-+# ifdef __KERNEL__
-+extern void do_notify_resume(struct pt_regs *, void *, __u32);
-+# endif /* __KERNEL__ */
-+
- #ifdef __i386__
- # ifdef __KERNEL__
- struct old_sigaction {
-@@ -141,8 +145,6 @@ struct k_sigaction {
- 	struct sigaction sa;
- };
- 
--extern void do_notify_resume(struct pt_regs *, void *, __u32);
--
- # else /* __KERNEL__ */
- /* Here we must cater to libcs that poke about in kernel headers.  */
+-#ifdef CONFIG_X86_32
+ void math_error(void __user *);
++#ifdef CONFIG_X86_32
+ unsigned long patch_espfix_desc(unsigned long, unsigned long);
++#else
++asmlinkage void smp_thermal_interrupt(void);
++asmlinkage void mce_threshold_interrupt(void);
++#endif
++#ifndef CONFIG_MATH_EMULATION
+ asmlinkage void math_emulate(long);
+ #endif
  
 -- 
 1.5.5.1
