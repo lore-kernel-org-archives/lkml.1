@@ -1,130 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbYLOTtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbYLOTxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567AbYLOTtj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 14:49:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYLOTtc
+	id S1755866AbYLOTxb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 14:53:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbYLOTxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 14:49:32 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:55607 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbYLOTtb (ORCPT
+	Mon, 15 Dec 2008 14:53:24 -0500
+Received: from rv-out-0506.google.com ([209.85.198.228]:7815 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751731AbYLOTxX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 14:49:31 -0500
-Date: Mon, 15 Dec 2008 13:49:11 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, bastian@waldi.eu.org,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Containers <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       roland@redhat.com, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH 2/2] pid: Generalize task_active_pid_ns
-Message-ID: <20081215194911.GA20166@us.ibm.com>
-References: <20081213023144.GA3951@us.ibm.com> <20081213023625.GB4147@us.ibm.com>
+	Mon, 15 Dec 2008 14:53:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=YQGmlf7t2dC0qR7GZh5jLp1a+G86XvBZz8gFHCsp9SVrb6VlubSt1y51ssqbgLpc5u
+         4xRuwHEIHd0ZrXA8kLNGCuTdXOMRl8PUdvaODIsFjQEZLcK3kbfMSeqvTzWVDxLC05Zx
+         VHwoO8/womEo7ANpc3PM9SJAgYdB7/9KP6uyc=
+Message-ID: <86802c440812151153l25a2351ds5e0a8a648262759d@mail.gmail.com>
+Date: Mon, 15 Dec 2008 11:53:22 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Jaswinder Singh" <jaswinder@infradead.org>
+Subject: Re: [PATCH] x86: irqinit_64.c declare init_ISA_irqs before they get used
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1229362945.15326.16.camel@jaswinder.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081213023625.GB4147@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <1229362945.15326.16.camel@jaswinder.satnam>
+X-Google-Sender-Auth: 0ef1ad2e8ca330e3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Sukadev Bhattiprolu (sukadev@linux.vnet.ibm.com):
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Fri, 12 Dec 2008 11:49:27 -0800
-> Subject: [PATCH 2/2] pid: Generalize task_active_pid_ns
-> 
-> Currently task_active_pid_ns is not safe to call after a
-> task becomes a zombie and exit_task_namespaces is called,
-> as nsproxy becomes NULL.  By reading the pid namespace from
-> the pid of the task we can trivially solve this problem at
-> the cost of one extra memory read in what should be the
-> same cacheline as we read the namespace from.
-> 
-> When moving things around I have made task_active_pid_ns
-> out of line because keeping it in pid_namespace.h would
-> require adding includes of pid.h and sched.h that I
-> don't think we want.
-> 
-> This change does make task_active_pid_ns unsafe to call during
-> copy_process until we attach a pid on the task_struct which
-> seems to be a reasonable trade off.
-
-Yeah that's not really much of a tradeoff...  the text for those
-lines gets shorter!  :)
-
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-(to all three)
-
-thanks,
--serge
-
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+On Mon, Dec 15, 2008 at 9:42 AM, Jaswinder Singh
+<jaswinder@infradead.org> wrote:
+> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
+>
+> Included asm/arch_hooks.h for init_ISA_irqs
 > ---
->  include/linux/pid_namespace.h |    6 +-----
->  kernel/fork.c                 |    4 ++--
->  kernel/pid.c                  |    6 ++++++
->  3 files changed, 9 insertions(+), 7 deletions(-)
-> 
-> diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
-> index d82fe82..38d1032 100644
-> --- a/include/linux/pid_namespace.h
-> +++ b/include/linux/pid_namespace.h
-> @@ -79,11 +79,7 @@ static inline void zap_pid_ns_processes(struct pid_namespace *ns)
->  }
->  #endif /* CONFIG_PID_NS */
-> 
-> -static inline struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
-> -{
-> -	return tsk->nsproxy->pid_ns;
-> -}
-> -
-> +extern struct pid_namespace *task_active_pid_ns(struct task_struct *tsk);
->  void pidhash_init(void);
->  void pidmap_init(void);
-> 
-> diff --git a/kernel/fork.c b/kernel/fork.c
-> index dba2d3f..9fa1d91 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -1100,12 +1100,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
-> 
->  	if (pid != &init_struct_pid) {
->  		retval = -ENOMEM;
-> -		pid = alloc_pid(task_active_pid_ns(p));
-> +		pid = alloc_pid(p->nsproxy->pid_ns);
->  		if (!pid)
->  			goto bad_fork_cleanup_io;
-> 
->  		if (clone_flags & CLONE_NEWPID) {
-> -			retval = pid_ns_prepare_proc(task_active_pid_ns(p));
-> +			retval = pid_ns_prepare_proc(p->nsproxy->pid_ns);
->  			if (retval < 0)
->  				goto bad_fork_free_pid;
->  		}
-> diff --git a/kernel/pid.c b/kernel/pid.c
-> index 064e76a..c5513fe 100644
-> --- a/kernel/pid.c
-> +++ b/kernel/pid.c
-> @@ -474,6 +474,12 @@ pid_t task_session_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
->  }
->  EXPORT_SYMBOL(task_session_nr_ns);
-> 
-> +struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
-> +{
-> +	return ns_of_pid(task_pid(tsk));
-> +}
-> +EXPORT_SYMBOL_GPL(task_active_pid_ns);
-> +
->  /*
->   * Used by proc to find the first pid that is greater then or equal to nr.
->   *
-> -- 
-> 1.5.2.5
-> 
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+>  arch/x86/kernel/irqinit_64.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/x86/kernel/irqinit_64.c b/arch/x86/kernel/irqinit_64.c
+> index b33d02f..d1f9663 100644
+> --- a/arch/x86/kernel/irqinit_64.c
+> +++ b/arch/x86/kernel/irqinit_64.c
+> @@ -21,6 +21,7 @@
+>  #include <asm/delay.h>
+>  #include <asm/desc.h>
+>  #include <asm/apic.h>
+> +#include <asm/arch_hooks.h>
+>  #include <asm/i8259.h>
+
+
+not needed.
+
+could change that to static for 64bit.
+
+YH
