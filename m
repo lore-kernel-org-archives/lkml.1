@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbYLODkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbYLOE5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753436AbYLODkB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 22:40:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYLODju
+	id S1753163AbYLOE5b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 23:57:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYLOE5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 22:39:50 -0500
-Received: from rv-out-0506.google.com ([209.85.198.239]:55821 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751914AbYLODjt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 22:39:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=v7KIXqjcyZy0Keir5vz5Ukt++M9ozFNSMHhHcsql6k10Qsxg2wac23Su1S8037dtCA
-         DuEWwRKdJTX/kwCkavis4GOfyBT1mxjLzxXfKIW40Ux/esgSF4C2AK+RoMV4Y3LFJuKr
-         7tpIp0jghjeT3aPZ1cgVgFifSj2nldoIpWCYI=
-Message-ID: <86802c440812141939s2fe0fd9g5f9899ed9e4f6e6c@mail.gmail.com>
-Date: Sun, 14 Dec 2008 19:39:48 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] add command line init_start_cpus
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <87myeyfgb7.fsf@basil.nowhere.org>
+	Sun, 14 Dec 2008 23:57:20 -0500
+Received: from ozlabs.org ([203.10.76.45]:54658 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752003AbYLOE5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 23:57:20 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4944A279.5020009@kernel.org> <87myeyfgb7.fsf@basil.nowhere.org>
-X-Google-Sender-Auth: f467a1869d126f25
+Message-ID: <18757.55706.609537.196994@drongo.ozlabs.ibm.com>
+Date: Mon, 15 Dec 2008 15:14:18 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Gerd Hoffmann <kraxel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
+In-Reply-To: <20081212152929.GM26095@parisc-linux.org>
+References: <1229090440-32120-1-git-send-email-kraxel@redhat.com>
+	<20081212152929.GM26095@parisc-linux.org>
+X-Mailer: VM 8.0.11 under Emacs 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 14, 2008 at 4:11 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> Yinghai Lu <yinghai@kernel.org> writes:
->
->> Impact: new command line
->>
->> so could select cpus to be started during init stage
->
-> maxcpus=N should do this already, at least for the first N cpus.
-> If you really need a non continuous range of N (why?) then it would
-> be better to fix maxcpus instead of adding a new option.
+Matthew Wilcox writes:
 
-it seems it is hard to make maxcpus= to support random cpus selecting and
-maxcpus=0 looks insane
+> On Fri, Dec 12, 2008 at 03:00:40PM +0100, Gerd Hoffmann wrote:
+> > The patch sports the actual system call implementation and the windup in
+> > the x86 system call tables.  Other archs are TBD.
+> 
+> > +asmlinkage ssize_t sys_preadv(unsigned long fd, const struct iovec __user *vec,
+> > +                              unsigned long vlen, loff_t pos)
+> > +asmlinkage ssize_t sys_pwritev(unsigned long fd, const struct iovec __user *vec,
+> > +                               unsigned long vlen, loff_t pos)
+> 
+> Are these prototypes required?  MIPS and PARISC will need wrappers to
+> fix them if they are.  These two architectures have an ABI which
+> requires 64-bit arguments to be passed in aligned pairs of registers,
 
-also maxcpus=1, will disable smp, can you enable other cpus later in user space?
+As does 32-bit PowerPC, so I also would prefer the alternate argument
+order for the syscall (pos as the 3rd argument).
 
-YH
+Paul.
