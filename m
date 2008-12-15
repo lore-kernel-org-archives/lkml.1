@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbYLOCFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbYLOCN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbYLOCFh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 21:05:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbYLOCF2
+	id S1752968AbYLOCN3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 21:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbYLOCNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 21:05:28 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52156 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751972AbYLOCF2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 21:05:28 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Subject: Re: 2.6.28-rc8 big regression in VM
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20081215011645.GA9707@localhost>
-References: <20081213095815.GA7143@ics.muni.cz> <20081215011645.GA9707@localhost>
-Message-Id: <20081215110231.00DF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sun, 14 Dec 2008 21:13:20 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57900 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751325AbYLOCNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 21:13:20 -0500
+Message-ID: <4945BCED.9010904@cn.fujitsu.com>
+Date: Mon, 15 Dec 2008 10:11:57 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Paul Menage <menage@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] sched: fix another race when reading /proc/sched_debug
+References: <494234B0.5@cn.fujitsu.com>	<20081212100044.GB18152@elte.hu>	<4944754F.8050503@cn.fujitsu.com>	<1229258890.17130.9.camel@lappy.programming.kicks-ass.net>	<6599ad830812141347k5d7e7e08vfc17855ea0ac981c@mail.gmail.com>	<4945B546.5040301@cn.fujitsu.com> <20081215105053.89263708.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081215105053.89263708.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Mon, 15 Dec 2008 11:05:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lukas
+KAMEZAWA Hiroyuki wrote:
+> On Mon, 15 Dec 2008 09:39:18 +0800
+> Li Zefan <lizf@cn.fujitsu.com> wrote:
+> 
+>> Paul Menage wrote:
+>>> I sent out some patches last week (search for hierarchy_mutex) that would
+>>> mean that you'd only need to take a subsystem-local lock to keep a cgroup
+>>> alive. People seemed to like them so I'll tweak them based on feedback and
+>>> send them on to Andrew.
+>>>
+>> Unfortunately, AFAICS the proposed hierarchy_mutex can't solve this bug. :(
+>>
+> Hmm ? how about this way if cgroup->dentry is problem ?
+> 
 
-(cc to linux-mm)
+Sounds feasable, though the resulting code might a bit tricky.
 
-> On Sat, Dec 13, 2008 at 11:58:15AM +0200, Lukas Hejtmanek wrote:
-> > On Sat, Dec 13, 2008 at 09:21:15AM +0800, Wu Fengguang wrote:
-> > > I cannot reproduce it on 2.6.28-rc7, compiling 2.6.28-rc8...
-> > > 
-> > > # free; echo 3 > /proc/sys/vm/drop_caches; free
-> > >              total       used       free     shared    buffers     cached
-> > > Mem:          1940        109       1831          0          0         42
-> > > -/+ buffers/cache:         66       1873
-> > > Swap:            0          0          0
-> > >              total       used       free     shared    buffers     cached
-> > > Mem:          1940         62       1877          0          0          7
-> > > -/+ buffers/cache:         55       1884
-> > > Swap:            0          0          0
-> > > 
-> > > > once the whole memory is eaten by the cache, the system is pretty unusable.
-> > > 
-> > > What's your kconfig?
-> > 
-> > attached.
+> at creation:
+>   - cpu_cgroup_populate() should record "tg" that "this cgroup has valid dentry"
 
-I also don't reproduce your problem.
-Could you get output of "cat /proc/meminfo", not only free command?
+This avoids /proc/sched_debug accessing invalid cgrp dentry while a cgroup is
+being created.
 
+> at deletion
+>   - css_tryget() will be useful to avoid the race.
 
+And this avoids accessing a dead task_group.
 
+Since css_tryget() is a 2.6.29 material, I think we can have this bug fixed for
+2.6.28 by holding cgroup_lock, and try to remove the global lock for 2.6.29 ?
