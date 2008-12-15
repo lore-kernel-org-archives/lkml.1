@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbYLOWJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYLOWLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757197AbYLOWJU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 17:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756253AbYLOWJJ
+	id S1757378AbYLOWLR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 17:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbYLOWLB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 17:09:09 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:54354 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756108AbYLOWJI (ORCPT
+	Mon, 15 Dec 2008 17:11:01 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:39318 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753390AbYLOWLB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 17:09:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=EtyHbNK8xnfw+saeFS2+tgyEUM3l8fBVtXqxYKQ/9VrZczxaw0MJ4e5gqGAFcMJhXZ
-         Aem3vj4rS4eCCFbMqsfi+U1ftAveVN+hqpyPMwLYOrdrr6j2yulWrVuS5fWVMTMHi3QN
-         /y8X6Tt4orgK81ljTwfpbTlBgZTWhmXLXWjyc=
-Message-ID: <7c86c4470812151403s5c8c1fe3u4c7c9e7f67e0055b@mail.gmail.com>
-Date: Mon, 15 Dec 2008 23:03:45 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: [patch] Performance Counters for Linux, v4
-Cc: "Vince Weaver" <vince@deater.net>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Robert Richter" <robert.richter@amd.com>,
-       "Arjan van de Ven" <arjan@infradead.org>, "Peter Anvin" <hpa@zytor.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "David S. Miller" <davem@davemloft.net>,
-       perfctr-devel@lists.sourceforge.net
-In-Reply-To: <18758.53072.197695.277198@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Dec 2008 17:11:01 -0500
+Date: Mon, 15 Dec 2008 23:23:03 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] x86: don't enable MCE after suspend/resume when system was booted with "nomce"
+Message-ID: <20081215222303.GW25779@one.firstfloor.org>
+References: <20081212180650.GS19144@alberich.amd.com> <20081212180827.GT19144@alberich.amd.com> <87y6ylmcsz.fsf@basil.nowhere.org> <20081215185503.GA5620@alberich.amd.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081214212829.GA9435@elte.hu>
-	 <Pine.LNX.4.64.0812151243130.2773@pianoman.cluster.toy>
-	 <18758.53072.197695.277198@cargo.ozlabs.ibm.com>
+In-Reply-To: <20081215185503.GA5620@alberich.amd.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 15, 2008 at 10:42 PM, Paul Mackerras <paulus@samba.org> wrote:
-> Vince Weaver writes:
->
->> I see a large (2300 instruction) fixed overhead when measuring
->> retired instruction count using the "timec" command
->> compared to the "pfmon" tool that comes with perfmon3
->> (the pfmon tool has essentially no overhead when
->> doing aggragate counts).
->
-> Looks like timec will be counting the fork() and execvp() system calls
-> that are used to run your executable, as well as the executable
-> itself.  The fork() overhead could be removed fairly easily I think,
-> the execvp would be hard to get rid of without using ptrace() - and
-> the use of ptrace was one of the things that Ingo et al. objected to
-> in perfmon3.
->
-Paul, I think your analysis is correct. This is likely what is happening.
+> > http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-x86.git;a=commit;h=81c7af997dafbabad464ccefba89af2b247899da
+> 
+> Thanks for that pointer.
+> I didn't look at tip/x86/mce up to know. Is this .28 material?
 
-Not that timec could not use ptrace() to block the task from executing
-its first instruction, but you'd still have a problem because of prctl(ENABLE)
-which applies to the current task, not another task, unless I am mistaken.
+I would think so, but I'm not sure the x86 maintainers think the same.
 
-Prctl() looks odd to me because you have all those supposedly independent
-file descriptors to identify events you want to measure, but they are not
-used to start/stop. If you are attaching to multiple tasks at the same time
-which you can do with the current API,  you may not necessarily want to
-start/stop all counters at the same time.
+> My fix is intended for .28.
+> 
+> I didn't care about the lurking sysfs interface when booted with
+> "nomce".  It's there and you could enable MCE with changing attributes
+> but then you are actively fiddling with MCE.
+> 
+> The fix is for the more severe problem that mce_init() is called on
+> resume and thus will enable MCE (setup cr4 and corresponding MSRs)
+> which shouldn't happen when booted with "nomce".
 
-Looks like prctl() is not what we want after all...
+The patch does the same (although the description doesn't say that). 
+When there is no sysfs interface there won't
+be any resume either because resume goes through the sysdev devices. 
+So it's a cleaner and more complete fix imho.
+
+-Andi
