@@ -1,661 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbYLOO4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbYLOO5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756068AbYLOO4w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 09:56:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYLOOzX
+	id S1756208AbYLOO5N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 09:57:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYLOOz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 09:55:23 -0500
+	Mon, 15 Dec 2008 09:55:27 -0500
 Received: from mga09.intel.com ([134.134.136.24]:26559 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753793AbYLOOzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 09:55:09 -0500
+	id S1754380AbYLOOzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 09:55:13 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.36,224,1228118400"; 
-   d="scan'208";a="370995437"
+   d="scan'208";a="370995477"
 From: Patrick Ohly <patrick.ohly@intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
        John Stultz <johnstul@us.ibm.com>, linux-api@vger.kernel.org,
        Patrick Ohly <patrick.ohly@intel.com>
-Subject: [RFC PATCH 02/12] net: infrastructure for hardware time stamping
-Date: Mon, 15 Dec 2008 15:54:49 +0100
-Message-Id: <1229352899-31330-3-git-send-email-patrick.ohly@intel.com>
+Subject: [RFC PATCH 04/12] sockets: allow allocating skb with optional structures
+Date: Mon, 15 Dec 2008 15:54:51 +0100
+Message-Id: <1229352899-31330-5-git-send-email-patrick.ohly@intel.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1229352899-31330-2-git-send-email-patrick.ohly@intel.com>
+In-Reply-To: <1229352899-31330-4-git-send-email-patrick.ohly@intel.com>
 References: <1229352899-31330-1-git-send-email-patrick.ohly@intel.com>
  <1229352899-31330-2-git-send-email-patrick.ohly@intel.com>
+ <1229352899-31330-3-git-send-email-patrick.ohly@intel.com>
+ <1229352899-31330-4-git-send-email-patrick.ohly@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instead of adding new members to struct sk_buff this
-patch introduces and uses a generic mechanism for
-extending skb: additional structures are allocated
-at the end of the data area, similar to the skb_shared_info.
-One new member of skb holds the information which of the
-optional structures are present, with one bit per
-structure. This allows fast checks whether certain
-information is present.
+The internal sock_alloc_send_pskb() is now exposed
+as sock_alloc_send_skb_flags() and takes a flags
+parameter with additional instructions for how the
+skb is to be allocated. This is necessary for adding
+send time stamping information to outgoing packets.
 
-The actual address of an optional structure
-is found by using a hard-coded ordering of these
-structures and adding up the size and alignment padding
-of the preceeding structs.
+sock_alloc_send_skb() is turned into a simple wrapper
+which preserves compatibility with code that
+passes a boolean "nblock" instead of the flags
+bitmask.
 
-The new struct skb_shared_tx is used to transport time stamping
-instructions to the device driver (outgoing packets). The
-resulting hardware time stamps are returned via struct
-skb_shared_hwtstamps (incoming or sent packets), in all
-formats possibly needed by the rest of the kernel and
-user space (original raw hardware time stamp and converted
-to system time base). This replaces the problematic callbacks
-into the network driver used in earlier revisions of this patch.
-
-Conceptionally the two structs are independent and use
-different bits in the new flags fields. This avoids the
-problem that dev_start_hard_xmit() cannot distinguish
-reliably between outgoing and incoming packets (it is
-called for looped multicast packets). But to avoid copying
-sent data, the space reserved for skb_shared_tx is
-increased so that this space can be reused for skb_shared_hwtstamps
-when sending back the packet to the originating socket.
-
-TX time stamping is implemented in software if the device driver
-doesn't support hardware time stamping.
-
-The new semantic for hardware/software time stamping around
-net_device->hard_start_xmit() is based on two assumptions about
-existing network device drivers which don't support hardware
-time stamping and know nothing about it:
-- they leave the new skb_shared_tx struct unmodified
-- the keep the connection to the originating socket in skb->sk
-  alive, i.e., don't call skb_orphan()
-
-Given that skb_shared_tx is new, the first assumption is safe.
-The second is only true for some drivers. As a result, software
-TX time stamping currently works with the bnx2 driver, but not
-with the unmodified igb driver (the two drivers this patch series
-was tested with).
+sock_alloc_send_pskb() was never called with non-zero
+data_len, therefore the obsolete code and parameter
+were removed.
 
 Signed-off-by: Patrick Ohly <patrick.ohly@intel.com>
 ---
- include/linux/skbuff.h |  196 ++++++++++++++++++++++++++++++++++++++++++++++--
- net/core/dev.c         |   34 ++++++++-
- net/core/skbuff.c      |  139 ++++++++++++++++++++++++++++------
- 3 files changed, 338 insertions(+), 31 deletions(-)
+ include/net/sock.h |   17 +++++++++++++----
+ net/core/sock.c    |   50 +++++++-------------------------------------------
+ 2 files changed, 20 insertions(+), 47 deletions(-)
 
-diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index acf17af..7f58b55 100644
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -156,6 +156,105 @@ struct skb_shared_info {
- #endif
- };
- 
-+#define HAVE_HW_TIME_STAMP
-+
-+/**
-+ * skb_shared_hwtstamps - optional hardware time stamps
-+ *
-+ * @hwtstamp:	hardware time stamp transformed into duration
-+ *		since arbitrary point in time
-+ * @syststamp:	hwtstamp transformed to system time base
-+ *
-+ * Software time stamps generated by ktime_get_real() are stored in
-+ * skb->tstamp. The relation between the different kinds of time
-+ * stamps is as follows:
-+ *
-+ * syststamp and tstamp can be compared against each other in
-+ * arbitrary combinations.  The accuracy of a
-+ * syststamp/tstamp/"syststamp from other device" comparison is
-+ * limited by the accuracy of the transformation into system time
-+ * base. This depends on the device driver and its underlying
-+ * hardware.
-+ *
-+ * hwtstamps can only be compared against other hwtstamps from
-+ * the same device.
-+ *
-+ * This additional structure has to be allocated together with
-+ * the data buffer and is shared between clones.
-+ */
-+struct skb_shared_hwtstamps {
-+	ktime_t	hwtstamp;
-+	ktime_t	syststamp;
-+};
-+
-+/**
-+ * skb_shared_tx - optional instructions for time stamping of outgoing packets
-+ *
-+ * @hardware:		generate hardware time stamp
-+ * @software:		generate software time stamp
-+ * @in_progress:	device driver is going to provide
-+ *			hardware time stamp
-+ *
-+ * This additional structure has to be allocated together with the
-+ * data buffer and is shared between clones. Its space is reused
-+ * in skb_tstamp_tx() for skb_shared_hwtstamps and therefore it
-+ * has to be larger than strictly necessary (handled in skbuff.c).
-+ */
-+union skb_shared_tx {
-+	struct {
-+		__u8	hardware:1,
-+			software:1,
-+			in_progress:1;
-+	};
-+	__u8 flags;
-+};
-+
-+/*
-+ * Flags which control how &struct sk_buff is to be/was allocated.
-+ * The &struct skb_shared_info always comes at sk_buff->end, then
-+ * all of the optional structs in the order defined by their
-+ * flags. Each structure is aligned so that it is at a multiple
-+ * of its own size. Putting structs with less strict alignment
-+ * requirements at the end increases the chance that no padding
-+ * is needed.
-+ *
-+ * SKB_FLAGS_TXTSTAMP could be combined with SKB_FLAGS_HWTSTAMPS
-+ * (outgoing packets have &union skb_shared_tx, incoming
-+ * &struct skb_shared_hwtstamps), but telling apart one from
-+ * the other is ambiguous: when a multicast packet is looped back,
-+ * it has to be considered incoming, but it then passes through
-+ * dev_hard_start_xmit() once more. Better avoid such ambiguities,
-+ * in particular as it doesn't save any space. One additional byte
-+ * is needed in any case.
-+ *
-+ * SKB_FLAGS_CLONE replaces the true/false integer fclone parameter in
-+ * __alloc_skb(). Clones are marked as before in sk_buff->cloned.
-+ *
-+ * Similarly, SKB_FLAGS_NOBLOCK is used in place of a special noblock
-+ * parameter in sock_alloc_send_skb().
-+ *
-+ * When adding optional structs, remember to update skb_optional_sizes
-+ * in skbuff.c!
-+ */
-+enum {
-+	/*
-+	 * one byte holds the lower order flags in struct sk_buff,
-+	 * so we could add more structs without additional costs
-+	 */
-+	SKB_FLAGS_OPTIONAL_HWTSTAMPS = 1 << 0,
-+	SKB_FLAGS_OPTIONAL_TX = 1 << 1,
-+
-+	/* number of bits used for optional structures */
-+	SKB_FLAGS_OPTIONAL_NUM = 2,
-+
-+	/*
-+	 * the following flags only affect how the skb is allocated,
-+	 * they are not stored like the ones above
-+	 */
-+	SKB_FLAGS_CLONE = 1 << 8,
-+	SKB_FLAGS_NOBLOCK = 1 << 9,
-+};
-+
- /* We divide dataref into two halves.  The higher 16 bits hold references
-  * to the payload part of skb->data.  The lower 16 bits hold references to
-  * the entire skb->data.  A clone of a headerless skb holds the length of
-@@ -228,6 +327,8 @@ typedef unsigned char *sk_buff_data_t;
-  *	@ip_summed: Driver fed us an IP checksum
-  *	@priority: Packet queueing priority
-  *	@users: User count - see {datagram,tcp}.c
-+ *	@optional: a combination of SKB_FLAGS_OPTIONAL_* flags, indicates
-+ *		which of the corresponding structs were allocated
-  *	@protocol: Packet protocol from driver
-  *	@truesize: Buffer size 
-  *	@head: Head of buffer
-@@ -305,6 +406,8 @@ struct sk_buff {
- 				ipvs_property:1,
- 				peeked:1,
- 				nf_trace:1;
-+	/* not all of the bits in optional are used */
-+	__u8			optional;
- 	__be16			protocol;
- 
- 	void			(*destructor)(struct sk_buff *skb);
-@@ -374,18 +477,18 @@ extern void skb_dma_unmap(struct device *dev, struct sk_buff *skb,
- 
- extern void kfree_skb(struct sk_buff *skb);
- extern void	       __kfree_skb(struct sk_buff *skb);
--extern struct sk_buff *__alloc_skb(unsigned int size,
--				   gfp_t priority, int fclone, int node);
-+extern struct sk_buff *__alloc_skb_flags(unsigned int size,
-+					gfp_t priority, int flags, int node);
- static inline struct sk_buff *alloc_skb(unsigned int size,
- 					gfp_t priority)
- {
--	return __alloc_skb(size, priority, 0, -1);
-+	return __alloc_skb_flags(size, priority, 0, -1);
- }
- 
- static inline struct sk_buff *alloc_skb_fclone(unsigned int size,
- 					       gfp_t priority)
- {
--	return __alloc_skb(size, priority, 1, -1);
-+	return __alloc_skb_flags(size, priority, SKB_FLAGS_CLONE, -1);
- }
- 
- extern int skb_recycle_check(struct sk_buff *skb, int skb_size);
-@@ -469,6 +572,29 @@ static inline unsigned char *skb_end_pointer(const struct sk_buff *skb)
- #define skb_shinfo(SKB)	((struct skb_shared_info *)(skb_end_pointer(SKB)))
- 
- /**
-+ * __skb_get_optional - returns pointer to the requested structure
-+ *
-+ * @optional:	one of the SKB_FLAGS_OPTIONAL_* constants
-+ *
-+ * The caller must check that the structure is actually in the skb.
-+ */
-+extern void *__skb_get_optional(struct sk_buff *skb, int optional);
-+
-+static inline struct skb_shared_hwtstamps *skb_hwtstamps(struct sk_buff *skb)
+diff --git a/include/net/sock.h b/include/net/sock.h
+index 36807e4..6cb120c 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -948,10 +948,19 @@ extern int			sock_setsockopt(struct socket *sock, int level,
+ extern int			sock_getsockopt(struct socket *sock, int level,
+ 						int op, char __user *optval, 
+ 						int __user *optlen);
+-extern struct sk_buff 		*sock_alloc_send_skb(struct sock *sk,
+-						     unsigned long size,
+-						     int noblock,
+-						     int *errcode);
++extern struct sk_buff		*sock_alloc_send_skb_flags(struct sock *sk,
++						unsigned long size,
++						int flags,
++						int *errcode);
++inline static struct sk_buff 	*sock_alloc_send_skb(struct sock *sk,
++						unsigned long size,
++						int noblock,
++						int *errcode)
 +{
-+	return (skb->optional & SKB_FLAGS_OPTIONAL_HWTSTAMPS) ?
-+		__skb_get_optional(skb, SKB_FLAGS_OPTIONAL_HWTSTAMPS) :
-+		NULL;
++	return sock_alloc_send_skb_flags(sk, size,
++					noblock ? SKB_FLAGS_NOBLOCK : 0,
++					errcode);
 +}
-+
-+static inline union skb_shared_tx *skb_tx(struct sk_buff *skb)
-+{
-+	return (skb->optional & SKB_FLAGS_OPTIONAL_TX) ?
-+		__skb_get_optional(skb, SKB_FLAGS_OPTIONAL_TX) :
-+		NULL;
-+}
-+
-+/**
-  *	skb_queue_empty - check if a queue is empty
-  *	@list: queue head
-  *
-@@ -1399,8 +1525,33 @@ static inline struct sk_buff *__dev_alloc_skb(unsigned int length,
- 
- extern struct sk_buff *dev_alloc_skb(unsigned int length);
- 
--extern struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
--		unsigned int length, gfp_t gfp_mask);
-+/**
-+ *	__netdev_alloc_skb_internal - allocate an skbuff for rx on a specific device
-+ *	@dev: network device to receive on
-+ *	@length: length to allocate
-+ *	@flags: SKB_FLAGS_* mask
-+ *	@gfp_mask: get_free_pages mask, passed to alloc_skb
-+ *
-+ *	Allocate a new &sk_buff and assign it a usage count of one. The
-+ *	buffer has unspecified headroom built in. Users should allocate
-+ *	the headroom they think they need without accounting for the
-+ *	built in space. The built in space is used for optimisations.
-+ *
-+ *	%NULL is returned if there is no free memory.
-+ *
-+ *	This function takes the full set of parameters. There are aliases
-+ *	with a smaller number of parameters.
-+ */
-+extern struct sk_buff *__netdev_alloc_skb_internal(struct net_device *dev,
-+						unsigned int length, int flags,
-+						gfp_t gfp_mask);
-+
-+static inline struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
-+						unsigned int length,
-+						gfp_t gfp_mask)
-+{
-+	return __netdev_alloc_skb_internal(dev, length, 0, gfp_mask);
-+}
- 
- /**
-  *	netdev_alloc_skb - allocate an skbuff for rx on a specific device
-@@ -1418,7 +1569,12 @@ extern struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
- static inline struct sk_buff *netdev_alloc_skb(struct net_device *dev,
- 		unsigned int length)
- {
--	return __netdev_alloc_skb(dev, length, GFP_ATOMIC);
-+	return __netdev_alloc_skb_internal(dev, length, 0, GFP_ATOMIC);
-+}
-+static inline struct sk_buff *netdev_alloc_skb_flags(struct net_device *dev,
-+						unsigned int length, int flags)
-+{
-+	return __netdev_alloc_skb_internal(dev, length, flags, GFP_ATOMIC);
- }
- 
- extern struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask);
-@@ -1733,6 +1889,11 @@ static inline void skb_copy_to_linear_data_offset(struct sk_buff *skb,
- 
- extern void skb_init(void);
- 
-+static inline ktime_t skb_get_ktime(const struct sk_buff *skb)
-+{
-+	return skb->tstamp;
-+}
-+
- /**
-  *	skb_get_timestamp - get timestamp from a skb
-  *	@skb: skb to get stamp from
-@@ -1747,6 +1908,11 @@ static inline void skb_get_timestamp(const struct sk_buff *skb, struct timeval *
- 	*stamp = ktime_to_timeval(skb->tstamp);
- }
- 
-+static inline void skb_get_timestampns(const struct sk_buff *skb, struct timespec *stamp)
-+{
-+	*stamp = ktime_to_timespec(skb->tstamp);
-+}
-+
- static inline void __net_timestamp(struct sk_buff *skb)
- {
- 	skb->tstamp = ktime_get_real();
-@@ -1762,6 +1928,22 @@ static inline ktime_t net_invalid_timestamp(void)
- 	return ktime_set(0, 0);
- }
- 
-+/**
-+ * skb_tstamp_tx - queue clone of skb with send time stamps
-+ * @orig_skb:	the original outgoing packet
-+ * @hwtstamps:	hardware time stamps, may be NULL if not available
-+ *
-+ * If the skb has a socket associated, then this function clones the
-+ * skb (thus sharing the actual data and optional structures), stores
-+ * the optional hardware time stamping information (if non NULL) or
-+ * generates a software time stamp (otherwise), then queues the clone
-+ * to the error queue of the socket.  Errors are silently ignored.
-+ *
-+ * May only be called on skbs which have a skb_shared_tx!
-+ */
-+extern void skb_tstamp_tx(struct sk_buff *orig_skb,
-+			struct skb_shared_hwtstamps *hwtstamps);
-+
- extern __sum16 __skb_checksum_complete_head(struct sk_buff *skb, int len);
- extern __sum16 __skb_checksum_complete(struct sk_buff *skb);
- 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index f54cac7..94d95a8 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -1657,12 +1657,25 @@ static int dev_gso_segment(struct sk_buff *skb)
- 	return 0;
- }
- 
-+static void tstamp_tx(struct sk_buff *skb)
-+{
-+	union skb_shared_tx *shtx =
-+		skb_tx(skb);
-+	if (unlikely(shtx &&
-+			shtx->software &&
-+			!shtx->in_progress)) {
-+		skb_tstamp_tx(skb, NULL);
-+	}
-+}
-+
- int dev_hard_start_xmit(struct sk_buff *skb, struct net_device *dev,
- 			struct netdev_queue *txq)
- {
- 	const struct net_device_ops *ops = dev->netdev_ops;
-+	int rc;
- 
- 	prefetch(&dev->netdev_ops->ndo_start_xmit);
-+
- 	if (likely(!skb->next)) {
- 		if (!list_empty(&ptype_all))
- 			dev_queue_xmit_nit(skb, dev);
-@@ -1674,13 +1687,29 @@ int dev_hard_start_xmit(struct sk_buff *skb, struct net_device *dev,
- 				goto gso;
- 		}
- 
--		return ops->ndo_start_xmit(skb, dev);
-+		rc = ops->ndo_start_xmit(skb, dev);
-+		/*
-+		 * TODO: if skb_orphan() was called by
-+		 * dev->hard_start_xmit() (for example, the unmodified
-+		 * igb driver does that; bnx2 doesn't), then
-+		 * skb_tx_software_timestamp() will be unable to send
-+		 * back the time stamp.
-+		 *
-+		 * How can this be prevented? Always create another
-+		 * reference to the socket before calling
-+		 * dev->hard_start_xmit()? Prevent that skb_orphan()
-+		 * does anything in dev->hard_start_xmit() by clearing
-+		 * the skb destructor before the call and restoring it
-+		 * afterwards, then doing the skb_orphan() ourselves?
-+		 */
-+		if (likely(!rc))
-+			tstamp_tx(skb);
-+		return rc;
- 	}
- 
- gso:
- 	do {
- 		struct sk_buff *nskb = skb->next;
--		int rc;
- 
- 		skb->next = nskb->next;
- 		nskb->next = NULL;
-@@ -1690,6 +1719,7 @@ gso:
- 			skb->next = nskb;
- 			return rc;
- 		}
-+		tstamp_tx(skb);
- 		if (unlikely(netif_tx_queue_stopped(txq) && skb->next))
- 			return NETDEV_TX_BUSY;
- 	} while (skb->next);
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index b1f6287..6f5fcc7 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -55,6 +55,7 @@
- #include <linux/rtnetlink.h>
- #include <linux/init.h>
- #include <linux/scatterlist.h>
-+#include <linux/errqueue.h>
- 
- #include <net/protocol.h>
- #include <net/dst.h>
-@@ -155,6 +156,49 @@ void skb_truesize_bug(struct sk_buff *skb)
- }
- EXPORT_SYMBOL(skb_truesize_bug);
- 
-+/*
-+ * The size of each struct that corresponds to a SKB_FLAGS_OPTIONAL_*
-+ * flag.
-+ */
-+static const unsigned int skb_optional_sizes[] =
-+{
-+	/*
-+	 * hwtstamps and tx are special: the space allocated for tx
-+	 * is reused for hwtstamps in skb_tstamp_tx(). This avoids copying
-+	 * the complete packet data.
-+	 *
-+	 * max() cannot be used here because it contains a code block,
-+	 * which gcc doesn't accept.
-+	 */
-+#define MAX_SHARED_TIMESTAMPING ((sizeof(struct skb_shared_hwtstamps) > \
-+	sizeof(union skb_shared_tx)) ? \
-+	sizeof(struct skb_shared_hwtstamps) : \
-+	sizeof(union skb_shared_tx))
-+
-+	MAX_SHARED_TIMESTAMPING,
-+	MAX_SHARED_TIMESTAMPING
-+};
-+
-+void *__skb_get_optional(struct sk_buff *skb, int optional)
-+{
-+	unsigned int offset = (unsigned int)(skb_end_pointer(skb) - skb->head +
-+					sizeof(struct skb_shared_info));
-+	int i = 0;
-+
-+	while(1) {
-+		if (skb->optional & (1 << i)) {
-+			unsigned int struct_size = skb_optional_sizes[i];
-+			offset = (offset + struct_size - 1) & ~(struct_size - 1);
-+			if ((1 << i) == optional)
-+				break;
-+			offset += struct_size;
-+		}
-+		i++;
-+	}
-+	return skb->head + offset;
-+}
-+EXPORT_SYMBOL(__skb_get_optional);
-+
- /* 	Allocate a new skbuff. We do this ourselves so we can fill in a few
-  *	'private' fields and also do memory statistics to find all the
-  *	[BEEP] leaks.
-@@ -162,9 +206,10 @@ EXPORT_SYMBOL(skb_truesize_bug);
+ extern void *sock_kmalloc(struct sock *sk, int size,
+ 			  gfp_t priority);
+ extern void sock_kfree_s(struct sock *sk, void *mem, int size);
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 35b4f4c..64f959e 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -1304,10 +1304,9 @@ static long sock_wait_for_wmem(struct sock * sk, long timeo)
+  *	Generic send/receive buffer handlers
   */
  
- /**
-- *	__alloc_skb	-	allocate a network buffer
-+ *	__alloc_skb_flags	-	allocate a network buffer
-  *	@size: size to allocate
-  *	@gfp_mask: allocation mask
-+ *	@flags: SKB_FLAGS_* mask
-  *	@fclone: allocate from fclone cache instead of head cache
-  *		and allocate a cloned (child) skb
-  *	@node: numa node to allocate memory on
-@@ -176,13 +221,16 @@ EXPORT_SYMBOL(skb_truesize_bug);
-  *	Buffers may only be allocated from interrupts using a @gfp_mask of
-  *	%GFP_ATOMIC.
-  */
--struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
--			    int fclone, int node)
-+struct sk_buff *__alloc_skb_flags(unsigned int size, gfp_t gfp_mask,
-+				int flags, int node)
+-static struct sk_buff *sock_alloc_send_pskb(struct sock *sk,
++struct sk_buff *sock_alloc_send_skb_flags(struct sock *sk,
+ 					    unsigned long header_len,
+-					    unsigned long data_len,
+-					    int noblock, int *errcode)
++					    int flags, int *errcode)
  {
- 	struct kmem_cache *cache;
- 	struct skb_shared_info *shinfo;
  	struct sk_buff *skb;
- 	u8 *data;
-+	int fclone = flags & SKB_FLAGS_CLONE;
-+	unsigned int total_size;
-+	int i;
+ 	gfp_t gfp_mask;
+@@ -1318,7 +1317,9 @@ static struct sk_buff *sock_alloc_send_pskb(struct sock *sk,
+ 	if (gfp_mask & __GFP_WAIT)
+ 		gfp_mask |= __GFP_REPEAT;
  
- 	cache = fclone ? skbuff_fclone_cache : skbuff_head_cache;
+-	timeo = sock_sndtimeo(sk, noblock);
++	timeo = sock_sndtimeo(sk, 
++			(flags & SKB_FLAGS_NOBLOCK) ?
++			MSG_DONTWAIT : 0);
+ 	while (1) {
+ 		err = sock_error(sk);
+ 		if (err != 0)
+@@ -1329,39 +1330,8 @@ static struct sk_buff *sock_alloc_send_pskb(struct sock *sk,
+ 			goto failure;
  
-@@ -192,7 +240,15 @@ struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
- 		goto out;
- 
- 	size = SKB_DATA_ALIGN(size);
--	data = kmalloc_node_track_caller(size + sizeof(struct skb_shared_info),
-+	total_size = size + sizeof(struct skb_shared_info);
-+	for (i = 0; i < SKB_FLAGS_OPTIONAL_NUM; i++) {
-+		if (flags & (1 << i)) {
-+			unsigned int struct_size = skb_optional_sizes[i];
-+			total_size = (total_size + struct_size - 1) & ~(struct_size - 1);
-+			total_size += struct_size;
-+		}
-+	}
-+	data = kmalloc_node_track_caller(total_size,
- 			gfp_mask, node);
- 	if (!data)
- 		goto nodata;
-@@ -228,6 +284,8 @@ struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
- 
- 		child->fclone = SKB_FCLONE_UNAVAILABLE;
- 	}
-+	skb->optional = flags;
-+
- out:
- 	return skb;
- nodata:
-@@ -236,26 +294,14 @@ nodata:
- 	goto out;
+ 		if (atomic_read(&sk->sk_wmem_alloc) < sk->sk_sndbuf) {
+-			skb = alloc_skb(header_len, gfp_mask);
++			skb = __alloc_skb_flags(header_len, gfp_mask, flags, -1);
+ 			if (skb) {
+-				int npages;
+-				int i;
+-
+-				/* No pages, we're done... */
+-				if (!data_len)
+-					break;
+-
+-				npages = (data_len + (PAGE_SIZE - 1)) >> PAGE_SHIFT;
+-				skb->truesize += data_len;
+-				skb_shinfo(skb)->nr_frags = npages;
+-				for (i = 0; i < npages; i++) {
+-					struct page *page;
+-					skb_frag_t *frag;
+-
+-					page = alloc_pages(sk->sk_allocation, 0);
+-					if (!page) {
+-						err = -ENOBUFS;
+-						skb_shinfo(skb)->nr_frags = i;
+-						kfree_skb(skb);
+-						goto failure;
+-					}
+-
+-					frag = &skb_shinfo(skb)->frags[i];
+-					frag->page = page;
+-					frag->page_offset = 0;
+-					frag->size = (data_len >= PAGE_SIZE ?
+-						      PAGE_SIZE :
+-						      data_len);
+-					data_len -= PAGE_SIZE;
+-				}
+-
+ 				/* Full success... */
+ 				break;
+ 			}
+@@ -1388,12 +1358,6 @@ failure:
+ 	return NULL;
  }
  
--/**
-- *	__netdev_alloc_skb - allocate an skbuff for rx on a specific device
-- *	@dev: network device to receive on
-- *	@length: length to allocate
-- *	@gfp_mask: get_free_pages mask, passed to alloc_skb
-- *
-- *	Allocate a new &sk_buff and assign it a usage count of one. The
-- *	buffer has unspecified headroom built in. Users should allocate
-- *	the headroom they think they need without accounting for the
-- *	built in space. The built in space is used for optimisations.
-- *
-- *	%NULL is returned if there is no free memory.
-- */
--struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
--		unsigned int length, gfp_t gfp_mask)
-+struct sk_buff *__netdev_alloc_skb_internal(struct net_device *dev,
-+				unsigned int length, int flags,
-+				gfp_t gfp_mask)
+-struct sk_buff *sock_alloc_send_skb(struct sock *sk, unsigned long size,
+-				    int noblock, int *errcode)
+-{
+-	return sock_alloc_send_pskb(sk, size, 0, noblock, errcode);
+-}
+-
+ static void __lock_sock(struct sock *sk)
  {
- 	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
- 	struct sk_buff *skb;
- 
--	skb = __alloc_skb(length + NET_SKB_PAD, gfp_mask, 0, node);
-+	skb = __alloc_skb_flags(length + NET_SKB_PAD, gfp_mask, flags, node);
- 	if (likely(skb)) {
- 		skb_reserve(skb, NET_SKB_PAD);
- 		skb->dev = dev;
-@@ -548,6 +594,7 @@ static struct sk_buff *__skb_clone(struct sk_buff *n, struct sk_buff *skb)
- 	n->cloned = 1;
- 	n->nohdr = 0;
- 	n->destructor = NULL;
-+	C(optional);
- 	C(iif);
- 	C(tail);
- 	C(end);
-@@ -2743,6 +2790,54 @@ int skb_cow_data(struct sk_buff *skb, int tailbits, struct sk_buff **trailer)
- 	return elt;
- }
- 
-+void skb_tstamp_tx(struct sk_buff *orig_skb,
-+		struct skb_shared_hwtstamps *hwtstamps)
-+{
-+	struct sock *sk = orig_skb->sk;
-+	struct sock_exterr_skb *serr;
-+	struct sk_buff *skb;
-+	int err = -ENOMEM;
-+	union skb_shared_tx *shtx =
-+		skb_tx(orig_skb);
-+
-+	if (!sk)
-+		return;
-+
-+	skb = skb_clone(orig_skb, GFP_ATOMIC);
-+	if (!skb)
-+		return;
-+
-+	if (hwtstamps) {
-+		/*
-+		 * reuse the existing space for time stamping
-+		 * instructions for storing the results
-+		 */
-+		struct skb_shared_hwtstamps *shhwtstamps =
-+			(struct skb_shared_hwtstamps *)shtx;
-+		*shhwtstamps = *hwtstamps;
-+		skb->optional = (skb->optional &
-+				~SKB_FLAGS_OPTIONAL_TX) |
-+			SKB_FLAGS_OPTIONAL_HWTSTAMPS;
-+	} else {
-+		/*
-+		 * no hardware time stamps available,
-+		 * so keep the skb_shared_tx and only
-+		 * store software time stamp
-+		 */
-+		skb->tstamp = ktime_get_real();
-+	}
-+
-+	serr = SKB_EXT_ERR(skb);
-+	memset(serr, 0, sizeof(*serr));
-+	serr->ee.ee_errno = ENOMSG;
-+	serr->ee.ee_origin = SO_EE_ORIGIN_TIMESTAMPING;
-+	err = sock_queue_err_skb(sk, skb);
-+	if (err)
-+		kfree_skb(skb);
-+}
-+EXPORT_SYMBOL_GPL(skb_tstamp_tx);
-+
-+
- /**
-  * skb_partial_csum_set - set up and verify partial csum values for packet
-  * @skb: the skb to set
-@@ -2782,8 +2877,8 @@ EXPORT_SYMBOL(___pskb_trim);
- EXPORT_SYMBOL(__kfree_skb);
- EXPORT_SYMBOL(kfree_skb);
- EXPORT_SYMBOL(__pskb_pull_tail);
--EXPORT_SYMBOL(__alloc_skb);
--EXPORT_SYMBOL(__netdev_alloc_skb);
-+EXPORT_SYMBOL(__alloc_skb_flags);
-+EXPORT_SYMBOL(__netdev_alloc_skb_internal);
- EXPORT_SYMBOL(pskb_copy);
- EXPORT_SYMBOL(pskb_expand_head);
- EXPORT_SYMBOL(skb_checksum);
+ 	DEFINE_WAIT(wait);
+@@ -2327,7 +2291,7 @@ subsys_initcall(proto_init);
+ EXPORT_SYMBOL(sk_alloc);
+ EXPORT_SYMBOL(sk_free);
+ EXPORT_SYMBOL(sk_send_sigurg);
+-EXPORT_SYMBOL(sock_alloc_send_skb);
++EXPORT_SYMBOL(sock_alloc_send_skb_flags);
+ EXPORT_SYMBOL(sock_init_data);
+ EXPORT_SYMBOL(sock_kfree_s);
+ EXPORT_SYMBOL(sock_kmalloc);
 -- 
 1.5.5.3
 
