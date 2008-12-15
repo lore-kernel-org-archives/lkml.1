@@ -1,269 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752626AbYLOAbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752615AbYLOAhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752626AbYLOAbb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Dec 2008 19:31:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbYLOAbV
+	id S1752615AbYLOAhm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Dec 2008 19:37:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYLOAhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Dec 2008 19:31:21 -0500
-Received: from ozlabs.org ([203.10.76.45]:46621 "EHLO ozlabs.org"
+	Sun, 14 Dec 2008 19:37:32 -0500
+Received: from ozlabs.org ([203.10.76.45]:45941 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751606AbYLOAbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Dec 2008 19:31:20 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: lguest@ozlabs.org
-Subject: Re: [Lguest] lguest, virtio_blk, id is not a head!
-Date: Mon, 15 Dec 2008 11:01:08 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Andre Grueneberg <list.lguest@grueneberg.de>, linux-kernel@vger.kernel.org
-References: <20081212194728.GE29143@leela.home.grueneberg.de>
-In-Reply-To: <20081212194728.GE29143@leela.home.grueneberg.de>
+	id S1750961AbYLOAhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Dec 2008 19:37:32 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812151101.08670.rusty@rustcorp.com.au>
+Message-ID: <18757.42682.109305.676647@drongo.ozlabs.ibm.com>
+Date: Mon, 15 Dec 2008 11:37:14 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: eranian@gmail.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Vince Weaver <vince@deater.net>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [patch] Performance Counters for Linux, v3
+In-Reply-To: <20081214231332.GA26942@elte.hu>
+References: <20081211155230.GA4230@elte.hu>
+	<Pine.LNX.4.64.0812111247510.22556@pianoman.cluster.toy>
+	<1229070345.12883.12.camel@twins>
+	<7c86c4470812120059s7f8e64a6h91ebeadbf938858d@mail.gmail.com>
+	<1229073834.12883.41.camel@twins>
+	<7c86c4470812120942x607a74f7w9f823adecbd73b85@mail.gmail.com>
+	<7c86c4470812121001i765d663bq6db3080b633a1eef@mail.gmail.com>
+	<20081214231332.GA26942@elte.hu>
+X-Mailer: VM 8.0.11 under Emacs 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 December 2008 06:17:28 Andre Grueneberg wrote:
-> Lately I upgraded my host and guest from kernel 2.6.25 (Debian) to
-> vanilla 2.6.27.8. I have two virtual machines and in both I recognised
-> the same issue after a while.
+Ingo Molnar writes:
+
+> * stephane eranian <eranian@googlemail.com> wrote:
 > 
-> After running for some hours the first guest showed the following
-> message on the console:
-> virtio_blk virtio1: id 1 is not a head!
+> > Hi,
+> > 
+> > Given the level of abstractions you are using for the API, and given 
+> > your argument that the kernel can do the HW resource scheduling better 
+> > than anybody else.
+> > 
+> > What happens in the following test case:
+> > 
+> >    - 2-way system (cpu0, cpu1)
+> > 
+> >    - on cpu0, two processes P1, P2, each self-monitoring and counting event E1.
+> >      Event E1 can only be measured on counter C1.
+> > 
+> >    - on cpu1, there is a cpu-wide session, monitoring event E1, thus using C1
+> > 
+> >    - the scheduler decides to migrate P1 onto CPU1. You now have a
+> >      conflict on C1.
+> > 
+> > How is this managed?
+> 
+> If there's a single unit of sharable resource [such as an event counter, 
+> or a physical CPU], then there's just three main possibilities: either 
+> user 1 gets it all, or user 2 gets it all, or they share it.
+> 
+> We've implemented the essence of these variants, with sharing the resource 
+> being the sane default, and with the sysadmin also having a configuration 
+> vector to reserve the resource to himself permanently. (There could be 
+> more variations of this.)
+> 
+> What is your point?
 
-Hi Andre,
+Note that Stephane said *counting* event E1.
 
-   This is interesting.  There hasn't been a great deal of change between
-those versions on the lguest side.  This sounds like a race, and the only
-thing I can see which would have introduced this is the change below.
+One of the important things about counting (as opposed to sampling) is
+that it matters whether or not the event is being counted the whole
+time or only part of the time.  Thus it puts constraints on counter
+scheduling and reporting that don't apply for sampling.
 
-You can apply this with patch -R (a bit of fuzz, but should be fine), then
-see if the problem goes away?
+In other words, if I'm counting an event, I want it to be counted all
+the time (i.e. whenever the task is executing, for a per-task counter,
+or continuously for a per-cpu counter).  If that causes conflicts and
+the kernel decides not to count the event for part of the time, that
+is very much second-best, and I absolutely need to know that that
+happened, and also when the kernel started and stopped counting the
+event (so I can scale the result to get some idea what the result
+would have been if it had been counted the whole time).
 
-Thanks,
-Rusty.
+Now, I haven't digested V4 yet, so you might have already implemented
+something like that.  Have you? :)
 
-commit 8c79873da0d2bedf4ad6b868c54e426bb0a2fe38
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Tue Jul 29 09:58:38 2008 -0500
-
-    lguest: turn Waker into a thread, not a process
-    
-    lguest uses a Waker process to break it out of the kernel (ie.
-    actually running the guest) when file descriptor needs attention.
-    
-    Changing this from a process to a thread somewhat simplifies things:
-    it can directly access the fd_set of things to watch.  More
-    importantly, it means that the Waker can see Guest memory correctly,
-    so /dev/vring file descriptors will work as anticipated (the
-    alternative is to actually mmap MAP_SHARED, but you can't do that with
-    /dev/zero).
-    
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff --git a/Documentation/lguest/lguest.c b/Documentation/lguest/lguest.c
-index f9bba2d..b88b0ea 100644
---- a/Documentation/lguest/lguest.c
-+++ b/Documentation/lguest/lguest.c
-@@ -76,8 +76,12 @@ static bool verbose;
- 	do { if (verbose) printf(args); } while(0)
- /*:*/
- 
--/* The pipe to send commands to the waker process */
--static int waker_fd;
-+/* File descriptors for the Waker. */
-+struct {
-+	int pipe[2];
-+	int lguest_fd;
-+} waker_fds;
-+
- /* The pointer to the start of guest memory. */
- static void *guest_base;
- /* The maximum guest physical address allowed, and maximum possible. */
-@@ -579,69 +583,64 @@ static void add_device_fd(int fd)
-  * watch, but handing a file descriptor mask through to the kernel is fairly
-  * icky.
-  *
-- * Instead, we fork off a process which watches the file descriptors and writes
-+ * Instead, we clone off a thread which watches the file descriptors and writes
-  * the LHREQ_BREAK command to the /dev/lguest file descriptor to tell the Host
-  * stop running the Guest.  This causes the Launcher to return from the
-  * /dev/lguest read with -EAGAIN, where it will write to /dev/lguest to reset
-  * the LHREQ_BREAK and wake us up again.
-  *
-  * This, of course, is merely a different *kind* of icky.
-+ *
-+ * Given my well-known antipathy to threads, I'd prefer to use processes.  But
-+ * it's easier to share Guest memory with threads, and trivial to share the
-+ * devices.infds as the Launcher changes it.
-  */
--static void wake_parent(int pipefd, int lguest_fd)
-+static int waker(void *unused)
- {
--	/* Add the pipe from the Launcher to the fdset in the device_list, so
--	 * we watch it, too. */
--	add_device_fd(pipefd);
-+	/* Close the write end of the pipe: only the Launcher has it open. */
-+	close(waker_fds.pipe[1]);
- 
- 	for (;;) {
- 		fd_set rfds = devices.infds;
- 		unsigned long args[] = { LHREQ_BREAK, 1 };
-+		unsigned int maxfd = devices.max_infd;
-+
-+		/* We also listen to the pipe from the Launcher. */
-+		FD_SET(waker_fds.pipe[0], &rfds);
-+		if (waker_fds.pipe[0] > maxfd)
-+			maxfd = waker_fds.pipe[0];
- 
- 		/* Wait until input is ready from one of the devices. */
--		select(devices.max_infd+1, &rfds, NULL, NULL, NULL);
--		/* Is it a message from the Launcher? */
--		if (FD_ISSET(pipefd, &rfds)) {
--			int fd;
--			/* If read() returns 0, it means the Launcher has
--			 * exited.  We silently follow. */
--			if (read(pipefd, &fd, sizeof(fd)) == 0)
--				exit(0);
--			/* Otherwise it's telling us to change what file
--			 * descriptors we're to listen to.  Positive means
--			 * listen to a new one, negative means stop
--			 * listening. */
--			if (fd >= 0)
--				FD_SET(fd, &devices.infds);
--			else
--				FD_CLR(-fd - 1, &devices.infds);
--		} else /* Send LHREQ_BREAK command. */
--			pwrite(lguest_fd, args, sizeof(args), cpu_id);
-+		select(maxfd+1, &rfds, NULL, NULL, NULL);
-+
-+		/* Message from Launcher? */
-+		if (FD_ISSET(waker_fds.pipe[0], &rfds)) {
-+			char c;
-+			/* If this fails, then assume Launcher has exited.
-+			 * Don't do anything on exit: we're just a thread! */
-+			if (read(waker_fds.pipe[0], &c, 1) != 1)
-+				_exit(0);
-+			continue;
-+		}
-+
-+		/* Send LHREQ_BREAK command to snap the Launcher out of it. */
-+		pwrite(waker_fds.lguest_fd, args, sizeof(args), cpu_id);
- 	}
-+	return 0;
- }
- 
- /* This routine just sets up a pipe to the Waker process. */
--static int setup_waker(int lguest_fd)
--{
--	int pipefd[2], child;
--
--	/* We create a pipe to talk to the Waker, and also so it knows when the
--	 * Launcher dies (and closes pipe). */
--	pipe(pipefd);
--	child = fork();
--	if (child == -1)
--		err(1, "forking");
--
--	if (child == 0) {
--		/* We are the Waker: close the "writing" end of our copy of the
--		 * pipe and start waiting for input. */
--		close(pipefd[1]);
--		wake_parent(pipefd[0], lguest_fd);
--	}
--	/* Close the reading end of our copy of the pipe. */
--	close(pipefd[0]);
-+static void setup_waker(int lguest_fd)
-+{
-+	/* This pipe is closed when Launcher dies, telling Waker. */
-+	if (pipe(waker_fds.pipe) != 0)
-+		err(1, "Creating pipe for Waker");
- 
--	/* Here is the fd used to talk to the waker. */
--	return pipefd[1];
-+	/* Waker also needs to know the lguest fd */
-+	waker_fds.lguest_fd = lguest_fd;
-+
-+	if (clone(waker, malloc(4096) + 4096, CLONE_VM | SIGCHLD, NULL) == -1)
-+		err(1, "Creating Waker");
- }
- 
- /*
-@@ -863,8 +862,8 @@ static bool handle_console_input(int fd, struct device *dev)
- 				unsigned long args[] = { LHREQ_BREAK, 0 };
- 				/* Close the fd so Waker will know it has to
- 				 * exit. */
--				close(waker_fd);
--				/* Just in case waker is blocked in BREAK, send
-+				close(waker_fds.pipe[1]);
-+				/* Just in case Waker is blocked in BREAK, send
- 				 * unbreak now. */
- 				write(fd, args, sizeof(args));
- 				exit(2);
-@@ -996,8 +995,8 @@ static bool handle_tun_input(int fd, struct device *dev)
- static void enable_fd(int fd, struct virtqueue *vq, bool timeout)
- {
- 	add_device_fd(vq->dev->fd);
--	/* Tell waker to listen to it again */
--	write(waker_fd, &vq->dev->fd, sizeof(vq->dev->fd));
-+	/* Snap the Waker out of its select loop. */
-+	write(waker_fds.pipe[1], "", 1);
- }
- 
- static void net_enable_fd(int fd, struct virtqueue *vq, bool timeout)
-@@ -1134,7 +1133,6 @@ static void handle_input(int fd)
- 		 * descriptors and a method of handling them.  */
- 		for (i = devices.dev; i; i = i->next) {
- 			if (i->handle_input && FD_ISSET(i->fd, &fds)) {
--				int dev_fd;
- 				if (i->handle_input(fd, i))
- 					continue;
- 
-@@ -1144,11 +1142,6 @@ static void handle_input(int fd)
- 				 * buffers to deliver into.  Console also uses
- 				 * it when it discovers that stdin is closed. */
- 				FD_CLR(i->fd, &devices.infds);
--				/* Tell waker to ignore it too, by sending a
--				 * negative fd number (-1, since 0 is a valid
--				 * FD number). */
--				dev_fd = -i->fd - 1;
--				write(waker_fd, &dev_fd, sizeof(dev_fd));
- 			}
- 		}
- 
-@@ -1880,11 +1873,12 @@ static void __attribute__((noreturn)) restart_guest(void)
- {
- 	unsigned int i;
- 
--	/* Closing pipes causes the Waker thread and io_threads to die, and
--	 * closing /dev/lguest cleans up the Guest.  Since we don't track all
--	 * open fds, we simply close everything beyond stderr. */
-+	/* Since we don't track all open fds, we simply close everything beyond
-+	 * stderr. */
- 	for (i = 3; i < FD_SETSIZE; i++)
- 		close(i);
-+
-+	/* The exec automatically gets rid of the I/O and Waker threads. */
- 	execv(main_args[0], main_args);
- 	err(1, "Could not exec %s", main_args[0]);
- }
-@@ -2085,10 +2079,10 @@ int main(int argc, char *argv[])
- 	 * /dev/lguest file descriptor. */
- 	lguest_fd = tell_kernel(pgdir, start);
- 
--	/* We fork off a child process, which wakes the Launcher whenever one
--	 * of the input file descriptors needs attention.  We call this the
--	 * Waker, and we'll cover it in a moment. */
--	waker_fd = setup_waker(lguest_fd);
-+	/* We clone off a thread, which wakes the Launcher whenever one of the
-+	 * input file descriptors needs attention.  We call this the Waker, and
-+	 * we'll cover it in a moment. */
-+	setup_waker(lguest_fd);
- 
- 	/* Finally, run the Guest.  This doesn't return. */
- 	run_guest(lguest_fd);
+Paul.
