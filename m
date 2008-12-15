@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYLOQjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYLOQoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486AbYLOQjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 11:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbYLOQjH
+	id S1755548AbYLOQoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 11:44:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYLOQoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 11:39:07 -0500
-Received: from golem.dinale.com ([82.208.35.193]:44016 "EHLO
-	bobrock.dinale.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753548AbYLOQjH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 11:39:07 -0500
-X-Greylist: delayed 2060 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Dec 2008 11:39:06 EST
-Message-ID: <49468024.1020700@dei.unipd.it>
-Date: Mon, 15 Dec 2008 17:04:52 +0100
-From: Ottavio Campana <ottavio.campana@dei.unipd.it>
-User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
-MIME-Version: 1.0
+	Mon, 15 Dec 2008 11:44:07 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48612 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753633AbYLOQoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 11:44:07 -0500
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH 0/3] send notification events about exec
 To: linux-kernel@vger.kernel.org
-Subject: Oops when trying to create more than 16000 timers
-Content-Type: text/plain; charset=ISO-8859-15
+Cc: hch@infradead.org, akpm@linux-foundation.org
+Date: Mon, 15 Dec 2008 11:44:03 -0500
+Message-ID: <20081215164016.2018.4813.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+The following series does two things.  First it pushes inotify and dnotify
+down into subdirectores inside fs/notify (help clean up fs.)  It then adds a
+new fsnotify hook for exec functions to call into and uses that new hookd to
+send notifications to inotify and dnotify.
 
-I'm sorry if it is not the best place to ask, but I haven't find any answer.
+---
 
-I am currently developing a software that needs approx 60k timers. I
-currently use timer_create and all the relative functions to manage timers.
+Eric Paris (3):
+      fsnotify: use the new open-exec hook for inotify and dnotify
+      fsnotify: sys_execve and sys_uselib do not call into fsnotify
+      filesystem notification: create fs/notify to contain all fs notification
 
-I've noticed that after having created 16039 timers I always get an oops
-from the kernel, which are always of the same kind:
 
-Dec 15 15:20:00 evolution kernel: [601680.417064] BUG: unable to handle
-kernel NULL pointer dereference at 0000000000000040 .
-
-I tried looking at kernel/posix-timers.c and I discovered that posix
-timers are kept in slab memory. By monitoring the my program I can see
-that in /proc/slabinfo the number of timers increases till 16039, when I
-get the oops and no more timers are created.
-
-In /prob/slabinfo I have
-posix_timers_cache 0 0 192 20 1 : tunables 120 60  8 : slabdata 0 0 0
-
-If I try to increase tunables to 2400 120 16 the maximum number of posix
-timers that I can create does not change.
-
-How can I tune the kernel so that it supports 60k or more timers?
-
-Thank for your help,
-
-Ottavio
-
--- 
-Ottavio Campana
-Telecommunication Engineer
-
-Lab. Immagini
-Dept. of Information Engineering
-University of Padova
-
-Via Gradenigo 6/B
-35131 Padova
-Italy
-
-phone: +39 049 8277641 fax:   +39 049 8277699
-e-mail: ottavio.campana@dei.unipd.it
+ fs/Kconfig                       |   39 --
+ fs/Makefile                      |    5 
+ fs/dnotify.c                     |  194 --------
+ fs/exec.c                        |    5 
+ fs/inotify.c                     |  913 --------------------------------------
+ fs/inotify_user.c                |  778 --------------------------------
+ fs/notify/Kconfig                |    2 
+ fs/notify/Makefile               |    2 
+ fs/notify/dnotify/Kconfig        |   10 
+ fs/notify/dnotify/Makefile       |    1 
+ fs/notify/dnotify/dnotify.c      |  194 ++++++++
+ fs/notify/inotify/Kconfig        |   27 +
+ fs/notify/inotify/Makefile       |    2 
+ fs/notify/inotify/inotify.c      |  913 ++++++++++++++++++++++++++++++++++++++
+ fs/notify/inotify/inotify_user.c |  778 ++++++++++++++++++++++++++++++++
+ include/linux/fsnotify.h         |   13 +
+ 16 files changed, 1949 insertions(+), 1927 deletions(-)
+ delete mode 100644 fs/dnotify.c
+ delete mode 100644 fs/inotify.c
+ delete mode 100644 fs/inotify_user.c
+ create mode 100644 fs/notify/Kconfig
+ create mode 100644 fs/notify/Makefile
+ create mode 100644 fs/notify/dnotify/Kconfig
+ create mode 100644 fs/notify/dnotify/Makefile
+ create mode 100644 fs/notify/dnotify/dnotify.c
+ create mode 100644 fs/notify/inotify/Kconfig
+ create mode 100644 fs/notify/inotify/Makefile
+ create mode 100644 fs/notify/inotify/inotify.c
+ create mode 100644 fs/notify/inotify/inotify_user.c
