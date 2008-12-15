@@ -1,93 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbYLOS13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbYLOS3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbYLOS13 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 13:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbYLOS1H
+	id S1756458AbYLOS3Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 13:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbYLOS3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 13:27:07 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:8455 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755851AbYLOS1F convert rfc822-to-8bit (ORCPT
+	Mon, 15 Dec 2008 13:29:16 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:13112 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754002AbYLOS3O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 13:27:05 -0500
-From: "Chen, Justin" <justin.chen@hp.com>
-To: "Chiang, Alexander" <achiang@hp.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: "matthew@wil.cx" <matthew@wil.cx>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Dec 2008 18:26:03 +0000
-Subject: RE: PCI BAR mem resource allocation "regression"
-Thread-Topic: PCI BAR mem resource allocation "regression"
-Thread-Index: AcldiBIvrPJaSDwaTJmS3YaE44GTEgBWKzBA
-Message-ID: <B57D568CB82B0C4B897F9CD9862DE8B733BD4294D0@GVW1097EXB.americas.hpqcorp.net>
-References: <20081213000538.GC9947@ldl.fc.hp.com>
- <alpine.LFD.2.00.0812130901370.3340@localhost.localdomain>
- <20081214010534.GB22302@ldl.fc.hp.com>
-In-Reply-To: <20081214010534.GB22302@ldl.fc.hp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 15 Dec 2008 13:29:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=C1AiYjNIGruJjWr/Q7lvnvz72vqKn7FVQMwcSFSK8cSblZ6tTYMi4WQebH85yzozWR
+         7XbvtgJ+cMRAG9bUUopCVlBa1gBRstLBRl+Zt7VLOoDjjyKyFcLwr0pUGd6I1hAuhQep
+         Hzo6pyu5RkezBL8vZrc+Warf/W2yMxNf+i6po=
+Message-ID: <a4423d670812151029u5458f9b4iaa36316a5f210ff1@mail.gmail.com>
+Date: Mon, 15 Dec 2008 21:29:13 +0300
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, axboe@kernel.dk
+Subject: next-20081215: kernel BUG at block/cfq-iosched.c:1243
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Chiang, Alexander
->
->> Also, is it just the error message, or does it actually affect
->> functionality?
->
->Hm, that is a good question. ;) The particular device I was
->testing with was an infiniband device, and I have never actually
->pushed any traffic over it; just used it to reproduce the error.
->
->I can try and hook the card up to something and push traffic over
->it, but that will have to wait until Monday. Maybe Justin (cc'ed)
->knows, since he was the one who first reported this to me.
+Hi
 
-It affects functionality.  The BAR is not reprogrammed after hotplug.  Below is an example:
-
-Original lspci dump:
-------------------------------
-002b:01:00.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (rev 06)
-        Subsystem: Hewlett-Packard Company: Unknown device 704f
-        Flags: bus master, fast devsel, latency 0, IRQ 61
-        Memory at 00000f7200000000 (32-bit, non-prefetchable) [size=128K]
-        Memory at 00000f7200020000 (32-bit, non-prefetchable) [size=128K]
-        I/O ports at e000 [size=32]
-        Expansion ROM at 00000f7200040000 [disabled] [size=128K]
-        Capabilities: [c8] Power Management version 2
-        Capabilities: [d0] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
-        Capabilities: [e0] #10 [0001]
-
-Mainline lspci after remove/hotplug the device:
-------------------------------------------------------------------
-002b:01:00.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (rev 06)
-        Subsystem: Hewlett-Packard Company: Unknown device 704f
-        Flags: fast devsel, IRQ 61
-        I/O ports at <unassigned> [disabled]
-        Capabilities: [c8] Power Management version 2
-        Capabilities: [d0] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
-        Capabilities: [e0] #10 [0001]
-
-
-Revert lspci after remove/hotplug the device:
----------------------------------------------------------------
-002b:01:00.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet Controller (rev 06)
-        Subsystem: Hewlett-Packard Company: Unknown device 704f
-        Flags: bus master, fast devsel, latency 0, IRQ 61
-        Memory at 00000f7200000000 (32-bit, non-prefetchable) [size=128K]
-        Memory at 00000f7200020000 (32-bit, non-prefetchable) [size=128K]
-        I/O ports at e000 [size=32]
-        Expansion ROM at 00000f7200040000 [disabled] [size=128K]
-        Capabilities: [c8] Power Management version 2
-        Capabilities: [d0] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
-        Capabilities: [e0] #10 [0001]
-
-Thanks,
-Justin
+[   22.857720] scsi_scan_0 used greatest stack depth: 4864 bytes left
+[   22.859221] scsi 1:0:0:0: CD-ROM            HL-DT-ST CD-ROM GCR-8240N 1.10 PQ
+: 0 ANSI: 5
+[   23.077531] ------------[ cut here ]------------
+[   23.080733] kernel BUG at block/cfq-iosched.c:1243!
+[   23.080733] invalid opcode: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+[   23.080733] last sysfs file:
+[   23.080733] CPU 3
+[   23.080733] Modules linked in:
+[   23.080733] Pid: 580, comm: scsi_scan_0 Tainted: G        W  2.6.28-rc8-next-
+20081215 #98
+[   23.080733] RIP: 0010:[<ffffffff80371160>]  [<ffffffff80371160>] cic_free_fun
+c+0x18/0x88
+[   23.080733] RSP: 0018:ffff88007ce9fe40  EFLAGS: 00010246
+[   23.080733] RAX: ffff88007ceb6618 RBX: ffff88007cf1d680 RCX: 0000000000000001
+[   23.080733] RDX: 0000000000000001 RSI: ffff88007cf1d680 RDI: ffff88007cea6000
+[   23.080733] RBP: ffff88007ce9fe60 R08: 0000000000000246 R09: 0000000000000001
+[   23.080733] R10: ffff88007ce9fde0 R11: ffff88007f0489c0 R12: ffff88007cea6000
+[   23.080733] R13: ffff88007ce9ff00 R14: ffff88007cc49568 R15: ffff88007cc49568
+[   23.080733] FS:  0000000000000000(0000) GS:ffff88007f402a28(0000) knlGS:00000
+00000000000
+[   23.080733] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+[   23.080733] CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+[   23.080733] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[   23.080733] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[   23.080733] Process scsi_scan_0 (pid: 580, threadinfo ffff88007ce9e000, task
+ffff88007cc49310)
+[   23.080733] Stack:
+[   23.080733]  ffff88007cf1d6f8 ffff88007cea6000 ffff88007ce9ff00 ffff88007cc49
+568
+[   23.080733]  ffff88007ce9fe80 ffffffff803711f5 ffff88007cea6000 ffff88007cc49
+310
+[   23.080733]  ffff88007ce9fea0 ffffffff8036c985 ffff88007ce9ff00 ffff88007cea6
+000
+[   23.080733] Call Trace:
+[   23.080733]  [<ffffffff803711f5>] cfq_free_io_context+0x25/0x2f
+[   23.080733]  [<ffffffff8036c985>] put_io_context+0x53/0x72
+[   23.080733]  [<ffffffff8036ca61>] exit_io_context+0x8e/0x95
+[   23.080733]  [<ffffffff8023a679>] do_exit+0x858/0x88f
+[   23.080733]  [<ffffffff8020c901>] child_rip+0x11/0x20
+[   23.080733]  [<ffffffff8020c2c0>] ? restore_args+0x0/0x30
+[   23.080733]  [<ffffffff80249f30>] ? kthread+0x0/0x76
+[   23.080733]  [<ffffffff8020c8f0>] ? child_rip+0x0/0x20
+[   23.080733] Code: c6 75 92 60 80 48 89 cf 31 c0 e8 45 b3 00 00 c9 48 98 c3 55
+ 48 89 e5 41 56 41 55 41 54 49 89 fc 53 48 89 f3 48 83 7e 08 00 75 04 <0f> 0b eb
+ fe 4c 8d 6f 08 4c 89 ef e8 77 40 17 00 48 8b 73 08 49
+[   23.080733] RIP  [<ffffffff80371160>] cic_free_func+0x18/0x88
+[   23.080733]  RSP <ffff88007ce9fe40>
+[   25.744530] ---[ end trace 4eaa2a86a8e2da22 ]---
