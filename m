@@ -1,78 +1,290 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYLPLUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbYLPL2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbYLPLUn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 06:20:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYLPLUf
+	id S1755422AbYLPL2H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 06:28:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbYLPL1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 06:20:35 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37235 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751398AbYLPLUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 06:20:34 -0500
-Date: Tue, 16 Dec 2008 12:20:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>
-Subject: Re: [mmotm and linux-next][PATCH] irq: enclose irq_desc_lock_class
-	in CONFIG_LOCKDEP
-Message-ID: <20081216112019.GE4299@elte.hu>
-References: <20081216170635.DBB8.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081216003428.43d37b6b.akpm@linux-foundation.org> <20081216101827.GB27481@elte.hu> <20081216102340.GA1003@elte.hu> <2f11576a0812160315g3dea988ayfadba2117e172a2c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 16 Dec 2008 06:27:55 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:38791 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752276AbYLPL1y convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 06:27:54 -0500
+Message-Id: <49479EDE.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 16 Dec 2008 11:28:14 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <sam@ravnborg.org>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] strip generated symbols from *.ko
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <2f11576a0812160315g3dea988ayfadba2117e172a2c@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch changes the way __crc_ symbols are being resolved from
+using ld to do so to using the assembler, thus allowing these symbols
+to be marked local (the linker creates then as global ones) and hence
+allow stripping (for modules) or ignoring (for vmlinux) them. While at
+this, also strip other generated symbols during module installation.
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+One potentially debatable point is the handling of the flags passeed
+to gcc when translating the intermediate assembly file into an object:
+passing $(c_flags) unchanged doesn't work as gcc passes --gdwarf2 to
+gas whenever is sees any -g* option, even for -g0, and despite the
+fact that the compiler would have already produced all necessary debug
+info in the C->assembly translation phase. I took the approach of just
+filtering out all -g* options, but an alternative to such negative
+filtering might be to have a positive filter which might, in the ideal
+case allow just all the -Wa,* options to pass through.
 
-> Hi!
-> 
-> >> > No, lockdep.h (which we forgot to include) already handles that:
-> >> >
-> >> > # define lockdep_set_class(lock, key)               do { (void)(key); } while (0)
-> >> >
-> >> > the problem is that the code which references irq_desc_lock_class is
-> >> > inside #ifdef CONFIG_SPARSE_IRQ, so this is a better fix:
-> >>
-> >> agreed that this is the better fix - applied to tip/irq/sparseirq,
-> >> thanks!
-> >
-> > actually, this breaks the build on !SPARSEIRQ because we will use that 
-> > class in the non-sparseirq case. So we've converted a build warning to 
-> > a build failure ;-)
-> 
-> Please give me your .config and tell me your arch. my ia64 box (ia64 is 
-> !SPARSEIRQ) can build the akpm patch.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-The expected build failure is obvious from reading the code:
+---
+ Makefile                    |   16 ++++++------
+ scripts/Makefile.build      |   55 ++++++++++++++++++++++++++++----------------
+ scripts/Makefile.modinst    |    3 +-
+ scripts/genksyms/genksyms.c |   21 ++++++++++++----
+ scripts/mksysmap            |    7 +----
+ scripts/strip-symbols       |   22 +++++++++++++++++
+ 6 files changed, 85 insertions(+), 39 deletions(-)
 
- #ifdef CONFIG_TRACE_IRQFLAGS
- void early_init_irq_lock_class(void)
+--- 2.6.28-rc8-strip.orig/Makefile
++++ 2.6.28-rc8-strip/Makefile
+@@ -601,19 +601,19 @@ MODLIB	= $(INSTALL_MOD_PATH)/lib/modules
+ export MODLIB
+ 
+ #
+-#  INSTALL_MOD_STRIP, if defined, will cause modules to be
+-#  stripped after they are installed.  If INSTALL_MOD_STRIP is '1', then
+-#  the default option --strip-debug will be used.  Otherwise,
+-#  INSTALL_MOD_STRIP will used as the options to the strip command.
+-
++# INSTALL_MOD_STRIP, if defined, will cause modules to be stripped while
++# they get installed.  If INSTALL_MOD_STRIP is '1', then the default
++# options (see below) will be used.  Otherwise, INSTALL_MOD_STRIP will
++# be used as the option(s) to the objcopy command.
+ ifdef INSTALL_MOD_STRIP
+ ifeq ($(INSTALL_MOD_STRIP),1)
+-mod_strip_cmd = $(STRIP) --strip-debug
++mod_strip_cmd = $(OBJCOPY) --strip-debug --strip-symbols \
++		$(srctree)/scripts/strip-symbols --wildcard
+ else
+-mod_strip_cmd = $(STRIP) $(INSTALL_MOD_STRIP)
++mod_strip_cmd = $(OBJCOPY) $(INSTALL_MOD_STRIP)
+ endif # INSTALL_MOD_STRIP=1
+ else
+-mod_strip_cmd = true
++mod_strip_cmd = false
+ endif # INSTALL_MOD_STRIP
+ export mod_strip_cmd
+ 
+--- 2.6.28-rc8-strip.orig/scripts/Makefile.build
++++ 2.6.28-rc8-strip/scripts/Makefile.build
+@@ -171,30 +171,42 @@ cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $
+ 
+ else
+ # When module versioning is enabled the following steps are executed:
+-# o compile a .tmp_<file>.o from <file>.c
+-# o if .tmp_<file>.o doesn't contain a __ksymtab version, i.e. does
+-#   not export symbols, we just rename .tmp_<file>.o to <file>.o and
++# o compile a .tmp_<file>.s from <file>.c
++# o if .tmp_<file>.s doesn't contain a __ksymtab version, i.e. does
++#   not export symbols, we just assemble .tmp_<file>.s to <file>.o and
+ #   are done.
+ # o otherwise, we calculate symbol versions using the good old
+ #   genksyms on the preprocessed source and postprocess them in a way
+-#   that they are usable as a linker script
+-# o generate <file>.o from .tmp_<file>.o using the linker to
+-#   replace the unresolved symbols __crc_exported_symbol with
+-#   the actual value of the checksum generated by genksyms
++#   that they are usable as assembly source
++# o assemble <file>.o from .tmp_<file>.s forcing inclusion of directives
++#   defining the actual values of __crc_*, followed by objcopy-ing them
++#   to force these symbols to be local to permit stripping them later.
++s_file = $(@D)/.tmp_$(@F:.o=.s)
++v_file = $(@D)/.tmp_$(@F:.o=.v)
++tmp_o_file = $(@D)/.tmp_$(@F)
++no_g_c_flags = $(filter-out -g%,$(c_flags))
++
++cmd_genksyms =	$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
++	| $(GENKSYMS) -A -a $(ARCH)					\
++		      $(if $(KBUILD_SYMTYPES),-T $(@D)/$(@F:.o=.symtypes))
++
++cmd_cc_o_c = $(CC) $(c_flags) -S -o $(s_file) $<
+ 
+-cmd_cc_o_c = $(CC) $(c_flags) -c -o $(@D)/.tmp_$(@F) $<
+ cmd_modversions =							\
+-	if $(OBJDUMP) -h $(@D)/.tmp_$(@F) | grep -q __ksymtab; then	\
+-		$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
+-		| $(GENKSYMS) $(if $(KBUILD_SYMTYPES),			\
+-			      -T $(@D)/$(@F:.o=.symtypes)) -a $(ARCH)	\
+-		> $(@D)/.tmp_$(@F:.o=.ver);				\
+-									\
+-		$(LD) $(LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 		\
+-			-T $(@D)/.tmp_$(@F:.o=.ver);			\
+-		rm -f $(@D)/.tmp_$(@F) $(@D)/.tmp_$(@F:.o=.ver);	\
++	if grep -q __ksymtab $(s_file); then				\
++		if $(cmd_genksyms) > $(v_file)				\
++		   && $(CC) $(no_g_c_flags) -c -Wa,$(v_file)		\
++			    -o $(tmp_o_file) $(s_file)			\
++		   && $(OBJCOPY) -L '__crc_*' -L '___crc_*' -w		\
++				 $(tmp_o_file) $@;			\
++		then							\
++			: ;						\
++		else							\
++			rm -f $@; exit 1;				\
++		fi;							\
+ 	else								\
+-		mv -f $(@D)/.tmp_$(@F) $@;				\
++		rm -f $(v_file);					\
++		$(CC) $(no_g_c_flags) -c -o $@ $(s_file);		\
+ 	fi;
+ endif
+ 
+@@ -217,7 +229,12 @@ define rule_cc_o_c
+ 	$(cmd_record_mcount)						  \
+ 	scripts/basic/fixdep $(depfile) $@ '$(call make-cmd,cc_o_c)' >    \
+ 	                                              $(dot-target).tmp;  \
+-	rm -f $(depfile);						  \
++	if [ -r $(@D)/.tmp_$(@F:.o=.v) ]; then				  \
++		echo >> $(dot-target).tmp;				  \
++		echo '$@: $(GENKSYMS)' >> $(dot-target).tmp;		  \
++		echo '$(GENKSYMS):: ;' >> $(dot-target).tmp;		  \
++	fi;								  \
++	rm -f $(depfile) $(@D)/.tmp_$(@F:.o=.?);			  \
+ 	mv -f $(dot-target).tmp $(dot-target).cmd
+ endef
+ 
+--- 2.6.28-rc8-strip.orig/scripts/Makefile.modinst
++++ 2.6.28-rc8-strip/scripts/Makefile.modinst
+@@ -17,7 +17,8 @@ __modinst: $(modules)
+ 	@:
+ 
+ quiet_cmd_modules_install = INSTALL $@
+-      cmd_modules_install = mkdir -p $(2); cp $@ $(2) ; $(mod_strip_cmd) $(2)/$(notdir $@)
++      cmd_modules_install = mkdir -p $(2); \
++			    $(mod_strip_cmd) $@ $(2)/$(notdir $@) || cp $@ $(2)
+ 
+ # Modules built outside the kernel source tree go into extra by default
+ INSTALL_MOD_DIR ?= extra
+--- 2.6.28-rc8-strip.orig/scripts/genksyms/genksyms.c
++++ 2.6.28-rc8-strip/scripts/genksyms/genksyms.c
+@@ -42,7 +42,7 @@ static FILE *debugfile;
+ int cur_line = 1;
+ char *cur_filename;
+ 
+-static int flag_debug, flag_dump_defs, flag_dump_types, flag_warnings;
++static int flag_debug, flag_dump_defs, flag_dump_types, flag_warnings, flag_asm;
+ static const char *arch = "";
+ static const char *mod_prefix = "";
+ 
+@@ -415,8 +415,11 @@ void export_symbol(const char *name)
+ 		if (flag_dump_defs)
+ 			fputs(">\n", debugfile);
+ 
+-		/* Used as a linker script. */
+-		printf("%s__crc_%s = 0x%08lx ;\n", mod_prefix, name, crc);
++		/* Used as assembly source or a linker script. */
++		printf(flag_asm
++		       ? ".equiv %s__crc_%s, %#08lx\n"
++		       : "%s__crc_%s = %#08lx ;\n",
++		       mod_prefix, name, crc);
+ 	}
+ }
+ 
+@@ -440,9 +443,10 @@ void error_with_pos(const char *fmt, ...
+ 
+ static void genksyms_usage(void)
  {
- #ifndef CONFIG_SPARSE_IRQ
-         struct irq_desc *desc;
-         int i;
+-	fputs("Usage:\n" "genksyms [-adDTwqhV] > /path/to/.tmp_obj.ver\n" "\n"
++	fputs("Usage:\n" "genksyms [-aAdDTwqhV] > /path/to/.tmp_obj.ver\n" "\n"
+ #ifdef __GNU_LIBRARY__
+ 	      "  -a, --arch            Select architecture\n"
++	      "  -A, --asm             Generate assembly rather than linker script\n"
+ 	      "  -d, --debug           Increment the debug level (repeatable)\n"
+ 	      "  -D, --dump            Dump expanded symbol defs (for debugging only)\n"
+ 	      "  -T, --dump-types file Dump expanded types into file (for debugging only)\n"
+@@ -452,6 +456,7 @@ static void genksyms_usage(void)
+ 	      "  -V, --version         Print the release version\n"
+ #else				/* __GNU_LIBRARY__ */
+ 	      "  -a                    Select architecture\n"
++	      "  -A                    Generate assembly rather than linker script\n"
+ 	      "  -d                    Increment the debug level (repeatable)\n"
+ 	      "  -D                    Dump expanded symbol defs (for debugging only)\n"
+ 	      "  -T file               Dump expanded types into file (for debugging only)\n"
+@@ -471,6 +476,7 @@ int main(int argc, char **argv)
+ #ifdef __GNU_LIBRARY__
+ 	struct option long_opts[] = {
+ 		{"arch", 1, 0, 'a'},
++		{"asm", 0, 0, 'A'},
+ 		{"debug", 0, 0, 'd'},
+ 		{"warnings", 0, 0, 'w'},
+ 		{"quiet", 0, 0, 'q'},
+@@ -481,10 +487,10 @@ int main(int argc, char **argv)
+ 		{0, 0, 0, 0}
+ 	};
+ 
+-	while ((o = getopt_long(argc, argv, "a:dwqVDT:h",
++	while ((o = getopt_long(argc, argv, "a:dwqVADT:h",
+ 				&long_opts[0], NULL)) != EOF)
+ #else				/* __GNU_LIBRARY__ */
+-	while ((o = getopt(argc, argv, "a:dwqVDT:h")) != EOF)
++	while ((o = getopt(argc, argv, "a:dwqVADT:h")) != EOF)
+ #endif				/* __GNU_LIBRARY__ */
+ 		switch (o) {
+ 		case 'a':
+@@ -502,6 +508,9 @@ int main(int argc, char **argv)
+ 		case 'V':
+ 			fputs("genksyms version 2.5.60\n", stderr);
+ 			break;
++		case 'A':
++			flag_asm = 1;
++			break;
+ 		case 'D':
+ 			flag_dump_defs = 1;
+ 			break;
+--- 2.6.28-rc8-strip.orig/scripts/mksysmap
++++ 2.6.28-rc8-strip/scripts/mksysmap
+@@ -37,9 +37,6 @@
+ 
+ # readprofile starts reading symbols when _stext is found, and
+ # continue until it finds a symbol which is not either of 'T', 't',
+-# 'W' or 'w'. __crc_ are 'A' and placed in the middle
+-# so we just ignore them to let readprofile continue to work.
+-# (At least sparc64 has __crc_ in the middle).
+-
+-$NM -n $1 | grep -v '\( [aNUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
++# 'W' or 'w'.
+ 
++$NM -n $1 | grep -v '\( [aNUw] \)\|\( \$[adt]\)' > $2
+--- /dev/null
++++ 2.6.28-rc8-strip/scripts/strip-symbols
+@@ -0,0 +1,22 @@
++<*>
++*.h
++__compound_literal[$.][0-9]*
++__crc_[a-zA-Z_]*
++__exitcall_[a-zA-Z_]*
++__func__[$.][0-9]*
++__FUNCTION__[$.][0-9]*
++gcc[0-9]_compiled[$.]
++__initcall_[a-zA-Z_]*
++__kcrctab_[a-zA-Z_]*
++__kstrtab_[a-zA-Z_]*
++__ksymtab_[a-zA-Z_]*
++__mod_[a-zA-Z_]*[0-9]
++__module_depends
++__param_[a-zA-Z_]*
++__pci_fixup_*PCI_ANY_IDPCI_ANY_ID*
++__pci_fixup_*PCI_ANY_IDPCI_DEVICE_ID_*
++__pci_fixup_*PCI_VENDOR_ID_*PCI_ANY_ID*
++__pci_fixup_*PCI_VENDOR_ID_*PCI_DEVICE_ID_*
++__PRETTY_FUNCTION__[$.][0-9]*
++__setup_[a-zA-Z_]*
++____versions
 
-         for_each_irq_desc(i, desc) {
-                 if (!desc)
-                         continue;
 
-                 lockdep_set_class(&desc->lock, &irq_desc_lock_class);
-
-Note that it's an #ifndef sparseirq, not an #ifdef sparseirq condition.
-
-	Ingo
