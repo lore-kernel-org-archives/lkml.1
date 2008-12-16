@@ -1,85 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbYLPQDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbYLPQFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbYLPQDE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 11:03:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755793AbYLPQCx
+	id S1758230AbYLPQFU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 11:05:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYLPQFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 11:02:53 -0500
-Received: from main.gmane.org ([80.91.229.2]:56484 "EHLO ciao.gmane.org"
+	Tue, 16 Dec 2008 11:05:05 -0500
+Received: from smtp02.uc3m.es ([163.117.176.132]:53074 "EHLO smtp02.uc3m.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754039AbYLPQCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 11:02:52 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: "Brian J. Murrell" <brian@interlinx.bc.ca>
-Subject: Re: suspend/resume fails on second attempt in LNXVIDEO:00
-Date: Tue, 16 Dec 2008 16:02:42 +0000 (UTC)
-Message-ID: <gi8jf1$m5f$5@ger.gmane.org>
-References: <gi247o$iog$1@ger.gmane.org> <200812160002.43427.rjw@sisk.pl>
-	<gi7433$m5f$1@ger.gmane.org> <200812161625.37318.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: d193-213-184.home3.cgocable.net
-User-Agent: Pan/0.132 (Waxed in Black)
-Cc: linux-acpi@vger.kernel.org
+	id S1755600AbYLPQFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 11:05:04 -0500
+From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
+Message-Id: <200812161604.mBGG4qT10889@inv.it.uc3m.es>
+Subject: Re: time_is_after_jiffies misnomer
+In-Reply-To: From (env: ptb) at "Dec 16, 2008 04:17:30 pm"
+To: hannes@cmpxchg.org
+Date: Tue, 16 Dec 2008 17:04:52 +0100 (MET)
+CC: "linux kernel" <linux-kernel@vger.kernel.org>
+X-Anonymously-To: 
+Reply-To: ptb@inv.it.uc3m.es
+X-message-flag: Had your Outlook virus, today?  
+	http://www.counterpane.com/crypto-gram-0103.html#4
+X-WebTV-Stationery: Standard\; BGColor=black\; TextColor=black
+Reply-By: Sat, 1 Apr 2006 14:21:08 -0700
+X-Mailer: ELM [version 2.4ME+ PL66 (25)]
+X-imss-version: 2.051
+X-imss-result: Passed
+X-imss-scanInfo: M:B L:N SM:2
+X-imss-tmaseResult: TT:1 TS:-19.8566 TC:1F TRN:28 TV:5.5.1026(16344.000)
+X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
+X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Dec 2008 16:25:37 +0100, Rafael J. Wysocki wrote:
-
-> Because the hal-driven whitelist allows us to match systems in a more
-> detailed way.  If your system is in the s2ram whitelist already and
-> works with it, there shouldn't be any difference.
-
-Unfortunately, Ubuntu in their "wisdom" removed s2ram and claim "s2both" 
-supersedes it in that it does both suspend to disk and suspend to ram and 
-then suspends, but if your battery dies while suspended you can still 
-resume from the suspend to disk.
- 
-> Still, I was only considering that as a debugging aid in your case,
-> because s2ram works in the minimal configuration, while hald doesn't.
-
-Right.  I will give s2both a try and see what happens... no joy.  It 
-fails to even run without the swap device mounted, and my swap device is 
-not big enough to hibernate to anyway.  Damn you Ubuntu.
-
-> That's a bit of new information.
+"Also sprach ptb:"
+> "Also sprach Johannes Weiner:"
+> > 'foo jiffies'?
 > 
-> What's the list of modules loaded in the minimal configuration?
+> ?? What does that mean? Yes, "the current time is later than foo
+> jiffies", is what I wrote.  I don't understand why you query it. What I
+> wrote is a perfectly normal english sentence.
 
-Module                  Size  Used by
-ext3                  130568  1 
-jbd                    53908  1 ext3
-mbcache                16004  1 ext3
-loop                   22540  2 
-usb_storage            78656  0 
-libusual               30356  1 usb_storage
-sd_mod                 41240  2 
-crc_t10dif             10112  1 sd_mod
-sr_mod                 21956  0 
-cdrom                  42272  1 sr_mod
-sg                     36148  0 
-ahci                   37260  1 
-ata_piix               29700  0 
-pata_acpi              12288  0 
-ata_generic            13060  0 
-libata                176160  4 ahci,ata_piix,pata_acpi,ata_generic
-scsi_mod              156948  5 usb_storage,sd_mod,sr_mod,sg,libata
-8139too                31744  0 
-8139cp                 27776  0 
-mii                    13440  2 8139too,8139cp
-ehci_hcd               41996  0 
-uhci_hcd               30352  0 
-usbcore               149392  5 usb_storage,libusual,ehci_hcd,uhci_hcd
-thermal                23708  0 
-processor              49708  3 thermal
-fan                    12676  0 
-fuse                   58780  3 
+Light dawns. Perhaps you think "jiffies" is a meaningless word that
+happens to be the name of a variable that measures elapsed time.
 
-Cheers,
-b.
+It's not. "jiffy" is a "short moment of time" in english, and "jiffies"
+is its plural. Like "augenblick" in german, but a bit longer
+("augenblick" probably translates as "moment", or "instant", literally,
+"eyeblink").  "In a jiffy" is an english phrase meaning "soon!".  It's
+close to an "instant" but of vaguer extent.
+
+So the variable called "jiffies" measures the number of elapsed
+jiffies.
+
+Like a variable called "hours" that measures the number of elapsed
+hours.
+
+"foo jiffies" is no stranger than "foo hours" or "foo minutes" or "foo
+seconds". That's why I was puzzled that you queried it!
+
+> It's poor english. Yes, to an english speaker
+> 
+>    time_is_after_jiffies(foo)
+> 
+> looks like
+> 
+>    the current time is later than foo jiffies
+> 
+> Look at the two:
+> 
+>    the current time is later than foo jiffies
+>                  |   |  |           `/.
+>                time_is_after_jiffies(foo)
 
 
+See it now? 
+
+Imagine that you had a macro called
+
+
+   time_is_after_hours
+
+then 
+
+  time_is_after_hours(12)
+
+
+would mean to an english speaker
+
+  the current time is later than midday
+
+I.e.
+
+  the current time is later than 12h
+               |    |   |        .|'
+              time_is_after_hours(12)
+
+Unfortunately the kernel's "time_is_after_hours(12)" macro means
+mathematically what we would express in english as "the current time is
+BEFORE 12h".  Ouch.
+
+The kernel's 
+
+     time_is_after_jiffies(500)
+
+macro mathematically means
+
+    the current value of the jiffies variable is LESS THAN 500
+
+!! That's the other way round from the way that an english speaker
+would read the macro name as meaning! So the semantics and the name
+contradict each other.
+
+Clear now?
+
+Peter
