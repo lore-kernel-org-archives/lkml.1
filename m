@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758785AbYLPWAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758591AbYLPV6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758785AbYLPWAB (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 17:00:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbYLPV7v
+	id S1758591AbYLPV6U (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 16:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYLPV6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 16:59:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56000 "EHLO mx2.mail.elte.hu"
+	Tue, 16 Dec 2008 16:58:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55576 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752040AbYLPV7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 16:59:50 -0500
-Date: Tue, 16 Dec 2008 22:59:41 +0100
+	id S1752750AbYLPV6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 16:58:07 -0500
+Date: Tue, 16 Dec 2008 22:57:53 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-        Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/ftrace: use preempt_enable_no_resched_notrace
-	in ring_buffer_time_stamp()
-Message-ID: <20081216215941.GA14787@elte.hu>
-References: <494818EA.7080807@gmail.com> <20081216212028.GP14787@elte.hu> <c62985530812161339p6296f032rdc3c74650331f3d8@mail.gmail.com> <alpine.DEB.1.10.0812161642530.25356@gandalf.stny.rr.com> <c62985530812161355l11edbb9cg6dd4e7e4291ab7b@mail.gmail.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+        Steven Rostedt <srostedt@redhat.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: Re: [PATCH] x86: entry_64 - introduce FTRACE_ frame macro v2
+Message-ID: <20081216215753.GZ14787@elte.hu>
+References: <20081212210908.GA30557@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530812161355l11edbb9cg6dd4e7e4291ab7b@mail.gmail.com>
+In-Reply-To: <20081212210908.GA30557@localhost>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,30 +37,25 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-> 2008/12/16 Steven Rostedt <rostedt@goodmis.org>:
-> >
-> >
-> > On Tue, 16 Dec 2008, Fr?d?ric Weisbecker wrote:
-> >>
-> >> The hard reboots I've seen are related to x86-64 while
-> >> disabling/reenabling a CPU through /sys/device/system/cpu
-> >> No tracer was enabled at these times (the problem still remains with
-> >> latest updates on -tip for half an hour).
-> >
-> > Do you have STACK_TRACER enabled?
-> >
-> > -- Steve
-> >
+> Impact: clean up
 > 
-> You were right. I've just built a kernel without STACK_TRACER and the 
-> problem disappears...
+> Itroduce FTRACE_SAVE/RESTORE_FRAME which allow us to
+> save a number of lines on source level.
+> 
+> Also fix a comment in ftrace.h.
+> ---
+> 
+> Didn't add Steve's Ack since it's a new version
+> 
+>  arch/x86/include/asm/ftrace.h |   29 ++++++++++++++++++++-
+>  arch/x86/kernel/entry_64.S    |   57 +++++-------------------------------------
+>  2 files changed, 35 insertions(+), 51 deletions(-)
 
-i noticed high stack-tracer overhead too. Which is understandable i guess: 
-the stack tracer keeps the mcount callbacks running all the time and can 
-save the stack backtrace of the highest-stack-usage point in time that the 
-kernel ever has hit in the past. That is a pretty powerful debug 
-capability, with appropriate costs.
+applied to tip/tracing/ftrace, thanks Cyrill!
+
+i renamed it from FTRACE_* to MCOUNT_* - since that's where these frame 
+details come from - these are stubs around GCC generated mcount calls.
 
 	Ingo
