@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbYLPRzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbYLPSBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbYLPRzq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 12:55:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYLPRzS
+	id S1753483AbYLPSBh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 13:01:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYLPSB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 12:55:18 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:33388 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751824AbYLPRzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 12:55:15 -0500
-Date: Tue, 16 Dec 2008 12:55:03 -0500
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-nfs@vger.kernel.org,
-       Max Kellermann <mk@cm4all.com>, linux-kernel@vger.kernel.org,
-       gcosta@redhat.com, Grant Coady <grant_lkml@dodo.com.au>,
-       Tom Tucker <tom@opengridcomputing.com>
-Subject: Re: [PATCH 0/3] NFS regression in 2.6.26?, "task blocked for more
-	than 120 seconds"
-Message-ID: <20081216175503.GG16388@fieldses.org>
-References: <1227596962.16868.22.camel@localhost.localdomain> <1227619696.7057.19.camel@heimdal.trondhjem.org> <1227620339.9425.99.camel@zakaz.uk.xensource.com> <1227621434.7057.33.camel@heimdal.trondhjem.org> <1227621877.9425.102.camel@zakaz.uk.xensource.com> <1227737539.31008.2.camel@localhost.localdomain> <1228090631.7112.11.camel@heimdal.trondhjem.org> <1228169383.20370.3.camel@localhost.localdomain> <1228565812.10856.30.camel@localhost.localdomain> <1229279045.3721.1.camel@localhost.localdomain>
+	Tue, 16 Dec 2008 13:01:29 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:40106 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751344AbYLPSB2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 13:01:28 -0500
+Message-ID: <4947ECD8.6050500@oracle.com>
+Date: Tue, 16 Dec 2008 10:00:56 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1229279045.3721.1.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: linux-kernel@vger.kernel.org
+CC: akpm <akpm@linux-foundation.org>, npiggin@suse.de
+Subject: Re: mmotm 2008-12-16-00-43 uploaded (fs)
+References: <200812160847.mBG8lOrw019428@imap1.linux-foundation.org> <4947E856.1040008@oracle.com>
+In-Reply-To: <4947E856.1040008@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A0B0203.4947ECCF.00C0:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 14, 2008 at 06:24:05PM +0000, Ian Campbell wrote:
-> On Sat, 2008-12-06 at 12:16 +0000, Ian Campbell wrote:
-> > On Mon, 2008-12-01 at 22:09 +0000, Ian Campbell wrote:
-> > > On Sun, 2008-11-30 at 19:17 -0500, Trond Myklebust wrote: 
-> > > > Can you see if the following 3 patches help? They're against 2.6.28-rc6,
-> > > > but afaics the problems are pretty much the same on 2.6.26.
-> > > 
-> > > Thanks.
-> > > 
-> > > The server was actually running 2.6.25.7 but the matching sources have
-> > > since been removed the backports.org so I've reproduce with 2.6.26 and
-> > > now I'll add the patches.
-> > 
-> > Just a small progress report. Anecdotally I thought that unpatched
-> > 2.6.26.7 was worse than 2.6.25.7, mostly because it hung twice in the ~1
-> > day I was running it where previously it was less frequent than once per
-> > day.
-> > 
-> > With the patched server the client ran OK for 2.5 days then mysteriously
-> > hung, the logs show none of the normal symptoms and my wife reset it
-> > before I got home so I've no real clue what happened but I'm inclined to
-> > think it was unrelated for now. I'll get back to you in a week or so if
-> > the problem hasn't reoccurred.
+Randy Dunlap wrote:
+> akpm@linux-foundation.org wrote:
+>> The mm-of-the-moment snapshot 2008-12-16-00-43 has been uploaded to
+>>
+>>    http://userweb.kernel.org/~akpm/mmotm/
+>>
+>> It contains the following patches against 2.6.28-rc8:
+>>
+>> fs-symlink-write_begin-allocation-context-fix.patch
 > 
-> $ uptime 
->  18:15:29 up 9 days, 22 min,  1 user,  load average: 0.74, 0.64, 0.46
+> Nick,
 > 
-> This is on the problematic client, so it looks like the server side fix
-> has sorted it. Thanks very much Trond.
+> fuse and reiser4 still use __grab_cache_page() although your patch
+> removed it:
+> 
+> build-r7257.out:/local/linsrc/tmp/mmotm-2008-1216-0043/fs/reiser4/plugin/file/file_conversi
+> on.c:689: error: implicit declaration of function '__grab_cache_page'
+> build-r7257.out:make[3]: *** [fs/reiser4/plugin/file/file_conversion.o] Error 1
+> 
+> build-r7248.out:/local/linsrc/tmp/mmotm-2008-1216-0043/fs/fuse/file.c:792: error: implicit declaration of function '__grab_cache_page'
+> build-r7248.out:make[3]: *** [fs/fuse/file.o] Error 1
 
-Thanks for the testing!  So this was with the following three patches
-applied on the server on top of 2.6.26?
 
-	[PATCH 1/3] SUNRPC: Ensure the server closes sockets in a timely fashion
-	[PATCH 2/3] SUNRPC: We only need to call svc_delete_xprt() once...
-	[PATCH 3/3] SUNRPC: svc_xprt_enqueue should not refuse to enqueue 'XPT_DEAD' transports
+One more related error:
 
-I'll try to take a look at these before I leave for the holidays,
-assuming the versions Trond posted on Nov. 30 are the latest.
+build-r7258.out:/local/linsrc/tmp/mmotm-2008-1216-0043/fs/ubifs/file.c:251: error: 'flags' undeclared (first use in this function)
+build-r7258.out:make[3]: *** [fs/ubifs/file.o] Error 1
 
---b.
