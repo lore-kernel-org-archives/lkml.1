@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbYLPQW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbYLPQZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757573AbYLPQW4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 11:22:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbYLPQWq
+	id S1758333AbYLPQZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 11:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758008AbYLPQZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 11:22:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55603 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754172AbYLPQWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 11:22:46 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Brian J. Murrell" <brian@interlinx.bc.ca>
-Subject: Re: suspend/resume fails on second attempt in LNXVIDEO:00
-Date: Tue, 16 Dec 2008 17:22:40 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <gi247o$iog$1@ger.gmane.org> <200812161713.08451.rjw@sisk.pl> <gi8kc5$m5f$6@ger.gmane.org>
-In-Reply-To: <gi8kc5$m5f$6@ger.gmane.org>
+	Tue, 16 Dec 2008 11:25:48 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:45914 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758007AbYLPQZq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 11:25:46 -0500
+Date: Tue, 16 Dec 2008 11:25:41 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Gerd Hoffmann <kraxel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH v3 0/3] preadv & pwritev syscalls.
+Message-ID: <20081216162541.GB410@bombadil.infradead.org>
+References: <1229340977-24345-1-git-send-email-kraxel@redhat.com> <20081215160311.GA23153@linux-mips.org> <4946C4B4.1020605@redhat.com> <20081216160502.GA15331@linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812161722.41149.rjw@sisk.pl>
+In-Reply-To: <20081216160502.GA15331@linux-mips.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 16 of December 2008, Brian J. Murrell wrote:
-> On Tue, 16 Dec 2008 17:13:08 +0100, Rafael J. Wysocki wrote:
-> > 
-> > Hm, this really isn't reasonable.
+On Tue, Dec 16, 2008 at 04:05:02PM +0000, Ralf Baechle wrote:
+> If merge_64() was a standard macro in <asm/compat.h> on all architectures,
+> compat_sys_pwrite() could invoke it directly and the need for the compat
+> wrapper around the compat wrapper would go away.
 > 
-> Many people agree with you.  :-)  There is a long bug open with ubuntu to 
-> restore this s2ram.  They seem to be ignoring it though.
-> 
-> > s2both saves the image, which takes
-> > quite a lot of time, while s2ram doesn't.
-> 
-> Indeed.
->  
-> > You can compile s2ram from sources, it's not too difficult.
-> 
-> Yeah.  I will probably just grab the debian package and dpkg-buildpackage 
-> it on my Ubuntu system.
->  
-> > Hm.  Is that all loaded when you boot with init=/bin/bash (by which I
-> > mean the minimal config)?
-> 
-> It sure is.  Most assuredly by the initrd.  Debian/Ubuntu systems seem to 
-> put everything but the kitchen sink into their initrds.  Which on the one 
-> hand makes them pretty portable and resilient, but on the other, yes, 
-> bloated.
 
-Well, please remove as many modules as you can (using rmmod) and see if your
-second resume still fails.
++1 for this.
 
-Thanks,
-Rafael
+AFAIK, there's issues on s390 and sparc (at least) with sign extension,
+that they need to wrap anyway, we should really sort that out in the
+generic compat wrappers as well.
+
+cheers, Kyle
