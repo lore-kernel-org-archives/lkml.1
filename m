@@ -1,51 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYLPJl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbYLPJl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbYLPJl0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 04:41:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbYLPJlR
+	id S1755167AbYLPJl7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 04:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYLPJlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 04:41:17 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59566 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750730AbYLPJlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 04:41:16 -0500
-Message-ID: <4947776C.10600@cn.fujitsu.com>
-Date: Tue, 16 Dec 2008 17:39:56 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 16 Dec 2008 04:41:51 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:35112 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751957AbYLPJlu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 04:41:50 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=O+JNAHOzdgY0vqkILOe/PvS1zsHN6D232ETxRKcGfRIvu2C8scSTlTPI3mLSupa5y
+	ayulH5BXsVjrtVNS2RTxg==
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1229337829.14605.41.camel@twins>
+References: <494234B0.5@cn.fujitsu.com> <20081212100044.GB18152@elte.hu>
+	 <4944754F.8050503@cn.fujitsu.com>
+	 <1229258890.17130.9.camel@lappy.programming.kicks-ass.net>
+	 <4945B200.7020207@cn.fujitsu.com> <1229328783.14605.11.camel@twins>
+	 <49462890.1040002@cn.fujitsu.com> <1229337829.14605.41.camel@twins>
+Date: Tue, 16 Dec 2008 01:41:45 -0800
+Message-ID: <6599ad830812160141v5ed5d453h36f825b069554e57@mail.gmail.com>
 Subject: Re: [PATCH] sched: fix another race when reading /proc/sched_debug
-References: <494234B0.5@cn.fujitsu.com> <20081212100044.GB18152@elte.hu>	 <4944754F.8050503@cn.fujitsu.com>	 <1229258890.17130.9.camel@lappy.programming.kicks-ass.net>	 <6599ad830812141347k5d7e7e08vfc17855ea0ac981c@mail.gmail.com>	 <4945B546.5040301@cn.fujitsu.com>	 <20081215105053.89263708.kamezawa.hiroyu@jp.fujitsu.com> <6599ad830812160123x4a088632re220d081788b7187@mail.gmail.com>
-In-Reply-To: <6599ad830812160123x4a088632re220d081788b7187@mail.gmail.com>
+From: Paul Menage <menage@google.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Sun, Dec 14, 2008 at 5:50 PM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> at creation:
->>  - cpu_cgroup_populate() should record "tg" that "this cgroup has valid dentry"
->> at deletion
-> 
-> Wouldn't moving the call to cgroup_create_dir() to before doing
-> subsystem initialization fix this problem more straightforwardly? Then
-> by the time the cpu subsytem create() callback is called, dentry will
-> already be valid.
-> 
+On Mon, Dec 15, 2008 at 2:43 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>>
+>> +             /*
+>> +              * Some subsystems (cpu cgroup) might still be able to
+>> +              * accessing the cgroup in rcu section.
+>> +              */
+>> +             synchronize_rcu();
+>> +
+>>               kfree(cgrp);
+>>       }
+>>       iput(inode);
+>
+> Is there any reason we cannot use call_rcu() ?
 
-Yes, it's true, and actually it was the first idea came into my mind when I
-started to fix this bug. But I was not sure whether this is an apropriate way.
-Now I think it's ok, and we'd better add a comment to indicate we want to
-make cgrp->dentry valid before calling subsystem create() method.
+It should be OK to rcu-free cgrp and have it still safe to call
+cgroup_path() on it - as long as we're confident that the dentry (and
+all its parents) won't be released until after the RCU section as
+well, since that's where we get the path elements from. And that does
+seem to be the case from looking at dcache.c
 
-Note in print_cfs_rq(), due to the race, tg->css.cgroup can be NULL.
-Fortunately, the code checks this condition, but I think it's just by accident
-but not awaring there is a race.
+It's certainly nicer than having two calls to synchronize_rcu() in
+quick succession in cgroup_diput().
+>
+> Perhaps wrap that check in a cgroup_*() helper? That would avoid the
+> duplication, be clearer and not open code the ->dentry assumption.
+
+I think it would be simpler to not have the cgroup exposed to the
+subsystem until the dentry and other structures have been created. The
+current order (create subsystems, then create fs structures) is more
+or less a carry-over from when I extended cpusets, rather than an
+explicit design choice.
+
+Paul
