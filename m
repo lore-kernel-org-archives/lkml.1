@@ -1,110 +1,97 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758908AbYLPWO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757062AbYLPWN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758908AbYLPWO0 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 17:14:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbYLPWOM
+	id S1757062AbYLPWN7 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 17:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYLPWNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 17:14:12 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:51251 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757209AbYLPWOK (ORCPT
+	Tue, 16 Dec 2008 17:13:47 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:59627 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752682AbYLPWNp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 17:14:10 -0500
-Subject: Re: [RFC v11][PATCH 03/13] General infrastructure for checkpoint
-	restart
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Mike Waychison <mikew@google.com>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, jeremy@goop.org, arnd@arndb.de,
-        linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-        Linux Torvalds <torvalds@linux-foundation.org>,
-        Alexander Viro <viro@zeniv.linux.org.uk>,
-        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <49482394.10006@google.com>
-References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
-	 <1228498282-11804-4-git-send-email-orenl@cs.columbia.edu>
-	 <49482394.10006@google.com>
-Content-Type: text/plain
-Date: Tue, 16 Dec 2008 14:14:01 -0800
-Message-Id: <1229465641.17206.350.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Dec 2008 17:13:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=RRKsU3q8Qk7Qnp0TF6+CYWBnihrrsdtRRf2AlY18V/jopjMLczdumYwkxXKoZ4HqqZ
+         P+8kp8xZprMev6HMy64YepAwVeJebC7GmmJIle0dcN35APJ9QLaT1oaphiFGRZ50RZNU
+         T7EN3aQ9zlEETeYYG0TQFveyFfcLnVY/1/1fw=
+Message-ID: <c62985530812161413j59fc0fdy31024a540bf0c197@mail.gmail.com>
+Date: Tue, 16 Dec 2008 23:13:44 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH][RFC 2/23]: SCST core
+Cc: "Vladislav Bolkhovitin" <vst@vlnb.net>,
+        "Steven Rostedt" <srostedt@redhat.com>,
+        "Sam Ravnborg" <sam@ravnborg.org>, linux-scsi@vger.kernel.org,
+        "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+        "Andrew Morton" <akpm@linux-foundation.org>,
+        "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+        "Mike Christie" <michaelc@cs.wisc.edu>,
+        "Jeff Garzik" <jeff@garzik.org>, "Boaz Harrosh" <bharrosh@panasas.com>,
+        "Linus Torvalds" <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+        "Bart Van Assche" <bart.vanassche@gmail.com>,
+        "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+In-Reply-To: <20081216214926.GU14787@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <494009D7.4020602@vlnb.net> <49400ACD.3070502@vlnb.net>
+	 <20081210191213.GA15273@uranus.ravnborg.org>
+	 <49414DBE.6070801@vlnb.net>
+	 <20081211210917.GB27010@uranus.ravnborg.org>
+	 <4942BA85.3070408@vlnb.net>
+	 <1229118607.24995.18.camel@localhost.localdomain>
+	 <4943CAAB.4050008@vlnb.net>
+	 <c62985530812131635k362fc8d2q3c65e8284141f491@mail.gmail.com>
+	 <20081216214926.GU14787@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-16 at 13:54 -0800, Mike Waychison wrote:
-> Oren Laadan wrote:
-> > diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-> > index 375129c..bd14ef9 100644
-> > --- a/checkpoint/sys.c
-> > +++ b/checkpoint/sys.c
-> 
-> > +/*
-> > + * During checkpoint and restart the code writes outs/reads in data
-> > + * to/from the checkpoint image from/to a temporary buffer (ctx->hbuf).
-> > + * Because operations can be nested, use cr_hbuf_get() to reserve space
-> > + * in the buffer, then cr_hbuf_put() when you no longer need that space.
-> > + */
-> 
-> This seems a bit over-kill for buffer management no?  The only large 
-> header seems to be cr_hdr_head and the blowup comes from utsinfo string 
-> data (which could easily be moved out to be in it's own CR_HDR_STRING 
-> blocks).
-> 
-> Wouldn't it be easier to use stack-local storage than balancing the 
-> cr_hbuf_get/put routines?
+2008/12/16 Ingo Molnar <mingo@elte.hu>:
+>
+> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+>
+>> > All the above functionality is almost what we need. The only thing
+>> > left, which I forgot to mention, is possibility to log also functions
+>> > return value on exit. This is what TRACE_EXIT_RES() in SCST does. Is
+>> > it possible to add those?
+>>
+>> I want to add that on the function graph tracer. That can be done pretty
+>> easily. The only problem comes with the type of the return value. Would
+>> this tracer be supposed to always return a 64 bits value regardless of
+>> the real typ of the value? There would be some pointless bytes on most
+>> return values. I don't know how to proceed for this problem.
+>
+> Things like mov ...,%eax are zero-extend so they'll zap the high 32 bits.
 
-I've asked the same question, so I'll give you Oren's response that I
-remember:
 
-cr_hbuf_get/put() are more of an API that we can use later.  For now,
-those buffers really are temporary.  But, in a case where we want to do
-a really fast checkpoint (to reduce "downtime" during the checkpoint) we
-store the image entirely in kernel memory to be written out later.
+That's right, but the problem occurs under 32 bits. The return values
+for 64 bits
+are in eax and edx. And most of the time, the high part (edx) will be junk.
 
-In that case, cr_hbuf_put() stops doing anything at all because we keep
-the memory around.
 
-cr_hbuf_get() becomes, "I need some memory to write some checkpointy
-things into".
+> The real problem are byte return values generated via things like:
+>
+>   movb $1, %al
+>
+> those wont zero-extend, so you could get garbage in the output. One
+> approach would be to try a quick hack just to see how common a problem
+> this is.
 
-cr_hbuf_put() becomes, "I'm done with this for now, only keep it if
-someone else needs it."
 
-This might all be a lot clearer if we just kept some more explicit
-accounting around about who is using the objects.  Something like:
+Yes, I will try something.
 
-struct cr_buf {
-	struct kref ref;
-	int size;
-	char buf[0];
-};
+> We could extract the return type from the debuginfo, hash it in a
+> read-mostly table and then look it up, but that seems complex both in
+> terms of build overhead and in terms of runtime overhead.
 
-/* replaces cr_hbuf_get() */
-struct cr_buf *alloc_cr_buf(int size, gfp_t flags)
-{
-	struct cr_buf *buf;
-
-	buf = kmalloc(sizeof(cr_buf) + size, flags);
-	if (!buf)
-		return NULL;
-	buf->ref = 1; /* or whatever */
-	buf->size = size;
-	return buf;
-}
-
-int cr_kwrite(struct cr_buf *buf)
-{
-	if (writing_checkpoint_now) {
-		// or whatever this write call was...
-		vfs_write(&buf->buf[0], buf->size);
-	} else if (deferring_write) {		
-		kref_get(buf->kref);
-	}
-}
-
--- Dave
-
+I thought about it too and as you say it's rather complex. And
+thinking about non primitive types (like pid_t....)
+that would require a second pass of analysis to retrieve the
+corresponding primitive...
