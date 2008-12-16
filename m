@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbYLPNNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbYLPNU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756497AbYLPNNs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 08:13:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbYLPNNj
+	id S1756118AbYLPNU7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 08:20:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYLPNUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 08:13:39 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44121 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbYLPNNj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 08:13:39 -0500
-Date: Tue, 16 Dec 2008 14:13:30 +0100
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       perfctr-devel@lists.sourceforge.net
-Subject: Re: [patch] Performance Counters for Linux, v4
-Message-ID: <20081216141330.1943c30d@infradead.org>
-In-Reply-To: <20081216130302.GA27678@elte.hu>
-References: <20081214212829.GA9435@elte.hu>
-	<20081216122229.GA1430@ucw.cz>
-	<20081216125000.GC25019@elte.hu>
-	<20081216125720.GC1684@ucw.cz>
-	<20081216130302.GA27678@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 16 Dec 2008 08:20:51 -0500
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:58175 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751762AbYLPNUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 08:20:51 -0500
+Date: Tue, 16 Dec 2008 22:18:49 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: hjk@linutronix.de, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, magnus.damm@gmail.com
+Subject: Re: [RESEND][PATCH] uio: Add of_platform_driver to uio_pdrv_genirq
+Message-ID: <20081216131849.GA30249@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Wolfram Sang <w.sang@pengutronix.de>, hjk@linutronix.de,
+	gregkh@suse.de, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, magnus.damm@gmail.com
+References: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de> <20081216122524.GA29546@linux-sh.org> <20081216124156.GD3275@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081216124156.GD3275@pengutronix.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Dec 2008 14:03:02 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
-
-> > >  - plus you have to forbid SMT CPUs as well. On HT a task could
-> > >    co-schedule with your setuid task and observe its timing
-> > >    characteristics via its _own_ behavior. (which is impacted by
-> > > whatever is running on another SMT/HT thread.)  
+On Tue, Dec 16, 2008 at 01:41:56PM +0100, Wolfram Sang wrote:
+> > In addition to the stuff pointed out by Greg, I don't see what you
+> > actually gain by hacking the OF crap in to this driver. You would be
+> > better off layering the OF driver on top of this, rather than trying to
+> > make them live together in the same file.
 > > 
-> > Yes, SMT is evil.  
+> > See pata_platform/pata_of_platform for an example of how to do this a bit
+> > more sanely.
 > 
-> HT got added back to Nehalem, so SMT is coming to you in every future
-> x86 CPU. It brings a serious performance win, so nobody will turn off
-> SMT threading in practice. If SMT worries you, it needs explicit
-> partitioning of security-relevant processing to different physical
-> CPUs, via cgroups/cpusets/etc.
-
-and/or you use properly implemented crypto code (see Bruce Schneider's
-books). The timing "problem" isn't really SMT specific. If you have
-improperly implemented crypto (eg crypto code where the code paths and
-not just the data payload are key dependent) then on any system with
-more than one (logical) processor there is interference that an
-attacker can use.
-
-The only possible answer is to use proper implementation; turning off HT
-may make you feel good but you go from shoddy crypto for which there is
-some internet papers on how to crack it, to shoddy crypto for which the
-same papers apply ;)
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> See my reply just posted. I found two ways to go, and from reading
+> discussions on the lists, finally decided for this way. May have been
+> the wrong path, but nothing that could not be changed.
+> 
+I guess there are a couple of things to consider. If it fits in fairly
+nicely and can be optimized out for the users that don't care, then
+integration generally makes sense. In this case however you have a large
+and insular block that is ifdef'ed in and selected by Kconfig, suggesting
+that the only benefit is for your driver which wishes to tie in to parts
+of uio_pdrv_genirq, with there being no benefits the other way. This sort
+of situation suggests you are better off layering and simply exposing the
+functionality you need from uio_pdrv_genirq. This was certainly the case
+with pata_platform as well, and it worked out pretty well there compared
+to hacking it in-place.
