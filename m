@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757934AbYLPRsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbYLPRxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757934AbYLPRsD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 12:48:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbYLPRrx
+	id S1754195AbYLPRxU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 12:53:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYLPRxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 12:47:53 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55839 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751533AbYLPRrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 12:47:53 -0500
-Date: Tue, 16 Dec 2008 18:47:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386: improve lazy TLB handling code
-Message-ID: <20081216174739.GK11683@elte.hu>
-References: <4947A342.76E4.0078.0@novell.com>
+	Tue, 16 Dec 2008 12:53:12 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:18976 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751633AbYLPRxL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 12:53:11 -0500
+Message-ID: <4947EB00.80507@oracle.com>
+Date: Tue, 16 Dec 2008 09:53:04 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4947A342.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org
+CC: akpm <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: mmotm 2008-12-16-00-43 uploaded (sparse irq)
+References: <200812160847.mBG8lOrw019428@imap1.linux-foundation.org>
+In-Reply-To: <200812160847.mBG8lOrw019428@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4947EAF0.00D9:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jan Beulich <jbeulich@novell.com> wrote:
-
-> Use the faster x86_{read,write}_percpu() accessors here.
+akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2008-12-16-00-43 has been uploaded to
 > 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>    http://userweb.kernel.org/~akpm/mmotm/
 > 
-> ---
->  arch/x86/include/asm/mmu_context_32.h |   13 ++++++-------
->  arch/x86/kernel/tlb_32.c              |   11 +++++------
->  2 files changed, 11 insertions(+), 13 deletions(-)
+> It contains the following patches against 2.6.28-rc8:
+> 
+> irq-enclose-irq_desc_lock_class-in-config_sparse_irq.patch
 
-applied to tip/x86/mm - thanks,
+whose patch is that?
 
-	Ingo
+If CONFIG_SPARSE_IRQ is not enabled, then builds fail with:
+
+build-r7248.out:/local/linsrc/tmp/mmotm-2008-1216-0043/kernel/irq/handle.c:434: error: 'irq_desc_lock_class' undeclared (first use in this function)
+build-r7248.out:make[3]: *** [kernel/irq/handle.o] Error 1
+
+
+~Randy
