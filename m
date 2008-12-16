@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbYLPQx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758282AbYLPQyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757970AbYLPQx4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 11:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbYLPQxo
+	id S1758282AbYLPQyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 11:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbYLPQxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 11:53:44 -0500
-Received: from kumera.dghda.com ([80.68.90.171]:53936 "EHLO kumera.dghda.com"
+	Tue, 16 Dec 2008 11:53:49 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:53941 "EHLO kumera.dghda.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755277AbYLPQxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 11:53:43 -0500
+	id S1756581AbYLPQxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 11:53:46 -0500
 From: "Duane Griffin" <duaneg@dghda.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, Duane Griffin <duaneg@dghda.com>,
        Al Viro <viro@zeniv.linux.org.uk>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH, v4] vfs: introduce helper function to safely NUL-terminate symlinks
-Date: Tue, 16 Dec 2008 16:53:38 +0000
-Message-Id: <1229446419-8680-1-git-send-email-duaneg@dghda.com>
+Subject: [PATCH] vfs: introduce helper function to safely NUL-terminate symlinks
+Date: Tue, 16 Dec 2008 16:53:39 +0000
+Message-Id: <1229446419-8680-2-git-send-email-duaneg@dghda.com>
 X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <1229446419-8680-1-git-send-email-duaneg@dghda.com>
+References: <1229446419-8680-1-git-send-email-duaneg@dghda.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -30,9 +32,6 @@ Cc: Al Viro <viro@zeniv.linux.org.uk>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Duane Griffin <duaneg@dghda.com>
 ---
-
-Version 4, this time with size_t instead of unsigned. Thanks Al!
-
  include/linux/namei.h |    5 +++++
  1 files changed, 5 insertions(+), 0 deletions(-)
 
