@@ -1,100 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760228AbYLPU0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760290AbYLPU0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760228AbYLPU0S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759919AbYLPUXs
+	id S1760290AbYLPU0h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:26:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759346AbYLPUY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:23:48 -0500
-Received: from kroah.org ([198.145.64.141]:52381 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759667AbYLPUXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:23:47 -0500
-Date: Tue, 16 Dec 2008 12:22:48 -0800
-From: Greg KH <greg@kroah.com>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: linux-kernel@vger.kernel.org, v4l <video4linux-list@redhat.com>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>
-Subject: Re: [BUG] cdev_put() race condition
-Message-ID: <20081216202248.GA3653@kroah.com>
-References: <200812082156.26522.hverkuil@xs4all.nl>
+	Tue, 16 Dec 2008 15:24:28 -0500
+Received: from outbound-mail-29.bluehost.com ([69.89.17.211]:41161 "HELO
+	outbound-mail-29.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752933AbYLPUYY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 15:24:24 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=RTaRDn1nZSqYqJ9jCv21BmXKQjH93v2qGJ0vo7nSeG+C9hv9zNZiXDTiXdldTFpjy4TrayR/1MdmdjR/KGwKvQpAywHycgcD+ZmOWGfK6laHDwJf3YyklhzAx7KNPPje;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>, Adam Jackson <ajax@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ajax@redhat.com: [PATCH] PCI: Don't carp about BAR allocation failures in quiet boot]
+Date: Tue, 16 Dec 2008 12:24:18 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.3; x86_64; ; )
+References: <20081212054940.GA12451@elte.hu>
+In-Reply-To: <20081212054940.GA12451@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200812082156.26522.hverkuil@xs4all.nl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200812161224.18719.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 08, 2008 at 09:56:26PM +0100, Hans Verkuil wrote:
-> Hi Greg,
-> 
-> Laurent found a race condition in the uvc driver that we traced to the 
-> way chrdev_open and cdev_put/get work.
-> 
-> You need the following ingredients to reproduce it:
-> 
-> 1) a hot-pluggable char device like an USB webcam.
-> 2) a manually created device node for such a webcam instead of relying 
-> on udev.
-> 
-> In order to easily force this situation you would also need to add a  
-> delay to the char device's release() function. For webcams that would 
-> be at the top of v4l2_chardev_release() in 
-> drivers/media/video/v4l2-dev.c. But adding a delay to e.g. cdev_purge 
-> would have the same effect.
-> 
-> The sequence of events in the case of a webcam is as follows:
-> 
-> 1) The USB device is removed, causing a disconnect.
-> 
-> 2) The webcam driver unregisters the video device which in turn calls 
-> cdev_del().
-> 
-> 3) When the last application using the device is closed, the cdev is 
-> released when the kref of the cdev's kobject goes to 0.
-> 
-> 4) If the kref's release() call takes a while due to e.g. extra cleanup 
-> in the case of a webcam, then another application can try to open the 
-> video device. Note that this requires a device node created with mknod, 
-> otherwise the device nodes would already have been removed by udev.
-> 
-> 5) chrdev_open checks inode->i_cdev. If this is NULL (i.e. this device 
-> node was never accessed before), then all is fine since kobj_lookup 
-> will fail because cdev_del() has been called earlier. However, if this 
-> device node was used earlier, then the else part is called: 
-> cdev_get(p). This 'p' is the cdev that is being released. Since the 
-> kref count is 0 you will get a WARN message from kref_get, but the code 
-> continues on, the f_op->open will (hopefully) return more-or-less 
-> gracefully with an error and the cdev_put at the end will cause the 
-> refcount to go to 0 again, which results in a SECOND call to the kref's 
-> release function!
-> 
-> See this link for the original discussion on the v4l list containing 
-> stack traces an a patch that you need if you want to (and can) test 
-> this with the uvc driver:
-> 
-> http://www.spinics.net/lists/vfl/msg39967.html
+Thanks for the heads-up, applied this to my linux-next branch.
 
-The second sentence in that message shows your problem here:
-	To avoid the need of a reference count in every v4l2 driver,
-	v4l2 moved to cdev which includes its own reference counting
-	infrastructure based on kobject.
+Jesse
 
-cdev is not ment to handle the reference counting of any object outside
-of itself, and should never be embedded within anything.  I've been
-thinking of taking the real "kobject" out of that structure for a long
-time now, incase someone did something foolish like this.
+On Thursday, December 11, 2008 9:49 pm Ingo Molnar wrote:
+> FYI.
+>
+> ----- Forwarded message from Adam Jackson <ajax@redhat.com> -----
+>
+> Date: Thu, 11 Dec 2008 17:13:45 -0500
+> From: Adam Jackson <ajax@redhat.com>
+> To: linux-kernel@vger.kernel.org
+> Subject: [PATCH] PCI: Don't carp about BAR allocation failures in quiet
+> boot Cc: Adam Jackson <ajax@redhat.com>
+>
+> These are easy to trigger (more or less harmlessly) with multiple video
+> cards, since the ROM BAR will typically not be given any space by the
+> BIOS bridge setup.  No reason to punish quiet boot for this.
+>
+> Signed-off-by: Adam Jackson <ajax@redhat.com>
+> ---
+>  arch/x86/pci/i386.c     |    4 ++--
+>  drivers/pci/setup-res.c |    4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+> index 844df0c..43d9783 100644
+> --- a/arch/x86/pci/i386.c
+> +++ b/arch/x86/pci/i386.c
+> @@ -129,7 +129,7 @@ static void __init
+> pcibios_allocate_bus_resources(struct list_head *bus_list) pr =
+> pci_find_parent_resource(dev, r);
+>  				if (!r->start || !pr ||
+>  				    request_resource(pr, r) < 0) {
+> -					dev_err(&dev->dev, "BAR %d: can't allocate resource\n", idx);
+> +					dev_info(&dev->dev, "BAR %d: can't allocate resource\n", idx);
+>  					/*
+>  					 * Something is wrong with the region.
+>  					 * Invalidate the resource to prevent
+> @@ -170,7 +170,7 @@ static void __init pcibios_allocate_resources(int pass)
+>  					r->flags, disabled, pass);
+>  				pr = pci_find_parent_resource(dev, r);
+>  				if (!pr || request_resource(pr, r) < 0) {
+> -					dev_err(&dev->dev, "BAR %d: can't allocate resource\n", idx);
+> +					dev_info(&dev->dev, "BAR %d: can't allocate resource\n", idx);
+>  					/* We'll assign a new address later */
+>  					r->end -= r->start;
+>  					r->start = 0;
+> diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+> index 2dbd96c..4e37563 100644
+> --- a/drivers/pci/setup-res.c
+> +++ b/drivers/pci/setup-res.c
+> @@ -134,7 +134,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
+>
+>  	align = resource_alignment(res);
+>  	if (!align) {
+> -		dev_err(&dev->dev, "BAR %d: can't allocate resource (bogus "
+> +		dev_info(&dev->dev, "BAR %d: can't allocate resource (bogus "
+>  			"alignment) %pR flags %#lx\n",
+>  			resno, res, res->flags);
+>  		return -EINVAL;
+> @@ -157,7 +157,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
+>  	}
+>
+>  	if (ret) {
+> -		dev_err(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
+> +		dev_info(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
+>  			resno, res->flags & IORESOURCE_IO ? "I/O" : "mem", res);
+>  	} else {
+>  		res->flags &= ~IORESOURCE_STARTALIGN;
 
-Seems I was too late :(
+-- 
+Jesse Barnes, Intel Open Source Technology Center
 
-So, to solve this, just remove the reliance on struct cdev in your own
-structures, you don't want to do this for the very reason you have now
-found (and for others, like the fact that this isn't a "real" struct
-kobject in play here, just a fake one.)
-
-Ick, what a mess.
-
-good luck,
-
-greg k-h
