@@ -1,95 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbYLPVEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759404AbYLPVEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbYLPVEA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 16:04:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbYLPVDw
+	id S1759404AbYLPVEx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 16:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbYLPVEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 16:03:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33409 "EHLO mx2.mail.elte.hu"
+	Tue, 16 Dec 2008 16:04:39 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:48309 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752308AbYLPVDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 16:03:51 -0500
-Date: Tue, 16 Dec 2008 22:03:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Luis Henriques <henrix@sapo.pt>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <pzijlstr@redhat.com>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Conditional compilation updates in kernel/lockdep.c
-Message-ID: <20081216210344.GK14787@elte.hu>
-References: <20081214205218.GA10877@hades.domain.com>
+	id S1755533AbYLPVEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 16:04:37 -0500
+Date: Tue, 16 Dec 2008 13:04:33 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org,
+       "kernel-testers@vger.kernel.org >> Kernel Testers List" 
+	<kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH v3 1/7] fs: Use a percpu_counter to track nr_dentry
+Message-ID: <20081216210433.GL6681@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <493100B0.6090104@cosmosbay.com> <49419680.8010409@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081214205218.GA10877@hades.domain.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <49419680.8010409@cosmosbay.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Dec 11, 2008 at 11:38:56PM +0100, Eric Dumazet wrote:
+> Adding a percpu_counter nr_dentry avoids cache line ping pongs
+> between cpus to maintain this metric, and dcache_lock is
+> no more needed to protect dentry_stat.nr_dentry
+> 
+> We centralize nr_dentry updates at the right place :
+> - increments in d_alloc()
+> - decrements in d_free()
+> 
+> d_alloc() can avoid taking dcache_lock if parent is NULL
+> 
+> ("socketallocbench -n8" result : 27.5s to 25s)
 
-* Luis Henriques <henrix@sapo.pt> wrote:
+Looks good!  (At least once I realised that nr_dentry was global rather
+than per-dentry!!!)
 
-> This patch removes the following warning:
-> 
-> kernel/lockdep.c:580: warning: ‘print_lock_dependencies’ defined but not used
-> 
-> Now functions print_lock_dependencies and print_lock_class_header are now
-> compiled only if both CONFIG_TRACE_IRQFLAGS and CONFIG_PROVE_LOCKING
-> are defined; function lockdep_dependency_visit and variable
-> lockdep_dependency_gen_id are compiled only if CONFIG_PROVE_LOCKING
-> is defined
-> 
-> Signed-off-by: Luis Henriques <henrix@sapo.pt>
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 > ---
->  kernel/lockdep.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
+>  fs/dcache.c        |   49 +++++++++++++++++++++++++------------------
+>  include/linux/fs.h |    2 +
+>  kernel/sysctl.c    |    2 -
+>  3 files changed, 32 insertions(+), 21 deletions(-)
 > 
-> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-> index 46a4041..f2eebc7 100644
-> --- a/kernel/lockdep.c
-> +++ b/kernel/lockdep.c
-> @@ -381,6 +381,7 @@ unsigned int nr_process_chains;
->  unsigned int max_lockdep_depth;
->  unsigned int max_recursion_depth;
->  
-> +#ifdef CONFIG_PROVE_LOCKING
->  static unsigned int lockdep_dependency_gen_id;
->  
->  static bool lockdep_dependency_visit(struct lock_class *source,
-> @@ -393,6 +394,7 @@ static bool lockdep_dependency_visit(struct lock_class *source,
->  	source->dep_gen_id = lockdep_dependency_gen_id;
->  	return false;
->  }
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index fa1ba03..f463a81 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -61,12 +61,31 @@ static struct kmem_cache *dentry_cache __read_mostly;
+>  static unsigned int d_hash_mask __read_mostly;
+>  static unsigned int d_hash_shift __read_mostly;
+>  static struct hlist_head *dentry_hashtable __read_mostly;
+> +static struct percpu_counter nr_dentry;
+> 
+>  /* Statistics gathering. */
+>  struct dentry_stat_t dentry_stat = {
+>  	.age_limit = 45,
+>  };
+> 
+> +/*
+> + * Handle nr_dentry sysctl
+> + */
+> +#if defined(CONFIG_SYSCTL) && defined(CONFIG_PROC_FS)
+> +int proc_nr_dentry(ctl_table *table, int write, struct file *filp,
+> +		   void __user *buffer, size_t *lenp, loff_t *ppos)
+> +{
+> +	dentry_stat.nr_dentry = percpu_counter_sum_positive(&nr_dentry);
+> +	return proc_dointvec(table, write, filp, buffer, lenp, ppos);
+> +}
+> +#else
+> +int proc_nr_dentry(ctl_table *table, int write, struct file *filp,
+> +		   void __user *buffer, size_t *lenp, loff_t *ppos)
+> +{
+> +	return -ENOSYS;
+> +}
 > +#endif
->  
->  #ifdef CONFIG_DEBUG_LOCKDEP
->  /*
-> @@ -549,6 +551,8 @@ static void lockdep_print_held_locks(struct task_struct *curr)
->  	}
->  }
->  
-> +#if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_PROVE_LOCKING)
 > +
->  static void print_lock_class_header(struct lock_class *class, int depth)
+>  static void __d_free(struct dentry *dentry)
 >  {
->  	int bit;
-> @@ -599,6 +603,7 @@ static void print_lock_dependencies(struct lock_class *class, int depth)
->  		printk("\n");
->  	}
+>  	WARN_ON(!list_empty(&dentry->d_alias));
+> @@ -82,8 +101,7 @@ static void d_callback(struct rcu_head *head)
 >  }
-> +#endif
-
-hm, these many #ifdefs are ugly. Could we somehow improve the structure of 
-this code by moving bits of it out into separate .c files, or by merging 
-needless Kconfig options?
-
-	Ingo
+> 
+>  /*
+> - * no dcache_lock, please.  The caller must decrement dentry_stat.nr_dentry
+> - * inside dcache_lock.
+> + * no dcache_lock, please.
+>   */
+>  static void d_free(struct dentry *dentry)
+>  {
+> @@ -94,6 +112,7 @@ static void d_free(struct dentry *dentry)
+>  		__d_free(dentry);
+>  	else
+>  		call_rcu(&dentry->d_u.d_rcu, d_callback);
+> +	percpu_counter_dec(&nr_dentry);
+>  }
+> 
+>  /*
+> @@ -172,7 +191,6 @@ static struct dentry *d_kill(struct dentry *dentry)
+>  	struct dentry *parent;
+> 
+>  	list_del(&dentry->d_u.d_child);
+> -	dentry_stat.nr_dentry--;	/* For d_free, below */
+>  	/*drops the locks, at that point nobody can reach this dentry */
+>  	dentry_iput(dentry);
+>  	if (IS_ROOT(dentry))
+> @@ -619,7 +637,6 @@ void shrink_dcache_sb(struct super_block * sb)
+>  static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
+>  {
+>  	struct dentry *parent;
+> -	unsigned detached = 0;
+> 
+>  	BUG_ON(!IS_ROOT(dentry));
+> 
+> @@ -678,7 +695,6 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
+>  			}
+> 
+>  			list_del(&dentry->d_u.d_child);
+> -			detached++;
+> 
+>  			inode = dentry->d_inode;
+>  			if (inode) {
+> @@ -696,7 +712,7 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
+>  			 * otherwise we ascend to the parent and move to the
+>  			 * next sibling if there is one */
+>  			if (!parent)
+> -				goto out;
+> +				return;
+> 
+>  			dentry = parent;
+> 
+> @@ -705,11 +721,6 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
+>  		dentry = list_entry(dentry->d_subdirs.next,
+>  				    struct dentry, d_u.d_child);
+>  	}
+> -out:
+> -	/* several dentries were freed, need to correct nr_dentry */
+> -	spin_lock(&dcache_lock);
+> -	dentry_stat.nr_dentry -= detached;
+> -	spin_unlock(&dcache_lock);
+>  }
+> 
+>  /*
+> @@ -943,8 +954,6 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
+>  	dentry->d_flags = DCACHE_UNHASHED;
+>  	spin_lock_init(&dentry->d_lock);
+>  	dentry->d_inode = NULL;
+> -	dentry->d_parent = NULL;
+> -	dentry->d_sb = NULL;
+>  	dentry->d_op = NULL;
+>  	dentry->d_fsdata = NULL;
+>  	dentry->d_mounted = 0;
+> @@ -959,16 +968,15 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
+>  	if (parent) {
+>  		dentry->d_parent = dget(parent);
+>  		dentry->d_sb = parent->d_sb;
+> +		spin_lock(&dcache_lock);
+> +		list_add(&dentry->d_u.d_child, &parent->d_subdirs);
+> +		spin_unlock(&dcache_lock);
+>  	} else {
+> +		dentry->d_parent = NULL;
+> +		dentry->d_sb = NULL;
+>  		INIT_LIST_HEAD(&dentry->d_u.d_child);
+>  	}
+> -
+> -	spin_lock(&dcache_lock);
+> -	if (parent)
+> -		list_add(&dentry->d_u.d_child, &parent->d_subdirs);
+> -	dentry_stat.nr_dentry++;
+> -	spin_unlock(&dcache_lock);
+> -
+> +	percpu_counter_inc(&nr_dentry);
+>  	return dentry;
+>  }
+> 
+> @@ -2282,6 +2290,7 @@ static void __init dcache_init(void)
+>  {
+>  	int loop;
+> 
+> +	percpu_counter_init(&nr_dentry, 0);
+>  	/* 
+>  	 * A constructor could be added for stable state like the lists,
+>  	 * but it is probably not worth it because of the cache nature
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index 4a853ef..114cb65 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -2217,6 +2217,8 @@ static inline void free_secdata(void *secdata)
+>  struct ctl_table;
+>  int proc_nr_files(struct ctl_table *table, int write, struct file *filp,
+>  		  void __user *buffer, size_t *lenp, loff_t *ppos);
+> +int proc_nr_dentry(struct ctl_table *table, int write, struct file *filp,
+> +		   void __user *buffer, size_t *lenp, loff_t *ppos);
+> 
+>  int get_filesystem_list(char * buf);
+> 
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 3d56fe7..777bee7 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -1246,7 +1246,7 @@ static struct ctl_table fs_table[] = {
+>  		.data		= &dentry_stat,
+>  		.maxlen		= 6*sizeof(int),
+>  		.mode		= 0444,
+> -		.proc_handler	= &proc_dointvec,
+> +		.proc_handler	= &proc_nr_dentry,
+>  	},
+>  	{
+>  		.ctl_name	= FS_OVERFLOWUID,
