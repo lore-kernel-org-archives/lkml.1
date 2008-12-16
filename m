@@ -1,84 +1,219 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755417AbYLPVjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757378AbYLPVld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbYLPVjl (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 16:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYLPVjb
+	id S1757378AbYLPVld (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 16:41:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbYLPVlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 16:39:31 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:44330 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750730AbYLPVja (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 16:39:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=kaTIHXsD26kl4AefBE/2H4Fg4ZZJCsY4Jfa5BnrKAEJIkj+l+u27G17LwRu9uH7zw6
-         NnzBqp4qFVIrrJYxbLbTVW7UpcL0X/S1uDCnLh7+I/DZjAqYx18uhh6ppHCkkDihJDRX
-         ENl2vtlGEX73Auh9n6ajA34v0MLL8h40dSpyc=
-Message-ID: <c62985530812161339p6296f032rdc3c74650331f3d8@mail.gmail.com>
-Date: Tue, 16 Dec 2008 22:39:26 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] tracing/ftrace: use preempt_enable_no_resched_notrace in ring_buffer_time_stamp()
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-        "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081216212028.GP14787@elte.hu>
+	Tue, 16 Dec 2008 16:41:16 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:57981 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752902AbYLPVlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 16:41:14 -0500
+Date: Tue, 16 Dec 2008 13:41:11 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+        Christoph Hellwig <hch@infradead.org>,
+        David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+        linux-kernel@vger.kernel.org,
+        "kernel-testers@vger.kernel.org >> Kernel Testers List" 
+	<kernel-testers@vger.kernel.org>,
+        Mike Galbraith <efault@gmx.de>,
+        Peter Zijlstra <a.p.zijlstra@chello.nl>,
+        Linux Netdev List <netdev@vger.kernel.org>,
+        Christoph Lameter <cl@linux-foundation.org>,
+        linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH v3 5/7] fs: new_inode_single() and iput_single()
+Message-ID: <20081216214111.GP6681@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <493100B0.6090104@cosmosbay.com> <494196C7.2050005@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <494818EA.7080807@gmail.com> <20081216212028.GP14787@elte.hu>
+In-Reply-To: <494196C7.2050005@cosmosbay.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/16 Ingo Molnar <mingo@elte.hu>:
->
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
->
->> Impact: prevent a trace recursion
->>
->> After some tests with function graph tracer under x86-32, I saw some recursions
->> caused by ring_buffer_time_stamp() that calls preempt_enable_no_notrace() which
->> calls preempt_schedule() which is traced itself.
->>
->> This patch re-enables preemption without rescheduling.
->>
->> Cc: Steven Rostedt <rostedt@goodmis.org>
->> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->> ---
->>  kernel/trace/ring_buffer.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> applied to tip/tracing/ftrace, thanks Frederic!
->
-> Does this explain+fix the weird crashes/reboots you were seeing?
->
->        Ingo
->
+On Thu, Dec 11, 2008 at 11:40:07PM +0100, Eric Dumazet wrote:
+> Goal of this patch is to not touch inode_lock for socket/pipes/anonfd
+> inodes allocation/freeing.
+> 
+> SINGLE dentries are attached to inodes that dont need to be linked
+> in a list of inodes, being "inode_in_use" or "sb->s_inodes"
+> As inode_lock was taken only to protect these lists, we avoid taking it
+> as well.
+> 
+> Using iput_single() from dput_single() avoids taking inode_lock
+> at freeing time.
+> 
+> This patch has a very noticeable effect, because we avoid dirtying of
+> three contended cache lines in new_inode(), and five cache lines in iput()
+> 
+> ("socketallocbench -n 8" result : from 19.9s to 3.01s)
 
-No, actually the functions tracers are protected against recursion,
-but rescheduling attempts
-during all trace insertions (and moreover a call to
-prepare_ftrace_return with cancelled insertion)
-is a useless payload.
+Nice!
 
-The hard reboots I've seen are related to x86-64 while
-disabling/reenabling a CPU through /sys/device/system/cpu
-No tracer was enabled at these times (the problem still remains with
-latest updates on -tip for half an hour).
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-One other thing: I've seen these pointless calls to preempt_schedule
-while testing the function graph tracer on
-VirtualBox. Since it provides virtual serial lines, it was more easy
-to debug than usual (I haven't any serial line
-on my box).
-The function graph tracer hangs on VirtualBox with a x86-32 -tip. It
-seems that the tracing is too slow and so hrtimer_interrupt()
-does an eternal loop, assuming that a new time update has to be done
-(because too much time elapsed during th tracing) after each
-iteration.
-I'm not sure what to do...disabling tracing for hrtimers or....
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> ---
+>  fs/anon_inodes.c   |    2 +-
+>  fs/dcache.c        |    2 +-
+>  fs/inode.c         |   29 ++++++++++++++++++++---------
+>  fs/pipe.c          |    2 +-
+>  include/linux/fs.h |   12 +++++++++++-
+>  net/socket.c       |    2 +-
+>  6 files changed, 35 insertions(+), 14 deletions(-)
+> 
+> diff --git a/fs/anon_inodes.c b/fs/anon_inodes.c
+> index 8bf83cb..89fd36d 100644
+> --- a/fs/anon_inodes.c
+> +++ b/fs/anon_inodes.c
+> @@ -125,7 +125,7 @@ EXPORT_SYMBOL_GPL(anon_inode_getfd);
+>   */
+>  static struct inode *anon_inode_mkinode(void)
+>  {
+> -	struct inode *inode = new_inode(anon_inode_mnt->mnt_sb);
+> +	struct inode *inode = new_inode_single(anon_inode_mnt->mnt_sb);
+> 
+>  	if (!inode)
+>  		return ERR_PTR(-ENOMEM);
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index af3bfb3..3363853 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -231,7 +231,7 @@ static void dput_single(struct dentry *dentry)
+>  		return;
+>  	inode = dentry->d_inode;
+>  	if (inode)
+> -		iput(inode);
+> +		iput_single(inode);
+>  	d_free(dentry);
+>  }
+> 
+> diff --git a/fs/inode.c b/fs/inode.c
+> index dc8e72a..0fdfe1b 100644
+> --- a/fs/inode.c
+> +++ b/fs/inode.c
+> @@ -221,6 +221,13 @@ void destroy_inode(struct inode *inode)
+>  		kmem_cache_free(inode_cachep, (inode));
+>  }
+> 
+> +void iput_single(struct inode *inode)
+> +{
+> +	if (atomic_dec_and_test(&inode->i_count)) {
+> +		destroy_inode(inode);
+> +		percpu_counter_dec(&nr_inodes);
+> +	}
+> +}
+> 
+>  /*
+>   * These are initializations that only need to be done
+> @@ -587,8 +594,9 @@ static int last_ino_get(void)
+>  #endif
+> 
+>  /**
+> - *	new_inode 	- obtain an inode
+> + *	__new_inode 	- obtain an inode
+>   *	@sb: superblock
+> + *  @single: if true, dont link new inode in a list
+>   *
+>   *	Allocates a new inode for given superblock. The default gfp_mask
+>   *	for allocations related to inode->i_mapping is GFP_HIGHUSER_PAGECACHE.
+> @@ -598,7 +606,7 @@ static int last_ino_get(void)
+>   *	newly created inode's mapping
+>   *
+>   */
+> -struct inode *new_inode(struct super_block *sb)
+> +struct inode *__new_inode(struct super_block *sb, int single)
+>  {
+>  	/*
+>  	 * On a 32bit, non LFS stat() call, glibc will generate an EOVERFLOW
+> @@ -607,22 +615,25 @@ struct inode *new_inode(struct super_block *sb)
+>  	 */
+>  	struct inode * inode;
+> 
+> -	spin_lock_prefetch(&inode_lock);
+> -	
+>  	inode = alloc_inode(sb);
+>  	if (inode) {
+>  		percpu_counter_inc(&nr_inodes);
+>  		inode->i_state = 0;
+>  		inode->i_ino = last_ino_get();
+> -		spin_lock(&inode_lock);
+> -		list_add(&inode->i_list, &inode_in_use);
+> -		list_add(&inode->i_sb_list, &sb->s_inodes);
+> -		spin_unlock(&inode_lock);
+> + 		if (single) {
+> +  			INIT_LIST_HEAD(&inode->i_list);
+> +  			INIT_LIST_HEAD(&inode->i_sb_list);
+> + 		} else {
+> +			spin_lock(&inode_lock);
+> +			list_add(&inode->i_list, &inode_in_use);
+> +			list_add(&inode->i_sb_list, &sb->s_inodes);
+> +			spin_unlock(&inode_lock);
+> +		}
+>  	}
+>  	return inode;
+>  }
+> 
+> -EXPORT_SYMBOL(new_inode);
+> +EXPORT_SYMBOL(__new_inode);
+> 
+>  void unlock_new_inode(struct inode *inode)
+>  {
+> diff --git a/fs/pipe.c b/fs/pipe.c
+> index 4de6dd5..8c51a0d 100644
+> --- a/fs/pipe.c
+> +++ b/fs/pipe.c
+> @@ -865,7 +865,7 @@ static struct dentry_operations pipefs_dentry_operations = {
+> 
+>  static struct inode * get_pipe_inode(void)
+>  {
+> -	struct inode *inode = new_inode(pipe_mnt->mnt_sb);
+> +	struct inode *inode = new_inode_single(pipe_mnt->mnt_sb);
+>  	struct pipe_inode_info *pipe;
+> 
+>  	if (!inode)
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index a789346..a702d81 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -1899,7 +1899,17 @@ extern void __iget(struct inode * inode);
+>  extern void iget_failed(struct inode *);
+>  extern void clear_inode(struct inode *);
+>  extern void destroy_inode(struct inode *);
+> -extern struct inode *new_inode(struct super_block *);
+> +extern struct inode *__new_inode(struct super_block *, int);
+> +static inline struct inode *new_inode(struct super_block *sb)
+> +{
+> +	return __new_inode(sb, 0);
+> +}
+> +static inline struct inode *new_inode_single(struct super_block *sb)
+> +{
+> +	return __new_inode(sb, 1);
+> +}
+> +extern void iput_single(struct inode *);
+> +
+>  extern int should_remove_suid(struct dentry *);
+>  extern int file_remove_suid(struct file *);
+> 
+> diff --git a/net/socket.c b/net/socket.c
+> index 353c928..4017409 100644
+> --- a/net/socket.c
+> +++ b/net/socket.c
+> @@ -464,7 +464,7 @@ static struct socket *sock_alloc(void)
+>  	struct inode *inode;
+>  	struct socket *sock;
+> 
+> -	inode = new_inode(sock_mnt->mnt_sb);
+> +	inode = new_inode_single(sock_mnt->mnt_sb);
+>  	if (!inode)
+>  		return NULL;
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
