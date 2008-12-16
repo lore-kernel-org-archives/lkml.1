@@ -1,120 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbYLPNke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756489AbYLPOKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757223AbYLPNke (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 08:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbYLPNj7
+	id S1756489AbYLPOKz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 09:10:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYLPOKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 08:39:59 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:54546 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751643AbYLPNj6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 08:39:58 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@openedhand.com>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 2/2] mfd: Register WM8400 codec device
-Date: Tue, 16 Dec 2008 13:39:56 +0000
-Message-Id: <1229434796-24871-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1229434796-24871-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1229434796-24871-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Tue, 16 Dec 2008 09:10:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48299 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752087AbYLPOKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 09:10:44 -0500
+Date: Tue, 16 Dec 2008 12:10:03 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: trace_seq_printf/.print_line question
+Message-ID: <20081216141003.GK14518@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	=?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Register a child device for the codec in the WM8400.
+Jens, just a FYI about this stuff, not yet ready for reviewing.
 
-Also switch the unregistration of the MFD devices to use the MFD core
-since the current code is hand rolling the same thing.
+Hi Frédéric, Steven,
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/mfd/Kconfig       |    1 +
- drivers/mfd/wm8400-core.c |   31 +++++++++++++++++++++++++------
- 2 files changed, 26 insertions(+), 6 deletions(-)
+	Have you guys ever get into this kind of situation?
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 8cd3dd9..ddfb12b 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -116,6 +116,7 @@ config PMIC_DA903X
- 
- config MFD_WM8400
- 	tristate "Support Wolfson Microelectronics WM8400"
-+	select MFD_CORE
- 	depends on I2C
- 	help
- 	  Support for the Wolfson Microelecronics WM8400 PMIC and audio
-diff --git a/drivers/mfd/wm8400-core.c b/drivers/mfd/wm8400-core.c
-index 6a0cedb..cf30d06 100644
---- a/drivers/mfd/wm8400-core.c
-+++ b/drivers/mfd/wm8400-core.c
-@@ -15,6 +15,7 @@
- #include <linux/bug.h>
- #include <linux/i2c.h>
- #include <linux/kernel.h>
-+#include <linux/mfd/core.h>
- #include <linux/mfd/wm8400-private.h>
- #include <linux/mfd/wm8400-audio.h>
- 
-@@ -239,6 +240,16 @@ void wm8400_reset_codec_reg_cache(struct wm8400 *wm8400)
- }
- EXPORT_SYMBOL_GPL(wm8400_reset_codec_reg_cache);
- 
-+static int wm8400_register_codec(struct wm8400 *wm8400)
-+{
-+	struct mfd_cell cell = {
-+		.name = "wm8400-codec",
-+		.driver_data = wm8400,
-+	};
-+
-+	return mfd_add_devices(wm8400->dev, -1, &cell, 1, NULL, 0);
-+}
-+
- /*
-  * wm8400_init - Generic initialisation
-  *
-@@ -296,24 +307,32 @@ static int wm8400_init(struct wm8400 *wm8400,
- 	reg = (reg & WM8400_CHIP_REV_MASK) >> WM8400_CHIP_REV_SHIFT;
- 	dev_info(wm8400->dev, "WM8400 revision %x\n", reg);
- 
-+	ret = wm8400_register_codec(wm8400);
-+	if (ret != 0) {
-+		dev_err(wm8400->dev, "Failed to register codec\n");
-+		goto err_children;
-+	}
-+
- 	if (pdata && pdata->platform_init) {
- 		ret = pdata->platform_init(wm8400->dev);
--		if (ret != 0)
-+		if (ret != 0) {
- 			dev_err(wm8400->dev, "Platform init failed: %d\n",
- 				ret);
-+			goto err_children;
-+		}
- 	} else
- 		dev_warn(wm8400->dev, "No platform initialisation supplied\n");
- 
-+	return 0;
-+
-+err_children:
-+	mfd_remove_devices(wm8400->dev);
- 	return ret;
- }
- 
- static void wm8400_release(struct wm8400 *wm8400)
- {
--	int i;
--
--	for (i = 0; i < ARRAY_SIZE(wm8400->regulators); i++)
--		if (wm8400->regulators[i].name)
--			platform_device_unregister(&wm8400->regulators[i]);
-+	mfd_remove_devices(wm8400->dev);
- }
- 
- #if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
--- 
-1.5.6.5
+[root@mica linux-2.6-tip]# cat /sys/kernel/debug/tracing/trace | tail
+       kjournald-480   [000]   593.219805:   C   W 2149459 + 8 [0]
+          <idle>-0     [000]   593.219849:   A  WS 2149467 + 8 <- (8,2) 44952
+       kjournald-480   [000]   607.210959:   Q  WS 2149467 + 8
+       kjournald-480   [000]   607.210960:   G  WS 2149467 + 8
+       kjournald-480   [000]   607.210963:   P   N
+       kjournald-480   [000]   607.210964:   I   W 2149467 + 8
+       kjournald-480   [000]   607.210965:   D   W 2149467 + 8
+       kjournald-480   [000]   607.210967:   U   N 1
+       kjournald-480   [000]   607.210971:   C   W 2149467 + 8 [0]
+          <idle>-0     [000]   607.211049: [root@mica linux-2.6-tip]# 
 
+[root@mica linux-2.6-tip]# head /sys/kernel/debug/tracing/trace
+# tracer: blk
+#
+#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+#              | |       |          |         |
+  A   W 2147707 + 8 <- (8,2) 43192
+       kjournald-480   [000]   254.428659:   Q   W 2147707 + 8
+       kjournald-480   [000]   254.428661:   G   W 2147707 + 8
+       kjournald-480   [000]   254.428663:   I   W 100410211 + 8
+         pdflush-261   [000]   147.328259:   P   N
+       kjournald-480   [000]   254.428664:   I   W 2147707 + 8
+[root@mica linux-2.6-tip]# 
+
+This is happening in an experiment I'm doing in porting blktrace to the
+tracing/ring_buffer infrastructure, the problem always happens at this
+function:
+
+static int blk_log_remap(struct trace_seq *s, struct blk_io_entry *t)
+{
+        char rwbs[6];
+        struct blk_io_trace_remap r = { .device = 0, };
+
+        get_pdu_remap(t, &r);
+        t->device = r.device_from;
+        fill_rwbs(rwbs, t);
+        return trace_seq_printf(s, "  A %3s %llu + %u <- (%d,%d) %llu\n",
+                                rwbs, (unsigned long long)t->sector,
+                                t_sec(t), MAJOR(r.device), MINOR(r.device),
+                                (unsigned long long)r.sector);
+}
+
+And the registered .print_line routine does check the return of
+trace_seq_printf:
+
+               if (!ret)
+                        return TRACE_TYPE_PARTIAL_LINE;
+        }
+        default:
+                return TRACE_TYPE_UNHANDLED;
+        }
+
+        return TRACE_TYPE_HANDLED;
+}
+
+Full patch, still WIPish:
+http://oops.ghostprotocols.net:81/acme/blkftrace.patch
+
+- Arnaldo
