@@ -1,100 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756489AbYLPOKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbYLPOLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756489AbYLPOKz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 09:10:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYLPOKp
+	id S1756371AbYLPOLU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 09:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbYLPOKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 09:10:45 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48299 "EHLO mx2.redhat.com"
+	Tue, 16 Dec 2008 09:10:50 -0500
+Received: from co203.xi-lite.net ([149.6.83.203]:46725 "EHLO co203.xi-lite.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752087AbYLPOKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 09:10:44 -0500
-Date: Tue, 16 Dec 2008 12:10:03 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: trace_seq_printf/.print_line question
-Message-ID: <20081216141003.GK14518@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	=?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+	id S1755432AbYLPOKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 09:10:49 -0500
+X-Greylist: delayed 1663 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Dec 2008 09:10:48 EST
+Message-ID: <4947B065.5080405@parrot.com>
+Date: Tue, 16 Dec 2008 14:43:01 +0100
+From: Matthieu CASTET <matthieu.castet@parrot.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+CC: linux-serial@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: s3c24xx : TIOCM_CTS handling problem
+References: <48D242DC.30102@parrot.com>
+In-Reply-To: <48D242DC.30102@parrot.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 16 Dec 2008 13:43:59.0314 (UTC) FILETIME=[592BE320:01C95F84]
+X-AV-Checked: No Virus Found
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens, just a FYI about this stuff, not yet ready for reviewing.
+Matthieu CASTET a écrit :
+> Hi,
+> 
+> there is a problem in samsung soc serial driver with the report of
+> TIOCM_CTS in get_mctrl.
+> 
+> The uart layer check the status of the TIOCM_CTS in the open or
+> set_termios function and cache the result in the tty->hw_stopped flag.
+> 
+> Then when sending data, in the function uart_start, it check
+> tty->hw_stopped flag before calling the start_tx uart driver callback.
+> 
+> 
+> For the samsung uart driver it means :
+> - if the other side is not connected or in a reset state, then CTS
+> signal is not activated
+> - we open and configure the uart. get_mctrl don't report TIOCM_CTS flag.
+> uart layer set tty->hw_stopped flag.
+> - we connect or start the other side. CTS signal become activated.
+> - we send some characters on the uart. This call uart_write which fill
+> uart tx queue and call uart_start. uart_start doesn't call driver
+> start_tx because tty->hw_stopped flag is set.
+> - because driver start_tx is never call, the data is never send on the uart.
+> 
+>>From what I see, working driver managing TIOCM_CTS flag (amba-pl011,
+> 8250), call uart_handle_cts_change when the uart driver detect a CTS
+> signal change (via a interrupt).
+> 
+> Because the samsung controller doesn't generate an interrupt when CTS
+> signal change, we can't call uart_handle_cts_change.
+> 
+> And easy fix could be to always report TIOCM_CTS.
+> 
+Ping ?
 
-Hi Frédéric, Steven,
+The bug is still present on git tree and I have got no replies.
 
-	Have you guys ever get into this kind of situation?
 
-[root@mica linux-2.6-tip]# cat /sys/kernel/debug/tracing/trace | tail
-       kjournald-480   [000]   593.219805:   C   W 2149459 + 8 [0]
-          <idle>-0     [000]   593.219849:   A  WS 2149467 + 8 <- (8,2) 44952
-       kjournald-480   [000]   607.210959:   Q  WS 2149467 + 8
-       kjournald-480   [000]   607.210960:   G  WS 2149467 + 8
-       kjournald-480   [000]   607.210963:   P   N
-       kjournald-480   [000]   607.210964:   I   W 2149467 + 8
-       kjournald-480   [000]   607.210965:   D   W 2149467 + 8
-       kjournald-480   [000]   607.210967:   U   N 1
-       kjournald-480   [000]   607.210971:   C   W 2149467 + 8 [0]
-          <idle>-0     [000]   607.211049: [root@mica linux-2.6-tip]# 
-
-[root@mica linux-2.6-tip]# head /sys/kernel/debug/tracing/trace
-# tracer: blk
-#
-#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-#              | |       |          |         |
-  A   W 2147707 + 8 <- (8,2) 43192
-       kjournald-480   [000]   254.428659:   Q   W 2147707 + 8
-       kjournald-480   [000]   254.428661:   G   W 2147707 + 8
-       kjournald-480   [000]   254.428663:   I   W 100410211 + 8
-         pdflush-261   [000]   147.328259:   P   N
-       kjournald-480   [000]   254.428664:   I   W 2147707 + 8
-[root@mica linux-2.6-tip]# 
-
-This is happening in an experiment I'm doing in porting blktrace to the
-tracing/ring_buffer infrastructure, the problem always happens at this
-function:
-
-static int blk_log_remap(struct trace_seq *s, struct blk_io_entry *t)
-{
-        char rwbs[6];
-        struct blk_io_trace_remap r = { .device = 0, };
-
-        get_pdu_remap(t, &r);
-        t->device = r.device_from;
-        fill_rwbs(rwbs, t);
-        return trace_seq_printf(s, "  A %3s %llu + %u <- (%d,%d) %llu\n",
-                                rwbs, (unsigned long long)t->sector,
-                                t_sec(t), MAJOR(r.device), MINOR(r.device),
-                                (unsigned long long)r.sector);
-}
-
-And the registered .print_line routine does check the return of
-trace_seq_printf:
-
-               if (!ret)
-                        return TRACE_TYPE_PARTIAL_LINE;
-        }
-        default:
-                return TRACE_TYPE_UNHANDLED;
-        }
-
-        return TRACE_TYPE_HANDLED;
-}
-
-Full patch, still WIPish:
-http://oops.ghostprotocols.net:81/acme/blkftrace.patch
-
-- Arnaldo
+Matthieu
