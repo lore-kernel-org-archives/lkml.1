@@ -1,91 +1,279 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759127AbYLPXq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759314AbYLPXt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759127AbYLPXq7 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 18:46:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbYLPXqr
+	id S1759314AbYLPXt5 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 18:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbYLPXtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 18:46:47 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:46811 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752614AbYLPXqp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 18:46:45 -0500
-Date: Tue, 16 Dec 2008 16:46:38 -0700
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH] vfs: introduce helper function to safely NUL-terminate
-	symlinks
-In-reply-to: <1229442720-31056-6-git-send-email-duaneg@dghda.com>
- <1229442720-31056-2-git-send-email-duaneg@dghda.com>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        Al Viro <viro@zeniv.linux.org.uk>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org
-Message-id: <20081216234638.GX5000@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <1229442720-31056-1-git-send-email-duaneg@dghda.com>
- <1229442720-31056-2-git-send-email-duaneg@dghda.com>
- <1229442720-31056-3-git-send-email-duaneg@dghda.com>
- <1229442720-31056-4-git-send-email-duaneg@dghda.com>
- <1229442720-31056-5-git-send-email-duaneg@dghda.com>
- <1229442720-31056-6-git-send-email-duaneg@dghda.com>
- <1229442720-31056-1-git-send-email-duaneg@dghda.com>
- <1229442720-31056-2-git-send-email-duaneg@dghda.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 16 Dec 2008 18:49:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57433 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755504AbYLPXtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 18:49:43 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
+Subject: Re: acpi_os_allocate(GFP_KERNEL) (was Re: acpi_evaluate_integer broken by design)
+Date: Wed, 17 Dec 2008 00:49:38 +0100
+User-Agent: KMail/1.9.9
+Cc: pavel@suse.cz, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-acpi@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>
+References: <20081125110508.GA1943@elf.ucw.cz> <200812161634.25838.rjw@sisk.pl> <200812170040.07977.rjw@sisk.pl>
+In-Reply-To: <200812170040.07977.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812170049.38464.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 16, 2008  15:51 +0000, Duane Griffin wrote:
-> A number of filesystems were potentially triggering kernel bugs due to
-> corrupted symlink names on disk. This helper helps safely terminate the
-> names.
+On Wednesday, 17 of December 2008, Rafael J. Wysocki wrote:
+> On Tuesday, 16 of December 2008, Rafael J. Wysocki wrote:
+> > On Tuesday, 16 of December 2008, Andrew Morton wrote:
+> > > On Tue, 16 Dec 2008 00:24:43 -0500 (EST) Len Brown <lenb@kernel.org> wrote:
+> [--snip--]
+> > > 
+> > > (please use __weak)
+> > > 
+> > > Whether it's "system_resume_irqsoff" or "system_suspend_irqs_off",
+> > > neither of them actually got used ;)
+> > > 
+> > > If the code is really this simple and localised then perhaps:
+> > > 
+> > > gfp_t acpi_aml_gfp_flags = GFP_ATOMIC;
+> > > 
+> > > void __weak arch_suspend_disable_irqs(void)
+> > > {
+> > > 	local_irq_disable();
+> > > 	acpi_aml_gfp_flags = GFP_ATOMIC;
+> > > }
+> > > 
+> > > /* default implementation */
+> > > void __weak arch_suspend_enable_irqs(void)
+> > > {
+> > > 	local_irq_enable();
+> > > 	acpi_aml_gfp_flags = GFP_KERNEL;
+> > > }
+> > > 
+> > > would suffice.  Dunno.
+> > 
+> > arch_suspend_disable_irqs() and arch_suspend_enable_irqs() are only used during
+> > suspend to RAM, but we have the 'suspend atomic context' during hibernation as
+> > well.
 > 
-> +static inline void nd_terminate_link(void *name,unsigned len,unsigned maxlen)
-> +{
-> +	((char *) name)[min(len, maxlen)] = '\0';
-> +}
+> In fact, we should be using GFP_ATOMIC already while devices are being
+> suspended, so we can switch from GFP_KERNEL to GFP_ATOMIC even before
+> interrupts are enabled.
+> 
+> In particular, we can do that in the suspend/hibernation platform callback as
+> shown in the patch below.
+> 
+> The patch hasn't been tested and is indended for discussion.
 
-> @@ -4200,9 +4201,11 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
->  	} else if (S_ISLNK(inode->i_mode)) {
-> +		if (ext4_inode_is_fast_symlink(inode)) {
->  			inode->i_op = &ext4_fast_symlink_inode_operations;
-> +			nd_terminate_link(ei->i_data, inode->i_size,
-> +				sizeof(ei->i_data));
-> +		} else {
->  			inode->i_op = &ext4_symlink_inode_operations;
->  			ext4_set_aops(inode);
->  		}
+Below is another patch for discussion.
 
-With sizeof(ei->i_data) = 15 * 4 = 60 bytes, this will set ei->i_data[60]
-as NUL, which is writing 1 byte beyond the end of the array.
+It standardizes the switching of interrupts etc. during suspend to RAM and
+hibernation and adds disabling/enabling of preemption so that the
+cond_resched() in the ACPI code doesn't try to schedule.
 
-Note that in ext[234]_symlink() the check for fast symlinks is:
+The patch hasn't been tested yet.
 
-	l = strlen(symname)+1;
-        if (l > sizeof (EXT3_I(inode)->i_data)) {
-		inode->i_op = &ext3_symlink_inode_operations;
-	} else {
-		inode->i_op = &ext3_fast_symlink_inode_operations;
-		inode->i_size = l-1;
-	}
+Thanks,
+Rafael
 
-so in fact the fast symlinks should always have space for a trailing NUL
-character, and "sizeof(ei->i_data) - 1" is the right maxlen to use for
-ext[234].
+---
+ include/linux/suspend.h |    3 +
+ kernel/power/disk.c     |   26 ++++++++--------
+ kernel/power/main.c     |   75 ++++++++++++++++++++++++++++++++++++------------
+ kernel/power/power.h    |    4 ++
+ 4 files changed, 78 insertions(+), 30 deletions(-)
 
-That might not be true for other filesystems, in which case you would
-need to add a "padding" field after the symlink name in memory to hold
-the trailing NUL.
-
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
-
+Index: linux-2.6/kernel/power/disk.c
+===================================================================
+--- linux-2.6.orig/kernel/power/disk.c
++++ linux-2.6/kernel/power/disk.c
+@@ -214,8 +214,8 @@ static int create_image(int platform_mod
+ 	if (error)
+ 		return error;
+ 
+-	device_pm_lock();
+-	local_irq_disable();
++	suspend_disable_concurrency();
++
+ 	/* At this point, device_suspend() has been called, but *not*
+ 	 * device_power_down(). We *must* call device_power_down() now.
+ 	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
+@@ -248,9 +248,10 @@ static int create_image(int platform_mod
+ 	 */
+ 	device_power_up(in_suspend ?
+ 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
++
+  Enable_irqs:
+-	local_irq_enable();
+-	device_pm_unlock();
++	suspend_enable_concurrency();
++
+ 	return error;
+ }
+ 
+@@ -330,8 +331,8 @@ static int resume_target_kernel(void)
+ {
+ 	int error;
+ 
+-	device_pm_lock();
+-	local_irq_disable();
++	suspend_disable_concurrency();
++
+ 	error = device_power_down(PMSG_QUIESCE);
+ 	if (error) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down, "
+@@ -361,9 +362,10 @@ static int resume_target_kernel(void)
+ 	restore_processor_state();
+ 	touch_softlockup_watchdog();
+ 	device_power_up(PMSG_RECOVER);
++
+  Enable_irqs:
+-	local_irq_enable();
+-	device_pm_unlock();
++	suspend_enable_concurrency();
++
+ 	return error;
+ }
+ 
+@@ -442,16 +444,16 @@ int hibernation_platform_enter(void)
+ 	if (error)
+ 		goto Finish;
+ 
+-	device_pm_lock();
+-	local_irq_disable();
++	suspend_disable_concurrency();
++
+ 	error = device_power_down(PMSG_HIBERNATE);
+ 	if (!error) {
+ 		hibernation_ops->enter();
+ 		/* We should never get here */
+ 		while (1);
+ 	}
+-	local_irq_enable();
+-	device_pm_unlock();
++
++	suspend_enable_concurrency();
+ 
+ 	/*
+ 	 * We don't need to reenable the nonboot CPUs or resume consoles, since
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -55,6 +55,46 @@ int pm_notifier_call_chain(unsigned long
+ 			== NOTIFY_BAD) ? -EINVAL : 0;
+ }
+ 
++/* default implementation */
++void __weak arch_suspend_disable_irqs(void)
++{
++	local_irq_disable();
++}
++
++/* default implementation */
++void __weak arch_suspend_enable_irqs(void)
++{
++	local_irq_enable();
++}
++
++/**
++ *	suspend_disable_concurrency - disable the execution of any other code
++ *                                    in parallel with the calling thread
++ *
++ *	To be executed with only one CPU on line.
++ */
++void suspend_disable_concurrency(void)
++{
++	device_pm_lock();
++	preempt_disable();
++	arch_suspend_disable_irqs();
++	BUG_ON(!irqs_disabled());
++}
++
++/**
++ *	suspend_enable_concurrency - allow other code to be executed in parallel
++ *                                   with the calling thread
++ *
++ *	To be executed with only one CPU on line.
++ */
++void suspend_enable_concurrency(void)
++{
++	arch_suspend_enable_irqs();
++	BUG_ON(irqs_disabled());
++	preempt_enable_no_resched();
++	device_pm_unlock();
++}
++
+ #ifdef CONFIG_PM_DEBUG
+ int pm_test_level = TEST_NONE;
+ 
+@@ -268,18 +321,6 @@ static int suspend_prepare(void)
+ 	return error;
+ }
+ 
+-/* default implementation */
+-void __attribute__ ((weak)) arch_suspend_disable_irqs(void)
+-{
+-	local_irq_disable();
+-}
+-
+-/* default implementation */
+-void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
+-{
+-	local_irq_enable();
+-}
+-
+ /**
+  *	suspend_enter - enter the desired system sleep state.
+  *	@state:		state to enter
+@@ -290,9 +331,7 @@ static int suspend_enter(suspend_state_t
+ {
+ 	int error = 0;
+ 
+-	device_pm_lock();
+-	arch_suspend_disable_irqs();
+-	BUG_ON(!irqs_disabled());
++	suspend_disable_concurrency();
+ 
+ 	if ((error = device_power_down(PMSG_SUSPEND))) {
+ 		printk(KERN_ERR "PM: Some devices failed to power down\n");
+@@ -303,10 +342,10 @@ static int suspend_enter(suspend_state_t
+ 		error = suspend_ops->enter(state);
+ 
+ 	device_power_up(PMSG_RESUME);
++
+  Done:
+-	arch_suspend_enable_irqs();
+-	BUG_ON(irqs_disabled());
+-	device_pm_unlock();
++	suspend_enable_concurrency();
++
+ 	return error;
+ }
+ 
+Index: linux-2.6/kernel/power/power.h
+===================================================================
+--- linux-2.6.orig/kernel/power/power.h
++++ linux-2.6/kernel/power/power.h
+@@ -163,11 +163,15 @@ extern void swsusp_show_speed(struct tim
+ #ifdef CONFIG_SUSPEND
+ /* kernel/power/main.c */
+ extern int suspend_devices_and_enter(suspend_state_t state);
++extern void suspend_disable_concurrency(void);
++extern void suspend_enable_concurrency(void);
+ #else /* !CONFIG_SUSPEND */
+ static inline int suspend_devices_and_enter(suspend_state_t state)
+ {
+ 	return -ENOSYS;
+ }
++static inline void suspend_disable_concurrency(void) {}
++static inline void suspend_enable_concurrency(void) {}
+ #endif /* !CONFIG_SUSPEND */
+ 
+ #ifdef CONFIG_PM_SLEEP
