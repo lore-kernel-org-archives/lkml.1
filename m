@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757090AbYLPLp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbYLPLpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757090AbYLPLp2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 06:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYLPLpR
+	id S1757520AbYLPLpu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 06:45:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbYLPLph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 06:45:17 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:3920 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753199AbYLPLpQ (ORCPT
+	Tue, 16 Dec 2008 06:45:37 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:39859 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754993AbYLPLpg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 06:45:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=WICfOUcyg6ZoHaSxLwCTpP6dclx9QVDjf+RfMYZXhjXWAFmINNGe+kK7QVIggaO+IL
-         W8NZbQvlM8gEob3EFtIMDb6u/mPInqqHZmcaP6l+xini6jzKIkBG2tr1tAB5+qBLkcuS
-         LUkqZx/IpuboKYbyfCZlgOzaVCjGA+597WGks=
-Message-ID: <2f11576a0812160345t1cca65eg34064dbbcafcd280@mail.gmail.com>
-Date: Tue, 16 Dec 2008 20:45:14 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [mmotm and linux-next][PATCH] irq: enclose irq_desc_lock_class in CONFIG_LOCKDEP
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>
-In-Reply-To: <20081216112019.GE4299@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Dec 2008 06:45:36 -0500
+Message-Id: <4947A304.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 16 Dec 2008 11:45:56 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] i386: add some compile time checks to mem_init()
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20081216170635.DBB8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20081216003428.43d37b6b.akpm@linux-foundation.org>
-	 <20081216101827.GB27481@elte.hu> <20081216102340.GA1003@elte.hu>
-	 <2f11576a0812160315g3dea988ayfadba2117e172a2c@mail.gmail.com>
-	 <20081216112019.GE4299@elte.hu>
-X-Google-Sender-Auth: c555d6f36a14eccb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> > actually, this breaks the build on !SPARSEIRQ because we will use that
->> > class in the non-sparseirq case. So we've converted a build warning to
->> > a build failure ;-)
->>
->> Please give me your .config and tell me your arch. my ia64 box (ia64 is
->> !SPARSEIRQ) can build the akpm patch.
->
-> The expected build failure is obvious from reading the code:
->
->  #ifdef CONFIG_TRACE_IRQFLAGS
->  void early_init_irq_lock_class(void)
->  {
->  #ifndef CONFIG_SPARSE_IRQ
->         struct irq_desc *desc;
->         int i;
->
->         for_each_irq_desc(i, desc) {
->                 if (!desc)
->                         continue;
->
->                 lockdep_set_class(&desc->lock, &irq_desc_lock_class);
->
-> Note that it's an #ifndef sparseirq, not an #ifdef sparseirq condition.
+Some of the inconsistencies checked for at run time can be detected at
+build time already, so duplicate the checks done at run time to also be
+done at build time.
 
-I see. thanks.
-It seems my first proposal is better.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-or, following #ifdef ?
+---
+ arch/x86/mm/init_32.c |   16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-#if defined(CONFIG_SPARSE_IRQ) || defined(CONFIG_TRACE_IRQFLAGS)
+--- linux-2.6.28-rc8/arch/x86/mm/init_32.c	2008-12-11 14:36:52.000000000 +0100
++++ 2.6.28-rc8-i386-mem-init-build-check/arch/x86/mm/init_32.c	2008-12-15 11:35:43.000000000 +0100
+@@ -1040,11 +1040,25 @@ void __init mem_init(void)
+ 		(unsigned long)&_text, (unsigned long)&_etext,
+ 		((unsigned long)&_etext - (unsigned long)&_text) >> 10);
+ 
++	/*
++	 * Check boundaries twice: Some fundamental inconsistencies can
++	 * be detected at build time already.
++	 */
++#define __FIXADDR_TOP (-PAGE_SIZE)
++#ifdef CONFIG_HIGHMEM
++	BUILD_BUG_ON(PKMAP_BASE + LAST_PKMAP*PAGE_SIZE	> FIXADDR_START);
++	BUILD_BUG_ON(VMALLOC_END			> PKMAP_BASE);
++#endif
++#define high_memory (-128UL << 20)
++	BUILD_BUG_ON(VMALLOC_START			>= VMALLOC_END);
++#undef high_memory
++#undef __FIXADDR_TOP
++
+ #ifdef CONFIG_HIGHMEM
+ 	BUG_ON(PKMAP_BASE + LAST_PKMAP*PAGE_SIZE	> FIXADDR_START);
+ 	BUG_ON(VMALLOC_END				> PKMAP_BASE);
+ #endif
+-	BUG_ON(VMALLOC_START				> VMALLOC_END);
++	BUG_ON(VMALLOC_START				>= VMALLOC_END);
+ 	BUG_ON((unsigned long)high_memory		> VMALLOC_START);
+ 
+ 	if (boot_cpu_data.wp_works_ok < 0)
 
- /*
- * lockdep: we want to handle all irq_desc locks as a single lock-class:
- */
- static struct lock_class_key irq_desc_lock_class;
 
-#endif
+
