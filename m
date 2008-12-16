@@ -1,131 +1,182 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759451AbYLPXrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758506AbYLPX6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759451AbYLPXrZ (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 18:47:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757536AbYLPXqu
+	id S1758506AbYLPX6y (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 18:58:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYLPX6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 18:46:50 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:9699 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756111AbYLPXqs convert rfc822-to-8bit (ORCPT
+	Tue, 16 Dec 2008 18:58:43 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:17707 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbYLPX6m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 18:46:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=v32zm0YfPSKx3sVKsBmmIiMi0An0Z57gh5W5z0JloEnnqgTZhJeTsSYnUdnySNmZic
-         kyds5tYbDZ5gf5roalQc2TM5vIQwYKFQ9Qvujz7OS7YeXblRW7mG50RZ5NaLNTdCk/hE
-         5Oz1y0PYIGjLzoTqPJKcXmPfSVr84kB/OacpY=
-Message-ID: <c62985530812161546j69bef7bcm5c495feb1a9c5458@mail.gmail.com>
-Date: Wed, 17 Dec 2008 00:46:46 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH][RFC 2/23]: SCST core
-Cc: "Vladislav Bolkhovitin" <vst@vlnb.net>,
-        "Steven Rostedt" <srostedt@redhat.com>,
-        "Sam Ravnborg" <sam@ravnborg.org>, linux-scsi@vger.kernel.org,
-        "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-        "Andrew Morton" <akpm@linux-foundation.org>,
-        "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-        "Mike Christie" <michaelc@cs.wisc.edu>,
-        "Jeff Garzik" <jeff@garzik.org>, "Boaz Harrosh" <bharrosh@panasas.com>,
-        "Linus Torvalds" <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-        "Bart Van Assche" <bart.vanassche@gmail.com>,
-        "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-In-Reply-To: <20081216222203.GI14787@elte.hu>
+	Tue, 16 Dec 2008 18:58:42 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:content-type:content-transfer-encoding;
+	b=FmYnpeVTWRoBXuvQ9YEdlef+XiY9tch+6Jv343KOX1o6wrojWR9tVtUExN5AQ+84b
+	K0iDNEhnQ1ZfygyXaj0nw==
 MIME-Version: 1.0
+Date: Tue, 16 Dec 2008 15:58:38 -0800
+Message-ID: <6599ad830812161558t4da0e5e7l4ad7d6f3a0dfbe6e@mail.gmail.com>
+Subject: [PATCH] Make cgroup_path() RCU-safe
+From: Paul Menage <menage@google.com>
+To: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
+        Peter Zijlstra <a.p.zijlstra@chello.nl>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <49400ACD.3070502@vlnb.net> <49414DBE.6070801@vlnb.net>
-	 <20081211210917.GB27010@uranus.ravnborg.org>
-	 <4942BA85.3070408@vlnb.net>
-	 <1229118607.24995.18.camel@localhost.localdomain>
-	 <4943CAAB.4050008@vlnb.net>
-	 <c62985530812131635k362fc8d2q3c65e8284141f491@mail.gmail.com>
-	 <20081216214926.GU14787@elte.hu>
-	 <c62985530812161413j59fc0fdy31024a540bf0c197@mail.gmail.com>
-	 <20081216222203.GI14787@elte.hu>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/16 Ingo Molnar <mingo@elte.hu>:
->
-> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
->
->> 2008/12/16 Ingo Molnar <mingo@elte.hu>:
->> >
->> > * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
->> >
->> >> > All the above functionality is almost what we need. The only thing
->> >> > left, which I forgot to mention, is possibility to log also functions
->> >> > return value on exit. This is what TRACE_EXIT_RES() in SCST does. Is
->> >> > it possible to add those?
->> >>
->> >> I want to add that on the function graph tracer. That can be done pretty
->> >> easily. The only problem comes with the type of the return value. Would
->> >> this tracer be supposed to always return a 64 bits value regardless of
->> >> the real typ of the value? There would be some pointless bytes on most
->> >> return values. I don't know how to proceed for this problem.
->> >
->> > Things like mov ...,%eax are zero-extend so they'll zap the high 32 bits.
->>
->>
->> That's right, but the problem occurs under 32 bits. The return values
->> for 64 bits are in eax and edx. And most of the time, the high part
->> (edx) will be junk.
->
-> for wider types i'd suggest to just print the low bits. Most of the
-> interesting return types fit into machine word.
->
->> > The real problem are byte return values generated via things like:
->> >
->> >   movb $1, %al
->> >
->> > those wont zero-extend, so you could get garbage in the output. One
->> > approach would be to try a quick hack just to see how common a problem
->> > this is.
->>
->>
->> Yes, I will try something.
->>
->> > We could extract the return type from the debuginfo, hash it in a
->> > read-mostly table and then look it up, but that seems complex both in
->> > terms of build overhead and in terms of runtime overhead.
->>
->> I thought about it too and as you say it's rather complex. And thinking
->> about non primitive types (like pid_t....) that would require a second
->> pass of analysis to retrieve the corresponding primitive...
->
-> structure returns would be rather evil to handle, agreed.
->
-> Unrelated:
->
-> it would be really nice if we could extend ftrace to trace system calls
-> and their parameters and return values. We used to have that in the
-> latency-tracer in -rt, and it was rather useful. Controlled by a
-> trace_option i guess - and blendable into any of the tracer outputs
-> (function tracer most notably).
->
-> Explicit calls in the entry.S files would be OK for this - but maybe we
-> can get this via the tricky use of a TIF_ flags as well, to force the code
-> into the ptrace callbacks and then divert it for ftrace's pleasure?
->
->        Ingo
->
+Make cgroup_path() RCU safe
 
-I recently thought about making a syscalls tracer and only thought
-about the tracepoints. But that could be better to
-trace them and all the function they call with the function graph
-tracer. I think about the "graph" one because time of execution
-measure could be useful for the -rt development.
+This patch fixes races between /proc/sched_debug by freeing
+cgroup objects via an RCU callback. Thus any cgroup reference obtained
+from an RCU-safe source will remain valid during the RCU section. Since
+dentries are also RCU-safe, this allows us to traverse up the tree safely.
 
-I think that putting new calls on entryxx.S would be an overload and
-would overlap what already does ptrace on syscall entry/exit.
-So I like the idea of using the ptrace callbacks by manipulating the TIF_ flags.
+Additionally, make cgroup_path() check for a NULL cgrp->dentry to avoid
+trying to report a path for a partially-created cgroup.
 
-Yeah that's interesting. I will do that for 2.6.30 :-)
+Signed-off-by: Paul Menage <menage@google.com>
+
+--
+
+There are more RCU changes that I can make for 2.6.29+, but this
+should fix the problem in 2.6.28
+
+ include/linux/cgroup.h |   11 ++++++++++-
+ kernel/cgroup.c        |   33 ++++++++++++++++++++++-----------
+ 2 files changed, 32 insertions(+), 12 deletions(-)
+
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index f68dfd8..3f46212 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -116,7 +116,7 @@ struct cgroup {
+ 	struct list_head children;	/* my children */
+
+ 	struct cgroup *parent;	/* my parent */
+-	struct dentry *dentry;	  	/* cgroup fs entry */
++	struct dentry *dentry;	  	/* cgroup fs entry, RCU protected */
+
+ 	/* Private pointers for each registered subsystem */
+ 	struct cgroup_subsys_state *subsys[CGROUP_SUBSYS_COUNT];
+@@ -145,6 +145,9 @@ struct cgroup {
+ 	int pids_use_count;
+ 	/* Length of the current tasks_pids array */
+ 	int pids_length;
++
++	/* For RCU-protected deletion */
++	struct rcu_head rcu_head;
+ };
+
+ /* A css_set is a structure holding pointers to a set of
+@@ -305,6 +308,12 @@ int cgroup_add_files(struct cgroup *cgrp,
+
+ int cgroup_is_removed(const struct cgroup *cgrp);
+
++/*
++ * cgroup_path() fills in a filesystem-like path for the given cgroup
++ * into "buf", up to "buflen" characters. Should be called with
++ * cgroup_mutex held, or else in an RCU section with an RCU-protected
++ * cgroup reference
++ */
+ int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen);
+
+ int cgroup_task_count(const struct cgroup *cgrp);
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index f9d9467..43fa013 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -271,7 +271,7 @@ static void __put_css_set(struct css_set *cg, int taskexit)
+
+ 	rcu_read_lock();
+ 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+-		struct cgroup *cgrp = cg->subsys[i]->cgroup;
++		struct cgroup *cgrp = rcu_dereference(cg->subsys[i]->cgroup);
+ 		if (atomic_dec_and_test(&cgrp->count) &&
+ 		    notify_on_release(cgrp)) {
+ 			if (taskexit)
+@@ -595,6 +595,18 @@ static void cgroup_call_pre_destroy(struct cgroup *cgrp)
+ 	return;
+ }
+
++static void free_cgroup_rcu(struct rcu_head *obj)
++{
++	struct cgroup *cgrp = container_of(obj, struct cgroup, rcu_head);
++	/*
++	 * Drop the active superblock reference that we took when we
++	 * created the cgroup
++	 */
++	deactivate_super(cgrp->root->sb);
++
++	kfree(cgrp);
++}
++
+ static void cgroup_diput(struct dentry *dentry, struct inode *inode)
+ {
+ 	/* is dentry a directory ? if so, kfree() associated cgroup */
+@@ -620,11 +632,7 @@ static void cgroup_diput(struct dentry *dentry,
+struct inode *inode)
+ 		cgrp->root->number_of_cgroups--;
+ 		mutex_unlock(&cgroup_mutex);
+
+-		/* Drop the active superblock reference that we took when we
+-		 * created the cgroup */
+-		deactivate_super(cgrp->root->sb);
+-
+-		kfree(cgrp);
++		call_rcu(&cgrp->rcu_head, free_cgroup_rcu);
+ 	}
+ 	iput(inode);
+ }
+@@ -1134,14 +1142,16 @@ static inline struct cftype *__d_cft(struct
+dentry *dentry)
+  * @buf: the buffer to write the path into
+  * @buflen: the length of the buffer
+  *
+- * Called with cgroup_mutex held. Writes path of cgroup into buf.
+- * Returns 0 on success, -errno on error.
++ * Called with cgroup_mutex held or else with an RCU-protected cgroup
++ * reference.  Writes path of cgroup into buf.  Returns 0 on success,
++ * -errno on error.
+  */
+ int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen)
+ {
+ 	char *start;
++	struct dentry *dentry = rcu_dereference(cgrp->dentry);
+
+-	if (cgrp == dummytop) {
++	if (!dentry || cgrp == dummytop) {
+ 		/*
+ 		 * Inactive subsystems have no dentry for their root
+ 		 * cgroup
+@@ -1154,13 +1164,14 @@ int cgroup_path(const struct cgroup *cgrp,
+char *buf, int buflen)
+
+ 	*--start = '\0';
+ 	for (;;) {
+-		int len = cgrp->dentry->d_name.len;
++		int len = dentry->d_name.len;
+ 		if ((start -= len) < buf)
+ 			return -ENAMETOOLONG;
+ 		memcpy(start, cgrp->dentry->d_name.name, len);
+ 		cgrp = cgrp->parent;
+ 		if (!cgrp)
+ 			break;
++		dentry = rcu_dereference(cgrp->dentry);
+ 		if (!cgrp->parent)
+ 			continue;
+ 		if (--start < buf)
+@@ -1663,7 +1674,7 @@ static int cgroup_create_dir(struct cgroup
+*cgrp, struct dentry *dentry,
+ 	if (!error) {
+ 		dentry->d_fsdata = cgrp;
+ 		inc_nlink(parent->d_inode);
+-		cgrp->dentry = dentry;
++		rcu_assign_pointer(cgrp->dentry, dentry);
+ 		dget(dentry);
+ 	}
+ 	dput(dentry);
