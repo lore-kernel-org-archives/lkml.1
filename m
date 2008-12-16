@@ -1,56 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbYLPJ5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbYLPKGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbYLPJ5j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 04:57:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYLPJ5a
+	id S1754107AbYLPKGe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 05:06:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYLPKGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 04:57:30 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:57146 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751028AbYLPJ53 convert rfc822-to-8bit (ORCPT
+	Tue, 16 Dec 2008 05:06:24 -0500
+Received: from smtp-vbr1.xs4all.nl ([194.109.24.21]:1868 "EHLO
+	smtp-vbr1.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752016AbYLPKGX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 04:57:29 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Subject: Re: [PATCH v2] Add preadv and pwritev system calls.
-Date: Tue, 16 Dec 2008 10:57:02 +0100
+	Tue, 16 Dec 2008 05:06:23 -0500
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [BUG] cdev_put() race condition
+Date: Tue, 16 Dec 2008 11:06:03 +0100
 User-Agent: KMail/1.9.9
-Cc: Jennifer Pioch <piochjennifer@googlemail.com>,
-       opensolaris-code@opensolaris.org, opensolaris-rfe@opensolaris.org,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
-References: <1229090440-32120-1-git-send-email-kraxel@redhat.com> <67079b830812150837o12adaa1awe40b0759bbea1f7a@mail.gmail.com> <4946C160.2090505@redhat.com>
-In-Reply-To: <4946C160.2090505@redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Cc: linux-kernel@vger.kernel.org, v4l <video4linux-list@redhat.com>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>
+References: <200812082156.26522.hverkuil@xs4all.nl>
+In-Reply-To: <200812082156.26522.hverkuil@xs4all.nl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812161057.03025.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+/ANAQ+vizeEfT3qep/qIZHKWeJHWqiaA24En
- eYFwEEQCmc66uEWT3gtg+LNnwJFAp3ei+dTtYJqjH9KTfe+WZj
- AUc6xvm7GbZx6BBDlDxfA==
+Message-Id: <200812161106.03925.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 December 2008, Gerd Hoffmann wrote:
-> Jennifer Pioch wrote:
-> > On 12/12/08, Gerd Hoffmann <kraxel@redhat.com> wrote:
-> >> Free- and OpenBSD have it too.  For Solaris I've found a feature request
-> >>  only.  Dunno about MacOS/Darwin.  Other un*xes which are important these
-> >>  days?
-> > 
-> > Do you know the ID of the feature request?
-> 
-> #1167819 @ bugs.opensolaris.org
-> 
+On Monday 08 December 2008 21:56:26 Hans Verkuil wrote:
+> Hi Greg,
+>
+> Laurent found a race condition in the uvc driver that we traced to
+> the way chrdev_open and cdev_put/get work.
+>
+> You need the following ingredients to reproduce it:
+>
+> 1) a hot-pluggable char device like an USB webcam.
+> 2) a manually created device node for such a webcam instead of
+> relying on udev.
+>
+> In order to easily force this situation you would also need to add a
+> delay to the char device's release() function. For webcams that would
+> be at the top of v4l2_chardev_release() in
+> drivers/media/video/v4l2-dev.c. But adding a delay to e.g. cdev_purge
+> would have the same effect.
+>
+> The sequence of events in the case of a webcam is as follows:
+>
+> 1) The USB device is removed, causing a disconnect.
+>
+> 2) The webcam driver unregisters the video device which in turn calls
+> cdev_del().
+>
+> 3) When the last application using the device is closed, the cdev is
+> released when the kref of the cdev's kobject goes to 0.
+>
+> 4) If the kref's release() call takes a while due to e.g. extra
+> cleanup in the case of a webcam, then another application can try to
+> open the video device. Note that this requires a device node created
+> with mknod, otherwise the device nodes would already have been
+> removed by udev.
+>
+> 5) chrdev_open checks inode->i_cdev. If this is NULL (i.e. this
+> device node was never accessed before), then all is fine since
+> kobj_lookup will fail because cdev_del() has been called earlier.
+> However, if this device node was used earlier, then the else part is
+> called:
+> cdev_get(p). This 'p' is the cdev that is being released. Since the
+> kref count is 0 you will get a WARN message from kref_get, but the
+> code continues on, the f_op->open will (hopefully) return
+> more-or-less gracefully with an error and the cdev_put at the end
+> will cause the refcount to go to 0 again, which results in a SECOND
+> call to the kref's release function!
+>
+> See this link for the original discussion on the v4l list containing
+> stack traces an a patch that you need if you want to (and can) test
+> this with the uvc driver:
+>
+> http://www.spinics.net/lists/vfl/msg39967.html
+>
+> Reading Documentation/kref.txt leads me to the conclusion that a
+> mutex should be introduced to prevent cdev_get from being called
+> while cdev_put is in progress. It should be a mutex instead of a
+> spinlock because the kref's release() can do all sorts of cleanups,
+> some of which might involve waits.
+>
+> I think that replacing cdev_lock with a mutex, adding it to
+> cdev_put(), cdev_del() and removing it from cdev_purge() should do
+> the trick (I hope).
+>
+> BTW: shouldn't cdev_del() call cdev_put() instead of kobject_put()?
+> If I understand it correctly then cdev_add calls cdev_get (through
+> exact_lock()), so cdev_del should do the reverse, right?
+>
+> Regards,
+>
+> 	Hans
 
-Looks like they've been working on it for some time:
-"Submit Date   25-MAY-1994"!
+Hi Greg,
 
-	Arnd <><
+Will you have time to look at this? I can try to make a patch for this, 
+but I'd like to get your feedback first.
+
+Regards,
+
+	Hans
+
+-- 
+Hans Verkuil - video4linux developer - sponsored by TANDBERG
