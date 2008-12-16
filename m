@@ -1,317 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758500AbYLPPRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbYLPPSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758500AbYLPPRn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 10:17:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbYLPPRb
+	id S1757417AbYLPPSA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 10:18:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbYLPPRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 10:17:31 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:24880 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752402AbYLPPR3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 10:17:29 -0500
-Message-ID: <4947C685.1000800@panasas.com>
-Date: Tue, 16 Dec 2008 17:17:25 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
-MIME-Version: 1.0
-To: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/9] exofs: file and file_inode operations
-References: <4947BFAA.4030208@panasas.com>
-In-Reply-To: <4947BFAA.4030208@panasas.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Dec 2008 15:15:57.0662 (UTC) FILETIME=[325CF7E0:01C95F91]
+	Tue, 16 Dec 2008 10:17:39 -0500
+Received: from smtp02.uc3m.es ([163.117.176.132]:45702 "EHLO smtp02.uc3m.es"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758114AbYLPPRi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 10:17:38 -0500
+From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
+Message-Id: <200812161517.mBGFHUE07109@inv.it.uc3m.es>
+Subject: Re: time_is_after_jiffies misnomer
+In-Reply-To: <20081216144608.GA19675@cmpxchg.org> from "Johannes Weiner" at 
+	"Dec16, 2008 03:46:08 pm"
+To: "Johannes Weiner" <hannes@cmpxchg.org>
+Date: Tue, 16 Dec 2008 16:17:30 +0100 (MET)
+CC: "linux kernel" <linux-kernel@vger.kernel.org>
+X-Anonymously-To: 
+Reply-To: ptb@inv.it.uc3m.es
+X-message-flag: Had your Outlook virus, today?  
+	http://www.counterpane.com/crypto-gram-0103.html#4
+X-WebTV-Stationery: Standard\; BGColor=black\; TextColor=black
+Reply-By: Sat, 1 Apr 2006 14:21:08 -0700
+X-Mailer: ELM [version 2.4ME+ PL66 (25)]
+X-imss-version: 2.051
+X-imss-result: Passed
+X-imss-scanInfo: M:B L:N SM:2
+X-imss-tmaseResult: TT:1 TS:-14.8850 TC:1F TRN:35 TV:5.5.1026(16344.000)
+X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
+X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Also sprach Johannes Weiner:"
+> On Tue, Dec 16, 2008 at 12:31:41PM +0100, Peter T. Breuer wrote:
+> > 
+> > I thought at first that
+> > 
+> >     time_is_after_jiffies(foo)
+> > 
+> > meant that the current time is later than foo jiffies.
+> 
+> 'foo jiffies'?
 
-implementation of the file_operations and inode_operations for
-regular data files.
 
-Most file_operations are generic vfs implementations except:
-- exofs_truncate will truncate the OSD object as well
-- Generic file_fsync is not good for none_bd devices so open code it
-- The default for .flush in Linux is todo nothing so call exofs_fsync
-  on the file.
+?? What does that mean? Yes, "the current time is later than foo
+jiffies", is what I wrote. I don't understand why you query it. What I
+wrote is a perfectly normal english sentence. It means "if the current
+time is X and and the 
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- fs/exofs/Kbuild  |    2 +-
- fs/exofs/exofs.h |   11 ++++
- fs/exofs/file.c  |   77 +++++++++++++++++++++++++++++
- fs/exofs/inode.c |  140 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 229 insertions(+), 1 deletions(-)
- create mode 100644 fs/exofs/file.c
- create mode 100644 fs/exofs/inode.c
+> It behaves like all the other time_(after|before) macros.  "Compare a
+> given time T against some other time X".
 
-diff --git a/fs/exofs/Kbuild b/fs/exofs/Kbuild
-index fd3351e..d9dedc9 100644
---- a/fs/exofs/Kbuild
-+++ b/fs/exofs/Kbuild
-@@ -26,5 +26,5 @@ KBUILD_CPPFLAGS := -I$(OSD_INC) $(KBUILD_CPPFLAGS)
- 
- endif
- 
--exofs-objs := osd.o
-+exofs-objs := osd.o inode.o file.o
- obj-$(CONFIG_EXOFS_FS) += exofs.o
-diff --git a/fs/exofs/exofs.h b/fs/exofs/exofs.h
-index 8534450..f11250c 100644
---- a/fs/exofs/exofs.h
-+++ b/fs/exofs/exofs.h
-@@ -180,4 +180,15 @@ int extract_list_from_req(struct osd_request *req,
- 
- void free_osd_req(struct osd_request *req);
- 
-+/* inode.c               */
-+void exofs_truncate(struct inode *inode);
-+int exofs_setattr(struct dentry *, struct iattr *);
-+
-+/*********************
-+ * operation vectors *
-+ *********************/
-+/* file.c            */
-+extern struct inode_operations exofs_file_inode_operations;
-+extern struct file_operations exofs_file_operations;
-+
- #endif
-diff --git a/fs/exofs/file.c b/fs/exofs/file.c
-new file mode 100644
-index 0000000..073dcf7
---- /dev/null
-+++ b/fs/exofs/file.c
-@@ -0,0 +1,77 @@
-+/*
-+ * Copyright (C) 2005, 2006
-+ * Avishay Traeger (avishay@gmail.com) (avishay@il.ibm.com)
-+ * Copyright (C) 2005, 2006
-+ * International Business Machines
-+ *
-+ * Copyrights for code taken from ext2:
-+ *     Copyright (C) 1992, 1993, 1994, 1995
-+ *     Remy Card (card@masi.ibp.fr)
-+ *     Laboratoire MASI - Institut Blaise Pascal
-+ *     Universite Pierre et Marie Curie (Paris VI)
-+ *     from
-+ *     linux/fs/minix/inode.c
-+ *     Copyright (C) 1991, 1992  Linus Torvalds
-+ *
-+ * This file is part of exofs.
-+ *
-+ * exofs is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation.  Since it is based on ext2, and the only
-+ * valid version of GPL for the Linux kernel is version 2, the only valid
-+ * version of GPL for exofs is version 2.
-+ *
-+ * exofs is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with exofs; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/buffer_head.h>
-+
-+#include "exofs.h"
-+
-+static int exofs_release_file(struct inode *inode, struct file *filp)
-+{
-+	return 0;
-+}
-+
-+int exofs_file_fsync(struct file *filp, struct dentry *dentry, int datasync)
-+{
-+	int ret1, ret2;
-+	struct address_space *mapping = filp->f_mapping;
-+
-+	ret1 = filemap_write_and_wait(mapping);
-+	ret2 = file_fsync(filp, dentry, datasync);
-+
-+	return ret1 ? : ret2;
-+}
-+
-+static int exofs_flush(struct file *file, fl_owner_t id)
-+{
-+	exofs_file_fsync(file, file->f_path.dentry, 1);
-+	/* TODO: Flush the OSD target */
-+	return 0;
-+}
-+
-+struct file_operations exofs_file_operations = {
-+	.llseek		= generic_file_llseek,
-+	.read		= do_sync_read,
-+	.write		= do_sync_write,
-+	.aio_read	= generic_file_aio_read,
-+	.aio_write	= generic_file_aio_write,
-+	.mmap		= generic_file_mmap,
-+	.open		= generic_file_open,
-+	.release	= exofs_release_file,
-+	.fsync		= exofs_file_fsync,
-+	.flush		= exofs_flush,
-+};
-+
-+struct inode_operations exofs_file_inode_operations = {
-+	.truncate	= exofs_truncate,
-+	.setattr	= exofs_setattr,
-+};
-diff --git a/fs/exofs/inode.c b/fs/exofs/inode.c
-new file mode 100644
-index 0000000..931025b
---- /dev/null
-+++ b/fs/exofs/inode.c
-@@ -0,0 +1,140 @@
-+/*
-+ * Copyright (C) 2005, 2006
-+ * Avishay Traeger (avishay@gmail.com) (avishay@il.ibm.com)
-+ * Copyright (C) 2005, 2006
-+ * International Business Machines
-+ *
-+ * Copyrights for code taken from ext2:
-+ *     Copyright (C) 1992, 1993, 1994, 1995
-+ *     Remy Card (card@masi.ibp.fr)
-+ *     Laboratoire MASI - Institut Blaise Pascal
-+ *     Universite Pierre et Marie Curie (Paris VI)
-+ *     from
-+ *     linux/fs/minix/inode.c
-+ *     Copyright (C) 1991, 1992  Linus Torvalds
-+ *
-+ * This file is part of exofs.
-+ *
-+ * exofs is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation.  Since it is based on ext2, and the only
-+ * valid version of GPL for the Linux kernel is version 2, the only valid
-+ * version of GPL for exofs is version 2.
-+ *
-+ * exofs is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with exofs; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/writeback.h>
-+#include <linux/buffer_head.h>
-+
-+#include "exofs.h"
-+
-+/*
-+ * Test whether an inode is a fast symlink.
-+ */
-+static inline int exofs_inode_is_fast_symlink(struct inode *inode)
-+{
-+	struct exofs_i_info *oi = EXOFS_I(inode);
-+
-+	return S_ISLNK(inode->i_mode) && (oi->i_data[0] != 0);
-+}
-+
-+/*
-+ * get_block_t - Fill in a buffer_head
-+ * An OSD takes care of block allocation so we just fake an allocation by
-+ * putting in the inode's sector_t in the buffer_head.
-+ * TODO: What about the case of create==0 and @iblock does not exist in the
-+ * object?
-+ */
-+int exofs_get_block(struct inode *inode, sector_t iblock,
-+		    struct buffer_head *bh_result, int create)
-+{
-+	map_bh(bh_result, inode->i_sb, iblock);
-+	return 0;
-+}
-+
-+/******************************************************************************
-+ * INODE OPERATIONS
-+ *****************************************************************************/
-+
-+/*
-+ * Truncate a file to the specified size - all we have to do is set the size
-+ * attribute.  We make sure the object exists first.
-+ */
-+void exofs_truncate(struct inode *inode)
-+{
-+	struct exofs_sb_info *sbi = inode->i_sb->s_fs_info;
-+	struct exofs_i_info *oi = EXOFS_I(inode);
-+	struct osd_request *req = NULL;
-+	loff_t isize = i_size_read(inode);
-+	uint64_t newsize;
-+	int ret;
-+
-+	if (!(S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode)
-+	     || S_ISLNK(inode->i_mode)))
-+		return;
-+	if (exofs_inode_is_fast_symlink(inode))
-+		return;
-+	if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-+		return;
-+	inode->i_mtime = inode->i_ctime = CURRENT_TIME;
-+
-+	nobh_truncate_page(inode->i_mapping, isize, exofs_get_block);
-+
-+	req = prepare_osd_set_attr(sbi->s_dev, sbi->s_pid,
-+				 inode->i_ino + EXOFS_OBJ_OFF);
-+	if (!req) {
-+		printk(KERN_ERR "ERROR: prepare set_attr failed.\n");
-+		goto fail;
-+	}
-+
-+	newsize = cpu_to_be64((uint64_t) isize);
-+	prepare_set_attr_list_add_entry(req, OSD_APAGE_OBJECT_INFORMATION,
-+					OSD_ATTR_OI_LOGICAL_LENGTH, 8,
-+					(unsigned char *)(&newsize));
-+
-+	/* if we are about to truncate an object, and it hasn't been
-+	 * created yet, wait
-+	 */
-+	if (!ObjCreated(oi)) {
-+		if (!Obj2BCreated(oi))
-+			BUG();
-+		else
-+			wait_event(oi->i_wq, ObjCreated(oi));
-+	}
-+
-+	ret = exofs_sync_op(req, sbi->s_timeout, oi->i_cred);
-+	free_osd_req(req);
-+	if (ret)
-+		goto fail;
-+
-+out:
-+	mark_inode_dirty(inode);
-+	return;
-+fail:
-+	make_bad_inode(inode);
-+	goto out;
-+}
-+
-+/*
-+ * Set inode attributes - just call generic functions.
-+ */
-+int exofs_setattr(struct dentry *dentry, struct iattr *iattr)
-+{
-+	struct inode *inode = dentry->d_inode;
-+	int error;
-+
-+	error = inode_change_ok(inode, iattr);
-+	if (error)
-+		return error;
-+
-+	error = inode_setattr(inode, iattr);
-+	return error;
-+}
--- 
-1.6.0.1
+It's poor english. Yes, to an english speaker
 
+   time_is_after_jiffies(foo)
+
+looks like
+
+   the current time is later than foo jiffies
+
+Look at the two:
+
+   the current time is later than foo jiffies
+                 |   |  |           `/.
+               time_is_after_jiffies(foo)
+
+(I AM a native english speaker, and a very good one - please take this
+on board and pay attention to it; you'll find me quoted as the author
+of hundreds of technical articles on google :-).
+
+The mathematical "jiffies(foo)" for colloquial "foo jiffies" is the
+normal way of writing formal predicates.  Like "colour(red)" for
+"red colour". This is a predicate.
+
+> T is always the first argument to these macros, it's never the current
+> time.  This is consistent.
+
+That's surely not relevant since it's the macro name that we are talking
+about, nothing else.
+
+As to "these macros", I see and know of no macros other than the set I
+am commenting on. If you mean some others, you'll have to point them
+out to me, but it wouldn't invalidate the observation: the macro names
+are phrased the wrong way round for a natural english interpretation.
+
+
+> And jiffies, the X here, is a well-known global variable. :)
+
+
+> The banner comment above the macro group should have clarified the
+> misunderstanding, btw.
+
+No, it says nothing:
+
+  * These four macros compare jiffies and 'a' for convenience.
+
+What's written above the individual macros is more explanatory, but
+it's the NAMES of the macros that are the wrong way round for english:
+
+  
+  /* time_is_before_jiffies(a) return true if a is before jiffies */
+  #define time_is_before_jiffies(a) time_after(jiffies, a)
+
+It's time_is_before_jiffies(foo) that reads the wrong way round in
+english. It should be
+
+
+     current_time_is_after_jiffies(foo).
+
+Best regards
+
+
+Peter
+  
 
