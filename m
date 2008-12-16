@@ -1,61 +1,106 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758591AbYLPV6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753609AbYLPV4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758591AbYLPV6U (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 16:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYLPV6J
+	id S1753609AbYLPV4W (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 16:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbYLPV4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 16:58:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55576 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752750AbYLPV6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 16:58:07 -0500
-Date: Tue, 16 Dec 2008 22:57:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-        Steven Rostedt <srostedt@redhat.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: Re: [PATCH] x86: entry_64 - introduce FTRACE_ frame macro v2
-Message-ID: <20081216215753.GZ14787@elte.hu>
-References: <20081212210908.GA30557@localhost>
+	Tue, 16 Dec 2008 16:56:09 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:52575 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753870AbYLPV4I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 16:56:08 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
+	references:in-reply-to:content-type:
+	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
+	b=UqwVPvopPaaSp0eQk0GzOGuZSrUd8dNqlVuK0h2yfLQclWiMjh49E+CXBj5kXmQQU
+	5S6H1Jb6VP6vIxOfCT/nA==
+Message-ID: <49482394.10006@google.com>
+Date: Tue, 16 Dec 2008 13:54:28 -0800
+From: Mike Waychison <mikew@google.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081212210908.GA30557@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Oren Laadan <orenl@cs.columbia.edu>
+CC: jeremy@goop.org, arnd@arndb.de, linux-api@vger.kernel.org,
+        containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+        Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
+        Linux Torvalds <torvalds@linux-foundation.org>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC v11][PATCH 03/13] General infrastructure for checkpoint
+ restart
+References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu> <1228498282-11804-4-git-send-email-orenl@cs.columbia.edu>
+In-Reply-To: <1228498282-11804-4-git-send-email-orenl@cs.columbia.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.75
+X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oren Laadan wrote:
+> diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+> index 375129c..bd14ef9 100644
+> --- a/checkpoint/sys.c
+> +++ b/checkpoint/sys.c
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> +/*
+> + * During checkpoint and restart the code writes outs/reads in data
+> + * to/from the checkpoint image from/to a temporary buffer (ctx->hbuf).
+> + * Because operations can be nested, use cr_hbuf_get() to reserve space
+> + * in the buffer, then cr_hbuf_put() when you no longer need that space.
+> + */
 
-> Impact: clean up
-> 
-> Itroduce FTRACE_SAVE/RESTORE_FRAME which allow us to
-> save a number of lines on source level.
-> 
-> Also fix a comment in ftrace.h.
-> ---
-> 
-> Didn't add Steve's Ack since it's a new version
-> 
->  arch/x86/include/asm/ftrace.h |   29 ++++++++++++++++++++-
->  arch/x86/kernel/entry_64.S    |   57 +++++-------------------------------------
->  2 files changed, 35 insertions(+), 51 deletions(-)
+This seems a bit over-kill for buffer management no?  The only large 
+header seems to be cr_hdr_head and the blowup comes from utsinfo string 
+data (which could easily be moved out to be in it's own CR_HDR_STRING 
+blocks).
 
-applied to tip/tracing/ftrace, thanks Cyrill!
+Wouldn't it be easier to use stack-local storage than balancing the 
+cr_hbuf_get/put routines?
 
-i renamed it from FTRACE_* to MCOUNT_* - since that's where these frame 
-details come from - these are stubs around GCC generated mcount calls.
-
-	Ingo
+> +
+> +/*
+> + * ctx->hbuf is used to hold headers and data of known (or bound),
+> + * static sizes. In some cases, multiple headers may be allocated in
+> + * a nested manner. The size should accommodate all headers, nested
+> + * or not, on all archs.
+> + */
+> +#define CR_HBUF_TOTAL  (8 * 4096)
+> +
+> +/**
+> + * cr_hbuf_get - reserve space on the hbuf
+> + * @ctx: checkpoint context
+> + * @n: number of bytes to reserve
+> + *
+> + * Returns pointer to reserved space
+> + */
+> +void *cr_hbuf_get(struct cr_ctx *ctx, int n)
+> +{
+> +	void *ptr;
+> +
+> +	/*
+> +	 * Since requests depend on logic and static header sizes (not on
+> +	 * user data), space should always suffice, unless someone either
+> +	 * made a structure bigger or call path deeper than expected.
+> +	 */
+> +	BUG_ON(ctx->hpos + n > CR_HBUF_TOTAL);
+> +	ptr = ctx->hbuf + ctx->hpos;
+> +	ctx->hpos += n;
+> +	return ptr;
+> +}
+> +
+> +/**
+> + * cr_hbuf_put - unreserve space on the hbuf
+> + * @ctx: checkpoint context
+> + * @n: number of bytes to reserve
+> + */
+> +void cr_hbuf_put(struct cr_ctx *ctx, int n)
+> +{
+> +	BUG_ON(ctx->hpos < n);
+> +	ctx->hpos -= n;
+> +}
+> +
