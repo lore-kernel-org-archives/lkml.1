@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYLPOtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbYLPOvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbYLPOtA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 09:49:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYLPOsv
+	id S1757474AbYLPOvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 09:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYLPOvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 09:48:51 -0500
-Received: from mga02.intel.com ([134.134.136.20]:7838 "EHLO mga02.intel.com"
+	Tue, 16 Dec 2008 09:51:10 -0500
+Received: from mga09.intel.com ([134.134.136.24]:47843 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753712AbYLPOsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 09:48:50 -0500
+	id S1752259AbYLPOvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 09:51:10 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.36,231,1228118400"; 
-   d="scan'208";a="371330237"
-Date: Tue, 16 Dec 2008 15:48:42 +0100
+   d="scan'208";a="474432201"
+Date: Tue, 16 Dec 2008 15:51:03 +0100
 From: Markus Metzger <markus.t.metzger@intel.com>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
        hpa@zytor.com
 Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
        eranian@googlemail.com
-Subject: [patch 1/3] x86, bts: clear bts bits on fork
-Message-ID: <20081216154842.A29980@sedona.ch.intel.com>
+Subject: [patch 2/3] x86, bts: remove recursion from get_context
+Message-ID: <20081216155103.A30039@sedona.ch.intel.com>
 Mime-Version: 1.0
 Content-Disposition: inline
 User-Agent: Mutt/1.2.5i
@@ -29,112 +29,96 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clear the DS context as well as the bts tracer and corresponding
-fields in task_struct on fork.
-
-Correct the CONFIG guard.
+Optimistically allocate a DS context. It is extremely unlikely that
+one already existed. This simplifies the code a lot.
 
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 Reported-by: Ingo Molnar <mingo@elte.hu>
 ---
 
-Index: ftrace/arch/x86/kernel/process_32.c
+Index: ftrace/arch/x86/kernel/ds.c
 ===================================================================
---- ftrace.orig/arch/x86/kernel/process_32.c	2008-12-12 14:02:24.000000000 +0100
-+++ ftrace/arch/x86/kernel/process_32.c	2008-12-12 14:33:19.000000000 +0100
-@@ -251,7 +251,7 @@
- 		tss->x86_tss.io_bitmap_base = INVALID_IO_BITMAP_OFFSET;
- 		put_cpu();
- 	}
--#ifdef CONFIG_X86_DS
-+#ifdef CONFIG_X86_PTRACE_BTS
- 	/* Free any BTS tracers that have not been properly released. */
- 	if (unlikely(current->bts)) {
- 		ds_release_bts(current->bts);
-@@ -261,7 +261,7 @@
- 		current->bts_buffer = NULL;
- 		current->bts_size = 0;
- 	}
--#endif /* CONFIG_X86_DS */
-+#endif /* CONFIG_X86_PTRACE_BTS */
- }
+--- ftrace.orig/arch/x86/kernel/ds.c	2008-12-12 14:02:24.000000000 +0100
++++ ftrace/arch/x86/kernel/ds.c	2008-12-12 16:25:22.000000000 +0100
+@@ -232,53 +232,45 @@
  
- void flush_thread(void)
-@@ -343,6 +343,17 @@
- 		kfree(p->thread.io_bitmap_ptr);
- 		p->thread.io_bitmap_max = 0;
- 	}
-+
-+#ifdef CONFIG_X86_DS
-+	clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
-+	p->thread.ds_ctx = NULL;
-+#endif
-+#ifdef CONFIG_X86_PTRACE_BTS
-+	p->thread.bts_ovfl_signal = 0;
-+#endif
-+	clear_tsk_thread_flag(p, TIF_DEBUGCTLMSR);
-+	p->thread.debugctlmsr = 0;
-+
- 	return err;
- }
+ #define system_context per_cpu(system_context_array, smp_processor_id())
  
-Index: ftrace/arch/x86/kernel/process_64.c
-===================================================================
---- ftrace.orig/arch/x86/kernel/process_64.c	2008-12-12 14:02:24.000000000 +0100
-+++ ftrace/arch/x86/kernel/process_64.c	2008-12-12 14:32:38.000000000 +0100
-@@ -248,7 +248,7 @@
- 		t->io_bitmap_max = 0;
- 		put_cpu();
- 	}
--#ifdef CONFIG_X86_DS
-+#ifdef CONFIG_X86_PTRACE_BTS
- 	/* Free any BTS tracers that have not been properly released. */
- 	if (unlikely(current->bts)) {
- 		ds_release_bts(current->bts);
-@@ -258,7 +258,7 @@
- 		current->bts_buffer = NULL;
- 		current->bts_size = 0;
- 	}
--#endif /* CONFIG_X86_DS */
-+#endif /* CONFIG_X86_PTRACE_BTS */
- }
+-static struct ds_context *ds_get_context(struct task_struct *task)
++
++static inline struct ds_context *ds_get_context(struct task_struct *task)
+ {
+ 	struct ds_context **p_context =
+ 		(task ? &task->thread.ds_ctx : &system_context);
+-	struct ds_context *context = *p_context;
++	struct ds_context *context = NULL;
++	struct ds_context *new_context = NULL;
+ 	unsigned long irq;
  
- void flush_thread(void)
-@@ -388,6 +388,17 @@
- 		if (err)
- 			goto out;
- 	}
-+
-+#ifdef CONFIG_X86_DS
-+	clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
-+	p->thread.ds_ctx = NULL;
-+#endif
-+#ifdef CONFIG_X86_PTRACE_BTS
-+	p->thread.bts_ovfl_signal = 0;
-+#endif
-+	clear_tsk_thread_flag(p, TIF_DEBUGCTLMSR);
-+	p->thread.debugctlmsr = 0;
-+
- 	err = 0;
- out:
- 	if (err && p->thread.io_bitmap_ptr) {
-Index: ftrace/kernel/fork.c
-===================================================================
---- ftrace.orig/kernel/fork.c	2008-12-12 14:02:24.000000000 +0100
-+++ ftrace/kernel/fork.c	2008-12-12 14:29:43.000000000 +0100
-@@ -1102,7 +1102,11 @@
- #ifdef CONFIG_DEBUG_MUTEXES
- 	p->blocked_on = NULL; /* not blocked yet */
- #endif
+-	if (!context) {
+-		context = kzalloc(sizeof(*context), GFP_KERNEL);
+-		if (!context)
+-			return NULL;
 -
-+#ifdef CONFIG_X86_PTRACE_BTS
-+	p->bts = NULL;
-+	p->bts_buffer = NULL;
-+	p->bts_size = 0;
-+#endif
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
+-		spin_lock_irqsave(&ds_lock, irq);
+-
+-		if (*p_context) {
+-			kfree(context);
++	/* Chances are small that we already have a context. */
++	new_context = kzalloc(sizeof(*new_context), GFP_KERNEL);
++	if (!new_context)
++		return NULL;
  
+-			context = *p_context;
+-		} else {
+-			*p_context = context;
++	spin_lock_irqsave(&ds_lock, irq);
+ 
+-			context->this = p_context;
+-			context->task = task;
++	context = *p_context;
++	if (!context) {
++		context = new_context;
+ 
+-			if (task)
+-				set_tsk_thread_flag(task, TIF_DS_AREA_MSR);
++		context->this = p_context;
++		context->task = task;
++		context->count = 0;
+ 
+-			if (!task || (task == current))
+-				wrmsrl(MSR_IA32_DS_AREA,
+-				       (unsigned long)context->ds);
+-		}
++		if (task)
++			set_tsk_thread_flag(task, TIF_DS_AREA_MSR);
+ 
+-		context->count++;
++		if (!task || (task == current))
++			wrmsrl(MSR_IA32_DS_AREA, (unsigned long)context->ds);
+ 
+-		spin_unlock_irqrestore(&ds_lock, irq);
+-	} else {
+-		spin_lock_irqsave(&ds_lock, irq);
++		*p_context = context;
++	}
+ 
+-		context = *p_context;
+-		if (context)
+-			context->count++;
++	context->count++;
+ 
+-		spin_unlock_irqrestore(&ds_lock, irq);
++	spin_unlock_irqrestore(&ds_lock, irq);
+ 
+-		if (!context)
+-			context = ds_get_context(task);
+-	}
++	if (context != new_context)
++		kfree(new_context);
+ 
+ 	return context;
+ }
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
