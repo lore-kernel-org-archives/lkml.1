@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbYLPSdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbYLPSf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753896AbYLPSdu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 13:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbYLPSdk
+	id S1754589AbYLPSf0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 13:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYLPSfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 13:33:40 -0500
-Received: from outbound-mail-28.bluehost.com ([69.89.17.198]:52752 "HELO
-	outbound-mail-28.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750998AbYLPSdj (ORCPT
+	Tue, 16 Dec 2008 13:35:14 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:9325 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751957AbYLPSfN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 13:33:39 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=VpHFqdddX+0ZZ0YjjrPplDE946U+TUvrUF+GHA6KasMMmoJt2rk/h7bqrXlS3r0zU+ugS4Rm/b4hty5B6bZOh/NFreCVE2zaAKEqEhIOfKmoXC3CK+oiSTBDpOIc+dz1;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH] aerdrv: fix sanity check in report_resume
-Date: Tue, 16 Dec 2008 10:31:50 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: linux-pci@vger.kernel.org, tom.l.nguyen@intel.com, yanmin.zhang@intel.com,
-       linux-kernel@vger.kernel.org
-References: <493392BA.50906@jp.fujitsu.com>
-In-Reply-To: <493392BA.50906@jp.fujitsu.com>
+	Tue, 16 Dec 2008 13:35:13 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=mgiWjhvPF+sMoYUWuHM5Spqql7g8g3ATX9gMgNGRiUm+2bqSNJVXw1B+YDGkudrSn
+	gjZweQ04DB4um5W0bTl0Q==
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-2022-jp"
+In-Reply-To: <4947A53B.9050600@cn.fujitsu.com>
+References: <494234B0.5@cn.fujitsu.com> <4944754F.8050503@cn.fujitsu.com>
+	 <1229258890.17130.9.camel@lappy.programming.kicks-ass.net>
+	 <4945B200.7020207@cn.fujitsu.com> <1229328783.14605.11.camel@twins>
+	 <49462890.1040002@cn.fujitsu.com> <1229337829.14605.41.camel@twins>
+	 <6599ad830812160141v5ed5d453h36f825b069554e57@mail.gmail.com>
+	 <6599ad830812160442p349fac09u9627ac2b81f76905@mail.gmail.com>
+	 <4947A53B.9050600@cn.fujitsu.com>
+Date: Tue, 16 Dec 2008 10:35:09 -0800
+Message-ID: <6599ad830812161035q7becedf1u3d90f4064f9b0964@mail.gmail.com>
+Subject: Re: [PATCH] sched: fix another race when reading /proc/sched_debug
+From: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812161031.50552.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, November 30, 2008 11:31 pm Hidetoshi Seto wrote:
-> What we have to check here before calling it is err_handler->resume.
-> It seems that this block have been copy&pasted from report_slot_reset.
+On Tue, Dec 16, 2008 at 4:55 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
 >
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> ---
->  drivers/pci/pcie/aer/aerdrv_core.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> This avoids accessing a destroyed cgroup, but still race with cgroup_create.
+> You sugguested call cgroup_create_dir() before calling subsystems' create()
+> method.
 >
-> diff --git a/drivers/pci/pcie/aer/aerdrv_core.c
-> b/drivers/pci/pcie/aer/aerdrv_core.c index dfc63d0..aac7006 100644
-> --- a/drivers/pci/pcie/aer/aerdrv_core.c
-> +++ b/drivers/pci/pcie/aer/aerdrv_core.c
-> @@ -252,7 +252,7 @@ static void report_resume(struct pci_dev *dev, void
-> *data)
->
->  	if (!dev->driver ||
->  		!dev->driver->err_handler ||
-> -		!dev->driver->err_handler->slot_reset)
-> +		!dev->driver->err_handler->resume)
->  		return;
->
->  	err_handler = dev->driver->err_handler;
 
-Applied this to my for-linus branch with Yanmin's ack, thanks.
+I think that if we need a fix for 2.6.28 I'll just make cgroup_path()
+check for a NULL dentry in the passed cgroup, rather than shuffling
+any code around. That combined with a simple RCU free in
+cgroup_diput() should do the trick - I think I'll leave the existing
+synchronize_rcu() at the beginning of cgroup_diput() in case we need
+it for more reasons than I originally mentioned in the comment there.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
-
+Paul
