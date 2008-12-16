@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758831AbYLPWHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758937AbYLPWEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758831AbYLPWHZ (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 17:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYLPWHI
+	id S1758937AbYLPWEz (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 17:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYLPWEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 17:07:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43276 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752372AbYLPWHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 17:07:07 -0500
-Date: Tue, 16 Dec 2008 23:06:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86: signal: use signal_fault() in sys_sigreturn()
-Message-ID: <20081216220657.GD14787@elte.hu>
-References: <49482568.3020108@ct.jp.nec.com>
+	Tue, 16 Dec 2008 17:04:44 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:57002 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752237AbYLPWEo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 17:04:44 -0500
+Message-ID: <494825FB.1040700@ct.jp.nec.com>
+Date: Tue, 16 Dec 2008 14:04:43 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+        "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 3/3] x86: ia32_signal: use proper macro __USER32_DS
+References: <49482568.3020108@ct.jp.nec.com>
 In-Reply-To: <49482568.3020108@ct.jp.nec.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+Impact: cleanup
 
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> 
-> Impact: cleanup
-> 
-> Call signal_fault() in error route of sys_sigreturn().
-> Change log level to KERN_EMERG if current is init.
-> 
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> ---
->  arch/x86/kernel/signal.c |   15 +++------------
->  1 files changed, 3 insertions(+), 12 deletions(-)
+Use __USER32_DS instead of __USER_DS in ia32_signal.c.
+No impact, because __USER32_DS is defined __USER_DS.
 
-applied your three patches to tip/x86/signal:
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/ia32/ia32_signal.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- 8bee3f0: x86: ia32_signal: use proper macro __USER32_DS
- d0b48ca: x86: ia32_signal: use __put_user() instead of __copy_to_user()
- ae417bb: x86: signal: use signal_fault() in sys_sigreturn()
+diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+index 8738cc5..ee1ad4a 100644
+--- a/arch/x86/ia32/ia32_signal.c
++++ b/arch/x86/ia32/ia32_signal.c
+@@ -396,7 +396,7 @@ static void __user *get_sigframe(struct k_sigaction *ka, struct pt_regs *regs,
+ 	}
+ 
+ 	/* This is the legacy signal stack switching. */
+-	else if ((regs->ss & 0xffff) != __USER_DS &&
++	else if ((regs->ss & 0xffff) != __USER32_DS &&
+ 		!(ka->sa.sa_flags & SA_RESTORER) &&
+ 		 ka->sa.sa_restorer)
+ 		sp = (unsigned long) ka->sa.sa_restorer;
+-- 
+1.6.0.4
 
-thanks!
-
-	Ingo
