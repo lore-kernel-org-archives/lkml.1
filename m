@@ -1,105 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbYLPSmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbYLPSnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756577AbYLPSmk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 13:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbYLPSm2
+	id S1756011AbYLPSnw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 13:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbYLPSnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 13:42:28 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:48647 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755722AbYLPSm0 (ORCPT
+	Tue, 16 Dec 2008 13:43:42 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:52454 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbYLPSnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 13:42:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lgNHqZsnmysHjy5V9qHfVkaQ2eV9XK7/U6bpmbMljhZR5or4EzbTsBXK7VI7V/3mAz
-         gBywjtOdUWGvFtXjqRa9pd2qPDCQa3Lmc1Qtx1G83V23+PYpxoamiPquZ8sGi/pqESY0
-         5329j2+NmpWv2kIJ4HTa7bnaAsbTYPJmXPcp8=
-Date: Tue, 16 Dec 2008 21:47:04 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [RFC] remove linux/hardirq.h from asm-generic/local.h
-Message-ID: <20081216184704.GA4976@x200.localdomain>
-References: <20081214133941.GA18035@flint.arm.linux.org.uk> <20081214095803.9d16e85f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081214095803.9d16e85f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 16 Dec 2008 13:43:41 -0500
+Subject: Re: [RFC v11][PATCH 00/13] Kernel based checkpoint/restart
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: akpm <akpm@linuxfoundation.org>
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Linux Torvalds <torvalds@osdl.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       MinChan Kim <minchan.kim@gmail.com>, arnd@arndb.de, jeremy@goop.org,
+       Oren Laadan <orenl@cs.columbia.edu>
+In-Reply-To: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
+References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
+Content-Type: text/plain
+Date: Tue, 16 Dec 2008 10:43:32 -0800
+Message-Id: <1229453012.17206.322.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 14, 2008 at 09:58:03AM -0800, Andrew Morton wrote:
-> On Sun, 14 Dec 2008 13:39:41 +0000 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+Andrew,
 
-> > Note that x86 does not include asm/irq.h nor linux/hardirq.h in its
-> > asm/local.h, so this patch can be viewed as bringing the generic version
-> > into line with the x86 version.
+I just realized that you weren't cc'd on these when they were posted.
+
+Can we give them a run in -mm?  As far as I know, all review comments
+have been addressed and there's nothing outstanding.
+
+On Fri, 2008-12-05 at 12:31 -0500, Oren Laadan wrote:
+> Checkpoint-restart (c/r): fixed races in file handling (comments from
+> from Al Viro). Updated and tested against v2.6.28-rc7 (feaf384...)
 > 
-> Sure.  Includes are easy to add and hard to remove.  I'll queue it up
-> and see if there's fallout.
+> We'd like these to make it into -mm. This version addresses the
+> last of the known bugs. Please pull at least the first 11 patches,
+> as they are similar to before.
+> 
+> Patches 1-11 are stable, providing self- and external- c/r of a
+> single process.
+> Patches 12 and 13 are newer, adding support for c/r of multiple
+> processes.
+> 
+> The git tree tracking v11, branch 'ckpt-v11' (and older versions):
+> 	git://git.ncl.cs.columbia.edu/pub/git/linux-cr.git
+> 
+> Restarting multiple processes requires 'mktree' userspace tool:
+> 	git://git.ncl.cs.columbia.edu/pub/git/user-cr.git
+> 
+> Oren.
+> 
+> 
+> --
+> Why do we want it?  It allows containers to be moved between physical
+> machines' kernels in the same way that VMWare can move VMs between
+> physical machines' hypervisors.  There are currently at least two
+> out-of-tree implementations of this in the commercial world (IBM's
+> Metacluster and Parallels' OpenVZ/Virtuozzo) and several in the academic
+> world like Zap.
+> 
+> Why do we need it in mainline now?  Because we already have plenty of
+> out-of-tree ones, and  want to know what an in-tree one will be like.   :)  
+> What *I* want right now is the extra review and scrutiny that comes with
+> a mainline submission to make sure we're not going in a direction
+> contrary to the community.
+> 
+> This only supports pretty simple apps.  But, I trust Ingo when he says:
+> >> > > Generally, if something works for simple apps already (in a robust, 
+> >> > > compatible and supportable way) and users find it "very cool", then 
+> >> > > support for more complex apps is not far in the future.  but if you
+> >> > > want to support more complex apps straight away, it takes forever and
+> >> > > gets ugly.
+> 
+> We're *certainly* going to be changing the ABI (which is the format of
+> the checkpoint).  I'd like to follow the model that we used for
+> ext4-dev, which is to make it very clear that this is a development-only
+> feature for now.  Perhaps we do that by making the interface only
+> available through debugfs or something similar for now.  Or, reserving
+> the syscall numbers but require some runtime switch to be thrown before
+> they can be used.  I'm open to suggestions here.
+> --
+> 
+> --
+> Todo:
+> - Add support for x86-64 and improve ABI
+> - Refine or change syscall interface
+> - Handle multiple namespaces in a container (e.g. save the filesystem
+>   namespaces state with the file descriptors)
+> - Security (without CAPS_SYS_ADMIN files restore may fail)
+> 
+> Changelog:
+> 
+> [2008-Dec-05] v11:
+>   - Use contents of 'init->fs->root' instead of pointing to it
+>   - Ignore symlinks (there is no such thing as an open symlink)
+>   - cr_scan_fds() retries from scratch if it hits size limits
+>   - Add missing test for VM_MAYSHARE when dumping memory
+>   - Improve documentation about: behavior when tasks aren't fronen,
+>     life span of the object hash, references to objects in the hash
+> 
+> [2008-Nov-26] v10:
+>   - Grab vfs root of container init, rather than current process
+>   - Acquire dcache_lock around call to __d_path() in cr_fill_name()
+>   - Force end-of-string in cr_read_string() (fix possible DoS)
+>   - Introduce cr_write_buffer(), cr_read_buffer() and cr_read_buf_type()
+> 
+> [2008-Nov-10] v9:
+>   - Support multiple processes c/r
+>   - Extend checkpoint header with archtiecture dependent header 
+>   - Misc bug fixes (see individual changelogs)
+>   - Rebase to v2.6.28-rc3.
+> 
+> [2008-Oct-29] v8:
+>   - Support "external" checkpoint
+>   - Include Dave Hansen's 'deny-checkpoint' patch
+>   - Split docs in Documentation/checkpoint/..., and improve contents
+> 
+> [2008-Oct-17] v7:
+>   - Fix save/restore state of FPU
+>   - Fix argument given to kunmap_atomic() in memory dump/restore
+> 
+> [2008-Oct-07] v6:
+>   - Balance all calls to cr_hbuf_get() with matching cr_hbuf_put()
+>     (even though it's not really needed)
+>   - Add assumptions and what's-missing to documentation
+>   - Misc fixes and cleanups
+> 
+> [2008-Sep-11] v5:
+>   - Config is now 'def_bool n' by default
+>   - Improve memory dump/restore code (following Dave Hansen's comments)
+>   - Change dump format (and code) to allow chunks of <vaddrs, pages>
+>     instead of one long list of each
+>   - Fix use of follow_page() to avoid faulting in non-present pages
+>   - Memory restore now maps user pages explicitly to copy data into them,
+>     instead of reading directly to user space; got rid of mprotect_fixup()
+>   - Remove preempt_disable() when restoring debug registers
+>   - Rename headers files s/ckpt/checkpoint/
+>   - Fix misc bugs in files dump/restore
+>   - Fixes and cleanups on some error paths
+>   - Fix misc coding style
+> 
+> [2008-Sep-09] v4:
+>   - Various fixes and clean-ups
+>   - Fix calculation of hash table size
+>   - Fix header structure alignment
+>   - Use stand list_... for cr_pgarr
+> 
+> [2008-Aug-29] v3:
+>   - Various fixes and clean-ups
+>   - Use standard hlist_... for hash table
+>   - Better use of standard kmalloc/kfree
+> 
+> [2008-Aug-20] v2:
+>   - Added Dump and restore of open files (regular and directories)
+>   - Added basic handling of shared objects, and improve handling of
+>     'parent tag' concept
+>   - Added documentation
+>   - Improved ABI, 64bit padding for image data
+>   - Improved locking when saving/restoring memory
+>   - Added UTS information to header (release, version, machine)
+>   - Cleanup extraction of filename from a file pointer
+>   - Refactor to allow easier reviewing
+>   - Remove requirement for CAPS_SYS_ADMIN until we come up with a
+>     security policy (this means that file restore may fail)
+>   - Other cleanup and response to comments for v1
+> 
+> [2008-Jul-29] v1:
+>   - Initial version: support a single task with address space of only
+>     private anonymous or file-mapped VMAs; syscalls ignore pid/crid
+>     argument and act on current process.
+> 
+> --
+> At the containers mini-conference before OLS, the consensus among
+> all the stakeholders was that doing checkpoint/restart in the kernel
+> as much as possible was the best approach.  With this approach, the
+> kernel will export a relatively opaque 'blob' of data to userspace
+> which can then be handed to the new kernel at restore time.
+> 
+> This is different than what had been proposed before, which was
+> that a userspace application would be responsible for collecting
+> all of this data.  We were also planning on adding lots of new,
+> little kernel interfaces for all of the things that needed
+> checkpointing.  This unites those into a single, grand interface.
+> 
+> The 'blob' will contain copies of select portions of kernel
+> structures such as vmas and mm_structs.  It will also contain
+> copies of the actual memory that the process uses.  Any changes
+> in this blob's format between kernel revisions can be handled by
+> an in-userspace conversion program.
+> 
+> This is a similar approach to virtually all of the commercial
+> checkpoint/restart products out there, as well as the research
+> project Zap.
+> 
+> These patches basically serialize internel kernel state and write
+> it out to a file descriptor.  The checkpoint and restore are done
+> with two new system calls: sys_checkpoint and sys_restart.
+> 
+> In this incarnation, they can only work checkpoint and restore a
+> single task. The task's address space may consist of only private,
+> simple vma's - anonymous or file-mapped. The open files may consist
+> of only simple files and directories.
+> --
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+-- Dave
 
-Here is some (but not everything):
-
-arch/avr32/kernel/traps.c:63: error: implicit declaration of function 'in_interrupt'
-arch/avr32/kernel/traps.c:113: error: implicit declaration of function 'nmi_enter'
-arch/avr32/kernel/traps.c:124: error: implicit declaration of function 'nmi_disable'
-arch/avr32/kernel/traps.c:127: error: implicit declaration of function 'nmi_exit'
-arch/sh/kernel/traps_32.c:104: error: implicit declaration of function 'in_interrupt'
-arch/sparc64/kernel/sysfs.c:201: error: 'cpuinfo_sparc' undeclared (first use in this function)
-arch/sparc64/kernel/mdesc.c:576: error: expected ')' before '*' token
-
-
-diff --git a/arch/avr32/kernel/traps.c b/arch/avr32/kernel/traps.c
-index 0d98737..d547c8d 100644
---- a/arch/avr32/kernel/traps.c
-+++ b/arch/avr32/kernel/traps.c
-@@ -7,6 +7,7 @@
-  */
- 
- #include <linux/bug.h>
-+#include <linux/hardirq.h>
- #include <linux/init.h>
- #include <linux/kallsyms.h>
- #include <linux/kdebug.h>
-diff --git a/arch/sh/kernel/traps_32.c b/arch/sh/kernel/traps_32.c
-index 1e5c74e..7a2dc95 100644
---- a/arch/sh/kernel/traps_32.c
-+++ b/arch/sh/kernel/traps_32.c
-@@ -13,6 +13,7 @@
-  */
- #include <linux/kernel.h>
- #include <linux/ptrace.h>
-+#include <linux/hardirq.h>
- #include <linux/init.h>
- #include <linux/spinlock.h>
- #include <linux/module.h>
-diff --git a/arch/sparc64/kernel/mdesc.c b/arch/sparc64/kernel/mdesc.c
-index dde52bc..3c539a6 100644
---- a/arch/sparc64/kernel/mdesc.c
-+++ b/arch/sparc64/kernel/mdesc.c
-@@ -11,6 +11,7 @@
- #include <linux/mm.h>
- #include <linux/miscdevice.h>
- 
-+#include <asm/cpudata.h>
- #include <asm/hypervisor.h>
- #include <asm/mdesc.h>
- #include <asm/prom.h>
-diff --git a/arch/sparc64/kernel/sysfs.c b/arch/sparc64/kernel/sysfs.c
-index 84e5ce1..d28f496 100644
---- a/arch/sparc64/kernel/sysfs.c
-+++ b/arch/sparc64/kernel/sysfs.c
-@@ -8,6 +8,7 @@
- #include <linux/percpu.h>
- #include <linux/init.h>
- 
-+#include <asm/cpudata.h>
- #include <asm/hypervisor.h>
- #include <asm/spitfire.h>
- 
