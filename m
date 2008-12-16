@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbYLPTi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbYLPTjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758063AbYLPTi5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 14:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYLPTis
+	id S1758550AbYLPTjU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 14:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757704AbYLPTiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 14:38:48 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:42717 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753394AbYLPTir (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 14:38:47 -0500
-Date: Tue, 16 Dec 2008 14:38:44 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Robert Richter <robert.richter@amd.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 6/9] oprofile: port to the new ring_buffer
-In-Reply-To: <20081216172341.GK15411@erda.amd.com>
-Message-ID: <alpine.DEB.1.10.0812161432000.23871@gandalf.stny.rr.com>
-References: <1229013723-8191-1-git-send-email-robert.richter@amd.com> <1229013723-8191-7-git-send-email-robert.richter@amd.com> <alpine.DEB.1.10.0812111424470.24741@gandalf.stny.rr.com> <20081216172341.GK15411@erda.amd.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 16 Dec 2008 14:38:55 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51640 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757431AbYLPTiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 14:38:54 -0500
+Date: Tue, 16 Dec 2008 20:38:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Janne Kulmala <janne.t.kulmala@tut.fi>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: x86: Fix HPET for Fujitsu u9200
+Message-ID: <20081216193843.GD843@elte.hu>
+References: <4947938D.3010004@tut.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4947938D.3010004@tut.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 16 Dec 2008, Robert Richter wrote:
-> 
-> In the beginning, the use of separate locks for reading and writing
-> would be sufficient. Then, there would be only one atomic comparison
-> needed to check, if the write pointer meets the read pointer. This
-> should be not as difficult since read and write is always in different
-> pages (if a am not wrong) and thus only the pointer to the pages have
-> to be compared.
-> 
+* Janne Kulmala <janne.t.kulmala@tut.fi> wrote:
 
-Most of the ftrace work uses the ring buffer in overwrite mode. That is, 
-when the head meets the tail, we move the tail. The way the reader works, 
-is that the first read will swap a page out of the ring with a blank page. 
-This means, what is on that page is safe from further writes. When the 
-reader is finished with the page, it will swap the empty page with a tail 
-of the buffer.
+> HPET timer is listed in the ACPI table, but needs a quirk entry in order 
+> to work. Unfortunately, the quirk code runs after first HPET 
+> hpet_enable() which has already determined that the timer doesn't work 
+> (reads 0xFFFFFFFF). This patch allows hpet_enable() to be called again 
+> after running the quirk code.
+>
+> Signed-off-by: Janne Kulmala <janne.t.kulmala@tut.fi>
 
-The problem is that there needs to be a lock to protect this change. If 
-the writer is moving the tail and the reader is about to swap it, things 
-can get corrupted. There are tricks to protect this with cmpxchg, but for 
-now we are playing it safe with spin locks. Note, the lock is only taken 
-by the reader when it needs to go to the next page.
+applied to tip/timers/hpet, thanks Janne!
 
-The writers do not need any locks to protect against other writers, 
-because the buffers are per cpu and a write may only be performed on a 
-buffer on the local cpu.
+Venki, is this new hpet force-enable quirk entry generally OK:
 
--- Steve
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH8_1,
+                         ich_force_enable_hpet);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH8_4,
++                        ich_force_enable_hpet);
 
+i guess it's OK since we enable hpet on ICH8_1 already. Should we perhaps 
+convert these quirks somehow to some ">= threshold_version" condition, 
+instead of having to enumerate everything?
 
-Note: I may have tail and head backwards, I do not remember which end I 
-called what.
+	Ingo
