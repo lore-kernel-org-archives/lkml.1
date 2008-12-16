@@ -1,108 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbYLPOs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYLPOtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757327AbYLPOs1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 09:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbYLPOsQ
+	id S1757543AbYLPOtA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 09:49:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYLPOsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 09:48:16 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:18001 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754905AbYLPOsP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 09:48:15 -0500
-Message-ID: <4947BFAA.4030208@panasas.com>
-Date: Tue, 16 Dec 2008 16:48:10 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
-MIME-Version: 1.0
-To: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCHSET 0/9] exofs (was osdfs)
-Content-Type: text/plain; charset=UTF-8
+	Tue, 16 Dec 2008 09:48:51 -0500
+Received: from mga02.intel.com ([134.134.136.20]:7838 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753712AbYLPOsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 09:48:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,231,1228118400"; 
+   d="scan'208";a="371330237"
+Date: Tue, 16 Dec 2008 15:48:42 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com
+Subject: [patch 1/3] x86, bts: clear bts bits on fork
+Message-ID: <20081216154842.A29980@sedona.ch.intel.com>
+Mime-Version: 1.0
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Dec 2008 14:46:43.0463 (UTC) FILETIME=[1CC77170:01C95F8D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-exofs an OSD based file system.
+Clear the DS context as well as the bts tracer and corresponding
+fields in task_struct on fork.
 
-Whats new since RFC:
-First - The name. As Jeff suggested osdfs is too generic a name, for any
-particular OSD file system. So Avishay Traeger decided he would like to
-call it: exofs - extended object file system. Which credits it's ext2
-origin.
+Correct the CONFIG guard.
 
-2nd - Move to .write_begin/.write_end from the old .prepare_write/.commit_write.
-that were just removed in 2.6.28-rc1 Kernel.
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+Reported-by: Ingo Molnar <mingo@elte.hu>
+---
 
-3rd - Use of the new osd_req_decode_sense() API to only ignore read errors
-when we expect them, i.e. read passed end of objects. (This used to work
-with the old IBM initiator)
+Index: ftrace/arch/x86/kernel/process_32.c
+===================================================================
+--- ftrace.orig/arch/x86/kernel/process_32.c	2008-12-12 14:02:24.000000000 +0100
++++ ftrace/arch/x86/kernel/process_32.c	2008-12-12 14:33:19.000000000 +0100
+@@ -251,7 +251,7 @@
+ 		tss->x86_tss.io_bitmap_base = INVALID_IO_BITMAP_OFFSET;
+ 		put_cpu();
+ 	}
+-#ifdef CONFIG_X86_DS
++#ifdef CONFIG_X86_PTRACE_BTS
+ 	/* Free any BTS tracers that have not been properly released. */
+ 	if (unlikely(current->bts)) {
+ 		ds_release_bts(current->bts);
+@@ -261,7 +261,7 @@
+ 		current->bts_buffer = NULL;
+ 		current->bts_size = 0;
+ 	}
+-#endif /* CONFIG_X86_DS */
++#endif /* CONFIG_X86_PTRACE_BTS */
+ }
+ 
+ void flush_thread(void)
+@@ -343,6 +343,17 @@
+ 		kfree(p->thread.io_bitmap_ptr);
+ 		p->thread.io_bitmap_max = 0;
+ 	}
++
++#ifdef CONFIG_X86_DS
++	clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
++	p->thread.ds_ctx = NULL;
++#endif
++#ifdef CONFIG_X86_PTRACE_BTS
++	p->thread.bts_ovfl_signal = 0;
++#endif
++	clear_tsk_thread_flag(p, TIF_DEBUGCTLMSR);
++	p->thread.debugctlmsr = 0;
++
+ 	return err;
+ }
+ 
+Index: ftrace/arch/x86/kernel/process_64.c
+===================================================================
+--- ftrace.orig/arch/x86/kernel/process_64.c	2008-12-12 14:02:24.000000000 +0100
++++ ftrace/arch/x86/kernel/process_64.c	2008-12-12 14:32:38.000000000 +0100
+@@ -248,7 +248,7 @@
+ 		t->io_bitmap_max = 0;
+ 		put_cpu();
+ 	}
+-#ifdef CONFIG_X86_DS
++#ifdef CONFIG_X86_PTRACE_BTS
+ 	/* Free any BTS tracers that have not been properly released. */
+ 	if (unlikely(current->bts)) {
+ 		ds_release_bts(current->bts);
+@@ -258,7 +258,7 @@
+ 		current->bts_buffer = NULL;
+ 		current->bts_size = 0;
+ 	}
+-#endif /* CONFIG_X86_DS */
++#endif /* CONFIG_X86_PTRACE_BTS */
+ }
+ 
+ void flush_thread(void)
+@@ -388,6 +388,17 @@
+ 		if (err)
+ 			goto out;
+ 	}
++
++#ifdef CONFIG_X86_DS
++	clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
++	p->thread.ds_ctx = NULL;
++#endif
++#ifdef CONFIG_X86_PTRACE_BTS
++	p->thread.bts_ovfl_signal = 0;
++#endif
++	clear_tsk_thread_flag(p, TIF_DEBUGCTLMSR);
++	p->thread.debugctlmsr = 0;
++
+ 	err = 0;
+ out:
+ 	if (err && p->thread.io_bitmap_ptr) {
+Index: ftrace/kernel/fork.c
+===================================================================
+--- ftrace.orig/kernel/fork.c	2008-12-12 14:02:24.000000000 +0100
++++ ftrace/kernel/fork.c	2008-12-12 14:29:43.000000000 +0100
+@@ -1102,7 +1102,11 @@
+ #ifdef CONFIG_DEBUG_MUTEXES
+ 	p->blocked_on = NULL; /* not blocked yet */
+ #endif
+-
++#ifdef CONFIG_X86_PTRACE_BTS
++	p->bts = NULL;
++	p->bts_buffer = NULL;
++	p->bts_size = 0;
++#endif
+ 	/* Perform scheduler related setup. Assign this task to a CPU. */
+ 	sched_fork(p, clone_flags);
+ 
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-4th - Fix a NUL-terminate bug with symlinks
-5th - file_fsync does not work properly for none-block-dev filesystems
-so open code that in an exofs_fsync.
-
-6th - Linux's default for .flush, called at file close, is to do nothing.
-We don't like that, specially for networked osd (iscsi) so implement
-exofs_flush by calling above exofs_fsync
-
-This patchset is dependent on the open-osd initiator library, that must
-get accepted first into Linux.
-(git://git.open-osd.org/linux-open-osd.git linux-next)
-
-Andrew Al?
-Please, who is the maintainer that such a filesystem should go through?
-
-Our intention with exofs is to make it exportable by Linux
-pNFS server, as reference implementation for pNFS-object-layout
-server. A pNFS-objects client implementation is also in the works
-(See all about pNFS in Linux at:
-http://wiki.linux-nfs.org/wiki/index.php/PNFS_prototype_design)
-
-exofs was originally developed by Avishay Traeger <avishay@gmail.com>
-from IBM. A very old version of it is hosted on sourceforge as the osdfs
-project. The Original code was based on ext2 of the 2.6.10 Kernel and ran
-over the old IBM's osd-initiator Linux driver.
-
-Since then it was picked by us, open-osd, and was both forward ported to
-current Kernel, as well as converted to run over our osd Kernel Library.
-
-I have mechanically divided the code in parts, each introducing a
-group of vfs function vectors, all tied at the end into a full filesystem.
-Each patch can be compiled but it will only run at the very end.
-This was done for the hope of easier reviewing.
-
-Here is the list of patches
-[PATCH 1/9] exofs: osd Swiss army knife
-[PATCH 2/9] exofs: file and file_inode operations
-[PATCH 3/9] exofs: symlink_inode and fast_symlink_inode operations
-[PATCH 4/9] exofs: address_space_operations
-[PATCH 5/9] exofs: dir_inode and directory operations
-[PATCH 6/9] exofs: super_operations and file_system_type
-[PATCH 7/9] exofs: mkexofs
-[PATCH 8/9] exofs: Documentation
-[PATCH 9/9] fs: Add exofs to Kernel build
-
-This patchset is also available on:
-  git-clone git://git.open-osd.org/linux-open-osd.git linux-next-exofs
-or on the web at:
-  http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=refs/heads/linux-next-exofs
-
-(Above tree is based on Linus 2.6.28.rc8-cefb3d0. A branch based on scsi-misc
- is also present see osd && osd-exofs branches)
-
-If anyone wants to actually run this code and test it
-then please start at: http://open-osd.org
-and also the exofs.txt file in patch 8/9 should help
-
-Thank you for the review
-Boaz
-
-
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
