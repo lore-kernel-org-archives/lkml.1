@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757497AbYLPXoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759127AbYLPXq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757497AbYLPXoZ (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 18:44:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758946AbYLPXoE
+	id S1759127AbYLPXq7 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 18:46:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbYLPXqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 18:44:04 -0500
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:55272 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757115AbYLPXoB (ORCPT
+	Tue, 16 Dec 2008 18:46:47 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:46811 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752614AbYLPXqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 18:44:01 -0500
-Date: Wed, 17 Dec 2008 00:43:58 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: David Miller <davem@davemloft.net>, rostedt@goodmis.org,
-        akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-        mathieu.desnoyers@polymtl.ca, paulus@samba.org,
-        benh@kernel.crashing.org, linux-ia64@vger.kernel.org,
-        linux-s390@vger.kernel.org
-Subject: Re: local_add_return
-Message-ID: <20081216234358.GC5584@osiris.boeblingen.de.ibm.com>
-References: <alpine.DEB.1.10.0812150823370.18692@gandalf.stny.rr.com> <200812161703.00697.rusty@rustcorp.com.au> <20081215.231314.92267481.davem@davemloft.net> <200812170908.05423.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812170908.05423.rusty@rustcorp.com.au>
+	Tue, 16 Dec 2008 18:46:45 -0500
+Date: Tue, 16 Dec 2008 16:46:38 -0700
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH] vfs: introduce helper function to safely NUL-terminate
+	symlinks
+In-reply-to: <1229442720-31056-6-git-send-email-duaneg@dghda.com>
+ <1229442720-31056-2-git-send-email-duaneg@dghda.com>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+        Al Viro <viro@zeniv.linux.org.uk>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org
+Message-id: <20081216234638.GX5000@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <1229442720-31056-1-git-send-email-duaneg@dghda.com>
+ <1229442720-31056-2-git-send-email-duaneg@dghda.com>
+ <1229442720-31056-3-git-send-email-duaneg@dghda.com>
+ <1229442720-31056-4-git-send-email-duaneg@dghda.com>
+ <1229442720-31056-5-git-send-email-duaneg@dghda.com>
+ <1229442720-31056-6-git-send-email-duaneg@dghda.com>
+ <1229442720-31056-1-git-send-email-duaneg@dghda.com>
+ <1229442720-31056-2-git-send-email-duaneg@dghda.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 09:08:04AM +1030, Rusty Russell wrote:
-> On Tuesday 16 December 2008 17:43:14 David Miller wrote:
-> > Here ya go:
+On Dec 16, 2008  15:51 +0000, Duane Griffin wrote:
+> A number of filesystems were potentially triggering kernel bugs due to
+> corrupted symlink names on disk. This helper helps safely terminate the
+> names.
 > 
-> Very interesting.  There's a little noise there (that first local_inc of 243
-> is wrong), but the picture is clear: trivalue is the best implementation for
-> sparc64.
-> 
-> Note: trivalue uses 3 values, so instead of hitting random values across 8MB
-> it's across 24MB, and despite the resulting cache damage it's 15% faster.  The
-> cpu_local_inc test is a single value, so no cache effects: it shows trivalue
-> to be 3 to 3.5 times faster in the cache-hot case.
-> 
-> This sucks, because it really does mean that there's no one-size-fits-all
-> implementation of local_t.  There's also no platform yet where atomic_long_t
-> is the right choice; and that's the default!
-> 
-> Any chance of an IA64 or s390 run?  You can normalize if you like, since
-> it's only to compare the different approaches.
+> +static inline void nd_terminate_link(void *name,unsigned len,unsigned maxlen)
+> +{
+> +	((char *) name)[min(len, maxlen)] = '\0';
+> +}
 
-atomic_long_t seems to be the right choice on s390. IRQ disable/enable is
-expensive, but the compare and swap instruction is cheap. I just gave it
-a quick shot, but please note that there were two hypervisors running below
-my system (add_return is missing since I used your first patch):
+> @@ -4200,9 +4201,11 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
+>  	} else if (S_ISLNK(inode->i_mode)) {
+> +		if (ext4_inode_is_fast_symlink(inode)) {
+>  			inode->i_op = &ext4_fast_symlink_inode_operations;
+> +			nd_terminate_link(ei->i_data, inode->i_size,
+> +				sizeof(ei->i_data));
+> +		} else {
+>  			inode->i_op = &ext4_symlink_inode_operations;
+>  			ext4_set_aops(inode);
+>  		}
 
-atomic_long	19  18  -  3  17
-irqsave/rest	57  58  - 39  22
-trivalue	43  43  -  4  45
-local_t		18  20  -  2  16
+With sizeof(ei->i_data) = 15 * 4 = 60 bytes, this will set ei->i_data[60]
+as NUL, which is writing 1 byte beyond the end of the array.
+
+Note that in ext[234]_symlink() the check for fast symlinks is:
+
+	l = strlen(symname)+1;
+        if (l > sizeof (EXT3_I(inode)->i_data)) {
+		inode->i_op = &ext3_symlink_inode_operations;
+	} else {
+		inode->i_op = &ext3_fast_symlink_inode_operations;
+		inode->i_size = l-1;
+	}
+
+so in fact the fast symlinks should always have space for a trailing NUL
+character, and "sizeof(ei->i_data) - 1" is the right maxlen to use for
+ext[234].
+
+That might not be true for other filesystems, in which case you would
+need to add a "padding" field after the symlink name in memory to hold
+the trailing NUL.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
