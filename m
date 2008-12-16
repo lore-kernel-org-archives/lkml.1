@@ -1,66 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbYLPO4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757689AbYLPO65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757464AbYLPO4l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 09:56:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbYLPO4d
+	id S1757689AbYLPO65 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 09:58:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbYLPO6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 09:56:33 -0500
-Received: from postman.teamix.net ([194.150.191.120]:52819 "EHLO
-	rproxy.teamix.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755268AbYLPO4d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 09:56:33 -0500
-From: Martin Steigerwald <ms@teamix.de>
-Organization: team(ix) GmbH
+	Tue, 16 Dec 2008 09:58:49 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56149 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755481AbYLPO6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 09:58:47 -0500
+Date: Tue, 16 Dec 2008 15:56:41 +0100
+From: Jiri Pirko <jpirko@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: physical memory limit of 64-bit linux
-Date: Tue, 16 Dec 2008 15:56:19 +0100
-User-Agent: KMail/1.9.9
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2837603.n3q4K9eXDt";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Cc: "Oleg Nesterov" <oleg@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michael Kerrisk" <mtk.manpages@googlemail.com>,
+       linux-api@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       jlim@sgi.com, kosaki.motohiro@jp.fujitsu.com
+Subject: [PATCH, RESEND] getrusage: fill ru_maxrss value
+Message-ID: <20081216155641.1411f8a7@psychotron.englab.brq.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812161556.25518.ms@teamix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2837603.n3q4K9eXDt
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This patch makes ->ru_maxrss value in struct rusage filled accordingly to
+rss hiwater mark. This struct is filled as a parameter to
+getrusage syscall. ->ru_maxrss value is set to pages which might be correct
+as "time" application converts it to KBs.
+
+To make this happen we extend struct signal_struct by two fields. The
+first one is ->maxrss which we use to store rss hiwater of the task. The
+second one is ->cmaxrss which we use to store highest rss hiwater of all
+task childs. These values are used in k_getrusage() to actually fill
+->ru_maxrss. k_getrusage() uses current rss hiwater value directly
+if mm struct exists.
+
+We clear the ->maxrss as a part of flush_old_exec() to be consistent
+because bprm_mm_init() does not copy ->hiwater_rss.
+
+Note that we use recently introduced get_mm_hiwater_rss() helper to
+actually get the rss hiwater value:
+http://lkml.org/lkml/2008/12/12/172
 
 
-Hi!
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+---
+ fs/exec.c             |    1 +
+ include/linux/sched.h |    1 +
+ kernel/exit.c         |    4 ++++
+ kernel/fork.c         |    1 +
+ kernel/sys.c          |   12 ++++++++++++
+ 5 files changed, 19 insertions(+), 0 deletions(-)
 
-What is the physical memory limit for 64-bit Linux? I read about 40 bit=20
-address bus for AMD Athlon X2 (1 TB) and 48 bit for Barcelona X4 (256 TB).
+diff --git a/fs/exec.c b/fs/exec.c
+index ec5df9a..8d3d0f9 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -870,6 +870,7 @@ static int de_thread(struct task_struct *tsk)
+ 	sig->notify_count = 0;
+ 
+ no_thread_group:
++	sig->maxrss = 0;
+ 	exit_itimers(sig);
+ 	flush_itimer_signals();
+ 	if (leader)
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index f4c70dc..41b04ee 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -563,6 +563,7 @@ struct signal_struct {
+ 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
+ 	unsigned long inblock, oublock, cinblock, coublock;
+ 	struct task_io_accounting ioac;
++	unsigned long maxrss, cmaxrss;
+ 
+ 	/*
+ 	 * We don't bother to synchronize most readers of this at all,
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 81b6372..61d622d 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -1053,6 +1053,8 @@ NORET_TYPE void do_exit(long code)
+ 	if (group_dead) {
+ 		hrtimer_cancel(&tsk->signal->real_timer);
+ 		exit_itimers(tsk->signal);
++		if (tsk->mm)
++			tsk->signal->maxrss = get_mm_hiwater_rss(tsk->mm);
+ 	}
+ 	acct_collect(code, group_dead);
+ 	if (group_dead)
+@@ -1351,6 +1353,8 @@ static int wait_task_zombie(struct task_struct *p, int options,
+ 			sig->oublock + sig->coublock;
+ 		task_io_accounting_add(&psig->ioac, &p->ioac);
+ 		task_io_accounting_add(&psig->ioac, &sig->ioac);
++		if (psig->cmaxrss < sig->maxrss)
++			psig->cmaxrss = sig->maxrss;
+ 		spin_unlock_irq(&p->parent->sighand->siglock);
+ 	}
+ 
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 495da2e..36ac3e5 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -850,6 +850,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
+ 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
+ 	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
+ 	task_io_accounting_init(&sig->ioac);
++	sig->maxrss = sig->cmaxrss = 0;
+ 	taskstats_tgid_init(sig);
+ 
+ 	task_lock(current->group_leader);
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 31deba8..67328ff 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1569,6 +1569,7 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ 			r->ru_majflt = p->signal->cmaj_flt;
+ 			r->ru_inblock = p->signal->cinblock;
+ 			r->ru_oublock = p->signal->coublock;
++			r->ru_maxrss = p->signal->cmaxrss;
+ 
+ 			if (who == RUSAGE_CHILDREN)
+ 				break;
+@@ -1583,6 +1584,8 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ 			r->ru_majflt += p->signal->maj_flt;
+ 			r->ru_inblock += p->signal->inblock;
+ 			r->ru_oublock += p->signal->oublock;
++			if (r->ru_maxrss < p->signal->maxrss)
++				r->ru_maxrss = p->signal->maxrss;
+ 			t = p;
+ 			do {
+ 				accumulate_thread_rusage(t, r);
+@@ -1598,6 +1601,15 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
+ out:
+ 	cputime_to_timeval(utime, &r->ru_utime);
+ 	cputime_to_timeval(stime, &r->ru_stime);
++
++	task_lock(p);
++	if (p->mm) {
++		unsigned long maxrss = get_mm_hiwater_rss(p->mm);
++
++		if (r->ru_maxrss < maxrss)
++			r->ru_maxrss = maxrss;
++	}
++	task_unlock(p);
+ }
+ 
+ int getrusage(struct task_struct *p, int who, struct rusage __user *ru)
+-- 
+1.5.6.5
 
-Is 64-bit linux able to use that amount - provided that one would manage to=
-=20
-build it into a machine? Or does it have a lower limit?
-
-Looking into the Google crystal ball gives unclear pictures... I tend to=20
-assume that Linux would handle it, but I am not sure.
-
-Ciao,
-=2D-=20
-Martin Steigerwald - team(ix) GmbH - http://www.teamix.de
-gpg: 19E3 8D42 896F D004 08AC A0CA 1E10 C593 0399 AE90
-
---nextPart2837603.n3q4K9eXDt
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAklHwZQACgkQHhDFkwOZrpDg1ACfVkKarZZUazhL+cHFC0t3jfGY
-X/0An2jJULW+HwEENnPEjUS6MMSKIsLg
-=V2cS
------END PGP SIGNATURE-----
-
---nextPart2837603.n3q4K9eXDt--
