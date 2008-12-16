@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbYLPRza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbYLPRzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754525AbYLPRza (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 12:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYLPRzQ
+	id S1755856AbYLPRzq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 12:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYLPRzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 12:55:16 -0500
-Received: from gw.goop.org ([64.81.55.164]:43596 "EHLO mail.goop.org"
+	Tue, 16 Dec 2008 12:55:18 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:33388 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751276AbYLPRzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 12:55:14 -0500
-Message-ID: <4947EB7C.9080006@goop.org>
-Date: Tue, 16 Dec 2008 09:55:08 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	id S1751824AbYLPRzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 12:55:15 -0500
+Date: Tue, 16 Dec 2008 12:55:03 -0500
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-nfs@vger.kernel.org,
+       Max Kellermann <mk@cm4all.com>, linux-kernel@vger.kernel.org,
+       gcosta@redhat.com, Grant Coady <grant_lkml@dodo.com.au>,
+       Tom Tucker <tom@opengridcomputing.com>
+Subject: Re: [PATCH 0/3] NFS regression in 2.6.26?, "task blocked for more
+	than 120 seconds"
+Message-ID: <20081216175503.GG16388@fieldses.org>
+References: <1227596962.16868.22.camel@localhost.localdomain> <1227619696.7057.19.camel@heimdal.trondhjem.org> <1227620339.9425.99.camel@zakaz.uk.xensource.com> <1227621434.7057.33.camel@heimdal.trondhjem.org> <1227621877.9425.102.camel@zakaz.uk.xensource.com> <1227737539.31008.2.camel@localhost.localdomain> <1228090631.7112.11.camel@heimdal.trondhjem.org> <1228169383.20370.3.camel@localhost.localdomain> <1228565812.10856.30.camel@localhost.localdomain> <1229279045.3721.1.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       hpa@zytor.com
-Subject: Re: [PATCH] x86-64: fix HYPERVISOR_update_descriptor()
-References: <4947A108.76E4.0078.0@novell.com>
-In-Reply-To: <4947A108.76E4.0078.0@novell.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1229279045.3721.1.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
->   
+On Sun, Dec 14, 2008 at 06:24:05PM +0000, Ian Campbell wrote:
+> On Sat, 2008-12-06 at 12:16 +0000, Ian Campbell wrote:
+> > On Mon, 2008-12-01 at 22:09 +0000, Ian Campbell wrote:
+> > > On Sun, 2008-11-30 at 19:17 -0500, Trond Myklebust wrote: 
+> > > > Can you see if the following 3 patches help? They're against 2.6.28-rc6,
+> > > > but afaics the problems are pretty much the same on 2.6.26.
+> > > 
+> > > Thanks.
+> > > 
+> > > The server was actually running 2.6.25.7 but the matching sources have
+> > > since been removed the backports.org so I've reproduce with 2.6.26 and
+> > > now I'll add the patches.
+> > 
+> > Just a small progress report. Anecdotally I thought that unpatched
+> > 2.6.26.7 was worse than 2.6.25.7, mostly because it hung twice in the ~1
+> > day I was running it where previously it was less frequent than once per
+> > day.
+> > 
+> > With the patched server the client ran OK for 2.5 days then mysteriously
+> > hung, the logs show none of the normal symptoms and my wife reset it
+> > before I got home so I've no real clue what happened but I'm inclined to
+> > think it was unrelated for now. I'll get back to you in a week or so if
+> > the problem hasn't reoccurred.
+> 
+> $ uptime 
+>  18:15:29 up 9 days, 22 min,  1 user,  load average: 0.74, 0.64, 0.46
+> 
+> This is on the problematic client, so it looks like the server side fix
+> has sorted it. Thanks very much Trond.
 
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Thanks for the testing!  So this was with the following three patches
+applied on the server on top of 2.6.26?
 
-> ---
->  arch/x86/include/asm/xen/hypercall.h |    2 ++
->  1 file changed, 2 insertions(+)
->
-> --- linux-2.6.28-rc8/arch/x86/include/asm/xen/hypercall.h	2008-12-11 14:45:37.000000000 +0100
-> +++ 2.6.28-rc8-x86_64-xen-update-descr/arch/x86/include/asm/xen/hypercall.h	2008-12-12 10:25:55.000000000 +0100
-> @@ -290,6 +290,8 @@ HYPERVISOR_get_debugreg(int reg)
->  static inline int
->  HYPERVISOR_update_descriptor(u64 ma, u64 desc)
->  {
-> +	if (sizeof(u64) == sizeof(long))
-> +		return _hypercall2(int, update_descriptor, ma, desc);
->  	return _hypercall4(int, update_descriptor, ma, ma>>32, desc, desc>>32);
->  }
->  
->
->
->
->   
+	[PATCH 1/3] SUNRPC: Ensure the server closes sockets in a timely fashion
+	[PATCH 2/3] SUNRPC: We only need to call svc_delete_xprt() once...
+	[PATCH 3/3] SUNRPC: svc_xprt_enqueue should not refuse to enqueue 'XPT_DEAD' transports
 
+I'll try to take a look at these before I leave for the holidays,
+assuming the versions Trond posted on Nov. 30 are the latest.
+
+--b.
