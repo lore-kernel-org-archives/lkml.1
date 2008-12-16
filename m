@@ -1,60 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbYLPSJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752272AbYLPSKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757203AbYLPSJw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 13:09:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbYLPSIj
+	id S1752272AbYLPSKO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 13:10:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbYLPSJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 13:08:39 -0500
-Received: from cavolo.yandex.ru ([87.250.244.45]:37188 "EHLO cavolo.yandex.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752265AbYLPSIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 13:08:38 -0500
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [w1] Move w1 commands from defines to enum.
-Date: Tue, 16 Dec 2008 21:08:00 +0300
-Message-Id: <1229450882-745-3-git-send-email-zbr@ioremap.net>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1229450882-745-2-git-send-email-zbr@ioremap.net>
-References: <1229450882-745-1-git-send-email-zbr@ioremap.net>
- <1229450882-745-2-git-send-email-zbr@ioremap.net>
-X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
-X-Antivirus-Code: 100000
+	Tue, 16 Dec 2008 13:09:10 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:49309 "EHLO
+	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756233AbYLPSJI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 13:09:08 -0500
+X-BigFish: VPS5(z34a4jzzzzzz32i6bh43j66h)
+X-Spam-TCS-SCL: 5:0
+X-FB-SS: 5,
+X-WSS-ID: 0KBZEES-01-CDQ-01
+Date: Tue, 16 Dec 2008 19:08:53 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: [PATCH 2/10] x86: microcode_amd: fix typos and trailing
+	whitespaces in log messages
+Message-ID: <20081216180853.GI7013@alberich.amd.com>
+References: <20081216180639.GG7013@alberich.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20081216180639.GG7013@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 16 Dec 2008 18:08:56.0999 (UTC) FILETIME=[5CEE1B70:01C95FA9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- drivers/w1/w1_netlink.h |   13 ++++++++-----
- 1 files changed, 8 insertions(+), 5 deletions(-)
+ arch/x86/kernel/microcode_amd.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/w1/w1_netlink.h b/drivers/w1/w1_netlink.h
-index 99dd21b..01d86a7 100644
---- a/drivers/w1/w1_netlink.h
-+++ b/drivers/w1/w1_netlink.h
-@@ -52,11 +52,14 @@ struct w1_netlink_msg
- 	__u8				data[0];
- };
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index b5bc814..83a9fa3 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -10,7 +10,7 @@
+  *  This driver allows to upgrade microcode on AMD
+  *  family 0x10 and 0x11 processors.
+  *
+- *  Licensed unter the terms of the GNU General Public
++ *  Licensed under the terms of the GNU General Public
+  *  License version 2. See file COPYING for details.
+ */
  
--#define W1_CMD_READ		0x0
--#define W1_CMD_WRITE		0x1
--#define W1_CMD_SEARCH		0x2
--#define W1_CMD_ALARM_SEARCH	0x3
--#define W1_CMD_TOUCH		0x4
-+enum w1_commands {
-+	W1_CMD_READ = 0,
-+	W1_CMD_WRITE,
-+	W1_CMD_SEARCH,
-+	W1_CMD_ALARM_SEARCH,
-+	W1_CMD_TOUCH,
-+	W1_CMD_MAX,
-+};
+@@ -133,7 +133,7 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
  
- struct w1_netlink_cmd
- {
+ 	if (!equiv_cpu_id) {
+ 		printk(KERN_ERR "microcode: CPU%d cpu_id "
+-		       "not found in equivalent cpu table \n", cpu);
++		       "not found in equivalent cpu table\n", cpu);
+ 		return 0;
+ 	}
+ 
+@@ -151,7 +151,7 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
+ 					    NULL);
+ 		if ((!nb_pci_dev) ||
+ 		    (mc_header->nb_rev_id != nb_pci_dev->revision)) {
+-			printk(KERN_ERR "microcode: CPU%d NB mismatch \n", cpu);
++			printk(KERN_ERR "microcode: CPU%d NB mismatch\n", cpu);
+ 			pci_dev_put(nb_pci_dev);
+ 			return 0;
+ 		}
+@@ -165,7 +165,7 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
+ 					    NULL);
+ 		if ((!sb_pci_dev) ||
+ 		    (mc_header->sb_rev_id != sb_pci_dev->revision)) {
+-			printk(KERN_ERR "microcode: CPU%d SB mismatch \n", cpu);
++			printk(KERN_ERR "microcode: CPU%d SB mismatch\n", cpu);
+ 			pci_dev_put(sb_pci_dev);
+ 			return 0;
+ 		}
+@@ -219,7 +219,7 @@ static void apply_microcode_amd(int cpu)
+ 	}
+ 
+ 	printk(KERN_INFO "microcode: CPU%d updated from revision "
+-	       "0x%x to 0x%x \n",
++	       "0x%x to 0x%x\n",
+ 	       cpu_num, uci->cpu_sig.rev, mc_amd->hdr.patch_id);
+ 
+ 	uci->cpu_sig.rev = rev;
+@@ -282,7 +282,7 @@ static int install_equiv_cpu_table(u8 *buf,
+ 
+ 	if (buf_pos[1] != UCODE_EQUIV_CPU_TABLE_TYPE || !size) {
+ 		printk(KERN_ERR "microcode: error! "
+-		       "Wrong microcode equivalnet cpu table\n");
++		       "Wrong microcode equivalent cpu table\n");
+ 		return 0;
+ 	}
+ 
 -- 
-1.5.6.3
+1.6.0.4
+
+
 
