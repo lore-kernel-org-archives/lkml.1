@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759029AbYLPUv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbYLPUxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759029AbYLPUv0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbYLPUu4
+	id S1758061AbYLPUxG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:53:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYLPUwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:50:56 -0500
-Received: from smtpauth00.csee.onr.siteprotect.com ([64.26.60.144]:44303 "EHLO
-	smtpauth00.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754527AbYLPUuz (ORCPT
+	Tue, 16 Dec 2008 15:52:54 -0500
+Received: from outbound-mail-20.bluehost.com ([69.89.20.235]:48433 "HELO
+	outbound-mail-20.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751699AbYLPUwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:50:55 -0500
-Date: Tue, 16 Dec 2008 15:55:41 -0500 (EST)
-From: Vince Weaver <vince@deater.net>
-X-X-Sender: vince@pianoman.cluster.toy
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       perfctr-devel@lists.sourceforge.net
-Subject: Re: [patch] Performance Counters for Linux, v4
-In-Reply-To: <494805E4.2040008@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0812161552460.7050@pianoman.cluster.toy>
-References: <20081214212829.GA9435@elte.hu> <Pine.LNX.4.64.0812161232170.6249@pianoman.cluster.toy>
- <494805E4.2040008@linux.vnet.ibm.com>
+	Tue, 16 Dec 2008 15:52:53 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=H+5IPZQ7jB1OttZ30j9KA8y5ANrtHjDdFOlWa5KipFUYl+yV75+A/dvS0aawxGDDalonYmMkmbXztH+y4Z3tc90H+SPqXho87xDetCYLV7PyfjSMGzF57edcTii/apwU;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+Subject: Re: [PATCH] ibmphp: Fix module ref count underflow
+Date: Tue, 16 Dec 2008 12:52:50 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: greg@kroah.com, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <20081210194334.GA25257@hmsreliant.think-freely.org> <200812161042.09345.jbarnes@virtuousgeek.org> <20081216195620.GA10231@hmsreliant.think-freely.org>
+In-Reply-To: <20081216195620.GA10231@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812161252.51191.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Dec 2008, Corey Ashford wrote:
-> In common with both perfmon3 and Ingo's solution is that as more and more 
-> events are scheduled onto the same set of hardware registers, the accuracy 
-> drops and has to be compensated with longer run times.
+On Tuesday, December 16, 2008 11:56 am Neil Horman wrote:
+> On Tue, Dec 16, 2008 at 10:42:08AM -0800, Jesse Barnes wrote:
+> > On Wednesday, December 10, 2008 11:43 am Neil Horman wrote:
+> > > Hey-
+> > > 	I happened to notice that the ibmphp hotplug driver does something
+> > > rather silly in its init routine.  It purposely calls module_put so as
+> > > to underflow its module ref count to avoid being removed from the
+> > > kernel. This is bad practice, and wrong, since it provides a window for
+> > > subsequent module_gets to reset the refcount to zero, allowing an
+> > > unload to race in and cause all sorts of mysterious panics.  If the
+> > > module is unsafe to load, it should inform the kernel as such with a
+> > > call to __unsafe.  The patch below does that.
+> >
+> > Thanks Neil, applied this to my for-linus branch since it sounds
+> > potentially serious (but also low risk since who uses ibmphp anymore? :)
+>
+> Dang it!  Sorry, Jesse.  Yes, youre absolutely right, it is low risk.  It
+> really just a bit of sillyness all around.
+>
+> Unfortunately, I took part in the sillyness.  The problem was reported to
+> me on RHEL, and I tested there, without checking upstream too closely.  As 
+> aresult, the patch I gave you is a bit out of date, and won't compile. 
+> I've tested the new patch here much more closely.  apologies.  I informed
+> akpm who was looking at it, but neglected to copy you.
+>
+> This patch corrects the same problem in that it prevents module unloads in
+> a sane fashion, by not registering an exit routine
+>
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
-There seems to be some confusion.
+Ah was just doing my testing & building now so I would have caught it in a 
+minute. :)  I'll replace the patch I have with this one, thanks.
 
-I want aggregate instruction count.  I do not want any sort of scaling or 
-sampling.
-
-When I cound retired instructions and cycles, I want the full counts for 
-those.  The q6600 definitely has more than 2 counters available, so it 
-should be able to give me exact aggregate counts for those counters.  No 
-sampling or scaling should be involved.
-
-Is it not possible to get raw, aggregate count with Ingo's infrastructure? 
-The documentation is vague on this.
-
-Vince
-
+Jesse
