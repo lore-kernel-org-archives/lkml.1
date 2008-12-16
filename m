@@ -1,114 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751406AbYLPI0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbYLPI01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751406AbYLPI0B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 03:26:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYLPIZs
+	id S1754737AbYLPI01 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 03:26:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbYLPIZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 03:25:48 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57393 "EHLO
+	Tue, 16 Dec 2008 03:25:53 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57396 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbYLPIZr (ORCPT
+	with ESMTP id S1753155AbYLPIZw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 03:25:47 -0500
-Date: Tue, 16 Dec 2008 17:25:44 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: tytso@mit.edu, adilger@sun.com
-Subject: [Patch/BUG] (ext4) s_mb_maxs[] of ext4_sb_info is too small size
-Cc: Li Zefan <lizf@cn.fujitsu.com>, linux-ext4@vger.kernel.org,
-       Miao Xie <miaox@cn.fujitsu.com>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20081216170409.34EA.E1E9C6FF@jp.fujitsu.com>
+	Tue, 16 Dec 2008 03:25:52 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [mmotm][PATCH] proc: enclose desc variable of show_stat() in CONFIG_SPARSE_IRQ
+Cc: kosaki.motohiro@jp.fujitsu.com, Yinghai Lu <yinghai@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081216002247.100bc362.akpm@linux-foundation.org>
+References: <20081216165758.DBB2.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081216002247.100bc362.akpm@linux-foundation.org>
+Message-Id: <20081216172455.DBBB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 16 Dec 2008 17:25:50 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+> This would be better, no?
 
-I chased the cause of following ext4 oops report which is tested on
-ia64 box.
+Agreed. sorry sending silly patch.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12018
 
-The cause is the size of s_mb_maxs array that is
-defined as "unsigned short" in ext4_sb_info structure.
-Unsigned short is too small.
 
-In this bug report, Li-san formatted with 64Kbyte block size like
-the following. Ia64 has 64Kbyte page size, then this
-block size is acceptable.
+> --- a/fs/proc/stat.c~proc-enclose-desc-variable-of-show_stat-in-config_sparse_irq
+> +++ a/fs/proc/stat.c
+> @@ -28,7 +28,6 @@ static int show_stat(struct seq_file *p,
+>  	u64 sum_softirq = 0;
+>  	struct timespec boottime;
+>  	unsigned int per_irq_sum;
+> -	struct irq_desc *desc;
+>  
+>  	user = nice = system = idle = iowait =
+>  		irq = softirq = steal = cputime64_zero;
+> @@ -48,8 +47,7 @@ static int show_stat(struct seq_file *p,
+>  		guest = cputime64_add(guest, kstat_cpu(i).cpustat.guest);
+>  		for_each_irq_nr(j) {
+>  #ifdef CONFIG_SPARSE_IRQ
+> -			desc = irq_to_desc(j);
+> -			if (!desc)
+> +			if (!irq_to_desc(j))
+>  				continue;
+>  #endif
+>  			sum += kstat_irqs_cpu(j, i);
+> @@ -103,8 +101,7 @@ static int show_stat(struct seq_file *p,
+>  	for_each_irq_nr(j) {
+>  		per_irq_sum = 0;
+>  #ifdef CONFIG_SPARSE_IRQ
+> -		desc = irq_to_desc(j);
+> -		if (!desc) {
+> +		if (!irq_to_desc(j)) {
+>  			seq_printf(p, " %u", per_irq_sum);
+>  			continue;
+>  		}
+> _
+> 
 
-# mkfs.ext4 -b 65536 /dev/md0
-
-In this case, the maximum value of s_mb_maxs[] becomes 
-(blocksize << 2) = 256K by the following code.
-
-2482 int ext4_mb_init(struct super_block *sb, int needs_recovery)
-               : 
-               :
-2508         max = sb->s_blocksize << 2;    <---- max becomes 0x40000.
-2509         do {
-2510                 sbi->s_mb_offsets[i] = offset;
-2511                 sbi->s_mb_maxs[i] = max;            <--- over flow!!!
-2512                 offset += 1 << (sb->s_blocksize_bits - i);
-2513                 max = max >> 1;
-2514                 i++;
-2515         } while (i <= sb->s_blocksize_bits + 1);
-
-Then, some s_mb_maxs[] becomes 0 due to overflow.
-It is cause of this oops. The following patch is to fix it.
-
-Thanks.
-
-----
-
-The size of s_mb_maxs that is defined in ext4_sb_info is too small.
-When block size is 64K, which is possible on ia64,
-the maximum value of s_mb_maxs becomes 256K(0x40000).
-However, s_mb_maxs is defined as unsigned short. This is cause of panic.
-
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Miao Xie <miaox@cn.fujitsu.com>
-
----
- fs/ext4/ext4_sb.h |    3 ++-
- fs/ext4/mballoc.c |    2 ++
- 2 files changed, 4 insertions(+), 1 deletion(-)
-
-Index: test2/fs/ext4/ext4_sb.h
-===================================================================
---- test2.orig/fs/ext4/ext4_sb.h	2008-12-16 11:20:18.000000000 +0900
-+++ test2/fs/ext4/ext4_sb.h	2008-12-16 14:17:32.000000000 +0900
-@@ -101,7 +101,8 @@ struct ext4_sb_info {
- 	spinlock_t s_reserve_lock;
- 	spinlock_t s_md_lock;
- 	tid_t s_last_transaction;
--	unsigned short *s_mb_offsets, *s_mb_maxs;
-+	unsigned short *s_mb_offsets;
-+	unsigned int *s_mb_maxs;
- 
- 	/* tunables */
- 	unsigned long s_stripe;
-Index: test2/fs/ext4/mballoc.c
-===================================================================
---- test2.orig/fs/ext4/mballoc.c	2008-12-16 11:20:18.000000000 +0900
-+++ test2/fs/ext4/mballoc.c	2008-12-16 14:23:21.000000000 +0900
-@@ -2493,6 +2493,8 @@ int ext4_mb_init(struct super_block *sb,
- 	if (sbi->s_mb_offsets == NULL) {
- 		return -ENOMEM;
- 	}
-+
-+	i = (sb->s_blocksize_bits + 2) * sizeof(unsigned int);
- 	sbi->s_mb_maxs = kmalloc(i, GFP_KERNEL);
- 	if (sbi->s_mb_maxs == NULL) {
- 		kfree(sbi->s_mb_maxs);
-
--- 
-Yasunori Goto 
 
 
