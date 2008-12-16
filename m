@@ -1,227 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759404AbYLPVEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbYLPVF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759404AbYLPVEx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 16:04:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbYLPVEj
+	id S1759504AbYLPVF1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 16:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756576AbYLPVFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 16:04:39 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:48309 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755533AbYLPVEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 16:04:37 -0500
-Date: Tue, 16 Dec 2008 13:04:33 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org,
-       "kernel-testers@vger.kernel.org >> Kernel Testers List" 
-	<kernel-testers@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH v3 1/7] fs: Use a percpu_counter to track nr_dentry
-Message-ID: <20081216210433.GL6681@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <493100B0.6090104@cosmosbay.com> <49419680.8010409@cosmosbay.com>
+	Tue, 16 Dec 2008 16:05:06 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:51846 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756075AbYLPVFE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 16:05:04 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Kyle McMartin <kyle@infradead.org>
+Subject: Re: [PATCH v3 0/3] preadv & pwritev syscalls.
+Date: Tue, 16 Dec 2008 22:03:05 +0100
+User-Agent: KMail/1.9.9
+Cc: Gerd Hoffmann <kraxel@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-api@vger.kernel.org
+References: <1229340977-24345-1-git-send-email-kraxel@redhat.com> <4947DBFA.9050108@redhat.com> <20081216170209.GC410@bombadil.infradead.org>
+In-Reply-To: <20081216170209.GC410@bombadil.infradead.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <49419680.8010409@cosmosbay.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200812162203.06139.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18I4v7wGRBtWCsimnsl+0QcRXJN779/WDrDk3O
+ CD+Uu3HWjHZDDw2xdryp17KhiXNYSglmJBBoYmt0KvaeWdGUey
+ 28h2R6gQ2Yp/qVTG9Xwaw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 11:38:56PM +0100, Eric Dumazet wrote:
-> Adding a percpu_counter nr_dentry avoids cache line ping pongs
-> between cpus to maintain this metric, and dcache_lock is
-> no more needed to protect dentry_stat.nr_dentry
+On Tuesday 16 December 2008, Kyle McMartin wrote:
+> > I'd prefer to have the ordering coded explicitly instead, like this:
+> > 
+> > asmlinkage int compat_sys_pwritev(unsigned long fd,
+> >        const struct compat_iovec __user *vec, unsigned long vlen,
+> >        unsigned pos_low, unsigned pos_high)
+> > {
+> >       loff_t pos = pos_low | (loff_t)pos_high << 32;
+> >         [ ... ]
+> > 
 > 
-> We centralize nr_dentry updates at the right place :
-> - increments in d_alloc()
-> - decrements in d_free()
+> Sadly this isn't possible without a wrapper unless you can guarantee
+> it was passed low high instead of high low. Unless you munge it in
+> userspace, you can't.
 > 
-> d_alloc() can avoid taking dcache_lock if parent is NULL
-> 
-> ("socketallocbench -n8" result : 27.5s to 25s)
 
-Looks good!  (At least once I realised that nr_dentry was global rather
-than per-dentry!!!)
+Exactly, we have to munge it in userspace anyway because of the
+argument ordering requirement we get if we pass it as a single u64.
+I vote for the explicit split as well, this will give us a straightforward
+wrapper in user space, unlike the swapped arguments that are just asking
+for trouble, and will make it easy to have a common compat_sys_pwritev
+function.
 
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> ---
->  fs/dcache.c        |   49 +++++++++++++++++++++++++------------------
->  include/linux/fs.h |    2 +
->  kernel/sysctl.c    |    2 -
->  3 files changed, 32 insertions(+), 21 deletions(-)
-> 
-> diff --git a/fs/dcache.c b/fs/dcache.c
-> index fa1ba03..f463a81 100644
-> --- a/fs/dcache.c
-> +++ b/fs/dcache.c
-> @@ -61,12 +61,31 @@ static struct kmem_cache *dentry_cache __read_mostly;
->  static unsigned int d_hash_mask __read_mostly;
->  static unsigned int d_hash_shift __read_mostly;
->  static struct hlist_head *dentry_hashtable __read_mostly;
-> +static struct percpu_counter nr_dentry;
-> 
->  /* Statistics gathering. */
->  struct dentry_stat_t dentry_stat = {
->  	.age_limit = 45,
->  };
-> 
-> +/*
-> + * Handle nr_dentry sysctl
-> + */
-> +#if defined(CONFIG_SYSCTL) && defined(CONFIG_PROC_FS)
-> +int proc_nr_dentry(ctl_table *table, int write, struct file *filp,
-> +		   void __user *buffer, size_t *lenp, loff_t *ppos)
-> +{
-> +	dentry_stat.nr_dentry = percpu_counter_sum_positive(&nr_dentry);
-> +	return proc_dointvec(table, write, filp, buffer, lenp, ppos);
-> +}
-> +#else
-> +int proc_nr_dentry(ctl_table *table, int write, struct file *filp,
-> +		   void __user *buffer, size_t *lenp, loff_t *ppos)
-> +{
-> +	return -ENOSYS;
-> +}
-> +#endif
-> +
->  static void __d_free(struct dentry *dentry)
->  {
->  	WARN_ON(!list_empty(&dentry->d_alias));
-> @@ -82,8 +101,7 @@ static void d_callback(struct rcu_head *head)
->  }
-> 
->  /*
-> - * no dcache_lock, please.  The caller must decrement dentry_stat.nr_dentry
-> - * inside dcache_lock.
-> + * no dcache_lock, please.
->   */
->  static void d_free(struct dentry *dentry)
->  {
-> @@ -94,6 +112,7 @@ static void d_free(struct dentry *dentry)
->  		__d_free(dentry);
->  	else
->  		call_rcu(&dentry->d_u.d_rcu, d_callback);
-> +	percpu_counter_dec(&nr_dentry);
->  }
-> 
->  /*
-> @@ -172,7 +191,6 @@ static struct dentry *d_kill(struct dentry *dentry)
->  	struct dentry *parent;
-> 
->  	list_del(&dentry->d_u.d_child);
-> -	dentry_stat.nr_dentry--;	/* For d_free, below */
->  	/*drops the locks, at that point nobody can reach this dentry */
->  	dentry_iput(dentry);
->  	if (IS_ROOT(dentry))
-> @@ -619,7 +637,6 @@ void shrink_dcache_sb(struct super_block * sb)
->  static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
->  {
->  	struct dentry *parent;
-> -	unsigned detached = 0;
-> 
->  	BUG_ON(!IS_ROOT(dentry));
-> 
-> @@ -678,7 +695,6 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
->  			}
-> 
->  			list_del(&dentry->d_u.d_child);
-> -			detached++;
-> 
->  			inode = dentry->d_inode;
->  			if (inode) {
-> @@ -696,7 +712,7 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
->  			 * otherwise we ascend to the parent and move to the
->  			 * next sibling if there is one */
->  			if (!parent)
-> -				goto out;
-> +				return;
-> 
->  			dentry = parent;
-> 
-> @@ -705,11 +721,6 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
->  		dentry = list_entry(dentry->d_subdirs.next,
->  				    struct dentry, d_u.d_child);
->  	}
-> -out:
-> -	/* several dentries were freed, need to correct nr_dentry */
-> -	spin_lock(&dcache_lock);
-> -	dentry_stat.nr_dentry -= detached;
-> -	spin_unlock(&dcache_lock);
->  }
-> 
->  /*
-> @@ -943,8 +954,6 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
->  	dentry->d_flags = DCACHE_UNHASHED;
->  	spin_lock_init(&dentry->d_lock);
->  	dentry->d_inode = NULL;
-> -	dentry->d_parent = NULL;
-> -	dentry->d_sb = NULL;
->  	dentry->d_op = NULL;
->  	dentry->d_fsdata = NULL;
->  	dentry->d_mounted = 0;
-> @@ -959,16 +968,15 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
->  	if (parent) {
->  		dentry->d_parent = dget(parent);
->  		dentry->d_sb = parent->d_sb;
-> +		spin_lock(&dcache_lock);
-> +		list_add(&dentry->d_u.d_child, &parent->d_subdirs);
-> +		spin_unlock(&dcache_lock);
->  	} else {
-> +		dentry->d_parent = NULL;
-> +		dentry->d_sb = NULL;
->  		INIT_LIST_HEAD(&dentry->d_u.d_child);
->  	}
-> -
-> -	spin_lock(&dcache_lock);
-> -	if (parent)
-> -		list_add(&dentry->d_u.d_child, &parent->d_subdirs);
-> -	dentry_stat.nr_dentry++;
-> -	spin_unlock(&dcache_lock);
-> -
-> +	percpu_counter_inc(&nr_dentry);
->  	return dentry;
->  }
-> 
-> @@ -2282,6 +2290,7 @@ static void __init dcache_init(void)
->  {
->  	int loop;
-> 
-> +	percpu_counter_init(&nr_dentry, 0);
->  	/* 
->  	 * A constructor could be added for stable state like the lists,
->  	 * but it is probably not worth it because of the cache nature
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 4a853ef..114cb65 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -2217,6 +2217,8 @@ static inline void free_secdata(void *secdata)
->  struct ctl_table;
->  int proc_nr_files(struct ctl_table *table, int write, struct file *filp,
->  		  void __user *buffer, size_t *lenp, loff_t *ppos);
-> +int proc_nr_dentry(struct ctl_table *table, int write, struct file *filp,
-> +		   void __user *buffer, size_t *lenp, loff_t *ppos);
-> 
->  int get_filesystem_list(char * buf);
-> 
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index 3d56fe7..777bee7 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -1246,7 +1246,7 @@ static struct ctl_table fs_table[] = {
->  		.data		= &dentry_stat,
->  		.maxlen		= 6*sizeof(int),
->  		.mode		= 0444,
-> -		.proc_handler	= &proc_dointvec,
-> +		.proc_handler	= &proc_nr_dentry,
->  	},
->  	{
->  		.ctl_name	= FS_OVERFLOWUID,
+	Arnd <><
