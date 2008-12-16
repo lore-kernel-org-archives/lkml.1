@@ -1,86 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbYLPUYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYLPUYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759447AbYLPUYm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:24:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759041AbYLPUUK
+	id S1755505AbYLPUYO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:24:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758747AbYLPUTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:20:10 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56965 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758997AbYLPUUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:20:08 -0500
-Date: Tue, 16 Dec 2008 21:19:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] x86: traps.c declare functions before they get used
-Message-ID: <20081216201956.GA14505@elte.hu>
-References: <1229360145.15326.5.camel@jaswinder.satnam>
-MIME-Version: 1.0
+	Tue, 16 Dec 2008 15:19:25 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:30368 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758735AbYLPUTX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 15:19:23 -0500
+Date: Tue, 16 Dec 2008 14:19:22 -0600
+From: scameron@beardog.cca.cpqcorp.net
+To: linux-kernel@vger.kernel.org
+Cc: jens.axboe@oracle.com, akpm@linux-foundation.org,
+       mikem@roadking.cca.cpqcorp.net
+Subject: [patch] cciss: Simplify parameters to deregister_disk function.
+Message-ID: <20081216201922.GM1126@beardog.cca.cpqcorp.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229360145.15326.5.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh <jaswinder@infradead.org> wrote:
+Simplify parameters to deregister_disk function.
 
-> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
-> 
-> In asm/traps.h :-
-> do_double_fault : added under X86_64
-> sync_regs : added under X86_64
-> math_error : moved out from X86_32 as it is common for both 32 and 64 bit
-> smp_thermal_interrupt : added under X86_64
-> mce_threshold_interrupt : added under X86_64
-> math_emulate : moved from X86_32 to MATH_EMULATION
-> ---
->  arch/x86/include/asm/traps.h |   11 ++++++++++-
->  1 files changed, 10 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/traps.h b/arch/x86/include/asm/traps.h
-> index 45dee28..d8a201b 100644
-> --- a/arch/x86/include/asm/traps.h
-> +++ b/arch/x86/include/asm/traps.h
-> @@ -46,6 +46,10 @@ dotraplinkage void do_coprocessor_segment_overrun(struct pt_regs *, long);
->  dotraplinkage void do_invalid_TSS(struct pt_regs *, long);
->  dotraplinkage void do_segment_not_present(struct pt_regs *, long);
->  dotraplinkage void do_stack_segment(struct pt_regs *, long);
-> +#ifdef CONFIG_X86_64
-> +dotraplinkage void do_double_fault(struct pt_regs *, long);
-> +asmlinkage __kprobes struct pt_regs *sync_regs(struct pt_regs *);
-> +#endif
->  dotraplinkage void do_general_protection(struct pt_regs *, long);
->  dotraplinkage void do_page_fault(struct pt_regs *, unsigned long);
->  dotraplinkage void do_spurious_interrupt_bug(struct pt_regs *, long);
-> @@ -72,9 +76,14 @@ static inline int get_si_code(unsigned long condition)
->  extern int panic_on_unrecovered_nmi;
->  extern int kstack_depth_to_print;
->  
-> -#ifdef CONFIG_X86_32
->  void math_error(void __user *);
-> +#ifdef CONFIG_X86_32
->  unsigned long patch_espfix_desc(unsigned long, unsigned long);
-> +#else
-> +asmlinkage void smp_thermal_interrupt(void);
-> +asmlinkage void mce_threshold_interrupt(void);
-> +#endif
-> +#ifndef CONFIG_MATH_EMULATION
->  asmlinkage void math_emulate(long);
->  #endif
+Signed-off-by: Stephen M. Cameron <scameron@beardog.cca.cpqcorp.net>
+---
 
-uhm, shouldnt that #ifndef CONFIG_MATH_EMULATION be #ifdef 
-CONFIG_MATH_EMULATION?
+ drivers/block/cciss.c |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-	Ingo
+diff -puN drivers/block/cciss.c~cciss_simplify_deregister_disk_params drivers/block/cciss.c
+--- linux-2.6.28-rc8/drivers/block/cciss.c~cciss_simplify_deregister_disk_params	2008-12-16 14:01:51.000000000 -0600
++++ linux-2.6.28-rc8-root/drivers/block/cciss.c	2008-12-16 14:01:51.000000000 -0600
+@@ -164,7 +164,7 @@ static int cciss_getgeo(struct block_dev
+ 
+ static int cciss_revalidate(struct gendisk *disk);
+ static int rebuild_lun_table(ctlr_info_t *h, int first_time);
+-static int deregister_disk(struct gendisk *disk, drive_info_struct *drv,
++static int deregister_disk(ctlr_info_t *h, int drv_index,
+ 			   int clear_all);
+ 
+ static void cciss_read_capacity(int ctlr, int logvol, int withirq,
+@@ -1492,8 +1492,7 @@ static void cciss_update_drive_info(int 
+ 		 * which keeps the interrupt handler from starting
+ 		 * the queue.
+ 		 */
+-		ret = deregister_disk(h->gendisk[drv_index],
+-				      &h->drv[drv_index], 0);
++		ret = deregister_disk(h, drv_index, 0);
+ 		h->drv[drv_index].busy_configuring = 0;
+ 	}
+ 
+@@ -1711,8 +1710,7 @@ static int rebuild_lun_table(ctlr_info_t
+ 			spin_lock_irqsave(CCISS_LOCK(h->ctlr), flags);
+ 			h->drv[i].busy_configuring = 1;
+ 			spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
+-			return_code = deregister_disk(h->gendisk[i],
+-				&h->drv[i], 1);
++			return_code = deregister_disk(h, i, 1);
+ 			h->drv[i].busy_configuring = 0;
+ 		}
+ 	}
+@@ -1782,15 +1780,19 @@ mem_msg:
+  *             the highest_lun should be left unchanged and the LunID
+  *             should not be cleared.
+ */
+-static int deregister_disk(struct gendisk *disk, drive_info_struct *drv,
++static int deregister_disk(ctlr_info_t *h, int drv_index,
+ 			   int clear_all)
+ {
+ 	int i;
+-	ctlr_info_t *h = get_host(disk);
++	struct gendisk *disk;
++	drive_info_struct *drv;
+ 
+ 	if (!capable(CAP_SYS_RAWIO))
+ 		return -EPERM;
+ 
++	drv = &h->drv[drv_index];
++	disk = h->gendisk[drv_index];
++
+ 	/* make sure logical volume is NOT is use */
+ 	if (clear_all || (h->gendisk[0] == disk)) {
+ 		if (drv->usage_count > 1)
+_
