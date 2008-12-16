@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758710AbYLPT6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbYLPT70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758710AbYLPT6o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 14:58:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYLPT6c
+	id S1758733AbYLPT70 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 14:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbYLPT7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 14:58:32 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:34590 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754080AbYLPT6b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 14:58:31 -0500
-Date: Tue, 16 Dec 2008 14:56:20 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: greg@kroah.com, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] ibmphp: Fix module ref count underflow
-Message-ID: <20081216195620.GA10231@hmsreliant.think-freely.org>
-References: <20081210194334.GA25257@hmsreliant.think-freely.org> <200812161042.09345.jbarnes@virtuousgeek.org>
+	Tue, 16 Dec 2008 14:59:11 -0500
+Received: from smtp-in.kfki.hu ([148.6.0.28]:56160 "EHLO smtp2.kfki.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752308AbYLPT7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 14:59:09 -0500
+Date: Tue, 16 Dec 2008 20:59:05 +0100 (CET)
+From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+To: Dave Jones <davej@redhat.com>
+cc: Jan Engelhardt <jengelh@medozas.de>, David Miller <davem@davemloft.net>,
+       ajax@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, Patrick McHardy <kaber@trash.net>
+Subject: Re: [PATCH] net: Remove a noisy printk
+In-Reply-To: <20081214200353.GA2994@redhat.com>
+Message-ID: <alpine.DEB.2.00.0812162044460.5854@blackhole.kfki.hu>
+References: <1229033625-30825-1-git-send-email-ajax@redhat.com> <20081211.203243.124017657.davem@davemloft.net> <alpine.LNX.1.10.0812132310080.27276@fbirervta.pbzchgretzou.qr> <alpine.DEB.2.00.0812141745550.2447@blackhole.kfki.hu>
+ <20081214200353.GA2994@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812161042.09345.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16, 2008 at 10:42:08AM -0800, Jesse Barnes wrote:
-> On Wednesday, December 10, 2008 11:43 am Neil Horman wrote:
-> > Hey-
-> > 	I happened to notice that the ibmphp hotplug driver does something
-> > rather silly in its init routine.  It purposely calls module_put so as to
-> > underflow its module ref count to avoid being removed from the kernel. 
-> > This is bad practice, and wrong, since it provides a window for subsequent
-> > module_gets to reset the refcount to zero, allowing an unload to race in
-> > and cause all sorts of mysterious panics.  If the module is unsafe to load,
-> > it should inform the kernel as such with a call to __unsafe.  The patch
-> > below does that.
+On Sun, 14 Dec 2008, Dave Jones wrote:
+
+> On Sun, Dec 14, 2008 at 06:09:17PM +0100, Jozsef Kadlecsik wrote:
 > 
-> Thanks Neil, applied this to my for-linus branch since it sounds potentially 
-> serious (but also low risk since who uses ibmphp anymore? :)
+>  > > >> @@ -147,8 +147,6 @@ static unsigned int ipv4_conntrack_local(unsigned int hooknum,
+>  > > >>  	/* root is playing with raw sockets. */
+>  > > >>  	if (skb->len < sizeof(struct iphdr) ||
+>  > > >>  	    ip_hdrlen(skb) < sizeof(struct iphdr)) {
+>  > > >> -		if (net_ratelimit())
+>  > > >> -			printk("ipt_hook: happy cracking.\n");
+>  > > >>  		return NF_ACCEPT;
+>  > > >>  	}
+>  > > >>  	return nf_conntrack_in(dev_net(out), PF_INET, hooknum, skb);
+>  > > 
+>  > > I think this change is ok.
+>  > 
+>  > In a >normal< system one usually does not use raw sockets. So if a root 
+>  > process do use raw socket, at least netfilter sends a notification and 
+>  > there's a chance that someone take notice it by checking the kernel logs.
 > 
-Dang it!  Sorry, Jesse.  Yes, youre absolutely right, it is low risk.  It really
-just a bit of sillyness all around.
+> 'normal' systems are irrelevant here. This message is triggerable remotely.
+> Even though it's ratelimited, anyone can flood another boxes logs by
+> sending enough packets.
 
-Unfortunately, I took part in the sillyness.  The problem was reported to me on
-RHEL, and I tested there, without checking upstream too closely.  As  aresult,
-the patch I gave you is a bit out of date, and won't compile.  I've tested the
-new patch here much more closely.  apologies.  I informed akpm who was looking
-at it, but neglected to copy you.
-
-This patch corrects the same problem in that it prevents module unloads in a
-sane fashion, by not registering an exit routine
-
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-
-
-
- ibmphp_core.c |    5 -----
- 1 file changed, 5 deletions(-)
-
-diff --git a/drivers/pci/hotplug/ibmphp_core.c b/drivers/pci/hotplug/ibmphp_core.c
-index c892daa..633e743 100644
---- a/drivers/pci/hotplug/ibmphp_core.c
-+++ b/drivers/pci/hotplug/ibmphp_core.c
-@@ -1402,10 +1402,6 @@ static int __init ibmphp_init(void)
- 		goto error;
- 	}
+The packets in question are shorter than the IP header. How would those be 
+delivered to the host? On the LAN it might be possible to forge such 
+packets with proper HW address and be delivered. But wouldn't the network 
+card or the stack itself throw away the packets??
  
--	/* lock ourselves into memory with a module 
--	 * count of -1 so that no one can unload us. */
--	module_put(THIS_MODULE);
+> The message is also utterly useless. What kind of action would you take
+> to a few gigabytes of "ipt_hook: happy cracking.\n" ?
+> There's no IP address logged, or any other useful information.
+
+As the packet is shorter than the IP header, what could be logged, besides 
+the fact that something worth to investigate is happening?
+
+Best regards,
+Jozsef
 -
- exit:
- 	return rc;
- 
-@@ -1423,4 +1419,3 @@ static void __exit ibmphp_exit(void)
- }
- 
- module_init(ibmphp_init);
--module_exit(ibmphp_exit);
-> Jesse
-> 
-
--- 
-/****************************************************
- * Neil Horman <nhorman@tuxdriver.com>
- * Software Engineer, Red Hat
- ****************************************************/
+E-mail  : kadlec@blackhole.kfki.hu, kadlec@mail.kfki.hu
+PGP key : http://www.kfki.hu/~kadlec/pgp_public_key.txt
+Address : KFKI Research Institute for Particle and Nuclear Physics
+          H-1525 Budapest 114, POB. 49, Hungary
