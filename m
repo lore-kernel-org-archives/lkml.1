@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbYLPUWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759497AbYLPUWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758204AbYLPUWQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:22:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756080AbYLPUSw
+	id S1759497AbYLPUWd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:22:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756209AbYLPUSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:18:52 -0500
-Received: from gw.goop.org ([64.81.55.164]:45911 "EHLO mail.goop.org"
+	Tue, 16 Dec 2008 15:18:53 -0500
+Received: from gw.goop.org ([64.81.55.164]:45893 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755532AbYLPUSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755712AbYLPUSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 16 Dec 2008 15:18:49 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 10 of 14] swiotlb: consolidate swiotlb info message printing
-X-Mercurial-Node: 13e4d6097a647003137015a9628417cd8430931e
-Message-Id: <13e4d6097a6470031370.1229458654@abulafia.goop.org>
+Subject: [PATCH 11 of 14] x86: add swiotlb allocation functions
+X-Mercurial-Node: dc8a79267b2a2beb7566743a85c3bc15fa6c3c9d
+Message-Id: <dc8a79267b2a2beb7566.1229458655@abulafia.goop.org>
 In-Reply-To: <patchbomb.1229458644@abulafia.goop.org>
-Date: Tue, 16 Dec 2008 12:17:34 -0800
+Date: Tue, 16 Dec 2008 12:17:35 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
@@ -28,72 +28,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <ian.campbell@citrix.com>
+Add x86-specific swiotlb allocation functions.  These are purely
+default for the moment.
 
-Remove duplicated swiotlb info printing, and make it more detailed.
-
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- lib/swiotlb.c |   33 ++++++++++++++++++++++++++++-----
- 1 file changed, 28 insertions(+), 5 deletions(-)
+ arch/x86/kernel/pci-swiotlb_64.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -156,6 +156,32 @@
- 	return swiotlb_phys_to_bus(page_to_phys(sg_page(sg)) + sg->offset);
- }
+diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb_64.c
+--- a/arch/x86/kernel/pci-swiotlb_64.c
++++ b/arch/x86/kernel/pci-swiotlb_64.c
+@@ -3,6 +3,8 @@
+ #include <linux/pci.h>
+ #include <linux/cache.h>
+ #include <linux/module.h>
++#include <linux/swiotlb.h>
++#include <linux/bootmem.h>
+ #include <linux/dma-mapping.h>
  
-+static void swiotlb_print_info(unsigned long bytes)
+ #include <asm/iommu.h>
+@@ -11,6 +13,16 @@
+ 
+ int swiotlb __read_mostly;
+ 
++void *swiotlb_alloc_boot(size_t size, unsigned long nslabs)
 +{
-+	phys_addr_t pstart, pend;
-+	dma_addr_t bstart, bend;
-+
-+	pstart = virt_to_phys(io_tlb_start);
-+	pend = virt_to_phys(io_tlb_end);
-+
-+	bstart = swiotlb_phys_to_bus(pstart);
-+	bend = swiotlb_phys_to_bus(pend);
-+
-+	printk(KERN_INFO "Placing %luMB software IO TLB between %p - %p\n",
-+	       bytes >> 20, io_tlb_start, io_tlb_end);
-+	if (pstart != bstart || pend != bend)
-+		printk(KERN_INFO "software IO TLB at phys %#llx - %#llx"
-+		       " bus %#llx - %#llx\n",
-+		       (unsigned long long)pstart,
-+		       (unsigned long long)pend,
-+		       (unsigned long long)bstart,
-+		       (unsigned long long)bend);
-+	else
-+		printk(KERN_INFO "software IO TLB at phys %#llx - %#llx\n",
-+		       (unsigned long long)pstart,
-+		       (unsigned long long)pend);
++	return alloc_bootmem_low_pages(size);
 +}
 +
- /*
-  * Statically reserve bounce buffer space and initialize bounce buffer data
-  * structures for the software IO TLB used to implement the DMA API.
-@@ -198,8 +224,7 @@
- 	if (!io_tlb_overflow_buffer)
- 		panic("Cannot allocate SWIOTLB overflow buffer!\n");
- 
--	printk(KERN_INFO "Placing software IO TLB between 0x%lx - 0x%lx\n",
--	       swiotlb_virt_to_bus(io_tlb_start), swiotlb_virt_to_bus(io_tlb_end));
-+	swiotlb_print_info(bytes);
- }
- 
- void __init
-@@ -279,9 +304,7 @@
- 	if (!io_tlb_overflow_buffer)
- 		goto cleanup4;
- 
--	printk(KERN_INFO "Placing %luMB software IO TLB between 0x%lx - "
--	       "0x%lx\n", bytes >> 20,
--	       swiotlb_virt_to_bus(io_tlb_start), swiotlb_virt_to_bus(io_tlb_end));
-+	swiotlb_print_info(bytes);
- 
- 	return 0;
- 
++void *swiotlb_alloc(unsigned order, unsigned long nslabs)
++{
++	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
++}
++
+ static dma_addr_t
+ swiotlb_map_single_phys(struct device *hwdev, phys_addr_t paddr, size_t size,
+ 			int direction)
 
 
