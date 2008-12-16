@@ -1,63 +1,381 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758869AbYLPWja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757911AbYLPWi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758869AbYLPWja (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 17:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758603AbYLPWjP
+	id S1757911AbYLPWi0 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 17:38:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbYLPWiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 17:39:15 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:54622 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758597AbYLPWjN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 17:39:13 -0500
-Date: Tue, 16 Dec 2008 23:39:09 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: Kyle McMartin <kyle@infradead.org>, Ralf Baechle <ralf@linux-mips.org>,
-        linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-        linux-api@vger.kernel.org
-Subject: Re: [PATCH v3 0/3] preadv & pwritev syscalls.
-Message-ID: <20081216223909.GB5584@osiris.boeblingen.de.ibm.com>
-References: <1229340977-24345-1-git-send-email-kraxel@redhat.com> <20081215160311.GA23153@linux-mips.org> <4946C4B4.1020605@redhat.com> <20081216160502.GA15331@linux-mips.org> <4947DBFA.9050108@redhat.com> <20081216170209.GC410@bombadil.infradead.org> <49481EF9.3090304@redhat.com>
+	Tue, 16 Dec 2008 17:38:13 -0500
+Received: from ozlabs.org ([203.10.76.45]:58023 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbYLPWiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 17:38:10 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: David Miller <davem@davemloft.net>
+Subject: Re: local_add_return
+Date: Wed, 17 Dec 2008 09:08:04 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: rostedt@goodmis.org, akpm@linux-foundation.org,
+        linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+        paulus@samba.org, benh@kernel.crashing.org, linux-ia64@vger.kernel.org,
+        linux-s390@vger.kernel.org
+References: <alpine.DEB.1.10.0812150823370.18692@gandalf.stny.rr.com> <200812161703.00697.rusty@rustcorp.com.au> <20081215.231314.92267481.davem@davemloft.net>
+In-Reply-To: <20081215.231314.92267481.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49481EF9.3090304@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200812170908.05423.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16, 2008 at 10:34:49PM +0100, Gerd Hoffmann wrote:
-> Kyle McMartin wrote:
-> > On Tue, Dec 16, 2008 at 05:48:58PM +0100, Gerd Hoffmann wrote:
-> >> i.e. the ordering of the splitted argument depends on the os endianness?
-> >> What is the reason for this?
-> > 
-> > Eh? The splitting will occur at the C ABI level, not as a result of
-> > glibc (though, it could be done that way if you really wanted, but then
-> > you're just moving the wrapper up the chain.)
-> 
-> Ah, ok.  You'll just declare 64bit arg for userspace, gcc splits it into
-> two 32bit in native byte order, and then the kernel picks up the two
-> 32bit values and has to reassemble them correctly, right?
-> 
-> The application-visible API must be compatible to the existing
-> implementations, i.e. this ...
-> 
->    pread(long fd, struct iovec *vec, long vlen, off_t pos);
-> 
-> ... prototype with the unaligned 64bit pos argument (in 32compat case).
-> 
-> Looks like there is no way around wrapping stuff then for the archs
-> wanting aligned 64bit values.  The only choice we have is to do the
-> wrap-o-magic in glibc or in the kernel.
-> 
-> I'd tend handle the wrapping in kernel space then because it is less
-> confusing and we have to wrap only in case the ABI for $arch requires it.
-> 
-> Comments?
+On Tuesday 16 December 2008 17:43:14 David Miller wrote:
+> Here ya go:
 
-Please do it just the way that Arnd suggested: explicitly pass the upper
-and lower part of loff_t as separate arguments.
-It's the most simple approach.
+Very interesting.  There's a little noise there (that first local_inc of 243
+is wrong), but the picture is clear: trivalue is the best implementation for
+sparc64.
+
+Note: trivalue uses 3 values, so instead of hitting random values across 8MB
+it's across 24MB, and despite the resulting cache damage it's 15% faster.  The
+cpu_local_inc test is a single value, so no cache effects: it shows trivalue
+to be 3 to 3.5 times faster in the cache-hot case.
+
+This sucks, because it really does mean that there's no one-size-fits-all
+implementation of local_t.  There's also no platform yet where atomic_long_t
+is the right choice; and that's the default!
+
+Any chance of an IA64 or s390 run?  You can normalize if you like, since
+it's only to compare the different approaches.
+
+Cheers,
+Rusty.
+
+Benchmarks for local_t variants
+
+(This patch also fixes the x86 cpu_local_* macros, which are obviously
+unused).
+
+I chose a large array (1M longs) for the inc/add/add_return tests so
+the trivalue case would show some cache pressure.
+
+The cpu_local_inc case is always cache-hot, so it's not comparable to
+the others.
+
+Time in ns per iteration (brackets is with CONFIG_PREEMPT=y):
+
+		inc	add	add_return	cpu_local_inc	read
+x86-32: 2.13 Ghz Core Duo 2
+atomic_long	118	118	115		17		17
+irqsave/rest	77	78	77		23		16
+trivalue	45	45	127		3(6)		21
+local_t		36	36	36		1(5)		17
+
+x86-64: 2.6 GHz Dual-Core AMD Opteron 2218
+atomic_long	55	60	-		6		19
+irqsave/rest	54	54	-		11		19
+trivalue	47	47	-		5		28
+local_t		47	46	-		1		19
+
+PPC64: 2.7 GHz PPC970MP [normalized]
+atomic_long	18	18	20		3(4)		8
+irqsave/rest	10(4)	5(4)	4		8(9)		10(9)
+trivalue	9	9	2		1(3)		10
+local_t		18	18	18		3(4)		8
+
+Sparc64: UltraSPARC-IIIi
+atomic_long	243	222	-		37		169
+irqsave/rest	205	205	-		25		169
+trivalue	193	193	-		11		221
+local_t		221	221	-		37		169
+
+Sparc64: Niagara-2
+atomic_long	207	206	-		72		160
+irqsave/rest	228	228	-		78		160
+trivalue:	172	172	-		20		222
+local_t		206	207	-		73		160
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/x86/include/asm/local.h |   20 +--
+ init/main.c                  |  223 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 233 insertions(+), 10 deletions(-)
+
+diff --git a/arch/x86/include/asm/local.h b/arch/x86/include/asm/local.h
+--- a/arch/x86/include/asm/local.h
++++ b/arch/x86/include/asm/local.h
+@@ -220,16 +220,16 @@ static inline long local_sub_return(long
+ 	preempt_enable();		\
+ })					\
+ 
+-#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var((l))))
+-#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var((l)), (i)))
+-#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var((l))))
+-#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var((l))))
+-#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var((l))))
+-#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var((l))))
++#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
++#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
++#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
++#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
++#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
++#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
+ 
+-#define __cpu_local_inc(l)	cpu_local_inc((l))
+-#define __cpu_local_dec(l)	cpu_local_dec((l))
+-#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
+-#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
++#define __cpu_local_inc(l)	cpu_local_inc(l)
++#define __cpu_local_dec(l)	cpu_local_dec(l)
++#define __cpu_local_add(i, l)	cpu_local_add((i), l)
++#define __cpu_local_sub(i, l)	cpu_local_sub((i), l)
+ 
+ #endif /* _ASM_X86_LOCAL_H */
+diff --git a/init/main.c b/init/main.c
+--- a/init/main.c
++++ b/init/main.c
+@@ -534,6 +534,225 @@ void __init __weak thread_info_cache_ini
+ {
+ }
+ 
++/* There are three obvious ways to implement local_t on an arch which
++ * can't do single-instruction inc/dec etc.
++ * 1) atomic_long
++ * 2) irq_save/irq_restore
++ * 3) multiple counters.
++ *
++ * This does a very rough benchmark on each one.
++ */
++struct local1 {
++	atomic_long_t v;
++};
++struct local2 {
++	unsigned long v;
++};
++struct local3 {
++	unsigned long v[3];
++};
++
++/* Enough to put some pressure on the caches. */
++#define NUM_LOCAL_TEST (1024*1024)
++#define NUM_LOCAL_RUNS (NUM_LOCAL_TEST*32)
++/* This will make it jump around looking random */
++#define STRIDE 514001
++
++static void *test_local_variants_mem;
++
++static void init_test_local_variants(void)
++{
++	unsigned long size;
++	size = max(sizeof(struct local1),
++		   max(sizeof(struct local2),
++		       max(sizeof(struct local3), sizeof(local_t))))
++		* NUM_LOCAL_TEST;
++	/* Assume this works in early boot. */
++	test_local_variants_mem = alloc_bootmem_nopanic(size);
++
++	if (!test_local_variants_mem) {
++		printk("test_local_variants: failed to allocate %lu bytes\n",
++		       size);
++		return;
++	}
++}
++
++static void print_result(const char *str,
++			 struct timespec start, struct timespec end)
++{
++	s64 diff;
++
++	diff = ktime_to_ns(ktime_sub(timespec_to_ktime(end), timespec_to_ktime(start)));
++	printk("%s=%lli/%lli ",
++	       str, diff, diff/NUM_LOCAL_RUNS);
++}
++
++static unsigned int warm_local_test_cache(const void *mem, size_t len)
++{
++	unsigned int i, total = 0;
++	for (i = 0; i < len; i++)
++		total += ((char *)mem)[i];
++	return total;
++}
++
++#define TEST_LOOP(expr)				\
++	n = 0;					\
++	getnstimeofday(&start);			\
++	for (i = 0; i < NUM_LOCAL_RUNS; i++) {	\
++		expr;				\
++		n += STRIDE;			\
++		n %= NUM_LOCAL_TEST;		\
++	}					\
++	getnstimeofday(&end);
++
++/* This doesn't test cache effects at all */
++#define NUM_PERCPU_VARS		16
++DEFINE_PER_CPU(struct local1[NUM_PERCPU_VARS], local1_test);
++DEFINE_PER_CPU(struct local2[NUM_PERCPU_VARS], local2_test);
++DEFINE_PER_CPU(struct local3[NUM_PERCPU_VARS], local3_test);
++DEFINE_PER_CPU(local_t[NUM_PERCPU_VARS], local4_test);
++
++static void test_local_variants(void)
++{
++	struct timespec start, end;
++	unsigned int i, n;
++	unsigned long total, warm_total = 0;
++	struct local1 *l1;
++	struct local2 *l2;
++	struct local3 *l3;
++	local_t *l4;
++
++	if (!test_local_variants_mem)
++		return;
++
++	printk("Running local_t variant benchmarks\n");
++	l1 = test_local_variants_mem;
++	l2 = test_local_variants_mem;
++	l3 = test_local_variants_mem;
++	l4 = test_local_variants_mem;
++
++	printk("atomic_long: ");
++	memset(l1, 0, sizeof(*l1)*NUM_LOCAL_TEST);
++	TEST_LOOP(atomic_long_inc(&l1[n].v));
++	print_result("local_inc", start, end);
++
++	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
++	TEST_LOOP(atomic_long_add(1234, &l1[n].v));
++	print_result("local_add", start, end);
++
++	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
++	TEST_LOOP(atomic_long_inc(&__get_cpu_var(local1_test)[n%NUM_PERCPU_VARS].v));
++	print_result("cpu_local_inc", start, end);
++
++	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
++	total = 0;
++	TEST_LOOP(total += atomic_long_read(&l1[n].v));
++	print_result("local_read", start, end);
++
++	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
++	TEST_LOOP(total += atomic_long_add_return(7, &l1[n].v));
++	print_result("local_add_return", start, end);
++
++	printk("(total was %lu)\n", total);
++
++	printk("irqsave/restore: ");
++	memset(l2, 0, sizeof(*l2)*NUM_LOCAL_TEST);
++	TEST_LOOP(unsigned long flags;
++		  local_irq_save(flags);
++		  l2[n].v++;
++		  local_irq_restore(flags));
++	print_result("local_inc", start, end);
++
++	warm_total += warm_local_test_cache(l2, sizeof(*l2)*NUM_LOCAL_TEST);
++	TEST_LOOP(unsigned long flags;
++		  local_irq_save(flags);
++		  l2[n].v += 1234;
++		  local_irq_restore(flags));
++	print_result("local_add", start, end);
++
++	warm_total += warm_local_test_cache(l2, sizeof(*l2)*NUM_LOCAL_TEST);
++	TEST_LOOP(unsigned long flags;
++		  local_irq_save(flags);
++		  __get_cpu_var(local2_test)[n%NUM_PERCPU_VARS].v++;
++		  local_irq_restore(flags));
++	print_result("cpu_local_inc", start, end);
++
++	warm_total += warm_local_test_cache(l2, sizeof(*l2)*NUM_LOCAL_TEST);
++	total = 0;
++	TEST_LOOP(total += l2[n].v);
++	print_result("local_read", start, end);
++
++	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
++	TEST_LOOP(unsigned long flags;
++		  local_irq_save(flags);
++		  l2[n].v += 7;
++		  total += l2[n].v;
++		  local_irq_restore(flags));
++	print_result("local_add_return", start, end);
++	printk("(total was %lu)\n", total);
++
++	printk("trivalue: ");
++	memset(l3, 0, sizeof(*l3)*NUM_LOCAL_TEST);
++	TEST_LOOP(unsigned int idx
++			= !(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK)) +
++			!(preempt_count() & HARDIRQ_MASK);
++		  l3[n].v[idx]++);
++	print_result("local_inc", start, end);
++
++	warm_total += warm_local_test_cache(l3, sizeof(*l3)*NUM_LOCAL_TEST);
++	TEST_LOOP(unsigned int idx
++			= !(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK)) +
++			!(preempt_count() & HARDIRQ_MASK);
++		  l3[n].v[idx] += 1234);
++	print_result("local_add", start, end);
++
++	warm_total += warm_local_test_cache(l3, sizeof(*l3)*NUM_LOCAL_TEST);
++	TEST_LOOP(unsigned int idx
++			= !(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK)) +
++			!(preempt_count() & HARDIRQ_MASK);
++		  get_cpu_var(local3_test)[n%NUM_PERCPU_VARS].v[idx]++;
++		  put_cpu_var());
++	print_result("cpu_local_inc", start, end);
++
++	warm_total += warm_local_test_cache(l3, sizeof(*l3)*NUM_LOCAL_TEST);
++	total = 0;
++	TEST_LOOP(total += l3[n].v[0] + l3[n].v[1] + l3[n].v[2]);
++	print_result("local_read", start, end);
++
++	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
++	TEST_LOOP(unsigned long flags;
++		  local_irq_save(flags);
++		  l3[n].v[0] += 7;
++		  total += l3[n].v[0] + l3[n].v[1] + l3[n].v[2];
++		  local_irq_restore(flags));
++	print_result("local_add_return", start, end);
++
++	printk("(total was %lu)\n", total);
++
++	printk("local_t: ");
++	memset(l4, 0, sizeof(*l4)*NUM_LOCAL_TEST);
++	TEST_LOOP(local_inc(&l4[n]));
++	print_result("local_inc", start, end);
++
++	warm_total += warm_local_test_cache(l4, sizeof(*l4)*NUM_LOCAL_TEST);
++	TEST_LOOP(local_add(1234, &l4[n]));
++	print_result("local_add", start, end);
++
++	warm_total += warm_local_test_cache(l4, sizeof(*l4)*NUM_LOCAL_TEST);
++	TEST_LOOP(cpu_local_inc(local4_test[n%NUM_PERCPU_VARS]));
++	print_result("cpu_local_inc", start, end);
++
++	warm_total += warm_local_test_cache(l4, sizeof(*l4)*NUM_LOCAL_TEST);
++	total = 0;
++	TEST_LOOP(total += local_read(&l4[n]));
++	print_result("local_read", start, end);
++
++	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
++	TEST_LOOP(total += local_add_return(7, &l1[n].v));
++	print_result("local_add_return", start, end);
++	printk("(total was %lu, warm_total %lu)\n", total, warm_total);
++}
++
+ asmlinkage void __init start_kernel(void)
+ {
+ 	char * command_line;
+@@ -630,6 +849,8 @@ asmlinkage void __init start_kernel(void
+ 	 */
+ 	locking_selftest();
+ 
++	init_test_local_variants();
++
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	if (initrd_start && !initrd_below_start_ok &&
+ 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
+@@ -687,6 +908,8 @@ asmlinkage void __init start_kernel(void
+ 	acpi_early_init(); /* before LAPIC and SMP init */
+ 
+ 	ftrace_init();
++
++	test_local_variants();
+ 
+ 	/* Do the rest non-__init'ed, we're now alive */
+ 	rest_init();
