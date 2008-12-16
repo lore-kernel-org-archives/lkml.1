@@ -1,75 +1,193 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757878AbYLPW1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754733AbYLPWgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbYLPW1L (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 17:27:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbYLPW0z
+	id S1754733AbYLPWgu (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 17:36:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYLPWgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 17:26:55 -0500
-Received: from ik-out-1112.google.com ([66.249.90.181]:9739 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753684AbYLPW0y (ORCPT
+	Tue, 16 Dec 2008 17:36:40 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56463 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbYLPWgi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 17:26:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=DhJBUW3Ljjo2W45TBqJ1SnCbUjDoNVNX/aXQu/lFwD8tWs3fXnW9LvRE2ViFQg5LC0
-         QGf8Ug9J2ic8EKuUlkiczXaL4jUnQyv5wYRUufZcpqFauqlB3Wben2r/4rcR/8xytKH5
-         qSLQ8g+KIqtfYcm8kWeGAsG8Etaz55tZ2IsJs=
-Message-ID: <dd18b0c30812161426l678b4bcx104efd63797c162d@mail.gmail.com>
-Date: Tue, 16 Dec 2008 14:26:52 -0800
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: SE-Linux <selinux@tycho.nsa.gov>, tresys <refpolicy@oss.tresys.com>,
-        "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: ath9k capability=16 won't compile into policy
+	Tue, 16 Dec 2008 17:36:38 -0500
+Date: Tue, 16 Dec 2008 17:36:28 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: linux-rt-users <linux-rt-users@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+        Jon Masters <jonathan@jonmasters.org>,
+        Clark Williams <clark.williams@gmail.com>,
+        Gregory Haskins <ghaskins@novell.com>
+Subject: Creating the RT git tree
+Message-ID: <alpine.DEB.1.10.0812161556460.25356@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm not too sure if I should post this with SELinux,
-refpolicy, or kernel.org,(or even wpasupplicant);
- so I decided to do all to the best of my knowledge.
-when using the ath9k module with the latest git
-kernel(or atleast a few days old); and the latest refpolicy (svn)
-I'm seeing this avc denial show up:
 
-Dec 16 12:33:32 name kernel: [   20.415785] type=1400
-audit(1229459612.411:3): avc:  denied  { sys_module } for  pid=2510
-comm="wpa_supplicant" capability=16
-scontext=system_u:system_r:system_dbusd_t:s0
-tcontext=system_u:system_r:system_dbusd_t:s0 tclass=capability
-Dec 16 12:33:32 name kernel: [   20.428494] type=1300
-audit(1229459612.411:3): arch=40000003 syscall=54 success=no exit=-19
-a0=9 a1=8933 a2=bfadd94c a3=bfadd94c items=0 ppid=1 pid=2510
-auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0
-fsgid=0 tty=(none) ses=4294967295 comm="wpa_supplicant"
-exe="/sbin/wpa_supplicant" subj=system_u:system_r:system_dbusd_t:s0
-key=(null)
+This email is an explanation on how the RT git tree is created. Note, the 
+tree is still in a "broken" state. But it now compiles!
 
-the allow rule is:(with ath9k module)
-allow system_dbusd_t self:capability sys_module;
-which in turn will be rejected by checkpolicy
-(capability 16)
-when compiling the policy.
+The git tree is located at:
 
-If I use the madwifi module the avc is similar but produces
-allow system_dbusd_t self:capability { sys_admin }
-(capability 12)
-and will be accepted by checkpolicy.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-rt.git
 
-As for setup I'm using NetworkManager from
-intrepid as well as wpasupplicant
+The branches are:
 
-Any info would be appreciated so I can test this module out
-and feel better knowing the module is not being denied in any
-way, that might cause a false positive, or some other weirdness.
+  linus
+  master
+  preempt-rt (only on local machine)
+  rt-master
+  rt/rt
+  rt/convert-locks
+  
+  rt/<topics>
 
+All branches that start with rt/ will be merged into the rt-master branch, 
+with the exception of the branches rt/rt and rt/convert-locks
 
-regards;
--- 
-Justin P. Mattock
+The work is done against the rt/<topic> branches, for example:
+
+  rt/rt-locks
+  rt/workqueues
+  rt/sched
+  rt/mainline
+
+Each of these topic branches should (in theory) compile and boot by 
+themselves.
+
+The 'linus' branch is the mainline upstream tree from Linus that the 
+master branch is based on (if you could not figure that out yourself ;-)
+
+The rt/rt branch contains the administrative scripts that create the 
+rt-master and preempt-rt (master) branches. If you check out rt/rt the 
+scripts will be in .rt/bin/  These scripts are based off of the scripts 
+used to manage linux-tip that is maintained by Ingo Molnar.
+
+The first of these I use is the rt-update-branches
+
+This script will update the linus branch if necessary (but it will also 
+prompt you first). Then it will go and check out each branch one at a time 
+and compare it to see if any changes has been made in the linus branch 
+that might conflict with the current branch. If there are changes, then it 
+will run a test merge, and if no conflicts occur then it will back out the 
+merge. If conflicts happen it will start a shell (with the 'conflict>' 
+prompt) and let you resolve the conflict. When the conflict is resolved, 
+you exit and the script will continue to the next branch.
+
+Note, a branch will be merged with the linus branch only if there is a 
+conflict that can not be resolved by the script. Otherwise, the branch 
+stays based off of the linus branch that it was created with.
+
+The next script is rt-merge-branches.
+
+This script will checkout the rt-master branch and merge in all the 
+rt/<topic> branches as well as the linus branch. This branch is expected 
+to be able to compile and boot too (but probably does not at the moment).
+
+Finally, rt-make-preempt-rt is performed.
+
+This script will checkout the preempt-rt branch.  If a preempt-rt-last 
+branch does not exist, the following is performed:
+
+It will do a reset --hard against the rt-master branch.  It merges in the 
+rt/convert-locks branch. It creates a preempt-rt-last branch from this 
+merge. It runs ./scripts/convert-spinlocks which will convert all 
+spinlock_t types in the kernel to lock_t (and the functions as well). It 
+will not convert any file in the BLACKLIST_FILES variable defined in 
+./scripts/convert-blacklist.
+
+This conversion is committed with the message:
+
+  Convert all spinlocks to lock_t
+
+Then rt-make-preempt-rt runs ./scripts/convert-locks which converts the 
+locks defined in ./scripts/convert-locks-list. The format in that file
+is:
+
+<path/file>:<regex>lock
+
+The left of the colon is the full path name to the file that contains the 
+lock that needs to be a spinlock. The right of the colon is the regular 
+expression and lock to convert the lock back. Some regex is already in 
+the conversion script, namely the appending of & or *.
+
+Example:
+
+kernel/kprobes.c:(.*(->|\.))?lock
+
+The regex is a perl regular expression. That is '(' and ')' are special 
+characters and if you want to represent a parenthesis you need to 
+backslash it '\(' and '\)'.
+
+This change is also committed with the message:
+
+    Convert some locks back to spinlock_t
+
+The rt-master + merge of rt/convert-locks is branched to become the 
+preempt-rt-last branch.
+
+That's it for a full rebase of preempt-rt.  But what happens if a 
+preempt-rt-last exists?  Here's that scenario.
+
+Because running convert-spinlocks takes about 10 minutes to run, I try to 
+avoid it. It also rebases preempt-rt and I like to avoid that too, since 
+that will break bisects. So I have the script make a back up of the 
+rt-master + merge of rt/convert-locks and compare against that 
+(preempt-rt-last).
+
+Now is also a good time to explain rt/convert-locks. Some files 
+(currently only sched.h), are hard to get right with scripts. That is, 
+which lock is a spinlock_t and which lock is a lock_t.  So I cheated. I 
+added sched.h to the BLACKLIST_FILES and do the work myself. Since each of 
+the rt/<topic> branches must compile on their own, touching sched.h means I 
+need to touch all the spin_lock() and spin_unlock() that are in the kernel 
+that I changed to lock_t. This change is much bigger than I would like, 
+and would cause unwanted conflicts with mainline. Thus, rt/convert-locks 
+was created. This is the one branch that does not compile by itself. Its 
+only purpose is to do the lock conversions that the scripts have a hard 
+time getting right.
+
+Back to the rt-make-preempt-rt with a preempt-rt-last branch.  A compare 
+is done against preempt-rt-last and rt-master + merge of rt/convert-locks. 
+The files that are changed are brought to preempt-rt and each of them will 
+have the convert-file-spinlocks run on them, if they are not in the 
+BLACKLIST_FILES. If a file changed that was in convert-locks-list, then 
+the convert-lock.pl is executed on that file.
+
+These changes are committed with the change log:
+
+    Automated update of changed files
+
+followed by a list of files that were detected to have changed. Note, this 
+may not include all changed files if the full convert-locks is run again.
+One might notice that some early logs in the master branch do not list the 
+changed files. That is because the script changed to include the files.
+
+When all is done, the rt-master + merge becomes the new preempt-rt-last.
+
+Note, if convert-locks or convert-lock.pl is modified, the convert-locks 
+is executed again. If convert-file-spinlocks is modified, then we do a new 
+rebase against rt-master again as if the preempt-rt-last did not exist.
+
+As you can see, doing a 'git log master' will not give you the true
+commits to the RT git tree. It will show you the files that changed, but 
+to get a true log, you need to do a log against rt-master.
+
+One last script of importance, and that is the rt-push-all. I run this 
+script to push the changes to my master machine. If I run this on my 
+master machine, then it pushes the changes to kernel.org and in the 
+process renames the branch preempt-rt to master.
+
+Well, I hope this helps others. All the scripts I use are public in this 
+git repo. The .rt/bin/ scripts I have copied elsewhere, so they 
+sometimes become out of sync, but I try to keep them up to date.
+
+-- Steve
+
