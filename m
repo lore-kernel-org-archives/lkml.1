@@ -1,121 +1,131 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759358AbYLPXvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759451AbYLPXrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759358AbYLPXvx (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 18:51:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYLPXvq
+	id S1759451AbYLPXrZ (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 18:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757536AbYLPXqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 18:51:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58294 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752015AbYLPXvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 18:51:45 -0500
-Date: Wed, 17 Dec 2008 00:51:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Stephane Eranian <eranian@googlemail.com>,
-        Eric Dumazet <dada1@cosmosbay.com>,
-        Robert Richter <robert.richter@amd.com>,
-        Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        perfctr-devel@lists.sourceforge.net
-Subject: Re: [patch] Performance Counters for Linux, v4
-Message-ID: <20081216235116.GA28831@elte.hu>
-References: <20081214212829.GA9435@elte.hu> <18758.18810.350923.806445@cargo.ozlabs.ibm.com> <1229437341.7025.11.camel@twins> <18760.13407.568536.198724@cargo.ozlabs.ibm.com>
+	Tue, 16 Dec 2008 18:46:50 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:9699 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756111AbYLPXqs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 18:46:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=v32zm0YfPSKx3sVKsBmmIiMi0An0Z57gh5W5z0JloEnnqgTZhJeTsSYnUdnySNmZic
+         kyds5tYbDZ5gf5roalQc2TM5vIQwYKFQ9Qvujz7OS7YeXblRW7mG50RZ5NaLNTdCk/hE
+         5Oz1y0PYIGjLzoTqPJKcXmPfSVr84kB/OacpY=
+Message-ID: <c62985530812161546j69bef7bcm5c495feb1a9c5458@mail.gmail.com>
+Date: Wed, 17 Dec 2008 00:46:46 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH][RFC 2/23]: SCST core
+Cc: "Vladislav Bolkhovitin" <vst@vlnb.net>,
+        "Steven Rostedt" <srostedt@redhat.com>,
+        "Sam Ravnborg" <sam@ravnborg.org>, linux-scsi@vger.kernel.org,
+        "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+        "Andrew Morton" <akpm@linux-foundation.org>,
+        "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+        "Mike Christie" <michaelc@cs.wisc.edu>,
+        "Jeff Garzik" <jeff@garzik.org>, "Boaz Harrosh" <bharrosh@panasas.com>,
+        "Linus Torvalds" <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+        "Bart Van Assche" <bart.vanassche@gmail.com>,
+        "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+In-Reply-To: <20081216222203.GI14787@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <18760.13407.568536.198724@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <49400ACD.3070502@vlnb.net> <49414DBE.6070801@vlnb.net>
+	 <20081211210917.GB27010@uranus.ravnborg.org>
+	 <4942BA85.3070408@vlnb.net>
+	 <1229118607.24995.18.camel@localhost.localdomain>
+	 <4943CAAB.4050008@vlnb.net>
+	 <c62985530812131635k362fc8d2q3c65e8284141f491@mail.gmail.com>
+	 <20081216214926.GU14787@elte.hu>
+	 <c62985530812161413j59fc0fdy31024a540bf0c197@mail.gmail.com>
+	 <20081216222203.GI14787@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/12/16 Ingo Molnar <mingo@elte.hu>:
+>
+> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+>
+>> 2008/12/16 Ingo Molnar <mingo@elte.hu>:
+>> >
+>> > * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+>> >
+>> >> > All the above functionality is almost what we need. The only thing
+>> >> > left, which I forgot to mention, is possibility to log also functions
+>> >> > return value on exit. This is what TRACE_EXIT_RES() in SCST does. Is
+>> >> > it possible to add those?
+>> >>
+>> >> I want to add that on the function graph tracer. That can be done pretty
+>> >> easily. The only problem comes with the type of the return value. Would
+>> >> this tracer be supposed to always return a 64 bits value regardless of
+>> >> the real typ of the value? There would be some pointless bytes on most
+>> >> return values. I don't know how to proceed for this problem.
+>> >
+>> > Things like mov ...,%eax are zero-extend so they'll zap the high 32 bits.
+>>
+>>
+>> That's right, but the problem occurs under 32 bits. The return values
+>> for 64 bits are in eax and edx. And most of the time, the high part
+>> (edx) will be junk.
+>
+> for wider types i'd suggest to just print the low bits. Most of the
+> interesting return types fit into machine word.
+>
+>> > The real problem are byte return values generated via things like:
+>> >
+>> >   movb $1, %al
+>> >
+>> > those wont zero-extend, so you could get garbage in the output. One
+>> > approach would be to try a quick hack just to see how common a problem
+>> > this is.
+>>
+>>
+>> Yes, I will try something.
+>>
+>> > We could extract the return type from the debuginfo, hash it in a
+>> > read-mostly table and then look it up, but that seems complex both in
+>> > terms of build overhead and in terms of runtime overhead.
+>>
+>> I thought about it too and as you say it's rather complex. And thinking
+>> about non primitive types (like pid_t....) that would require a second
+>> pass of analysis to retrieve the corresponding primitive...
+>
+> structure returns would be rather evil to handle, agreed.
+>
+> Unrelated:
+>
+> it would be really nice if we could extend ftrace to trace system calls
+> and their parameters and return values. We used to have that in the
+> latency-tracer in -rt, and it was rather useful. Controlled by a
+> trace_option i guess - and blendable into any of the tracer outputs
+> (function tracer most notably).
+>
+> Explicit calls in the entry.S files would be OK for this - but maybe we
+> can get this via the tricky use of a TIF_ flags as well, to force the code
+> into the ptrace callbacks and then divert it for ftrace's pleasure?
+>
+>        Ingo
+>
 
-* Paul Mackerras <paulus@samba.org> wrote:
+I recently thought about making a syscalls tracer and only thought
+about the tracepoints. But that could be better to
+trace them and all the function they call with the function graph
+tracer. I think about the "graph" one because time of execution
+measure could be useful for the -rt development.
 
-> Peter Zijlstra writes:
-> 
-> > On Mon, 2008-12-15 at 23:11 +1100, Paul Mackerras wrote:
+I think that putting new calls on entryxx.S would be an overload and
+would overlap what already does ptrace on syscall entry/exit.
+So I like the idea of using the ptrace callbacks by manipulating the TIF_ flags.
 
-> > > I think the core should put together a list of counters and counter 
-> > > groups that it would like to have on the PMU simultaneously and then 
-> > > make one call to the arch layer to ask if that is possible.  That 
-> > > could either return success or failure.  If it returns failure then 
-> > > the core needs to ask for something less, or something different.  
-> > > I'm not sure how the core should choose what to ask for instead, 
-> > > though.
-> > 
-> > I think the constraint set should be applied when we add to a group, 
-> > if when we add a counter to the group, the result isn't schedulable 
-> > anymore, we should fail the group addition - and thereby the counter 
-> > creation.
-> > 
-> > This would leave us with groups that are always schedulable in an 
-> > atomic fashion.
-> 
-> I agree that if adding a counter to a group results in that group not 
-> being schedulable any more, we should fail the addition.
-> 
-> > > From what I understand the code RRs groups (co-scheduling groups 
-> > > where possible) (ungrouped counter is a group of one), this means 
-> > > that with the above addition you'd have the needed control over 
-> > > things.
-> > 
-> > If you need things to be atomic, create a single group, if you're fine 
-> > with RR time-sharing, create multiple.
-> 
-> I think we need a "full-time" attribute for counters and groups that 
-> says "I need to be on the whole time", where "whole time" means whenever 
-> the task is running, for a per-task counter or group, or continuously 
-> for per-cpu counters/groups.
-> 
-> With that, the core can check at creation or enable time and return an 
-> error if it can't fit all the full-time counters and groups on, or if 
-> there is any part-time counter/group that would never get to go on when 
-> all the full-time counters/groups are on.  (And I guess creation or 
-> enabling of a part-time counter or group should fail if it would never 
-> be able to go on.)
-> 
-> > This seems to leave a hole where multiple monitors collide and create 
-> > multiple groups unaware of each-other - could we plug this hole with a 
-> > group attribute?
-> 
-> There could be a "whole-PMU" group attribute, that says "I need raw 
-> access to the PMU with no other counters scheduled", which would allow 
-> monitoring programs to use arcane PMU features that the kernel doesn't 
-> necessarily know about.  But I think that's a bit different from what 
-> you're talking about.
-> 
-> The perf counter subsystem will, in Ingo's design, naturally try to 
-> schedule as many counters and groups on as it can.  Given a list of 
-> counters/groups, it could start with the first and keep on trying to add 
-> counters or groups while it can, essentially trying all possible 
-> combinations until it either fills up all the hardware counters or 
-> exhausts the possible combinations.  If it moves all the counters/groups 
-> that do fit on up to the head of the list, and then rotates them to the 
-> back of the list when the timeslice expires, that would probably be OK.  
-> In fact the computation about what set of counters/groups to put on 
-> should be done when adding/removing a counter/group and when the 
-> timeslice expires, rather than at context switch time.  (I'm talking 
-> about the list of part-time counters/groups here, of course.)
-
-yeah, something like that sounds sensible.
-
-The principle is this: as long as it's an add-on attribute with a default 
-value of zero, so that normal usage does not need to care about it, it's a 
-reasonable extension. What we want to avoid is burdening the normal case 
-with the weird cases. (and none of the things you mentioned seem to be in 
-that category so we are fine.)
-
-	Ingo
+Yeah that's interesting. I will do that for 2.6.30 :-)
