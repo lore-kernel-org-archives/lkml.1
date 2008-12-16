@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbYLPLQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbYLPLQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756273AbYLPLQb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 06:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbYLPLPx
+	id S1756308AbYLPLQs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 06:16:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbYLPLQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 06:15:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52735 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755509AbYLPLPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 06:15:52 -0500
-Date: Tue, 16 Dec 2008 12:15:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ken Chen <kenchen@google.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/2] cpuacct: export percpu cpuacct cgroup stats
-Message-ID: <20081216111544.GD4299@elte.hu>
-References: <b040c32a0812152204x3b3d378aie7a1898aa67c4278@mail.gmail.com> <b040c32a0812152306p6b72e1d6r548daa66f27f24d6@mail.gmail.com>
+	Tue, 16 Dec 2008 06:16:03 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:65481 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755931AbYLPLQA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 06:16:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=DuIYH0P94z0ylxGrVVSjtgRYnc+G05zigqZXXp/IAb6CbLIoT1ckIhErVrkke5fULG
+         65sDyPpcN59UDTN2yE3dNKJzC0hX5GGZ89dvaUzEeLFAZ5/vU3xSpl2M1vvPw0dhuBFn
+         rQb3NI014IwH6Chp+BSnt4ciNZLc3c/Xs1mG8=
+Message-ID: <2f11576a0812160315g3dea988ayfadba2117e172a2c@mail.gmail.com>
+Date: Tue, 16 Dec 2008 20:15:58 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [mmotm and linux-next][PATCH] irq: enclose irq_desc_lock_class in CONFIG_LOCKDEP
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>
+In-Reply-To: <20081216102340.GA1003@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <b040c32a0812152306p6b72e1d6r548daa66f27f24d6@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20081216170635.DBB8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20081216003428.43d37b6b.akpm@linux-foundation.org>
+	 <20081216101827.GB27481@elte.hu> <20081216102340.GA1003@elte.hu>
+X-Google-Sender-Auth: 86cc52a5ed563563
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Ken Chen <kenchen@google.com> wrote:
+>> > No, lockdep.h (which we forgot to include) already handles that:
+>> >
+>> > # define lockdep_set_class(lock, key)               do { (void)(key); } while (0)
+>> >
+>> > the problem is that the code which references irq_desc_lock_class is
+>> > inside #ifdef CONFIG_SPARSE_IRQ, so this is a better fix:
+>>
+>> agreed that this is the better fix - applied to tip/irq/sparseirq,
+>> thanks!
+>
+> actually, this breaks the build on !SPARSEIRQ because we will use that
+> class in the non-sparseirq case. So we've converted a build warning to a
+> build failure ;-)
 
-> This patch export per-cpu CPU cycle usage for a given cpuacct cgroup. 
-> There is a need for a user space monitor daemon to track group CPU usage 
-> on per-cpu base.  It is also useful for monitoring CFS load balancer 
-> behavior by tracking per CPU group usage.
-> 
-> Signed-off-by: Ken Chen <kenchen@google.com>
-> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-> Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
-
-applied to tip/sched/core, thanks Ken!
-
-	Ingo
+Please give me your .config and tell me your arch.
+my ia64 box (ia64 is !SPARSEIRQ) can build the akpm patch.
