@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbYLPLcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbYLPLfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756587AbYLPLcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 06:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbYLPLbs
+	id S1755494AbYLPLfw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 06:35:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYLPLfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 06:31:48 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:38931 "EHLO
+	Tue, 16 Dec 2008 06:35:43 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:39325 "EHLO
 	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753394AbYLPLbr convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752750AbYLPLfn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 06:31:47 -0500
-Message-Id: <49479FC6.76E4.0078.0@novell.com>
+	Tue, 16 Dec 2008 06:35:43 -0500
+Message-Id: <4947A0B3.76E4.0078.0@novell.com>
 X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Tue, 16 Dec 2008 11:32:06 +0000
+Date: Tue, 16 Dec 2008 11:36:03 +0000
 From: "Jan Beulich" <jbeulich@novell.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] mark late_time_init as __initdata
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: fix compiler warning without
+	 CONFIG_X86_RESERVE_LOW_64K
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -27,20 +29,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
 ---
- init/main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/setup.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- linux-2.6.28-rc8/init/main.c	2008-12-11 14:37:26.000000000 +0100
-+++ 2.6.28-rc8-late-time-init/init/main.c	2008-12-15 11:35:43.000000000 +0100
-@@ -116,7 +116,7 @@ EXPORT_SYMBOL(system_state);
+--- linux-2.6.28-rc8/arch/x86/kernel/setup.c	2008-12-11 14:36:52.000000000 +0100
++++ 2.6.28-rc8-x86-dmi-low-mem/arch/x86/kernel/setup.c	2008-12-15 11:35:43.000000000 +0100
+@@ -738,6 +738,7 @@ void start_periodic_check_for_corruption
+ }
+ #endif
  
- extern void time_init(void);
- /* Default late time init is NULL. archs can override this later. */
--void (*late_time_init)(void);
-+void (*__initdata late_time_init)(void);
- extern void softirq_init(void);
++#ifdef CONFIG_X86_RESERVE_LOW_64K
+ static int __init dmi_low_memory_corruption(const struct dmi_system_id *d)
+ {
+ 	printk(KERN_NOTICE
+@@ -749,6 +750,7 @@ static int __init dmi_low_memory_corrupt
  
- /* Untouched command line saved by arch-specific code. */
+ 	return 0;
+ }
++#endif
+ 
+ /* List of systems that have known low memory corruption BIOS problems */
+ static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
 
 
 
