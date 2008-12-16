@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYLPRY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbYLPR0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbYLPRY7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 12:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYLPRYv
+	id S1754446AbYLPR0W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 12:26:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYLPR0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 12:24:51 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:42792 "EHLO
-	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbYLPRYu (ORCPT
+	Tue, 16 Dec 2008 12:26:08 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:10953 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750981AbYLPR0G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 12:24:50 -0500
-X-BigFish: VPS-35(zz1432R62a3L98dR936eQ1805Mzzzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KBZCCU-02-SLR-01
-Date: Tue, 16 Dec 2008 18:23:42 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 6/9] oprofile: port to the new ring_buffer
-Message-ID: <20081216172341.GK15411@erda.amd.com>
-References: <1229013723-8191-1-git-send-email-robert.richter@amd.com> <1229013723-8191-7-git-send-email-robert.richter@amd.com> <alpine.DEB.1.10.0812111424470.24741@gandalf.stny.rr.com>
+	Tue, 16 Dec 2008 12:26:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=ncG7+NxEQRv3Pp1NChyarLeVm0SaX6wlRtfJckIhbeUBFIWJFyClZdkfZxK88Ii7HN
+         2c0L0nBiSS6sc2bSag1tL/Xr0RE0NAlchovzWwmwavmdeJ5n66d7ObgnUhY0kjPwPPGS
+         DEKeBxfx7ERsa2s7NaIGJMbQI5O+VdjVMJqH8=
+Message-ID: <e9e943910812160926j64fa298ciae20696cd353c125@mail.gmail.com>
+Date: Tue, 16 Dec 2008 17:26:03 +0000
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "Dave Kleikamp" <shaggy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/8, v3] ensure symlinks are NUL-terminated
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Al Viro" <viro@zeniv.linux.org.uk>,
+       "Evgeniy Dushistov" <dushistov@mail.ru>
+In-Reply-To: <1229447007.3751.1.camel@norville.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0812111424470.24741@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 16 Dec 2008 17:24:25.0217 (UTC) FILETIME=[246C8710:01C95FA3]
+References: <1229442720-31056-1-git-send-email-duaneg@dghda.com>
+	 <1229447007.3751.1.camel@norville.austin.ibm.com>
+X-Google-Sender-Auth: 8e58d67763ec61a6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11.12.08 14:48:56, Steven Rostedt wrote:
-> > Since the new tracing ring buffer implementation uses spin locks to
-> > protect the buffer during read/write access, it is difficult to use
-> > the buffer in an NMI handler. In this case, writing to the buffer by
-> > the NMI handler (x86) could occur also during critical sections when
-> > reading the buffer. To avoid this, there are 2 buffers for independent
-> > read and write access. Read access is in process context only, write
-> > access only in the NMI handler. If the read buffer runs empty, both
-> > buffers are swapped atomically. There is potentially a small window
-> > during swapping where the buffers are disabled and samples could be
-> > lost.
-> 
-> There is plans on removing the spinlock from the write side of the buffer.
-> But this will take a bit of work and care. Lockless is better, but it also 
-> makes for more complex code which translates to more prone to bugs code.
+2008/12/16 Dave Kleikamp <shaggy@linux.vnet.ibm.com>:
+> Duane,
+> I see you left out jfs, so I'm assuming you're letting me handle that
+> one.  I've push my patch upstream, so it should show up in the -next
+> tree.
 
-In the beginning, the use of separate locks for reading and writing
-would be sufficient. Then, there would be only one atomic comparison
-needed to check, if the write pointer meets the read pointer. This
-should be not as difficult since read and write is always in different
-pages (if a am not wrong) and thus only the pointer to the pages have
-to be compared.
+That's right, since jfs doesn't need the helper and your patch was a
+full and complete fix. I should have clarified whether that was how
+you wanted it handled, sorry.
 
--Robert
+Which reminds me, I need to follow up about the original befs and 9p
+patches which didn't make it to the list and haven't been ACKed or
+NAKed yet...
+
+> Shaggy
+
+Cheers,
+Duane.
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+"I never could learn to drink that blood and call it wine" - Bob Dylan
