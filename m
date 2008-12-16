@@ -1,122 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbYLPQ7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbYLPRBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbYLPQ7G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 11:59:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756209AbYLPQ6y
+	id S1758106AbYLPRBf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 12:01:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755779AbYLPRB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 11:58:54 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56973 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754086AbYLPQ6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 11:58:53 -0500
-Message-ID: <4947DE30.2090903@redhat.com>
-Date: Tue, 16 Dec 2008 10:58:24 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-CC: tytso@mit.edu, adilger@sun.com, Li Zefan <lizf@cn.fujitsu.com>,
-       linux-ext4@vger.kernel.org, Miao Xie <miaox@cn.fujitsu.com>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch/BUG] (ext4) s_mb_maxs[] of ext4_sb_info is too small size
-References: <20081216170409.34EA.E1E9C6FF@jp.fujitsu.com>
-In-Reply-To: <20081216170409.34EA.E1E9C6FF@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Dec 2008 12:01:27 -0500
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:36090 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754592AbYLPRB0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 12:01:26 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Av8EALtrR0lMROB9/2dsb2JhbACBbLxyV5Eggn8
+Date: Tue, 16 Dec 2008 12:01:24 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: sched: trace: update trace_sched_wakeup()
+Message-ID: <20081216170124.GA9900@Krystal>
+References: <1229411223.14605.48.camel@twins> <1229414244.14605.50.camel@twins> <20081216154748.GC6231@Krystal> <1229444288.7025.35.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1229444288.7025.35.camel@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:59:40 up 29 days, 17:40,  3 users,  load average: 1.34, 0.92,
+	0.88
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yasunori Goto wrote:
-> Hello.
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Tue, 2008-12-16 at 10:47 -0500, Mathieu Desnoyers wrote:
+> > * Peter Zijlstra (peterz@infradead.org) wrote:
+> > > On Tue, 2008-12-16 at 08:07 +0100, Peter Zijlstra wrote:
+> > > > Add the information needed to distinguish 'real' wakeups from 'false'
+> > > > wakeups.
+> > > 
+> > > I don't seem to be doing so well this morning...
+> > > 
+> > > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > 
+> > > Thanks Dhaval!
+> > > 
+> > 
+> > Applied a modified version into the 2.6.27.9 LTTng tree. Thanks!
+> > (remembering that I should really move to 2.6.28-rc!)
 > 
-> I chased the cause of following ext4 oops report which is tested on
-> ia64 box.
+> Ingo pointed out that this generates build crap in ftrace which made me
+> look at the thing again, and I just realized we don't need it.
 > 
-> http://bugzilla.kernel.org/show_bug.cgi?id=12018
+> trace_sched_wakeup() gets called before we set p->state = TASK_RUNNING,
+> so by checking p->state in the callback we can see if its a real of
+> false wakeup.
 > 
-> The cause is the size of s_mb_maxs array that is
-> defined as "unsigned short" in ext4_sb_info structure.
-> Unsigned short is too small.
-> 
-> In this bug report, Li-san formatted with 64Kbyte block size like
-> the following. Ia64 has 64Kbyte page size, then this
-> block size is acceptable.
-> 
-> # mkfs.ext4 -b 65536 /dev/md0
-> 
-> In this case, the maximum value of s_mb_maxs[] becomes 
-> (blocksize << 2) = 256K by the following code.
-> 
-> 2482 int ext4_mb_init(struct super_block *sb, int needs_recovery)
->                : 
->                :
-> 2508         max = sb->s_blocksize << 2;    <---- max becomes 0x40000.
-> 2509         do {
-> 2510                 sbi->s_mb_offsets[i] = offset;
-> 2511                 sbi->s_mb_maxs[i] = max;            <--- over flow!!!
-> 2512                 offset += 1 << (sb->s_blocksize_bits - i);
-> 2513                 max = max >> 1;
-> 2514                 i++;
-> 2515         } while (i <= sb->s_blocksize_bits + 1);
-> 
-> Then, some s_mb_maxs[] becomes 0 due to overflow.
-> It is cause of this oops. The following patch is to fix it.
-
-Looks good to mee; and these lines before it:
-
-        sbi->s_mb_maxs[0] = sb->s_blocksize << 3;
-        sbi->s_mb_offsets[0] = 0;
-
-mean that we would have a problem "even" on 8k blocks, yes?
-
--Eric
-
-> Thanks.
-> 
-> ----
-> 
-> The size of s_mb_maxs that is defined in ext4_sb_info is too small.
-> When block size is 64K, which is possible on ia64,
-> the maximum value of s_mb_maxs becomes 256K(0x40000).
-> However, s_mb_maxs is defined as unsigned short. This is cause of panic.
-> 
-> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-> Cc: Li Zefan <lizf@cn.fujitsu.com>
-> Cc: Miao Xie <miaox@cn.fujitsu.com>
-> 
-> ---
->  fs/ext4/ext4_sb.h |    3 ++-
->  fs/ext4/mballoc.c |    2 ++
->  2 files changed, 4 insertions(+), 1 deletion(-)
-> 
-> Index: test2/fs/ext4/ext4_sb.h
-> ===================================================================
-> --- test2.orig/fs/ext4/ext4_sb.h	2008-12-16 11:20:18.000000000 +0900
-> +++ test2/fs/ext4/ext4_sb.h	2008-12-16 14:17:32.000000000 +0900
-> @@ -101,7 +101,8 @@ struct ext4_sb_info {
->  	spinlock_t s_reserve_lock;
->  	spinlock_t s_md_lock;
->  	tid_t s_last_transaction;
-> -	unsigned short *s_mb_offsets, *s_mb_maxs;
-> +	unsigned short *s_mb_offsets;
-> +	unsigned int *s_mb_maxs;
->  
->  	/* tunables */
->  	unsigned long s_stripe;
-> Index: test2/fs/ext4/mballoc.c
-> ===================================================================
-> --- test2.orig/fs/ext4/mballoc.c	2008-12-16 11:20:18.000000000 +0900
-> +++ test2/fs/ext4/mballoc.c	2008-12-16 14:23:21.000000000 +0900
-> @@ -2493,6 +2493,8 @@ int ext4_mb_init(struct super_block *sb,
->  	if (sbi->s_mb_offsets == NULL) {
->  		return -ENOMEM;
->  	}
-> +
-> +	i = (sb->s_blocksize_bits + 2) * sizeof(unsigned int);
-
->  	sbi->s_mb_maxs = kmalloc(i, GFP_KERNEL);
->  	if (sbi->s_mb_maxs == NULL) {
->  		kfree(sbi->s_mb_maxs);
+> The scheduler tracer in ftrace already exploits this.
 > 
 
+We do something similar in LTTng : we save the state along with the
+event in the trace stream and let the userspace analyzer see what was
+the state of the process prior to the wakeup.
+
+Thanks,
+
+Mathieu
+
+> > > > --- a/kernel/sched.c
+> > > > +++ b/kernel/sched.c
+> > > > @@ -2329,7 +2329,7 @@ out_activate:
+> > > >  	success = 1;
+> > > >  
+> > > >  out_running:
+> > > > -	trace_sched_wakeup(rq, p);
+> > > > +	trace_sched_wakeup(rq, p, success);
+> > > >  	check_preempt_curr(rq, p, sync);
+> > > >  
+> > > >  	p->state = TASK_RUNNING;
+> 
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
