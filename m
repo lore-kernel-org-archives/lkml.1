@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYLPQuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbYLPQx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbYLPQuw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 11:50:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbYLPQun
+	id S1757970AbYLPQx4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 11:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbYLPQxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 11:50:43 -0500
-Received: from smtpauth00.csee.onr.siteprotect.com ([64.26.60.144]:34482 "EHLO
-	smtpauth00.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755114AbYLPQun (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 11:50:43 -0500
-Date: Tue, 16 Dec 2008 11:55:27 -0500 (EST)
-From: Vince Weaver <vince@deater.net>
-X-X-Sender: vince@pianoman.cluster.toy
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       perfctr-devel@lists.sourceforge.net
-Subject: Re: [patch] Performance Counters for Linux, v4
-In-Reply-To: <1229438579.7025.21.camel@twins>
-Message-ID: <Pine.LNX.4.64.0812161149430.6141@pianoman.cluster.toy>
-References: <20081214212829.GA9435@elte.hu>  <Pine.LNX.4.64.0812151243130.2773@pianoman.cluster.toy>
-  <18758.53072.197695.277198@cargo.ozlabs.ibm.com> <1229438579.7025.21.camel@twins>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 16 Dec 2008 11:53:44 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:53936 "EHLO kumera.dghda.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755277AbYLPQxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 11:53:43 -0500
+From: "Duane Griffin" <duaneg@dghda.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, Duane Griffin <duaneg@dghda.com>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH, v4] vfs: introduce helper function to safely NUL-terminate symlinks
+Date: Tue, 16 Dec 2008 16:53:38 +0000
+Message-Id: <1229446419-8680-1-git-send-email-duaneg@dghda.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+A number of filesystems were potentially triggering kernel bugs due to
+corrupted symlink names on disk. This helper helps safely terminate the
+names.
 
-> On Tue, 2008-12-16 at 08:42 +1100, Paul Mackerras wrote:
-> Furthermore, I think output of tools such as time and now timec are most
-> relevant when compared between runs - that is, the change in values
-> between runs, not the absolute values as such. At least, that's what I
-> usually do:
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+---
 
-That's doesn't do you any good when comparing results across different 
-machines, or even different kernels on the same machine.
+Version 4, this time with size_t instead of unsigned. Thanks Al!
 
-perfmon shows that good results can be had, even if it's not the cleanest 
-way in the world.  It would be a shame to lose that.
+ include/linux/namei.h |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-Small micro-benchmarks like this are important.  You can't always trust 
-the performance counters to work, so being able to sanity check them with 
-exact test-cases is critical.  Otherwise you might just be measuring 
-nonsense.
+diff --git a/include/linux/namei.h b/include/linux/namei.h
+index 99eb803..231ce28 100644
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -94,4 +94,9 @@ static inline char *nd_get_link(struct nameidata *nd)
+ 	return nd->saved_names[nd->depth];
+ }
+ 
++static inline void nd_terminate_link(void *name, size_t len, size_t maxlen)
++{
++	((char *) name)[min(len, maxlen)] = '\0';
++}
++
+ #endif /* _LINUX_NAMEI_H */
+-- 
+1.6.0.4
 
-And while it might be able to subtract the exec() overhead for something 
-like retired instructions, it gets a lot more complicated when you have 
-something like cache bus snoops or branch mispredicts where it's hard to 
-tell what comes from the program and what is overhead from the monitoring 
-infrastructure.
-
-Vince
