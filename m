@@ -1,163 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbYLPUfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759213AbYLPUfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758806AbYLPUfO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:35:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYLPUe7
+	id S1759213AbYLPUfr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:35:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYLPUff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:34:59 -0500
-Received: from gw.goop.org ([64.81.55.164]:58029 "EHLO mail.goop.org"
+	Tue, 16 Dec 2008 15:35:35 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43730 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751699AbYLPUe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:34:58 -0500
-Message-ID: <494810F0.1010101@goop.org>
-Date: Tue, 16 Dec 2008 12:34:56 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	id S1752532AbYLPUfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 15:35:34 -0500
+Date: Tue, 16 Dec 2008 21:35:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Jan Beulich <jbeulich@novell.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use
+	of swiotlb
+Message-ID: <20081216203513.GA14787@elte.hu>
+References: <patchbomb.1229458644@abulafia.goop.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: add handle_irq() to allow interrupt injection
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <patchbomb.1229458644@abulafia.goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xen uses a different interrupt path, so introduce handle_irq() to
-allow interrupts to be inserted into the normal interrupt path.  This
-is handled slightly differently on 32 and 64-bit.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> Hi Ingo,
+> 
+> Here's some patches to clean up swiotlb to prepare for some Xen dom0 
+> patches.  These have been posted before, but undergone a round of 
+> cleanups to address various comments.
+
+applied to tip/core/iommu, thanks Jeremy.
+
+the only patch that seems to have the potential to break drivers is:
+
+  be4ac7b: swiotlb: consistently use address_needs_mapping everywhere
+
+looks fine to me, but the gents on the Cc: might have a dissenting 
+opinion?
+
+	Ingo
+
+------------->
+>From be4ac7b87b27380bc43fa4f686e39b46eca2c866 Mon Sep 17 00:00:00 2001
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Date: Tue, 16 Dec 2008 12:17:28 -0800
+Subject: [PATCH] swiotlb: consistently use address_needs_mapping everywhere
+
+Impact: remove open-coded DMA mask assumptions
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/include/asm/irq.h |    1 +
- arch/x86/kernel/irq_32.c   |   34 +++++++++++++++++++++-------------
- arch/x86/kernel/irq_64.c   |   23 ++++++++++++++++-------
- 3 files changed, 38 insertions(+), 20 deletions(-)
+ lib/swiotlb.c |   10 +++-------
+ 1 files changed, 3 insertions(+), 7 deletions(-)
 
-===================================================================
---- a/arch/x86/include/asm/irq.h
-+++ b/arch/x86/include/asm/irq.h
-@@ -39,6 +39,7 @@
- extern unsigned int do_IRQ(struct pt_regs *regs);
- extern void init_IRQ(void);
- extern void native_init_IRQ(void);
-+extern bool handle_irq(unsigned irq, struct pt_regs *regs);
- 
- /* Interrupt vector management */
- extern DECLARE_BITMAP(used_vectors, NR_VECTORS);
-===================================================================
---- a/arch/x86/kernel/irq_32.c
-+++ b/arch/x86/kernel/irq_32.c
-@@ -191,6 +191,26 @@
- execute_on_irq_stack(int overflow, struct irq_desc *desc, int irq) { return 0; }
- #endif
- 
-+bool handle_irq(unsigned irq, struct pt_regs *regs)
-+{
-+	struct irq_desc *desc;
-+	int overflow;
-+
-+	overflow = check_stack_overflow();
-+
-+	desc = irq_to_desc(irq);
-+	if (unlikely(!desc))
-+		return false;
-+
-+	if (!execute_on_irq_stack(overflow, desc, irq)) {
-+		if (unlikely(overflow))
-+			print_stack_overflow();
-+		desc->handle_irq(irq, desc);
-+	}
-+
-+	return true;
-+}
-+
- /*
-  * do_IRQ handles all normal device IRQ's (the special
-  * SMP cross-CPU interrupts have their own specific
-@@ -200,31 +220,19 @@
- {
- 	struct pt_regs *old_regs;
- 	/* high bit used in ret_from_ code */
--	int overflow;
- 	unsigned vector = ~regs->orig_ax;
--	struct irq_desc *desc;
- 	unsigned irq;
- 
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index db724ba..76821f0 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -465,13 +465,9 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 	dma_addr_t dev_addr;
+ 	void *ret;
+ 	int order = get_order(size);
+-	u64 dma_mask = DMA_32BIT_MASK;
 -
- 	old_regs = set_irq_regs(regs);
- 	irq_enter();
- 	irq = __get_cpu_var(vector_irq)[vector];
+-	if (hwdev && hwdev->coherent_dma_mask)
+-		dma_mask = hwdev->coherent_dma_mask;
  
--	overflow = check_stack_overflow();
--
--	desc = irq_to_desc(irq);
--	if (unlikely(!desc)) {
-+	if (!handle_irq(irq, regs)) {
- 		printk(KERN_EMERG "%s: cannot handle IRQ %d vector %#x cpu %d\n",
- 					__func__, irq, vector, smp_processor_id());
- 		BUG();
- 	}
+ 	ret = (void *)__get_free_pages(flags, order);
+-	if (ret && !is_buffer_dma_capable(dma_mask, virt_to_bus(ret), size)) {
++	if (ret && !address_needs_mapping(hwdev, virt_to_bus(ret), size)) {
+ 		/*
+ 		 * The allocated memory isn't reachable by the device.
+ 		 * Fall back on swiotlb_map_single().
+@@ -495,9 +491,9 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 	dev_addr = virt_to_bus(ret);
  
--	if (!execute_on_irq_stack(overflow, desc, irq)) {
--		if (unlikely(overflow))
--			print_stack_overflow();
--		desc->handle_irq(irq, desc);
--	}
--
- 	irq_exit();
- 	set_irq_regs(old_regs);
- 	return 1;
-===================================================================
---- a/arch/x86/kernel/irq_64.c
-+++ b/arch/x86/kernel/irq_64.c
-@@ -40,6 +40,20 @@
- #endif
- }
+ 	/* Confirm address can be DMA'd by device */
+-	if (!is_buffer_dma_capable(dma_mask, dev_addr, size)) {
++	if (!address_needs_mapping(hwdev, dev_addr, size)) {
+ 		printk("hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
+-		       (unsigned long long)dma_mask,
++		       (unsigned long long)dma_get_mask(hwdev),
+ 		       (unsigned long long)dev_addr);
  
-+bool handle_irq(unsigned irq, struct pt_regs *regs)
-+{
-+	struct irq_desc *desc;
-+
-+	stack_overflow_check(regs);
-+
-+	desc = irq_to_desc(irq);
-+	if (unlikely(!desc))
-+		return false;
-+
-+	generic_handle_irq_desc(irq, desc);
-+	return true;
-+}
-+
- /*
-  * do_IRQ handles all normal device IRQ's (the special
-  * SMP cross-CPU interrupts have their own specific
-@@ -48,7 +62,6 @@
- asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
--	struct irq_desc *desc;
- 
- 	/* high bit used in ret_from_ code  */
- 	unsigned vector = ~regs->orig_ax;
-@@ -56,14 +69,10 @@
- 
- 	exit_idle();
- 	irq_enter();
-+
- 	irq = __get_cpu_var(vector_irq)[vector];
- 
--	stack_overflow_check(regs);
--
--	desc = irq_to_desc(irq);
--	if (likely(desc))
--		generic_handle_irq_desc(irq, desc);
--	else {
-+	if (!handle_irq(irq, regs)) {
- 		if (!disable_apic)
- 			ack_APIC_irq();
- 
-
-
+ 		/* DMA_TO_DEVICE to avoid memcpy in unmap_single */
