@@ -1,244 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbYLPSpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbYLPSsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757187AbYLPSpM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 13:45:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbYLPSox
+	id S1756029AbYLPSsV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 13:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbYLPSsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 13:44:53 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:61029 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751671AbYLPSov (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 13:44:51 -0500
-Message-ID: <4947F72E.7000408@vlnb.net>
-Date: Tue, 16 Dec 2008 21:45:02 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 16 Dec 2008 13:48:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53041 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751671AbYLPSsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 13:48:03 -0500
+Date: Tue, 16 Dec 2008 19:47:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Martin Steigerwald <ms@teamix.de>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: physical memory limit of 64-bit linux
+Message-ID: <20081216184742.GL11683@elte.hu>
+References: <200812161556.25518.ms@teamix.de> <200812161654.17291.rjw@sisk.pl>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Bart Van Assche <bart.vanassche@gmail.com>,
-       linux-iscsi-target-dev@googlegroups.com,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Hannes Reinecke <hare@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       scst-devel <scst-devel@lists.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Announce]: Target_Core_Mod/ConfigFS and LIO-Target v3.0 work
-References: <1228965271.4153.510.camel@haakon2.linux-iscsi.org>	 <e2e108260812111124j79793adcie106ac2da4f801f3@mail.gmail.com>	 <1229025513.4153.542.camel@haakon2.linux-iscsi.org>	 <e2e108260812112321w2f5b1827xe2593888e44808ae@mail.gmail.com>	 <1229074809.4153.666.camel@haakon2.linux-iscsi.org>	 <54939.1229149205@turing-police.cc.vt.edu>	 <e2e108260812130141o3d21bbbdob9e7c9f95d309a74@mail.gmail.com>	 <1229162907.4153.857.camel@haakon2.linux-iscsi.org>	 <e2e108260812130223q13fd98d8gc1e55881a92b939@mail.gmail.com>	 <1229167118.4153.930.camel@haakon2.linux-iscsi.org>	 <e2e108260812130356y1fe60713xf844a35c775e161d@mail.gmail.com> <1229181896.3258.27.camel@localhost.localdomain>
-In-Reply-To: <1229181896.3258.27.camel@localhost.localdomain>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+Qccofnb8luEsD8Xd3/gIg5X/vJS3oD8DAjc2
- LLbEKvJ6pEA+QLmLSnItFtCFPbsNRC2vCI+Rxl3QSQsJpsiUjS
- lJwIqyp+mnWqf0iL2eT8A==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200812161654.17291.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sat, 2008-12-13 at 12:56 +0100, Bart Van Assche wrote:
->> On Sat, Dec 13, 2008 at 12:18 PM, Nicholas A. Bellinger
->> <nab@linux-iscsi.org> wrote:
->>> Of course I fix bugs when people report them.
->> Things have changed then since the beginning of this year. As anyone
->> can see in the threads I referred to, you have done your best to deny
->> that the crashes and system hangs were caused by LIO, although I had
->> posted exact instructions on how to reproduce the bugs. Regarding
->> kernel integration and subsystem maintainership: one of the important
->> tasks of a maintainer is to verify whether reported bugs are
->> reproducible, and if so, to resolve them. I'm happy none of the
->> current kernel maintainers has the habitude of denying bug reports
->> that are 100% reproducible and which contain exact instructions about
->> how to reproduce the bug.
+
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
+> On Tuesday, 16 of December 2008, Martin Steigerwald wrote:
+> > 
+> > Hi!
+> > 
+> > What is the physical memory limit for 64-bit Linux? I read about 40 
+> > bit address bus for AMD Athlon X2 (1 TB) and 48 bit for Barcelona X4 
+> > (256 TB).
+> > 
+> > Is 64-bit linux able to use that amount - provided that one would 
+> > manage to build it into a machine? Or does it have a lower limit?
+> > 
+> > Looking into the Google crystal ball gives unclear pictures... I tend 
+> > to assume that Linux would handle it, but I am not sure.
 > 
-> OK, All of you on this thread, why don't you take time out to step back
-> and think about the effects this descent into trench warfare is having
-> on your observers.
+> IIRC, the current maximal virtual memory space size of the kernel on 
+> x86_64 is 2^46.
 
-James,
+Almost: the real current upstream kernel hard memory limit on x86-64 is 44 
+bits, i.e. 16 TB.
 
-I'm sorry you needed to intervene in such a manner. I don't want to 
-continue that LIO vs SCST fight, but I see in your message some 
-important misunderstandings about SCST, on which, I feel I need to reply 
-to clean them up.
+There's a couple of limits to consider here.
 
->      1. You're both saying the other side isn't production ready ...
->         it's not a stretch for the rest of us to take this at face
->         value ... about both of you.
+Firstly, there's the architectural limit imposed by the CPU - that is 48 
+bits, 256 TB. That is the full virtual memory range that x86-64 CPUs are 
+able to address: non-canonical addresses outside that range create an 
+exception.
 
-I listed in http://lkml.org/lkml/2008/12/10/245 the exact things, why 
-LIO is far from being production ready and can continue that list. In 
-fact, if to call things their real names, LIO is an iSCSI target which 
-in past few months in a hurry is being converted to a generic target 
-engine and which has a lo-o-ong way to go to complete the conversion. 
-I.e., in other words, LIO might be good as an iSCSI target, but as a 
-generic iSCSI target engine at the moment it simply *does not exist* yet.
+I.e. valid addresses on x86-64 are in the range of:
 
-Relating to SCST being not production ready, can Nicholas Bellinger 
-support his claims against SCST with something concrete? So far, 
-everything he has written was empty words not supported by any real 
-facts. For instance, he failed to describe for what all those "missed" 
-in SCST features are needed.
+        [ 0xffff800000000000...0x00007fffffffffff ]
 
->      2. This ideological opposition to features the other side
->         implements tells me that if it came to a choice, by going with
->         either one of you I'd get an incomplete feature set.
+Which is minus 128 TB to plus 128 TB.
 
-There's no ideological opposition between SCST and LIO. Both engines are 
-built around basically the same ideology. The opposition is in 
-completely different and non-technical area.
+Traditionally (and because it's practical) that max range is split in two: 
+negative addresses to kernel-space-only addresses [the same on all tasks], 
+positive addresses to user-space addresses [unique to each process MM].
 
->      3. Making obvious partisans of your user base also tells me that if
->         I had to make a choice, whatever it was I'd piss off a large
->         number of people who'd be very vocal about it.
+The kernel starts at minus 122 TB, far far down, to take maximum advantage 
+of the negative range:
 
-Unfortunately, being based on an Open Source product isn't something 
-many people want to be proud of..
+  arch/x86/include/asm/page_64.h:
+  #define __PAGE_OFFSET           _AC(0xffff880000000000, UL)
 
-But here is the list of companies taken from scst-devel mailing list who 
-are working on SCST based products and made contributions in the past 
-half a year:
+(and we start with an 8 TB empty-mapped hole range. )
 
-@storwize.com
-@open-e.com
-@enjellic.com
+That is where all physical memory is mapped to, linearly. Then we have a 
+64 TB limit imposed on the maximum size of this linear kernel memory 
+range:
 
-In the earlier time there were also contributions from @hp.com and 
-@systemfabricworks.com.
+  #define MAXMEM           _AC(0x00003fffffffffff, UL)
 
-Also, I've already mentioned Mellanox, who developed SRP target driver 
-and now selling based on it product.
+that is sized a bit optimistically - it ends at ffffc7ffffffffff, which 
+overlaps by 2TB into the vmalloc area, which starts at:
 
-Also, there is a target driver development for Marvell SAS hardware by 
-an anonymous company, see 
-http://sourceforge.net/mailarchive/message.php?msg_id=e938503f0809260211r2d4ec37bt293c75c80960eadd%40mail.gmail.com
+  #define VMALLOC_START    _AC(0xffffc20000000000, UL)
 
-If you need more, I'll ask permissions from companies who already 
-selling SCST based products (BTW, 2 of them - user space VTLs, which can 
-be made on STGT, but those companies chose SCST).
+We want to set MAXMEM to VMALLOC_START-hole instead, where the hole is say 
+0x20000000000. (2 TB)
 
-It's worth to note here, that scst-devel mailing list has 134 
-subscribers. Many of them are from well known storage related companies. 
-Unfortunately, other sf.net statistics permanently loose data, hence not 
-trustworthy, so I can't refer to it.
+This problem is academic because there are no such systems in existence, 
+and because we have another limit on the size of physical memory:
 
-> So stop fighting ... you're not going to backstab your way to inclusion.
-> 
-> The only identified failing of STGT (and it's theoretical, not
-> demonstrated, although I can agree the theory looks correct) is that the
-> user space packet processing may cause performance problems on high
-> speed networks.  We know from practical tests that these networks have
-> to be above 1Gbit because the results were identical for STGT and SCST
-> on a 1G network, so it's infiniband or 10Gbit ethernet.
+  arch/x86/include/asm/sparsemem.h:
+  # define MAX_PHYSMEM_BITS	44
 
-I thought that SRP measurements in http://lkml.org/lkml/2008/12/10/245 
-are sufficient to remove all your doubts. If you don't object, I'll 
-remind: there was a >50% improvement in IOPS on 4K writes (~150K vs 
-~100K), which relates to >200MB/s throughput increase, when, where 
-possible, processing was moved from kernel threads to tasklets. For STGT 
-any processing can't be moved to tasklets by design and context switches 
-between user space threads are a bit heavier, than between kernel 
-threads, + STGT has some syscall entry/exit overheads, hence for the 
-same processing done in STGT, the difference would be even more.
+So in reality MAXMEM should be limited to the max sparsemem-covered 
+physical memory range, via the patch below.
 
-Thus, those measurements give the low boundary estimation of the 
-performance increase. Having such a huge increase on 4K block sizes is a 
-big advantage for any latency bound applications, like databases.
+In terms of future extensibility:
 
-What else should we do to convince you?
+phase 1)  We could go to 45 bits (32 TB) via a twoliner patch,
+          should the need arise
 
-Also, what I can't understand, why you don't want to count the 
-architectural advantages of SCST over STGT. Namely: overall simplicity, 
-possibility to implement many impossible for STGT features, like 
-complete pass-through and zero-copy cache IO. In fact, one such feature 
-has already been implemented: zero-copy transmit in iSCSI target. From 
-user space this is impossible, but for kernel I implemented it by very 
-small and simple patch.
+phase 2)  We can then go to 46 bits (64 TB) with small changes too - by 
+          moving the vmalloc area up a notch and moving the followon 
+          dynamic kernel mappings areas too.
 
-> So, what it comes down to is that if we had a kernel side protocol
-> accelerator for STGT, the project would no longer suffer from this
-> theoretical failing.  *Both* of you have such a thing embedded in your
-> respective submissions (all 74k LOC of them) so can't you just enhance
-> STGT with whichever one is better ... actually, if you'd both bury the
-> hatchet and work on the enhancement together taking the best of each
-> project, we'd have something that worked much better and a unified user
-> base and neither side would be able to claim sole credit ... just a
-> thought.
+phase 3)  We could also go close to 47 bits: with various more invasive
+          movings of VMALLOC and rest upwards, and other considerations
+          such as the elimination of the generous start of 8 TB hole at
+          __PAGE_OFFSET - i.e. moving __PAGE_OFFSET straight down to
+          minus 128 TB. 120 TB would be doable.
 
-James, just think as if SCST in the current state is STGT in which all 
-the possible enhancements are already incorporated. It simply has been 
-cooking outside of the kernel for too long, so you didn't see the 
-intermediate steps. I'm not joking. I'm absolutely serious. And it is 
-true. Developing scst_user module I carefully studied STGT and scst_user 
-has everything it could take from it.
+phase 4)  If the 48 bits limit is ever lifted on the CPU side, we can move
+          __PAGE_OFFSET down. This is actually less invasive than phase 
+          3), because moving __PAGE_OFFSET is relatively easy. The far
+          more invasive change would be the necessary changes to the
+          virtual memory code: the current 4-level paging has a 256 TB 
+          limit which comes from the 512*512*512*512*4K split of 
+          pgd/pud/pmd/pte entries. Either PGDIR_SHIFT would have to be 
+          increased, moving the root pgtable's size from 4K to 8K or more, 
+          or another pgdir level would have to be introduced (which is 
+          even more intrusive and much less likely to be implemented by hw
+          makers).
 
-When you ask us to improve STGT step by step and implement a kernel side 
-protocol accelerator for it, you ask us to go back by 2+ years. For the 
-kernel side acceleration STGT needs to move the SCSI target state 
-machine and memory management into the kernel, which effectively means 
-to convert it to SCST. What should I do to make it clear for you?
+	Ingo
 
-Also, current integration of STGT with Linux (initiator) SCSI subsystem 
-should have a better design, I explained why in 
-http://lkml.org/lkml/2008/12/10/245. SCSI initiator and target has 
-almost nothing to share, so they should be separated.
+-------------------->
+>From b6fd6f26733e864fba2ea3eb1d716e23d2e66f3a Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 16 Dec 2008 19:23:36 +0100
+Subject: [PATCH] x86, mm: limit MAXMEM on 64-bit
 
-I always open for any possible cooperation. Particularly, I'm always 
-willing to make with SCST any necessary changes, which will lead to 
-better target engine in Linux. But before doing any change I, as any 
-sane engineer, need to have answers on several simple questions. 
-Basically, there are 2 such questions:
+on 64-bit x86 the physical memory limit is controlled by the sparsemem
+bits - which are 44 bits right now. But MAXMEM (the max pfn number
+e820 parsing will allow to enter our sizing routines) is set to
+0x00003fffffffffff, i.e. 46 bits - that's too large because it overlaps
+into the vmalloc range.
 
-1. For what the proposed action is needed? I.e., which real life task is 
-it going to solve?
+So couple MAXMEM to MAX_PHYSMEM_BITS, and add a comment that the
+maximum of MAX_PHYSMEM_BITS is 45 bits.
 
-2. Why is the proposed change the best one among possible implementation 
-alternatives?
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/pgtable_64.h |    2 +-
+ arch/x86/include/asm/sparsemem.h  |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-If you simply take from 
-http://scst.sourceforge.net/patches/scst_combined.patch the combined 
-SCST patch, which has all 23 patches I submitted combined in a single 
-file (BTW, it has 46K LOC, not 76K), then patch some 2.6.27 tree and 
-spend a little time looking at it, you will soon find out that 
-converting STGT to SCST is the worst possible alternative. Simply try to 
-find out places, where STGT in-kernel core is better, than SCST core, or 
-has a feature, which SCST core doesn't have. There is only one such 
-feature: OSD support, i.e. bidirectional transfers, large CDBs, etc. It 
-wasn't implemented in SCST so far, because there was no demand for it 
-(hence, no way to test). But (1) this feature doesn't have any in-kernel 
-user, so nobody will be affected if STGT moved to be user space only, 
-and (2) there is nothing hard to add that feature to SCST, if there is 
-such demand.
-
-I have been closely following development of both STGT and LIO since 
-their beginning, so my words based on close examination of their source 
-code, not on my rejection to look at it. They both inferior to SCST in 
-all main areas. I believe, there is no point to spend time improving 
-kernel side of STGT. Better to put effort to better integrate user space 
-part of STGT with scst_local SCST module as I described in 
-http://lkml.org/lkml/2008/12/10/245. If you don't agree with me, can you 
-answer on the question (2) above, please?
-
- From everything I know SCST at the moment is the best open source SCSI 
-target engine in the world and no other target engines, including 
-Solaris's COMSTAR, can match it in functionality, performance and 
-stability areas.
-
-James, you offered by already *completed* work, where everything 
-possible to improve STGT was already done, so why not simply accept it?
-
-I'm an engineer, not a sales man, and there are no sales men in SCST 
-team to advertise it. We believe that the source code, its quality, 
-performance and feature completeness should speak theirself. It has been 
-in Linux so far and we hope will be so in this case. Just let the code 
-speak!
-
-Sorry for taking your time by one more huge e-mail. I did my best to be 
-as laconic as possible.
-
-Thanks,
-Vlad
+diff --git a/arch/x86/include/asm/pgtable_64.h b/arch/x86/include/asm/pgtable_64.h
+index 65b6be6..c54ba69 100644
+--- a/arch/x86/include/asm/pgtable_64.h
++++ b/arch/x86/include/asm/pgtable_64.h
+@@ -146,7 +146,7 @@ static inline void native_pgd_clear(pgd_t *pgd)
+ #define PGDIR_MASK	(~(PGDIR_SIZE - 1))
+ 
+ 
+-#define MAXMEM		 _AC(0x00003fffffffffff, UL)
++#define MAXMEM		 _AC(__AC(1, UL) << MAX_PHYSMEM_BITS, UL)
+ #define VMALLOC_START    _AC(0xffffc20000000000, UL)
+ #define VMALLOC_END      _AC(0xffffe1ffffffffff, UL)
+ #define VMEMMAP_START	 _AC(0xffffe20000000000, UL)
+diff --git a/arch/x86/include/asm/sparsemem.h b/arch/x86/include/asm/sparsemem.h
+index be44f7d..e3cc3c0 100644
+--- a/arch/x86/include/asm/sparsemem.h
++++ b/arch/x86/include/asm/sparsemem.h
+@@ -27,7 +27,7 @@
+ #else /* CONFIG_X86_32 */
+ # define SECTION_SIZE_BITS	27 /* matt - 128 is convenient right now */
+ # define MAX_PHYSADDR_BITS	44
+-# define MAX_PHYSMEM_BITS	44
++# define MAX_PHYSMEM_BITS	44 /* Can be max 45 bits */
+ #endif
+ 
+ #endif /* CONFIG_SPARSEMEM */
