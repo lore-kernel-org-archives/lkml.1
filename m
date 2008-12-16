@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYLPM0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYLPM1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbYLPM0X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 07:26:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYLPM0L
+	id S1756846AbYLPM1j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 07:27:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYLPM12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 07:26:11 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:55568 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752986AbYLPM0K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 07:26:10 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: JosephChan@via.com.tw
-Subject: Re: [Patch 3/3] via-sdmmc: via-sdmmc.h
-Date: Tue, 16 Dec 2008 13:25:58 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB808520F3C@exchtp03.taipei.via.com.tw>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB808520F3C@exchtp03.taipei.via.com.tw>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 16 Dec 2008 07:27:28 -0500
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:30993 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751334AbYLPM11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 07:27:27 -0500
+Date: Tue, 16 Dec 2008 21:25:24 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: hjk@linutronix.de, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [RESEND][PATCH] uio: Add of_platform_driver to uio_pdrv_genirq
+Message-ID: <20081216122524.GA29546@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Wolfram Sang <w.sang@pengutronix.de>, hjk@linutronix.de,
+	gregkh@suse.de, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+References: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812161325.58594.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19bdJUk0AGf3kenI2m+1QixIxNLqdP5+Xy8tKf
- ERbQtWi6eXbItNP00T3mV8/JHeeJkeS8BV9239ITAGtdcihzXr
- 8nEsQdfJeBr0JkYMAiF/g==
+In-Reply-To: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 December 2008, JosephChan@via.com.tw wrote:
-> Header file of VIA MSP SD/MMC card reader driver.
+On Thu, Dec 11, 2008 at 04:05:37PM +0100, Wolfram Sang wrote:
+> Make the generic uio-driver also accessible for of devices. It utilizes the
+> standard 'reg' and 'interrupt' properties. A typical usage would look like
+> this:
 > 
+> 	fpga-io@00003000 {
+> 		compatible = "generic-uio";
+> 		reg = <0x00003000 0x20>;
+> 		interrupts = <0xa>;
+> 		interrupt-parent = <&fpga_irq_mux>;
+> 	};
+> 
+> To achieve this, the probe function has been refactored, so it can be used by
+> platform and of code. Then, the of driver has been added.
+> 
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 
-The order of your patches is reversed, you add the Kconfig/Makefile
-changes last so that the tree stays 'bisectable', i.e. you don't
-have a broken build in the middle between your patches.
+It is pretty poor form to not even bother to Cc the only author of the
+code you are modifying, and have no Signed-off-by or Acked-by to even
+suggest that it was ever even looked at. This isn't something that ought
+to have to be pointed out, either.
 
-Since your header file is not an interface but only used in a single
-source file, I would also suggest merging it into the main via-sdmmc.c
-file, add changing Kconfig/Makefile in the same patch.
+In addition to the stuff pointed out by Greg, I don't see what you
+actually gain by hacking the OF crap in to this driver. You would be
+better off layering the OF driver on top of this, rather than trying to
+make them live together in the same file.
 
-	Arnd <><
+See pata_platform/pata_of_platform for an example of how to do this a bit
+more sanely.
