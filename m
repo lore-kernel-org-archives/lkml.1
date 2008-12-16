@@ -1,110 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYLPTMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYLPTPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbYLPTMa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 14:12:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYLPTMV
+	id S1755514AbYLPTPP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 14:15:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYLPTPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 14:12:21 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:17082 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbYLPTMU (ORCPT
+	Tue, 16 Dec 2008 14:15:00 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:45815 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751671AbYLPTO7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 14:12:20 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
-	references:in-reply-to:content-type:
-	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
-	b=dYsymijQFEYF0Y8+aaAMedceN0FD4Zs+zOCeio0GLtlgJaeBZIOLcLMKYSKyCm1fF
-	U5Jw9rdHfNvE+45MTCuRw==
-Message-ID: <4947FBC8.2000601@google.com>
-Date: Tue, 16 Dec 2008 11:04:40 -0800
-From: Mike Waychison <mikew@google.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 16 Dec 2008 14:14:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=PZuFPht2/D3C/J6tnxNnzRLYVQR6PAWpWegRY+2f89uYBKbeXlnrd2xX4aBOn+ZfG7
+         zhz3ddv38cKRJ6RaLTU6/YXODBxzmoFCja1ZDlPAoxB3NRiZIhc23YNl/BrHGSYyEXI8
+         ujQa/MsMEpRmFaoeUDqgkIJTsZO4QBocIB5vA=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: [PATCH 1/6] ide: fix setting nIEN on idle devices
+Date: Tue, 16 Dec 2008 19:57:52 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rc6-next-20081128; KDE/4.1.3; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20081213233925.4653.58008.sendpatchset@localhost.localdomain> <20081213233932.4653.97088.sendpatchset@localhost.localdomain> <20081214070620.GB31552@1wt.eu>
+In-Reply-To: <20081214070620.GB31552@1wt.eu>
 MIME-Version: 1.0
-To: Oren Laadan <orenl@cs.columbia.edu>
-CC: jeremy@goop.org, arnd@arndb.de, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       Linux Torvalds <torvalds@osdl.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC v11][PATCH 03/13] General infrastructure for checkpoint
- restart
-References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu> <1228498282-11804-4-git-send-email-orenl@cs.columbia.edu>
-In-Reply-To: <1228498282-11804-4-git-send-email-orenl@cs.columbia.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200812161957.52419.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.25.146.75
-X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oren Laadan wrote:
+On Sunday 14 December 2008, Willy Tarreau wrote:
+> Hi Bart,
+> 
+> On Sun, Dec 14, 2008 at 12:39:32AM +0100, Bartlomiej Zolnierkiewicz wrote:
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] ide: fix setting nIEN on idle devices
+> > 
+> > Fix do_ide_request() to operate on previous device / port instead of
+> > the current one.  The original code was wrong since at least Feb 2002
+> > (2.4.0 timeframe).
+> 
+> What could be the impact of this bug ? Should I backport your fix to 2.4 ?
 
-> +/*
-> + * Helpers to write(read) from(to) kernel space to(from) the checkpoint
-> + * image file descriptor (similar to how a core-dump is performed).
-> + *
-> + *   cr_kwrite() - write a kernel-space buffer to the checkpoint image
-> + *   cr_kread() - read from the checkpoint image to a kernel-space buffer
-> + */
-> +
-> +int cr_kwrite(struct cr_ctx *ctx, void *addr, int count)
-> +{
-> +	struct file *file = ctx->file;
-> +	mm_segment_t fs;
-> +	ssize_t nwrite;
-> +	int nleft;
-> +
-> +	fs = get_fs();
-> +	set_fs(KERNEL_DS);
-> +	for (nleft = count; nleft; nleft -= nwrite) {
-> +		nwrite = file->f_op->write(file, addr, nleft, &file->f_pos);
-> +		if (nwrite < 0) {
-> +			if (nwrite == -EAGAIN)
-> +				nwrite = 0;
-> +			else
+The fix results in better handling of unexpected IRQs on serialized IDE
+ports.  However since unexpected IRQs coming from a device is not something
+we should normally see and I don't recall seeing any bugreports that would
+be potentially closed by this fix I don't think that there is an urgent need
+to backport it (thanks for caring about 2.4.x users anyway!).
 
-set_fs(fs) here
-
-> +				return nwrite;
-> +		}
-> +		addr += nwrite;
-> +	}
-> +	set_fs(fs);
-> +	ctx->total += count;
-> +	return 0;
-> +}
-> +
-> +int cr_kread(struct cr_ctx *ctx, void *addr, int count)
-> +{
-> +	struct file *file = ctx->file;
-> +	mm_segment_t fs;
-> +	ssize_t nread;
-> +	int nleft;
-> +
-> +	fs = get_fs();
-> +	set_fs(KERNEL_DS);
-> +	for (nleft = count; nleft; nleft -= nread) {
-> +		nread = file->f_op->read(file, addr, nleft, &file->f_pos);
-> +		if (nread <= 0) {
-> +			if (nread == -EAGAIN) {
-> +				nread = 0;
-> +				continue;
-> +			} else if (nread == 0)
-> +				nread = -EPIPE;		/* unexecpted EOF */
-
-set_fs(fs) here as well
-
-> +			return nread;
-> +		}
-> +		addr += nread;
-> +	}
-> +	set_fs(fs);
-> +	ctx->total += count;
-> +	return 0;
-> +}
-> +
-
+Thanks,
+Bart
