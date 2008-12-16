@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbYLPLGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003AbYLPLK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755432AbYLPLGg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 06:06:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYLPLG2
+	id S1755003AbYLPLK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 06:10:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbYLPLKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 06:06:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49332 "EHLO mx3.mail.elte.hu"
+	Tue, 16 Dec 2008 06:10:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51359 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752502AbYLPLG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 06:06:27 -0500
-Date: Tue, 16 Dec 2008 12:06:14 +0100
+	id S1750998AbYLPLKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 06:10:10 -0500
+Date: Tue, 16 Dec 2008 12:09:49 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: sched: trace: update trace_sched_wakeup()
-Message-ID: <20081216110614.GA4299@elte.hu>
-References: <1229411223.14605.48.camel@twins> <1229414244.14605.50.camel@twins>
+To: Yoshihiro Takahashi <ytakahashi@miraclelinux.com>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Eduardo Habkost <ehabkost@redhat.com>,
+       Huang Ying <ying.huang@intel.com>, kexec@lists.infradead.org,
+       Bernhard Walle <bwalle@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: kdump hangs up by Sysrq+C trigger in high load.
+Message-ID: <20081216110949.GB4299@elte.hu>
+References: <20081216152143.88caba51.ytakahashi@miraclelinux.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229414244.14605.50.camel@twins>
+In-Reply-To: <20081216152143.88caba51.ytakahashi@miraclelinux.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,21 +39,25 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+* Yoshihiro Takahashi <ytakahashi@miraclelinux.com> wrote:
 
-> On Tue, 2008-12-16 at 08:07 +0100, Peter Zijlstra wrote:
-> > Add the information needed to distinguish 'real' wakeups from 'false'
-> > wakeups.
+> Hi.
 > 
-> I don't seem to be doing so well this morning...
+> kdump hangs up by Sysrq+C trigger once in about 10 times in high load. 
+> After the above occurs, kdump cannot collect vmcores with NMI button. 
+> When waiting_for_crash_ipi does case more than 0, mdelay seem to make a 
+> stall.
 > 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> While nmi_shootdown_cpus(), mdelay may not work since interruption is 
+> disable.  (ex. when crashing kernel by NMI interruption, all 
+> interruption may be disabled.).
 > 
-> Thanks Dhaval!
+> So I think that it should use other way (TSC) instead of mdelay() in 
+> nmi_shootdown_cpus().
 
-applied to tip/tracing/ftrace, thanks Peter!
+mdelay uses either the tsc or CPU loops - neither stop while IRQs are 
+disabled.
 
-I suspect you'll also then use this bit in the ftrace scheduler records? 
-This extension is pretty orphaned right now.
+Could you figure out exactly why it hangs in your case?
 
 	Ingo
