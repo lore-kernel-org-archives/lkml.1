@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbYLPTaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbYLPTb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755152AbYLPTaV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 14:30:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbYLPTaI
+	id S1757548AbYLPTb7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 14:31:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYLPTbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 14:30:08 -0500
-Received: from zcars04f.nortel.com ([47.129.242.57]:41031 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752308AbYLPTaH (ORCPT
+	Tue, 16 Dec 2008 14:31:48 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:64756 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752453AbYLPTbr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 14:30:07 -0500
-Message-ID: <494801B3.9060203@nortel.com>
-Date: Tue, 16 Dec 2008 13:29:55 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: ptb@inv.it.uc3m.es
-CC: Andreas Schwab <schwab@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: time_is_after_jiffies misnomer
-References: <200812161632.mBGGWh213629@inv.it.uc3m.es>
-In-Reply-To: <200812161632.mBGGWh213629@inv.it.uc3m.es>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Dec 2008 19:29:59.0692 (UTC) FILETIME=[AF522CC0:01C95FB4]
+	Tue, 16 Dec 2008 14:31:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=pOJROu1bzR1SjYBNRTxMLFz6owNgnG7fDMdtEzQgJAGDlHR8eI3fly1iLhJqOxWUYE
+         MzN9ew54trQHuQ8F05+ncZ6r73hHjND0O16wwHmTL6kstcPLTzOFkyR3nLZ9twePs1xW
+         TwqXvm7NWP4y1e65hilKd6wwP1l38H5A/ExHw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Tue, 16 Dec 2008 20:31:37 +0100
+Message-Id: <20081216193137.3959.70339.sendpatchset@localhost.localdomain>
+Subject: [PATCH 1/9] ide: update ide_unregister() documentation
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter T. Breuer wrote:
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide: update ide_unregister() documentation
 
-> Forgive me, but you don't seem to really be taking it on board here
-> either ...  what it SAYS to an english reader is the opposite of what
-> you intend it to MEAN, unfortunately :(.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+just a couple of cleanups, should be applied on a top of Sunday's patchset
+[ http://marc.info/?l=linux-kernel&m=122921159918716&w=2 ]
 
-time_is_after_jiffies(foo) means: time "foo" is after the current value 
-of the variable "jiffies" (which is used throughout the kernel as the 
-current time).
+ drivers/ide/ide.c |   18 +++++-------------
+ 1 file changed, 5 insertions(+), 13 deletions(-)
 
-You are interpreting it as: the current time is after time "foo" (which 
-is in jiffies).
-
-The reason why your interpretation is incorrect is that "jiffies" is a 
-specific variable in and of itself, and not a modifier for "foo".
-
-> So how about keeping the current macro
-> names but gradually phasing them out in favour of a parallel set of 
-> alternatives, which could be
-> 
->     current_time_is_before_jiffies(foo)
-> 
-> ?? That reads fine in english and this time it means what it says!
-
-
-You're using "jiffies" as a modifier for "foo", when it is actually a 
-separate variable.  This makes your version just as ambiguous.
-
-If you really want to change it, removing "jiffies" from the name (and 
-thus removing any ambiguity) may make more sense.  Something like:
-
-time_is_after(foo)
-
-which would mean that the current value of "jiffies" is after "foo".
-
-Chris
+Index: b/drivers/ide/ide.c
+===================================================================
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -155,22 +155,14 @@ EXPORT_SYMBOL_GPL(ide_port_unregister_de
+  *	ide_unregister		-	free an IDE interface
+  *	@hwif: IDE interface
+  *
+- *	Perform the final unregister of an IDE interface. At the moment
+- *	we don't refcount interfaces so this will also get split up.
++ *	Perform the final unregister of an IDE interface.
+  *
+  *	Locking:
+- *	The caller must not hold the IDE locks
+- *	The drive present/vanishing is not yet properly locked
+- *	Take care with the callbacks. These have been split to avoid
+- *	deadlocking the IDE layer. The shutdown callback is called
+- *	before we take the lock and free resources. It is up to the
+- *	caller to be sure there is no pending I/O here, and that
+- *	the interface will not be reopened (present/vanishing locking
+- *	isn't yet done BTW). After we commit to the final kill we
+- *	call the cleanup callback with the ide locks held.
++ *	The caller must not hold the IDE locks.
+  *
+- *	Unregister restores the hwif structures to the default state.
+- *	This is raving bonkers.
++ *	It is up to the caller to be sure there is no pending I/O here,
++ *	and that the interface will not be reopened (present/vanishing
++ *	locking isn't yet done BTW).
+  */
+ 
+ void ide_unregister(ide_hwif_t *hwif)
