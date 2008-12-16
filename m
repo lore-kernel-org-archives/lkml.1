@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758419AbYLPUuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758707AbYLPUvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758419AbYLPUuW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:50:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbYLPUuE
+	id S1758707AbYLPUvI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:51:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYLPUuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:50:04 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48846 "EHLO mx3.mail.elte.hu"
+	Tue, 16 Dec 2008 15:50:55 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52218 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752881AbYLPUuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:50:01 -0500
-Date: Tue, 16 Dec 2008 21:49:46 +0100
+	id S1752689AbYLPUuy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 15:50:54 -0500
+Date: Tue, 16 Dec 2008 21:50:39 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: add handle_irq() to allow interrupt injection
-Message-ID: <20081216204946.GE14787@elte.hu>
-References: <494810F0.1010101@goop.org>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH] xen: clean up asm/xen/hypervisor.h
+Message-ID: <20081216205039.GF14787@elte.hu>
+References: <49481173.1050901@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <494810F0.1010101@goop.org>
+In-Reply-To: <49481173.1050901@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,142 +38,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> Xen uses a different interrupt path, so introduce handle_irq() to
-> allow interrupts to be inserted into the normal interrupt path.  This
-> is handled slightly differently on 32 and 64-bit.
+> hypervisor.h had accumulated a lot of crud, including lots of spurious
+> #includes.  Clean it all up, and go around fixing up everything else
+> accordingly.
 >
 > Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 > ---
-> arch/x86/include/asm/irq.h |    1 +
-> arch/x86/kernel/irq_32.c   |   34 +++++++++++++++++++++-------------
-> arch/x86/kernel/irq_64.c   |   23 ++++++++++++++++-------
-> 3 files changed, 38 insertions(+), 20 deletions(-)
->
-> ===================================================================
-> --- a/arch/x86/include/asm/irq.h
-> +++ b/arch/x86/include/asm/irq.h
-> @@ -39,6 +39,7 @@
-> extern unsigned int do_IRQ(struct pt_regs *regs);
-> extern void init_IRQ(void);
-> extern void native_init_IRQ(void);
-> +extern bool handle_irq(unsigned irq, struct pt_regs *regs);
->
-> /* Interrupt vector management */
-> extern DECLARE_BITMAP(used_vectors, NR_VECTORS);
-> ===================================================================
-> --- a/arch/x86/kernel/irq_32.c
-> +++ b/arch/x86/kernel/irq_32.c
-> @@ -191,6 +191,26 @@
-> execute_on_irq_stack(int overflow, struct irq_desc *desc, int irq) { return 0; }
-> #endif
->
-> +bool handle_irq(unsigned irq, struct pt_regs *regs)
-> +{
-> +	struct irq_desc *desc;
-> +	int overflow;
-> +
-> +	overflow = check_stack_overflow();
-> +
-> +	desc = irq_to_desc(irq);
-> +	if (unlikely(!desc))
-> +		return false;
-> +
-> +	if (!execute_on_irq_stack(overflow, desc, irq)) {
-> +		if (unlikely(overflow))
-> +			print_stack_overflow();
-> +		desc->handle_irq(irq, desc);
-> +	}
-> +
-> +	return true;
-> +}
-> +
-> /*
->  * do_IRQ handles all normal device IRQ's (the special
->  * SMP cross-CPU interrupts have their own specific
-> @@ -200,31 +220,19 @@
-> {
-> 	struct pt_regs *old_regs;
-> 	/* high bit used in ret_from_ code */
-> -	int overflow;
-> 	unsigned vector = ~regs->orig_ax;
-> -	struct irq_desc *desc;
-> 	unsigned irq;
->
-> -
-> 	old_regs = set_irq_regs(regs);
-> 	irq_enter();
-> 	irq = __get_cpu_var(vector_irq)[vector];
->
-> -	overflow = check_stack_overflow();
-> -
-> -	desc = irq_to_desc(irq);
-> -	if (unlikely(!desc)) {
-> +	if (!handle_irq(irq, regs)) {
-> 		printk(KERN_EMERG "%s: cannot handle IRQ %d vector %#x cpu %d\n",
-> 					__func__, irq, vector, smp_processor_id());
-> 		BUG();
-> 	}
->
-> -	if (!execute_on_irq_stack(overflow, desc, irq)) {
-> -		if (unlikely(overflow))
-> -			print_stack_overflow();
-> -		desc->handle_irq(irq, desc);
-> -	}
-> -
-> 	irq_exit();
-> 	set_irq_regs(old_regs);
-> 	return 1;
-> ===================================================================
-> --- a/arch/x86/kernel/irq_64.c
-> +++ b/arch/x86/kernel/irq_64.c
-> @@ -40,6 +40,20 @@
-> #endif
-> }
->
-> +bool handle_irq(unsigned irq, struct pt_regs *regs)
-> +{
-> +	struct irq_desc *desc;
-> +
-> +	stack_overflow_check(regs);
-> +
-> +	desc = irq_to_desc(irq);
-> +	if (unlikely(!desc))
-> +		return false;
-> +
-> +	generic_handle_irq_desc(irq, desc);
-> +	return true;
-> +}
-> +
-> /*
->  * do_IRQ handles all normal device IRQ's (the special
->  * SMP cross-CPU interrupts have their own specific
-> @@ -48,7 +62,6 @@
-> asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
-> {
-> 	struct pt_regs *old_regs = set_irq_regs(regs);
-> -	struct irq_desc *desc;
->
-> 	/* high bit used in ret_from_ code  */
-> 	unsigned vector = ~regs->orig_ax;
-> @@ -56,14 +69,10 @@
->
-> 	exit_idle();
-> 	irq_enter();
-> +
-> 	irq = __get_cpu_var(vector_irq)[vector];
->
-> -	stack_overflow_check(regs);
-> -
-> -	desc = irq_to_desc(irq);
-> -	if (likely(desc))
-> -		generic_handle_irq_desc(irq, desc);
-> -	else {
-> +	if (!handle_irq(irq, regs)) {
-> 		if (!disable_apic)
-> 			ack_APIC_irq();
->
+> arch/x86/include/asm/xen/hypercall.h  |    6 +++++
+> arch/x86/include/asm/xen/hypervisor.h |   39 ++++++---------------------------
+> arch/x86/include/asm/xen/page.h       |    5 ++++
+> arch/x86/xen/enlighten.c              |    1 drivers/xen/balloon.c        
+>          |    4 ++-
+> drivers/xen/features.c                |    6 ++++-
+> drivers/xen/grant-table.c             |    1  
+> include/xen/interface/event_channel.h |    2 +
+> 8 files changed, 31 insertions(+), 33 deletions(-)
 
-the changes look rather similar. Could you please look into unifying 
-irq_*.c before adding more logic to it?
+applied to tip/x86/xen, thanks Jeremy!
 
 	Ingo
