@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758014AbYLPPM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbYLPPN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758014AbYLPPM4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 10:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757874AbYLPPMp
+	id S1758137AbYLPPN0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 10:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756376AbYLPPNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 10:12:45 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:59690 "EHLO mgw1.diku.dk"
+	Tue, 16 Dec 2008 10:13:13 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:59503 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757413AbYLPPMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 10:12:44 -0500
-Date: Tue, 16 Dec 2008 16:12:42 +0100 (CET)
+	id S1756551AbYLPPNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 10:13:11 -0500
+Date: Tue, 16 Dec 2008 16:13:09 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/11] drivers/isdn/hardware/mISDN: Move a dereference below
- a NULL test
-Message-ID: <Pine.LNX.4.64.0812161612170.20444@pc-004.diku.dk>
+To: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/11] drivers/mmc: Move a dereference below a NULL test
+Message-ID: <Pine.LNX.4.64.0812161612440.20444@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -49,27 +48,27 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/isdn/hardware/mISDN/hfcmulti.c         |    3 ++-
+ drivers/mmc/host/tmio_mmc.c         |    3 ++-
  1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
-index 1eac03f..4dd85a5 100644
---- a/drivers/isdn/hardware/mISDN/hfcmulti.c
-+++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
-@@ -3607,7 +3607,7 @@ hfcm_bctrl(struct mISDNchannel *ch, u_int cmd, void *arg)
- static void
- ph_state_change(struct dchannel *dch)
+diff --git a/drivers/mmc/host/tmio_mmc.c b/drivers/mmc/host/tmio_mmc.c
+index 95430b8..6a7a619 100644
+--- a/drivers/mmc/host/tmio_mmc.c
++++ b/drivers/mmc/host/tmio_mmc.c
+@@ -224,7 +224,7 @@ static inline void tmio_mmc_data_irq(struct tmio_mmc_host *host)
  {
--	struct hfc_multi *hc = dch->hw;
-+	struct hfc_multi *hc;
- 	int ch, i;
+ 	void __iomem *ctl = host->ctl;
+ 	struct mmc_data *data = host->data;
+-	struct mmc_command *stop = data->stop;
++	struct mmc_command *stop;
  
- 	if (!dch) {
-@@ -3615,6 +3615,7 @@ ph_state_change(struct dchannel *dch)
- 		    __func__);
+ 	host->data = NULL;
+ 
+@@ -232,6 +232,7 @@ static inline void tmio_mmc_data_irq(struct tmio_mmc_host *host)
+ 		pr_debug("Spurious data end IRQ\n");
  		return;
  	}
-+	hc = dch->hw;
- 	ch = dch->slot;
++	stop = data->stop;
  
- 	if (hc->type == 1) {
+ 	/* FIXME - return correct transfer count on errors */
+ 	if (!data->error)
