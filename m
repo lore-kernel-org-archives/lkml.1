@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbYLPQtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYLPQuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757550AbYLPQtU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 11:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbYLPQtI
+	id S1757883AbYLPQuw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 11:50:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbYLPQun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 11:49:08 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51525 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754436AbYLPQtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 11:49:06 -0500
-Message-ID: <4947DBFA.9050108@redhat.com>
-Date: Tue, 16 Dec 2008 17:48:58 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Tue, 16 Dec 2008 11:50:43 -0500
+Received: from smtpauth00.csee.onr.siteprotect.com ([64.26.60.144]:34482 "EHLO
+	smtpauth00.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755114AbYLPQun (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 11:50:43 -0500
+Date: Tue, 16 Dec 2008 11:55:27 -0500 (EST)
+From: Vince Weaver <vince@deater.net>
+X-X-Sender: vince@pianoman.cluster.toy
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       perfctr-devel@lists.sourceforge.net
+Subject: Re: [patch] Performance Counters for Linux, v4
+In-Reply-To: <1229438579.7025.21.camel@twins>
+Message-ID: <Pine.LNX.4.64.0812161149430.6141@pianoman.cluster.toy>
+References: <20081214212829.GA9435@elte.hu>  <Pine.LNX.4.64.0812151243130.2773@pianoman.cluster.toy>
+  <18758.53072.197695.277198@cargo.ozlabs.ibm.com> <1229438579.7025.21.camel@twins>
 MIME-Version: 1.0
-To: Ralf Baechle <ralf@linux-mips.org>
-CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: Re: [PATCH v3 0/3] preadv & pwritev syscalls.
-References: <1229340977-24345-1-git-send-email-kraxel@redhat.com> <20081215160311.GA23153@linux-mips.org> <4946C4B4.1020605@redhat.com> <20081216160502.GA15331@linux-mips.org>
-In-Reply-To: <20081216160502.GA15331@linux-mips.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ralf Baechle wrote:
-> On Mon, Dec 15, 2008 at 09:57:24PM +0100, Gerd Hoffmann wrote:
-> 
->>> It fixes the alignment issue but still won't work; on MIPS 32-bit userspace
->>> will pass the 64-bit argument in two registers but the 64-bit kernel code
->>> will assume it to be passed in a single registers.  It'd be ugly but passing
->>> a pointer to a 64-bit argument would solve the issue; something like this:
->>>
->>> sys_preadv(unsigned long fd, const struct iovec __user *vec,
->>>                   unsigned long vlen, loff_t __user *pos);
->>> compat_sys_preadv(unsigned long fd, const struct compat_iovec __user *vec,
->>>                   unsigned long vlen, loff_t __user *pos);
->> Suggestion from the s390 front was to explicitly pass high and low part
->> of pos as two arguments.  A bit ugly too, but should work fine as well
->> and it avoids the user pointer dereference.  What do you think about this?
-> 
-> That's what the wrapper which you deleted, was doing ;-)  So yes, I like
-> it.
 
-Yep, but I'm trying to find a way to have it work without per-arch
-wrappers ...
+> On Tue, 2008-12-16 at 08:42 +1100, Paul Mackerras wrote:
+> Furthermore, I think output of tools such as time and now timec are most
+> relevant when compared between runs - that is, the change in values
+> between runs, not the absolute values as such. At least, that's what I
+> usually do:
 
-> It just raises one new problem, endianess - are arguments being passed
-> as low/high or high/low?  On MIPS we've been solving the issue with the
-> merge_64() macro which is defined depending on the byte order:
-> 
-> #ifdef __MIPSEB__
-> #define merge_64(r1, r2) ((((r1) & 0xffffffffUL) << 32) + ((r2) & 0xffffffffUL))
-> #endif
-> #ifdef __MIPSEL__
-> #define merge_64(r1, r2) ((((r2) & 0xffffffffUL) << 32) + ((r1) & 0xffffffffUL))
-> #endif
-> 
-> The actual syscall wrapper could use it like:
-> 
-> asmlinkage int compat_sys_pwritev(unsigned long fd,
->        const struct compat_iovec __user *vec,
->        unsigned a3, unsigned a4, unsigned long vlen)
-> {
-> 	loff_t offset = merge_64(a3, a4);
-> ...
+That's doesn't do you any good when comparing results across different 
+machines, or even different kernels on the same machine.
 
-i.e. the ordering of the splitted argument depends on the os endianness?
-What is the reason for this?
+perfmon shows that good results can be had, even if it's not the cleanest 
+way in the world.  It would be a shame to lose that.
 
-I'd prefer to have the ordering coded explicitly instead, like this:
+Small micro-benchmarks like this are important.  You can't always trust 
+the performance counters to work, so being able to sanity check them with 
+exact test-cases is critical.  Otherwise you might just be measuring 
+nonsense.
 
-asmlinkage int compat_sys_pwritev(unsigned long fd,
-       const struct compat_iovec __user *vec, unsigned long vlen,
-       unsigned pos_low, unsigned pos_high)
-{
-	loff_t pos = pos_low | (loff_t)pos_high << 32;
-        [ ... ]
+And while it might be able to subtract the exec() overhead for something 
+like retired instructions, it gets a lot more complicated when you have 
+something like cache bus snoops or branch mispredicts where it's hard to 
+tell what comes from the program and what is overhead from the monitoring 
+infrastructure.
 
-cheers,
-  Gerd
-
-
+Vince
