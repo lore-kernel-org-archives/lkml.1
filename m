@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbYLPVaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYLPVax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbYLPVaU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 16:30:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYLPVaG
+	id S1757055AbYLPVax (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 16:30:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYLPVao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 16:30:06 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:55774 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753324AbYLPVaF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 16:30:05 -0500
-Message-ID: <49481DC5.4000404@oracle.com>
-Date: Tue, 16 Dec 2008 13:29:41 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Tue, 16 Dec 2008 16:30:44 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49942 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751406AbYLPVan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 16:30:43 -0500
+Date: Tue, 16 Dec 2008 22:30:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: hardirq: use inc_irq_stat() in non-unified
+	functions
+Message-ID: <20081216213027.GT14787@elte.hu>
+References: <4942F93A.8040904@ct.jp.nec.com>
 MIME-Version: 1.0
-To: Ben Dooks <ben-linux@fluff.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Kernel function documentation question
-References: <20081216211824.GG12431@fluff.org.uk>
-In-Reply-To: <20081216211824.GG12431@fluff.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.49481DB6.0165:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4942F93A.8040904@ct.jp.nec.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Dooks wrote:
-> The Documentation/kernel-doc-nano-HOWTO.txt says that functions
-> should be documented as so:
 
-That's an example.  There is no "should" with that example.
+* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-> /**
->  * foobar() - short function description of foobar
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > 
-> I notice there are a number of places that ommit the () off the
-> foobar, for example:
+> Impact: cleanup
 > 
-> include/linux/skbuff.h, line 461:
+> Replace incrementing irq stat with inc_irq_stat() in non-unified functions.
 > 
-> /**
->  *	skb_get - reference buffer
->  *	@skb: buffer to reference
-> 
-> where skb_get does not have ()s.
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  arch/x86/kernel/cpu/mcheck/mce_amd_64.c   |    2 +-
+>  arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    2 +-
+>  arch/x86/kernel/time_32.c                 |    2 +-
+>  arch/x86/kernel/time_64.c                 |    2 +-
+>  arch/x86/kernel/tlb_32.c                  |    2 +-
+>  arch/x86/kernel/tlb_64.c                  |    2 +-
+>  6 files changed, 6 insertions(+), 6 deletions(-)
 
-That's perfectly fine.  The "formal" syntax is given later in that file:
+applied to tip/x86/irq, thanks!
 
-The format of the block comment is like this:
-
-/**
- * function_name(:)? (- short description)?
-(* @parameterx(space)*: (description of parameter x)?)*
-(* a blank line)?
- * (Description:)? (Description of function)?
- * (section header: (section description)? )*
-(*)?*/
-
-
-and those parentheses are (confusing) grouping characters, not literals.  :(
-
-
-> As a note, it seems the default debian emacs does not colour the
-> function name unless it ends ().
-
-File a bug with debian?
-
-> Also, is there any policy on tabs vs a single space for indenting
-> these comments?
-
-Nope.  I prefer a single space, but some people seem to prefer tab(s).
-
-~Randy
+	Ingo
