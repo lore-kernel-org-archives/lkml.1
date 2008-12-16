@@ -1,94 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbYLPOiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbYLPOnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757105AbYLPOiA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 09:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbYLPOhv
+	id S1757061AbYLPOnw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 09:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755169AbYLPOnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 09:37:51 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:1159 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752243AbYLPOht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 09:37:49 -0500
-Date: Tue, 16 Dec 2008 15:37:21 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, dm-devel@redhat.com,
-       tglx@linutronix.de, mel@csn.ul.ie
-Subject: Re: [BUG] linux-next: 20081209 - kernel bug at __rcu_process_callbacks, while booting up
-Message-ID: <20081216143721.GT32491@kernel.dk>
-References: <20081209185237.8bb715d7.sfr@canb.auug.org.au> <20081210115721.GB6107@linux.vnet.ibm.com> <20081210145414.GA6945@linux.vnet.ibm.com> <20081210163007.GA6391@linux.vnet.ibm.com> <20081210175338.GB6745@linux.vnet.ibm.com> <20081210180936.GD6391@linux.vnet.ibm.com> <20081210183302.GD6745@linux.vnet.ibm.com> <20081212194026.GA5455@linux.vnet.ibm.com> <20081212221611.GG6950@linux.vnet.ibm.com> <20081216143001.GA4365@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081216143001.GA4365@linux.vnet.ibm.com>
+	Tue, 16 Dec 2008 09:43:43 -0500
+Received: from viefep16-int.chello.at ([62.179.121.36]:41615 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754525AbYLPOnm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 09:43:42 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [patch] Performance Counters for Linux, v4
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Vince Weaver <vince@deater.net>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       perfctr-devel@lists.sourceforge.net
+In-Reply-To: <18758.53072.197695.277198@cargo.ozlabs.ibm.com>
+References: <20081214212829.GA9435@elte.hu>
+	 <Pine.LNX.4.64.0812151243130.2773@pianoman.cluster.toy>
+	 <18758.53072.197695.277198@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Tue, 16 Dec 2008 15:42:59 +0100
+Message-Id: <1229438579.7025.21.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16 2008, Kamalesh Babulal wrote:
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> [2008-12-12 14:16:11]:
-> 
-> > On Sat, Dec 13, 2008 at 01:10:26AM +0530, Kamalesh Babulal wrote:
-> > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> [2008-12-10 10:33:02]:
-> > > 
-> > > > On Wed, Dec 10, 2008 at 11:39:36PM +0530, Kamalesh Babulal wrote:
-> > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> [2008-12-10 09:53:38]:
-> > > > > 
-> > > > > > On Wed, Dec 10, 2008 at 10:00:07PM +0530, Kamalesh Babulal wrote:
-> > > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> [2008-12-10 06:54:14]:
-> > > > > > > 
-> > > > > > > > On Wed, Dec 10, 2008 at 05:27:21PM +0530, Kamalesh Babulal wrote:
-> > > > > > > > > Hi,
-> > > > > > > > > 
-> > > > > > > > > 	Kernel bug is hit while booting up the next-20081208/09 kernels over
-> > > > > > > > > the x86_64 box. The IP is pointing to 0x0 and its stuck at
-> > > > > > > > > __rcu_process_callbacks.
-> > > > > > > > 
-> > > > > > > > Kernel config?
-> > > > > > > > 
-> > > > > > > > 							Thanx, Paul
-> > > > > > > > 
-> > > > > > > Hi Paul,
-> > > > > > > 
-> > > > > > > 	I have attached the kernel config file.
-> > > > > > 
-> > > > > > Hello, Kamalesh,
-> > > > > > 
-> > > > > > No significant recent changes in this area.  Is this consistent?
-> > > > > > Any chance of "git bisect"?
-> > > > > > 
-> > > > > > 							Thanx, Paul
-> > > > > > 
-> > > > > Hi Paul,
-> > > > > 
-> > > > > 	I tried reproducing it for three times and I was successfull in reproducing it thrice.
-> > > > > I have already started the git bisect, will update the results soon.
-> > > > 
-> > > > Very good, looking forward to seeing the result!
-> > > > 
-> > > > 							Thanx, Paul
-> > > > 
-> > > Hi Paul,
-> > > 
-> > > 	After a Complete round of git bisect, I was not able to reproduce the oops,
-> > > but when I tried again with complete next-20081209 patch, I am getting
-> > > different warning message altogether this time
-> > 
-> > Might be that the two oopses are different manifestations of the same
-> > underlying problem, right?
-> > 
-> > 							Thanx, Paul
-> > 
-> Hi Paul,
-> 
-> 	Your were right, those were the manifestation of the same
-> 	problem. Adding to it another calltrace was commonly visible
-> 	during the git-bisect.
+On Tue, 2008-12-16 at 08:42 +1100, Paul Mackerras wrote:
+> the execvp would be hard to get rid of without using ptrace() - and
+> the use of ptrace was one of the things that Ingo et al. objected to
+> in perfmon3.
 
-Did you try with a newer version? Should be fixed since last week.
+I don't think using ptrace in this case is a big issue - aside from the
+fact that ptrace is crap in that you'd not be able to timec from a
+debugger context :-(
 
--- 
-Jens Axboe
+The biggest objection to using ptrace was that ptrace was needed
+_during_ the execution of the monitored load, thereby distorting the
+load.
+
+This case is different in that it would be used to start off the load.
+
+Still it would be good if we could find another (elegant) way to fix
+this.
+
+Also, I'm pretty sure the regular 'time' suffers the very same issue and
+counts the exec syscall as well - I saw that when I tinkered with the
+execve argument code.
+
+Furthermore, I think output of tools such as time and now timec are most
+relevant when compared between runs - that is, the change in values
+between runs, not the absolute values as such. At least, that's what I
+usually do:
+
+ time ./foo
+
+tinker with foo.c
+
+ time ./foo
+
+if time2 < time1 :-)
+else :-(
+
 
