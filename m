@@ -1,83 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbYLPRbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbYLPReY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757085AbYLPRbg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 12:31:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYLPRb2
+	id S1757050AbYLPReY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 12:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbYLPReP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 12:31:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39611 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751609AbYLPRb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 12:31:27 -0500
-Date: Tue, 16 Dec 2008 18:30:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Markus Metzger <markus.t.metzger@intel.com>,
+	Tue, 16 Dec 2008 12:34:15 -0500
+Received: from smtpauth01.csee.onr.siteprotect.com ([64.26.60.145]:44945 "EHLO
+	smtpauth01.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751078AbYLPReP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 12:34:15 -0500
+Date: Tue, 16 Dec 2008 12:38:59 -0500 (EST)
+From: Vince Weaver <vince@deater.net>
+X-X-Sender: vince@pianoman.cluster.toy
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
-       markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com
-Subject: Re: [rfc] x86, ptrace: memory accounting for branch tracing
-Message-ID: <20081216173059.GD11683@elte.hu>
-References: <20081216162424.A30209@sedona.ch.intel.com>
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       perfctr-devel@lists.sourceforge.net
+Subject: Re: [patch] Performance Counters for Linux, v4
+In-Reply-To: <20081214212829.GA9435@elte.hu>
+Message-ID: <Pine.LNX.4.64.0812161232170.6249@pianoman.cluster.toy>
+References: <20081214212829.GA9435@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081216162424.A30209@sedona.ch.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Markus Metzger <markus.t.metzger@intel.com> wrote:
+I'm trying to evaluate this new proposal for the kind of workloads I use 
+performance counters for, and even the simplest tests don't work.
 
-> Account memory allocated for the BTS buffer to the traced task's 
-> total_vm and locked_vm.
+I'm trying to do a simple aggragate count for some benchmarks here using 
+timec and I'm getting poor results.
 
-Andrew, is this the right (and preferred) way to attach BTS buffer 
-allocation overhead to the RLIMIT_MEMLOCK bucket:
+Are any of the problems I'm reporting going to be fixed?
 
-> +static int ptrace_bts_allocate_buffer(struct task_struct *child, size_t size)
-> +{
-> +	unsigned long rlim, vm, pgsz;
-> +	int error = -ENOMEM;
-> +
-> +	pgsz = PAGE_ALIGN(size) >> PAGE_SHIFT;
-> +
-> +	down_write(&child->mm->mmap_sem);
-> +
-> +	rlim = child->signal->rlim[RLIMIT_AS].rlim_cur >> PAGE_SHIFT;
-> +	vm   = child->mm->total_vm + pgsz;
-> +	if (rlim < vm)
-> +		goto out;
-> +
-> +	rlim = child->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >> PAGE_SHIFT;
-> +	vm   = child->mm->locked_vm + pgsz;
-> +	if (rlim < vm)
-> +		goto out;
-> +
-> +	child->bts_buffer = kzalloc(size, GFP_KERNEL);
-> +	if (!child->bts_buffer)
-> +		goto out;
-> +
-> +	child->bts_size = size;
-> +
-> +	child->mm->total_vm  += pgsz;
-> +	child->mm->locked_vm += pgsz;
-> +
-> +	error = 0;
-> + out:
-> +	up_write(&child->mm->mmap_sem);
-> +	return error;
+In any case, I was testing aggregate counts on a longer running benchmark, 
+this time equake from the spec2k benchmark suite, still on the q6600.
 
-?
+If I only count retired instructions, I get consistent results:
 
-	Ingo
+   timec -e 1
+
+       119175255369  instructions         (events)
+       119175255561  instructions         (events)
+       119175255383  instructions         (events)
+
+
+however the minute I add another count, say cycles so I can calculate 
+CPI/IPC the results for instructions are suddenly off by 33%.
+
+Needless to say, perfmon can handle reading both cycles and instructions 
+at the same time.
+
+
+   timec -e 0, -e 1
+        91758816320  cycles               (events)
+        79428247907  instructions         (events)
+
+        91849140396  cycles               (events)
+        79449560742  instructions         (events)
+
+
+It gets worse when trying to look at cache statistics:
+
+    timec -e 1 -e 2 -e 3
+
+        59611457943  instructions         (events)
+         1872499771  cache references     (events)
+           97471971  cache misses         (events)
+
+        59601907232  instructions         (events)
+         1871766376  cache references     (events)
+           97435199  cache misses         (events)
+
+and so on
+
+    timec -e1 -e2 -e3 -e4
+
+
+        47671703285  instructions         (events)
+         1498246999  cache references     (events)
+           77838085  cache misses         (events)
+         3394839360  branches             (events)
+
+        47666131604  instructions         (events)
+         1497069685  cache references     (events)
+           78065325  cache misses         (events)
+         3393244879  branches             (events)
+
+
+
+So apparently this performance counter infrastructure will always be 
+useless for trying to get plain aggregate counts?  It's the simplest case 
+to get right, so it makes me wonder about the design of the rest of the 
+infrastructure.
+
+Vince
