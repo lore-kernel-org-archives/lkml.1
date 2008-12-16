@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbYLPMW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYLPMYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756550AbYLPMW4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 07:22:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYLPMWr
+	id S1756698AbYLPMYY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 07:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYLPMYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 07:22:47 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42956 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302AbYLPMWr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 07:22:47 -0500
-Date: Tue, 16 Dec 2008 13:22:29 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	Tue, 16 Dec 2008 07:24:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34966 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753181AbYLPMYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 07:24:13 -0500
+Date: Tue, 16 Dec 2008 13:23:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Menage <menage@google.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       perfctr-devel@lists.sourceforge.net
-Subject: Re: [patch] Performance Counters for Linux, v4
-Message-ID: <20081216122229.GA1430@ucw.cz>
-References: <20081214212829.GA9435@elte.hu>
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: fix another race when reading /proc/sched_debug
+Message-ID: <20081216122350.GB25019@elte.hu>
+References: <494234B0.5@cn.fujitsu.com> <20081212100044.GB18152@elte.hu> <4944754F.8050503@cn.fujitsu.com> <49476049.7000403@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081214212829.GA9435@elte.hu>
+In-Reply-To: <49476049.7000403@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-12-14 22:28:29, Ingo Molnar wrote:
-> We are pleased to announce the v4 release of our performance counters 
-> subsystem implementation. The kernel changes can be picked up from:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perfcounters/core
-> 
->   (also in the master branch. There's also a kernel patch attached 
->    below.)
-> 
-> The biggest new feature in this release is the implementation of 
-> "performance counter inheritance" for the per task counters: the ability 
-> to extend performance counters to cover the execution of child tasks 
-> too, transparently and automatically - following them to other CPUs.
-> 
-> This can be used to monitor a hierarchy of tasks without stopping them 
-> (or impacting them in any observable way), and extending that monitoring 
-> to all child tasks as well.
-> 
-> We've written a new utility: 'timec', which takes advantage of this new 
-> kernel capability:
-> 
->      http://redhat.com/~mingo/perfcounters/timec.c
-> 
-> 'timec' works like /usr/bin/time, but it extends the dimension of "time" 
-> with all the metrics that hardware and software performance counters are 
-> able to capture.
 
-Hmm, if I timec some setuid program, what happens?
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-Performance counters seem like great tool to pull secret keys out of
-other processes :-).
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Li Zefan wrote:
+> >> i merged it up in tip/master, could you please check whether it's ok?
+> >>
+> > 
+> > Sorry, though this patch avoids accessing a half-created cgroup, but I found
+> > current code may access a cgroup which has been destroyed.
+> > 
+> > The simplest fix is to take cgroup_lock() before for_each_leaf_cfs_rq.
+> > 
+> > Could you revert this patch and apply the following new one? My box has
+> > survived for 16 hours with it applied.
+> > 
+> 
+> Hi, Ingo
+> 
+> Can we have this bug fixed for 2.6.28 using this patch ? This patch is 
+> the simplest fix and has been fully tested.
+
+the mutex used by cgroup_lock() is pretty crappy to nest inside the 
+runqueue lock:
+
+ BUG: sleeping function called from invalid context at kernel/mutex7
+ in_atomic(): 0, irqs_disabled(): 1, pid: 1790, name: cat
+ 2 locks held by cat/1790:
+  #0:  (&p->lock){--..}, at: [<c02a6328>] seq_read+0x25/0x2b8
+  #1:  (tasklist_lock){..--}, at: [<c021f5bc>] 
+sched_debug_show+0xaa7/0xe90
+ Call Trace:
+  [<c0222612>] __might_sleep+0xd6/0xdd
+  [<c05ff1eb>] mutex_lock_nested+0x1d/0x245
+  [<c021f88b>] ? sched_debug_show+0xd76/0xe90
+  [<c0256223>] cgroup_lock+0xf/0x11
+  [<c021f893>] sched_debug_show+0xd7e/0xe90
+  [<c0248696>] ? __lock_acquire+0x637/0x69d
+  [<c028e7cd>] ? check_object+0x111/0x18c
+  [<c028f435>] ? kmem_cache_alloc+0x70/0xa5
+  [<c02a6355>] ? seq_read+0x52/0x2b8
+  [<c0246ee2>] ? trace_hardirqs_on_caller+0x105/0x13d
+  [<c0246f25>] ? trace_hardirqs_on+0xb/0xd
+  [<c02a6355>] ? seq_read+0x52/0x2b8
+  [<c02a63f7>] seq_read+0xf4/0x2b8
+  [<c02a6303>] ? seq_read+0x0/0x2b8
+  [<c02c411a>] proc_reg_read+0x60/0x74
+
+so i had to remove your patch.
+
+also, while looking at what cgroup_lock does - it's a trivial wrapper:
+
+ void cgroup_lock(void)
+ {
+         mutex_lock(&cgroup_mutex);
+ }
+
+why isnt that done explicitly in all usage sites? If cgroup-unaware code 
+ever has to take the cgroup lock outside of CONFIG_CGROUPS, that's a code 
+structure problem.
+
+	Ingo
