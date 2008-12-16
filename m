@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759898AbYLPU2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760450AbYLPU26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759898AbYLPU2Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759343AbYLPU17
+	id S1760450AbYLPU26 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758999AbYLPU2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:27:59 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:1190 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758393AbYLPU16 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:27:58 -0500
-Date: Tue, 16 Dec 2008 21:27:30 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: scameron@beardog.cca.cpqcorp.net
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mikem@roadking.cca.cpqcorp.net
-Subject: Re: [patch] cciss: Fix problem that deleting multiple logical drives could cause a panic
-Message-ID: <20081216202730.GZ32491@kernel.dk>
-References: <20081216201703.GL1126@beardog.cca.cpqcorp.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081216201703.GL1126@beardog.cca.cpqcorp.net>
+	Tue, 16 Dec 2008 15:28:23 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:16291 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758007AbYLPU2W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 15:28:22 -0500
+Subject: [PATCH] pl2303: add id for Hewlett-Packard LD220-HP POS pole
+	display
+From: Mike Provencher <mike.provencher@hp.com>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 16 Dec 2008 14:30:14 -0600
+Message-Id: <1229459414.4871.91.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16 2008, scameron@beardog.cca.cpqcorp.net wrote:
-> 
-> Fix problem that deleting multiple logical drives could cause a panic.
+Add id for the Hewlett-Packard LD220-HP POS pole display.
 
-This looks like a 2.6.28 candidate, correct?
+Bus 002 Device 002: ID 03f0:3524 Hewlett-Packard
 
-> 
-> Signed-off-by: Stephen M. Cameron <scameron@beardog.cca.cpqcorp.net>
-> ---
-> 
->  drivers/block/cciss.c |    5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff -puN drivers/block/cciss.c~fix_rebuild_lun_table_bug drivers/block/cciss.c
-> --- linux-2.6.28-rc8/drivers/block/cciss.c~fix_rebuild_lun_table_bug	2008-12-16 14:00:52.000000000 -0600
-> +++ linux-2.6.28-rc8-root/drivers/block/cciss.c	2008-12-16 14:00:52.000000000 -0600
-> @@ -1693,6 +1693,11 @@ static int rebuild_lun_table(ctlr_info_t
->  	for (i = 0; i <= h->highest_lun; i++) {
->  		int j;
->  		drv_found = 0;
-> +
-> +		/* skip holes in the array from already deleted drives */
-> +		if (h->drv[i].raid_level == -1)
-> +			continue;
-> +
->  		for (j = 0; j < num_luns; j++) {
->  			memcpy(&lunid, &ld_buff->LUN[j][0], 4);
->  			lunid = le32_to_cpu(lunid);
-> _
+Signed-off-by: Mike Provencher <mike.provencher@hp.com>
 
--- 
-Jens Axboe
+ pl2303.c |    1 +
+ pl2303.h |    4 ++++
+ 2 files changed, 5 insertions(+)
+
+--- a/drivers/usb/serial/pl2303.h       2008-12-16 10:40:41.000000000 -0600
++++ b/drivers/usb/serial/pl2303.h       2008-12-16 14:03:18.000000000 -0600
+@@ -110,3 +110,7 @@
+ /* Y.C. Cable U.S.A., Inc - USB to RS-232 */
+ #define YCCABLE_VENDOR_ID      0x05ad
+ #define YCCABLE_PRODUCT_ID     0x0fba
++
++/* Hewlett-Packard LD220-HP POS Pole Display */
++#define HP_VENDOR_ID           0x03f0
++#define HP_LD220_PRODUCT_ID    0x3524
+
+--- a/drivers/usb/serial/pl2303.c       2008-12-16 10:40:41.000000000 -0600
++++ b/drivers/usb/serial/pl2303.c       2008-12-16 10:48:09.000000000 -0600
+@@ -91,6 +91,7 @@ static struct usb_device_id id_table [] 
+        { USB_DEVICE(WS002IN_VENDOR_ID, WS002IN_PRODUCT_ID) },
+        { USB_DEVICE(COREGA_VENDOR_ID, COREGA_PRODUCT_ID) },
+        { USB_DEVICE(YCCABLE_VENDOR_ID, YCCABLE_PRODUCT_ID) },
++       { USB_DEVICE(HP_VENDOR_ID, HP_LD220_PRODUCT_ID) },
+        { }                                     /* Terminating entry */
+ };
+
+
 
