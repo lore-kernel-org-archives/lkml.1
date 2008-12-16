@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbYLPQS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbYLPQSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757171AbYLPQS2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 11:18:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbYLPQST
+	id S1757970AbYLPQSn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 11:18:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756238AbYLPQSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 11:18:19 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55383 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbYLPQST (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 11:18:19 -0500
-Subject: Re: sched: trace: update trace_sched_wakeup()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <20081216154748.GC6231@Krystal>
-References: <1229411223.14605.48.camel@twins>
-	 <1229414244.14605.50.camel@twins>  <20081216154748.GC6231@Krystal>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 16 Dec 2008 17:18:08 +0100
-Message-Id: <1229444288.7025.35.camel@twins>
+	Tue, 16 Dec 2008 11:18:24 -0500
+Received: from main.gmane.org ([80.91.229.2]:46276 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756173AbYLPQSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 11:18:23 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: "Brian J. Murrell" <brian@interlinx.bc.ca>
+Subject: Re: suspend/resume fails on second attempt in LNXVIDEO:00
+Date: Tue, 16 Dec 2008 16:18:13 +0000 (UTC)
+Message-ID: <gi8kc5$m5f$6@ger.gmane.org>
+References: <gi247o$iog$1@ger.gmane.org> <200812161625.37318.rjw@sisk.pl>
+	<gi8jf1$m5f$5@ger.gmane.org> <200812161713.08451.rjw@sisk.pl>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: d193-213-184.home3.cgocable.net
+User-Agent: Pan/0.132 (Waxed in Black)
+Cc: linux-acpi@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-16 at 10:47 -0500, Mathieu Desnoyers wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
-> > On Tue, 2008-12-16 at 08:07 +0100, Peter Zijlstra wrote:
-> > > Add the information needed to distinguish 'real' wakeups from 'false'
-> > > wakeups.
-> > 
-> > I don't seem to be doing so well this morning...
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > 
-> > Thanks Dhaval!
-> > 
+On Tue, 16 Dec 2008 17:13:08 +0100, Rafael J. Wysocki wrote:
 > 
-> Applied a modified version into the 2.6.27.9 LTTng tree. Thanks!
-> (remembering that I should really move to 2.6.28-rc!)
+> Hm, this really isn't reasonable.
 
-Ingo pointed out that this generates build crap in ftrace which made me
-look at the thing again, and I just realized we don't need it.
+Many people agree with you.  :-)  There is a long bug open with ubuntu to 
+restore this s2ram.  They seem to be ignoring it though.
 
-trace_sched_wakeup() gets called before we set p->state = TASK_RUNNING,
-so by checking p->state in the callback we can see if its a real of
-false wakeup.
+> s2both saves the image, which takes
+> quite a lot of time, while s2ram doesn't.
 
-The scheduler tracer in ftrace already exploits this.
+Indeed.
+ 
+> You can compile s2ram from sources, it's not too difficult.
 
-> > > --- a/kernel/sched.c
-> > > +++ b/kernel/sched.c
-> > > @@ -2329,7 +2329,7 @@ out_activate:
-> > >  	success = 1;
-> > >  
-> > >  out_running:
-> > > -	trace_sched_wakeup(rq, p);
-> > > +	trace_sched_wakeup(rq, p, success);
-> > >  	check_preempt_curr(rq, p, sync);
-> > >  
-> > >  	p->state = TASK_RUNNING;
+Yeah.  I will probably just grab the debian package and dpkg-buildpackage 
+it on my Ubuntu system.
+ 
+> Hm.  Is that all loaded when you boot with init=/bin/bash (by which I
+> mean the minimal config)?
+
+It sure is.  Most assuredly by the initrd.  Debian/Ubuntu systems seem to 
+put everything but the kitchen sink into their initrds.  Which on the one 
+hand makes them pretty portable and resilient, but on the other, yes, 
+bloated.
+
+b.
 
 
