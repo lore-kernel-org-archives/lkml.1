@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758294AbYLPRDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbYLPRR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758294AbYLPRDl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 12:03:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbYLPRDb
+	id S1753506AbYLPRR4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 12:17:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbYLPRRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 12:03:31 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:40928 "EHLO e8.ny.us.ibm.com"
+	Tue, 16 Dec 2008 12:17:48 -0500
+Received: from ns2.suse.de ([195.135.220.15]:37257 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756051AbYLPRDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 12:03:31 -0500
-Subject: Re: [PATCH 0/8, v3] ensure symlinks are NUL-terminated
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Evgeniy Dushistov <dushistov@mail.ru>
-In-Reply-To: <1229442720-31056-1-git-send-email-duaneg@dghda.com>
-References: <1229442720-31056-1-git-send-email-duaneg@dghda.com>
-Content-Type: text/plain
-Date: Tue, 16 Dec 2008 11:03:27 -0600
-Message-Id: <1229447007.3751.1.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1750981AbYLPRRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 12:17:47 -0500
+Date: Tue, 16 Dec 2008 09:16:46 -0800
+From: Greg KH <gregkh@suse.de>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: hjk@linutronix.de, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: adding of_platform_drivers (was: Re: [RESEND][PATCH] uio: Add
+	of_platform_driver to uio_pdrv_genirq)
+Message-ID: <20081216171646.GA12812@suse.de>
+References: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de> <20081211205033.GA7080@suse.de> <20081216122731.GC3275@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081216122731.GC3275@pengutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-16 at 15:51 +0000, Duane Griffin wrote:
-> These patches fix potential bugs associated with link target handling by
-> NUL-terminating names read from disk.
+On Tue, Dec 16, 2008 at 01:27:32PM +0100, Wolfram Sang wrote:
+> > > +/* ---------------------------------------------------------------------
+> > > + * OF bus binding
+> > > + */
+> > > +
+> > > +#if defined(CONFIG_OF)
+> > 
+> > Same goes here, don't put #if in .c files please.
 > 
-> This is version 3 of these patches. It fixes the bug, pointed out by Al Viro
-> and Evgeniy Dushistov, that i_size was not being validated. In order to
-> facilitate this it introduces a helper function for terminating the link name,
-> as suggested by Al.
+> So, generally speaking, this means that I should not put a
+> platform_driver and an of_platform_driver into one source file, but
+> rather create an of_$DRIVER.c then?
 
-Duane,
-I see you left out jfs, so I'm assuming you're letting me handle that
-one.  I've push my patch upstream, so it should show up in the -next
-tree.
+Yes, this is the preferred way to do it.
 
-Shaggy
+thanks,
 
-> diffstat:
->  fs/ext2/inode.c          |    7 +++++--
->  fs/ext3/inode.c          |    7 +++++--
->  fs/ext4/inode.c          |    7 +++++--
->  fs/freevxfs/vxfs_inode.c |    4 +++-
->  fs/namei.c               |    7 +++++--
->  fs/sysv/inode.c          |    6 +++++-
->  fs/ufs/inode.c           |    8 ++++++--
->  include/linux/namei.h    |    5 +++++
->  8 files changed, 39 insertions(+), 12 deletions(-)
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+greg k-h
