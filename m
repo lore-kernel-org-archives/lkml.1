@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbYLPPhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbYLPPi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758272AbYLPPhB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 10:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbYLPPgv
+	id S1758240AbYLPPi3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 10:38:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbYLPPiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 10:36:51 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:23100 "EHLO
+	Tue, 16 Dec 2008 10:38:18 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:20130 "EHLO
 	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753937AbYLPPgt (ORCPT
+	with ESMTP id S1753613AbYLPPiR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 10:36:49 -0500
-Message-ID: <4947CB0C.3000406@panasas.com>
-Date: Tue, 16 Dec 2008 17:36:44 +0200
+	Tue, 16 Dec 2008 10:38:17 -0500
+Message-ID: <4947CB65.3070005@panasas.com>
+Date: Tue, 16 Dec 2008 17:38:13 +0200
 From: Boaz Harrosh <bharrosh@panasas.com>
 User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
@@ -21,222 +21,47 @@ To: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
        open-osd <osd-dev@open-osd.org>
 CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 8/9] exofs: Documentation
+Subject: [PATCH 9/9] fs: Add exofs to Kernel build
 References: <4947BFAA.4030208@panasas.com>
 In-Reply-To: <4947BFAA.4030208@panasas.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Dec 2008 15:35:17.0373 (UTC) FILETIME=[E59AD2D0:01C95F93]
+X-OriginalArrivalTime: 16 Dec 2008 15:36:45.0936 (UTC) FILETIME=[1A647700:01C95F94]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Added some documentation in exofs.txt, as well as a BUGS file.
-
-For further reading, operation instructions, example scripts
-and up to date infomation and code please see:
-http://open-osd.org
+- Add exofs to fs/Kconfig under "menu 'Miscellaneous filesystems'"
+- Add exofs to fs/Makefile
 
 Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 ---
- Documentation/filesystems/exofs.txt |  173 +++++++++++++++++++++++++++++++++++
- fs/exofs/BUGS                       |    6 +
- 2 files changed, 179 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/filesystems/exofs.txt
- create mode 100644 fs/exofs/BUGS
+ fs/Kconfig  |    1 +
+ fs/Makefile |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/filesystems/exofs.txt b/Documentation/filesystems/exofs.txt
-new file mode 100644
-index 0000000..ec5040c
---- /dev/null
-+++ b/Documentation/filesystems/exofs.txt
-@@ -0,0 +1,173 @@
-+===============================================================================
-+WHAT IS EXOFS?
-+===============================================================================
-+
-+exofs is a file system that uses an OSD and exports the API of a normal Linux
-+file system. Users access exofs like any other local file system, and exofs
-+will in turn issue commands to the local initiator.
-+
-+===============================================================================
-+ENVIRONMENT
-+===============================================================================
-+
-+To use this file system, you need to have an object store to run it on.  You
-+may download a target from:
-+http://open-osd.org
-+
-+See drivers/scsi/osd/README for how to setup a working osd environment.
-+
-+===============================================================================
-+USAGE
-+===============================================================================
-+
-+1. Download and compile exofs and open-osd initiator:
-+  You need an external Kernel source tree or kernel headers from your
-+  distribution. (anything based on 2.6.26 or later).
-+
-+  a. download open-osd including exofs source using:
-+     [parent-directory]$ git clone git://git.open-osd.org/open-osd.git
-+
-+  b. Build the library module like this:
-+     [parent-directory]$ make -C KSRC=$(KER_DIR) open-osd
-+
-+     This will build both the open-osd initiator as well as the exofs kernel
-+     module. Use whatever parameters you compiled your Kernel with and
-+     $(KER_DIR) above pointing to the Kernel you compile against. See the file
-+     open-osd/top-level-Makefile for an example.
-+
-+2. Get the OSD initiator and target set up properly, and login to the target.
-+  See drivers/scsi/osd/README for farther instructions. Also see ./do-osd-test
-+  for example script that does all these steps.
-+
-+3. Insmod the exofs.ko module:
-+   [exofs]$ insmod exofs.ko
-+
-+4. Make sure the directory where you want to mount exists. If not, create it.
-+   (For example, /mnt/exofs)
-+
-+5. At first run you will need to invoke the mkexofs.c routine
-+
-+   As an example, this will create the file system on:
-+   /dev/osd0 partition ID 65540, max capacity 1024 Mg bytes
-+
-+   mount -t exofs -o pid=65540,mkfs=1,format=1024 /dev/osd0 /mnt/exofs/
-+
-+   The format=1024 is optional if not specified no OSD_FORMAT will be preformed
-+   and a clean file system will be created in the specified pid, in the
-+   available space of the target.
-+   If pid already exist it will be deleted and a new one will be created in it's
-+   place. Be careful.
-+
-+6. Mount the file system. The above command left the filesystem mounted,
-+   but on subsequent runs the mkfs=1 should not be invoked.
-+
-+   For example, to mount /dev/osd0, partition ID 65540 on /mnt/exofs:
-+
-+	mount -t exofs -o pid=65540 /dev/osd0 /mnt/exofs/
-+
-+7. For reference (under fs/exofs/):
-+	do-exofs start - an example of how to perform the above steps.
-+	do-exofs stop -  an example of how to unmount the file system.
-+
-+8. Extra compilation flags (uncomment in fs/exofs/Kbuild):
-+	EXOFS_DEBUG - for debug messages and extra checks.
-+
-+===============================================================================
-+exofs mount options
-+===============================================================================
-+Similar to any mount command:
-+	mount -t exofs -o exofs_options /dev/osdX mount_exofs_directory
-+
-+Where:
-+    -t exofs: specifies the exofs file system
-+
-+    /dev/osdX: X is a decimal number. /dev/osdX was created after a successful
-+               login into an OSD target.
-+
-+    mount_exofs_directory: The directory to mount the file system on
-+
-+    exofs_options: Options are separated by commas (,)
-+		pid=<integer> - The partition number to mount/create as
-+                                container of the filesystem.
-+                                This option is mandatory
-+		mkfs=<1/0>    - If mkfs=1 make a new filesystem before mount.
-+                                Default is 0 - don't make. If mkfs=0 pid must
-+                                exist and an mkfs=1 was previously preformed
-+                                on it.
-+               format=<integer>- If mkfs=1 is specified then the format=
-+                                 parameter will also invoke an OSD_FORMAT
-+                                 command prior to creation of the filesystem
-+                                 partition (mkfs). The integer specified is in
-+                                 Mega bytes. If not specified or set to 0 then
-+                                 no format is executed, and a partition is
-+                                 created in the available space.
-+                                 If mkfs=0 this option is ignored.
-+                to=<integer>  - Timeout in ticks for a single command
-+                                default is (60 * HZ) [for debugging only]
-+
-+===============================================================================
-+DESIGN
-+===============================================================================
-+
-+* The file system control block (AKA on-disk superblock) resides in an object
-+  with a special ID (defined in common.h).
-+  Information included in the file system control block is used to fill the
-+  in-memory superblock structure at mount time. This object is created before
-+  the file system is used by mkexofs.c It contains information such as:
-+	- The file system's magic number
-+	- The next inode number to be allocated
-+
-+* Each file resides in its own object and contains the data (and it will be
-+  possible to extend the file over multiple objects, though this has not been
-+  implemented yet).
-+
-+* A directory is treated as a file, and essentially contains a list of <file
-+  name, inode #> pairs for files that are found in that directory. The object
-+  IDs correspond to the files' inode numbers and will be allocated according to
-+  a bitmap (stored in a separate object). Now they are allocated using a
-+  counter.
-+
-+* Each file's control block (AKA on-disk inode) is stored in its object's
-+  attributes. This applies to both regular files and other types (directories,
-+  device files, symlinks, etc.).
-+
-+* Credentials are generated per object (inode and superblock) when they is
-+  created in memory (read off disk or created). The credential works for all
-+  operations and is used as long as the object remains in memory.
-+
-+* Async OSD operations are used whenever possible, but the target may execute
-+  them out of order. The operations that concern us are create, delete,
-+  readpage, writepage, update_inode, and truncate. The following pairs of
-+  operations should execute in the order written, and we need to prevent them
-+  from executing in reverse order:
-+	- The following are handled with the OBJ_CREATED and OBJ_2BCREATED
-+	  flags. OBJ_CREATED is set when we know the object exists on the OSD -
-+	  in create's callback function, and when we successfully do a read_inode.
-+	  OBJ_2BCREATED is set in the beginning of the create function, so we
-+	  know that we should wait.
-+		- create/delete: delete should wait until the object is created
-+		  on the OSD.
-+		- create/readpage: readpage should be able to return a page
-+		  full of zeroes in this case. If there was a write already
-+		  en-route (i.e. create, writepage, readpage) then the page
-+		  would be locked, and so it would really be the same as
-+		  create/writepage.
-+		- create/writepage: if writepage is called for a sync write, it
-+		  should wait until the object is created on the OSD.
-+		  Otherwise, it should just return.
-+		- create/truncate: truncate should wait until the object is
-+		  created on the OSD.
-+		- create/update_inode: update_inode should wait until the
-+		  object is created on the OSD.
-+	- Handled by VFS locks:
-+		- readpage/delete: shouldn't happen because of page lock.
-+		- writepage/delete: shouldn't happen because of page lock.
-+		- readpage/writepage: shouldn't happen because of page lock.
-+
-+===============================================================================
-+LICENSE/COPYRIGHT
-+===============================================================================
-+The exofs file system is based on ext2 v0.5b (distributed with the Linux kernel
-+version 2.6.10).  All files include the original copyrights, and the license
-+is GPL version 2 (only version 2, as is true for the Linux kernel).  The
-+Linux kernel can be downloaded from www.kernel.org.
-diff --git a/fs/exofs/BUGS b/fs/exofs/BUGS
-new file mode 100644
-index 0000000..6d6e1f9
---- /dev/null
-+++ b/fs/exofs/BUGS
-@@ -0,0 +1,6 @@
-+- Some mount time options should have been 64-bit, but are declared as 32-bit
-+  because that's what the kernel's parsing methods support at this time.
-+
-+- Out-of-space may cause a severe problem if the object (and directory entry)
-+  were written, but the inode attributes failed. Then if the filesystem was
-+  unmounted and mounted the kernel can get into an endless loop doing a readdir.
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 522469a..a2e6129 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1122,6 +1122,7 @@ config UFS_DEBUG
+ 	  Y here.  This will result in _many_ additional debugging messages to be
+ 	  written to the system log.
+ 
++source "fs/exofs/Kconfig"
+ endmenu
+ 
+ menuconfig NETWORK_FILESYSTEMS
+diff --git a/fs/Makefile b/fs/Makefile
+index d9f8afe..920250b 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -122,3 +122,4 @@ obj-$(CONFIG_HPPFS)		+= hppfs/
+ obj-$(CONFIG_DEBUG_FS)		+= debugfs/
+ obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
+ obj-$(CONFIG_GFS2_FS)           += gfs2/
++obj-$(CONFIG_EXOFS_FS)          += exofs/
 -- 
 1.6.0.1
 
