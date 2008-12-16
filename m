@@ -1,381 +1,503 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757911AbYLPWi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758153AbYLPWnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757911AbYLPWi0 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 17:38:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbYLPWiN
+	id S1758153AbYLPWnZ (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 17:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbYLPWnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 17:38:13 -0500
-Received: from ozlabs.org ([203.10.76.45]:58023 "EHLO ozlabs.org"
+	Tue, 16 Dec 2008 17:43:15 -0500
+Received: from gw.goop.org ([64.81.55.164]:34231 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751190AbYLPWiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 17:38:10 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: local_add_return
-Date: Wed, 17 Dec 2008 09:08:04 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: rostedt@goodmis.org, akpm@linux-foundation.org,
-        linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-        paulus@samba.org, benh@kernel.crashing.org, linux-ia64@vger.kernel.org,
-        linux-s390@vger.kernel.org
-References: <alpine.DEB.1.10.0812150823370.18692@gandalf.stny.rr.com> <200812161703.00697.rusty@rustcorp.com.au> <20081215.231314.92267481.davem@davemloft.net>
-In-Reply-To: <20081215.231314.92267481.davem@davemloft.net>
+	id S1752613AbYLPWnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 17:43:13 -0500
+Message-ID: <49482EFC.1060406@goop.org>
+Date: Tue, 16 Dec 2008 14:43:08 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: mingo@elte.hu, viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
+        xen-devel@lists.xensource.com, alex.zeffertt@eu.citrix.com,
+        Ian.Campbell@citrix.com
+Subject: Re: [PATCH] xen: add xenfs to allow usermode <-> Xen interaction
+References: <49480F39.2010102@goop.org> <20081216125425.30524946.akpm@linux-foundation.org>
+In-Reply-To: <20081216125425.30524946.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812170908.05423.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 December 2008 17:43:14 David Miller wrote:
-> Here ya go:
+Andrew Morton wrote:
+> On Tue, 16 Dec 2008 12:27:37 -0800
+> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> [ Reviewers: This is in drivers/xen to keep it close to the code it is and will be using.  Would people
+>>   prefer to see it in fs/xenfs? -J ]
+>>     
+>
+> Well it would be nice to keep filesystems under ./fs, but `grep -rl
+> register_filesystem .' says we screwed that pooch.
+>
+>   
+>> From: Alex Zeffertt <alex.zeffertt@eu.citrix.com>
+>>
+>> The xenfs filesystem exports various interfaces to usermode.  Initially
+>> this exports a file to allow usermode to interact with xenbus/xenstore.
+>>
+>> Traditionally this appeared in /proc/xen.  Rather than extending procfs,
+>> this patch adds a backward-compat mountpoint on /proc/xen, and provides
+>> a xenfs filesystem which can be mounted there.
+>>
+>>
+>> ...
+>>
+>> --- /dev/null
+>> +++ b/drivers/xen/xenfs/super.c
+>> @@ -0,0 +1,65 @@
+>> +/*
+>> + *  xenfs.c - a filesystem for passing info between the a domain and
+>> + *  the hypervisor.
+>> + *
+>> + * 2008-10-07  Alex Zeffertt    Replaced /proc/xen/xenbus with xenfs filesystem
+>> + *                              and /proc/xen compatibility mount point.
+>> + *                              Turned xenfs into a loadable module.
+>> + */
+>> +
+>> +#include <linux/kernel.h>
+>> +#include <linux/errno.h>
+>> +#include <linux/module.h>
+>> +#include <linux/fs.h>
+>> +
+>> +#include "xenfs.h"
+>> +
+>> +#include <asm/xen/hypervisor.h>
+>> +
+>> +#define XENFS_MAGIC	0xabba1974
+>>     
+>
+> Move to include/linux/magic.h, please.
+>   
 
-Very interesting.  There's a little noise there (that first local_inc of 243
-is wrong), but the picture is clear: trivalue is the best implementation for
-sparc64.
+OK.
 
-Note: trivalue uses 3 values, so instead of hitting random values across 8MB
-it's across 24MB, and despite the resulting cache damage it's 15% faster.  The
-cpu_local_inc test is a single value, so no cache effects: it shows trivalue
-to be 3 to 3.5 times faster in the cache-hot case.
+>   
+>> +MODULE_DESCRIPTION("Xen filesystem");
+>> +MODULE_LICENSE("GPL");
+>>     
+>
+> MODULE_AUTHOR()?
+>   
 
-This sucks, because it really does mean that there's no one-size-fits-all
-implementation of local_t.  There's also no platform yet where atomic_long_t
-is the right choice; and that's the default!
+There's at least 4 candidates for that role, and Citrix is the official 
+copyright holder, so I'm not sure what I'd put there.
 
-Any chance of an IA64 or s390 run?  You can normalize if you like, since
-it's only to compare the different approaches.
+> ./MAINTAINERS?
+>   
 
-Cheers,
-Rusty.
+Covered by the blanket Xen entry (which could do with a refresh).
 
-Benchmarks for local_t variants
+>   
+>> +static int xenfs_fill_super(struct super_block *sb, void *data, int silent)
+>> +{
+>> +	static struct tree_descr xenfs_files[] = {
+>> +		[2] = {"xenbus", &xenbus_file_ops, S_IRUSR|S_IWUSR},
+>> +		{""},
+>> +	};
+>> +
+>> +	return simple_fill_super(sb, XENFS_MAGIC, xenfs_files);
+>> +}
+>> +
+>>
+>> ...
+>>
+>> +struct xenbus_transaction_holder {
+>> +	struct list_head list;
+>> +	struct xenbus_transaction handle;
+>> +};
+>> +
+>> +struct read_buffer {
+>> +	struct list_head list;
+>> +	unsigned int cons;
+>> +	unsigned int len;
+>> +	char msg[];
+>> +};
+>>
+>> +struct xenbus_file_priv {
+>> +	/* In-progress transaction. */
+>> +	struct list_head transactions;
+>> +
+>> +	/* Active watches. */
+>> +	struct list_head watches;
+>> +
+>> +	/* Partial request. */
+>> +	unsigned int len;
+>> +	union {
+>> +		struct xsd_sockmsg msg;
+>> +		char buffer[PAGE_SIZE];
+>> +	} u;
+>> +
+>> +	/* Response queue. */
+>> +	struct list_head read_buffers;
+>> +	wait_queue_head_t read_waitq;
+>> +
+>> +	struct mutex reply_mutex;
+>> +};
+>>     
+>
+> It would be useful to document the locking for the list_head's (at least).
+>   
 
-(This patch also fixes the x86 cpu_local_* macros, which are obviously
-unused).
+Hm, and add some, by the looks of it.
 
-I chose a large array (1M longs) for the inc/add/add_return tests so
-the trivalue case would show some cache pressure.
+>> +
+>> +static ssize_t xenbus_file_read(struct file *filp,
+>> +			       char __user *ubuf,
+>> +			       size_t len, loff_t *ppos)
+>> +{
+>> +	struct xenbus_file_priv *u = filp->private_data;
+>> +	struct read_buffer *rb;
+>> +	int i, ret;
+>> +
+>> +	mutex_lock(&u->reply_mutex);
+>> +	while (list_empty(&u->read_buffers)) {
+>> +		mutex_unlock(&u->reply_mutex);
+>> +		ret = wait_event_interruptible(u->read_waitq,
+>> +					       !list_empty(&u->read_buffers));
+>> +		if (ret)
+>> +			return ret;
+>> +		mutex_lock(&u->reply_mutex);
+>> +	}
+>> +
+>> +	rb = list_entry(u->read_buffers.next, struct read_buffer, list);
+>> +	for (i = 0; i < len;) {
+>> +		ret = put_user(rb->msg[rb->cons], ubuf + i);
+>>     
+>
+> So mmap_sem nests inside ->reply_mutex.  Has this all been carefully
+> tested with lockdep?
+>   
 
-The cpu_local_inc case is always cache-hot, so it's not comparable to
-the others.
+I run with lockdep enabled habitually, and I've seen no squeaks from 
+this code.
 
-Time in ns per iteration (brackets is with CONFIG_PREEMPT=y):
+The mmap_sem nesting would be a problem if this even implemented 
+mappable files, but it is OK now?
 
-		inc	add	add_return	cpu_local_inc	read
-x86-32: 2.13 Ghz Core Duo 2
-atomic_long	118	118	115		17		17
-irqsave/rest	77	78	77		23		16
-trivalue	45	45	127		3(6)		21
-local_t		36	36	36		1(5)		17
+>   
+>> +		if (ret) {
+>> +			mutex_unlock(&u->reply_mutex);
+>> +			return ret;
+>> +		}
+>> +		i++;
+>> +		rb->cons++;
+>> +		if (rb->cons == rb->len) {
+>> +			list_del(&rb->list);
+>> +			kfree(rb);
+>> +			if (list_empty(&u->read_buffers))
+>> +				break;
+>> +			rb = list_entry(u->read_buffers.next,
+>> +					struct read_buffer, list);
+>> +		}
+>> +	}
+>>     
+>
+> This code will misbehave if it ever receives a read_buffer with len==0.
+>
+>   
+>> +	mutex_unlock(&u->reply_mutex);
+>> +
+>> +	return i;
+>> +}
+>> +
+>> +static int queue_reply(struct list_head *list, char *data, unsigned int len)
+>> +{
+>> +	struct read_buffer *rb;
+>> +
+>> +	if (len == 0)
+>> +		return 0;
+>>     
+>
+> That should fix it.
+>
+>   
+>> +	rb = kmalloc(sizeof(*rb) + len, GFP_KERNEL);
+>> +	if (rb == NULL)
+>> +		return -ENOMEM;
+>> +
+>> +	rb->cons = 0;
+>> +	rb->len = len;
+>> +
+>> +	memcpy(rb->msg, data, len);
+>> +
+>> +	list_add_tail(&rb->list, list);
+>>     
+>
+> So the caller of this function must hold ->reply_mutex.
+>
+> You thought that was secret but I found it out!
+>   
 
-x86-64: 2.6 GHz Dual-Core AMD Opteron 2218
-atomic_long	55	60	-		6		19
-irqsave/rest	54	54	-		11		19
-trivalue	47	47	-		5		28
-local_t		47	46	-		1		19
+No, it needn't.  The list its adding to is a local staging list, which 
+is spliced to the real reply list once everything has been successfully 
+allocated (otherwise it just gets thrown out).  In practice all the 
+callers to hold the ->reply_mutex.
 
-PPC64: 2.7 GHz PPC970MP [normalized]
-atomic_long	18	18	20		3(4)		8
-irqsave/rest	10(4)	5(4)	4		8(9)		10(9)
-trivalue	9	9	2		1(3)		10
-local_t		18	18	18		3(4)		8
+>   
+>> +	return 0;
+>> +}
+>> +
+>> +/* Free all the read_buffer s on a list.
+>> + * Caller must have sole reference to list.
+>> + */
+>> +static void queue_cleanup(struct list_head  *list)
+>> +{
+>> +	struct read_buffer *rb;
+>> +
+>> +	while (!list_empty(list)) {
+>> +		rb = list_entry(list->next, struct read_buffer, list);
+>> +		list_del(list->next);
+>> +		kfree(rb);
+>> +	}
+>> +}
+>> +
+>> +struct watch_adapter {
+>> +	struct list_head list;
+>>     
+>
+> locking is?
+>   
+Missing.
 
-Sparc64: UltraSPARC-IIIi
-atomic_long	243	222	-		37		169
-irqsave/rest	205	205	-		25		169
-trivalue	193	193	-		11		221
-local_t		221	221	-		37		169
+>> +	struct xenbus_watch watch;
+>> +	struct xenbus_file_priv *dev_data;
+>> +	char *token;
+>> +};
+>> +
+>>
+>> ...
+>>
+>> +static LIST_HEAD(watch_list);
+>> +
+>> +static ssize_t xenbus_file_write(struct file *filp,
+>> +				const char __user *ubuf,
+>> +				size_t len, loff_t *ppos)
+>> +{
+>> +	struct xenbus_file_priv *u = filp->private_data;
+>> +	struct xenbus_transaction_holder *trans = NULL;
+>> +	uint32_t msg_type;
+>> +	void *reply;
+>> +	char *path, *token;
+>> +	int err, rc = len;
+>> +	int ret;
+>> +	LIST_HEAD(staging_q);
+>> +
+>> +	if ((len + u->len) > sizeof(u->u.buffer)) {
+>> +		rc = -EINVAL;
+>> +		goto out;
+>> +	}
+>>     
+>
+> Now what's this doing?
+>
+> One would expect a large write to get chunked up into smaller writes by
+> the kernel.
+>
+> This code is poorly documented.
+>   
 
-Sparc64: Niagara-2
-atomic_long	207	206	-		72		160
-irqsave/rest	228	228	-		78		160
-trivalue:	172	172	-		20		222
-local_t		206	207	-		73		160
+Each logical write is a xenbus message packet.  If usermode passes a 
+partial write then it gets accumulated until we have a full message.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- arch/x86/include/asm/local.h |   20 +--
- init/main.c                  |  223 +++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 233 insertions(+), 10 deletions(-)
+>   
+>> +	if (copy_from_user(u->u.buffer + u->len, ubuf, len) != 0) {
+>> +		rc = -EFAULT;
+>> +		goto out;
+>> +	}
+>> +
+>> +	u->len += len;
+>> +	if ((u->len < sizeof(u->u.msg)) ||
+>> +	    (u->len < (sizeof(u->u.msg) + u->u.msg.len)))
+>> +		return rc;
+>> +
+>> +	msg_type = u->u.msg.type;
+>> +
+>> +	switch (msg_type) {
+>> +	case XS_TRANSACTION_START:
+>> +	case XS_TRANSACTION_END:
+>> +	case XS_DIRECTORY:
+>> +	case XS_READ:
+>> +	case XS_GET_PERMS:
+>> +	case XS_RELEASE:
+>> +	case XS_GET_DOMAIN_PATH:
+>> +	case XS_WRITE:
+>> +	case XS_MKDIR:
+>> +	case XS_RM:
+>> +	case XS_SET_PERMS:
+>> +		if (msg_type == XS_TRANSACTION_START) {
+>> +			trans = kmalloc(sizeof(*trans), GFP_KERNEL);
+>> +			if (!trans) {
+>> +				rc = -ENOMEM;
+>> +				goto out;
+>> +			}
+>> +		}
+>> +
+>> +		reply = xenbus_dev_request_and_reply(&u->u.msg);
+>> +		if (IS_ERR(reply)) {
+>> +			kfree(trans);
+>> +			rc = PTR_ERR(reply);
+>> +			goto out;
+>> +		}
+>> +
+>> +		if (msg_type == XS_TRANSACTION_START) {
+>> +			trans->handle.id = simple_strtoul(reply, NULL, 0);
+>> +			list_add(&trans->list, &u->transactions);
+>> +		} else if (msg_type == XS_TRANSACTION_END) {
+>> +			list_for_each_entry(trans, &u->transactions, list)
+>> +				if (trans->handle.id == u->u.msg.tx_id)
+>> +					break;
+>> +			BUG_ON(&trans->list == &u->transactions);
+>> +			list_del(&trans->list);
+>> +			kfree(trans);
+>> +		}
+>> +		mutex_lock(&u->reply_mutex);
+>> +		ret = queue_reply(&staging_q,
+>> +				  (char *)&u->u.msg, sizeof(u->u.msg));
+>> +		if (!ret)
+>> +			ret = queue_reply(&staging_q,
+>> +					  (char *)reply, u->u.msg.len);
+>> +		if (!ret) {
+>> +			list_splice_tail(&staging_q, &u->read_buffers);
+>> +			wake_up(&u->read_waitq);
+>> +		} else {
+>> +			queue_cleanup(&staging_q);
+>> +			rc = ret;
+>> +		}
+>> +		mutex_unlock(&u->reply_mutex);
+>> +		kfree(reply);
+>> +		break;
+>> +
+>> +	case XS_WATCH:
+>> +	case XS_UNWATCH: {
+>> +		struct watch_adapter *watch, *tmp_watch;
+>> +		static const char XS_RESP[] = "OK";
+>> +		struct xsd_sockmsg hdr;
+>> +
+>> +		path = u->u.buffer + sizeof(u->u.msg);
+>> +		token = memchr(path, 0, u->u.msg.len);
+>> +		if (token == NULL) {
+>> +			rc = -EILSEQ;
+>> +			goto out;
+>> +		}
+>> +		token++;
+>> +
+>> +		if (msg_type == XS_WATCH) {
+>> +			watch = kzalloc(sizeof(*watch), GFP_KERNEL);
+>> +			if (watch == NULL) {
+>> +				rc = -ENOMEM;
+>> +				goto out;
+>> +			}
+>> +			watch->watch.node =
+>> +				kmalloc(strlen(path)+1, GFP_KERNEL);
+>> +			if (watch->watch.node == NULL) {
+>> +				kfree(watch);
+>> +				rc = -ENOMEM;
+>> +				goto out;
+>> +			}
+>> +			strcpy((char *)watch->watch.node, path);
+>> +			watch->watch.callback = watch_fired;
+>> +			watch->token =
+>> +				kmalloc(strlen(token)+1, GFP_KERNEL);
+>> +			if (watch->token == NULL) {
+>> +				kfree(watch->watch.node);
+>> +				kfree(watch);
+>> +				rc = -ENOMEM;
+>> +				goto out;
+>> +			}
+>> +			strcpy(watch->token, token);
+>> +			watch->dev_data = u;
+>> +
+>> +			err = register_xenbus_watch(&watch->watch);
+>> +			if (err) {
+>> +				free_watch_adapter(watch);
+>> +				rc = err;
+>> +				goto out;
+>> +			}
+>> +
+>> +			list_add(&watch->list, &u->watches);
+>> +		} else {
+>> +			list_for_each_entry_safe(watch, tmp_watch,
+>> +						 &u->watches, list) {
+>> +				if (!strcmp(watch->token, token) &&
+>> +				    !strcmp(watch->watch.node, path)) {
+>> +					unregister_xenbus_watch(&watch->watch);
+>> +					list_del(&watch->list);
+>> +					free_watch_adapter(watch);
+>> +					break;
+>> +				}
+>> +			}
+>> +		}
+>> +
+>> +		hdr.type = msg_type;
+>> +		hdr.len = sizeof(XS_RESP);
+>> +		mutex_lock(&u->reply_mutex);
+>> +		ret = queue_reply(&staging_q, (char *)&hdr, sizeof(hdr));
+>> +		if (!ret)
+>> +			ret = queue_reply(&staging_q, (char *)XS_RESP, hdr.len);
+>> +		if (!ret) {
+>> +			list_splice_tail(&staging_q, &u->read_buffers);
+>> +			wake_up(&u->read_waitq);
+>> +		} else {
+>> +			queue_cleanup(&staging_q);
+>> +			rc = ret;
+>> +		}
+>> +		mutex_unlock(&u->reply_mutex);
+>> +		break;
+>> +	}
+>> +
+>> +	default:
+>> +		rc = -EINVAL;
+>> +		break;
+>> +	}
+>> +
+>> + out:
+>> +	u->len = 0;
+>> +	return rc;
+>> +}
+>>     
+>
+> This function implements a new kernel ABI.  How are reviewers to review
+> the design of this proposed ABI?
+>   
 
-diff --git a/arch/x86/include/asm/local.h b/arch/x86/include/asm/local.h
---- a/arch/x86/include/asm/local.h
-+++ b/arch/x86/include/asm/local.h
-@@ -220,16 +220,16 @@ static inline long local_sub_return(long
- 	preempt_enable();		\
- })					\
- 
--#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var((l))))
--#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var((l)), (i)))
--#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var((l))))
--#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var((l))))
--#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var((l))))
--#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var((l))))
-+#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
-+#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
-+#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
-+#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
-+#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
-+#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
- 
--#define __cpu_local_inc(l)	cpu_local_inc((l))
--#define __cpu_local_dec(l)	cpu_local_dec((l))
--#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
--#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
-+#define __cpu_local_inc(l)	cpu_local_inc(l)
-+#define __cpu_local_dec(l)	cpu_local_dec(l)
-+#define __cpu_local_add(i, l)	cpu_local_add((i), l)
-+#define __cpu_local_sub(i, l)	cpu_local_sub((i), l)
- 
- #endif /* _ASM_X86_LOCAL_H */
-diff --git a/init/main.c b/init/main.c
---- a/init/main.c
-+++ b/init/main.c
-@@ -534,6 +534,225 @@ void __init __weak thread_info_cache_ini
- {
- }
- 
-+/* There are three obvious ways to implement local_t on an arch which
-+ * can't do single-instruction inc/dec etc.
-+ * 1) atomic_long
-+ * 2) irq_save/irq_restore
-+ * 3) multiple counters.
-+ *
-+ * This does a very rough benchmark on each one.
-+ */
-+struct local1 {
-+	atomic_long_t v;
-+};
-+struct local2 {
-+	unsigned long v;
-+};
-+struct local3 {
-+	unsigned long v[3];
-+};
-+
-+/* Enough to put some pressure on the caches. */
-+#define NUM_LOCAL_TEST (1024*1024)
-+#define NUM_LOCAL_RUNS (NUM_LOCAL_TEST*32)
-+/* This will make it jump around looking random */
-+#define STRIDE 514001
-+
-+static void *test_local_variants_mem;
-+
-+static void init_test_local_variants(void)
-+{
-+	unsigned long size;
-+	size = max(sizeof(struct local1),
-+		   max(sizeof(struct local2),
-+		       max(sizeof(struct local3), sizeof(local_t))))
-+		* NUM_LOCAL_TEST;
-+	/* Assume this works in early boot. */
-+	test_local_variants_mem = alloc_bootmem_nopanic(size);
-+
-+	if (!test_local_variants_mem) {
-+		printk("test_local_variants: failed to allocate %lu bytes\n",
-+		       size);
-+		return;
-+	}
-+}
-+
-+static void print_result(const char *str,
-+			 struct timespec start, struct timespec end)
-+{
-+	s64 diff;
-+
-+	diff = ktime_to_ns(ktime_sub(timespec_to_ktime(end), timespec_to_ktime(start)));
-+	printk("%s=%lli/%lli ",
-+	       str, diff, diff/NUM_LOCAL_RUNS);
-+}
-+
-+static unsigned int warm_local_test_cache(const void *mem, size_t len)
-+{
-+	unsigned int i, total = 0;
-+	for (i = 0; i < len; i++)
-+		total += ((char *)mem)[i];
-+	return total;
-+}
-+
-+#define TEST_LOOP(expr)				\
-+	n = 0;					\
-+	getnstimeofday(&start);			\
-+	for (i = 0; i < NUM_LOCAL_RUNS; i++) {	\
-+		expr;				\
-+		n += STRIDE;			\
-+		n %= NUM_LOCAL_TEST;		\
-+	}					\
-+	getnstimeofday(&end);
-+
-+/* This doesn't test cache effects at all */
-+#define NUM_PERCPU_VARS		16
-+DEFINE_PER_CPU(struct local1[NUM_PERCPU_VARS], local1_test);
-+DEFINE_PER_CPU(struct local2[NUM_PERCPU_VARS], local2_test);
-+DEFINE_PER_CPU(struct local3[NUM_PERCPU_VARS], local3_test);
-+DEFINE_PER_CPU(local_t[NUM_PERCPU_VARS], local4_test);
-+
-+static void test_local_variants(void)
-+{
-+	struct timespec start, end;
-+	unsigned int i, n;
-+	unsigned long total, warm_total = 0;
-+	struct local1 *l1;
-+	struct local2 *l2;
-+	struct local3 *l3;
-+	local_t *l4;
-+
-+	if (!test_local_variants_mem)
-+		return;
-+
-+	printk("Running local_t variant benchmarks\n");
-+	l1 = test_local_variants_mem;
-+	l2 = test_local_variants_mem;
-+	l3 = test_local_variants_mem;
-+	l4 = test_local_variants_mem;
-+
-+	printk("atomic_long: ");
-+	memset(l1, 0, sizeof(*l1)*NUM_LOCAL_TEST);
-+	TEST_LOOP(atomic_long_inc(&l1[n].v));
-+	print_result("local_inc", start, end);
-+
-+	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
-+	TEST_LOOP(atomic_long_add(1234, &l1[n].v));
-+	print_result("local_add", start, end);
-+
-+	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
-+	TEST_LOOP(atomic_long_inc(&__get_cpu_var(local1_test)[n%NUM_PERCPU_VARS].v));
-+	print_result("cpu_local_inc", start, end);
-+
-+	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
-+	total = 0;
-+	TEST_LOOP(total += atomic_long_read(&l1[n].v));
-+	print_result("local_read", start, end);
-+
-+	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
-+	TEST_LOOP(total += atomic_long_add_return(7, &l1[n].v));
-+	print_result("local_add_return", start, end);
-+
-+	printk("(total was %lu)\n", total);
-+
-+	printk("irqsave/restore: ");
-+	memset(l2, 0, sizeof(*l2)*NUM_LOCAL_TEST);
-+	TEST_LOOP(unsigned long flags;
-+		  local_irq_save(flags);
-+		  l2[n].v++;
-+		  local_irq_restore(flags));
-+	print_result("local_inc", start, end);
-+
-+	warm_total += warm_local_test_cache(l2, sizeof(*l2)*NUM_LOCAL_TEST);
-+	TEST_LOOP(unsigned long flags;
-+		  local_irq_save(flags);
-+		  l2[n].v += 1234;
-+		  local_irq_restore(flags));
-+	print_result("local_add", start, end);
-+
-+	warm_total += warm_local_test_cache(l2, sizeof(*l2)*NUM_LOCAL_TEST);
-+	TEST_LOOP(unsigned long flags;
-+		  local_irq_save(flags);
-+		  __get_cpu_var(local2_test)[n%NUM_PERCPU_VARS].v++;
-+		  local_irq_restore(flags));
-+	print_result("cpu_local_inc", start, end);
-+
-+	warm_total += warm_local_test_cache(l2, sizeof(*l2)*NUM_LOCAL_TEST);
-+	total = 0;
-+	TEST_LOOP(total += l2[n].v);
-+	print_result("local_read", start, end);
-+
-+	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
-+	TEST_LOOP(unsigned long flags;
-+		  local_irq_save(flags);
-+		  l2[n].v += 7;
-+		  total += l2[n].v;
-+		  local_irq_restore(flags));
-+	print_result("local_add_return", start, end);
-+	printk("(total was %lu)\n", total);
-+
-+	printk("trivalue: ");
-+	memset(l3, 0, sizeof(*l3)*NUM_LOCAL_TEST);
-+	TEST_LOOP(unsigned int idx
-+			= !(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK)) +
-+			!(preempt_count() & HARDIRQ_MASK);
-+		  l3[n].v[idx]++);
-+	print_result("local_inc", start, end);
-+
-+	warm_total += warm_local_test_cache(l3, sizeof(*l3)*NUM_LOCAL_TEST);
-+	TEST_LOOP(unsigned int idx
-+			= !(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK)) +
-+			!(preempt_count() & HARDIRQ_MASK);
-+		  l3[n].v[idx] += 1234);
-+	print_result("local_add", start, end);
-+
-+	warm_total += warm_local_test_cache(l3, sizeof(*l3)*NUM_LOCAL_TEST);
-+	TEST_LOOP(unsigned int idx
-+			= !(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK)) +
-+			!(preempt_count() & HARDIRQ_MASK);
-+		  get_cpu_var(local3_test)[n%NUM_PERCPU_VARS].v[idx]++;
-+		  put_cpu_var());
-+	print_result("cpu_local_inc", start, end);
-+
-+	warm_total += warm_local_test_cache(l3, sizeof(*l3)*NUM_LOCAL_TEST);
-+	total = 0;
-+	TEST_LOOP(total += l3[n].v[0] + l3[n].v[1] + l3[n].v[2]);
-+	print_result("local_read", start, end);
-+
-+	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
-+	TEST_LOOP(unsigned long flags;
-+		  local_irq_save(flags);
-+		  l3[n].v[0] += 7;
-+		  total += l3[n].v[0] + l3[n].v[1] + l3[n].v[2];
-+		  local_irq_restore(flags));
-+	print_result("local_add_return", start, end);
-+
-+	printk("(total was %lu)\n", total);
-+
-+	printk("local_t: ");
-+	memset(l4, 0, sizeof(*l4)*NUM_LOCAL_TEST);
-+	TEST_LOOP(local_inc(&l4[n]));
-+	print_result("local_inc", start, end);
-+
-+	warm_total += warm_local_test_cache(l4, sizeof(*l4)*NUM_LOCAL_TEST);
-+	TEST_LOOP(local_add(1234, &l4[n]));
-+	print_result("local_add", start, end);
-+
-+	warm_total += warm_local_test_cache(l4, sizeof(*l4)*NUM_LOCAL_TEST);
-+	TEST_LOOP(cpu_local_inc(local4_test[n%NUM_PERCPU_VARS]));
-+	print_result("cpu_local_inc", start, end);
-+
-+	warm_total += warm_local_test_cache(l4, sizeof(*l4)*NUM_LOCAL_TEST);
-+	total = 0;
-+	TEST_LOOP(total += local_read(&l4[n]));
-+	print_result("local_read", start, end);
-+
-+	warm_total += warm_local_test_cache(l1, sizeof(*l1)*NUM_LOCAL_TEST);
-+	TEST_LOOP(total += local_add_return(7, &l1[n].v));
-+	print_result("local_add_return", start, end);
-+	printk("(total was %lu, warm_total %lu)\n", total, warm_total);
-+}
-+
- asmlinkage void __init start_kernel(void)
- {
- 	char * command_line;
-@@ -630,6 +849,8 @@ asmlinkage void __init start_kernel(void
- 	 */
- 	locking_selftest();
- 
-+	init_test_local_variants();
-+
- #ifdef CONFIG_BLK_DEV_INITRD
- 	if (initrd_start && !initrd_below_start_ok &&
- 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
-@@ -687,6 +908,8 @@ asmlinkage void __init start_kernel(void
- 	acpi_early_init(); /* before LAPIC and SMP init */
- 
- 	ftrace_init();
-+
-+	test_local_variants();
- 
- 	/* Do the rest non-__init'ed, we're now alive */
- 	rest_init();
+It's closer to a network protocol.  This is pretty much a raw interface 
+to the xenbus protocol allowing guests to access the host xenbus 
+namespace.  The read side just returns the naked xenbus protocol data.  
+The write side needs to peek into it to maintain some local state, like 
+what transactions are currently going.  But in general the kernel 
+doesn't inspect what's being written particularly closely.
+
+>> ...
+>>
+>> +static unsigned int xenbus_file_poll(struct file *file, poll_table *wait)
+>> +{
+>> +	struct xenbus_file_priv *u = file->private_data;
+>> +
+>> +	poll_wait(file, &u->read_waitq, wait);
+>> +	if (!list_empty(&u->read_buffers))
+>> +		return POLLIN | POLLRDNORM;
+>>     
+>
+> I wonder if we needed the lock or some open-coded barrier to safely run
+> list_empty().
+>   
+
+Not sure.
+
+
+
+Thanks for looking over this.  I'll post an updated patch after a quick 
+round of testing.
+
+    J
