@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759176AbYLPWDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758243AbYLPWDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759176AbYLPWDx (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 17:03:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbYLPWDi
+	id S1758243AbYLPWDj (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 17:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbYLPWD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 17:03:38 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:55721 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757466AbYLPWDh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 17:03:37 -0500
-Message-ID: <494825B8.5090006@ct.jp.nec.com>
-Date: Tue, 16 Dec 2008 14:03:36 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Tue, 16 Dec 2008 17:03:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45570 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752243AbYLPWD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 17:03:27 -0500
+Date: Tue, 16 Dec 2008 23:03:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
+        "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] x86: re-enable MCE on secondary CPUS after
+	suspend/resume
+Message-ID: <20081216220319.GB14787@elte.hu>
+References: <20081212180650.GS19144@alberich.amd.com> <20081212181021.GU19144@alberich.amd.com> <873agtnrgy.fsf@basil.nowhere.org> <20081215190509.GB5620@alberich.amd.com> <20081215223310.GX25779@one.firstfloor.org> <20081215224139.GC5620@alberich.amd.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-        "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] x86: ia32_signal: use __put_user() instead of __copy_to_user()
-References: <49482568.3020108@ct.jp.nec.com>
-In-Reply-To: <49482568.3020108@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081215224139.GC5620@alberich.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Impact: cleanup
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
 
-__put_user() can be used for constant size 8, like arch/x86/kernel/signal.c.
+> On Mon, Dec 15, 2008 at 11:33:10PM +0100, Andi Kleen wrote:
+> > > void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
+> > > {
+> > >         static cpumask_t mce_cpus = CPU_MASK_NONE;
+> > > 
+> > >         mce_cpu_quirks(c);
+> > > 
+> > >         if (mce_dont_init ||
+> > >             cpu_test_and_set(smp_processor_id(), mce_cpus) ||
+> > >             !mce_available(c))
+> > >   =>             return;
+> > > 
+> > >         mce_init(NULL);
+> > >         mce_cpu_features(c);
+> > > }
+> > > 
+> > > But we need to call mce_init to clear all MCE state.
+> > > IMHO the best location to call mce_init for APs is the cpu notifier.
+> > 
+> > Ah got it. Thanks that makes sense. 
+> > 
+> > But I think the better fix is to just drop the mce_cpus check and
+> > then handly it naturally in the standard bootup path. I'm not
+> > sure what it was good for anyways. I copied it into the 64bit code
+> > from 32bit, but I suppose even there it isn't really needed and on 
+> > 32bit it is already gone even.
+> > 
+> > How about this patch. Does it fix the problem for you too?
+> 
+> Yup, works as well:
+> 
+> Tested-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/ia32/ia32_signal.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+applied to tip/x86/urgent, thanks guys.
 
-diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index 9ddf2fa..8738cc5 100644
---- a/arch/x86/ia32/ia32_signal.c
-+++ b/arch/x86/ia32/ia32_signal.c
-@@ -467,7 +467,7 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
- 	 * These are actually not used anymore, but left because some
- 	 * gdb versions depend on them as a marker.
- 	 */
--	err |= __copy_to_user(frame->retcode, &code, 8);
-+	err |= __put_user(*((u64 *)&code), (u64 *)frame->retcode);
- 	if (err)
- 		return -EFAULT;
- 
-@@ -554,7 +554,7 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	 * Not actually used anymore, but left because some gdb
- 	 * versions need it.
- 	 */
--	err |= __copy_to_user(frame->retcode, &code, 8);
-+	err |= __put_user(*((u64 *)&code), (u64 *)frame->retcode);
- 	if (err)
- 		return -EFAULT;
- 
--- 
-1.6.0.4
-
+	Ingo
