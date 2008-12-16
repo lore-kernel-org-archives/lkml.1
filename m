@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYLPM1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757092AbYLPM14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbYLPM1j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 07:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYLPM12
+	id S1757092AbYLPM14 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 07:27:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbYLPM1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 07:27:28 -0500
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:30993 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751334AbYLPM11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 07:27:27 -0500
-Date: Tue, 16 Dec 2008 21:25:24 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: hjk@linutronix.de, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [RESEND][PATCH] uio: Add of_platform_driver to uio_pdrv_genirq
-Message-ID: <20081216122524.GA29546@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Wolfram Sang <w.sang@pengutronix.de>, hjk@linutronix.de,
-	gregkh@suse.de, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-References: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de>
+	Tue, 16 Dec 2008 07:27:35 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:58693 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755510AbYLPM1e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 07:27:34 -0500
+Date: Tue, 16 Dec 2008 13:27:32 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Greg KH <gregkh@suse.de>
+Cc: hjk@linutronix.de, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: adding of_platform_drivers (was: Re: [RESEND][PATCH] uio: Add
+	of_platform_driver to uio_pdrv_genirq)
+Message-ID: <20081216122731.GC3275@pengutronix.de>
+References: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de> <20081211205033.GA7080@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="9Ek0hoCL9XbhcSqy"
 Content-Disposition: inline
-In-Reply-To: <1229007937-5501-1-git-send-email-w.sang@pengutronix.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081211205033.GA7080@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 04:05:37PM +0100, Wolfram Sang wrote:
-> Make the generic uio-driver also accessible for of devices. It utilizes the
-> standard 'reg' and 'interrupt' properties. A typical usage would look like
-> this:
-> 
-> 	fpga-io@00003000 {
-> 		compatible = "generic-uio";
-> 		reg = <0x00003000 0x20>;
-> 		interrupts = <0xa>;
-> 		interrupt-parent = <&fpga_irq_mux>;
-> 	};
-> 
-> To achieve this, the probe function has been refactored, so it can be used by
-> platform and of code. Then, the of driver has been added.
-> 
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 
-It is pretty poor form to not even bother to Cc the only author of the
-code you are modifying, and have no Signed-off-by or Acked-by to even
-suggest that it was ever even looked at. This isn't something that ought
-to have to be pointed out, either.
+--9Ek0hoCL9XbhcSqy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In addition to the stuff pointed out by Greg, I don't see what you
-actually gain by hacking the OF crap in to this driver. You would be
-better off layering the OF driver on top of this, rather than trying to
-make them live together in the same file.
+> > +/* -------------------------------------------------------------------=
+--
+> > + * OF bus binding
+> > + */
+> > +
+> > +#if defined(CONFIG_OF)
+>=20
+> Same goes here, don't put #if in .c files please.
 
-See pata_platform/pata_of_platform for an example of how to do this a bit
-more sanely.
+So, generally speaking, this means that I should not put a
+platform_driver and an of_platform_driver into one source file, but
+rather create an of_$DRIVER.c then? I found both ways used in the kernel
+and could not find hints about the preferred way to do it. I took this
+approach as I hoped it would save some code to directly convert the
+of_node to uioinfo without the detour of using a platform_device
+inbetween.
+
+Kind regards,
+
+   Wolfram
+
+--=20
+  Dipl.-Ing. Wolfram Sang | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+
+--9Ek0hoCL9XbhcSqy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklHnrMACgkQD27XaX1/VRtqVgCeNRTrMgtmVHBqkfx84ili+hS7
+6IQAnRgwJOng1yxbQ13jzEQPHJvfyRM2
+=OZHf
+-----END PGP SIGNATURE-----
+
+--9Ek0hoCL9XbhcSqy--
