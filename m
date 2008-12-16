@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbYLPTwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbYLPTz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758132AbYLPTwn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 14:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827AbYLPTwR
+	id S1757447AbYLPTz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 14:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbYLPTzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 14:52:17 -0500
-Received: from ns.suse.de ([195.135.220.2]:49660 "EHLO mx1.suse.de"
+	Tue, 16 Dec 2008 14:55:20 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59224 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754206AbYLPTwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 14:52:16 -0500
-Date: Tue, 16 Dec 2008 11:51:05 -0800
-From: Greg KH <gregkh@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Fabio Comolli <fabio.comolli@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: [Bug #12155] Regression in 2.6.28-rc and 2.6.27-stable -
-	hibernate related
-Message-ID: <20081216195105.GA7791@suse.de>
-References: <u7kfEgp36eE.A.qpG.Y4_QJB@chimera> <T1gm2CtAHBF.A.bnH.14_QJB@chimera> <b637ec0b0812131045n34bf420w3729abf24533b51c@mail.gmail.com> <200812131956.03495.rjw@sisk.pl> <20081216190707.GA336@elte.hu> <alpine.LFD.2.00.0812161113350.14014@localhost.localdomain> <20081216191827.GA1176@elte.hu>
+	id S1751786AbYLPTzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 14:55:19 -0500
+Date: Tue, 16 Dec 2008 20:55:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/2] x86: Support always running TSC on Intel CPUs
+Message-ID: <20081216195505.GC4501@elte.hu>
+References: <20081125235751.576792000@intel.com> <20081125235852.402898000@intel.com> <7E82351C108FA840AB1866AC776AEC464338C10B@orsmsx505.amr.corp.intel.com> <4946E05E.9080503@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081216191827.GA1176@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <4946E05E.9080503@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0008]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16, 2008 at 08:18:27PM +0100, Ingo Molnar wrote:
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > On Tue, 16 Dec 2008, Ingo Molnar wrote:
-> > > 
-> > > yeah - i think it's too late to do anything but a revert here.
-> > 
-> > Yup. Already done. Commit ca7e716c7833aeaeb8fedd6d004c5f5d5e14d325.
-> > 
-> > Did -stable revert it too?
-> 
-> not that i know of (-stable tries to follow upstream with reverts too).
-> We could have put a Cc: stable@kernel.org into the reverter commit ;-)
 
-Yes, I'll go revert it later today, give me a chance to catch up :)
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-thanks,
+> Pallipadi, Venkatesh wrote:
+>> hpa/Ingo,
+>>
+>> Haven't seen any comments on the patches here. Can you push it along in case there are no issues.
+>>
+>
+> Hi Venki,
+>
+> Sorry about that -- I think you know what's up on my end :) Will look at 
+> it as soon as I can.
 
-greg k-h
+okay - i queued it up in x86/tsc. It looked sane last time too, just the 
+'NOSTOP_TSC' name sucked. I changed it to NONSTOP_TSC - hopefully we wont 
+ever need a REALLY_NON_STOP_TSC distinction in the future ;-)
+
+	Ingo
