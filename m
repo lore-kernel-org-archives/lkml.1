@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbYLPHGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752070AbYLPHHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753441AbYLPHGx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 02:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbYLPHGo
+	id S1752070AbYLPHHP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 02:07:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYLPHGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 02:06:44 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:12247 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750721AbYLPHGn (ORCPT
+	Tue, 16 Dec 2008 02:06:50 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46656 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbYLPHGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 02:06:43 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	content-type:content-transfer-encoding;
-	b=Gb36Aa62YC6s9zI2aRhqUC6Smo7HtNzkTuqitsj8v8Ns4AmJN+OhXeM9y+BvokPE6
-	xSUUDkZhT+EmmPvQwfA4A==
+	Tue, 16 Dec 2008 02:06:48 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Brice Goglin <Brice.Goglin@inria.fr>, Christoph Lameter <clameter@sgi.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH for 2.6.28] mm: Don't touch uninitialized variable in do_pages_stat_array()
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20081216160303.DBA8.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <b040c32a0812152204x3b3d378aie7a1898aa67c4278@mail.gmail.com>
-References: <b040c32a0812152204x3b3d378aie7a1898aa67c4278@mail.gmail.com>
-Date: Mon, 15 Dec 2008 23:06:41 -0800
-Message-ID: <b040c32a0812152306p6b72e1d6r548daa66f27f24d6@mail.gmail.com>
-Subject: [patch 2/2] cpuacct: export percpu cpuacct cgroup stats
-From: Ken Chen <kenchen@google.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 16 Dec 2008 16:06:43 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sorry, forgot to cc lkml on initial post.
 
----------- Forwarded message ----------
-From: Ken Chen <kenchen@google.com>
-Date: Mon, Dec 15, 2008 at 10:04 PM
-Subject: [patch 2/2] cpuacct: export percpu cpuacct cgroup stats
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton
-<akpm@linux-foundation.org>, Paul Menage <menage@google.com>, Li Zefan
-<lizf@cn.fujitsu.com>
+80bba1290ab5122c60cdb73332b26d288dc8aedd remove one necessary variable initialization.
+Then, following warning happend.
+
+  CC      mm/migrate.o
+mm/migrate.c: In function 'sys_move_pages':
+mm/migrate.c:1001: warning: 'err' may be used uninitialized in this function
+
+More unfortunately, if find_vma() failed, kernel read uninitialized memory.
 
 
-This patch export per-cpu CPU cycle usage for a given cpuacct cgroup.
-There is a need for a user space monitor daemon to track group CPU
-usage on per-cpu base.  It is also useful for monitoring CFS load
-balancer behavior by tracking per CPU group usage.
 
-Signed-off-by: Ken Chen <kenchen@google.com>
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Christoph Lameter <clameter@sgi.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Hugh Dickins <hugh@veritas.com>
+---
+ mm/migrate.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 124bd7a..cfdaace 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -9369,12 +9369,32 @@ out:
- 	return err;
- }
+Index: b/mm/migrate.c
+===================================================================
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -998,7 +998,7 @@ static void do_pages_stat_array(struct m
+ 		unsigned long addr = (unsigned long)(*pages);
+ 		struct vm_area_struct *vma;
+ 		struct page *page;
+-		int err;
++		int err = -EFAULT;
+ 
+ 		vma = find_vma(mm, addr);
+ 		if (!vma)
 
-+static int cpuacct_percpu_seq_read(struct cgroup *cgroup, struct cftype *cft,
-+				   struct seq_file *m)
-+{
-+	struct cpuacct *ca = cgroup_ca(cgroup);
-+	u64 percpu;
-+	int i;
-+
-+	for_each_present_cpu(i) {
-+		percpu = cpuacct_cpuusage_read(ca, i);
-+		seq_printf(m, "%llu ", (unsigned long long) percpu);
-+	}
-+	seq_printf(m, "\n");
-+	return 0;
-+}
-+
- static struct cftype files[] = {
- 	{
- 		.name = "usage",
- 		.read_u64 = cpuusage_read,
- 		.write_u64 = cpuusage_write,
- 	},
-+	{
-+		.name = "usage_percpu",
-+		.read_seq_string = cpuacct_percpu_seq_read,
-+	},
-+
- };
 
- static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
