@@ -1,208 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbYLPPe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbYLPPhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758734AbYLPPe7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 10:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbYLPPet
+	id S1758272AbYLPPhB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 10:37:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbYLPPgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 10:34:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55304 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756330AbYLPPes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 10:34:48 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: acpi_os_allocate(GFP_KERNEL) (was Re: acpi_evaluate_integer broken by design)
-Date: Tue, 16 Dec 2008 16:34:25 +0100
-User-Agent: KMail/1.9.9
-Cc: Len Brown <lenb@kernel.org>, pavel@suse.cz,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>
-References: <20081125110508.GA1943@elf.ucw.cz> <alpine.LFD.2.00.0812152240500.30475@localhost.localdomain> <20081215214140.9031d4c8.akpm@linux-foundation.org>
-In-Reply-To: <20081215214140.9031d4c8.akpm@linux-foundation.org>
+	Tue, 16 Dec 2008 10:36:51 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:23100 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753937AbYLPPgt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 10:36:49 -0500
+Message-ID: <4947CB0C.3000406@panasas.com>
+Date: Tue, 16 Dec 2008 17:36:44 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 8/9] exofs: Documentation
+References: <4947BFAA.4030208@panasas.com>
+In-Reply-To: <4947BFAA.4030208@panasas.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812161634.25838.rjw@sisk.pl>
+X-OriginalArrivalTime: 16 Dec 2008 15:35:17.0373 (UTC) FILETIME=[E59AD2D0:01C95F93]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 16 of December 2008, Andrew Morton wrote:
-> On Tue, 16 Dec 2008 00:24:43 -0500 (EST) Len Brown <lenb@kernel.org> wrote:
-> 
-> > > Obviously, it is even better to do neither.  It is a basic and
-> > > oft-reoccurring design mistake for a low-level piece of code to
-> > > hardwire its GFP_foo decision.  The gfp_t should be passed in from the
-> > > callers, all the way down the chain from the top-level code which
-> > > actually knows what state this thread of control is in.
-> > 
-> > Here the caller does not know.
-> 
-> I bet it does it's just that the caller is thirty five levels of
-> function call higher up...
-> 
-> > The crux of the problem it that the AML interpreter
-> > may need to allocate memory and thus may sleep.
-> > Under nominal conditions the interpreter only runs in 
-> > user-context and allocatges with GFP_KERNEL
-> > so sleeping is just dandy.
-> > 
-> > But AML also needs to run at boot time and at resume time
-> > to do things like configure interrupts before interrupts are
-> > enabled...
-> > 
-> > boot-time is handled by _cond_resched()
-> > not calling __cond_resched unless
-> > system_state == SYSTEM_RUNNING
-> > 
-> > I suppose I could do something like this,
-> > though I'm not sure of the prettiest place
-> > to check system_resume_irqsoff == true,
-> > so that is left out for now...
-> > 
-> >
-> > ...
-> > 
-> > diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
-> > index e52ad91..def91fa 100644
-> > --- a/drivers/acpi/pci_link.c
-> > +++ b/drivers/acpi/pci_link.c
-> > @@ -320,7 +320,7 @@ static int acpi_pci_link_set(struct acpi_pci_link *link, int irq)
-> >  	if (!link || !irq)
-> >  		return -EINVAL;
-> >  
-> > -	resource = kzalloc(sizeof(*resource) + 1, irqs_disabled() ? GFP_ATOMIC: GFP_KERNEL);
-> > +	resource = kzalloc(sizeof(*resource) + 1, GFP_KERNEL);
-> >  	if (!resource)
-> >  		return -ENOMEM;
-> >  
-> > diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
-> > index bb7d50d..27243f9 100644
-> > --- a/drivers/acpi/power.c
-> > +++ b/drivers/acpi/power.c
-> > @@ -218,8 +218,7 @@ static int acpi_power_on(acpi_handle handle, struct acpi_device *dev)
-> >  	}
-> >  
-> >  	if (!found) {
-> > -		ref = kmalloc(sizeof (struct acpi_power_reference),
-> > -		    irqs_disabled() ? GFP_ATOMIC : GFP_KERNEL);
-> > +		ref = kmalloc(sizeof (struct acpi_power_reference), GFP_KERNEL);
-> >  		if (!ref) {
-> >  			ACPI_DEBUG_PRINT((ACPI_DB_INFO, "kmalloc() failed\n"));
-> >  			mutex_unlock(&resource->resource_lock);
-> > diff --git a/include/acpi/platform/aclinux.h b/include/acpi/platform/aclinux.h
-> > index 029c8c0..9fbf73f 100644
-> > --- a/include/acpi/platform/aclinux.h
-> > +++ b/include/acpi/platform/aclinux.h
-> > @@ -121,17 +121,16 @@ static inline acpi_thread_id acpi_os_get_thread_id(void)
-> >  #include <acpi/actypes.h>
-> >  static inline void *acpi_os_allocate(acpi_size size)
-> >  {
-> > -	return kmalloc(size, irqs_disabled()? GFP_ATOMIC : GFP_KERNEL);
-> > +	return kmalloc(size, GFP_KERNEL);
-> >  }
-> >  static inline void *acpi_os_allocate_zeroed(acpi_size size)
-> >  {
-> > -	return kzalloc(size, irqs_disabled()? GFP_ATOMIC : GFP_KERNEL);
-> > +	return kzalloc(size, GFP_KERNEL);
-> >  }
-> >  
-> >  static inline void *acpi_os_acquire_object(acpi_cache_t * cache)
-> >  {
-> > -	return kmem_cache_zalloc(cache,
-> > -				 irqs_disabled()? GFP_ATOMIC : GFP_KERNEL);
-> > +	return kmem_cache_zalloc(cache, GFP_KERNEL);
-> >  }
-> >  
-> >  #define ACPI_ALLOCATE(a)	acpi_os_allocate(a)
-> > diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> > index 2ce8207..a716de8 100644
-> > --- a/include/linux/suspend.h
-> > +++ b/include/linux/suspend.h
-> > @@ -128,9 +128,16 @@ extern void arch_suspend_disable_irqs(void);
-> >   */
-> >  extern void arch_suspend_enable_irqs(void);
-> >  
-> > +/**
-> > + * suspend_irqs_off
-> > + *
-> > + * flag to indicate that IRQs are off for the benefit of suspend
-> > + */
-> > +extern bool system_suspend_irqs_off;
-> >  extern int pm_suspend(suspend_state_t state);
-> >  #else /* !CONFIG_SUSPEND */
-> >  #define suspend_valid_only_mem	NULL
-> > +#define system_suspend_irqs_off false
-> >  
-> >  static inline void suspend_set_ops(struct platform_suspend_ops *ops) {}
-> >  static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
-> > diff --git a/kernel/power/main.c b/kernel/power/main.c
-> > index b8f7ce9..2eadae7 100644
-> > --- a/kernel/power/main.c
-> > +++ b/kernel/power/main.c
-> > @@ -268,16 +268,20 @@ static int suspend_prepare(void)
-> >  	return error;
-> >  }
-> >  
-> > +bool system_resume_irqsoff;	/* IRQs are off for resume */
-> 
-> I guess that was supposed to be "system_suspend_irqs_off"?
-> 
-> >  /* default implementation */
-> >  void __attribute__ ((weak)) arch_suspend_disable_irqs(void)
-> >  {
-> >  	local_irq_disable();
-> > +	system_resume_irqsoff = true;
-> >  }
-> >  
-> >  /* default implementation */
-> >  void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
-> >  {
-> >  	local_irq_enable();
-> > +	system_resume_irqsoff = false;
-> >  }
-> 
-> (please use __weak)
-> 
-> Whether it's "system_resume_irqsoff" or "system_suspend_irqs_off",
-> neither of them actually got used ;)
-> 
-> If the code is really this simple and localised then perhaps:
-> 
-> gfp_t acpi_aml_gfp_flags = GFP_ATOMIC;
-> 
-> void __weak arch_suspend_disable_irqs(void)
-> {
-> 	local_irq_disable();
-> 	acpi_aml_gfp_flags = GFP_ATOMIC;
-> }
-> 
-> /* default implementation */
-> void __weak arch_suspend_enable_irqs(void)
-> {
-> 	local_irq_enable();
-> 	acpi_aml_gfp_flags = GFP_KERNEL;
-> }
-> 
-> would suffice.  Dunno.
 
-arch_suspend_disable_irqs() and arch_suspend_enable_irqs() are only used during
-suspend to RAM, but we have the 'suspend atomic context' during hibernation as
-well.
+Added some documentation in exofs.txt, as well as a BUGS file.
 
-> Why are we providing for an arch override of this?
+For further reading, operation instructions, example scripts
+and up to date infomation and code please see:
+http://open-osd.org
 
-Because of powerpc that does additional stuff here, AFAICS.
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ Documentation/filesystems/exofs.txt |  173 +++++++++++++++++++++++++++++++++++
+ fs/exofs/BUGS                       |    6 +
+ 2 files changed, 179 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/filesystems/exofs.txt
+ create mode 100644 fs/exofs/BUGS
 
-Anyway, analogous situation can happen on shutdown when the nonboot CPUs
-are disabled and interrupts are off on the BSP.
+diff --git a/Documentation/filesystems/exofs.txt b/Documentation/filesystems/exofs.txt
+new file mode 100644
+index 0000000..ec5040c
+--- /dev/null
++++ b/Documentation/filesystems/exofs.txt
+@@ -0,0 +1,173 @@
++===============================================================================
++WHAT IS EXOFS?
++===============================================================================
++
++exofs is a file system that uses an OSD and exports the API of a normal Linux
++file system. Users access exofs like any other local file system, and exofs
++will in turn issue commands to the local initiator.
++
++===============================================================================
++ENVIRONMENT
++===============================================================================
++
++To use this file system, you need to have an object store to run it on.  You
++may download a target from:
++http://open-osd.org
++
++See drivers/scsi/osd/README for how to setup a working osd environment.
++
++===============================================================================
++USAGE
++===============================================================================
++
++1. Download and compile exofs and open-osd initiator:
++  You need an external Kernel source tree or kernel headers from your
++  distribution. (anything based on 2.6.26 or later).
++
++  a. download open-osd including exofs source using:
++     [parent-directory]$ git clone git://git.open-osd.org/open-osd.git
++
++  b. Build the library module like this:
++     [parent-directory]$ make -C KSRC=$(KER_DIR) open-osd
++
++     This will build both the open-osd initiator as well as the exofs kernel
++     module. Use whatever parameters you compiled your Kernel with and
++     $(KER_DIR) above pointing to the Kernel you compile against. See the file
++     open-osd/top-level-Makefile for an example.
++
++2. Get the OSD initiator and target set up properly, and login to the target.
++  See drivers/scsi/osd/README for farther instructions. Also see ./do-osd-test
++  for example script that does all these steps.
++
++3. Insmod the exofs.ko module:
++   [exofs]$ insmod exofs.ko
++
++4. Make sure the directory where you want to mount exists. If not, create it.
++   (For example, /mnt/exofs)
++
++5. At first run you will need to invoke the mkexofs.c routine
++
++   As an example, this will create the file system on:
++   /dev/osd0 partition ID 65540, max capacity 1024 Mg bytes
++
++   mount -t exofs -o pid=65540,mkfs=1,format=1024 /dev/osd0 /mnt/exofs/
++
++   The format=1024 is optional if not specified no OSD_FORMAT will be preformed
++   and a clean file system will be created in the specified pid, in the
++   available space of the target.
++   If pid already exist it will be deleted and a new one will be created in it's
++   place. Be careful.
++
++6. Mount the file system. The above command left the filesystem mounted,
++   but on subsequent runs the mkfs=1 should not be invoked.
++
++   For example, to mount /dev/osd0, partition ID 65540 on /mnt/exofs:
++
++	mount -t exofs -o pid=65540 /dev/osd0 /mnt/exofs/
++
++7. For reference (under fs/exofs/):
++	do-exofs start - an example of how to perform the above steps.
++	do-exofs stop -  an example of how to unmount the file system.
++
++8. Extra compilation flags (uncomment in fs/exofs/Kbuild):
++	EXOFS_DEBUG - for debug messages and extra checks.
++
++===============================================================================
++exofs mount options
++===============================================================================
++Similar to any mount command:
++	mount -t exofs -o exofs_options /dev/osdX mount_exofs_directory
++
++Where:
++    -t exofs: specifies the exofs file system
++
++    /dev/osdX: X is a decimal number. /dev/osdX was created after a successful
++               login into an OSD target.
++
++    mount_exofs_directory: The directory to mount the file system on
++
++    exofs_options: Options are separated by commas (,)
++		pid=<integer> - The partition number to mount/create as
++                                container of the filesystem.
++                                This option is mandatory
++		mkfs=<1/0>    - If mkfs=1 make a new filesystem before mount.
++                                Default is 0 - don't make. If mkfs=0 pid must
++                                exist and an mkfs=1 was previously preformed
++                                on it.
++               format=<integer>- If mkfs=1 is specified then the format=
++                                 parameter will also invoke an OSD_FORMAT
++                                 command prior to creation of the filesystem
++                                 partition (mkfs). The integer specified is in
++                                 Mega bytes. If not specified or set to 0 then
++                                 no format is executed, and a partition is
++                                 created in the available space.
++                                 If mkfs=0 this option is ignored.
++                to=<integer>  - Timeout in ticks for a single command
++                                default is (60 * HZ) [for debugging only]
++
++===============================================================================
++DESIGN
++===============================================================================
++
++* The file system control block (AKA on-disk superblock) resides in an object
++  with a special ID (defined in common.h).
++  Information included in the file system control block is used to fill the
++  in-memory superblock structure at mount time. This object is created before
++  the file system is used by mkexofs.c It contains information such as:
++	- The file system's magic number
++	- The next inode number to be allocated
++
++* Each file resides in its own object and contains the data (and it will be
++  possible to extend the file over multiple objects, though this has not been
++  implemented yet).
++
++* A directory is treated as a file, and essentially contains a list of <file
++  name, inode #> pairs for files that are found in that directory. The object
++  IDs correspond to the files' inode numbers and will be allocated according to
++  a bitmap (stored in a separate object). Now they are allocated using a
++  counter.
++
++* Each file's control block (AKA on-disk inode) is stored in its object's
++  attributes. This applies to both regular files and other types (directories,
++  device files, symlinks, etc.).
++
++* Credentials are generated per object (inode and superblock) when they is
++  created in memory (read off disk or created). The credential works for all
++  operations and is used as long as the object remains in memory.
++
++* Async OSD operations are used whenever possible, but the target may execute
++  them out of order. The operations that concern us are create, delete,
++  readpage, writepage, update_inode, and truncate. The following pairs of
++  operations should execute in the order written, and we need to prevent them
++  from executing in reverse order:
++	- The following are handled with the OBJ_CREATED and OBJ_2BCREATED
++	  flags. OBJ_CREATED is set when we know the object exists on the OSD -
++	  in create's callback function, and when we successfully do a read_inode.
++	  OBJ_2BCREATED is set in the beginning of the create function, so we
++	  know that we should wait.
++		- create/delete: delete should wait until the object is created
++		  on the OSD.
++		- create/readpage: readpage should be able to return a page
++		  full of zeroes in this case. If there was a write already
++		  en-route (i.e. create, writepage, readpage) then the page
++		  would be locked, and so it would really be the same as
++		  create/writepage.
++		- create/writepage: if writepage is called for a sync write, it
++		  should wait until the object is created on the OSD.
++		  Otherwise, it should just return.
++		- create/truncate: truncate should wait until the object is
++		  created on the OSD.
++		- create/update_inode: update_inode should wait until the
++		  object is created on the OSD.
++	- Handled by VFS locks:
++		- readpage/delete: shouldn't happen because of page lock.
++		- writepage/delete: shouldn't happen because of page lock.
++		- readpage/writepage: shouldn't happen because of page lock.
++
++===============================================================================
++LICENSE/COPYRIGHT
++===============================================================================
++The exofs file system is based on ext2 v0.5b (distributed with the Linux kernel
++version 2.6.10).  All files include the original copyrights, and the license
++is GPL version 2 (only version 2, as is true for the Linux kernel).  The
++Linux kernel can be downloaded from www.kernel.org.
+diff --git a/fs/exofs/BUGS b/fs/exofs/BUGS
+new file mode 100644
+index 0000000..6d6e1f9
+--- /dev/null
++++ b/fs/exofs/BUGS
+@@ -0,0 +1,6 @@
++- Some mount time options should have been 64-bit, but are declared as 32-bit
++  because that's what the kernel's parsing methods support at this time.
++
++- Out-of-space may cause a severe problem if the object (and directory entry)
++  were written, but the inode attributes failed. Then if the filesystem was
++  unmounted and mounted the kernel can get into an endless loop doing a readdir.
+-- 
+1.6.0.1
 
-I think what we need is something like 'if the nonboot CPUs are disabled and
-interrupts are off (on the BSP, which is the only CPU active), use GFP_ATOMIC'.
 
-I'll prepare a patch for that, unless someone is faster.
-
-Thanks,
-Rafael
