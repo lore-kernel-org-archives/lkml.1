@@ -1,130 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbYLPVXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbYLPV0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758738AbYLPVXW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 16:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYLPVXM
+	id S1757536AbYLPV0z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 16:26:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbYLPV0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 16:23:12 -0500
-Received: from kroah.org ([198.145.64.141]:50222 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753273AbYLPVXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 16:23:11 -0500
-Date: Tue, 16 Dec 2008 13:21:50 -0800
-From: Greg KH <greg@kroah.com>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: linux-kernel@vger.kernel.org, v4l <video4linux-list@redhat.com>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>
-Subject: Re: [BUG] cdev_put() race condition
-Message-ID: <20081216212150.GA20721@kroah.com>
-References: <200812082156.26522.hverkuil@xs4all.nl> <20081216202248.GA3653@kroah.com> <200812162200.52260.hverkuil@xs4all.nl>
+	Tue, 16 Dec 2008 16:26:42 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:52415 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752015AbYLPV0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 16:26:40 -0500
+Date: Tue, 16 Dec 2008 13:26:38 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org,
+       "kernel-testers@vger.kernel.org >> Kernel Testers List" 
+	<kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH v3 3/7] fs: Introduce a per_cpu last_ino allocator
+Message-ID: <20081216212638.GN6681@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <493100B0.6090104@cosmosbay.com> <49419696.9080509@cosmosbay.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200812162200.52260.hverkuil@xs4all.nl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <49419696.9080509@cosmosbay.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16, 2008 at 10:00:51PM +0100, Hans Verkuil wrote:
-> On Tuesday 16 December 2008 21:22:48 Greg KH wrote:
-> > On Mon, Dec 08, 2008 at 09:56:26PM +0100, Hans Verkuil wrote:
-> > > Hi Greg,
-> > > 
-> > > Laurent found a race condition in the uvc driver that we traced to the 
-> > > way chrdev_open and cdev_put/get work.
-> > > 
-> > > You need the following ingredients to reproduce it:
-> > > 
-> > > 1) a hot-pluggable char device like an USB webcam.
-> > > 2) a manually created device node for such a webcam instead of relying 
-> > > on udev.
-> > > 
-> > > In order to easily force this situation you would also need to add a  
-> > > delay to the char device's release() function. For webcams that would 
-> > > be at the top of v4l2_chardev_release() in 
-> > > drivers/media/video/v4l2-dev.c. But adding a delay to e.g. cdev_purge 
-> > > would have the same effect.
-> > > 
-> > > The sequence of events in the case of a webcam is as follows:
-> > > 
-> > > 1) The USB device is removed, causing a disconnect.
-> > > 
-> > > 2) The webcam driver unregisters the video device which in turn calls 
-> > > cdev_del().
-> > > 
-> > > 3) When the last application using the device is closed, the cdev is 
-> > > released when the kref of the cdev's kobject goes to 0.
-> > > 
-> > > 4) If the kref's release() call takes a while due to e.g. extra cleanup 
-> > > in the case of a webcam, then another application can try to open the 
-> > > video device. Note that this requires a device node created with mknod, 
-> > > otherwise the device nodes would already have been removed by udev.
-> > > 
-> > > 5) chrdev_open checks inode->i_cdev. If this is NULL (i.e. this device 
-> > > node was never accessed before), then all is fine since kobj_lookup 
-> > > will fail because cdev_del() has been called earlier. However, if this 
-> > > device node was used earlier, then the else part is called: 
-> > > cdev_get(p). This 'p' is the cdev that is being released. Since the 
-> > > kref count is 0 you will get a WARN message from kref_get, but the code 
-> > > continues on, the f_op->open will (hopefully) return more-or-less 
-> > > gracefully with an error and the cdev_put at the end will cause the 
-> > > refcount to go to 0 again, which results in a SECOND call to the kref's 
-> > > release function!
-> > > 
-> > > See this link for the original discussion on the v4l list containing 
-> > > stack traces an a patch that you need if you want to (and can) test 
-> > > this with the uvc driver:
-> > > 
-> > > http://www.spinics.net/lists/vfl/msg39967.html
-> > 
-> > The second sentence in that message shows your problem here:
-> > 	To avoid the need of a reference count in every v4l2 driver,
-> > 	v4l2 moved to cdev which includes its own reference counting
-> > 	infrastructure based on kobject.
-> > 
-> > cdev is not ment to handle the reference counting of any object outside
-> > of itself, and should never be embedded within anything.  I've been
-> > thinking of taking the real "kobject" out of that structure for a long
-> > time now, incase someone did something foolish like this.
-> > 
-> > Seems I was too late :(
-> > 
-> > So, to solve this, just remove the reliance on struct cdev in your own
-> > structures, you don't want to do this for the very reason you have now
-> > found (and for others, like the fact that this isn't a "real" struct
-> > kobject in play here, just a fake one.)
-> > 
-> > Ick, what a mess.
+On Thu, Dec 11, 2008 at 11:39:18PM +0100, Eric Dumazet wrote:
+> new_inode() dirties a contended cache line to get increasing
+> inode numbers.
 > 
-> Sorry, but this makes no sense. First of all the race condition exists
-> regardless of how v4l uses it. Other drivers using cdev with a
-> hot-pluggable device in combination with a manually created device
-> node should show the same problem.
+> Solve this problem by providing to each cpu a per_cpu variable,
+> feeded by the shared last_ino, but once every 1024 allocations.
+> 
+> This reduce contention on the shared last_ino, and give same
+> spreading ino numbers than before.
+> (same wraparound after 2^32 allocations)
 
-I don't see how this would be, unless this problem has always existed in
-the cdev code, it was created back before dynamic device nodes with udev
-existed :)
+One question below, but just a clarification.  Works correctly as is,
+though a bit strangely.
 
-> It's just that we found it with v4l because the release callback takes
-> longer than usual, thus increasing the chances of hitting the race.
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-The release callback for the cdev itself?
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> ---
+>  fs/inode.c |   35 ++++++++++++++++++++++++++++++++---
+>  1 files changed, 32 insertions(+), 3 deletions(-)
+> 
+> diff --git a/fs/inode.c b/fs/inode.c
+> index f94f889..dc8e72a 100644
+> --- a/fs/inode.c
+> +++ b/fs/inode.c
+> @@ -556,6 +556,36 @@ repeat:
+>  	return node ? inode : NULL;
+>  }
+> 
+> +#ifdef CONFIG_SMP
+> +/*
+> + * Each cpu owns a range of 1024 numbers.
+> + * 'shared_last_ino' is dirtied only once out of 1024 allocations,
+> + * to renew the exhausted range.
+> + */
+> +static DEFINE_PER_CPU(int, last_ino);
+> +
+> +static int last_ino_get(void)
+> +{
+> +	static atomic_t shared_last_ino;
+> +	int *p = &get_cpu_var(last_ino);
+> +	int res = *p;
+> +
+> +	if (unlikely((res & 1023) == 0))
+> +		res = atomic_add_return(1024, &shared_last_ino) - 1024;
+> +
+> +	*p = ++res;
 
-> The core problem is simply that it is possible to call cdev_get while
-> in cdev_put! That should never happen.
+So the first CPU gets the range [1:1024], the second [1025:2048], and
+so on, eventually wrapping to [4294966273:0].  Is that the intent?
 
-True, and cdev_put is only called from __fput() which has the proper
-locking to handle the call to cdev_get() if a char device is opened,
-right?
+(I don't see a problem with this, just seems a bit strange.)
 
-> Secondly, why shouldn't struct cdev be embedded in anything? It's used
-> in lots of drivers that way. I really don't see what's unusual or
-> messy about v4l in that respect.
-
-I don't see it embedded in any other structures at the moment, and used
-to reference count the structure, do you have pointers to where it is?
-
-thanks,
-
-greg k-h
+> +	put_cpu_var(last_ino);
+> +	return res;
+> +}
+> +#else
+> +static int last_ino_get(void)
+> +{
+> +	static int last_ino;
+> +
+> +	return ++last_ino;
+> +}
+> +#endif
+> +
+>  /**
+>   *	new_inode 	- obtain an inode
+>   *	@sb: superblock
+> @@ -575,7 +605,6 @@ struct inode *new_inode(struct super_block *sb)
+>  	 * error if st_ino won't fit in target struct field. Use 32bit counter
+>  	 * here to attempt to avoid that.
+>  	 */
+> -	static unsigned int last_ino;
+>  	struct inode * inode;
+> 
+>  	spin_lock_prefetch(&inode_lock);
+> @@ -583,11 +612,11 @@ struct inode *new_inode(struct super_block *sb)
+>  	inode = alloc_inode(sb);
+>  	if (inode) {
+>  		percpu_counter_inc(&nr_inodes);
+> +		inode->i_state = 0;
+> +		inode->i_ino = last_ino_get();
+>  		spin_lock(&inode_lock);
+>  		list_add(&inode->i_list, &inode_in_use);
+>  		list_add(&inode->i_sb_list, &sb->s_inodes);
+> -		inode->i_ino = ++last_ino;
+> -		inode->i_state = 0;
+>  		spin_unlock(&inode_lock);
+>  	}
+>  	return inode;
