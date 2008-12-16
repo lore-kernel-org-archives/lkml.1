@@ -1,71 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbYLPJ0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbYLPJcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755669AbYLPJ0y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 04:26:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYLPJ0p
+	id S1754185AbYLPJcy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 04:32:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYLPJcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 04:26:45 -0500
-Received: from gw.goop.org ([64.81.55.164]:33442 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751772AbYLPJ0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 04:26:44 -0500
-Message-ID: <49477452.6030307@goop.org>
-Date: Tue, 16 Dec 2008 01:26:42 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ken Chen <kenchen@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch] x86: convert rdtscll() to use __native_read_tsc
-References: <b040c32a0812160032pf681f13s9e5e86c4b5448012@mail.gmail.com> <20081216091509.GA29872@elte.hu>
-In-Reply-To: <20081216091509.GA29872@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 16 Dec 2008 04:32:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54871 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751609AbYLPJcq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 04:32:46 -0500
+Date: Tue, 16 Dec 2008 01:32:25 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Robert Richter <robert.richter@amd.com>
+Cc: oprofile-list <oprofile-list@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 08/10] oprofile: set values to default when creating
+ oprofilefs
+Message-Id: <20081216013225.272a5fd1.akpm@linux-foundation.org>
+In-Reply-To: <1229007886-14362-9-git-send-email-robert.richter@amd.com>
+References: <1229007886-14362-1-git-send-email-robert.richter@amd.com>
+	<1229007886-14362-9-git-send-email-robert.richter@amd.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> The reason for the __native_read_tsc() / native_read_tsc() distinction is 
-> and obscure problem with paravirt function pointers. Such constructs:
->
->   ./xen/enlighten.c:	.read_tsc = native_read_tsc,
->
-> do not always work fine with all versions of gcc, if native_read_tsc() is 
-> a simple static inline (as it should be) - the build would fail with 
-> certain gcc flags.
+On Thu, 11 Dec 2008 16:04:44 +0100 Robert Richter <robert.richter@amd.com> wrote:
 
-I don't think that's true.  We rely on taking function pointers of 
-static inlines pretty extensively; native_read_tsc is hardly unique in 
-this respect.  I don't remember seeing any problems of the sort you 
-describe.  (I can well believe this may have been a problem at some 
-point, but not during the pv-ops development timeframe.)
+> This patch restores default values for:
+> 
+> /dev/oprofile/cpu_buffer_size
+> /dev/oprofile/buffer_watershed
+> /dev/oprofile/buffer_size
+> 
+> when creating the oprofilefs:
+> 
+>  # opcontrol --deinit
+>  # opcontrol --init
+>  # cat /dev/oprofile/cpu_buffer_size
+>  8192
+>  # echo 5123 > /dev/oprofile/cpu_buffer_size
+>  # cat /dev/oprofile/cpu_buffer_size
+>  5123
+>  # opcontrol --deinit
+>  # opcontrol --init
+>  # cat /dev/oprofile/cpu_buffer_size
+>  8192
+>  # opcontrol --deinit
+> 
+> This sets the values in a defined state. Before, there was no way to
+> restore the defaults without rebooting the system or reloading the
+> module.
+> 
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> ---
+>  drivers/oprofile/oprofile_files.c |   15 ++++++++++++---
+>  1 files changed, 12 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/oprofile/oprofile_files.c b/drivers/oprofile/oprofile_files.c
+> index cc106d5..d820199 100644
+> --- a/drivers/oprofile/oprofile_files.c
+> +++ b/drivers/oprofile/oprofile_files.c
+> @@ -14,9 +14,13 @@
+>  #include "oprofile_stats.h"
+>  #include "oprof.h"
+>  
+> -unsigned long fs_buffer_size = 131072;
+> -unsigned long fs_cpu_buffer_size = 8192;
+> -unsigned long fs_buffer_watershed = 32768; /* FIXME: tune */
+> +#define FS_BUFFER_SIZE_DEFAULT		131072
+> +#define FS_CPU_BUFFER_SIZE_DEFAULT	8192
+> +#define FS_BUFFER_WATERSHED_DEFAULT	32768	/* FIXME: tune */
+> +
+> +unsigned long fs_buffer_size;
+> +unsigned long fs_cpu_buffer_size;
+> +unsigned long fs_buffer_watershed;
 
-> Perhaps the real fix is to do this rename as well:
->
->     native_read_tsc => native_read_tsc_paravirt
->   __native_read_tsc => native_read_tsc
->
-> as this makes the native_read_tsc_paravirt() a pure technical variant, to 
-> be used in paravirt_ops function pointer assignments. People would thus 
-> just use the obvious native_read_tsc() inline function most of the time 
-> and could forget about native_read_tsc_paravirt().
->
-> Jeremy?
->   
+These were poorly chosen kernel-wide identifiers.
 
-I'm trying to remember the real reason for 
-__native_read_tsc/native_read_tsc.  At least part of it is that 
-__native_read_tsc is used in a vdso, and so *must* be inlined to avoid a 
-bogus call from user to kernel space.  But I don't know why you wouldn't 
-want to inline native_read_tsc everywhere.  I have a feeling it may be a 
-relic from unification - possibly because x86-64 was late to the 
-clocksource party - but I don't remember anything specific.
+>  static ssize_t depth_read(struct file *file, char __user *buf, size_t count, loff_t *offset)
+>  {
+> @@ -120,6 +124,11 @@ static const struct file_operations dump_fops = {
+>  
+>  void oprofile_create_files(struct super_block *sb, struct dentry *root)
+>  {
+> +	/* reinitialize default values */
+> +	fs_buffer_size =	FS_BUFFER_SIZE_DEFAULT;
+> +	fs_cpu_buffer_size =	FS_CPU_BUFFER_SIZE_DEFAULT;
+> +	fs_buffer_watershed =	FS_BUFFER_WATERSHED_DEFAULT;
+> +
+>  	oprofilefs_create_file(sb, root, "enable", &enable_fops);
+>  	oprofilefs_create_file_perm(sb, root, "dump", &dump_fops, 0666);
+>  	oprofilefs_create_file(sb, root, "buffer", &event_buffer_fops);
 
-I think we can probably make do with a single native_read_tsc, so long 
-as its always inlined.
+afacit oprofile_create_files() only gets run when the module is loaded,
+so this patch is a no-op?
 
-    J
+
