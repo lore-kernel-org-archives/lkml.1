@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759467AbYLPP4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbYLPPzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759467AbYLPP4E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 10:56:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759171AbYLPPyb
+	id S1759382AbYLPPzs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 10:55:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758846AbYLPPxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 10:54:31 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55381 "EHLO ogre.sisk.pl"
+	Tue, 16 Dec 2008 10:53:46 -0500
+Received: from koef.zs64.net ([212.12.50.230]:57658 "EHLO koef.zs64.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759155AbYLPPya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 10:54:30 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Martin Steigerwald <ms@teamix.de>
-Subject: Re: physical memory limit of 64-bit linux
-Date: Tue, 16 Dec 2008 16:54:16 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200812161556.25518.ms@teamix.de>
-In-Reply-To: <200812161556.25518.ms@teamix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1758835AbYLPPxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 10:53:44 -0500
+X-Greylist: delayed 305 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Dec 2008 10:53:44 EST
+Date: Tue, 16 Dec 2008 10:46:55 -0500
+From: Martin Cracauer <cracauer@cons.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "David S. Miller" <davem@davemloft.net>,
+       Robert Richter <robert.richter@amd.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Paul Mackerras <paulus@samba.org>, Peter Anvin <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       perfctr-devel@lists.sourceforge.net,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [Perfctr-devel] [patch] Performance Counters for Linux, v4
+Message-ID: <20081216154655.GB32787@cons.org>
+References: <20081214212829.GA9435@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812161654.17291.rjw@sisk.pl>
+In-Reply-To: <20081214212829.GA9435@elte.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 16 of December 2008, Martin Steigerwald wrote:
+Ingo Molnar wrote on Sun, Dec 14, 2008 at 10:28:29PM +0100: 
+> We are pleased to announce the v4 release of our performance counters 
+> subsystem implementation. The kernel changes can be picked up from:
 > 
-> Hi!
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perfcounters/core
 > 
-> What is the physical memory limit for 64-bit Linux? I read about 40 bit 
-> address bus for AMD Athlon X2 (1 TB) and 48 bit for Barcelona X4 (256 TB).
+>   (also in the master branch. There's also a kernel patch attached 
+>    below.)
 > 
-> Is 64-bit linux able to use that amount - provided that one would manage to 
-> build it into a machine? Or does it have a lower limit?
-> 
-> Looking into the Google crystal ball gives unclear pictures... I tend to 
-> assume that Linux would handle it, but I am not sure.
+> The biggest new feature in this release is the implementation of 
+> "performance counter inheritance" for the per task counters: the ability 
+> to extend performance counters to cover the execution of child tasks 
+> too, transparently and automatically - following them to other CPUs.
 
-IIRC, the current maximal virtual memory space size of the kernel on x86_64 is 2^46.
+Does this come with a PAPI frontend or is one planned?
 
-Thanks,
-Rafael
+I picked the old perfctr mainly because I need PAPI.  Outside-process
+measurement doesn't do for my application, I need subdivisions in my
+code.
+
+Thanks
+	Martin
+-- 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Martin Cracauer <cracauer@cons.org>   http://www.cons.org/cracauer/
