@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbYLPKdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbYLPKjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbYLPKdy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 05:33:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYLPKdq
+	id S1754685AbYLPKjO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 05:39:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYLPKi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 05:33:46 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:57382 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752221AbYLPKdp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 05:33:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=XJXFaclOKGOCfZbZOd6emR1hLLT8JJ7CjdHxwyzl8Q+fnUMP1wWwwHsyZMIhEeZErN
-         nHBdcdVsoXK2eVkMeDhfT58ZxAHGejW7XZ/Sy+pb2YYHWUbLPInmmyzR6l1qDkAXSxVf
-         cFsudH3lJNLJ32Df4TJwLi9/CB04c/1sCb6is=
-Message-ID: <bb6c380c0812160233i26da273du643cc32aaa9eb782@mail.gmail.com>
-Date: Tue, 16 Dec 2008 11:33:42 +0100
-From: liga <alessioligabue@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: kernels > 2.6.19.7 freezes over epia mii-6000 (VT8633) with sata VT6421 pci controller
+	Tue, 16 Dec 2008 05:38:58 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48917 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752271AbYLPKi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 05:38:57 -0500
+Date: Tue, 16 Dec 2008 11:36:26 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: balbir@linux.vnet.ibm.com, hugh@veritas.com, jlan@sgi.com,
+       jpirko@redhat.com, jlim@sgi.com, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RESEND] introduce get_mm_hiwater_xxx(), fix
+	taskstats->hiwater_xxx accounting
+Message-ID: <20081216103626.GA3964@redhat.com>
+References: <20081212140524.GA29488@redhat.com> <20081215162148.87fd38a5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081215162148.87fd38a5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a problem with my VT6421 sata controller, after some hours it
-freeze bad with all the kernel > 2.6.19.7.
-I have tried ~ 10 kernel with the same result (2 compiled by Debian),
-it seem to be a bug in sata_via module (but I'm not sure) because I
-have tried with a old ide disk the kernels and they runs correctly.
-No messages on the kernel serial console.
-I hope that you can help me.
-Thank you.
-Alessio
+On 12/15, Andrew Morton wrote:
+>
+> On Fri, 12 Dec 2008 15:05:24 +0100
+> Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > +#define get_mm_hiwater_rss(mm)	max((mm)->hiwater_rss, get_mm_rss(mm))
+>
+> This evaluates its argument thrice.
+>
+> > +#define get_mm_hiwater_vm(mm)	max((mm)->hiwater_vm, (mm)->total_vm)
+>
+> This evaluates its argument twice.
 
-My lspci:
-00:00.0 Host bridge: VIA Technologies, Inc. VT8623 [Apollo CLE266]
-00:01.0 PCI bridge: VIA Technologies, Inc. VT8633 [Apollo Pro266 AGP]
-00:0a.0 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev 82)
-00:0a.1 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev 82)
-00:0d.0 FireWire (IEEE 1394): VIA Technologies, Inc. VT6306 Fire II
-IEEE 1394 OHCI Link Layer Controller (rev 80)
-00:10.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
-Controller (rev 80)
-00:10.3 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 82)
-00:11.0 ISA bridge: VIA Technologies, Inc. VT8235 ISA Bridge
-00:11.1 IDE interface: VIA Technologies, Inc.
-VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE (rev 06)
-00:11.5 Multimedia audio controller: VIA Technologies, Inc.
-VT8233/A/8235/8237 AC97 Audio Controller (rev 50)
-00:12.0 Ethernet controller: VIA Technologies, Inc. VT6102 [Rhine-II] (rev 74)
-00:14.0 RAID bus controller: VIA Technologies, Inc. VT6421 IDE RAID
-Controller (rev 50)
-01:00.0 VGA compatible controller: VIA Technologies, Inc. VT8623
-[Apollo CLE266] integrated CastleRock graphics (rev 03)
+I thought that any user should be careful anyway...
 
--- 
-Registered Linux user number 404688
+OK, agreed, will send the cleanup.
+
+> was sched.h the appropriate header in which to implement these?  Maybe...
+
+Just because I'd like to put them near update_hiwater_xxx()
+
+> But they're only ever _used_ in kernel/tsacct.c, so do they actually
+> need to be implemented in any .h file?
+
+Jiri cooks the patch which implements rusage->ru_maxrss accounting,
+it will use the first helper.
+
+Oleg.
+
