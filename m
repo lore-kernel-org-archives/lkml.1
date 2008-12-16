@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbYLPPi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbYLPPkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758240AbYLPPi3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 10:38:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbYLPPiS
+	id S1757990AbYLPPkl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 10:40:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbYLPPkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 10:38:18 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:20130 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753613AbYLPPiR (ORCPT
+	Tue, 16 Dec 2008 10:40:33 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:28629 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753613AbYLPPkc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 10:38:17 -0500
-Message-ID: <4947CB65.3070005@panasas.com>
-Date: Tue, 16 Dec 2008 17:38:13 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Tue, 16 Dec 2008 10:40:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vfhBfdEE4Z65I2QXhJlvu2ljA0W0z3HEKr8UYzaISHzUcyF+lU8IuQBrmYfh8jCBec
+         5qCFe7CSX4U81JAw9RxseEJVD0ftNmz1l7klYtq9F0VY7vrcm1jXOmSkdb/CVFafDl+i
+         y9zOIbO9OPWyWZ6FhhVgW956X0vM/M9NjXdGM=
+Message-ID: <3f9a31f40812160740o4559e37bi2e664789a5963167@mail.gmail.com>
+Date: Tue, 16 Dec 2008 21:10:30 +0530
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: BUG - HDA Intel very low audio with breaking voice in 2.6.28-rc8
+Cc: linux-kernel@vger.kernel.org, andy.kopp@intel.com, dan.d.kogan@intel.com,
+       pshou@realtek.com.tw
+In-Reply-To: <s5h1vw9rjap.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 9/9] fs: Add exofs to Kernel build
-References: <4947BFAA.4030208@panasas.com>
-In-Reply-To: <4947BFAA.4030208@panasas.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Dec 2008 15:36:45.0936 (UTC) FILETIME=[1A647700:01C95F94]
+Content-Disposition: inline
+References: <3f9a31f40812132358x27df1788re521e47b8dbe2cd1@mail.gmail.com>
+	 <s5hr64b151n.wl%tiwai@suse.de>
+	 <3f9a31f40812140330w7aa55e55n2159f095cbafd018@mail.gmail.com>
+	 <s5h1vw9rjap.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Takashi,
 
-- Add exofs to fs/Kconfig under "menu 'Miscellaneous filesystems'"
-- Add exofs to fs/Makefile
+On Mon, Dec 15, 2008 at 12:56 PM, Takashi Iwai <tiwai@suse.de> wrote:
+> But, if the other kernel version shows the same behavior, it's no help
+> actually.
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- fs/Kconfig  |    1 +
- fs/Makefile |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+After updating the system, voice breaking is fixed.
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index 522469a..a2e6129 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1122,6 +1122,7 @@ config UFS_DEBUG
- 	  Y here.  This will result in _many_ additional debugging messages to be
- 	  written to the system log.
- 
-+source "fs/exofs/Kconfig"
- endmenu
- 
- menuconfig NETWORK_FILESYSTEMS
-diff --git a/fs/Makefile b/fs/Makefile
-index d9f8afe..920250b 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -122,3 +122,4 @@ obj-$(CONFIG_HPPFS)		+= hppfs/
- obj-$(CONFIG_DEBUG_FS)		+= debugfs/
- obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
- obj-$(CONFIG_GFS2_FS)           += gfs2/
-+obj-$(CONFIG_EXOFS_FS)          += exofs/
--- 
-1.6.0.1
+I am quite happy with this.
 
+Thanks for your help,
 
+Jaswinder Singh.
