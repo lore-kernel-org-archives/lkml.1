@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757668AbYLPUkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbYLPUqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757668AbYLPUkX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:40:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbYLPUkI
+	id S1755922AbYLPUqz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:46:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYLPUqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:40:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38831 "EHLO mx2.mail.elte.hu"
+	Tue, 16 Dec 2008 15:46:46 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40159 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752272AbYLPUkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:40:07 -0500
-Date: Tue, 16 Dec 2008 21:39:57 +0100
+	id S1751344AbYLPUqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 15:46:45 -0500
+Date: Tue, 16 Dec 2008 21:46:16 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] sched: Use RCU variant of list traversal in
-	for_each_leaf_rt_rq()
-Message-ID: <20081216203957.GB14787@elte.hu>
-References: <20081215062648.GB4337@in.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Alex Zeffertt <alex.zeffertt@eu.citrix.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] xen: add xenfs to allow usermode <-> Xen interaction
+Message-ID: <20081216204616.GC14787@elte.hu>
+References: <49480F39.2010102@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081215062648.GB4337@in.ibm.com>
+In-Reply-To: <49480F39.2010102@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,21 +40,42 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> sched: Use RCU variant of list traversal in for_each_leaf_rt_rq()
-> 
-> for_each_leaf_rt_rq() walks an RCU protected list (rq->leaf_rt_rq_list),
-> but doesn't use list_for_each_entry_rcu(). Fix this.
-> 
-> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> ---
->  kernel/sched_rt.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> [ Reviewers: This is in drivers/xen to keep it close to the code it is 
+>   and will be using.  Would people prefer to see it in fs/xenfs? -J ]
 
-applied to tip/sched/urgent, thanks Bharata!
+> +config XENFS
+> +	tristate "Xen filesystem"
 
-i'm wondering, have you observed a real crash, or did you find this via 
-code review?
+there's about two dozen filesystems that live not in fs/*:
+
+./net/socket.c:	register_filesystem(&sock_fs_type);
+./net/sunrpc/rpc_pipe.c:	err = register_filesystem(&rpc_pipe_fs_type);
+./security/selinux/selinuxfs.c:	err = register_filesystem(&sel_fs_type);
+./security/inode.c:	retval = register_filesystem(&fs_type);
+./security/smack/smackfs.c:	err = register_filesystem(&smk_fs_type);
+./drivers/usb/core/inode.c:	retval = register_filesystem(&usb_fs_type);
+./drivers/usb/gadget/inode.c:	status = register_filesystem (&gadgetfs_type);
+./drivers/oprofile/oprofilefs.c:	return register_filesystem(&oprofilefs_type);
+./drivers/misc/ibmasm/ibmasmfs.c:	return register_filesystem(&ibmasmfs_type);
+./drivers/isdn/capi/capifs.c:	err = register_filesystem(&capifs_fs_type);
+./drivers/infiniband/hw/ipath/ipath_fs.c:	return register_filesystem(&ipathfs_fs_type);
+./drivers/infiniband/core/uverbs_main.c:	ret = register_filesystem(&uverbs_event_fs);
+./mm/shmem.c:	error = register_filesystem(&tmpfs_fs_type);
+./mm/tiny-shmem.c:	BUG_ON(register_filesystem(&tmpfs_fs_type) != 0);
+./ipc/mqueue.c:	error = register_filesystem(&mqueue_fs_type);
+./kernel/cpuset.c:	err = register_filesystem(&cpuset_fs_type);
+./kernel/cgroup.c:	err = register_filesystem(&cgroup_fs_type);
+./include/linux/fs.h:extern int register_filesystem(struct file_system_type *);
+./arch/s390/hypfs/inode.c:	rc = register_filesystem(&hypfs_type);
+./arch/ia64/kernel/perfmon.c:	int err = register_filesystem(&pfm_fs_type);
+./arch/powerpc/platforms/cell/spufs/inode.c:	ret = register_filesystem(&spufs_type);
+
+by the looks of it it wants to live in drivers/xen/. It's a minimalistic 
+API-only filesystem.
+
+Nevertheless it would be nice to have Acks from FS experts. Security, 
+races, obsoleteness of approach, etc.
 
 	Ingo
