@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbYLPUss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYLPUtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756458AbYLPUss (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:48:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYLPUsk
+	id S1757408AbYLPUtz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbYLPUtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:48:40 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48492 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751395AbYLPUsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:48:39 -0500
-Date: Tue, 16 Dec 2008 21:48:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: make sure we really have an hpet mapping before
-	using it
-Message-ID: <20081216204829.GD14787@elte.hu>
-References: <49481057.2030307@goop.org>
-MIME-Version: 1.0
+	Tue, 16 Dec 2008 15:49:47 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:16252 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752833AbYLPUtq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 15:49:46 -0500
+Date: Tue, 16 Dec 2008 14:49:45 -0600
+From: scameron@beardog.cca.cpqcorp.net
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mikem@roadking.cca.cpqcorp.net
+Subject: Re: [patch] cciss: Fix problem that deleting multiple logical drives could cause a panic
+Message-ID: <20081216204945.GN1126@beardog.cca.cpqcorp.net>
+References: <20081216201703.GL1126@beardog.cca.cpqcorp.net> <20081216202730.GZ32491@kernel.dk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49481057.2030307@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20081216202730.GZ32491@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Dec 16, 2008 at 09:27:30PM +0100, Jens Axboe wrote:
+> On Tue, Dec 16 2008, scameron@beardog.cca.cpqcorp.net wrote:
+> > 
+> > Fix problem that deleting multiple logical drives could cause a panic.
+> 
+> This looks like a 2.6.28 candidate, correct?
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Yes, and we would like to get it in anywhere else it needs to go
+(backport to 2.6.27.x? if that makes sense.)
 
-> When booting in Xen dom0, the hpet isn't really accessible, so make
-> sure the mapping is non-NULL before use.
->
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> ---
-> arch/x86/kernel/hpet.c |    5 +++--
-> 1 file changed, 3 insertions(+), 2 deletions(-)
->
-> ===================================================================
-> --- a/arch/x86/kernel/hpet.c
-> +++ b/arch/x86/kernel/hpet.c
-> @@ -818,9 +818,10 @@
->
-> 		hpet_address = force_hpet_address;
-> 		hpet_enable();
-> -		if (!hpet_virt_address)
-> -			return -ENODEV;
-> 	}
-> +
-> +	if (!hpet_virt_address)
-> +		return -ENODEV;
+It fixes a panic which can be easily reproduced in the following
+way: Just create several "arrays," each with multiple logical 
+drives via hpacucli, then delete the first array, and it will blow
+up in deregister_disk(), in the call to get_host() when it tries to
+dig the hba pointer out of a NULL queue pointer.
 
-hm, how can hpet_virt_address become non-NULL if hpet_address is zero?
+The problem has been present since my code to make 
+rebuild_lun_table behave better went in.
 
-	Ingo
+-- steve
+
+> 
+> > 
+> > Signed-off-by: Stephen M. Cameron <scameron@beardog.cca.cpqcorp.net>
+> > ---
+> > 
+> >  drivers/block/cciss.c |    5 +++++
+> >  1 file changed, 5 insertions(+)
+> > 
+> > diff -puN drivers/block/cciss.c~fix_rebuild_lun_table_bug drivers/block/cciss.c
+> > --- linux-2.6.28-rc8/drivers/block/cciss.c~fix_rebuild_lun_table_bug	2008-12-16 14:00:52.000000000 -0600
+> > +++ linux-2.6.28-rc8-root/drivers/block/cciss.c	2008-12-16 14:00:52.000000000 -0600
+> > @@ -1693,6 +1693,11 @@ static int rebuild_lun_table(ctlr_info_t
+> >  	for (i = 0; i <= h->highest_lun; i++) {
+> >  		int j;
+> >  		drv_found = 0;
+> > +
+> > +		/* skip holes in the array from already deleted drives */
+> > +		if (h->drv[i].raid_level == -1)
+> > +			continue;
+> > +
+> >  		for (j = 0; j < num_luns; j++) {
+> >  			memcpy(&lunid, &ld_buff->LUN[j][0], 4);
+> >  			lunid = le32_to_cpu(lunid);
+> > _
+> 
+> -- 
+> Jens Axboe
+> 
