@@ -1,95 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYLPURf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbYLPUS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbYLPURf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:17:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751044AbYLPURV
+	id S1758124AbYLPUS6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:18:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYLPUSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:17:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57334 "EHLO mx2.mail.elte.hu"
+	Tue, 16 Dec 2008 15:18:45 -0500
+Received: from gw.goop.org ([64.81.55.164]:45879 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757447AbYLPURT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:17:19 -0500
-Date: Tue, 16 Dec 2008 21:16:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Theodore Tso <tytso@mit.edu>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, Mingming Cao <cmm@us.ibm.com>,
-       linux-ext4@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] percpu_counter: Fix __percpu_counter_sum()
-Message-ID: <20081216201640.GA13555@elte.hu>
-References: <4936D287.6090206@cosmosbay.com> <493F4EF4.4080205@cosmosbay.com> <20081209214921.b3944687.akpm@linux-foundation.org> <200812152323.53592.rusty@rustcorp.com.au>
+	id S1750853AbYLPUSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 15:18:44 -0500
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812152323.53592.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+Subject: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use of
+	swiotlb
+Message-Id: <patchbomb.1229458644@abulafia.goop.org>
+Date: Tue, 16 Dec 2008 12:17:24 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Jan Beulich <jbeulich@novell.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ingo,
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+Here's some patches to clean up swiotlb to prepare for some Xen dom0
+patches.  These have been posted before, but undergone a round of
+cleanups to address various comments.
 
-> On Wednesday 10 December 2008 16:19:21 Andrew Morton wrote:
-> > Rusty, Christoph: talk to me.  If we add a new user of local_t in core
-> > kernel, will we regret it?
-> 
-> Interesting.  There's new local_t infrastructure, but it's not used.
-> 
-> Here's a benchmark patch showing some results.  x86 is pretty close to
-> optimal already, though my results on Power show atomic_long is a bad choice
-> there.
-> 
-> I'll do an audit of the users, then send out some local_t cleanup patches etc.
-> 
-> Benchmarks for local_t variants
-> 
-> (This patch also fixes the x86 cpu_local_* macros, which are obviously
-> unused).
-> 
-> I chose a large array (1M longs) for the inc/add/add_return tests so
-> the trivalue case would show some cache pressure.
-> 
-> The cpu_local_inc case is always cache-hot, so it's not comparable to
-> the others.
-> 
-> Time in ns per iteration (brackets is with CONFIG_PREEMPT=y):
-> 
-> 		inc	add	add_return	cpu_local_inc	read
-> x86-32: 2.13 Ghz Core Duo 2
-> atomic_long	118	118	115		17		17
-> irqsave/rest	77	78	77		23		16
-> trivalue	45	45	127		3(6)		21
-> local_t		36	36	36		1(5)		17
-> 
-> x86-64: 2.6 GHz Dual-Core AMD Opteron 2218
-> atomic_long	55	60	-		6		19
-> irqsave/rest	54	54	-		11		19
-> trivalue	47	47	-		5		28
-> local_t		47	46	-		1		19
+Thanks,
+	J
 
-coolness!
-
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> ---
->  arch/x86/include/asm/local.h |   20 ++--
->  init/main.c                  |  198 +++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 208 insertions(+), 10 deletions(-)
-
-it's a gem - but init/main.c is an arguably pretty sucky place for it. 
-Stick it somewhere in lib/*, to be moved into testing/* later on?
-
-	Ingo
