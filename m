@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbYLPQdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbYLPQiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756459AbYLPQdD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 11:33:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbYLPQct
+	id S1757860AbYLPQiX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 11:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbYLPQiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 11:32:49 -0500
-Received: from smtp03.uc3m.es ([163.117.176.133]:44063 "EHLO smtp03.uc3m.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757864AbYLPQcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 11:32:48 -0500
-From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
-Message-Id: <200812161632.mBGGWh213629@inv.it.uc3m.es>
-Subject: Re: time_is_after_jiffies misnomer
-In-Reply-To: <jeabawccup.fsf@sykes.suse.de> from "Andreas Schwab" at "Dec 
-	16,2008 05:18:54 pm"
-To: "Andreas Schwab" <schwab@suse.de>
-Date: Tue, 16 Dec 2008 17:32:43 +0100 (MET)
-CC: "linux kernel" <linux-kernel@vger.kernel.org>
-X-Anonymously-To: 
-Reply-To: ptb@inv.it.uc3m.es
-X-message-flag: Had your Outlook virus, today?  
-	http://www.counterpane.com/crypto-gram-0103.html#4
-X-WebTV-Stationery: Standard\; BGColor=black\; TextColor=black
-Reply-By: Sat, 1 Apr 2006 14:21:08 -0700
-X-Mailer: ELM [version 2.4ME+ PL66 (25)]
-X-imss-version: 2.051
-X-imss-result: Passed
-X-imss-scanInfo: M:B L:E SM:2
-X-imss-tmaseResult: TT:1 TS:-18.2532 TC:1F TRN:22 TV:5.5.1026(16344.000)
-X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
-X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
+	Tue, 16 Dec 2008 11:38:05 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:40076 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755519AbYLPQiD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 11:38:03 -0500
+Date: Tue, 16 Dec 2008 16:37:46 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Brian J. Murrell" <brian@interlinx.bc.ca>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: suspend/resume fails on second attempt in LNXVIDEO:00
+Message-ID: <20081216163746.GA9478@srcf.ucam.org>
+References: <gi247o$iog$1@ger.gmane.org> <200812161625.37318.rjw@sisk.pl> <gi8jf1$m5f$5@ger.gmane.org> <200812161713.08451.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200812161713.08451.rjw@sisk.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Also sprach Andreas Schwab:"
-[Charset iso-8859-1 unsupported, filtering to ASCII...]
-> "Peter T. Breuer" <ptb@inv.it.uc3m.es> writes:
-> 
-> > Look at the two:
-> >
-> >    the current time is later than foo jiffies
-> >                  |   |  |           `/.
-> >                time_is_after_jiffies(foo)
-> 
-> It's not "foo jiffies", it's time "foo" vs time "jiffies" (where jiffies
-> is the well known global variable).
+On Tue, Dec 16, 2008 at 05:13:08PM +0100, Rafael J. Wysocki wrote:
+> On Tuesday, 16 of December 2008, Brian J. Murrell wrote:
+> > On Tue, 16 Dec 2008 16:25:37 +0100, Rafael J. Wysocki wrote:
+> > 
+> > > Because the hal-driven whitelist allows us to match systems in a more
+> > > detailed way.  If your system is in the s2ram whitelist already and
+> > > works with it, there shouldn't be any difference.
+> > 
+> > Unfortunately, Ubuntu in their "wisdom" removed s2ram and claim "s2both" 
+> > supersedes it in that it does both suspend to disk and suspend to ram and 
+> > then suspends, but if your battery dies while suspended you can still 
+> > resume from the suspend to disk.
 
-Forgive me, but you don't seem to really be taking it on board here
-either ...  what it SAYS to an english reader is the opposite of what
-you intend it to MEAN, unfortunately :(.
+I seem to be missing the original message, but: no, s2ram doesn't exist 
+in Ubuntu because pm-utils handles that role.
 
-So the name is wrong. It's simple to fix. Just change the name. The
-simplest naming fix is from
-
-    time_is_after_jiffies(foo)
-
-to
-
-    time_is_before_jiffies(foo)
-
-but obviously that would create more confusion yet, given the
-unfortunate current scheme!  So how about keeping the current macro
-names but gradually phasing them out in favour of a parallel set of 
-alternatives, which could be
-
-    current_time_is_before_jiffies(foo)
-
-?? That reads fine in english and this time it means what it says!
-
-Best regards
-
-Peter
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
