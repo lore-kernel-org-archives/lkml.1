@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbYLPQFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbYLPQNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758824AbYLPQFq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 11:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756890AbYLPQFd
+	id S1757860AbYLPQNn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 11:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbYLPQNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 11:05:33 -0500
-Received: from h4.dl5rb.org.uk ([81.2.74.4]:34967 "EHLO
-	ditditdahdahdah-dahdahdahditdit.dl5rb.org.uk" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754086AbYLPQFb (ORCPT
+	Tue, 16 Dec 2008 11:13:34 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:17542 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752490AbYLPQNd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 11:05:31 -0500
-Date: Tue, 16 Dec 2008 16:05:02 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: Re: [PATCH v3 0/3] preadv & pwritev syscalls.
-Message-ID: <20081216160502.GA15331@linux-mips.org>
-References: <1229340977-24345-1-git-send-email-kraxel@redhat.com> <20081215160311.GA23153@linux-mips.org> <4946C4B4.1020605@redhat.com>
+	Tue, 16 Dec 2008 11:13:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=XGZb2Dxi6e6juo0AZY4zewT35pHB6sgDTIWYXZCZW3AiluwLvkfV2Ta9oQpgoC++Yx
+         ZoUetpSp3XgnwSXTclXvcBtOqUvroqyFTWlrdD9+skm/PQyMgktw0rlm5Zt1Jdsa58Yi
+         w0x91h9YzGjt8HSurrx+iJyzZHkbbnrTuwvzg=
+Message-ID: <84144f020812160813x692abe16t5148462a9036856d@mail.gmail.com>
+Date: Tue, 16 Dec 2008 18:13:32 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: ptb@inv.it.uc3m.es
+Subject: Re: time_is_after_jiffies misnomer
+Cc: hannes@cmpxchg.org, "linux kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200812161604.mBGG4qT10889@inv.it.uc3m.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4946C4B4.1020605@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <200812161604.mBGG4qT10889@inv.it.uc3m.es>
+X-Google-Sender-Auth: c288fa9429b2d74a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 15, 2008 at 09:57:24PM +0100, Gerd Hoffmann wrote:
+On Tue, Dec 16, 2008 at 6:04 PM, Peter T. Breuer <ptb@inv.it.uc3m.es> wrote:
+> The kernel's
+>
+>     time_is_after_jiffies(500)
+>
+> macro mathematically means
+>
+>    the current value of the jiffies variable is LESS THAN 500
 
-> > It fixes the alignment issue but still won't work; on MIPS 32-bit userspace
-> > will pass the 64-bit argument in two registers but the 64-bit kernel code
-> > will assume it to be passed in a single registers.  It'd be ugly but passing
-> > a pointer to a 64-bit argument would solve the issue; something like this:
-> >
-> > sys_preadv(unsigned long fd, const struct iovec __user *vec,
-> >                   unsigned long vlen, loff_t __user *pos);
-> > compat_sys_preadv(unsigned long fd, const struct compat_iovec __user *vec,
-> >                   unsigned long vlen, loff_t __user *pos);
-> 
-> Suggestion from the s390 front was to explicitly pass high and low part
-> of pos as two arguments.  A bit ugly too, but should work fine as well
-> and it avoids the user pointer dereference.  What do you think about this?
+Not that you would ever do something like that. Instead, you will see
+something like this if you grep the kernel sources a bit:
 
-That's what the wrapper which you deleted, was doing ;-)  So yes, I like
-it.  It just raises one new problem, endianess - are arguments being passed
-as low/high or high/low?  On MIPS we've been solving the issue with the
-merge_64() macro which is defined depending on the byte order:
+    time_is_after_jiffies(jiffies + 500)
 
-#ifdef __MIPSEB__
-#define merge_64(r1, r2) ((((r1) & 0xffffffffUL) << 32) + ((r2) & 0xffffffffUL))
-#endif
-#ifdef __MIPSEL__
-#define merge_64(r1, r2) ((((r2) & 0xffffffffUL) << 32) + ((r1) & 0xffffffffUL))
-#endif
-
-The actual syscall wrapper could use it like:
-
-asmlinkage int compat_sys_pwritev(unsigned long fd,
-       const struct compat_iovec __user *vec,
-       unsigned a3, unsigned a4, unsigned long vlen)
-{
-	loff_t offset = merge_64(a3, a4);
-...
-
-If merge_64() was a standard macro in <asm/compat.h> on all architectures,
-compat_sys_pwrite() could invoke it directly and the need for the compat
-wrapper around the compat wrapper would go away.
-
-> > I'm surprised this works for x86; does x86-64 code really expect 64-bit
-> > arguments as 2 32-bit arguments?
-> 
-> Args are passed on the stack, not in registers.
-
-Same as 32-bit MIPS for argument #4 and up which will be passed on the
-stack - but the requirement for passing a long long is for it to be
-passed as an aligned pair of arguments and the original patch got
-that wrong.
-
-  Ralf
+                    Pekka
