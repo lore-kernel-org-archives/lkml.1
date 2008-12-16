@@ -1,132 +1,47 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758448AbYLPWp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1756593AbYLPWx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758448AbYLPWp2 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 17:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbYLPWpN
+	id S1756593AbYLPWx1 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 17:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbYLPWxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 17:45:13 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:2228 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752970AbYLPWpL (ORCPT
+	Tue, 16 Dec 2008 17:53:16 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48058 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752265AbYLPWxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 17:45:11 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
-	references:in-reply-to:content-type:
-	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
-	b=eGLKsthOy5hIMDBDfwP5DI7jSj2UQSov8ymPTHcubmzOvh2q+BfZHlcCqgzuxXLhb
-	sYRQ0A02Ny3caRyQ4IMog==
-Message-ID: <49482F14.1040407@google.com>
-Date: Tue, 16 Dec 2008 14:43:32 -0800
-From: Mike Waychison <mikew@google.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 16 Dec 2008 17:53:16 -0500
+Date: Tue, 16 Dec 2008 17:53:13 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+        Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/ftrace: use preempt_enable_no_resched_notrace
+ in ring_buffer_time_stamp()
+In-Reply-To: <20081216215941.GA14787@elte.hu>
+Message-ID: <alpine.DEB.1.10.0812161752040.25356@gandalf.stny.rr.com>
+References: <494818EA.7080807@gmail.com> <20081216212028.GP14787@elte.hu> <c62985530812161339p6296f032rdc3c74650331f3d8@mail.gmail.com> <alpine.DEB.1.10.0812161642530.25356@gandalf.stny.rr.com> <c62985530812161355l11edbb9cg6dd4e7e4291ab7b@mail.gmail.com>
+ <20081216215941.GA14787@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Oren Laadan <orenl@cs.columbia.edu>, jeremy@goop.org, arnd@arndb.de,
-        linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-        Linux Torvalds <torvalds@linux-foundation.org>,
-        Alexander Viro <viro@zeniv.linux.org.uk>,
-        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC v11][PATCH 03/13] General infrastructure for checkpoint
- restart
-References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>	 <1228498282-11804-4-git-send-email-orenl@cs.columbia.edu>	 <49482394.10006@google.com> <1229465641.17206.350.camel@nimitz>
-In-Reply-To: <1229465641.17206.350.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.24.198.81
-X-GMailtapped: mikew
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> On Tue, 2008-12-16 at 13:54 -0800, Mike Waychison wrote:
->> Oren Laadan wrote:
->>> diff --git a/checkpoint/sys.c b/checkpoint/sys.c
->>> index 375129c..bd14ef9 100644
->>> --- a/checkpoint/sys.c
->>> +++ b/checkpoint/sys.c
->>> +/*
->>> + * During checkpoint and restart the code writes outs/reads in data
->>> + * to/from the checkpoint image from/to a temporary buffer (ctx->hbuf).
->>> + * Because operations can be nested, use cr_hbuf_get() to reserve space
->>> + * in the buffer, then cr_hbuf_put() when you no longer need that space.
->>> + */
->> This seems a bit over-kill for buffer management no?  The only large 
->> header seems to be cr_hdr_head and the blowup comes from utsinfo string 
->> data (which could easily be moved out to be in it's own CR_HDR_STRING 
->> blocks).
->>
->> Wouldn't it be easier to use stack-local storage than balancing the 
->> cr_hbuf_get/put routines?
-> 
-> I've asked the same question, so I'll give you Oren's response that I
-> remember:
-> 
-> cr_hbuf_get/put() are more of an API that we can use later.  For now,
-> those buffers really are temporary.  But, in a case where we want to do
-> a really fast checkpoint (to reduce "downtime" during the checkpoint) we
-> store the image entirely in kernel memory to be written out later.
-> 
 
-Hmm, if I'm understanding you correctly, adding ref counts explicitly 
-(like you suggest below)  would be used to let a lower layer defer 
-writes.  Seems like this could be just as easily done with explicits 
-kmallocs and transferring ownership of the allocated memory to the 
-in-kernel representation handling layer below (which in turn queues the 
-data structures for writes).
+On Tue, 16 Dec 2008, Ingo Molnar wrote:
+> 
+> i noticed high stack-tracer overhead too. Which is understandable i guess: 
+> the stack tracer keeps the mcount callbacks running all the time and can 
+> save the stack backtrace of the highest-stack-usage point in time that the 
+> kernel ever has hit in the past. That is a pretty powerful debug 
+> capability, with appropriate costs.
 
-Any such layer would probably need to hold references to objects 
-enqueued for write-out, so they will still a full cleanup path in case 
-of success/error/abort (which means that any advantage of creating a 
-pool of allocations for O(1) cleanup disappears).
+I was thinking of having a way to start and stop the stack tracer. This 
+way we can actually have it on by default with anything that has dynamic 
+ftace. To enable it durning boot would require a kernel command line 
+option. Other than that, I would have a sysctl enable it.
 
-Reference counting these guys doesn't have a clear advantage to me. 
-They seem to have a pretty linear lifetime.
-
-> In that case, cr_hbuf_put() stops doing anything at all because we keep
-> the memory around.
-> 
-> cr_hbuf_get() becomes, "I need some memory to write some checkpointy
-> things into".
-> 
-> cr_hbuf_put() becomes, "I'm done with this for now, only keep it if
-> someone else needs it."
-> 
-> This might all be a lot clearer if we just kept some more explicit
-> accounting around about who is using the objects.  Something like:
-> 
-> struct cr_buf {
-> 	struct kref ref;
-> 	int size;
-> 	char buf[0];
-> };
-> 
-> /* replaces cr_hbuf_get() */
-> struct cr_buf *alloc_cr_buf(int size, gfp_t flags)
-> {
-> 	struct cr_buf *buf;
-> 
-> 	buf = kmalloc(sizeof(cr_buf) + size, flags);
-> 	if (!buf)
-> 		return NULL;
-> 	buf->ref = 1; /* or whatever */
-> 	buf->size = size;
-> 	return buf;
-> }
-> 
-> int cr_kwrite(struct cr_buf *buf)
-> {
-> 	if (writing_checkpoint_now) {
-> 		// or whatever this write call was...
-> 		vfs_write(&buf->buf[0], buf->size);
-> 	} else if (deferring_write) {		
-> 		kref_get(buf->kref);
-> 	}
-> }
-> 
-> -- Dave
-> 
+-- Steve
 
