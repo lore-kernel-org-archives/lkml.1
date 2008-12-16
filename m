@@ -1,38 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbYLPJSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYLPJVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753878AbYLPJSI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 04:18:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYLPJRs
+	id S1754036AbYLPJVI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 04:21:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYLPJUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 04:17:48 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46790
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751225AbYLPJRr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 04:17:47 -0500
-Date: Tue, 16 Dec 2008 01:17:49 -0800 (PST)
-Message-Id: <20081216.011749.124113130.davem@davemloft.net>
-To: hannes@hanneseder.net
-Cc: kkeil@suse.de, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH v2] isdn: eicon: fix sparse warning: make global
- functions static
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49463d0c.09c5660a.36f7.ffffc710@mx.google.com>
-References: <49463d0c.09c5660a.36f7.ffffc710@mx.google.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Dec 2008 04:20:53 -0500
+Received: from lucidpixels.com ([75.144.35.66]:59349 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751767AbYLPJUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 04:20:52 -0500
+Date: Tue, 16 Dec 2008 04:20:50 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Dan Williams <dan.j.williams@gmail.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: 2.6.27.8: OOM killer: [swapper: page allocation failure]
+In-Reply-To: <e9c3a7c20812151644p7c1038cajd7254a963f9038a2@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0812160419550.28063@p34.internal.lan>
+References: <alpine.DEB.1.10.0812120708080.9826@p34.internal.lan> <e9c3a7c20812151644p7c1038cajd7254a963f9038a2@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hannes Eder <hannes@hanneseder.net>
-Date: Thu, 11 Dec 2008 17:59:14 +0100
 
-> Fix this sparse warnings by making the functions static:
- ...
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 
-Applied, thanks Hannes.
+On Mon, 15 Dec 2008, Dan Williams wrote:
+
+> On Fri, Dec 12, 2008 at 5:14 AM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+>> [44893.846532] swapper: page allocation failure. order:0, mode:0x20
+> [..]
+>>
+>> Raid optimizations used:
+>>
+>> # cat oraid.sh |grep -v ^#|grep .
+>> . /etc/profile
+>> echo "Optimizing RAID Arrays..."
+>> cd /sys/block
+>> DISKS=$(/bin/ls -1d sd[e-j])
+>> echo "Setting read-ahead to 32 MiB for /dev/md0"
+>> blockdev --setra 65536 /dev/md0
+>> echo "Setting stripe_cache_size to 16 MiB for /dev/md0"
+>> echo 16384 > /sys/block/md0/md/stripe_cache_size
+>>
+>
+> If you set the stripe_cache_size high enough you can strangle the
+> system.  Do you really need 384MiB of raid cache?
+
+The weird thing is, with md/RAID-5, I never had a problem.
+
+Justin.
+
