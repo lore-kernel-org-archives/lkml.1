@@ -1,152 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759796AbYLPVJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbYLPVLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759796AbYLPVJK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 16:09:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759631AbYLPVIt
+	id S1759353AbYLPVLT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 16:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbYLPVK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 16:08:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40393 "EHLO mx3.mail.elte.hu"
+	Tue, 16 Dec 2008 16:10:58 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:45865 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759611AbYLPVIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 16:08:47 -0500
-Date: Tue, 16 Dec 2008 22:08:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: linux-next: Tree for December 11
-Message-ID: <20081216210834.GM14787@elte.hu>
-References: <20081211200459.14d18d7a.sfr@canb.auug.org.au> <f19298770812110440s7e3781eex4a16b961ad6847b2@mail.gmail.com> <f19298770812140634j434bf6a6gd883688f00dac45e@mail.gmail.com>
+	id S1752956AbYLPVKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 16:10:55 -0500
+Date: Tue, 16 Dec 2008 13:10:53 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org,
+       "kernel-testers@vger.kernel.org >> Kernel Testers List" 
+	<kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH v3 2/7] fs: Use a percpu_counter to track nr_inodes
+Message-ID: <20081216211053.GM6681@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <493100B0.6090104@cosmosbay.com> <4941968E.3020201@cosmosbay.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <f19298770812140634j434bf6a6gd883688f00dac45e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4941968E.3020201@cosmosbay.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Dec 11, 2008 at 11:39:10PM +0100, Eric Dumazet wrote:
+> Avoids cache line ping pongs between cpus and prepare next patch,
+> because updates of nr_inodes dont need inode_lock anymore.
+> 
+> (socket8 bench result : no difference at this point)
 
-* Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
+I do like this per-CPU counter infrastructure!
 
-> On Thu, Dec 11, 2008 at 15:40, Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
-> > On Thu, Dec 11, 2008 at 12:04, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >> Hi all,
-> >>
-> >> Changes since 20081210:
-> >>
-> >> New tree:
-> >>        nommu
-> >>
-> >> Undropped tree:
-> >>        sound
-> >>
-> >> Dropped trees (temporarily):
-> >>        v4l-dvb (build problem)
-> >>        mtd (difficult conflicts)
-> >>        drm (build problem)
-> >>        semaphore-removal (due to unfixed conflicts against Linus' tree)
-> >>        cpu_alloc (build problem)
-> >>        perfmon3 (concerns from the x86 team)
-> >>        audit (difficult conflicts)
-> >>        nommu (build problem)
-> >>        staging (build failure)
-> >>
-> >> The driver-core tree gained a build failure that needed a commit reverted.
-> >>
-> >> The ftrace tree gained a conflict against Linus' tree.
-> >>
-> >> The pci tree gained a conflict against the driver-core tree.
-> >>
-> >> The mtd tree gained 3 conflicts against the arm tree which I could not
-> >> easily resolve, so it was dropped.
-> >>
-> >> The ttydev tree gained a conflict against the async_tx tree requiring a
-> >> commit from the async_tx tree to be reverted.
-> >>
-> >> The nommu tree gained conflicts against the slab and kmemcheck trees and
-> >> also a build failure so it was dropped.
-> >>
-> >> ----------------------------------------------------------------------------
-> >
-> > Hi.
-> >
-> > I'm seeing this warning early in boot logs. It does not appear on 2.6.28-rc7.
-> > Not sure how long it's been around. Haven't built -next for some time.
-> >
-> > [    0.004000] Intel machine check reporting enabled on CPU#0.
-> > [    0.004000] using mwait in idle threads.
-> > [    0.004000] Checking 'hlt' instruction... <4>------------[ cut here
-> > ]------------
-> > [    0.004167] WARNING: at kernel/sched.c:4364 sub_preempt_count+0xae/0xc0()
-> > [    0.004266] Hardware name: HP Compaq nx7300 (GB848ES#ACB)
-> > [    0.004361] Modules linked in:
-> > [    0.004497] Pid: 0, comm: swapper Not tainted 2.6.28-rc8-next-20081211 #117
-> > [    0.004595] Call Trace:
-> > [    0.004689]  [<c01324d6>] warn_slowpath+0x86/0xa0
-> > [    0.004789]  [<c0155d00>] ? check_usage_forwards+0x10/0xb0
-> > [    0.004886]  [<c015394a>] ? save_trace+0x3a/0xa0
-> > [    0.004981]  [<c015742d>] ? mark_lock+0x37d/0xe00
-> > [    0.005076]  [<c01580f9>] ? __lock_acquire+0x249/0x610
-> > [    0.005175]  [<c04a3a02>] ? _spin_unlock_irq+0x22/0x50
-> > [    0.005272]  [<c0158e50>] ? trace_hardirqs_on_caller+0x70/0x1a0
-> > [    0.005369]  [<c04a3a0d>] ? _spin_unlock_irq+0x2d/0x50
-> > [    0.005465]  [<c0124bfe>] sub_preempt_count+0xae/0xc0
-> > [    0.005564]  [<c0137012>] _local_bh_enable+0x52/0xc0
-> > [    0.005661]  [<c013725f>] __do_softirq+0x11f/0x170
-> > [    0.005756]  [<c0137140>] ? __do_softirq+0x0/0x170
-> > [    0.005851]  <IRQ>  [<c0137729>] ? irq_exit+0x89/0xa0
-> > [    0.005993]  [<c01059ed>] ? do_IRQ+0xad/0x120
-> > [    0.006088]  [<c0103aac>] ? common_interrupt+0x2c/0x34
-> > [    0.006184]  [<c013007b>] ? mmput+0x2b/0xc0
-> > [    0.006281]  [<c06735a8>] ? check_bugs+0xb8/0xe0
-> > [    0.006379]  [<c066b7ea>] ? start_kernel+0x26a/0x310
-> > [    0.006475]  [<c066b270>] ? unknown_bootoption+0x0/0x210
-> > [    0.006572]  [<c066b077>] ? __init_begin+0x77/0xb0
-> > [    0.006674] ---[ end trace 4eaa2a86a8e2da22 ]---
-> > [    0.016004] OK.
-> > [    0.016560] ACPI: Core revision 20081031
-> > [    0.044495] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-> >
-> > Config and full dmesg attached.
-> >
-> 
-> The warning can also be reproduced in qemu, so it was easy to bisect.
-> 
-> commit 7317d7b87edb41a9135e30be1ec3f7ef817c53dd
-> Author: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date:   Tue Sep 30 20:50:27 2008 +1000
-> 
->     sched: improve preempt debugging
-> 
->     This patch helped me out with a problem I recently had....
-> 
->     Basically, when the kernel lock is held, then preempt_count
-> underflow does not
->     get detected until it is released which may be a long time (and arbitrarily,
->     eg at different points it may be rescheduled). If the bkl is released at
->     schedule, the resulting output is actually fairly cryptic...
-> 
->     With any other lock that elevates preempt_count, it is illegal to schedule
->     under it (which would get found pretty quickly). bkl allows scheduling with
->     preempt_count elevated, which makes underflows hard to debug.
-> 
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> I understand that not this particular commit is buggy, but at least
-> I've got someone to add to the CC. ;)
-> 
-> Also the author's e-mail looks suspicious.
+One small comment change noted below.  Other than that:
 
-Suspicious in what way?
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-	Ingo
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> ---
+>  fs/fs-writeback.c   |    2 +-
+>  fs/inode.c          |   39 +++++++++++++++++++++++++++++++--------
+>  include/linux/fs.h  |    3 +++
+>  kernel/sysctl.c     |    4 ++--
+>  mm/page-writeback.c |    2 +-
+>  5 files changed, 38 insertions(+), 12 deletions(-)
+> 
+> 
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index d0ff0b8..b591cdd 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -608,7 +608,7 @@ void sync_inodes_sb(struct super_block *sb, int wait)
+>  	unsigned long nr_unstable = global_page_state(NR_UNSTABLE_NFS);
+> 
+>  	wbc.nr_to_write = nr_dirty + nr_unstable +
+> -			(inodes_stat.nr_inodes - inodes_stat.nr_unused) +
+> +			(get_nr_inodes() - inodes_stat.nr_unused) +
+>  			nr_dirty + nr_unstable;
+>  	wbc.nr_to_write += wbc.nr_to_write / 2;		/* Bit more for luck */
+>  	sync_sb_inodes(sb, &wbc);
+> diff --git a/fs/inode.c b/fs/inode.c
+> index 0487ddb..f94f889 100644
+> --- a/fs/inode.c
+> +++ b/fs/inode.c
+> @@ -96,9 +96,33 @@ static DEFINE_MUTEX(iprune_mutex);
+>   * Statistics gathering..
+>   */
+>  struct inodes_stat_t inodes_stat;
+> +static struct percpu_counter nr_inodes;
+> 
+>  static struct kmem_cache * inode_cachep __read_mostly;
+> 
+> +int get_nr_inodes(void)
+> +{
+> +	return percpu_counter_sum_positive(&nr_inodes);
+> +}
+> +
+> +/*
+> + * Handle nr_dentry sysctl
+
+That would be "nr_inode", right?
+
+> + */
+> +#if defined(CONFIG_SYSCTL) && defined(CONFIG_PROC_FS)
+> +int proc_nr_inodes(ctl_table *table, int write, struct file *filp,
+> +		   void __user *buffer, size_t *lenp, loff_t *ppos)
+> +{
+> +	inodes_stat.nr_inodes = get_nr_inodes();
+> +	return proc_dointvec(table, write, filp, buffer, lenp, ppos);
+> +}
+> +#else
+> +int proc_nr_inodes(ctl_table *table, int write, struct file *filp,
+> +		   void __user *buffer, size_t *lenp, loff_t *ppos)
+> +{
+> +	return -ENOSYS;
+> +}
+> +#endif
+> +
+>  static void wake_up_inode(struct inode *inode)
+>  {
+>  	/*
+> @@ -306,9 +330,7 @@ static void dispose_list(struct list_head *head)
+>  		destroy_inode(inode);
+>  		nr_disposed++;
+>  	}
+> -	spin_lock(&inode_lock);
+> -	inodes_stat.nr_inodes -= nr_disposed;
+> -	spin_unlock(&inode_lock);
+> +	percpu_counter_sub(&nr_inodes, nr_disposed);
+>  }
+> 
+>  /*
+> @@ -560,8 +582,8 @@ struct inode *new_inode(struct super_block *sb)
+>  	
+>  	inode = alloc_inode(sb);
+>  	if (inode) {
+> +		percpu_counter_inc(&nr_inodes);
+>  		spin_lock(&inode_lock);
+> -		inodes_stat.nr_inodes++;
+>  		list_add(&inode->i_list, &inode_in_use);
+>  		list_add(&inode->i_sb_list, &sb->s_inodes);
+>  		inode->i_ino = ++last_ino;
+> @@ -622,7 +644,7 @@ static struct inode * get_new_inode(struct super_block *sb, struct hlist_head *h
+>  			if (set(inode, data))
+>  				goto set_failed;
+> 
+> -			inodes_stat.nr_inodes++;
+> +			percpu_counter_inc(&nr_inodes);
+>  			list_add(&inode->i_list, &inode_in_use);
+>  			list_add(&inode->i_sb_list, &sb->s_inodes);
+>  			hlist_add_head(&inode->i_hash, head);
+> @@ -671,7 +693,7 @@ static struct inode * get_new_inode_fast(struct super_block *sb, struct hlist_he
+>  		old = find_inode_fast(sb, head, ino);
+>  		if (!old) {
+>  			inode->i_ino = ino;
+> -			inodes_stat.nr_inodes++;
+> +			percpu_counter_inc(&nr_inodes);
+>  			list_add(&inode->i_list, &inode_in_use);
+>  			list_add(&inode->i_sb_list, &sb->s_inodes);
+>  			hlist_add_head(&inode->i_hash, head);
+> @@ -1042,8 +1064,8 @@ void generic_delete_inode(struct inode *inode)
+>  	list_del_init(&inode->i_list);
+>  	list_del_init(&inode->i_sb_list);
+>  	inode->i_state |= I_FREEING;
+> -	inodes_stat.nr_inodes--;
+>  	spin_unlock(&inode_lock);
+> +	percpu_counter_dec(&nr_inodes);
+> 
+>  	security_inode_delete(inode);
+> 
+> @@ -1093,8 +1115,8 @@ static void generic_forget_inode(struct inode *inode)
+>  	list_del_init(&inode->i_list);
+>  	list_del_init(&inode->i_sb_list);
+>  	inode->i_state |= I_FREEING;
+> -	inodes_stat.nr_inodes--;
+>  	spin_unlock(&inode_lock);
+> +	percpu_counter_dec(&nr_inodes);
+>  	if (inode->i_data.nrpages)
+>  		truncate_inode_pages(&inode->i_data, 0);
+>  	clear_inode(inode);
+> @@ -1394,6 +1416,7 @@ void __init inode_init(void)
+>  {
+>  	int loop;
+> 
+> +	percpu_counter_init(&nr_inodes, 0);
+>  	/* inode slab cache */
+>  	inode_cachep = kmem_cache_create("inode_cache",
+>  					 sizeof(struct inode),
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index 114cb65..a789346 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -47,6 +47,7 @@ struct inodes_stat_t {
+>  	int dummy[5];		/* padding for sysctl ABI compatibility */
+>  };
+>  extern struct inodes_stat_t inodes_stat;
+> +extern int get_nr_inodes(void);
+> 
+>  extern int leases_enable, lease_break_time;
+> 
+> @@ -2219,6 +2220,8 @@ int proc_nr_files(struct ctl_table *table, int write, struct file *filp,
+>  		  void __user *buffer, size_t *lenp, loff_t *ppos);
+>  int proc_nr_dentry(struct ctl_table *table, int write, struct file *filp,
+>  		   void __user *buffer, size_t *lenp, loff_t *ppos);
+> +int proc_nr_inodes(struct ctl_table *table, int write, struct file *filp,
+> +		   void __user *buffer, size_t *lenp, loff_t *ppos);
+> 
+>  int get_filesystem_list(char * buf);
+> 
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 777bee7..b705f3a 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -1205,7 +1205,7 @@ static struct ctl_table fs_table[] = {
+>  		.data		= &inodes_stat,
+>  		.maxlen		= 2*sizeof(int),
+>  		.mode		= 0444,
+> -		.proc_handler	= &proc_dointvec,
+> +		.proc_handler	= &proc_nr_inodes,
+>  	},
+>  	{
+>  		.ctl_name	= FS_STATINODE,
+> @@ -1213,7 +1213,7 @@ static struct ctl_table fs_table[] = {
+>  		.data		= &inodes_stat,
+>  		.maxlen		= 7*sizeof(int),
+>  		.mode		= 0444,
+> -		.proc_handler	= &proc_dointvec,
+> +		.proc_handler	= &proc_nr_inodes,
+>  	},
+>  	{
+>  		.procname	= "file-nr",
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 2970e35..a71a922 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -705,7 +705,7 @@ static void wb_kupdate(unsigned long arg)
+>  	next_jif = start_jif + dirty_writeback_interval;
+>  	nr_to_write = global_page_state(NR_FILE_DIRTY) +
+>  			global_page_state(NR_UNSTABLE_NFS) +
+> -			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
+> +			(get_nr_inodes() - inodes_stat.nr_unused);
+>  	while (nr_to_write > 0) {
+>  		wbc.more_io = 0;
+>  		wbc.encountered_congestion = 0;
