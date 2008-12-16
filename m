@@ -1,152 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYLPE05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752745AbYLPE1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbYLPE05 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 23:26:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYLPE0s
+	id S1752745AbYLPE1T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 23:27:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYLPE0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 23:26:48 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:51979 "EHLO relay.sgi.com"
+	Mon, 15 Dec 2008 23:26:49 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:51980 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751887AbYLPE0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751584AbYLPE0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 15 Dec 2008 23:26:47 -0500
-Message-Id: <20081216042646.088194000@polaris-admin.engr.sgi.com>
+Message-Id: <20081216042645.818266000@polaris-admin.engr.sgi.com>
 References: <20081216042645.629941000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 15 Dec 2008 20:26:48 -0800
+Date: Mon, 15 Dec 2008 20:26:46 -0800
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@redhat.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>, Jack Steiner <steiner@sgi.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] cpumask: add sysfs displays for configured and disabled cpu maps
-Content-Disposition: inline; filename=cpumask:add-sysfs-files.patch
+Subject: [PATCH 1/3] x86: fix cpu_mask_to_apicid_and to include cpu_online_mask
+Content-Disposition: inline; filename=x86:fix-cpu_mask_to_apicid_and.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add new functionality.
+Impact: fix potential problem.
 
-Add sysfs files "kernel_max" and "offline" to display the max CPU index
-allowed (NR_CPUS-1), and the map of cpus that are offline. 
+In determining the destination apicid, there are usually three cpumasks
+that are considered: the incoming cpumask arg, cfg->domain and the
+cpu_online_mask.  Since we are just introducing the cpu_mask_to_apicid_and
+function, make sure it includes the cpu_online_mask in it's evaluation.
+[Added with this patch.]
 
-Cpus can be offlined via HOTPLUG, disabled by the BIOS ACPI tables, or
-if they exceed the number of cpus allowed by the NR_CPUS config option,
-or the "maxcpus=NUM" kernel start parameter.
+There are two io_apic.c functions that did not previously use the
+cpu_online_mask:  setup_IO_APIC_irq and msi_compose_msg.  Both of these
+simply used cpu_mask_to_apicid(cfg->domain & TARGET_CPUS), and all but
+one arch (NUMAQ[*]) returns only online cpus in the TARGET_CPUS mask,
+so the behavior is identical for all cases.
 
-The "possible_cpus=NUM" parameter can also extend the number of possible
-cpus allowed, in which case the cpus not present at startup will be
-in the offline state.  (These cpus can be HOTPLUGGED ON after system
-startup [pending a follow-on patch to provide the capability via the
-/sys/devices/sys/cpu/cpuN/online mechanism to bring them online.])
+[*-This sounds like an error in NUMAQ?  Or perhaps it cannot offline cpus?]
 
-By design, the "offlined cpus > possible cpus" display will always
-use the following formats:
-
-  * all possible cpus online:   "x$"    or "x-y$" 
-  * some possible cpus offline: ".*,x$" or ".*,x-y$"
-
-where:
-  x == number of possible cpus (nr_cpu_ids); and
-  y == number of cpus >= NR_CPUS or maxcpus (if y > x).
-
-One use of this feature is for distros to select (or configure) the
-appropriate kernel to install for the resident system.
-
-Notes:
-  * cpus offlined <= possible cpus will be printed for all architectures.
-  * cpus offlined >  possible cpus will only be printed for arches that
-  	set 'total_cpus' [X86 only in this patch].
+Note that alloc_cpumask_var is only used for the 32-bit cases where
+it's highly likely that the cpumask set size will be small and therefore
+CPUMASK_OFFSTACK=n.  But if that's not the case, failing the allocate
+will cause the same return value as the default.
 
 Based on tip/cpus4096 + .../rusty/linux-2.6-for-ingo.git/master +
 	 x86-only-patches sent 12/15.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/x86/kernel/smpboot.c |    2 ++
- drivers/base/cpu.c        |   45 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/smp.h       |    3 +++
- 3 files changed, 50 insertions(+)
+ arch/x86/include/asm/bigsmp/apic.h            |    4 +-
+ arch/x86/include/asm/es7000/apic.h            |   40 +++++++++++---------------
+ arch/x86/include/asm/mach-default/mach_apic.h |    3 +
+ arch/x86/include/asm/summit/apic.h            |   30 +++++++++++--------
+ arch/x86/kernel/genapic_flat_64.c             |    4 +-
+ arch/x86/kernel/genx2apic_cluster.c           |    4 +-
+ arch/x86/kernel/genx2apic_phys.c              |    4 +-
+ arch/x86/kernel/genx2apic_uv_x.c              |    4 +-
+ 8 files changed, 52 insertions(+), 41 deletions(-)
 
---- linux-2.6-for-ingo.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/smpboot.c
-@@ -1293,6 +1293,8 @@ __init void prefill_possible_map(void)
- 	else
- 		possible = setup_possible_cpus;
+--- linux-2.6-for-ingo.orig/arch/x86/include/asm/bigsmp/apic.h
++++ linux-2.6-for-ingo/arch/x86/include/asm/bigsmp/apic.h
+@@ -138,7 +138,9 @@ static inline unsigned int cpu_mask_to_a
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = cpumask_any_and(cpumask, andmask);
++	for_each_cpu_and(cpu, cpumask, andmask)
++		if (cpumask_test_cpu(cpu, cpu_online_mask))
++			break;
+ 	if (cpu < nr_cpu_ids)
+ 		return cpu_to_logical_apicid(cpu);
  
-+	total_cpus = max_t(int, possible, num_processors + disabled_cpus);
-+
- 	if (possible > CONFIG_NR_CPUS) {
- 		printk(KERN_WARNING
- 			"%d Processors exceeds NR_CPUS limit of %d\n",
---- linux-2.6-for-ingo.orig/drivers/base/cpu.c
-+++ linux-2.6-for-ingo/drivers/base/cpu.c
-@@ -128,10 +128,55 @@ print_cpus_func(online);
- print_cpus_func(possible);
- print_cpus_func(present);
+--- linux-2.6-for-ingo.orig/arch/x86/include/asm/es7000/apic.h
++++ linux-2.6-for-ingo/arch/x86/include/asm/es7000/apic.h
+@@ -214,51 +214,47 @@ static inline unsigned int cpu_mask_to_a
+ 	return apicid;
+ }
  
-+/*
-+ * Print values for NR_CPUS and offlined cpus
-+ */
-+static ssize_t print_cpus_kernel_max(struct sysdev_class *class, char *buf)
-+{
-+	int n = snprintf(buf, PAGE_SIZE-2, "%d\n", CONFIG_NR_CPUS - 1);
-+	return n;
-+}
-+static SYSDEV_CLASS_ATTR(kernel_max, 0444, print_cpus_kernel_max, NULL);
+-static inline unsigned int cpu_mask_to_apicid_and(const struct cpumask *cpumask,
 +
-+/* arch-optional setting to enable display of offline cpus >= nr_cpu_ids */
-+unsigned int total_cpus;
++static inline unsigned int cpu_mask_to_apicid_and(const struct cpumask *inmask,
+ 						  const struct cpumask *andmask)
+ {
+ 	int num_bits_set;
+-	int num_bits_set2;
+ 	int cpus_found = 0;
+ 	int cpu;
+-	int apicid = 0;
++	int apicid = cpu_to_logical_apicid(0);
++	cpumask_var_t cpumask;
 +
-+static ssize_t print_cpus_offline(struct sysdev_class *class, char *buf)
-+{
-+	int n = 0, len = PAGE_SIZE-2;
-+	cpumask_var_t offline;
++	if (!alloc_cpumask_var(&cpumask, GFP_ATOMIC))
++		return apicid;
 +
-+	/* display offline cpus < nr_cpu_ids */
-+	if (!alloc_cpumask_var(&offline, GFP_KERNEL))
-+		goto next;
-+	cpumask_complement(offline, cpu_online_mask);
-+	n = cpulist_scnprintf(buf, len, offline);
-+	free_cpumask_var(offline);
-+
-+next:
-+	/* display offline cpus >= nr_cpu_ids */
-+	if (total_cpus && nr_cpu_ids < total_cpus) {
-+		if (n && n < len)
-+			buf[n++] = ',';
-+
-+		if (nr_cpu_ids == total_cpus-1)
-+			n += snprintf(&buf[n], len - n, "%d", nr_cpu_ids);
-+		else
-+			n += snprintf(&buf[n], len - n, "%d-%d",
-+						      nr_cpu_ids, total_cpus-1);
-+	}
-+
-+	n += snprintf(&buf[n], len - n, "\n");
-+	return n;
-+}
-+static SYSDEV_CLASS_ATTR(offline, 0444, print_cpus_offline, NULL);
-+
- static struct sysdev_class_attribute *cpu_state_attr[] = {
- 	&attr_online_map,
- 	&attr_possible_map,
- 	&attr_present_map,
-+	&attr_kernel_max,
-+	&attr_offline,
- };
++	cpumask_and(cpumask, inmask, andmask);
++	cpumask_and(cpumask, cpumask, cpu_online_mask);
  
- static int cpu_states_init(void)
---- linux-2.6-for-ingo.orig/include/linux/smp.h
-+++ linux-2.6-for-ingo/include/linux/smp.h
-@@ -21,6 +21,9 @@ struct call_single_data {
- 	u16 priv;
- };
+ 	num_bits_set = cpumask_weight(cpumask);
+-	num_bits_set2 = cpumask_weight(andmask);
+-	num_bits_set = min(num_bits_set, num_bits_set2);
+ 	/* Return id to all */
+-	if (num_bits_set >= nr_cpu_ids)
+-#if defined CONFIG_ES7000_CLUSTERED_APIC
+-		return 0xFF;
+-#else
+-		return cpu_to_logical_apicid(0);
+-#endif
++	if (num_bits_set == NR_CPUS)
++		goto exit;
+ 	/*
+ 	 * The cpus in the mask must all be on the apic cluster.  If are not
+ 	 * on the same apicid cluster return default value of TARGET_CPUS.
+ 	 */
+-	cpu = cpumask_first_and(cpumask, andmask);
++	cpu = cpumask_first(cpumask);
+ 	apicid = cpu_to_logical_apicid(cpu);
+-
+ 	while (cpus_found < num_bits_set) {
+-		if (cpumask_test_cpu(cpu, cpumask) &&
+-		    cpumask_test_cpu(cpu, andmask)) {
++		if (cpumask_test_cpu(cpu, cpumask)) {
+ 			int new_apicid = cpu_to_logical_apicid(cpu);
+ 			if (apicid_cluster(apicid) !=
+-					apicid_cluster(new_apicid)) {
+-				printk(KERN_WARNING
+-					"%s: Not a valid mask!\n", __func__);
+-#if defined CONFIG_ES7000_CLUSTERED_APIC
+-				return 0xFF;
+-#else
++					apicid_cluster(new_apicid)){
++				printk ("%s: Not a valid mask!\n", __func__);
+ 				return cpu_to_logical_apicid(0);
+-#endif
+ 			}
+ 			apicid = new_apicid;
+ 			cpus_found++;
+ 		}
+ 		cpu++;
+ 	}
++exit:
++	free_cpumask_var(cpumask);
+ 	return apicid;
+ }
  
-+/* total number of cpus in this system (may exceed NR_CPUS) */
-+extern unsigned int total_cpus;
+--- linux-2.6-for-ingo.orig/arch/x86/include/asm/mach-default/mach_apic.h
++++ linux-2.6-for-ingo/arch/x86/include/asm/mach-default/mach_apic.h
+@@ -72,8 +72,9 @@ static inline unsigned int cpu_mask_to_a
+ {
+ 	unsigned long mask1 = cpumask_bits(cpumask)[0];
+ 	unsigned long mask2 = cpumask_bits(andmask)[0];
++	unsigned long mask3 = cpumask_bits(cpu_online_mask)[0];
+ 
+-	return (unsigned int)(mask1 & mask2);
++	return (unsigned int)(mask1 & mask2 & mask3);
+ }
+ 
+ static inline u32 phys_pkg_id(u32 cpuid_apic, int index_msb)
+--- linux-2.6-for-ingo.orig/arch/x86/include/asm/summit/apic.h
++++ linux-2.6-for-ingo/arch/x86/include/asm/summit/apic.h
+@@ -170,35 +170,37 @@ static inline unsigned int cpu_mask_to_a
+ 	return apicid;
+ }
+ 
+-static inline unsigned int cpu_mask_to_apicid_and(const struct cpumask *cpumask,
++static inline unsigned int cpu_mask_to_apicid_and(const struct cpumask *inmask,
+ 						  const struct cpumask *andmask)
+ {
+ 	int num_bits_set;
+-	int num_bits_set2;
+ 	int cpus_found = 0;
+ 	int cpu;
+-	int apicid = 0;
++	int apicid = 0xFF;
++	cpumask_var_t cpumask;
 +
- #ifdef CONFIG_SMP
++	if (!alloc_cpumask_var(&cpumask, GFP_ATOMIC))
++		return (int) 0xFF;
++
++	cpumask_and(cpumask, inmask, andmask);
++	cpumask_and(cpumask, cpumask, cpu_online_mask);
  
- #include <linux/preempt.h>
+ 	num_bits_set = cpumask_weight(cpumask);
+-	num_bits_set2 = cpumask_weight(andmask);
+-	num_bits_set = min(num_bits_set, num_bits_set2);
+ 	/* Return id to all */
+-	if (num_bits_set >= nr_cpu_ids)
+-		return 0xFF;
++	if (num_bits_set == nr_cpu_ids)
++		goto exit;
+ 	/*
+ 	 * The cpus in the mask must all be on the apic cluster.  If are not
+ 	 * on the same apicid cluster return default value of TARGET_CPUS.
+ 	 */
+-	cpu = cpumask_first_and(cpumask, andmask);
++	cpu = cpumask_first(cpumask);
+ 	apicid = cpu_to_logical_apicid(cpu);
+ 	while (cpus_found < num_bits_set) {
+-		if (cpumask_test_cpu(cpu, cpumask)
+-		    && cpumask_test_cpu(cpu, andmask)) {
++		if (cpumask_test_cpu(cpu, cpumask)) {
+ 			int new_apicid = cpu_to_logical_apicid(cpu);
+ 			if (apicid_cluster(apicid) !=
+-					apicid_cluster(new_apicid)) {
+-				printk(KERN_WARNING
+-					"%s: Not a valid mask!\n", __func__);
++					apicid_cluster(new_apicid)){
++				printk ("%s: Not a valid mask!\n", __func__);
+ 				return 0xFF;
+ 			}
+ 			apicid = apicid | new_apicid;
+@@ -206,6 +208,8 @@ static inline unsigned int cpu_mask_to_a
+ 		}
+ 		cpu++;
+ 	}
++exit:
++	free_cpumask_var(cpumask);
+ 	return apicid;
+ }
+ 
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/genapic_flat_64.c
++++ linux-2.6-for-ingo/arch/x86/kernel/genapic_flat_64.c
+@@ -276,7 +276,9 @@ physflat_cpu_mask_to_apicid_and(const st
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = cpumask_any_and(cpumask, andmask);
++	for_each_cpu_and(cpu, cpumask, andmask)
++		if (cpumask_test_cpu(cpu, cpu_online_mask))
++			break;
+ 	if (cpu < nr_cpu_ids)
+ 		return per_cpu(x86_cpu_to_apicid, cpu);
+ 	return BAD_APICID;
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/genx2apic_cluster.c
++++ linux-2.6-for-ingo/arch/x86/kernel/genx2apic_cluster.c
+@@ -133,7 +133,9 @@ static unsigned int x2apic_cpu_mask_to_a
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = cpumask_any_and(cpumask, andmask);
++	for_each_cpu_and(cpu, cpumask, andmask)
++		if (cpumask_test_cpu(cpu, cpu_online_mask))
++			break;
+ 	if (cpu < nr_cpu_ids)
+ 		return per_cpu(x86_cpu_to_apicid, cpu);
+ 	return BAD_APICID;
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/genx2apic_phys.c
++++ linux-2.6-for-ingo/arch/x86/kernel/genx2apic_phys.c
+@@ -132,7 +132,9 @@ static unsigned int x2apic_cpu_mask_to_a
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = cpumask_any_and(cpumask, andmask);
++	for_each_cpu_and(cpu, cpumask, andmask)
++		if (cpumask_test_cpu(cpu, cpu_online_mask))
++			break;
+ 	if (cpu < nr_cpu_ids)
+ 		return per_cpu(x86_cpu_to_apicid, cpu);
+ 	return BAD_APICID;
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/genx2apic_uv_x.c
++++ linux-2.6-for-ingo/arch/x86/kernel/genx2apic_uv_x.c
+@@ -188,7 +188,9 @@ static unsigned int uv_cpu_mask_to_apici
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = cpumask_any_and(cpumask, andmask);
++	for_each_cpu_and(cpu, cpumask, andmask)
++		if (cpumask_test_cpu(cpu, cpu_online_mask))
++			break;
+ 	if (cpu < nr_cpu_ids)
+ 		return per_cpu(x86_cpu_to_apicid, cpu);
+ 	return BAD_APICID;
 
 -- 
