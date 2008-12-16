@@ -1,99 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbYLPUG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbYLPUHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758095AbYLPUG7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:06:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYLPUGs
+	id S1758780AbYLPUHb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:07:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbYLPUHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:06:48 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45407 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753398AbYLPUGr (ORCPT
+	Tue, 16 Dec 2008 15:07:14 -0500
+Received: from mga11.intel.com ([192.55.52.93]:60579 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754176AbYLPUHN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:06:47 -0500
-Date: Tue, 16 Dec 2008 15:06:45 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: linux-kbuild@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       zippel@linux-m68k.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Better way to force a rebuild
-In-Reply-To: <alpine.DEB.1.10.0812141204480.20467@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0812161502530.25356@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0812101443550.11805@gandalf.stny.rr.com> <20081210200242.GA15692@uranus.ravnborg.org> <20081210212821.GA18348@uranus.ravnborg.org> <20081213231654.GA32446@uranus.ravnborg.org>
- <alpine.DEB.1.10.0812141204480.20467@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 16 Dec 2008 15:07:13 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,232,1228118400"; 
+   d="scan'208";a="650309357"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "mingo@elte.hu" <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>, "npiggin@suse.de" <npiggin@suse.de>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "jeremy@goop.org" <jeremy@goop.org>,
+       "arjan@infradead.org" <arjan@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Date: Tue, 16 Dec 2008 12:07:56 -0800
+Subject: RE: [patch 4/8] x86 PAT: hooks in generic vm code to help archs to
+ track pfnmap regions
+Thread-Topic: [patch 4/8] x86 PAT: hooks in generic vm code to help archs to
+ track pfnmap regions
+Thread-Index: AclfuJO0z8uZvHYBTHys1/+9IfuSAwAAPPGg
+Message-ID: <7E82351C108FA840AB1866AC776AEC46433D1762@orsmsx505.amr.corp.intel.com>
+References: <20081112212647.259698000@intel.com>
+	<20081112212900.436502000@intel.com>
+ <20081216115717.9f7082c7.akpm@linux-foundation.org>
+In-Reply-To: <20081216115717.9f7082c7.akpm@linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sun, 14 Dec 2008, Steven Rostedt wrote:
-> 
-> On Sun, 14 Dec 2008, Sam Ravnborg wrote:
-> 
-> > On Wed, Dec 10, 2008 at 10:28:21PM +0100, Sam Ravnborg wrote:
-> > > 
-> > > I made the following quick hack.
-> > > I think it should do the trick.
-> > > 
-> > > 	Sam
-> > > 
-> > > diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-> > > index 468fbc9..8b5bf43 100644
-> > > --- a/scripts/Makefile.build
-> > > +++ b/scripts/Makefile.build
-> > > @@ -215,7 +215,8 @@ define rule_cc_o_c
-> > >  	$(call echo-cmd,cc_o_c) $(cmd_cc_o_c);				  \
-> > >  	$(cmd_modversions)						  \
-> > >  	$(cmd_record_mcount)						  \
-> > > -	scripts/basic/fixdep $(depfile) $@ '$(call make-cmd,cc_o_c)' >    \
-> > > +	scripts/basic/fixdep $(depfile) $@                                \
-> > > +	'$(call make-cmd,cc_o_c) $(call make-cmd,record_mcount)' >        \
-> > >  	                                              $(dot-target).tmp;  \
-> > >  	rm -f $(depfile);						  \
-> > >  	mv -f $(dot-target).tmp $(dot-target).cmd
-> > 
-> > Hi Steven.
-> > 
-> > Did you try the above?
-> > If it works I will add it to kbuild-next.git
-> 
-> I started to but got distracted :-/   I'll retry it on Monday.
-
-Hi Sam,
-
-Sorry for taking so long to get back to you, but my hard drive for my 
-laptop is on the fritz, and I'm busy making sure everything is backed up.
-
-I tried this patch and it does not seem to do what I want :-(
-
-You can test it too, just compile the kernel with CONFIG_FUNCTION_TRACER
-and CONFIG_DYNAMIC_FTRACE enabled, and then compile again with just 
-disabling CONFIG_DYNAMIC_FTRACE (keep CONFIG_FUNCTION_TRACER enabled). If 
-the entire kernel does not compile again, then it did not work.
-
--- Steve
-
-Oh, you need to add this patch first:
-
----
- include/linux/kernel.h |    5 -----
- 1 file changed, 5 deletions(-)
-
-Index: linux-trace.git/include/linux/kernel.h
-===================================================================
---- linux-trace.git.orig/include/linux/kernel.h	2008-11-20 14:36:55.000000000 -0500
-+++ linux-trace.git/include/linux/kernel.h	2008-12-10 16:54:16.000000000 -0500
-@@ -535,9 +535,4 @@ struct sysinfo {
- #define NUMA_BUILD 0
- #endif
  
--/* Rebuild everything on CONFIG_FTRACE_MCOUNT_RECORD */
--#ifdef CONFIG_FTRACE_MCOUNT_RECORD
--# define REBUILD_DUE_TO_FTRACE_MCOUNT_RECORD
--#endif
--
- #endif
+
+>-----Original Message-----
+>From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+>Sent: Tuesday, December 16, 2008 11:57 AM
+>To: Pallipadi, Venkatesh
+>Cc: mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com; 
+>npiggin@suse.de; hugh@veritas.com; rdreier@cisco.com; 
+>jbarnes@virtuousgeek.org; jeremy@goop.org; 
+>arjan@infradead.org; linux-kernel@vger.kernel.org; Pallipadi, 
+>Venkatesh; Siddha, Suresh B
+>Subject: Re: [patch 4/8] x86 PAT: hooks in generic vm code to 
+>help archs to track pfnmap regions
+>
+>On Wed, 12 Nov 2008 13:26:51 -0800
+>Venkatesh Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+>
+>> --- tip.orig/mm/memory.c	2008-11-11 10:10:11.000000000 -0800
+>> +++ tip/mm/memory.c	2008-11-11 12:10:18.000000000 -0800
+>> @@ -99,6 +99,28 @@ int randomize_va_space __read_mostly =
+>>  					2;
+>>  #endif
+>>  
+>> +#ifndef track_pfn_vma_new
+>> +int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t prot,
+>> +			unsigned long pfn, unsigned long size)
+>> +{
+>> +	return 0;
+>> +}
+>> +#endif
+>> +
+>> +#ifndef track_pfn_vma_copy
+>> +int track_pfn_vma_copy(struct vm_area_struct *vma)
+>> +{
+>> +	return 0;
+>> +}
+>> +#endif
+>> +
+>> +#ifndef untrack_pfn_vma
+>> +void untrack_pfn_vma(struct vm_area_struct *vma, unsigned long pfn,
+>> +			unsigned long size)
+>> +{
+>> +}
+>> +#endif
+>
+>Using __weak would provide a somewhat neater result here.
+>
+
+Thought about that. But, then remembered the issues with gcc versions and __weak, as in here
+http://lkml.org/lkml/2008/5/1/368
+
+and decided to take the safer approach.
+
+Thanks,
+Venki
