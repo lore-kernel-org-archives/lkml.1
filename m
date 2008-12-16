@@ -1,50 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbYLPQiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbYLPQih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757860AbYLPQiX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 11:38:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbYLPQiF
+	id S1758245AbYLPQih (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 11:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbYLPQiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 11:38:05 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:40076 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755519AbYLPQiD (ORCPT
+	Tue, 16 Dec 2008 11:38:11 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45368 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756648AbYLPQiK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 11:38:03 -0500
-Date: Tue, 16 Dec 2008 16:37:46 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Brian J. Murrell" <brian@interlinx.bc.ca>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: suspend/resume fails on second attempt in LNXVIDEO:00
-Message-ID: <20081216163746.GA9478@srcf.ucam.org>
-References: <gi247o$iog$1@ger.gmane.org> <200812161625.37318.rjw@sisk.pl> <gi8jf1$m5f$5@ger.gmane.org> <200812161713.08451.rjw@sisk.pl>
+	Tue, 16 Dec 2008 11:38:10 -0500
+Date: Tue, 16 Dec 2008 16:38:08 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] vfs: introduce helper function to safely NUL-terminate
+	symlinks
+Message-ID: <20081216163808.GU28946@ZenIV.linux.org.uk>
+References: <1229442720-31056-1-git-send-email-duaneg@dghda.com> <1229442720-31056-2-git-send-email-duaneg@dghda.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200812161713.08451.rjw@sisk.pl>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <1229442720-31056-2-git-send-email-duaneg@dghda.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16, 2008 at 05:13:08PM +0100, Rafael J. Wysocki wrote:
-> On Tuesday, 16 of December 2008, Brian J. Murrell wrote:
-> > On Tue, 16 Dec 2008 16:25:37 +0100, Rafael J. Wysocki wrote:
-> > 
-> > > Because the hal-driven whitelist allows us to match systems in a more
-> > > detailed way.  If your system is in the s2ram whitelist already and
-> > > works with it, there shouldn't be any difference.
-> > 
-> > Unfortunately, Ubuntu in their "wisdom" removed s2ram and claim "s2both" 
-> > supersedes it in that it does both suspend to disk and suspend to ram and 
-> > then suspends, but if your battery dies while suspended you can still 
-> > resume from the suspend to disk.
+On Tue, Dec 16, 2008 at 03:51:53PM +0000, Duane Griffin wrote:
+> A number of filesystems were potentially triggering kernel bugs due to
+> corrupted symlink names on disk. This helper helps safely terminate the
+> names.
 
-I seem to be missing the original message, but: no, s2ram doesn't exist 
-in Ubuntu because pm-utils handles that role.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+s/unsigned/size_t/g and into the queue that goes...
