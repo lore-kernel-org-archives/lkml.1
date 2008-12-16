@@ -1,22 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbYLPGVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751390AbYLPGa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946AbYLPGVr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 01:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYLPGVk
+	id S1751390AbYLPGa1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 01:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbYLPGaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 01:21:40 -0500
-Received: from mailgw.miraclelinux.com ([122.216.84.157]:32008 "EHLO
-	mailgw.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbYLPGVk (ORCPT
+	Tue, 16 Dec 2008 01:30:20 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:39535 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301AbYLPGaT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 01:21:40 -0500
-Date: Tue, 16 Dec 2008 15:21:43 +0900
-From: Yoshihiro Takahashi <ytakahashi@miraclelinux.com>
-To: linux-kernel@vger.kernel.org
-Subject: kdump hangs up by Sysrq+C trigger in high load.
-Message-Id: <20081216152143.88caba51.ytakahashi@miraclelinux.com>
-Organization: miraclelinux.com
-X-Mailer: Sylpheed 2.6.0beta1 (GTK+ 2.10.4; i686-pc-linux-gnu)
+	Tue, 16 Dec 2008 01:30:19 -0500
+Date: Tue, 16 Dec 2008 15:26:59 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: miaox@cn.fujitsu.com
+Cc: nishimura@mxp.nes.nec.co.jp, Paul Menage <menage@google.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Why are the pages not migrated to current cpuset after
+ 'memory_migrate' is set true
+Message-Id: <20081216152659.4eb384c4.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <4947389D.1050708@cn.fujitsu.com>
+References: <4947389D.1050708@cn.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,70 +31,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi.
 
-kdump hangs up by Sysrq+C trigger once in about 10 times in high load.
-After the above occurs, kdump cannot collect vmcores with NMI button.
-When waiting_for_crash_ipi does case more than 0, mdelay seem to make 
-a stall.
+On Tue, 16 Dec 2008 13:11:57 +0800, Miao Xie <miaox@cn.fujitsu.com> wrote:
+> Hi, Paul
+> 
+> I found the pages that task had allocated to it on nodes in its previous cpuset
+> were not migrated to the tasks' current cpuset after 'memory_migrate' was set
+> true. It looks strange for users. Why are the pages not migrated to current
+> cpuset after 'memory_migrate' is set true?
+> 
+I don't know the reason of current behavior, but
 
-While nmi_shootdown_cpus(), mdelay may not work since interruption is
-disable.  (ex. when crashing kernel by NMI interruption, all
-interruption may be disabled.).
+> Step I did
+> 1, allocate pages on cpuset (mems is 0, memory_migrate is 0)
+> 2, change cpuset's mems (mems: 0 -> 1)
+> 3, change cpuset's memory_migrate(memory_migrate: 0 -> 1) 
+>  
+from/to which node kernel should migrate pages in general ?
 
-So I think that it should use other way (TSC) instead of mdelay() in
-nmi_shootdown_cpus().
+Should kernel remember previous value of "mems" ? What if we change "mems"
+several times before setting memory_migrate ON ?
 
-Here is the log.
---
-SysRq : Trigger a crashdump
-BUG: warning at arch/x86/kernel/crash.c:107/nmi_shootdown_cpus() (Not tainted)
+IMHO, current behavior is not so strange. All users have to do is
+set memory_migrate ON *before* changing "mems" or attaching task
+if they want to migrate pages.
 
 
-    Signed-off-by: Yoshihiro Takahashi <ytakahashi@miraclelinux.com>
----
- crash.c |   26 +++++++++++++++++++++-----
- 1 file changed, 21 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index 2685538..fc63636 100644
---- a/arch/x86/kernel/crash.c
-+++ b/arch/x86/kernel/crash.c
-@@ -89,7 +89,8 @@ static struct notifier_block crash_nmi_nb = {
- 
- static void nmi_shootdown_cpus(void)
- {
--	unsigned long msecs;
-+	int i, tsc_wait, tsc_count;
-+	unsigned long tsc_start, tsc_now, tsc_delay;
- 
- 	atomic_set(&waiting_for_crash_ipi, num_online_cpus() - 1);
- 	/* Would it be better to replace the trap vector here? */
-@@ -102,10 +103,25 @@ static void nmi_shootdown_cpus(void)
- 
- 	smp_send_nmi_allbutself();
- 
--	msecs = 1000; /* Wait at most a second for the other cpus to stop */
--	while ((atomic_read(&waiting_for_crash_ipi) > 0) && msecs) {
--		mdelay(1);
--		msecs--;
-+	tsc_delay = HZ; /* Wait at most a second for the other cpus to stop */
-+	while ((atomic_read(&waiting_for_crash_ipi) > 0) && tsc_delay) {
-+		tsc_wait = 1000000; /* msec */
-+		tsc_count = 16384;
-+		while (tsc_wait > 0) {
-+			if (tsc_count-- < 0) {
-+				break;
-+			}
-+			tsc_start = get_cycles();
-+			for (i = 0; i < 100000; i++) {
-+				;
-+			}
-+			tsc_now = get_cycles();
-+			tsc_wait -= tsc_now - tsc_start;
-+		}
-+		if (tsc_count < 0) {
-+			break;
-+		}
-+		tsc_delay--;
- 	}
- 
- 	/* Leave the nmi callback set */
+Thanks,
+Daisuke Nishimura.
