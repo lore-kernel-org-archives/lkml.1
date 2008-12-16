@@ -1,236 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbYLPVLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757852AbYLPVPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759353AbYLPVLT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 16:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbYLPVK6
+	id S1757852AbYLPVPb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 16:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYLPVPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 16:10:58 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:45865 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752956AbYLPVKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 16:10:55 -0500
-Date: Tue, 16 Dec 2008 13:10:53 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org,
-       "kernel-testers@vger.kernel.org >> Kernel Testers List" 
-	<kernel-testers@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH v3 2/7] fs: Use a percpu_counter to track nr_inodes
-Message-ID: <20081216211053.GM6681@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <49267694.1030506@cosmosbay.com> <20081121.010508.40225532.davem@davemloft.net> <4926AEDB.10007@cosmosbay.com> <4926D022.5060008@cosmosbay.com> <20081121152148.GA20388@elte.hu> <4926D39D.9050603@cosmosbay.com> <20081121153453.GA23713@elte.hu> <492DDB6A.8090806@cosmosbay.com> <493100B0.6090104@cosmosbay.com> <4941968E.3020201@cosmosbay.com>
+	Tue, 16 Dec 2008 16:15:23 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:41795 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751644AbYLPVPW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 16:15:22 -0500
+X-Greylist: delayed 378 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Dec 2008 16:15:21 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=ENgi8P7FHzmbghvHybOE1JZCYKLDHP+PTnwJIf1pxFqZDzpQ5oPuHAiIO+Of89PX4p
+         YO6g40HZz3ynSmGSfS74KBuyRnKFplx6U1glCsmvsqrZ6Sht/epegVT9PGaM9edR1Rxi
+         QZndVoIr/msA3fV3KUv3L6pZpk0vVQBunXtf4=
+Message-ID: <494818EA.7080807@gmail.com>
+Date: Tue, 16 Dec 2008 22:08:58 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4941968E.3020201@cosmosbay.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing/ftrace: use preempt_enable_no_resched_notrace in
+ ring_buffer_time_stamp()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 11, 2008 at 11:39:10PM +0100, Eric Dumazet wrote:
-> Avoids cache line ping pongs between cpus and prepare next patch,
-> because updates of nr_inodes dont need inode_lock anymore.
-> 
-> (socket8 bench result : no difference at this point)
+Impact: prevent a trace recursion
 
-I do like this per-CPU counter infrastructure!
+After some tests with function graph tracer under x86-32, I saw some recursions
+caused by ring_buffer_time_stamp() that calls preempt_enable_no_notrace() which
+calls preempt_schedule() which is traced itself.
 
-One small comment change noted below.  Other than that:
+This patch re-enables preemption without rescheduling.
 
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/trace/ring_buffer.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> ---
->  fs/fs-writeback.c   |    2 +-
->  fs/inode.c          |   39 +++++++++++++++++++++++++++++++--------
->  include/linux/fs.h  |    3 +++
->  kernel/sysctl.c     |    4 ++--
->  mm/page-writeback.c |    2 +-
->  5 files changed, 38 insertions(+), 12 deletions(-)
-> 
-> 
-> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> index d0ff0b8..b591cdd 100644
-> --- a/fs/fs-writeback.c
-> +++ b/fs/fs-writeback.c
-> @@ -608,7 +608,7 @@ void sync_inodes_sb(struct super_block *sb, int wait)
->  	unsigned long nr_unstable = global_page_state(NR_UNSTABLE_NFS);
-> 
->  	wbc.nr_to_write = nr_dirty + nr_unstable +
-> -			(inodes_stat.nr_inodes - inodes_stat.nr_unused) +
-> +			(get_nr_inodes() - inodes_stat.nr_unused) +
->  			nr_dirty + nr_unstable;
->  	wbc.nr_to_write += wbc.nr_to_write / 2;		/* Bit more for luck */
->  	sync_sb_inodes(sb, &wbc);
-> diff --git a/fs/inode.c b/fs/inode.c
-> index 0487ddb..f94f889 100644
-> --- a/fs/inode.c
-> +++ b/fs/inode.c
-> @@ -96,9 +96,33 @@ static DEFINE_MUTEX(iprune_mutex);
->   * Statistics gathering..
->   */
->  struct inodes_stat_t inodes_stat;
-> +static struct percpu_counter nr_inodes;
-> 
->  static struct kmem_cache * inode_cachep __read_mostly;
-> 
-> +int get_nr_inodes(void)
-> +{
-> +	return percpu_counter_sum_positive(&nr_inodes);
-> +}
-> +
-> +/*
-> + * Handle nr_dentry sysctl
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 822fcd4..a775e46 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -109,7 +109,7 @@ u64 ring_buffer_time_stamp(int cpu)
+ 	preempt_disable_notrace();
+ 	/* shift to debug/test normalization and TIME_EXTENTS */
+ 	time = sched_clock() << DEBUG_SHIFT;
+-	preempt_enable_notrace();
++	preempt_enable_no_resched_notrace();
+ 
+ 	return time;
+ }
+-- 
+1.6.0.4
 
-That would be "nr_inode", right?
-
-> + */
-> +#if defined(CONFIG_SYSCTL) && defined(CONFIG_PROC_FS)
-> +int proc_nr_inodes(ctl_table *table, int write, struct file *filp,
-> +		   void __user *buffer, size_t *lenp, loff_t *ppos)
-> +{
-> +	inodes_stat.nr_inodes = get_nr_inodes();
-> +	return proc_dointvec(table, write, filp, buffer, lenp, ppos);
-> +}
-> +#else
-> +int proc_nr_inodes(ctl_table *table, int write, struct file *filp,
-> +		   void __user *buffer, size_t *lenp, loff_t *ppos)
-> +{
-> +	return -ENOSYS;
-> +}
-> +#endif
-> +
->  static void wake_up_inode(struct inode *inode)
->  {
->  	/*
-> @@ -306,9 +330,7 @@ static void dispose_list(struct list_head *head)
->  		destroy_inode(inode);
->  		nr_disposed++;
->  	}
-> -	spin_lock(&inode_lock);
-> -	inodes_stat.nr_inodes -= nr_disposed;
-> -	spin_unlock(&inode_lock);
-> +	percpu_counter_sub(&nr_inodes, nr_disposed);
->  }
-> 
->  /*
-> @@ -560,8 +582,8 @@ struct inode *new_inode(struct super_block *sb)
->  	
->  	inode = alloc_inode(sb);
->  	if (inode) {
-> +		percpu_counter_inc(&nr_inodes);
->  		spin_lock(&inode_lock);
-> -		inodes_stat.nr_inodes++;
->  		list_add(&inode->i_list, &inode_in_use);
->  		list_add(&inode->i_sb_list, &sb->s_inodes);
->  		inode->i_ino = ++last_ino;
-> @@ -622,7 +644,7 @@ static struct inode * get_new_inode(struct super_block *sb, struct hlist_head *h
->  			if (set(inode, data))
->  				goto set_failed;
-> 
-> -			inodes_stat.nr_inodes++;
-> +			percpu_counter_inc(&nr_inodes);
->  			list_add(&inode->i_list, &inode_in_use);
->  			list_add(&inode->i_sb_list, &sb->s_inodes);
->  			hlist_add_head(&inode->i_hash, head);
-> @@ -671,7 +693,7 @@ static struct inode * get_new_inode_fast(struct super_block *sb, struct hlist_he
->  		old = find_inode_fast(sb, head, ino);
->  		if (!old) {
->  			inode->i_ino = ino;
-> -			inodes_stat.nr_inodes++;
-> +			percpu_counter_inc(&nr_inodes);
->  			list_add(&inode->i_list, &inode_in_use);
->  			list_add(&inode->i_sb_list, &sb->s_inodes);
->  			hlist_add_head(&inode->i_hash, head);
-> @@ -1042,8 +1064,8 @@ void generic_delete_inode(struct inode *inode)
->  	list_del_init(&inode->i_list);
->  	list_del_init(&inode->i_sb_list);
->  	inode->i_state |= I_FREEING;
-> -	inodes_stat.nr_inodes--;
->  	spin_unlock(&inode_lock);
-> +	percpu_counter_dec(&nr_inodes);
-> 
->  	security_inode_delete(inode);
-> 
-> @@ -1093,8 +1115,8 @@ static void generic_forget_inode(struct inode *inode)
->  	list_del_init(&inode->i_list);
->  	list_del_init(&inode->i_sb_list);
->  	inode->i_state |= I_FREEING;
-> -	inodes_stat.nr_inodes--;
->  	spin_unlock(&inode_lock);
-> +	percpu_counter_dec(&nr_inodes);
->  	if (inode->i_data.nrpages)
->  		truncate_inode_pages(&inode->i_data, 0);
->  	clear_inode(inode);
-> @@ -1394,6 +1416,7 @@ void __init inode_init(void)
->  {
->  	int loop;
-> 
-> +	percpu_counter_init(&nr_inodes, 0);
->  	/* inode slab cache */
->  	inode_cachep = kmem_cache_create("inode_cache",
->  					 sizeof(struct inode),
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 114cb65..a789346 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -47,6 +47,7 @@ struct inodes_stat_t {
->  	int dummy[5];		/* padding for sysctl ABI compatibility */
->  };
->  extern struct inodes_stat_t inodes_stat;
-> +extern int get_nr_inodes(void);
-> 
->  extern int leases_enable, lease_break_time;
-> 
-> @@ -2219,6 +2220,8 @@ int proc_nr_files(struct ctl_table *table, int write, struct file *filp,
->  		  void __user *buffer, size_t *lenp, loff_t *ppos);
->  int proc_nr_dentry(struct ctl_table *table, int write, struct file *filp,
->  		   void __user *buffer, size_t *lenp, loff_t *ppos);
-> +int proc_nr_inodes(struct ctl_table *table, int write, struct file *filp,
-> +		   void __user *buffer, size_t *lenp, loff_t *ppos);
-> 
->  int get_filesystem_list(char * buf);
-> 
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index 777bee7..b705f3a 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -1205,7 +1205,7 @@ static struct ctl_table fs_table[] = {
->  		.data		= &inodes_stat,
->  		.maxlen		= 2*sizeof(int),
->  		.mode		= 0444,
-> -		.proc_handler	= &proc_dointvec,
-> +		.proc_handler	= &proc_nr_inodes,
->  	},
->  	{
->  		.ctl_name	= FS_STATINODE,
-> @@ -1213,7 +1213,7 @@ static struct ctl_table fs_table[] = {
->  		.data		= &inodes_stat,
->  		.maxlen		= 7*sizeof(int),
->  		.mode		= 0444,
-> -		.proc_handler	= &proc_dointvec,
-> +		.proc_handler	= &proc_nr_inodes,
->  	},
->  	{
->  		.procname	= "file-nr",
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index 2970e35..a71a922 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -705,7 +705,7 @@ static void wb_kupdate(unsigned long arg)
->  	next_jif = start_jif + dirty_writeback_interval;
->  	nr_to_write = global_page_state(NR_FILE_DIRTY) +
->  			global_page_state(NR_UNSTABLE_NFS) +
-> -			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
-> +			(get_nr_inodes() - inodes_stat.nr_unused);
->  	while (nr_to_write > 0) {
->  		wbc.more_io = 0;
->  		wbc.encountered_congestion = 0;
