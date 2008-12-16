@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbYLPP4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758559AbYLPP6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758933AbYLPP4d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 10:56:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758765AbYLPPzh
+	id S1758559AbYLPP6u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 10:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbYLPP6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 10:55:37 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55926 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757061AbYLPPzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 10:55:35 -0500
-Date: Tue, 16 Dec 2008 16:54:56 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       linux-api@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       jlim@sgi.com, kosaki.motohiro@jp.fujitsu.com
-Subject: Re: [PATCH, RESEND] getrusage: fill ru_maxrss value
-Message-ID: <20081216165456.347e5355@psychotron.englab.brq.redhat.com>
-In-Reply-To: <20081216152054.GA17012@redhat.com>
-References: <20081216155641.1411f8a7@psychotron.englab.brq.redhat.com>
-	<20081216152054.GA17012@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Dec 2008 10:58:38 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:57932 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756770AbYLPP6h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 10:58:37 -0500
+Date: Tue, 16 Dec 2008 15:58:22 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Hannes Eder <hannes@hanneseder.net>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] HID: avoid sparse warning in HID_COMPAT_LOAD_DRIVER
+Message-ID: <20081216155822.GD12431@fluff.org.uk>
+References: <4947a48f.08b6660a.34ca.ffffa1e8@mx.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4947a48f.08b6660a.34ca.ffffa1e8@mx.google.com>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Dec 2008 16:20:54 +0100
-Oleg Nesterov <oleg@redhat.com> wrote:
+On Tue, Dec 16, 2008 at 01:31:31PM +0100, Hannes Eder wrote:
+> Impact: include a prototype for the exported function in the macro
+> 
+> Fix about 20 of this warnings:
+> 
+>   drivers/hid/hid-a4tech.c:162:1: warning: symbol 'hid_compat_a4tech' was not declared. Should it be static?
+> 
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+>  include/linux/hid.h |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/hid.h b/include/linux/hid.h
+> index 215035b..81aa84d 100644
+> --- a/include/linux/hid.h
+> +++ b/include/linux/hid.h
+> @@ -793,6 +793,8 @@ dbg_hid(const char *fmt, ...)
+>  
+>  #ifdef CONFIG_HID_COMPAT
+>  #define HID_COMPAT_LOAD_DRIVER(name)	\
+> +/* prototype to avoid sparse warning */	\
+> +extern void hid_compat_##name(void);	\
+>  void hid_compat_##name(void) { }	\
 
-> On 12/16, Jiri Pirko wrote:
-> >
-> > This patch makes ->ru_maxrss value in struct rusage filled accordingly to
-> > rss hiwater mark. This struct is filled as a parameter to
-> > getrusage syscall. ->ru_maxrss value is set to pages which might be correct
-> > as "time" application converts it to KBs.
-> >
-> > To make this happen we extend struct signal_struct by two fields. The
-> > first one is ->maxrss which we use to store rss hiwater of the task. The
-> > second one is ->cmaxrss which we use to store highest rss hiwater of all
-> > task childs. These values are used in k_getrusage() to actually fill
-> > ->ru_maxrss. k_getrusage() uses current rss hiwater value directly
-> > if mm struct exists.
-> >
-> > We clear the ->maxrss as a part of flush_old_exec() to be consistent
-> > because bprm_mm_init() does not copy ->hiwater_rss.
+surely this could simply be changed to 'static void hid_compat_##name(void)'
+if it is only being defined to be an empty function?
+
+>  EXPORT_SYMBOL(hid_compat_##name)
+>  #else
+> -- 
+> 1.5.6.3
 > 
-> Imho the patch is fine, but
-> 
-> > @@ -1598,6 +1601,15 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
-> >  out:
-> >  	cputime_to_timeval(utime, &r->ru_utime);
-> >  	cputime_to_timeval(stime, &r->ru_stime);
-> > +
-> > +	task_lock(p);
-> > +	if (p->mm) {
-> > +		unsigned long maxrss = get_mm_hiwater_rss(p->mm);
-> > +
-> > +		if (r->ru_maxrss < maxrss)
-> > +			r->ru_maxrss = maxrss;
-> > +	}
-> > +	task_unlock(p);
-> 
-> I think the code above should check "if (who != RUSAGE_CHILDREN) ?
-Yes of course it should. Sorry I missed that :/ Will do new patch.
-> 
-> Oleg.
-> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
