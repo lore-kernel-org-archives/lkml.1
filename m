@@ -1,97 +1,78 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757062AbYLPWN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1756056AbYLPWVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757062AbYLPWN7 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 17:13:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYLPWNr
+	id S1756056AbYLPWVn (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 17:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbYLPWVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 17:13:47 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:59627 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752682AbYLPWNp convert rfc822-to-8bit (ORCPT
+	Tue, 16 Dec 2008 17:21:31 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:30391 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751671AbYLPWVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 17:13:45 -0500
+	Tue, 16 Dec 2008 17:21:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=RRKsU3q8Qk7Qnp0TF6+CYWBnihrrsdtRRf2AlY18V/jopjMLczdumYwkxXKoZ4HqqZ
-         P+8kp8xZprMev6HMy64YepAwVeJebC7GmmJIle0dcN35APJ9QLaT1oaphiFGRZ50RZNU
-         T7EN3aQ9zlEETeYYG0TQFveyFfcLnVY/1/1fw=
-Message-ID: <c62985530812161413j59fc0fdy31024a540bf0c197@mail.gmail.com>
-Date: Tue, 16 Dec 2008 23:13:44 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+        b=LrAyXQ9EHeKqZJv89/+SrrQOtxd2NxDd+EdBCZHaUu4mA1u1tIYP7yYaqouVUJBB5g
+         AkDCHktq49yrtsoxbYDVEvfxiNQ7KKqSygLtw0kyyubMpvJN63DS37FDsoD6VluI+cGN
+         h2kCeYRAnpw/bCRVuIf73Xit1gIv0p2yLv0iw=
+Message-ID: <f19298770812161421r77a10575ia956e59a52d7efb2@mail.gmail.com>
+Date: Wed, 17 Dec 2008 01:21:29 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
 To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH][RFC 2/23]: SCST core
-Cc: "Vladislav Bolkhovitin" <vst@vlnb.net>,
-        "Steven Rostedt" <srostedt@redhat.com>,
-        "Sam Ravnborg" <sam@ravnborg.org>, linux-scsi@vger.kernel.org,
-        "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-        "Andrew Morton" <akpm@linux-foundation.org>,
-        "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-        "Mike Christie" <michaelc@cs.wisc.edu>,
-        "Jeff Garzik" <jeff@garzik.org>, "Boaz Harrosh" <bharrosh@panasas.com>,
-        "Linus Torvalds" <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-        "Bart Van Assche" <bart.vanassche@gmail.com>,
-        "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-In-Reply-To: <20081216214926.GU14787@elte.hu>
+Subject: Re: linux-next: Tree for December 11
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+        LKML <linux-kernel@vger.kernel.org>,
+        "Nick Piggin" <nickpiggin@yahoo.com.au>
+In-Reply-To: <20081216210834.GM14787@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <494009D7.4020602@vlnb.net> <49400ACD.3070502@vlnb.net>
-	 <20081210191213.GA15273@uranus.ravnborg.org>
-	 <49414DBE.6070801@vlnb.net>
-	 <20081211210917.GB27010@uranus.ravnborg.org>
-	 <4942BA85.3070408@vlnb.net>
-	 <1229118607.24995.18.camel@localhost.localdomain>
-	 <4943CAAB.4050008@vlnb.net>
-	 <c62985530812131635k362fc8d2q3c65e8284141f491@mail.gmail.com>
-	 <20081216214926.GU14787@elte.hu>
+References: <20081211200459.14d18d7a.sfr@canb.auug.org.au>
+	 <f19298770812110440s7e3781eex4a16b961ad6847b2@mail.gmail.com>
+	 <f19298770812140634j434bf6a6gd883688f00dac45e@mail.gmail.com>
+	 <20081216210834.GM14787@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/16 Ingo Molnar <mingo@elte.hu>:
->
-> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
->
->> > All the above functionality is almost what we need. The only thing
->> > left, which I forgot to mention, is possibility to log also functions
->> > return value on exit. This is what TRACE_EXIT_RES() in SCST does. Is
->> > it possible to add those?
+On Wed, Dec 17, 2008 at 00:08, Ingo Molnar <mingo@elte.hu> wrote:
+
 >>
->> I want to add that on the function graph tracer. That can be done pretty
->> easily. The only problem comes with the type of the return value. Would
->> this tracer be supposed to always return a 64 bits value regardless of
->> the real typ of the value? There would be some pointless bytes on most
->> return values. I don't know how to proceed for this problem.
+>> The warning can also be reproduced in qemu, so it was easy to bisect.
+>>
+>> commit 7317d7b87edb41a9135e30be1ec3f7ef817c53dd
+>> Author: Nick Piggin <nickpiggin@yahoo.com.au>
+>> Date:   Tue Sep 30 20:50:27 2008 +1000
+>>
+>>     sched: improve preempt debugging
+>>
+>>     This patch helped me out with a problem I recently had....
+>>
+>>     Basically, when the kernel lock is held, then preempt_count
+>> underflow does not
+>>     get detected until it is released which may be a long time (and arbitrarily,
+>>     eg at different points it may be rescheduled). If the bkl is released at
+>>     schedule, the resulting output is actually fairly cryptic...
+>>
+>>     With any other lock that elevates preempt_count, it is illegal to schedule
+>>     under it (which would get found pretty quickly). bkl allows scheduling with
+>>     preempt_count elevated, which makes underflows hard to debug.
+>>
+>>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>
+>> I understand that not this particular commit is buggy, but at least
+>> I've got someone to add to the CC. ;)
+>>
+>> Also the author's e-mail looks suspicious.
 >
-> Things like mov ...,%eax are zero-extend so they'll zap the high 32 bits.
+> Suspicious in what way?
 
+Does not appear in signed-off-by.
 
-That's right, but the problem occurs under 32 bits. The return values
-for 64 bits
-are in eax and edx. And most of the time, the high part (edx) will be junk.
-
-
-> The real problem are byte return values generated via things like:
 >
->   movb $1, %al
+>        Ingo
 >
-> those wont zero-extend, so you could get garbage in the output. One
-> approach would be to try a quick hack just to see how common a problem
-> this is.
-
-
-Yes, I will try something.
-
-> We could extract the return type from the debuginfo, hash it in a
-> read-mostly table and then look it up, but that seems complex both in
-> terms of build overhead and in terms of runtime overhead.
-
-I thought about it too and as you say it's rather complex. And
-thinking about non primitive types (like pid_t....)
-that would require a second pass of analysis to retrieve the
-corresponding primitive...
