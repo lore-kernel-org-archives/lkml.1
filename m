@@ -1,125 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYLPNCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbYLPNDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756492AbYLPNCv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 08:02:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYLPNCl
+	id S1757124AbYLPNDd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 08:03:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbYLPNDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 08:02:41 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:36929 "EHLO mail-out2.uio.no"
+	Tue, 16 Dec 2008 08:03:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45490 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754298AbYLPNCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 08:02:40 -0500
-Subject: Re: High load in 2.6.27, NFS / rpcauth_lookup_credcache()?
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Harry Edmon <harry@atmos.washington.edu>
-Cc: Max Kellermann <max@duempel.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <4946EBFA.60700@atmos.washington.edu>
-References: <20081022091207.GA12996@squirrel.roonstrasse.net>
-	 <20081023123628.GA18549@squirrel.roonstrasse.net>
-	 <1224773745.7625.4.camel@localhost>  <4946EBFA.60700@atmos.washington.edu>
-Content-Type: text/plain
-Date: Tue, 16 Dec 2008 08:02:33 -0500
-Message-Id: <1229432553.7257.4.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 4C7923299EF1A6164E72D1B8C4FDCAB1B64691C7
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 264 max/h 9 blacklist 0 greylist 0 ratelimit 0
+	id S1754487AbYLPNDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 08:03:24 -0500
+Date: Tue, 16 Dec 2008 14:03:02 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       perfctr-devel@lists.sourceforge.net
+Subject: Re: [patch] Performance Counters for Linux, v4
+Message-ID: <20081216130302.GA27678@elte.hu>
+References: <20081214212829.GA9435@elte.hu> <20081216122229.GA1430@ucw.cz> <20081216125000.GC25019@elte.hu> <20081216125720.GC1684@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081216125720.GC1684@ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-15 at 15:44 -0800, Harry Edmon wrote:
-> Trond Myklebust wrote:
-> > On Thu, 2008-10-23 at 14:36 +0200, Max Kellermann wrote:
-> >   
-> >> On 2008/10/22 11:12, Max Kellermann <max@duempel.org> wrote:
-> >>     
-> >>> after I was able to fix http://lkml.org/lkml/2008/10/17/147, the
-> >>> server which was already upgraded to 2.6.27.2 still gets very high
-> >>> load.  It is a web server with NFS file storage (NetApp), and while
-> >>> the others in the cluster (kernel 2.6.25) have a load of 1-3, 2.6.27.2
-> >>> gets 30-50.
-> >>>
-> >>> I did an oprofile, with the following results (server just started,
-> >>> load "only" 5-10):
-> >>>
-> >>> 87593    56.1116  (no location information)   vmlinux
-> >>> vmlinux                  rpcauth_lookup_credcache
-> >>> 16037    10.2732  auth_generic.c:0            vmlinux
-> >>> vmlinux                  generic_match
-> >>> 6460      4.1382  (no location information)   php4
-> >>> php4                     (no symbols)
-> >>> 2478      1.5874  (no location information)   libc-2.7.so
-> >>> libc-2.7.so              (no symbols)
-> >>> [...]
-> >>>
-> >>> We havn't configured any special authentication method.  It is a NFSv3
-> >>> over UDP mount, but the kernel has NFSv4 and therefore KRB5 enabled.
-> >>>
-> >>> Any ideas why rpcauth_lookup_credcache() goes overboard with CPU
-> >>> usage?
-> >>>       
-> >> I have bisected the problem: 98a8e323 is the result ("SUNRPC: Add a
-> >> helper rpcauth_lookup_generic_cred()").  5c691044 is ok.
-> >>
-> >> See the attached oprofile annotation data for both commits.  I guess
-> >> that the function rpcauth_lookup_credcache() is waiting for a spinlock
-> >> too often and too long.  Trond, any idea?
-> >>     
-> >
-> > Can you add a '-v' to the rpc.gssd daemon startup line? I'd like to see
-> > how often you are creating new gss contexts.
-> >
-> >   
-> >> Harry: added you to Cc because your problem sounds similar.
-> >>     
-> >
-> > Harry's problem is should be unrelated. afaik, he is seeing a problem
-> > with userland RPC code, not kernel rpc code.
-> >
-> > Trond
-> >
-> >   
-> I am finally getting some time to look at my problem that I originally 
-> reported in October (SUNRPC problem with 2.6.26 and beyond), and I am 
-> seeing the same behavior as Max Kellermann when my machine slows as I 
-> described earlier.  The system in question is currently running 
-> 2.6.27.7.  Here is what I see when it is misbehaving:
-> 
-> samples  %        image name               app name                 
-> symbol name
-> 11380517 57.4191  sunrpc.ko                sunrpc                   
-> rpcauth_lookup_credcache
-> 3263657  16.4664  sunrpc.ko                sunrpc                   
-> generic_match
-> 1081287   5.4555  vmlinux                  vmlinux                  
-> copy_user_generic_string
-> 499407    2.5197  vmlinux                  vmlinux                  
-> __posix_lock_file
-> [...]
-> 
-> And here is what I see when I stop the programs that are chewing up all 
-> the system time, and then starting them up again:
-> 
-> samples  %        image name               app name                 
-> symbol name
-> 6372650  21.7978  vmlinux                  vmlinux                  
-> copy_user_generic_string
-> 5401386  18.4755  sunrpc.ko                sunrpc                   
-> rpcauth_lookup_credcache
-> 3018753  10.3257  vmlinux                  vmlinux                  
-> __posix_lock_file
-> 1050095   3.5919  sunrpc.ko                sunrpc                   
-> generic_match
-> 
-> 
-> and I am not using Kerberos with NFSv4 (i.e. no rpc.gssd).  Did you ever 
-> find a solution for this problem with rpcauth_lookup_credcache?
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git&a=commitdiff&h=23918b03060f6e572168fdde1798a905679d2e06
+* Pavel Machek <pavel@suse.cz> wrote:
 
-Trond
+> On Tue 2008-12-16 13:50:00, Ingo Molnar wrote:
+> > 
+> > * Pavel Machek <pavel@suse.cz> wrote:
+> > 
+> > > Hmm, if I timec some setuid program, what happens?
+> > 
+> > yes, i already had a quick look at that a few days ago when i implemented 
+> > counter inheritance (for different reasons) and couldnt find the cleanest 
+> > place to put the exec() flushing into so i procrastinated that a bit :)
+> > 
+> > > Performance counters seem like great tool to pull secret keys out of 
+> > > other processes :-).
+> > 
+> > if you worry about _that_ angle you also have to:
+> > 
+> >  - turn off the cycle counter
+> > 
+> >  - turn off precise utimes
+> 
+> Probably good idea, yes.
+> 
+> >  - plus you have to forbid SMT CPUs as well. On HT a task could
+> >    co-schedule with your setuid task and observe its timing
+> >    characteristics via its _own_ behavior. (which is impacted by whatever
+> >    is running on another SMT/HT thread.)
+> 
+> Yes, SMT is evil.
 
+HT got added back to Nehalem, so SMT is coming to you in every future x86 
+CPU. It brings a serious performance win, so nobody will turn off SMT 
+threading in practice. If SMT worries you, it needs explicit partitioning 
+of security-relevant processing to different physical CPUs, via 
+cgroups/cpusets/etc.
+
+> > the real exec() worry are: active, IRQ driven samples/events. Not possible 
+> > yet via the current iteration of counter inheritance (hence my 
+> > procrastination) - but it makes sense and that's why i was looking at the 
+> > exec() angle.
+> > 
+> > and that will flush simple counters too, removing your theoretical attack 
+> > angle as well.
+> > 
+> > So how about the patch below?
+> 
+> Thanks!
+> 
+> > Subject: perfcounters: flush on setuid exec
+> > From: Ingo Molnar <mingo@elte.hu>
+> > Date: Tue Dec 16 13:40:44 CET 2008
+> > 
+> > Pavel Machek pointed out that performance counters should be flushed
+> > when crossing protection domains on setuid execution.
+> > 
+> > Reported-by: Pavel Machek <pavel@suse.cz>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> Acked-by: Pavel Machek <pavel@suse.cz>
+
+find below the final commit, thanks Pavel.
+
+	Ingo
+
+------------>
+>From f65cb45cba63f249458b669aa67069eabc37b2f5 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 16 Dec 2008 13:40:44 +0100
+Subject: [PATCH] perfcounters: flush on setuid exec
+
+Pavel Machek pointed out that performance counters should be flushed
+when crossing protection domains on setuid execution.
+
+Reported-by: Pavel Machek <pavel@suse.cz>
+Acked-by: Pavel Machek <pavel@suse.cz>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ fs/exec.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/fs/exec.c b/fs/exec.c
+index ec5df9a..d5165d8 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -33,6 +33,7 @@
+ #include <linux/string.h>
+ #include <linux/init.h>
+ #include <linux/pagemap.h>
++#include <linux/perf_counter.h>
+ #include <linux/highmem.h>
+ #include <linux/spinlock.h>
+ #include <linux/key.h>
+@@ -1017,6 +1018,13 @@ int flush_old_exec(struct linux_binprm * bprm)
+ 		set_dumpable(current->mm, suid_dumpable);
+ 	}
+ 
++	/*
++	 * Flush performance counters when crossing a
++	 * security domain:
++	 */
++	if (!get_dumpable(current->mm))
++		perf_counter_exit_task(current);
++
+ 	/* An exec changes our domain. We are no longer part of the thread
+ 	   group */
+ 
