@@ -1,125 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbYLOX5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbYLPAJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbYLOX5b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 18:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYLOX5W
+	id S1756655AbYLPAJm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 19:09:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbYLPAJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 18:57:22 -0500
-Received: from dew2.atmos.washington.edu ([128.95.89.42]:37240 "EHLO
-	dew2.atmos.washington.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752340AbYLOX5V (ORCPT
+	Mon, 15 Dec 2008 19:09:30 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:60793 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbYLPAJ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 18:57:21 -0500
-X-Greylist: delayed 720 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Dec 2008 18:57:21 EST
-Message-ID: <4946EBFA.60700@atmos.washington.edu>
-Date: Mon, 15 Dec 2008 15:44:58 -0800
-From: Harry Edmon <harry@atmos.washington.edu>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Mon, 15 Dec 2008 19:09:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=KvYk31MPxKPnxlqWF8/ERXbo/MG7U9PR3fGb0xUExi0iOCeKO6tM3JSBthtq0qnfjL
+         lM+u2of5PltnmtCoQRydtnaFUyTHu8YZXHjAy7uDN+WEK/G4C2WA+EW+UjTJHKfazmUe
+         mceymJI3Hu8BGize9f6OG2zZf6MXfFt2sPCKc=
+Message-ID: <e9c3a7c20812151609k2100fc8et5218e4e1f2336367@mail.gmail.com>
+Date: Mon, 15 Dec 2008 17:09:27 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+Subject: Re: [PATCH 11/13] dmaengine: kill struct dma_client and supporting infrastructure
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
+       "g.liakhovetski@gmx.de" <g.liakhovetski@gmx.de>,
+       "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
+In-Reply-To: <129600E5E5FB004392DDC3FB599660D70C8F3407@irsmsx504.ger.corp.intel.com>
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Max Kellermann <max@duempel.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Subject: Re: High load in 2.6.27, NFS / rpcauth_lookup_credcache()?
-References: <20081022091207.GA12996@squirrel.roonstrasse.net>	 <20081023123628.GA18549@squirrel.roonstrasse.net> <1224773745.7625.4.camel@localhost>
-In-Reply-To: <1224773745.7625.4.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -102.6 () BAYES_00,SPF_PASS,USER_IN_WHITELIST
+Content-Disposition: inline
+References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
+	 <20081114213513.32354.58256.stgit@dwillia2-linux.ch.intel.com>
+	 <129600E5E5FB004392DDC3FB599660D70C8F3407@irsmsx504.ger.corp.intel.com>
+X-Google-Sender-Auth: 01d24fc940b64820
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> On Thu, 2008-10-23 at 14:36 +0200, Max Kellermann wrote:
->   
->> On 2008/10/22 11:12, Max Kellermann <max@duempel.org> wrote:
->>     
->>> after I was able to fix http://lkml.org/lkml/2008/10/17/147, the
->>> server which was already upgraded to 2.6.27.2 still gets very high
->>> load.  It is a web server with NFS file storage (NetApp), and while
->>> the others in the cluster (kernel 2.6.25) have a load of 1-3, 2.6.27.2
->>> gets 30-50.
->>>
->>> I did an oprofile, with the following results (server just started,
->>> load "only" 5-10):
->>>
->>> 87593    56.1116  (no location information)   vmlinux
->>> vmlinux                  rpcauth_lookup_credcache
->>> 16037    10.2732  auth_generic.c:0            vmlinux
->>> vmlinux                  generic_match
->>> 6460      4.1382  (no location information)   php4
->>> php4                     (no symbols)
->>> 2478      1.5874  (no location information)   libc-2.7.so
->>> libc-2.7.so              (no symbols)
->>> [...]
->>>
->>> We havn't configured any special authentication method.  It is a NFSv3
->>> over UDP mount, but the kernel has NFSv4 and therefore KRB5 enabled.
->>>
->>> Any ideas why rpcauth_lookup_credcache() goes overboard with CPU
->>> usage?
->>>       
->> I have bisected the problem: 98a8e323 is the result ("SUNRPC: Add a
->> helper rpcauth_lookup_generic_cred()").  5c691044 is ok.
+On Fri, Dec 12, 2008 at 7:29 AM, Sosnowski, Maciej
+<maciej.sosnowski@intel.com> wrote:
+> Williams, Dan J wrote:
+>> All users have been converted to either the general-purpose allocator,
+>> dma_find_channel, or dma_request_channel.
 >>
->> See the attached oprofile annotation data for both commits.  I guess
->> that the function rpcauth_lookup_credcache() is waiting for a spinlock
->> too often and too long.  Trond, any idea?
->>     
+>> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+>> ---
+> (...)
+>>  /**
+>> - * dma_chans_notify_available - broadcast available channels to the
+>> clients
+>> - */
+>> -static void dma_clients_notify_available(void)
+>> -{
+>> -     struct dma_client *client;
+>> -
+>> -     mutex_lock(&dma_list_mutex);
+>> -
+>> -     list_for_each_entry(client, &dma_client_list, global_node)
+>> -             dma_client_chan_alloc(client);
+>> -
+>> -     mutex_unlock(&dma_list_mutex);
+>> -}
 >
-> Can you add a '-v' to the rpc.gssd daemon startup line? I'd like to see
-> how often you are creating new gss contexts.
+> I agree with Guennadi's concern about removing clients' notification
+> of new devices available in the system.
+> I understand that this design is based on polling instead,
+> however polling is always less efficient approach.
+> Do you think that restoring notifications in this redesigned dmaengine
+> would be more painful than limiting clients to polling solution?
 >
->   
->> Harry: added you to Cc because your problem sounds similar.
->>     
->
-> Harry's problem is should be unrelated. afaik, he is seeing a problem
-> with userland RPC code, not kernel rpc code.
->
-> Trond
->
->   
-I am finally getting some time to look at my problem that I originally 
-reported in October (SUNRPC problem with 2.6.26 and beyond), and I am 
-seeing the same behavior as Max Kellermann when my machine slows as I 
-described earlier.  The system in question is currently running 
-2.6.27.7.  Here is what I see when it is misbehaving:
 
-samples  %        image name               app name                 
-symbol name
-11380517 57.4191  sunrpc.ko                sunrpc                   
-rpcauth_lookup_credcache
-3263657  16.4664  sunrpc.ko                sunrpc                   
-generic_match
-1081287   5.4555  vmlinux                  vmlinux                  
-copy_user_generic_string
-499407    2.5197  vmlinux                  vmlinux                  
-__posix_lock_file
-[...]
+You are missing that net_dma has always "polled".  Consider the case
+of how net_dma currently operates prior to ioatdma.ko being loaded.
+It periodically calls get_softnet_dma() to see if a channel is
+available, if it does not find one it falls back to a cpu copy.  All
+that has changed is replacing this custom channel allocation routine
+with the unified dma_find_channel() interface.  Channel notifications
+are not required.  Either everything is built-in to guarantee that an
+engine is available upon request[1], or the client is smart enough to
+run without a channel for while like net_dma and raid offload.
 
-And here is what I see when I stop the programs that are chewing up all 
-the system time, and then starting them up again:
+Regards,
+Dan
 
-samples  %        image name               app name                 
-symbol name
-6372650  21.7978  vmlinux                  vmlinux                  
-copy_user_generic_string
-5401386  18.4755  sunrpc.ko                sunrpc                   
-rpcauth_lookup_credcache
-3018753  10.3257  vmlinux                  vmlinux                  
-__posix_lock_file
-1050095   3.5919  sunrpc.ko                sunrpc                   
-generic_match
-
-
-and I am not using Kerberos with NFSv4 (i.e. no rpc.gssd).  Did you ever 
-find a solution for this problem with rpcauth_lookup_credcache?
-
--- 
-
- Dr. Harry Edmon			E-MAIL: harry@atmos.washington.edu
- 206-543-0547				harry@washington.edu
- Dept of Atmospheric Sciences		FAX:	206-543-0308
- University of Washington, Box 351640, Seattle, WA 98195-1640
-
+[1] http://marc.info/?l=linux-kernel&m=122835195303213&w=2
