@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757838AbYLPUTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYLPUUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757838AbYLPUTz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:19:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbYLPUSr
+	id S1754839AbYLPUUU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbYLPUSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:18:47 -0500
-Received: from gw.goop.org ([64.81.55.164]:45904 "EHLO mail.goop.org"
+	Tue, 16 Dec 2008 15:18:48 -0500
+Received: from gw.goop.org ([64.81.55.164]:45911 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753251AbYLPUSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:18:46 -0500
+	id S1754804AbYLPUSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 15:18:47 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 03 of 14] swiotlb: move some definitions to header
-X-Mercurial-Node: 99fd4f3f460fd86932a7ad346993724cb5c87cd0
-Message-Id: <99fd4f3f460fd86932a7.1229458647@abulafia.goop.org>
+Subject: [PATCH 04 of 14] swiotlb: consistently use address_needs_mapping
+	everywhere
+X-Mercurial-Node: aba0c734944520d4b892586a8f69d3d029b9f51c
+Message-Id: <aba0c734944520d4b892.1229458648@abulafia.goop.org>
 In-Reply-To: <patchbomb.1229458644@abulafia.goop.org>
-Date: Tue, 16 Dec 2008 12:17:27 -0800
+Date: Tue, 16 Dec 2008 12:17:28 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
@@ -28,69 +29,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <ian.campbell@citrix.com>
-
 Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- include/linux/swiotlb.h |   14 ++++++++++++++
- lib/swiotlb.c           |   14 +-------------
- 2 files changed, 15 insertions(+), 13 deletions(-)
+ lib/swiotlb.c |   10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -7,6 +7,20 @@
- struct dma_attrs;
- struct scatterlist;
- 
-+/*
-+ * Maximum allowable number of contiguous slabs to map,
-+ * must be a power of 2.  What is the appropriate value ?
-+ * The complexity of {map,unmap}_single is linearly dependent on this value.
-+ */
-+#define IO_TLB_SEGSIZE	128
-+
-+
-+/*
-+ * log of the size of each IO TLB slab.  The number of slabs is command line
-+ * controllable.
-+ */
-+#define IO_TLB_SHIFT 11
-+
- extern void
- swiotlb_init(void);
- 
 diff --git a/lib/swiotlb.c b/lib/swiotlb.c
 --- a/lib/swiotlb.c
 +++ b/lib/swiotlb.c
-@@ -23,6 +23,7 @@
- #include <linux/spinlock.h>
- #include <linux/swiotlb.h>
- #include <linux/string.h>
-+#include <linux/swiotlb.h>
- #include <linux/types.h>
- #include <linux/ctype.h>
- 
-@@ -40,19 +41,6 @@
- #define SG_ENT_VIRT_ADDRESS(sg)	(sg_virt((sg)))
- #define SG_ENT_PHYS_ADDRESS(sg)	virt_to_bus(SG_ENT_VIRT_ADDRESS(sg))
- 
--/*
-- * Maximum allowable number of contiguous slabs to map,
-- * must be a power of 2.  What is the appropriate value ?
-- * The complexity of {map,unmap}_single is linearly dependent on this value.
-- */
--#define IO_TLB_SEGSIZE	128
+@@ -465,13 +465,9 @@
+ 	dma_addr_t dev_addr;
+ 	void *ret;
+ 	int order = get_order(size);
+-	u64 dma_mask = DMA_32BIT_MASK;
 -
--/*
-- * log of the size of each IO TLB slab.  The number of slabs is command line
-- * controllable.
-- */
--#define IO_TLB_SHIFT 11
--
- #define SLABS_PER_PAGE (1 << (PAGE_SHIFT - IO_TLB_SHIFT))
+-	if (hwdev && hwdev->coherent_dma_mask)
+-		dma_mask = hwdev->coherent_dma_mask;
  
- /*
+ 	ret = (void *)__get_free_pages(flags, order);
+-	if (ret && !is_buffer_dma_capable(dma_mask, virt_to_bus(ret), size)) {
++	if (ret && !address_needs_mapping(hwdev, virt_to_bus(ret), size)) {
+ 		/*
+ 		 * The allocated memory isn't reachable by the device.
+ 		 * Fall back on swiotlb_map_single().
+@@ -495,9 +491,9 @@
+ 	dev_addr = virt_to_bus(ret);
+ 
+ 	/* Confirm address can be DMA'd by device */
+-	if (!is_buffer_dma_capable(dma_mask, dev_addr, size)) {
++	if (!address_needs_mapping(hwdev, dev_addr, size)) {
+ 		printk("hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
+-		       (unsigned long long)dma_mask,
++		       (unsigned long long)dma_get_mask(hwdev),
+ 		       (unsigned long long)dev_addr);
+ 
+ 		/* DMA_TO_DEVICE to avoid memcpy in unmap_single */
 
 
