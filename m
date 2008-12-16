@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYLPH5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYLPH5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbYLPH5V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 02:57:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYLPH5G
+	id S1755542AbYLPH5g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 02:57:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbYLPH5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 02:57:06 -0500
-Received: from mga02.intel.com ([134.134.136.20]:37822 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751158AbYLPH5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 02:57:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.36,230,1228118400"; 
-   d="scan'208";a="371244207"
-Subject: Re: [RFC PATCH 02/12] net: infrastructure for hardware time
-	stamping
-From: Patrick Ohly <patrick.ohly@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "johnstul@us.ibm.com" <johnstul@us.ibm.com>,
-       "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
-In-Reply-To: <E1LCLNV-0001EW-CN@gondolin.me.apana.org.au>
-References: <E1LCLNV-0001EW-CN@gondolin.me.apana.org.au>
+	Tue, 16 Dec 2008 02:57:25 -0500
+Received: from casper.infradead.org ([85.118.1.10]:38716 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754377AbYLPH5Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 02:57:25 -0500
+Subject: Re: sched: trace: update trace_sched_wakeup()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jason Baron <jbaron@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <1229411223.14605.48.camel@twins>
+References: <1229411223.14605.48.camel@twins>
 Content-Type: text/plain
-Date: Tue, 16 Dec 2008 08:56:59 +0100
-Message-Id: <1229414219.18038.241.camel@ecld0pohly>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+Date: Tue, 16 Dec 2008 08:57:24 +0100
+Message-Id: <1229414244.14605.50.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-15 at 21:53 +0000, Herbert Xu wrote:
-> Patrick Ohly <patrick.ohly@intel.com> wrote:
-> > @@ -305,6 +406,8 @@ struct sk_buff {
-> >                                ipvs_property:1,
-> >                                peeked:1,
-> >                                nf_trace:1;
-> > +       /* not all of the bits in optional are used */
-> > +       __u8                    optional;
-> >        __be16                  protocol;
+On Tue, 2008-12-16 at 08:07 +0100, Peter Zijlstra wrote:
+> Add the information needed to distinguish 'real' wakeups from 'false'
+> wakeups.
+
+I don't seem to be doing so well this morning...
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+Thanks Dhaval!
+
+> ---
+>  include/trace/sched.h             |    4 ++--
+>  kernel/sched.c                    |    2 +-
+>  kernel/trace/trace_sched_switch.c |    2 +-
+>  kernel/trace/trace_sched_wakeup.c |    2 +-
+>  4 files changed, 5 insertions(+), 5 deletions(-)
 > 
-> You do reliase that this is going to grow the sk_buff by at least
-> 4 bytes and not 1?
-
-Yes. I should have been more explicit about that when talking about
-"adding one byte". At least it's better than adding 8 bytes of
-additional data, as in the previous patch.
-
-I haven't checked it, but was told that sk_buff is already tightly
-packed. It didn't look like there was a better place to put the byte
-either.
-
--- 
-Best Regards, Patrick Ohly
-
-The content of this message is my personal opinion only and although
-I am an employee of Intel, the statements I make here in no way
-represent Intel's position on the issue, nor am I authorized to speak
-on behalf of Intel on this matter.
-
+> diff --git a/include/trace/sched.h b/include/trace/sched.h
+> index 9b2854a..a0861d2 100644
+> --- a/include/trace/sched.h
+> +++ b/include/trace/sched.h
+> @@ -17,8 +17,8 @@ DECLARE_TRACE(sched_wait_task,
+>  		TPARGS(rq, p));
+>  
+>  DECLARE_TRACE(sched_wakeup,
+> -	TPPROTO(struct rq *rq, struct task_struct *p),
+> -		TPARGS(rq, p));
+> +	TPPROTO(struct rq *rq, struct task_struct *p, int success),
+> +		TPARGS(rq, p, success));
+>  
+>  DECLARE_TRACE(sched_wakeup_new,
+>  	TPPROTO(struct rq *rq, struct task_struct *p),
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 0eff15b..953ded9 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -2329,7 +2329,7 @@ out_activate:
+>  	success = 1;
+>  
+>  out_running:
+> -	trace_sched_wakeup(rq, p);
+> +	trace_sched_wakeup(rq, p, success);
+>  	check_preempt_curr(rq, p, sync);
+>  
+>  	p->state = TASK_RUNNING;
+> diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
+> index 8633905..d4db564 100644
+> --- a/kernel/trace/trace_sched_switch.c
+> +++ b/kernel/trace/trace_sched_switch.c
+> @@ -49,7 +49,7 @@ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
+>  }
+>  
+>  static void
+> -probe_sched_wakeup(struct rq *__rq, struct task_struct *wakee)
+> +probe_sched_wakeup(struct rq *__rq, struct task_struct *wakee, int success)
+>  {
+>  	struct trace_array_cpu *data;
+>  	unsigned long flags;
+> diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
+> index 0067b49..43586b6 100644
+> --- a/kernel/trace/trace_sched_wakeup.c
+> +++ b/kernel/trace/trace_sched_wakeup.c
+> @@ -211,7 +211,7 @@ static void wakeup_reset(struct trace_array *tr)
+>  }
+>  
+>  static void
+> -probe_wakeup(struct rq *rq, struct task_struct *p)
+> +probe_wakeup(struct rq *rq, struct task_struct *p, int success)
+>  {
+>  	int cpu = smp_processor_id();
+>  	unsigned long flags;
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
