@@ -1,31 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbYLPUqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbYLPUss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755922AbYLPUqz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 15:46:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYLPUqq
+	id S1756458AbYLPUss (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 15:48:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYLPUsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 15:46:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40159 "EHLO mx2.mail.elte.hu"
+	Tue, 16 Dec 2008 15:48:40 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48492 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751344AbYLPUqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 15:46:45 -0500
-Date: Tue, 16 Dec 2008 21:46:16 +0100
+	id S1751395AbYLPUsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 15:48:39 -0500
+Date: Tue, 16 Dec 2008 21:48:29 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
+Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Alex Zeffertt <alex.zeffertt@eu.citrix.com>,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] xen: add xenfs to allow usermode <-> Xen interaction
-Message-ID: <20081216204616.GC14787@elte.hu>
-References: <49480F39.2010102@goop.org>
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: make sure we really have an hpet mapping before
+	using it
+Message-ID: <20081216204829.GD14787@elte.hu>
+References: <49481057.2030307@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49480F39.2010102@goop.org>
+In-Reply-To: <49481057.2030307@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -42,40 +39,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> [ Reviewers: This is in drivers/xen to keep it close to the code it is 
->   and will be using.  Would people prefer to see it in fs/xenfs? -J ]
+> When booting in Xen dom0, the hpet isn't really accessible, so make
+> sure the mapping is non-NULL before use.
+>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+> arch/x86/kernel/hpet.c |    5 +++--
+> 1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> ===================================================================
+> --- a/arch/x86/kernel/hpet.c
+> +++ b/arch/x86/kernel/hpet.c
+> @@ -818,9 +818,10 @@
+>
+> 		hpet_address = force_hpet_address;
+> 		hpet_enable();
+> -		if (!hpet_virt_address)
+> -			return -ENODEV;
+> 	}
+> +
+> +	if (!hpet_virt_address)
+> +		return -ENODEV;
 
-> +config XENFS
-> +	tristate "Xen filesystem"
-
-there's about two dozen filesystems that live not in fs/*:
-
-./net/socket.c:	register_filesystem(&sock_fs_type);
-./net/sunrpc/rpc_pipe.c:	err = register_filesystem(&rpc_pipe_fs_type);
-./security/selinux/selinuxfs.c:	err = register_filesystem(&sel_fs_type);
-./security/inode.c:	retval = register_filesystem(&fs_type);
-./security/smack/smackfs.c:	err = register_filesystem(&smk_fs_type);
-./drivers/usb/core/inode.c:	retval = register_filesystem(&usb_fs_type);
-./drivers/usb/gadget/inode.c:	status = register_filesystem (&gadgetfs_type);
-./drivers/oprofile/oprofilefs.c:	return register_filesystem(&oprofilefs_type);
-./drivers/misc/ibmasm/ibmasmfs.c:	return register_filesystem(&ibmasmfs_type);
-./drivers/isdn/capi/capifs.c:	err = register_filesystem(&capifs_fs_type);
-./drivers/infiniband/hw/ipath/ipath_fs.c:	return register_filesystem(&ipathfs_fs_type);
-./drivers/infiniband/core/uverbs_main.c:	ret = register_filesystem(&uverbs_event_fs);
-./mm/shmem.c:	error = register_filesystem(&tmpfs_fs_type);
-./mm/tiny-shmem.c:	BUG_ON(register_filesystem(&tmpfs_fs_type) != 0);
-./ipc/mqueue.c:	error = register_filesystem(&mqueue_fs_type);
-./kernel/cpuset.c:	err = register_filesystem(&cpuset_fs_type);
-./kernel/cgroup.c:	err = register_filesystem(&cgroup_fs_type);
-./include/linux/fs.h:extern int register_filesystem(struct file_system_type *);
-./arch/s390/hypfs/inode.c:	rc = register_filesystem(&hypfs_type);
-./arch/ia64/kernel/perfmon.c:	int err = register_filesystem(&pfm_fs_type);
-./arch/powerpc/platforms/cell/spufs/inode.c:	ret = register_filesystem(&spufs_type);
-
-by the looks of it it wants to live in drivers/xen/. It's a minimalistic 
-API-only filesystem.
-
-Nevertheless it would be nice to have Acks from FS experts. Security, 
-races, obsoleteness of approach, etc.
+hm, how can hpet_virt_address become non-NULL if hpet_address is zero?
 
 	Ingo
