@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbYLPBGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbYLPBMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbYLPBGS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 20:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbYLPBGG
+	id S1756124AbYLPBMU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 20:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbYLPBMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 20:06:06 -0500
-Received: from fk-out-0910.google.com ([209.85.128.186]:32849 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750819AbYLPBGE (ORCPT
+	Mon, 15 Dec 2008 20:12:12 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40475 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbYLPBMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 20:06:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=wKzX7WOhR0rc8WaZ8vV6IIkGuxbGYbDrx/UYiUW8c2s3g6gmfMODfGXNJiycLYKvRx
-         DALIxCFCcHF/l/eMA3TefxZkDitKWz6n3ICcWZO/zmQ7n/5A1P99qpteeIHvq2fmKZoN
-         mwbqWzrXGK2eIlx9gqW3zSy2arHIT2xm4z5GQ=
-Date: Tue, 16 Dec 2008 04:10:39 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
-       mingo@elte.hu, akpm@linux-foundation.org, acme@ghostprotocols.net
-Subject: Impact: (was Re: [PATCH] update rwlock initialization for
-	nat_table)
-Message-ID: <20081216011039.GA2458@x200.localdomain>
-References: <alpine.DEB.1.10.0812101314460.11805@gandalf.stny.rr.com> <49400B7F.7040607@cosmosbay.com> <alpine.DEB.1.10.0812101504280.11805@gandalf.stny.rr.com> <20081215.002019.232912990.davem@davemloft.net>
+	Mon, 15 Dec 2008 20:12:12 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH 3/3] fsnotify: use the new open-exec hook for inotify and dnotify
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       hch@infradead.org, akpm@linux-foundation.org
+In-Reply-To: <20081215164419.2018.11097.stgit@paris.rdu.redhat.com>
+References: <20081215164016.2018.4813.stgit@paris.rdu.redhat.com> <20081215164419.2018.11097.stgit@paris.rdu.redhat.com>
+Message-Id: <20081216100418.06CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081215.002019.232912990.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 16 Dec 2008 10:12:07 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 15, 2008 at 12:20:19AM -0800, David Miller wrote:
-> >     update rwlock initialization for nat_table
-> >     
-> >     Impact: clean up
-> >     
-> >     The commit e099a173573ce1ba171092aee7bb3c72ea686e59
-> >     (netfilter: netns nat: per-netns NAT table) renamed the
-> >     nat_table from __nat_table to nat_table without updating the
-> >     __RW_LOCK_UNLOCKED(__nat_table.lock).
-> >     
-> >     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> 
-> Applied to net-2.6, thanks Steven.
-> 
-> As Andrew mentioned this is a bug (albeit a "nano-bug" as you
-> called it :-) so I removed the Impact line in the commit
-> message when applying this.
+> diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
+> index 88265dd..a7122c6 100644
+> --- a/include/linux/fsnotify.h
+> +++ b/include/linux/fsnotify.h
+> @@ -170,6 +170,12 @@ static inline void fsnotify_modify(struct dentry *dentry)
+>   */
+>  static inline void fsnotify_open_exec(struct file *file)
+>  {
+> +	struct dentry *dentry = file->f_path.dentry;
+> +	struct inode *inode = dentry->d_inode;
+> +
+> +	dnotify_parent(dentry, DN_ACCESS);
+> +	inotify_dentry_parent_queue_event(dentry, IN_ACCESS, 0, dentry->d_name.name);
+> +	inotify_inode_queue_event(inode, IN_ACCESS, 0, NULL, NULL);
+>  }
 
-Speaking of Impact: lines, is this a new fashion or what?
+Current fsnotify_open() has following code
 
-Looking at the ones which are already in official tree, they are either
-trivially duplicating Subject: line, or effectively duplicating Subject: line,
-or cover up for insufficiently informative (read: badly written) Subject: line,
-or simply useless.
+	static inline void fsnotify_open(struct dentry *dentry)
+	{
+	        struct inode *inode = dentry->d_inode;
+	        u32 mask = IN_OPEN;
+	
+	        if (S_ISDIR(inode->i_mode))
+	                mask |= IN_ISDIR;
+	
+	        inotify_dentry_parent_queue_event(dentry, mask, 0, dentry->d_name.name);
+	        inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
+	}
+
+they are two different.
+
+1) Call dnotify_parent() or not
+2) Use IN_OPEN or IN_ACCESS
+
+The patch description doesn't explain any reason.
 
 
-	Subject: sched: CPU remove deadlock fix
-	Impact: fix possible deadlock in CPU hot-remove path
+IOW, IN_ACCESS is usually used by read(). but linux has demand paging
+mechanism. then exec() only do open and mmap.
+actual reading is processed by page fault.
 
-What prevented to write "Subject: sched: fix possible deadlock in CPU hot-remove path"?
+I guess you have the reason of this design choice.
+but it isn't described.
 
 
-	AMD IOMMU: __unmap_single: check for bad_dma_address instead of 0
-	Impact: minor fix
 
-Well...
 
-I have an idea on how to make them remotely useful, but can we agree that there is
-a problem arising here?
