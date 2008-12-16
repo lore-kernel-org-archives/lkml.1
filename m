@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYLPRnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbYLPRrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbYLPRnX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 12:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYLPRnN
+	id S1757572AbYLPRrV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 12:47:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYLPRrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 12:43:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47557 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751302AbYLPRnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 12:43:13 -0500
-Date: Tue, 16 Dec 2008 18:43:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386: add some compile time checks to mem_init()
-Message-ID: <20081216174300.GJ11683@elte.hu>
-References: <4947A304.76E4.0078.0@novell.com>
+	Tue, 16 Dec 2008 12:47:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49401 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751000AbYLPRrM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 12:47:12 -0500
+Date: Tue, 16 Dec 2008 09:47:02 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: GIT head doesn't seem to want to build on 32bit..
+In-Reply-To: <20081216172859.5bc030b6@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LFD.2.00.0812160946410.14014@localhost.localdomain>
+References: <20081216172859.5bc030b6@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4947A304.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jan Beulich <jbeulich@novell.com> wrote:
 
-> Some of the inconsistencies checked for at run time can be detected at
-> build time already, so duplicate the checks done at run time to also be
-> done at build time.
+On Tue, 16 Dec 2008, Alan Cox wrote:
+>
+>   CC      arch/x86/kernel/traps.o
+>   CC      arch/x86/kernel/irq.o
+>   CC      arch/x86/kernel/irq_32.o
+> arch/x86/kernel/irq_32.c: In function ¡do_IRQ¢:
+> arch/x86/kernel/irq_32.c:211: error: ¡per_cpu__vector_irq¢ undeclared (first use in this function)
+> arch/x86/kernel/irq_32.c:211: error: (Each undeclared identifier is reported only once
+> arch/x86/kernel/irq_32.c:211: error: for each function it appears in.)
+> make[1]: ***
+> [arch/x86/kernel/irq_32.o] Error 1
 > 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> 
-> ---
->  arch/x86/mm/init_32.c |   16 +++++++++++++++-
->  1 file changed, 15 insertions(+), 1 deletion(-)
+> gcc version 4.3.0 20080428 (Red Hat 4.3.0-8) (GCC) 
 
-applied to tip/x86/debug - thanks,
+Hmm. That code has been like that since before -rc1. And I cannot 
+reproduce it in my 32-bit environment. That's with your config file, and 
+despite the fact that I have the same compiler version on that machine.
 
-	Ingo
+			Linus
