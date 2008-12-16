@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbYLPLQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbYLPLQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752992AbYLPLQG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 06:16:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYLPLPq
+	id S1756273AbYLPLQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 06:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbYLPLPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 06:15:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38534 "EHLO mx3.mail.elte.hu"
+	Tue, 16 Dec 2008 06:15:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52735 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753708AbYLPLPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 06:15:45 -0500
-Date: Tue, 16 Dec 2008 12:15:26 +0100
+	id S1755509AbYLPLPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 06:15:52 -0500
+Date: Tue, 16 Dec 2008 12:15:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Ken Chen <kenchen@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 1/2] cpuacct: refactoring cpuusage_read / cpuusage_write
-Message-ID: <20081216111526.GC4299@elte.hu>
-References: <b040c32a0812152202y4914ba88gbf0c9137d50a296a@mail.gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/2] cpuacct: export percpu cpuacct cgroup stats
+Message-ID: <20081216111544.GD4299@elte.hu>
+References: <b040c32a0812152204x3b3d378aie7a1898aa67c4278@mail.gmail.com> <b040c32a0812152306p6b72e1d6r548daa66f27f24d6@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b040c32a0812152202y4914ba88gbf0c9137d50a296a@mail.gmail.com>
+In-Reply-To: <b040c32a0812152306p6b72e1d6r548daa66f27f24d6@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,18 +36,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Ken Chen <kenchen@google.com> wrote:
 
-> In the thread regarding to 'export percpu cpuacct cgroup stats'
-> http://lkml.org/lkml/2008/12/7/13
+> This patch export per-cpu CPU cycle usage for a given cpuacct cgroup. 
+> There is a need for a user space monitor daemon to track group CPU usage 
+> on per-cpu base.  It is also useful for monitoring CFS load balancer 
+> behavior by tracking per CPU group usage.
 > 
-> akpm pointed out that current cpuacct code is inefficient.  This patch
-> refactoring the following:
-> 
-> * make cpu_rq locking only on 32-bit
-> * change iterator to each_present_cpu instead of each_possible_cpu to
->   make it hotplug friendly.
-> 
-> It's a bit of code churn, but I was rewarded with 160 byte code size saving
-> on x86-64 arch and zero code size change on i386.
+> Signed-off-by: Ken Chen <kenchen@google.com>
+> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+> Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
 
 applied to tip/sched/core, thanks Ken!
 
