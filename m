@@ -1,98 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYLPMYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYLPM0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbYLPMYY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 07:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYLPMYO
+	id S1756698AbYLPM0X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 07:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYLPM0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 07:24:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34966 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753181AbYLPMYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 07:24:13 -0500
-Date: Tue, 16 Dec 2008 13:23:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: fix another race when reading /proc/sched_debug
-Message-ID: <20081216122350.GB25019@elte.hu>
-References: <494234B0.5@cn.fujitsu.com> <20081212100044.GB18152@elte.hu> <4944754F.8050503@cn.fujitsu.com> <49476049.7000403@cn.fujitsu.com>
+	Tue, 16 Dec 2008 07:26:11 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:55568 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752986AbYLPM0K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 07:26:10 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: JosephChan@via.com.tw
+Subject: Re: [Patch 3/3] via-sdmmc: via-sdmmc.h
+Date: Tue, 16 Dec 2008 13:25:58 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB808520F3C@exchtp03.taipei.via.com.tw>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB808520F3C@exchtp03.taipei.via.com.tw>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49476049.7000403@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200812161325.58594.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19bdJUk0AGf3kenI2m+1QixIxNLqdP5+Xy8tKf
+ ERbQtWi6eXbItNP00T3mV8/JHeeJkeS8BV9239ITAGtdcihzXr
+ 8nEsQdfJeBr0JkYMAiF/g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> Li Zefan wrote:
-> >> i merged it up in tip/master, could you please check whether it's ok?
-> >>
-> > 
-> > Sorry, though this patch avoids accessing a half-created cgroup, but I found
-> > current code may access a cgroup which has been destroyed.
-> > 
-> > The simplest fix is to take cgroup_lock() before for_each_leaf_cfs_rq.
-> > 
-> > Could you revert this patch and apply the following new one? My box has
-> > survived for 16 hours with it applied.
-> > 
+On Tuesday 16 December 2008, JosephChan@via.com.tw wrote:
+> Header file of VIA MSP SD/MMC card reader driver.
 > 
-> Hi, Ingo
-> 
-> Can we have this bug fixed for 2.6.28 using this patch ? This patch is 
-> the simplest fix and has been fully tested.
 
-the mutex used by cgroup_lock() is pretty crappy to nest inside the 
-runqueue lock:
+The order of your patches is reversed, you add the Kconfig/Makefile
+changes last so that the tree stays 'bisectable', i.e. you don't
+have a broken build in the middle between your patches.
 
- BUG: sleeping function called from invalid context at kernel/mutex7
- in_atomic(): 0, irqs_disabled(): 1, pid: 1790, name: cat
- 2 locks held by cat/1790:
-  #0:  (&p->lock){--..}, at: [<c02a6328>] seq_read+0x25/0x2b8
-  #1:  (tasklist_lock){..--}, at: [<c021f5bc>] 
-sched_debug_show+0xaa7/0xe90
- Call Trace:
-  [<c0222612>] __might_sleep+0xd6/0xdd
-  [<c05ff1eb>] mutex_lock_nested+0x1d/0x245
-  [<c021f88b>] ? sched_debug_show+0xd76/0xe90
-  [<c0256223>] cgroup_lock+0xf/0x11
-  [<c021f893>] sched_debug_show+0xd7e/0xe90
-  [<c0248696>] ? __lock_acquire+0x637/0x69d
-  [<c028e7cd>] ? check_object+0x111/0x18c
-  [<c028f435>] ? kmem_cache_alloc+0x70/0xa5
-  [<c02a6355>] ? seq_read+0x52/0x2b8
-  [<c0246ee2>] ? trace_hardirqs_on_caller+0x105/0x13d
-  [<c0246f25>] ? trace_hardirqs_on+0xb/0xd
-  [<c02a6355>] ? seq_read+0x52/0x2b8
-  [<c02a63f7>] seq_read+0xf4/0x2b8
-  [<c02a6303>] ? seq_read+0x0/0x2b8
-  [<c02c411a>] proc_reg_read+0x60/0x74
+Since your header file is not an interface but only used in a single
+source file, I would also suggest merging it into the main via-sdmmc.c
+file, add changing Kconfig/Makefile in the same patch.
 
-so i had to remove your patch.
-
-also, while looking at what cgroup_lock does - it's a trivial wrapper:
-
- void cgroup_lock(void)
- {
-         mutex_lock(&cgroup_mutex);
- }
-
-why isnt that done explicitly in all usage sites? If cgroup-unaware code 
-ever has to take the cgroup lock outside of CONFIG_CGROUPS, that's a code 
-structure problem.
-
-	Ingo
+	Arnd <><
