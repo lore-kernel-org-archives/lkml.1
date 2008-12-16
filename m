@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbYLPB2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbYLPBf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303AbYLPB2a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 20:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbYLPB2W
+	id S1755935AbYLPBf1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 20:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYLPBfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 20:28:22 -0500
-Received: from gw.goop.org ([64.81.55.164]:53932 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750805AbYLPB2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 20:28:21 -0500
-Message-ID: <49470433.4050504@goop.org>
-Date: Mon, 15 Dec 2008 17:28:19 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Mon, 15 Dec 2008 20:35:14 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:47954 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751957AbYLPBfN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 20:35:13 -0500
+Date: Tue, 16 Dec 2008 02:35:47 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Allow HPET force enable on ICH10 HPET
+Message-ID: <20081216013547.GA24992@basil.nowhere.org>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH RFC] vm_unmap_aliases: allow callers to inhibit TLB flush
-References: <49416494.6040009@goop.org> <200707241052.13825.nickpiggin@yahoo.com.au> <4941C568.4070207@goop.org> <200707241140.12945.nickpiggin@yahoo.com.au>
-In-Reply-To: <200707241140.12945.nickpiggin@yahoo.com.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Friday 12 December 2008 12:59, Jeremy Fitzhardinge wrote:
->   
->> Nick Piggin wrote:
->>     
->>> Hi,
->>>
->>> On Friday 12 December 2008 06:05, Jeremy Fitzhardinge wrote:
->>>       
->>>> Hi Nick,
->>>>
->>>> In Xen when we're killing the lazy vmalloc aliases, we're only concerned
->>>> about the pagetable references to the mapped pages, not the TLB entries.
->>>>         
->>> Hm? Why is that? Why wouldn't it matter if some page table page gets
->>> written to via a stale TLB?
->>>       
->> No.  Well, yes, it would, but Xen itself will do whatever tlb flushes
->> are necessary to keep it safe (it must, since it doesn't trust guest
->> kernels).  It's fairly clever about working out which cpus need flushing
->> and if other flushes have already done the job.
->>     
->
-> OK. Yeah, then the problem is simply that the guest may reuse that virtual
-> memory for another vmap.
->   
+Allow HPET force enable on ICH10 HPET
 
-Hm.  What you would you think of a "deferred tlb flush" flag (or 
-something) to cause the next vmap to do the tlb flushes, in the case the 
-vunmap happens in a context where the flushes can't be done?
+Intel "Smackover" x58 BIOS don't have HPET enabled in the BIOS, so allow
+to force enable it at least. The register layout is the same
+as in other recent ICHs, so all the code can be reused.
 
-    J
+Using numerical PCI-ID because it's unlikely the PCI-ID will be used
+anywhere else.
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+---
+ arch/x86/kernel/quirks.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.28-rc4-test/arch/x86/kernel/quirks.c
+===================================================================
+--- linux-2.6.28-rc4-test.orig/arch/x86/kernel/quirks.c	2008-10-24 13:34:40.000000000 +0200
++++ linux-2.6.28-rc4-test/arch/x86/kernel/quirks.c	2008-12-15 17:31:24.000000000 +0100
+@@ -170,7 +170,8 @@
+ 			 ich_force_enable_hpet);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_7,
+ 			 ich_force_enable_hpet);
+-
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x3a16,	/* ICH10 */
++			 ich_force_enable_hpet);
+ 
+ static struct pci_dev *cached_dev;
+ 
