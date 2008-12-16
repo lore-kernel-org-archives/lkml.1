@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758955AbYLPXYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758869AbYLPX0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758955AbYLPXYj (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 18:24:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301AbYLPXYZ
+	id S1758869AbYLPX0P (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 18:26:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbYLPXZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 18:24:25 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:38988 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755983AbYLPXYY (ORCPT
+	Tue, 16 Dec 2008 18:25:55 -0500
+Received: from mga11.intel.com ([192.55.52.93]:8848 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755072AbYLPXZw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 18:24:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gcrabWFZ1ieyl1PTWdRj4aPV/Sc70mPScFvLcAzl1P+mSKPNeZeSWIubpSHZ/P54q9
-         YfcK2+bkhuGnIn2d/iJ86gzayzBBbNI/5nXwcgn+9h9swaVo7E3Wtub7aeVUSDw02cfe
-         gCJ1gp6QdhKaafY3qUrAjejZMH+Sdwbr3ZIPs=
-Message-ID: <b647ffbd0812161524r124365c3y3e6e232ad360ab75@mail.gmail.com>
-Date: Wed, 17 Dec 2008 00:24:22 +0100
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-Subject: Re: [PATCH 0/10] x86: microcode_amd: fixes and cleanup
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-        linux-kernel@vger.kernel.org
-In-Reply-To: <b647ffbd0812161522t361cfbf5x80fd836ad99607f6@mail.gmail.com>
+	Tue, 16 Dec 2008 18:25:52 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,233,1228118400"; 
+   d="scan'208";a="415056647"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Rusty Russell <rusty@rustcorp.com.au>, David Miller <davem@davemloft.net>
+CC: "rostedt@goodmis.org" <rostedt@goodmis.org>,
+        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "mathieu.desnoyers@polymtl.ca" <mathieu.desnoyers@polymtl.ca>,
+        "paulus@samba.org" <paulus@samba.org>,
+        "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+        "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+        "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>
+Date: Tue, 16 Dec 2008 15:25:40 -0800
+Subject: RE: local_add_return
+Thread-Topic: local_add_return
+Thread-Index: Aclfzv7Y2ehGL4/iQ+KK6iTJwM8/RgABhZyw
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA35C91870C@orsmsx505.amr.corp.intel.com>
+References: <alpine.DEB.1.10.0812150823370.18692@gandalf.stny.rr.com>
+ <200812161703.00697.rusty@rustcorp.com.au>
+ <20081215.231314.92267481.davem@davemloft.net>
+ <200812170908.05423.rusty@rustcorp.com.au>
+In-Reply-To: <200812170908.05423.rusty@rustcorp.com.au>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081216180639.GG7013@alberich.amd.com>
-	 <b647ffbd0812161522t361cfbf5x80fd836ad99607f6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/17 Dmitry Adamushko <dmitry.adamushko@gmail.com>:
-> Hello Andreas,
->
->>
->> Following a small series of patches to cleanup microcode_amd. Patch 1
->> might be of interest for .28. But I don't know whether you are willing to
->> apply the whole series for .28.
->>
->
-> I wonder if you see a problem with the scenario described here
-> http://bugzilla.kernel.org/process_bug.cgi
-> on any of your systems?
+> Any chance of an IA64 or s390 run?  You can normalize if you like, since
+> it's only to compare the different approaches.
 
-here is the correct link:
+-EDOESNOTCOMPILE
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12100
+  CC      init/main.o
+init/main.c: In function 'test_local_variants':
+init/main.c:756: error: 'atomic_long_t' has no member named 'a'
+make[1]: *** [init/main.o] Error 1
 
-
--- 
-Best regards,
-Dmitry Adamushko
+-Tony
