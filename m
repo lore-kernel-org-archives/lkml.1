@@ -1,182 +1,149 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758506AbYLPX6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759160AbYLQAA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758506AbYLPX6y (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 18:58:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYLPX6n
+	id S1759160AbYLQAA2 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:00:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbYLQAAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 18:58:43 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:17707 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751317AbYLPX6m (ORCPT
+	Tue, 16 Dec 2008 19:00:10 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:46369 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752499AbYLQAAI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 18:58:42 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:date:message-id:subject:from:to:content-type:content-transfer-encoding;
-	b=FmYnpeVTWRoBXuvQ9YEdlef+XiY9tch+6Jv343KOX1o6wrojWR9tVtUExN5AQ+84b
-	K0iDNEhnQ1ZfygyXaj0nw==
+	Tue, 16 Dec 2008 19:00:08 -0500
+Message-ID: <494840C4.50000@cosmosbay.com>
+Date: Wed, 17 Dec 2008 00:59:00 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Date: Tue, 16 Dec 2008 15:58:38 -0800
-Message-ID: <6599ad830812161558t4da0e5e7l4ad7d6f3a0dfbe6e@mail.gmail.com>
-Subject: [PATCH] Make cgroup_path() RCU-safe
-From: Paul Menage <menage@google.com>
-To: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        LKML <linux-kernel@vger.kernel.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: David Miller <davem@davemloft.net>, rostedt@goodmis.org,
+        akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+        mathieu.desnoyers@polymtl.ca, paulus@samba.org,
+        benh@kernel.crashing.org, linux-ia64@vger.kernel.org,
+        linux-s390@vger.kernel.org
+Subject: Re: local_add_return
+References: <alpine.DEB.1.10.0812150823370.18692@gandalf.stny.rr.com> <200812161703.00697.rusty@rustcorp.com.au> <20081215.231314.92267481.davem@davemloft.net> <200812170908.05423.rusty@rustcorp.com.au>
+In-Reply-To: <200812170908.05423.rusty@rustcorp.com.au>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 17 Dec 2008 00:59:02 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make cgroup_path() RCU safe
+Rusty Russell a écrit :
+> On Tuesday 16 December 2008 17:43:14 David Miller wrote:
+>> Here ya go:
+> 
+> Very interesting.  There's a little noise there (that first local_inc of 243
+> is wrong), but the picture is clear: trivalue is the best implementation for
+> sparc64.
+> 
+> Note: trivalue uses 3 values, so instead of hitting random values across 8MB
+> it's across 24MB, and despite the resulting cache damage it's 15% faster.  The
+> cpu_local_inc test is a single value, so no cache effects: it shows trivalue
+> to be 3 to 3.5 times faster in the cache-hot case.
+> 
+> This sucks, because it really does mean that there's no one-size-fits-all
+> implementation of local_t.  There's also no platform yet where atomic_long_t
+> is the right choice; and that's the default!
+> 
+> Any chance of an IA64 or s390 run?  You can normalize if you like, since
+> it's only to compare the different approaches.
+> 
+> Cheers,
+> Rusty.
+> 
+> Benchmarks for local_t variants
+> 
+> (This patch also fixes the x86 cpu_local_* macros, which are obviously
+> unused).
+> 
+> I chose a large array (1M longs) for the inc/add/add_return tests so
+> the trivalue case would show some cache pressure.
+> 
+> The cpu_local_inc case is always cache-hot, so it's not comparable to
+> the others.
 
-This patch fixes races between /proc/sched_debug by freeing
-cgroup objects via an RCU callback. Thus any cgroup reference obtained
-from an RCU-safe source will remain valid during the RCU section. Since
-dentries are also RCU-safe, this allows us to traverse up the tree safely.
+Would be good to differenciate results, if data is already in cache or not...
 
-Additionally, make cgroup_path() check for a NULL cgrp->dentry to avoid
-trying to report a path for a partially-created cgroup.
+> 
+> Time in ns per iteration (brackets is with CONFIG_PREEMPT=y):
+> 
+> 		inc	add	add_return	cpu_local_inc	read
+> x86-32: 2.13 Ghz Core Duo 2
+> atomic_long	118	118	115		17		17
 
-Signed-off-by: Paul Menage <menage@google.com>
+really strange atomic_long performs so badly here.
+LOCK + data not in cache -> really really bad...
 
---
+> irqsave/rest	77	78	77		23		16
+> trivalue	45	45	127		3(6)		21
+> local_t		36	36	36		1(5)		17
+> 
+> x86-64: 2.6 GHz Dual-Core AMD Opteron 2218
+> atomic_long	55	60	-		6		19
+> irqsave/rest	54	54	-		11		19
+> trivalue	47	47	-		5		28
+> local_t		47	46	-		1		19
+> 
 
-There are more RCU changes that I can make for 2.6.29+, but this
-should fix the problem in 2.6.28
+Running local_t variant benchmarks
+atomic_long: local_inc=395001846/11 local_add=395000325/11 cpu_local_inc=362000295/10 local_read=49000040/1 local_add_return=396000322/11 (total was 1728053248)
+irqsave/restore: local_inc=498000400/14 local_add=496000395/14 cpu_local_inc=486000384/14 local_read=68000054/2 local_add_return=502000394/14 (total was 1728053248)
+trivalue: local_inc=1325001024/39 local_add=1324001226/39 cpu_local_inc=81000080/2 local_read=786000766/23 local_add_return=4193003781/124 (total was 1728053248)
+local_t: local_inc=69000059/2 local_add=69000058/2 cpu_local_inc=42000035/1 local_read=50000043/1 local_add_return=90000076/2 (total was 1728053248, warm_total 62914562)
 
- include/linux/cgroup.h |   11 ++++++++++-
- kernel/cgroup.c        |   33 ++++++++++++++++++++++-----------
- 2 files changed, 32 insertions(+), 12 deletions(-)
 
-diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index f68dfd8..3f46212 100644
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -116,7 +116,7 @@ struct cgroup {
- 	struct list_head children;	/* my children */
+Intel(R) Xeon(R) CPU           E5450  @ 3.00GHz
 
- 	struct cgroup *parent;	/* my parent */
--	struct dentry *dentry;	  	/* cgroup fs entry */
-+	struct dentry *dentry;	  	/* cgroup fs entry, RCU protected */
+two quadcore cpus, x86-32 kernel
 
- 	/* Private pointers for each registered subsystem */
- 	struct cgroup_subsys_state *subsys[CGROUP_SUBSYS_COUNT];
-@@ -145,6 +145,9 @@ struct cgroup {
- 	int pids_use_count;
- 	/* Length of the current tasks_pids array */
- 	int pids_length;
-+
-+	/* For RCU-protected deletion */
-+	struct rcu_head rcu_head;
- };
+It seems Core2 are really better than Core Duo 2,
+or their cache is big enough to hold the array of your test...
 
- /* A css_set is a structure holding pointers to a set of
-@@ -305,6 +308,12 @@ int cgroup_add_files(struct cgroup *cgrp,
+(at least for l1 & l2, their 4Mbytes working set fits in cache)
 
- int cgroup_is_removed(const struct cgroup *cgrp);
+processor       : 7
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 23
+model name      : Intel(R) Xeon(R) CPU           E5450  @ 3.00GHz
+stepping        : 6
+cpu MHz         : 3000.099
+cache size      : 6144 KB    <<<< yes, thats big :) >>>>
 
-+/*
-+ * cgroup_path() fills in a filesystem-like path for the given cgroup
-+ * into "buf", up to "buflen" characters. Should be called with
-+ * cgroup_mutex held, or else in an RCU section with an RCU-protected
-+ * cgroup reference
-+ */
- int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen);
+If I double size of working set
 
- int cgroup_task_count(const struct cgroup *cgrp);
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index f9d9467..43fa013 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -271,7 +271,7 @@ static void __put_css_set(struct css_set *cg, int taskexit)
+#define NUM_LOCAL_TEST (2*1024*1024)
 
- 	rcu_read_lock();
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
--		struct cgroup *cgrp = cg->subsys[i]->cgroup;
-+		struct cgroup *cgrp = rcu_dereference(cg->subsys[i]->cgroup);
- 		if (atomic_dec_and_test(&cgrp->count) &&
- 		    notify_on_release(cgrp)) {
- 			if (taskexit)
-@@ -595,6 +595,18 @@ static void cgroup_call_pre_destroy(struct cgroup *cgrp)
- 	return;
- }
+then I get quite different numbers :
 
-+static void free_cgroup_rcu(struct rcu_head *obj)
-+{
-+	struct cgroup *cgrp = container_of(obj, struct cgroup, rcu_head);
-+	/*
-+	 * Drop the active superblock reference that we took when we
-+	 * created the cgroup
-+	 */
-+	deactivate_super(cgrp->root->sb);
-+
-+	kfree(cgrp);
-+}
-+
- static void cgroup_diput(struct dentry *dentry, struct inode *inode)
- {
- 	/* is dentry a directory ? if so, kfree() associated cgroup */
-@@ -620,11 +632,7 @@ static void cgroup_diput(struct dentry *dentry,
-struct inode *inode)
- 		cgrp->root->number_of_cgroups--;
- 		mutex_unlock(&cgroup_mutex);
+Running local_t variant benchmarks
+atomic_long: local_inc=6729007264/100 local_add=6727005943/100 cpu_local_inc=724000569/10 local_read=1030000784/15 local
+_add_return=6623004616/98 (total was 3456106496)
+irqsave/restore: local_inc=4458002796/66 local_add=4459001998/66 cpu_local_inc=971000381/14 local_read=1060000389/15 loc
+al_add_return=4528001388/67 (total was 3456106496)
+trivalue: local_inc=2871000855/42 local_add=2867000976/42 cpu_local_inc=162000052/2 local_read=1747000551/26 local_add_r
+eturn=8829002352/131 (total was 3456106496)
+local_t: local_inc=2210000492/32 local_add=2206000460/32 cpu_local_inc=84000017/1 local_read=1029000203/15 local_add_ret
+urn=2216000415/33 (total was 3456106496, warm_total 125829124)
 
--		/* Drop the active superblock reference that we took when we
--		 * created the cgroup */
--		deactivate_super(cgrp->root->sb);
--
--		kfree(cgrp);
-+		call_rcu(&cgrp->rcu_head, free_cgroup_rcu);
- 	}
- 	iput(inode);
- }
-@@ -1134,14 +1142,16 @@ static inline struct cftype *__d_cft(struct
-dentry *dentry)
-  * @buf: the buffer to write the path into
-  * @buflen: the length of the buffer
-  *
-- * Called with cgroup_mutex held. Writes path of cgroup into buf.
-- * Returns 0 on success, -errno on error.
-+ * Called with cgroup_mutex held or else with an RCU-protected cgroup
-+ * reference.  Writes path of cgroup into buf.  Returns 0 on success,
-+ * -errno on error.
-  */
- int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen)
- {
- 	char *start;
-+	struct dentry *dentry = rcu_dereference(cgrp->dentry);
+If now I reduce NUM_LOCAL_TEST to 256*1024 so that even trivalue l3 fits cache.
 
--	if (cgrp == dummytop) {
-+	if (!dentry || cgrp == dummytop) {
- 		/*
- 		 * Inactive subsystems have no dentry for their root
- 		 * cgroup
-@@ -1154,13 +1164,14 @@ int cgroup_path(const struct cgroup *cgrp,
-char *buf, int buflen)
+Running local_t variant benchmarks
+atomic_long: local_inc=98984929/11 local_add=98984889/11 cpu_local_inc=89986248/10 local_read=11998165/1 local_add_retur
+n=99003292/11 (total was 2579496960)
+irqsave/restore: local_inc=124000102/14 local_add=124000102/14 cpu_local_inc=121000100/14 local_read=17000013/2 local_ad
+d_return=126000103/15 (total was 2579496960)
+trivalue: local_inc=21000017/2 local_add=20000016/2 cpu_local_inc=20000017/2 local_read=25000021/2 local_add_return=1360
+00110/16 (total was 2579496960)
+local_t: local_inc=17000014/2 local_add=17000015/2 cpu_local_inc=11000009/1 local_read=12000010/1 local_add_return=23000
+019/2 (total was 2579496960, warm_total 15728642)
 
- 	*--start = '\0';
- 	for (;;) {
--		int len = cgrp->dentry->d_name.len;
-+		int len = dentry->d_name.len;
- 		if ((start -= len) < buf)
- 			return -ENAMETOOLONG;
- 		memcpy(start, cgrp->dentry->d_name.name, len);
- 		cgrp = cgrp->parent;
- 		if (!cgrp)
- 			break;
-+		dentry = rcu_dereference(cgrp->dentry);
- 		if (!cgrp->parent)
- 			continue;
- 		if (--start < buf)
-@@ -1663,7 +1674,7 @@ static int cgroup_create_dir(struct cgroup
-*cgrp, struct dentry *dentry,
- 	if (!error) {
- 		dentry->d_fsdata = cgrp;
- 		inc_nlink(parent->d_inode);
--		cgrp->dentry = dentry;
-+		rcu_assign_pointer(cgrp->dentry, dentry);
- 		dget(dentry);
- 	}
- 	dput(dentry);
+
+
+About trivalues, their use in percpu_counter local storage (one trivalue for each cpu)
+would make the accuracy a litle bit more lazy...
+
+
