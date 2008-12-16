@@ -1,124 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757011AbYLPTqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757586AbYLPTsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757011AbYLPTqg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 14:46:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbYLPTq1
+	id S1757586AbYLPTsE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 14:48:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbYLPTrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 14:46:27 -0500
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2686 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751344AbYLPTq0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 14:46:26 -0500
-Subject: Re: mm: Don't touch uninitialized variable in do_pages_stat_array()
-From: Joe Perches <joe@perches.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Brice Goglin <Brice.Goglin@inria.fr>,
-       Christoph Lameter <clameter@sgi.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <200812161859.mBGIx1kR018513@hera.kernel.org>
-References: <200812161859.mBGIx1kR018513@hera.kernel.org>
-Content-Type: text/plain
-Date: Tue, 16 Dec 2008 11:47:01 -0800
-Message-Id: <1229456821.20606.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+	Tue, 16 Dec 2008 14:47:53 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:33912 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751644AbYLPTrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 14:47:52 -0500
+Message-ID: <494805E4.2040008@linux.vnet.ibm.com>
+Date: Tue, 16 Dec 2008 11:47:48 -0800
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Vince Weaver <vince@deater.net>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       perfctr-devel@lists.sourceforge.net
+Subject: Re: [patch] Performance Counters for Linux, v4
+References: <20081214212829.GA9435@elte.hu> <Pine.LNX.4.64.0812161232170.6249@pianoman.cluster.toy>
+In-Reply-To: <Pine.LNX.4.64.0812161232170.6249@pianoman.cluster.toy>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-16 at 18:59 +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c095adbc211f9f4e990eac7d6cb440de35e4f05f
-> Commit:     c095adbc211f9f4e990eac7d6cb440de35e4f05f
-> Parent:     a3dd15444baa9c7522c8457ab564c41219dfb44c
-> Author:     KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> AuthorDate: Tue Dec 16 16:06:43 2008 +0900
-> Committer:  Linus Torvalds <torvalds@linux-foundation.org>
-> CommitDate: Tue Dec 16 08:19:23 2008 -0800
+Vince Weaver wrote:
 > 
->     mm: Don't touch uninitialized variable in do_pages_stat_array()
->     
->     Commit 80bba1290ab5122c60cdb73332b26d288dc8aedd removed one necessary
->     variable initialization.  As a result following warning happened:
->     
->         CC      mm/migrate.o
->       mm/migrate.c: In function 'sys_move_pages':
->       mm/migrate.c:1001: warning: 'err' may be used uninitialized in this function
->     
->     More unfortunately, if find_vma() failed, kernel read uninitialized
->     memory.
->     
->     Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->     CC: Brice Goglin <Brice.Goglin@inria.fr>
->     Cc: Christoph Lameter <clameter@sgi.com>
->     Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->     Cc: Nick Piggin <npiggin@suse.de>
->     Cc: Hugh Dickins <hugh@veritas.com>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> ---
->  mm/migrate.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> I'm trying to evaluate this new proposal for the kind of workloads I use 
+> performance counters for, and even the simplest tests don't work.
 > 
-> diff --git a/mm/migrate.c b/mm/migrate.c
-> index d8f0766..037b096 100644
-> --- a/mm/migrate.c
-> +++ b/mm/migrate.c
-> @@ -998,7 +998,7 @@ static void do_pages_stat_array(struct mm_struct *mm, unsigned long nr_pages,
->  		unsigned long addr = (unsigned long)(*pages);
->  		struct vm_area_struct *vma;
->  		struct page *page;
-> -		int err;
-> +		int err = -EFAULT;
->  
->  		vma = find_vma(mm, addr);
->  		if (!vma)
-> --
+> I'm trying to do a simple aggragate count for some benchmarks here using 
+> timec and I'm getting poor results.
+> 
+> Are any of the problems I'm reporting going to be fixed?
+> 
+> In any case, I was testing aggregate counts on a longer running 
+> benchmark, this time equake from the spec2k benchmark suite, still on 
+> the q6600.
+> 
+> If I only count retired instructions, I get consistent results:
+> 
+>   timec -e 1
+> 
+>       119175255369  instructions         (events)
+>       119175255561  instructions         (events)
+>       119175255383  instructions         (events)
+> 
+> 
+> however the minute I add another count, say cycles so I can calculate 
+> CPI/IPC the results for instructions are suddenly off by 33%.
+> 
+> Needless to say, perfmon can handle reading both cycles and instructions 
+> at the same time.
+> 
+> 
+>   timec -e 0, -e 1
+>        91758816320  cycles               (events)
+>        79428247907  instructions         (events)
+> 
+>        91849140396  cycles               (events)
+>        79449560742  instructions         (events)
+> 
+> 
+> It gets worse when trying to look at cache statistics:
+> 
+>    timec -e 1 -e 2 -e 3
+> 
+>        59611457943  instructions         (events)
+>         1872499771  cache references     (events)
+>           97471971  cache misses         (events)
+> 
+>        59601907232  instructions         (events)
+>         1871766376  cache references     (events)
+>           97435199  cache misses         (events)
+> 
+> and so on
+> 
+>    timec -e1 -e2 -e3 -e4
+> 
+> 
+>        47671703285  instructions         (events)
+>         1498246999  cache references     (events)
+>           77838085  cache misses         (events)
+>         3394839360  branches             (events)
+> 
+>        47666131604  instructions         (events)
+>         1497069685  cache references     (events)
+>           78065325  cache misses         (events)
+>         3393244879  branches             (events)
+> 
+> 
+> 
+> So apparently this performance counter infrastructure will always be 
+> useless for trying to get plain aggregate counts?  It's the simplest 
+> case to get right, so it makes me wonder about the design of the rest of 
+> the infrastructure.
+> 
+> Vince
 
-Perhaps this is more legible and avoids
-the unnecessary assignments to err.
+Your test case demonstrates that scaling is missing from the current 
+version of Performance Counters for Linux.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+When each set of events is scheduled onto a set of hardware event 
+counters, in order to scale the results properly, a cycles counter needs 
+to be included in each set as well.
 
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 037b096..ddfeeac 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -998,22 +998,25 @@ static void do_pages_stat_array(struct mm_struct *mm, unsigned long nr_pages,
- 		unsigned long addr = (unsigned long)(*pages);
- 		struct vm_area_struct *vma;
- 		struct page *page;
--		int err = -EFAULT;
-+		int err;
- 
- 		vma = find_vma(mm, addr);
--		if (!vma)
-+		if (!vma) {
-+			err = -EFAULT;
- 			goto set_status;
-+		}
- 
- 		page = follow_page(vma, addr, 0);
--
--		err = PTR_ERR(page);
--		if (IS_ERR(page))
-+		if (IS_ERR(page)) {
-+			err = PTR_ERR(page);
- 			goto set_status;
-+		}
- 
--		err = -ENOENT;
- 		/* Use PageReserved to check for zero page */
--		if (!page || PageReserved(page))
-+		if (!page || PageReserved(page)) {
-+			err = -ENOENT;
- 			goto set_status;
-+		}
- 
- 		err = page_to_nid(page);
- set_status:
+When the counts are read up, the counts from each set need to be scaled 
+by a factor of
+(total cycles)/(cycles in that set)
 
+This is something that can be handled by perfmon3 (full) because set 
+multiplexing is explicitly programmed, not transparent as it is in 
+Ingo's current code.  In perfmon3, the set switching can be determined 
+by events counter overflow, as well as time.
+
+In common with both perfmon3 and Ingo's solution is that as more and 
+more events are scheduled onto the same set of hardware registers, the 
+accuracy drops and has to be compensated with longer run times.
+
+Another source of error is that if the sets are rotated across the 
+hardware at a fixed periodic rate, if there's any correlation between 
+that rate and what's going on in the program being analyzed, the results 
+will be dubious.  Ideally, you'd want to have some sort of pseudo-random 
+set switching rate to mitigate this sort of problem.
+
+If Ingo could make some sort of provision for including a cycles count 
+in every set, and then transparently performing the scaling, that would 
+make it easier to use.  As it stands now, I don't think there's any way 
+to recover the needed scaling information, because you cannot tell what 
+events are in what sets and how many cycles are associated with each set.
+
+- Corey
+
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR
+503-578-3507
+cjashfor@us.ibm.com
 
