@@ -1,129 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbYLPVWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbYLPVXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757124AbYLPVWs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 16:22:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYLPVWh
+	id S1758738AbYLPVXW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 16:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYLPVXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 16:22:37 -0500
-Received: from 1wt.eu ([62.212.114.60]:1090 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbYLPVWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 16:22:36 -0500
-Date: Tue, 16 Dec 2008 22:21:55 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Harry Edmon <harry@atmos.washington.edu>, Max Kellermann <max@duempel.org>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: High load in 2.6.27, NFS / rpcauth_lookup_credcache()?
-Message-ID: <20081216212155.GA581@1wt.eu>
-References: <20081022091207.GA12996@squirrel.roonstrasse.net> <20081023123628.GA18549@squirrel.roonstrasse.net> <1224773745.7625.4.camel@localhost> <4946EBFA.60700@atmos.washington.edu> <1229432553.7257.4.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
+	Tue, 16 Dec 2008 16:23:12 -0500
+Received: from kroah.org ([198.145.64.141]:50222 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753273AbYLPVXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 16:23:11 -0500
+Date: Tue, 16 Dec 2008 13:21:50 -0800
+From: Greg KH <greg@kroah.com>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: linux-kernel@vger.kernel.org, v4l <video4linux-list@redhat.com>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>
+Subject: Re: [BUG] cdev_put() race condition
+Message-ID: <20081216212150.GA20721@kroah.com>
+References: <200812082156.26522.hverkuil@xs4all.nl> <20081216202248.GA3653@kroah.com> <200812162200.52260.hverkuil@xs4all.nl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229432553.7257.4.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <200812162200.52260.hverkuil@xs4all.nl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16, 2008 at 08:02:33AM -0500, Trond Myklebust wrote:
-> On Mon, 2008-12-15 at 15:44 -0800, Harry Edmon wrote:
-> > Trond Myklebust wrote:
-> > > On Thu, 2008-10-23 at 14:36 +0200, Max Kellermann wrote:
-> > >   
-> > >> On 2008/10/22 11:12, Max Kellermann <max@duempel.org> wrote:
-> > >>     
-> > >>> after I was able to fix http://lkml.org/lkml/2008/10/17/147, the
-> > >>> server which was already upgraded to 2.6.27.2 still gets very high
-> > >>> load.  It is a web server with NFS file storage (NetApp), and while
-> > >>> the others in the cluster (kernel 2.6.25) have a load of 1-3, 2.6.27.2
-> > >>> gets 30-50.
-> > >>>
-> > >>> I did an oprofile, with the following results (server just started,
-> > >>> load "only" 5-10):
-> > >>>
-> > >>> 87593    56.1116  (no location information)   vmlinux
-> > >>> vmlinux                  rpcauth_lookup_credcache
-> > >>> 16037    10.2732  auth_generic.c:0            vmlinux
-> > >>> vmlinux                  generic_match
-> > >>> 6460      4.1382  (no location information)   php4
-> > >>> php4                     (no symbols)
-> > >>> 2478      1.5874  (no location information)   libc-2.7.so
-> > >>> libc-2.7.so              (no symbols)
-> > >>> [...]
-> > >>>
-> > >>> We havn't configured any special authentication method.  It is a NFSv3
-> > >>> over UDP mount, but the kernel has NFSv4 and therefore KRB5 enabled.
-> > >>>
-> > >>> Any ideas why rpcauth_lookup_credcache() goes overboard with CPU
-> > >>> usage?
-> > >>>       
-> > >> I have bisected the problem: 98a8e323 is the result ("SUNRPC: Add a
-> > >> helper rpcauth_lookup_generic_cred()").  5c691044 is ok.
-> > >>
-> > >> See the attached oprofile annotation data for both commits.  I guess
-> > >> that the function rpcauth_lookup_credcache() is waiting for a spinlock
-> > >> too often and too long.  Trond, any idea?
-> > >>     
-> > >
-> > > Can you add a '-v' to the rpc.gssd daemon startup line? I'd like to see
-> > > how often you are creating new gss contexts.
-> > >
-> > >   
-> > >> Harry: added you to Cc because your problem sounds similar.
-> > >>     
-> > >
-> > > Harry's problem is should be unrelated. afaik, he is seeing a problem
-> > > with userland RPC code, not kernel rpc code.
-> > >
-> > > Trond
-> > >
-> > >   
-> > I am finally getting some time to look at my problem that I originally 
-> > reported in October (SUNRPC problem with 2.6.26 and beyond), and I am 
-> > seeing the same behavior as Max Kellermann when my machine slows as I 
-> > described earlier.  The system in question is currently running 
-> > 2.6.27.7.  Here is what I see when it is misbehaving:
+On Tue, Dec 16, 2008 at 10:00:51PM +0100, Hans Verkuil wrote:
+> On Tuesday 16 December 2008 21:22:48 Greg KH wrote:
+> > On Mon, Dec 08, 2008 at 09:56:26PM +0100, Hans Verkuil wrote:
+> > > Hi Greg,
+> > > 
+> > > Laurent found a race condition in the uvc driver that we traced to the 
+> > > way chrdev_open and cdev_put/get work.
+> > > 
+> > > You need the following ingredients to reproduce it:
+> > > 
+> > > 1) a hot-pluggable char device like an USB webcam.
+> > > 2) a manually created device node for such a webcam instead of relying 
+> > > on udev.
+> > > 
+> > > In order to easily force this situation you would also need to add a  
+> > > delay to the char device's release() function. For webcams that would 
+> > > be at the top of v4l2_chardev_release() in 
+> > > drivers/media/video/v4l2-dev.c. But adding a delay to e.g. cdev_purge 
+> > > would have the same effect.
+> > > 
+> > > The sequence of events in the case of a webcam is as follows:
+> > > 
+> > > 1) The USB device is removed, causing a disconnect.
+> > > 
+> > > 2) The webcam driver unregisters the video device which in turn calls 
+> > > cdev_del().
+> > > 
+> > > 3) When the last application using the device is closed, the cdev is 
+> > > released when the kref of the cdev's kobject goes to 0.
+> > > 
+> > > 4) If the kref's release() call takes a while due to e.g. extra cleanup 
+> > > in the case of a webcam, then another application can try to open the 
+> > > video device. Note that this requires a device node created with mknod, 
+> > > otherwise the device nodes would already have been removed by udev.
+> > > 
+> > > 5) chrdev_open checks inode->i_cdev. If this is NULL (i.e. this device 
+> > > node was never accessed before), then all is fine since kobj_lookup 
+> > > will fail because cdev_del() has been called earlier. However, if this 
+> > > device node was used earlier, then the else part is called: 
+> > > cdev_get(p). This 'p' is the cdev that is being released. Since the 
+> > > kref count is 0 you will get a WARN message from kref_get, but the code 
+> > > continues on, the f_op->open will (hopefully) return more-or-less 
+> > > gracefully with an error and the cdev_put at the end will cause the 
+> > > refcount to go to 0 again, which results in a SECOND call to the kref's 
+> > > release function!
+> > > 
+> > > See this link for the original discussion on the v4l list containing 
+> > > stack traces an a patch that you need if you want to (and can) test 
+> > > this with the uvc driver:
+> > > 
+> > > http://www.spinics.net/lists/vfl/msg39967.html
 > > 
-> > samples  %        image name               app name                 
-> > symbol name
-> > 11380517 57.4191  sunrpc.ko                sunrpc                   
-> > rpcauth_lookup_credcache
-> > 3263657  16.4664  sunrpc.ko                sunrpc                   
-> > generic_match
-> > 1081287   5.4555  vmlinux                  vmlinux                  
-> > copy_user_generic_string
-> > 499407    2.5197  vmlinux                  vmlinux                  
-> > __posix_lock_file
-> > [...]
+> > The second sentence in that message shows your problem here:
+> > 	To avoid the need of a reference count in every v4l2 driver,
+> > 	v4l2 moved to cdev which includes its own reference counting
+> > 	infrastructure based on kobject.
 > > 
-> > And here is what I see when I stop the programs that are chewing up all 
-> > the system time, and then starting them up again:
+> > cdev is not ment to handle the reference counting of any object outside
+> > of itself, and should never be embedded within anything.  I've been
+> > thinking of taking the real "kobject" out of that structure for a long
+> > time now, incase someone did something foolish like this.
 > > 
-> > samples  %        image name               app name                 
-> > symbol name
-> > 6372650  21.7978  vmlinux                  vmlinux                  
-> > copy_user_generic_string
-> > 5401386  18.4755  sunrpc.ko                sunrpc                   
-> > rpcauth_lookup_credcache
-> > 3018753  10.3257  vmlinux                  vmlinux                  
-> > __posix_lock_file
-> > 1050095   3.5919  sunrpc.ko                sunrpc                   
-> > generic_match
+> > Seems I was too late :(
 > > 
+> > So, to solve this, just remove the reliance on struct cdev in your own
+> > structures, you don't want to do this for the very reason you have now
+> > found (and for others, like the fact that this isn't a "real" struct
+> > kobject in play here, just a fake one.)
 > > 
-> > and I am not using Kerberos with NFSv4 (i.e. no rpc.gssd).  Did you ever 
-> > find a solution for this problem with rpcauth_lookup_credcache?
+> > Ick, what a mess.
 > 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git&a=commitdiff&h=23918b03060f6e572168fdde1798a905679d2e06
+> Sorry, but this makes no sense. First of all the race condition exists
+> regardless of how v4l uses it. Other drivers using cdev with a
+> hot-pluggable device in combination with a manually created device
+> node should show the same problem.
 
-Trond, this should be included into next stable, right ?
+I don't see how this would be, unless this problem has always existed in
+the cdev code, it was created back before dynamic device nodes with udev
+existed :)
 
-It's fortunate because I know someone else who recently described me the
-same problem under the same circumstances when migrating from 2.6.22 to
-2.6.27.
+> It's just that we found it with v4l because the release callback takes
+> longer than usual, thus increasing the chances of hitting the race.
 
-Regards,
-Willy
+The release callback for the cdev itself?
 
+> The core problem is simply that it is possible to call cdev_get while
+> in cdev_put! That should never happen.
+
+True, and cdev_put is only called from __fput() which has the proper
+locking to handle the call to cdev_get() if a char device is opened,
+right?
+
+> Secondly, why shouldn't struct cdev be embedded in anything? It's used
+> in lots of drivers that way. I really don't see what's unusual or
+> messy about v4l in that respect.
+
+I don't see it embedded in any other structures at the moment, and used
+to reference count the structure, do you have pointers to where it is?
+
+thanks,
+
+greg k-h
