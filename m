@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758869AbYLPX0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759155AbYLPX1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758869AbYLPX0P (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 18:26:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbYLPXZz
+	id S1759155AbYLPX1H (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 18:27:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbYLPX0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 18:25:55 -0500
-Received: from mga11.intel.com ([192.55.52.93]:8848 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755072AbYLPXZw convert rfc822-to-8bit (ORCPT
+	Tue, 16 Dec 2008 18:26:53 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37119 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754921AbYLPX0w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 18:25:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.36,233,1228118400"; 
-   d="scan'208";a="415056647"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Rusty Russell <rusty@rustcorp.com.au>, David Miller <davem@davemloft.net>
-CC: "rostedt@goodmis.org" <rostedt@goodmis.org>,
-        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "mathieu.desnoyers@polymtl.ca" <mathieu.desnoyers@polymtl.ca>,
-        "paulus@samba.org" <paulus@samba.org>,
-        "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
-        "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-        "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>
-Date: Tue, 16 Dec 2008 15:25:40 -0800
-Subject: RE: local_add_return
-Thread-Topic: local_add_return
-Thread-Index: Aclfzv7Y2ehGL4/iQ+KK6iTJwM8/RgABhZyw
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA35C91870C@orsmsx505.amr.corp.intel.com>
-References: <alpine.DEB.1.10.0812150823370.18692@gandalf.stny.rr.com>
- <200812161703.00697.rusty@rustcorp.com.au>
- <20081215.231314.92267481.davem@davemloft.net>
- <200812170908.05423.rusty@rustcorp.com.au>
-In-Reply-To: <200812170908.05423.rusty@rustcorp.com.au>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
+	Tue, 16 Dec 2008 18:26:52 -0500
+Date: Tue, 16 Dec 2008 15:26:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Adrian Hunter <ext-adrian.hunter@nokia.com>,
+        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+        David Woodhouse <David.Woodhouse@intel.com>
+Subject: Re: linux-next: Tree for December 16
+Message-Id: <20081216152607.f232fafd.akpm@linux-foundation.org>
+In-Reply-To: <20081216223754.0c8e21d4.sfr@canb.auug.org.au>
+References: <20081216223754.0c8e21d4.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Any chance of an IA64 or s390 run?  You can normalize if you like, since
-> it's only to compare the different approaches.
+On Tue, 16 Dec 2008 22:37:54 +1100
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
--EDOESNOTCOMPILE
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+> (patches at
+> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/)
 
-  CC      init/main.o
-init/main.c: In function 'test_local_variants':
-init/main.c:756: error: 'atomic_long_t' has no member named 'a'
-make[1]: *** [init/main.o] Error 1
+This MTD patch:
 
--Tony
+commit 69423d99fc182a81f3c5db3eb5c140acc6fc64be
+Author:     Adrian Hunter <ext-adrian.hunter@nokia.com>
+AuthorDate: Wed Dec 10 13:37:21 2008 +0000
+Commit:     David Woodhouse <David.Woodhouse@intel.com>
+CommitDate: Wed Dec 10 13:37:21 2008 +0000
+
+    [MTD] update internal API to support 64-bit device size
+
+broke the i386 build:
+
+ERROR: "__udivdi3" [drivers/mtd/devices/mtd_dataflash.ko] undefined!
+ERROR: "__umoddi3" [drivers/mtd/devices/mtd_dataflash.ko] undefined!
+ERROR: "__umoddi3" [drivers/mtd/devices/m25p80.ko] undefined!
+
+because things like
+
+                pageaddr = instr->addr / priv->page_size;
+
+are now doing a 64-bit divide.
+
+These will all need to be hunted down and converted to do_div().
