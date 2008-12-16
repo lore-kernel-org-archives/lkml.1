@@ -1,116 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbYLPSWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbYLPSWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbYLPSWA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 13:22:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbYLPSVu
+	id S1757561AbYLPSWa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 13:22:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYLPSWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 13:21:50 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:38870 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750983AbYLPSVt (ORCPT
+	Tue, 16 Dec 2008 13:22:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43886 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752263AbYLPSWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 13:21:49 -0500
-X-BigFish: VPS3(zzzzzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KBZEZQ-02-WDD-01
-Date: Tue, 16 Dec 2008 19:21:30 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: [PATCH 9/10] x86: microcode_amd: use 'packed' attribute for structs
-Message-ID: <20081216182130.GP7013@alberich.amd.com>
-References: <20081216180639.GG7013@alberich.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20081216180639.GG7013@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 16 Dec 2008 18:21:33.0538 (UTC) FILETIME=[1FDCCC20:01C95FAB]
+	Tue, 16 Dec 2008 13:22:11 -0500
+Date: Tue, 16 Dec 2008 10:21:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, npiggin@suse.de
+Subject: Re: mmotm 2008-12-16-00-43 uploaded (fs)
+Message-Id: <20081216102136.08ba1714.akpm@linux-foundation.org>
+In-Reply-To: <4947ECD8.6050500@oracle.com>
+References: <200812160847.mBG8lOrw019428@imap1.linux-foundation.org>
+	<4947E856.1040008@oracle.com>
+	<4947ECD8.6050500@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 16 Dec 2008 10:00:56 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/kernel/microcode_amd.c |   45 ++++++++++++++++++++-------------------
- 1 files changed, 23 insertions(+), 22 deletions(-)
+> Randy Dunlap wrote:
+> > akpm@linux-foundation.org wrote:
+> >> The mm-of-the-moment snapshot 2008-12-16-00-43 has been uploaded to
+> >>
+> >>    http://userweb.kernel.org/~akpm/mmotm/
+> >>
+> >> It contains the following patches against 2.6.28-rc8:
+> >>
+> >> fs-symlink-write_begin-allocation-context-fix.patch
+> > 
+> > Nick,
+> > 
+> > fuse and reiser4 still use __grab_cache_page() although your patch
+> > removed it:
+> > 
+> > build-r7257.out:/local/linsrc/tmp/mmotm-2008-1216-0043/fs/reiser4/plugin/file/file_conversi
+> > on.c:689: error: implicit declaration of function '__grab_cache_page'
+> > build-r7257.out:make[3]: *** [fs/reiser4/plugin/file/file_conversion.o] Error 1
+> > 
+> > build-r7248.out:/local/linsrc/tmp/mmotm-2008-1216-0043/fs/fuse/file.c:792: error: implicit declaration of function '__grab_cache_page'
+> > build-r7248.out:make[3]: *** [fs/fuse/file.o] Error 1
+> 
+> 
+> One more related error:
+> 
+> build-r7258.out:/local/linsrc/tmp/mmotm-2008-1216-0043/fs/ubifs/file.c:251: error: 'flags' undeclared (first use in this function)
+> build-r7258.out:make[3]: *** [fs/ubifs/file.o] Error 1
 
-diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-index 2e8af6e..e1ce650 100644
---- a/arch/x86/kernel/microcode_amd.c
-+++ b/arch/x86/kernel/microcode_amd.c
-@@ -47,28 +47,29 @@ MODULE_LICENSE("GPL v2");
- #define UCODE_UCODE_TYPE           0x00000001
- 
- struct equiv_cpu_entry {
--	unsigned int installed_cpu;
--	unsigned int fixed_errata_mask;
--	unsigned int fixed_errata_compare;
--	unsigned int equiv_cpu;
--};
-+	u32	installed_cpu;
-+	u32	fixed_errata_mask;
-+	u32	fixed_errata_compare;
-+	u16	equiv_cpu;
-+	u16	res;
-+} __attribute__((packed));
- 
- struct microcode_header_amd {
--	unsigned int  data_code;
--	unsigned int  patch_id;
--	unsigned char mc_patch_data_id[2];
--	unsigned char mc_patch_data_len;
--	unsigned char init_flag;
--	unsigned int  mc_patch_data_checksum;
--	unsigned int  nb_dev_id;
--	unsigned int  sb_dev_id;
--	u16 processor_rev_id;
--	unsigned char nb_rev_id;
--	unsigned char sb_rev_id;
--	unsigned char bios_api_rev;
--	unsigned char reserved1[3];
--	unsigned int  match_reg[8];
--};
-+	u32	data_code;
-+	u32	patch_id;
-+	u16	mc_patch_data_id;
-+	u8	mc_patch_data_len;
-+	u8	init_flag;
-+	u32	mc_patch_data_checksum;
-+	u32	nb_dev_id;
-+	u32	sb_dev_id;
-+	u16	processor_rev_id;
-+	u8	nb_rev_id;
-+	u8	sb_rev_id;
-+	u8	bios_api_rev;
-+	u8	reserved1[3];
-+	u32	match_reg[8];
-+} __attribute__((packed));
- 
- struct microcode_amd {
- 	struct microcode_header_amd hdr;
-@@ -109,7 +110,7 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
- {
- 	struct microcode_header_amd *mc_header = mc;
- 	unsigned int current_cpu_id;
--	unsigned int equiv_cpu_id = 0x00;
-+	u16 equiv_cpu_id = 0;
- 	unsigned int i = 0;
- 
- 	BUG_ON(equiv_cpu_table == NULL);
-@@ -117,7 +118,7 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
- 
- 	while (equiv_cpu_table[i].installed_cpu != 0) {
- 		if (current_cpu_id == equiv_cpu_table[i].installed_cpu) {
--			equiv_cpu_id = equiv_cpu_table[i].equiv_cpu & 0xffff;
-+			equiv_cpu_id = equiv_cpu_table[i].equiv_cpu;
- 			break;
- 		}
- 		i++;
--- 
-1.6.0.4
-
-
-
+thanks, I dropped it.
