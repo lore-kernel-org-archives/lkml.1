@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758502AbYLPPOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbYLPPPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758502AbYLPPOp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 10:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757946AbYLPPOc
+	id S1757871AbYLPPPN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 10:15:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757160AbYLPPOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 10:14:32 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:59560 "EHLO mgw2.diku.dk"
+	Tue, 16 Dec 2008 10:14:53 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:59586 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756742AbYLPPOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 10:14:30 -0500
-Date: Tue, 16 Dec 2008 16:14:28 +0100 (CET)
+	id S1756924AbYLPPOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 10:14:52 -0500
+Date: Tue, 16 Dec 2008 16:14:49 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: lrodriguez@atheros.com, jmalinen@atheros.com,
-       linux-wireless@vger.kernel.org, ath9k-devel@venema.h4ckr.net,
+To: dcbw@redhat.com, libertas-dev@lists.infradead.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 7/11] drivers/net/wireless/ath9k: Move a dereference below
+Subject: [PATCH 8/11] drivers/net/wireless/libertas: Move a dereference below
  a NULL test
-Message-ID: <Pine.LNX.4.64.0812161613510.20444@pc-004.diku.dk>
+Message-ID: <Pine.LNX.4.64.0812161614280.20444@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,7 +25,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Julia Lawall <julia@diku.dk>
 
 In each case, if the NULL test is necessary, then the dereference should be
-moved below the NULL test.
+moved below the NULL test.  I have also taken advantage of the availability
+of the value of priv->dev in the subsequent calls to netif_stop_queue and
+netif_carrier_off.
 
 The semantic patch that makes this change is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -50,24 +51,32 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/net/wireless/ath9k/hw.c     |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/net/wireless/libertas/main.c           |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/wireless/ath9k/hw.c b/drivers/net/wireless/ath9k/hw.c
-index 98bc25c..7d1dac6 100644
---- a/drivers/net/wireless/ath9k/hw.c
-+++ b/drivers/net/wireless/ath9k/hw.c
-@@ -5581,11 +5581,12 @@ static inline bool ath9k_hw_run_init_cals(struct ath_hal *ah,
- 	struct ath9k_channel ichan;
- 	bool isCalDone;
- 	struct hal_cal_list *currCal = ahp->ah_cal_list_curr;
--	const struct hal_percal_data *calData = currCal->calData;
-+	const struct hal_percal_data *calData;
- 	int i;
+diff --git a/drivers/net/wireless/libertas/main.c b/drivers/net/wireless/libertas/main.c
+index 73dc8c7..91c89da 100644
+--- a/drivers/net/wireless/libertas/main.c
++++ b/drivers/net/wireless/libertas/main.c
+@@ -1311,7 +1311,7 @@ EXPORT_SYMBOL_GPL(lbs_start_card);
  
- 	if (currCal == NULL)
- 		return false;
-+	calData = currCal->calData;
+ void lbs_stop_card(struct lbs_private *priv)
+ {
+-	struct net_device *dev = priv->dev;
++	struct net_device *dev;
+ 	struct cmd_ctrl_node *cmdnode;
+ 	unsigned long flags;
  
- 	ichan.CalValid = 0;
+@@ -1319,9 +1319,10 @@ void lbs_stop_card(struct lbs_private *priv)
  
+ 	if (!priv)
+ 		goto out;
++	dev = priv->dev;
+ 
+-	netif_stop_queue(priv->dev);
+-	netif_carrier_off(priv->dev);
++	netif_stop_queue(dev);
++	netif_carrier_off(dev);
+ 
+ 	lbs_debugfs_remove_one(priv);
+ 	if (priv->mesh_tlv) {
