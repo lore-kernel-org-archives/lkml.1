@@ -1,34 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbYLPAK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbYLPAWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756980AbYLPAK2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 19:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbYLPAKP
+	id S1756754AbYLPAWW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 19:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbYLPAWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 19:10:15 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58673 "EHLO
+	Mon, 15 Dec 2008 19:22:14 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57823 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754127AbYLPAKN (ORCPT
+	by vger.kernel.org with ESMTP id S1753145AbYLPAWO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 19:10:13 -0500
-Date: Mon, 15 Dec 2008 16:09:36 -0800
+	Mon, 15 Dec 2008 19:22:14 -0500
+Date: Mon, 15 Dec 2008 16:21:48 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Duane Griffin" <duaneg@dghda.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       bharrosh@panasas.com, sct@redhat.com, adilger@sun.com,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH, v2] ext3: ensure link targets are NULL-terminated
-Message-Id: <20081215160936.7b70bec9.akpm@linux-foundation.org>
-In-Reply-To: <e9e943910812120219k54e46330hc82add29a7fda455@mail.gmail.com>
-References: <1229022995-9898-1-git-send-email-duaneg@dghda.com>
-	<1229022995-9898-2-git-send-email-duaneg@dghda.com>
-	<1229022995-9898-3-git-send-email-duaneg@dghda.com>
-	<1229022995-9898-4-git-send-email-duaneg@dghda.com>
-	<1229022995-9898-5-git-send-email-duaneg@dghda.com>
-	<1229022995-9898-6-git-send-email-duaneg@dghda.com>
-	<20081211222605.GB18665@dastardly.home.dghda.com>
-	<20081211193228.51c34114.akpm@linux-foundation.org>
-	<e9e943910812120140j356d9e1g972dfddbb4f14369@mail.gmail.com>
-	<e9e943910812120219k54e46330hc82add29a7fda455@mail.gmail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: balbir@linux.vnet.ibm.com, hugh@veritas.com, jlan@sgi.com,
+       jpirko@redhat.com, jlim@sgi.com, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RESEND] introduce get_mm_hiwater_xxx(), fix
+ taskstats->hiwater_xxx accounting
+Message-Id: <20081215162148.87fd38a5.akpm@linux-foundation.org>
+In-Reply-To: <20081212140524.GA29488@redhat.com>
+References: <20081212140524.GA29488@redhat.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -37,30 +29,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Dec 2008 10:19:20 +0000
-"Duane Griffin" <duaneg@dghda.com> wrote:
+On Fri, 12 Dec 2008 15:05:24 +0100
+Oleg Nesterov <oleg@redhat.com> wrote:
+>
 
-> 2008/12/12 Duane Griffin <duaneg@dghda.com>:
-> > 2008/12/12 Andrew Morton <akpm@linux-foundation.org>:
-> >> Really?  The ext2 on-disk format requires that the fast symlink be
-> >> null-terminated on disk?  Even though the length is already in i_size?
-> >>
-> >> It seems that's true.  How un-ext2-like.
-> >>
-> >> ext2 and ext4 need the same fix, yes?
-> >
-> > Yes. I've sent them out already, but thanks to a monumental cock-up
-> > with the CCs they may not have made it to the list. I'll check and
-> > resend to real addresses if necessary.
-> 
-> Seems they did make it:
-> http://marc.info/?l=linux-kernel&m=122903437006575&w=2
-> http://marc.info/?l=linux-kernel&m=122903451306859&w=2
-> 
+> --- K-28/include/linux/sched.h~HIWATER	2008-12-02 17:12:40.000000000 +0100
+> +++ K-28/include/linux/sched.h	2008-12-03 18:17:18.000000000 +0100
 
-OK, thanks, it seems I was sneakily not cc'ed ;)
+grumble
 
-As Al points out, the code which you implemented is still vulnerable to
-on-disk corruption: bad values of i_size will cause the kernel to write
-a zero byte to any address within the entire CPU address range.
+> +#define get_mm_hiwater_rss(mm)	max((mm)->hiwater_rss, get_mm_rss(mm))
+
+This evaluates its argument thrice.
+
+> +#define get_mm_hiwater_vm(mm)	max((mm)->hiwater_vm, (mm)->total_vm)
+
+This evaluates its argument twice.
+
+
+was sched.h the appropriate header in which to implement these?  Maybe...
+
+But they're only ever _used_ in kernel/tsacct.c, so do they actually
+need to be implemented in any .h file?
 
