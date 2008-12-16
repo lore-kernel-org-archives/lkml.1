@@ -1,37 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbYLPL4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbYLPL5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbYLPL4U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 06:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYLPL4I
+	id S1756370AbYLPL5U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 06:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbYLPL5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 06:56:08 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:45786 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752942AbYLPL4H (ORCPT
+	Tue, 16 Dec 2008 06:57:07 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:3565 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753548AbYLPL5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 06:56:07 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: JosephChan@via.com.tw
-Subject: Re: [Patch 2/3] via-sdmmc: via-sdmmc.c
-Date: Tue, 16 Dec 2008 12:58:02 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB808520F3B@exchtp03.taipei.via.com.tw>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB808520F3B@exchtp03.taipei.via.com.tw>
+	Tue, 16 Dec 2008 06:57:07 -0500
+X-BigFish: VPS-35(z34a4jz1432R62a3L98dR936eQ1805Mzzzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KBYX6R-02-B99-01
+Date: Tue, 16 Dec 2008 12:56:09 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: oprofile-list <oprofile-list@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 08/10] oprofile: set values to default when creating
+	oprofilefs
+Message-ID: <20081216115609.GA15411@erda.amd.com>
+References: <1229007886-14362-1-git-send-email-robert.richter@amd.com> <1229007886-14362-9-git-send-email-robert.richter@amd.com> <20081216013225.272a5fd1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-Message-Id: <200812161258.03787.oliver@neukum.org>
+In-Reply-To: <20081216013225.272a5fd1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 16 Dec 2008 11:56:52.0709 (UTC) FILETIME=[629DC950:01C95F75]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id mBGBuOi3028916
 
-Am Dienstag, 16. Dezember 2008 12:41:35 schrieb JosephChan@via.com.tw:> +       spin_lock_irqsave(&host->lock, flags);> +> +       addrbase = vcrdr_chip->pcictrl_mmiobase;> +       writeb(PCI_DMA_CLK_SDC, addrbase + PCIDMACLK_REG);> +       vcrdr_chip->cur_device = DEV_SDC;> +> +       addrbase = vcrdr_chip->sdhc_mmiobase;> +       status = readw(addrbase + SDSTATUS_REG);> +       if (!(status & SD_STS_SLOTG)) {> +               if (host->mrq) {> +                       pr_err("%s: Card removed during transfer!\n",> +                              mmc_hostname(host->mmc));> +                       host->mrq->cmd->error = -ENOMEDIUM;> +                       tasklet_schedule(&host->finish_tasklet);> +               }> +> +               addrbase = vcrdr_chip->pcictrl_mmiobase;> +               writeb(PCI_CLK_375K, addrbase + PCISDCCLK_REG);> +> +               via_reset_pcictrl(host);
-This means a long delay with interrupts off. Is this really needed?
-	Regards		Oliver
+On 16.12.08 01:32:25, Andrew Morton wrote:
+> > +unsigned long fs_buffer_size;
+> > +unsigned long fs_cpu_buffer_size;
+> > +unsigned long fs_buffer_watershed;
+> 
+> These were poorly chosen kernel-wide identifiers.
 
-���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+Right, didn't notice that. Will change this.
+
+> >  static ssize_t depth_read(struct file *file, char __user *buf, size_t count, loff_t *offset)
+> >  {
+> > @@ -120,6 +124,11 @@ static const struct file_operations dump_fops = {
+> >  
+> >  void oprofile_create_files(struct super_block *sb, struct dentry *root)
+> >  {
+> > +	/* reinitialize default values */
+> > +	fs_buffer_size =	FS_BUFFER_SIZE_DEFAULT;
+> > +	fs_cpu_buffer_size =	FS_CPU_BUFFER_SIZE_DEFAULT;
+> > +	fs_buffer_watershed =	FS_BUFFER_WATERSHED_DEFAULT;
+> > +
+> >  	oprofilefs_create_file(sb, root, "enable", &enable_fops);
+> >  	oprofilefs_create_file_perm(sb, root, "dump", &dump_fops, 0666);
+> >  	oprofilefs_create_file(sb, root, "buffer", &event_buffer_fops);
+> 
+> afacit oprofile_create_files() only gets run when the module is loaded,
+> so this patch is a no-op?
+
+This code runs when oprofilefs is mounted. This happens typically in
+an opcontrol --init/--deinit sequence. Before, the previous values
+would have been used after mounting again. Now, default values are
+restored.
+
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
