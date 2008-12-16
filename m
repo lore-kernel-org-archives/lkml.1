@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758339AbYLPPOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758502AbYLPPOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758339AbYLPPOT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 10:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbYLPPNz
+	id S1758502AbYLPPOp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 10:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757946AbYLPPOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 10:13:55 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:59739 "EHLO mgw1.diku.dk"
+	Tue, 16 Dec 2008 10:14:32 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:59560 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756088AbYLPPNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 10:13:53 -0500
-Date: Tue, 16 Dec 2008 16:13:50 +0100 (CET)
+	id S1756742AbYLPPOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 10:14:30 -0500
+Date: Tue, 16 Dec 2008 16:14:28 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 6/11] drivers/net/hamradio: Move a dereference below a NULL
- test
-Message-ID: <Pine.LNX.4.64.0812161613320.20444@pc-004.diku.dk>
+To: lrodriguez@atheros.com, jmalinen@atheros.com,
+       linux-wireless@vger.kernel.org, ath9k-devel@venema.h4ckr.net,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 7/11] drivers/net/wireless/ath9k: Move a dereference below
+ a NULL test
+Message-ID: <Pine.LNX.4.64.0812161613510.20444@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -49,25 +50,24 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/net/hamradio/mkiss.c        |    3 ++-
+ drivers/net/wireless/ath9k/hw.c     |    3 ++-
  1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/hamradio/mkiss.c b/drivers/net/hamradio/mkiss.c
-index b8e25c4..e5770d1 100644
---- a/drivers/net/hamradio/mkiss.c
-+++ b/drivers/net/hamradio/mkiss.c
-@@ -847,12 +847,13 @@ static int mkiss_ioctl(struct tty_struct *tty, struct file *file,
- 	unsigned int cmd, unsigned long arg)
- {
- 	struct mkiss *ax = mkiss_get(tty);
--	struct net_device *dev = ax->dev;
-+	struct net_device *dev;
- 	unsigned int tmp, err;
+diff --git a/drivers/net/wireless/ath9k/hw.c b/drivers/net/wireless/ath9k/hw.c
+index 98bc25c..7d1dac6 100644
+--- a/drivers/net/wireless/ath9k/hw.c
++++ b/drivers/net/wireless/ath9k/hw.c
+@@ -5581,11 +5581,12 @@ static inline bool ath9k_hw_run_init_cals(struct ath_hal *ah,
+ 	struct ath9k_channel ichan;
+ 	bool isCalDone;
+ 	struct hal_cal_list *currCal = ahp->ah_cal_list_curr;
+-	const struct hal_percal_data *calData = currCal->calData;
++	const struct hal_percal_data *calData;
+ 	int i;
  
- 	/* First make sure we're connected. */
- 	if (ax == NULL)
- 		return -ENXIO;
-+	dev = ax->dev;
+ 	if (currCal == NULL)
+ 		return false;
++	calData = currCal->calData;
  
- 	switch (cmd) {
-  	case SIOCGIFNAME:
+ 	ichan.CalValid = 0;
+ 
