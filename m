@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758869AbYLPWC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759176AbYLPWDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758869AbYLPWC2 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 17:02:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYLPWCS
+	id S1759176AbYLPWDx (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 17:03:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbYLPWDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 17:02:18 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:54701 "EHLO
+	Tue, 16 Dec 2008 17:03:38 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:55721 "EHLO
 	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752221AbYLPWCR (ORCPT
+	with ESMTP id S1757466AbYLPWDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 17:02:17 -0500
-Message-ID: <49482568.3020108@ct.jp.nec.com>
-Date: Tue, 16 Dec 2008 14:02:16 -0800
+	Tue, 16 Dec 2008 17:03:37 -0500
+Message-ID: <494825B8.5090006@ct.jp.nec.com>
+Date: Tue, 16 Dec 2008 14:03:36 -0800
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
         "H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] x86: signal: use signal_fault() in sys_sigreturn()
+Subject: [PATCH 2/3] x86: ia32_signal: use __put_user() instead of __copy_to_user()
+References: <49482568.3020108@ct.jp.nec.com>
+In-Reply-To: <49482568.3020108@ct.jp.nec.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,48 +31,35 @@ From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
 Impact: cleanup
 
-Call signal_fault() in error route of sys_sigreturn().
-Change log level to KERN_EMERG if current is init.
+__put_user() can be used for constant size 8, like arch/x86/kernel/signal.c.
 
 Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 ---
- arch/x86/kernel/signal.c |   15 +++------------
- 1 files changed, 3 insertions(+), 12 deletions(-)
+ arch/x86/ia32/ia32_signal.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
-index dee553c..605592a 100644
---- a/arch/x86/kernel/signal.c
-+++ b/arch/x86/kernel/signal.c
-@@ -594,17 +594,7 @@ asmlinkage unsigned long sys_sigreturn(unsigned long __unused)
- 	return ax;
+diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+index 9ddf2fa..8738cc5 100644
+--- a/arch/x86/ia32/ia32_signal.c
++++ b/arch/x86/ia32/ia32_signal.c
+@@ -467,7 +467,7 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 	 * These are actually not used anymore, but left because some
+ 	 * gdb versions depend on them as a marker.
+ 	 */
+-	err |= __copy_to_user(frame->retcode, &code, 8);
++	err |= __put_user(*((u64 *)&code), (u64 *)frame->retcode);
+ 	if (err)
+ 		return -EFAULT;
  
- badframe:
--	if (show_unhandled_signals && printk_ratelimit()) {
--		printk("%s%s[%d] bad frame in sigreturn frame:"
--			"%p ip:%lx sp:%lx oeax:%lx",
--		    task_pid_nr(current) > 1 ? KERN_INFO : KERN_EMERG,
--		    current->comm, task_pid_nr(current), frame, regs->ip,
--		    regs->sp, regs->orig_ax);
--		print_vma_addr(" in ", regs->ip);
--		printk(KERN_CONT "\n");
--	}
--
--	force_sig(SIGSEGV, current);
-+	signal_fault(regs, frame, "sigreturn");
+@@ -554,7 +554,7 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	 * Not actually used anymore, but left because some gdb
+ 	 * versions need it.
+ 	 */
+-	err |= __copy_to_user(frame->retcode, &code, 8);
++	err |= __put_user(*((u64 *)&code), (u64 *)frame->retcode);
+ 	if (err)
+ 		return -EFAULT;
  
- 	return 0;
- }
-@@ -906,8 +896,9 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
- 	struct task_struct *me = current;
- 
- 	if (show_unhandled_signals && printk_ratelimit()) {
--		printk(KERN_INFO
-+		printk("%s"
- 		       "%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx",
-+		       task_pid_nr(current) > 1 ? KERN_INFO : KERN_EMERG,
- 		       me->comm, me->pid, where, frame,
- 		       regs->ip, regs->sp, regs->orig_ax);
- 		print_vma_addr(" in ", regs->ip);
 -- 
 1.6.0.4
 
