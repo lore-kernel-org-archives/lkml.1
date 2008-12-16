@@ -1,162 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756955AbYLPE1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYLPE3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756955AbYLPE1u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Dec 2008 23:27:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYLPE0u
+	id S1755575AbYLPE3U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Dec 2008 23:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYLPE3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Dec 2008 23:26:50 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:49017 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751584AbYLPE0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Dec 2008 23:26:49 -0500
-Message-Id: <20081216042645.955131000@polaris-admin.engr.sgi.com>
-References: <20081216042645.629941000@polaris-admin.engr.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 15 Dec 2008 20:26:47 -0800
-From: Mike Travis <travis@sgi.com>
-To: Ingo Molnar <mingo@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Ashok Raj <ashok.raj@intel.com>, Rusty Russell <rusty@rustycorp.com.au>
-Subject: [PATCH 2/3] x86: use possible_cpus=NUM to extend the possible cpus allowed
-Content-Disposition: inline; filename=x86:add-setup_possible_cpus.patch
+	Mon, 15 Dec 2008 23:29:10 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:35039 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751920AbYLPE3I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Dec 2008 23:29:08 -0500
+Date: Tue, 16 Dec 2008 13:02:30 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Hugh Dickins" <hugh@veritas.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       nishimura@mxp.nes.nec.co.jp
+Subject: [PATCH mmotm] memcg: fix for documentation (Re: [BUGFIX][PATCH
+ mmotm] memcg fix swap accounting leak (v3))
+Message-Id: <20081216130230.2978b8fc.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20081215160751.b6a944be.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081212172930.282caa38.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081212184341.b62903a7.nishimura@mxp.nes.nec.co.jp>
+	<46730.10.75.179.61.1229080565.squirrel@webmail-b.css.fujitsu.com>
+	<20081213160310.e9501cd9.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0812130935220.3611@blonde.anvils>
+	<4409.10.75.179.62.1229164064.squirrel@webmail-b.css.fujitsu.com>
+	<20081215160751.b6a944be.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: allow adding additional cpus.
+Sorry for late reply.
 
-Use possible_cpus=NUM kernel parameter to extend the number of possible
-cpus.
+> @@ -111,9 +111,40 @@ Under below explanation, we assume CONFI
+>  	(b) If the SwapCache has been mapped by processes, it has been
+>  	    charged already.
+>  
+> -	In case (a), we charge it. In case (b), we don't charge it.
+> -	(But racy state between (a) and (b) exists. We do check it.)
+> -	At charging, a charge recorded in swap_cgroup is moved to page_cgroup.
+> +	This swap-in is one of the most complicated work. In do_swap_page(),
+> +	following events occur when pte is unchanged.
+> +
+> +	(1) the page (SwapCache) is looked up.
+> +	(2) lock_page()
+> +	(3) try_charge_swapin()
+> +	(4) reuse_swap_page() (may call delete_swap_cache())
+> +	(5) commit_charge_swapin()
+> +	(6) swap_free().
+> +
+> +	Considering following situation for example.
+> +
+> +	(A) The page has not been charged before (2) and reuse_swap_page()
+> +	    doesn't call delete_from_swap_cache().
+> +	(B) The page has not been charged before (2) and reuse_swap_page()
+> +	    calls delete_from_swap_cache().
+> +	(C) The page has been charged before (2) and reuse_swap_page() doesn't
+> +	    call delete_from_swap_cache().
+> +	(D) The page has been charged before (2) and reuse_swap_page() calls
+> +	    delete_from_swap_cache().
+> +
+> +	    memory.usage/memsw.usage changes to this page/swp_entry will be
+> +	 Case          (A)      (B)       (C)     (D)
+> +         Event
+> +       Before (2)     0/ 1     0/ 1      1/ 1    1/ 1
+> +          ===========================================
+> +          (3)        +1/+1    +1/+1     +1/+1   +1/+1
+> +          (4)          -       0/ 0       -     -1/ 0
+> +          (5)         0/ 1     0/-1     -1/-1    0/ 0
+> +          (6)          -        -         -      0/-1
+> +          ===========================================
+> +       Result         1/ 1     1/1       1/ 1    1/ 1
+> +
+> +       In any cases, charges to this page should be 1/ 1.
+>  
+I've verified that charges will result in valid values by tracing source code
+in all of these cases, but in case of (B) I don't think commit_charge_swapin
+does memsw-- because PageSwapCache has been cleared already. swap_free does
+memsw-- in this case.
 
-The ability to HOTPLUG ON cpus that are "possible" but not "present" is
-dealt with in a later patch.
+I attached a fix patch.
 
-Based on tip/cpus4096 + .../rusty/linux-2.6-for-ingo.git/master +
-	 x86-only-patches sent 12/15.
+Thanks,
+Daisuke Nishimura.
 
-Signed-off-by: Mike Travis <travis@sgi.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Ashok Raj <ashok.raj@intel.com>
-Cc: Rusty Russell <rusty@rustycorp.com.au>
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+fix for documentation.
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 ---
- Documentation/cpu-hotplug.txt |   17 +++++++++--------
- arch/x86/kernel/apic.c        |   16 ++++++++++------
- arch/x86/kernel/smpboot.c     |   25 +++++++++++++++++++++----
- 3 files changed, 40 insertions(+), 18 deletions(-)
+ Documentation/controllers/memcg_test.txt |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
---- linux-2.6-for-ingo.orig/Documentation/cpu-hotplug.txt
-+++ linux-2.6-for-ingo/Documentation/cpu-hotplug.txt
-@@ -50,16 +50,17 @@ additional_cpus=n (*)	Use this to limit 
-   			cpu_possible_map = cpu_present_map + additional_cpus
+diff --git a/Documentation/controllers/memcg_test.txt b/Documentation/controllers/memcg_test.txt
+index 3c1458a..08d4d3e 100644
+--- a/Documentation/controllers/memcg_test.txt
++++ b/Documentation/controllers/memcg_test.txt
+@@ -139,10 +139,10 @@ Under below explanation, we assume CONFIG_MEM_RES_CTRL_SWAP=y.
+           ===========================================
+           (3)        +1/+1    +1/+1     +1/+1   +1/+1
+           (4)          -       0/ 0       -     -1/ 0
+-          (5)         0/ 1     0/-1     -1/-1    0/ 0
+-          (6)          -        -         -      0/-1
++          (5)         0/-1     0/ 0     -1/-1    0/ 0
++          (6)          -       0/-1       -      0/-1
+           ===========================================
+-       Result         1/ 1     1/1       1/ 1    1/ 1
++       Result         1/ 1     1/ 1      1/ 1    1/ 1
  
- (*) Option valid only for following architectures
--- x86_64, ia64
-+- ia64
+        In any cases, charges to this page should be 1/ 1.
  
--ia64 and x86_64 use the number of disabled local apics in ACPI tables MADT
--to determine the number of potentially hot-pluggable cpus. The implementation
--should only rely on this to count the # of cpus, but *MUST* not rely on the
--apicid values in those tables for disabled apics. In the event BIOS doesn't
--mark such hot-pluggable cpus as disabled entries, one could use this
--parameter "additional_cpus=x" to represent those cpus in the cpu_possible_map.
-+ia64 uses the number of disabled local apics in ACPI tables MADT to
-+determine the number of potentially hot-pluggable cpus. The implementation
-+should only rely on this to count the # of cpus, but *MUST* not rely
-+on the apicid values in those tables for disabled apics. In the event
-+BIOS doesn't mark such hot-pluggable cpus as disabled entries, one could
-+use this parameter "additional_cpus=x" to represent those cpus in the
-+cpu_possible_map.
- 
--possible_cpus=n		[s390 only] use this to set hotpluggable cpus.
-+possible_cpus=n		[s390,x86_64] use this to set hotpluggable cpus.
- 			This option sets possible_cpus bits in
- 			cpu_possible_map. Thus keeping the numbers of bits set
- 			constant even if the machine gets rebooted.
---- linux-2.6-for-ingo.orig/arch/x86/kernel/apic.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/apic.c
-@@ -1832,7 +1832,6 @@ void disconnect_bsp_APIC(int virt_wire_s
- void __cpuinit generic_processor_info(int apicid, int version)
- {
- 	int cpu;
--	cpumask_t tmp_map;
- 
- 	/*
- 	 * Validate version
-@@ -1845,15 +1844,20 @@ void __cpuinit generic_processor_info(in
- 	}
- 	apic_version[apicid] = version;
- 
--	if (num_processors >= NR_CPUS) {
--		printk(KERN_WARNING "WARNING: NR_CPUS limit of %i reached."
--			"  Processor ignored.\n", NR_CPUS);
-+	if (num_processors >= nr_cpu_ids) {
-+		int max = nr_cpu_ids;
-+		int thiscpu = max + disabled_cpus;
-+
-+		printk(KERN_WARNING
-+			"ACPI: NR_CPUS/possible_cpus limit of %i reached."
-+			"  Processor %d/0x%x ignored.\n", max, thiscpu, apicid);
-+
-+		disabled_cpus++;
- 		return;
- 	}
- 
- 	num_processors++;
--	cpus_complement(tmp_map, cpu_present_map);
--	cpu = first_cpu(tmp_map);
-+	cpu = cpumask_next_zero(-1, cpu_present_mask);
- 
- 	physid_set(apicid, phys_cpu_present_map);
- 	if (apicid == boot_cpu_physical_apicid) {
---- linux-2.6-for-ingo.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/smpboot.c
-@@ -1254,6 +1254,15 @@ void __init native_smp_cpus_done(unsigne
- 	check_nmi_watchdog();
- }
- 
-+static int __initdata setup_possible_cpus = -1;
-+static int __init _setup_possible_cpus(char *str)
-+{
-+	get_option(&str, &setup_possible_cpus);
-+	return 0;
-+}
-+early_param("possible_cpus", _setup_possible_cpus);
-+
-+
- /*
-  * cpu_possible_map should be static, it cannot change as cpu's
-  * are onlined, or offlined. The reason is per-cpu data-structures
-@@ -1266,7 +1275,7 @@ void __init native_smp_cpus_done(unsigne
-  *
-  * Three ways to find out the number of additional hotplug CPUs:
-  * - If the BIOS specified disabled CPUs in ACPI/mptables use that.
-- * - The user can overwrite it with additional_cpus=NUM
-+ * - The user can overwrite it with possible_cpus=NUM
-  * - Otherwise don't reserve additional CPUs.
-  * We do this because additional CPUs waste a lot of memory.
-  * -AK
-@@ -1279,9 +1288,17 @@ __init void prefill_possible_map(void)
- 	if (!num_processors)
- 		num_processors = 1;
- 
--	possible = num_processors + disabled_cpus;
--	if (possible > NR_CPUS)
--		possible = NR_CPUS;
-+	if (setup_possible_cpus == -1)
-+		possible = num_processors + disabled_cpus;
-+	else
-+		possible = setup_possible_cpus;
-+
-+	if (possible > CONFIG_NR_CPUS) {
-+		printk(KERN_WARNING
-+			"%d Processors exceeds NR_CPUS limit of %d\n",
-+			possible, CONFIG_NR_CPUS);
-+		possible = CONFIG_NR_CPUS;
-+	}
- 
- 	printk(KERN_INFO "SMP: Allowing %d CPUs, %d hotplug CPUs\n",
- 		possible, max_t(int, possible - num_processors, 0));
-
--- 
