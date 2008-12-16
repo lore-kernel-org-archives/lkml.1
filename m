@@ -1,151 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbYLPNDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbYLPNNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757124AbYLPNDd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Dec 2008 08:03:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbYLPNDY
+	id S1756497AbYLPNNs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Dec 2008 08:13:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbYLPNNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 08:03:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45490 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754487AbYLPNDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 08:03:24 -0500
-Date: Tue, 16 Dec 2008 14:03:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+	Tue, 16 Dec 2008 08:13:39 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44121 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbYLPNNj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 08:13:39 -0500
+Date: Tue, 16 Dec 2008 14:13:30 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>,
        Stephane Eranian <eranian@googlemail.com>,
        Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Robert Richter <robert.richter@amd.com>, Peter Anvin <hpa@zytor.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Mackerras <paulus@samba.org>,
        "David S. Miller" <davem@davemloft.net>,
        perfctr-devel@lists.sourceforge.net
 Subject: Re: [patch] Performance Counters for Linux, v4
-Message-ID: <20081216130302.GA27678@elte.hu>
-References: <20081214212829.GA9435@elte.hu> <20081216122229.GA1430@ucw.cz> <20081216125000.GC25019@elte.hu> <20081216125720.GC1684@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081216125720.GC1684@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-ID: <20081216141330.1943c30d@infradead.org>
+In-Reply-To: <20081216130302.GA27678@elte.hu>
+References: <20081214212829.GA9435@elte.hu>
+	<20081216122229.GA1430@ucw.cz>
+	<20081216125000.GC25019@elte.hu>
+	<20081216125720.GC1684@ucw.cz>
+	<20081216130302.GA27678@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 16 Dec 2008 14:03:02 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-* Pavel Machek <pavel@suse.cz> wrote:
-
-> On Tue 2008-12-16 13:50:00, Ingo Molnar wrote:
+> > >  - plus you have to forbid SMT CPUs as well. On HT a task could
+> > >    co-schedule with your setuid task and observe its timing
+> > >    characteristics via its _own_ behavior. (which is impacted by
+> > > whatever is running on another SMT/HT thread.)  
 > > 
-> > * Pavel Machek <pavel@suse.cz> wrote:
-> > 
-> > > Hmm, if I timec some setuid program, what happens?
-> > 
-> > yes, i already had a quick look at that a few days ago when i implemented 
-> > counter inheritance (for different reasons) and couldnt find the cleanest 
-> > place to put the exec() flushing into so i procrastinated that a bit :)
-> > 
-> > > Performance counters seem like great tool to pull secret keys out of 
-> > > other processes :-).
-> > 
-> > if you worry about _that_ angle you also have to:
-> > 
-> >  - turn off the cycle counter
-> > 
-> >  - turn off precise utimes
+> > Yes, SMT is evil.  
 > 
-> Probably good idea, yes.
-> 
-> >  - plus you have to forbid SMT CPUs as well. On HT a task could
-> >    co-schedule with your setuid task and observe its timing
-> >    characteristics via its _own_ behavior. (which is impacted by whatever
-> >    is running on another SMT/HT thread.)
-> 
-> Yes, SMT is evil.
+> HT got added back to Nehalem, so SMT is coming to you in every future
+> x86 CPU. It brings a serious performance win, so nobody will turn off
+> SMT threading in practice. If SMT worries you, it needs explicit
+> partitioning of security-relevant processing to different physical
+> CPUs, via cgroups/cpusets/etc.
 
-HT got added back to Nehalem, so SMT is coming to you in every future x86 
-CPU. It brings a serious performance win, so nobody will turn off SMT 
-threading in practice. If SMT worries you, it needs explicit partitioning 
-of security-relevant processing to different physical CPUs, via 
-cgroups/cpusets/etc.
+and/or you use properly implemented crypto code (see Bruce Schneider's
+books). The timing "problem" isn't really SMT specific. If you have
+improperly implemented crypto (eg crypto code where the code paths and
+not just the data payload are key dependent) then on any system with
+more than one (logical) processor there is interference that an
+attacker can use.
 
-> > the real exec() worry are: active, IRQ driven samples/events. Not possible 
-> > yet via the current iteration of counter inheritance (hence my 
-> > procrastination) - but it makes sense and that's why i was looking at the 
-> > exec() angle.
-> > 
-> > and that will flush simple counters too, removing your theoretical attack 
-> > angle as well.
-> > 
-> > So how about the patch below?
-> 
-> Thanks!
-> 
-> > Subject: perfcounters: flush on setuid exec
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Date: Tue Dec 16 13:40:44 CET 2008
-> > 
-> > Pavel Machek pointed out that performance counters should be flushed
-> > when crossing protection domains on setuid execution.
-> > 
-> > Reported-by: Pavel Machek <pavel@suse.cz>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> Acked-by: Pavel Machek <pavel@suse.cz>
+The only possible answer is to use proper implementation; turning off HT
+may make you feel good but you go from shoddy crypto for which there is
+some internet papers on how to crack it, to shoddy crypto for which the
+same papers apply ;)
 
-find below the final commit, thanks Pavel.
 
-	Ingo
-
------------->
->From f65cb45cba63f249458b669aa67069eabc37b2f5 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 16 Dec 2008 13:40:44 +0100
-Subject: [PATCH] perfcounters: flush on setuid exec
-
-Pavel Machek pointed out that performance counters should be flushed
-when crossing protection domains on setuid execution.
-
-Reported-by: Pavel Machek <pavel@suse.cz>
-Acked-by: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- fs/exec.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/fs/exec.c b/fs/exec.c
-index ec5df9a..d5165d8 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -33,6 +33,7 @@
- #include <linux/string.h>
- #include <linux/init.h>
- #include <linux/pagemap.h>
-+#include <linux/perf_counter.h>
- #include <linux/highmem.h>
- #include <linux/spinlock.h>
- #include <linux/key.h>
-@@ -1017,6 +1018,13 @@ int flush_old_exec(struct linux_binprm * bprm)
- 		set_dumpable(current->mm, suid_dumpable);
- 	}
- 
-+	/*
-+	 * Flush performance counters when crossing a
-+	 * security domain:
-+	 */
-+	if (!get_dumpable(current->mm))
-+		perf_counter_exit_task(current);
-+
- 	/* An exec changes our domain. We are no longer part of the thread
- 	   group */
- 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
