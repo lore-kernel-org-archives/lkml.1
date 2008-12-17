@@ -1,59 +1,39 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755221AbYLQQgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755417AbYLQQjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbYLQQgt (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 11:36:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbYLQQgk
+	id S1755417AbYLQQjp (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 11:39:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYLQQjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 11:36:40 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:49303 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbYLQQgj (ORCPT
+	Wed, 17 Dec 2008 11:39:35 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:41100 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbYLQQjf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 11:36:39 -0500
+	Wed, 17 Dec 2008 11:39:35 -0500
+Date: Wed, 17 Dec 2008 17:51:49 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: Tejun Heo <tj@kernel.org>, George Spelvin <linux@horizon.com>,
+        peterz@infradead.org, andi@firstfloor.org,
+        linux-kernel@vger.kernel.org
 Subject: Re: [RFC] globmatch() helper function
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Steven Rostedt <srostedt@redhat.com>, George Spelvin <linux@horizon.com>,
-        andi@firstfloor.org, linux-kernel@vger.kernel.org
-In-Reply-To: <494929E5.8060302@kernel.org>
-References: <20081217104247.28440.qmail@science.horizon.com>
-	 <87hc530w39.fsf@basil.nowhere.org> <1229526942.9487.75.camel@twins>
-	 <20081217160417.18507.qmail@science.horizon.com>
-	 <49492733.9000108@kernel.org>
-	 <1229531466.30177.12.camel@localhost.localdomain>
-	 <494929E5.8060302@kernel.org>
-Content-Type: text/plain
-Date: Wed, 17 Dec 2008 17:36:04 +0100
-Message-Id: <1229531764.21171.0.camel@lappy.programming.kicks-ass.net>
+Message-ID: <20081217165149.GG25779@one.firstfloor.org>
+References: <20081217104247.28440.qmail@science.horizon.com> <87hc530w39.fsf@basil.nowhere.org> <1229526942.9487.75.camel@twins> <20081217160417.18507.qmail@science.horizon.com> <49492733.9000108@kernel.org> <1229531466.30177.12.camel@localhost.localdomain> <494929E5.8060302@kernel.org> <1229531826.30177.14.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1229531826.30177.14.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-18 at 01:33 +0900, Tejun Heo wrote:
-> Steven Rostedt wrote:
-> > On Thu, 2008-12-18 at 01:22 +0900, Tejun Heo wrote:
-> >> Hello,
-> >>
-> >> George Spelvin wrote:
-> >>> Do people think that would be, on balance, better?  It would be plenty
-> >>> good enough for the blacklist application.
-> >> Just pass a depth parameter and trigger WARN_ON() and return -EINVAL
-> >> when it exceeds ten.  It's a five minute change and should be enough
-> >> for kernel usages.
-> > 
-> > If this is ever expected to be used by userspace, I would not include
-> > the WARN_ON. If this is a generic function, then I'll include in in
-> > ftrace as well, and that takes userspace input. The last thing I want is
-> > a DoS because of printk's to the serial console because some userspace
-> > app is constantly writing bad patterns to this file.
-> 
-> Well, then, how about printk_ratelimit()?  Having one too many
-> asterisk will be a very rare occasion and when it happens it's
-> something which can easily escape attention, so I think some form of
-> whining is in order.
+> OK, lets compromise with WARN_ON_ONCE() ;-)
 
-having the write fail with -EINVAL seems suitably whiney..
+I don't think WARN_ON is the right way to handle bad user input.
+It implies that when someone typos the result might end up in Arjan's 
+kerneloops.org database, which is not good.
 
+-Andi
+-- 
+ak@linux.intel.com
