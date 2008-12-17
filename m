@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752381AbYLQTew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752700AbYLQTed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752381AbYLQTew (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 14:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYLQTeg
+	id S1752700AbYLQTed (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 14:34:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbYLQTeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 14:34:36 -0500
-Received: from gw.goop.org ([64.81.55.164]:45547 "EHLO mail.goop.org"
+	Wed, 17 Dec 2008 14:34:18 -0500
+Received: from mx2.suse.de ([195.135.220.15]:46521 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752790AbYLQTef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 14:34:35 -0500
-Message-ID: <49495447.5030904@goop.org>
-Date: Wed, 17 Dec 2008 11:34:31 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: "Rose, Gregory V" <gregory.v.rose@intel.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-        "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-        "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-        "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
-        Greg KH <greg@kroah.com>, "rdreier@cisco.com" <rdreier@cisco.com>,
-        Jike Song <albcamus@gmail.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "horms@verge.net.au" <horms@verge.net.au>,
-        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-        "mingo@elte.hu" <mingo@elte.hu>,
-        "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-        "yinghai@kernel.org" <yinghai@kernel.org>,
-        "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
-References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>	<20081217060608.GA12618@kroah.com>	<43F901BD926A4E43B106BF17856F07554B525811@orsmsx508.amr.corp.intel.com>	<200812171051.36645.jbarnes@virtuousgeek.org> <43F901BD926A4E43B106BF17856F07554B525A02@orsmsx508.amr.corp.intel.com>
-In-Reply-To: <43F901BD926A4E43B106BF17856F07554B525A02@orsmsx508.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752384AbYLQTeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 14:34:16 -0500
+Date: Wed, 17 Dec 2008 11:34:14 -0800
+From: Mark Fasheh <mfasheh@suse.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+        Joel Becker <joel.becker@oracle.com>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: [git patches] Ocfs2 fixes
+Message-ID: <20081217193414.GD8791@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rose, Gregory V wrote:
-> -----Original Message-----
-> From: Jesse Barnes [mailto:jbarnes@virtuousgeek.org] 
->
-> On Wednesday, December 17, 2008 8:44 am Rose, Gregory V wrote:
->   
->> As noted in the attached email to the netdev list, we (e1000_devel) will
->> support the API.
->>     
->
-> Do you think you'll have those changes ready for 2.6.29?  Would merging core
-> SR-IOV support now make that any more likely?
->
->   
->
-> I'm not sure about readiness for 2.6.29.  I can tell you that as soon as I get a Xen Dom0 kernel with these API's included it will take me less than a day to convert over to them from the current drivers I have that are using an older API from back in August.
+Please pull from 'upstream-linus' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
 
-Which dom0 kernel are you using?  Is it based on my pvops-based dom0 work?
+to receive the following updates:
 
-    J
+ fs/ocfs2/ocfs2_fs.h |    8 +++++++-
+ fs/ocfs2/xattr.c    |    4 ++--
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+Joel Becker (1):
+      ocfs2: Add JBD2 compat feature bit.
+
+Tao Ma (1):
+      ocfs2: Always update xattr search when creating bucket.
+
+diff --git a/fs/ocfs2/ocfs2_fs.h b/fs/ocfs2/ocfs2_fs.h
+index 5f180cf..5e0c0d0 100644
+--- a/fs/ocfs2/ocfs2_fs.h
++++ b/fs/ocfs2/ocfs2_fs.h
+@@ -86,7 +86,8 @@
+ #define OCFS2_CLEAR_INCOMPAT_FEATURE(sb,mask)			\
+ 	OCFS2_SB(sb)->s_feature_incompat &= ~(mask)
+ 
+-#define OCFS2_FEATURE_COMPAT_SUPP	OCFS2_FEATURE_COMPAT_BACKUP_SB
++#define OCFS2_FEATURE_COMPAT_SUPP	(OCFS2_FEATURE_COMPAT_BACKUP_SB	\
++					 | OCFS2_FEATURE_COMPAT_JBD2_SB)
+ #define OCFS2_FEATURE_INCOMPAT_SUPP	(OCFS2_FEATURE_INCOMPAT_LOCAL_MOUNT \
+ 					 | OCFS2_FEATURE_INCOMPAT_SPARSE_ALLOC \
+ 					 | OCFS2_FEATURE_INCOMPAT_INLINE_DATA \
+@@ -153,6 +154,11 @@
+ #define OCFS2_FEATURE_COMPAT_BACKUP_SB		0x0001
+ 
+ /*
++ * The filesystem will correctly handle journal feature bits.
++ */
++#define OCFS2_FEATURE_COMPAT_JBD2_SB		0x0002
++
++/*
+  * Unwritten extents support.
+  */
+ #define OCFS2_FEATURE_RO_COMPAT_UNWRITTEN	0x0001
+diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
+index 054e2ef..74d7367 100644
+--- a/fs/ocfs2/xattr.c
++++ b/fs/ocfs2/xattr.c
+@@ -2645,9 +2645,9 @@ static int ocfs2_xattr_update_xattr_search(struct inode *inode,
+ 				return ret;
+ 			}
+ 
+-			i = xs->here - old_xh->xh_entries;
+-			xs->here = &xs->header->xh_entries[i];
+ 		}
++		i = xs->here - old_xh->xh_entries;
++		xs->here = &xs->header->xh_entries[i];
+ 	}
+ 
+ 	return ret;
