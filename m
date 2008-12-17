@@ -1,52 +1,235 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757378AbYLQQof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755943AbYLQQnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbYLQQof (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 11:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbYLQQmN
+	id S1755943AbYLQQnv (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 11:43:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYLQQmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 11:42:13 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:65182 "EHLO
+	Wed, 17 Dec 2008 11:42:08 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:65209 "EHLO
 	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752047AbYLQQmF (ORCPT
+	by vger.kernel.org with ESMTP id S1751946AbYLQQmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 11:42:05 -0500
-Message-Id: <20081217164036.475086811@vixen.sonytel.be>
+	Wed, 17 Dec 2008 11:42:03 -0500
+Message-Id: <20081217164036.722849831@vixen.sonytel.be>
 References: <20081217163634.998961917@vixen.sonytel.be>
 User-Agent: quilt/0.46-1
-Date: Wed, 17 Dec 2008 17:36:36 +0100
+Date: Wed, 17 Dec 2008 17:36:40 +0100
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Herbert Xu <herbert@gondor.apana.org.au>
 Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
         Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH/RFC 1/8] crypto: testmgr - Correct comment about deflate parameters
-Content-Disposition: inline; filename=crypto-testmgr-correct-deflate-windowbits.patch
+Subject: [PATCH/RFC 5/8] crypto: api - Export pcomp through comp
+Content-Disposition: inline; filename=crypto-add-pcomp-comp-compat.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-The comment for the deflate test vectors says the winbits parameter is 11,
-while the deflate module actually uses -11 (a negative window bits parameter
-enables the raw deflate format instead of the zlib format).
-Correct this, to avoid confusion about the format used.
+Allow "pcomp" algorithms to be used through the old "comp" interface, by
+implementing one-shot (de)compression on top of the partial (de)compression
+interface.
+
+As the old "comp" interface doesn't support the configuration of
+(de)compression parameters by the user, each algorithm must provide a set of
+default parameters through pcompress_alg.coa_default_params.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- crypto/testmgr.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ crypto/api.c           |    6 ++
+ crypto/internal.h      |    1 
+ crypto/pcompress.c     |  106 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/crypto.h |    9 ++--
+ 4 files changed, 118 insertions(+), 4 deletions(-)
 
---- a/crypto/testmgr.h
-+++ b/crypto/testmgr.h
-@@ -8349,7 +8349,7 @@ struct comp_testvec {
+--- a/crypto/api.c
++++ b/crypto/api.c
+@@ -288,7 +288,11 @@ static int crypto_init_ops(struct crypto
+ 		return crypto_init_compress_ops(tfm);
+ 	
+ 	case CRYPTO_ALG_TYPE_PCOMPRESS:
+-		return crypto_init_pcompress_ops(tfm);
++		if ((type & CRYPTO_ALG_TYPE_MASK) ==
++		    CRYPTO_ALG_TYPE_COMPRESS)
++			return crypto_init_pcompress_ops_compat(tfm);
++		else
++			return crypto_init_pcompress_ops(tfm);
  
- /*
-  * Deflate test vectors (null-terminated strings).
-- * Params: winbits=11, Z_DEFAULT_COMPRESSION, MAX_MEM_LEVEL.
-+ * Params: winbits=-11, Z_DEFAULT_COMPRESSION, MAX_MEM_LEVEL.
+ 	default:
+ 		break;
+--- a/crypto/internal.h
++++ b/crypto/internal.h
+@@ -101,6 +101,7 @@ int crypto_init_digest_ops_async(struct 
+ int crypto_init_cipher_ops(struct crypto_tfm *tfm);
+ int crypto_init_compress_ops(struct crypto_tfm *tfm);
+ int crypto_init_pcompress_ops(struct crypto_tfm *tfm);
++int crypto_init_pcompress_ops_compat(struct crypto_tfm *tfm);
+ 
+ void crypto_exit_digest_ops(struct crypto_tfm *tfm);
+ void crypto_exit_cipher_ops(struct crypto_tfm *tfm);
+--- a/crypto/pcompress.c
++++ b/crypto/pcompress.c
+@@ -79,3 +79,109 @@ int crypto_init_pcompress_ops(struct cry
+ void crypto_exit_pcompress_ops(struct crypto_tfm *tfm)
+ {
+ }
++
++
++static int crypto_init_compat(struct crypto_tfm *tfm)
++{
++	struct crypto_alg *alg = tfm->__crt_alg;
++	int error;
++
++	error = alg->cra_init(tfm);
++	if (error)
++		return error;
++
++	error = crypto_compress_setup(tfm,
++				      alg->cra_pcompress.coa_default_params);
++	if (error)
++		pr_debug("crypto_compress_setup failed %d\n", error);
++
++	return error;
++}
++
++static int crypto_compress_compat(struct crypto_tfm *tfm, const u8 *src,
++				  unsigned int slen, u8 *dst,
++				  unsigned int *dlen)
++{
++	struct comp_request req;
++	int error;
++
++	pr_debug("src = %p, slen = %u, dst = %p, dlen = %u\n", src, slen, dst,
++		 *dlen);
++
++	req.next_in = src;
++	req.avail_in = slen;
++	req.next_out = dst;
++	req.avail_out = *dlen;
++
++	error = crypto_compress_init(tfm, &req);
++	if (error && (error != -EAGAIN || req.avail_in)) {
++		pr_debug("crypto_compress_init failed %d\n", error);
++		return error;
++	}
++
++	error = crypto_compress_update(tfm, &req);
++	if (error && (error != -EAGAIN || req.avail_in)) {
++		pr_debug("crypto_compress_update failed %d\n", error);
++		return error;
++	}
++
++	error = crypto_compress_final(tfm, &req);
++	if (error) {
++		pr_debug("crypto_compress_final failed %d\n", error);
++		return error;
++	}
++
++	*dlen -= req.avail_out;
++
++	return 0;
++}
++
++static int crypto_decompress_compat(struct crypto_tfm *tfm, const u8 *src,
++				    unsigned int slen, u8 *dst,
++				    unsigned int *dlen)
++{
++	struct comp_request req;
++	int error;
++
++	pr_debug("src = %p, slen = %u, dst = %p, dlen = %u\n", src, slen, dst,
++		 *dlen);
++
++	req.next_in = src;
++	req.avail_in = slen;
++	req.next_out = dst;
++	req.avail_out = *dlen;
++
++	error = crypto_decompress_init(tfm, &req);
++	if (error && (error != -EAGAIN || req.avail_in)) {
++		pr_debug("crypto_decompress_init failed %d\n", error);
++		return error;
++	}
++
++	error = crypto_decompress_update(tfm, &req);
++	if (error && (error != -EAGAIN || req.avail_in)) {
++		pr_debug("crypto_decompress_update failed %d\n", error);
++		return error;
++	}
++
++	error = crypto_decompress_final(tfm, &req);
++	if (error) {
++		pr_debug("crypto_decompress_final failed %d\n", error);
++		return error;
++	}
++
++	*dlen -= req.avail_out;
++
++	return 0;
++}
++
++int crypto_init_pcompress_ops_compat(struct crypto_tfm *tfm)
++{
++	struct compress_tfm *ops = &tfm->crt_compress;
++
++	tfm->init = crypto_init_compat;
++
++	ops->cot_compress = crypto_compress_compat;
++	ops->cot_decompress = crypto_decompress_compat;
++
++	return 0;
++}
+--- a/include/linux/crypto.h
++++ b/include/linux/crypto.h
+@@ -30,7 +30,6 @@
   */
- #define DEFLATE_COMP_TEST_VECTORS 2
- #define DEFLATE_DECOMP_TEST_VECTORS 2
+ #define CRYPTO_ALG_TYPE_MASK		0x0000000f
+ #define CRYPTO_ALG_TYPE_CIPHER		0x00000001
+-#define CRYPTO_ALG_TYPE_COMPRESS	0x00000002
+ #define CRYPTO_ALG_TYPE_AEAD		0x00000003
+ #define CRYPTO_ALG_TYPE_BLKCIPHER	0x00000004
+ #define CRYPTO_ALG_TYPE_ABLKCIPHER	0x00000005
+@@ -40,11 +39,13 @@
+ #define CRYPTO_ALG_TYPE_SHASH		0x00000009
+ #define CRYPTO_ALG_TYPE_AHASH		0x0000000a
+ #define CRYPTO_ALG_TYPE_RNG		0x0000000c
++#define CRYPTO_ALG_TYPE_COMPRESS	0x0000000e
+ #define CRYPTO_ALG_TYPE_PCOMPRESS	0x0000000f
+ 
+ #define CRYPTO_ALG_TYPE_HASH_MASK	0x0000000e
+ #define CRYPTO_ALG_TYPE_AHASH_MASK	0x0000000c
+ #define CRYPTO_ALG_TYPE_BLKCIPHER_MASK	0x0000000c
++#define CRYPTO_ALG_TYPE_COMPRESS_MASK	0x0000000e
+ 
+ #define CRYPTO_ALG_LARVAL		0x00000010
+ #define CRYPTO_ALG_DEAD			0x00000020
+@@ -324,6 +325,8 @@ struct pcompress_alg {
+ 				     struct comp_request *req);
+ 	int (*coa_decompress_final)(struct crypto_tfm *tfm,
+ 				    struct comp_request *req);
++	/* for backwards-compatibility with compress_alg only */
++	const void *coa_default_params;
+ };
+ 
+ struct rng_alg {
+@@ -1344,7 +1347,7 @@ static inline struct crypto_comp *crypto
+ {
+ 	type &= ~CRYPTO_ALG_TYPE_MASK;
+ 	type |= CRYPTO_ALG_TYPE_COMPRESS;
+-	mask |= CRYPTO_ALG_TYPE_MASK;
++	mask |= CRYPTO_ALG_TYPE_COMPRESS_MASK;
+ 
+ 	return __crypto_comp_cast(crypto_alloc_base(alg_name, type, mask));
+ }
+@@ -1363,7 +1366,7 @@ static inline int crypto_has_comp(const 
+ {
+ 	type &= ~CRYPTO_ALG_TYPE_MASK;
+ 	type |= CRYPTO_ALG_TYPE_COMPRESS;
+-	mask |= CRYPTO_ALG_TYPE_MASK;
++	mask |= CRYPTO_ALG_TYPE_COMPRESS_MASK;
+ 
+ 	return crypto_has_alg(alg_name, type, mask);
+ }
 
 -- 
 With kind regards,
