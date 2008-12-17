@@ -1,171 +1,95 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752992AbYLQPZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753847AbYLQP13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752992AbYLQPZ2 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 10:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbYLQPZO
+	id S1753847AbYLQP13 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 10:27:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYLQP1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 10:25:14 -0500
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:35149 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750859AbYLQPZM (ORCPT
+	Wed, 17 Dec 2008 10:27:18 -0500
+Received: from smtp.opengridcomputing.com ([209.198.142.2]:50188 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750949AbYLQP1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 10:25:12 -0500
-Message-ID: <49491978.20609@cs.columbia.edu>
-Date: Wed, 17 Dec 2008 10:23:36 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Wed, 17 Dec 2008 10:27:17 -0500
+Message-ID: <49491A50.7000109@opengridcomputing.com>
+Date: Wed, 17 Dec 2008 09:27:12 -0600
+From: Tom Tucker <tom@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
 MIME-Version: 1.0
-To: Mike Waychison <mikew@google.com>
-CC: jeremy@goop.org, arnd@arndb.de, linux-api@vger.kernel.org,
-        containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-        Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-        Linux Torvalds <torvalds@linux-foundation.org>,
-        Alexander Viro <viro@zeniv.linux.org.uk>,
-        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC v11][PATCH 04/13] x86 support for checkpoint/restart
-References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu> <1228498282-11804-5-git-send-email-orenl@cs.columbia.edu> <494861CA.8000403@google.com>
-In-Reply-To: <494861CA.8000403@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+CC: Ian Campbell <ijc@hellion.org.uk>, linux-nfs@vger.kernel.org,
+        Max Kellermann <mk@cm4all.com>, linux-kernel@vger.kernel.org,
+        gcosta@redhat.com, Grant Coady <grant_lkml@dodo.com.au>,
+        "J. Bruce Fields" <bfields@fieldses.org>
+Subject: Re: [PATCH 1/3] SUNRPC: Ensure the server closes sockets in a timely
+ fashion
+References: <20081017123207.GA14979@rabbit.intern.cm-ag>	 <1224484046.23068.14.camel@localhost.localdomain>	 <1225539927.2221.3.camel@localhost.localdomain>	 <1225546878.4390.3.camel@heimdal.trondhjem.org>	 <1227596962.16868.22.camel@localhost.localdomain>	 <1227619696.7057.19.camel@heimdal.trondhjem.org>	 <1227620339.9425.99.camel@zakaz.uk.xensource.com>	 <1227621434.7057.33.camel@heimdal.trondhjem.org>	 <1227621877.9425.102.camel@zakaz.uk.xensource.com>	 <1227737539.31008.2.camel@localhost.localdomain>	 <1228090631.7112.11.camel@heimdal.trondhjem.org> <1228090719.7112.13.camel@heimdal.trondhjem.org>
+In-Reply-To: <1228090719.7112.13.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Mike Waychison wrote:
-> Oren Laadan wrote:
->> Add logic to save and restore architecture specific state, including
->> thread-specific state, CPU registers and FPU state.
->>
->> In addition, architecture capabilities are saved in an architecure
->> specific extension of the header (cr_hdr_head_arch); Currently this
->> includes only FPU capabilities.
->>
->> Currently only x86-32 is supported. Compiling on x86-64 will trigger
->> an explicit error.
->>
-
-[...]
-
->> +
->> +    hh->gdt_entry_tls_entries = GDT_ENTRY_TLS_ENTRIES;
->> +    hh->sizeof_tls_array = sizeof(thread->tls_array);
->> +    hh->ntls = ntls;
->> +
->> +    ret = cr_write_obj(ctx, &h, hh);
->> +    cr_hbuf_put(ctx, sizeof(*hh));
->> +    if (ret < 0)
->> +        return ret;
->> +
->> +    cr_debug("ntls %d\n", ntls);
->> +    if (ntls == 0)
->> +        return 0;
->> +
->> +    /* for simplicity dump the entire array, cherry-pick upon restart */
->> +    ret = cr_kwrite(ctx, thread->tls_array, sizeof(thread->tls_array));
+Trond Myklebust wrote:
+> We want to ensure that connected sockets close down the connection when we
+> set XPT_CLOSE, so that we don't keep it hanging while cleaning up all the
+> stuff that is keeping a reference to the socket.
 > 
-> Again, the the TLS descriptors in the GDT should be called out an not
-> tied to the in-kernel representation.
-
-True. I'll add a 'FIXME' comment.
-
-However, I'm yet to see a case where this breaks among x86_32, and I'm no
-expert in that area to tell whether it could. (Moving from x86_32 to x86_64
-is another story, and will require some compatibility layer anyway).
-
+> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> ---
 > 
->> +
->> +    /* IGNORE RESTART BLOCKS FOR NOW ... */
-
-[...]
-
->> +static int cr_write_cpu_fpu(struct cr_ctx *ctx, struct task_struct *t)
->> +{
->> +    void *xstate_buf = cr_hbuf_get(ctx, xstate_size);
->> +
->> +    /* i387 + MMU + SSE logic */
->> +    preempt_disable();    /* needed it (t == current) */
->> +
->> +    /*
->> +     * normally, no need to unlazy_fpu(), since TS_USEDFPU flag
->> +     * have been cleared when task was context-switched out...
->> +     * except if we are in process context, in which case we do
->> +     */
->> +    if (t == current && (task_thread_info(t)->status & TS_USEDFPU))
->> +        unlazy_fpu(current);
->> +
->> +    memcpy(xstate_buf, t->thread.xstate, xstate_size);
+>  net/sunrpc/svcsock.c |   21 ++++++++++++++++++++-
+>  1 files changed, 20 insertions(+), 1 deletions(-)
 > 
-> This is probably better off being very deliberate about what registers
-> we are dumping from a traceability and compatibility point of view?
-
-Same here.
-
 > 
->> +    preempt_enable();    /* needed it (t == current) */
->> +
->> +    return cr_kwrite(ctx, xstate_buf, xstate_size);
+> diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+> index 95293f5..a1b048d 100644
+> --- a/net/sunrpc/svcsock.c
+> +++ b/net/sunrpc/svcsock.c
+> @@ -59,6 +59,7 @@ static void		svc_udp_data_ready(struct sock *, int);
+>  static int		svc_udp_recvfrom(struct svc_rqst *);
+>  static int		svc_udp_sendto(struct svc_rqst *);
+>  static void		svc_sock_detach(struct svc_xprt *);
+> +static void		svc_tcp_sock_detach(struct svc_xprt *);
+>  static void		svc_sock_free(struct svc_xprt *);
+>  
+>  static struct svc_xprt *svc_create_socket(struct svc_serv *, int,
+> @@ -1017,7 +1018,7 @@ static struct svc_xprt_ops svc_tcp_ops = {
+>  	.xpo_recvfrom = svc_tcp_recvfrom,
+>  	.xpo_sendto = svc_tcp_sendto,
+>  	.xpo_release_rqst = svc_release_skb,
+> -	.xpo_detach = svc_sock_detach,
+> +	.xpo_detach = svc_tcp_sock_detach,
+>  	.xpo_free = svc_sock_free,
+>  	.xpo_prep_reply_hdr = svc_tcp_prep_reply_hdr,
+>  	.xpo_has_wspace = svc_tcp_has_wspace,
+> @@ -1282,6 +1283,24 @@ static void svc_sock_detach(struct svc_xprt *xprt)
+>  	sk->sk_state_change = svsk->sk_ostate;
+>  	sk->sk_data_ready = svsk->sk_odata;
+>  	sk->sk_write_space = svsk->sk_owspace;
+> +
+> +	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +		wake_up_interruptible(sk->sk_sleep);
+> +}
+> +
+> +/*
+> + * Disconnect the socket, and reset the callbacks
+> + */
+> +static void svc_tcp_sock_detach(struct svc_xprt *xprt)
+> +{
+> +	struct svc_sock *svsk = container_of(xprt, struct svc_sock, sk_xprt);
+> +
+> +	dprintk("svc: svc_tcp_sock_detach(%p)\n", svsk);
+> +
+> +	svc_sock_detach(xprt);
+> +
+> +	if (!test_bit(XPT_LISTENER, &xprt->xpt_flags))
+> +		kernel_sock_shutdown(svsk->sk_sock, SHUT_RDWR);
+
+How is this different than what happens as an artifact of sock_release?
+
+>  }
+>  
+>  /*
 > 
-> Missed cr_huf_put()
-
-Ooops ... will fix.
-
-> 
->> +}
->> +
->> +#endif    /* CONFIG_X86_64 */
-
-[...]
-
->> +        /*
->> +         * restore TLS by hand: why convert to struct user_desc if
->> +         * sys_set_thread_entry() will convert it back ?
->> +         */
->> +
->> +        size = sizeof(*desc) * GDT_ENTRY_TLS_ENTRIES;
->> +        desc = kmalloc(size, GFP_KERNEL);
->> +        if (!desc)
-> 
-> cr_hbuf_put() here.
-
-Will fix.
-
-> 
->> +            return -ENOMEM;
->> +
->> +        ret = cr_kread(ctx, desc, size);
->> +        if (ret >= 0) {
-> 
-> if (ret == 0)
-
-Right.
-
-> 
->> +            /*
->> +             * FIX: add sanity checks (eg. that values makes
->> +             * sense, that we don't overwrite old values, etc
->> +             */
->> +            cpu = get_cpu();
->> +            memcpy(thread->tls_array, desc, size);
->> +            load_TLS(thread, cpu);
->> +            put_cpu();
->> +        }
->> +        kfree(desc);
->> +    }
->> +
->> +    ret = 0;
->> + out:
->> +    cr_hbuf_put(ctx, sizeof(*hh));
->> +    return ret;
->> +}
-
-[...]
-
-Thanks for the review !
-
-Oren.
 
