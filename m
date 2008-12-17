@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757642AbYLQB0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758263AbYLQB11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757642AbYLQB0i (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 20:26:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYLQB02
+	id S1758263AbYLQB11 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 20:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYLQB1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 20:26:28 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:50907 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751619AbYLQB01 (ORCPT
+	Tue, 16 Dec 2008 20:27:18 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53164 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752427AbYLQB1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 20:26:27 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: ying.huang@intel.com (Huang Ying)
-Subject: Re: [RFC PATCH crypto] AES: Add support to Intel	AES-NI	instructions
-Cc: herbert@gondor.apana.org.au, suresh.b.siddha@intel.com,
-        linux-crypto@ml.breakpoint.cc, akpm@linux-foundation.org,
-        linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
-        mingo@elte.hu, tglx@linutronix.de
-Organization: Core
-In-Reply-To: <1229476462.5936.314.camel@yhuang-dev.sh.intel.com>
-X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1LClB3-0006WP-9J@gondolin.me.apana.org.au>
-Date: Wed, 17 Dec 2008 12:26:17 +1100
+	Tue, 16 Dec 2008 20:27:17 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: jT <toyj@union.edu>
+Subject: Re: mmotm git repository
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+        Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20081216114343.2ca29bdf.akpm@linux-foundation.org>
+References: <20081216114343.2ca29bdf.akpm@linux-foundation.org>
+Message-Id: <20081217102538.DBBE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Wed, 17 Dec 2008 10:27:13 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying <ying.huang@intel.com> wrote:
->
-> f. if TS is clear, then use x86_64 implementation. Otherwise if
-> user-space has touched the FPU, we save the state, if not then simply
-> clear TS.
+Hi jT,
 
-Well I'd rather avoid using the x86_64 implementation ever because
-unless the chip guys have really screwed up we should be looking at
-a difference of at least a factor of 10.
+> browseable here:
+> 
+> 	http://git.zen-sources.org/?p=mmotm.git;a=summary
 
-BTW I wasn't very clear in the original email.  You'd only do the
-asynchronous operation for CBC/ECB.  For the simple AES case I
-suppose we'll just have to stick to the x86_64 fallback.  This'll
-really suck for disk encryption but I guess you could always add
-an LRW/XTS mode to your code.
+This url display following error now.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+
+Software error:
+
+Can't locate HTML/Email/Obfuscate.pm in @INC (@INC contains: /etc/perl /usr/lib64/perl5/vendor_perl/5.8.8/x86_64-linux-thread-multi /usr/lib64/perl5/vendor_perl/5.8.8 /usr/lib64/perl5/vendor_perl /usr/lib64/perl5/site_perl/5.8.8/x86_64-linux-thread-multi /usr/lib64/perl5/site_perl/5.8.8 /usr/lib64/perl5/site_perl /usr/lib64/perl5/5.8.8/x86_64-linux-thread-multi /usr/lib64/perl5/5.8.8 /usr/local/lib/site_perl .) at /var/www//htdocs/zen-sources.org/git/gitweb.cgi line 19.
+BEGIN failed--compilation aborted at /var/www//htdocs/zen-sources.org/git/gitweb.cgi line 19.
+
+For help, please send mail to this site's webmaster, giving this error message and the time and date of the error. 
+
+
+
+
+
