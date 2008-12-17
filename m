@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758700AbYLQITt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759352AbYLQIUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758700AbYLQITt (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 03:19:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYLQITf
+	id S1759352AbYLQIUe (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 03:20:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYLQIUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 03:19:35 -0500
-Received: from ns1.suse.de ([195.135.220.2]:58604 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbYLQITe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 03:19:34 -0500
-Date: Wed, 17 Dec 2008 09:19:32 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Hugh Dickins <hugh@veritas.com>, "hpa@zytor.com" <hpa@zytor.com>,
-        "tglx@linutronix.de" <tglx@linutronix.de>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/7] x86 PAT: v2 - track pfnmap mappings with remap_pfn_range and vm_insert_pfn
-Message-ID: <20081217081932.GC26179@wotan.suse.de>
-References: <20081126002157.475142000@intel.com> <7E82351C108FA840AB1866AC776AEC464338C11E@orsmsx505.amr.corp.intel.com> <20081216195154.GB4501@elte.hu> <20081216220502.GC22722@wotan.suse.de> <20081216220746.GE14787@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081216220746.GE14787@elte.hu>
-User-Agent: Mutt/1.5.9i
+	Wed, 17 Dec 2008 03:20:24 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:30762 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751249AbYLQIUX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 03:20:23 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=RUbaGAkHvCOrHW4GQWgjS7XJQ384foAqhZRDhPkaZYhHZ2G26vJlZJAt9fYK1V4+x
+	8CSLVnHdbjS5cEiqtvg1g==
+MIME-Version: 1.0
+In-Reply-To: <b040c32a0812152337r4c708d59q7d71ebbcda8fe05a@mail.gmail.com>
+References: <b040c32a0812152337r4c708d59q7d71ebbcda8fe05a@mail.gmail.com>
+Date: Wed, 17 Dec 2008 00:20:19 -0800
+Message-ID: <b040c32a0812170020x1dae7e11taec8e2f4ff9f06f1@mail.gmail.com>
+Subject: Re: [patch] sched: fix uneven per-cpu task_group share distribution
+From: Ken Chen <kenchen@google.com>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16, 2008 at 11:07:46PM +0100, Ingo Molnar wrote:
-> 
-> * Nick Piggin <npiggin@suse.de> wrote:
-> > > So when you sent this a month ago i asked the MM folks whether they have 
-> > > any problems with these patches. Acks (or objections) from Andrew, Nick or 
-> > > Hugh would be nice to have.
-> > 
-> > Last I looked at them, I think all my questions were cleared up.
-> 
-> does that transform into a:
-> 
->   Acked-by: Nick Piggin <npiggin@suse.de>
+On Mon, Dec 15, 2008 at 11:37 PM, Ken Chen <kenchen@google.com> wrote:
+> While testing CFS scheduler on linux-2.6-tip tree
+> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+>
+> We found that task which is pinned to a CPU could be starved relative to its
+> allocated fair share.
 
-I should think so ;), but I'll take another glance at the next round
-after Andrew's comments were incorporated. Are those available?
+I just want to poke you two to see if you have time to look over this
+patch.  There is a real bug in linux-2.6-tip tree.
+
+If I create a CFS cgroup under directory .../parent/cgdir, put one
+task under 'parent' with CFS weight 1024, and one task under 'cgdir'
+(cgdir has group weight of 1024 also), pin both tasks onto same CPU.
+The CPU cycle allocation on these two tasks will be N:1 where N is
+number of CPUs in the system.  The expected allocation should be 1:1.
+
+- Ken
