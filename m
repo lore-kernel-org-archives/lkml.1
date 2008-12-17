@@ -1,267 +1,853 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1756904AbYLQE2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755983AbYLQEYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbYLQE2R (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 23:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbYLQE17
+	id S1755983AbYLQEYk (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 23:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750706AbYLQEYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 23:27:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52476 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750944AbYLQE17 (ORCPT
+	Tue, 16 Dec 2008 23:24:25 -0500
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:60502 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750703AbYLQEYW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 23:27:59 -0500
-Date: Tue, 16 Dec 2008 20:27:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-        =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] trace: add a way to enable or disable the stack tracer
-Message-Id: <20081216202738.cbbbd92c.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0812162311430.25356@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0812162311430.25356@gandalf.stny.rr.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Dec 2008 23:24:22 -0500
+Message-ID: <49487EEF.1070207@nttdata.co.jp>
+Date: Wed, 17 Dec 2008 13:24:15 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.18) Gecko/20081105 Thunderbird/2.0.0.18 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: viro@ZenIV.linux.org.uk
+CC: jmorris@namei.org, akpm@linux-foundation.org,
+        linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
+        linux-kernel@vger.kernel.org, haradats@nttdata.co.jp
+Subject: [PATCH] introduce new LSM hooks where vfsmount is available.
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Dec 2008 04:24:15.0612 (UTC) FILETIME=[522363C0:01C95FFF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Dec 2008 23:14:23 -0500 (EST) Steven Rostedt <rostedt@goodmis.org> wrote:
+Al, would you respond to this patch?
+James, Andrew and we are waiting for your Acked-by: response.
 
-> 
-> The following patch is in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->     branch: tip/devel
-> 
-> 
-> Steven Rostedt (1):
->       trace: add a way to enable or disable the stack tracer
-> 
-> ----
->  Documentation/kernel-parameters.txt |    4 +++
->  include/linux/ftrace.h              |    8 +++++
->  kernel/sysctl.c                     |   10 +++++++
->  kernel/trace/Kconfig                |   13 ++++++---
->  kernel/trace/trace_stack.c          |   52 ++++++++++++++++++++++++++++++++---
->  5 files changed, 79 insertions(+), 8 deletions(-)
-> ---------------------------
-> commit ab8e30ab67495a48599edc11e805382da15b7761
-> Author: Steven Rostedt <srostedt@redhat.com>
-> Date:   Tue Dec 16 23:06:40 2008 -0500
-> 
->     trace: add a way to enable or disable the stack tracer
->     
->     Impact: enhancement to stack tracer
->     
->     The stack tracer currently is either on when configured in or
->     off when it is not. It can not be disabled when it is configured on.
->     (besides disabling the function tracer that it uses)
->     
->     This patch adds a way to enable or disable the stack tracer at
->     run time. It defaults off on bootup, but a kernel parameter 'stacktrace'
->     has been added to enable it on bootup.
->     
->     A new sysctl has been added "kernel.stack_tracer_enabled" to let
->     the user enable or disable the stack tracer at run time.
->     
+Regards,
 
-Why do we need the boot parameter if there's a runtime control?
+------- Forwarded Message
+ From: Al Viro <viro@ZenIV.linux.org.uk>
+ To: akpm@linux-foundation.org
+ Cc: linux-fsdevel@vger.kernel.org, takedakn@nttdata.co.jp,casey@schaufler-ca.com, crispin@crispincowan.com,haradats@nttdata.co.jp, hch@lst.de, jmorris@namei.org,penguin-kernel@I-love.SAKURA.ne.jp, sds@tycho.nsa.gov
+ Subject: Re: [patch 04/11] vfs: introduce new LSM hooks where vfsmount isavailable.
+ Date: Sat, 6 Dec 2008 07:10:09 +0000
 
+On Mon, Dec 01, 2008 at 02:34:54PM -0800, akpm@linux-foundation.org wrote:
+
+In principle, ACK.
+ 
+>  fs/namei.c               |   37 +++++++++
+>  fs/open.c                |    5 +
+>  include/linux/security.h |  139 +++++++++++++++++++++++++++++++++++++
+>  net/unix/af_unix.c       |    4 +
+>  security/Kconfig         |    9 ++
+>  security/capability.c    |   57 +++++++++++++++
+>  security/security.c      |   66 +++++++++++++++++
+>  7 files changed, 317 insertions(+)
 > 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 16aaa84..95fa674 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -89,6 +89,7 @@ parameter is applicable:
->  	SPARC	Sparc architecture is enabled.
->  	SWSUSP	Software suspend (hibernation) is enabled.
->  	SUSPEND	System suspend states are enabled.
-> +	FTRACE	Function tracing enabled.
->  	TS	Appropriate touchscreen support is enabled.
->  	USB	USB support is enabled.
->  	USBHID	USB Human Interface Device support is enabled.
-> @@ -2197,6 +2198,9 @@ and is between 256 and 4096 characters. It is defined in the file
->  	st=		[HW,SCSI] SCSI tape parameters (buffers, etc.)
->  			See Documentation/scsi/st.txt.
->  
-> +	stacktrace	[FTRACE]
-> +			Enabled the stack tracer on boot up.
-> +
->  	sti=		[PARISC,HW]
->  			Format: <num>
->  			Set the STI (builtin display/keyboard on the HP-PARISC
-> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> index 286af82..04b52e6 100644
-> --- a/include/linux/ftrace.h
-> +++ b/include/linux/ftrace.h
-> @@ -87,6 +87,14 @@ static inline void ftrace_stop(void) { }
->  static inline void ftrace_start(void) { }
->  #endif /* CONFIG_FUNCTION_TRACER */
->  
-> +#ifdef CONFIG_STACK_TRACER
-> +extern int stack_tracer_enabled;
-> +int
-> +stack_trace_sysctl(struct ctl_table *table, int write,
-> +		   struct file *file, void __user *buffer, size_t *lenp,
-> +		   loff_t *ppos);
-> +#endif
+> diff -puN fs/namei.c~introduce-new-lsm-hooks-where-vfsmount-is-available fs/namei.c
+> --- a/fs/namei.c~introduce-new-lsm-hooks-where-vfsmount-is-available
+> +++ a/fs/namei.c
+> @@ -1556,6 +1556,10 @@ int may_open(struct nameidata *nd, int a
+>  		 * Refuse to truncate files with mandatory locks held on them.
+>  		 */
+>  		error = locks_verify_locked(inode);
+> +		if (!error)
+> +			error = security_path_truncate(&nd->path, 0,
+> +					       ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
+> +						       NULL);
 
-The ifdef could be omitted here.
+Humm...  What's the story with the last argument (struct file *) in there?
+Explain that and you've got it merged; other than this part I have no
+objections to that patch.
 
->  #ifdef CONFIG_DYNAMIC_FTRACE
->  /* asm/ftrace.h must be defined for archs supporting dynamic ftrace */
->  #include <asm/ftrace.h>
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index c7bf3dd..2414fa8 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -488,6 +488,16 @@ static struct ctl_table kern_table[] = {
->  		.proc_handler	= &ftrace_enable_sysctl,
->  	},
->  #endif
-> +#ifdef CONFIG_STACK_TRACER
-> +	{
-> +		.ctl_name	= CTL_UNNUMBERED,
-> +		.procname	= "stack_tracer_enabled",
-> +		.data		= &stack_tracer_enabled,
-> +		.maxlen		= sizeof(int),
-> +		.mode		= 0644,
-> +		.proc_handler	= &stack_trace_sysctl,
-> +	},
-> +#endif
->  #ifdef CONFIG_TRACING
->  	{
->  		.ctl_name	= CTL_UNNUMBERED,
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index d8bae6f..e2a4ff6 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -244,10 +244,15 @@ config STACK_TRACER
->  
->  	  This tracer works by hooking into every function call that the
->  	  kernel executes, and keeping a maximum stack depth value and
-> -	  stack-trace saved. Because this logic has to execute in every
-> -	  kernel function, all the time, this option can slow down the
-> -	  kernel measurably and is generally intended for kernel
-> -	  developers only.
-> +	  stack-trace saved.  If this is configured with DYNAMIC_FTRACE
-> +	  then it will not have any overhead while the stack tracer
-> +	  is disabled.
-> +
-> +	  To enable the stack tracer on bootup, pass in 'stacktrace'
-> +	  on the kernel command line.
-> +
-> +	  The stack tracer can also be enabled or disabled via the
-> +	  sysctl kernel.stack_tracer_enabled
->  
->  	  Say N if unsure.
->  
-> diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
-> index 0b863f2..4842c96 100644
-> --- a/kernel/trace/trace_stack.c
-> +++ b/kernel/trace/trace_stack.c
-> @@ -10,6 +10,7 @@
->  #include <linux/debugfs.h>
->  #include <linux/ftrace.h>
->  #include <linux/module.h>
-> +#include <linux/sysctl.h>
->  #include <linux/init.h>
->  #include <linux/fs.h>
->  #include "trace.h"
-> @@ -31,6 +32,10 @@ static raw_spinlock_t max_stack_lock =
->  
->  static int stack_trace_disabled __read_mostly;
->  static DEFINE_PER_CPU(int, trace_active);
-> +static DEFINE_MUTEX(stack_sysctl_mutex);
-> +
-> +int stack_tracer_enabled;
-> +static int last_stack_tracer_enabled;
->  
->  static inline void check_stack(void)
->  {
-> @@ -174,7 +179,7 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
->  	return count;
->  }
->  
-> -static struct file_operations stack_max_size_fops = {
-> +static const struct file_operations stack_max_size_fops = {
->  	.open		= tracing_open_generic,
->  	.read		= stack_max_size_read,
->  	.write		= stack_max_size_write,
-> @@ -272,7 +277,7 @@ static int t_show(struct seq_file *m, void *v)
->  	return 0;
->  }
->  
-> -static struct seq_operations stack_trace_seq_ops = {
-> +static const struct seq_operations stack_trace_seq_ops = {
->  	.start		= t_start,
->  	.next		= t_next,
->  	.stop		= t_stop,
-> @@ -288,12 +293,48 @@ static int stack_trace_open(struct inode *inode, struct file *file)
->  	return ret;
->  }
->  
-> -static struct file_operations stack_trace_fops = {
-> +static const struct file_operations stack_trace_fops = {
->  	.open		= stack_trace_open,
->  	.read		= seq_read,
->  	.llseek		= seq_lseek,
->  };
->  
-> +int
-> +stack_trace_sysctl(struct ctl_table *table, int write,
-> +		   struct file *file, void __user *buffer, size_t *lenp,
-> +		   loff_t *ppos)
-> +{
-> +	int ret;
-> +
-> +	mutex_lock(&stack_sysctl_mutex);
-> +
-> +	ret  = proc_dointvec(table, write, file, buffer, lenp, ppos);
+------- End of Forwarded Message
 
-funny whitespace
+------- Forwarded Message
+ From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+ To: viro@ZenIV.linux.org.uk
+ Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org, takedakn@nttdata.co.jp, casey@schaufler-ca.com, crispin@crispincowan.com, haradats@nttdata.co.jp, hch@lst.de, jmorris@namei.org, sds@tycho.nsa.gov
+ Subject: Re: [patch 04/11] vfs: introduce new LSM hooks where vfsmount is available.
+ Date: Sat, 6 Dec 2008 21:24:31 +0900
 
-> +	if (ret || !write ||
-> +	    (last_stack_tracer_enabled == stack_tracer_enabled))
-> +		goto out;
-> +
-> +	last_stack_tracer_enabled = stack_tracer_enabled;
-> +
-> +	if (stack_tracer_enabled)
-> +		register_ftrace_function(&trace_ops);
-> +	else
-> +		unregister_ftrace_function(&trace_ops);
-> +
-> + out:
-> +	mutex_unlock(&stack_sysctl_mutex);
-> +	return ret;
-> +}
-> +
-> +static int start_stack_trace __initdata;
-> +
-> +static __init int enable_stacktrace(char *str)
-> +{
-> +	start_stack_trace = 1;
-> +	return 1;
-> +}
-> +__setup("stacktrace", enable_stacktrace);
-> +
->  static __init int stack_trace_init(void)
->  {
->  	struct dentry *d_tracer;
-> @@ -311,7 +352,10 @@ static __init int stack_trace_init(void)
->  	if (!entry)
->  		pr_warning("Could not create debugfs 'stack_trace' entry\n");
+Thank you very much for responding.
+
+Al Viro wrote:
+> On Mon, Dec 01, 2008 at 02:34:54PM -0800, akpm@linux-foundation.org wrote:
+> 
+> In principle, ACK.
 >  
-> -	register_ftrace_function(&trace_ops);
-> +	if (start_stack_trace) {
-> +		register_ftrace_function(&trace_ops);
-> +		stack_tracer_enabled = 1;
-> +	}
+> >  fs/namei.c               |   37 +++++++++
+> >  fs/open.c                |    5 +
+> >  include/linux/security.h |  139 +++++++++++++++++++++++++++++++++++++
+> >  net/unix/af_unix.c       |    4 +
+> >  security/Kconfig         |    9 ++
+> >  security/capability.c    |   57 +++++++++++++++
+> >  security/security.c      |   66 +++++++++++++++++
+> >  7 files changed, 317 insertions(+)
+> > 
+> > diff -puN fs/namei.c~introduce-new-lsm-hooks-where-vfsmount-is-available fs/namei.c
+> > --- a/fs/namei.c~introduce-new-lsm-hooks-where-vfsmount-is-available
+> > +++ a/fs/namei.c
+> > @@ -1556,6 +1556,10 @@ int may_open(struct nameidata *nd, int a
+> >  		 * Refuse to truncate files with mandatory locks held on them.
+> >  		 */
+> >  		error = locks_verify_locked(inode);
+> > +		if (!error)
+> > +			error = security_path_truncate(&nd->path, 0,
+> > +					       ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
+> > +						       NULL);
+> 
+> Humm...  What's the story with the last argument (struct file *) in there?
+> Explain that and you've got it merged; other than this part I have no
+> objections to that patch.
 
-I think we could do away with start_stack_trace and just set
-stack_tracer_enabled=1 in enable_stacktrace()?
+do_sys_ftruncate() calls do_truncate() with "struct file *", whereas
+do_sys_truncate() and may_open() call do_truncate() with NULL.
+TOMOYO is not using the last argument, but I'm passing all arguments without
+modification so that a LSM module can know the last argument if that LSM module
+needs the last argument.
+
+Regards.
+
+------- End of Forwarded Message
+
+------- Forwarded Message
+ From: Al Viro <viro@ZenIV.linux.org.uk>
+ To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+ Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org, takedakn@nttdata.co.jp, casey@schaufler-ca.com, crispin@crispincowan.com, haradats@nttdata.co.jp, hch@lst.de, jmorris@namei.org, sds@tycho.nsa.gov
+ Subject: Re: [patch 04/11] vfs: introduce new LSM hooks where vfsmount is available.
+ Date: Sat, 6 Dec 2008 18:29:02 +0000
+
+On Sat, Dec 06, 2008 at 09:24:31PM +0900, Tetsuo Handa wrote:
+
+> > Humm...  What's the story with the last argument (struct file *) in there?
+> > Explain that and you've got it merged; other than this part I have no
+> > objections to that patch.
+> 
+> do_sys_ftruncate() calls do_truncate() with "struct file *", whereas
+> do_sys_truncate() and may_open() call do_truncate() with NULL.
+> TOMOYO is not using the last argument, but I'm passing all arguments without
+> modification so that a LSM module can know the last argument if that LSM module
+> needs the last argument.
+
+And if such a module ever shows up *and* its authors can give good reasons
+for checks in that place that apply to ftruncate(2) but not to truncate(2),
+we can always add such argument.  Until then...
+
+Note that similar story with struct nameidata * being passed to fs methods
+had caused a lot of mess and we are still not through with it.  Let's
+stick to the things that make clear sense...
+
+------- End of Forwarded Message
+
+------- Forwarded Message
+ From: Kentaro Takeda <takedakn@nttdata.co.jp>
+ To: viro@ZenIV.linux.org.uk
+ Cc: penguin-kernel@i-love.sakura.ne.jp, akpm@linux-foundation.org,linux-fsdevel@vger.kernel.org, casey@schaufler-ca.com,crispin@crispincowan.com, haradats@nttdata.co.jp, hch@lst.de,jmorris@namei.org, sds@tycho.nsa.gov,linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+ Subject: Re: [patch 04/11] vfs: introduce new LSM hooks where vfsmount isavailable.
+ Date: Mon, 08 Dec 2008 10:33:57 +0900
+
+(added cc:lsm-list, linux-kernel-list)
+
+Al Viro wrote:
+> On Sat, Dec 06, 2008 at 09:24:31PM +0900, Tetsuo Handa wrote:
+> 
+> > > Humm...  What's the story with the last argument (struct file *) in there?
+> > > Explain that and you've got it merged; other than this part I have no
+> > > objections to that patch.
+> > 
+> > do_sys_ftruncate() calls do_truncate() with "struct file *", whereas
+> > do_sys_truncate() and may_open() call do_truncate() with NULL.
+> > TOMOYO is not using the last argument, but I'm passing all arguments without
+> > modification so that a LSM module can know the last argument if that LSM module
+> > needs the last argument.
+> 
+> And if such a module ever shows up *and* its authors can give good reasons
+> for checks in that place that apply to ftruncate(2) but not to truncate(2),
+> we can always add such argument.  Until then...
+> 
+> Note that similar story with struct nameidata * being passed to fs methods
+> had caused a lot of mess and we are still not through with it.  Let's
+> stick to the things that make clear sense...
+> 
+I see. I removed the last argument from this patch.
+I attach the updated version of this patch with updated changelog.
+
+I'm sorry for letting you repeat the same answer.
+TOMOYO wants to do DAC checks before MAC checks. Thus, I tried to embed DAC's
+code copied from VFS helper functions into security_path_*() hooks.
+But I received a comment that duplicating DAC's code is ugly.
+Thus, I was searching for a way to do MAC checks at security_inode_*() hooks.
+To do MAC checks at security_inode_*() hooks, I need to somehow pass
+vfsmount's pathname, but I now understood that passing something via implicit
+arguments is not acceptable. Thus, I give up approaches which use implicit
+arguments.
+
+Regards,
+
+(patch omitted)
+------- End of Forwarded Message
+
+------- Forwarded Message
+ From: Kentaro Takeda <takedakn@nttdata.co.jp>
+ To: viro@ZenIV.linux.org.uk
+ Cc: penguin-kernel@i-love.sakura.ne.jp, akpm@linux-foundation.org,linux-fsdevel@vger.kernel.org, casey@schaufler-ca.com,crispin@crispincowan.com, haradats@nttdata.co.jp, hch@lst.de,jmorris@namei.org, sds@tycho.nsa.gov,linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+ Subject: Re: [patch 04/11] vfs: introduce new LSM hooks where vfsmount isavailable.
+ Date: Fri, 12 Dec 2008 10:59:39 +0900
+
+Al, please give us Acked-by response.
+(patch refreshed for mmotm-2008-12-11-15-20).
+
+Regards,
+
+---
+Subject: vfs: introduce new LSM hooks where vfsmount is available.
+
+----- What is this patch for? -----
+
+There are security_inode_*() LSM hooks for attribute-based MAC, but they are
+not suitable for pathname-based MAC because they don't receive
+"struct vfsmount" information.
+
+----- How this patch was developed? -----
+
+Two pathname-based MACs, AppArmor and TOMOYO Linux, are trying to merge
+upstream. But because of "struct vfsmount" problem, they have been unable to
+merge upstream.
+
+Here are the list of approaches and the reasons of denial.
+
+(1) Not using LSM
+ http://lwn.net/Articles/277833/
+
+ This approach was rejected because security modules should use LSM because the
+ whole idea behind LSM was to have a single set of hooks for all security
+ modules; if every module now adds its own set of hooks, that purpose will have
+ been defeated and the kernel will turn into a big mess of security hooks.
+
+(2) Retrieving "struct vfsmount" from "struct task_struct".
+ http://lkml.org/lkml/2007/11/5/388
+
+ Since "struct task_struct" contains list of "struct vfsmount",
+ "struct vfsmount" which corresponds to "struct dentry" can be retrieved from
+ the list unless "mount --bind" is used.
+
+ This approach turned out to cause a critical problem that getting
+ namespace_sem lock from security_inode_*() triggers AB-BA deadlock.
+
+(3) Adding "struct vfsmount" parameter to VFS helper functions.
+ http://lkml.org/lkml/2008/5/29/207
+
+ This approach adds "struct vfsmount" to VFS helper functions (e.g. vfs_mkdir()
+ and vfs_symlink()) and LSM hooks inside VFS helper functions. This approach is
+ helpful for not only AppArmor and TOMOYO Linux 2.x but also SELinux and
+ auditing purpose, for this approach allows existent LSM users to use pathnames
+ in their access control and audit logs.
+
+ This approach was rejected by Al Viro, the VFS maintainer, because he thinks
+ individual filesystem should remain "struct vfsmount"-unaware and VFS helper
+ functions should not receive "struct vfsmount".
+
+ Al Viro also suggested to move existing security_inode_*() to out of VFS
+ helper functions so that security_inode_*() can receive "struct vfsmount"
+ without modifying VFS helper functions, but this suggestion was opposed by
+ Stephen Smalley because changing the order of permission checks (i.e.
+ MAC checks before DAC checks) is not acceptable.
+
+(4) Passing "struct vfsmount" via "struct task_struct".
+ http://lkml.org/lkml/2007/11/16/157
+
+ Since we didn't understand the reason why accessing "struct vfsmount" from
+ LSM hooks inside VFS helper functions is not acceptable, we thought the reason
+ why VFS helper functions don't receive "struct vfsmount" is the amount of
+ modifications needed to do so. Thus, we proposed to pass "struct vfsmount" via
+ "struct task_struct" so that modifications remain minimal.
+
+ This approach was rejected because this is an abuse of "struct task_struct".
+
+(5) Remembering pathname of "struct vfsmount" via "struct task_struct".
+ http://lkml.org/lkml/2008/8/19/16
+
+ Since pathname of a "struct dentry" up to the mount point can be calculated
+ without "struct vfsmount", absolute pathname of a "struct dentry" can be
+ calculated if "struct task_struct" can remember absolute pathname of a
+ "struct vfsmount" which corresponds to "struct dentry".
+
+ As we now understand that Al Viro is opposing to access "struct vfsmount" from
+ LSM hooks inside VFS helper functions, we gave up delivering "struct vfsmount"
+ itself to LSM hooks inside VFS helper functions.
+
+ Kernel 2.6.26 introduced read-only bind mount feature, and hooks for that
+ feature (i.e. mnt_want_write() and mnt_drop_write()) were inserted around
+ VFS helper functions call. Since mnt_want_write() receives "struct vfsmount"
+ which corresponds to "struct dentry" that will be passed to subsequent VFS
+ helper functions call, we associated pathname of "struct vfsmount" with
+ "struct task_struct" instead of associating "struct vfsmount" itself.
+
+ This approach was rejected because of the kludge and of having the effect of
+ vfs_mkdir() et.al. dependent on anything except the arguments it's getting.
+
+(6) Introducing new LSM hooks where vfsmount is available.
+ (this patch)
+
+ We came to the conclusion that adding new LSM hooks which receive
+ all necessary arguments (e.g. "struct vfsmount" and "struct dentry")
+ outside VFS helper functions is the only acceptable approach.
+
+ This approach has less impact to existing LSM module and no impact to
+ VFS helper functions.
+
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Crispin Cowan <crispin@crispincowan.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Casey Schaufler <casey@schaufler-ca.com>
+Cc: James Morris <jmorris@namei.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/namei.c               |   36 ++++++++++++
+ fs/open.c                |    5 +
+ include/linux/security.h |  137 +++++++++++++++++++++++++++++++++++++++++++++++
+ net/unix/af_unix.c       |    4 +
+ security/Kconfig         |    9 +++
+ security/capability.c    |   57 +++++++++++++++++++
+ security/security.c      |   66 ++++++++++++++++++++++
+ 7 files changed, 314 insertions(+)
+
+--- linux-2.6.28-rc8-mm1.orig/fs/namei.c
++++ linux-2.6.28-rc8-mm1/fs/namei.c
+@@ -1556,6 +1556,9 @@ int may_open(struct nameidata *nd, int a
+ 		 * Refuse to truncate files with mandatory locks held on them.
+ 		 */
+ 		error = locks_verify_locked(inode);
++		if (!error)
++			error = security_path_truncate(&nd->path, 0,
++					       ATTR_MTIME|ATTR_CTIME|ATTR_OPEN);
+ 		if (!error) {
+ 			DQUOT_INIT(inode);
+ 
+@@ -1586,7 +1589,11 @@ static int __open_namei_create(struct na
+ 
+ 	if (!IS_POSIXACL(dir->d_inode))
+ 		mode &= ~current->fs->umask;
++	error = security_path_mknod(&nd->path, path->dentry, mode, 0);
++	if (error)
++		goto out_unlock;
+ 	error = vfs_create(dir->d_inode, path->dentry, mode, nd);
++out_unlock:
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+ 	dput(nd->path.dentry);
+ 	nd->path.dentry = path->dentry;
+@@ -1999,6 +2006,9 @@ asmlinkage long sys_mknodat(int dfd, con
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_mknod(&nd.path, dentry, mode, dev);
++	if (error)
++		goto out_drop_write;
+ 	switch (mode & S_IFMT) {
+ 		case 0: case S_IFREG:
+ 			error = vfs_create(nd.path.dentry->d_inode,dentry,mode,&nd);
+@@ -2011,6 +2021,7 @@ asmlinkage long sys_mknodat(int dfd, con
+ 			error = vfs_mknod(nd.path.dentry->d_inode,dentry,mode,0);
+ 			break;
+ 	}
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2070,7 +2081,11 @@ asmlinkage long sys_mkdirat(int dfd, con
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_mkdir(&nd.path, dentry, mode);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2180,7 +2195,11 @@ static long do_rmdir(int dfd, const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto exit3;
++	error = security_path_rmdir(&nd.path, dentry);
++	if (error)
++		goto exit4;
+ 	error = vfs_rmdir(nd.path.dentry->d_inode, dentry);
++exit4:
+ 	mnt_drop_write(nd.path.mnt);
+ exit3:
+ 	dput(dentry);
+@@ -2265,7 +2284,11 @@ static long do_unlinkat(int dfd, const c
+ 		error = mnt_want_write(nd.path.mnt);
+ 		if (error)
+ 			goto exit2;
++		error = security_path_unlink(&nd.path, dentry);
++		if (error)
++			goto exit3;
+ 		error = vfs_unlink(nd.path.dentry->d_inode, dentry);
++exit3:
+ 		mnt_drop_write(nd.path.mnt);
+ 	exit2:
+ 		dput(dentry);
+@@ -2346,7 +2369,11 @@ asmlinkage long sys_symlinkat(const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_symlink(&nd.path, dentry, from);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_symlink(nd.path.dentry->d_inode, dentry, from);
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2443,7 +2470,11 @@ asmlinkage long sys_linkat(int olddfd, c
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_link(old_path.dentry, &nd.path, new_dentry);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_link(old_path.dentry, nd.path.dentry->d_inode, new_dentry);
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(new_dentry);
+@@ -2677,8 +2708,13 @@ asmlinkage long sys_renameat(int olddfd,
+ 	error = mnt_want_write(oldnd.path.mnt);
+ 	if (error)
+ 		goto exit5;
++	error = security_path_rename(&oldnd.path, old_dentry,
++				     &newnd.path, new_dentry);
++	if (error)
++		goto exit6;
+ 	error = vfs_rename(old_dir->d_inode, old_dentry,
+ 				   new_dir->d_inode, new_dentry);
++exit6:
+ 	mnt_drop_write(oldnd.path.mnt);
+ exit5:
+ 	dput(new_dentry);
+--- linux-2.6.28-rc8-mm1.orig/fs/open.c
++++ linux-2.6.28-rc8-mm1/fs/open.c
+@@ -272,6 +272,8 @@ static long do_sys_truncate(const char _
+ 		goto put_write_and_out;
+ 
+ 	error = locks_verify_truncate(inode, NULL, length);
++	if (!error)
++		error = security_path_truncate(&path, length, 0);
+ 	if (!error) {
+ 		DQUOT_INIT(inode);
+ 		error = do_truncate(path.dentry, length, 0, NULL);
+@@ -329,6 +331,9 @@ static long do_sys_ftruncate(unsigned in
+ 
+ 	error = locks_verify_truncate(inode, file, length);
+ 	if (!error)
++		error = security_path_truncate(&file->f_path, length,
++					       ATTR_MTIME|ATTR_CTIME);
++	if (!error)
+ 		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
+ out_putf:
+ 	fput(file);
+--- linux-2.6.28-rc8-mm1.orig/include/linux/security.h
++++ linux-2.6.28-rc8-mm1/include/linux/security.h
+@@ -335,17 +335,37 @@ static inline void security_free_mnt_opt
+  *	@dir contains the inode structure of the parent directory of the new link.
+  *	@new_dentry contains the dentry structure for the new link.
+  *	Return 0 if permission is granted.
++ * @path_link:
++ *	Check permission before creating a new hard link to a file.
++ *	@old_dentry contains the dentry structure for an existing link
++ *	to the file.
++ *	@new_dir contains the path structure of the parent directory of
++ *	the new link.
++ *	@new_dentry contains the dentry structure for the new link.
++ *	Return 0 if permission is granted.
+  * @inode_unlink:
+  *	Check the permission to remove a hard link to a file.
+  *	@dir contains the inode structure of parent directory of the file.
+  *	@dentry contains the dentry structure for file to be unlinked.
+  *	Return 0 if permission is granted.
++ * @path_unlink:
++ *	Check the permission to remove a hard link to a file.
++ *	@dir contains the path structure of parent directory of the file.
++ *	@dentry contains the dentry structure for file to be unlinked.
++ *	Return 0 if permission is granted.
+  * @inode_symlink:
+  *	Check the permission to create a symbolic link to a file.
+  *	@dir contains the inode structure of parent directory of the symbolic link.
+  *	@dentry contains the dentry structure of the symbolic link.
+  *	@old_name contains the pathname of file.
+  *	Return 0 if permission is granted.
++ * @path_symlink:
++ *	Check the permission to create a symbolic link to a file.
++ *	@dir contains the path structure of parent directory of
++ *	the symbolic link.
++ *	@dentry contains the dentry structure of the symbolic link.
++ *	@old_name contains the pathname of file.
++ *	Return 0 if permission is granted.
+  * @inode_mkdir:
+  *	Check permissions to create a new directory in the existing directory
+  *	associated with inode strcture @dir.
+@@ -353,11 +373,25 @@ static inline void security_free_mnt_opt
+  *	@dentry contains the dentry structure of new directory.
+  *	@mode contains the mode of new directory.
+  *	Return 0 if permission is granted.
++ * @path_mkdir:
++ *	Check permissions to create a new directory in the existing directory
++ *	associated with path strcture @path.
++ *	@dir containst the path structure of parent of the directory
++ *	to be created.
++ *	@dentry contains the dentry structure of new directory.
++ *	@mode contains the mode of new directory.
++ *	Return 0 if permission is granted.
+  * @inode_rmdir:
+  *	Check the permission to remove a directory.
+  *	@dir contains the inode structure of parent of the directory to be removed.
+  *	@dentry contains the dentry structure of directory to be removed.
+  *	Return 0 if permission is granted.
++ * @path_rmdir:
++ *	Check the permission to remove a directory.
++ *	@dir contains the path structure of parent of the directory to be
++ *	removed.
++ *	@dentry contains the dentry structure of directory to be removed.
++ *	Return 0 if permission is granted.
+  * @inode_mknod:
+  *	Check permissions when creating a special file (or a socket or a fifo
+  *	file created via the mknod system call).  Note that if mknod operation
+@@ -368,6 +402,15 @@ static inline void security_free_mnt_opt
+  *	@mode contains the mode of the new file.
+  *	@dev contains the device number.
+  *	Return 0 if permission is granted.
++ * @path_mknod:
++ *	Check permissions when creating a file. Note that this hook is called
++ *	even if mknod operation is being done for a regular file.
++ *	@dir contains the path structure of parent of the new file.
++ *	@dentry contains the dentry structure of the new file.
++ *	@mode contains the mode of the new file.
++ *	@dev contains the undecoded device number. Use new_decode_dev() to get
++ *	the decoded device number.
++ *	Return 0 if permission is granted.
+  * @inode_rename:
+  *	Check for permission to rename a file or directory.
+  *	@old_dir contains the inode structure for parent of the old link.
+@@ -375,6 +418,13 @@ static inline void security_free_mnt_opt
+  *	@new_dir contains the inode structure for parent of the new link.
+  *	@new_dentry contains the dentry structure of the new link.
+  *	Return 0 if permission is granted.
++ * @path_rename:
++ *	Check for permission to rename a file or directory.
++ *	@old_dir contains the path structure for parent of the old link.
++ *	@old_dentry contains the dentry structure of the old link.
++ *	@new_dir contains the path structure for parent of the new link.
++ *	@new_dentry contains the dentry structure of the new link.
++ *	Return 0 if permission is granted.
+  * @inode_readlink:
+  *	Check the permission to read the symbolic link.
+  *	@dentry contains the dentry structure for the file link.
+@@ -403,6 +453,12 @@ static inline void security_free_mnt_opt
+  *	@dentry contains the dentry structure for the file.
+  *	@attr is the iattr structure containing the new file attributes.
+  *	Return 0 if permission is granted.
++ * @path_truncate:
++ *	Check permission before truncating a file.
++ *	@path contains the path structure for the file.
++ *	@length is the new length of the file.
++ *	@time_attrs is the flags passed to do_truncate().
++ *	Return 0 if permission is granted.
+  * @inode_getattr:
+  *	Check permission before obtaining file attributes.
+  *	@mnt is the vfsmount where the dentry was looked up
+@@ -1331,6 +1387,22 @@ struct security_operations {
+ 				   struct super_block *newsb);
+ 	int (*sb_parse_opts_str) (char *options, struct security_mnt_opts *opts);
+ 
++#ifdef CONFIG_SECURITY_PATH
++	int (*path_unlink) (struct path *dir, struct dentry *dentry);
++	int (*path_mkdir) (struct path *dir, struct dentry *dentry, int mode);
++	int (*path_rmdir) (struct path *dir, struct dentry *dentry);
++	int (*path_mknod) (struct path *dir, struct dentry *dentry, int mode,
++			   unsigned int dev);
++	int (*path_truncate) (struct path *path, loff_t length,
++			      unsigned int time_attrs);
++	int (*path_symlink) (struct path *dir, struct dentry *dentry,
++			     const char *old_name);
++	int (*path_link) (struct dentry *old_dentry, struct path *new_dir,
++			  struct dentry *new_dentry);
++	int (*path_rename) (struct path *old_dir, struct dentry *old_dentry,
++			    struct path *new_dir, struct dentry *new_dentry);
++#endif
++
+ 	int (*inode_alloc_security) (struct inode *inode);
+ 	void (*inode_free_security) (struct inode *inode);
+ 	int (*inode_init_security) (struct inode *inode, struct inode *dir,
+@@ -2705,6 +2777,71 @@ static inline void security_skb_classify
+ 
+ #endif	/* CONFIG_SECURITY_NETWORK_XFRM */
+ 
++#ifdef CONFIG_SECURITY_PATH
++int security_path_unlink(struct path *dir, struct dentry *dentry);
++int security_path_mkdir(struct path *dir, struct dentry *dentry, int mode);
++int security_path_rmdir(struct path *dir, struct dentry *dentry);
++int security_path_mknod(struct path *dir, struct dentry *dentry, int mode,
++			unsigned int dev);
++int security_path_truncate(struct path *path, loff_t length,
++			   unsigned int time_attrs);
++int security_path_symlink(struct path *dir, struct dentry *dentry,
++			  const char *old_name);
++int security_path_link(struct dentry *old_dentry, struct path *new_dir,
++		       struct dentry *new_dentry);
++int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
++			 struct path *new_dir, struct dentry *new_dentry);
++#else	/* CONFIG_SECURITY_PATH */
++static inline int security_path_unlink(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static inline int security_path_mkdir(struct path *dir, struct dentry *dentry,
++				      int mode)
++{
++	return 0;
++}
++
++static inline int security_path_rmdir(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static inline int security_path_mknod(struct path *dir, struct dentry *dentry,
++				      int mode, unsigned int dev)
++{
++	return 0;
++}
++
++static inline int security_path_truncate(struct path *path, loff_t length,
++					 unsigned int time_attrs)
++{
++	return 0;
++}
++
++static inline int security_path_symlink(struct path *dir, struct dentry *dentry,
++					const char *old_name)
++{
++	return 0;
++}
++
++static inline int security_path_link(struct dentry *old_dentry,
++				     struct path *new_dir,
++				     struct dentry *new_dentry)
++{
++	return 0;
++}
++
++static inline int security_path_rename(struct path *old_dir,
++				       struct dentry *old_dentry,
++				       struct path *new_dir,
++				       struct dentry *new_dentry)
++{
++	return 0;
++}
++#endif	/* CONFIG_SECURITY_PATH */
++
+ #ifdef CONFIG_KEYS
+ #ifdef CONFIG_SECURITY
+ 
+--- linux-2.6.28-rc8-mm1.orig/net/unix/af_unix.c
++++ linux-2.6.28-rc8-mm1/net/unix/af_unix.c
+@@ -836,7 +836,11 @@ static int unix_bind(struct socket *sock
+ 		err = mnt_want_write(nd.path.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
++		err = security_path_mknod(&nd.path, dentry, mode, 0);
++		if (err)
++			goto out_mknod_drop_write;
+ 		err = vfs_mknod(nd.path.dentry->d_inode, dentry, mode, 0);
++out_mknod_drop_write:
+ 		mnt_drop_write(nd.path.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
+--- linux-2.6.28-rc8-mm1.orig/security/Kconfig
++++ linux-2.6.28-rc8-mm1/security/Kconfig
+@@ -81,6 +81,15 @@ config SECURITY_NETWORK_XFRM
+ 	  IPSec.
+ 	  If you are unsure how to answer this question, answer N.
+ 
++config SECURITY_PATH
++	bool "Security hooks for pathname based access control"
++	depends on SECURITY
++	help
++	  This enables the security hooks for pathname based access control.
++	  If enabled, a security module can use these hooks to
++	  implement pathname based access controls.
++	  If you are unsure how to answer this question, answer N.
++
+ config SECURITY_FILE_CAPABILITIES
+ 	bool "File POSIX Capabilities"
+ 	default n
+--- linux-2.6.28-rc8-mm1.orig/security/capability.c
++++ linux-2.6.28-rc8-mm1/security/capability.c
+@@ -263,6 +263,53 @@ static void cap_inode_getsecid(const str
+ 	*secid = 0;
+ }
+ 
++#ifdef CONFIG_SECURITY_PATH
++static int cap_path_mknod(struct path *dir, struct dentry *dentry, int mode,
++			  unsigned int dev)
++{
++	return 0;
++}
++
++static int cap_path_mkdir(struct path *dir, struct dentry *dentry, int mode)
++{
++	return 0;
++}
++
++static int cap_path_rmdir(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static int cap_path_unlink(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static int cap_path_symlink(struct path *dir, struct dentry *dentry,
++			    const char *old_name)
++{
++	return 0;
++}
++
++static int cap_path_link(struct dentry *old_dentry, struct path *new_dir,
++			 struct dentry *new_dentry)
++{
++	return 0;
++}
++
++static int cap_path_rename(struct path *old_path, struct dentry *old_dentry,
++			   struct path *new_path, struct dentry *new_dentry)
++{
++	return 0;
++}
++
++static int cap_path_truncate(struct path *path, loff_t length,
++			     unsigned int time_attrs)
++{
++	return 0;
++}
++#endif
++
+ static int cap_file_permission(struct file *file, int mask)
+ {
+ 	return 0;
+@@ -883,6 +930,16 @@ void security_fixup_ops(struct security_
+ 	set_to_cap_if_null(ops, inode_setsecurity);
+ 	set_to_cap_if_null(ops, inode_listsecurity);
+ 	set_to_cap_if_null(ops, inode_getsecid);
++#ifdef CONFIG_SECURITY_PATH
++	set_to_cap_if_null(ops, path_mknod);
++	set_to_cap_if_null(ops, path_mkdir);
++	set_to_cap_if_null(ops, path_rmdir);
++	set_to_cap_if_null(ops, path_unlink);
++	set_to_cap_if_null(ops, path_symlink);
++	set_to_cap_if_null(ops, path_link);
++	set_to_cap_if_null(ops, path_rename);
++	set_to_cap_if_null(ops, path_truncate);
++#endif
+ 	set_to_cap_if_null(ops, file_permission);
+ 	set_to_cap_if_null(ops, file_alloc_security);
+ 	set_to_cap_if_null(ops, file_free_security);
+--- linux-2.6.28-rc8-mm1.orig/security/security.c
++++ linux-2.6.28-rc8-mm1/security/security.c
+@@ -355,6 +355,72 @@ int security_inode_init_security(struct 
+ }
+ EXPORT_SYMBOL(security_inode_init_security);
+ 
++#ifdef CONFIG_SECURITY_PATH
++int security_path_mknod(struct path *path, struct dentry *dentry, int mode,
++			unsigned int dev)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_mknod(path, dentry, mode, dev);
++}
++EXPORT_SYMBOL(security_path_mknod);
++
++int security_path_mkdir(struct path *path, struct dentry *dentry, int mode)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_mkdir(path, dentry, mode);
++}
++
++int security_path_rmdir(struct path *path, struct dentry *dentry)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_rmdir(path, dentry);
++}
++
++int security_path_unlink(struct path *path, struct dentry *dentry)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_unlink(path, dentry);
++}
++
++int security_path_symlink(struct path *path, struct dentry *dentry,
++			  const char *old_name)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_symlink(path, dentry, old_name);
++}
++
++int security_path_link(struct dentry *old_dentry, struct path *new_dir,
++		       struct dentry *new_dentry)
++{
++	if (unlikely(IS_PRIVATE(old_dentry->d_inode)))
++		return 0;
++	return security_ops->path_link(old_dentry, new_dir, new_dentry);
++}
++
++int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
++			 struct path *new_dir, struct dentry *new_dentry)
++{
++	if (unlikely(IS_PRIVATE(old_dentry->d_inode) ||
++		     (new_dentry->d_inode && IS_PRIVATE(new_dentry->d_inode))))
++		return 0;
++	return security_ops->path_rename(old_dir, old_dentry, new_dir,
++					 new_dentry);
++}
++
++int security_path_truncate(struct path *path, loff_t length,
++			   unsigned int time_attrs)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_truncate(path, length, time_attrs);
++}
++#endif
++
+ int security_inode_create(struct inode *dir, struct dentry *dentry, int mode)
+ {
+ 	if (unlikely(IS_PRIVATE(dir)))
+
+------- End of Forwarded Message
 
