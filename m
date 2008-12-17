@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752252AbYLQT2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751442AbYLQT1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752252AbYLQT2z (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 14:28:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbYLQT2n
+	id S1751442AbYLQT1V (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 14:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYLQT0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 14:28:43 -0500
-Received: from kroah.org ([198.145.64.141]:54227 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750761AbYLQT2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 14:28:43 -0500
-Date: Wed, 17 Dec 2008 11:27:37 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] driver core fixes for your 2.6-git tree
-Message-ID: <20081217192737.GA24641@kroah.com>
+	Wed, 17 Dec 2008 14:26:50 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:51545 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751297AbYLQT0s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 14:26:48 -0500
+X-IronPort-AV: E=Sophos;i="4.36,238,1228089600"; 
+   d="scan'208";a="119645503"
+From: Roland Dreier <rdreier@cisco.com>
+To: "Matt Turner" <mattst88@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Ivan Kokshaysky" <ink@jurassic.park.msu.ru>,
+        rth@twiddle.net, "Jay Estabrook" <jay.estabrook@hp.com>
+Subject: Re: questions about native alpha futex implementation
+References: <b4198de60812171113r72d8d04ao67cde38c62185bcc@mail.gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 17 Dec 2008 11:26:47 -0800
+In-Reply-To: <b4198de60812171113r72d8d04ao67cde38c62185bcc@mail.gmail.com>
+	(Matt Turner's message of "Wed, 17 Dec 2008 14:13:15 -0500")
+Message-ID: <adaprjqzjpk.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 17 Dec 2008 19:26:47.0637 (UTC) FILETIME=[6742A850:01C9607D]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are 4 patches for your 2.6-git tree.
+ > Alpha uses a generic futex implementation, which causes some problems [1].
 
-They contain:
-	- licensing fix for the xilinx_hwicap drivers (signed off by the
-	  original authors)
-	- 2 dynamic debug printk fixes
-	- staging Kconfig fix
+Summarizing this: the generic futex implementation leaves
+futex_atomic_cmpxchg_inatomic() as a stub that just returns -ENOSYS, and
+glibc robust futex code can't handle this return value, which leads to
+glibc tests hanging.
 
-All of these have been in the -next trees and the -mm releases for a
-while now.
+ > I've read through the code, and it appears as if the implementation
+ > could be done by using the ldq_l/stq_c instructions, relatively easy I
+ > might add. I'm definitely interested in implementing this, but first...
+ > 
+ > I have only a few questions.
+ > 
+ > 1) What are the benefits of a native futex implementation, other than
+ > fixing the glibc test failures?
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-core-2.6.git/
+Presumably native implementations can use optimized assembly, which
+would be somewhat faster than a generic implementation in C.
 
-The patches will be sent as a follow-on to this message to lkml for people
-to see.
+ > 2) Is there a technical reason it hasn't been implemented on Alpha?
 
-thanks,
+I don't know for sure, but I would guess it's just that no one has cared
+enough about optimizing futexes on alpha.
 
-greg k-h
+A native implementation for alpha is probably an amusing project, but
+also figuring out a way of implementing the missing operations for
+generic futexes would be nice too (given that glibc uses them now).
+Although a generic futex_atomic_cmpxchg_inatomic() that works for SMP
+might be tricky.
 
-------------
-
- drivers/char/xilinx_hwicap/buffer_icap.c   |    3 ---
- drivers/char/xilinx_hwicap/buffer_icap.h   |    3 ---
- drivers/char/xilinx_hwicap/fifo_icap.c     |    3 ---
- drivers/char/xilinx_hwicap/fifo_icap.h     |    3 ---
- drivers/char/xilinx_hwicap/xilinx_hwicap.c |    3 ---
- drivers/char/xilinx_hwicap/xilinx_hwicap.h |    3 ---
- drivers/staging/Kconfig                    |    3 +++
- lib/dynamic_printk.c                       |    6 +++---
- 8 files changed, 6 insertions(+), 21 deletions(-)
-
----------------
-
-Dmitry Baryshkov (1):
-      STAGING: Move staging drivers back to staging-specific menu
-
-Greg Kroah-Hartman (1):
-      xilinx_hwicap: remove improper wording in license statement
-
-Johann Felix Soden (1):
-      driver core: fix using 'ret' variable in unregister_dynamic_debug_module
-
-Marcel Holtmann (1):
-      driver core: add newlines to debugging enabled/disabled messages
-
+ - R.
