@@ -1,97 +1,128 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752118AbYLQUWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752520AbYLQU2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752118AbYLQUWg (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 15:22:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbYLQUW0
+	id S1752520AbYLQU2d (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 15:28:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYLQU2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 15:22:26 -0500
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:41674 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751169AbYLQUWZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 15:22:25 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=VqKhj/+8RrrEe/vL22Fw+Dgx2/aY0LLfa0zdOVSDmWJkPlw8Fky9Z3act4fTmijhkuOFnVuJAfXbhLUhONMbgLyVDvU5K4xMBoZ6Lyx2l2NHoY59pdGMlM08avyzodQNQjjYS58B6Ra0Bs8rocV1ZrIm3Nz88lo1eEXOdJshD+U=  ;
-X-YMail-OSG: rErEeEIVM1k23Hy7ZqEjPlKPeAivNRrjkC0d2KkkdlTBZC.lBFnmfuLiJWAl5hsuQW6Njmy8DJEmcPEpgIfSA4Wcfws3IJpmTUx6Jg8vhPMg7E2g42HmcGaMkBc6ts1Gty4UIACp7988C0jg3tPRTNGSr72gg.ba54ZUqTWQLnxRgWvszHEiN9331KrTXwJoTx74ZZpl4FDV0aLlK0mrubRtMWg-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 10/11] drivers/spi: Move a dereference below a NULL test
-Date: Wed, 17 Dec 2008 12:22:23 -0800
-User-Agent: KMail/1.9.10
-Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-        kernel-janitors@vger.kernel.org
-References: <Pine.LNX.4.64.0812161615090.20444@pc-004.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0812161615090.20444@pc-004.diku.dk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Dec 2008 15:28:21 -0500
+Received: from cantor.suse.de ([195.135.220.2]:53777 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751276AbYLQU2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 15:28:20 -0500
+Date: Wed, 17 Dec 2008 12:28:15 -0800
+From: Mark Fasheh <mfasheh@suse.com>
+To: Ankit Jain <me@ankitjain.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@infradead.org>,
+        linux-fsdevel@vger.kernel.org, joel.becker@oracle.com,
+        ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org,
+        xfs-masters@oss.sgi.com, xfs@oss.sgi.com
+Subject: Re: [PATCH][RFC] fs: Add new pre-allocation ioctls to vfs for compatibility with legacy xfs ioctls
+Message-ID: <20081217202815.GE8791@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+References: <49460F88.2080408@ankitjain.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812171222.23785.david-b@pacbell.net>
+In-Reply-To: <49460F88.2080408@ankitjain.org>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 December 2008, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+On Mon, Dec 15, 2008 at 01:34:24PM +0530, Ankit Jain wrote:
+> This patch adds ioctls to vfs for compatibility with legacy XFS
+> pre-allocation ioctls (XFS_IOC_*RESVP*). The implementation
+> effectively invokes sys_fallocate for the new ioctls.
+> Note: These legacy ioctls are also implemented by OCFS2.
 > 
-> In each case, if the NULL test is necessary, then the dereference should be
-> moved below the NULL test.
-> 
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @@
-> type T;
-> expression E;
-> identifier i,fld;
-> statement S;
-> @@
-> 
-> - T i = E->fld;
-> + T i;
->   ... when != E
->       when != i
->   if (E == NULL) S
-> + i = E->fld;
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+> There are some things that I'm not sure about:
+> 1. Should the struct space_resv be exposed to user-space? If not,
+> then what would be the right place to put it? And the ioctl
+> definitions?
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
-
-... and I'm *still* glad to see tools shaking loose
-goofage like this.  :)
+Yes. As far as where to put it, I'm not sure. Maybe falloc.h?
 
 
-> 
+> 2. Should the corresponding ioctls be removed from ocfs2?
+
+Well, a small amount of the code in fs/ocfs2/ioctl.c can certainly go away.
+Shouldn't we be talking about doing the same for xfs too?
+
+
+> Signed-off-by: Ankit Jain <me@ankitjain.org>
 > ---
->  drivers/spi/pxa2xx_spi.c            |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+>  fs/ioctl.c             |   37 +++++++++++++++++++++++++++
+>  fs/open.c              |   51 ++++++++++++++++++-------------------
+>  include/linux/falloc.h |   19 ++++++++++++++
+>  include/linux/fs.h     |    2 +
+>  4 files changed, 83 insertions(+), 26 deletions(-)
 > 
-> diff --git a/drivers/spi/pxa2xx_spi.c b/drivers/spi/pxa2xx_spi.c
-> index cf12f2d..fbad7e4 100644
-> --- a/drivers/spi/pxa2xx_spi.c
-> +++ b/drivers/spi/pxa2xx_spi.c
-> @@ -1561,11 +1561,12 @@ out_error_master_alloc:
->  static int pxa2xx_spi_remove(struct platform_device *pdev)
+> diff --git a/fs/ioctl.c b/fs/ioctl.c
+> index 43e8b2c..5e565c8 100644
+> --- a/fs/ioctl.c
+> +++ b/fs/ioctl.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/uaccess.h>
+>  #include <linux/writeback.h>
+>  #include <linux/buffer_head.h>
+> +#include <linux/falloc.h>
+>  
+>  #include <asm/ioctls.h>
+>  
+> @@ -346,6 +347,37 @@ EXPORT_SYMBOL(generic_block_fiemap);
+>  
+>  #endif  /*  CONFIG_BLOCK  */
+>  
+> +/*
+> + * This provides compatibility with legacy XFS pre-allocation ioctls
+> + * which predate the fallocate syscall.
+> + *
+> + * Only the l_start, l_len and l_whence fields of the 'struct space_resv'
+> + * are used here, rest are ignored.
+> + */
+> +static int ioctl_preallocate(struct file *filp, unsigned long arg)
+> +{
+> +	struct inode *inode = filp->f_path.dentry->d_inode;
+> +	struct space_resv sr;
+> +
+> +	if (copy_from_user(&sr, (struct space_resv __user *) arg, sizeof(sr)))
+> +		return -EFAULT;
+> +
+> +	switch (sr.l_whence) {
+> +	case SEEK_SET:
+> +		break;
+> +	case SEEK_CUR:
+> +		sr.l_start += filp->f_pos;
+> +		break;
+> +	case SEEK_END:
+> +		sr.l_start += i_size_read(inode);
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	return do_fallocate(filp, FALLOC_FL_KEEP_SIZE, sr.l_start, sr.l_len);
+> +}
+> +
+>  static int file_ioctl(struct file *filp, unsigned int cmd,
+>  		unsigned long arg)
 >  {
->  	struct driver_data *drv_data = platform_get_drvdata(pdev);
-> -	struct ssp_device *ssp = drv_data->ssp;
-> +	struct ssp_device *ssp;
->  	int status = 0;
->  
->  	if (!drv_data)
->  		return 0;
-> +	ssp = drv_data->ssp;
->  
->  	/* Remove the queue */
->  	status = destroy_queue(drv_data);
-> 
-> 
+> @@ -361,6 +393,11 @@ static int file_ioctl(struct file *filp, unsigned int cmd,
+>  		return put_user(inode->i_sb->s_blocksize, p);
+>  	case FIONREAD:
+>  		return put_user(i_size_read(inode) - filp->f_pos, p);
+> +	case F_IOC_RESVSP:
+> +	case F_IOC_RESVSP64:
+> +	case F_IOC_UNRESVSP:
+> +	case F_IOC_UNRESVSP64:
+> +		return ioctl_preallocate(filp, arg);
 
+This patch is not implementing proper support for F_IOC_UNRESVSP and
+F_IOC_UNRESVSP64, so why are you catching those here? To be more clear,
+those are used for freeing space in a file ("puching holes"), which
+fallocate is not set up to do right now.
+	--Mark
 
+--
+Mark Fasheh
