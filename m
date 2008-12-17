@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758890AbYLQAJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759872AbYLQAKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758890AbYLQAJL (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 19:09:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759199AbYLQAGL
+	id S1759872AbYLQAKV (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:10:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759738AbYLQAGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 19:06:11 -0500
-Received: from kroah.org ([198.145.64.141]:41327 "EHLO coco.kroah.org"
+	Tue, 16 Dec 2008 19:06:15 -0500
+Received: from kroah.org ([198.145.64.141]:41368 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759694AbYLQAGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 19:06:07 -0500
-Date: Tue, 16 Dec 2008 16:04:27 -0800
+	id S1759607AbYLQAGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 19:06:11 -0500
+Date: Tue, 16 Dec 2008 16:04:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,14 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
         Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
         Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
         torvalds@linux-foundation.org, akpm@linux-foundation.org,
-        alan@lxorguk.ukuu.org.uk, Johannes Berg <johannes@sipsolutions.net>,
-        "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 14/22] iwlagn: fix RX skb alignment
-Message-ID: <20081217000427.GO4504@kroah.com>
+        alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 17/22] ieee1394: add quirk fix for Freecom HDD
+Message-ID: <20081217000433.GR4504@kroah.com>
 References: <20081216235704.347182084@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="iwlagn-fix-rx-skb-alignment.patch"
+Content-Disposition: inline; filename="ieee1394-add-quirk-fix-for-freecom-hdd.patch"
 In-Reply-To: <20081217000306.GA4504@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,154 +40,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-commit 4018517a1a69a85c3d61b20fa02f187b80773137 upstream.
+commit 25a41b280083259d05d68f61633194344a1f8a9f upstream.
 
-So I dug deeper into the DMA problems I had with iwlagn and a kind soul
-helped me in that he said something about pci-e alignment and mentioned
-the iwl_rx_allocate function to check for crossing 4KB boundaries. Since
-there's 8KB A-MPDU support, crossing 4k boundaries didn't seem like
-something the device would fail with, but when I looked into the
-function for a minute anyway I stumbled over this little gem:
+According to http://bugzilla.kernel.org/show_bug.cgi?id=12206, Freecom
+FireWire Hard Drive 1TB reports max_rom=2 but returns garbage if block
+read requests are used to read the config ROM.  Force max_rom=0 to limit
+them to quadlet read requests.
 
-	BUG_ON(rxb->dma_addr & (~DMA_BIT_MASK(36) & 0xff));
-
-Clearly, that is a totally bogus check, one would hope the compiler
-removes it entirely. (Think about it)
-
-After fixing it, I obviously ran into it, nothing guarantees the
-alignment the way you want it,  because of the way skbs and their
-headroom are allocated. I won't explain that here nor double-check that
-I'm right, that goes beyond what most of the CC'ed people care about.
-
-So then I came up with the patch below, and so far my system has
-survived minutes with 64K pages, when it would previously fail in
-seconds. And I haven't seen a single instance of the TX bug either. But
-when you see the patch it'll be pretty obvious to you why.
-
-This should fix the following reported kernel bugs:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=11596
-http://bugzilla.kernel.org/show_bug.cgi?id=11393
-http://bugzilla.kernel.org/show_bug.cgi?id=11983
-
-I haven't checked if there are any elsewhere, but I suppose RHBZ will
-have a few instances too...
-
-I'd like to ask anyone who is CC'ed (those are people I know ran into
-the bug) to try this patch.
-
-I am convinced that this patch is correct in spirit, but I haven't
-understood why, for example, there are so many unmap calls. I'm not
-entirely convinced that this is the only bug leading to the TX reply
-errors.
-
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Reported-by: Christian Mueller <cm1@mumac.de>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/iwlwifi/iwl-agn.c |    6 +++---
- drivers/net/wireless/iwlwifi/iwl-dev.h |    3 ++-
- drivers/net/wireless/iwlwifi/iwl-rx.c  |   26 +++++++++++++++++---------
- 3 files changed, 22 insertions(+), 13 deletions(-)
+ drivers/ieee1394/nodemgr.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/drivers/net/wireless/iwlwifi/iwl-agn.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
-@@ -1384,7 +1384,7 @@ void iwl_rx_handle(struct iwl_priv *priv
+--- a/drivers/ieee1394/nodemgr.c
++++ b/drivers/ieee1394/nodemgr.c
+@@ -115,8 +115,14 @@ static int nodemgr_bus_read(struct csr12
+ 	return error;
+ }
  
- 		rxq->queue[i] = NULL;
- 
--		pci_dma_sync_single_for_cpu(priv->pci_dev, rxb->dma_addr,
-+		pci_dma_sync_single_for_cpu(priv->pci_dev, rxb->aligned_dma_addr,
- 					    priv->hw_params.rx_buf_size,
- 					    PCI_DMA_FROMDEVICE);
- 		pkt = (struct iwl_rx_packet *)rxb->skb->data;
-@@ -1436,8 +1436,8 @@ void iwl_rx_handle(struct iwl_priv *priv
- 			rxb->skb = NULL;
- 		}
- 
--		pci_unmap_single(priv->pci_dev, rxb->dma_addr,
--				 priv->hw_params.rx_buf_size,
-+		pci_unmap_single(priv->pci_dev, rxb->real_dma_addr,
-+				 priv->hw_params.rx_buf_size + 256,
- 				 PCI_DMA_FROMDEVICE);
- 		spin_lock_irqsave(&rxq->lock, flags);
- 		list_add_tail(&rxb->list, &priv->rxq.rx_used);
---- a/drivers/net/wireless/iwlwifi/iwl-dev.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-dev.h
-@@ -89,7 +89,8 @@ extern struct iwl_cfg iwl5100_abg_cfg;
- #define	DEFAULT_LONG_RETRY_LIMIT  4U
- 
- struct iwl_rx_mem_buffer {
--	dma_addr_t dma_addr;
-+	dma_addr_t real_dma_addr;
-+	dma_addr_t aligned_dma_addr;
- 	struct sk_buff *skb;
- 	struct list_head list;
- };
---- a/drivers/net/wireless/iwlwifi/iwl-rx.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-rx.c
-@@ -204,7 +204,7 @@ int iwl_rx_queue_restock(struct iwl_priv
- 		list_del(element);
- 
- 		/* Point to Rx buffer via next RBD in circular buffer */
--		rxq->bd[rxq->write] = iwl_dma_addr2rbd_ptr(priv, rxb->dma_addr);
-+		rxq->bd[rxq->write] = iwl_dma_addr2rbd_ptr(priv, rxb->aligned_dma_addr);
- 		rxq->queue[rxq->write] = rxb;
- 		rxq->write = (rxq->write + 1) & RX_QUEUE_MASK;
- 		rxq->free_count--;
-@@ -251,7 +251,7 @@ void iwl_rx_allocate(struct iwl_priv *pr
- 		rxb = list_entry(element, struct iwl_rx_mem_buffer, list);
- 
- 		/* Alloc a new receive buffer */
--		rxb->skb = alloc_skb(priv->hw_params.rx_buf_size,
-+		rxb->skb = alloc_skb(priv->hw_params.rx_buf_size + 256,
- 				__GFP_NOWARN | GFP_ATOMIC);
- 		if (!rxb->skb) {
- 			if (net_ratelimit())
-@@ -266,9 +266,17 @@ void iwl_rx_allocate(struct iwl_priv *pr
- 		list_del(element);
- 
- 		/* Get physical address of RB/SKB */
--		rxb->dma_addr =
--		    pci_map_single(priv->pci_dev, rxb->skb->data,
--			   priv->hw_params.rx_buf_size, PCI_DMA_FROMDEVICE);
-+		rxb->real_dma_addr = pci_map_single(
-+					priv->pci_dev,
-+					rxb->skb->data,
-+					priv->hw_params.rx_buf_size + 256,
-+					PCI_DMA_FROMDEVICE);
-+		/* dma address must be no more than 36 bits */
-+		BUG_ON(rxb->real_dma_addr & ~DMA_BIT_MASK(36));
-+		/* and also 256 byte aligned! */
-+		rxb->aligned_dma_addr = ALIGN(rxb->real_dma_addr, 256);
-+		skb_reserve(rxb->skb, rxb->aligned_dma_addr - rxb->real_dma_addr);
++#define OUI_FREECOM_TECHNOLOGIES_GMBH 0x0001db
 +
- 		list_add_tail(&rxb->list, &rxq->rx_free);
- 		rxq->free_count++;
- 	}
-@@ -300,8 +308,8 @@ void iwl_rx_queue_free(struct iwl_priv *
- 	for (i = 0; i < RX_QUEUE_SIZE + RX_FREE_BUFFERS; i++) {
- 		if (rxq->pool[i].skb != NULL) {
- 			pci_unmap_single(priv->pci_dev,
--					 rxq->pool[i].dma_addr,
--					 priv->hw_params.rx_buf_size,
-+					 rxq->pool[i].real_dma_addr,
-+					 priv->hw_params.rx_buf_size + 256,
- 					 PCI_DMA_FROMDEVICE);
- 			dev_kfree_skb(rxq->pool[i].skb);
- 		}
-@@ -354,8 +362,8 @@ void iwl_rx_queue_reset(struct iwl_priv 
- 		 * to an SKB, so we need to unmap and free potential storage */
- 		if (rxq->pool[i].skb != NULL) {
- 			pci_unmap_single(priv->pci_dev,
--					 rxq->pool[i].dma_addr,
--					 priv->hw_params.rx_buf_size,
-+					 rxq->pool[i].real_dma_addr,
-+					 priv->hw_params.rx_buf_size + 256,
- 					 PCI_DMA_FROMDEVICE);
- 			priv->alloc_rxb_skb--;
- 			dev_kfree_skb(rxq->pool[i].skb);
+ static int nodemgr_get_max_rom(quadlet_t *bus_info_data, void *__ci)
+ {
++	/* Freecom FireWire Hard Drive firmware bug */
++	if (be32_to_cpu(bus_info_data[3]) >> 8 == OUI_FREECOM_TECHNOLOGIES_GMBH)
++		return 0;
++
+ 	return (be32_to_cpu(bus_info_data[2]) >> 8) & 0x3;
+ }
+ 
 
