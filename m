@@ -1,359 +1,198 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759101AbYLQFNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759241AbYLQFLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759101AbYLQFNk (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 00:13:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759401AbYLQFMO
+	id S1759241AbYLQFLt (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 00:11:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757668AbYLQFLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 00:12:14 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37043 "EHLO
+	Wed, 17 Dec 2008 00:11:23 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37012 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759220AbYLQFMM (ORCPT
+	with ESMTP id S1756889AbYLQFLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 00:12:12 -0500
+	Wed, 17 Dec 2008 00:11:22 -0500
 To: linux-audit@redhat.com
-Subject: [PATCH 7/15] sanitize AUDIT_MQ_SENDRECV
+Subject: [PATCH 2/15] sanitize audit_socketcall
 Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1LCohe-0000C7-TH@ZenIV.linux.org.uk>
+Message-Id: <E1LCogq-00008v-SR@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Wed, 17 Dec 2008 05:12:10 +0000
+Date: Wed, 17 Dec 2008 05:11:20 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* logging the original value of *msg_prio in mq_timedreceive(2)
-  is insane - the argument is write-only (i.e. syscall always
-  ignores the original value and only overwrites it).
-* merge __audit_mq_timed{send,receive}
-* don't do copy_from_user() twice
-* don't mess with allocations in auditsc part
-* ... and don't bother checking !audit_enabled and !context in there -
-  we'd already checked for audit_dummy_context().
+* don't bother with allocations
+* now that it can't fail, make it return void
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- include/linux/audit.h |   17 ++-----
- ipc/mqueue.c          |   54 ++++++++++++---------
- kernel/auditsc.c      |  127 +++++++++++-------------------------------------
- 3 files changed, 63 insertions(+), 135 deletions(-)
+ include/linux/audit.h |    4 +-
+ kernel/auditsc.c      |   66 ++++++++++++++++++++++++++++--------------------
+ net/socket.c          |    4 +--
+ 3 files changed, 41 insertions(+), 33 deletions(-)
 
 diff --git a/include/linux/audit.h b/include/linux/audit.h
-index b82b927..dd3f62c 100644
+index 8f0672d..e59feb9 100644
 --- a/include/linux/audit.h
 +++ b/include/linux/audit.h
-@@ -449,8 +449,7 @@ extern int audit_sockaddr(int len, void *addr);
+@@ -444,7 +444,7 @@ extern void audit_log_task_context(struct audit_buffer *ab);
+ extern int __audit_ipc_obj(struct kern_ipc_perm *ipcp);
+ extern int __audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid, mode_t mode);
+ extern int audit_bprm(struct linux_binprm *bprm);
+-extern int audit_socketcall(int nargs, unsigned long *args);
++extern void audit_socketcall(int nargs, unsigned long *args);
+ extern int audit_sockaddr(int len, void *addr);
  extern int __audit_fd_pair(int fd1, int fd2);
  extern int audit_set_macxattr(const char *name);
- extern int __audit_mq_open(int oflag, mode_t mode, struct mq_attr __user *u_attr);
--extern int __audit_mq_timedsend(mqd_t mqdes, size_t msg_len, unsigned int msg_prio, const struct timespec __user *u_abs_timeout);
--extern int __audit_mq_timedreceive(mqd_t mqdes, size_t msg_len, unsigned int __user *u_msg_prio, const struct timespec __user *u_abs_timeout);
-+extern void __audit_mq_sendrecv(mqd_t mqdes, size_t msg_len, unsigned int msg_prio, const struct timespec *abs_timeout);
- extern void __audit_mq_notify(mqd_t mqdes, const struct sigevent *notification);
- extern void __audit_mq_getsetattr(mqd_t mqdes, struct mq_attr *mqstat);
- 
-@@ -476,17 +475,10 @@ static inline int audit_mq_open(int oflag, mode_t mode, struct mq_attr __user *u
- 		return __audit_mq_open(oflag, mode, u_attr);
- 	return 0;
- }
--static inline int audit_mq_timedsend(mqd_t mqdes, size_t msg_len, unsigned int msg_prio, const struct timespec __user *u_abs_timeout)
-+static inline void audit_mq_sendrecv(mqd_t mqdes, size_t msg_len, unsigned int msg_prio, const struct timespec *abs_timeout)
- {
- 	if (unlikely(!audit_dummy_context()))
--		return __audit_mq_timedsend(mqdes, msg_len, msg_prio, u_abs_timeout);
--	return 0;
--}
--static inline int audit_mq_timedreceive(mqd_t mqdes, size_t msg_len, unsigned int __user *u_msg_prio, const struct timespec __user *u_abs_timeout)
--{
--	if (unlikely(!audit_dummy_context()))
--		return __audit_mq_timedreceive(mqdes, msg_len, u_msg_prio, u_abs_timeout);
--	return 0;
-+		__audit_mq_sendrecv(mqdes, msg_len, msg_prio, abs_timeout);
- }
- static inline void audit_mq_notify(mqd_t mqdes, const struct sigevent *notification)
- {
-@@ -526,8 +518,7 @@ extern int audit_signals;
+@@ -525,7 +525,7 @@ extern int audit_signals;
+ #define audit_ipc_obj(i) ({ 0; })
+ #define audit_ipc_set_perm(q,u,g,m) ({ 0; })
+ #define audit_bprm(p) ({ 0; })
+-#define audit_socketcall(n,a) ({ 0; })
++#define audit_socketcall(n,a) ((void)0)
+ #define audit_fd_pair(n,a) ({ 0; })
  #define audit_sockaddr(len, addr) ({ 0; })
  #define audit_set_macxattr(n) do { ; } while (0)
- #define audit_mq_open(o,m,a) ({ 0; })
--#define audit_mq_timedsend(d,l,p,t) ({ 0; })
--#define audit_mq_timedreceive(d,l,p,t) ({ 0; })
-+#define audit_mq_sendrecv(d,l,p,t) ((void)0)
- #define audit_mq_notify(d,n) ((void)0)
- #define audit_mq_getsetattr(d,s) ((void)0)
- #define audit_ptrace(t) ((void)0)
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index 8ea1133..20fd43e 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -524,31 +524,27 @@ static void __do_notify(struct mqueue_inode_info *info)
- 	wake_up(&info->wait_q);
- }
- 
--static long prepare_timeout(const struct timespec __user *u_arg)
-+static long prepare_timeout(struct timespec *p)
- {
--	struct timespec ts, nowts;
-+	struct timespec nowts;
- 	long timeout;
- 
--	if (u_arg) {
--		if (unlikely(copy_from_user(&ts, u_arg,
--					sizeof(struct timespec))))
--			return -EFAULT;
--
--		if (unlikely(ts.tv_nsec < 0 || ts.tv_sec < 0
--			|| ts.tv_nsec >= NSEC_PER_SEC))
-+	if (p) {
-+		if (unlikely(p->tv_nsec < 0 || p->tv_sec < 0
-+			|| p->tv_nsec >= NSEC_PER_SEC))
- 			return -EINVAL;
- 		nowts = CURRENT_TIME;
- 		/* first subtract as jiffies can't be too big */
--		ts.tv_sec -= nowts.tv_sec;
--		if (ts.tv_nsec < nowts.tv_nsec) {
--			ts.tv_nsec += NSEC_PER_SEC;
--			ts.tv_sec--;
-+		p->tv_sec -= nowts.tv_sec;
-+		if (p->tv_nsec < nowts.tv_nsec) {
-+			p->tv_nsec += NSEC_PER_SEC;
-+			p->tv_sec--;
- 		}
--		ts.tv_nsec -= nowts.tv_nsec;
--		if (ts.tv_sec < 0)
-+		p->tv_nsec -= nowts.tv_nsec;
-+		if (p->tv_sec < 0)
- 			return 0;
- 
--		timeout = timespec_to_jiffies(&ts) + 1;
-+		timeout = timespec_to_jiffies(p) + 1;
- 	} else
- 		return MAX_SCHEDULE_TIMEOUT;
- 
-@@ -826,17 +822,22 @@ asmlinkage long sys_mq_timedsend(mqd_t mqdes, const char __user *u_msg_ptr,
- 	struct ext_wait_queue *receiver;
- 	struct msg_msg *msg_ptr;
- 	struct mqueue_inode_info *info;
-+	struct timespec ts, *p = NULL;
- 	long timeout;
- 	int ret;
- 
--	ret = audit_mq_timedsend(mqdes, msg_len, msg_prio, u_abs_timeout);
--	if (ret != 0)
--		return ret;
-+	if (u_abs_timeout) {
-+		if (copy_from_user(&ts, u_abs_timeout, 
-+					sizeof(struct timespec)))
-+			return -EFAULT;
-+		p = &ts;
-+	}
- 
- 	if (unlikely(msg_prio >= (unsigned long) MQ_PRIO_MAX))
- 		return -EINVAL;
- 
--	timeout = prepare_timeout(u_abs_timeout);
-+	audit_mq_sendrecv(mqdes, msg_len, msg_prio, p);
-+	timeout = prepare_timeout(p);
- 
- 	ret = -EBADF;
- 	filp = fget(mqdes);
-@@ -915,12 +916,17 @@ asmlinkage ssize_t sys_mq_timedreceive(mqd_t mqdes, char __user *u_msg_ptr,
- 	struct inode *inode;
- 	struct mqueue_inode_info *info;
- 	struct ext_wait_queue wait;
-+	struct timespec ts, *p = NULL;
- 
--	ret = audit_mq_timedreceive(mqdes, msg_len, u_msg_prio, u_abs_timeout);
--	if (ret != 0)
--		return ret;
-+	if (u_abs_timeout) {
-+		if (copy_from_user(&ts, u_abs_timeout, 
-+					sizeof(struct timespec)))
-+			return -EFAULT;
-+		p = &ts;
-+	}
- 
--	timeout = prepare_timeout(u_abs_timeout);
-+	audit_mq_sendrecv(mqdes, msg_len, 0, p);
-+	timeout = prepare_timeout(p);
- 
- 	ret = -EBADF;
- 	filp = fget(mqdes);
 diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index 2060a08..fa8793d 100644
+index aca9ddb..1d53aa8 100644
 --- a/kernel/auditsc.c
 +++ b/kernel/auditsc.c
-@@ -119,14 +119,6 @@ struct audit_aux_data_mq_open {
- 	struct mq_attr		attr;
+@@ -156,12 +156,6 @@ struct audit_aux_data_execve {
+ 	struct mm_struct *mm;
  };
  
--struct audit_aux_data_mq_sendrecv {
+-struct audit_aux_data_socketcall {
 -	struct audit_aux_data	d;
--	mqd_t			mqdes;
--	size_t			msg_len;
--	unsigned int		msg_prio;
--	struct timespec		abs_timeout;
+-	int			nargs;
+-	unsigned long		args[0];
 -};
 -
- struct audit_aux_data_execve {
- 	struct audit_aux_data	d;
- 	int argc;
-@@ -218,6 +210,12 @@ struct audit_context {
- 			mqd_t			mqdes;
- 			int			sigev_signo;
- 		} mq_notify;
+ struct audit_aux_data_fd_pair {
+ 	struct	audit_aux_data d;
+ 	int	fd[2];
+@@ -221,6 +215,14 @@ struct audit_context {
+ 	struct audit_tree_refs *trees, *first_trees;
+ 	int tree_count;
+ 
++	int type;
++	union {
 +		struct {
-+			mqd_t			mqdes;
-+			size_t			msg_len;
-+			unsigned int		msg_prio;
-+			struct timespec		abs_timeout;
-+		} mq_sendrecv;
- 	};
- 
++			int nargs;
++			long args[6];
++		} socketcall;
++	};
++
  #if AUDIT_DEBUG
-@@ -1206,6 +1204,16 @@ static void show_special(struct audit_context *context, int *call_panic)
- 				return;
- 		}
- 		break; }
-+	case AUDIT_MQ_SENDRECV: {
-+		audit_log_format(ab,
-+			"mqdes=%d msg_len=%zd msg_prio=%u "
-+			"abs_timeout_sec=%ld abs_timeout_nsec=%ld",
-+			context->mq_sendrecv.mqdes,
-+			context->mq_sendrecv.msg_len,
-+			context->mq_sendrecv.msg_prio,
-+			context->mq_sendrecv.abs_timeout.tv_sec,
-+			context->mq_sendrecv.abs_timeout.tv_nsec);
-+		break; }
- 	case AUDIT_MQ_NOTIFY: {
- 		audit_log_format(ab, "mqdes=%d sigev_signo=%d",
- 				context->mq_notify.mqdes,
-@@ -1309,15 +1317,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
- 				axi->attr.mq_curmsgs);
- 			break; }
- 
--		case AUDIT_MQ_SENDRECV: {
--			struct audit_aux_data_mq_sendrecv *axi = (void *)aux;
--			audit_log_format(ab,
--				"mqdes=%d msg_len=%zd msg_prio=%u "
--				"abs_timeout_sec=%ld abs_timeout_nsec=%ld",
--				axi->mqdes, axi->msg_len, axi->msg_prio,
--				axi->abs_timeout.tv_sec, axi->abs_timeout.tv_nsec);
--			break; }
--
- 		case AUDIT_EXECVE: {
- 			struct audit_aux_data_execve *axi = (void *)aux;
- 			audit_log_execve_info(context, &ab, axi);
-@@ -2057,97 +2056,29 @@ int __audit_mq_open(int oflag, mode_t mode, struct mq_attr __user *u_attr)
+ 	int		    put_count;
+ 	int		    ino_count;
+@@ -1167,6 +1169,27 @@ static void audit_log_execve_info(struct audit_context *context,
+ 	kfree(buf);
  }
  
- /**
-- * __audit_mq_timedsend - record audit data for a POSIX MQ timed send
-+ * __audit_mq_sendrecv - record audit data for a POSIX MQ timed send/receive
-  * @mqdes: MQ descriptor
-  * @msg_len: Message length
-  * @msg_prio: Message priority
-- * @u_abs_timeout: Message timeout in absolute time
-- *
-- * Returns 0 for success or NULL context or < 0 on error.
-- */
--int __audit_mq_timedsend(mqd_t mqdes, size_t msg_len, unsigned int msg_prio,
--			const struct timespec __user *u_abs_timeout)
--{
--	struct audit_aux_data_mq_sendrecv *ax;
--	struct audit_context *context = current->audit_context;
++static void show_special(struct audit_context *context)
++{
++	struct audit_buffer *ab;
++	int i;
++
++	ab = audit_log_start(context, GFP_KERNEL, context->type);
++	if (!ab)
++		return;
++
++	switch (context->type) {
++	case AUDIT_SOCKETCALL: {
++		int nargs = context->socketcall.nargs;
++		audit_log_format(ab, "nargs=%d", nargs);
++		for (i = 0; i < nargs; i++)
++			audit_log_format(ab, " a%d=%lx", i,
++				context->socketcall.args[i]);
++		break; }
++	}
++	audit_log_end(ab);
++}
++
+ static void audit_log_exit(struct audit_context *context, struct task_struct *tsk)
+ {
+ 	int i, call_panic = 0;
+@@ -1311,13 +1334,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
+ 			audit_log_execve_info(context, &ab, axi);
+ 			break; }
+ 
+-		case AUDIT_SOCKETCALL: {
+-			struct audit_aux_data_socketcall *axs = (void *)aux;
+-			audit_log_format(ab, "nargs=%d", axs->nargs);
+-			for (i=0; i<axs->nargs; i++)
+-				audit_log_format(ab, " a%d=%lx", i, axs->args[i]);
+-			break; }
 -
--	if (!audit_enabled)
--		return 0;
--
--	if (likely(!context))
--		return 0;
--
--	ax = kmalloc(sizeof(*ax), GFP_ATOMIC);
--	if (!ax)
--		return -ENOMEM;
--
--	if (u_abs_timeout != NULL) {
--		if (copy_from_user(&ax->abs_timeout, u_abs_timeout, sizeof(ax->abs_timeout))) {
--			kfree(ax);
--			return -EFAULT;
--		}
--	} else
--		memset(&ax->abs_timeout, 0, sizeof(ax->abs_timeout));
--
--	ax->mqdes = mqdes;
--	ax->msg_len = msg_len;
--	ax->msg_prio = msg_prio;
--
--	ax->d.type = AUDIT_MQ_SENDRECV;
--	ax->d.next = context->aux;
--	context->aux = (void *)ax;
--	return 0;
--}
--
--/**
-- * __audit_mq_timedreceive - record audit data for a POSIX MQ timed receive
-- * @mqdes: MQ descriptor
-- * @msg_len: Message length
-- * @u_msg_prio: Message priority
-- * @u_abs_timeout: Message timeout in absolute time
-+ * @abs_timeout: Message timeout in absolute time
+ 		case AUDIT_FD_PAIR: {
+ 			struct audit_aux_data_fd_pair *axs = (void *)aux;
+ 			audit_log_format(ab, "fd0=%d fd1=%d", axs->fd[0], axs->fd[1]);
+@@ -1327,6 +1343,9 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
+ 		audit_log_end(ab);
+ 	}
+ 
++	if (context->type)
++		show_special(context);
++
+ 	if (context->sockaddr_len) {
+ 		ab = audit_log_start(context, GFP_KERNEL, AUDIT_SOCKADDR);
+ 		if (ab) {
+@@ -1604,6 +1623,7 @@ void audit_syscall_exit(int valid, long return_code)
+ 		context->target_pid = 0;
+ 		context->target_sid = 0;
+ 		context->sockaddr_len = 0;
++		context->type = 0;
+ 		kfree(context->filterkey);
+ 		context->filterkey = NULL;
+ 		tsk->audit_context = context;
+@@ -2292,27 +2312,17 @@ int audit_bprm(struct linux_binprm *bprm)
+  * @nargs: number of args
+  * @args: args array
   *
 - * Returns 0 for success or NULL context or < 0 on error.
   */
--int __audit_mq_timedreceive(mqd_t mqdes, size_t msg_len,
--				unsigned int __user *u_msg_prio,
--				const struct timespec __user *u_abs_timeout)
-+void __audit_mq_sendrecv(mqd_t mqdes, size_t msg_len, unsigned int msg_prio,
-+			const struct timespec *abs_timeout)
+-int audit_socketcall(int nargs, unsigned long *args)
++void audit_socketcall(int nargs, unsigned long *args)
  {
--	struct audit_aux_data_mq_sendrecv *ax;
+-	struct audit_aux_data_socketcall *ax;
  	struct audit_context *context = current->audit_context;
-+	struct timespec *p = &context->mq_sendrecv.abs_timeout;
  
--	if (!audit_enabled)
+ 	if (likely(!context || context->dummy))
 -		return 0;
 -
--	if (likely(!context))
--		return 0;
--
--	ax = kmalloc(sizeof(*ax), GFP_ATOMIC);
+-	ax = kmalloc(sizeof(*ax) + nargs * sizeof(unsigned long), GFP_KERNEL);
 -	if (!ax)
 -		return -ENOMEM;
 -
--	if (u_msg_prio != NULL) {
--		if (get_user(ax->msg_prio, u_msg_prio)) {
--			kfree(ax);
--			return -EFAULT;
--		}
--	} else
--		ax->msg_prio = 0;
--
--	if (u_abs_timeout != NULL) {
--		if (copy_from_user(&ax->abs_timeout, u_abs_timeout, sizeof(ax->abs_timeout))) {
--			kfree(ax);
--			return -EFAULT;
--		}
--	} else
--		memset(&ax->abs_timeout, 0, sizeof(ax->abs_timeout));
-+	if (abs_timeout)
-+		memcpy(p, abs_timeout, sizeof(struct timespec));
-+	else
-+		memset(p, 0, sizeof(struct timespec));
+-	ax->nargs = nargs;
+-	memcpy(ax->args, args, nargs * sizeof(unsigned long));
++		return;
  
--	ax->mqdes = mqdes;
--	ax->msg_len = msg_len;
-+	context->mq_sendrecv.mqdes = mqdes;
-+	context->mq_sendrecv.msg_len = msg_len;
-+	context->mq_sendrecv.msg_prio = msg_prio;
- 
--	ax->d.type = AUDIT_MQ_SENDRECV;
+-	ax->d.type = AUDIT_SOCKETCALL;
 -	ax->d.next = context->aux;
 -	context->aux = (void *)ax;
 -	return 0;
-+	context->type = AUDIT_MQ_SENDRECV;
++	context->type = AUDIT_SOCKETCALL;
++	context->socketcall.nargs = nargs;
++	memcpy(context->socketcall.args, args, nargs * sizeof(unsigned long));
  }
  
  /**
+diff --git a/net/socket.c b/net/socket.c
+index 92764d8..aba5a50 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -2066,9 +2066,7 @@ asmlinkage long sys_socketcall(int call, unsigned long __user *args)
+ 	if (copy_from_user(a, args, nargs[call]))
+ 		return -EFAULT;
+ 
+-	err = audit_socketcall(nargs[call] / sizeof(unsigned long), a);
+-	if (err)
+-		return err;
++	audit_socketcall(nargs[call] / sizeof(unsigned long), a);
+ 
+ 	a0 = a[0];
+ 	a1 = a[1];
 -- 
 1.5.6.5
 
