@@ -1,90 +1,205 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760470AbYLQFPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759980AbYLQFRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760470AbYLQFPr (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 00:15:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYLQFNM
+	id S1759980AbYLQFRn (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 00:17:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYLQFRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 00:13:12 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37073 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759745AbYLQFNL (ORCPT
+	Wed, 17 Dec 2008 00:17:32 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41650 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750901AbYLQFRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 00:13:11 -0500
-To: linux-audit@redhat.com
-Subject: [PATCH 13/15] make sure that filterkey of task,always rules is reported
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1LCoic-0000Fo-UH@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Wed, 17 Dec 2008 05:13:10 +0000
+	Wed, 17 Dec 2008 00:17:31 -0500
+Date: Wed, 17 Dec 2008 14:16:31 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: menage@google.com
+Cc: akpm@linux-foundation.org, lizf@cn.fujitsu.com,
+        linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 1/3] CGroups: Add a per-subsystem hierarchy_mutex
+Message-Id: <20081217141631.4a1bc757.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081216113652.929310000@menage.corp.google.com>
+References: <20081216113055.713856000@menage.corp.google.com>
+	<20081216113652.929310000@menage.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 16 Dec 2008 03:30:56 -0800
+menage@google.com wrote:
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- kernel/auditsc.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
+> This patch adds a hierarchy_mutex to the cgroup_subsys object that
+> protects changes to the hierarchy observed by that subsystem. It is
+> taken by the cgroup subsystem (in addition to cgroup_mutex) for the
+> following operations:
+> 
+> - linking a cgroup into that subsystem's cgroup tree
+> - unlinking a cgroup from that subsystem's cgroup tree
+> - moving the subsystem to/from a hierarchy (including across the
+>   bind() callback)
+> 
+> Thus if the subsystem holds its own hierarchy_mutex, it can safely
+> traverse its own hierarchy.
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
+Tested-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index 296d329..549443e 100644
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -618,7 +618,7 @@ static int audit_filter_rules(struct task_struct *tsk,
-  * completely disabled for this task.  Since we only have the task
-  * structure at this point, we can only check uid and gid.
-  */
--static enum audit_state audit_filter_task(struct task_struct *tsk)
-+static enum audit_state audit_filter_task(struct task_struct *tsk, char **key)
- {
- 	struct audit_entry *e;
- 	enum audit_state   state;
-@@ -626,6 +626,8 @@ static enum audit_state audit_filter_task(struct task_struct *tsk)
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(e, &audit_filter_list[AUDIT_FILTER_TASK], list) {
- 		if (audit_filter_rules(tsk, &e->rule, NULL, NULL, &state)) {
-+			if (state == AUDIT_RECORD_CONTEXT)
-+				*key = kstrdup(e->rule.filterkey, GFP_ATOMIC);
- 			rcu_read_unlock();
- 			return state;
- 		}
-@@ -832,18 +834,21 @@ int audit_alloc(struct task_struct *tsk)
- {
- 	struct audit_context *context;
- 	enum audit_state     state;
-+	char *key = NULL;
- 
- 	if (likely(!audit_ever_enabled))
- 		return 0; /* Return if not auditing. */
- 
--	state = audit_filter_task(tsk);
-+	state = audit_filter_task(tsk, &key);
- 	if (likely(state == AUDIT_DISABLED))
- 		return 0;
- 
- 	if (!(context = audit_alloc_context(state))) {
-+		kfree(key);
- 		audit_log_lost("out of memory in audit_alloc");
- 		return -ENOMEM;
- 	}
-+	context->filterkey = key;
- 
- 	tsk->audit_context  = context;
- 	set_tsk_thread_flag(tsk, TIF_SYSCALL_AUDIT);
-@@ -1616,8 +1621,10 @@ void audit_syscall_exit(int valid, long return_code)
- 		context->sockaddr_len = 0;
- 		context->type = 0;
- 		context->fds[0] = -1;
--		kfree(context->filterkey);
--		context->filterkey = NULL;
-+		if (context->state != AUDIT_RECORD_CONTEXT) {
-+			kfree(context->filterkey);
-+			context->filterkey = NULL;
-+		}
- 		tsk->audit_context = context;
- 	}
- }
--- 
-1.5.6.5
 
+
+> ---
+> 
+>  Documentation/cgroups/cgroups.txt |    2 +-
+>  include/linux/cgroup.h            |   17 ++++++++++++++++-
+>  kernel/cgroup.c                   |   37 +++++++++++++++++++++++++++++++++++--
+>  3 files changed, 52 insertions(+), 4 deletions(-)
+> 
+> Index: hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
+> ===================================================================
+> --- hierarchy_lock-mmotm-2008-12-09.orig/include/linux/cgroup.h
+> +++ hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
+> @@ -337,8 +337,23 @@ struct cgroup_subsys {
+>  #define MAX_CGROUP_TYPE_NAMELEN 32
+>  	const char *name;
+>  
+> +	/*
+> +	 * Protects sibling/children links of cgroups in this
+> +	 * hierarchy, plus protects which hierarchy (or none) the
+> +	 * subsystem is a part of (i.e. root/sibling).  To avoid
+> +	 * potential deadlocks, the following operations should not be
+> +	 * undertaken while holding any hierarchy_mutex:
+> +	 *
+> +	 * - allocating memory
+> +	 * - initiating hotplug events
+> +	 */
+> +	struct mutex hierarchy_mutex;
+> +
+> +	/*
+> +	 * Link to parent, and list entry in parent's children.
+> +	 * Protected by this->hierarchy_mutex and cgroup_lock()
+> +	 */
+>  	struct cgroupfs_root *root;
+> -
+>  	struct list_head sibling;
+>  };
+>  
+> Index: hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+> ===================================================================
+> --- hierarchy_lock-mmotm-2008-12-09.orig/kernel/cgroup.c
+> +++ hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+> @@ -714,23 +714,26 @@ static int rebind_subsystems(struct cgro
+>  			BUG_ON(cgrp->subsys[i]);
+>  			BUG_ON(!dummytop->subsys[i]);
+>  			BUG_ON(dummytop->subsys[i]->cgroup != dummytop);
+> +			mutex_lock(&ss->hierarchy_mutex);
+>  			cgrp->subsys[i] = dummytop->subsys[i];
+>  			cgrp->subsys[i]->cgroup = cgrp;
+>  			list_move(&ss->sibling, &root->subsys_list);
+>  			ss->root = root;
+>  			if (ss->bind)
+>  				ss->bind(ss, cgrp);
+> -
+> +			mutex_unlock(&ss->hierarchy_mutex);
+>  		} else if (bit & removed_bits) {
+>  			/* We're removing this subsystem */
+>  			BUG_ON(cgrp->subsys[i] != dummytop->subsys[i]);
+>  			BUG_ON(cgrp->subsys[i]->cgroup != cgrp);
+> +			mutex_lock(&ss->hierarchy_mutex);
+>  			if (ss->bind)
+>  				ss->bind(ss, dummytop);
+>  			dummytop->subsys[i]->cgroup = dummytop;
+>  			cgrp->subsys[i] = NULL;
+>  			subsys[i]->root = &rootnode;
+>  			list_move(&ss->sibling, &rootnode.subsys_list);
+> +			mutex_unlock(&ss->hierarchy_mutex);
+>  		} else if (bit & final_bits) {
+>  			/* Subsystem state should already exist */
+>  			BUG_ON(!cgrp->subsys[i]);
+> @@ -2326,6 +2329,29 @@ static void init_cgroup_css(struct cgrou
+>  	cgrp->subsys[ss->subsys_id] = css;
+>  }
+>  
+> +static void cgroup_lock_hierarchy(struct cgroupfs_root *root)
+> +{
+> +	/* We need to take each hierarchy_mutex in a consistent order */
+> +	int i;
+> +
+> +	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> +		struct cgroup_subsys *ss = subsys[i];
+> +		if (ss->root == root)
+> +			mutex_lock_nested(&ss->hierarchy_mutex, i);
+> +	}
+> +}
+> +
+> +static void cgroup_unlock_hierarchy(struct cgroupfs_root *root)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> +		struct cgroup_subsys *ss = subsys[i];
+> +		if (ss->root == root)
+> +			mutex_unlock(&ss->hierarchy_mutex);
+> +	}
+> +}
+> +
+>  /*
+>   * cgroup_create - create a cgroup
+>   * @parent: cgroup that will be parent of the new cgroup
+> @@ -2374,7 +2400,9 @@ static long cgroup_create(struct cgroup 
+>  		init_cgroup_css(css, ss, cgrp);
+>  	}
+>  
+> +	cgroup_lock_hierarchy(root);
+>  	list_add(&cgrp->sibling, &cgrp->parent->children);
+> +	cgroup_unlock_hierarchy(root);
+>  	root->number_of_cgroups++;
+>  
+>  	err = cgroup_create_dir(cgrp, dentry, mode);
+> @@ -2492,8 +2520,12 @@ static int cgroup_rmdir(struct inode *un
+>  	if (!list_empty(&cgrp->release_list))
+>  		list_del(&cgrp->release_list);
+>  	spin_unlock(&release_list_lock);
+> -	/* delete my sibling from parent->children */
+> +
+> +	cgroup_lock_hierarchy(cgrp->root);
+> +	/* delete this cgroup from parent->children */
+>  	list_del(&cgrp->sibling);
+> +	cgroup_unlock_hierarchy(cgrp->root);
+> +
+>  	spin_lock(&cgrp->dentry->d_lock);
+>  	d = dget(cgrp->dentry);
+>  	spin_unlock(&d->d_lock);
+> @@ -2535,6 +2567,7 @@ static void __init cgroup_init_subsys(st
+>  	 * need to invoke fork callbacks here. */
+>  	BUG_ON(!list_empty(&init_task.tasks));
+>  
+> +	mutex_init(&ss->hierarchy_mutex);
+>  	ss->active = 1;
+>  }
+>  
+> Index: hierarchy_lock-mmotm-2008-12-09/Documentation/cgroups/cgroups.txt
+> ===================================================================
+> --- hierarchy_lock-mmotm-2008-12-09.orig/Documentation/cgroups/cgroups.txt
+> +++ hierarchy_lock-mmotm-2008-12-09/Documentation/cgroups/cgroups.txt
+> @@ -528,7 +528,7 @@ example in cpusets, no task may attach b
+>  up.
+>  
+>  void bind(struct cgroup_subsys *ss, struct cgroup *root)
+> -(cgroup_mutex held by caller)
+> +(cgroup_mutex and ss->hierarchy_mutex held by caller)
+>  
+>  Called when a cgroup subsystem is rebound to a different hierarchy
+>  and root cgroup. Currently this will only involve movement between
+> 
+> --
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
