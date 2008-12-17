@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752459AbYLQSro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751320AbYLQSr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752459AbYLQSro (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 13:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYLQSra
+	id S1751320AbYLQSr6 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 13:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYLQSrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 13:47:30 -0500
-Received: from mx1.suse.de ([195.135.220.2]:47190 "EHLO mx1.suse.de"
+	Wed, 17 Dec 2008 13:47:33 -0500
+Received: from cantor.suse.de ([195.135.220.2]:47200 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752178AbYLQSr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 13:47:29 -0500
-Date: Wed, 17 Dec 2008 10:40:11 -0800
+	id S1752193AbYLQSrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 13:47:32 -0500
+Date: Wed, 17 Dec 2008 10:42:36 -0800
 From: Greg KH <gregkh@suse.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
-        Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] cpumask: add sysfs displays for configured and
-	disabled cpu maps
-Message-ID: <20081217184011.GB30724@suse.de>
-References: <20081216042645.629941000@polaris-admin.engr.sgi.com> <20081216042646.088194000@polaris-admin.engr.sgi.com> <200812172223.53079.rusty@rustcorp.com.au>
+To: Matt Fleming <matt@console-pimps.org>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org,
+        stable@kernel.org, Willy Tarreau <w@1wt.eu>,
+        torvalds@linux-foundation.org, akpm@linux-foundation.org,
+        alan@lxorguk.ukuu.org.uk, mingo@elte.hu, venkatesh.pallipadi@intel.com,
+        Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 68/83] x86: HPET: convert WARN_ON to WARN_ON_ONCE
+Message-ID: <20081217184236.GC30724@suse.de>
+References: <20081211190201.612240183@mini.kroah.org> <20081211191620.GP5894@kroah.com> <20081217112625.GJ13247@console-pimps.org> <s5h4p13dojm.wl%tiwai@suse.de> <20081217120305.GK13247@console-pimps.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200812172223.53079.rusty@rustcorp.com.au>
+In-Reply-To: <20081217120305.GK13247@console-pimps.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 10:23:52PM +1030, Rusty Russell wrote:
-> On Tuesday 16 December 2008 14:56:48 Mike Travis wrote:
-> > Impact: add new functionality.
+On Wed, Dec 17, 2008 at 12:03:05PM +0000, Matt Fleming wrote:
+> On Wed, Dec 17, 2008 at 12:33:17PM +0100, Takashi Iwai wrote:
+> > At Wed, 17 Dec 2008 11:26:25 +0000,
+> > Matt Fleming wrote:
+> > > 
+> > > On Thu, Dec 11, 2008 at 11:16:20AM -0800, Greg KH wrote:
+> > > > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+> > > > 
+> > > > ------------------
+> > > > 
+> > > > From: Matt Fleming <mjf@gentoo.org>
+> > > > 
+> > > > commit 1de5b0854623d30d01d72cd4ea323eb5f39d1f16 upstream.
+> > > > 
+> > > > It is possible to flood the console with call traces if the WARN_ON
+> > > > condition is true because of the frequency with which this function is
+> > > > called.
+> > > > 
+> > > 
+> > > If this commit is going into stable it would be worth adding these
+> > > two commits (which are actually the bugfixes).
+> > > 
+> > > 5ceb1a04187553e08c6ab60d30cee7c454ee139a
+> > > x86: HPET: enter hpet_interrupt_handler with interrupts disabled
+> > > 
+> > > 89d77a1eb60be916d85d9394bedbfa2037af89c5
+> > > x86: HPET: read from HPET_Tn_CMP() not HPET_T0_CMP
 > > 
-> > Add sysfs files "kernel_max" and "offline" to display the max CPU index
-> > allowed (NR_CPUS-1), and the map of cpus that are offline. 
+> > I think the latter isn't applicable as 2.6.27 supports only T0.
+> > 
 > 
-> I've applied this to the cpumask series, but Greg is sysfs maestro, so
-> I'll await his ack (I've quoted whole thing for easy reading).
+> Ah, thanks. I wasn't aware of that.
 
-All new sysfs files should have corrisponding Documentation/ABI files
-added as well, containing all of the information in the body of this
-email so that others can find it in the future in an easy manner.
-
-Mike, can you make this change please?
-
-> > Cpus can be offlined via HOTPLUG, disabled by the BIOS ACPI tables, or
-> > if they exceed the number of cpus allowed by the NR_CPUS config option,
-> > or the "maxcpus=NUM" kernel start parameter.
-> > 
-> > The "possible_cpus=NUM" parameter can also extend the number of possible
-> > cpus allowed, in which case the cpus not present at startup will be
-> > in the offline state.  (These cpus can be HOTPLUGGED ON after system
-> > startup [pending a follow-on patch to provide the capability via the
-> > /sys/devices/sys/cpu/cpuN/online mechanism to bring them online.])
-> > 
-> > By design, the "offlined cpus > possible cpus" display will always
-> > use the following formats:
-> > 
-> >   * all possible cpus online:   "x$"    or "x-y$" 
-> >   * some possible cpus offline: ".*,x$" or ".*,x-y$"
-
-Care to provide an example of what these sysfs files will actually hold?
-It seems like you are craming more information than needed into a single
-sysfs file.
-
-Oh, and state why this is really needed, as I thought we already showed
-this kind of information today in the existing sysfs files, but I'm
-probably wrong :)
+Ok, so which patch should go into the 2.6.27-stable tree?
 
 thanks,
 
