@@ -1,55 +1,88 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752485AbYLQVQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752512AbYLQVVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752485AbYLQVQM (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 16:16:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYLQVPw
+	id S1752512AbYLQVVU (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 16:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYLQVVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 16:15:52 -0500
-Received: from mx1.suse.de ([195.135.220.2]:56754 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751214AbYLQVPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 16:15:51 -0500
-Date: Wed, 17 Dec 2008 13:15:50 -0800
-From: Mark Fasheh <mfasheh@suse.com>
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Ankit Jain <me@ankitjain.org>, linux-kernel@vger.kernel.org,
-        joel.becker@oracle.com, Christoph Hellwig <hch@infradead.org>,
-        xfs-masters@oss.sgi.com, Al Viro <viro@zeniv.linux.org.uk>,
-        linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com,
-        ocfs2-devel@oss.oracle.com
-Subject: Re: [xfs-masters] [PATCH][RFC] fs: Add new pre-allocation ioctls to vfs for compatibility with legacy xfs ioctls
-Message-ID: <20081217211550.GF8791@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-References: <49460F88.2080408@ankitjain.org> <20081217202815.GE8791@wotan.suse.de> <494969C6.4090500@sandeen.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 17 Dec 2008 16:21:00 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:41031 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751584AbYLQVU6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 16:20:58 -0500
+Message-ID: <ac3eb2510812171320i414d89d4x9840954275774d51@mail.gmail.com>
+Date: Wed, 17 Dec 2008 22:20:56 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Chris Mason" <chris.mason@oracle.com>
+Subject: Re: Notes on support for multiple devices for a single filesystem
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+        "Christoph Hellwig" <hch@infradead.org>, adilger@sun.com,
+        sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+        linux-btrfs@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <1229547485.27170.77.camel@think.oraclecorp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <494969C6.4090500@sandeen.net>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+References: <1227183484.6161.17.camel@think.oraclecorp.com>
+	 <1228962896.21376.11.camel@think.oraclecorp.com>
+	 <20081211141436.030c2d65.sfr@canb.auug.org.au>
+	 <20081210200604.8e190b0d.akpm@linux-foundation.org>
+	 <1229006596.22236.46.camel@think.oraclecorp.com>
+	 <20081215210323.GB5000@webber.adilger.int>
+	 <20081217132343.GA14695@infradead.org>
+	 <20081217115325.3312858a.akpm@linux-foundation.org>
+	 <1229547485.27170.77.camel@think.oraclecorp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 03:06:14PM -0600, Eric Sandeen wrote:
-> >> There are some things that I'm not sure about:
-> >> 1. Should the struct space_resv be exposed to user-space? If not,
-> >> then what would be the right place to put it? And the ioctl
-> >> definitions?
-> > 
-> > Yes. As far as where to put it, I'm not sure. Maybe falloc.h?
-> 
-> I'd sort of rather not; why should that legacy struct space_resv be
-> available in a header... I thought this was for people already using the
-> xfs ioctl, in which case they are already using the xfs header... and if
-> they want preallocation in any new work, they should use fallocate()
-> instead, yes?
+On Wed, Dec 17, 2008 at 21:58, Chris Mason <chris.mason@oracle.com> wrote:
+> On Wed, 2008-12-17 at 11:53 -0800, Andrew Morton wrote:
 
-Actually, yeah agreed - I take that back. Old users are already getting them
-from file system headers, new ones should use fallocate. So there's no need
-to expose the ioctls to userspace, at least not if all we're talking about
-is the RESVP ioctls.
-	--Mark
+>> One thing I've never seen comprehensively addressed is: why do this in
+>> the filesystem at all?  Why not let MD take care of all this and
+>> present a single block device to the fs layer?
+>>
+>> Lots of filesystems are violating this, and I'm sure the reasons for
+>> this are good, but this document seems like a suitable place in which to
+>> briefly decribe those reasons.
+>
+> I'd almost rather see this doc stick to the device topology interface in
+> hopes of describing something that RAID and MD can use too.  But just to
+> toss some information into the pool:
+>
+> * When moving data around (raid rebuild, restripe, pvmove etc), we want
+> to make sure the data read off the disk is correct before writing it to
+> the new location (checksum verification).
+>
+> * When moving data around, we don't want to move data that isn't
+> actually used by the filesystem.  This could be solved via new APIs, but
+> keeping it crash safe would be very tricky.
+>
+> * When checksum verification fails on read, the FS should be able to ask
+> the raid implementation for another copy.  This could be solved via new
+> APIs.
+>
+> * Different parts of the filesystem might want different underlying raid
+> parameters.  The easiest example is metadata vs data, where a 4k
+> stripesize for data might be a bad idea and a 64k stripesize for
+> metadata would result in many more rwm cycles.
+>
+> * Sharing the filesystem transaction layer.  LVM and MD have to pretend
+> they are a single consistent array of bytes all the time, for each and
+> every write they return as complete to the FS.
+>
+> By pushing the multiple device support up into the filesystem, I can
+> share the filesystem's transaction layer.  Work can be done in larger
+> atomic units, and the filesystem will stay consistent because it is all
+> coordinated.
+>
+> There are other bits and pieces like high speed front end caching
+> devices that would be difficult in MD/LVM, but since I don't have that
+> coded yet I suppose they don't really count...
 
---
-Mark Fasheh
+Features like the very nice and useful directory-based snapshots would
+also not be possible with simple block-based multi-devices, right?
+
+Kay
