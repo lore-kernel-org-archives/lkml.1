@@ -1,175 +1,49 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753289AbYLQWFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752818AbYLQWLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbYLQWFd (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 17:05:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbYLQWFH
+	id S1752818AbYLQWLt (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 17:11:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYLQWLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 17:05:07 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58567 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150AbYLQWFD (ORCPT
+	Wed, 17 Dec 2008 17:11:40 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38980 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751360AbYLQWLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 17:05:03 -0500
-Date: Wed, 17 Dec 2008 15:04:49 -0700
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: Notes on support for multiple devices for a single filesystem
-In-reply-to: <20081217132343.GA14695@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Chris Mason <chris.mason@oracle.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-        linux-btrfs@vger.kernel.org,
-        linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Message-id: <20081217220449.GC5000@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <1227183484.6161.17.camel@think.oraclecorp.com>
- <1228962896.21376.11.camel@think.oraclecorp.com>
- <20081211141436.030c2d65.sfr@canb.auug.org.au>
- <20081210200604.8e190b0d.akpm@linux-foundation.org>
- <1229006596.22236.46.camel@think.oraclecorp.com>
- <20081215210323.GB5000@webber.adilger.int>
- <20081217132343.GA14695@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 17 Dec 2008 17:11:39 -0500
+Date: Wed, 17 Dec 2008 14:09:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: louis.rilling@kerlabs.com, linux-kernel@vger.kernel.org,
+        cluster-devel@redhat.com, swhiteho@redhat.com, a.p.zijlstra@chello.nl
+Subject: Re: [PATCH] configfs: Silence lockdep on mkdir(), rmdir() and
+ configfs_depend_item()
+Message-Id: <20081217140900.4d58c18d.akpm@linux-foundation.org>
+In-Reply-To: <20081217220310.GB6372@mail.oracle.com>
+References: <20081212100615.GD19128@hawkmoon.kerlabs.com>
+	<1229095751-23984-1-git-send-email-louis.rilling@kerlabs.com>
+	<20081217134020.42da55fc.akpm@linux-foundation.org>
+	<20081217220310.GB6372@mail.oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 17, 2008  08:23 -0500, Christoph Hellwig wrote:
-> == Prior art ==
+On Wed, 17 Dec 2008 14:03:10 -0800
+Joel Becker <Joel.Becker@oracle.com> wrote:
+
+> > >
+> > > [etc]
+> > >
+> > 
+> > Oh dear, what an unpleasant patch.
+> > 
+> > Peter, can this be saved?
 > 
-> * External log and realtime volume
-> 
-> The most common way to specify the external log device and the XFS real time
-> device is to have a mount option that contains the path to the block special
-> device for it.  This variant means a mount option is always required, and
-> requires the device name doesn't change, which is enough with udev-generated
-> unique device names (/dev/disk/by-{label,uuid}).
-> 
-> An alternative way, supported by optionally by ext3 and reiserfs and
-> exclusively supported by jfs is to open the journal device by the device
-> number (dev_t) of the block special device.  While this doesn't require
-> an additional mount option when the device number is stored in the filesystem
-> superblock it relies on the device number being stable which is getting
-> increasingly unlikely in complex storage topologies.
+> 	I'd love to see it work within lockdep, but it seems rather
+> hard, so that's why I recommended Louis cook up this version.  I see you
+> picked it up in -mm.  Do you want me to push it through ocfs2.git?
 
-Just as an FYI here - the dev_t stored in the ext3/4 superblock for the
-journal device is only a "cached" device.  The journal is properly
-identified by its UUID, and should the device mapping change there is a
-"journal_dev=" option that can be used to specify the new device.  The
-one shortcoming is that there is no mount.ext3 helper which does this 
-journal UUID->dev mapping and automatically passes "journal_dev=" if
-needed.
-
-> * RAID (MD) and LVM
-> 
-> Recent MD setups and LVM2 thus move the scanning to user space, typically
-> using a command iterating over all block device nodes and performing the
-> format-specific scanning.  While this is more flexible
-> than the in-kernel scanning, it scales very badly to a large number of
-> block devices, and requires additional user space commands to run early
-> in the boot process.  A variant of this schemes runs a scanning callout
-> from udev once disk device are detected, which avoids the scanning overhead.
-
-My (admittedly somewhat vague) impression is that with large numbers of
-devices the udev callout can itself be a huge overhead because this involves
-a userspace fork/exec for each new device being added.  For the same
-number of devices, a single scan from userspace only requires a single
-process, and an equal number of device probes.
-
-Added to this is that the blkid cache can be used to eliminate the need
-to do any scanning if the devices have not changed from the previous boot
-makes it unclear which mechanism is more efficient.  The drawback is that
-the initrd device cache is never going to be up-to-date so it wouldn't
-be useful until the root partition is mounted.
-
-We've used blkid for our testing of Lustre-on-DMU with up to 48 (local)
-disks w/o any kind of performance issues.  We'll eventually be able to
-test on systems with around 400 disks in a JBOD configuration, but until
-then we only run on systems with hundreds of disks behind a RAID controller.
-
-> == High-level design considerations ==
-> 
-> Due to requirement b) we need a layer that finds devices for a single
-> fstab entry.  We can either do this in user space, or in kernel space.
-> As we've traditionally always done UUID/LABEL to device mapping in
-> userspace, and we already have libvolume_id and libblkid dealing with
-> the specialized case of UUID/LABEL to single device mapping I would
-> recommend to keep doing this in user space and reuse libvolume_id/libblkid.
-> 
-> There are to options to perform the assembly of the device list for
-> a filesystem:
-> 
->  1) whenever libvolume_id / libblkid find a device detected as a multi-device
->     capable filesystem it gets added to a list of all devices of this
->     particular filesystem type.
->     On mount type mount(8) or a mount.fstype helpers calls out to the
->     libraries to get a list of devices belonging to this filesystem
->     type and translates them to device names, which can be passed to
->     the kernel on the mount command line.
-
-I would actually suggest that instead of keeping devices in groups by
-the filesystem type, rather keep a list of devices with the same UUID
-and/or LABEL, and if the mount is looking for this UUID/LABEL it gets
-the whole list of matching devices back.
-
-This could also be done in the kernel by having the filesystems register
-a "probe" function that examines the device/partitions as they are added,
-similar to the way that MD used to do it.  There would likely be very few
-probe functions needed, only ext3/4 (for journal devices), btrfs, and
-maybe MD, LVM2 and a handful more.
-
-If we wanted to avoid code duplication, this could share code between
-libblkid and the kernel (just the enhanced probe-only functions in the
-util-linux-ng implementation) since these functions are little more than
-"take a pointer, cast it to struct X, check some magic fields and return
-match + {LABEL, UUID}, or no-match".
-
-That MD used to check only the partition type doesn't mean that we can't
-have simple functions that read the superblock (or equivalent) to make
-an internal list of suitable devices attached to a filesystem-type global
-structure (possibly split into per-fsUUID sublists if it wants).  When
-filesystem X is mounted (using any one device from the filesystem passed
-to mount) it can quickly scan this list to find all devices that for that
-filesystem's UUID to assemble all of the required devices.
-
-Since the filesystem would internally have to verify the list of devices
-that would (somehow) be passed to the kernel during mount this doesn't
-really gain much to keep the list in userspace.
-
->     Advantage:    Requires a mount.fstype helper or fs-specific knowledge
->     		    in mount(8).
->     Disadvantages:  Required libvolume_id / libblkid to keep state.
-> 
->  2) whenever libvolume_id / libblkid find a device detected as a multi-device
->     capable filesystem they call into the kernel through and ioctl / sysfs /
->     etc to add it to a list in kernel space.  The kernel code then manages
->     to select the right filesystem instances, and either adds it to an already
->     running instance, or prepares a list for a future mount.
-
-While not performance critical, this seems that calling into userspace
-just to call back down into the kernel is more complex than it needs to
-be (i.e. prone to failure).
-
-I'm not stuck on doing this in the kernel, just thinking that the more
-components involved the more likely it is that something goes wrong.  I
-have enough grief with just initrd not having the right kernel module,
-I'd hate to depend on tools to do the device assembly for the root fs.
-
->     Advantages:    keeps state in the kernel instead of in libraries
->     Disadvantages: requires and additional user interface to mount
-> 
-> c) will be deal with an option that allows adding named block devices
-> on the mount command line, which is already required for design 1) but
-> would have to be implemented additionally for design 2).
-
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
-
+Please do.  If Peter refuses to save us.
