@@ -1,45 +1,32 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752662AbYLQNxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751825AbYLQNya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752662AbYLQNxf (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 08:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYLQNxV
+	id S1751825AbYLQNya (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 08:54:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYLQNxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 08:53:21 -0500
-Received: from cavolo.yandex.ru ([87.250.244.45]:40540 "EHLO cavolo.yandex.ru"
+	Wed, 17 Dec 2008 08:53:24 -0500
+Received: from cavolo.yandex.ru ([87.250.244.45]:40546 "EHLO cavolo.yandex.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750706AbYLQNxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 08:53:20 -0500
+	id S1751169AbYLQNxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 08:53:21 -0500
 From: Evgeniy Polyakov <zbr@ioremap.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [0/7] dst: new release introduction.
-Date: Wed, 17 Dec 2008 16:53:11 +0300
-Message-Id: <1229521998-7870-1-git-send-email-zbr@ioremap.net>
+Subject: [5/7] dst: transactions.
+Date: Wed, 17 Dec 2008 16:53:16 +0300
+Message-Id: <1229521998-7870-6-git-send-email-zbr@ioremap.net>
 X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1229521998-7870-5-git-send-email-zbr@ioremap.net>
+References: <1229521998-7870-1-git-send-email-zbr@ioremap.net>
+ <1229521998-7870-2-git-send-email-zbr@ioremap.net>
+ <1229521998-7870-3-git-send-email-zbr@ioremap.net>
+ <1229521998-7870-4-git-send-email-zbr@ioremap.net>
+ <1229521998-7870-5-git-send-email-zbr@ioremap.net>
 X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
 X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-Hi.
-
-I'm pleased to announce 11'th DST release.
-
-DST is a network block device storage, which can be used to organize
-exported storages on the remote nodes into the local block device.
-
-DST works on top of any network media and protocol, it is just a matter
-of configuration utility to understand the correct addresses. The most
-common example is TCP over IP allows to pass through firewalls and
-created remote backup storage in the different datacenter. DST requires
-single port to be enabled on the exporting node and outgoing connections
-on the local node.
-
-DST works with in-kernel client and server, which improves the performance
-eliminating unneded data copies and allows not to depend on the version
-of the external IO components. It requires userspace configuration utility
-though.
 
 DST uses transaction model, when each store has to be explicitly acked
 from the remote node to be considered as successfully written. There
@@ -59,80 +46,350 @@ Because of transactional model it is possible to use zero-copy sending
 without worry of data corruption (which in turn could be detected by the
 strong checksums though).
 
-DST may fully encrypt the data channel in case of untrusted channel and implement
-strong checksum of the transferred data. It is possible to configure algorithms
-and crypto keys, they should match on both sides of the network channel.
-Crypto processing does not introduce noticeble performance overhead, since DST
-uses configurable pool of threads to perform crypto processing.
-
-DST utilizes memory pool model of all its transaction allocations (it is the
-only additional allocation on the client) and server allocations (bio pools,
-while pages are allocated from the slab).
-
-At startup DST performs a simple negotiation with the export node to determine
-access permissions and size of the exported storage. It can be extended if
-new parameters should be autonegotiated.
-
-DST carries block IO flags in the protocol, which allows to transparently implement
-barriers and sync/flush operations. Those flags are used in the export node where
-IO against the local storage is performed, which means that sync write will be sync
-on the remote node too, which in turn improves data integrity and improved resistance
-to errors and data corruption during power outages or storage damages.
-
-Patches were split on per-file basis, so tree in the middle of the series will not
-compile, which should not be a problem, since kconfig/makefile changes are introduced
-in the latest patch.
-
-There is an open maillist for DST development and discussion at dst @ ioremap.net
-
-Short list of supported features:
-    * Kernel-side client and server. No need for any special tools for data processing
-    	(like special userspace applications) except for configuration.
-    * Bullet-proof memory allocations via memory pools for all temporary objects
-    	(transaction and so on). All clients structures are allocated as single transaction
-	from the memory pool and except this there is no allocation overhead. Network adds
-	own though. Server uses memory pools too, but number of allocations is higher
-	(bio, transaction and pages for IO).
-    * Zero-copy sending (except header) if supported by device using sendpage().
-    * Failover recovery in case of broken link (reconnection if remote node is down).
-    * Full transaction support (resending of the failed transactions on timeout of after
-    	reconnect to failed node).
-    * Dynamically resizeable pool of threads used for data receiving and crypto processing.
-    * Initial autoconfiguration. Ability to extend it with additional attributes if needed.
-    * Support for barriers and other block io request flags.
-    * Support for any kind of network media (not limited to tcp or inet protocols) higher
-    	MAC layer (socket layer). Out of the box kernel-side IPv6 support (needs to extend
-	configuration utility, check how it was done in POHMELFS).
-    * Security attributes for local export nodes (list of allowed to connect addresses with
-    	permissions). Read-only connections.
-    * Ability to use any supported cryptographically strong checksums.
-    	Ability to encrypt data channel.
-    * Keepalive messages to early detect failed nodes.
-
-1. DST homepage.
-http://www.ioremap.net/projects/dst
-
-2. DST archive.
-http://www.ioremap.net/archive/dst/
-
-3. GIT trees.
-http://www.ioremap.net/cgi-bin/gitweb.cgi
-
-4. DST mail list.
-dst @ ioremap.net
+Transactions are handled in this patch: allocation/freeing/completion,
+scanning for stall and to-be-resent transactions and overall management
+of the storing tree.
 
 Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 
- drivers/block/Kconfig           |    2 +
- drivers/block/Makefile          |    2 +
- drivers/block/dst/Kconfig       |   71 +++
- drivers/block/dst/Makefile      |    3 +
- drivers/block/dst/crypto.c      |  731 +++++++++++++++++++++++++++++
- drivers/block/dst/dcore.c       |  972 +++++++++++++++++++++++++++++++++++++++
- drivers/block/dst/export.c      |  664 ++++++++++++++++++++++++++
- drivers/block/dst/state.c       |  839 +++++++++++++++++++++++++++++++++
- drivers/block/dst/thread_pool.c |  345 ++++++++++++++
- drivers/block/dst/trans.c       |  335 ++++++++++++++
- include/linux/connector.h       |    4 +-
- include/linux/dst.h             |  587 +++++++++++++++++++++++
- 12 files changed, 4554 insertions(+), 1 deletions(-)
+diff --git a/drivers/block/dst/trans.c b/drivers/block/dst/trans.c
+new file mode 100644
+index 0000000..557d372
+--- /dev/null
++++ b/drivers/block/dst/trans.c
+@@ -0,0 +1,335 @@
++/*
++ * 2007+ Copyright (c) Evgeniy Polyakov <zbr@ioremap.net>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/bio.h>
++#include <linux/dst.h>
++#include <linux/slab.h>
++#include <linux/mempool.h>
++
++/*
++ * Transaction memory pool size.
++ */
++static int dst_mempool_num = 32;
++module_param(dst_mempool_num, int, 0644);
++
++/*
++ * Transaction tree management.
++ */
++static inline int dst_trans_cmp(dst_gen_t gen, dst_gen_t new)
++{
++	if (gen < new)
++		return 1;
++	if (gen > new)
++		return -1;
++	return 0;
++}
++
++struct dst_trans *dst_trans_search(struct dst_node *node, dst_gen_t gen)
++{
++	struct rb_root *root = &node->trans_root;
++	struct rb_node *n = root->rb_node;
++	struct dst_trans *t, *ret = NULL;
++	int cmp;
++
++	while (n) {
++		t = rb_entry(n, struct dst_trans, trans_entry);
++
++		cmp = dst_trans_cmp(t->gen, gen);
++		if (cmp < 0)
++			n = n->rb_left;
++		else if (cmp > 0)
++			n = n->rb_right;
++		else {
++			ret = t;
++			break;
++		}
++	}
++
++	dprintk("%s: %s transaction: id: %llu.\n", __func__,
++			(ret)?"found":"not found", gen);
++
++	return ret;
++}
++
++static int dst_trans_insert(struct dst_trans *new)
++{
++	struct rb_root *root = &new->n->trans_root;
++	struct rb_node **n = &root->rb_node, *parent = NULL;
++	struct dst_trans *ret = NULL, *t;
++	int cmp;
++
++	while (*n) {
++		parent = *n;
++
++		t = rb_entry(parent, struct dst_trans, trans_entry);
++
++		cmp = dst_trans_cmp(t->gen, new->gen);
++		if (cmp < 0)
++			n = &parent->rb_left;
++		else if (cmp > 0)
++			n = &parent->rb_right;
++		else {
++			ret = t;
++			break;
++		}
++	}
++
++	new->send_time = jiffies;
++	if (ret) {
++		printk("%s: exist: old: gen: %llu, bio: %llu/%u, send_time: %lu, "
++				"new: gen: %llu, bio: %llu/%u, send_time: %lu.\n",
++			__func__,
++			ret->gen, (u64)ret->bio->bi_sector,
++			ret->bio->bi_size, ret->send_time,
++			new->gen, (u64)new->bio->bi_sector,
++			new->bio->bi_size, new->send_time);
++		return -EEXIST;
++	}
++
++	rb_link_node(&new->trans_entry, parent, n);
++	rb_insert_color(&new->trans_entry, root);
++
++	dprintk("%s: inserted: gen: %llu, bio: %llu/%u, send_time: %lu.\n",
++		__func__, new->gen, (u64)new->bio->bi_sector,
++		new->bio->bi_size, new->send_time);
++
++	return 0;
++}
++
++int dst_trans_remove_nolock(struct dst_trans *t)
++{
++	struct dst_node *n = t->n;
++
++	if (t->trans_entry.rb_parent_color) {
++		rb_erase(&t->trans_entry, &n->trans_root);
++		t->trans_entry.rb_parent_color = 0;
++	}
++	return 0;
++}
++
++int dst_trans_remove(struct dst_trans *t)
++{
++	int ret;
++	struct dst_node *n = t->n;
++
++	mutex_lock(&n->trans_lock);
++	ret = dst_trans_remove_nolock(t);
++	mutex_unlock(&n->trans_lock);
++
++	return ret;
++}
++
++/*
++ * When transaction is completed and there are no more users,
++ * we complete appriate block IO request with given error status.
++ */
++void dst_trans_put(struct dst_trans *t)
++{
++	if (atomic_dec_and_test(&t->refcnt)) {
++		struct bio *bio = t->bio;
++
++		dprintk("%s: completed t: %p, gen: %llu, bio: %p.\n",
++				__func__, t, t->gen, bio);
++
++		bio_endio(bio, t->error);
++		bio_put(bio);
++
++		dst_node_put(t->n);
++		mempool_free(t, t->n->trans_pool);
++	}
++}
++
++/*
++ * Process given block IO request: allocate transaction, insert it into the tree
++ * and send/schedule crypto processing.
++ */
++int dst_process_bio(struct dst_node *n, struct bio *bio)
++{
++	struct dst_trans *t;
++	int err = -ENOMEM;
++
++	t = mempool_alloc(n->trans_pool, GFP_NOFS);
++	if (!t)
++		goto err_out_exit;
++
++	t->n = dst_node_get(n);
++	t->bio = bio;
++	t->error = 0;
++	t->retries = 0;
++	atomic_set(&t->refcnt, 1);
++	t->gen = atomic_long_inc_return(&n->gen);
++
++	t->enc = bio_data_dir(bio);
++	dst_bio_to_cmd(bio, &t->cmd, DST_IO, t->gen);
++
++	mutex_lock(&n->trans_lock);
++	err = dst_trans_insert(t);
++	mutex_unlock(&n->trans_lock);
++	if (err)
++		goto err_out_free;
++
++	dprintk("%s: gen: %llu, bio: %llu/%u, dir/enc: %d, need_crypto: %d.\n",
++			__func__, t->gen, (u64)bio->bi_sector,
++			bio->bi_size, t->enc, dst_need_crypto(n));
++
++	if (dst_need_crypto(n) && t->enc)
++		dst_trans_crypto(t);
++	else
++		dst_trans_send(t);
++
++	return 0;
++
++err_out_free:
++	dst_node_put(n);
++	mempool_free(t, n->trans_pool);
++err_out_exit:
++	bio_endio(bio, err);
++	bio_put(bio);
++	return err;
++}
++
++/*
++ * Scan for timeout/stale transactions.
++ * Each transaction is being resent multiple times before error completion.
++ */
++static void dst_trans_scan(struct work_struct *work)
++{
++	struct dst_node *n = container_of(work, struct dst_node, trans_work.work);
++	struct rb_node *rb_node;
++	struct dst_trans *t;
++	unsigned long timeout = n->trans_scan_timeout;
++	int num = 10 * n->trans_max_retries;
++
++	mutex_lock(&n->trans_lock);
++
++	for (rb_node = rb_first(&n->trans_root); rb_node; ) {
++		t = rb_entry(rb_node, struct dst_trans, trans_entry);
++
++		if (timeout && time_after(t->send_time + timeout, jiffies)
++				&& t->retries == 0)
++			break;
++#if 0
++		dprintk("%s: t: %p, gen: %llu, n: %s, retries: %u, max: %u.\n",
++			__func__, t, t->gen, n->name,
++			t->retries, n->trans_max_retries);
++#endif
++		if (--num == 0)
++			break;
++
++		dst_trans_get(t);
++
++		rb_node = rb_next(rb_node);
++
++		if (timeout && (++t->retries < n->trans_max_retries)) {
++			dst_trans_send(t);
++		} else {
++			t->error = -ETIMEDOUT;
++			dst_trans_remove_nolock(t);
++			dst_trans_put(t);
++		}
++
++		dst_trans_put(t);
++	}
++
++	mutex_unlock(&n->trans_lock);
++
++	/*
++	 * If no timeout specified then system is in the middle of exiting process,
++	 * so no need to reschedule scanning process again.
++	 */
++	if (timeout) {
++		if (!num)
++			timeout = HZ;
++		schedule_delayed_work(&n->trans_work, timeout);
++	}
++}
++
++/*
++ * Flush all transactions and mark them as timed out.
++ * Destroy transaction pools.
++ */
++void dst_node_trans_exit(struct dst_node *n)
++{
++	struct dst_trans *t;
++	struct rb_node *rb_node;
++
++	if (!n->trans_cache)
++		return;
++
++	dprintk("%s: n: %p, cancelling the work.\n", __func__, n);
++	cancel_delayed_work_sync(&n->trans_work);
++	flush_scheduled_work();
++	dprintk("%s: n: %p, work has been cancelled.\n", __func__, n);
++
++	for (rb_node = rb_first(&n->trans_root); rb_node; ) {
++		t = rb_entry(rb_node, struct dst_trans, trans_entry);
++
++		dprintk("%s: t: %p, gen: %llu, n: %s.\n",
++			__func__, t, t->gen, n->name);
++
++		rb_node = rb_next(rb_node);
++
++		t->error = -ETIMEDOUT;
++		dst_trans_remove_nolock(t);
++		dst_trans_put(t);
++	}
++
++	mempool_destroy(n->trans_pool);
++	kmem_cache_destroy(n->trans_cache);
++}
++
++/*
++ * Initialize transaction storage for given node.
++ * Transaction stores not only control information,
++ * but also network command and crypto data (if needed)
++ * to reduce number of allocations. Thus transaction size
++ * differs from node to node.
++ */
++int dst_node_trans_init(struct dst_node *n, unsigned int size)
++{
++	/*
++	 * We need this, since node with given name can be dropped from the
++	 * hash table, but be still alive, so subsequent creation of the node
++	 * with the same name may collide with existing cache name.
++	 */
++
++	snprintf(n->cache_name, sizeof(n->cache_name), "%s-%p", n->name, n);
++
++	n->trans_cache = kmem_cache_create(n->cache_name,
++			size + n->crypto.crypto_attached_size,
++			0, 0, NULL);
++	if (!n->trans_cache)
++		goto err_out_exit;
++
++	n->trans_pool = mempool_create_slab_pool(dst_mempool_num, n->trans_cache);
++	if (!n->trans_pool)
++		goto err_out_cache_destroy;
++
++	mutex_init(&n->trans_lock);
++	n->trans_root = RB_ROOT;
++
++	INIT_DELAYED_WORK(&n->trans_work, dst_trans_scan);
++	schedule_delayed_work(&n->trans_work, n->trans_scan_timeout);
++
++	dprintk("%s: n: %p, size: %u, crypto: %u.\n",
++		__func__, n, size, n->crypto.crypto_attached_size);
++
++	return 0;
++
++err_out_cache_destroy:
++	kmem_cache_destroy(n->trans_cache);
++err_out_exit:
++	return -ENOMEM;
++}
