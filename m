@@ -1,90 +1,118 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753145AbYLQWeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753011AbYLQWlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753145AbYLQWeN (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 17:34:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYLQWdz
+	id S1753011AbYLQWlu (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 17:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYLQWlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 17:33:55 -0500
-Received: from intermatrixgroup.ru ([195.178.208.66]:37822 "EHLO
-	tservice.net.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbYLQWdz (ORCPT
+	Wed, 17 Dec 2008 17:41:39 -0500
+Received: from liberdade.minaslivre.org ([72.232.18.203]:43466 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751971AbYLQWli (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 17:33:55 -0500
-Date: Thu, 18 Dec 2008 01:33:52 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Andrew Morton <akpm@linux-foundation.org>
+	Wed, 17 Dec 2008 17:41:38 -0500
+X-Greylist: delayed 2024 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Dec 2008 17:41:38 EST
+Date: Wed, 17 Dec 2008 20:08:30 -0200
+From: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
+To: Takashi Iwai <tiwai@suse.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [w1] Allow master IO commands.
-Message-ID: <20081217223352.GA28283@ioremap.net>
-References: <1229450882-745-1-git-send-email-zbr@ioremap.net> <1229450882-745-2-git-send-email-zbr@ioremap.net> <20081217142241.e05fff98.akpm@linux-foundation.org>
+Subject: Re: [PATCH] Wait for all codecs to be ready if doing a cold reset
+Message-ID: <20081217220829.GF3672@vespa.holoscopio.com>
+References: <s5hfxqlvec2.wl%tiwai@suse.de> <20080707173654.GA28388@vespa.holoscopio.com> <s5h1w24vfy4.wl%tiwai@suse.de> <20080708165931.GA2882@vespa.holoscopio.com> <s5hskujayfu.wl%tiwai@suse.de> <20080708173121.GA2860@vespa.holoscopio.com> <s5h63rezzlb.wl%tiwai@suse.de> <20080709172637.GA5355@vespa.holoscopio.com> <s5h8ww2r9qg.wl%tiwai@suse.de> <20080715001039.GA13399@vespa.holoscopio.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="47eKBCiAZYFK5l32"
 Content-Disposition: inline
-In-Reply-To: <20081217142241.e05fff98.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080715001039.GA13399@vespa.holoscopio.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew.
 
-On Wed, Dec 17, 2008 at 02:22:41PM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
-> > +static int w1_process_command_master(struct w1_master *dev, struct cn_msg *req_msg,
-> > +		struct w1_netlink_msg *req_hdr, struct w1_netlink_cmd *req_cmd)
-> > +{
-> > +	int err = -EINVAL;
-> > +	struct cn_msg *msg;
-> > +	struct w1_netlink_msg *hdr;
-> > +	struct w1_netlink_cmd *cmd;
-> > +
-> > +	msg = kzalloc(PAGE_SIZE, GFP_KERNEL);
-> 
-> The use of PAGE_SIZE is odd.  It's either too large (inefficient) or
-> too small (disaster).
-> 
-> Is it not practical to calculate this precisely?
+--47eKBCiAZYFK5l32
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It is not possible to calculate it in advance for the search commands,
-since we do not know how many slave devices are attached to the bus.
-This buffer is used as temporal area where IDs are stored and when
-number of IDs is large enough message is emmitted to the userspace and
-buffer becomes empty again. Sending one message per slave ID is a too
-big overhead, so this could be half of a page or one third or whatever
-else, I selected a page, which is the maximum guaranteed allocation
-buffer size.
+On Mon, Jul 14, 2008 at 09:10:39PM -0300, Thadeu Lima de Souza Cascardo wro=
+te:
+> On Wed, Jul 16, 2008 at 01:47:03AM +0200, Takashi Iwai wrote:
+> > Thanks.
+> >=20
+> > Meanwhile, I reconsidered about this problem.  I think the check of
+> > the whole "active" codec slots can be done better in a way like the
+> > following.  Could you give it a try?
+> >=20
+> > If this still doesn't work, I suspect it's really the matter of
+> > additional delay.
+> >=20
 
-> > +	if (!msg)
-> > +		return -ENOMEM;
-> > +
-> > +	msg->id = req_msg->id;
-> > +	msg->seq = req_msg->seq;
-> > +	msg->ack = 0;
-> > +	msg->len = sizeof(struct w1_netlink_msg) + sizeof(struct w1_netlink_cmd);
-> > +
-> > +	hdr = (struct w1_netlink_msg *)(msg + 1);
-> > +	cmd = (struct w1_netlink_cmd *)(hdr + 1);
-> > +
-> > +	hdr->type = W1_MASTER_CMD;
-> > +	hdr->id = req_hdr->id;
-> > +	hdr->len = sizeof(struct w1_netlink_cmd);
-> > +
-> > +	cmd->cmd = req_cmd->cmd;
-> > +	cmd->len = 0;
-> > +
-> > +	switch (cmd->cmd) {
-> > +		case W1_CMD_SEARCH:
-> 
-> checkpatch correctly points out that the body of the switch statement
-> should be indented one tabstop less than this.
-> 
-> > +		case W1_CMD_ALARM_SEARCH:
-> > +			err = w1_process_search_command(dev, msg,
-> > +				PAGE_SIZE - msg->len - sizeof(struct cn_msg));
-> 
-> which would give more room for cleaning this up.
+I've put some more effort on this issue last weekend. Here is the
+result:
 
-Ok, I will space it to the left. Should I sent patch on top of it or
-instead of?
+The codec I have is AD1881A. The additional delay makes a pretty
+difference, right. Only the delay is enough to solve it.
 
--- 
-	Evgeniy Polyakov
+However, I agree this is not the right solution. The codec_init_bits
+solution does not work.
+
+I have diff'ed the value of the codec registers and they are different
+=66rom all the other situations I tested, that are:
+
+* booted my notebook: OK
+* suspended, resumed, reloaded the driver: OK
+* loaded the driver with no cold reset
+  (no AC97_POWER_SAVE on intel8x0): OK
+* same as above, after resuming: OK
+* AC97_POWER_SAVE enabled (cold reset), after resume: NOT ok
+
+As previously reported, even when probing, after loading the driver, we
+get a different behaviour if we cold reset. When probing, we wait for
+those HZ/4, which may explain why everything works.
+
+I tested if ac97_resume was writing the same values to the same
+registers if I had the delay or if I didn't. It was. However, the values
+I read from /proc were still different, very similar to what the codec
+specification refered to as the default values.
+
+The best solution would be to do whatever is needed to do after cold
+resetting that we are not doing, unless it is a hardware issue and the
+driver can't really do anything about it but wait. Reading the Intel
+ICH3 doc and AD1881A doc, I couldn't figure out anything that the driver
+is doing wrong.
+
+So, right now, the alternatives amount to:
+
+* Wait for the HZ/4 additional delay. Probing is doing it and my
+previously submitted patch does not add any delay for the probe case
+and, it the resume case, it only adds a delay if we are cold resetting,
+that is, AC97_POWER_SAVE is enabled.
+
+* Do not do the cold reset at all. It works pretty well for me if ac97
+power save is enabled and we only do a warm reset.
+
+* Do only one of the above as a quirk for my controller or codec or
+their combination.
+
+
+Any help trying to figure out what's really happening, I'd appreciate.
+If any more details of my tests are needed, I can collect and publish
+them.
+
+Regards,
+Thadeu Cascardo.
+
+--47eKBCiAZYFK5l32
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklJeF0ACgkQyTpryRcqtS3k2QCfUTP/QxKIaKcet4Z9WKOhIMiJ
+um8An0Aq+SDD4hnX8iJSRn0mAuDiZylf
+=tw5z
+-----END PGP SIGNATURE-----
+
+--47eKBCiAZYFK5l32--
