@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760192AbYLQIHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758700AbYLQITt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760192AbYLQIHa (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 03:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYLQIHS
+	id S1758700AbYLQITt (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 03:19:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYLQITf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 03:07:18 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:28487 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752805AbYLQIHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 03:07:16 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=I/mnaQ0LexOv4LHEptYA07EsdO0pMgMuiIJ4ZPobrtLysIiEyz5ojawFji3xXtRMX
-	f13nsrESDRdUg4hINC5Jg==
-MIME-Version: 1.0
-In-Reply-To: <20081216101551.GA27481@elte.hu>
-References: <b040c32a0812160032pf681f13s9e5e86c4b5448012@mail.gmail.com>
-	 <20081216091509.GA29872@elte.hu> <49477452.6030307@goop.org>
-	 <20081216101551.GA27481@elte.hu>
-Date: Wed, 17 Dec 2008 00:07:12 -0800
-Message-ID: <b040c32a0812170007s59600707h5a8597a1cbe9cc21@mail.gmail.com>
-Subject: Re: [patch] x86: convert rdtscll() to use __native_read_tsc
-From: Ken Chen <kenchen@google.com>
+	Wed, 17 Dec 2008 03:19:35 -0500
+Received: from ns1.suse.de ([195.135.220.2]:58604 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751548AbYLQITe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 03:19:34 -0500
+Date: Wed, 17 Dec 2008 09:19:32 +0100
+From: Nick Piggin <npiggin@suse.de>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Hugh Dickins <hugh@veritas.com>, "hpa@zytor.com" <hpa@zytor.com>,
+        "tglx@linutronix.de" <tglx@linutronix.de>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/7] x86 PAT: v2 - track pfnmap mappings with remap_pfn_range and vm_insert_pfn
+Message-ID: <20081217081932.GC26179@wotan.suse.de>
+References: <20081126002157.475142000@intel.com> <7E82351C108FA840AB1866AC776AEC464338C11E@orsmsx505.amr.corp.intel.com> <20081216195154.GB4501@elte.hu> <20081216220502.GC22722@wotan.suse.de> <20081216220746.GE14787@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081216220746.GE14787@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16, 2008 at 2:15 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> agreed mostly, with this twist: vdso inlining dependencies should be
-> expressed explicitly, via:
->
->  native_vread_tsc()
->
-> but we can also make native_read_tsc() __always_inline [it's a single
-> instruction with basically no preparatory halo around that instruction]
-> and document the vdso detail there.
+On Tue, Dec 16, 2008 at 11:07:46PM +0100, Ingo Molnar wrote:
+> 
+> * Nick Piggin <npiggin@suse.de> wrote:
+> > > So when you sent this a month ago i asked the MM folks whether they have 
+> > > any problems with these patches. Acks (or objections) from Andrew, Nick or 
+> > > Hugh would be nice to have.
+> > 
+> > Last I looked at them, I think all my questions were cleared up.
+> 
+> does that transform into a:
+> 
+>   Acked-by: Nick Piggin <npiggin@suse.de>
 
-Given that vdso already uses the inline version of __native_read_tsc,
-we don't really have churn all that code around.  I also take your
-analysis as there is no issue in converting rdtscll() to
-__native_read_tsc().  Would it be possible for you to merge the patch
-then?
-
-- Ken
+I should think so ;), but I'll take another glance at the next round
+after Andrew's comments were incorporated. Are those available?
