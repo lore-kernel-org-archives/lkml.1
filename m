@@ -1,95 +1,119 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753847AbYLQP13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753748AbYLQPeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbYLQP13 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 10:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYLQP1S
+	id S1753748AbYLQPeR (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 10:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYLQPd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 10:27:18 -0500
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:50188 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750949AbYLQP1R (ORCPT
+	Wed, 17 Dec 2008 10:33:56 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:24654 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbYLQPdz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 10:27:17 -0500
-Message-ID: <49491A50.7000109@opengridcomputing.com>
-Date: Wed, 17 Dec 2008 09:27:12 -0600
-From: Tom Tucker <tom@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
+	Wed, 17 Dec 2008 10:33:55 -0500
+Message-ID: <ac3eb2510812170733r234ea389yac69fd4f5f1dc48b@mail.gmail.com>
+Date: Wed, 17 Dec 2008 16:33:52 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Christoph Hellwig" <hch@infradead.org>
+Subject: Re: Notes on support for multiple devices for a single filesystem
+Cc: "Andreas Dilger" <adilger@sun.com>, "Chris Mason" <chris.mason@oracle.com>,
+        "Andrew Morton" <akpm@linux-foundation.org>,
+        "Stephen Rothwell" <sfr@canb.auug.org.au>,
+        linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+        linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+        "Karel Zak" <kzak@redhat.com>
+In-Reply-To: <20081217150813.GA2858@infradead.org>
 MIME-Version: 1.0
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-CC: Ian Campbell <ijc@hellion.org.uk>, linux-nfs@vger.kernel.org,
-        Max Kellermann <mk@cm4all.com>, linux-kernel@vger.kernel.org,
-        gcosta@redhat.com, Grant Coady <grant_lkml@dodo.com.au>,
-        "J. Bruce Fields" <bfields@fieldses.org>
-Subject: Re: [PATCH 1/3] SUNRPC: Ensure the server closes sockets in a timely
- fashion
-References: <20081017123207.GA14979@rabbit.intern.cm-ag>	 <1224484046.23068.14.camel@localhost.localdomain>	 <1225539927.2221.3.camel@localhost.localdomain>	 <1225546878.4390.3.camel@heimdal.trondhjem.org>	 <1227596962.16868.22.camel@localhost.localdomain>	 <1227619696.7057.19.camel@heimdal.trondhjem.org>	 <1227620339.9425.99.camel@zakaz.uk.xensource.com>	 <1227621434.7057.33.camel@heimdal.trondhjem.org>	 <1227621877.9425.102.camel@zakaz.uk.xensource.com>	 <1227737539.31008.2.camel@localhost.localdomain>	 <1228090631.7112.11.camel@heimdal.trondhjem.org> <1228090719.7112.13.camel@heimdal.trondhjem.org>
-In-Reply-To: <1228090719.7112.13.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1227183484.6161.17.camel@think.oraclecorp.com>
+	 <1228962896.21376.11.camel@think.oraclecorp.com>
+	 <20081211141436.030c2d65.sfr@canb.auug.org.au>
+	 <20081210200604.8e190b0d.akpm@linux-foundation.org>
+	 <1229006596.22236.46.camel@think.oraclecorp.com>
+	 <20081215210323.GB5000@webber.adilger.int>
+	 <20081217132343.GA14695@infradead.org>
+	 <ac3eb2510812170650j404edfb1h38aa86bbe3ffa2e@mail.gmail.com>
+	 <20081217150813.GA2858@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> We want to ensure that connected sockets close down the connection when we
-> set XPT_CLOSE, so that we don't keep it hanging while cleaning up all the
-> stuff that is keeping a reference to the socket.
-> 
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
-> 
->  net/sunrpc/svcsock.c |   21 ++++++++++++++++++++-
->  1 files changed, 20 insertions(+), 1 deletions(-)
-> 
-> 
-> diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
-> index 95293f5..a1b048d 100644
-> --- a/net/sunrpc/svcsock.c
-> +++ b/net/sunrpc/svcsock.c
-> @@ -59,6 +59,7 @@ static void		svc_udp_data_ready(struct sock *, int);
->  static int		svc_udp_recvfrom(struct svc_rqst *);
->  static int		svc_udp_sendto(struct svc_rqst *);
->  static void		svc_sock_detach(struct svc_xprt *);
-> +static void		svc_tcp_sock_detach(struct svc_xprt *);
->  static void		svc_sock_free(struct svc_xprt *);
->  
->  static struct svc_xprt *svc_create_socket(struct svc_serv *, int,
-> @@ -1017,7 +1018,7 @@ static struct svc_xprt_ops svc_tcp_ops = {
->  	.xpo_recvfrom = svc_tcp_recvfrom,
->  	.xpo_sendto = svc_tcp_sendto,
->  	.xpo_release_rqst = svc_release_skb,
-> -	.xpo_detach = svc_sock_detach,
-> +	.xpo_detach = svc_tcp_sock_detach,
->  	.xpo_free = svc_sock_free,
->  	.xpo_prep_reply_hdr = svc_tcp_prep_reply_hdr,
->  	.xpo_has_wspace = svc_tcp_has_wspace,
-> @@ -1282,6 +1283,24 @@ static void svc_sock_detach(struct svc_xprt *xprt)
->  	sk->sk_state_change = svsk->sk_ostate;
->  	sk->sk_data_ready = svsk->sk_odata;
->  	sk->sk_write_space = svsk->sk_owspace;
-> +
-> +	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +		wake_up_interruptible(sk->sk_sleep);
-> +}
-> +
-> +/*
-> + * Disconnect the socket, and reset the callbacks
-> + */
-> +static void svc_tcp_sock_detach(struct svc_xprt *xprt)
-> +{
-> +	struct svc_sock *svsk = container_of(xprt, struct svc_sock, sk_xprt);
-> +
-> +	dprintk("svc: svc_tcp_sock_detach(%p)\n", svsk);
-> +
-> +	svc_sock_detach(xprt);
-> +
-> +	if (!test_bit(XPT_LISTENER, &xprt->xpt_flags))
-> +		kernel_sock_shutdown(svsk->sk_sock, SHUT_RDWR);
+On Wed, Dec 17, 2008 at 16:08, Christoph Hellwig <hch@infradead.org> wrote:
+> On Wed, Dec 17, 2008 at 03:50:45PM +0100, Kay Sievers wrote:
+>> Sounds all sensible. Btrfs already stores the (possibly incomplete)
+>> device tree state in the kernel, which should make things pretty easy
+>> for userspace, compared to other already existing subsystems.
+>>
+>> We could have udev maintain a btrfs volume tree:
+>>   /dev/btrfs/
+>>   |-- 0cdedd75-2d03-41e6-a1eb-156c0920a021
+>>   |   |-- 897fac06-569c-4f45-a0b9-a1f91a9564d4 -> ../../sda10
+>>   |   `-- aac20975-b642-4650-b65b-b92ce22616f2 -> ../../sda9
+>>   `-- a1ec970a-2463-414e-864c-2eb8ac4e1cf2
+>>       |-- 4d1f1fff-4c6b-4b87-8486-36f58abc0610 -> ../../sdb2
+>>       `-- e7fe3065-c39f-4295-a099-a89e839ae350 -> ../../sdb1
+>>
+>> At the same time, by-uuid/ is created:
+>>   /dev/disk/by-uuid/
+>>   |-- 0cdedd75-2d03-41e6-a1eb-156c0920a021 -> ../../sda10
+>>   |-- a1ec970a-2463-414e-864c-2eb8ac4e1cf2 -> ../../sdb2
+>>   ...
+>
+> Well, it's not just btrfs, it's also md, lvm and xfs.  I think the right
+> way is to make the single node for the /dev/disk/by-uuid/ just a legacy
+> case for potential multiple devices.  E.g. by having
+>
+> /dev/disk/by-uuid/
+>        0cdedd75-2d03-41e6-a1eb-156c0920a021    -> ../../sda10
+>        0cdedd75-2d03-41e6-a1eb-156c0920a021.d
+>                foo                             -> ../../sda10
+>                bar                             -> ../../sda9
+>
+> where foo nad bar could be uuids if the filesystem / volume manager
+> supports it, otherwise just the short name for it.
 
-How is this different than what happens as an artifact of sock_release?
+Sure, we can do something like that. /dev/btrfs/ was just something
+for me to start with, and see how the stuff works.
 
->  }
->  
->  /*
-> 
+>> For recue and recovery cases, it will still be nice to be able to
+>> trigger "scan all devices" code in btrfsctrl (own code or libbklid),
+>> but it should be avoided in any normal operation mode.
+>
+> Again, that's something we should do generically for the whole
+> /dev/disk/ tree.   For that we need to merge libvolume_id and libblkid
+> so that it has a few related but separate use cases:
+>
+>  - a lowlevel probe what fs / volume manager / etc is this for
+>   the udev callout, mkfs, strip size detection etc
 
+A low-level api will be offered by a future libblkid version in util-linux-ng.
+
+>  - a way to rescan everything, either for non-udev static /dev case
+>   or your above recovery scenario
+
+The scan code is part of libblkid, we just need some explicit controls
+to enable disable the scanning. It should never be the default, like
+it is today.
+
+>  - plus potentially some sort of caching for the non-recovery static
+>   /dev case
+
+It's also in libblkid. Today it's pretty useless to cache stuff
+indexed by major/minor, but it's there.
+
+> I've long planned to put you and Ted into a room and not let you out
+> until we see white smoke :)
+
+A new libblkid already happened at:
+  http://git.kernel.org/?p=utils/util-linux-ng/util-linux-ng.git;a=shortlog;h=topic/blkid
+
+Almost all of libvolume_id is already merged into this new version
+(only btrfs is missing :)). Udev will switch over to calling blkid
+when it's available in a released version of util-linux-ng. I will
+just delete the current libvolume_id library after that.
+
+No white smoke, if all works out as planned. :)
+
+Thanks,
+Kay
