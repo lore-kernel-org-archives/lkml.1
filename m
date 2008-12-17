@@ -1,143 +1,72 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751826AbYLQSq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752459AbYLQSro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751826AbYLQSq3 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 13:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYLQSqQ
+	id S1752459AbYLQSro (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 13:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYLQSra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 13:46:16 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:35943 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbYLQSqO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 13:46:14 -0500
-Date: Wed, 17 Dec 2008 23:40:33 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-        Suresh B Siddha <suresh.b.siddha@intel.com>,
-        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-        Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-        Dipankar Sarma <dipankar@in.ibm.com>, Vatsa <vatsa@linux.vnet.ibm.com>,
-        Gautham R Shenoy <ego@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-        David Collier-Brown <davecb@sun.com>,
-        Tim Connors <tconnors@astro.swin.edu.au>,
-        Max Krasnyansky <maxk@qualcomm.com>,
-        Gregory Haskins <gregory.haskins@gmail.com>,
-        Pavel Machek <pavel@suse.cz>
-Subject: Re: [PATCH v6 1/7] sched: Framework for
-	sched_mc/smt_power_savings=N
-Message-ID: <20081217181033.GC26572@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Collier-Brown <davecb@sun.com>,
-	Tim Connors <tconnors@astro.swin.edu.au>,
-	Max Krasnyansky <maxk@qualcomm.com>,
-	Gregory Haskins <gregory.haskins@gmail.com>,
-	Pavel Machek <pavel@suse.cz>
-References: <20081217172309.534.28847.stgit@drishya.in.ibm.com> <20081217172635.534.50541.stgit@drishya.in.ibm.com>
+	Wed, 17 Dec 2008 13:47:30 -0500
+Received: from mx1.suse.de ([195.135.220.2]:47190 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752178AbYLQSr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 13:47:29 -0500
+Date: Wed, 17 Dec 2008 10:40:11 -0800
+From: Greg KH <gregkh@suse.de>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
+        Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] cpumask: add sysfs displays for configured and
+	disabled cpu maps
+Message-ID: <20081217184011.GB30724@suse.de>
+References: <20081216042645.629941000@polaris-admin.engr.sgi.com> <20081216042646.088194000@polaris-admin.engr.sgi.com> <200812172223.53079.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081217172635.534.50541.stgit@drishya.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200812172223.53079.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-12-17 22:56:35]:
+On Wed, Dec 17, 2008 at 10:23:52PM +1030, Rusty Russell wrote:
+> On Tuesday 16 December 2008 14:56:48 Mike Travis wrote:
+> > Impact: add new functionality.
+> > 
+> > Add sysfs files "kernel_max" and "offline" to display the max CPU index
+> > allowed (NR_CPUS-1), and the map of cpus that are offline. 
+> 
+> I've applied this to the cpumask series, but Greg is sysfs maestro, so
+> I'll await his ack (I've quoted whole thing for easy reading).
 
-> From: Gautham R Shenoy <ego@in.ibm.com>
-> 
-> Currently the sched_mc/smt_power_savings variable is a boolean,
-> which either enables or disables topology based power savings.
-> This patch extends the behaviour of the variable from boolean to
-> multivalued, such that based on the value, we decide how
-> aggressively do we want to perform powersavings balance at
-> appropriate sched domain based on topology.
-> 
-> Variable levels of power saving tunable would benefit end user to
-> match the required level of power savings vs performance
-> trade-off depending on the system configuration and workloads.
-> 
-> This version makes the sched_mc_power_savings global variable to
-> take more values (0,1,2).  Later versions can have a single
-> tunable called sched_power_savings instead of
-> sched_{mc,smt}_power_savings.
-> 
-> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> ---
-> 
->  include/linux/sched.h |   11 +++++++++++
->  kernel/sched.c        |   17 ++++++++++++++---
->  2 files changed, 25 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 55e30d1..888f2b2 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -764,6 +764,17 @@ enum cpu_idle_type {
->  #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
->  #define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
-> 
-> +enum powersavings_balance_level {
-> +	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
-> +	POWERSAVINGS_BALANCE_BASIC,	/* Fill one thread/core/package
-> +					 * first for long running threads
-> +					 */
-> +	POWERSAVINGS_BALANCE_WAKEUP,	/* Also bias task wakeups to semi-idle
-> +					 * cpu package for power savings
-> +					 */
-> +	MAX_POWERSAVINGS_BALANCE_LEVELS
-> +};
-> +
->  #define BALANCE_FOR_MC_POWER	\
->  	(sched_smt_power_savings ? SD_POWERSAVINGS_BALANCE : 0)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index e4bb1dd..16897ab 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -7879,14 +7879,25 @@ int arch_reinit_sched_domains(void)
->  static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
->  {
->  	int ret;
-> +	unsigned int level = 0;
-> 
-> -	if (buf[0] != '0' && buf[0] != '1')
-> +	if (sscanf(buf, "%u", &level) != 1)
-> +		return -EINVAL;
-> +
-> +	/*
-> +	 * level is always be positive so don't check for
-> +	 * level < POWERSAVINGS_BALANCE_NONE which is 0
-> +	 * What happens on 0 or 1 byte write,
-> +	 * need to check for count as well?
-> +	 */
-> +
-> +	if (level >= MAX_POWERSAVINGS_BALANCE_LEVELS)
->  		return -EINVAL;
-> 
->  	if (smt)
-> -		sched_smt_power_savings = (buf[0] == '1');
-> +		sched_smt_power_savings = level;
->  	else
-> -		sched_mc_power_savings = (buf[0] == '1');
-> +		sched_mc_power_savings = level;
-> 
->  	ret = arch_reinit_sched_domains();
->
+All new sysfs files should have corrisponding Documentation/ABI files
+added as well, containing all of the information in the body of this
+email so that others can find it in the future in an easy manner.
 
-Looks good to me
+Mike, can you make this change please?
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com> 
+> > Cpus can be offlined via HOTPLUG, disabled by the BIOS ACPI tables, or
+> > if they exceed the number of cpus allowed by the NR_CPUS config option,
+> > or the "maxcpus=NUM" kernel start parameter.
+> > 
+> > The "possible_cpus=NUM" parameter can also extend the number of possible
+> > cpus allowed, in which case the cpus not present at startup will be
+> > in the offline state.  (These cpus can be HOTPLUGGED ON after system
+> > startup [pending a follow-on patch to provide the capability via the
+> > /sys/devices/sys/cpu/cpuN/online mechanism to bring them online.])
+> > 
+> > By design, the "offlined cpus > possible cpus" display will always
+> > use the following formats:
+> > 
+> >   * all possible cpus online:   "x$"    or "x-y$" 
+> >   * some possible cpus offline: ".*,x$" or ".*,x-y$"
 
--- 
-	Balbir
+Care to provide an example of what these sysfs files will actually hold?
+It seems like you are craming more information than needed into a single
+sysfs file.
+
+Oh, and state why this is really needed, as I thought we already showed
+this kind of information today in the existing sysfs files, but I'm
+probably wrong :)
+
+thanks,
+
+greg k-h
