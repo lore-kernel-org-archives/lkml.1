@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758695AbYLQMGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752858AbYLQMJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758695AbYLQMGl (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 07:06:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbYLQMG2
+	id S1752858AbYLQMJn (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 07:09:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbYLQMJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 07:06:28 -0500
-Received: from triton.rz.uni-saarland.de ([134.96.7.25]:1768 "EHLO
-	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751577AbYLQMG2 (ORCPT
+	Wed, 17 Dec 2008 07:09:32 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:52126 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750859AbYLQMJb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 07:06:28 -0500
-Date: Wed, 17 Dec 2008 13:04:50 +0100
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>, linux-arch@vger.kernel.org,
-        Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH last/many] x86: checking framework for correct use of ENTRY/PROC
-Message-ID: <20081217120450.GA8600@mailshack.com>
-References: <1229505475-10219-1-git-send-email-heukelum@fastmail.fm> <1229505475-10219-2-git-send-email-heukelum@fastmail.fm> <1229505475-10219-3-git-send-email-heukelum@fastmail.fm> <aa79d98a0812170351rb64c595gc933456c661317c5@mail.gmail.com>
+	Wed, 17 Dec 2008 07:09:31 -0500
+Subject: Re: [PATCH 0/7] Ksplice: Rebootless kernel updates
+From: Ben Collins <bcollins@ubuntu.com>
+Reply-To: Ben Collins <ben.collins@canonical.com>
+To: Tim Abbott <tabbott@MIT.EDU>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Arnold <jbarnold@MIT.EDU>,
+        linux-kernel@vger.kernel.org,
+        Denys Vlasenko <vda.linux@googlemail.com>,
+        Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+        Nikanth Karthikesan <knikanth@suse.de>,
+        Dave Jones <davej@codemonkey.org.uk>
+In-Reply-To: <alpine.DEB.2.00.0812162211540.25958@vinegar-pot.mit.edu>
+References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu>
+	 <alpine.DEB.2.00.0812162133360.25958@vinegar-pot.mit.edu>
+	 <20081216190740.9db323ee.akpm@linux-foundation.org>
+	 <alpine.DEB.2.00.0812162211540.25958@vinegar-pot.mit.edu>
+Content-Type: text/plain
+Organization: Canonical
+Date: Wed, 17 Dec 2008 07:09:09 -0500
+Message-Id: <1229515749.9540.21.camel@capable>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aa79d98a0812170351rb64c595gc933456c661317c5@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Wed, 17 Dec 2008 13:06:15 +0100 (CET)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.9.0.45; VDF: 7.1.0.245; host: AntiVir3)
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 02:51:53PM +0300, Cyrill Gorcunov wrote:
-> On Wed, Dec 17, 2008 at 12:17 PM, Alexander van Heukelum
-> <heukelum@fastmail.fm> wrote:
-> > [ DO NOT APPLY (yet...) At this point this patch will
-> > just cause the build to abort due to annotation errors
-> > found. ]
-> >
-> > Introduce a checking framework to check correct pairing
-> > of ENTRY/END and PROC/ENDPROC. It also checks that the
-> > annotations are not nested. I have used the ideas and
-> > most of the implementation from Cyrill Gorcunov who
-> > introduced the framework to check for mismatching
-> > KPROBE_ENTRY annotations, which was however soon made
-> > obsolete by the removal of KPROBE_ENTRY/KPROBE_END.
-> >
-> > Checks performed:
-> >  o  END must terminate an ENTRY annotation
-> >  o  ENDPROC must terminate a PROC annotation
-> >  o  ENTRY or PROC cannot be nested inside
-> >        another ENTRY or PROC section.
-> >
-> > Finally the macro ENTRY_PROC_FINAL is introduced to
-> > enable checking correct closing of PROC and ENTRY
-> > sections at the end of assembly files.
-> >
-> > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-> > Cc: Cyrill Gorcunov <gorcunov@gmail.com>
-> ...
+On Wed, 2008-12-17 at 00:05 -0500, Tim Abbott wrote:
+> On Tue, 16 Dec 2008, Andrew Morton wrote:
 > 
-> Thanks Alexander!
+> > Has your team been in contact with distros? Are Suse shipping it, or 
+> > planning to?
 > 
-> You know I think you meant __ASSEMBLY__ while
-> were typing __ASSEMBLER__. Don't you? :)
+> We've talked to kernel team people from Fedora, Ubuntu, and SUSE so far. 
+> Fedora 8, 9, and 10, Debian sid, and Ubuntu jaunty are currently shipping 
+> packages for the standalone version of Ksplice.
 
-If it matters there is some cleanup to do in the kernel tree ;).
+Ubuntu jaunty isn't "shipping", just to be clear.
 
-Greetings,
-    Alexander
+> We haven't yet made a big push for end-users--that's still ahead.  We've 
+> submitted the code now because we think that it's important to try to 
+> involve the community sooner rather than later.
+> 
+>  	-Tim Abbott
+
