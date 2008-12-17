@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759821AbYLQHse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760027AbYLQHuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759821AbYLQHse (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 02:48:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYLQHsY
+	id S1760027AbYLQHuN (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 02:50:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYLQHt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 02:48:24 -0500
-Received: from tundra.namei.org ([65.99.196.166]:2006 "EHLO tundra.namei.org"
+	Wed, 17 Dec 2008 02:49:58 -0500
+Received: from tundra.namei.org ([65.99.196.166]:3340 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751005AbYLQHsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 02:48:24 -0500
-Date: Wed, 17 Dec 2008 18:48:08 +1100 (EST)
+	id S1751548AbYLQHt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 02:49:58 -0500
+Date: Wed, 17 Dec 2008 18:49:03 +1100 (EST)
 From: James Morris <jmorris@namei.org>
 To: Al Viro <viro@ftp.linux.org.uk>
 cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/15] fixing audit rule ordering mess, part 1
-In-Reply-To: <E1LCoiI-0000Eu-Ty@ZenIV.linux.org.uk>
-Message-ID: <alpine.LRH.1.10.0812171847570.22856@tundra.namei.org>
-References: <E1LCoiI-0000Eu-Ty@ZenIV.linux.org.uk>
+Subject: Re: [PATCH 12/15] audit rules ordering, part 2
+In-Reply-To: <E1LCoiS-0000FI-U8@ZenIV.linux.org.uk>
+Message-ID: <alpine.LRH.1.10.0812171848510.22856@tundra.namei.org>
+References: <E1LCoiS-0000FI-U8@ZenIV.linux.org.uk>
 User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -27,17 +27,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 On Wed, 17 Dec 2008, Al Viro wrote:
 
 > 
-> Problem: ordering between the rules on exit chain is currently lost;
-> all watch and inode rules are listed after everything else _and_
-> exit,never on one kind doesn't stop exit,always on another from
-> being matched.
-> 
-> Solution: assign priorities to rules, keep track of the current
-> highest-priority matching rule and its result (always/never).
+> Fix the actual rule listing; add per-type lists _not_ used for matching,
+> with all exit,... sitting on one such list.  Simplifies "do something
+> for all rules" logics, while we are at it...
 > 
 > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
+
 Reviewed-by: James Morris <jmorris@namei.org>
+
 
 -- 
 James Morris
