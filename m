@@ -1,43 +1,107 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752011AbYLQT05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752052AbYLQT3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752011AbYLQT05 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 14:26:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYLQT0r
+	id S1752052AbYLQT3W (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 14:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbYLQT2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 14:26:47 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:62266 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750961AbYLQT0q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 14:26:46 -0500
-Message-ID: <7e0fb38c0812171126q20f70c22i49be021f07108062@mail.gmail.com>
-Date: Wed, 17 Dec 2008 14:26:45 -0500
-From: "Eric Paris" <eparis@parisplace.org>
-To: "Eric Paris" <eparis@redhat.com>
-Subject: Re: [PATCH] filesystem notification: create fs/notify to contain all fs notification
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-        sfr@canb.auug.org.au, ttb@tentacle.dhs.org, rml@novell.com,
-        kosaki.motohiro@jp.fujitsu.com, zbr@ioremap.net
-In-Reply-To: <20081217185941.2188.49536.stgit@paris.rdu.redhat.com>
+	Wed, 17 Dec 2008 14:28:45 -0500
+Received: from kroah.org ([198.145.64.141]:54230 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751217AbYLQT2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 14:28:43 -0500
+Date: Wed, 17 Dec 2008 11:27:44 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+        Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB patches for 2.6-git
+Message-ID: <20081217192744.GB24641@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <20081217185941.2188.49536.stgit@paris.rdu.redhat.com>
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 1:59 PM, Eric Paris <eparis@redhat.com> wrote:
-> Creating a generic filesystem notification interface, fsnotify, which will be
-> used by inotify, dnotify, and eventually fanotify is really starting to
-> clutter the fs directory.  This patch simply moves inotify and dnotify into
-> fs/notify/inotify and fs/notify/dnotify respectively to make both current fs/
-> and future notification tidier.
->
-> Signed-off-by: Eric Paris <eparis@redhat.com>
+Here are a few USB patches for your 2.6-git tree.
 
-For those of you who prefer a more readable diff (aka git format-patch
--M), its the exact same patch as here:
+These patches are:
+	- new device ids for some USB drivers
+	- documentation updates to reflect changes made in previous
+	  2.6.28-rc releases
+	- broken usb device fix for when using libusb
+	- other minor USB fixes.
 
-http://marc.info/?l=linux-kernel&m=122935950317407&w=2
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+
+All of these have been in the -next and -mm releases for a while.
+
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
+
+thanks,
+
+greg k-h
+
+------------
+
+ Documentation/usb/gadget_serial.txt   |    4 +-
+ Documentation/usb/proc_usb_info.txt   |    6 ++-
+ Documentation/usb/usbmon.txt          |   12 ++++---
+ drivers/usb/class/usbtmc.c            |    1 +
+ drivers/usb/core/driver.c             |    4 ++-
+ drivers/usb/gadget/f_rndis.c          |    4 ++
+ drivers/usb/serial/ftdi_sio.c         |    2 +
+ drivers/usb/serial/ftdi_sio.h         |    6 +++
+ drivers/usb/serial/pl2303.c           |    2 +
+ drivers/usb/serial/pl2303.h           |    8 +++++
+ drivers/usb/serial/ti_usb_3410_5052.c |   55 ++-------------------------------
+ drivers/usb/storage/unusual_devs.h    |   16 +++++++++-
+ include/linux/usb/ch9.h               |    8 +++-
+ 13 files changed, 63 insertions(+), 65 deletions(-)
+
+---------------
+
+Alan Cox (1):
+      USB: tty: SprogII DCC controller identifiers
+
+Alan Stern (2):
+      usb-storage: update unusual_devs entry for Nokia 5310
+      USB: skip Set-Interface(0) if already in altsetting 0
+
+Andrew Ewert (1):
+      USB: ftdi_sio: Adding Ewert Energy System's CANdapter PID
+
+CSÉCSY László (1):
+      USB: storage: unusual_devs.h: Nokia 3109c addition
+
+David Brownell (1):
+      USB: gadget: fix rndis working at high speed
+
+Greg Kroah-Hartman (1):
+      USB: fix problem with usbtmc driver not loading properly
+
+Matthew Arnold (1):
+      USB: add 5372:2303 to pl2303
+
+Mike Provencher (1):
+      USB: pl2303: add id for Hewlett-Packard LD220-HP POS pole display
+
+Oliver Neukum (1):
+      USB: set correct configuration in probe of ti_usb_3410_5052
+
+Ozan Sener (1):
+      USB: Unusual devs patch for Nokia 3500c
+
+Pete Zaitcev (1):
+      usbmon: drop bogus 0t from usbmon.txt
+
+Peter Korsgaard (1):
+      USB: Documentation/usb/gadget_serial.txt: update to match driver use_acm behaviour
+
+Phil Endecott (1):
+      USB: fix comment about endianness of descriptors
+
