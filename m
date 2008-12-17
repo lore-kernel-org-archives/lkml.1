@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752547AbYLQTjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752539AbYLQTnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752547AbYLQTjU (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 14:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYLQTjF
+	id S1752539AbYLQTnP (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 14:43:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYLQTmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 14:39:05 -0500
-Received: from kroah.org ([198.145.64.141]:52731 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751199AbYLQTjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 14:39:04 -0500
-Date: Wed, 17 Dec 2008 11:35:25 -0800
-From: Greg KH <greg@kroah.com>
-To: Laurent Pinchart <laurent.pinchart@skynet.be>
-Cc: Hans Verkuil <hverkuil@xs4all.nl>, linux-kernel@vger.kernel.org,
-        v4l <video4linux-list@redhat.com>
-Subject: Re: [BUG] cdev_put() race condition
-Message-ID: <20081217193525.GA24916@kroah.com>
-References: <200812082156.26522.hverkuil@xs4all.nl> <200812171437.33695.hverkuil@xs4all.nl> <20081217181645.GA26161@kroah.com> <200812172027.13771.laurent.pinchart@skynet.be>
+	Wed, 17 Dec 2008 14:42:55 -0500
+Received: from mga11.intel.com ([192.55.52.93]:33523 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750848AbYLQTmx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 14:42:53 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,238,1228118400"; 
+   d="scan'208";a="650625629"
+From: "Rose, Gregory V" <gregory.v.rose@intel.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>, "Zhao, Yu" <yu.zhao@intel.com>,
+        "Yu, Wilfred" <wilfred.yu@intel.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+        "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+        "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+        "achiang@hp.com" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
+        Greg KH <greg@kroah.com>, "rdreier@cisco.com" <rdreier@cisco.com>,
+        Jike Song <albcamus@gmail.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "horms@verge.net.au" <horms@verge.net.au>,
+        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+        "mingo@elte.hu" <mingo@elte.hu>,
+        "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+        "yinghai@kernel.org" <yinghai@kernel.org>,
+        "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>
+Date: Wed, 17 Dec 2008 11:42:47 -0800
+Subject: RE: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
+Thread-Topic: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
+Thread-Index: AclgfotYlD5H0qChT9uopyth59+c9gAAEugw
+Message-ID: <43F901BD926A4E43B106BF17856F07554B525A62@orsmsx508.amr.corp.intel.com>
+References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
+	<20081217060608.GA12618@kroah.com>
+	<43F901BD926A4E43B106BF17856F07554B525811@orsmsx508.amr.corp.intel.com>
+	<200812171051.36645.jbarnes@virtuousgeek.org>
+ <43F901BD926A4E43B106BF17856F07554B525A02@orsmsx508.amr.corp.intel.com>
+ <49495447.5030904@goop.org>
+In-Reply-To: <49495447.5030904@goop.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812172027.13771.laurent.pinchart@skynet.be>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 08:27:13PM +0100, Laurent Pinchart wrote:
-> Hi Greg,
-> 
-> On Wednesday 17 December 2008, Greg KH wrote:
-> > On Wed, Dec 17, 2008 at 02:37:33PM +0100, Hans Verkuil wrote:
-> > > > Again, don't use cdev's reference counting for your own object
-> > > > lifecycle, it is different and will cause problems, like you have found
-> > > > out.
-> > >
-> > > Sigh. It has nothing to do with how v4l uses it. And to demonstrate this,
-> > > here is how you reproduce it with the sg module (tested it with my USB
-> > > harddisk).
-> > >
-> > > 1) apply this patch to char_dev.c:
-> >
-> > <snip>
-> >
-> > Ok, since I can't convince you that using a cdev for your reference
-> > counting is incorrect, I'll have to go change the cdev code to prevent
-> > you from doing this :(
-> 
-> Don't give up yet :-)
-> 
-> As v4l isn't the only kernel subsystem wrongly using cdev (Hans showed that sg 
-> also suffered from race conditions), people seem not to understand cdev 
-> properly.
 
-I totally agree, it is not the most easily understood chunk of code.
 
-> Maybe you should start by explaining what cdev has been designed to
-> handle and how to use it in device drivers (such as sg or v4l) instead
-> of telling us what not to do.
+Jeremy Fitzhardinge wrote:
 
-As I didn't create this code, but for some reason seem to maintain it,
-I'll work on creating a document to do this.  But as the holidays are
-rapidly approaching, it might be a while before I can get to it.
+> Which dom0 kernel are you using?  Is it based on my pvops-based dom0 work?
 
-thanks,
+The kernel I'm currently using is an ad-hoc patchwork of changes to the 2.6.18 Xen Dom0 kernel that was available back in August.  The folks from OTC in Intel (Zhao Yu and his team) would be able to provide you more background on it as they did the work to enable MSI-X, SR-IOV and VT-d in that kernel so that my drivers would function.  I don't see Zhao Yu on the distro list for this email so I'll add him.
 
-greg k-h
+- Greg
+
