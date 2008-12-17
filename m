@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759642AbYLQAFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759495AbYLQAFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759642AbYLQAFR (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 19:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899AbYLQAEw
+	id S1759495AbYLQAFA (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:05:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbYLQAEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 19:04:52 -0500
-Received: from kroah.org ([198.145.64.141]:50990 "EHLO coco.kroah.org"
+	Tue, 16 Dec 2008 19:04:49 -0500
+Received: from kroah.org ([198.145.64.141]:50967 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756111AbYLQAEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 19:04:51 -0500
-Date: Tue, 16 Dec 2008 16:03:53 -0800
+	id S1753164AbYLQAEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 19:04:48 -0500
+Date: Tue, 16 Dec 2008 16:03:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,62 +23,72 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
         Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
         Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
         torvalds@linux-foundation.org, akpm@linux-foundation.org,
-        alan@lxorguk.ukuu.org.uk, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [patch 01/22] AMD IOMMU: enable device isolation per default
-Message-ID: <20081217000353.GB4504@kroah.com>
-References: <20081216235704.347182084@mini.kroah.org>
+        alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/22] 2.6.27.10 stable review
+Message-ID: <20081217000306.GA4504@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="amd-iommu-enable-device-isolation-per-default.patch"
-In-Reply-To: <20081217000306.GA4504@kroah.com>
+Content-Disposition: inline
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+This is the start of the stable review cycle for the 2.6.27.10 release.
+There are 22 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-------------------
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+Responses should be made by Thursday, December 18, 22:00:00 UTC.
+Anything received after that time might be too late.
 
-commit 3ce1f93c6d53c3f91c3846cf66b018276c8ac2e7 upstream.
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.10-rc1.gz
+and the diffstat can be found below.
 
-Impact: makes device isolation the default for AMD IOMMU
 
-Some device drivers showed double-free bugs of DMA memory while testing
-them with AMD IOMMU. If all devices share the same protection domain
-this can lead to data corruption and data loss. Prevent this by putting
-each device into its own protection domain per default.
+thanks,
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+greg k-h
 
----
- Documentation/kernel-parameters.txt |    2 +-
- arch/x86/kernel/amd_iommu_init.c    |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -120,7 +120,7 @@ u16 amd_iommu_last_bdf;			/* largest PCI
- LIST_HEAD(amd_iommu_unity_map);		/* a list of required unity mappings
- 					   we find in ACPI */
- unsigned amd_iommu_aperture_order = 26; /* size of aperture in power of 2 */
--int amd_iommu_isolate;			/* if 1, device isolation is enabled */
-+int amd_iommu_isolate = 1;		/* if 1, device isolation is enabled */
- 
- LIST_HEAD(amd_iommu_list);		/* list of all AMD IOMMUs in the
- 					   system */
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -283,7 +283,7 @@ and is between 256 and 4096 characters. 
- 			Possible values are:
- 			isolate - enable device isolation (each device, as far
- 			          as possible, will get its own protection
--			          domain)
-+			          domain) [default]
- 	amd_iommu_size= [HW,X86-64]
- 			Define the size of the aperture for the AMD IOMMU
- 			driver. Possible values are:
-
+ Documentation/kernel-parameters.txt     |    2 
+ Makefile                                |    2 
+ arch/x86/kernel/amd_iommu_init.c        |    2 
+ arch/x86/kernel/setup.c                 |   12 ++---
+ arch/x86/kernel/smpboot.c               |    2 
+ arch/x86/kernel/vmi_32.c                |   16 ++++--
+ drivers/ata/libata-core.c               |   65 +++++++++++++++++++++++++---
+ drivers/char/cp437.uni                  |   12 ++---
+ drivers/char/vt.c                       |    2 
+ drivers/firewire/fw-ohci.c              |   11 +++-
+ drivers/firewire/fw-transaction.c       |    3 +
+ drivers/firewire/fw-transaction.h       |    2 
+ drivers/ieee1394/nodemgr.c              |    6 ++
+ drivers/isdn/hardware/avm/b1isa.c       |    6 --
+ drivers/media/video/tvaudio.c           |   30 +++++++++++-
+ drivers/net/bonding/bond_main.c         |    3 +
+ drivers/net/e1000e/ich8lan.c            |    9 +++
+ drivers/net/wireless/iwlwifi/iwl-agn.c  |    6 +-
+ drivers/net/wireless/iwlwifi/iwl-core.c |    3 +
+ drivers/net/wireless/iwlwifi/iwl-dev.h  |    3 -
+ drivers/net/wireless/iwlwifi/iwl-rx.c   |   26 +++++++----
+ drivers/net/wireless/iwlwifi/iwl-sta.c  |   24 +++++++++-
+ drivers/video/macfb.c                   |   74 +++++++++++++++-----------------
+ include/asm-x86/vmi.h                   |    8 +++
+ include/linux/can/core.h                |    2 
+ kernel/sched_clock.c                    |    6 +-
+ lib/idr.c                               |    8 +++
+ mm/page_alloc.c                         |    4 -
+ net/can/af_can.c                        |   68 ++++++++++++++++++++++-------
+ net/can/bcm.c                           |    7 +--
+ net/core/dev.c                          |    2 
+ net/key/af_key.c                        |    1 
+ net/sunrpc/auth_generic.c               |   20 +++++++-
+ 33 files changed, 318 insertions(+), 129 deletions(-)
