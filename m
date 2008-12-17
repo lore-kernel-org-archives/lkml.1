@@ -1,73 +1,93 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757906AbYLQG7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758961AbYLQHBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757906AbYLQG7l (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 01:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbYLQG7b
+	id S1758961AbYLQHBV (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 02:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbYLQHBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 01:59:31 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:41814 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751249AbYLQG7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 01:59:30 -0500
-Date: Wed, 17 Dec 2008 17:59:11 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Woodhouse <David.Woodhouse@intel.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Adrian Hunter <ext-adrian.hunter@nokia.com>,
-        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-        Andrew Morton <akpm@linux-foundation.org>
-Subject: linux-next: mtd tree build failures (Was: Re: linux-next: Tree for
- December 16)
-Message-Id: <20081217175911.594ae84f.sfr@canb.auug.org.au>
-In-Reply-To: <20081216152607.f232fafd.akpm@linux-foundation.org>
-References: <20081216223754.0c8e21d4.sfr@canb.auug.org.au>
-	<20081216152607.f232fafd.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__17_Dec_2008_17_59_11_+1100_ZmOmGec1uvXcL=B3"
+	Wed, 17 Dec 2008 02:01:09 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:27069 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751294AbYLQHBI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 02:01:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Ftggy0hG2iWRiEywoNhxObxxEh6OK9dLsem9aG40dOmnv5n35cVCdl8Qh2DUQliVO1
+         dbP/KHsp1pWvDoMNZcEV8tXHq7P5p0OvzgZJQd52T/uRX1sv/ECSVs+Tp8WS1v19njVp
+         gQ8GXgYZsjRFyee8rJ6NpiHt0gs1ECRn5cWyU=
+Message-ID: <28c262360812162301i58c9fe9l4a1ee89ca0a6a56@mail.gmail.com>
+Date: Wed, 17 Dec 2008 16:01:06 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "Nick Piggin" <npiggin@suse.de>
+Subject: Re: [rfc][patch] SLQB slab allocator
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+        "Linux Memory Management List" <linux-mm@kvack.org>
+In-Reply-To: <20081217064238.GA26179@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081212002518.GH8294@wotan.suse.de>
+	 <28c262360812151542g2ac032fay6c5b03d846d05a77@mail.gmail.com>
+	 <20081217064238.GA26179@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__17_Dec_2008_17_59_11_+1100_ZmOmGec1uvXcL=B3
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 16 Dec 2008 15:26:07 -0800 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
+On Wed, Dec 17, 2008 at 3:42 PM, Nick Piggin <npiggin@suse.de> wrote:
+> On Tue, Dec 16, 2008 at 08:42:12AM +0900, MinChan Kim wrote:
+>> Hi, Nick.
+>> I am interested in SLQB.
+>> So I tested slqb, slub, slab by kernel compile time.
+>>
+>> make all -j 8
+>>
+>> slqb and slub not DEBUG.
+>> my test environment is as follows.
+>>
+>> cpu family    : 6
+>> model         : 15
+>> model name    : Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz
+>> stepping      : 11
+>> cpu MHz               : 1600.000
+>> cache size    : 4096 KB
+>>
+>> Below is average for ten time test.
+>>
+>> slab :
+>> user : 2376.484, system : 192.616 elapsed : 12:22.0
+>> slub :
+>> user : 2378.439, system : 194.989 elapsed : 12:22.4
+>> slqb :
+>> user : 2380.556, system : 194.801 elapsed : 12:23.0
+>>
+>> so, slqb is rather slow although it is a big difference.
+>> Interestingly, slqb consumes less time than slub in system.
 >
-> This MTD patch:
->=20
-> commit 69423d99fc182a81f3c5db3eb5c140acc6fc64be
-> Author:     Adrian Hunter <ext-adrian.hunter@nokia.com>
-> AuthorDate: Wed Dec 10 13:37:21 2008 +0000
-> Commit:     David Woodhouse <David.Woodhouse@intel.com>
-> CommitDate: Wed Dec 10 13:37:21 2008 +0000
->=20
->     [MTD] update internal API to support 64-bit device size
->=20
-> broke the i386 build:
+> Thanks, interesting test. kbuild is not very slab allocator intensive,
 
-Also a few arm configs and the m68k allmodconfig.  I shall revert the mtd
-tree from linux-next today.
+Let me know what is popular benchmark program in slab allocator.
+I will try with it. :)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> so I hadn't thought of trying it. Possibly the object cacheline layout
+> of longer lived allocations changes the behaviour (increased user time
+> could indicate that).
 
---Signature=_Wed__17_Dec_2008_17_59_11_+1100_ZmOmGec1uvXcL=B3
-Content-Type: application/pgp-signature
+What mean "object cacheline layout of loger lived allocations" ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> I've been making a few changes to that, and hopefully slqb is slightly
+> improved now (the margin is much closer, seems within the noise with
+> SLUB on my NUMA opteron now, although that's a very different system).
+>
+> The biggest bug I fixed was that the NUMA path wasn't being taken in
+> kmem_cache_free on NUMA systems (oops), but that wouldn't change your
+> result. But I did make some other changes too, eg in prefetching.
 
-iEYEARECAAYFAklIoz8ACgkQjjKRsyhoI8wQRwCgo9YGNCQSRqepx8yzl9oB5fg4
-MwMAn3WVJXlLzHGIAbw84QIO051yF90j
-=Bsci
------END PGP SIGNATURE-----
+OK. I will review and test your new patch in my machine.
 
---Signature=_Wed__17_Dec_2008_17_59_11_+1100_ZmOmGec1uvXcL=B3--
+-- 
+Kinds regards,
+MinChan Kim
