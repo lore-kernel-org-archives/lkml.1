@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753676AbYLQRY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753246AbYLQRXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753676AbYLQRY3 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 12:24:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbYLQRYC
+	id S1753246AbYLQRXs (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 12:23:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYLQRXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 12:24:02 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:59194 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753459AbYLQRYA (ORCPT
+	Wed, 17 Dec 2008 12:23:33 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:45525 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752548AbYLQRXb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 12:24:00 -0500
+	Wed, 17 Dec 2008 12:23:31 -0500
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH v6 4/7] sched: bias task wakeups to preferred semi-idle
-	packages
+Subject: [PATCH v6 2/7] sched: favour lower logical cpu number for sched_mc
+	balance
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
         Suresh B Siddha <suresh.b.siddha@intel.com>,
         Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -26,8 +26,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
         Gregory Haskins <gregory.haskins@gmail.com>,
         Pavel Machek <pavel@suse.cz>,
         Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Wed, 17 Dec 2008 22:57:10 +0530
-Message-ID: <20081217172710.534.3985.stgit@drishya.in.ibm.com>
+Date: Wed, 17 Dec 2008 22:56:42 +0530
+Message-ID: <20081217172642.534.10983.stgit@drishya.in.ibm.com>
 In-Reply-To: <20081217172309.534.28847.stgit@drishya.in.ibm.com>
 References: <20081217172309.534.28847.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -38,67 +38,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Preferred wakeup cpu (from a semi idle package) has been
-nominated in find_busiest_group() in the previous patch.  Use
-this information in sched_mc_preferred_wakeup_cpu in function
-wake_idle() to bias task wakeups if the following conditions
-are satisfied:
-        - The present cpu that is trying to wakeup the process is
-          idle and waking the target process on this cpu will
-          potentially wakeup a completely idle package
-        - The previous cpu on which the target process ran is
-          also idle and hence selecting the previous cpu may
-          wakeup a semi idle cpu package
-        - The task being woken up is allowed to run in the
-          nominated cpu (cpu affinity and restrictions)
+Just in case two groups have identical load, prefer to move load to lower
+logical cpu number rather than the present logic of moving to higher logical
+number.
 
-Basically if both the current cpu and the previous cpu on
-which the task ran is idle, select the nominated cpu from semi
-idle cpu package for running the new task that is waking up.
-
-Cache hotness is considered since the actual biasing happens
-in wake_idle() only if the application is cache cold.
-
-This technique will effectively move short running bursty jobs in
-a mostly idle system.
-
-Wakeup biasing for power savings gets automatically disabled if
-system utilisation increases due to the fact that the probability
-of finding both this_cpu and prev_cpu idle decreases.
+find_busiest_group() tries to look for a group_leader that has spare capacity
+to take more tasks and freeup an appropriate least loaded group.  Just in case
+there is a tie and the load is equal, then the group with higher logical number
+is favoured.  This conflicts with user space irqbalance daemon that will move
+interrupts to lower logical number if the system utilisation is very low.
 
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
 
- kernel/sched_fair.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+ kernel/sched.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 98345e4..c82386c 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1027,6 +1027,24 @@ static int wake_idle(int cpu, struct task_struct *p)
- 	cpumask_t tmp;
- 	struct sched_domain *sd;
- 	int i;
-+	unsigned int chosen_wakeup_cpu;
-+	int this_cpu;
-+
-+	/*
-+	 * At POWERSAVINGS_BALANCE_WAKEUP level, if both this_cpu and prev_cpu
-+	 * are idle and this is not a kernel thread and this task's affinity
-+	 * allows it to be moved to preferred cpu, then just move!
-+	 */
-+
-+	this_cpu = smp_processor_id();
-+	chosen_wakeup_cpu =
-+		cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu;
-+
-+	if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP &&
-+		idle_cpu(cpu) && idle_cpu(this_cpu) &&
-+		p->mm && !(p->flags & PF_KTHREAD) &&
-+		cpu_isset(chosen_wakeup_cpu, p->cpus_allowed))
-+		return chosen_wakeup_cpu;
- 
- 	/*
- 	 * If it is idle, then it is the best cpu to run this task.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 16897ab..0b9bbbd 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3264,7 +3264,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 		 */
+ 		if ((sum_nr_running < min_nr_running) ||
+ 		    (sum_nr_running == min_nr_running &&
+-		     first_cpu(group->cpumask) <
++		     first_cpu(group->cpumask) >
+ 		     first_cpu(group_min->cpumask))) {
+ 			group_min = group;
+ 			min_nr_running = sum_nr_running;
+@@ -3280,7 +3280,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 		if (sum_nr_running <= group_capacity - 1) {
+ 			if (sum_nr_running > leader_nr_running ||
+ 			    (sum_nr_running == leader_nr_running &&
+-			     first_cpu(group->cpumask) >
++			     first_cpu(group->cpumask) <
+ 			      first_cpu(group_leader->cpumask))) {
+ 				group_leader = group;
+ 				leader_nr_running = sum_nr_running;
 
