@@ -1,94 +1,110 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752391AbYLQS6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752582AbYLQS7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752391AbYLQS6z (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 13:58:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbYLQS6m
+	id S1752582AbYLQS7T (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 13:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbYLQS6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 13:58:42 -0500
-Received: from mirapoint3.brutele.be ([212.68.199.148]:17054 "EHLO
-	mirapoint3.brutele.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbYLQS6l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 13:58:41 -0500
-Message-ID: <49494BDB.1000100@tvcablenet.be>
-Date: Wed, 17 Dec 2008 19:58:35 +0100
-From: =?ISO-8859-1?Q?Fran=E7ois_Valenduc?= 
-	<francois.valenduc@tvcablenet.be>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081123)
+	Wed, 17 Dec 2008 13:58:49 -0500
+Received: from gw.goop.org ([64.81.55.164]:33860 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751436AbYLQS6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 13:58:47 -0500
+Message-ID: <49494BE4.1070408@goop.org>
+Date: Wed, 17 Dec 2008 10:58:44 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/83] 2.6.27.9-stable review
-References: <20081211191014.GA5759@suse.de> <49438093.9030809@tvcablenet.be> <20081216232530.GA11262@suse.de>
-In-Reply-To: <20081216232530.GA11262@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Junkmail-Status: score=10/50, host=mirapoint3.brutele.be
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A0B0203.49494BDC.01F4,ss=1,fgs=0,
-	ip=192.168.1.2,
-	so=2008-05-01 23:44:25,
-	dmn=5.7.1/2008-09-02
-X-Junkmail-IWF: false
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+        x86@kernel.org, ian.campbell@citrix.com, jbeulich@novell.com,
+        joerg.roedel@amd.com
+Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use
+ of swiotlb
+References: <20081216203513.GA14787@elte.hu>	<20081217142637V.fujita.tomonori@lab.ntt.co.jp>	<4949296F.7000701@goop.org> <20081218015705Z.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081218015705Z.fujita.tomonori@lab.ntt.co.jp>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH a écrit :
-> On Sat, Dec 13, 2008 at 10:29:55AM +0100, François Valenduc wrote:
+FUJITA Tomonori wrote:
+> On Wed, 17 Dec 2008 08:31:43 -0800
+> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
 >   
->> Greg KH a écrit :
->>     
->>> This is the start of the stable review cycle for the 2.6.27.9 release.
->>> There are 83 patches in this series, all will be posted as a response to
->>> this one.  If anyone has any issues with these being applied, please let
->>> us know.  If anyone is a maintainer of the proper subsystem, and wants
->>> to add a Signed-off-by: line to the patch, please respond with it.
->>> These patches are sent out with a number of different people on the Cc:
->>> line.  If you wish to be a reviewer, please email stable@kernel.org to
->>> add your name to the list.  If you want to be off the reviewer list,
->>> also email us.
->>> Responses should be made by December 13, 2008, 20:00:00 UTC.
->>> Anything received after that time might be too late.
->>> The whole patch series can be found in one patch at:
->>> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.9-rc1.gz
->>> and the diffstat can be found below.
->>> thanks,
->>> greg k-h
+>>> I think that the whole patchset is against the swiotlb design. swiotlb
+>>> is designed to be used as a library. Each architecture implements the
+>>> own swiotlb by using swiotlb library
+>>> (e.g. arch/x86/kernel/pci-swiotlb_64.c).
+>>>   
 >>>       
->> Would it be possible to add these two patches ?
+>> The whole patchset?  The bulk of the changes to lib/swiotlb.c are 
+>> relatively minor to remove the unwarranted assumptions it is making in 
+>> the face of a new user.  They will have no effect on other existing 
+>> users, including non-Xen x86 builds.
 >>
->> commit 8258becf07e71236aac8cf5406a1345712f9ac25
->> Author: Johannes Berg <johannes@sipsolutions.net>
->> Date:   Tue Sep 23 19:18:43 2008 +0200
->>
->>     iwlagn: downgrade BUG_ON in interrupt
->>
->> commit 199d9de726ff2f949405279665a9c8b38966239b
->> Author: Johannes Berg <johannes@sipsolutions.net>
->> Date:   Tue Nov 18 01:47:21 2008 +0100
->>
->>     iwlagn: fix RX skb alignment
->>
->> Without these ones, my computer freezes very frequently (see bugs 11393, 
->> 11983 and 12173 which in fact is a duplicate of the previous one).
->> These two patches can be applied without any rejects on kernel 2.6.27.8.
+>> If you have specific objections we can discuss those, but I don't think 
+>> there's anything fundamentally wrong with making lib/swiotlb.c a bit 
+>> more generically useful.
 >>     
 >
-> I don't see these patches in Linus's kernel tree.  Are they not there?
->
-> Or if they are there, can you give me the correct git commit ids for
-> them?
->
-> thanks,
->
-> greg k-h
->
+> Sorry, but the highmem support is not generically useful.
 >   
 
-These commit ids are indeed not the one of linus's tree and they
-correspond to my local tree for kernel 2.6.27. The correct ids should
-be  4018517a1a69a85c3d61b20fa02f187b80773137 and 
-55d6a3cd0cc85ed90c39cf32e16f622bd003117b.
+That's a circular argument.   lib/swiotlb currently used by 1 1/2 of the 
+23 architectures, neither of which happens to use highmem.  If you 
+consider swiotlb to be a general purpose mechanism, then presumably the 
+other 21 1/2 architectures are at least potential users (and 6 1/2 of 
+those have highmem configurations).  If you base your judgement of 
+what's a "generically useful" change based on what the current users 
+need, then you'll naturally exclude the requirements of all the other 
+(potential) users.
 
-François
+And the matter arises now because we're trying to unify the use of 
+swiotlb in x86, bringing the number of users up to 2.
+
+> I'm especially against the highmem support. As you said, the rest
+> looks fine but if you go with pci-swiotlb_32.c, I think that you don't
+> need the most of them.
+>   
+
+I really don't want to have to duplicate a lot of code just to 
+incorporate a few small changes.  In fact the original Xen patch set 
+included its own swiotlb implementation, and that was rejected on the 
+grounds that we should use the common swiotlb.c.
+
+This patch set abstracts out a few more architecture-specific details, 
+to allow the common swiotlb logic to be in one place.  By not putting 
+highmem support into lib/swiotlb.c, you're effectively saying that we 
+should have separate lib/swiotlb-nohighmem.c and lib/swiotlb-highmem.c 
+files, with almost identical contents aside from the few places where we 
+need to use page+offset rather than a kernel vaddr.
+
+Yes, highmem is ugly, and there'll be cheering in the streets when we 
+can finally kill the last highmem user.  But for now we need to deal 
+with it, and unfortunately swiotlb is now one of the places that it 
+affects.  Its true that adding highmem support to swiotlb.c increases 
+the maintenance burden to some extent.  But I can't see an alternative 
+that doesn't increase the burden a lot more.
+
+We can look at abstracting things a bit more so that non-highmem 
+architectures can keep using simple addresses rather than page+offset, 
+but that highmem code has got to be *somewhere*.
+
+>> > have zero effect on the code generated for IA64 or x86-64.  This is not 
+>> > really a Xen-specific change, but a result of adding swiotlb support for 
+>> > i386.  Other architectures which support a notion of highmem would also 
+>> > need this code if they wanted to use swiotlb.
+>>     
+>
+> Can you be more specific? What architecture is plan to use highmem
+> support in swiotlb?
+>   
+
+Well, concretely, x86-32.  I don't know about the others, but I don't 
+see why there's an inherent reason that they won't have a problem that 
+swiotlb solves.
+
+    J
