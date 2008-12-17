@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752517AbYLQUHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752042AbYLQUTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752517AbYLQUHw (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 15:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYLQUHi
+	id S1752042AbYLQUTM (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 15:19:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYLQUSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 15:07:38 -0500
-Received: from outbound-mail-110.bluehost.com ([69.89.22.10]:43105 "HELO
-	outbound-mail-110.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751276AbYLQUHi (ORCPT
+	Wed, 17 Dec 2008 15:18:55 -0500
+Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:1451 "EHLO
+	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751047AbYLQUSy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 15:07:38 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=QOgxZmIs5l1iZZx39ff9lAVtLf1fRcD9yX3W9vQ4OAPtM32+5nNacv3ZSesfx9OCWl3rSuE6ZPZubHtJTFD5M9kau2CVe9jsHDZMRUvO9O2+lJwxV5UcmIzddLxa4TJ/;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
+	Wed, 17 Dec 2008 15:18:54 -0500
+From: Hans Verkuil <hverkuil@xs4all.nl>
 To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
-Date: Wed, 17 Dec 2008 12:07:32 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: "Rose, Gregory V" <gregory.v.rose@intel.com>,
-        Jike Song <albcamus@gmail.com>, "Zhao, Yu" <yu.zhao@intel.com>,
-        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-        "achiang@hp.com" <achiang@hp.com>,
-        "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>,
-        "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-        "mingo@elte.hu" <mingo@elte.hu>, "matthew@wil.cx" <matthew@wil.cx>,
-        "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-        "rdreier@cisco.com" <rdreier@cisco.com>,
-        "horms@verge.net.au" <horms@verge.net.au>,
-        "yinghai@kernel.org" <yinghai@kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-        "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <200812171142.56170.jbarnes@virtuousgeek.org> <20081217195143.GA25211@kroah.com>
-In-Reply-To: <20081217195143.GA25211@kroah.com>
+Subject: Re: [BUG] cdev_put() race condition
+Date: Wed, 17 Dec 2008 21:18:29 +0100
+User-Agent: KMail/1.9.9
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+References: <200812082156.26522.hverkuil@xs4all.nl> <200812172039.03436.hverkuil@xs4all.nl> <20081217195329.GB25211@kroah.com>
+In-Reply-To: <20081217195329.GB25211@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812171207.34396.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+Message-Id: <200812172118.29574.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, December 17, 2008 11:51 am Greg KH wrote:
-> On Wed, Dec 17, 2008 at 11:42:54AM -0800, Jesse Barnes wrote:
-> > I really don't want the SR-IOV stuff to sit out another merge cycle
-> > though... Arg.
+On Wednesday 17 December 2008 20:53:29 Greg KH wrote:
+> On Wed, Dec 17, 2008 at 08:39:03PM +0100, Hans Verkuil wrote:
+> > On Wednesday 17 December 2008 20:30:32 Hans Verkuil wrote:
+> > > This solves this particular problem. But this will certainly break
+> > > v4l as it is right now, since the spin_lock means that the kref's
+> > > release cannot do any sleeps, which is possible in v4l. If we want to
+> > > allow that in cdev, then the spinlock has to be replaced by a mutex.
+> > > But I have the strong feeling that that's not going to happen :-)
+> >
+> > Note that if we ever allow drivers to hook in their own release
+> > callback, then we certainly should switch to a mutex in the cdev
+> > struct, rather than a global mutex. It obviously makes life more
+> > complicated for cdev, but much easier for drivers.
 >
-> Why, is there some rush to get it in?  As there is no in-kernel users of
-> it, I don't see the problem with postponing it until someone actually
-> needs it.
+> I don't see it being easier for drivers, you should provide this kind of
+> infrastructure within your framework already.
+>
+> Actually, we already do provide this kind of framework, what's wrong
+> with using "struct device" for this, like the rest of the kernel does?
+> That is the device you need to be doing the reference counting and
+> release code for, it is exactly what it is there for.
+>
+> So why is V4L different than the rest of the kernel in that it wishes to
+> do things differently?
 
-Well it *does* make development of SR-IOV drivers that much harder.  As you 
-know, out of tree development is a pain.  OTOH if any changes end up being 
-required, they can be done before the code is merged.
+Because it has almost no proper framework to speak of and what little there 
+is has been pretty much unchanged since the very beginning.
 
-Anyway, hopefully we won't have to worry about it because some driver will 
-come along soon that uses Yu's code. :)  If not, Yu might have to maintain a 
-separate git tree or something until the drivers are ready to be merged.
+I'm trying to develop a decent framework that should help support upcoming 
+devices and generally make life easier for v4l driver developers.
+
+And I've no idea why we don't just use the device's release() callback for 
+this. I'm going to implement this right now :-)
+
+Regards,
+
+	Hans
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
-
+Hans Verkuil - video4linux developer - sponsored by TANDBERG
