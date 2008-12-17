@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753357AbYLQVtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753030AbYLQVyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753357AbYLQVtB (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 16:49:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYLQVsi
+	id S1753030AbYLQVyc (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 16:54:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYLQVyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 16:48:38 -0500
-Received: from mx1.suse.de ([195.135.220.2]:58588 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752021AbYLQVsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 16:48:37 -0500
-Date: Wed, 17 Dec 2008 13:38:26 -0800
-From: Greg KH <gregkh@suse.de>
-To: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-Cc: Mike Frysinger <vapier.adi@gmail.com>, Julia Lawall <julia@diku.dk>,
-        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/28] drivers/base/platform.c: Drop return value from
-	platform_driver remove functions
-Message-ID: <20081217213826.GD26923@suse.de>
-References: <Pine.LNX.4.64.0812101725540.21998@ask.diku.dk> <8bd0f97a0812100928l2c75d373n7eba5aa0cc3882fd@mail.gmail.com> <53806.88.114.236.15.1228947522.squirrel@webmail.movial.fi> <8bd0f97a0812101437r4abb9346p8bc8d512ddc02cde@mail.gmail.com> <20081212051759.GA12563@suse.de> <49424438.7030205@movial.fi>
+	Wed, 17 Dec 2008 16:54:22 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:45934 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751652AbYLQVyV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 16:54:21 -0500
+Date: Wed, 17 Dec 2008 22:54:19 +0100
+From: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: "booke: Fix problem with _tlbil_va being interrupted" causes
+	BUG()
+Message-ID: <20081217215419.GB27343@Chamillionaire.breakpoint.cc>
+References: <20081217213448.GA27343@Chamillionaire.breakpoint.cc> <361C8199-AF93-4438-A6F9-56D3822A2847@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <49424438.7030205@movial.fi>
+In-Reply-To: <361C8199-AF93-4438-A6F9-56D3822A2847@kernel.crashing.org>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 01:00:08PM +0200, Dmitri Vorobiev wrote:
-> Greg KH wrote:
-> > On Wed, Dec 10, 2008 at 05:37:42PM -0500, Mike Frysinger wrote:
-> >> On Wed, Dec 10, 2008 at 17:18, Vorobiev Dmitri wrote:
-> >>>> On Wed, Dec 10, 2008 at 11:26, Julia Lawall wrote:
-> >>>>> The return value of the remove function of a driver structure, and thus
-> >>>>> of
-> >>>>> a platform_driver structure, is ultimately ignored, and is thus
-> >>>>> unnecessary.  The goal of this patch is to make it possible to convert
-> >>>>> the
-> >>>>> platform_driver functions stored in the remove field such that they
-> >>>>> return
-> >>>>> void.  This patch introduces a temporary field remove_new with return
-> >>>>> type
-> >>>>> void into the platform_driver structure, and updates the only place that
-> >>>>> the remove function is called to call the function in the remove_new
-> >>>>> field,
-> >>>>> if one is available.  The subsequent patches update some drivers to use
-> >>>>> the
-> >>>>> remove_new field.
-> >>>> why bother with remove -> remove_new convention ?
-> >>> Please see this email for the background:
-> >>>
-> >>> http://lkml.org/lkml/2008/12/10/231
-> >>>
-> >>>>  you'll get a
-> >>>> warning in C about the assignment, but you wont get a build failure,
-> >>> ...unless you compile with -Werror, which frequently the case.
-> >> anyone crazy enough to build with -Werror is crazy enough to send in a fix ;)
-> > 
-> > Hm, have you noted that some arches have that flag enabled in their
-> > build?
-> > 
-> > And it's not ok to add a couple of hundred build warnings to the system,
-> > sorry.
-> 
-> Still, what about the whole series? What do you think about int->void
-> migration for the remove() callback?
+* Kumar Gala | 2008-12-17 15:41:42 [-0600]:
 
-In thinking about it some more, I don't really see the point.  We should
-probably just do something about the return value, as that would be
-better, and easier to do.
+> Dave Liu noticed something similar.. Feel free to send me a brown paper 
+> bag.
+:)
 
-thanks,
+> Fixed in my 'merge' branch and just waiting for Paul or Linus to pick it 
+> up.
+>
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-December/066352.html
+Thx.
 
-greg k-h
+> - k
+
+Sebastian
