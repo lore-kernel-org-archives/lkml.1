@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1750865AbYLQJw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760224AbYLQJ5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750865AbYLQJw0 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 04:52:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbYLQJv5
+	id S1760224AbYLQJ5c (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 04:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYLQJ5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 04:51:57 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56476 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756274AbYLQJv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 04:51:56 -0500
-Message-ID: <4948CAE7.107@cn.fujitsu.com>
-Date: Wed, 17 Dec 2008 17:48:23 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ring_buffer: remove unused ring_buffer size
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Dec 2008 04:57:19 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:33925 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751577AbYLQJ5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 04:57:17 -0500
+Date: Wed, 17 Dec 2008 20:57:06 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Artem.Bityutskiy@nokia.com
+Cc: David Woodhouse <David.Woodhouse@intel.com>, linux-next@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Adrian Hunter <ext-adrian.hunter@nokia.com>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: mtd tree build failures (Was: Re: linux-next: Tree
+ for December 16)
+Message-Id: <20081217205706.378973c5.sfr@canb.auug.org.au>
+In-Reply-To: <4948C71C.2000700@nokia.com>
+References: <20081216223754.0c8e21d4.sfr@canb.auug.org.au>
+	<20081216152607.f232fafd.akpm@linux-foundation.org>
+	<20081217175911.594ae84f.sfr@canb.auug.org.au>
+	<4948C71C.2000700@nokia.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__17_Dec_2008_20_57_06_+1100_gEb5rZZHlY+SEZ+m"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Wed__17_Dec_2008_20_57_06_+1100_gEb5rZZHlY+SEZ+m
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-struct ring_buffer.size is not set after ring_buffer is initialized
-or resized. it is always 0.
+Hi Artem,
 
-we can use "buffer->pages * BUF_PAGE_SIZE" to get ring_buffer's size
+On Wed, 17 Dec 2008 11:32:12 +0200 Artem Bityutskiy <Artem.Bityutskiy@nokia=
+.com> wrote:
+>
+> It would be nice if you sent the error messages. I do not have m68k
+> compilers, but I could fix the errors anyway, because it is just
+> about doing divisions with 'do_div()'.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 668bbb5..7c7ec06 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -202,7 +202,6 @@ struct ring_buffer_per_cpu {
- };
- 
- struct ring_buffer {
--	unsigned long			size;
- 	unsigned			pages;
- 	unsigned			flags;
- 	int				cpus;
-@@ -2090,8 +2089,7 @@ int ring_buffer_swap_cpu(struct ring_buffer *buffer_a,
- 		return -EINVAL;
- 
- 	/* At least make sure the two buffers are somewhat the same */
--	if (buffer_a->size != buffer_b->size ||
--	    buffer_a->pages != buffer_b->pages)
-+	if (buffer_a->pages != buffer_b->pages)
- 		return -EINVAL;
- 
- 	cpu_buffer_a = buffer_a->buffers[cpu];
+Normally I would have sent them, but they are basically the same error as
+i386 gets.
 
+arm: (various configs)
 
+hid-input.c:(.text+0x41470): undefined reference to `__umoddi3'
+hid-input.c:(.text+0x4148c): undefined reference to `__umoddi3'
+hid-input.c:(.text+0x41504): undefined reference to `__udivdi3'
+drivers/mtd/devices/mtd_dataflash.c:161: undefined reference to `__umoddi3'
+drivers/mtd/devices/mtd_dataflash.c:161: undefined reference to `__umoddi3'
+drivers/mtd/devices/mtd_dataflash.c:181: undefined reference to `__udivdi3'
+i2c-dev.c:(.text+0x4d424): undefined reference to `__umoddi3'
+i2c-dev.c:(.text+0x4d44c): undefined reference to `__umoddi3'
+i2c-dev.c:(.text+0x4d4b4): undefined reference to `__udivdi3'
 
+m68k: (allmodconfig)
+ERROR: "__udivdi3" [drivers/mtd/devices/mtd_dataflash.ko] undefined!
+ERROR: "__umoddi3" [drivers/mtd/devices/mtd_dataflash.ko] undefined!
+ERROR: "__umoddi3" [drivers/mtd/devices/m25p80.ko] undefined!
+
+All these are from: http://kisskb.ellerman.id.au/kisskb/branch/9/
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__17_Dec_2008_20_57_06_+1100_gEb5rZZHlY+SEZ+m
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAklIzPIACgkQjjKRsyhoI8yz0gCfdJM1CrLI8sLmZkfaOvsLcvSZ
+FnkAn39PWH5sfNi18FJ7+8A6Dok0X4Li
+=uKqp
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__17_Dec_2008_20_57_06_+1100_gEb5rZZHlY+SEZ+m--
