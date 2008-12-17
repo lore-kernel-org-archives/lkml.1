@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752232AbYLQSwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752250AbYLQSwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752232AbYLQSwz (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 13:52:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbYLQSwq
+	id S1752250AbYLQSwK (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 13:52:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYLQSvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 13:52:46 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:36710 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbYLQSwp (ORCPT
+	Wed, 17 Dec 2008 13:51:52 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:51943 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751792AbYLQSvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 13:52:45 -0500
-Date: Wed, 17 Dec 2008 12:52:41 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-        Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 1/2] mqueue ns: move mqueue_mnt into struct
-	ipc_namespace
-Message-ID: <20081217185241.GA25250@us.ibm.com>
-References: <20081217175513.GA23291@us.ibm.com> <20081217175531.GA23331@us.ibm.com> <1229538964.17206.421.camel@nimitz>
+	Wed, 17 Dec 2008 13:51:50 -0500
+Message-ID: <49494A50.3090201@vlnb.net>
+Date: Wed, 17 Dec 2008 21:52:00 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1229538964.17206.421.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Fabio Checconi <fabio@gandalf.sssup.it>
+CC: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Dynamic switching of io_context
+References: <4942B90F.6050807@vlnb.net> <20081216082235.GD3284@gandalf.sssup.it>
+In-Reply-To: <20081216082235.GD3284@gandalf.sssup.it>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+jJa/9TAG6S5F8j6+2gXpoXtaTenEozAi/7GY
+ elN5Z0v7hnCuNDb/Obxg4Tzmt7zphT+ft7CJ6RI81YR/DIGdSs
+ MY/GZpRovLLh+YTB076mg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> On Wed, 2008-12-17 at 11:55 -0600, Serge E. Hallyn wrote:
-
-Thanks for taking look.
-
-...
-> > -#if defined(CONFIG_SYSVIPC) && defined(CONFIG_IPC_NS)
-> > +#ifdef CONFIG_POSIX_MQUEUE
-> > +extern void mq_init_ns(struct ipc_namespace *ns);
-> > +/* default values */
-> > +#define DFLT_QUEUESMAX 256     /* max number of message queues */
-> > +#define DFLT_MSGMAX    10      /* max number of messages in each queue */
-> > +#define HARD_MSGMAX    (131072/sizeof(void *))
-> > +#define DFLT_MSGSIZEMAX 8192   /* max message size */
-> > +#else
-> > +#define mq_init_ns(ns)
-> > +#endif
+Fabio Checconi, on 12/16/2008 11:22 AM wrote:
+>> In SCST (http://scst.sf.net) in some cases IO can be submitted 
+>> asynchronously. This is possible for pass-through (i.e. using 
+>> scsi_execute_async()) and BLOCKIO (i.e. using direct bio interface, see 
+>> blockio_exec_rw() in 
+>> http://scst.svn.sourceforge.net/viewvc/scst/trunk/scst/src/dev_handlers/scst_vdisk.c?revision=614&view=markup) 
+>> backend. For them there's no need to have a per device pool of threads, one 
+>> or more global thread(s) can perfectly do all the work. But it is very 
+>> desirable for performance that all the IO is submitted in a dedicated IO 
+>> context for each initiator (i.e. client), which originated it. I.e. 
+>> commands from initiator 1 submitted in IO context IOC1, from initiator 2 - 
+>> IOC2, etc. Most likely, the same approach would be very useful for NFS 
+>> server as well.
+>>
+>> To achieve that it is necessary to have a possibility to switch IO 
+>> context of the threads on the fly. I tried to implement that (see the 
+>> attached patch), but hit BUG_ON(!cic->dead_key) in cic_free_func(), when 
+>> session for initiator with the corresponding IO context was being 
+>> destroyed by scst_free_tgt_dev(). At that point it was guaranteed that 
+>> there was no outstanding IO with this IO context.
+>>
+>> So, I had to go to a more defensive approach to have for each pool of 
+>> threads, including threads for async. IO, a dedicated IO context, which 
+>> is currently implemented.
+>>
+>> Could you advice please what was going wrong? What should I do to 
+>> achieve what's desired?
 > 
-> Do all these empty suckers need do{}while(0)'s?
+> I think the problem may be that cfq expects cfq_exit_io_context()
+> to be called before the last reference to an io context is put.
+> Since cfq_exit_io_context() is called during process exit, and AFAICT
+> you are not calling exit_io_context() on the given ioc, cfq finds it
+> in an incorrect state.
 
-Couldn't hurt for future-proofing.  Will do, thanks.
+With your hint I figured out that put_io_context() isn't sufficient and 
+I should also call exit_io_context() instead of the latest 
+put_io_context(). Thanks!
 
-> > @@ -109,11 +98,25 @@ static inline struct mqueue_inode_info *MQUEUE_I(struct inode *inode)
-> >  	return container_of(inode, struct mqueue_inode_info, vfs_inode);
-> >  }
-> > 
-> > +void mq_init_ns(struct ipc_namespace *ns) {
-> > +	ns->mq_queues_count  = 0;
-> > +	ns->mq_queues_max    = DFLT_QUEUESMAX;
-> > +	ns->mq_msg_max       = DFLT_MSGMAX;
-> > +	ns->mq_msgsize_max   = DFLT_MSGSIZEMAX;
-> > +	ns->mq_mnt           = mntget(init_ipc_ns.mq_mnt);
-> > +}
-> 
-> Heh, I read that as a structure definition at first!  Could you put that
-> bracket on a new line.
+> I haven't seen the rest of the code, so I may be wrong, but I suppose
+> that a better approach would be to use CLONE_IO to share io contexts,
+> if possible.
 
-That's actually taken care of in the followup patch - same with
-mq_exit_ns.  Sorry about that.  (Still I'd rather not bother with
-the patch flux to change it just in this patch, since whenever
-I do that I inevitably mess up something else)
+Unfortunately, it would be very non-optimal. As it is known, to achieve 
+the best performance with async. IO, it should be submitted by a limited 
+number of threads <= CPU count. So, the only way to submit IO from each 
+of, e.g. 100, clients in a dedicated per-client IO context is to 
+dynamically switch io_context of the current threads to io_context of 
+the client before IO submission.
 
-> This part of the patch is nice.  The -'s are next to the +'s and it is
-> easy to audit.
-> 
-> The rest of the patch looks good.  Mostly simple substitutions, and it
-> is pretty obvious what is going on.
+Vlad
 
-Thanks.  I'm hoping that Pavel and Eric will give their input and
-maybe we can put this thing to bed  :)
-
--serge
