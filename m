@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752367AbYLRQjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752469AbYLRQkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752367AbYLRQjK (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 11:39:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYLRQiz
+	id S1752469AbYLRQkY (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 11:40:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYLRQkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 11:38:55 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45179 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751435AbYLRQiz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 11:38:55 -0500
-Subject: Re: [PATCH 03/15] kmemleak: Add the slab memory allocation/freeing
-	hooks
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org
-In-Reply-To: <1229597162.1047.48.camel@penberg-laptop>
-References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
-	 <20081210182710.30323.57396.stgit@pc1117.cambridge.arm.com>
-	 <494184AA.8090509@cs.helsinki.fi>
-	 <1229092065.15045.35.camel@pc1117.cambridge.arm.com>
-	 <1229597162.1047.48.camel@penberg-laptop>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Thu, 18 Dec 2008 16:38:28 +0000
-Message-Id: <1229618308.16418.50.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Dec 2008 16:38:30.0357 (UTC) FILETIME=[0F39C050:01C9612F]
+	Thu, 18 Dec 2008 11:40:07 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42634 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750784AbYLRQkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 11:40:06 -0500
+Date: Wed, 17 Dec 2008 15:27:24 -0500
+From: Dave Jones <davej@redhat.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, iommu@lists.linux-foundation.org,
+        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+        hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 gart: don't complain if no AMD GART found
+Message-ID: <20081217202724.GB9475@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Bjorn Helgaas <bjorn.helgaas@hp.com>,
+	Joerg Roedel <joerg.roedel@amd.com>,
+	iommu@lists.linux-foundation.org,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+	linux-kernel@vger.kernel.org
+References: <20081217195234.13603.96737.stgit@bob.kio>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081217195234.13603.96737.stgit@bob.kio>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-18 at 12:46 +0200, Pekka Enberg wrote:
-> On Fri, 2008-12-12 at 14:27 +0000, Catalin Marinas wrote:
-> > > Do you take care of the per-node lists as well?
-> > 
-> > I can't figure out what other location should be erased.
-> 
-> As far as I can tell, you need to tell kmemleak not to scan the alien
-> caches and the shared array that is shared by all CPUs that belong to
-> one node. I'm adding Christoph to the CC in case he wants to comment on
-> this.
+On Wed, Dec 17, 2008 at 12:52:34PM -0700, Bjorn Helgaas wrote:
+ > It's perfectly normal for no AMD GART to be present, e.g., if you have
+ > Intel CPUs.
 
-In the ____cache_alloc() kmemleak clears the
-cachep->array->entry[ac->avail] pointer but this may not be enough as
-freed and later re-allocated objects may have pointers in the alien
-cache (is that correct?). A better approach (haven't tried it yet) would
-be not to scan objects allocated via alloc_arraycache() at all. However,
-there is still the initarray_cache/generic which are automatically
-scanned via the data section (unless I add an attribute to place them in
-a different, not scanned, section).
+Yes! That's annoyed me for some time too.
+
+ >  None of the other iommu_init() functions makes noise when
+ > it finds nothing.
+ 
+The Calgary stuff is pretty noisy in the face of non-existant hardware too.
+Makes for noisy distro kernels..
+
+Calgary: detecting Calgary via BIOS EBDA area
+Calgary: Unable to locate Rio Grande table in EBDA - bailing!
+
+	Dave
 
 -- 
-Catalin
-
+http://www.codemonkey.org.uk
