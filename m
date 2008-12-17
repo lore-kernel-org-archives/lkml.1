@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752294AbYLQTvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752489AbYLQTwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752294AbYLQTvn (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 14:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYLQTvc
+	id S1752489AbYLQTwr (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 14:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYLQTwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 14:51:32 -0500
-Received: from cs20.apochromatic.org ([204.152.189.161]:52076 "EHLO
-	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbYLQTvc (ORCPT
+	Wed, 17 Dec 2008 14:52:37 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:40125 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbYLQTwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 14:51:32 -0500
-Date: Wed, 17 Dec 2008 19:51:27 +0000
-From: Matt Fleming <matt@console-pimps.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org,
-        stable@kernel.org, Willy Tarreau <w@1wt.eu>,
-        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-        alan@lxorguk.ukuu.org.uk, mingo@elte.hu, venkatesh.pallipadi@intel.com,
-        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 68/83] x86: HPET: convert WARN_ON to WARN_ON_ONCE
-Message-ID: <20081217195127.GA2578@console-pimps.org>
-References: <20081211190201.612240183@mini.kroah.org> <20081211191620.GP5894@kroah.com> <20081217112625.GJ13247@console-pimps.org> <s5h4p13dojm.wl%tiwai@suse.de> <20081217120305.GK13247@console-pimps.org> <20081217184236.GC30724@suse.de>
+	Wed, 17 Dec 2008 14:52:36 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: [PATCH] x86 gart: don't complain if no AMD GART found
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: iommu@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+        linux-kernel@vger.kernel.org
+Date: Wed, 17 Dec 2008 12:52:34 -0700
+Message-ID: <20081217195234.13603.96737.stgit@bob.kio>
+User-Agent: StGIT/0.14.3.215.gff3d
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081217184236.GC30724@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 10:42:36AM -0800, Greg KH wrote:
-> 
-> Ok, so which patch should go into the 2.6.27-stable tree?
-> 
+It's perfectly normal for no AMD GART to be present, e.g., if you have
+Intel CPUs.  None of the other iommu_init() functions makes noise when
+it finds nothing.
 
-Sorry, I was confused about what HPET code was in 2.6.27-stable. The
-current patch that you have queued (1de5b0854623d30d01d72cd4ea323eb5f39d1f16)
-is the only one that should be in. So you can entirely ignore this
-thread ;-)
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+---
+ arch/x86/kernel/pci-gart_64.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+index ba7ad83..a35eaa3 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -745,10 +745,8 @@ void __init gart_iommu_init(void)
+ 	unsigned long scratch;
+ 	long i;
+ 
+-	if (cache_k8_northbridges() < 0 || num_k8_northbridges == 0) {
+-		printk(KERN_INFO "PCI-GART: No AMD GART found.\n");
++	if (cache_k8_northbridges() < 0 || num_k8_northbridges == 0)
+ 		return;
+-	}
+ 
+ #ifndef CONFIG_AGP_AMD64
+ 	no_agp = 1;
 
