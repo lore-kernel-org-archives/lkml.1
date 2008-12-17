@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760854AbYLQANB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759985AbYLQAMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760854AbYLQANB (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 19:13:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759323AbYLQAGv
+	id S1759985AbYLQAMX (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759703AbYLQAGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 19:06:51 -0500
-Received: from kroah.org ([198.145.64.141]:41424 "EHLO coco.kroah.org"
+	Tue, 16 Dec 2008 19:06:45 -0500
+Received: from kroah.org ([198.145.64.141]:41437 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759761AbYLQAGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 19:06:18 -0500
-Date: Tue, 16 Dec 2008 16:04:41 -0800
+	id S1759782AbYLQAGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 19:06:19 -0500
+Date: Tue, 16 Dec 2008 16:04:43 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,14 +23,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
         Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
         Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
         torvalds@linux-foundation.org, akpm@linux-foundation.org,
-        alan@lxorguk.ukuu.org.uk, Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [patch 21/22] V4L/DVB (9621): Avoid writing outside shadow.bytes[]
-	array
-Message-ID: <20081217000441.GV4504@kroah.com>
+        alan@lxorguk.ukuu.org.uk, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [patch 22/22] setup_per_zone_pages_min(): take zone->lock instead
+	of zone->lru_lock
+Message-ID: <20081217000443.GW4504@kroah.com>
 References: <20081216235704.347182084@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="v4l-dvb-avoid-writing-outside-shadow.bytes-array.patch"
+Content-Disposition: inline; filename="setup_per_zone_pages_min-take-zone-lock-instead-of-zone-lru_lock.patch"
 In-Reply-To: <20081217000306.GA4504@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,83 +42,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 
-commit 494264379d186bf806613d27aafb7d88d42f4212 upstream.
+commit 1125b4e3949949b44a7c80b619507c6f61d62911 upstream.
 
-There were no check about the limits of shadow.bytes array. This offers
-a risk of writing values outside the limits, overriding other data
-areas.
+This replaces zone->lru_lock in setup_per_zone_pages_min() with zone->lock.
+There seems to be no need for the lru_lock anymore, but there is a need for
+zone->lock instead, because that function may call move_freepages() via
+setup_zone_migrate_reserve().
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Tested-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/tvaudio.c |   30 +++++++++++++++++++++++++++---
- 1 file changed, 27 insertions(+), 3 deletions(-)
+ mm/page_alloc.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/media/video/tvaudio.c
-+++ b/drivers/media/video/tvaudio.c
-@@ -152,7 +152,7 @@ static int chip_write(struct CHIPSTATE *
- {
- 	unsigned char buffer[2];
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -4224,7 +4224,7 @@ void setup_per_zone_pages_min(void)
+ 	for_each_zone(zone) {
+ 		u64 tmp;
  
--	if (-1 == subaddr) {
-+	if (subaddr < 0) {
- 		v4l_dbg(1, debug, chip->c, "%s: chip_write: 0x%x\n",
- 			chip->c->name, val);
- 		chip->shadow.bytes[1] = val;
-@@ -163,6 +163,13 @@ static int chip_write(struct CHIPSTATE *
- 			return -1;
- 		}
- 	} else {
-+		if (subaddr + 1 >= ARRAY_SIZE(chip->shadow.bytes)) {
-+			v4l_info(chip->c,
-+				"Tried to access a non-existent register: %d\n",
-+				subaddr);
-+			return -EINVAL;
-+		}
-+
- 		v4l_dbg(1, debug, chip->c, "%s: chip_write: reg%d=0x%x\n",
- 			chip->c->name, subaddr, val);
- 		chip->shadow.bytes[subaddr+1] = val;
-@@ -177,12 +184,20 @@ static int chip_write(struct CHIPSTATE *
- 	return 0;
- }
- 
--static int chip_write_masked(struct CHIPSTATE *chip, int subaddr, int val, int mask)
-+static int chip_write_masked(struct CHIPSTATE *chip,
-+			     int subaddr, int val, int mask)
- {
- 	if (mask != 0) {
--		if (-1 == subaddr) {
-+		if (subaddr < 0) {
- 			val = (chip->shadow.bytes[1] & ~mask) | (val & mask);
- 		} else {
-+			if (subaddr + 1 >= ARRAY_SIZE(chip->shadow.bytes)) {
-+				v4l_info(chip->c,
-+					"Tried to access a non-existent register: %d\n",
-+					subaddr);
-+				return -EINVAL;
-+			}
-+
- 			val = (chip->shadow.bytes[subaddr+1] & ~mask) | (val & mask);
- 		}
+-		spin_lock_irqsave(&zone->lru_lock, flags);
++		spin_lock_irqsave(&zone->lock, flags);
+ 		tmp = (u64)pages_min * zone->present_pages;
+ 		do_div(tmp, lowmem_pages);
+ 		if (is_highmem(zone)) {
+@@ -4256,7 +4256,7 @@ void setup_per_zone_pages_min(void)
+ 		zone->pages_low   = zone->pages_min + (tmp >> 2);
+ 		zone->pages_high  = zone->pages_min + (tmp >> 1);
+ 		setup_zone_migrate_reserve(zone);
+-		spin_unlock_irqrestore(&zone->lru_lock, flags);
++		spin_unlock_irqrestore(&zone->lock, flags);
  	}
-@@ -228,6 +243,15 @@ static int chip_cmd(struct CHIPSTATE *ch
- 	if (0 == cmd->count)
- 		return 0;
  
-+	if (cmd->count + cmd->bytes[0] - 1 >= ARRAY_SIZE(chip->shadow.bytes)) {
-+		v4l_info(chip->c,
-+			 "Tried to access a non-existent register range: %d to %d\n",
-+			 cmd->bytes[0] + 1, cmd->bytes[0] + cmd->count - 1);
-+		return -EINVAL;
-+	}
-+
-+	/* FIXME: it seems that the shadow bytes are wrong bellow !*/
-+
- 	/* update our shadow register set; print bytes if (debug > 0) */
- 	v4l_dbg(1, debug, chip->c, "%s: chip_cmd(%s): reg=%d, data:",
- 		chip->c->name, name,cmd->bytes[0]);
+ 	/* update totalreserve_pages */
 
