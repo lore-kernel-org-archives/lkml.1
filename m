@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752763AbYLQRVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752456AbYLQRVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752763AbYLQRVY (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 12:21:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYLQRVH
+	id S1752456AbYLQRVA (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 12:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbYLQRUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 12:21:07 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60616 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751365AbYLQRVF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 12:21:05 -0500
-Date: Wed, 17 Dec 2008 12:19:16 -0500 (EST)
-From: Jeff Arnold <jbarnold@MIT.EDU>
-To: Dave Jones <davej@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Tim Abbott <tabbott@MIT.EDU>,
-        linux-kernel@vger.kernel.org,
-        Denys Vlasenko <vda.linux@googlemail.com>,
-        Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-        Nikanth Karthikesan <knikanth@suse.de>,
-        Ben Collins <bcollins@ubuntu.com>
-Subject: Re: [PATCH 0/7] Ksplice: Rebootless kernel updates
-In-Reply-To: <20081217035316.GA24620@redhat.com>
-Message-ID: <alpine.DEB.2.00.0812170046550.27419@vinegar-pot.mit.edu>
-References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <alpine.DEB.2.00.0812162133360.25958@vinegar-pot.mit.edu> <20081216190740.9db323ee.akpm@linux-foundation.org> <20081217035316.GA24620@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 17 Dec 2008 12:20:48 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:54808 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751307AbYLQRUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 12:20:48 -0500
+Date: Wed, 17 Dec 2008 09:15:42 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+        Pekka Enberg <penberg@cs.helsinki.fi>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 01/15] kmemleak: Add the base support
+Message-ID: <20081217171542.GC6674@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com> <20081210182659.30323.43898.stgit@pc1117.cambridge.arm.com> <20081216193648.GJ6681@linux.vnet.ibm.com> <1229507096.32517.8.camel@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1229507096.32517.8.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Dec 2008, Dave Jones wrote:
+On Wed, Dec 17, 2008 at 09:44:56AM +0000, Catalin Marinas wrote:
+> On Tue, 2008-12-16 at 11:36 -0800, Paul E. McKenney wrote:
+> > On Wed, Dec 10, 2008 at 06:26:59PM +0000, Catalin Marinas wrote:
+> > > This patch adds the base support for the kernel memory leak
+> > > detector. It traces the memory allocation/freeing in a way similar to
+> > > the Boehm's conservative garbage collector, the difference being that
+> > > the unreferenced objects are not freed but only shown in
+> > > /sys/kernel/debug/memleak. Enabling this feature introduces an
+> > > overhead to memory allocations.
+> > 
+> > Looks good to me from an RCU viewpoint!
+> > 
+> > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> Thanks for reviewing it.
+> 
+> FYI, in the version I'm going to post this week I added another mutex to
+> ensure the exclusive opening of the /sys/kernel/debug/memleak file as
+> one can now use this file to configure kmemleak at run-time. The RCU
+> locking isn't affected and I'll add your "Reviewed-by:" line.
 
-Hi Dave.  Thanks for your feedback.  I thought that it might be helpful 
-for me to provide some information about how Ksplice tries to address 
-these concerns.
+Fair enough!
 
-> It comes down to 'what happens when something goes wrong'.
-> When the end-user is running a ksplice-patched kernel with an unknown
-> number of patches, reproducability can get really complicated.
-
-Ksplice does everything that we've been able to think of to help with 
-reproducibility and debugging.
-
-The taint flag tells you whether any Ksplice updates have been loaded.  
-The list of loaded modules gives you an ID string for every Ksplice update 
-that has been loaded (which, if you have a copy of those updates, tells 
-you everything that Ksplice has done to the kernel, in the order that it 
-has done it).
-
-Ksplice verifies the kernel's text before applying each update to make 
-sure that the kernel text exactly matches Ksplice's expectations (Ksplice 
-takes into account code modifications that have already happened, such as 
-from altinstructions and previous Ksplice updates).
-
-> but we don't always get to see tainted flags in bug reports (the 
-> non-oops variants for eg).
-
-Perhaps it is possible to make taint information appear in bug reports 
-more frequently?  It seems as though useful bug reports already need to 
-contain quite a bit of other information.
-
-> Which just leaves the "we can't afford downtime" argument, which leads
-> me to question how well reviewed runtime patches are.
-
-I'm not sure whether you're worried about the Ksplice code itself or the 
-patches that people might apply using Ksplice.
-
-As for the Ksplice code itself, I suppose that I can only say that we've 
-done our best and we invite people to find problems in it.
-
-If you're concerned about the patches that people might apply using 
-Ksplice:  yes, I agree that writing new custom code for hot updates is 
-scary.  Ksplice has, in fact, been designed around the idea of avoiding 
-new code for hot updates.  88% of CVEs from May 2005 to May 2008 can be 
-corrected without writing a single line of new code [1]--Ksplice 
-constructs the update based entirely on the existing mainline patch.  
-(The remaining CVEs require an average of roughly 20 semicolon-terminated 
-new lines of code per CVE).  Updates should still be generated by someone 
-competent, but we've tried to minimize the burden and risk involved.
-
-[1] http://www.ksplice.com/cve-evaluation
-
-Jeff Arnold
-jbarnold@mit.edu
+						Thanx, Paul
