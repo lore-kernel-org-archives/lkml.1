@@ -1,240 +1,209 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758966AbYLQFN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759521AbYLQFMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758966AbYLQFN4 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 00:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759415AbYLQFMX
+	id S1759521AbYLQFMm (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 00:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759065AbYLQFLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 00:12:23 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37061 "EHLO
+	Wed, 17 Dec 2008 00:11:43 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37016 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757883AbYLQFMW (ORCPT
+	with ESMTP id S1759011AbYLQFLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 00:12:22 -0500
+	Wed, 17 Dec 2008 00:11:42 -0500
 To: linux-audit@redhat.com
-Subject: [PATCH 8/15] sanitize audit_mq_open()
+Subject: [PATCH 4/15] sanitize audit_ipc_set_perm()
 Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1LCoho-0000Cr-TT@ZenIV.linux.org.uk>
+Message-Id: <E1LCohA-00009y-Sm@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Wed, 17 Dec 2008 05:12:20 +0000
+Date: Wed, 17 Dec 2008 05:11:40 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* don't bother with allocations
-* don't do double copy_from_user()
-* don't duplicate parts of check for audit_dummy_context()
+* get rid of allocations
+* make it return void
+* simplify callers
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
  include/linux/audit.h |    9 +++----
- ipc/mqueue.c          |   23 ++++++++---------
- kernel/auditsc.c      |   65 +++++++++++++++++-------------------------------
- 3 files changed, 38 insertions(+), 59 deletions(-)
+ ipc/util.c            |   10 ++-----
+ kernel/auditsc.c      |   59 +++++++++++++++++++++---------------------------
+ 3 files changed, 33 insertions(+), 45 deletions(-)
 
 diff --git a/include/linux/audit.h b/include/linux/audit.h
-index dd3f62c..ed6bdfc 100644
+index 97598f0..cd4b1f7 100644
 --- a/include/linux/audit.h
 +++ b/include/linux/audit.h
-@@ -448,7 +448,7 @@ extern void audit_socketcall(int nargs, unsigned long *args);
+@@ -442,7 +442,7 @@ extern int  audit_set_loginuid(struct task_struct *task, uid_t loginuid);
+ #define audit_get_sessionid(t) ((t)->sessionid)
+ extern void audit_log_task_context(struct audit_buffer *ab);
+ extern void __audit_ipc_obj(struct kern_ipc_perm *ipcp);
+-extern int __audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid, mode_t mode);
++extern void __audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid, mode_t mode);
+ extern int audit_bprm(struct linux_binprm *bprm);
+ extern void audit_socketcall(int nargs, unsigned long *args);
  extern int audit_sockaddr(int len, void *addr);
- extern int __audit_fd_pair(int fd1, int fd2);
- extern int audit_set_macxattr(const char *name);
--extern int __audit_mq_open(int oflag, mode_t mode, struct mq_attr __user *u_attr);
-+extern void __audit_mq_open(int oflag, mode_t mode, struct mq_attr *attr);
- extern void __audit_mq_sendrecv(mqd_t mqdes, size_t msg_len, unsigned int msg_prio, const struct timespec *abs_timeout);
- extern void __audit_mq_notify(mqd_t mqdes, const struct sigevent *notification);
- extern void __audit_mq_getsetattr(mqd_t mqdes, struct mq_attr *mqstat);
-@@ -469,11 +469,10 @@ static inline void audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid
- 	if (unlikely(!audit_dummy_context()))
- 		__audit_ipc_set_perm(qbytes, uid, gid, mode);
+@@ -465,11 +465,10 @@ static inline int audit_fd_pair(int fd1, int fd2)
+ 		return __audit_fd_pair(fd1, fd2);
+ 	return 0;
  }
--static inline int audit_mq_open(int oflag, mode_t mode, struct mq_attr __user *u_attr)
-+static inline void audit_mq_open(int oflag, mode_t mode, struct mq_attr *attr)
+-static inline int audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid, mode_t mode)
++static inline void audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid, mode_t mode)
  {
  	if (unlikely(!audit_dummy_context()))
--		return __audit_mq_open(oflag, mode, u_attr);
+-		return __audit_ipc_set_perm(qbytes, uid, gid, mode);
 -	return 0;
-+		__audit_mq_open(oflag, mode, attr);
++		__audit_ipc_set_perm(qbytes, uid, gid, mode);
  }
- static inline void audit_mq_sendrecv(mqd_t mqdes, size_t msg_len, unsigned int msg_prio, const struct timespec *abs_timeout)
+ static inline int audit_mq_open(int oflag, mode_t mode, struct mq_attr __user *u_attr)
  {
-@@ -517,7 +516,7 @@ extern int audit_signals;
+@@ -522,7 +521,7 @@ extern int audit_signals;
+ #define audit_get_sessionid(t) (-1)
+ #define audit_log_task_context(b) do { ; } while (0)
+ #define audit_ipc_obj(i) ((void)0)
+-#define audit_ipc_set_perm(q,u,g,m) ({ 0; })
++#define audit_ipc_set_perm(q,u,g,m) ((void)0)
+ #define audit_bprm(p) ({ 0; })
+ #define audit_socketcall(n,a) ((void)0)
  #define audit_fd_pair(n,a) ({ 0; })
- #define audit_sockaddr(len, addr) ({ 0; })
- #define audit_set_macxattr(n) do { ; } while (0)
--#define audit_mq_open(o,m,a) ({ 0; })
-+#define audit_mq_open(o,m,a) ((void)0)
- #define audit_mq_sendrecv(d,l,p,t) ((void)0)
- #define audit_mq_notify(d,n) ((void)0)
- #define audit_mq_getsetattr(d,s) ((void)0)
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index 20fd43e..27199b9 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -588,21 +588,17 @@ static int mq_attr_ok(struct mq_attr *attr)
-  * Invoked when creating a new queue via sys_mq_open
-  */
- static struct file *do_create(struct dentry *dir, struct dentry *dentry,
--			int oflag, mode_t mode, struct mq_attr __user *u_attr)
-+			int oflag, mode_t mode, struct mq_attr *attr)
- {
--	struct mq_attr attr;
- 	struct file *result;
- 	int ret;
- 
--	if (u_attr) {
--		ret = -EFAULT;
--		if (copy_from_user(&attr, u_attr, sizeof(attr)))
--			goto out;
-+	if (attr) {
- 		ret = -EINVAL;
--		if (!mq_attr_ok(&attr))
-+		if (!mq_attr_ok(attr))
- 			goto out;
- 		/* store for use during create */
--		dentry->d_fsdata = &attr;
-+		dentry->d_fsdata = attr;
+diff --git a/ipc/util.c b/ipc/util.c
+index 0aa8ed8..b9f328b 100644
+--- a/ipc/util.c
++++ b/ipc/util.c
+@@ -797,19 +797,15 @@ struct kern_ipc_perm *ipcctl_pre_down(struct ipc_ids *ids, int id, int cmd,
  	}
  
- 	mode &= ~current->fs->umask;
-@@ -657,11 +653,13 @@ asmlinkage long sys_mq_open(const char __user *u_name, int oflag, mode_t mode,
- 	struct dentry *dentry;
- 	struct file *filp;
- 	char *name;
-+	struct mq_attr attr;
- 	int fd, error;
- 
--	error = audit_mq_open(oflag, mode, u_attr);
--	if (error != 0)
--		return error;
-+	if (u_attr && copy_from_user(&attr, u_attr, sizeof(struct mq_attr)))
-+		return -EFAULT;
+ 	audit_ipc_obj(ipcp);
+-
+-	if (cmd == IPC_SET) {
+-		err = audit_ipc_set_perm(extra_perm, perm->uid,
++	if (cmd == IPC_SET)
++		audit_ipc_set_perm(extra_perm, perm->uid,
+ 					 perm->gid, perm->mode);
+-		if (err)
+-			goto out_unlock;
+-	}
 +
-+	audit_mq_open(oflag, mode, u_attr ? &attr : NULL);
+ 	if (current->euid == ipcp->cuid ||
+ 	    current->euid == ipcp->uid || capable(CAP_SYS_ADMIN))
+ 		return ipcp;
  
- 	if (IS_ERR(name = getname(u_name)))
- 		return PTR_ERR(name);
-@@ -687,7 +685,8 @@ asmlinkage long sys_mq_open(const char __user *u_name, int oflag, mode_t mode,
- 			filp = do_open(dentry, oflag);
- 		} else {
- 			filp = do_create(mqueue_mnt->mnt_root, dentry,
--						oflag, mode, u_attr);
-+						oflag, mode,
-+						u_attr ? &attr : NULL);
- 		}
- 	} else {
- 		error = -ENOENT;
+ 	err = -EPERM;
+-out_unlock:
+ 	ipc_unlock(ipcp);
+ out_up:
+ 	up_write(&ids->rw_mutex);
 diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index fa8793d..ac89cd3 100644
+index c136047..9d4ac11 100644
 --- a/kernel/auditsc.c
 +++ b/kernel/auditsc.c
-@@ -112,13 +112,6 @@ struct audit_aux_data {
- /* Number of target pids per aux struct. */
- #define AUDIT_AUX_PIDS	16
+@@ -139,16 +139,6 @@ struct audit_aux_data_mq_getsetattr {
+ 	struct mq_attr 		mqstat;
+ };
  
--struct audit_aux_data_mq_open {
+-struct audit_aux_data_ipcctl {
 -	struct audit_aux_data	d;
--	int			oflag;
+-	struct ipc_perm		p;
+-	unsigned long		qbytes;
+-	uid_t			uid;
+-	gid_t			gid;
 -	mode_t			mode;
--	struct mq_attr		attr;
+-	u32			osid;
 -};
 -
  struct audit_aux_data_execve {
  	struct audit_aux_data	d;
  	int argc;
-@@ -216,6 +209,11 @@ struct audit_context {
- 			unsigned int		msg_prio;
- 			struct timespec		abs_timeout;
- 		} mq_sendrecv;
-+		struct {
-+			int			oflag;
-+			mode_t			mode;
-+			struct mq_attr		attr;
-+		} mq_open;
+@@ -226,6 +216,11 @@ struct audit_context {
+ 			gid_t			gid;
+ 			mode_t			mode;
+ 			u32			osid;
++			int			has_perm;
++			uid_t			perm_uid;
++			gid_t			perm_gid;
++			mode_t			perm_mode;
++			unsigned long		qbytes;
+ 		} ipc;
  	};
  
- #if AUDIT_DEBUG
-@@ -1204,6 +1202,16 @@ static void show_special(struct audit_context *context, int *call_panic)
- 				return;
+@@ -1201,6 +1196,19 @@ static void show_special(struct audit_context *context, int *call_panic)
+ 				security_release_secctx(ctx, len);
+ 			}
  		}
++		if (context->ipc.has_perm) {
++			audit_log_end(ab);
++			ab = audit_log_start(context, GFP_KERNEL,
++					     AUDIT_IPC_SET_PERM);
++			audit_log_format(ab,
++				"qbytes=%lx ouid=%u ogid=%u mode=%#o",
++				context->ipc.qbytes,
++				context->ipc.perm_uid,
++				context->ipc.perm_gid,
++				context->ipc.perm_mode);
++			if (!ab)
++				return;
++		}
  		break; }
-+	case AUDIT_MQ_OPEN: {
-+		audit_log_format(ab,
-+			"oflag=0x%x mode=%#o mq_flags=0x%lx mq_maxmsg=%ld "
-+			"mq_msgsize=%ld mq_curmsgs=%ld",
-+			context->mq_open.oflag, context->mq_open.mode,
-+			context->mq_open.attr.mq_flags,
-+			context->mq_open.attr.mq_maxmsg,
-+			context->mq_open.attr.mq_msgsize,
-+			context->mq_open.attr.mq_curmsgs);
-+		break; }
- 	case AUDIT_MQ_SENDRECV: {
- 		audit_log_format(ab,
- 			"mqdes=%d msg_len=%zd msg_prio=%u "
-@@ -1307,15 +1315,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
- 			continue; /* audit_panic has been called */
+ 	}
+ 	audit_log_end(ab);
+@@ -1318,13 +1326,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
+ 				axi->mqstat.mq_msgsize, axi->mqstat.mq_curmsgs);
+ 			break; }
  
- 		switch (aux->type) {
--		case AUDIT_MQ_OPEN: {
--			struct audit_aux_data_mq_open *axi = (void *)aux;
+-		case AUDIT_IPC_SET_PERM: {
+-			struct audit_aux_data_ipcctl *axi = (void *)aux;
 -			audit_log_format(ab,
--				"oflag=0x%x mode=%#o mq_flags=0x%lx mq_maxmsg=%ld "
--				"mq_msgsize=%ld mq_curmsgs=%ld",
--				axi->oflag, axi->mode, axi->attr.mq_flags,
--				axi->attr.mq_maxmsg, axi->attr.mq_msgsize,
--				axi->attr.mq_curmsgs);
+-				"qbytes=%lx ouid=%u ogid=%u mode=%#o",
+-				axi->qbytes, axi->uid, axi->gid, axi->mode);
 -			break; }
- 
+-
  		case AUDIT_EXECVE: {
  			struct audit_aux_data_execve *axi = (void *)aux;
-@@ -2021,38 +2020,20 @@ int audit_set_loginuid(struct task_struct *task, uid_t loginuid)
-  * @mode: mode bits
-  * @u_attr: queue attributes
+ 			audit_log_execve_info(context, &ab, axi);
+@@ -2238,6 +2239,7 @@ void __audit_ipc_obj(struct kern_ipc_perm *ipcp)
+ 	context->ipc.uid = ipcp->uid;
+ 	context->ipc.gid = ipcp->gid;
+ 	context->ipc.mode = ipcp->mode;
++	context->ipc.has_perm = 0;
+ 	security_ipc_getsecid(ipcp, &context->ipc.osid);
+ 	context->type = AUDIT_IPC;
+ }
+@@ -2249,26 +2251,17 @@ void __audit_ipc_obj(struct kern_ipc_perm *ipcp)
+  * @gid: msgq group id
+  * @mode: msgq mode (permissions)
   *
 - * Returns 0 for success or NULL context or < 0 on error.
++ * Called only after audit_ipc_obj().
   */
--int __audit_mq_open(int oflag, mode_t mode, struct mq_attr __user *u_attr)
-+void __audit_mq_open(int oflag, mode_t mode, struct mq_attr *attr)
+-int __audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid, mode_t mode)
++void __audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid, mode_t mode)
  {
--	struct audit_aux_data_mq_open *ax;
+-	struct audit_aux_data_ipcctl *ax;
  	struct audit_context *context = current->audit_context;
  
--	if (!audit_enabled)
--		return 0;
--
--	if (likely(!context))
--		return 0;
--
 -	ax = kmalloc(sizeof(*ax), GFP_ATOMIC);
 -	if (!ax)
 -		return -ENOMEM;
 -
--	if (u_attr != NULL) {
--		if (copy_from_user(&ax->attr, u_attr, sizeof(ax->attr))) {
--			kfree(ax);
--			return -EFAULT;
--		}
--	} else
--		memset(&ax->attr, 0, sizeof(ax->attr));
-+	if (attr)
-+		memcpy(&context->mq_open.attr, attr, sizeof(struct mq_attr));
-+	else
-+		memset(&context->mq_open.attr, 0, sizeof(struct mq_attr));
- 
--	ax->oflag = oflag;
+-	ax->qbytes = qbytes;
+-	ax->uid = uid;
+-	ax->gid = gid;
 -	ax->mode = mode;
-+	context->mq_open.oflag = oflag;
-+	context->mq_open.mode = mode;
- 
--	ax->d.type = AUDIT_MQ_OPEN;
+-
+-	ax->d.type = AUDIT_IPC_SET_PERM;
 -	ax->d.next = context->aux;
 -	context->aux = (void *)ax;
 -	return 0;
-+	context->type = AUDIT_MQ_OPEN;
++	context->ipc.qbytes = qbytes;
++	context->ipc.perm_uid = uid;
++	context->ipc.perm_gid = gid;
++	context->ipc.perm_mode = mode;
++	context->ipc.has_perm = 1;
  }
  
- /**
+ int audit_bprm(struct linux_binprm *bprm)
 -- 
 1.5.6.5
 
