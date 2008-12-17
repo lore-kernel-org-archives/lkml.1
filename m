@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759325AbYLQAI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759470AbYLQAOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759325AbYLQAI1 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 19:08:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759497AbYLQAGI
+	id S1759470AbYLQAOL (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:14:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbYLQAFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 19:06:08 -0500
-Received: from kroah.org ([198.145.64.141]:41304 "EHLO coco.kroah.org"
+	Tue, 16 Dec 2008 19:05:53 -0500
+Received: from kroah.org ([198.145.64.141]:41202 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759677AbYLQAGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 19:06:04 -0500
-Date: Tue, 16 Dec 2008 16:04:23 -0800
+	id S1757126AbYLQAFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 19:05:52 -0500
+Date: Tue, 16 Dec 2008 16:04:05 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,14 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
         Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
         Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
         torvalds@linux-foundation.org, akpm@linux-foundation.org,
-        alan@lxorguk.ukuu.org.uk, Ingo Brueckl <ib@wupperonline.de>,
-        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 12/22] unicode table for cp437
-Message-ID: <20081217000423.GM4504@kroah.com>
+        alan@lxorguk.ukuu.org.uk, Zachary Amsden <zach@vmware.com>
+Subject: [patch 04/22] x86 Fix VMI crash on boot in 2.6.28-rc8
+Message-ID: <20081217000405.GE4504@kroah.com>
 References: <20081216235704.347182084@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="unicode-table-for-cp437.patch"
+Content-Disposition: inline; filename="x86-fix-vmi-crash-on-boot-in-2.6.28-rc8.patch"
 In-Reply-To: <20081217000306.GA4504@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,87 +40,122 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ingo Brueckl <ib@wupperonline.de>
+From: Zachary Amsden <zach@vmware.com>
 
-commit f75bc06e5d00a827d3ec5d57bbb5b73a4adec855 upstream.
+commit ae8d04e2ecbb233926860e9ce145eac19c7835dc upstream.
 
-There is a major bug in the cp437 to unicode translation table.  Char
-0x7c is mapped to U+00a5 which is the Yen sign and wrong.  The right
-mapping is U+00a6 (broken bar).
+VMI initialiation can relocate the fixmap, causing early_ioremap to
+malfunction if it is initialized before the relocation.  To fix this,
+VMI activation is split into two phases; the detection, which must
+happen before setting up ioremap, and the activation, which must happen
+after parsing early boot parameters.
 
-Furthermore, a mapping for U+00b4 (a widely used character) is missing
-even though easily possible.
+This fixes a crash on boot when VMI is enabled under VMware.
 
-The patch fixes these, as well as it provides a few other useful
-mappings.
-
-The changes are as follows:
-
-  0x0f (enhancement) enables a sort of currency symbol
-  0x27 (bug) enables a sort of acute accent which is a widely used character
-  0x44 (enhancement) enables a sort of icelandic capital letter eth
-  0x7c (major bug) corrects mapping
-  0xeb (enhancement) enables a sort of icelandic small letter eth
-  0xee (enhancement) enables a sort of math 'element of'
-
-Signed-off-by: Ingo Brueckl <ib@wupperonline.de>
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Zachary Amsden <zach@vmware.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/cp437.uni |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/kernel/setup.c   |   12 +++++-------
+ arch/x86/kernel/smpboot.c |    2 --
+ arch/x86/kernel/vmi_32.c  |   16 +++++++++++-----
+ include/asm-x86/vmi.h     |    8 +++++++-
+ 4 files changed, 23 insertions(+), 15 deletions(-)
 
---- a/drivers/char/cp437.uni
-+++ b/drivers/char/cp437.uni
-@@ -27,7 +27,7 @@
- 0x0c	U+2640
- 0x0d	U+266a
- 0x0e	U+266b
--0x0f	U+263c
-+0x0f	U+263c U+00a4
- 0x10	U+25b6 U+25ba
- 0x11	U+25c0 U+25c4
- 0x12	U+2195
-@@ -55,7 +55,7 @@
- 0x24	U+0024
- 0x25	U+0025
- 0x26	U+0026
--0x27	U+0027
-+0x27	U+0027 U+00b4
- 0x28	U+0028
- 0x29	U+0029
- 0x2a	U+002a
-@@ -84,7 +84,7 @@
- 0x41	U+0041 U+00c0 U+00c1 U+00c2 U+00c3
- 0x42	U+0042
- 0x43	U+0043 U+00a9
--0x44	U+0044
-+0x44	U+0044 U+00d0
- 0x45	U+0045 U+00c8 U+00ca U+00cb
- 0x46	U+0046
- 0x47	U+0047
-@@ -140,7 +140,7 @@
- 0x79	U+0079 U+00fd
- 0x7a	U+007a
- 0x7b	U+007b
--0x7c	U+007c U+00a5
-+0x7c	U+007c U+00a6
- 0x7d	U+007d
- 0x7e	U+007e
- #
-@@ -263,10 +263,10 @@
- 0xe8	U+03a6 U+00d8
- 0xe9	U+0398
- 0xea	U+03a9 U+2126
--0xeb	U+03b4
-+0xeb	U+03b4 U+00f0
- 0xec	U+221e
- 0xed	U+03c6 U+00f8
--0xee	U+03b5
-+0xee	U+03b5 U+2208
- 0xef	U+2229
- 0xf0	U+2261
- 0xf1	U+00b1
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -634,6 +634,9 @@ void __init setup_arch(char **cmdline_p)
+ 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
+ #endif
+ 
++	/* VMI may relocate the fixmap; do this before touching ioremap area */
++	vmi_init();
++
+ 	early_cpu_init();
+ 	early_ioremap_init();
+ 
+@@ -707,13 +710,8 @@ void __init setup_arch(char **cmdline_p)
+ 	check_efer();
+ #endif
+ 
+-#if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
+-	/*
+-	 * Must be before kernel pagetables are setup
+-	 * or fixmap area is touched.
+-	 */
+-	vmi_init();
+-#endif
++	/* Must be before kernel pagetables are setup */
++	vmi_activate();
+ 
+ 	/* after early param, so could get panic from serial */
+ 	reserve_early_setup_data();
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -289,9 +289,7 @@ static void __cpuinit start_secondary(vo
+ 	 * fragile that we want to limit the things done here to the
+ 	 * most necessary things.
+ 	 */
+-#ifdef CONFIG_VMI
+ 	vmi_bringup();
+-#endif
+ 	cpu_init();
+ 	preempt_disable();
+ 	smp_callin();
+--- a/arch/x86/kernel/vmi_32.c
++++ b/arch/x86/kernel/vmi_32.c
+@@ -960,8 +960,6 @@ static inline int __init activate_vmi(vo
+ 
+ void __init vmi_init(void)
+ {
+-	unsigned long flags;
+-
+ 	if (!vmi_rom)
+ 		probe_vmi_rom();
+ 	else
+@@ -973,13 +971,21 @@ void __init vmi_init(void)
+ 
+ 	reserve_top_address(-vmi_rom->virtual_top);
+ 
+-	local_irq_save(flags);
+-	activate_vmi();
+-
+ #ifdef CONFIG_X86_IO_APIC
+ 	/* This is virtual hardware; timer routing is wired correctly */
+ 	no_timer_check = 1;
+ #endif
++}
++
++void vmi_activate(void)
++{
++	unsigned long flags;
++
++	if (!vmi_rom)
++		return;
++
++	local_irq_save(flags);
++	activate_vmi();
+ 	local_irq_restore(flags & X86_EFLAGS_IF);
+ }
+ 
+--- a/include/asm-x86/vmi.h
++++ b/include/asm-x86/vmi.h
+@@ -223,9 +223,15 @@ struct pci_header {
+ } __attribute__((packed));
+ 
+ /* Function prototypes for bootstrapping */
++#ifdef CONFIG_VMI
+ extern void vmi_init(void);
++extern void vmi_activate(void);
+ extern void vmi_bringup(void);
+-extern void vmi_apply_boot_page_allocations(void);
++#else
++static inline void vmi_init(void) {}
++static inline void vmi_activate(void) {}
++static inline void vmi_bringup(void) {}
++#endif
+ 
+ /* State needed to start an application processor in an SMP system. */
+ struct vmi_ap_state {
 
