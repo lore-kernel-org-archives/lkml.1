@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751786AbYLQQb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755131AbYLQQeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751786AbYLQQb7 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 11:31:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbYLQQbr
+	id S1755131AbYLQQeX (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 11:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYLQQeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 11:31:47 -0500
-Received: from gw.goop.org ([64.81.55.164]:60752 "EHLO mail.goop.org"
+	Wed, 17 Dec 2008 11:34:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59590 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752805AbYLQQbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 11:31:46 -0500
-Message-ID: <4949296F.7000701@goop.org>
-Date: Wed, 17 Dec 2008 08:31:43 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	id S1751093AbYLQQeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 11:34:12 -0500
+Message-ID: <494929E5.8060302@kernel.org>
+Date: Thu, 18 Dec 2008 01:33:41 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-        x86@kernel.org, ian.campbell@citrix.com, jbeulich@novell.com,
-        joerg.roedel@amd.com
-Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use
- of swiotlb
-References: <patchbomb.1229458644@abulafia.goop.org>	<20081216203513.GA14787@elte.hu> <20081217142637V.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081217142637V.fujita.tomonori@lab.ntt.co.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Steven Rostedt <srostedt@redhat.com>
+CC: George Spelvin <linux@horizon.com>, peterz@infradead.org,
+        andi@firstfloor.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] globmatch() helper function
+References: <20081217104247.28440.qmail@science.horizon.com>	 <87hc530w39.fsf@basil.nowhere.org> <1229526942.9487.75.camel@twins>	 <20081217160417.18507.qmail@science.horizon.com>	 <49492733.9000108@kernel.org> <1229531466.30177.12.camel@localhost.localdomain>
+In-Reply-To: <1229531466.30177.12.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 17 Dec 2008 16:33:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Tue, 16 Dec 2008 21:35:13 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
->
->   
->> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Steven Rostedt wrote:
+> On Thu, 2008-12-18 at 01:22 +0900, Tejun Heo wrote:
+>> Hello,
 >>
->>     
->>> Hi Ingo,
->>>
->>> Here's some patches to clean up swiotlb to prepare for some Xen dom0 
->>> patches.  These have been posted before, but undergone a round of 
->>> cleanups to address various comments.
->>>       
->> applied to tip/core/iommu, thanks Jeremy.
->>
->> the only patch that seems to have the potential to break drivers is:
->>
->>   be4ac7b: swiotlb: consistently use address_needs_mapping everywhere
->>     
->
-> Yeah, as I already wrote, this patch is wrong.
->   
+>> George Spelvin wrote:
+>>> Do people think that would be, on balance, better?  It would be plenty
+>>> good enough for the blacklist application.
+>> Just pass a depth parameter and trigger WARN_ON() and return -EINVAL
+>> when it exceeds ten.  It's a five minute change and should be enough
+>> for kernel usages.
+> 
+> If this is ever expected to be used by userspace, I would not include
+> the WARN_ON. If this is a generic function, then I'll include in in
+> ftrace as well, and that takes userspace input. The last thing I want is
+> a DoS because of printk's to the serial console because some userspace
+> app is constantly writing bad patterns to this file.
 
-I'll have a look.
+Well, then, how about printk_ratelimit()?  Having one too many
+asterisk will be a very rare occasion and when it happens it's
+something which can easily escape attention, so I think some form of
+whining is in order.
 
-> I think that the whole patchset is against the swiotlb design. swiotlb
-> is designed to be used as a library. Each architecture implements the
-> own swiotlb by using swiotlb library
-> (e.g. arch/x86/kernel/pci-swiotlb_64.c).
->   
+Thanks.
 
-The whole patchset?  The bulk of the changes to lib/swiotlb.c are 
-relatively minor to remove the unwarranted assumptions it is making in 
-the face of a new user.  They will have no effect on other existing 
-users, including non-Xen x86 builds.
-
-If you have specific objections we can discuss those, but I don't think 
-there's anything fundamentally wrong with making lib/swiotlb.c a bit 
-more generically useful.
-
-> For example, adding the following code (9/14) for just Xen that the
-> majority of swiotbl users (x86_64 and IA64) don't need to the library
-> is against the design.
->   
-
-If the architecture doesn't support highmem then this code will compile 
-to nothing - PageHighMem() will always evaluate to 0.  It will therefore 
-have zero effect on the code generated for IA64 or x86-64.  This is not 
-really a Xen-specific change, but a result of adding swiotlb support for 
-i386.  Other architectures which support a notion of highmem would also 
-need this code if they wanted to use swiotlb.
-
-    J
+-- 
+tejun
