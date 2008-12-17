@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753154AbYLQPPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752676AbYLQPSH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbYLQPPx (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 10:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbYLQPPm
+	id S1752676AbYLQPSH (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 10:18:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbYLQPRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 10:15:42 -0500
-Received: from ti-out-0910.google.com ([209.85.142.187]:46271 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751173AbYLQPPl (ORCPT
+	Wed, 17 Dec 2008 10:17:53 -0500
+Received: from casper.infradead.org ([85.118.1.10]:41216 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750859AbYLQPRw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 10:15:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=wCsomzjhofiEeUUXlCetaX/G6JTBuQof9Ny31SHNJg6np97tuUMdTA7xCVMo0dHC6w
-         nu9M9QNO+QC+g7ZzounKMpoEWaT3MF6FiubY9APAHaTPtNm4fMLiW1VI1uhH5Fo4t2pn
-         mSkwDzY7daaUpsWRN+0gtdDkvnpik4IE7fEIc=
-From: tom.leiming@gmail.com
-To: kay.sievers@vrfy.org, greg@kroah.com
-Cc: linux-kernel@vger.kernel.org, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH] driver core:fix duplicate removing driver link in __device_release_driver
-Date: Wed, 17 Dec 2008 23:15:35 +0800
-Message-Id: <1229526935-7505-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0
+	Wed, 17 Dec 2008 10:17:52 -0500
+Subject: Re: [RFC] globmatch() helper function
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: George Spelvin <linux@horizon.com>, linux-kernel@vger.kernel.org,
+        tj@kernel.org, Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <87hc530w39.fsf@basil.nowhere.org>
+References: <20081217104247.28440.qmail@science.horizon.com>
+	 <87hc530w39.fsf@basil.nowhere.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 17 Dec 2008 16:15:42 +0100
+Message-Id: <1229526942.9487.75.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+On Wed, 2008-12-17 at 14:28 +0100, Andi Kleen wrote:
+> "George Spelvin" <linux@horizon.com> writes:
+> 
+> Wow, finally a name.
+> 
+> > 			break;
+> > 		case '*':
+> > 			if (pat[1] == '\0')	/* Optimize trailing * case */
+> > 				return true;
+> > 			/* Recurse on each possible tail of str */
+> > 			while (!globmatch(pat+1, str))
+> > 				if (!*str++)
+> > 					return false;
+> 
+> I'm uneasy with the unbounded recursion. Sure currently all the users
+> are controlled in kernel source code and expect to put in sane patterns.
+> But if someone ever adds a user controlled glob in some way it will be 
+> trivial to crash/overwrite memory with the limited kernel stack.
+> And with such a generalized function it's likely to be used more
+> in the future.
 
-In __device_release_driver(),driver_sysfs_remove() has removed the
-driver link under device dir in sysfs, but sysfs_remove_link() is
-called again to do such thing. Remove the duplicate call to
-sys_remove_link().
+ftrace has a globbing thing in there somewhere as well and that does
+indeed take user input.
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- drivers/base/dd.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 20febc0..2a0b8cc 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -298,7 +298,6 @@ static void __device_release_driver(struct device *dev)
- 	drv = dev->driver;
- 	if (drv) {
- 		driver_sysfs_remove(dev);
--		sysfs_remove_link(&dev->kobj, "driver");
- 
- 		if (dev->bus)
- 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
--- 
-1.6.0
-
+Using recursion in kernel code is indeed not recommended, what Andi said
+we have tiny stacks.
