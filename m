@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751825AbYLQNya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755131AbYLQNyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751825AbYLQNya (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 08:54:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYLQNxY
+	id S1755131AbYLQNyN (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 08:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYLQNxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 08:53:24 -0500
-Received: from cavolo.yandex.ru ([87.250.244.45]:40546 "EHLO cavolo.yandex.ru"
+	Wed, 17 Dec 2008 08:53:23 -0500
+Received: from cavolo.yandex.ru ([87.250.244.45]:40542 "EHLO cavolo.yandex.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751169AbYLQNxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751091AbYLQNxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 17 Dec 2008 08:53:21 -0500
 From: Evgeniy Polyakov <zbr@ioremap.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [5/7] dst: transactions.
-Date: Wed, 17 Dec 2008 16:53:16 +0300
-Message-Id: <1229521998-7870-6-git-send-email-zbr@ioremap.net>
+Subject: [4/7] dst: thread pool.
+Date: Wed, 17 Dec 2008 16:53:15 +0300
+Message-Id: <1229521998-7870-5-git-send-email-zbr@ioremap.net>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1229521998-7870-5-git-send-email-zbr@ioremap.net>
+In-Reply-To: <1229521998-7870-4-git-send-email-zbr@ioremap.net>
 References: <1229521998-7870-1-git-send-email-zbr@ioremap.net>
  <1229521998-7870-2-git-send-email-zbr@ioremap.net>
  <1229521998-7870-3-git-send-email-zbr@ioremap.net>
  <1229521998-7870-4-git-send-email-zbr@ioremap.net>
- <1229521998-7870-5-git-send-email-zbr@ioremap.net>
 X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
 X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DST uses transaction model, when each store has to be explicitly acked
-from the remote node to be considered as successfully written. There
-may be lots of in-flight transactions. When remote host does not ack
-the transaction it will be resent predefined number of times with specified
-timeouts between them. All those parameters are configurable. Transactions
-are marked as failed after all resends completed unsuccessfully, having
-long enough resend timeout and/or large number of resends allows not to
-return error to the higher (FS usually) layer in case of short network
-problems or remote node outages. In case of network RAID setup this means
-that storage will not degrade until transactions are marked as failed, and
-thus will not force checksum recalculation and data rebuild. In case of
-connection failure DST will try to reconnect to the remote node automatically.
-DST sends ping commands at idle time to detect if remote node is alive.
+Thread pool abstraction allows to schedule a work to be performed
+on behalf of kernel thread. One does not operate with threads itself,
+instead user provides setup and cleanup callbacks for thread pool itself,
+and action and cleanup callbacks for each submitted work.
 
-Because of transactional model it is possible to use zero-copy sending
-without worry of data corruption (which in turn could be detected by the
-strong checksums though).
+Each worker has private data initialized at creation time and data,
+provided by user at scheduling time.
 
-Transactions are handled in this patch: allocation/freeing/completion,
-scanning for stall and to-be-resent transactions and overall management
-of the storing tree.
+When action is being performed, thread can not be used by other users,
+instead they will sleep until there is free thread to pick their work.
+
+Thread pool is used for crypto processing of incoming and outgoing IO
+requests to reduce the overall overhead.
 
 Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 
-diff --git a/drivers/block/dst/trans.c b/drivers/block/dst/trans.c
+diff --git a/drivers/block/dst/thread_pool.c b/drivers/block/dst/thread_pool.c
 new file mode 100644
-index 0000000..557d372
+index 0000000..c35754d
 --- /dev/null
-+++ b/drivers/block/dst/trans.c
-@@ -0,0 +1,335 @@
++++ b/drivers/block/dst/thread_pool.c
+@@ -0,0 +1,345 @@
 +/*
 + * 2007+ Copyright (c) Evgeniy Polyakov <zbr@ioremap.net>
 + * All rights reserved.
@@ -73,323 +64,333 @@ index 0000000..557d372
 + * GNU General Public License for more details.
 + */
 +
-+#include <linux/bio.h>
++#include <linux/kernel.h>
 +#include <linux/dst.h>
++#include <linux/kthread.h>
 +#include <linux/slab.h>
-+#include <linux/mempool.h>
 +
 +/*
-+ * Transaction memory pool size.
++ * Thread pool abstraction allows to schedule a work to be performed
++ * on behalf of kernel thread. One does not operate with threads itself,
++ * instead user provides setup and cleanup callbacks for thread pool itself,
++ * and action and cleanup callbacks for each submitted work.
++ *
++ * Each worker has private data initialized at creation time and data,
++ * provided by user at scheduling time.
++ *
++ * When action is being performed, thread can not be used by other users,
++ * instead they will sleep until there is free thread to pick their work.
 + */
-+static int dst_mempool_num = 32;
-+module_param(dst_mempool_num, int, 0644);
-+
-+/*
-+ * Transaction tree management.
-+ */
-+static inline int dst_trans_cmp(dst_gen_t gen, dst_gen_t new)
++struct thread_pool_worker
 +{
-+	if (gen < new)
-+		return 1;
-+	if (gen > new)
-+		return -1;
++	struct list_head	worker_entry;
++
++	struct task_struct	*thread;
++
++	struct thread_pool	*pool;
++
++	int			error;
++	int			has_data;
++	int			need_exit;
++	unsigned int		id;
++
++	wait_queue_head_t	wait;
++
++	void			*private;
++	void			*schedule_data;
++
++	int			(* action)(void *private, void *schedule_data);
++	void			(* cleanup)(void *private);
++};
++
++static void thread_pool_exit_worker(struct thread_pool_worker *w)
++{
++	kthread_stop(w->thread);
++
++	w->cleanup(w->private);
++	kfree(w);
++}
++
++/*
++ * Called to mark thread as ready and allow users to schedule new work.
++ */
++static void thread_pool_worker_make_ready(struct thread_pool_worker *w)
++{
++	struct thread_pool *p = w->pool;
++
++	mutex_lock(&p->thread_lock);
++
++	if (!w->need_exit) {
++		list_move_tail(&w->worker_entry, &p->ready_list);
++		w->has_data = 0;
++		mutex_unlock(&p->thread_lock);
++
++		wake_up(&p->wait);
++	} else {
++		p->thread_num--;
++		list_del(&w->worker_entry);
++		mutex_unlock(&p->thread_lock);
++
++		thread_pool_exit_worker(w);
++	}
++}
++
++/*
++ * Thread action loop: waits until there is new work.
++ */
++static int thread_pool_worker_func(void *data)
++{
++	struct thread_pool_worker *w = data;
++
++	while (!kthread_should_stop()) {
++		wait_event_interruptible(w->wait,
++			kthread_should_stop() || w->has_data);
++
++		if (kthread_should_stop())
++			break;
++
++		if (!w->has_data)
++			continue;
++
++		w->action(w->private, w->schedule_data);
++		thread_pool_worker_make_ready(w);
++	}
++
 +	return 0;
 +}
 +
-+struct dst_trans *dst_trans_search(struct dst_node *node, dst_gen_t gen)
++/*
++ * Remove single worker without specifying which one.
++ */
++void thread_pool_del_worker(struct thread_pool *p)
 +{
-+	struct rb_root *root = &node->trans_root;
-+	struct rb_node *n = root->rb_node;
-+	struct dst_trans *t, *ret = NULL;
-+	int cmp;
++	struct thread_pool_worker *w = NULL;
 +
-+	while (n) {
-+		t = rb_entry(n, struct dst_trans, trans_entry);
++	while (!w) {
++		wait_event(p->wait, !list_empty(&p->ready_list) || !p->thread_num);
 +
-+		cmp = dst_trans_cmp(t->gen, gen);
-+		if (cmp < 0)
-+			n = n->rb_left;
-+		else if (cmp > 0)
-+			n = n->rb_right;
-+		else {
-+			ret = t;
++		dprintk("%s: locking list_empty: %d, thread_num: %d.\n",
++				__func__, list_empty(&p->ready_list), p->thread_num);
++
++		mutex_lock(&p->thread_lock);
++		if (!list_empty(&p->ready_list)) {
++			w = list_first_entry(&p->ready_list,
++					struct thread_pool_worker,
++					worker_entry);
++
++			dprintk("%s: deleting w: %p, thread_num: %d, list: %p [%p.%p].\n",
++					__func__, w, p->thread_num, &p->ready_list,
++					p->ready_list.prev, p->ready_list.next);
++
++			p->thread_num--;
++			list_del(&w->worker_entry);
++		}
++		mutex_unlock(&p->thread_lock);
++	}
++
++	if (w)
++		thread_pool_exit_worker(w);
++	dprintk("%s: deleted w: %p, thread_num: %d.\n",
++			__func__, w, p->thread_num);
++}
++
++/*
++ * Remove a worker with given ID.
++ */
++void thread_pool_del_worker_id(struct thread_pool *p, unsigned int id)
++{
++	struct thread_pool_worker *w;
++	int found = 0;
++
++	mutex_lock(&p->thread_lock);
++	list_for_each_entry(w, &p->ready_list, worker_entry) {
++		if (w->id == id) {
++			found = 1;
++			p->thread_num--;
++			list_del(&w->worker_entry);
 +			break;
 +		}
 +	}
 +
-+	dprintk("%s: %s transaction: id: %llu.\n", __func__,
-+			(ret)?"found":"not found", gen);
-+
-+	return ret;
-+}
-+
-+static int dst_trans_insert(struct dst_trans *new)
-+{
-+	struct rb_root *root = &new->n->trans_root;
-+	struct rb_node **n = &root->rb_node, *parent = NULL;
-+	struct dst_trans *ret = NULL, *t;
-+	int cmp;
-+
-+	while (*n) {
-+		parent = *n;
-+
-+		t = rb_entry(parent, struct dst_trans, trans_entry);
-+
-+		cmp = dst_trans_cmp(t->gen, new->gen);
-+		if (cmp < 0)
-+			n = &parent->rb_left;
-+		else if (cmp > 0)
-+			n = &parent->rb_right;
-+		else {
-+			ret = t;
-+			break;
++	if (!found) {
++		list_for_each_entry(w, &p->active_list, worker_entry) {
++			if (w->id == id) {
++				w->need_exit = 1;
++				break;
++			}
 +		}
 +	}
++	mutex_unlock(&p->thread_lock);
 +
-+	new->send_time = jiffies;
-+	if (ret) {
-+		printk("%s: exist: old: gen: %llu, bio: %llu/%u, send_time: %lu, "
-+				"new: gen: %llu, bio: %llu/%u, send_time: %lu.\n",
-+			__func__,
-+			ret->gen, (u64)ret->bio->bi_sector,
-+			ret->bio->bi_size, ret->send_time,
-+			new->gen, (u64)new->bio->bi_sector,
-+			new->bio->bi_size, new->send_time);
-+		return -EEXIST;
-+	}
-+
-+	rb_link_node(&new->trans_entry, parent, n);
-+	rb_insert_color(&new->trans_entry, root);
-+
-+	dprintk("%s: inserted: gen: %llu, bio: %llu/%u, send_time: %lu.\n",
-+		__func__, new->gen, (u64)new->bio->bi_sector,
-+		new->bio->bi_size, new->send_time);
-+
-+	return 0;
-+}
-+
-+int dst_trans_remove_nolock(struct dst_trans *t)
-+{
-+	struct dst_node *n = t->n;
-+
-+	if (t->trans_entry.rb_parent_color) {
-+		rb_erase(&t->trans_entry, &n->trans_root);
-+		t->trans_entry.rb_parent_color = 0;
-+	}
-+	return 0;
-+}
-+
-+int dst_trans_remove(struct dst_trans *t)
-+{
-+	int ret;
-+	struct dst_node *n = t->n;
-+
-+	mutex_lock(&n->trans_lock);
-+	ret = dst_trans_remove_nolock(t);
-+	mutex_unlock(&n->trans_lock);
-+
-+	return ret;
++	if (found)
++		thread_pool_exit_worker(w);
 +}
 +
 +/*
-+ * When transaction is completed and there are no more users,
-+ * we complete appriate block IO request with given error status.
++ * Add new worker thread with given parameters.
++ * If initialization callback fails, return error.
 + */
-+void dst_trans_put(struct dst_trans *t)
++int thread_pool_add_worker(struct thread_pool *p,
++		char *name,
++		unsigned int id,
++		void *(* init)(void *private),
++		void (* cleanup)(void *private),
++		void *private)
 +{
-+	if (atomic_dec_and_test(&t->refcnt)) {
-+		struct bio *bio = t->bio;
-+
-+		dprintk("%s: completed t: %p, gen: %llu, bio: %p.\n",
-+				__func__, t, t->gen, bio);
-+
-+		bio_endio(bio, t->error);
-+		bio_put(bio);
-+
-+		dst_node_put(t->n);
-+		mempool_free(t, t->n->trans_pool);
-+	}
-+}
-+
-+/*
-+ * Process given block IO request: allocate transaction, insert it into the tree
-+ * and send/schedule crypto processing.
-+ */
-+int dst_process_bio(struct dst_node *n, struct bio *bio)
-+{
-+	struct dst_trans *t;
++	struct thread_pool_worker *w;
 +	int err = -ENOMEM;
 +
-+	t = mempool_alloc(n->trans_pool, GFP_NOFS);
-+	if (!t)
++	w = kzalloc(sizeof(struct thread_pool_worker), GFP_KERNEL);
++	if (!w)
 +		goto err_out_exit;
 +
-+	t->n = dst_node_get(n);
-+	t->bio = bio;
-+	t->error = 0;
-+	t->retries = 0;
-+	atomic_set(&t->refcnt, 1);
-+	t->gen = atomic_long_inc_return(&n->gen);
++	w->pool = p;
++	init_waitqueue_head(&w->wait);
++	w->cleanup = cleanup;
++	w->id = id;
 +
-+	t->enc = bio_data_dir(bio);
-+	dst_bio_to_cmd(bio, &t->cmd, DST_IO, t->gen);
-+
-+	mutex_lock(&n->trans_lock);
-+	err = dst_trans_insert(t);
-+	mutex_unlock(&n->trans_lock);
-+	if (err)
++	w->thread = kthread_run(thread_pool_worker_func, w, "%s", name);
++	if (IS_ERR(w->thread)) {
++		err = PTR_ERR(w->thread);
 +		goto err_out_free;
++	}
 +
-+	dprintk("%s: gen: %llu, bio: %llu/%u, dir/enc: %d, need_crypto: %d.\n",
-+			__func__, t->gen, (u64)bio->bi_sector,
-+			bio->bi_size, t->enc, dst_need_crypto(n));
++	w->private = init(private);
++	if (IS_ERR(w->private)) {
++		err = PTR_ERR(w->private);
++		goto err_out_stop_thread;
++	}
 +
-+	if (dst_need_crypto(n) && t->enc)
-+		dst_trans_crypto(t);
-+	else
-+		dst_trans_send(t);
++	mutex_lock(&p->thread_lock);
++	list_add_tail(&w->worker_entry, &p->ready_list);
++	p->thread_num++;
++	mutex_unlock(&p->thread_lock);
 +
 +	return 0;
 +
++err_out_stop_thread:
++	kthread_stop(w->thread);
 +err_out_free:
-+	dst_node_put(n);
-+	mempool_free(t, n->trans_pool);
++	kfree(w);
 +err_out_exit:
-+	bio_endio(bio, err);
-+	bio_put(bio);
 +	return err;
 +}
 +
 +/*
-+ * Scan for timeout/stale transactions.
-+ * Each transaction is being resent multiple times before error completion.
++ * Destroy the whole pool.
 + */
-+static void dst_trans_scan(struct work_struct *work)
++void thread_pool_destroy(struct thread_pool *p)
 +{
-+	struct dst_node *n = container_of(work, struct dst_node, trans_work.work);
-+	struct rb_node *rb_node;
-+	struct dst_trans *t;
-+	unsigned long timeout = n->trans_scan_timeout;
-+	int num = 10 * n->trans_max_retries;
-+
-+	mutex_lock(&n->trans_lock);
-+
-+	for (rb_node = rb_first(&n->trans_root); rb_node; ) {
-+		t = rb_entry(rb_node, struct dst_trans, trans_entry);
-+
-+		if (timeout && time_after(t->send_time + timeout, jiffies)
-+				&& t->retries == 0)
-+			break;
-+#if 0
-+		dprintk("%s: t: %p, gen: %llu, n: %s, retries: %u, max: %u.\n",
-+			__func__, t, t->gen, n->name,
-+			t->retries, n->trans_max_retries);
-+#endif
-+		if (--num == 0)
-+			break;
-+
-+		dst_trans_get(t);
-+
-+		rb_node = rb_next(rb_node);
-+
-+		if (timeout && (++t->retries < n->trans_max_retries)) {
-+			dst_trans_send(t);
-+		} else {
-+			t->error = -ETIMEDOUT;
-+			dst_trans_remove_nolock(t);
-+			dst_trans_put(t);
-+		}
-+
-+		dst_trans_put(t);
++	while (p->thread_num) {
++		dprintk("%s: num: %d.\n", __func__, p->thread_num);
++		thread_pool_del_worker(p);
 +	}
 +
-+	mutex_unlock(&n->trans_lock);
-+
-+	/*
-+	 * If no timeout specified then system is in the middle of exiting process,
-+	 * so no need to reschedule scanning process again.
-+	 */
-+	if (timeout) {
-+		if (!num)
-+			timeout = HZ;
-+		schedule_delayed_work(&n->trans_work, timeout);
-+	}
++	kfree(p);
 +}
 +
 +/*
-+ * Flush all transactions and mark them as timed out.
-+ * Destroy transaction pools.
++ * Create a pool with given number of threads.
++ * They will have sequential IDs started from zero.
 + */
-+void dst_node_trans_exit(struct dst_node *n)
++struct thread_pool *thread_pool_create(int num, char *name,
++		void *(* init)(void *private),
++		void (* cleanup)(void *private),
++		void *private)
 +{
-+	struct dst_trans *t;
-+	struct rb_node *rb_node;
++	struct thread_pool_worker *w, *tmp;
++	struct thread_pool *p;
++	int err = -ENOMEM;
++	int i;
 +
-+	if (!n->trans_cache)
-+		return;
-+
-+	dprintk("%s: n: %p, cancelling the work.\n", __func__, n);
-+	cancel_delayed_work_sync(&n->trans_work);
-+	flush_scheduled_work();
-+	dprintk("%s: n: %p, work has been cancelled.\n", __func__, n);
-+
-+	for (rb_node = rb_first(&n->trans_root); rb_node; ) {
-+		t = rb_entry(rb_node, struct dst_trans, trans_entry);
-+
-+		dprintk("%s: t: %p, gen: %llu, n: %s.\n",
-+			__func__, t, t->gen, n->name);
-+
-+		rb_node = rb_next(rb_node);
-+
-+		t->error = -ETIMEDOUT;
-+		dst_trans_remove_nolock(t);
-+		dst_trans_put(t);
-+	}
-+
-+	mempool_destroy(n->trans_pool);
-+	kmem_cache_destroy(n->trans_cache);
-+}
-+
-+/*
-+ * Initialize transaction storage for given node.
-+ * Transaction stores not only control information,
-+ * but also network command and crypto data (if needed)
-+ * to reduce number of allocations. Thus transaction size
-+ * differs from node to node.
-+ */
-+int dst_node_trans_init(struct dst_node *n, unsigned int size)
-+{
-+	/*
-+	 * We need this, since node with given name can be dropped from the
-+	 * hash table, but be still alive, so subsequent creation of the node
-+	 * with the same name may collide with existing cache name.
-+	 */
-+
-+	snprintf(n->cache_name, sizeof(n->cache_name), "%s-%p", n->name, n);
-+
-+	n->trans_cache = kmem_cache_create(n->cache_name,
-+			size + n->crypto.crypto_attached_size,
-+			0, 0, NULL);
-+	if (!n->trans_cache)
++	p = kzalloc(sizeof(struct thread_pool), GFP_KERNEL);
++	if (!p)
 +		goto err_out_exit;
 +
-+	n->trans_pool = mempool_create_slab_pool(dst_mempool_num, n->trans_cache);
-+	if (!n->trans_pool)
-+		goto err_out_cache_destroy;
++	init_waitqueue_head(&p->wait);
++	mutex_init(&p->thread_lock);
++	INIT_LIST_HEAD(&p->ready_list);
++	INIT_LIST_HEAD(&p->active_list);
++	p->thread_num = 0;
 +
-+	mutex_init(&n->trans_lock);
-+	n->trans_root = RB_ROOT;
++	for (i=0; i<num; ++i) {
++		err = thread_pool_add_worker(p, name, i, init,
++				cleanup, private);
++		if (err)
++			goto err_out_free_all;
++	}
 +
-+	INIT_DELAYED_WORK(&n->trans_work, dst_trans_scan);
-+	schedule_delayed_work(&n->trans_work, n->trans_scan_timeout);
++	return p;
 +
-+	dprintk("%s: n: %p, size: %u, crypto: %u.\n",
-+		__func__, n, size, n->crypto.crypto_attached_size);
-+
-+	return 0;
-+
-+err_out_cache_destroy:
-+	kmem_cache_destroy(n->trans_cache);
++err_out_free_all:
++	list_for_each_entry_safe(w, tmp, &p->ready_list, worker_entry) {
++		list_del(&w->worker_entry);
++		thread_pool_exit_worker(w);
++	}
++	kfree(p);
 +err_out_exit:
-+	return -ENOMEM;
++	return ERR_PTR(err);
++}
++
++/*
++ * Schedule execution of the action on a given thread,
++ * provided ID pointer has to match previously stored
++ * private data.
++ */
++int thread_pool_schedule_private(struct thread_pool *p,
++		int (* setup)(void *private, void *data),
++		int (* action)(void *private, void *data),
++		void *data, long timeout, void *id)
++{
++	struct thread_pool_worker *w, *tmp, *worker = NULL;
++	int err = 0;
++
++	while (!worker && !err) {
++		timeout = wait_event_interruptible_timeout(p->wait,
++				!list_empty(&p->ready_list),
++				timeout);
++
++		if (!timeout) {
++			err = -ETIMEDOUT;
++			break;
++		}
++
++		worker = NULL;
++		mutex_lock(&p->thread_lock);
++		list_for_each_entry_safe(w, tmp, &p->ready_list, worker_entry) {
++			if (id && id != w->private)
++				continue;
++
++			worker = w;
++
++			list_move_tail(&w->worker_entry, &p->active_list);
++
++			err = setup(w->private, data);
++			if (!err) {
++				w->schedule_data = data;
++				w->action = action;
++				w->has_data = 1;
++				wake_up(&w->wait);
++			} else {
++				list_move_tail(&w->worker_entry, &p->ready_list);
++			}
++
++			break;
++		}
++		mutex_unlock(&p->thread_lock);
++	}
++
++	return err;
++}
++
++/*
++ * Schedule execution on arbitrary thread from the pool.
++ */
++int thread_pool_schedule(struct thread_pool *p,
++		int (* setup)(void *private, void *data),
++		int (* action)(void *private, void *data),
++		void *data, long timeout)
++{
++	return thread_pool_schedule_private(p, setup,
++			action, data, timeout, NULL);
 +}
