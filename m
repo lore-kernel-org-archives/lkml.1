@@ -1,61 +1,90 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752971AbYLQW3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753145AbYLQWeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752971AbYLQW3e (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 17:29:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbYLQW3V
+	id S1753145AbYLQWeN (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 17:34:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYLQWdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 17:29:21 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52329 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751739AbYLQW3U (ORCPT
+	Wed, 17 Dec 2008 17:33:55 -0500
+Received: from intermatrixgroup.ru ([195.178.208.66]:37822 "EHLO
+	tservice.net.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbYLQWdz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 17:29:20 -0500
-Date: Wed, 17 Dec 2008 17:29:18 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: trace: fix task state printout
-In-Reply-To: <alpine.LFD.2.00.0812172229490.3492@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0812171727160.4839@gandalf.stny.rr.com>
-References: <alpine.LFD.2.00.0812172229490.3492@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 17 Dec 2008 17:33:55 -0500
+Date: Thu, 18 Dec 2008 01:33:52 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [w1] Allow master IO commands.
+Message-ID: <20081217223352.GA28283@ioremap.net>
+References: <1229450882-745-1-git-send-email-zbr@ioremap.net> <1229450882-745-2-git-send-email-zbr@ioremap.net> <20081217142241.e05fff98.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081217142241.e05fff98.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andrew.
 
-On Wed, 17 Dec 2008, Thomas Gleixner wrote:
-
-> Impact: tracer task state decoding is wrong, size check is buggy
-
-The Imact line seems more of a subject line. The real Impact line should 
-be something like:
-
-Impact: fix wrong decoding of task state int tracer
-
-Keyword is 'fix'
-
+On Wed, Dec 17, 2008 at 02:22:41PM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > +static int w1_process_command_master(struct w1_master *dev, struct cn_msg *req_msg,
+> > +		struct w1_netlink_msg *req_hdr, struct w1_netlink_cmd *req_cmd)
+> > +{
+> > +	int err = -EINVAL;
+> > +	struct cn_msg *msg;
+> > +	struct w1_netlink_msg *hdr;
+> > +	struct w1_netlink_cmd *cmd;
+> > +
+> > +	msg = kzalloc(PAGE_SIZE, GFP_KERNEL);
 > 
-> The tracing code has interesting varieties of printing out task state.
-> Unfortunalely only one of the instances is correct as it copies the
-> code from sched.c:sched_show_task(). The others are plain wrong as
-> they treatthe bitfield as an integer offset into the character
-> array. Also the size check of the character array is wrong as it
-> includes the trailing \0.
+> The use of PAGE_SIZE is odd.  It's either too large (inefficient) or
+> too small (disaster).
 > 
-> Use a common state decoder inline which does the Right Thing.
+> Is it not practical to calculate this precisely?
+
+It is not possible to calculate it in advance for the search commands,
+since we do not know how many slave devices are attached to the bus.
+This buffer is used as temporal area where IDs are stored and when
+number of IDs is large enough message is emmitted to the userspace and
+buffer becomes empty again. Sending one message per slave ID is a too
+big overhead, so this could be half of a page or one third or whatever
+else, I selected a page, which is the maximum guaranteed allocation
+buffer size.
+
+> > +	if (!msg)
+> > +		return -ENOMEM;
+> > +
+> > +	msg->id = req_msg->id;
+> > +	msg->seq = req_msg->seq;
+> > +	msg->ack = 0;
+> > +	msg->len = sizeof(struct w1_netlink_msg) + sizeof(struct w1_netlink_cmd);
+> > +
+> > +	hdr = (struct w1_netlink_msg *)(msg + 1);
+> > +	cmd = (struct w1_netlink_cmd *)(hdr + 1);
+> > +
+> > +	hdr->type = W1_MASTER_CMD;
+> > +	hdr->id = req_hdr->id;
+> > +	hdr->len = sizeof(struct w1_netlink_cmd);
+> > +
+> > +	cmd->cmd = req_cmd->cmd;
+> > +	cmd->len = 0;
+> > +
+> > +	switch (cmd->cmd) {
+> > +		case W1_CMD_SEARCH:
 > 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> checkpatch correctly points out that the body of the switch statement
+> should be indented one tabstop less than this.
+> 
+> > +		case W1_CMD_ALARM_SEARCH:
+> > +			err = w1_process_search_command(dev, msg,
+> > +				PAGE_SIZE - msg->len - sizeof(struct cn_msg));
+> 
+> which would give more room for cleaning this up.
 
-Acked-by: Steven Rostedt <srostedt@redhat.com>
+Ok, I will space it to the left. Should I sent patch on top of it or
+instead of?
 
-
-Ingo, this is a low risk fix that probably should be pushed towards Linus 
-for inclusion into 2.6.28.
-
--- Steve
-
+-- 
+	Evgeniy Polyakov
