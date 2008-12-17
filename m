@@ -1,57 +1,128 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753212AbYLQRdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754009AbYLQRer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbYLQRdr (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 12:33:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996AbYLQRdh
+	id S1754009AbYLQRer (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 12:34:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYLQReW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 12:33:37 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:50455 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750746AbYLQRdh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 12:33:37 -0500
-Date: Wed, 17 Dec 2008 17:33:35 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, geert@linux-m68k.org, dhowells@redhat.com,
-        gerg@uclinux.org
-Subject: Re: [PATCH] get rid of the last symlink in uml build
-Message-ID: <20081217173335.GF28946@ZenIV.linux.org.uk>
-References: <20081217061250.GX28946@ZenIV.linux.org.uk> <20081217072620.GA3551@uranus.ravnborg.org> <20081217083734.GA28946@ZenIV.linux.org.uk> <20081217085539.GA4152@uranus.ravnborg.org> <20081217091058.GB28946@ZenIV.linux.org.uk> <20081217112723.GA5027@uranus.ravnborg.org> <20081217170257.GE28946@ZenIV.linux.org.uk> <20081217171800.GA5436@uranus.ravnborg.org>
+	Wed, 17 Dec 2008 12:34:22 -0500
+Received: from plexity.net ([206.123.115.38]:53079 "EHLO plexity.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751298AbYLQReU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 12:34:20 -0500
+X-Greylist: delayed 380 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Dec 2008 12:34:19 EST
+Date: Wed, 17 Dec 2008 09:27:58 -0800
+From: Deepak Saxena <dsaxena@laptop.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+        Steven Rostedt <srostedt@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: TSC not updating after resume: Bug or Feature?
+Message-ID: <20081217172758.GA6010@trantor.hsd1.or.comcast.net>
+Reply-To: dsaxena@plexity.net
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081217171800.GA5436@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Organization: Plexity Networks
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 06:18:00PM +0100, Sam Ravnborg wrote:
-> I took a different route here and unified the headers for m68k and m68knommu
-> under arch/m68k/include/asm
-> It was based on a script originally developed by Arnd Bergmann.
-> 
-> Geert already acked it, and I expect Greg to apply it in the -rc1 timeframe.
 
-Fine by me...
+Hi,
 
-> > * mn10300 is playing with symlinks - the last one to do that for headers,
-> >   AFAICS.
-> > 
-> > I've thrown together a patch series on top of linux-next doing m68k and
-> > mn10300.  *WARNING* - it's completely untested, basically about half an
-> > hour diversion from sifting through the mailbox for missed VFS patches.
-> > And that half and hour did *not* include anything resembling building
-> > the resulting tree.  So take that with a trainload of salt.
-> Thanks Al.
-> I will take a closer look at the mn10300 bits and send them to David
-> in due time.
+I am using ftrace to get a detailed timing analysis of the resume process 
+on the OLPC XO laptop and am seeing that when we start running again, the
+system timestamep is not being updated for several (hundreds of) thousands 
+of cycles (~2000 ftrace entries). From following the ftrace, what is 
+happening is that the clocksource is not updated until we run the cpu_idle() 
+thread due to an explicit scheduling operation in the resume path that occurs 
+via call to msleep from pci_set_power_state().  As I'm still fully groking the 
+timekeeping code, the question(s) I have is whether this is expected behaviour 
+and I should not assume valid timestamp data in the initial bits of the suspend path, 
+whether this is an OLPC-specific bug, or whether I've uncovered a generic bug in 
+the timekeeping implementation.  This is on 2.6.27.7 as I've not gotten 28-rc 
+up and running on the XO but can move that up in priority if this behaviour
+is different in newer kernels.
 
-OK.  FWIW, two more uses of ln I've seen while looking at that stuff
-are also fishy:
-$(obj)/head.o: $(obj)/$(head-y)
-        ln -sf $(head-y) $(obj)/head.o
-in arch/m68knommu/platform/683{28,60}/Makefile shouldn't be there at all,
-AFAICS - normal kbuild machinery will take care of that just fine (with
-ld instead of ln, but who the hell cares?)
+Thanks,
+~Deepak
+
+# dsaxena: Return from firmware
+ do_suspend_trac-1267  [00]   154.925216: restore_processor_state <-ret_point
+ do_suspend_trac-1267  [00]   154.925216: enable_sep_cpu <-restore_processor_state
+ do_suspend_trac-1267  [00]   154.925216: olpc_fixup_wakeup <-olpc_pm_enter
+ do_suspend_trac-1267  [00]   154.925216: geode_get_dev_base <-olpc_fixup_wakeup
+ do_suspend_trac-1267  [00]   154.925216: olpc_ec_cmd <-olpc_fixup_wakeup
+ do_suspend_trac-1267  [00]   154.925216: _spin_lock_irqsave <-olpc_ec_cmd
+ do_suspend_trac-1267  [00]   154.925216: __wait_on_ibf <-olpc_ec_cmd
+ do_suspend_trac-1267  [00]   154.925216: printk <-olpc_ec_cmd
+ do_suspend_trac-1267  [00]   154.925216: vprintk <-printk
+ do_suspend_trac-1267  [00]   154.925216: _spin_lock <-vprintk
+ do_suspend_trac-1267  [00]   154.925216: emit_log_char <-vprintk
+ do_suspend_trac-1267  [00]   154.925216: emit_log_char <-vprintk
+....
+# pci_set_power_state() calls msleep(10) as per PCI spec
+ do_suspend_trac-1267  [00]   154.925216: msleep <-pci_set_power_state
+ do_suspend_trac-1267  [00]   154.925216: msecs_to_jiffies <-msleep
+ do_suspend_trac-1267  [00]   154.925216: schedule_timeout_uninterruptible <-msleep
+ do_suspend_trac-1267  [00]   154.925216: schedule_timeout <-schedule_timeout_uninterruptible
+ do_suspend_trac-1267  [00]   154.925216: init_timer_on_stack <-schedule_timeout
+ do_suspend_trac-1267  [00]   154.925216: __init_timer <-init_timer_on_stack
+ do_suspend_trac-1267  [00]   154.925216: __mod_timer <-schedule_timeout
+ do_suspend_trac-1267  [00]   154.925216: __timer_stats_timer_set_start_info <-__mod_timer
+ do_suspend_trac-1267  [00]   154.925216: lock_timer_base <-__mod_timer
+ do_suspend_trac-1267  [00]   154.925216: _spin_lock_irqsave <-lock_timer_base
+ do_suspend_trac-1267  [00]   154.925216: internal_add_timer <-__mod_timer
+ do_suspend_trac-1267  [00]   154.925216: _spin_unlock_irqrestore <-__mod_timer
+ do_suspend_trac-1267  [00]   154.925216: _spin_lock <-schedule
+ do_suspend_trac-1267  [00]   154.925216: marker_probe_cb <-schedule
+ do_suspend_trac-1267  [00]   154.925216: _spin_unlock <-tracing_record_cmdline
+ do_suspend_trac-1267  [00]   154.925216: __switch_to <-schedule
+          <idle>-0     [00]   154.925216: _spin_unlock_irq <-finish_task_switch
+          <idle>-0     [00]   154.925216: tick_nohz_stop_sched_tick <-cpu_idle
+          <idle>-0     [00]   154.925216: ktime_get <-tick_nohz_stop_sched_tick
+          <idle>-0     [00]   154.925216: ktime_get_ts <-ktime_get
+          <idle>-0     [00]   154.925216: getnstimeofday <-ktime_get_ts
+          <idle>-0     [00]   154.925216: set_normalized_timespec <-ktime_get_ts
+          <idle>-0     [00]   154.925216: get_next_timer_interrupt <-tick_nohz_stop_sched_tick
+          <idle>-0     [00]   154.925216: _spin_lock <-get_next_timer_interrupt
+          <idle>-0     [00]   154.925216: _spin_unlock <-get_next_timer_interrupt
+          <idle>-0     [00]   154.925216: hrtimer_get_next_event <-get_next_timer_interrupt
+          <idle>-0     [00]   154.925216: _spin_lock_irqsave <-hrtimer_get_next_event
+          <idle>-0     [00]   154.925216: _spin_unlock_irqrestore <-hrtimer_get_next_event
+          <idle>-0     [00]   154.925216: rcu_needs_cpu <-tick_nohz_stop_sched_tick
+          <idle>-0     [00]   154.925216: rcu_pending <-rcu_needs_cpu
+          <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
+          <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
+          <idle>-0     [00]   154.925216: rcu_pending <-cpu_idle
+          <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
+          <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
+          <idle>-0     [00]   154.925216: default_idle <-cpu_idle
+          <idle>-0     [00]   154.925216: do_IRQ <-common_interrupt
+          <idle>-0     [00]   154.925216: irq_enter <-do_IRQ
+          <idle>-0     [00]   154.925216: tick_nohz_stop_idle <-irq_enter
+          <idle>-0     [00]   154.925216: ktime_get <-tick_nohz_stop_idle
+          <idle>-0     [00]   154.925216: ktime_get_ts <-ktime_get
+          <idle>-0     [00]   154.925216: getnstimeofday <-ktime_get_ts
+          <idle>-0     [00]   154.925216: set_normalized_timespec <-ktime_get_ts
+          <idle>-0     [00]   154.925216: ktime_get <-sched_clock_tick
+          <idle>-0     [00]   154.925216: ktime_get_ts <-ktime_get
+          <idle>-0     [00]   154.925216: getnstimeofday <-ktime_get_ts
+          <idle>-0     [00]   154.925216: set_normalized_timespec <-ktime_get_ts
+# ktime_get_ts() calls getnstimeofday() which ends up calling clocksource_read()
+# thus updating the kernel timestamp. note that we call getnstimeofday()
+# twice above but for some reason they do not impact the time stamp...
+# There is an IRQ in here, possibly an HRT-driven IRQ and I'm wondering
+# if that is kicking the TSC into ticking?
+          <idle>-0     [00]   154.929837: touch_softlockup_watchdog <-sched_clock_idle_wakeup_event
+          <idle>-0     [00]   154.929839: tick_nohz_update_jiffies <-irq_enter
+
+
+~Deepak
+
+-- 
+ Deepak Saxena  http://www.greenbasement.info
+   _____   __o  Kernel Hacker, One Laptop Per Child  (o>
+------    -\<,  Give One Laptop, Get One Laptop      //\
+ ----- ( )/ ( ) http://www.amazon.com/xo             V_/_
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
