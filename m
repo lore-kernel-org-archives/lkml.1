@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1756905AbYLQDr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751513AbYLQDy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbYLQDr2 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 22:47:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYLQDrS
+	id S1751513AbYLQDy1 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 22:54:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbYLQDyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 22:47:18 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:40418 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750981AbYLQDrR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 22:47:17 -0500
-Date: Wed, 17 Dec 2008 09:17:03 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
-        mingo@elte.hu, richardj_moore@uk.ibm.com
-Subject: Re: [RFC Patch 1/9] Introducing generic hardware breakpoint
-	handler interfaces
-Message-ID: <20081217034703.GA5084@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20081204190804.GA15134@in.ibm.com> <20081204191119.GA20563@in.ibm.com> <493831A9.3050904@caviumnetworks.com>
+	Tue, 16 Dec 2008 22:54:16 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58367 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750706AbYLQDyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 22:54:15 -0500
+Date: Tue, 16 Dec 2008 22:53:16 -0500
+From: Dave Jones <davej@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tim Abbott <tabbott@MIT.EDU>, Jeff Arnold <jbarnold@MIT.EDU>,
+        linux-kernel@vger.kernel.org,
+        Denys Vlasenko <vda.linux@googlemail.com>,
+        Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+        Nikanth Karthikesan <knikanth@suse.de>,
+        Ben Collins <bcollins@ubuntu.com>
+Subject: Re: [PATCH 0/7] Ksplice: Rebootless kernel updates
+Message-ID: <20081217035316.GA24620@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Tim Abbott <tabbott@MIT.EDU>, Jeff Arnold <jbarnold@MIT.EDU>,
+	linux-kernel@vger.kernel.org,
+	Denys Vlasenko <vda.linux@googlemail.com>,
+	Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+	Nikanth Karthikesan <knikanth@suse.de>,
+	Ben Collins <bcollins@ubuntu.com>
+References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <alpine.DEB.2.00.0812162133360.25958@vinegar-pot.mit.edu> <20081216190740.9db323ee.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <493831A9.3050904@caviumnetworks.com>
+In-Reply-To: <20081216190740.9db323ee.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 04, 2008 at 11:38:17AM -0800, David Daney wrote:
-> K.Prasad wrote:
-> [...]
->> + * len and type values are defined in include/asm/hw_breakpoint.h.
->> + * Available values vary according to the architecture.  On i386 the
->> + * possibilities are:
->> + *
->> + *	HW_BREAKPOINT_LEN_1
->> + *	HW_BREAKPOINT_LEN_2
->> + *	HW_BREAKPOINT_LEN_4
->> + *	HW_BREAKPOINT_LEN_EXECUTE
->> + *	HW_BREAKPOINT_RW
->> + *	HW_BREAKPOINT_READ
->> + *	HW_BREAKPOINT_EXECUTE
->> + *
->> + * On other architectures HW_BREAKPOINT_LEN_8 may be available, and the
->> + * 1-, 2-, and 4-byte lengths may be unavailable.  There also may be
->> + * HW_BREAKPOINT_WRITE.  You can use #ifdef to check at compile time.
->> + */
->
-> On MIPS we support breakpoint lengths that are powers of 2 between 8 and  
-> 4096.  Do you really want symbolic values for these?  The debuggers have  
-> to do calculations with the length values, so translating between the  
-> symbolic values and numeric values would be tedious at best.
->
->
-> David Daney
+On Tue, Dec 16, 2008 at 07:07:40PM -0800, Andrew Morton wrote:
 
-Given that the possible values for length are finite and small on
-x86(just three of them), it was chosen to be defined as constants.
+ > I'd have _thought_ that distros and their high-end customers would be
+ > interested in it, but I haven't noticed anything from them.  Not that
+ > this means much - our processes for gathering this sort of information
+ > are rudimentary at best.  Has your team been in contact with distros?
+ > Are Suse shipping it, or planning to?
+ > 
+ > (cc's a few more distro people)
 
-For architectures such as MIPS where a range of lengths can be possibly
-monitored using HW Breakpoints, the arch_validate_hwbkpt_settings()
-maybe suitably written to validate the input and the 'length' may also
-be specified in numeric terms to the kernel interface (say
-register_kernel_hw_breakpoint()).
+I'm not exactly enamoured by this tbh.
+It's a neat hack, but the idea of it being used by even a small percentage
+of our users gives me the creeps.
+ 
+It comes down to 'what happens when something goes wrong'.
+When the end-user is running a ksplice-patched kernel with an unknown
+number of patches, reproducability can get really complicated.
+The Fedora position on it has been 'you keep both pieces if something breaks'
+in the same way we don't support someone who hand-built their own kernel.
+I understand ksplice now taints the kernel when it applies a patch, which
+is a step in the right direction, but we don't always get to see
+tainted flags in bug reports (the non-oops variants for eg).
 
-Thanks,
-K.Prasad
+If distros can't get security updates out in a reasonable time, fix
+the process instead of adding mechanism that does an end-run around it.
 
+Which just leaves the "we can't afford downtime" argument, which leads
+me to question how well reviewed runtime patches are.
+
+Having seen some of the non-ksplice runtime patches that appear in the
+wake of a new security hole, I can't say I have a lot of faith.
+Perhaps if there was a kernel.org sanctioned ksplice functionality, 
+then such patches would get better review before being deployed. Dunno.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
