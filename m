@@ -1,37 +1,54 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754146AbYLQMza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754051AbYLQNDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbYLQMza (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 07:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbYLQMzT
+	id S1754051AbYLQNDS (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 08:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYLQNDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 07:55:19 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:51006 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750847AbYLQMzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 07:55:18 -0500
-Date: Wed, 17 Dec 2008 13:55:07 +0100
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] avr32: Introducing asm/syscalls.h
-Message-ID: <20081217135507.69b9bbd5@hskinnemoen-d830>
-In-Reply-To: <1216973918.26114.1.camel@jaswinder.satnam>
-References: <1216973918.26114.1.camel@jaswinder.satnam>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Dec 2008 08:03:00 -0500
+Received: from mga14.intel.com ([143.182.124.37]:12472 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751009AbYLQNC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 08:02:59 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,236,1228118400"; 
+   d="scan'208";a="91184260"
+Date: Wed, 17 Dec 2008 21:02:18 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        Bill Davidsen <davidsen@tmr.com>
+Subject: Re: 2.6.28-rc8 big regression in VM
+Message-ID: <20081217130218.GA22620@localhost>
+References: <20081213012115.GA6250@localhost> <20081213095815.GA7143@ics.muni.cz> <20081215011645.GA9707@localhost> <20081215094409.GA4422@ics.muni.cz> <20081216045938.GA1000@localhost> <20081216195219.GA4480@ics.muni.cz> <20081217122726.GA21356@localhost> <20081217123307.GF4480@ics.muni.cz> <20081217124421.GA22317@localhost> <20081217124904.GG4480@ics.muni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081217124904.GG4480@ics.muni.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh wrote:
-> Declaring arch-dependent syscalls for avr32 architecture
-> 
-> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
+On Wed, Dec 17, 2008 at 02:49:04PM +0200, Lukas Hejtmanek wrote:
+> On Wed, Dec 17, 2008 at 08:44:21PM +0800, Wu Fengguang wrote:
+> > So the cache memory shrinks a lot.
+> >
+> > Maybe your 'free' command is reporting wrong numbers?
+> > Or it's not a quite reproducible problem?
+>
+> it depends, I think that 100MB of caches which is not dropped is not quite OK.
+>
+> While using the system without reboots for a long time, 'undroppable' amount
+> of caches rises until the system is unusable.
 
-Applied, thanks. Sorry it took so long...I was kind of wondering what
-happened to the rest of the series and then I forgot about the whole
-thing.
+The mapped file pages are not easily dropped:
 
-Haavard
+  Mapped:            73380 kB     =>   73384 kB
+
+You can check this number when the system becomes somehow unusable.  The
+/proc/filecache interface can also help you identify which files/pages
+tend to stick in memory.
+
+Thanks,
+Fengguang
+
