@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757304AbYLQByn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758008AbYLQCFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbYLQByn (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 20:54:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYLQByd
+	id S1758008AbYLQCFq (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 21:05:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbYLQCFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 20:54:33 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:50296 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbYLQByc (ORCPT
+	Tue, 16 Dec 2008 21:05:36 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:59870 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751609AbYLQCFf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 20:54:32 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-        linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Stephane Eranian <eranian@googlemail.com>,
-        Eric Dumazet <dada1@cosmosbay.com>,
-        Robert Richter <robert.richter@amd.com>,
-        Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        perfctr-devel@lists.sourceforge.net
-Subject: Re: [patch] Performance Counters for Linux, v4
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081214212829.GA9435@elte.hu>
-	<18758.18810.350923.806445@cargo.ozlabs.ibm.com>
-	<1229437341.7025.11.camel@twins>
-	<18760.13407.568536.198724@cargo.ozlabs.ibm.com>
-Date: Wed, 17 Dec 2008 02:55:10 +0100
-In-Reply-To: <18760.13407.568536.198724@cargo.ozlabs.ibm.com> (Paul Mackerras's message of "Wed, 17 Dec 2008 10:06:07 +1100")
-Message-ID: <87ljuf1s75.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 16 Dec 2008 21:05:35 -0500
+Date: Tue, 16 Dec 2008 18:04:35 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com
+Cc: daniel@hozac.com, bastian@waldi.eu.org, xemul@openvz.org,
+        containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+        sukadev@us.ibm.com
+Subject: [RFC][PATCH][v2] SEND_SIG_NOINFO: Masquerade si_pid when crossing
+	pid-ns boundary
+Message-ID: <20081217020435.GA2866@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras <paulus@samba.org> writes:
->
-> The perf counter subsystem will, in Ingo's design, naturally try to
-> schedule as many counters and groups on as it can.  Given a list of
-> counters/groups, it could start with the first and keep on trying to
-> add counters or groups while it can, essentially trying all possible
-> combinations until it either fills up all the hardware counters or
-> exhausts the possible combinations.  If it moves all the
-> counters/groups that do fit on up to the head of the list, and then
-> rotates them to the back of the list when the timeslice expires, that
-> would probably be OK.  In fact the computation about what set of
-> counters/groups to put on should be done when adding/removing a
-> counter/group and when the timeslice expires, rather than at context
-> switch time.  (I'm talking about the list of part-time counters/groups
-> here, of course.)
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Fri, 12 Dec 2008 17:51:43 -0800
+Subject: [PATCH] SEND_SIG_NOINFO: Masquerade si_pid when crossing pid-ns boundary
 
-One issue is that PMU counts can cover more than one CPU. One example
-for this are the Uncore events on Nehalem (which cover a whole socket)
-or when you are in AnyThreads monitoring mode (then you get events
-from both SMT siblings in a core)
+For SEND_SIG_NOINFO, si_pid is currently set to the pid of sender
+in sender's active pid namespace. But if the receiver is in a
+different namespace, that given pid number would be incorrect.
+Eg: when parent sends the 'pdeath_signal' to a child that is in
+a descendant pid namespace, we should set si_pid 0.
 
-With that you would need to examine other CPU's state at context switch
-time. Probably not a good idea for scalability.
+Changelog[v2]
+	- Moved change from task_pid() to task_tgid() to separate patch
 
--Andi
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ kernel/signal.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 2a64304..d11e5f8 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -856,7 +856,8 @@ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+ 			q->info.si_signo = sig;
+ 			q->info.si_errno = 0;
+ 			q->info.si_code = SI_USER;
+-			q->info.si_pid = task_pid_vnr(current);
++			q->info.si_pid = task_pid_nr_ns(current,
++							task_active_pid_ns(t));
+ 			q->info.si_uid = current_uid();
+ 			break;
+ 		case (unsigned long) SEND_SIG_PRIV:
 -- 
-ak@linux.intel.com
+1.5.2.5
+
