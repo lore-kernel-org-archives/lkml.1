@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752362AbYLQR6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752340AbYLQR6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752362AbYLQR6Q (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 12:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbYLQR56
+	id S1752340AbYLQR6j (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 12:58:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYLQR62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 12:57:58 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:54790 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750742AbYLQR55 (ORCPT
+	Wed, 17 Dec 2008 12:58:28 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:43714 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbYLQR60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 12:57:57 -0500
-Date: Wed, 17 Dec 2008 11:57:31 -0600
+	Wed, 17 Dec 2008 12:58:26 -0500
+Date: Wed, 17 Dec 2008 11:58:07 -0600
 From: "Serge E. Hallyn" <serue@us.ibm.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: Linux Containers <containers@lists.osdl.org>,
         Subrata Modak1 <subrata.modak@in.ibm.com>
-Subject: [LTP PATCH 2/4] posix mqns: test parent to child mq access
-Message-ID: <20081217175731.GD23331@us.ibm.com>
+Subject: [LTP PATCH 3/4] posix mqns: test vfs and mq interaction
+Message-ID: <20081217175807.GE23331@us.ibm.com>
 References: <20081217175513.GA23291@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,25 +27,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's kind of redundant with test 01 since there is no hierarchical
-relationship between ipc namespaces - they are all completely isolated.
-But heck it can't hurt.
+Test that the interaction between mqueuefs and ipc namespaces
+is correct (one mqueuefs for each ipc namespace, living at least
+as long as the namespace)
 
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 Signed-off-by: Serge Hallyn <serue@us.ibm.com>
 ---
- testcases/kernel/containers/mqns/mqns_02.c      |  138 +++++++++++++++++++++++
+ testcases/kernel/containers/mqns/mqns.h         |    1 +
+ testcases/kernel/containers/mqns/mqns_03.c      |  196 +++++++++++++++++++++++
  testcases/kernel/containers/mqns/runmqnstest.sh |    2 +-
- 2 files changed, 139 insertions(+), 1 deletions(-)
- create mode 100644 testcases/kernel/containers/mqns/mqns_02.c
- mode change 100644 => 100755 testcases/kernel/containers/mqns/runmqnstest.sh
+ 3 files changed, 198 insertions(+), 1 deletions(-)
+ create mode 100644 testcases/kernel/containers/mqns/mqns_03.c
 
-diff --git a/testcases/kernel/containers/mqns/mqns_02.c b/testcases/kernel/containers/mqns/mqns_02.c
+diff --git a/testcases/kernel/containers/mqns/mqns.h b/testcases/kernel/containers/mqns/mqns.h
+index df8fc4b..4bf1e1f 100644
+--- a/testcases/kernel/containers/mqns/mqns.h
++++ b/testcases/kernel/containers/mqns/mqns.h
+@@ -9,5 +9,6 @@
+ 
+ #define DEV_MQUEUE "/dev/mqueue"
+ #define SLASH_MQ1 "/MQ1"
++#define SLASH_MQ2 "/MQ2"
+ 
+ #endif /* __MQNS_H */
+diff --git a/testcases/kernel/containers/mqns/mqns_03.c b/testcases/kernel/containers/mqns/mqns_03.c
 new file mode 100644
-index 0000000..2414f43
+index 0000000..732bf88
 --- /dev/null
-+++ b/testcases/kernel/containers/mqns/mqns_02.c
-@@ -0,0 +1,138 @@
++++ b/testcases/kernel/containers/mqns/mqns_03.c
+@@ -0,0 +1,196 @@
 +/*
 +* Copyright (c) International Business Machines Corp., 2007
 +* This program is free software; you can redistribute it and/or modify
@@ -61,19 +71,20 @@ index 0000000..2414f43
 +* along with this program; if not, write to the Free Software
 +* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 +*
-+* Author: Nadia Derbey <Nadia.Derbey@bull.net>
++* Author: Serge Hallyn <serue@us.ibm.com>
 +*
-+* Check mqns isolation: child mqns cannot be accessed from father
++* Check ipcns+sb longevity
 +*
 +* Mount mqueue fs
 +* unshare
 +* In unshared process:
-+*    Mount newinstance mqueuefs
-+*    Create a posix mq -->mq1
-+* Check that mq1 is not readable from father
-+*
-+* Changelog:
-+* 	Dec 16: accomodate new mqns semantics (Serge Hallyn)
++*    Create "/mq1" with mq_open()
++*    Mount mqueuefs
++*    Check that /mq1 exists
++*    Create /dev/mqueue/mq2 through vfs (create(2))
++*    Umount /dev/mqueue
++*    Remount /dev/mqueue
++*    Check that both /mq1 and /mq2 exist
 +
 +***************************************************************************/
 +
@@ -87,35 +98,80 @@ index 0000000..2414f43
 +#include <errno.h>
 +#include "mqns.h"
 +
-+char *TCID = "posixmq_namespace_02";
++char *TCID = "posixmq_namespace_03";
 +int TST_TOTAL=1;
 +
 +int p1[2];
 +int p2[2];
 +
++#define FNAM1 DEV_MQUEUE2 SLASH_MQ1
++#define FNAM2 DEV_MQUEUE2 SLASH_MQ2
++
 +int check_mqueue(void *vtest)
 +{
-+	char buf[3];
++	char buf[30];
 +	mqd_t mqd;
++	int rc;
++	struct stat statbuf;
 +
 +	close(p1[1]);
 +	close(p2[0]);
 +
-+	read(p1[0], buf, 3);
++	read(p1[0], buf, 3); /* go */
 +
-+	mqd = mq_open(SLASH_MQ1, O_RDWR|O_CREAT|O_EXCL, 0777, NULL);
++	mqd = mq_open(SLASH_MQ1, O_RDWR|O_CREAT|O_EXCL, 0755, NULL);
 +	if (mqd == -1) {
 +		write(p2[1], "mqfail", 7);
 +		tst_exit(3);
 +	}
 +
-+	write(p2[1], "mqopen", 7);
-+
-+	read(p1[0], buf, 5);
-+
-+	/* destroy the mqueue */
 +	mq_close(mqd);
-+	mq_unlink(SLASH_MQ1);
++
++	rc = mount("mqueue", DEV_MQUEUE2, "mqueue", 0, NULL);
++	if (rc == -1) {
++		perror("mount");
++		write(p2[1], "mount1", 7);
++		tst_exit(3);
++	}
++
++	rc = stat(FNAM1, &statbuf);
++	if (rc == -1) {
++		write(p2[1], "stat1", 6);
++		tst_exit(3);
++	}
++
++	rc = creat(FNAM2, 0755);
++	if (rc == -1) {
++		write(p2[1], "creat", 6);
++		tst_exit(3);
++	}
++
++	close(rc);
++
++	rc = umount(DEV_MQUEUE2);
++	if (rc == -1) {
++		perror("umount");
++		write(p2[1], "umount", 7);
++		tst_exit(3);
++	}
++
++	rc = mount("mqueue", DEV_MQUEUE2, "mqueue", 0, NULL);
++	if (rc == -1) {
++		write(p2[1], "mount2", 7);
++		tst_exit(3);
++	}
++
++	rc = stat(FNAM1, &statbuf);
++	if (rc == -1) {
++		write(p2[1], "stat2", 7);
++		tst_exit(3);
++	}
++
++	rc = stat(FNAM2, &statbuf);
++	if (rc == -1) {
++		write(p2[1], "stat3", 7);
++		tst_exit(3);
++	}
 +
 +	write(p2[1], "done", 5);
 +
@@ -129,7 +185,6 @@ index 0000000..2414f43
 +int main(int argc, char *argv[])
 +{
 +	int r;
-+	mqd_t mqd;
 +	char buf[7];
 +	int use_clone = T_UNSHARE;
 +
@@ -138,7 +193,7 @@ index 0000000..2414f43
 +		use_clone = T_CLONE;
 +	} else
 +		tst_resm(TINFO, "Testing posix mq namespaces through unshare(2).\n");
-+
++ 
 +	if (pipe(p1) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
 +	if (pipe(p2) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
 +
@@ -149,53 +204,64 @@ index 0000000..2414f43
 +		tst_exit(1);
 +	}
 +
-+	tst_resm(TINFO, "Checking namespaces isolation (child to parent)\n");
++	tst_resm(TINFO, "Checking correct umount+remount of mqueuefs\n");
 +
++	mkdir(DEV_MQUEUE2, 0755);
++
++ 	close(p1[0]);
 +	close(p1[0]);
 +	close(p2[1]);
 +	write(p1[1], "go", 3);
 +
 +	read(p2[0], buf, 7);
++	r = TFAIL;
 +	if (!strcmp(buf, "mqfail")) {
 +		tst_resm(TFAIL, "child process could not create mqueue\n");
-+		umount(DEV_MQUEUE);
-+		tst_exit(TFAIL);
-+	} else if (strcmp(buf, "mqopen")) {
-+		tst_resm(TFAIL, "child process could not create mqueue\n");
-+		umount(DEV_MQUEUE);
-+		tst_exit(TFAIL);
++		goto fail;
++	} else if (!strcmp(buf, "mount1")) {
++		tst_resm(TFAIL, "child process could not mount mqueue\n");
++		goto fail;
++	} else if (!strcmp(buf, "stat1x")) {
++		tst_resm(TFAIL, "mq created by child is not in mqueuefs\n");
++		goto fail;
++	} else if (!strcmp(buf, "creat")) {
++		tst_resm(TFAIL, "child couldn't creat mq through mqueuefs\n");
++		goto fail;
++	} else if (!strcmp(buf, "umount")) {
++		tst_resm(TFAIL, "child couldn't umount mqueuefs\n");
++		goto fail;
++	} else if (!strcmp(buf, "mount2")) {
++		tst_resm(TFAIL, "child couldn't remount mqueuefs\n");
++		goto fail;
++	} else if (!strcmp(buf, "stat2")) {
++		tst_resm(TFAIL, "mq_open()d file gone after remount of mqueuefs\n");
++		goto fail;
++	} else if (!strcmp(buf, "stat3")) {
++		tst_resm(TFAIL, "creat(2)'d file gone after remount of mqueuefs\n");
++		goto fail;
 +	}
 +
-+	mqd = mq_open(SLASH_MQ1, O_RDONLY);
-+	if (mqd == -1) {
-+		r = TPASS;
-+		tst_resm(TPASS, "Father process doesn't see mqueue\n");
-+	} else {
-+		r = TFAIL;
-+		tst_resm(TFAIL, "Father process found mqueue\n");
-+		mq_close(mqd);
-+	}
++	tst_resm(TPASS, "umount+remount of mqueuefs remounted the right fs\n");
 +
-+	write(p1[1], "cont", 5);
-+	read(p2[0], buf, 7);
-+
++	r = 0;
++fail:
++	umount(DEV_MQUEUE2);
++	rmdir(DEV_MQUEUE2);
 +	tst_exit(r);
 +
 +	/* NOT REACHED */
 +	return 0;
 +}
 diff --git a/testcases/kernel/containers/mqns/runmqnstest.sh b/testcases/kernel/containers/mqns/runmqnstest.sh
-old mode 100644
-new mode 100755
-index 87c712e..a5bbd24
+index a5bbd24..b518d28 100755
 --- a/testcases/kernel/containers/mqns/runmqnstest.sh
 +++ b/testcases/kernel/containers/mqns/runmqnstest.sh
 @@ -20,7 +20,7 @@
  ################################################################################
  
  exit_code=0
--tests_list='mqns_01'
-+tests_list='mqns_01 mqns_02'
+-tests_list='mqns_01 mqns_02'
++tests_list='mqns_01 mqns_02 mqns_03'
  
  for t in $tests_list
  do
