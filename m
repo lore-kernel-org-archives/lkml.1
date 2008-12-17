@@ -1,58 +1,37 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758226AbYLQE27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1756732AbYLQEmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758226AbYLQE27 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 23:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYLQE2s
+	id S1756732AbYLQEmg (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 23:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbYLQEmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 23:28:48 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:33996 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbYLQE2s (ORCPT
+	Tue, 16 Dec 2008 23:42:24 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59791 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbYLQEmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 23:28:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=m6HH1s3Kk0pAVB26Ce2PutOyDo7/tSOsxdkVmJW/mRxUaVBkAFbb+8pHV3Tf2QQ0xq
-         cAyGOuk6l9jAzO7/vj31SEvjftwfu3TsuDNASdjm9IRwLzgvJzWe5IHS8IHxz1t5UGz1
-         DlZoKltHnbqtoDu7TUAdtbCmOsu1dEsOq6eZ0=
-Message-ID: <3f9a31f40812162028j5a0e12f5h2215daae12ce3441@mail.gmail.com>
-Date: Wed, 17 Dec 2008 09:58:47 +0530
-From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: traps.c declare functions before they get used
-Cc: "Jaswinder Singh" <jaswinder@infradead.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <20081216201956.GA14505@elte.hu>
+	Tue, 16 Dec 2008 23:42:23 -0500
+Date: Wed, 17 Dec 2008 04:42:16 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Kentaro Takeda <takedakn@nttdata.co.jp>
+Cc: jmorris@namei.org, akpm@linux-foundation.org,
+        linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
+        linux-kernel@vger.kernel.org, haradats@nttdata.co.jp
+Subject: Re: [PATCH] introduce new LSM hooks where vfsmount is available.
+Message-ID: <20081217044215.GV28946@ZenIV.linux.org.uk>
+References: <49487EEF.1070207@nttdata.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1229360145.15326.5.camel@jaswinder.satnam>
-	 <20081216201956.GA14505@elte.hu>
+In-Reply-To: <49487EEF.1070207@nttdata.co.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
+On Wed, Dec 17, 2008 at 01:24:15PM +0900, Kentaro Takeda wrote:
+> Al, would you respond to this patch?
+> James, Andrew and we are waiting for your Acked-by: response.
 
-On Wed, Dec 17, 2008 at 1:49 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> +#ifndef CONFIG_MATH_EMULATION
->>  asmlinkage void math_emulate(long);
->>  #endif
->
-> uhm, shouldnt that #ifndef CONFIG_MATH_EMULATION be #ifdef
-> CONFIG_MATH_EMULATION?
->
-
-Sorry, but it seems correct to me in traps case will be opposite.
-
-If someone tries to access math_emulate() and MATH_EMULATION is not
-defined then he will be trapped ;-)
-
-Thank you,
-
-Jaswinder Singh.
+In queue.  FWIW, I'm about to post the current audit patchset to linux-audit,
+push that crap to audit git and then I'm through with that turd.  And
+_finally_ can get to VFS queue sorting.
