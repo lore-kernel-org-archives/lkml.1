@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759881AbYLQAQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760345AbYLQAOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759881AbYLQAQk (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 19:16:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbYLQAQ2
+	id S1760345AbYLQAOd (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760860AbYLQANL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 19:16:28 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:45691 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbYLQAQ2 (ORCPT
+	Tue, 16 Dec 2008 19:13:11 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:47882 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760188AbYLQANJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 19:16:28 -0500
-Date: Wed, 17 Dec 2008 01:16:25 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Very slow header cache in mutt if the maildir is on ext3
-Message-ID: <20081217001625.GA3250@x61>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 16 Dec 2008 19:13:09 -0500
+Subject: Re: [RFC v11][PATCH 03/13] General infrastructure for checkpoint
+	restart
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Mike Waychison <mikew@google.com>
+Cc: jeremy@goop.org, arnd@arndb.de, containers@lists.linux-foundation.org,
+        "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+        linux-mm@kvack.org, Linux Torvalds <torvalds@linux-foundation.org>,
+        Alexander Viro <viro@zeniv.linux.org.uk>, linux-api@vger.kernel.org,
+        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <49482F14.1040407@google.com>
+References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
+	 <1228498282-11804-4-git-send-email-orenl@cs.columbia.edu>
+	 <49482394.10006@google.com> <1229465641.17206.350.camel@nimitz>
+	 <49482F14.1040407@google.com>
+Content-Type: text/plain
+Date: Tue, 16 Dec 2008 16:13:03 -0800
+Message-Id: <1229472783.17206.358.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2008-12-16 at 14:43 -0800, Mike Waychison wrote:
+> Hmm, if I'm understanding you correctly, adding ref counts explicitly 
+> (like you suggest below)  would be used to let a lower layer defer 
+> writes.  Seems like this could be just as easily done with explicits 
+> kmallocs and transferring ownership of the allocated memory to the 
+> in-kernel representation handling layer below (which in turn queues the 
+> data structures for writes).
 
-I suffered from very long delays (like one minute) when opening
-maildirs with a few thousand mails on my laptop.  I did some testing on
-my desktop in a very similar environment (LVM, dm-crypt, 2,5" hard
-disk, identical mutt configuration), which worked as quick as expected. 
-However, I tested with the maildir on XFS.  When I switched to ext3,
-things got slow again.  Then I discovered that the mutt header cache
-file is the culprit.  I already made a backup and restore, so the file
-system is in a fresh state.  I also removed the old header cache before
-testing.
+Yup, that's true.  We'd effectively shift the burden of freeing those
+buffers into the cr_write() (or whatever we call it) function.  
 
-In strace, I see that during the delay read() and lseek() were called
-to read the header cache.  If I flush all caches, and then read only
-the header cache back into the cache using dd, it works as quick as
-expected (only a few seconds).
+But, I'm just thinking about the sys_checkpoint() side.  I need to go
+look at the restart code too.
 
-The strange thing is that in both cases (maildir on ext3 and maildir on
-XFS), the header cache file is stored on a separate file system on a
-different hard disk on an XFS file system.  I don't get the point why
-reading the header cache from this XFS file system is so slow when the
-maildir is on ext3, and fast when the maildir is on XFS.
+-- Dave
 
-Here are strace excerpts for XFS and ext3, taken with "strace -f -s0
--tt" after doing "echo 7 > /proc/sys/vm/drop_caches":
-
-http://tikei.de/mutt_hcache_xfs.txt
-http://tikei.de/mutt_hcache_ext3.txt
-
-Note the start and end times. The ext3 case took nearly 18 seconds, the
-XFS case took 3 seconds.
-
-Regards,
-Tino
