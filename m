@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759078AbYLQHHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759254AbYLQHL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759078AbYLQHHm (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 02:07:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYLQHH2
+	id S1759254AbYLQHL7 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 02:11:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYLQHLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 02:07:28 -0500
-Received: from mga11.intel.com ([192.55.52.93]:11505 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751041AbYLQHH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 02:07:27 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.36,235,1228118400"; 
-   d="scan'208";a="415146407"
-Message-ID: <4948A52B.7040403@intel.com>
-Date: Wed, 17 Dec 2008 15:07:23 +0800
-From: "Zhao, Yu" <yu.zhao@intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 17 Dec 2008 02:11:48 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:33336 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751194AbYLQHLr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 02:11:47 -0500
+Message-ID: <4948A528.9090605@nokia.com>
+Date: Wed, 17 Dec 2008 09:07:20 +0200
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Jike Song <albcamus@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-        "achiang@hp.com" <achiang@hp.com>,
-        "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>,
-        "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-        "mingo@elte.hu" <mingo@elte.hu>, "matthew@wil.cx" <matthew@wil.cx>,
-        "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-        "rdreier@cisco.com" <rdreier@cisco.com>,
-        "horms@verge.net.au" <horms@verge.net.au>,
-        "yinghai@kernel.org" <yinghai@kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-        "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
-References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <200812161523.55238.jbarnes@virtuousgeek.org> <49486602.5000108@gmail.com> <20081217060608.GA12618@kroah.com>
-In-Reply-To: <20081217060608.GA12618@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Adrian Hunter <ext-adrian.hunter@nokia.com>,
+        David Woodhouse <David.Woodhouse@intel.com>
+Subject: Re: linux-next: Tree for December 16
+References: <20081216223754.0c8e21d4.sfr@canb.auug.org.au> <20081216152607.f232fafd.akpm@linux-foundation.org>
+In-Reply-To: <20081216152607.f232fafd.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 17 Dec 2008 07:09:35.0329 (UTC) FILETIME=[6AC01510:01C96016]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Dec 17, 2008 at 10:37:54AM +0800, Jike Song wrote:
->> Jesse Barnes wrote:
->>> Given a respin of 10-13 I think it's reasonable to merge this into 2.6.29, but 
->>> I'd be much happier about it if we got some driver code along with it, so as 
->>> not to have an unused interface sitting around for who knows how many 
->>> releases.  Is that reasonable?  Do you know if any of the corresponding PF/VF 
->>> driver bits are ready yet?
->> Hi Jesse, 
->>
->> Yu Zhao has posted a patch set with subject "SR-IOV driver example" 
->> at November 26, which illustrated the usage of SR-IOV API in Intel 82576 VF/PF
->> drivers;-)
+ext Andrew Morton wrote:
+> On Tue, 16 Dec 2008 22:37:54 +1100
+> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 > 
-> Yes, but that driver was soundly rejected by the network driver
-> maintainers, so I wouldn't go around showing that as your primary
-> example of how to use this interface :)
+>> I have created today's linux-next tree at
+>> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+>> (patches at
+>> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/)
 > 
-> The point is valid, I don't think these apis should go into the tree
-> without a driver or some other code using them.  Otherwise they make no
-> sense at all to have in-tree.
+> This MTD patch:
+> 
+> commit 69423d99fc182a81f3c5db3eb5c140acc6fc64be
+> Author:     Adrian Hunter <ext-adrian.hunter@nokia.com>
+> AuthorDate: Wed Dec 10 13:37:21 2008 +0000
+> Commit:     David Woodhouse <David.Woodhouse@intel.com>
+> CommitDate: Wed Dec 10 13:37:21 2008 +0000
+> 
+>     [MTD] update internal API to support 64-bit device size
+> 
+> broke the i386 build:
+> 
+> ERROR: "__udivdi3" [drivers/mtd/devices/mtd_dataflash.ko] undefined!
+> ERROR: "__umoddi3" [drivers/mtd/devices/mtd_dataflash.ko] undefined!
+> ERROR: "__umoddi3" [drivers/mtd/devices/m25p80.ko] undefined!
+> 
+> because things like
+> 
+>                 pageaddr = instr->addr / priv->page_size;
+> 
+> are now doing a 64-bit divide.
+> 
+> These will all need to be hunted down and converted to do_div().
 
-I agree the point is valid, but on another hand this is a 'the chicken & 
-the egg' problem -- if we don't have the SR-IOV base, people who are 
-developing PF drivers can not get their changes in-tree. Maybe they are 
-holding the patches and waiting on the infrastructure... :-)
+Right, I'll fix this shortly.
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
