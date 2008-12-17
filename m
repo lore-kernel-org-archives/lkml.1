@@ -1,69 +1,99 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752894AbYLQWTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753050AbYLQWX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752894AbYLQWTc (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 17:19:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbYLQWTT
+	id S1753050AbYLQWX3 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 17:23:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYLQWXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 17:19:19 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:36062 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751393AbYLQWTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 17:19:18 -0500
-Subject: Re: Notes on support for multiple devices for a single filesystem
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-        Chris Mason <chris.mason@oracle.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-        linux-btrfs@vger.kernel.org,
-        linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <20081217220449.GC5000@webber.adilger.int>
-References: <1227183484.6161.17.camel@think.oraclecorp.com>
-	 <1228962896.21376.11.camel@think.oraclecorp.com>
-	 <20081211141436.030c2d65.sfr@canb.auug.org.au>
-	 <20081210200604.8e190b0d.akpm@linux-foundation.org>
-	 <1229006596.22236.46.camel@think.oraclecorp.com>
-	 <20081215210323.GB5000@webber.adilger.int>
-	 <20081217132343.GA14695@infradead.org>
-	 <20081217220449.GC5000@webber.adilger.int>
-Content-Type: text/plain
-Date: Wed, 17 Dec 2008 16:19:13 -0600
-Message-Id: <1229552354.19550.29.camel@norville.austin.ibm.com>
+	Wed, 17 Dec 2008 17:23:19 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41798 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752030AbYLQWXS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 17:23:18 -0500
+Date: Wed, 17 Dec 2008 14:22:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: linux-kernel@vger.kernel.org, zbr@ioremap.net
+Subject: Re: [w1] Allow master IO commands.
+Message-Id: <20081217142241.e05fff98.akpm@linux-foundation.org>
+In-Reply-To: <1229450882-745-2-git-send-email-zbr@ioremap.net>
+References: <1229450882-745-1-git-send-email-zbr@ioremap.net>
+	<1229450882-745-2-git-send-email-zbr@ioremap.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-17 at 15:04 -0700, Andreas Dilger wrote:
-> On Dec 17, 2008  08:23 -0500, Christoph Hellwig wrote:
+On Tue, 16 Dec 2008 21:07:59 +0300
+Evgeniy Polyakov <zbr@ioremap.net> wrote:
 
-> > An alternative way, supported by optionally by ext3 and reiserfs and
-> > exclusively supported by jfs is to open the journal device by the device
-> > number (dev_t) of the block special device.  While this doesn't require
-> > an additional mount option when the device number is stored in the filesystem
-> > superblock it relies on the device number being stable which is getting
-> > increasingly unlikely in complex storage topologies.
+> This patch allows to start IO not against already found slave devices,
+> but against the bus itself, which can be used for example to probe device.
 > 
-> Just as an FYI here - the dev_t stored in the ext3/4 superblock for the
-> journal device is only a "cached" device.  The journal is properly
-> identified by its UUID, and should the device mapping change there is a
-> "journal_dev=" option that can be used to specify the new device.  The
-> one shortcoming is that there is no mount.ext3 helper which does this 
-> journal UUID->dev mapping and automatically passes "journal_dev=" if
-> needed.
+> ...
+>
+> +static int w1_process_command_master(struct w1_master *dev, struct cn_msg *req_msg,
+> +		struct w1_netlink_msg *req_hdr, struct w1_netlink_cmd *req_cmd)
+> +{
+> +	int err = -EINVAL;
+> +	struct cn_msg *msg;
+> +	struct w1_netlink_msg *hdr;
+> +	struct w1_netlink_cmd *cmd;
+> +
+> +	msg = kzalloc(PAGE_SIZE, GFP_KERNEL);
 
-An additional FYI.  JFS also treats the dev_t in its superblock the same
-way.  Since jfs relies on jfs_fsck running at boot time to ensure that
-the journal is replayed, jfs_fsck makes sure that the dev_t is accurate.
-If not, then it scans all of the block devices until it finds the uuid
-of the journal device, updating the superblock so that the kernel will
-find the journal.
+The use of PAGE_SIZE is odd.  It's either too large (inefficient) or
+too small (disaster).
 
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+Is it not practical to calculate this precisely?
+
+> +	if (!msg)
+> +		return -ENOMEM;
+> +
+> +	msg->id = req_msg->id;
+> +	msg->seq = req_msg->seq;
+> +	msg->ack = 0;
+> +	msg->len = sizeof(struct w1_netlink_msg) + sizeof(struct w1_netlink_cmd);
+> +
+> +	hdr = (struct w1_netlink_msg *)(msg + 1);
+> +	cmd = (struct w1_netlink_cmd *)(hdr + 1);
+> +
+> +	hdr->type = W1_MASTER_CMD;
+> +	hdr->id = req_hdr->id;
+> +	hdr->len = sizeof(struct w1_netlink_cmd);
+> +
+> +	cmd->cmd = req_cmd->cmd;
+> +	cmd->len = 0;
+> +
+> +	switch (cmd->cmd) {
+> +		case W1_CMD_SEARCH:
+
+checkpatch correctly points out that the body of the switch statement
+should be indented one tabstop less than this.
+
+> +		case W1_CMD_ALARM_SEARCH:
+> +			err = w1_process_search_command(dev, msg,
+> +				PAGE_SIZE - msg->len - sizeof(struct cn_msg));
+
+which would give more room for cleaning this up.
+
+> +			break;
+> +		case W1_CMD_READ:
+> +		case W1_CMD_WRITE:
+> +		case W1_CMD_TOUCH:
+> +			err = w1_process_command_io(dev, msg, hdr, cmd);
+> +			break;
+> +		default:
+> +			cmd->res = EINVAL;
+> +			cn_netlink_send(msg, 0, GFP_KERNEL);
+> +			break;
+> +	}
+> +
+> +	kfree(msg);
+> +	return err;
+> +}
+> +
 
