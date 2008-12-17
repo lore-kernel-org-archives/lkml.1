@@ -1,72 +1,93 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755817AbYLQPzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755533AbYLQPyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755817AbYLQPzj (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 10:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbYLQPz1
+	id S1755533AbYLQPyv (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 10:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbYLQPyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 10:55:27 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:54786 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751681AbYLQPz0 (ORCPT
+	Wed, 17 Dec 2008 10:54:37 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:41946 "EHLO
+	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754671AbYLQPyg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 10:55:26 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Evgeniy Polyakov <zbr@ioremap.net>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [4/7] dst: thread pool.
-Date: Wed, 17 Dec 2008 16:55:04 +0100
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <1229521998-7870-1-git-send-email-zbr@ioremap.net> <1229521998-7870-4-git-send-email-zbr@ioremap.net> <1229521998-7870-5-git-send-email-zbr@ioremap.net>
-In-Reply-To: <1229521998-7870-5-git-send-email-zbr@ioremap.net>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 17 Dec 2008 10:54:36 -0500
+X-BigFish: VPS-12(z21eWzzzzzz32i6bh43j62h)
+X-FB-SS: 5,
+X-WSS-ID: 0KC12UC-03-23L-01
+Date: Wed, 17 Dec 2008 16:54:15 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@redhat.com>
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] more AMD IOMMU fixes for 2.6.28-rc8
+Message-ID: <20081217155415.GV3407@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-Message-Id: <200812171655.05020.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18aK6rXQaVhIiHfMF2tZ1z1QtbqsinwbMi9NuD
- 2y8wFmdnvSBE+YTXLOUa9ZxRACaZiN9zXxGzcXj0N7rzwIioRG
- lzc6h2zD6E4f+p+b1ECxQ==
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 17 Dec 2008 15:54:15.0801 (UTC) FILETIME=[B692E690:01C9605F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 December 2008, Evgeniy Polyakov wrote:
-> 
-> Thread pool abstraction allows to schedule a work to be performed
-> on behalf of kernel thread. One does not operate with threads itself,
-> instead user provides setup and cleanup callbacks for thread pool itself,
-> and action and cleanup callbacks for each submitted work.
-> 
-> Each worker has private data initialized at creation time and data,
-> provided by user at scheduling time.
-> 
-> When action is being performed, thread can not be used by other users,
-> instead they will sleep until there is free thread to pick their work.
-> 
-> Thread pool is used for crypto processing of incoming and outgoing IO
-> requests to reduce the overall overhead.
-> 
-> Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+Hi Ingo,
 
-Have you looked at the last discussion involving thread pools in Linux?
-BenH brought up the topic earlier this year, it is archived on
-https://lists.linux-foundation.org/pipermail/ksummit-2008-discuss/2008-July/000213.html
+The following changes since commit 83fd5cc6481c6b7fa8b45f8a7e0aa7120213430b:
+  Joerg Roedel (1):
+        AMD IOMMU: allocate rlookup_table with __GFP_ZERO
 
-So while it seems that there is clearly a use for such infrastructure,
-my feeling is that it should not be part of dst, but rather live
-in a location where it can be used by every subsystem.
+are available in the git repository at:
 
-Of course getting it there means another flame war^W^W discussion about what
-the right interface should look like.
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-fixes-2.6.28
 
-My personal feeling is that the interface should look a lot like
-the existing work queues, to the point where you can easily convert
-drivers between them, or even move all work queues over to thread pools.
+Joerg Roedel (2):
+      AMD IOMMU: set cmd buffer pointers to zero manually
+      AMD IOMMU: panic if completion wait loop fails
 
-	Arnd <><
+ arch/x86/kernel/amd_iommu.c      |    5 +++--
+ arch/x86/kernel/amd_iommu_init.c |    4 ++++
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+They fix another problem discovered in long-running reboot tests. Please
+pull. The diff is attached.
+
+Joerg
+
+
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index a7b6dec..0a60d60 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -235,8 +235,9 @@ static int iommu_completion_wait(struct amd_iommu *iommu)
+ 	status &= ~MMIO_STATUS_COM_WAIT_INT_MASK;
+ 	writel(status, iommu->mmio_base + MMIO_STATUS_OFFSET);
+ 
+-	if (unlikely((i == EXIT_LOOP_COUNT) && printk_ratelimit()))
+-		printk(KERN_WARNING "AMD IOMMU: Completion wait loop failed\n");
++	if (unlikely(i == EXIT_LOOP_COUNT))
++		panic("AMD IOMMU: Completion wait loop failed\n");
++
+ out:
+ 	spin_unlock_irqrestore(&iommu->lock, flags);
+ 
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index c90a15e..c6cc228 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -427,6 +427,10 @@ static u8 * __init alloc_command_buffer(struct amd_iommu *iommu)
+ 	memcpy_toio(iommu->mmio_base + MMIO_CMD_BUF_OFFSET,
+ 			&entry, sizeof(entry));
+ 
++	/* set head and tail to zero manually */
++	writel(0x00, iommu->mmio_base + MMIO_CMD_HEAD_OFFSET);
++	writel(0x00, iommu->mmio_base + MMIO_CMD_TAIL_OFFSET);
++
+ 	iommu_feature_enable(iommu, CONTROL_CMDBUF_EN);
+ 
+ 	return cmd_buf;
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
