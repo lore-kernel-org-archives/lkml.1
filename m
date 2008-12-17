@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753128AbYLQK5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753565AbYLQLJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753128AbYLQK5s (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 05:57:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYLQK5i
+	id S1753565AbYLQLJa (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 06:09:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbYLQLJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 05:57:38 -0500
-Received: from [59.145.155.8] ([59.145.155.8]:40574 "EHLO e28smtp08.in.ibm.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751035AbYLQK5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 05:57:38 -0500
-X-Greylist: delayed 1838 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Dec 2008 05:57:37 EST
-Message-ID: <4948D3C4.9060900@in.ibm.com>
-Date: Wed, 17 Dec 2008 15:56:12 +0530
-From: Sharyathi Nagesh <sharyath@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Wed, 17 Dec 2008 06:09:19 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49948 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbYLQLJT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 06:09:19 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+        LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] remove CONFIG_OUT_OF_LINE_PFN_TO_PAGE
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20081217200812.FF1E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
-        Alexey Dobriyan <adobriyan@gmail.com>,
-        balbir <balbir@linux.vnet.ibm.com>,
-        "Rishikesh K. Rajak" <risrajak@in.ibm.com>, akpm@linux-foundation.org
-Subject: Error with cgroups: "unused subsystem ns"
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Wed, 17 Dec 2008 20:09:12 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
 
-Description:
-   We have noticed kernel error message on the dmesg when ltp test cases 
-are executed. We observed multiple instance of error message:
-                   "Not cloning cgroup for unused subsystem ns" in dmesg
+Now, any architecture don't use CONFIG_OUT_OF_LINE_PFN_TO_PAGE at all.
+it can be removed.
 
-Test:
-The messages were seen when ltp test case for the containers are executed:
-ltp -f containers
 
-Solution:
-Alexey Dobriyan had provided a patch to address the issue. Where the 
-printk was removed. The patch still haven't made it to main line and 
-hence we still see the messages.
-The patch can be found here:
-  http://git.openvz.org/?p=linux-2.6.24-openvz;a=log;h=v2.6.24-ovz002.2
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ include/asm-generic/memory_model.h |    7 -------
+ mm/page_alloc.c                    |   13 -------------
+ 2 files changed, 20 deletions(-)
 
-Would this be the right way to handle the issue?
-if so
-When can we expect this to be included into mainline
-Thanks
-Yeehaw
+Index: b/include/asm-generic/memory_model.h
+===================================================================
+--- a/include/asm-generic/memory_model.h
++++ b/include/asm-generic/memory_model.h
+@@ -69,15 +69,8 @@
+ })
+ #endif /* CONFIG_FLATMEM/DISCONTIGMEM/SPARSEMEM */
+ 
+-#ifdef CONFIG_OUT_OF_LINE_PFN_TO_PAGE
+-struct page;
+-/* this is useful when inlined pfn_to_page is too big */
+-extern struct page *pfn_to_page(unsigned long pfn);
+-extern unsigned long page_to_pfn(struct page *page);
+-#else
+ #define page_to_pfn __page_to_pfn
+ #define pfn_to_page __pfn_to_page
+-#endif /* CONFIG_OUT_OF_LINE_PFN_TO_PAGE */
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+Index: b/mm/page_alloc.c
+===================================================================
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -4593,19 +4593,6 @@ void *__init alloc_large_system_hash(con
+ 	return table;
+ }
+ 
+-#ifdef CONFIG_OUT_OF_LINE_PFN_TO_PAGE
+-struct page *pfn_to_page(unsigned long pfn)
+-{
+-	return __pfn_to_page(pfn);
+-}
+-unsigned long page_to_pfn(struct page *page)
+-{
+-	return __page_to_pfn(page);
+-}
+-EXPORT_SYMBOL(pfn_to_page);
+-EXPORT_SYMBOL(page_to_pfn);
+-#endif /* CONFIG_OUT_OF_LINE_PFN_TO_PAGE */
+-
+ /* Return a pointer to the bitmap storing bits affecting a block of pages */
+ static inline unsigned long *get_pageblock_bitmap(struct zone *zone,
+ 							unsigned long pfn)
+
+
