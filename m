@@ -1,275 +1,248 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759722AbYLQFP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759530AbYLQFU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759722AbYLQFP0 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 00:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759127AbYLQFNF
+	id S1759530AbYLQFU4 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 00:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750817AbYLQFUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 00:13:05 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37070 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758950AbYLQFND (ORCPT
+	Wed, 17 Dec 2008 00:20:45 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35122 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbYLQFUo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 00:13:03 -0500
-To: linux-audit@redhat.com
-Subject: [PATCH 12/15] audit rules ordering, part 2
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1LCoiS-0000FI-U8@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Wed, 17 Dec 2008 05:13:00 +0000
+	Wed, 17 Dec 2008 00:20:44 -0500
+Date: Wed, 17 Dec 2008 14:19:46 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: menage@google.com
+Cc: akpm@linux-foundation.org, lizf@cn.fujitsu.com,
+        linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 3/3] CGroups: Add css_tryget()
+Message-Id: <20081217141946.2e969fa7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081216113653.252690000@menage.corp.google.com>
+References: <20081216113055.713856000@menage.corp.google.com>
+	<20081216113653.252690000@menage.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 16 Dec 2008 03:30:58 -0800
+menage@google.com wrote:
 
-Fix the actual rule listing; add per-type lists _not_ used for matching,
-with all exit,... sitting on one such list.  Simplifies "do something
-for all rules" logics, while we are at it...
+> This patch adds css_tryget(), that obtains a counted reference on a
+> CSS.  It is used in situations where the caller has a "weak" reference
+> to the CSS, i.e. one that does not protect the cgroup from removal via
+> a reference count, but would instead be cleaned up by a destroy()
+> callback.
+> 
+> css_tryget() will return true on success, or false if the cgroup is
+> being removed.
+> 
+> This is similar to Kamezawa Hiroyuki's patch from a week or two ago,
+> but with the difference that in the event of css_tryget() racing with
+> a cgroup_rmdir(), css_tryget() will only return false if the cgroup
+> really does get removed.
+> 
+> This implementation is done by biasing css->refcnt, so that a refcnt
+> of 1 means "releasable" and 0 means "released or releasing". In the
+> event of a race, css_tryget() distinguishes between "released" and
+> "releasing" by checking for the CSS_REMOVED flag in css->flags.
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
+mkdir/rmdir works well. I'll write the user of this patch "css_tryget()" 
+in memcg.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- include/linux/audit.h |    1 +
- kernel/audit_tree.c   |    1 +
- kernel/auditfilter.c  |   95 ++++++++++++++++++++-----------------------------
- 3 files changed, 41 insertions(+), 56 deletions(-)
+Tested-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-diff --git a/include/linux/audit.h b/include/linux/audit.h
-index d28682c..4e37f06 100644
---- a/include/linux/audit.h
-+++ b/include/linux/audit.h
-@@ -371,6 +371,7 @@ struct audit_krule {
- 	struct audit_watch	*watch;	/* associated watch */
- 	struct audit_tree	*tree;	/* associated watched tree */
- 	struct list_head	rlist;	/* entry in audit_{watch,tree}.rules list */
-+	struct list_head	list;	/* for AUDIT_LIST* purposes only */
- 	u64			prio;
- };
- 
-diff --git a/kernel/audit_tree.c b/kernel/audit_tree.c
-index 8b50944..48bddad 100644
---- a/kernel/audit_tree.c
-+++ b/kernel/audit_tree.c
-@@ -450,6 +450,7 @@ static void kill_rules(struct audit_tree *tree)
- 			audit_log_end(ab);
- 			rule->tree = NULL;
- 			list_del_rcu(&entry->list);
-+			list_del(&entry->rule.list);
- 			call_rcu(&entry->rcu, audit_free_rule_rcu);
- 		}
- 	}
-diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
-index 995a2e8..5d4edc6 100644
---- a/kernel/auditfilter.c
-+++ b/kernel/auditfilter.c
-@@ -86,6 +86,14 @@ struct list_head audit_filter_list[AUDIT_NR_FILTERS] = {
- #error Fix audit_filter_list initialiser
- #endif
- };
-+static struct list_head audit_rules_list[AUDIT_NR_FILTERS] = {
-+	LIST_HEAD_INIT(audit_rules_list[0]),
-+	LIST_HEAD_INIT(audit_rules_list[1]),
-+	LIST_HEAD_INIT(audit_rules_list[2]),
-+	LIST_HEAD_INIT(audit_rules_list[3]),
-+	LIST_HEAD_INIT(audit_rules_list[4]),
-+	LIST_HEAD_INIT(audit_rules_list[5]),
-+};
- 
- DEFINE_MUTEX(audit_filter_mutex);
- 
-@@ -1007,12 +1015,15 @@ static void audit_update_watch(struct audit_parent *parent,
- 			list_del_rcu(&oentry->list);
- 
- 			nentry = audit_dupe_rule(&oentry->rule, nwatch);
--			if (IS_ERR(nentry))
-+			if (IS_ERR(nentry)) {
-+				list_del(&oentry->rule.list);
- 				audit_panic("error updating watch, removing");
--			else {
-+			} else {
- 				int h = audit_hash_ino((u32)ino);
- 				list_add(&nentry->rule.rlist, &nwatch->rules);
- 				list_add_rcu(&nentry->list, &audit_inode_hash[h]);
-+				list_replace(&oentry->rule.list,
-+					     &nentry->rule.list);
- 			}
- 
- 			call_rcu(&oentry->rcu, audit_free_rule_rcu);
-@@ -1077,6 +1088,7 @@ static void audit_remove_parent_watches(struct audit_parent *parent)
- 				audit_log_end(ab);
- 			}
- 			list_del(&r->rlist);
-+			list_del(&r->list);
- 			list_del_rcu(&e->list);
- 			call_rcu(&e->rcu, audit_free_rule_rcu);
- 		}
-@@ -1331,9 +1343,13 @@ static inline int audit_add_rule(struct audit_entry *entry,
- 	}
- 
- 	if (entry->rule.flags & AUDIT_FILTER_PREPEND) {
-+		list_add(&entry->rule.list,
-+			 &audit_rules_list[entry->rule.listnr]);
- 		list_add_rcu(&entry->list, list);
- 		entry->rule.flags &= ~AUDIT_FILTER_PREPEND;
- 	} else {
-+		list_add_tail(&entry->rule.list,
-+			      &audit_rules_list[entry->rule.listnr]);
- 		list_add_tail_rcu(&entry->list, list);
- 	}
- #ifdef CONFIG_AUDITSYSCALL
-@@ -1415,6 +1431,7 @@ static inline int audit_del_rule(struct audit_entry *entry,
- 		audit_remove_tree_rule(&e->rule);
- 
- 	list_del_rcu(&e->list);
-+	list_del(&e->rule.list);
- 	call_rcu(&e->rcu, audit_free_rule_rcu);
- 
- #ifdef CONFIG_AUDITSYSCALL
-@@ -1443,30 +1460,16 @@ out:
- static void audit_list(int pid, int seq, struct sk_buff_head *q)
- {
- 	struct sk_buff *skb;
--	struct audit_entry *entry;
-+	struct audit_krule *r;
- 	int i;
- 
- 	/* This is a blocking read, so use audit_filter_mutex instead of rcu
- 	 * iterator to sync with list writers. */
- 	for (i=0; i<AUDIT_NR_FILTERS; i++) {
--		list_for_each_entry(entry, &audit_filter_list[i], list) {
--			struct audit_rule *rule;
--
--			rule = audit_krule_to_rule(&entry->rule);
--			if (unlikely(!rule))
--				break;
--			skb = audit_make_reply(pid, seq, AUDIT_LIST, 0, 1,
--					 rule, sizeof(*rule));
--			if (skb)
--				skb_queue_tail(q, skb);
--			kfree(rule);
--		}
--	}
--	for (i = 0; i < AUDIT_INODE_BUCKETS; i++) {
--		list_for_each_entry(entry, &audit_inode_hash[i], list) {
-+		list_for_each_entry(r, &audit_rules_list[i], list) {
- 			struct audit_rule *rule;
- 
--			rule = audit_krule_to_rule(&entry->rule);
-+			rule = audit_krule_to_rule(r);
- 			if (unlikely(!rule))
- 				break;
- 			skb = audit_make_reply(pid, seq, AUDIT_LIST, 0, 1,
-@@ -1485,30 +1488,16 @@ static void audit_list(int pid, int seq, struct sk_buff_head *q)
- static void audit_list_rules(int pid, int seq, struct sk_buff_head *q)
- {
- 	struct sk_buff *skb;
--	struct audit_entry *e;
-+	struct audit_krule *r;
- 	int i;
- 
- 	/* This is a blocking read, so use audit_filter_mutex instead of rcu
- 	 * iterator to sync with list writers. */
- 	for (i=0; i<AUDIT_NR_FILTERS; i++) {
--		list_for_each_entry(e, &audit_filter_list[i], list) {
--			struct audit_rule_data *data;
--
--			data = audit_krule_to_data(&e->rule);
--			if (unlikely(!data))
--				break;
--			skb = audit_make_reply(pid, seq, AUDIT_LIST_RULES, 0, 1,
--					 data, sizeof(*data) + data->buflen);
--			if (skb)
--				skb_queue_tail(q, skb);
--			kfree(data);
--		}
--	}
--	for (i=0; i< AUDIT_INODE_BUCKETS; i++) {
--		list_for_each_entry(e, &audit_inode_hash[i], list) {
-+		list_for_each_entry(r, &audit_rules_list[i], list) {
- 			struct audit_rule_data *data;
- 
--			data = audit_krule_to_data(&e->rule);
-+			data = audit_krule_to_data(r);
- 			if (unlikely(!data))
- 				break;
- 			skb = audit_make_reply(pid, seq, AUDIT_LIST_RULES, 0, 1,
-@@ -1789,35 +1778,37 @@ unlock_and_return:
- 	return result;
- }
- 
--static int update_lsm_rule(struct audit_entry *entry)
-+static int update_lsm_rule(struct audit_krule *r)
- {
-+	struct audit_entry *entry = container_of(r, struct audit_entry, rule);
- 	struct audit_entry *nentry;
- 	struct audit_watch *watch;
- 	struct audit_tree *tree;
- 	int err = 0;
- 
--	if (!security_audit_rule_known(&entry->rule))
-+	if (!security_audit_rule_known(r))
- 		return 0;
- 
--	watch = entry->rule.watch;
--	tree = entry->rule.tree;
--	nentry = audit_dupe_rule(&entry->rule, watch);
-+	watch = r->watch;
-+	tree = r->tree;
-+	nentry = audit_dupe_rule(r, watch);
- 	if (IS_ERR(nentry)) {
- 		/* save the first error encountered for the
- 		 * return value */
- 		err = PTR_ERR(nentry);
- 		audit_panic("error updating LSM filters");
- 		if (watch)
--			list_del(&entry->rule.rlist);
-+			list_del(&r->rlist);
- 		list_del_rcu(&entry->list);
-+		list_del(&r->list);
- 	} else {
- 		if (watch) {
- 			list_add(&nentry->rule.rlist, &watch->rules);
--			list_del(&entry->rule.rlist);
-+			list_del(&r->rlist);
- 		} else if (tree)
--			list_replace_init(&entry->rule.rlist,
--				     &nentry->rule.rlist);
-+			list_replace_init(&r->rlist, &nentry->rule.rlist);
- 		list_replace_rcu(&entry->list, &nentry->list);
-+		list_replace(&r->list, &nentry->rule.list);
- 	}
- 	call_rcu(&entry->rcu, audit_free_rule_rcu);
- 
-@@ -1831,27 +1822,19 @@ static int update_lsm_rule(struct audit_entry *entry)
-  * updated rule. */
- int audit_update_lsm_rules(void)
- {
--	struct audit_entry *e, *n;
-+	struct audit_krule *r, *n;
- 	int i, err = 0;
- 
- 	/* audit_filter_mutex synchronizes the writers */
- 	mutex_lock(&audit_filter_mutex);
- 
- 	for (i = 0; i < AUDIT_NR_FILTERS; i++) {
--		list_for_each_entry_safe(e, n, &audit_filter_list[i], list) {
--			int res = update_lsm_rule(e);
--			if (!err)
--				err = res;
--		}
--	}
--	for (i=0; i< AUDIT_INODE_BUCKETS; i++) {
--		list_for_each_entry_safe(e, n, &audit_inode_hash[i], list) {
--			int res = update_lsm_rule(e);
-+		list_for_each_entry_safe(r, n, &audit_rules_list[i], list) {
-+			int res = update_lsm_rule(r);
- 			if (!err)
- 				err = res;
- 		}
- 	}
--
- 	mutex_unlock(&audit_filter_mutex);
- 
- 	return err;
--- 
-1.5.6.5
 
+> ---
+>  include/linux/cgroup.h |   38 +++++++++++++++++++++++++-----
+>  kernel/cgroup.c        |   61 ++++++++++++++++++++++++++++++++++++++++++++-----
+>  2 files changed, 88 insertions(+), 11 deletions(-)
+> 
+> Index: hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
+> ===================================================================
+> --- hierarchy_lock-mmotm-2008-12-09.orig/include/linux/cgroup.h
+> +++ hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
+> @@ -52,9 +52,9 @@ struct cgroup_subsys_state {
+>  	 * hierarchy structure */
+>  	struct cgroup *cgroup;
+>  
+> -	/* State maintained by the cgroup system to allow
+> -	 * subsystems to be "busy". Should be accessed via css_get()
+> -	 * and css_put() */
+> +	/* State maintained by the cgroup system to allow subsystems
+> +	 * to be "busy". Should be accessed via css_get(),
+> +	 * css_tryget() and and css_put(). */
+>  
+>  	atomic_t refcnt;
+>  
+> @@ -64,11 +64,14 @@ struct cgroup_subsys_state {
+>  /* bits in struct cgroup_subsys_state flags field */
+>  enum {
+>  	CSS_ROOT, /* This CSS is the root of the subsystem */
+> +	CSS_REMOVED, /* This CSS is dead */
+>  };
+>  
+>  /*
+> - * Call css_get() to hold a reference on the cgroup;
+> - *
+> + * Call css_get() to hold a reference on the css; it can be used
+> + * for a reference obtained via:
+> + * - an existing ref-counted reference to the css
+> + * - task->cgroups for a locked task
+>   */
+>  
+>  static inline void css_get(struct cgroup_subsys_state *css)
+> @@ -77,9 +80,32 @@ static inline void css_get(struct cgroup
+>  	if (!test_bit(CSS_ROOT, &css->flags))
+>  		atomic_inc(&css->refcnt);
+>  }
+> +
+> +static inline bool css_is_removed(struct cgroup_subsys_state *css)
+> +{
+> +	return test_bit(CSS_REMOVED, &css->flags);
+> +}
+> +
+> +/*
+> + * Call css_tryget() to take a reference on a css if your existing
+> + * (known-valid) reference isn't already ref-counted. Returns false if
+> + * the css has been destroyed.
+> + */
+> +
+> +static inline bool css_tryget(struct cgroup_subsys_state *css)
+> +{
+> +	if (test_bit(CSS_ROOT, &css->flags))
+> +		return true;
+> +	while (!atomic_inc_not_zero(&css->refcnt)) {
+> +		if (test_bit(CSS_REMOVED, &css->flags))
+> +			return false;
+> +	}
+> +	return true;
+> +}
+> +
+>  /*
+>   * css_put() should be called to release a reference taken by
+> - * css_get()
+> + * css_get() or css_tryget()
+>   */
+>  
+>  extern void __css_put(struct cgroup_subsys_state *css);
+> Index: hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+> ===================================================================
+> --- hierarchy_lock-mmotm-2008-12-09.orig/kernel/cgroup.c
+> +++ hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
+> @@ -2321,7 +2321,7 @@ static void init_cgroup_css(struct cgrou
+>  			       struct cgroup *cgrp)
+>  {
+>  	css->cgroup = cgrp;
+> -	atomic_set(&css->refcnt, 0);
+> +	atomic_set(&css->refcnt, 1);
+>  	css->flags = 0;
+>  	if (cgrp == dummytop)
+>  		set_bit(CSS_ROOT, &css->flags);
+> @@ -2453,7 +2453,7 @@ static int cgroup_has_css_refs(struct cg
+>  {
+>  	/* Check the reference count on each subsystem. Since we
+>  	 * already established that there are no tasks in the
+> -	 * cgroup, if the css refcount is also 0, then there should
+> +	 * cgroup, if the css refcount is also 1, then there should
+>  	 * be no outstanding references, so the subsystem is safe to
+>  	 * destroy. We scan across all subsystems rather than using
+>  	 * the per-hierarchy linked list of mounted subsystems since
+> @@ -2474,12 +2474,62 @@ static int cgroup_has_css_refs(struct cg
+>  		 * matter, since it can only happen if the cgroup
+>  		 * has been deleted and hence no longer needs the
+>  		 * release agent to be called anyway. */
+> -		if (css && atomic_read(&css->refcnt))
+> +		if (css && (atomic_read(&css->refcnt) > 1))
+>  			return 1;
+>  	}
+>  	return 0;
+>  }
+>  
+> +/*
+> + * Atomically mark all (or else none) of the cgroup's CSS objects as
+> + * CSS_REMOVED. Return true on success, or false if the cgroup has
+> + * busy subsystems. Call with cgroup_mutex held
+> + */
+> +
+> +static int cgroup_clear_css_refs(struct cgroup *cgrp)
+> +{
+> +	struct cgroup_subsys *ss;
+> +	unsigned long flags;
+> +	bool failed = false;
+> +	local_irq_save(flags);
+> +	for_each_subsys(cgrp->root, ss) {
+> +		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
+> +		int refcnt;
+> +		do {
+> +			/* We can only remove a CSS with a refcnt==1 */
+> +			refcnt = atomic_read(&css->refcnt);
+> +			if (refcnt > 1) {
+> +				failed = true;
+> +				goto done;
+> +			}
+> +			BUG_ON(!refcnt);
+> +			/*
+> +			 * Drop the refcnt to 0 while we check other
+> +			 * subsystems. This will cause any racing
+> +			 * css_tryget() to spin until we set the
+> +			 * CSS_REMOVED bits or abort
+> +			 */
+> +		} while (atomic_cmpxchg(&css->refcnt, refcnt, 0) != refcnt);
+> +	}
+> + done:
+> +	for_each_subsys(cgrp->root, ss) {
+> +		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
+> +		if (failed) {
+> +			/*
+> +			 * Restore old refcnt if we previously managed
+> +			 * to clear it from 1 to 0
+> +			 */
+> +			if (!atomic_read(&css->refcnt))
+> +				atomic_set(&css->refcnt, 1);
+> +		} else {
+> +			/* Commit the fact that the CSS is removed */
+> +			set_bit(CSS_REMOVED, &css->flags);
+> +		}
+> +	}
+> +	local_irq_restore(flags);
+> +	return !failed;
+> +}
+> +
+>  static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
+>  {
+>  	struct cgroup *cgrp = dentry->d_fsdata;
+> @@ -2510,7 +2560,7 @@ static int cgroup_rmdir(struct inode *un
+>  
+>  	if (atomic_read(&cgrp->count)
+>  	    || !list_empty(&cgrp->children)
+> -	    || cgroup_has_css_refs(cgrp)) {
+> +	    || !cgroup_clear_css_refs(cgrp)) {
+>  		mutex_unlock(&cgroup_mutex);
+>  		return -EBUSY;
+>  	}
+> @@ -3065,7 +3115,8 @@ void __css_put(struct cgroup_subsys_stat
+>  {
+>  	struct cgroup *cgrp = css->cgroup;
+>  	rcu_read_lock();
+> -	if (atomic_dec_and_test(&css->refcnt) && notify_on_release(cgrp)) {
+> +	if ((atomic_dec_return(&css->refcnt) == 1) &&
+> +	    notify_on_release(cgrp)) {
+>  		set_bit(CGRP_RELEASABLE, &cgrp->flags);
+>  		check_for_release(cgrp);
+>  	}
+> 
+> --
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
