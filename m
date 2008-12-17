@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757464AbYLQQzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1756046AbYLQQzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757464AbYLQQzz (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 11:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYLQQzo
+	id S1756046AbYLQQzW (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 11:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYLQQzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 11:55:44 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53785 "EHLO mx2.redhat.com"
+	Wed, 17 Dec 2008 11:55:05 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53772 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751115AbYLQQzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 11:55:43 -0500
-Subject: Re: [PATCH 3/15] sanitize audit_ipc_obj()
-From: Eric Paris <eparis@redhat.com>
-To: James Morris <jmorris@namei.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-audit@redhat.com,
-        linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>
-In-Reply-To: <alpine.LRH.1.10.0812172047090.24405@tundra.namei.org>
-References: <E1LCoh0-00009T-Sd@ZenIV.linux.org.uk>
-	 <alpine.LRH.1.10.0812171823430.22856@tundra.namei.org>
-	 <20081217093245.GC28946@ZenIV.linux.org.uk>
-	 <alpine.LRH.1.10.0812172047090.24405@tundra.namei.org>
+	id S1751493AbYLQQzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 11:55:04 -0500
+Subject: Re: [RFC] globmatch() helper function
+From: Steven Rostedt <srostedt@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Tejun Heo <tj@kernel.org>, George Spelvin <linux@horizon.com>,
+        peterz@infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20081217165149.GG25779@one.firstfloor.org>
+References: <20081217104247.28440.qmail@science.horizon.com>
+	 <87hc530w39.fsf@basil.nowhere.org> <1229526942.9487.75.camel@twins>
+	 <20081217160417.18507.qmail@science.horizon.com>
+	 <49492733.9000108@kernel.org>
+	 <1229531466.30177.12.camel@localhost.localdomain>
+	 <494929E5.8060302@kernel.org>
+	 <1229531826.30177.14.camel@localhost.localdomain>
+	 <20081217165149.GG25779@one.firstfloor.org>
 Content-Type: text/plain
-Date: Wed, 17 Dec 2008 11:55:28 -0500
-Message-Id: <1229532928.3384.3.camel@localhost.localdomain>
+Organization: Red Hat
+Date: Wed, 17 Dec 2008 11:54:32 -0500
+Message-Id: <1229532872.30177.19.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-17 at 20:53 +1100, James Morris wrote:
-> On Wed, 17 Dec 2008, Al Viro wrote:
+
+On Wed, 2008-12-17 at 17:51 +0100, Andi Kleen wrote:
+> > OK, lets compromise with WARN_ON_ONCE() ;-)
 > 
-> > On Wed, Dec 17, 2008 at 06:24:40PM +1100, James Morris wrote:
-> > > On Wed, 17 Dec 2008, Al Viro wrote:
-> > > 
-> > > > +		struct {
-> > > > +			uid_t			uid;
-> > > > +			gid_t			gid;
-> > > > +			mode_t			mode;
-> > > > +			u32			osid;
-> > > > +		} ipc;
-> > > 
-> > > 'osid' should be converted into 'secid' someday.
-> > 
-> > Eh?  Do you mean the field name there or the actual output?  Either is
-> > trivial, of course, but the latter is up to userland folks and the
-> > former alone seems to be rather pointless...
-> 
-> I was thinking in terms of the kernel API, where 'secid' is the preferred 
-> name for security identifiers ('sid' being an SELinux-specific term and 
-> also conflicting with 'session id').  Given that it's exposed to userland, 
-> I guess it's too late.
+> I don't think WARN_ON is the right way to handle bad user input.
+> It implies that when someone typos the result might end up in Arjan's 
+> kerneloops.org database, which is not good.
 
-James meant just do s/osid/secid/ for continuity across the kernel (we
-are trying to make the main kernel a bit more LSM agnostic and sid is an
-SELinux term).  The userspace exported part is actually a translated
-string (I think we use ocontext= and scontext=).
 
-There is no reason we couldn't do this in audit.  But, I don't think
-it's worth changing this patch, as I think audit refers to it as sid in
-other places.  Maybe I'll try to clean that up someday.  I at least
-added it to my "someday" todo list.
+Since I recommended an internal helper function, we could have:
 
--Eric
+int globmatch(const char *pat, const char *str)
+{
+	int ret;
+
+	ret = globmatch_internal(pat, str, 0);
+	if (ret < 0)
+		WARN_ON();
+	return ret;
+}
+
+int globmatch_user(const char *pat, const char *str)
+{
+	return globmatch_internal(pat, str, 0);
+}
+
+
+This would warn on if a kernel user caused the overflow, and also gives
+a function that user space input could use, that would not warn on
+overflow.
+
+-- Steve
+
 
