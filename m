@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753273AbYLQOMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754323AbYLQORP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753273AbYLQOMm (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 09:12:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYLQOMb
+	id S1754323AbYLQORP (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 09:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYLQOQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 09:12:31 -0500
-Received: from postman.teamix.net ([194.150.191.120]:37231 "EHLO
-	rproxy.teamix.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751086AbYLQOMb (ORCPT
+	Wed, 17 Dec 2008 09:16:57 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:50205 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751211AbYLQOQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 09:12:31 -0500
-From: Martin Steigerwald <ms@teamix.de>
-Organization: team(ix) GmbH
-To: linux-kernel@vger.kernel.org
-Subject: Re: physical memory limit of 64-bit linux
-Date: Wed, 17 Dec 2008 15:12:15 +0100
-User-Agent: KMail/1.9.9
-Cc: Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-        Ingo Molnar <mingo@elte.hu>
-References: <200812161556.25518.ms@teamix.de> <200812161654.17291.rjw@sisk.pl> <20081216164443.GY25779@one.firstfloor.org>
-In-Reply-To: <20081216164443.GY25779@one.firstfloor.org>
+	Wed, 17 Dec 2008 09:16:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Ianmn4t8ye30aphcJulpBSJFh0rEzW5R2IxPi9HpQttYt95fYaQZnxHmVIxkDLaK+9
+         3j3yp2prpTBzJwhC19IDwmRs9F6WhvXWL0CEAizrO591hv7yrPnYF2ZQwpCzJwwTRvau
+         vYfgy0sJbKkvtPiCtafzAt6jgMI+Hyb+mJ+Hg=
+Message-ID: <3f9a31f40812170616h3c4eb54fo20e325e7d763b490@mail.gmail.com>
+Date: Wed, 17 Dec 2008 19:46:56 +0530
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH] avr32: Introducing asm/syscalls.h
+Cc: "Jaswinder Singh" <jaswinder@infradead.org>,
+        LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081217135507.69b9bbd5@hskinnemoen-d830>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4191591.oda1QXyAGh";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200812171512.24993.ms@teamix.de>
+Content-Disposition: inline
+References: <1216973918.26114.1.camel@jaswinder.satnam>
+	 <20081217135507.69b9bbd5@hskinnemoen-d830>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4191591.oda1QXyAGh
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hello Haavard,
 
-
-Thanks to all for the answers and the detailed discussions.
-
-Am Dienstag, 16. Dezember 2008 schrieb Andi Kleen:
-> On Tue, Dec 16, 2008 at 04:54:16PM +0100, Rafael J. Wysocki wrote:
-> > On Tuesday, 16 of December 2008, Martin Steigerwald wrote:
-> > > Hi!
-> > >
-> > > What is the physical memory limit for 64-bit Linux? I read about 40 b=
-it
-> > > address bus for AMD Athlon X2 (1 TB) and 48 bit for Barcelona X4 (256
-> > > TB).
-> > >
-> > > Is 64-bit linux able to use that amount - provided that one would
-> > > manage to build it into a machine? Or does it have a lower limit?
+On Wed, Dec 17, 2008 at 6:25 PM, Haavard Skinnemoen
+<haavard.skinnemoen@atmel.com> wrote:
+> Jaswinder Singh wrote:
+>> Declaring arch-dependent syscalls for avr32 architecture
+>>
+>> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
 >
-> It depends on which 64bit Linux; e.g. IA64 has larger limits.
+> Applied, thanks. Sorry it took so long...I was kind of wondering what
+> happened to the rest of the series and then I forgot about the whole
+> thing.
 
-Is it 50 bits (1024 TB)?
+Basically I prepared syscalls.h for x86 :
 
-ms@mango:~/lokal/Kernel/linux-2.6.27/arch/ia64>=20
-egrep -r "(define.*MAX_PHYS_MEMORY|define.*MAX_PHYS_BITS|
-define.*IA64_MAX_PHYSBITS)" *
-include/asm/pgtable.h:#define IA64_MAX_PHYS_BITS        50      /* max. num=
-ber=20
-of physical address bits (architected) */
-include/asm/pgtable.h:#define _PAGE_PPN_MASK            (((__IA64_UL(1) <<=
-=20
-IA64_MAX_PHYS_BITS) - 1) & ~0xfffUL)
-sn/kernel/setup.c:#define MAX_PHYS_MEMORY               (1UL <<=20
-IA64_MAX_PHYS_BITS)     /* Max physical address supported */
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=arch/x86/include/asm/syscalls.h;h=87803da440100d50222d86cf7a1ac9cf00ed29ca;hb=HEAD
 
-Ciao,
-=2D-=20
-Martin Steigerwald - team(ix) GmbH - http://www.teamix.de
-gpg: 19E3 8D42 896F D004 08AC A0CA 1E10 C593 0399 AE90
+On David's request I also prepared for other arch.
 
---nextPart4191591.oda1QXyAGh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+But it totally depends on arch maintainers to include or not.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Thank you,
 
-iEYEABECAAYFAklJCMAACgkQHhDFkwOZrpB1MwCcDSehkVDRvhy3UTCOU7GeiT+b
-rToAn2eka6fDBEMGSC+LcoFF/yfqIvyi
-=xYex
------END PGP SIGNATURE-----
-
---nextPart4191591.oda1QXyAGh--
+Jaswinder Singh.
