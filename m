@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752669AbYLQXJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753452AbYLQXOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752669AbYLQXJE (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 18:09:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYLQXIu
+	id S1753452AbYLQXOe (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 18:14:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYLQXOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 18:08:50 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51577 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752131AbYLQXIt (ORCPT
+	Wed, 17 Dec 2008 18:14:23 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49649 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751393AbYLQXOW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 18:08:49 -0500
-Date: Wed, 17 Dec 2008 23:08:55 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-        Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-        stable <stable@kernel.org>
-Subject: Re: [PATCH 2/4] xilinx_hwicap: remove improper wording in license
- statement
-Message-ID: <20081217230855.29a26318@lxorguk.ukuu.org.uk>
-In-Reply-To: <1229542103-24678-2-git-send-email-gregkh@suse.de>
-References: <20081217192737.GA24641@kroah.com>
-	<1229542103-24678-2-git-send-email-gregkh@suse.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 17 Dec 2008 18:14:22 -0500
+Date: Wed, 17 Dec 2008 15:14:18 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [w1] Allow master IO commands.
+Message-Id: <20081217151418.f17cee7c.akpm@linux-foundation.org>
+In-Reply-To: <20081217223352.GA28283@ioremap.net>
+References: <1229450882-745-1-git-send-email-zbr@ioremap.net>
+	<1229450882-745-2-git-send-email-zbr@ioremap.net>
+	<20081217142241.e05fff98.akpm@linux-foundation.org>
+	<20081217223352.GA28283@ioremap.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,12 +29,74 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Dec 2008 11:28:21 -0800
-Greg Kroah-Hartman <gregkh@suse.de> wrote:
+On Thu, 18 Dec 2008 01:33:52 +0300
+Evgeniy Polyakov <zbr@ioremap.net> wrote:
 
-> GPLv2 doesn't allow additional restrictions to be imposed on any
-> code, so this wording needs to be removed from these files.
+> Hi Andrew.
+> 
+> On Wed, Dec 17, 2008 at 02:22:41PM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > > +static int w1_process_command_master(struct w1_master *dev, struct cn_msg *req_msg,
+> > > +		struct w1_netlink_msg *req_hdr, struct w1_netlink_cmd *req_cmd)
+> > > +{
+> > > +	int err = -EINVAL;
+> > > +	struct cn_msg *msg;
+> > > +	struct w1_netlink_msg *hdr;
+> > > +	struct w1_netlink_cmd *cmd;
+> > > +
+> > > +	msg = kzalloc(PAGE_SIZE, GFP_KERNEL);
+> > 
+> > The use of PAGE_SIZE is odd.  It's either too large (inefficient) or
+> > too small (disaster).
+> > 
+> > Is it not practical to calculate this precisely?
+> 
+> It is not possible to calculate it in advance for the search commands,
+> since we do not know how many slave devices are attached to the bus.
+> This buffer is used as temporal area where IDs are stored and when
+> number of IDs is large enough message is emmitted to the userspace and
+> buffer becomes empty again. Sending one message per slave ID is a too
+> big overhead, so this could be half of a page or one third or whatever
+> else, I selected a page, which is the maximum guaranteed allocation
+> buffer size.
 
-You only need to remove the "Use in .. expressly prohibited bit", the
-rest seems like useful relevant information.
+OK.
+
+Do we have checks in there to ensure that we can't run off the end of
+the buffer?
+
+> > > +	if (!msg)
+> > > +		return -ENOMEM;
+> > > +
+> > > +	msg->id = req_msg->id;
+> > > +	msg->seq = req_msg->seq;
+> > > +	msg->ack = 0;
+> > > +	msg->len = sizeof(struct w1_netlink_msg) + sizeof(struct w1_netlink_cmd);
+> > > +
+> > > +	hdr = (struct w1_netlink_msg *)(msg + 1);
+> > > +	cmd = (struct w1_netlink_cmd *)(hdr + 1);
+> > > +
+> > > +	hdr->type = W1_MASTER_CMD;
+> > > +	hdr->id = req_hdr->id;
+> > > +	hdr->len = sizeof(struct w1_netlink_cmd);
+> > > +
+> > > +	cmd->cmd = req_cmd->cmd;
+> > > +	cmd->len = 0;
+> > > +
+> > > +	switch (cmd->cmd) {
+> > > +		case W1_CMD_SEARCH:
+> > 
+> > checkpatch correctly points out that the body of the switch statement
+> > should be indented one tabstop less than this.
+> > 
+> > > +		case W1_CMD_ALARM_SEARCH:
+> > > +			err = w1_process_search_command(dev, msg,
+> > > +				PAGE_SIZE - msg->len - sizeof(struct cn_msg));
+> > 
+> > which would give more room for cleaning this up.
+> 
+> Ok, I will space it to the left. Should I sent patch on top of it or
+> instead of?
+
+Is OK, I'll fix it.  That change messes up the following patches so I
+fixed them as well.
 
