@@ -1,102 +1,188 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754072AbYLQPq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754967AbYLQPy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbYLQPq5 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 10:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYLQPqr
+	id S1754967AbYLQPy1 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 10:54:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYLQPyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 10:46:47 -0500
-Received: from rtr.ca ([76.10.145.34]:40302 "EHLO mail.rtr.ca"
+	Wed, 17 Dec 2008 10:54:16 -0500
+Received: from nebensachen.de ([195.34.83.29]:38884 "EHLO mail.nebensachen.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751393AbYLQPqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 10:46:45 -0500
-Message-ID: <49491F32.1040400@rtr.ca>
-Date: Wed, 17 Dec 2008 10:48:02 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	id S1750983AbYLQPyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 10:54:14 -0500
+X-Hashcash: 1:20:081217:bzolnier@gmail.com::+f/uYTEpnTgB82tL:00000000000000000000000000000000000000000000lUK
+X-Hashcash: 1:20:081217:linux-ide@vger.kernel.org::KFYd6+yw624vYaqF:0000000000000000000000000000000000003sVC
+X-Hashcash: 1:20:081217:linux-kernel@vger.kernel.org::13Ulutk9Zu5+dfkO:0000000000000000000000000000000001Cxz
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] ide: use per-device request queue locks
+References: <200811182119.21286.bzolnier@gmail.com>
+	<87vdudjgfm.fsf@denkblock.local>
+	<200812140015.23853.bzolnier@gmail.com>
+Date: Wed, 17 Dec 2008 16:53:56 +0100
+Message-ID: <87skom6bmz.fsf@denkblock.local>
+User-Agent: Gnus/5.110011 (No Gnus v0.11)
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Greg KH <gregkh@suse.de>, akpm@linux-foundation.org, rjw@sisk.pl,
-        tglx@linutronix.de, rjw@sisk.pl, lenb@kernel.org,
-        linux-pm@lists.linux-foundation.org, davej@redhat.com
-Subject: SMP poweroff hangs:  it's baaaack!  But on x86_64 this time.
-References: <20071213053020.E28AB1454450@imap.suse.de> <4761601B.3030408@rtr.ca> <20071213164545.GA10593@suse.de> <47616C15.7030604@rtr.ca> <47616F8C.9030803@rtr.ca>
-In-Reply-To: <47616F8C.9030803@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Subject: Fix SMP poweroff hangs
-> From: Mark Lord <lkml@rtr.ca>
-> 
-> We need to disable all CPUs other than the boot CPU (usually 0) before
-> attempting to power-off modern SMP machines.  This fixes the
-> hang-on-poweroff issue on my MythTV SMP box, and also on Thomas Gleixner's
-> new toybox.
-> 
-> Signed-off-by: Mark Lord <mlord@pobox.com>
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  kernel/sys.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff -puN kernel/sys.c~fix-smp-poweroff-hangs kernel/sys.c
-> --- a/kernel/sys.c~fix-smp-poweroff-hangs
-> +++ a/kernel/sys.c
-> @@ -32,6 +32,7 @@
->  #include <linux/getcpu.h>
->  #include <linux/task_io_accounting_ops.h>
->  #include <linux/seccomp.h>
-> +#include <linux/cpu.h>
->  
->  #include <linux/compat.h>
->  #include <linux/syscalls.h>
-> @@ -878,6 +879,7 @@ void kernel_power_off(void)
->  	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
->  	if (pm_power_off_prepare)
->  		pm_power_off_prepare();
-> +	disable_nonboot_cpus();
->  	sysdev_shutdown();
->  	printk(KERN_EMERG "Power down.\n");
->  	machine_power_off();
-..
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> [ Once again, sorry for the long delay. ]
 
-This bug has returned here now, but on x86_86 this time around.
-Same machine as before, just upgraded toa 64-bit kernel/user (2.6.27.9)
-from the original 32-bit kernel/user that was originally fixed (above).
+Never mind, my responses are rather sluggish these days too.
 
-One hang at poweroff over the past 10 days.  Not much, but enough
-to destroy confidence in "unattended" operation.
+>
+> On Monday 24 November 2008, Elias Oltmanns wrote:
+>> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+[...]
+>> >  drivers/ide/ide-io.c    | 213 +++++++++++++++---------------------------------
+>> >  drivers/ide/ide-park.c  |   13 +-
+>> >  drivers/ide/ide-probe.c |    3 
+>> >  include/linux/ide.h     |    4 
+>> >  4 files changed, 79 insertions(+), 154 deletions(-)
+>> >
+>> > Index: b/drivers/ide/ide-io.c
+>> > ===================================================================
+>> > --- a/drivers/ide/ide-io.c
+>> > +++ b/drivers/ide/ide-io.c
+>> [...]
+>> > @@ -780,61 +704,40 @@ repeat:	
+>> >   */
+>> >  void do_ide_request(struct request_queue *q)
+>> >  {
+>> > -	ide_drive_t	*orig_drive = q->queuedata;
+>> > -	ide_hwgroup_t	*hwgroup = orig_drive->hwif->hwgroup;
+>> > -	ide_drive_t	*drive;
+>> > -	ide_hwif_t	*hwif;
+>> > +	ide_drive_t	*drive = q->queuedata;
+>> > +	ide_hwif_t	*hwif = drive->hwif;
+>> > +	ide_hwgroup_t	*hwgroup = hwif->hwgroup;
+>> >  	struct request	*rq;
+>> >  	ide_startstop_t	startstop;
+>> >  
+>> > -	/* caller must own hwgroup->lock */
+>> > -	BUG_ON(!irqs_disabled());
+>> > -
+>> > -	while (!ide_lock_hwgroup(hwgroup)) {
+>> > -		drive = choose_drive(hwgroup);
+>> > -		if (drive == NULL) {
+>> > -			int sleeping = 0;
+>> > -			unsigned long sleep = 0; /* shut up, gcc */
+>> > -			hwgroup->rq = NULL;
+>> > -			drive = hwgroup->drive;
+>> > -			do {
+>> > -				if ((drive->dev_flags & IDE_DFLAG_SLEEPING) &&
+>> > -				    (sleeping == 0 ||
+>> > -				     time_before(drive->sleep, sleep))) {
+>> > -					sleeping = 1;
+>> > -					sleep = drive->sleep;
+>> > -				}
+>> > -			} while ((drive = drive->next) != hwgroup->drive);
+>> > -			if (sleeping) {
+>> > +	/*
+>> > +	 * drive is doing pre-flush, ordered write, post-flush sequence. even
+>> > +	 * though that is 3 requests, it must be seen as a single transaction.
+>> > +	 * we must not preempt this drive until that is complete
+>> > +	 */
+>> > +	if (blk_queue_flushing(q))
+>> >  		/*
+>> > -		 * Take a short snooze, and then wake up this hwgroup again.
+>> > -		 * This gives other hwgroups on the same a chance to
+>> > -		 * play fairly with us, just in case there are big differences
+>> > -		 * in relative throughputs.. don't want to hog the cpu too much.
+>> > +		 * small race where queue could get replugged during
+>> > +		 * the 3-request flush cycle, just yank the plug since
+>> > +		 * we want it to finish asap
+>> >  		 */
+>> > -				if (time_before(sleep, jiffies + WAIT_MIN_SLEEP))
+>> > -					sleep = jiffies + WAIT_MIN_SLEEP;
+>> > -#if 1
+>> > -				if (timer_pending(&hwgroup->timer))
+>> > -					printk(KERN_CRIT "ide_set_handler: timer already active\n");
+>> > -#endif
+>> > -				/* so that ide_timer_expiry knows what to do */
+>> > -				hwgroup->sleeping = 1;
+>> > -				hwgroup->req_gen_timer = hwgroup->req_gen;
+>> > -				mod_timer(&hwgroup->timer, sleep);
+>> > -				/* we purposely leave hwgroup locked
+>> > -				 * while sleeping */
+>> > -			} else
+>> > -				ide_unlock_hwgroup(hwgroup);
+>> > +		blk_remove_plug(q);
+>> 
+>> I'm not at all convinced that this works as expected. First of all, I
+>> think we can safely assume that the plug is removed when block layer
+>> calls into the ->request_fn(). Secondly, since the ide layer doesn't
+>> call the ->request_fn() on it's own accord, I rather suspect that this
+>> check can be dropped altogether. On the other hand, I'm not sure I agree
+>
+> I suspect that this is leftover from the old code and I also think that
+> it can be removed completely.  However mixing too many real code changes
+> in a single patch is not a good practice and the removal can be handled
+> independently of the discussed patch.
+>
+> If you would send me a patch with the above change I will be happy to
+> integrate it into pata tree (patch can be against current Linus' tree or
+> linux-next, either one is completely fine with me).
 
-I lack opportunity to dig further into the code for now,
-but just wanted to flag the problem, in case similar reports
-from others might already be out there.
+I'll have a go at it later.
 
-In the meanwhile, I'm experimenting with this simple patch,
-garnered from the 32-bit investigations last time around.
-We should know in a few weeks whether it has any effect or not.
+[...]
+>> Finally, some more general blathering on the topic at hand: A while ago,
+>> I spent some thought on the possibilities of giving the block layer a
+>> notion of linked device queues as an equivalent hwgroups in ide,
+>> scsi_hosts or ata_ports and let it take care of time / bandwidth
+>> distribution among the queues belonging to one group. This is, as I
+>> understand, pretty much what your code is relying on since you have
+>> chucked out choose_drive(). However, this turned out not to be too easy
+>
+> This is the right way to go and I has always advocated for it.  However
+> after seeing how libata got away with ignoring the issue altogether
+> I'm no longer sure of this.  I haven't seen any bug reports which would
+> indicate that simplified approach has any really negative consequences.
 
---- old/kernel/sys.c	2008-10-18 13:57:22.000000000 -0400
-+++ linux-2.6.27.9/kernel/sys.c	2008-12-17 09:42:17.000000000 -0500
-@@ -303,6 +303,8 @@
- 
- static void kernel_shutdown_prepare(enum system_states state)
- {
-+	set_cpus_allowed(current, cpumask_of_cpu(first_cpu(cpu_online_map)));
-+	disable_nonboot_cpus();
- 	blocking_notifier_call_chain(&reboot_notifier_list,
- 		(state == SYSTEM_HALT)?SYS_HALT:SYS_POWER_OFF, NULL);
- 	system_state = state;
-@@ -333,7 +335,6 @@
- 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
- 	if (pm_power_off_prepare)
- 		pm_power_off_prepare();
--	disable_nonboot_cpus();
- 	sysdev_shutdown();
- 	printk(KERN_EMERG "Power down.\n");
- 	machine_power_off();
+Well, libata can safely ignore it since scsi takes care of that (see
+scsi_run_queue() which is called on command completion).
+
+>
+> [ Still would be great to have the control over bandwitch of "queue-group"
+>   at the block layer level since we could also use it for distributing the
+>   available PCI[-E] bus bandwitch. ]
+>
+>> and I'm not quite sure whether we really want to go down that road. One
+>> major problem is that there is no straight forward way for the block
+>> layer to know, whether a ->request_fn() has actually taken a request off
+>> the queue and if not (or less than queue_depth anyway), whether it's
+>> just the device that couldn't take any more or the controller instead.
+>> On the whole, it seems not exactly trivial to get it right and it would
+>> probably be a good idea to consult Jens and perhaps James before
+>
+> I think that having more information returned by ->request_fn() could be
+> beneficial to the block layer (independently whether we end up adding
+> support for "queue-groups" to the block layer or not) but this definitely
+> needs to be verified with Jens & James.
+
+Some time back, I raised this with Jens in connection with your previous
+version of the patchset [1]. I didn't get an answer at the time but
+perhaps it would help to raise it again in its own right and to give
+some more examples of its potential merits.
+
+>
+>> embarking on such a venture. Short of that, I think that ide layer has
+>> to keep an appropriate equivalent of choose_drive() and also the while
+>> loop in the do_ide_request() function.
+>
+> Thank you for your review.  v1->v2 interdiff below.
+>
+> v2:
+> * Fixes/improvements based on review from Elias:
+>  - take as many requests off the queue as possible
+>  - remove now redundant BUG_ON()
+
+Looks alright to me.
+
+Regards,
+
+Elias
