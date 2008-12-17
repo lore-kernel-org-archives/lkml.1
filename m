@@ -1,159 +1,138 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759247AbYLQHV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753555AbYLQH0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759247AbYLQHV0 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 02:21:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbYLQHVP
+	id S1753555AbYLQH0L (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 02:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbYLQHZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 02:21:15 -0500
-Received: from tundra.namei.org ([65.99.196.166]:4449 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751393AbYLQHVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 02:21:14 -0500
-Date: Wed, 17 Dec 2008 18:20:42 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/15] don't reallocate buffer in every audit_sockaddr()
-In-Reply-To: <E1LCogg-00008b-SH@ZenIV.linux.org.uk>
-Message-ID: <alpine.LRH.1.10.0812171820130.22856@tundra.namei.org>
-References: <E1LCogg-00008b-SH@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Wed, 17 Dec 2008 02:25:45 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:53929 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759676AbYLQHZm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 02:25:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent:from;
+        b=BuEPNlA16gdFsu+7E3ZetGvSwgdxwLLb6Y8VFTACPB0UIO7ubTywuQADGXPiI077OT
+         90YZ7CaFkR+59mBzqlO3haY2w5pMSed2yJ5lPMnv22/030tRQH6KqU85u1hZlEdAJkLq
+         qwI4Abqvkm7udc8cBcZ2lZYgaoYXFrp/bXxWg=
+Date: Wed, 17 Dec 2008 08:25:43 +0100
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 0/9] ide-atapi: remove ide_atapi_pc from the irq handler
+Message-ID: <20081217072543.GA828@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1229412969-3552-1-git-send-email-petkovbb@gmail.com> <200812162135.27902.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200812162135.27902.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Dec 2008, Al Viro wrote:
+Hi,
 
+> Hmm.  I recall discussing this before and having some concerns about struct
+> ide_atapi_pc removal idea probably being premature...
 > 
-> No need to do that more than once per process lifetime; allocating/freeing
-> on each sendto/accept/etc. is bloody pointless.
+> Looking at the patchset itself -- I'm very sorry but I just cannot apply it
+> with all these command specific fields going into ide_drive_t:
 > 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+>         unsigned long pc_flags;
+>         int pc_req_xfer;
+>         int pc_buf_size;
+>         int pc_error;
+> 
+> While they may look similar to the existing pc_* fields:
+> 
+>         /* callback for packet commands */
+>         void (*pc_callback)(struct ide_drive_s *, int);
+> 
+>         void (*pc_update_buffers)(struct ide_drive_s *, struct ide_atapi_pc *);
+>         int  (*pc_io_buffers)(struct ide_drive_s *, struct ide_atapi_pc *,
+>                               unsigned int, int);
+> 
+> they are clearly not.  Existing pc_* callbacks are per-device type (they
+> should have been probably named drv_*) and new ones are per-command ones.
 
-Reviewed-by: James Morris <jmorris@namei.org>
+maybe I didn't express myself clear in the commit messages - those
+fields are only temporary - the emphasis being on temporary - and was
+going to remove them after the dust settles.
 
-> ---
->  kernel/auditsc.c |   46 ++++++++++++++++++++++------------------------
->  1 files changed, 22 insertions(+), 24 deletions(-)
+> I also don't see a way for code to differentiate between pc and failed_pc.
+
+This happens only in once place in ide-tape and this is taken care of rather
+clumsily with an additional flag.
+
+> Why attack the "hard" problem first (struct ide_atapi_pc one) while there
+> are easier ones to deal with?  It may happen that once these easier ones
+> are fixed we will be able to view the "hard" one from a completely different
+> perspective (because code's complexity will decrease a lot in the meantime
+> it no longer will be a "hard" problem) and apply a better solution.
 > 
-> diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-> index 2a3f0af..aca9ddb 100644
-> --- a/kernel/auditsc.c
-> +++ b/kernel/auditsc.c
-> @@ -162,12 +162,6 @@ struct audit_aux_data_socketcall {
->  	unsigned long		args[0];
->  };
->  
-> -struct audit_aux_data_sockaddr {
-> -	struct audit_aux_data	d;
-> -	int			len;
-> -	char			a[0];
-> -};
-> -
->  struct audit_aux_data_fd_pair {
->  	struct	audit_aux_data d;
->  	int	fd[2];
-> @@ -208,7 +202,8 @@ struct audit_context {
->  	struct audit_context *previous; /* For nested syscalls */
->  	struct audit_aux_data *aux;
->  	struct audit_aux_data *aux_pids;
-> -
-> +	struct sockaddr_storage *sockaddr;
-> +	size_t sockaddr_len;
->  				/* Save things to print about task_struct */
->  	pid_t		    pid, ppid;
->  	uid_t		    uid, euid, suid, fsuid;
-> @@ -891,6 +886,7 @@ static inline void audit_free_context(struct audit_context *context)
->  		free_tree_refs(context);
->  		audit_free_aux(context);
->  		kfree(context->filterkey);
-> +		kfree(context->sockaddr);
->  		kfree(context);
->  		context  = previous;
->  	} while (context);
-> @@ -1322,13 +1318,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
->  				audit_log_format(ab, " a%d=%lx", i, axs->args[i]);
->  			break; }
->  
-> -		case AUDIT_SOCKADDR: {
-> -			struct audit_aux_data_sockaddr *axs = (void *)aux;
-> -
-> -			audit_log_format(ab, "saddr=");
-> -			audit_log_n_hex(ab, axs->a, axs->len);
-> -			break; }
-> -
->  		case AUDIT_FD_PAIR: {
->  			struct audit_aux_data_fd_pair *axs = (void *)aux;
->  			audit_log_format(ab, "fd0=%d fd1=%d", axs->fd[0], axs->fd[1]);
-> @@ -1338,6 +1327,16 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
->  		audit_log_end(ab);
->  	}
->  
-> +	if (context->sockaddr_len) {
-> +		ab = audit_log_start(context, GFP_KERNEL, AUDIT_SOCKADDR);
-> +		if (ab) {
-> +			audit_log_format(ab, "saddr=");
-> +			audit_log_n_hex(ab, (void *)context->sockaddr,
-> +					context->sockaddr_len);
-> +			audit_log_end(ab);
-> +		}
-> +	}
-> +
->  	for (aux = context->aux_pids; aux; aux = aux->next) {
->  		struct audit_aux_data_pids *axs = (void *)aux;
->  
-> @@ -1604,6 +1603,7 @@ void audit_syscall_exit(int valid, long return_code)
->  		context->aux_pids = NULL;
->  		context->target_pid = 0;
->  		context->target_sid = 0;
-> +		context->sockaddr_len = 0;
->  		kfree(context->filterkey);
->  		context->filterkey = NULL;
->  		tsk->audit_context = context;
-> @@ -2354,22 +2354,20 @@ int __audit_fd_pair(int fd1, int fd2)
->   */
->  int audit_sockaddr(int len, void *a)
->  {
-> -	struct audit_aux_data_sockaddr *ax;
->  	struct audit_context *context = current->audit_context;
->  
->  	if (likely(!context || context->dummy))
->  		return 0;
->  
-> -	ax = kmalloc(sizeof(*ax) + len, GFP_KERNEL);
-> -	if (!ax)
-> -		return -ENOMEM;
-> -
-> -	ax->len = len;
-> -	memcpy(ax->a, a, len);
-> +	if (!context->sockaddr) {
-> +		void *p = kmalloc(sizeof(struct sockaddr_storage), GFP_KERNEL);
-> +		if (!p)
-> +			return -ENOMEM;
-> +		context->sockaddr = p;
-> +	}
->  
-> -	ax->d.type = AUDIT_SOCKADDR;
-> -	ax->d.next = context->aux;
-> -	context->aux = (void *)ax;
-> +	context->sockaddr_len = len;
-> +	memcpy(context->sockaddr, a, len);
->  	return 0;
->  }
->  
-> -- 
-> 1.5.6.5
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> Besides I'm not fully convinced that struct ide_atapi_pc has to go first in
+> order to port ide-cd over ide-atapi -- we can just instead port ide-cd to
+> use struct ide_atapi_pc (however probably only after converting the driver
+> to use sg-s for PIO transfers -- otherwise it becomes another "hard" problem)
+> and then deal with struct ide_atapi_pc for all ATAPI code (be using struct
+> request fields directly or by merging struct ide_atapi_pc into ide_task_t
+> and always using the latter structure for ATA[PI] commands -- which is the
+> option that I personally came to prefer lately)...
+
+Here are the problems i see with ide_atapi_pc, judging by my somewhat limited
+experience:
+
+1. ide_issue_pc/ide_transfer_pc and all those other ATAPI functions have to
+check the pc pointer depending on being entered from ide-cd or from the other
+drivers, which means that either ide-cd is ported to use ide_atapi_pc's or we
+have lots of spaghetti if/else checks.
+
+2. But, it really seems too unnatural to have ide_atapi_pc structs representing
+an ATAPI cmd, IMHO, and doing all those memcpy(rq->cmd, pc->c, BLK_MAX_CDB) and
+generally mapping the atapi_pc's to an rq - I'd rather much prefer to use the
+rqs which are pretty much sufficient for most tasks and have maybe a smaller
+struct which is in rq->buffer or similar handling all the ATAPI specific things
+like pc->req_xfer and such.
+
+3. I also think that it is kinda not so smart to have a buffer in the atapi_pc
+and move it all around. True, Linus removed some of the allocations on stack but
+ide-floppy used to be one of the biggest stack users, ide-tape might still be,
+haven't checked.
+
+So, to sum up, I think that ide-cd and especially all the logic around
+ide_cd_queue_pc and its users is much more cleaner, IMHO, than what
+ide-floppy/tape do by saying
+
+ide_init_pc()
+ide_create_bla_cmd()
+ide_queue_pc_head/tail() /* here you unnecessarily map the pc to an rq */
+ide_issue_pc()
+
+and, in most cases, ide_create_bla_cmd() is used only in one place so
+it gets inlined by gcc. So, I think using private buffers in all those
+get_capacity/check_status/read_tocentry and sending them down through an
+rq is the cleaner solution because you do
+
+cdrom_check_status()
+ide_cd_queue_pc()
+
+and this might become
+
+ide_atapi_check_status()
+ide_atapi_queue_pc()
+
+and that's pretty awesome, don't you think?
+
+p.s. I'm sure there's something else I'm forgetting.
 
 -- 
-James Morris
-<jmorris@namei.org>
+Regards/Gruss,
+    Boris.
