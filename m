@@ -1,43 +1,73 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752258AbYLQWmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753068AbYLQWmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752258AbYLQWmI (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 17:42:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYLQWlm
+	id S1753068AbYLQWmq (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 17:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbYLQWme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 17:41:42 -0500
-Received: from ozlabs.org ([203.10.76.45]:46756 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752187AbYLQWll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 17:41:41 -0500
+	Wed, 17 Dec 2008 17:42:34 -0500
+Received: from kroah.org ([198.145.64.141]:36118 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751971AbYLQWmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 17:42:33 -0500
+Date: Wed, 17 Dec 2008 13:53:20 -0800
+From: Greg KH <greg@kroah.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org
+Subject: Re: driver probe error reporting
+Message-ID: <20081217215320.GA28033@kroah.com>
+References: <20081215231502.GC12431@fluff.org.uk> <200812171344.52872.rjw@sisk.pl> <20081217182444.GA26359@kroah.com> <200812172244.35042.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18761.32798.327649.628188@cargo.ozlabs.ibm.com>
-Date: Thu, 18 Dec 2008 09:41:34 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
-        linuxppc-dev@ozlabs.org
-Subject: Re: Please pull from 'merge' for 2.6.28
-In-Reply-To: <Pine.LNX.4.64.0812171006580.12026@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0812171006580.12026@blarg.am.freescale.net>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <200812172244.35042.rjw@sisk.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kumar Gala writes:
-
-> The following changes since commit 23e0e8afafd9ac065d81506524adf3339584044b:
->   Arnd Bergmann (1):
->         powerpc/cell/axon-msi: Fix MSI after kexec
+On Wed, Dec 17, 2008 at 10:44:34PM +0100, Rafael J. Wysocki wrote:
+> On Wednesday, 17 of December 2008, Greg KH wrote:
+> > On Wed, Dec 17, 2008 at 01:44:52PM +0100, Rafael J. Wysocki wrote:
+> > > On Wednesday, 17 of December 2008, Greg KH wrote:
+> > > > On Mon, Dec 15, 2008 at 11:15:02PM +0000, Ben Dooks wrote:
+> > > > > This runs on from the discussion in [1] on how drivers (especially
+> > > > > one using a variant of the device driver framework) report errors
+> > > > > on probe. There are two main classes of errors, the type which happen
+> > > > > at probe time (device not responding, not enough memory, etc) and
+> > > > > errors that are due to configuration such as missing device configuration
+> > > > > data.
+> > > > > 
+> > > > > It has been suggested that using dev_err() to report any configuration
+> > > > > data error is a bloat of code as a properly debugged kernel should never
+> > > > > find itself in this state.
+> > > > > 
+> > > > > Unfortunatley the only diagnostic dev_xxx() macro is dev_dbg() which is
+> > > > > only available if the the driver code itself defines DEBUG. I would think
+> > > > > it would be better to have a macro that can be turned on/off by a kernel
+> > > > > configuration for when debugging which turns on the messages that are
+> > > > > important to developers creating new machine/arch support but disabled
+> > > > > for shipping kernels.
+> > > > 
+> > > > Not anymore, dev_dbg() can be dynamically switched on and off at runtime
+> > > > in 2.6.28.
+> > > 
+> > > IMO, there's a problem with that, because it turns on _all_ of the debug info
+> > > from the entire kernel, which is _never_ necessary.
+> > 
+> > No, it is turned on and off on a per-module basis, not for the whole
+> > kernel (although that is possible if you so desire.)
+> > 
+> > So this should not be an issue.
 > 
-> are available in the git repository at:
-> 
->   master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
+> Well, recently I've been debugging suspend-resume quite a lot and I had to
+> compile it out.  I use verbose PM debugging for that, which is based on
+> dev_dbg(), and it is very inconvenient with dynamic printk.
 
-Linus, please pull Kumar's tree directly, since I have no other
-commits needing to go in 2.6.28 at this stage.
+I'm confused, if you enable dynamic printk, it uses dev_dbg().  And then
+you can turn it on or off on a per-module basis.
 
-Thanks,
-Paul.
+What are you suggesting we do instead?
+
+thanks,
+
+greg k-h
