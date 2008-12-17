@@ -1,110 +1,88 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752582AbYLQS7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752850AbYLQS7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752582AbYLQS7T (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 13:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbYLQS6t
+	id S1752850AbYLQS7y (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 13:59:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYLQS7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 13:58:49 -0500
-Received: from gw.goop.org ([64.81.55.164]:33860 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751436AbYLQS6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 13:58:47 -0500
-Message-ID: <49494BE4.1070408@goop.org>
-Date: Wed, 17 Dec 2008 10:58:44 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Wed, 17 Dec 2008 13:59:41 -0500
+Received: from outbound-mail-139.bluehost.com ([67.222.39.29]:51755 "HELO
+	outbound-mail-139.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752355AbYLQS7j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 13:59:39 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=j7t8asgbqCp7WQgIdKovwZq5VN4tUSGJ0qCDn+GTbOPpLhMBvJopQAz4PPdsmzYFkcI9RdPub8akC+zJLmH0MpEob/NK2lueIsbj6BhA/ibibLBM7zcxJHp/TMV6Lw2l;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Fischer, Anna" <anna.fischer@hp.com>
+Subject: Re: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
+Date: Wed, 17 Dec 2008 10:59:34 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: Yu Zhao <yu.zhao@intel.com>,
+        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+        "Chiang, Alexander" <achiang@hp.com>,
+        "Helgaas, Bjorn" <bjorn.helgaas@hp.com>,
+        "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+        "greg@kroah.com" <greg@kroah.com>, "mingo@elte.hu" <mingo@elte.hu>,
+        "matthew@wil.cx" <matthew@wil.cx>,
+        "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+        "rdreier@cisco.com" <rdreier@cisco.com>,
+        "horms@verge.net.au" <horms@verge.net.au>,
+        "yinghai@kernel.org" <yinghai@kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+        "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <200812161523.55238.jbarnes@virtuousgeek.org> <0199E0D51A61344794750DC57738F58E5E29B33E3C@GVW1118EXC.americas.hpqcorp.net>
+In-Reply-To: <0199E0D51A61344794750DC57738F58E5E29B33E3C@GVW1118EXC.americas.hpqcorp.net>
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-        x86@kernel.org, ian.campbell@citrix.com, jbeulich@novell.com,
-        joerg.roedel@amd.com
-Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use
- of swiotlb
-References: <20081216203513.GA14787@elte.hu>	<20081217142637V.fujita.tomonori@lab.ntt.co.jp>	<4949296F.7000701@goop.org> <20081218015705Z.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081218015705Z.fujita.tomonori@lab.ntt.co.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812171059.36188.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Wed, 17 Dec 2008 08:31:43 -0800
-> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Wednesday, December 17, 2008 3:42 am Fischer, Anna wrote:
+> I have two minor comments on this topic.
 >
->   
->>> I think that the whole patchset is against the swiotlb design. swiotlb
->>> is designed to be used as a library. Each architecture implements the
->>> own swiotlb by using swiotlb library
->>> (e.g. arch/x86/kernel/pci-swiotlb_64.c).
->>>   
->>>       
->> The whole patchset?  The bulk of the changes to lib/swiotlb.c are 
->> relatively minor to remove the unwarranted assumptions it is making in 
->> the face of a new user.  They will have no effect on other existing 
->> users, including non-Xen x86 builds.
->>
->> If you have specific objections we can discuss those, but I don't think 
->> there's anything fundamentally wrong with making lib/swiotlb.c a bit 
->> more generically useful.
->>     
->
-> Sorry, but the highmem support is not generically useful.
->   
+> 1) Currently the PF driver is called before the kernel initializes VFs and
+> their resources, and the current API does not allow the PF driver to
+> detect that easily if the allocation of the VFs and their resources
+> has succeeded or not. It would be quite useful if the PF driver gets
+> notified when the VFs have been created successfully as it might have
+> to do further device-specific work *after* IOV has been enabled.
 
-That's a circular argument.   lib/swiotlb currently used by 1 1/2 of the 
-23 architectures, neither of which happens to use highmem.  If you 
-consider swiotlb to be a general purpose mechanism, then presumably the 
-other 21 1/2 architectures are at least potential users (and 6 1/2 of 
-those have highmem configurations).  If you base your judgement of 
-what's a "generically useful" change based on what the current users 
-need, then you'll naturally exclude the requirements of all the other 
-(potential) users.
+You're thinking of after the VFs are created the VF drivers (which may or may 
+not be part of the PF driver) may not be able to communicate back to the PF 
+driver that something else needs to be done (I remember seeing this in the 
+earlier thread, should have included it in my post, sorry)?  I'm not sure if 
+it makes sense to add an interface like that to the core until we have feel 
+for what the PF/VF drivers are going to want... Or do you have something 
+specific in mind right now?  If/until we have something in the core, it seems 
+like this could be done on a per PF/VF driver basis for now.
 
-And the matter arises now because we're trying to unify the use of 
-swiotlb in x86, bringing the number of users up to 2.
+> 2) Configuration of SR-IOV: the current API allows to enable/disable
+> VFs from userspace via SYSFS. At the moment I am not quite clear what
+> exactly is supposed to control these capabilities. This could be
+> Linux tools or, on a virtualized system, hypervisor control tools.
+> One thing I am missing though is an in-kernel API for this which I
+> think might be useful. After all the PF driver controls the device,
+> and, for example, when a device error occurs (e.g. a hardware failure
+> which only the PF driver will be able to detect, not Linux), then the
+> PF driver might have to de-allocate all resources, shut down VFs and
+> reset the device, or something like that. In that case the PF driver
+> needs to have a way to notify the Linux SR-IOV code about this and
+> initiate cleaning up of VFs and their resources. At the moment, this
+> would have to go through userspace, I believe, and I think that is not
+> an optimal solution. Yu, do you have an opinion on how this would be
+> realized?
 
-> I'm especially against the highmem support. As you said, the rest
-> looks fine but if you go with pci-swiotlb_32.c, I think that you don't
-> need the most of them.
->   
+That's a good point, Yu?
 
-I really don't want to have to duplicate a lot of code just to 
-incorporate a few small changes.  In fact the original Xen patch set 
-included its own swiotlb implementation, and that was rejected on the 
-grounds that we should use the common swiotlb.c.
+-- 
+Jesse Barnes, Intel Open Source Technology Center
 
-This patch set abstracts out a few more architecture-specific details, 
-to allow the common swiotlb logic to be in one place.  By not putting 
-highmem support into lib/swiotlb.c, you're effectively saying that we 
-should have separate lib/swiotlb-nohighmem.c and lib/swiotlb-highmem.c 
-files, with almost identical contents aside from the few places where we 
-need to use page+offset rather than a kernel vaddr.
-
-Yes, highmem is ugly, and there'll be cheering in the streets when we 
-can finally kill the last highmem user.  But for now we need to deal 
-with it, and unfortunately swiotlb is now one of the places that it 
-affects.  Its true that adding highmem support to swiotlb.c increases 
-the maintenance burden to some extent.  But I can't see an alternative 
-that doesn't increase the burden a lot more.
-
-We can look at abstracting things a bit more so that non-highmem 
-architectures can keep using simple addresses rather than page+offset, 
-but that highmem code has got to be *somewhere*.
-
->> > have zero effect on the code generated for IA64 or x86-64.  This is not 
->> > really a Xen-specific change, but a result of adding swiotlb support for 
->> > i386.  Other architectures which support a notion of highmem would also 
->> > need this code if they wanted to use swiotlb.
->>     
->
-> Can you be more specific? What architecture is plan to use highmem
-> support in swiotlb?
->   
-
-Well, concretely, x86-32.  I don't know about the others, but I don't 
-see why there's an inherent reason that they won't have a problem that 
-swiotlb solves.
-
-    J
