@@ -1,152 +1,262 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753543AbYLQNYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754051AbYLQNZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753543AbYLQNYL (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 08:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYLQNXw
+	id S1754051AbYLQNZv (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 08:25:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYLQNZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 08:23:52 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:41805 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751344AbYLQNXu (ORCPT
+	Wed, 17 Dec 2008 08:25:41 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34656 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbYLQNZk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 08:23:50 -0500
-Date: Wed, 17 Dec 2008 08:23:44 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Chris Mason <chris.mason@oracle.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-        linux-btrfs@vger.kernel.org,
-        linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Notes on support for multiple devices for a single filesystem
-Message-ID: <20081217132343.GA14695@infradead.org>
-References: <1227183484.6161.17.camel@think.oraclecorp.com> <1228962896.21376.11.camel@think.oraclecorp.com> <20081211141436.030c2d65.sfr@canb.auug.org.au> <20081210200604.8e190b0d.akpm@linux-foundation.org> <1229006596.22236.46.camel@think.oraclecorp.com> <20081215210323.GB5000@webber.adilger.int>
+	Wed, 17 Dec 2008 08:25:40 -0500
+Date: Wed, 17 Dec 2008 08:25:37 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+        =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+Subject: Re: [PATCH] trace: add a way to enable or disable the stack tracer
+In-Reply-To: <20081216202738.cbbbd92c.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0812170818040.25356@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0812162311430.25356@gandalf.stny.rr.com> <20081216202738.cbbbd92c.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081215210323.GB5000@webber.adilger.int>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FYI: here's a little writeup I did this summer on support for
-filesystems spanning multiple block devices:
 
+On Tue, 16 Dec 2008, Andrew Morton wrote:
 
--- 
+> >     
+> >     The stack tracer currently is either on when configured in or
+> >     off when it is not. It can not be disabled when it is configured on.
+> >     (besides disabling the function tracer that it uses)
+> >     
+> >     This patch adds a way to enable or disable the stack tracer at
+> >     run time. It defaults off on bootup, but a kernel parameter 'stacktrace'
+> >     has been added to enable it on bootup.
+> >     
+> >     A new sysctl has been added "kernel.stack_tracer_enabled" to let
+> >     the user enable or disable the stack tracer at run time.
+> >     
+> 
+> Why do we need the boot parameter if there's a runtime control?
 
-=== Notes on support for multiple devices for a single filesystem ===
+Because it would be a regression without it. The current stack tracer lets 
+you know find the biggest stack size since initcall. There's some pretty 
+big stack sizes in the boot up process, and I want to make it easy to 
+record them. My test kernels now have this defaulted on.
 
-== Intro ==
+> 
+> > 
+> > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> > index 16aaa84..95fa674 100644
+> > --- a/Documentation/kernel-parameters.txt
+> > +++ b/Documentation/kernel-parameters.txt
+> > @@ -89,6 +89,7 @@ parameter is applicable:
+> >  	SPARC	Sparc architecture is enabled.
+> >  	SWSUSP	Software suspend (hibernation) is enabled.
+> >  	SUSPEND	System suspend states are enabled.
+> > +	FTRACE	Function tracing enabled.
+> >  	TS	Appropriate touchscreen support is enabled.
+> >  	USB	USB support is enabled.
+> >  	USBHID	USB Human Interface Device support is enabled.
+> > @@ -2197,6 +2198,9 @@ and is between 256 and 4096 characters. It is defined in the file
+> >  	st=		[HW,SCSI] SCSI tape parameters (buffers, etc.)
+> >  			See Documentation/scsi/st.txt.
+> >  
+> > +	stacktrace	[FTRACE]
+> > +			Enabled the stack tracer on boot up.
+> > +
+> >  	sti=		[PARISC,HW]
+> >  			Format: <num>
+> >  			Set the STI (builtin display/keyboard on the HP-PARISC
+> > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> > index 286af82..04b52e6 100644
+> > --- a/include/linux/ftrace.h
+> > +++ b/include/linux/ftrace.h
+> > @@ -87,6 +87,14 @@ static inline void ftrace_stop(void) { }
+> >  static inline void ftrace_start(void) { }
+> >  #endif /* CONFIG_FUNCTION_TRACER */
+> >  
+> > +#ifdef CONFIG_STACK_TRACER
+> > +extern int stack_tracer_enabled;
+> > +int
+> > +stack_trace_sysctl(struct ctl_table *table, int write,
+> > +		   struct file *file, void __user *buffer, size_t *lenp,
+> > +		   loff_t *ppos);
+> > +#endif
+> 
+> The ifdef could be omitted here.
 
-Btrfs (and an experimental XFS version) can support multiple underlying block
-devices for a single filesystem instances in a generalized and flexible way.
+Yeah I thought about that too. But it is in a header file, and I might be 
+adding more stuff as well. The ifdef here is more to annotate what the 
+prototype is for than to protect it. This is one of the few cases that 
+adding a #ifdef is cleaner than to omit it (IMHO).
 
-Unlike the support for external log devices in ext3, jfs, reiserfs, XFS, and
-the special real-time device in XFS all data and metadata may be spread over a
-potentially large number of block devices, and not just one (or two)
+> 
+> >  #ifdef CONFIG_DYNAMIC_FTRACE
+> >  /* asm/ftrace.h must be defined for archs supporting dynamic ftrace */
+> >  #include <asm/ftrace.h>
+> > diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> > index c7bf3dd..2414fa8 100644
+> > --- a/kernel/sysctl.c
+> > +++ b/kernel/sysctl.c
+> > @@ -488,6 +488,16 @@ static struct ctl_table kern_table[] = {
+> >  		.proc_handler	= &ftrace_enable_sysctl,
+> >  	},
+> >  #endif
+> > +#ifdef CONFIG_STACK_TRACER
+> > +	{
+> > +		.ctl_name	= CTL_UNNUMBERED,
+> > +		.procname	= "stack_tracer_enabled",
+> > +		.data		= &stack_tracer_enabled,
+> > +		.maxlen		= sizeof(int),
+> > +		.mode		= 0644,
+> > +		.proc_handler	= &stack_trace_sysctl,
+> > +	},
+> > +#endif
+> >  #ifdef CONFIG_TRACING
+> >  	{
+> >  		.ctl_name	= CTL_UNNUMBERED,
+> > diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> > index d8bae6f..e2a4ff6 100644
+> > --- a/kernel/trace/Kconfig
+> > +++ b/kernel/trace/Kconfig
+> > @@ -244,10 +244,15 @@ config STACK_TRACER
+> >  
+> >  	  This tracer works by hooking into every function call that the
+> >  	  kernel executes, and keeping a maximum stack depth value and
+> > -	  stack-trace saved. Because this logic has to execute in every
+> > -	  kernel function, all the time, this option can slow down the
+> > -	  kernel measurably and is generally intended for kernel
+> > -	  developers only.
+> > +	  stack-trace saved.  If this is configured with DYNAMIC_FTRACE
+> > +	  then it will not have any overhead while the stack tracer
+> > +	  is disabled.
+> > +
+> > +	  To enable the stack tracer on bootup, pass in 'stacktrace'
+> > +	  on the kernel command line.
+> > +
+> > +	  The stack tracer can also be enabled or disabled via the
+> > +	  sysctl kernel.stack_tracer_enabled
+> >  
+> >  	  Say N if unsure.
+> >  
+> > diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+> > index 0b863f2..4842c96 100644
+> > --- a/kernel/trace/trace_stack.c
+> > +++ b/kernel/trace/trace_stack.c
+> > @@ -10,6 +10,7 @@
+> >  #include <linux/debugfs.h>
+> >  #include <linux/ftrace.h>
+> >  #include <linux/module.h>
+> > +#include <linux/sysctl.h>
+> >  #include <linux/init.h>
+> >  #include <linux/fs.h>
+> >  #include "trace.h"
+> > @@ -31,6 +32,10 @@ static raw_spinlock_t max_stack_lock =
+> >  
+> >  static int stack_trace_disabled __read_mostly;
+> >  static DEFINE_PER_CPU(int, trace_active);
+> > +static DEFINE_MUTEX(stack_sysctl_mutex);
+> > +
+> > +int stack_tracer_enabled;
+> > +static int last_stack_tracer_enabled;
+> >  
+> >  static inline void check_stack(void)
+> >  {
+> > @@ -174,7 +179,7 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
+> >  	return count;
+> >  }
+> >  
+> > -static struct file_operations stack_max_size_fops = {
+> > +static const struct file_operations stack_max_size_fops = {
+> >  	.open		= tracing_open_generic,
+> >  	.read		= stack_max_size_read,
+> >  	.write		= stack_max_size_write,
+> > @@ -272,7 +277,7 @@ static int t_show(struct seq_file *m, void *v)
+> >  	return 0;
+> >  }
+> >  
+> > -static struct seq_operations stack_trace_seq_ops = {
+> > +static const struct seq_operations stack_trace_seq_ops = {
+> >  	.start		= t_start,
+> >  	.next		= t_next,
+> >  	.stop		= t_stop,
+> > @@ -288,12 +293,48 @@ static int stack_trace_open(struct inode *inode, struct file *file)
+> >  	return ret;
+> >  }
+> >  
+> > -static struct file_operations stack_trace_fops = {
+> > +static const struct file_operations stack_trace_fops = {
+> >  	.open		= stack_trace_open,
+> >  	.read		= seq_read,
+> >  	.llseek		= seq_lseek,
+> >  };
+> >  
+> > +int
+> > +stack_trace_sysctl(struct ctl_table *table, int write,
+> > +		   struct file *file, void __user *buffer, size_t *lenp,
+> > +		   loff_t *ppos)
+> > +{
+> > +	int ret;
+> > +
+> > +	mutex_lock(&stack_sysctl_mutex);
+> > +
+> > +	ret  = proc_dointvec(table, write, file, buffer, lenp, ppos);
+> 
+> funny whitespace
 
+Hmm, I cut and pasted this function from ftrace.c. It must be there too.
+(goes look, and sure enough it is)
 
-== Requirements ==
+> 
+> > +	if (ret || !write ||
+> > +	    (last_stack_tracer_enabled == stack_tracer_enabled))
+> > +		goto out;
+> > +
+> > +	last_stack_tracer_enabled = stack_tracer_enabled;
+> > +
+> > +	if (stack_tracer_enabled)
+> > +		register_ftrace_function(&trace_ops);
+> > +	else
+> > +		unregister_ftrace_function(&trace_ops);
+> > +
+> > + out:
+> > +	mutex_unlock(&stack_sysctl_mutex);
+> > +	return ret;
+> > +}
+> > +
+> > +static int start_stack_trace __initdata;
+> > +
+> > +static __init int enable_stacktrace(char *str)
+> > +{
+> > +	start_stack_trace = 1;
+> > +	return 1;
+> > +}
+> > +__setup("stacktrace", enable_stacktrace);
+> > +
+> >  static __init int stack_trace_init(void)
+> >  {
+> >  	struct dentry *d_tracer;
+> > @@ -311,7 +352,10 @@ static __init int stack_trace_init(void)
+> >  	if (!entry)
+> >  		pr_warning("Could not create debugfs 'stack_trace' entry\n");
+> >  
+> > -	register_ftrace_function(&trace_ops);
+> > +	if (start_stack_trace) {
+> > +		register_ftrace_function(&trace_ops);
+> > +		stack_tracer_enabled = 1;
+> > +	}
+> 
+> I think we could do away with start_stack_trace and just set
+> stack_tracer_enabled=1 in enable_stacktrace()?
 
-We want a scheme to support these complex filesystem topologies in way
-that is
+Ah yes. I'll write a follow up patch to fix that.
 
- a) easy to setup and non-fragile for the users
- b) scalable to a large number of disks in the system
- c) recoverable without requiring user space running first
- d) generic enough to work for multiple filesystems or other consumers
+-- Steve
 
-Requirement a) means that a multiple-device filesystem should be mountable
-by a simple fstab entry (UUID/LABEL or some other cookie) which continues
-to work when the filesystem topology changes.
-
-Requirement b) implies we must not do a scan over all available block devices
-in large systems, but use an event-based callout on detection of new block
-devices.
-
-Requirement c) means there must be some version to add devices to a filesystem
-by kernel command lines, even if this is not the default way, and might require
-additional knowledge from the user / system administrator.
-
-Requirement d) means that we should not implement this mechanism inside a
-single filesystem.
-
-
-== Prior art ==
-
-* External log and realtime volume
-
-The most common way to specify the external log device and the XFS real time
-device is to have a mount option that contains the path to the block special
-device for it.  This variant means a mount option is always required, and
-requires the device name doesn't change, which is enough with udev-generated
-unique device names (/dev/disk/by-{label,uuid}).
-
-An alternative way, supported by optionally by ext3 and reiserfs and
-exclusively supported by jfs is to open the journal device by the device
-number (dev_t) of the block special device.  While this doesn't require
-an additional mount option when the device number is stored in the filesystem
-superblock it relies on the device number being stable which is getting
-increasingly unlikely in complex storage topologies.
-
-
-* RAID (MD) and LVM
-
-Software RAID and volume managers, although not strictly filesystems,
-have a similar very similar problem finding their devices.  The traditional
-solution used for early versions of the Linux MD driver and LVM version 1
-was to hook into the partitions scanning code and add device with the
-right partition type to a kernel-internal list of potential RAID / LVM
-devices.  This approach has the advantage of being simple to implement,
-fast, reliable and not requiring additional user space programs in the boot
-process.  The downside is that it only works with specific partition table
-formats that allow specifying a partition type, and doesn't work with
-unpartitioned disks at all.  Recent MD setups and LVM2 thus move the scanning
-to user space, typically using a command iterating over all block device
-nodes and performing the format-specific scanning.  While this is more flexible
-than the in-kernel scanning, it scales very badly to a large number of
-block devices, and requires additional user space commands to run early
-in the boot process.  A variant of this schemes runs a scanning callout
-from udev once disk device are detected, which avoids the scanning overhead.
-
-
-== High-level design considerations ==
-
-Due to requirement b) we need a layer that finds devices for a single
-fstab entry.  We can either do this in user space, or in kernel space. As we've
-traditionally always done UUID/LABEL to device mapping in userspace, and we
-already have libvolume_id and libblkid dealing with the specialized case
-of UUID/LABEL to single device mapping I would recommend to keep doing
-this in user space and try to reuse the libvolume_id / libblkid.
-
-There are to options to perform the assembly of the device list for
-a filesystem:
-
- 1) whenever libvolume_id / libblkid find a device detected as a multi-device
-    capable filesystem it gets added to a list of all devices of this
-    particular filesystem type.
-    On mount type mount(8) or a mount.fstype helpers calls out to the
-    libraries to get a list of devices belonging to this filesystem
-    type and translates them to device names, which can be passed to
-    the kernel on the mount command line.
-
-    Advantage:	    Requires a mount.fstype helper or fs-specific knowledge
-    		    in mount(8).
-    Disadvantages:  Required libvolume_id / libblkid to keep state.
-
- 2) whenever libvolume_id / libblkid find a device detected as a multi-device
-    capable filesystem they call into the kernel through and ioctl / sysfs /
-    etc to add it to a list in kernel space.  The kernel code then manages
-    to select the right filesystem instances, and either adds it to an already
-    running instance, or prepares a list for a future mount.
-    
-    Advantages:    keeps state in the kernel instead of in libraries
-    Disadvantages: requires and additional user interface to mount
-
-c) will be deal with an option that allows adding named block devices
-on the mount command line, which is already required for design 1) but
-would have to be implemented additionally for design 2).
