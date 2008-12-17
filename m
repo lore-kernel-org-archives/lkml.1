@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760496AbYLQAMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760439AbYLQAJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760496AbYLQAMp (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 19:12:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759769AbYLQAGS
+	id S1760439AbYLQAJu (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759560AbYLQAGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 19:06:18 -0500
-Received: from kroah.org ([198.145.64.141]:41407 "EHLO coco.kroah.org"
+	Tue, 16 Dec 2008 19:06:13 -0500
+Received: from kroah.org ([198.145.64.141]:41354 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759756AbYLQAGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 19:06:17 -0500
-Date: Tue, 16 Dec 2008 16:04:39 -0800
+	id S1759530AbYLQAGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 19:06:10 -0500
+Date: Tue, 16 Dec 2008 16:04:31 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,14 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
         Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
         Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
         torvalds@linux-foundation.org, akpm@linux-foundation.org,
-        alan@lxorguk.ukuu.org.uk, Finn Thain <fthain@telegraphics.com.au>,
-        Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [patch 20/22] macfb: Do not overflow fb_fix_screeninfo.id
-Message-ID: <20081217000439.GU4504@kroah.com>
+        alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 16/22] firewire: fw-ohci: fix IOMMU resource exhaustion
+Message-ID: <20081217000431.GQ4504@kroah.com>
 References: <20081216235704.347182084@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="macfb-do-not-overflow-fb_fix_screeninfo.id.patch"
+Content-Disposition: inline; filename="firewire-fw-ohci-fix-iommu-resource-exhaustion.patch"
 In-Reply-To: <20081217000306.GA4504@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,238 +40,105 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Finn Thain <fthain@telegraphics.com.au>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-commit 89c223a616cddd9eab792b860f61f99cec53c4e8 upstream.
+commit 1d1dc5e83f3299c108a4e44d58cc4bfef48c876a upstream.
 
-Don't overflow the 16-character fb_fix_screeninfo id string (fixes some
-console erasing and blanking artifacts). Have the ID default to "Unknown"
-on machines with no built-in video and no nubus devices. Check for
-fb_alloc_cmap failure.
+There is a DMA map/ unmap imbalance whenever a block write request
+packet is sent and then dequeued with ohci_cancel_packet.  The latter
+may happen frequently if the AR resp tasklet is executed before the AT
+req tasklet for the same transaction.
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Add the missing dma_unmap_single.  This fixes
+https://bugzilla.redhat.com/show_bug.cgi?id=475156
+
+Reported-by: Emmanuel Kowalski
+Tested-by: Emmanuel Kowalski
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/macfb.c |   74 +++++++++++++++++++++++---------------------------
- 1 file changed, 35 insertions(+), 39 deletions(-)
+ drivers/firewire/fw-ohci.c        |   11 +++++++----
+ drivers/firewire/fw-transaction.c |    3 +++
+ drivers/firewire/fw-transaction.h |    2 ++
+ 3 files changed, 12 insertions(+), 4 deletions(-)
 
---- a/drivers/video/macfb.c
-+++ b/drivers/video/macfb.c
-@@ -164,7 +164,6 @@ static struct fb_var_screeninfo macfb_de
- };
- 
- static struct fb_fix_screeninfo macfb_fix = {
--	.id	= "Macintosh ",
- 	.type	= FB_TYPE_PACKED_PIXELS,
- 	.accel	= FB_ACCEL_NONE,
- };
-@@ -760,22 +759,22 @@ static int __init macfb_init(void)
- 
- 		switch(ndev->dr_hw) {
- 		case NUBUS_DRHW_APPLE_MDC:
--			strcat( macfb_fix.id, "Display Card" );
-+			strcpy(macfb_fix.id, "Mac Disp. Card");
- 			macfb_setpalette = mdc_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 		case NUBUS_DRHW_APPLE_TFB:
--			strcat( macfb_fix.id, "Toby" );
-+			strcpy(macfb_fix.id, "Toby");
- 			macfb_setpalette = toby_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 		case NUBUS_DRHW_APPLE_JET:
--			strcat( macfb_fix.id, "Jet");
-+			strcpy(macfb_fix.id, "Jet");
- 			macfb_setpalette = jet_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;			
- 		default:
--			strcat( macfb_fix.id, "Generic NuBus" );
-+			strcpy(macfb_fix.id, "Generic NuBus");
- 			break;
+--- a/drivers/firewire/fw-ohci.c
++++ b/drivers/firewire/fw-ohci.c
+@@ -958,6 +958,7 @@ at_context_queue_packet(struct context *
+ 			packet->ack = RCODE_SEND_ERROR;
+ 			return -1;
  		}
- 	}
-@@ -786,21 +785,11 @@ static int __init macfb_init(void)
- 	if (!video_is_nubus)
- 		switch( mac_bi_data.id )
- 		{
--			/* These don't have onboard video.  Eventually, we may
--			   be able to write separate framebuffer drivers for
--			   them (tobyfb.c, hiresfb.c, etc, etc) */
--		case MAC_MODEL_II:
--		case MAC_MODEL_IIX:
--		case MAC_MODEL_IICX:
--		case MAC_MODEL_IIFX:
--			strcat( macfb_fix.id, "Generic NuBus" );
--			break;
--
- 			/* Valkyrie Quadras */
- 		case MAC_MODEL_Q630:
- 			/* I'm not sure about this one */
- 		case MAC_MODEL_P588:
--			strcat( macfb_fix.id, "Valkyrie built-in" );
-+			strcpy(macfb_fix.id, "Valkyrie");
- 			macfb_setpalette = valkyrie_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			valkyrie_cmap_regs = ioremap(DAC_BASE, 0x1000);
-@@ -823,7 +812,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_Q700:
- 		case MAC_MODEL_Q900:
- 		case MAC_MODEL_Q950:
--			strcat( macfb_fix.id, "DAFB built-in" );
-+			strcpy(macfb_fix.id, "DAFB");
- 			macfb_setpalette = dafb_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			dafb_cmap_regs = ioremap(DAFB_BASE, 0x1000);
-@@ -831,7 +820,7 @@ static int __init macfb_init(void)
++		packet->payload_bus = payload_bus;
  
- 			/* LC II uses the V8 framebuffer */
- 		case MAC_MODEL_LCII:
--			strcat( macfb_fix.id, "V8 built-in" );
-+			strcpy(macfb_fix.id, "V8");
- 			macfb_setpalette = v8_brazil_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
-@@ -843,7 +832,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_IIVI:
- 		case MAC_MODEL_IIVX:
- 		case MAC_MODEL_P600:
--			strcat( macfb_fix.id, "Brazil built-in" );
-+			strcpy(macfb_fix.id, "Brazil");
- 			macfb_setpalette = v8_brazil_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
-@@ -860,7 +849,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_P460:
- 			macfb_setpalette = v8_brazil_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
--			strcat( macfb_fix.id, "Sonora built-in" );
-+			strcpy(macfb_fix.id, "Sonora");
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
- 			break;
+ 		d[2].req_count    = cpu_to_le16(packet->payload_length);
+ 		d[2].data_address = cpu_to_le32(payload_bus);
+@@ -1009,7 +1010,6 @@ static int handle_at_packet(struct conte
+ 	struct driver_data *driver_data;
+ 	struct fw_packet *packet;
+ 	struct fw_ohci *ohci = context->ohci;
+-	dma_addr_t payload_bus;
+ 	int evt;
  
-@@ -871,7 +860,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_IISI:
- 			macfb_setpalette = rbv_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
--			strcat( macfb_fix.id, "RBV built-in" );
-+			strcpy(macfb_fix.id, "RBV");
- 			rbv_cmap_regs = ioremap(DAC_BASE, 0x1000);
- 			break;
+ 	if (last->transfer_status == 0)
+@@ -1022,9 +1022,8 @@ static int handle_at_packet(struct conte
+ 		/* This packet was cancelled, just continue. */
+ 		return 1;
  
-@@ -880,7 +869,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_C660:
- 			macfb_setpalette = civic_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
--			strcat( macfb_fix.id, "Civic built-in" );
-+			strcpy(macfb_fix.id, "Civic");
- 			civic_cmap_regs = ioremap(CIVIC_BASE, 0x1000);
- 			break;
+-	payload_bus = le32_to_cpu(last->data_address);
+-	if (payload_bus != 0)
+-		dma_unmap_single(ohci->card.device, payload_bus,
++	if (packet->payload_bus)
++		dma_unmap_single(ohci->card.device, packet->payload_bus,
+ 				 packet->payload_length, DMA_TO_DEVICE);
  
-@@ -901,7 +890,7 @@ static int __init macfb_init(void)
- 				v8_brazil_cmap_regs =
- 					ioremap(DAC_BASE, 0x1000);
- 			}
--			strcat( macfb_fix.id, "LC built-in" );
-+			strcpy(macfb_fix.id, "LC");
- 			break;
- 			/* We think this may be like the LC II */
- 		case MAC_MODEL_CCL:
-@@ -911,18 +900,18 @@ static int __init macfb_init(void)
- 				v8_brazil_cmap_regs =
- 					ioremap(DAC_BASE, 0x1000);
- 			}
--			strcat( macfb_fix.id, "Color Classic built-in" );
-+			strcpy(macfb_fix.id, "Color Classic");
- 			break;
+ 	evt = le16_to_cpu(last->transfer_status) & 0x1f;
+@@ -1681,6 +1680,10 @@ static int ohci_cancel_packet(struct fw_
+ 	if (packet->ack != 0)
+ 		goto out;
  
- 			/* And we *do* mean "weirdos" */
- 		case MAC_MODEL_TV:
--			strcat( macfb_fix.id, "Mac TV built-in" );
-+			strcpy(macfb_fix.id, "Mac TV");
- 			break;
- 
- 			/* These don't have colour, so no need to worry */
- 		case MAC_MODEL_SE30:
- 		case MAC_MODEL_CLII:
--			strcat( macfb_fix.id, "Monochrome built-in" );
-+			strcpy(macfb_fix.id, "Monochrome");
- 			break;
- 
- 			/* Powerbooks are particularly difficult.  Many of
-@@ -935,7 +924,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_PB140:
- 		case MAC_MODEL_PB145:
- 		case MAC_MODEL_PB170:
--			strcat( macfb_fix.id, "DDC built-in" );
-+			strcpy(macfb_fix.id, "DDC");
- 			break;
- 
- 			/* Internal is GSC, External (if present) is ViSC */
-@@ -945,13 +934,13 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_PB180:
- 		case MAC_MODEL_PB210:
- 		case MAC_MODEL_PB230:
--			strcat( macfb_fix.id, "GSC built-in" );
-+			strcpy(macfb_fix.id, "GSC");
- 			break;
- 
- 			/* Internal is TIM, External is ViSC */
- 		case MAC_MODEL_PB165C:
- 		case MAC_MODEL_PB180C:
--			strcat( macfb_fix.id, "TIM built-in" );
-+			strcpy(macfb_fix.id, "TIM");
- 			break;
- 
- 			/* Internal is CSC, External is Keystone+Ariel. */
-@@ -963,12 +952,12 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_PB280C:
- 			macfb_setpalette = csc_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
--			strcat( macfb_fix.id, "CSC built-in" );
-+			strcpy(macfb_fix.id, "CSC");
- 			csc_cmap_regs = ioremap(CSC_BASE, 0x1000);
- 			break;
- 		
- 		default:
--			strcat( macfb_fix.id, "Unknown/Unsupported built-in" );
-+			strcpy(macfb_fix.id, "Unknown");
- 			break;
- 		}
- 
-@@ -978,16 +967,23 @@ static int __init macfb_init(void)
- 	fb_info.pseudo_palette	= pseudo_palette;
- 	fb_info.flags		= FBINFO_DEFAULT;
- 
--	fb_alloc_cmap(&fb_info.cmap, video_cmap_len, 0);
-+	err = fb_alloc_cmap(&fb_info.cmap, video_cmap_len, 0);
-+	if (err)
-+		goto fail_unmap;
- 	
- 	err = register_framebuffer(&fb_info);
--	if (!err)
--		printk("fb%d: %s frame buffer device\n",
--		       fb_info.node, fb_info.fix.id);
--	else {
--		iounmap(fb_info.screen_base);
--		iounmap_macfb();
--	}
-+	if (err)
-+		goto fail_dealloc;
++	if (packet->payload_bus)
++		dma_unmap_single(ohci->card.device, packet->payload_bus,
++				 packet->payload_length, DMA_TO_DEVICE);
 +
-+	printk("fb%d: %s frame buffer device\n",
-+	       fb_info.node, fb_info.fix.id);
-+	return 0;
-+
-+fail_dealloc:
-+	fb_dealloc_cmap(&fb_info.cmap);
-+fail_unmap:
-+	iounmap(fb_info.screen_base);
-+	iounmap_macfb();
- 	return err;
+ 	log_ar_at_event('T', packet->speed, packet->header, 0x20);
+ 	driver_data->packet = NULL;
+ 	packet->ack = RCODE_CANCELLED;
+--- a/drivers/firewire/fw-transaction.c
++++ b/drivers/firewire/fw-transaction.c
+@@ -207,6 +207,7 @@ fw_fill_request(struct fw_packet *packet
+ 	packet->speed = speed;
+ 	packet->generation = generation;
+ 	packet->ack = 0;
++	packet->payload_bus = 0;
  }
  
+ /**
+@@ -541,6 +542,8 @@ fw_fill_response(struct fw_packet *respo
+ 		BUG();
+ 		return;
+ 	}
++
++	response->payload_bus = 0;
+ }
+ EXPORT_SYMBOL(fw_fill_response);
+ 
+--- a/drivers/firewire/fw-transaction.h
++++ b/drivers/firewire/fw-transaction.h
+@@ -27,6 +27,7 @@
+ #include <linux/list.h>
+ #include <linux/spinlock_types.h>
+ #include <linux/timer.h>
++#include <linux/types.h>
+ #include <linux/workqueue.h>
+ 
+ #define TCODE_IS_READ_REQUEST(tcode)	(((tcode) & ~1) == 4)
+@@ -153,6 +154,7 @@ struct fw_packet {
+ 	size_t header_length;
+ 	void *payload;
+ 	size_t payload_length;
++	dma_addr_t payload_bus;
+ 	u32 timestamp;
+ 
+ 	/*
 
