@@ -1,28 +1,28 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758108AbYLQC0S (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 16 Dec 2008 21:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYLQC0C
+	id S1759041AbYLQDfz (ORCPT <rfc822;ralf@linux-mips.org>);
+	Tue, 16 Dec 2008 22:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYLQDfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 21:26:02 -0500
-Received: from ag-out-0708.google.com ([72.14.246.244]:14820 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752534AbYLQC0A (ORCPT
+	Tue, 16 Dec 2008 22:35:45 -0500
+Received: from mail-gx0-f29.google.com ([209.85.217.29]:53235 "EHLO
+	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752171AbYLQDfo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 21:26:00 -0500
-Message-ID: <49486333.04686e0a.59b0.ffffc0e3@mx.google.com>
-From: "emily" <wellcom003@gmail.com>
+	Tue, 16 Dec 2008 22:35:44 -0500
+Message-ID: <4948738d.04686e0a.4fde.ffffd733@mx.google.com>
+From: "emily" <wellcom002@gmail.com>
 Subject: GSM wireless terminal from China
-To: lara@medelita.com
+To: letters@thehindu.co.in
 Content-Type: text/plain;
 	charset="Big5"
 MIME-Version: 1.0
 Content-Transfer-Encoding: base64
 Reply-To: sales@well-com.cn
-Date: Wed, 17 Dec 2008 10:25:57 +0800
+Date: Wed, 17 Dec 2008 11:35:43 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758108AbYLQC0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759041AbYLQDfz@vger.kernel.org>
 
 RGVhciBTaXIsDQoNCkhvdyBkbyB5b3UgZG8hVGhpcyBpcyBXZWxsLUNvbSBUZWNobm9sb2d5IENv
 LixMdGQgZnJvbSBDaGluYS4NCg0KV2UgYXJlIHRoZSBtYW51ZmFjdHVyZXIgaW4gU1osIHN1cHBs
