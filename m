@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759530AbYLQFU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759735AbYLQFTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759530AbYLQFU4 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 00:20:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750817AbYLQFUp
+	id S1759735AbYLQFTE (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 00:19:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbYLQFSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 00:20:45 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35122 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750806AbYLQFUo (ORCPT
+	Wed, 17 Dec 2008 00:18:51 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52703 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbYLQFSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 00:20:44 -0500
-Date: Wed, 17 Dec 2008 14:19:46 +0900
+	Wed, 17 Dec 2008 00:18:51 -0500
+Date: Wed, 17 Dec 2008 14:17:53 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: menage@google.com
 Cc: akpm@linux-foundation.org, lizf@cn.fujitsu.com,
         linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/3] CGroups: Add css_tryget()
-Message-Id: <20081217141946.2e969fa7.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081216113653.252690000@menage.corp.google.com>
+Subject: Re: [PATCH 2/3] CGroups: Use hierarchy_mutex in memory controller
+Message-Id: <20081217141753.66ba248b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081216113653.090278000@menage.corp.google.com>
 References: <20081216113055.713856000@menage.corp.google.com>
-	<20081216113653.252690000@menage.corp.google.com>
+	<20081216113653.090278000@menage.corp.google.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -29,214 +29,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Dec 2008 03:30:58 -0800
+On Tue, 16 Dec 2008 03:30:57 -0800
 menage@google.com wrote:
 
-> This patch adds css_tryget(), that obtains a counted reference on a
-> CSS.  It is used in situations where the caller has a "weak" reference
-> to the CSS, i.e. one that does not protect the cgroup from removal via
-> a reference count, but would instead be cleaned up by a destroy()
-> callback.
-> 
-> css_tryget() will return true on success, or false if the cgroup is
-> being removed.
-> 
-> This is similar to Kamezawa Hiroyuki's patch from a week or two ago,
-> but with the difference that in the event of css_tryget() racing with
-> a cgroup_rmdir(), css_tryget() will only return false if the cgroup
-> really does get removed.
-> 
-> This implementation is done by biasing css->refcnt, so that a refcnt
-> of 1 means "releasable" and 0 means "released or releasing". In the
-> event of a race, css_tryget() distinguishes between "released" and
-> "releasing" by checking for the CSS_REMOVED flag in css->flags.
+> This patch updates the memory controller to use its hierarchy_mutex
+> rather than calling cgroup_lock() to protected against
+> cgroup_mkdir()/cgroup_rmdir() from occurring in its hierarchy.
 > 
 > Signed-off-by: Paul Menage <menage@google.com>
 > 
-mkdir/rmdir works well. I'll write the user of this patch "css_tryget()" 
-in memcg.
+Not doing any special test but passed usual test.
 
 Tested-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
 
 > ---
->  include/linux/cgroup.h |   38 +++++++++++++++++++++++++-----
->  kernel/cgroup.c        |   61 ++++++++++++++++++++++++++++++++++++++++++++-----
->  2 files changed, 88 insertions(+), 11 deletions(-)
+>  mm/memcontrol.c |   14 ++++++--------
+>  1 file changed, 6 insertions(+), 8 deletions(-)
 > 
-> Index: hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
+> Index: hierarchy_lock-mmotm-2008-12-09/mm/memcontrol.c
 > ===================================================================
-> --- hierarchy_lock-mmotm-2008-12-09.orig/include/linux/cgroup.h
-> +++ hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
-> @@ -52,9 +52,9 @@ struct cgroup_subsys_state {
->  	 * hierarchy structure */
->  	struct cgroup *cgroup;
+> --- hierarchy_lock-mmotm-2008-12-09.orig/mm/memcontrol.c
+> +++ hierarchy_lock-mmotm-2008-12-09/mm/memcontrol.c
+> @@ -154,7 +154,7 @@ struct mem_cgroup {
 >  
-> -	/* State maintained by the cgroup system to allow
-> -	 * subsystems to be "busy". Should be accessed via css_get()
-> -	 * and css_put() */
-> +	/* State maintained by the cgroup system to allow subsystems
-> +	 * to be "busy". Should be accessed via css_get(),
-> +	 * css_tryget() and and css_put(). */
->  
->  	atomic_t refcnt;
->  
-> @@ -64,11 +64,14 @@ struct cgroup_subsys_state {
->  /* bits in struct cgroup_subsys_state flags field */
->  enum {
->  	CSS_ROOT, /* This CSS is the root of the subsystem */
-> +	CSS_REMOVED, /* This CSS is dead */
->  };
+>  	/*
+>  	 * While reclaiming in a hiearchy, we cache the last child we
+> -	 * reclaimed from. Protected by cgroup_lock()
+> +	 * reclaimed from. Protected by hierarchy_mutex
+>  	 */
+>  	struct mem_cgroup *last_scanned_child;
+>  	/*
+> @@ -529,7 +529,7 @@ unsigned long mem_cgroup_isolate_pages(u
 >  
 >  /*
-> - * Call css_get() to hold a reference on the cgroup;
-> - *
-> + * Call css_get() to hold a reference on the css; it can be used
-> + * for a reference obtained via:
-> + * - an existing ref-counted reference to the css
-> + * - task->cgroups for a locked task
+>   * This routine finds the DFS walk successor. This routine should be
+> - * called with cgroup_mutex held
+> + * called with hierarchy_mutex held
 >   */
+>  static struct mem_cgroup *
+>  mem_cgroup_get_next_node(struct mem_cgroup *curr, struct mem_cgroup *root_mem)
+> @@ -598,7 +598,7 @@ mem_cgroup_get_first_node(struct mem_cgr
+>  	/*
+>  	 * Scan all children under the mem_cgroup mem
+>  	 */
+> -	cgroup_lock();
+> +	mutex_lock(&mem_cgroup_subsys.hierarchy_mutex);
+>  	if (list_empty(&root_mem->css.cgroup->children)) {
+>  		ret = root_mem;
+>  		goto done;
+> @@ -619,7 +619,7 @@ mem_cgroup_get_first_node(struct mem_cgr
 >  
->  static inline void css_get(struct cgroup_subsys_state *css)
-> @@ -77,9 +80,32 @@ static inline void css_get(struct cgroup
->  	if (!test_bit(CSS_ROOT, &css->flags))
->  		atomic_inc(&css->refcnt);
->  }
-> +
-> +static inline bool css_is_removed(struct cgroup_subsys_state *css)
-> +{
-> +	return test_bit(CSS_REMOVED, &css->flags);
-> +}
-> +
-> +/*
-> + * Call css_tryget() to take a reference on a css if your existing
-> + * (known-valid) reference isn't already ref-counted. Returns false if
-> + * the css has been destroyed.
-> + */
-> +
-> +static inline bool css_tryget(struct cgroup_subsys_state *css)
-> +{
-> +	if (test_bit(CSS_ROOT, &css->flags))
-> +		return true;
-> +	while (!atomic_inc_not_zero(&css->refcnt)) {
-> +		if (test_bit(CSS_REMOVED, &css->flags))
-> +			return false;
-> +	}
-> +	return true;
-> +}
-> +
->  /*
->   * css_put() should be called to release a reference taken by
-> - * css_get()
-> + * css_get() or css_tryget()
->   */
->  
->  extern void __css_put(struct cgroup_subsys_state *css);
-> Index: hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
-> ===================================================================
-> --- hierarchy_lock-mmotm-2008-12-09.orig/kernel/cgroup.c
-> +++ hierarchy_lock-mmotm-2008-12-09/kernel/cgroup.c
-> @@ -2321,7 +2321,7 @@ static void init_cgroup_css(struct cgrou
->  			       struct cgroup *cgrp)
->  {
->  	css->cgroup = cgrp;
-> -	atomic_set(&css->refcnt, 0);
-> +	atomic_set(&css->refcnt, 1);
->  	css->flags = 0;
->  	if (cgrp == dummytop)
->  		set_bit(CSS_ROOT, &css->flags);
-> @@ -2453,7 +2453,7 @@ static int cgroup_has_css_refs(struct cg
->  {
->  	/* Check the reference count on each subsystem. Since we
->  	 * already established that there are no tasks in the
-> -	 * cgroup, if the css refcount is also 0, then there should
-> +	 * cgroup, if the css refcount is also 1, then there should
->  	 * be no outstanding references, so the subsystem is safe to
->  	 * destroy. We scan across all subsystems rather than using
->  	 * the per-hierarchy linked list of mounted subsystems since
-> @@ -2474,12 +2474,62 @@ static int cgroup_has_css_refs(struct cg
->  		 * matter, since it can only happen if the cgroup
->  		 * has been deleted and hence no longer needs the
->  		 * release agent to be called anyway. */
-> -		if (css && atomic_read(&css->refcnt))
-> +		if (css && (atomic_read(&css->refcnt) > 1))
->  			return 1;
->  	}
->  	return 0;
+>  done:
+>  	root_mem->last_scanned_child = ret;
+> -	cgroup_unlock();
+> +	mutex_unlock(&mem_cgroup_subsys.hierarchy_mutex);
+>  	return ret;
 >  }
 >  
-> +/*
-> + * Atomically mark all (or else none) of the cgroup's CSS objects as
-> + * CSS_REMOVED. Return true on success, or false if the cgroup has
-> + * busy subsystems. Call with cgroup_mutex held
-> + */
-> +
-> +static int cgroup_clear_css_refs(struct cgroup *cgrp)
-> +{
-> +	struct cgroup_subsys *ss;
-> +	unsigned long flags;
-> +	bool failed = false;
-> +	local_irq_save(flags);
-> +	for_each_subsys(cgrp->root, ss) {
-> +		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
-> +		int refcnt;
-> +		do {
-> +			/* We can only remove a CSS with a refcnt==1 */
-> +			refcnt = atomic_read(&css->refcnt);
-> +			if (refcnt > 1) {
-> +				failed = true;
-> +				goto done;
-> +			}
-> +			BUG_ON(!refcnt);
-> +			/*
-> +			 * Drop the refcnt to 0 while we check other
-> +			 * subsystems. This will cause any racing
-> +			 * css_tryget() to spin until we set the
-> +			 * CSS_REMOVED bits or abort
-> +			 */
-> +		} while (atomic_cmpxchg(&css->refcnt, refcnt, 0) != refcnt);
-> +	}
-> + done:
-> +	for_each_subsys(cgrp->root, ss) {
-> +		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
-> +		if (failed) {
-> +			/*
-> +			 * Restore old refcnt if we previously managed
-> +			 * to clear it from 1 to 0
-> +			 */
-> +			if (!atomic_read(&css->refcnt))
-> +				atomic_set(&css->refcnt, 1);
-> +		} else {
-> +			/* Commit the fact that the CSS is removed */
-> +			set_bit(CSS_REMOVED, &css->flags);
-> +		}
-> +	}
-> +	local_irq_restore(flags);
-> +	return !failed;
-> +}
-> +
->  static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry)
->  {
->  	struct cgroup *cgrp = dentry->d_fsdata;
-> @@ -2510,7 +2560,7 @@ static int cgroup_rmdir(struct inode *un
->  
->  	if (atomic_read(&cgrp->count)
->  	    || !list_empty(&cgrp->children)
-> -	    || cgroup_has_css_refs(cgrp)) {
-> +	    || !cgroup_clear_css_refs(cgrp)) {
->  		mutex_unlock(&cgroup_mutex);
->  		return -EBUSY;
+> @@ -683,18 +683,16 @@ static int mem_cgroup_hierarchical_recla
+>  	while (next_mem != root_mem) {
+>  		if (next_mem->obsolete) {
+>  			mem_cgroup_put(next_mem);
+> -			cgroup_lock();
+>  			next_mem = mem_cgroup_get_first_node(root_mem);
+> -			cgroup_unlock();
+>  			continue;
+>  		}
+>  		ret = try_to_free_mem_cgroup_pages(next_mem, gfp_mask, noswap,
+>  						   get_swappiness(next_mem));
+>  		if (mem_cgroup_check_under_limit(root_mem))
+>  			return 0;
+> -		cgroup_lock();
+> +		mutex_lock(&mem_cgroup_subsys.hierarchy_mutex);
+>  		next_mem = mem_cgroup_get_next_node(next_mem, root_mem);
+> -		cgroup_unlock();
+> +		mutex_unlock(&mem_cgroup_subsys.hierarchy_mutex);
 >  	}
-> @@ -3065,7 +3115,8 @@ void __css_put(struct cgroup_subsys_stat
->  {
->  	struct cgroup *cgrp = css->cgroup;
->  	rcu_read_lock();
-> -	if (atomic_dec_and_test(&css->refcnt) && notify_on_release(cgrp)) {
-> +	if ((atomic_dec_return(&css->refcnt) == 1) &&
-> +	    notify_on_release(cgrp)) {
->  		set_bit(CGRP_RELEASABLE, &cgrp->flags);
->  		check_for_release(cgrp);
->  	}
+>  	return ret;
+>  }
 > 
 > --
 > --
