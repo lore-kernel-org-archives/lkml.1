@@ -1,782 +1,89 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757594AbYLQNz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753273AbYLQOMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757594AbYLQNz6 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 08:55:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYLQNx3
+	id S1753273AbYLQOMm (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 09:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYLQOMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 08:53:29 -0500
-Received: from cavolo.yandex.ru ([87.250.244.45]:40547 "EHLO cavolo.yandex.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751189AbYLQNxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 08:53:22 -0500
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [6/7] dst: crypto processing.
-Date: Wed, 17 Dec 2008 16:53:17 +0300
-Message-Id: <1229521998-7870-7-git-send-email-zbr@ioremap.net>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1229521998-7870-6-git-send-email-zbr@ioremap.net>
-References: <1229521998-7870-1-git-send-email-zbr@ioremap.net>
- <1229521998-7870-2-git-send-email-zbr@ioremap.net>
- <1229521998-7870-3-git-send-email-zbr@ioremap.net>
- <1229521998-7870-4-git-send-email-zbr@ioremap.net>
- <1229521998-7870-5-git-send-email-zbr@ioremap.net>
- <1229521998-7870-6-git-send-email-zbr@ioremap.net>
-X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
-X-Antivirus-Code: 100000
+	Wed, 17 Dec 2008 09:12:31 -0500
+Received: from postman.teamix.net ([194.150.191.120]:37231 "EHLO
+	rproxy.teamix.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751086AbYLQOMb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 09:12:31 -0500
+From: Martin Steigerwald <ms@teamix.de>
+Organization: team(ix) GmbH
+To: linux-kernel@vger.kernel.org
+Subject: Re: physical memory limit of 64-bit linux
+Date: Wed, 17 Dec 2008 15:12:15 +0100
+User-Agent: KMail/1.9.9
+Cc: Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+        Ingo Molnar <mingo@elte.hu>
+References: <200812161556.25518.ms@teamix.de> <200812161654.17291.rjw@sisk.pl> <20081216164443.GY25779@one.firstfloor.org>
+In-Reply-To: <20081216164443.GY25779@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart4191591.oda1QXyAGh";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200812171512.24993.ms@teamix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DST may fully encrypt the data channel in case of untrusted channel and implement
-strong checksum of the transferred data. It is possible to configure algorithms
-and crypto keys, they should match on both sides of the network channel.
-Crypto processing does not introduce noticeble performance overhead, since DST
-uses configurable pool of threads to perform crypto processing.
+--nextPart4191591.oda1QXyAGh
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This patch introduces crypto processing helpers and crypto engine initialization:
-glueing with the crypto layer, allocation and initialization of the crypto
-processing thread pool, allocation of the cached pages, which are used to temporary
-encrypt data into, since it is forbidden to encrypt data in-place, since pages
-are used by the higher layers.
 
-Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+Thanks to all for the answers and the detailed discussions.
 
-diff --git a/drivers/block/dst/crypto.c b/drivers/block/dst/crypto.c
-new file mode 100644
-index 0000000..7250f90
---- /dev/null
-+++ b/drivers/block/dst/crypto.c
-@@ -0,0 +1,731 @@
-+/*
-+ * 2007+ Copyright (c) Evgeniy Polyakov <zbr@ioremap.net>
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/bio.h>
-+#include <linux/crypto.h>
-+#include <linux/dst.h>
-+#include <linux/kernel.h>
-+#include <linux/scatterlist.h>
-+#include <linux/slab.h>
-+
-+/*
-+ * Tricky bastard, but IV can be more complex with time...
-+ */
-+static inline u64 dst_gen_iv(struct dst_trans *t)
-+{
-+	return t->gen;
-+}
-+
-+/*
-+ * Crypto machinery: hash/cipher support for the given crypto controls.
-+ */
-+static struct crypto_hash *dst_init_hash(struct dst_crypto_ctl *ctl, u8 *key)
-+{
-+	int err;
-+	struct crypto_hash *hash;
-+
-+	hash = crypto_alloc_hash(ctl->hash_algo, 0, CRYPTO_ALG_ASYNC);
-+	if (IS_ERR(hash)) {
-+		err = PTR_ERR(hash);
-+		dprintk("%s: failed to allocate hash '%s', err: %d.\n",
-+				__func__, ctl->hash_algo, err);
-+		goto err_out_exit;
-+	}
-+
-+	ctl->crypto_attached_size = crypto_hash_digestsize(hash);
-+
-+	if (!ctl->hash_keysize)
-+		return hash;
-+
-+	err = crypto_hash_setkey(hash, key, ctl->hash_keysize);
-+	if (err) {
-+		dprintk("%s: failed to set key for hash '%s', err: %d.\n",
-+				__func__, ctl->hash_algo, err);
-+		goto err_out_free;
-+	}
-+
-+	return hash;
-+
-+err_out_free:
-+	crypto_free_hash(hash);
-+err_out_exit:
-+	return ERR_PTR(err);
-+}
-+
-+static struct crypto_ablkcipher *dst_init_cipher(struct dst_crypto_ctl *ctl, u8 *key)
-+{
-+	int err = -EINVAL;
-+	struct crypto_ablkcipher *cipher;
-+
-+	if (!ctl->cipher_keysize)
-+		goto err_out_exit;
-+
-+	cipher = crypto_alloc_ablkcipher(ctl->cipher_algo, 0, 0);
-+	if (IS_ERR(cipher)) {
-+		err = PTR_ERR(cipher);
-+		dprintk("%s: failed to allocate cipher '%s', err: %d.\n",
-+				__func__, ctl->cipher_algo, err);
-+		goto err_out_exit;
-+	}
-+
-+	crypto_ablkcipher_clear_flags(cipher, ~0);
-+
-+	err = crypto_ablkcipher_setkey(cipher, key, ctl->cipher_keysize);
-+	if (err) {
-+		dprintk("%s: failed to set key for cipher '%s', err: %d.\n",
-+				__func__, ctl->cipher_algo, err);
-+		goto err_out_free;
-+	}
-+
-+	return cipher;
-+
-+err_out_free:
-+	crypto_free_ablkcipher(cipher);
-+err_out_exit:
-+	return ERR_PTR(err);
-+}
-+
-+/*
-+ * Crypto engine has a pool of pages to encrypt data into before sending
-+ * it over the network. This pool is freed/allocated here.
-+ */
-+static void dst_crypto_pages_free(struct dst_crypto_engine *e)
-+{
-+	unsigned int i;
-+
-+	for (i=0; i<e->page_num; ++i)
-+		__free_page(e->pages[i]);
-+	kfree(e->pages);
-+}
-+
-+static int dst_crypto_pages_alloc(struct dst_crypto_engine *e, int num)
-+{
-+	int i;
-+
-+	e->pages = kmalloc(num * sizeof(struct page **), GFP_KERNEL);
-+	if (!e->pages)
-+		return -ENOMEM;
-+
-+	for (i=0; i<num; ++i) {
-+		e->pages[i] = alloc_page(GFP_KERNEL);
-+		if (!e->pages[i])
-+			goto err_out_free_pages;
-+	}
-+
-+	e->page_num = num;
-+	return 0;
-+
-+err_out_free_pages:
-+	while (--i >= 0)
-+		__free_page(e->pages[i]);
-+
-+	kfree(e->pages);
-+	return -ENOMEM;
-+}
-+
-+/*
-+ * Initialize crypto engine for given node.
-+ * Setup cipher/hash, keys, pool of threads and private data.
-+ */
-+static int dst_crypto_engine_init(struct dst_crypto_engine *e, struct dst_node *n)
-+{
-+	int err;
-+	struct dst_crypto_ctl *ctl = &n->crypto;
-+
-+	err = dst_crypto_pages_alloc(e, n->max_pages);
-+	if (err)
-+		goto err_out_exit;
-+
-+	e->size = PAGE_SIZE;
-+	e->data = kmalloc(e->size, GFP_KERNEL);
-+	if (!e->data) {
-+		err = -ENOMEM;
-+		goto err_out_free_pages;
-+	}
-+
-+	if (ctl->hash_algo[0]) {
-+		e->hash = dst_init_hash(ctl, n->hash_key);
-+		if (IS_ERR(e->hash)) {
-+			err = PTR_ERR(e->hash);
-+			e->hash = NULL;
-+			goto err_out_free;
-+		}
-+	}
-+
-+	if (ctl->cipher_algo[0]) {
-+		e->cipher = dst_init_cipher(ctl, n->cipher_key);
-+		if (IS_ERR(e->cipher)) {
-+			err = PTR_ERR(e->cipher);
-+			e->cipher = NULL;
-+			goto err_out_free_hash;
-+		}
-+	}
-+
-+	return 0;
-+
-+err_out_free_hash:
-+	crypto_free_hash(e->hash);
-+err_out_free:
-+	kfree(e->data);
-+err_out_free_pages:
-+	dst_crypto_pages_free(e);
-+err_out_exit:
-+	return err;
-+}
-+
-+static void dst_crypto_engine_exit(struct dst_crypto_engine *e)
-+{
-+	if (e->hash)
-+		crypto_free_hash(e->hash);
-+	if (e->cipher)
-+		crypto_free_ablkcipher(e->cipher);
-+	dst_crypto_pages_free(e);
-+	kfree(e->data);
-+}
-+
-+/*
-+ * Waiting for cipher processing to be completed.
-+ */
-+struct dst_crypto_completion
-+{
-+	struct completion		complete;
-+	int				error;
-+};
-+
-+static void dst_crypto_complete(struct crypto_async_request *req, int err)
-+{
-+	struct dst_crypto_completion *c = req->data;
-+
-+	if (err == -EINPROGRESS)
-+		return;
-+
-+	dprintk("%s: req: %p, err: %d.\n", __func__, req, err);
-+	c->error = err;
-+	complete(&c->complete);
-+}
-+
-+static int dst_crypto_process(struct ablkcipher_request *req,
-+		struct scatterlist *sg_dst, struct scatterlist *sg_src,
-+		void *iv, int enc, unsigned long timeout)
-+{
-+	struct dst_crypto_completion c;
-+	int err;
-+
-+	init_completion(&c.complete);
-+	c.error = -EINPROGRESS;
-+
-+	ablkcipher_request_set_callback(req, CRYPTO_TFM_REQ_MAY_BACKLOG,
-+					dst_crypto_complete, &c);
-+
-+	ablkcipher_request_set_crypt(req, sg_src, sg_dst, sg_src->length, iv);
-+
-+	if (enc)
-+		err = crypto_ablkcipher_encrypt(req);
-+	else
-+		err = crypto_ablkcipher_decrypt(req);
-+
-+	switch (err) {
-+		case -EINPROGRESS:
-+		case -EBUSY:
-+			err = wait_for_completion_interruptible_timeout(&c.complete,
-+					timeout);
-+			if (!err)
-+				err = -ETIMEDOUT;
-+			else
-+				err = c.error;
-+			break;
-+		default:
-+			break;
-+	}
-+
-+	return err;
-+}
-+
-+/*
-+ * DST uses generic iteration approach for data crypto processing.
-+ * Single block IO request is switched into array of scatterlists,
-+ * which are submitted to the crypto processing iterator.
-+ *
-+ * Input and output iterator initialization are different, since
-+ * in output case we can not encrypt data in-place and need a
-+ * temporary storage, which is then being sent to the remote peer.
-+ */
-+static int dst_trans_iter_out(struct bio *bio, struct dst_crypto_engine *e,
-+		int (* iterator) (struct dst_crypto_engine *e,
-+				  struct scatterlist *dst,
-+				  struct scatterlist *src))
-+{
-+	struct bio_vec *bv;
-+	int err, i;
-+
-+	sg_init_table(e->src, bio->bi_vcnt);
-+	sg_init_table(e->dst, bio->bi_vcnt);
-+
-+	bio_for_each_segment(bv, bio, i) {
-+		sg_set_page(&e->src[i], bv->bv_page, bv->bv_len, bv->bv_offset);
-+		sg_set_page(&e->dst[i], e->pages[i], bv->bv_len, bv->bv_offset);
-+
-+		err = iterator(e, &e->dst[i], &e->src[i]);
-+		if (err)
-+			return err;
-+	}
-+
-+	return 0;
-+}
-+
-+static int dst_trans_iter_in(struct bio *bio, struct dst_crypto_engine *e,
-+		int (* iterator) (struct dst_crypto_engine *e,
-+				  struct scatterlist *dst,
-+				  struct scatterlist *src))
-+{
-+	struct bio_vec *bv;
-+	int err, i;
-+
-+	sg_init_table(e->src, bio->bi_vcnt);
-+	sg_init_table(e->dst, bio->bi_vcnt);
-+
-+	bio_for_each_segment(bv, bio, i) {
-+		sg_set_page(&e->src[i], bv->bv_page, bv->bv_len, bv->bv_offset);
-+		sg_set_page(&e->dst[i], bv->bv_page, bv->bv_len, bv->bv_offset);
-+
-+		err = iterator(e, &e->dst[i], &e->src[i]);
-+		if (err)
-+			return err;
-+	}
-+
-+	return 0;
-+}
-+
-+static int dst_crypt_iterator(struct dst_crypto_engine *e,
-+		struct scatterlist *sg_dst, struct scatterlist *sg_src)
-+{
-+	struct ablkcipher_request *req = e->data;
-+	u8 iv[32];
-+
-+	memset(iv, 0, sizeof(iv));
-+
-+	memcpy(iv, &e->iv, sizeof(e->iv));
-+
-+	return dst_crypto_process(req, sg_dst, sg_src, iv, e->enc, e->timeout);
-+}
-+
-+static int dst_crypt(struct dst_crypto_engine *e, struct bio *bio)
-+{
-+	struct ablkcipher_request *req = e->data;
-+
-+	memset(req, 0, sizeof(struct ablkcipher_request));
-+	ablkcipher_request_set_tfm(req, e->cipher);
-+
-+	if (e->enc)
-+		return dst_trans_iter_out(bio, e, dst_crypt_iterator);
-+	else
-+		return dst_trans_iter_in(bio, e, dst_crypt_iterator);
-+}
-+
-+static int dst_hash_iterator(struct dst_crypto_engine *e,
-+		struct scatterlist *sg_dst, struct scatterlist *sg_src)
-+{
-+	return crypto_hash_update(e->data, sg_src, sg_src->length);
-+}
-+
-+static int dst_hash(struct dst_crypto_engine *e, struct bio *bio, void *dst)
-+{
-+	struct hash_desc *desc = e->data;
-+	int err;
-+
-+	desc->tfm = e->hash;
-+	desc->flags = 0;
-+
-+	err = crypto_hash_init(desc);
-+	if (err)
-+		return err;
-+
-+	err = dst_trans_iter_in(bio, e, dst_hash_iterator);
-+	if (err)
-+		return err;
-+
-+	err = crypto_hash_final(desc, dst);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Initialize/cleanup a crypto thread. The only thing it should
-+ * do is to allocate a pool of pages as temporary storage.
-+ * And to setup cipher and/or hash.
-+ */
-+static void *dst_crypto_thread_init(void *data)
-+{
-+	struct dst_node *n = data;
-+	struct dst_crypto_engine *e;
-+	int err = -ENOMEM;
-+
-+	e = kzalloc(sizeof(struct dst_crypto_engine), GFP_KERNEL);
-+	if (!e)
-+		goto err_out_exit;
-+	e->src = kcalloc(2 * n->max_pages, sizeof(struct scatterlist),
-+			GFP_KERNEL);
-+	if (!e->src)
-+		goto err_out_free;
-+
-+	e->dst = e->src + n->max_pages;
-+
-+	err = dst_crypto_engine_init(e, n);
-+	if (err)
-+		goto err_out_free_all;
-+
-+	return e;
-+
-+err_out_free_all:
-+	kfree(e->src);
-+err_out_free:
-+	kfree(e);
-+err_out_exit:
-+	return ERR_PTR(err);
-+}
-+
-+static void dst_crypto_thread_cleanup(void *private)
-+{
-+	struct dst_crypto_engine *e = private;
-+
-+	dst_crypto_engine_exit(e);
-+	kfree(e->src);
-+	kfree(e);
-+}
-+
-+/*
-+ * Initialize crypto engine for given node: store keys, create pool
-+ * of threads, initialize each one.
-+ *
-+ * Each thread has unique ID, but 0 and 1 are reserved for receiving and accepting
-+ * threads (if export node), so IDs could start from 2, but starting them
-+ * from 10 allows easily understand what this thread is for.
-+ */
-+int dst_node_crypto_init(struct dst_node *n, struct dst_crypto_ctl *ctl)
-+{
-+	void *key = (ctl + 1);
-+	int err = -ENOMEM, i;
-+	char name[32];
-+
-+	if (ctl->hash_keysize) {
-+		n->hash_key = kmalloc(ctl->hash_keysize, GFP_KERNEL);
-+		if (!n->hash_key)
-+			goto err_out_exit;
-+		memcpy(n->hash_key, key, ctl->hash_keysize);
-+	}
-+
-+	if (ctl->cipher_keysize) {
-+		n->cipher_key = kmalloc(ctl->cipher_keysize, GFP_KERNEL);
-+		if (!n->cipher_key)
-+			goto err_out_free_hash;
-+		memcpy(n->cipher_key, key, ctl->cipher_keysize);
-+	}
-+	memcpy(&n->crypto, ctl, sizeof(struct dst_crypto_ctl));
-+
-+	for (i=0; i<ctl->thread_num; ++i) {
-+		snprintf(name, sizeof(name), "%s-crypto-%d", n->name, i);
-+		/* Unique ids... */
-+		err = thread_pool_add_worker(n->pool, name, i+10,
-+			dst_crypto_thread_init, dst_crypto_thread_cleanup, n);
-+		if (err)
-+			goto err_out_free_threads;
-+	}
-+
-+	return 0;
-+
-+err_out_free_threads:
-+	while (--i >= 0)
-+		thread_pool_del_worker_id(n->pool, i+10);
-+
-+	if (ctl->cipher_keysize)
-+		kfree(n->cipher_key);
-+	ctl->cipher_keysize = 0;
-+err_out_free_hash:
-+	if (ctl->hash_keysize)
-+		kfree(n->hash_key);
-+	ctl->hash_keysize = 0;
-+err_out_exit:
-+	return err;
-+}
-+
-+void dst_node_crypto_exit(struct dst_node *n)
-+{
-+	struct dst_crypto_ctl *ctl = &n->crypto;
-+
-+	if (ctl->cipher_algo[0] || ctl->hash_algo[0]) {
-+		kfree(n->hash_key);
-+		kfree(n->cipher_key);
-+	}
-+}
-+
-+/*
-+ * Thrad pool setup callback. Just stores a transaction in private data.
-+ */
-+static int dst_trans_crypto_setup(void *crypto_engine, void *trans)
-+{
-+	struct dst_crypto_engine *e = crypto_engine;
-+
-+	e->private = trans;
-+	return 0;
-+}
-+
-+#if 0
-+static void dst_dump_bio(struct bio *bio)
-+{
-+	u8 *p;
-+	struct bio_vec *bv;
-+	int i;
-+
-+	bio_for_each_segment(bv, bio, i) {
-+		dprintk("%s: %llu/%u: size: %u, offset: %u, data: ",
-+				__func__, bio->bi_sector, bio->bi_size,
-+				bv->bv_len, bv->bv_offset);
-+
-+		p = kmap(bv->bv_page) + bv->bv_offset;
-+		for (i=0; i<bv->bv_len; ++i)
-+			printk("%02x ", p[i]);
-+		kunmap(bv->bv_page);
-+		printk("\n");
-+	}
-+}
-+#endif
-+
-+/*
-+ * Encrypt/hash data and send it to the network.
-+ */
-+static int dst_crypto_process_sending(struct dst_crypto_engine *e,
-+		struct bio *bio, u8 *hash)
-+{
-+	int err;
-+
-+	if (e->cipher) {
-+		err = dst_crypt(e, bio);
-+		if (err)
-+			goto err_out_exit;
-+	}
-+
-+	if (e->hash) {
-+		err = dst_hash(e, bio, hash);
-+		if (err)
-+			goto err_out_exit;
-+
-+#ifdef CONFIG_DST_DEBUG
-+		{
-+			unsigned int i;
-+
-+			/* dst_dump_bio(bio); */
-+
-+			printk(KERN_DEBUG "%s: bio: %llu/%u, rw: %lu, hash: ",
-+				__func__, (u64)bio->bi_sector,
-+				bio->bi_size, bio_data_dir(bio));
-+			for (i=0; i<crypto_hash_digestsize(e->hash); ++i)
-+					printk("%02x ", hash[i]);
-+			printk("\n");
-+		}
-+#endif
-+	}
-+
-+	return 0;
-+
-+err_out_exit:
-+	return err;
-+}
-+
-+/*
-+ * Check if received data is valid. Decipher if it is.
-+ */
-+static int dst_crypto_process_receiving(struct dst_crypto_engine *e,
-+		struct bio *bio, u8 *hash, u8 *recv_hash)
-+{
-+	int err;
-+
-+	if (e->hash) {
-+		int mismatch;
-+
-+		err = dst_hash(e, bio, hash);
-+		if (err)
-+			goto err_out_exit;
-+
-+		mismatch = !!memcmp(recv_hash, hash,
-+				crypto_hash_digestsize(e->hash));
-+#ifdef CONFIG_DST_DEBUG
-+		/* dst_dump_bio(bio); */
-+
-+		printk(KERN_DEBUG "%s: bio: %llu/%u, rw: %lu, hash mismatch: %d",
-+			__func__, (u64)bio->bi_sector, bio->bi_size,
-+			bio_data_dir(bio), mismatch);
-+		if (mismatch) {
-+			unsigned int i;
-+
-+			printk(", recv/calc: ");
-+			for (i=0; i<crypto_hash_digestsize(e->hash); ++i) {
-+				printk("%02x/%02x ", recv_hash[i], hash[i]);
-+			}
-+		}
-+		printk("\n");
-+#endif
-+		err = -1;
-+		if (mismatch)
-+			goto err_out_exit;
-+	}
-+
-+	if (e->cipher) {
-+		err = dst_crypt(e, bio);
-+		if (err)
-+			goto err_out_exit;
-+	}
-+
-+	return 0;
-+
-+err_out_exit:
-+	return err;
-+}
-+
-+/*
-+ * Thread pool callback to encrypt data and send it to the netowork.
-+ */
-+static int dst_trans_crypto_action(void *crypto_engine, void *schedule_data)
-+{
-+	struct dst_crypto_engine *e = crypto_engine;
-+	struct dst_trans *t = schedule_data;
-+	struct bio *bio = t->bio;
-+	int err;
-+
-+	dprintk("%s: t: %p, gen: %llu, cipher: %p, hash: %p.\n",
-+			__func__, t, t->gen, e->cipher, e->hash);
-+
-+	e->enc = t->enc;
-+	e->iv = dst_gen_iv(t);
-+
-+	if (bio_data_dir(bio) == WRITE) {
-+		err = dst_crypto_process_sending(e, bio, t->cmd.hash);
-+		if (err)
-+			goto err_out_exit;
-+
-+		if (e->hash) {
-+			t->cmd.csize = crypto_hash_digestsize(e->hash);
-+			t->cmd.size += t->cmd.csize;
-+		}
-+
-+		return dst_trans_send(t);
-+	} else {
-+		u8 *hash = e->data + e->size/2;
-+
-+		err = dst_crypto_process_receiving(e, bio, hash, t->cmd.hash);
-+		if (err)
-+			goto err_out_exit;
-+
-+		dst_trans_remove(t);
-+		dst_trans_put(t);
-+	}
-+
-+	return 0;
-+
-+err_out_exit:
-+	t->error = err;
-+	dst_trans_put(t);
-+	return err;
-+}
-+
-+/*
-+ * Schedule crypto processing for given transaction.
-+ */
-+int dst_trans_crypto(struct dst_trans *t)
-+{
-+	struct dst_node *n = t->n;
-+	int err;
-+
-+	err = thread_pool_schedule(n->pool,
-+		dst_trans_crypto_setup, dst_trans_crypto_action,
-+		t, MAX_SCHEDULE_TIMEOUT);
-+	if (err)
-+		goto err_out_exit;
-+
-+	return 0;
-+
-+err_out_exit:
-+	dst_trans_put(t);
-+	return err;
-+}
-+
-+/*
-+ * Crypto machinery for the export node.
-+ */
-+static int dst_export_crypto_setup(void *crypto_engine, void *bio)
-+{
-+	struct dst_crypto_engine *e = crypto_engine;
-+
-+	e->private = bio;
-+	return 0;
-+}
-+
-+static int dst_export_crypto_action(void *crypto_engine, void *schedule_data)
-+{
-+	struct dst_crypto_engine *e = crypto_engine;
-+	struct bio *bio = schedule_data;
-+	struct dst_export_priv *p = bio->bi_private;
-+	int err;
-+
-+	dprintk("%s: e: %p, data: %p, bio: %llu/%u, dir: %lu.\n", __func__,
-+		e, e->data, (u64)bio->bi_sector, bio->bi_size, bio_data_dir(bio));
-+
-+	e->enc = (bio_data_dir(bio) == READ);
-+	e->iv = p->cmd.id;
-+
-+	if (bio_data_dir(bio) == WRITE) {
-+		u8 *hash = e->data + e->size/2;
-+
-+		err = dst_crypto_process_receiving(e, bio, hash, p->cmd.hash);
-+		if (err)
-+			goto err_out_exit;
-+
-+		generic_make_request(bio);
-+	} else {
-+		err = dst_crypto_process_sending(e, bio, p->cmd.hash);
-+		if (err)
-+			goto err_out_exit;
-+
-+		if (e->hash) {
-+			p->cmd.csize = crypto_hash_digestsize(e->hash);
-+			p->cmd.size += p->cmd.csize;
-+		}
-+
-+		err = dst_export_send_bio(bio);
-+	}
-+	return 0;
-+
-+err_out_exit:
-+	bio_put(bio);
-+	return err;
-+}
-+
-+int dst_export_crypto(struct dst_node *n, struct bio *bio)
-+{
-+	int err;
-+
-+	err = thread_pool_schedule(n->pool,
-+		dst_export_crypto_setup, dst_export_crypto_action,
-+		bio, MAX_SCHEDULE_TIMEOUT);
-+	if (err)
-+		goto err_out_exit;
-+
-+	return 0;
-+
-+err_out_exit:
-+	bio_put(bio);
-+	return err;
-+}
+Am Dienstag, 16. Dezember 2008 schrieb Andi Kleen:
+> On Tue, Dec 16, 2008 at 04:54:16PM +0100, Rafael J. Wysocki wrote:
+> > On Tuesday, 16 of December 2008, Martin Steigerwald wrote:
+> > > Hi!
+> > >
+> > > What is the physical memory limit for 64-bit Linux? I read about 40 b=
+it
+> > > address bus for AMD Athlon X2 (1 TB) and 48 bit for Barcelona X4 (256
+> > > TB).
+> > >
+> > > Is 64-bit linux able to use that amount - provided that one would
+> > > manage to build it into a machine? Or does it have a lower limit?
+>
+> It depends on which 64bit Linux; e.g. IA64 has larger limits.
+
+Is it 50 bits (1024 TB)?
+
+ms@mango:~/lokal/Kernel/linux-2.6.27/arch/ia64>=20
+egrep -r "(define.*MAX_PHYS_MEMORY|define.*MAX_PHYS_BITS|
+define.*IA64_MAX_PHYSBITS)" *
+include/asm/pgtable.h:#define IA64_MAX_PHYS_BITS        50      /* max. num=
+ber=20
+of physical address bits (architected) */
+include/asm/pgtable.h:#define _PAGE_PPN_MASK            (((__IA64_UL(1) <<=
+=20
+IA64_MAX_PHYS_BITS) - 1) & ~0xfffUL)
+sn/kernel/setup.c:#define MAX_PHYS_MEMORY               (1UL <<=20
+IA64_MAX_PHYS_BITS)     /* Max physical address supported */
+
+Ciao,
+=2D-=20
+Martin Steigerwald - team(ix) GmbH - http://www.teamix.de
+gpg: 19E3 8D42 896F D004 08AC A0CA 1E10 C593 0399 AE90
+
+--nextPart4191591.oda1QXyAGh
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAklJCMAACgkQHhDFkwOZrpB1MwCcDSehkVDRvhy3UTCOU7GeiT+b
+rToAn2eka6fDBEMGSC+LcoFF/yfqIvyi
+=xYex
+-----END PGP SIGNATURE-----
+
+--nextPart4191591.oda1QXyAGh--
