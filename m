@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753151AbYLQRiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753833AbYLQRin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753151AbYLQRiR (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 12:38:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYLQRiA
+	id S1753833AbYLQRin (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 12:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYLQRi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 12:38:00 -0500
-Received: from outbound-mail-39.bluehost.com ([69.89.20.193]:43896 "HELO
-	outbound-mail-39.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751040AbYLQRh7 (ORCPT
+	Wed, 17 Dec 2008 12:38:29 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:45074 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbYLQRi1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 12:37:59 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=Vbw0Ih/fVd8Lm4jdC/L3dnxEM3j+9TU8oES5SlUL/zHseT4FHCEatuypZgw+4HnVOJpPLi8oSzm6K1A0N+ehwkBYYlPuG6Mwo+ewgrEuFyqCSpe8c0KWOMSD+dbeDVB4;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
-Date: Wed, 17 Dec 2008 09:27:05 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: Yu Zhao <yu.zhao@intel.com>, linux-pci@vger.kernel.org, achiang@hp.com,
-        bjorn.helgaas@hp.com, grundler@parisc-linux.org, greg@kroah.com,
-        mingo@elte.hu, randy.dunlap@oracle.com, rdreier@cisco.com,
-        horms@verge.net.au, yinghai@kernel.org, linux-kernel@vger.kernel.org,
-        kvm@vger.kernel.org, virtualization@lists.linux-foundation.org
-References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <200812161523.55238.jbarnes@virtuousgeek.org> <20081217141542.GB19967@parisc-linux.org>
-In-Reply-To: <20081217141542.GB19967@parisc-linux.org>
+	Wed, 17 Dec 2008 12:38:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dEnJ8Zz4SDP/gpH5lX+eYqM+ZVg7dvmai3BBcGd+W0v/3QSCVdwo5wPkZxsJ0pY7Fh
+         m3I4tu2d/FDe/dcTJOxeFcpjoqwL8PVNajneX7p61fGfmormJXU1QV/Cfl5M52BeDgCe
+         K9cH0V+IEzZOC8R9LP1+Cglket3yK2MRT87hE=
+Date: Wed, 17 Dec 2008 20:38:24 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>, linux-arch@vger.kernel.org,
+        Alexander van Heukelum <heukelum@mailshack.com>,
+        Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/many] PROC macro to annotate functions in assembly
+	files
+Message-ID: <20081217173824.GF8078@localhost>
+References: <1229505475-10219-1-git-send-email-heukelum@fastmail.fm> <1229505475-10219-2-git-send-email-heukelum@fastmail.fm> <20081217172640.GB5436@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812170927.06532.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20081217172640.GB5436@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, December 17, 2008 6:15 am Matthew Wilcox wrote:
-> On Tue, Dec 16, 2008 at 03:23:53PM -0800, Jesse Barnes wrote:
-> > I applied 1-9 to my linux-next branch; and at least patch #10 needs a
-> > respin,
->
-> I still object to #2.  We should have the flexibility to have 'struct
-> resource's that are not in this array in the pci_dev.  I would like to
-> see the SR-IOV resources _not_ in this array (and indeed, I'd like to
-> see PCI bridges keep their producer resources somewhere other than in
-> this array).  I accept that there are still some problems with this, but
-> patch #2 moves us further from being able to achieve this goal, not
-> closer.
+[Sam Ravnborg - Wed, Dec 17, 2008 at 06:26:40PM +0100]
+| On Wed, Dec 17, 2008 at 10:17:54AM +0100, Alexander van Heukelum wrote:
+| > Introduce the PROC macro in the generic header file
+| > include/linux/linkage.h to annotate functions in assembly
+| > files. This is a first step to fully annotate functions
+| > (procedures) in .S-files. The PROC macro complements the
+| > already existing and being used ENDPROC macro. The generic
+| > implementation of PROC is exactly the same as ENTRY.
+| > 
+| > The goal is to annotate functions, at least those called
+| > from C code, with PROC at the beginning and ENDPROC at the
+| > end. This is for the benefit of debugging and tracing. It
+| > will also allow to introduce a framework to check for
+| > nesting problems and missing annotations in a later stage
+| > by overriding ENTRY/END and PROC/ENDPROC in architecture-
+| > specific code, after the annotation errors have been fixed.
+| > 
+| > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+| > Cc: Sam Ravnborg <sam@ravnborg.org>
+| > Cc: Andrew Morton <akpm@linux-foundation.org>
+| 
+| I understand where you are coming from with these.
+| But what I see now is:
+| 
+| ENTRY/END
+| PROC/ENDPROC
+| KPROBE_ENTRY/KPROBE_END
+| 
+| And it is not obvious for me reading the comment when I should
+| expect which one to be used.
+| 
+| Could we try to keep it down to two variants?
+| And then document when to use which one.
+| 
+| 	Sam
+| 
 
-Yeah, I can see what you mean here...  but on the other hand it makes the 
-existing code a bit clearer (no extra args), and really it doesn't push us 
-*that* much further from non-pci_dev tied resources.  Any patches in that 
-direction will just get a few lines bigger, that's all.
+Sam, I think eventually we should get something like this:
 
-But I agree that eventually we may want to have non-pci_dev resource lists, 
-especially if we start adding advanced host bridge drivers or something.
+- KPROBE will be eliminated and explicit section descriptions
+  are to be used
+- ENTRY could be used / or renamed for something more descriptive
+  and being used aligned jmp targets or in case of procs with
+  shared body
+- PROC/ENDPROC are to replace old ENTRY/END for procs being called
+  mostly from C code
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Did I miss something? Does it sound like a good/bad plan?
 
+		- Cyrill -
