@@ -1,74 +1,101 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753745AbYLQOxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754622AbYLQOzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753745AbYLQOxd (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 09:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYLQOxV
+	id S1754622AbYLQOzN (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 09:55:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbYLQOyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 09:53:21 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55956 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750970AbYLQOxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 09:53:20 -0500
-Date: Wed, 17 Dec 2008 15:52:39 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-        "Oleg Nesterov" <oleg@redhat.com>,
-        "Andrew Morton" <akpm@linux-foundation.org>,
-        "Michael Kerrisk" <mtk.manpages@googlemail.com>,
-        linux-api@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-        jlim@sgi.com
-Subject: Re: [PATCH, RESEND2] getrusage: fill ru_maxrss value
-Message-ID: <20081217155239.77e58da0@psychotron.englab.brq.redhat.com>
-In-Reply-To: <20081217204607.FF25.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081217194646.F677.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20081217124256.46883fae@psychotron.englab.brq.redhat.com>
-	<20081217204607.FF25.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 17 Dec 2008 09:54:44 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:51510 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752030AbYLQOym (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 09:54:42 -0500
+X-Greylist: delayed 134215 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Dec 2008 09:54:42 EST
+Subject: Re: Notes on support for multiple devices for a single filesystem
+From: Chris Mason <chris.mason@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>, Kay Sievers <kay.sievers@vrfy.org>
+Cc: Andreas Dilger <adilger@sun.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+        linux-btrfs@vger.kernel.org,
+        linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20081217132343.GA14695@infradead.org>
+References: <1227183484.6161.17.camel@think.oraclecorp.com>
+	 <1228962896.21376.11.camel@think.oraclecorp.com>
+	 <20081211141436.030c2d65.sfr@canb.auug.org.au>
+	 <20081210200604.8e190b0d.akpm@linux-foundation.org>
+	 <1229006596.22236.46.camel@think.oraclecorp.com>
+	 <20081215210323.GB5000@webber.adilger.int>
+	 <20081217132343.GA14695@infradead.org>
+Content-Type: text/plain
+Date: Wed, 17 Dec 2008 09:53:48 -0500
+Message-Id: <1229525628.27170.30.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.49491280.02B9:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Dec 2008 21:03:27 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On Wed, 2008-12-17 at 08:23 -0500, Christoph Hellwig wrote:
+> FYI: here's a little writeup I did this summer on support for
+> filesystems spanning multiple block devices:
+> 
+> 
 
-> > > > This patch makes ->ru_maxrss value in struct rusage filled accordingly to
-> > > > rss hiwater mark. This struct is filled as a parameter to
-> > > > getrusage syscall. ->ru_maxrss value is set to pages which might be correct
-> > > > as "time" application converts it to KBs.
-> > > 
-> > > Why?
-> > > if kernel convert to KB, glibc don't need any change.
-> > Where exactly glibc is working with this as KBs? I can't find that place.
-> > 
-> > I looked into sources of time util and maxrss is showed this way:
-> > fprintf (fp, "%lu", ptok ((UL) resp->ru.ru_maxrss));
-> > ptok() actually does pages_to_KB conversion. If we convert to KB in
-> > kernel, this code must be changed.
-> 
-> Ah, you talked about /usr/bin/time? sorry, I misunderstood a bit.
-> Why time need number of pages?
-> 
-> In general, getrusage()::ru_maxrss is bsd compatibility feature.
-> as far as possible, the same syscall spec is better.
-> and bsd use KB unit.
-Oh you are right. Now I searched it in FreeBSD kernel. They goes like this:
-rss = pgtok(vmspace_resident_count(vm));
-if (ru->ru_maxrss < rss)
-	ru->ru_maxrss = rss;
+Thanks Christoph, I'll start with a description of what btrfs does
+today.
 
-Seems pretty reasonable to stick with the same behavior. Then I really
-do not understand why /usr/bin/time does the conversion.
-FreeBSD /usr/bin/time is very different and much simpler and (of
-course) does not do this conversion.
+Every Btrfs filesystem has a uuid, and a tree that stores all the device
+uuids that belong to the FS uuid.
 
-So I suggest to change the patch to fill KB instead of pages and
-change /usr/bin/time to not do the conversion. What do you think?
-> 
-> if time command has reasonable reason, I can agree current design.
-> but is there?
-> 
-> 
-> 
+Every btrfs device has a device uuid and a super block that indicates
+which FS uuid it belongs to.
+
+The btrfs kernel module holds a list of the FS uuids found and the
+devices that belong to each one.  This list is populated by a block
+device scanning ioctl that opens a bdev and checks for btrfs supers.
+
+I tried to keep this code as simple as possible because I knew we'd end
+up replacing it.  At mount time, btrfs makes sure the devices found by
+scanning match the devices the FS expected to find.
+
+btrfsctl -a scans all of /dev calling the scan ioctl on each device and
+btrfsctl -A /dev/xxxx just calls the ioctl on a single device.
+
+No scanning is required for a single device filesystem.  After the scan
+is done, sending any device in a multi-device filesystem is enough for
+the kernel to mount the FS.  IOW:
+
+mkfs.btrfs /dev/sdb ; mount /dev/sdb /mnt just works.
+mkfs.btrfs /dev/sdb /dev/sdc ; mount /dev/sdb /mnt also works
+
+(mkfs.btrfs calls the ioctl on multi-device filesystems).
+
+UUIDS and labels are important in large systems, but if the admin knows
+a given device is part of an FS, they are going to expect to be able to
+send that one device to mount and have things work.
+
+Even though btrfs currently maintains the device list in the kernel, I'm
+happy to move it into a userland api once we settle on one.  Kay has
+some code so that udev can discover the btrfs device<->FS uuid mappings,
+resulting in a tree like this:
+
+  $ tree /dev/btrfs/
+  /dev/btrfs/
+  |-- 0cdedd75-2d03-41e6-a1eb-156c0920a021
+  |   |-- 897fac06-569c-4f45-a0b9-a1f91a9564d4 -> ../../sda10
+  |   `-- aac20975-b642-4650-b65b-b92ce22616f2 -> ../../sda9
+  `-- a1ec970a-2463-414e-864c-2eb8ac4e1cf2
+      |-- 4d1f1fff-4c6b-4b87-8486-36f58abc0610 -> ../../sdb2
+      `-- e7fe3065-c39f-4295-a099-a89e839ae350 -> ../../sdb1
+
+It makes sense to me to use /dev/multi-device/ instead of /dev/btrfs/,
+I'm fine with anything really.
+
+-chris
+
+
