@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759470AbYLQAOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760547AbYLQAK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759470AbYLQAOL (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 19:14:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbYLQAFx
+	id S1760547AbYLQAK4 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:10:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759691AbYLQAGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 19:05:53 -0500
-Received: from kroah.org ([198.145.64.141]:41202 "EHLO coco.kroah.org"
+	Tue, 16 Dec 2008 19:06:07 -0500
+Received: from kroah.org ([198.145.64.141]:41285 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757126AbYLQAFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 19:05:52 -0500
-Date: Tue, 16 Dec 2008 16:04:05 -0800
+	id S1759659AbYLQAGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 19:06:02 -0500
+Date: Tue, 16 Dec 2008 16:04:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
         Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
         Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
         torvalds@linux-foundation.org, akpm@linux-foundation.org,
-        alan@lxorguk.ukuu.org.uk, Zachary Amsden <zach@vmware.com>
-Subject: [patch 04/22] x86 Fix VMI crash on boot in 2.6.28-rc8
-Message-ID: <20081217000405.GE4504@kroah.com>
+        alan@lxorguk.ukuu.org.uk, Tomas Winkler <tomas.winkler@intel.com>,
+        Zhu Yi <yi.zhu@intel.com>, "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 10/22] iwlwifi: clean key table in iwl_clear_stations_table
+	function
+Message-ID: <20081217000419.GK4504@kroah.com>
 References: <20081216235704.347182084@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-fix-vmi-crash-on-boot-in-2.6.28-rc8.patch"
+Content-Disposition: inline; filename="iwlwifi-clean-key-table-in-iwl_clear_stations_table-function.patch"
 In-Reply-To: <20081217000306.GA4504@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,122 +42,121 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Zachary Amsden <zach@vmware.com>
+From: Tomas Winkler <tomas.winkler@intel.com>
 
-commit ae8d04e2ecbb233926860e9ce145eac19c7835dc upstream.
+commit 40a9a8299116297429298e8fcee08235134883f7 upstream.
 
-VMI initialiation can relocate the fixmap, causing early_ioremap to
-malfunction if it is initialized before the relocation.  To fix this,
-VMI activation is split into two phases; the detection, which must
-happen before setting up ioremap, and the activation, which must happen
-after parsing early boot parameters.
+This patch cleans uCode key table bit map iwl_clear_stations_table
+since all stations are cleared also the key table must be.
 
-This fixes a crash on boot when VMI is enabled under VMware.
+Since the keys are not removed properly on suspend by mac80211
+this may result in exhausting key table on resume leading
+to memory corruption during removal
 
-Signed-off-by: Zachary Amsden <zach@vmware.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+This patch also fixes a memory corruption problem reported in
+http://marc.info/?l=linux-wireless&m=122641417231586&w=2 and tracked in
+http://bugzilla.kernel.org/show_bug.cgi?id=12040.
+
+When the key is removed a second time the offset is set to 255 - this
+index is not valid for the ucode_key_table and corrupts the eeprom pointer
+(which is 255 bits from ucode_key_table).
+
+Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+Reported-by: Carlos R. Mafra <crmafra2@gmail.com>
+Reported-by: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/setup.c   |   12 +++++-------
- arch/x86/kernel/smpboot.c |    2 --
- arch/x86/kernel/vmi_32.c  |   16 +++++++++++-----
- include/asm-x86/vmi.h     |    8 +++++++-
- 4 files changed, 23 insertions(+), 15 deletions(-)
+ drivers/net/wireless/iwlwifi/iwl-core.c |    3 +++
+ drivers/net/wireless/iwlwifi/iwl-sta.c  |   24 +++++++++++++++++++++---
+ 2 files changed, 24 insertions(+), 3 deletions(-)
 
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -634,6 +634,9 @@ void __init setup_arch(char **cmdline_p)
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
- #endif
+--- a/drivers/net/wireless/iwlwifi/iwl-core.c
++++ b/drivers/net/wireless/iwlwifi/iwl-core.c
+@@ -290,6 +290,9 @@ void iwl_clear_stations_table(struct iwl
+ 	priv->num_stations = 0;
+ 	memset(priv->stations, 0, sizeof(priv->stations));
  
-+	/* VMI may relocate the fixmap; do this before touching ioremap area */
-+	vmi_init();
++	/* clean ucode key table bit map */
++	priv->ucode_key_table = 0;
 +
- 	early_cpu_init();
- 	early_ioremap_init();
+ 	spin_unlock_irqrestore(&priv->sta_lock, flags);
+ }
+ EXPORT_SYMBOL(iwl_clear_stations_table);
+--- a/drivers/net/wireless/iwlwifi/iwl-sta.c
++++ b/drivers/net/wireless/iwlwifi/iwl-sta.c
+@@ -475,7 +475,7 @@ static int iwl_get_free_ucode_key_index(
+ 		if (!test_and_set_bit(i, &priv->ucode_key_table))
+ 			return i;
  
-@@ -707,13 +710,8 @@ void __init setup_arch(char **cmdline_p)
- 	check_efer();
- #endif
- 
--#if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
--	/*
--	 * Must be before kernel pagetables are setup
--	 * or fixmap area is touched.
--	 */
--	vmi_init();
--#endif
-+	/* Must be before kernel pagetables are setup */
-+	vmi_activate();
- 
- 	/* after early param, so could get panic from serial */
- 	reserve_early_setup_data();
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -289,9 +289,7 @@ static void __cpuinit start_secondary(vo
- 	 * fragile that we want to limit the things done here to the
- 	 * most necessary things.
- 	 */
--#ifdef CONFIG_VMI
- 	vmi_bringup();
--#endif
- 	cpu_init();
- 	preempt_disable();
- 	smp_callin();
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -960,8 +960,6 @@ static inline int __init activate_vmi(vo
- 
- void __init vmi_init(void)
- {
--	unsigned long flags;
--
- 	if (!vmi_rom)
- 		probe_vmi_rom();
- 	else
-@@ -973,13 +971,21 @@ void __init vmi_init(void)
- 
- 	reserve_top_address(-vmi_rom->virtual_top);
- 
--	local_irq_save(flags);
--	activate_vmi();
--
- #ifdef CONFIG_X86_IO_APIC
- 	/* This is virtual hardware; timer routing is wired correctly */
- 	no_timer_check = 1;
- #endif
-+}
-+
-+void vmi_activate(void)
-+{
-+	unsigned long flags;
-+
-+	if (!vmi_rom)
-+		return;
-+
-+	local_irq_save(flags);
-+	activate_vmi();
- 	local_irq_restore(flags & X86_EFLAGS_IF);
+-	return -1;
++	return WEP_INVALID_OFFSET;
  }
  
---- a/include/asm-x86/vmi.h
-+++ b/include/asm-x86/vmi.h
-@@ -223,9 +223,15 @@ struct pci_header {
- } __attribute__((packed));
+ int iwl_send_static_wepkey_cmd(struct iwl_priv *priv, u8 send_if_empty)
+@@ -620,6 +620,9 @@ static int iwl_set_wep_dynamic_key_info(
+ 	/* else, we are overriding an existing key => no need to allocated room
+ 	 * in uCode. */
  
- /* Function prototypes for bootstrapping */
-+#ifdef CONFIG_VMI
- extern void vmi_init(void);
-+extern void vmi_activate(void);
- extern void vmi_bringup(void);
--extern void vmi_apply_boot_page_allocations(void);
-+#else
-+static inline void vmi_init(void) {}
-+static inline void vmi_activate(void) {}
-+static inline void vmi_bringup(void) {}
-+#endif
++	WARN(priv->stations[sta_id].sta.key.key_offset == WEP_INVALID_OFFSET,
++		"no space for new kew");
++
+ 	priv->stations[sta_id].sta.key.key_flags = key_flags;
+ 	priv->stations[sta_id].sta.sta.modify_mask = STA_MODIFY_KEY_MASK;
+ 	priv->stations[sta_id].sta.mode = STA_CONTROL_MODIFY_MSK;
+@@ -637,6 +640,7 @@ static int iwl_set_ccmp_dynamic_key_info
+ {
+ 	unsigned long flags;
+ 	__le16 key_flags = 0;
++	int ret;
  
- /* State needed to start an application processor in an SMP system. */
- struct vmi_ap_state {
+ 	key_flags |= (STA_KEY_FLG_CCMP | STA_KEY_FLG_MAP_KEY_MSK);
+ 	key_flags |= cpu_to_le16(keyconf->keyidx << STA_KEY_FLG_KEYID_POS);
+@@ -664,14 +668,18 @@ static int iwl_set_ccmp_dynamic_key_info
+ 	/* else, we are overriding an existing key => no need to allocated room
+ 	 * in uCode. */
+ 
++	WARN(priv->stations[sta_id].sta.key.key_offset == WEP_INVALID_OFFSET,
++		"no space for new kew");
++
+ 	priv->stations[sta_id].sta.key.key_flags = key_flags;
+ 	priv->stations[sta_id].sta.sta.modify_mask = STA_MODIFY_KEY_MASK;
+ 	priv->stations[sta_id].sta.mode = STA_CONTROL_MODIFY_MSK;
+ 
++	ret = iwl_send_add_sta(priv, &priv->stations[sta_id].sta, CMD_ASYNC);
++
+ 	spin_unlock_irqrestore(&priv->sta_lock, flags);
+ 
+-	IWL_DEBUG_INFO("hwcrypto: modify ucode station key info\n");
+-	return iwl_send_add_sta(priv, &priv->stations[sta_id].sta, CMD_ASYNC);
++	return ret;
+ }
+ 
+ static int iwl_set_tkip_dynamic_key_info(struct iwl_priv *priv,
+@@ -696,6 +704,9 @@ static int iwl_set_tkip_dynamic_key_info
+ 	/* else, we are overriding an existing key => no need to allocated room
+ 	 * in uCode. */
+ 
++	WARN(priv->stations[sta_id].sta.key.key_offset == WEP_INVALID_OFFSET,
++		"no space for new kew");
++
+ 	/* This copy is acutally not needed: we get the key with each TX */
+ 	memcpy(priv->stations[sta_id].keyinfo.key, keyconf->key, 16);
+ 
+@@ -734,6 +745,13 @@ int iwl_remove_dynamic_key(struct iwl_pr
+ 		return 0;
+ 	}
+ 
++	if (priv->stations[sta_id].sta.key.key_offset == WEP_INVALID_OFFSET) {
++		IWL_WARNING("Removing wrong key %d 0x%x\n",
++			    keyconf->keyidx, key_flags);
++		spin_unlock_irqrestore(&priv->sta_lock, flags);
++		return 0;
++	}
++
+ 	if (!test_and_clear_bit(priv->stations[sta_id].sta.key.key_offset,
+ 		&priv->ucode_key_table))
+ 		IWL_ERROR("index %d not used in uCode key table.\n",
 
