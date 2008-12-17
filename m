@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760439AbYLQAJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760854AbYLQANB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760439AbYLQAJu (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 19:09:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759560AbYLQAGN
+	id S1760854AbYLQANB (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:13:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759323AbYLQAGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 19:06:13 -0500
-Received: from kroah.org ([198.145.64.141]:41354 "EHLO coco.kroah.org"
+	Tue, 16 Dec 2008 19:06:51 -0500
+Received: from kroah.org ([198.145.64.141]:41424 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759530AbYLQAGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 19:06:10 -0500
-Date: Tue, 16 Dec 2008 16:04:31 -0800
+	id S1759761AbYLQAGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 19:06:18 -0500
+Date: Tue, 16 Dec 2008 16:04:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
         Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
         Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
         torvalds@linux-foundation.org, akpm@linux-foundation.org,
-        alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 16/22] firewire: fw-ohci: fix IOMMU resource exhaustion
-Message-ID: <20081217000431.GQ4504@kroah.com>
+        alan@lxorguk.ukuu.org.uk, Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [patch 21/22] V4L/DVB (9621): Avoid writing outside shadow.bytes[]
+	array
+Message-ID: <20081217000441.GV4504@kroah.com>
 References: <20081216235704.347182084@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="firewire-fw-ohci-fix-iommu-resource-exhaustion.patch"
+Content-Disposition: inline; filename="v4l-dvb-avoid-writing-outside-shadow.bytes-array.patch"
 In-Reply-To: <20081217000306.GA4504@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,105 +41,83 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
 
-commit 1d1dc5e83f3299c108a4e44d58cc4bfef48c876a upstream.
+commit 494264379d186bf806613d27aafb7d88d42f4212 upstream.
 
-There is a DMA map/ unmap imbalance whenever a block write request
-packet is sent and then dequeued with ohci_cancel_packet.  The latter
-may happen frequently if the AR resp tasklet is executed before the AT
-req tasklet for the same transaction.
+There were no check about the limits of shadow.bytes array. This offers
+a risk of writing values outside the limits, overriding other data
+areas.
 
-Add the missing dma_unmap_single.  This fixes
-https://bugzilla.redhat.com/show_bug.cgi?id=475156
-
-Reported-by: Emmanuel Kowalski
-Tested-by: Emmanuel Kowalski
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/firewire/fw-ohci.c        |   11 +++++++----
- drivers/firewire/fw-transaction.c |    3 +++
- drivers/firewire/fw-transaction.h |    2 ++
- 3 files changed, 12 insertions(+), 4 deletions(-)
+ drivers/media/video/tvaudio.c |   30 +++++++++++++++++++++++++++---
+ 1 file changed, 27 insertions(+), 3 deletions(-)
 
---- a/drivers/firewire/fw-ohci.c
-+++ b/drivers/firewire/fw-ohci.c
-@@ -958,6 +958,7 @@ at_context_queue_packet(struct context *
- 			packet->ack = RCODE_SEND_ERROR;
+--- a/drivers/media/video/tvaudio.c
++++ b/drivers/media/video/tvaudio.c
+@@ -152,7 +152,7 @@ static int chip_write(struct CHIPSTATE *
+ {
+ 	unsigned char buffer[2];
+ 
+-	if (-1 == subaddr) {
++	if (subaddr < 0) {
+ 		v4l_dbg(1, debug, chip->c, "%s: chip_write: 0x%x\n",
+ 			chip->c->name, val);
+ 		chip->shadow.bytes[1] = val;
+@@ -163,6 +163,13 @@ static int chip_write(struct CHIPSTATE *
  			return -1;
  		}
-+		packet->payload_bus = payload_bus;
- 
- 		d[2].req_count    = cpu_to_le16(packet->payload_length);
- 		d[2].data_address = cpu_to_le32(payload_bus);
-@@ -1009,7 +1010,6 @@ static int handle_at_packet(struct conte
- 	struct driver_data *driver_data;
- 	struct fw_packet *packet;
- 	struct fw_ohci *ohci = context->ohci;
--	dma_addr_t payload_bus;
- 	int evt;
- 
- 	if (last->transfer_status == 0)
-@@ -1022,9 +1022,8 @@ static int handle_at_packet(struct conte
- 		/* This packet was cancelled, just continue. */
- 		return 1;
- 
--	payload_bus = le32_to_cpu(last->data_address);
--	if (payload_bus != 0)
--		dma_unmap_single(ohci->card.device, payload_bus,
-+	if (packet->payload_bus)
-+		dma_unmap_single(ohci->card.device, packet->payload_bus,
- 				 packet->payload_length, DMA_TO_DEVICE);
- 
- 	evt = le16_to_cpu(last->transfer_status) & 0x1f;
-@@ -1681,6 +1680,10 @@ static int ohci_cancel_packet(struct fw_
- 	if (packet->ack != 0)
- 		goto out;
- 
-+	if (packet->payload_bus)
-+		dma_unmap_single(ohci->card.device, packet->payload_bus,
-+				 packet->payload_length, DMA_TO_DEVICE);
+ 	} else {
++		if (subaddr + 1 >= ARRAY_SIZE(chip->shadow.bytes)) {
++			v4l_info(chip->c,
++				"Tried to access a non-existent register: %d\n",
++				subaddr);
++			return -EINVAL;
++		}
 +
- 	log_ar_at_event('T', packet->speed, packet->header, 0x20);
- 	driver_data->packet = NULL;
- 	packet->ack = RCODE_CANCELLED;
---- a/drivers/firewire/fw-transaction.c
-+++ b/drivers/firewire/fw-transaction.c
-@@ -207,6 +207,7 @@ fw_fill_request(struct fw_packet *packet
- 	packet->speed = speed;
- 	packet->generation = generation;
- 	packet->ack = 0;
-+	packet->payload_bus = 0;
+ 		v4l_dbg(1, debug, chip->c, "%s: chip_write: reg%d=0x%x\n",
+ 			chip->c->name, subaddr, val);
+ 		chip->shadow.bytes[subaddr+1] = val;
+@@ -177,12 +184,20 @@ static int chip_write(struct CHIPSTATE *
+ 	return 0;
  }
  
- /**
-@@ -541,6 +542,8 @@ fw_fill_response(struct fw_packet *respo
- 		BUG();
- 		return;
+-static int chip_write_masked(struct CHIPSTATE *chip, int subaddr, int val, int mask)
++static int chip_write_masked(struct CHIPSTATE *chip,
++			     int subaddr, int val, int mask)
+ {
+ 	if (mask != 0) {
+-		if (-1 == subaddr) {
++		if (subaddr < 0) {
+ 			val = (chip->shadow.bytes[1] & ~mask) | (val & mask);
+ 		} else {
++			if (subaddr + 1 >= ARRAY_SIZE(chip->shadow.bytes)) {
++				v4l_info(chip->c,
++					"Tried to access a non-existent register: %d\n",
++					subaddr);
++				return -EINVAL;
++			}
++
+ 			val = (chip->shadow.bytes[subaddr+1] & ~mask) | (val & mask);
+ 		}
  	}
+@@ -228,6 +243,15 @@ static int chip_cmd(struct CHIPSTATE *ch
+ 	if (0 == cmd->count)
+ 		return 0;
+ 
++	if (cmd->count + cmd->bytes[0] - 1 >= ARRAY_SIZE(chip->shadow.bytes)) {
++		v4l_info(chip->c,
++			 "Tried to access a non-existent register range: %d to %d\n",
++			 cmd->bytes[0] + 1, cmd->bytes[0] + cmd->count - 1);
++		return -EINVAL;
++	}
 +
-+	response->payload_bus = 0;
- }
- EXPORT_SYMBOL(fw_fill_response);
- 
---- a/drivers/firewire/fw-transaction.h
-+++ b/drivers/firewire/fw-transaction.h
-@@ -27,6 +27,7 @@
- #include <linux/list.h>
- #include <linux/spinlock_types.h>
- #include <linux/timer.h>
-+#include <linux/types.h>
- #include <linux/workqueue.h>
- 
- #define TCODE_IS_READ_REQUEST(tcode)	(((tcode) & ~1) == 4)
-@@ -153,6 +154,7 @@ struct fw_packet {
- 	size_t header_length;
- 	void *payload;
- 	size_t payload_length;
-+	dma_addr_t payload_bus;
- 	u32 timestamp;
- 
- 	/*
++	/* FIXME: it seems that the shadow bytes are wrong bellow !*/
++
+ 	/* update our shadow register set; print bytes if (debug > 0) */
+ 	v4l_dbg(1, debug, chip->c, "%s: chip_cmd(%s): reg=%d, data:",
+ 		chip->c->name, name,cmd->bytes[0]);
 
