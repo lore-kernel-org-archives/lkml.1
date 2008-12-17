@@ -1,84 +1,48 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751502AbYLQR7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751780AbYLQSIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751502AbYLQR7T (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 12:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbYLQR65
+	id S1751780AbYLQSIW (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 13:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbYLQSIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 12:58:57 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:56244 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751520AbYLQR6z (ORCPT
+	Wed, 17 Dec 2008 13:08:11 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48864 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbYLQSIK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 12:58:55 -0500
-Date: Wed, 17 Dec 2008 19:00:23 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>, linux-arch@vger.kernel.org,
-        Alexander van Heukelum <heukelum@mailshack.com>,
-        Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/many] PROC macro to annotate functions in assembly files
-Message-ID: <20081217180023.GA5783@uranus.ravnborg.org>
-References: <1229505475-10219-1-git-send-email-heukelum@fastmail.fm> <1229505475-10219-2-git-send-email-heukelum@fastmail.fm> <20081217172640.GB5436@uranus.ravnborg.org> <20081217173824.GF8078@localhost>
-Mime-Version: 1.0
+	Wed, 17 Dec 2008 13:08:10 -0500
+Date: Wed, 17 Dec 2008 18:08:05 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, Greg KH <greg@kroah.com>,
+        linux-kernel@vger.kernel.org, v4l <video4linux-list@redhat.com>,
+        Laurent Pinchart <laurent.pinchart@skynet.be>,
+        Tejun Heo <tj@kernel.org>
+Subject: Re: [BUG] cdev_put() race condition
+Message-ID: <20081217180805.GG28946@ZenIV.linux.org.uk>
+References: <200812082156.26522.hverkuil@xs4all.nl> <200812171607.41713.hverkuil@xs4all.nl> <49492437.7020105@panasas.com> <200812171833.39735.hverkuil@xs4all.nl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081217173824.GF8078@localhost>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200812171833.39735.hverkuil@xs4all.nl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 08:38:24PM +0300, Cyrill Gorcunov wrote:
-> [Sam Ravnborg - Wed, Dec 17, 2008 at 06:26:40PM +0100]
-> | On Wed, Dec 17, 2008 at 10:17:54AM +0100, Alexander van Heukelum wrote:
-> | > Introduce the PROC macro in the generic header file
-> | > include/linux/linkage.h to annotate functions in assembly
-> | > files. This is a first step to fully annotate functions
-> | > (procedures) in .S-files. The PROC macro complements the
-> | > already existing and being used ENDPROC macro. The generic
-> | > implementation of PROC is exactly the same as ENTRY.
-> | > 
-> | > The goal is to annotate functions, at least those called
-> | > from C code, with PROC at the beginning and ENDPROC at the
-> | > end. This is for the benefit of debugging and tracing. It
-> | > will also allow to introduce a framework to check for
-> | > nesting problems and missing annotations in a later stage
-> | > by overriding ENTRY/END and PROC/ENDPROC in architecture-
-> | > specific code, after the annotation errors have been fixed.
-> | > 
-> | > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-> | > Cc: Sam Ravnborg <sam@ravnborg.org>
-> | > Cc: Andrew Morton <akpm@linux-foundation.org>
-> | 
-> | I understand where you are coming from with these.
-> | But what I see now is:
-> | 
-> | ENTRY/END
-> | PROC/ENDPROC
-> | KPROBE_ENTRY/KPROBE_END
-> | 
-> | And it is not obvious for me reading the comment when I should
-> | expect which one to be used.
-> | 
-> | Could we try to keep it down to two variants?
-> | And then document when to use which one.
-> | 
-> | 	Sam
-> | 
-> 
-> Sam, I think eventually we should get something like this:
-> 
-> - KPROBE will be eliminated and explicit section descriptions
->   are to be used
-> - ENTRY could be used / or renamed for something more descriptive
->   and being used aligned jmp targets or in case of procs with
->   shared body
-> - PROC/ENDPROC are to replace old ENTRY/END for procs being called
->   mostly from C code
+On Wed, Dec 17, 2008 at 06:33:38PM +0100, Hans Verkuil wrote:
+> On Wednesday 17 December 2008 17:09:27 Boaz Harrosh wrote:
+> > Hans Verkuil wrote:
+> > > On Wednesday 17 December 2008 15:52:38 Boaz Harrosh wrote:
+> > >> Hans Verkuil wrote:
+> > >>> On Wednesday 17 December 2008 00:30:39 Greg KH wrote:
+> > >>>> On Wed, Dec 17, 2008 at 12:23:41AM +0100, Hans Verkuil wrote:
+> > >>>>> On Tuesday 16 December 2008 22:21:50 Greg KH wrote:
+> > >>>>>> On Tue, Dec 16, 2008 at 10:00:51PM +0100, Hans Verkuil wrote:
+> > >>>>>>> On Tuesday 16 December 2008 21:22:48 Greg KH wrote:
+> > >>>>>>>> On Mon, Dec 08, 2008 at 09:56:26PM +0100, Hans Verkuil wrote:
+> > >>>>>>>>> Hi Greg,
 
-So what prevents us from extending ENTRY/END instead of introducing
-another set?
-Let us try to extend what we have and not introduce something new.
+[snip 400-odd lines, with ~30 lines of original contents]
 
-	Sam
+Could the esteemed sir kindly consider trimming the fucking crap or taking
+that to alt.cascade?
