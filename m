@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760621AbYLQH5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760236AbYLQIBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760621AbYLQH5a (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 02:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759406AbYLQH5Q
+	id S1760236AbYLQIBW (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 03:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYLQIBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 02:57:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53491 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759622AbYLQH5P (ORCPT
+	Wed, 17 Dec 2008 03:01:10 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:27669 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751AbYLQIBJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 02:57:15 -0500
-Date: Tue, 16 Dec 2008 23:56:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/15] sanitize AUDIT_MQ_SENDRECV
-Message-Id: <20081216235656.d7985f1d.akpm@linux-foundation.org>
-In-Reply-To: <E1LCohe-0000C7-TH@ZenIV.linux.org.uk>
-References: <E1LCohe-0000C7-TH@ZenIV.linux.org.uk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 17 Dec 2008 03:01:09 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=keG5SnLlj/LLAgUwgQIHsImCSnYIffZuYcPbQpJs6+N6f9Kh7FEEgBUt4ckXZ/tC8
+	aeduhCHxW54cxN08lLnWA==
+MIME-Version: 1.0
+In-Reply-To: <494852FA.3000101@cn.fujitsu.com>
+References: <6599ad830812161558t4da0e5e7l4ad7d6f3a0dfbe6e@mail.gmail.com>
+	 <494852FA.3000101@cn.fujitsu.com>
+Date: Wed, 17 Dec 2008 00:01:05 -0800
+Message-ID: <6599ad830812170001wfca7cd0n15e5ead3a569f2c2@mail.gmail.com>
+Subject: Re: [PATCH] Make cgroup_path() RCU-safe
+From: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Dec 2008 05:12:10 +0000 Al Viro <viro@ftp.linux.org.uk> wrote:
-
-> 
-> * logging the original value of *msg_prio in mq_timedreceive(2)
->   is insane - the argument is write-only (i.e. syscall always
->   ignores the original value and only overwrites it).
-> * merge __audit_mq_timed{send,receive}
-> * don't do copy_from_user() twice
-> * don't mess with allocations in auditsc part
-> * ... and don't bother checking !audit_enabled and !context in there -
->   we'd already checked for audit_dummy_context().
-> 
-> ...
+On Tue, Dec 16, 2008 at 5:16 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
 >
-> +		if (copy_from_user(&ts, u_abs_timeout, 
-> +					sizeof(struct timespec)))
+> But the patch is word wrapped..
 
-Well that's odd.  afacit timespec has different sizes on 32-bit and
-64-bit userspace.
+Sigh. I thought that I'd fixed gmail to not do that ...
 
-But the old audit code did this copy too, and it presumably worked.
+I'll try to resend.
+
+>
+> We already have kernel-doc for cgroup_path(), why do we need those comments
+> in cgroup.h.
+>
+
+Fair point - I got rid of those extra comments.
+
+Paul
