@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752761AbYLQTJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751633AbYLQTHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752761AbYLQTJW (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 14:09:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYLQTI4
+	id S1751633AbYLQTHU (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 14:07:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYLQTHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 14:08:56 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42982 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752023AbYLQTIz (ORCPT
+	Wed, 17 Dec 2008 14:07:04 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:59163 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751336AbYLQTHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 14:08:55 -0500
-Date: Wed, 17 Dec 2008 13:08:26 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-        Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 2/2] ipc namespaces: implement support for posix
-	msqueues
-Message-ID: <20081217190826.GA25890@us.ibm.com>
-References: <20081217175513.GA23291@us.ibm.com> <20081217175549.GB23331@us.ibm.com> <1229540099.17206.426.camel@nimitz>
+	Wed, 17 Dec 2008 14:07:03 -0500
+Date: Wed, 17 Dec 2008 14:07:01 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: initramfs@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+        Dave Jones <davej@redhat.com>, cjwatson@ubuntu.com,
+        Hannes Reinecke <hare@suse.de>
+Subject: Re: Dracut -- Cross distribution initramfs infrastructure
+Message-ID: <20081217190700.GA15377@infradead.org>
+References: <1229540094.28858.150.camel@aglarond.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229540099.17206.426.camel@nimitz>
+In-Reply-To: <1229540094.28858.150.camel@aglarond.local>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> On Wed, 2008-12-17 at 11:55 -0600, Serge E. Hallyn wrote:
-> > -void free_ipc_ns(struct kref *kref)
-> > +void put_ipc_ns(struct ipc_namespace *ns)
-> >  {
-> > -       struct ipc_namespace *ns;
-> > +       if (ns && atomic_dec_and_lock(&ns->count, &mq_lock)) {
-> > +               mq_clear_sbinfo(ns);
-> > +               spin_unlock(&mq_lock);
-> > +               mq_put_mnt(ns);
-> > +               free_ipc_ns(ns);
-> > +       }
-> > +}
+On Wed, Dec 17, 2008 at 01:54:54PM -0500, Jeremy Katz wrote:
+> As davej started talking about a few months ago at Kernel Summit and
+> LPC, there's a lot of duplication between distros on the tools used to
+> generate the initramfs as well as the contents and how the initramfs
+> works.  Ultimately, there's little reason for this not to be something
+> that is shared and worked on by everyone.  Added to this is the fact
+> that everyone's infrastructures for this have grown up over a long-ish
+> period of time without significant amounts of reworking for the way that
+> the kernel and early boot works these days.
 > 
-> OK, I see now why you wanted to remove the kref and add an atomic_t.
-> That's probably worth a sentence in the patch description.
+> Therefore I've started on a new project, dracut, to try to be a new
+> initramfs tool that can be used across various distributions.  From the
+> README...
 
-Good point, will do.
+It looks like Hannes has also been working on a new, modular initramfs
+for a while:
 
-> I know that atomic_dec_and_lock() can be a nice logical thing to do, but
-> is it necessary here?  Basically, is there something that happens under
-> mq_lock that can re-raise the ns->count?
+	http://git.kernel.org/?p=linux/kernel/git/hare/mkinitrd.git;a=summary
 
-A racing task from another ipc namespace can open a mq file through
-the VFS and thereby bump the ipc's refcount.  Will comment that here and
-in the patch description.
-
-thanks,
--serge
+I hope you guys can get together and agree on one implementation..
