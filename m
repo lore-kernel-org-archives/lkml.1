@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757462AbYLQBWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757642AbYLQB0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757462AbYLQBWk (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 20:22:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYLQBW3
+	id S1757642AbYLQB0i (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 20:26:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYLQB02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 20:22:29 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:31251 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619AbYLQBW3 (ORCPT
+	Tue, 16 Dec 2008 20:26:28 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:50907 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751619AbYLQB01 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 20:22:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=wUEESoMC8syr3pGQpQ5jQwiIYZ2XR+/n1jBYvoj771bjSMSmHwRIwctaQ+LrLG02+8
-         ugLt8AuQYqX/u2mQCtvIRBH+Of8CgGcCxWxjg9MhjRH+0u4yjjVVLv+TiFxPeBfW9NIc
-         ub1q8O/oyl8PPbIY2KBTeUKoEYt0YESH2vaXg=
-Subject: Re: Compiling glibc with 2.6.28 linux headers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: bluebird@gentoo.org, sparclinux@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-In-Reply-To: <20081216.011334.124918024.davem@davemloft.net>
-References: <4943DAD6.7070402@gentoo.org>
-	 <20081216.011334.124918024.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 16 Dec 2008 17:22:26 -0800
-Message-Id: <1229476946.6481.0.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Dec 2008 20:26:27 -0500
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: ying.huang@intel.com (Huang Ying)
+Subject: Re: [RFC PATCH crypto] AES: Add support to Intel	AES-NI	instructions
+Cc: herbert@gondor.apana.org.au, suresh.b.siddha@intel.com,
+        linux-crypto@ml.breakpoint.cc, akpm@linux-foundation.org,
+        linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+        mingo@elte.hu, tglx@linutronix.de
+Organization: Core
+In-Reply-To: <1229476462.5936.314.camel@yhuang-dev.sh.intel.com>
+X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1LClB3-0006WP-9J@gondolin.me.apana.org.au>
+Date: Wed, 17 Dec 2008 12:26:17 +1100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-16 at 01:13 -0800, David Miller wrote:
-> From: Friedrich Oslage <bluebird@gentoo.org>
-> Date: Sat, 13 Dec 2008 16:55:02 +0100
-> 
-> > -----BEGIN PGP SIGNED MESSAGE-----
-> > Hash: SHA1
-> > 
-> > Hi,
-> > 
-> > when compiling glibc(2.9, 20081208 snapshot) with linux 2.6.28-rc8
-> > headers I get a lot of errors like this one:
-> > 
-> > In file included from
-> > /tmp/toolchain-build/rootfs/usr/include/asm/byteorder.h:49,
-> >                  from
-> > /tmp/toolchain-build/rootfs/usr/include/linux/atalk.h:4,
-> >                  from ../sysdeps/unix/sysv/linux/netatalk/at.h:25,
-> >                  from ../sysdeps/unix/sysv/linux/sa_len.c:22:
-> > /tmp/toolchain-build/rootfs/usr/include/linux/byteorder.h:8:3: error:
-> > #error Fix asm/byteorder.h to define one endianness
-> 
-> Harvey, we might need to do something about this.
+Huang Ying <ying.huang@intel.com> wrote:
+>
+> f. if TS is clear, then use x86_64 implementation. Otherwise if
+> user-space has touched the FPU, we save the state, if not then simply
+> clear TS.
 
-I'm on the run today, will take a look in 24 hours.
+Well I'd rather avoid using the x86_64 implementation ever because
+unless the chip guys have really screwed up we should be looking at
+a difference of at least a factor of 10.
 
-Harvey
+BTW I wasn't very clear in the original email.  You'd only do the
+asynchronous operation for CBC/ECB.  For the simple AES case I
+suppose we'll just have to stick to the x86_64 fallback.  This'll
+really suck for disk encryption but I guess you could always add
+an LRW/XTS mode to your code.
 
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
