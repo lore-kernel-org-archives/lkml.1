@@ -1,192 +1,143 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752810AbYLQWIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752632AbYLQWEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752810AbYLQWIf (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 17:08:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbYLQWIY
+	id S1752632AbYLQWEb (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 17:04:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYLQWES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 17:08:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55219 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751321AbYLQWIY (ORCPT
+	Wed, 17 Dec 2008 17:04:18 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:26121 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751285AbYLQWER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 17:08:24 -0500
-Date: Wed, 17 Dec 2008 14:07:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: menage@google.com
-Cc: kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com,
-        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/3] CGroups: Add css_tryget()
-Message-Id: <20081217140741.0085e6a0.akpm@linux-foundation.org>
-In-Reply-To: <20081216113653.252690000@menage.corp.google.com>
-References: <20081216113055.713856000@menage.corp.google.com>
-	<20081216113653.252690000@menage.corp.google.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Dec 2008 17:04:17 -0500
+Date: Wed, 17 Dec 2008 14:03:10 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Louis Rilling <louis.rilling@kerlabs.com>, linux-kernel@vger.kernel.org,
+        cluster-devel@redhat.com, swhiteho@redhat.com,
+        Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] configfs: Silence lockdep on mkdir(), rmdir() and
+	configfs_depend_item()
+Message-ID: <20081217220310.GB6372@mail.oracle.com>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Louis Rilling <louis.rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
+	swhiteho@redhat.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <20081212100615.GD19128@hawkmoon.kerlabs.com> <1229095751-23984-1-git-send-email-louis.rilling@kerlabs.com> <20081217134020.42da55fc.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081217134020.42da55fc.akpm@linux-foundation.org>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4949772B.0195:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Dec 2008 03:30:58 -0800
-menage@google.com wrote:
-
-> This patch adds css_tryget(), that obtains a counted reference on a
-> CSS.  It is used in situations where the caller has a "weak" reference
-> to the CSS, i.e. one that does not protect the cgroup from removal via
-> a reference count, but would instead be cleaned up by a destroy()
-> callback.
+On Wed, Dec 17, 2008 at 01:40:20PM -0800, Andrew Morton wrote:
+> On Fri, 12 Dec 2008 16:29:11 +0100
+> Louis Rilling <louis.rilling@kerlabs.com> wrote:
 > 
-> css_tryget() will return true on success, or false if the cgroup is
-> being removed.
+> > When attaching default groups (subdirs) of a new group (in mkdir() or
+> > in configfs_register()), configfs recursively takes inode's mutexes
+> > along the path from the parent of the new group to the default
+> > subdirs. This is needed to ensure that the VFS will not race with
+> > operations on these sub-dirs. This is safe for the following reasons:
+> > 
+> > - the VFS allows one to lock first an inode and second one of its
+> >   children (The lock subclasses for this pattern are respectively
+> >   I_MUTEX_PARENT and I_MUTEX_CHILD);
+> > - from this rule any inode path can be recursively locked in
+> >   descending order as long as it stays under a single mountpoint and
+> >   does not follow symlinks.
+> > 
+> > Unfortunately lockdep does not know (yet?) how to handle such
+> > recursion.
+> > 
+> > I've tried to use Peter Zijlstra's lock_set_subclass() helper to
+> > upgrade i_mutexes from I_MUTEX_CHILD to I_MUTEX_PARENT when we know
+> > that we might recursively lock some of their descendant, but this
+> > usage does not seem to fit the purpose of lock_set_subclass() because
+> > it leads to several i_mutex locked with subclass I_MUTEX_PARENT by
+> > the same task.
+> > 
+> > >From inside configfs it is not possible to serialize those recursive
+> > locking with a top-level one, because mkdir() and rmdir() are already
+> > called with inodes locked by the VFS. So using some
+> > mutex_lock_nest_lock() is not an option.
+> > 
+> > I am proposing two solutions:
+> > 1) one that wraps recursive mutex_lock()s with
+> >    lockdep_off()/lockdep_on().
+> > 2) (as suggested earlier by Peter Zijlstra) one that puts the
+> >    i_mutexes recursively locked in different classes based on their
+> >    depth from the top-level config_group created. This
+> >    induces an arbitrary limit (MAX_LOCK_DEPTH - 2 == 46) on the
+> >    nesting of configfs default groups whenever lockdep is activated
+> >    but this limit looks reasonably high. Unfortunately, this alos
+> >    isolates VFS operations on configfs default groups from the others
+> >    and thus lowers the chances to detect locking issues.
+> > 
+> > This patch implements solution 1).
+> > 
+> > Solution 2) looks better from lockdep's point of view, but fails with
+> > configfs_depend_item(). This needs to rework the locking
+> > scheme of configfs_depend_item() by removing the variable lock recursion
+> > depth, and I think that it's doable thanks to the configfs_dirent_lock.
+> > For now, let's stick to solution 1).
+> > 
+> > Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
+> > ---
+> >  fs/configfs/dir.c |   59 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+> >  1 files changed, 59 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
+> > index 8e93341..9c23583 100644
+> > --- a/fs/configfs/dir.c
+> > +++ b/fs/configfs/dir.c
+> > @@ -553,12 +553,24 @@ static void detach_groups(struct config_group *group)
+> >  
+> >  		child = sd->s_dentry;
+> >  
+> > +		/*
+> > +		 * Note: we hide this from lockdep since we have no way
+> > +		 * to teach lockdep about recursive
+> > +		 * I_MUTEX_PARENT -> I_MUTEX_CHILD patterns along a path
+> > +		 * in an inode tree, which are valid as soon as
+> > +		 * I_MUTEX_PARENT -> I_MUTEX_CHILD is valid from a
+> > +		 * parent inode to one of its children.
+> > +		 */
+> > +		lockdep_off();
+> >  		mutex_lock(&child->d_inode->i_mutex);
+> > +		lockdep_on();
+> >
+> > [etc]
+> >
 > 
-> This is similar to Kamezawa Hiroyuki's patch from a week or two ago,
-> but with the difference that in the event of css_tryget() racing with
-> a cgroup_rmdir(), css_tryget() will only return false if the cgroup
-> really does get removed.
+> Oh dear, what an unpleasant patch.
 > 
-> This implementation is done by biasing css->refcnt, so that a refcnt
-> of 1 means "releasable" and 0 means "released or releasing". In the
-> event of a race, css_tryget() distinguishes between "released" and
-> "releasing" by checking for the CSS_REMOVED flag in css->flags.
-> 
-> ...
->
-> --- hierarchy_lock-mmotm-2008-12-09.orig/include/linux/cgroup.h
-> +++ hierarchy_lock-mmotm-2008-12-09/include/linux/cgroup.h
-> @@ -52,9 +52,9 @@ struct cgroup_subsys_state {
->  	 * hierarchy structure */
->  	struct cgroup *cgroup;
->  
-> -	/* State maintained by the cgroup system to allow
-> -	 * subsystems to be "busy". Should be accessed via css_get()
-> -	 * and css_put() */
-> +	/* State maintained by the cgroup system to allow subsystems
-> +	 * to be "busy". Should be accessed via css_get(),
-> +	 * css_tryget() and and css_put(). */
+> Peter, can this be saved?
 
-nanonit.  This layout:
+	I'd love to see it work within lockdep, but it seems rather
+hard, so that's why I recommended Louis cook up this version.  I see you
+picked it up in -mm.  Do you want me to push it through ocfs2.git?
 
-	/*
-	 * State maintained by the cgroup system to allow subsystems
-	 * to be "busy". Should be accessed via css_get(),
-	 * css_tryget() and and css_put().
-	 */
+Joel
 
-is conventional/preferred.
 
->  	atomic_t refcnt;
->  
-> @@ -64,11 +64,14 @@ struct cgroup_subsys_state {
->  /* bits in struct cgroup_subsys_state flags field */
->  enum {
->  	CSS_ROOT, /* This CSS is the root of the subsystem */
-> +	CSS_REMOVED, /* This CSS is dead */
->  };
->  
->  /*
-> - * Call css_get() to hold a reference on the cgroup;
-> - *
-> + * Call css_get() to hold a reference on the css; it can be used
-> + * for a reference obtained via:
-> + * - an existing ref-counted reference to the css
-> + * - task->cgroups for a locked task
->   */
->  
->  static inline void css_get(struct cgroup_subsys_state *css)
-> @@ -77,9 +80,32 @@ static inline void css_get(struct cgroup
->  	if (!test_bit(CSS_ROOT, &css->flags))
->  		atomic_inc(&css->refcnt);
->  }
-> +
-> +static inline bool css_is_removed(struct cgroup_subsys_state *css)
-> +{
-> +	return test_bit(CSS_REMOVED, &css->flags);
-> +}
-> +
-> +/*
-> + * Call css_tryget() to take a reference on a css if your existing
-> + * (known-valid) reference isn't already ref-counted. Returns false if
-> + * the css has been destroyed.
-> + */
-> +
-> +static inline bool css_tryget(struct cgroup_subsys_state *css)
-> +{
-> +	if (test_bit(CSS_ROOT, &css->flags))
-> +		return true;
-> +	while (!atomic_inc_not_zero(&css->refcnt)) {
-> +		if (test_bit(CSS_REMOVED, &css->flags))
-> +			return false;
-> +	}
-> +	return true;
-> +}
+-- 
 
-This looks too large to inline.
+Life's Little Instruction Book #157 
 
-We should have a cpu_relax() in the loop?
+	"Take time to smell the roses."
 
-And possibly a cond_resched().
-
-It would be better if these polling loops didn't exist at all, of
-course.  But I guess if you could work out a way of doing that, this
-patch wouldn't exist.
-
->
->  ...
->
-> +/*
-> + * Atomically mark all (or else none) of the cgroup's CSS objects as
-> + * CSS_REMOVED. Return true on success, or false if the cgroup has
-> + * busy subsystems. Call with cgroup_mutex held
-> + */
-> +
-> +static int cgroup_clear_css_refs(struct cgroup *cgrp)
-> +{
-> +	struct cgroup_subsys *ss;
-> +	unsigned long flags;
-> +	bool failed = false;
-> +	local_irq_save(flags);
-
-please put a blank line between end-of-locals and start-of-code.
-
-> +	for_each_subsys(cgrp->root, ss) {
-> +		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
-> +		int refcnt;
-> +		do {
-> +			/* We can only remove a CSS with a refcnt==1 */
-> +			refcnt = atomic_read(&css->refcnt);
-> +			if (refcnt > 1) {
-> +				failed = true;
-> +				goto done;
-> +			}
-> +			BUG_ON(!refcnt);
-> +			/*
-> +			 * Drop the refcnt to 0 while we check other
-> +			 * subsystems. This will cause any racing
-> +			 * css_tryget() to spin until we set the
-> +			 * CSS_REMOVED bits or abort
-> +			 */
-> +		} while (atomic_cmpxchg(&css->refcnt, refcnt, 0) != refcnt);
-
-This loop also should have a cpu_relax(), I think?
-
-> +	}
-> + done:
-> +	for_each_subsys(cgrp->root, ss) {
-> +		struct cgroup_subsys_state *css = cgrp->subsys[ss->subsys_id];
-> +		if (failed) {
-> +			/*
-> +			 * Restore old refcnt if we previously managed
-> +			 * to clear it from 1 to 0
-> +			 */
-> +			if (!atomic_read(&css->refcnt))
-> +				atomic_set(&css->refcnt, 1);
-> +		} else {
-> +			/* Commit the fact that the CSS is removed */
-> +			set_bit(CSS_REMOVED, &css->flags);
-> +		}
-> +	}
-> +	local_irq_restore(flags);
-> +	return !failed;
-> +}
-
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
