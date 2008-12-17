@@ -1,124 +1,55 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759917AbYLQJwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759969AbYLQJyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759917AbYLQJwH (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 04:52:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYLQJvx
+	id S1759969AbYLQJyd (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 04:54:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYLQJyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 04:51:53 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52887 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750981AbYLQJvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 04:51:52 -0500
-Message-ID: <4948CADF.6050205@cn.fujitsu.com>
-Date: Wed, 17 Dec 2008 17:48:15 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Wed, 17 Dec 2008 04:54:23 -0500
+Received: from tundra.namei.org ([65.99.196.166]:4302 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751219AbYLQJyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 04:54:22 -0500
+Date: Wed, 17 Dec 2008 20:53:04 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Al Viro <viro@ftp.linux.org.uk>, linux-audit@redhat.com,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/15] sanitize audit_ipc_obj()
+In-Reply-To: <20081217093245.GC28946@ZenIV.linux.org.uk>
+Message-ID: <alpine.LRH.1.10.0812172047090.24405@tundra.namei.org>
+References: <E1LCoh0-00009T-Sd@ZenIV.linux.org.uk> <alpine.LRH.1.10.0812171823430.22856@tundra.namei.org> <20081217093245.GC28946@ZenIV.linux.org.uk>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ring_bufer: fix BUF_PAGE_SIZE
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 17 Dec 2008, Al Viro wrote:
 
-impact: make BUF_PAGE_SIZE changeable.
+> On Wed, Dec 17, 2008 at 06:24:40PM +1100, James Morris wrote:
+> > On Wed, 17 Dec 2008, Al Viro wrote:
+> > 
+> > > +		struct {
+> > > +			uid_t			uid;
+> > > +			gid_t			gid;
+> > > +			mode_t			mode;
+> > > +			u32			osid;
+> > > +		} ipc;
+> > 
+> > 'osid' should be converted into 'secid' someday.
+> 
+> Eh?  Do you mean the field name there or the actual output?  Either is
+> trivial, of course, but the latter is up to userland folks and the
+> former alone seems to be rather pointless...
 
-Except allocating/freeing page and the code using PAGE_MASK,
-all code expect buffer_page's length is BUF_PAGE_SIZE.
-
-This patch make this behavior more concordant.
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 668bbb5..0cf6caf 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -158,6 +158,10 @@ struct buffer_page {
- 	void *page;			/* Actual data page */
- };
- 
-+#define BUF_PAGE_ORDER 0
-+#define BUF_PAGE_SIZE (PAGE_SIZE << BUF_PAGE_ORDER)
-+#define BUF_PAGE_MASK (~(BUF_PAGE_SIZE - 1))
-+
- /*
-  * Also stolen from mm/slob.c. Thanks to Mathieu Desnoyers for pointing
-  * this issue out.
-@@ -165,7 +169,7 @@ struct buffer_page {
- static inline void free_buffer_page(struct buffer_page *bpage)
- {
- 	if (bpage->page)
--		free_page((unsigned long)bpage->page);
-+		free_pages((unsigned long)bpage->page, BUF_PAGE_ORDER);
- 	kfree(bpage);
- }
- 
-@@ -179,8 +183,6 @@ static inline int test_time_stamp(u64 delta)
- 	return 0;
- }
- 
--#define BUF_PAGE_SIZE PAGE_SIZE
--
- /*
-  * head_page == tail_page && head == tail then buffer is empty.
-  */
-@@ -289,7 +291,7 @@ static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
- 			goto free_pages;
- 		list_add(&page->list, &pages);
- 
--		addr = __get_free_page(GFP_KERNEL);
-+		addr = __get_free_pages(GFP_KERNEL, BUF_PAGE_ORDER);
- 		if (!addr)
- 			goto free_pages;
- 		page->page = (void *)addr;
-@@ -333,7 +335,7 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
- 		goto fail_free_buffer;
- 
- 	cpu_buffer->reader_page = page;
--	addr = __get_free_page(GFP_KERNEL);
-+	addr = __get_free_pages(GFP_KERNEL, BUF_PAGE_ORDER);
- 	if (!addr)
- 		goto fail_free_reader;
- 	page->page = (void *)addr;
-@@ -592,7 +594,7 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size)
- 			if (!page)
- 				goto free_pages;
- 			list_add(&page->list, &pages);
--			addr = __get_free_page(GFP_KERNEL);
-+			addr = __get_free_pages(GFP_KERNEL, BUF_PAGE_ORDER);
- 			if (!addr)
- 				goto free_pages;
- 			page->page = (void *)addr;
-@@ -718,7 +720,7 @@ rb_event_index(struct ring_buffer_event *event)
- {
- 	unsigned long addr = (unsigned long)event;
- 
--	return (addr & ~PAGE_MASK) - (PAGE_SIZE - BUF_PAGE_SIZE);
-+	return addr & ~BUF_PAGE_MASK;
- }
- 
- static inline int
-@@ -729,7 +731,7 @@ rb_is_commit(struct ring_buffer_per_cpu *cpu_buffer,
- 	unsigned long index;
- 
- 	index = rb_event_index(event);
--	addr &= PAGE_MASK;
-+	addr &= BUF_PAGE_MASK;
- 
- 	return cpu_buffer->commit_page->page == (void *)addr &&
- 		rb_commit_index(cpu_buffer) == index;
-@@ -743,7 +745,7 @@ rb_set_commit_event(struct ring_buffer_per_cpu *cpu_buffer,
- 	unsigned long index;
- 
- 	index = rb_event_index(event);
--	addr &= PAGE_MASK;
-+	addr &= BUF_PAGE_MASK;
- 
- 	while (cpu_buffer->commit_page->page != (void *)addr) {
- 		RB_WARN_ON(cpu_buffer,
+I was thinking in terms of the kernel API, where 'secid' is the preferred 
+name for security identifiers ('sid' being an SELinux-specific term and 
+also conflicting with 'session id').  Given that it's exposed to userland, 
+I guess it's too late.
 
 
+- James
+-- 
+James Morris
+<jmorris@namei.org>
