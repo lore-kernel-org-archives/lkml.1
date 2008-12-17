@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753565AbYLQLJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758377AbYLQLOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbYLQLJa (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 06:09:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbYLQLJT
+	id S1758377AbYLQLOV (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 06:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbYLQLOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 06:09:19 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49948 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbYLQLJT (ORCPT
+	Wed, 17 Dec 2008 06:14:09 -0500
+Received: from exchtp08.via.com.tw ([61.66.243.7]:64901 "EHLO
+	exchtp08.via.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021AbYLQLOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 06:09:19 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-        LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] remove CONFIG_OUT_OF_LINE_PFN_TO_PAGE
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20081217200812.FF1E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 17 Dec 2008 06:14:08 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed, 17 Dec 2008 20:09:12 +0900 (JST)
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: [Patch 3/3] via-sdmmc: via-sdmmc.h
+Date: Wed, 17 Dec 2008 19:14:06 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB808521884@exchtp03.taipei.via.com.tw>
+In-Reply-To: <200812161325.58594.arnd@arndb.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Patch 3/3] via-sdmmc: via-sdmmc.h
+Thread-Index: AclfeXr+JpPLQAhQQrKlFbs4DZARIAAvvojw
+From: <JosephChan@via.com.tw>
+To: <arnd@arndb.de>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 17 Dec 2008 11:14:07.0724 (UTC) FILETIME=[942DE2C0:01C96038]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by imap1.linux-foundation.org id mBHBGYh3021785
 
+> > 
+> 
+> The order of your patches is reversed, you add the 
+> Kconfig/Makefile changes last so that the tree stays 
+> 'bisectable', i.e. you don't have a broken build in the 
+> middle between your patches.
+> 
+> Since your header file is not an interface but only used in a 
+> single source file, I would also suggest merging it into the 
+> main via-sdmmc.c file, add changing Kconfig/Makefile in the 
+> same patch.
+> 
+> 	Arnd <><
+> 
 
-Now, any architecture don't use CONFIG_OUT_OF_LINE_PFN_TO_PAGE at all.
-it can be removed.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- include/asm-generic/memory_model.h |    7 -------
- mm/page_alloc.c                    |   13 -------------
- 2 files changed, 20 deletions(-)
-
-Index: b/include/asm-generic/memory_model.h
-===================================================================
---- a/include/asm-generic/memory_model.h
-+++ b/include/asm-generic/memory_model.h
-@@ -69,15 +69,8 @@
- })
- #endif /* CONFIG_FLATMEM/DISCONTIGMEM/SPARSEMEM */
- 
--#ifdef CONFIG_OUT_OF_LINE_PFN_TO_PAGE
--struct page;
--/* this is useful when inlined pfn_to_page is too big */
--extern struct page *pfn_to_page(unsigned long pfn);
--extern unsigned long page_to_pfn(struct page *page);
--#else
- #define page_to_pfn __page_to_pfn
- #define pfn_to_page __pfn_to_page
--#endif /* CONFIG_OUT_OF_LINE_PFN_TO_PAGE */
- 
- #endif /* __ASSEMBLY__ */
- 
-Index: b/mm/page_alloc.c
-===================================================================
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -4593,19 +4593,6 @@ void *__init alloc_large_system_hash(con
- 	return table;
- }
- 
--#ifdef CONFIG_OUT_OF_LINE_PFN_TO_PAGE
--struct page *pfn_to_page(unsigned long pfn)
--{
--	return __pfn_to_page(pfn);
--}
--unsigned long page_to_pfn(struct page *page)
--{
--	return __page_to_pfn(page);
--}
--EXPORT_SYMBOL(pfn_to_page);
--EXPORT_SYMBOL(page_to_pfn);
--#endif /* CONFIG_OUT_OF_LINE_PFN_TO_PAGE */
--
- /* Return a pointer to the bitmap storing bits affecting a block of pages */
- static inline unsigned long *get_pageblock_bitmap(struct zone *zone,
- 							unsigned long pfn)
-
-
+Tks, I'll notice this next time.
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
