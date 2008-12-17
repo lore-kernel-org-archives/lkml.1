@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751513AbYLQDy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754885AbYLQEGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751513AbYLQDy1 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 22:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbYLQDyQ
+	id S1754885AbYLQEGE (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 23:06:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750706AbYLQEFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 22:54:16 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58367 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750706AbYLQDyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 22:54:15 -0500
-Date: Tue, 16 Dec 2008 22:53:16 -0500
-From: Dave Jones <davej@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tim Abbott <tabbott@MIT.EDU>, Jeff Arnold <jbarnold@MIT.EDU>,
-        linux-kernel@vger.kernel.org,
-        Denys Vlasenko <vda.linux@googlemail.com>,
-        Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-        Nikanth Karthikesan <knikanth@suse.de>,
-        Ben Collins <bcollins@ubuntu.com>
-Subject: Re: [PATCH 0/7] Ksplice: Rebootless kernel updates
-Message-ID: <20081217035316.GA24620@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Tim Abbott <tabbott@MIT.EDU>, Jeff Arnold <jbarnold@MIT.EDU>,
-	linux-kernel@vger.kernel.org,
-	Denys Vlasenko <vda.linux@googlemail.com>,
-	Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-	Nikanth Karthikesan <knikanth@suse.de>,
-	Ben Collins <bcollins@ubuntu.com>
-References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <alpine.DEB.2.00.0812162133360.25958@vinegar-pot.mit.edu> <20081216190740.9db323ee.akpm@linux-foundation.org>
+	Tue, 16 Dec 2008 23:05:52 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:39868 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750703AbYLQEFv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 23:05:51 -0500
+Date: Tue, 16 Dec 2008 21:05:34 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alex Chiang <achiang@hp.com>, justin.chen@hp.com,
+        linux-kernel@vger.kernel.org
+Subject: Re: PCI BAR mem resource allocation "regression"
+Message-ID: <20081217040534.GA19967@parisc-linux.org>
+References: <20081213000538.GC9947@ldl.fc.hp.com> <alpine.LFD.2.00.0812130901370.3340@localhost.localdomain> <alpine.LFD.2.00.0812130929100.3340@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081216190740.9db323ee.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.00.0812130929100.3340@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16, 2008 at 07:07:40PM -0800, Andrew Morton wrote:
+On Sat, Dec 13, 2008 at 09:41:05AM -0800, Linus Torvalds wrote:
+> Matthew: I do suspect that the "insert below" patch is wrong. Look at 
+> "pci_claim_resource()", for example: it uses insert_resource() to insert 
+> the PCI device resource into the resource tree. But if the PCI device 
+> resource has the same size as the bus window, that commit changes it to 
+> insert it as the _parent_ of the bus window, no?
 
- > I'd have _thought_ that distros and their high-end customers would be
- > interested in it, but I haven't noticed anything from them.  Not that
- > this means much - our processes for gathering this sort of information
- > are rudimentary at best.  Has your team been in contact with distros?
- > Are Suse shipping it, or planning to?
- > 
- > (cc's a few more distro people)
+You're quite correct.  This was actually the intended behaviour of
+insert_resource() ... the problem is that pci_claim_resource() is using
+it wrong.
 
-I'm not exactly enamoured by this tbh.
-It's a neat hack, but the idea of it being used by even a small percentage
-of our users gives me the creeps.
- 
-It comes down to 'what happens when something goes wrong'.
-When the end-user is running a ksplice-patched kernel with an unknown
-number of patches, reproducability can get really complicated.
-The Fedora position on it has been 'you keep both pieces if something breaks'
-in the same way we don't support someone who hand-built their own kernel.
-I understand ksplice now taints the kernel when it applies a patch, which
-is a step in the right direction, but we don't always get to see
-tainted flags in bug reports (the non-oops variants for eg).
+> Of course, on a PC, the only user of pci_claim_resource() would be some 
+> PCI quirks that should never trigger this, but it's an example of the kind 
+> of behavioural change that that commit introduced, and which looks 
+> like it could result in a wrong resource tree.
+> 
+> I'm not finding the original discussion that resulted in that patch, 
+> though, so I have a somewhat hard time to judge the reasoning. It's from 
+> almost three years ago, I don't remember details even if I had been 
+> involved with it (and judging by the sign-off path, I hadn't).
+> 
+> Matthew, do you remember the context of that commmit d33b6fba2?
 
-If distros can't get security updates out in a reasonable time, fix
-the process instead of adding mechanism that does an end-run around it.
+Basically it was that we came across a machine with the opposite problem
+-- that we found a parent after we found a child (and claimed the
+child's resources), and had no way to insert the parent's region above
+the child's region.  Alex's machine finds the child after the parent and
+needs to insert the child's resource inside the parent's resource.
 
-Which just leaves the "we can't afford downtime" argument, which leads
-me to question how well reviewed runtime patches are.
-
-Having seen some of the non-ksplice runtime patches that appear in the
-wake of a new security hole, I can't say I have a lot of faith.
-Perhaps if there was a kernel.org sanctioned ksplice functionality, 
-then such patches would get better review before being deployed. Dunno.
-
-	Dave
+pci_claim_resource() should be looking through the resources that belong
+to the parent bus, trying to insert inside each of them, not just
+taking the root resource and wandering all the way down.  I'll work on a
+patch tomorrow to do that unless someone beats me to it.
 
 -- 
-http://www.codemonkey.org.uk
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
