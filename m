@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757331AbYLQBv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758321AbYLQBwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757331AbYLQBv3 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 20:51:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYLQBvT
+	id S1758321AbYLQBwE (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 20:52:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbYLQBvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 20:51:19 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:57495 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbYLQBvS (ORCPT
+	Tue, 16 Dec 2008 20:51:51 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:36426 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752394AbYLQBvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 20:51:18 -0500
-To: William Cohen <wcohen@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-        "David S. Miller" <davem@davemloft.net>,
-        Robert Richter <robert.richter@amd.com>,
-        Eric Dumazet <dada1@cosmosbay.com>,
-        Stephane Eranian <eranian@googlemail.com>,
-        Paul Mackerras <paulus@samba.org>, Peter Anvin <hpa@zytor.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        perfctr-devel@lists.sourceforge.net,
-        Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [Perfctr-devel] [patch] Performance Counters for Linux, v4
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081214212829.GA9435@elte.hu> <494807D2.3060808@redhat.com>
-Date: Wed, 17 Dec 2008 02:51:54 +0100
-In-Reply-To: <494807D2.3060808@redhat.com> (William Cohen's message of "Tue, 16 Dec 2008 14:56:02 -0500")
-Message-ID: <87prjr1scl.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 16 Dec 2008 20:51:50 -0500
+Date: Tue, 16 Dec 2008 17:50:50 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: roland@redhat.com, "Eric W. Biederman" <ebiederm@xmission.com>,
+        Pavel Emelyanov <xemul@openvz.org>, bastian@waldi.eu.org,
+        sukadev@us.ibm.com, Albert Cahalan <acahalan@gmail.com>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] Fix si_pid in send_signal() for SEND_SIG_NOINFO
+Message-ID: <20081217015050.GA1850@us.ibm.com>
+References: <20081213024129.GB4256@us.ibm.com> <20081215143723.GA22386@redhat.com> <20081215203715.GC11958@us.ibm.com> <20081216101621.GA2784@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081216101621.GA2784@redhat.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Cohen <wcohen@redhat.com> writes:
->
-> PERF_COUNT_CACHE_REFERENCES and PERF_COUNT_CACHE_MISSES are not single
-> monolitic events on many processors. There are multiple cache
-> levels. The L1 cache most processors have separate instruction and
-> data caches and require multiple counters to implement. Would these
-> refer to the last level of cache before memory and just be used to
-> compute the hit/miss rate for that last level? Some processors in the
-> same family have L2 and some processors have L3 cache. The setup code
-> would need to distinguish between these processor variants.
+| > Ok. so should I change it to task_pid_nr_ns() ?
+| 
+| I don't know. I vote for your patch as is. (but please update
+| the changelog).
 
-The difference between L1 and L3 caches can be huge (in some cases
-two orders of magnitude). With that I'm not sure a single cache
-miss/hit event even makes any sense. 
+Well, to keep the patch descriptions simple, how about I split the
+two changes into two patches. First one masquerades ->si_pid with
+task_pid_nr_ns() and second one uses task_tgid_nr_ns(). They
+do look like unrelated changes.
 
-On a modern CPU with L2 and L3 caches as soon as you fall out 
-of the L2 you're going to perform more poorly on parallel workloads.
+| 
+| > Would that still
+| > be correct for say the SIGPIPE from pipe_write() ?
+| 
+| Again, I don't know.
+| 
+| But. Let's suppose we have the user-space application which
+| uses .si_pid to figure out which thread hits SIGPIPE. Yes,
+| this is ugly because the signal is thread-specific, but this
+| works until this patch.
 
-With that you really have to distingush some levels.
+I have highlighted this and the the reparent-thread behavior
+changes in the patch description.
 
--Andi
+| 
+| Actually, I don't understand most of (all?) users of
+| send_signal(SIGXXX, current, 0), SEND_SIG_PRIV looks more
+| logical to me. Or, _perhaps_, we need yet another SEND_SIG_SELF
+| which sets .si_pid = task_pid_vnr(target).
 
+Ok. We have to change the __si_special() indirection or how about
+removing it altogether and change uses of __si_special() to one of:
 
--- 
-ak@linux.intel.com
+	{ SEND_SIG_NOINFO, SEND_SIG_PRIV, SEND_SIG_SELF, &info }
+
+It would add a condition check in places like:
+
+	disassociate_ctty(): kill_pgrp(old_pgrp, SIGHUP, on_exit);
+
+but there aren't too many of those.
