@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759945AbYLQMDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758206AbYLQMDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759945AbYLQMDt (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 07:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYLQMDf
+	id S1758206AbYLQMDW (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 07:03:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbYLQMDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 07:03:35 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39301 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbYLQMDe (ORCPT
+	Wed, 17 Dec 2008 07:03:09 -0500
+Received: from cs20.apochromatic.org ([204.152.189.161]:52471 "EHLO
+	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021AbYLQMDI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 07:03:34 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Jiri Pirko <jpirko@redhat.com>
-Subject: Re: [PATCH, RESEND2] getrusage: fill ru_maxrss value
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-        "Oleg Nesterov" <oleg@redhat.com>,
-        "Andrew Morton" <akpm@linux-foundation.org>,
-        "Michael Kerrisk" <mtk.manpages@googlemail.com>,
-        linux-api@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-        jlim@sgi.com
-In-Reply-To: <20081217124256.46883fae@psychotron.englab.brq.redhat.com>
-References: <20081217194646.F677.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081217124256.46883fae@psychotron.englab.brq.redhat.com>
-Message-Id: <20081217204607.FF25.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 17 Dec 2008 07:03:08 -0500
+Date: Wed, 17 Dec 2008 12:03:05 +0000
+From: Matt Fleming <matt@console-pimps.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+        Willy Tarreau <w@1wt.eu>, torvalds@linux-foundation.org,
+        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, mingo@elte.hu,
+        venkatesh.pallipadi@intel.com, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 68/83] x86: HPET: convert WARN_ON to WARN_ON_ONCE
+Message-ID: <20081217120305.GK13247@console-pimps.org>
+References: <20081211190201.612240183@mini.kroah.org> <20081211191620.GP5894@kroah.com> <20081217112625.GJ13247@console-pimps.org> <s5h4p13dojm.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed, 17 Dec 2008 21:03:27 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5h4p13dojm.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > This patch makes ->ru_maxrss value in struct rusage filled accordingly to
-> > > rss hiwater mark. This struct is filled as a parameter to
-> > > getrusage syscall. ->ru_maxrss value is set to pages which might be correct
-> > > as "time" application converts it to KBs.
+On Wed, Dec 17, 2008 at 12:33:17PM +0100, Takashi Iwai wrote:
+> At Wed, 17 Dec 2008 11:26:25 +0000,
+> Matt Fleming wrote:
 > > 
-> > Why?
-> > if kernel convert to KB, glibc don't need any change.
-> Where exactly glibc is working with this as KBs? I can't find that place.
+> > On Thu, Dec 11, 2008 at 11:16:20AM -0800, Greg KH wrote:
+> > > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+> > > 
+> > > ------------------
+> > > 
+> > > From: Matt Fleming <mjf@gentoo.org>
+> > > 
+> > > commit 1de5b0854623d30d01d72cd4ea323eb5f39d1f16 upstream.
+> > > 
+> > > It is possible to flood the console with call traces if the WARN_ON
+> > > condition is true because of the frequency with which this function is
+> > > called.
+> > > 
+> > 
+> > If this commit is going into stable it would be worth adding these
+> > two commits (which are actually the bugfixes).
+> > 
+> > 5ceb1a04187553e08c6ab60d30cee7c454ee139a
+> > x86: HPET: enter hpet_interrupt_handler with interrupts disabled
+> > 
+> > 89d77a1eb60be916d85d9394bedbfa2037af89c5
+> > x86: HPET: read from HPET_Tn_CMP() not HPET_T0_CMP
 > 
-> I looked into sources of time util and maxrss is showed this way:
-> fprintf (fp, "%lu", ptok ((UL) resp->ru.ru_maxrss));
-> ptok() actually does pages_to_KB conversion. If we convert to KB in
-> kernel, this code must be changed.
+> I think the latter isn't applicable as 2.6.27 supports only T0.
+> 
 
-Ah, you talked about /usr/bin/time? sorry, I misunderstood a bit.
-Why time need number of pages?
-
-In general, getrusage()::ru_maxrss is bsd compatibility feature.
-as far as possible, the same syscall spec is better.
-and bsd use KB unit.
-
-if time command has reasonable reason, I can agree current design.
-but is there?
-
-
-
+Ah, thanks. I wasn't aware of that.
