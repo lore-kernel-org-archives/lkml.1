@@ -1,52 +1,100 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760345AbYLQAOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757946AbYLQA1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760345AbYLQAOd (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 19:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760860AbYLQANL
+	id S1757946AbYLQA1V (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYLQA1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 19:13:11 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:47882 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760188AbYLQANJ (ORCPT
+	Tue, 16 Dec 2008 19:27:01 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:22931 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbYLQA07 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 19:13:09 -0500
-Subject: Re: [RFC v11][PATCH 03/13] General infrastructure for checkpoint
-	restart
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Mike Waychison <mikew@google.com>
-Cc: jeremy@goop.org, arnd@arndb.de, containers@lists.linux-foundation.org,
-        "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-        linux-mm@kvack.org, Linux Torvalds <torvalds@linux-foundation.org>,
-        Alexander Viro <viro@zeniv.linux.org.uk>, linux-api@vger.kernel.org,
-        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <49482F14.1040407@google.com>
-References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
-	 <1228498282-11804-4-git-send-email-orenl@cs.columbia.edu>
-	 <49482394.10006@google.com> <1229465641.17206.350.camel@nimitz>
-	 <49482F14.1040407@google.com>
-Content-Type: text/plain
-Date: Tue, 16 Dec 2008 16:13:03 -0800
-Message-Id: <1229472783.17206.358.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 16 Dec 2008 19:26:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=kiT9BZiH+RCqqXUEkV7PLfuRUbmkZy7wuujMdyKGBIia/5mZbm9SCLp3PXP5vURIck
+         I6COCxeNJCXP5O/F7xfyW9s2cwunHOXX8X84vownsbo9SJzC3YSueUHvepI+1Agt0YfW
+         30kKR1DDhgqZp83Z07SuqPMYekyCNNkIPjhnc=
+Message-ID: <e9e943910812161626i6f2cdc3eldc36c68e9a98f180@mail.gmail.com>
+Date: Wed, 17 Dec 2008 00:26:57 +0000
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "Andreas Dilger" <adilger@sun.com>
+Subject: Re: [PATCH] vfs: introduce helper function to safely NUL-terminate symlinks
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+        "Al Viro" <viro@zeniv.linux.org.uk>,
+        "Andrew Morton" <akpm@linux-foundation.org>,
+        "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org
+In-Reply-To: <20081216234638.GX5000@webber.adilger.int>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1229442720-31056-3-git-send-email-duaneg@dghda.com>
+	 <1229442720-31056-4-git-send-email-duaneg@dghda.com>
+	 <1229442720-31056-5-git-send-email-duaneg@dghda.com>
+	 <1229442720-31056-1-git-send-email-duaneg@dghda.com>
+	 <1229442720-31056-6-git-send-email-duaneg@dghda.com>
+	 <1229442720-31056-2-git-send-email-duaneg@dghda.com>
+	 <20081216234638.GX5000@webber.adilger.int>
+X-Google-Sender-Auth: 473d06dd2846ab76
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-12-16 at 14:43 -0800, Mike Waychison wrote:
-> Hmm, if I'm understanding you correctly, adding ref counts explicitly 
-> (like you suggest below)  would be used to let a lower layer defer 
-> writes.  Seems like this could be just as easily done with explicits 
-> kmallocs and transferring ownership of the allocated memory to the 
-> in-kernel representation handling layer below (which in turn queues the 
-> data structures for writes).
+2008/12/16 Andreas Dilger <adilger@sun.com>:
+> On Dec 16, 2008  15:51 +0000, Duane Griffin wrote:
+>> A number of filesystems were potentially triggering kernel bugs due to
+>> corrupted symlink names on disk. This helper helps safely terminate the
+>> names.
+>>
+>> +static inline void nd_terminate_link(void *name,unsigned len,unsigned maxlen)
+>> +{
+>> +     ((char *) name)[min(len, maxlen)] = '\0';
+>> +}
+>
+>> @@ -4200,9 +4201,11 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
+>>       } else if (S_ISLNK(inode->i_mode)) {
+>> +             if (ext4_inode_is_fast_symlink(inode)) {
+>>                       inode->i_op = &ext4_fast_symlink_inode_operations;
+>> +                     nd_terminate_link(ei->i_data, inode->i_size,
+>> +                             sizeof(ei->i_data));
+>> +             } else {
+>>                       inode->i_op = &ext4_symlink_inode_operations;
+>>                       ext4_set_aops(inode);
+>>               }
+>
+> With sizeof(ei->i_data) = 15 * 4 = 60 bytes, this will set ei->i_data[60]
+> as NUL, which is writing 1 byte beyond the end of the array.
 
-Yup, that's true.  We'd effectively shift the burden of freeing those
-buffers into the cr_write() (or whatever we call it) function.  
+Argh, you are correct, of course.
 
-But, I'm just thinking about the sys_checkpoint() side.  I need to go
-look at the restart code too.
+> Note that in ext[234]_symlink() the check for fast symlinks is:
+>
+>        l = strlen(symname)+1;
+>        if (l > sizeof (EXT3_I(inode)->i_data)) {
+>                inode->i_op = &ext3_symlink_inode_operations;
+>        } else {
+>                inode->i_op = &ext3_fast_symlink_inode_operations;
+>                inode->i_size = l-1;
+>        }
+>
+> so in fact the fast symlinks should always have space for a trailing NUL
+> character, and "sizeof(ei->i_data) - 1" is the right maxlen to use for
+> ext[234].
+>
+> That might not be true for other filesystems, in which case you would
+> need to add a "padding" field after the symlink name in memory to hold
+> the trailing NUL.
 
--- Dave
+It is true for sysv, too. The ufs code also, but that has other
+issues, anyway. The generic page symlink and freevxfs patches should
+be fine, though.
 
+Cheers,
+Duane.
+
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
