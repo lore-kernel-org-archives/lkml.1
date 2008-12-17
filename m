@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754074AbYLQQRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754074AbYLQQWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbYLQQRh (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 11:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYLQQR1
+	id S1754074AbYLQQWu (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 11:22:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYLQQWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 11:17:27 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:55036 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbYLQQR0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 11:17:26 -0500
-Date: Wed, 17 Dec 2008 17:17:22 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Cc: Theodore Tso <tytso@mit.edu>
-Subject: Re: Very slow header cache in mutt if the maildir is on ext3
-Message-ID: <20081217161722.GA28303@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	Theodore Tso <tytso@mit.edu>
-References: <20081217001625.GA3250@x61> <20081217005210.GA889@dose.home.local> <20081217032517.GE10590@mit.edu> <20081217091003.GA26609@dose.home.local> <20081217123204.GO10590@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081217123204.GO10590@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 17 Dec 2008 11:22:40 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43244 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751410AbYLQQWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 11:22:39 -0500
+Subject: Re: [RFC] globmatch() helper function
+From: Steven Rostedt <srostedt@redhat.com>
+To: George Spelvin <linux@horizon.com>
+Cc: peterz@infradead.org, andi@firstfloor.org, tj@kernel.org,
+        linux-kernel@vger.kernel.org
+In-Reply-To: <20081217160417.18507.qmail@science.horizon.com>
+References: <20081217104247.28440.qmail@science.horizon.com>
+	 <87hc530w39.fsf@basil.nowhere.org> <1229526942.9487.75.camel@twins>
+	 <20081217160417.18507.qmail@science.horizon.com>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Wed, 17 Dec 2008 11:13:12 -0500
+Message-Id: <1229530392.30177.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 07:32:04 -0500, Theodore Tso wrote:
 
-[...]
+On Wed, 2008-12-17 at 11:04 -0500, George Spelvin wrote:
 
-> I just checked mutt 1.5.17 in Ubunty Hardy, and it sorts the inodes
-> even if maildir_header_cache_verify is unset.  (It sorts it earlier if
-> that option is set, but a little later in the function, if it wasn't
-> sorted earlier, it sorts it then.)  Check for calls to maildir_sort()
-> that use md_cmp_inode(); in my version of mutt, there are two such
-> calls in mh.c:maildir_delayed_parsing().
+> 
+> The problem is, what if some future thoughtless person feeds user data
+> into the pattern argument?
+> 
+> I could just take support for non-trailing * out entirely.  That would be
+> a different sort of documentation burden.
+> 
+> Or I could just add an explicit 2-level stack. If you overflow the stack,
+> matching always fails.  Unfortunately, the code will be larger.
+> 
+> Do people think that would be, on balance, better?  It would be plenty
+> good enough for the blacklist application.
 
-I checked maildir_sort(), and it wasn't called with
-maildir_header_cache_verify unset. In the source, it looks like this:
+Having a static function do the work and pass in a "depth" parameter
+should be sufficient. As Andi mentioned, a depth of 10 should be plenty.
 
-#if USE_HCACHE
-    if (option(OPTHCACHEVERIFY))
-    {
-      DO_SORT();
-      ret = stat(fn, &lastchanged);
-    }
+Like this:
 
-...
+static bool
+ globmatch_internal(const char *pat, const char *str, int depth)
+{
+	if (depth > 10)
+		return false;
 
-   if (ctx->magic == M_MH)
-      data = mutt_hcache_fetch (hc, p->h->path, strlen);
-    else
-      data = mutt_hcache_fetch (hc, p->h->path + 3, &maildir_hcache_keylen);
+	[...]
 
-...
+	while (!globmatch_internal(pat+1, str, depth+1))
+	[...]
+}
 
-#endif /* USE_HCACHE */
+bool globmatch(const char *pat, const char *str)
+{
+	return globmatch_internal(pat, str, 0);
+}
 
-    DO_SORT();
+Make sure you include a "Signed-off-by:" as well.
 
-So DO_SORT() is called _after_ reading the header cache if
-maildir_header_cache_verify is unset, which is too late, because the
-hard disk seeks to death if the cache is read with the unsorted inode
-list.
+-- Steve
 
-Regards,
-Tino
+
