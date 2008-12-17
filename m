@@ -1,93 +1,51 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755533AbYLQPyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754544AbYLQQBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbYLQPyv (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 10:54:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbYLQPyh
+	id S1754544AbYLQQBW (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 11:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYLQQBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 10:54:37 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:41946 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754671AbYLQPyg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 10:54:36 -0500
-X-BigFish: VPS-12(z21eWzzzzzz32i6bh43j62h)
-X-FB-SS: 5,
-X-WSS-ID: 0KC12UC-03-23L-01
-Date: Wed, 17 Dec 2008 16:54:15 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@redhat.com>
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] more AMD IOMMU fixes for 2.6.28-rc8
-Message-ID: <20081217155415.GV3407@amd.com>
+	Wed, 17 Dec 2008 11:01:07 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53724 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751010AbYLQQBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 11:01:06 -0500
+Message-ID: <49492210.1070007@redhat.com>
+Date: Wed, 17 Dec 2008 11:00:16 -0500
+From: William Cohen <wcohen@redhat.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 17 Dec 2008 15:54:15.0801 (UTC) FILETIME=[B692E690:01C9605F]
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+        "David S. Miller" <davem@davemloft.net>,
+        Robert Richter <robert.richter@amd.com>,
+        Eric Dumazet <dada1@cosmosbay.com>,
+        Stephane Eranian <eranian@googlemail.com>,
+        Paul Mackerras <paulus@samba.org>, Peter Anvin <hpa@zytor.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        perfctr-devel@lists.sourceforge.net,
+        Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [Perfctr-devel] [patch] Performance Counters for Linux, v4
+References: <20081214212829.GA9435@elte.hu>
+In-Reply-To: <20081214212829.GA9435@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Ingo Molnar wrote:
+> We are pleased to announce the v4 release of our performance counters 
+> subsystem implementation. The kernel changes can be picked up from:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perfcounters/core
+> 
+>   (also in the master branch. There's also a kernel patch attached 
+>    below.)
 
-The following changes since commit 83fd5cc6481c6b7fa8b45f8a7e0aa7120213430b:
-  Joerg Roedel (1):
-        AMD IOMMU: allocate rlookup_table with __GFP_ZERO
+Machines that support virtualization are becoming very common.  How is
+this performance monitoring support going to work with virtualization
+(e.g. KVM)? Having the performance counters only work on physical
+machines would be pretty limiting.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-fixes-2.6.28
-
-Joerg Roedel (2):
-      AMD IOMMU: set cmd buffer pointers to zero manually
-      AMD IOMMU: panic if completion wait loop fails
-
- arch/x86/kernel/amd_iommu.c      |    5 +++--
- arch/x86/kernel/amd_iommu_init.c |    4 ++++
- 2 files changed, 7 insertions(+), 2 deletions(-)
-
-They fix another problem discovered in long-running reboot tests. Please
-pull. The diff is attached.
-
-Joerg
-
-
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index a7b6dec..0a60d60 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -235,8 +235,9 @@ static int iommu_completion_wait(struct amd_iommu *iommu)
- 	status &= ~MMIO_STATUS_COM_WAIT_INT_MASK;
- 	writel(status, iommu->mmio_base + MMIO_STATUS_OFFSET);
- 
--	if (unlikely((i == EXIT_LOOP_COUNT) && printk_ratelimit()))
--		printk(KERN_WARNING "AMD IOMMU: Completion wait loop failed\n");
-+	if (unlikely(i == EXIT_LOOP_COUNT))
-+		panic("AMD IOMMU: Completion wait loop failed\n");
-+
- out:
- 	spin_unlock_irqrestore(&iommu->lock, flags);
- 
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index c90a15e..c6cc228 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -427,6 +427,10 @@ static u8 * __init alloc_command_buffer(struct amd_iommu *iommu)
- 	memcpy_toio(iommu->mmio_base + MMIO_CMD_BUF_OFFSET,
- 			&entry, sizeof(entry));
- 
-+	/* set head and tail to zero manually */
-+	writel(0x00, iommu->mmio_base + MMIO_CMD_HEAD_OFFSET);
-+	writel(0x00, iommu->mmio_base + MMIO_CMD_TAIL_OFFSET);
-+
- 	iommu_feature_enable(iommu, CONTROL_CMDBUF_EN);
- 
- 	return cmd_buf;
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+-Will
