@@ -1,119 +1,127 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760714AbYLQALx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759325AbYLQAI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760714AbYLQALx (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 19:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759902AbYLQAGh
+	id S1759325AbYLQAI1 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:08:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759497AbYLQAGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 19:06:37 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46712 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759808AbYLQAGe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 19:06:34 -0500
-Date: Tue, 16 Dec 2008 16:05:34 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-        Oleg Nesterov <oleg@tv-sign.ru>, bastian@waldi.eu.org,
-        Pavel Emelyanov <xemul@openvz.org>, roland@redhat.com,
-        Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] pid: generalize task_active_pid_ns
-Message-ID: <20081217000534.GB810@us.ibm.com>
-References: <20081217000257.GA810@us.ibm.com>
+	Tue, 16 Dec 2008 19:06:08 -0500
+Received: from kroah.org ([198.145.64.141]:41304 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759677AbYLQAGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 19:06:04 -0500
+Date: Tue, 16 Dec 2008 16:04:23 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+        Chris Wedgwood <reviews@ml.cw.f00f.org>,
+        Michael Krufky <mkrufky@linuxtv.org>,
+        Chuck Ebbert <cebbert@redhat.com>,
+        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+        torvalds@linux-foundation.org, akpm@linux-foundation.org,
+        alan@lxorguk.ukuu.org.uk, Ingo Brueckl <ib@wupperonline.de>,
+        "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 12/22] unicode table for cp437
+Message-ID: <20081217000423.GM4504@kroah.com>
+References: <20081216235704.347182084@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081217000257.GA810@us.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Disposition: inline; filename="unicode-table-for-cp437.patch"
+In-Reply-To: <20081217000306.GA4504@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resending patch with correct "From", "Signed-off-by".
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
+
+------------------
+
+From: Ingo Brueckl <ib@wupperonline.de>
+
+commit f75bc06e5d00a827d3ec5d57bbb5b73a4adec855 upstream.
+
+There is a major bug in the cp437 to unicode translation table.  Char
+0x7c is mapped to U+00a5 which is the Yen sign and wrong.  The right
+mapping is U+00a6 (broken bar).
+
+Furthermore, a mapping for U+00b4 (a widely used character) is missing
+even though easily possible.
+
+The patch fixes these, as well as it provides a few other useful
+mappings.
+
+The changes are as follows:
+
+  0x0f (enhancement) enables a sort of currency symbol
+  0x27 (bug) enables a sort of acute accent which is a widely used character
+  0x44 (enhancement) enables a sort of icelandic capital letter eth
+  0x7c (major bug) corrects mapping
+  0xeb (enhancement) enables a sort of icelandic small letter eth
+  0xee (enhancement) enables a sort of math 'element of'
+
+Signed-off-by: Ingo Brueckl <ib@wupperonline.de>
+Acked-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
+ drivers/char/cp437.uni |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-From: Eric Biederman <ebiederm@xmission.com>
-Date: Fri, 12 Dec 2008 11:49:27 -0800
-Subject: [PATCH] pid: Generalize task_active_pid_ns
-
-Currently task_active_pid_ns is not safe to call after a
-task becomes a zombie and exit_task_namespaces is called,
-as nsproxy becomes NULL.  By reading the pid namespace from
-the pid of the task we can trivially solve this problem at
-the cost of one extra memory read in what should be the
-same cacheline as we read the namespace from.
-
-When moving things around I have made task_active_pid_ns
-out of line because keeping it in pid_namespace.h would
-require adding includes of pid.h and sched.h that I
-don't think we want.
-
-This change does make task_active_pid_ns unsafe to call during
-copy_process until we attach a pid on the task_struct which
-seems to be a reasonable trade off.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- include/linux/pid_namespace.h |    6 +-----
- kernel/fork.c                 |    4 ++--
- kernel/pid.c                  |    6 ++++++
- 3 files changed, 9 insertions(+), 7 deletions(-)
-
-diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
-index d82fe82..38d1032 100644
---- a/include/linux/pid_namespace.h
-+++ b/include/linux/pid_namespace.h
-@@ -79,11 +79,7 @@ static inline void zap_pid_ns_processes(struct pid_namespace *ns)
- }
- #endif /* CONFIG_PID_NS */
- 
--static inline struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
--{
--	return tsk->nsproxy->pid_ns;
--}
--
-+extern struct pid_namespace *task_active_pid_ns(struct task_struct *tsk);
- void pidhash_init(void);
- void pidmap_init(void);
- 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index dba2d3f..9fa1d91 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1100,12 +1100,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 
- 	if (pid != &init_struct_pid) {
- 		retval = -ENOMEM;
--		pid = alloc_pid(task_active_pid_ns(p));
-+		pid = alloc_pid(p->nsproxy->pid_ns);
- 		if (!pid)
- 			goto bad_fork_cleanup_io;
- 
- 		if (clone_flags & CLONE_NEWPID) {
--			retval = pid_ns_prepare_proc(task_active_pid_ns(p));
-+			retval = pid_ns_prepare_proc(p->nsproxy->pid_ns);
- 			if (retval < 0)
- 				goto bad_fork_free_pid;
- 		}
-diff --git a/kernel/pid.c b/kernel/pid.c
-index 064e76a..c5513fe 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -474,6 +474,12 @@ pid_t task_session_nr_ns(struct task_struct *tsk, struct pid_namespace *ns)
- }
- EXPORT_SYMBOL(task_session_nr_ns);
- 
-+struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
-+{
-+	return ns_of_pid(task_pid(tsk));
-+}
-+EXPORT_SYMBOL_GPL(task_active_pid_ns);
-+
- /*
-  * Used by proc to find the first pid that is greater then or equal to nr.
-  *
--- 
-1.5.2.5
+--- a/drivers/char/cp437.uni
++++ b/drivers/char/cp437.uni
+@@ -27,7 +27,7 @@
+ 0x0c	U+2640
+ 0x0d	U+266a
+ 0x0e	U+266b
+-0x0f	U+263c
++0x0f	U+263c U+00a4
+ 0x10	U+25b6 U+25ba
+ 0x11	U+25c0 U+25c4
+ 0x12	U+2195
+@@ -55,7 +55,7 @@
+ 0x24	U+0024
+ 0x25	U+0025
+ 0x26	U+0026
+-0x27	U+0027
++0x27	U+0027 U+00b4
+ 0x28	U+0028
+ 0x29	U+0029
+ 0x2a	U+002a
+@@ -84,7 +84,7 @@
+ 0x41	U+0041 U+00c0 U+00c1 U+00c2 U+00c3
+ 0x42	U+0042
+ 0x43	U+0043 U+00a9
+-0x44	U+0044
++0x44	U+0044 U+00d0
+ 0x45	U+0045 U+00c8 U+00ca U+00cb
+ 0x46	U+0046
+ 0x47	U+0047
+@@ -140,7 +140,7 @@
+ 0x79	U+0079 U+00fd
+ 0x7a	U+007a
+ 0x7b	U+007b
+-0x7c	U+007c U+00a5
++0x7c	U+007c U+00a6
+ 0x7d	U+007d
+ 0x7e	U+007e
+ #
+@@ -263,10 +263,10 @@
+ 0xe8	U+03a6 U+00d8
+ 0xe9	U+0398
+ 0xea	U+03a9 U+2126
+-0xeb	U+03b4
++0xeb	U+03b4 U+00f0
+ 0xec	U+221e
+ 0xed	U+03c6 U+00f8
+-0xee	U+03b5
++0xee	U+03b5 U+2208
+ 0xef	U+2229
+ 0xf0	U+2261
+ 0xf1	U+00b1
 
