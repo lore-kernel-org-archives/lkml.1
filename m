@@ -1,24 +1,31 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759961AbYLQJ5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759264AbYLQKHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759961AbYLQJ5N (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 04:57:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYLQJ4z
+	id S1759264AbYLQKHi (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 05:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbYLQKH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 04:56:55 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:54335 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750865AbYLQJ4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 04:56:54 -0500
-Date: Wed, 17 Dec 2008 10:56:39 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Oleg Nesterov" <oleg@redhat.com>,
-        "Andrew Morton" <akpm@linux-foundation.org>,
-        "Michael Kerrisk" <mtk.manpages@googlemail.com>,
-        linux-api@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-        jlim@sgi.com, kosaki.motohiro@jp.fujitsu.com
-Subject: [PATCH, RESEND2] getrusage: fill ru_maxrss value
-Message-ID: <20081217105639.63e765eb@psychotron.englab.brq.redhat.com>
+	Wed, 17 Dec 2008 05:07:27 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36359 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753616AbYLQKH0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 05:07:26 -0500
+Date: Wed, 17 Dec 2008 10:07:27 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+Subject: Re: GIT head doesn't seem to want to build on 32bit..
+Message-ID: <20081217100727.5cf6248c@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081216183817.GA25108@uranus.ravnborg.org>
+References: <20081216172859.5bc030b6@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.0812160946410.14014@localhost.localdomain>
+	<20081216181133.2342b49e@lxorguk.ukuu.org.uk>
+	<20081216183817.GA25108@uranus.ravnborg.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,134 +33,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(updated)
 
-This patch makes ->ru_maxrss value in struct rusage filled accordingly to
-rss hiwater mark. This struct is filled as a parameter to
-getrusage syscall. ->ru_maxrss value is set to pages which might be correct
-as "time" application converts it to KBs.
+> Smells like a kbuild issue.
+> Please copy me and linux-kbuild@vger.kernel.org on any findings.
+> 
+> [My 64 bit toolchain is br0ken atm so I could not try to reproduce]
 
-To make this happen we extend struct signal_struct by two fields. The
-first one is ->maxrss which we use to store rss hiwater of the task. The
-second one is ->cmaxrss which we use to store highest rss hiwater of all
-task childs. These values are used in k_getrusage() to actually fill
-->ru_maxrss. k_getrusage() uses current rss hiwater value directly  
-if mm struct exists.
-
-We clear the ->maxrss as a part of flush_old_exec() to be consistent
-because bprm_mm_init() does not copy ->hiwater_rss.
-
-Note that we use recently introduced get_mm_hiwater_rss() helper to
-actually get the rss hiwater value:
-http://lkml.org/lkml/2008/12/12/172
+Yes I do indeed need to build x86_64 first, then make distclean or
+mrproper and then 32bit build fails
 
 
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
----
- fs/exec.c             |    1 +
- include/linux/sched.h |    1 +
- kernel/exit.c         |    4 ++++
- kernel/fork.c         |    1 +
- kernel/sys.c          |   14 ++++++++++++++
- 5 files changed, 21 insertions(+), 0 deletions(-)
-
-diff --git a/fs/exec.c b/fs/exec.c
-index ec5df9a..8d3d0f9 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -870,6 +870,7 @@ static int de_thread(struct task_struct *tsk)
- 	sig->notify_count = 0;
- 
- no_thread_group:
-+	sig->maxrss = 0;
- 	exit_itimers(sig);
- 	flush_itimer_signals();
- 	if (leader)
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index f4c70dc..41b04ee 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -563,6 +563,7 @@ struct signal_struct {
- 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
- 	unsigned long inblock, oublock, cinblock, coublock;
- 	struct task_io_accounting ioac;
-+	unsigned long maxrss, cmaxrss;
- 
- 	/*
- 	 * We don't bother to synchronize most readers of this at all,
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 81b6372..61d622d 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1053,6 +1053,8 @@ NORET_TYPE void do_exit(long code)
- 	if (group_dead) {
- 		hrtimer_cancel(&tsk->signal->real_timer);
- 		exit_itimers(tsk->signal);
-+		if (tsk->mm)
-+			tsk->signal->maxrss = get_mm_hiwater_rss(tsk->mm);
- 	}
- 	acct_collect(code, group_dead);
- 	if (group_dead)
-@@ -1351,6 +1353,8 @@ static int wait_task_zombie(struct task_struct *p, int options,
- 			sig->oublock + sig->coublock;
- 		task_io_accounting_add(&psig->ioac, &p->ioac);
- 		task_io_accounting_add(&psig->ioac, &sig->ioac);
-+		if (psig->cmaxrss < sig->maxrss)
-+			psig->cmaxrss = sig->maxrss;
- 		spin_unlock_irq(&p->parent->sighand->siglock);
- 	}
- 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 495da2e..36ac3e5 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -850,6 +850,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
- 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
- 	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
- 	task_io_accounting_init(&sig->ioac);
-+	sig->maxrss = sig->cmaxrss = 0;
- 	taskstats_tgid_init(sig);
- 
- 	task_lock(current->group_leader);
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 31deba8..0441975 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1569,6 +1569,7 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
- 			r->ru_majflt = p->signal->cmaj_flt;
- 			r->ru_inblock = p->signal->cinblock;
- 			r->ru_oublock = p->signal->coublock;
-+			r->ru_maxrss = p->signal->cmaxrss;
- 
- 			if (who == RUSAGE_CHILDREN)
- 				break;
-@@ -1583,6 +1584,8 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
- 			r->ru_majflt += p->signal->maj_flt;
- 			r->ru_inblock += p->signal->inblock;
- 			r->ru_oublock += p->signal->oublock;
-+			if (r->ru_maxrss < p->signal->maxrss)
-+				r->ru_maxrss = p->signal->maxrss;
- 			t = p;
- 			do {
- 				accumulate_thread_rusage(t, r);
-@@ -1598,6 +1601,17 @@ static void k_getrusage(struct task_struct *p, int who, struct rusage *r)
- out:
- 	cputime_to_timeval(utime, &r->ru_utime);
- 	cputime_to_timeval(stime, &r->ru_stime);
-+
-+	if (who != RUSAGE_CHILDREN) {
-+		task_lock(p);
-+		if (p->mm) {
-+			unsigned long maxrss = get_mm_hiwater_rss(p->mm);
-+
-+			if (r->ru_maxrss < maxrss)
-+				r->ru_maxrss = maxrss;
-+		}
-+		task_unlock(p);
-+	}
- }
- 
- int getrusage(struct task_struct *p, int who, struct rusage __user *ru)
--- 
-1.6.0.4
-
+Alan
