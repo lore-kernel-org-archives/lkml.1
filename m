@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753402AbYLQRZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753516AbYLQRZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753402AbYLQRZN (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 12:25:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYLQRYi
+	id S1753516AbYLQRZ4 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 12:25:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYLQRZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 12:24:38 -0500
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:57038 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752390AbYLQRYg (ORCPT
+	Wed, 17 Dec 2008 12:25:31 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:59356 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751972AbYLQRZ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 12:24:36 -0500
+	Wed, 17 Dec 2008 12:25:29 -0500
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH v6 7/7] sched: idle_balance() does not call
-	load_balance_newidle()
+Subject: [PATCH v6 5/7] sched: activate active load balancing in new idle cpus
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
         Suresh B Siddha <suresh.b.siddha@intel.com>,
         Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -26,8 +25,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
         Gregory Haskins <gregory.haskins@gmail.com>,
         Pavel Machek <pavel@suse.cz>,
         Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Wed, 17 Dec 2008 22:57:45 +0530
-Message-ID: <20081217172745.534.46999.stgit@drishya.in.ibm.com>
+Date: Wed, 17 Dec 2008 22:57:24 +0530
+Message-ID: <20081217172724.534.65949.stgit@drishya.in.ibm.com>
 In-Reply-To: <20081217172309.534.28847.stgit@drishya.in.ibm.com>
 References: <20081217172309.534.28847.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -38,36 +37,95 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-load_balance_newidle() does not get called if SD_BALANCE_NEWIDLE
-is set at higher level domain (3-CPU) and not in low level domain
-(2-MC).
+Active load balancing is a process by which migration thread
+is woken up on the target CPU in order to pull current
+running task on another package into this newly idle
+package.
 
-pulled_task is initialised to -1 and checked for non-zero which
-is always true if the lowest level sched_domain does not have
-SD_BALANCE_NEWIDLE flag set.
+This method is already in use with normal load_balance(),
+this patch introduces this method to new idle cpus when
+sched_mc is set to POWERSAVINGS_BALANCE_WAKEUP.
 
-Trivial fix to initialise pulled_task to zero.
+This logic provides effective consolidation of short running
+daemon jobs in a almost idle system
 
-This patch has been queued for 2.6.29
-http://lkml.org/lkml/2008/12/8/213
+The side effect of this patch may be ping-ponging of tasks
+if the system is moderately utilised. May need to adjust the
+iterations before triggering.
 
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
 
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/sched.c |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 54 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index f82a7a0..e6a88bf 100644
+index 3415fa3..f82a7a0 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -3773,7 +3773,7 @@ out_balanced:
- static void idle_balance(int this_cpu, struct rq *this_rq)
- {
- 	struct sched_domain *sd;
--	int pulled_task = -1;
-+	int pulled_task = 0;
- 	unsigned long next_balance = jiffies + HZ;
- 	cpumask_t tmpmask;
+@@ -3692,10 +3692,64 @@ redo:
+ 	}
+ 
+ 	if (!ld_moved) {
++		int active_balance;
++
+ 		schedstat_inc(sd, lb_failed[CPU_NEWLY_IDLE]);
+ 		if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
+ 		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+ 			return -1;
++
++		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
++			return -1;
++
++		if (sd->nr_balance_failed++ < 2)
++			return -1;
++
++		/*
++		 * The only task running in a non-idle cpu can be moved to this
++		 * cpu in an attempt to completely freeup the other CPU
++		 * package. The same method used to move task in load_balance()
++		 * have been extended for load_balance_newidle() to speedup
++		 * consolidation at sched_mc=POWERSAVINGS_BALANCE_WAKEUP (2)
++		 *
++		 * The package power saving logic comes from
++		 * find_busiest_group().  If there are no imbalance, then
++		 * f_b_g() will return NULL.  However when sched_mc={1,2} then
++		 * f_b_g() will select a group from which a running task may be
++		 * pulled to this cpu in order to make the other package idle.
++		 * If there is no opportunity to make a package idle and if
++		 * there are no imbalance, then f_b_g() will return NULL and no
++		 * action will be taken in load_balance_newidle().
++		 *
++		 * Under normal task pull operation due to imbalance, there
++		 * will be more than one task in the source run queue and
++		 * move_tasks() will succeed.  ld_moved will be true and this
++		 * active balance code will not be triggered.
++		 */
++
++		/* Lock busiest in correct order while this_rq is held */
++		double_lock_balance(this_rq, busiest);
++
++		/*
++		 * don't kick the migration_thread, if the curr
++		 * task on busiest cpu can't be moved to this_cpu
++		 */
++		if (!cpu_isset(this_cpu, busiest->curr->cpus_allowed)) {
++			double_unlock_balance(this_rq, busiest);
++			all_pinned = 1;
++			return ld_moved;
++		}
++
++		if (!busiest->active_balance) {
++			busiest->active_balance = 1;
++			busiest->push_cpu = this_cpu;
++			active_balance = 1;
++		}
++
++		double_unlock_balance(this_rq, busiest);
++		if (active_balance)
++			wake_up_process(busiest->migration_thread);
++
+ 	} else
+ 		sd->nr_balance_failed = 0;
  
 
