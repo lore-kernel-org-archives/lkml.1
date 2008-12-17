@@ -1,100 +1,143 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757586AbYLQGNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757932AbYLQGR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757586AbYLQGNK (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 01:13:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbYLQGMz
+	id S1757932AbYLQGR1 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 01:17:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbYLQGRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 01:12:55 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:54067 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750906AbYLQGMy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 01:12:54 -0500
-Date: Wed, 17 Dec 2008 06:12:50 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: jdike@addtoit.com
-Cc: sam@ravnborg.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] get rid of the last symlink in uml build
-Message-ID: <20081217061250.GX28946@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 17 Dec 2008 01:17:15 -0500
+Received: from mail.gmx.net ([213.165.64.20]:42043 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750906AbYLQGRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 01:17:14 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19LYwB1skFLL1sgUBMeI6GwqzlkxJifNbilr/IZ2e
+	/5zPZGyatNHh3b
+Subject: Re: [Bug #12208] uml is very slow on 2.6.28 host
+From: Mike Galbraith <efault@gmx.de>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: rjw@sisk.pl, a.p.zijlstra@chello.nl, mingo@elte.hu,
+        linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+In-Reply-To: <E1LCbpI-0002MN-7R@pomaz-ex.szeredi.hu>
+References: <u7kfEgp36eE.A.qpG.Y4_QJB@chimera>
+	 <T1gm2CtAHBF.A.u6G.g4_QJB@chimera>  <E1LCO85-0000rR-Br@pomaz-ex.szeredi.hu>
+	 <1229397927.5296.48.camel@marge.simson.net>
+	 <E1LCX8h-0001sh-Uo@pomaz-ex.szeredi.hu>
+	 <1229437180.5379.76.camel@marge.simson.net>
+	 <E1LCbpI-0002MN-7R@pomaz-ex.szeredi.hu>
+Content-Type: multipart/mixed; boundary="=-wHKTC3VbzE/ipZBAABSR"
+Date: Wed, 17 Dec 2008 07:17:08 +0100
+Message-Id: <1229494628.5280.24.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	We need to make asm-offsets.h contents visible for objects built
-with userland headers.  Instead of creating a symlink, just have the
-file with equivalent include (relative to location of header) created
-once.
 
-	That kills the last symlink used in arch/um builds.  Have fun...
+--=-wHKTC3VbzE/ipZBAABSR
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/arch/um/Makefile b/arch/um/Makefile
-index d944c34..3fd7e45 100644
---- a/arch/um/Makefile
-+++ b/arch/um/Makefile
-@@ -22,10 +22,11 @@ MODE_INCLUDE	+= -I$(srctree)/$(ARCH_DIR)/include/shared/skas
- 
- include $(srctree)/$(ARCH_DIR)/Makefile-skas
- 
--ARCH_INCLUDE	:= -I$(srctree)/$(ARCH_DIR)/include/shared
-+SHARED_HEADERS	:= $(ARCH_DIR)/include/shared
-+ARCH_INCLUDE	:= -I$(srctree)/$(SHARED_HEADERS)
- ARCH_INCLUDE	+= -I$(srctree)/$(ARCH_DIR)/sys-$(SUBARCH)/shared
- ifneq ($(KBUILD_SRC),)
--ARCH_INCLUDE	+= -I$(ARCH_DIR)/include/shared # for two generated files
-+ARCH_INCLUDE	+= -I$(SHARED_HEADERS)
- endif
- KBUILD_CPPFLAGS += -I$(srctree)/$(ARCH_DIR)/sys-$(SUBARCH)
- 
-@@ -85,8 +86,8 @@ endef
- 
- KBUILD_KCONFIG := arch/um/Kconfig.$(HEADER_ARCH)
- 
--archprepare: $(ARCH_DIR)/include/shared/user_constants.h
--prepare: $(ARCH_DIR)/include/shared/kern_constants.h
-+archprepare: $(SHARED_HEADERS)/user_constants.h
-+prepare: $(SHARED_HEADERS)/kern_constants.h
- 
- LINK-$(CONFIG_LD_SCRIPT_STATIC) += -static
- LINK-$(CONFIG_LD_SCRIPT_DYN) += -Wl,-rpath,/lib
-@@ -119,17 +120,13 @@ endef
- # When cleaning we don't include .config, so we don't include
- # TT or skas makefiles and don't clean skas_ptregs.h.
- CLEAN_FILES += linux x.i gmon.out \
--	$(ARCH_DIR)/include/shared/user_constants.h \
--	$(ARCH_DIR)/include/shared/kern_constants.h
-+	$(SHARED_HEADERS)/user_constants.h \
-+	$(SHARED_HEADERS)/kern_constants.h
- 
- archclean:
- 	@find . \( -name '*.bb' -o -name '*.bbg' -o -name '*.da' \
- 		-o -name '*.gcov' \) -type f -print | xargs rm -f
- 
--$(objtree)/$(ARCH_DIR)/include/shared:
--	@echo '  MKDIR $@'
--	$(Q)mkdir -p $@
--
- # Generated files
- 
- $(ARCH_DIR)/sys-$(SUBARCH)/user-offsets.s: FORCE
-@@ -148,11 +145,11 @@ define filechk_gen-asm-offsets
-          echo ""; )
- endef
- 
--$(ARCH_DIR)/include/shared/user_constants.h: $(ARCH_DIR)/sys-$(SUBARCH)/user-offsets.s
-+$(SHARED_HEADERS)/user_constants.h: $(ARCH_DIR)/sys-$(SUBARCH)/user-offsets.s
- 	$(call filechk,gen-asm-offsets)
- 
--$(ARCH_DIR)/include/shared/kern_constants.h: $(objtree)/$(ARCH_DIR)/include/shared
--	@echo '  SYMLINK $@'
--	$(Q)ln -sf ../../../../include/asm/asm-offsets.h $@
-+$(SHARED_HEADERS)/kern_constants.h:
-+	$(Q)mkdir -p $(dir $@)
-+	$(Q)echo '#include "../../../../include/asm/asm-offsets.h"' >$@
- 
- export SUBARCH USER_CFLAGS CFLAGS_NO_HARDENING OS HEADER_ARCH DEV_NULL_PATH
+On Tue, 2008-12-16 at 16:27 +0100, Miklos Szeredi wrote:
+
+> Is there a way to trace what is happening in the scheduler?
+
+Sure.  Ingo has a script for gathering info (attached), if you run it,
+please gzip up the output and send me a copy offline to eyeball.
+
+There's also ftrace, but I've not tried that yet, so can't offer any
+advice, I use primitive but effective time_after() + printk() with klogd
+wakeup disabled (deadlock).
+
+	-Mike
+
+--=-wHKTC3VbzE/ipZBAABSR
+Content-Disposition: attachment; filename=cfs-debug-info.sh
+Content-Type: application/x-shellscript; name=cfs-debug-info.sh
+Content-Transfer-Encoding: 7bit
+
+
+[ -e /proc/sched_debug ]    || echo "not a CFS kernel? continuing anyway."
+[ "`id | grep root`" = "" ] && { echo "please run this as root!"; exit -1; }
+
+FILE=cfs-debug-info-`date +%Y.%m.%d-%H.%M.%S`
+
+echo "sched info dump (of tasks, modules, hw, dmesg, config, fs):"
+
+echo "-- /proc/sched_debug: --"      >  $FILE
+cat /proc/sched_debug                >> $FILE 2>/dev/null
+echo "-- /proc/*/task/*/sched: --"   >> $FILE
+cat /proc/*/task/*/sched             >> $FILE 2>/dev/null
+echo "-- /proc/sys/kernel/sched: --" >> $FILE
+for N in /proc/sys/kernel/sched*; do
+  echo $N:                           >> $FILE 2>/dev/null
+  cat $N                             >> $FILE 2>/dev/null
+done
+echo "-- modules: --"                >> $FILE
+/sbin/lsmod                          >> $FILE 2>/dev/null
+echo "-- hw: --"                     >> $FILE
+/sbin/lspci -vvv                     >> $FILE 2>/dev/null
+echo "-- interrupts: --"             >> $FILE
+cat /proc/interrupts                 >> $FILE 2>/dev/null
+echo "-- cpuinfo: --"                >> $FILE
+cat /proc/cpuinfo                    >> $FILE 2>/dev/null
+echo "-- cpufreq: --"                >> $FILE
+cat /sys/devices/system/cpu/cpu*/cpufreq/* \
+                                     >> $FILE 2>/dev/null
+echo "-- meminfo: --"                >> $FILE
+cat /proc/meminfo                    >> $FILE 2>/dev/null
+echo "-- buddyinfo: --"              >> $FILE
+cat /proc/buddyinfo                  >> $FILE 2>/dev/null
+echo "-- vmstat: --"                 >> $FILE
+cat /proc/vmstat                     >> $FILE 2>/dev/null
+echo "-- zoneinfo: --"               >> $FILE
+cat /proc/zoneinfo                   >> $FILE 2>/dev/null
+echo "-- pagetypeinfo: --"           >> $FILE
+cat /proc/pagetypeinfo               >> $FILE 2>/dev/null
+echo "-- slabinfo: --"               >> $FILE
+cat /proc/slabinfo                   >> $FILE 2>/dev/null
+echo "-- dmesg: --"                  >> $FILE
+dmesg -s 10000000                    >> $FILE 2>/dev/null
+echo "-- /proc/timer_list: --"       >> $FILE
+cat /proc/timer_list                 >> $FILE 2>/dev/null
+echo "-- /proc/timer_info: --"       >> $FILE
+cat /proc/timer_info                 >> $FILE 2>/dev/null
+echo "-- /proc/config.gz: --"        >> $FILE
+zcat /proc/config.gz                 >> $FILE 2>/dev/null
+echo "-- current kernel config: --"  >> $FILE
+KREL=`uname -r | sed 's/smp$//g'`
+( cat "`rpm -ql kernel-$KREL 2>/dev/null | grep /boot/config`"
+  cat "`rpm -ql kernel-smp-$KREL 2>/dev/null | grep /boot/config`"
+  cat "`dpkg -L linux-image-$KREL 2>/dev/null | grep /boot/config`"
+  cat /boot/config-$KREL 2>/dev/null
+) >> $FILE 2>/dev/null
+echo "-- filesystems: --"            >> $FILE
+mount                                >> $FILE 2>/dev/null
+echo "-- uptime: --"                 >> $FILE
+uptime                               >> $FILE 2>/dev/null
+echo "-- uname: --"                  >> $FILE
+uname -a                             >> $FILE 2>/dev/null
+echo "-- /sys/devices/system: --"    >> $FILE
+for N in `find /sys/devices/system/ -type f`; do
+  echo $N:			     >> $FILE
+  cat $N			     >> $FILE 2>/dev/null
+done
+echo "gathering statistics for 15 seconds ..."
+echo "-- top: --"                    >> $FILE
+top -c -b -d 1 -n 5                  >> $FILE 2>/dev/null
+echo "-- vmstat: --"                 >> $FILE
+vmstat -n 1 5                        >> $FILE 2>/dev/null
+for ((i=0; i<5; i++)); do
+ echo "-- sched_debug #$i: --"       >> $FILE
+ date                                >> $FILE
+ cat /proc/sched_debug               >> $FILE 2>/dev/null
+ sleep 1
+done
+
+ls -l $FILE
+
+
+--=-wHKTC3VbzE/ipZBAABSR--
+
