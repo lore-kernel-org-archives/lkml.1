@@ -1,459 +1,226 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760918AbYLQMgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757305AbYLQMfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760918AbYLQMgv (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 07:36:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbYLQM3f
+	id S1757305AbYLQMfn (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 07:35:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbYLQM3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 07:29:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53750 "EHLO mx2.redhat.com"
+	Wed, 17 Dec 2008 07:29:31 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53747 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755350AbYLQM32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 07:29:28 -0500
+	id S1755020AbYLQM3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 07:29:25 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 20/24] GFS2: Move four functions from super.c
-Date: Wed, 17 Dec 2008 11:30:19 +0000
-Message-Id: <1229513423-19105-21-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1229513423-19105-20-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>, Theodore Tso <tytso@mit.edu>,
+        Eric Sandeen <sandeen@redhat.com>
+Subject: [PATCH 01/24] GFS2: Support for FIEMAP ioctl
+Date: Wed, 17 Dec 2008 11:30:00 +0000
+Message-Id: <1229513423-19105-2-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1229513423-19105-1-git-send-email-swhiteho@redhat.com>
 References: <1229513423-19105-1-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-2-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-3-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-4-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-5-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-6-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-7-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-8-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-9-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-10-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-11-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-12-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-13-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-14-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-15-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-16-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-17-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-18-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-19-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-20-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Whitehouse <swhiteho@redhat.com>
 
-The functions which are being moved can all be marked
-static in their new locations, since they only have
-a single caller each. Their new locations are more
-logical than before and some of the functions are
-small enough that the compiler might well inline them.
+This patch implements the FIEMAP ioctl for GFS2. We can use the generic
+code (aside from a lock order issue, solved as per Ted Tso's suggestion)
+for which I've introduced a new variant of the generic function. We also
+have one exception to deal with, namely stuffed files, so we do that
+"by hand", setting all the required flags.
+
+This has been tested with a modified (I could only find an old version) of
+Eric's test program, and appears to work correctly.
+
+This patch does not currently support FIEMAP of xattrs, but the plan is to add
+that feature at some future point.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Theodore Tso <tytso@mit.edu>
+Cc: Eric Sandeen <sandeen@redhat.com>
 
-diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index 07ffc81..6e298b0 100644
---- a/fs/gfs2/glock.c
-+++ b/fs/gfs2/glock.c
-@@ -1317,6 +1317,20 @@ static void blocking_cb(struct gfs2_sbd *sdp, struct lm_lockname *name,
- 		gfs2_glock_put(gl);
+diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
+index d232991..1e24b65 100644
+--- a/fs/gfs2/ops_inode.c
++++ b/fs/gfs2/ops_inode.c
+@@ -19,6 +19,7 @@
+ #include <linux/gfs2_ondisk.h>
+ #include <linux/crc32.h>
+ #include <linux/lm_interface.h>
++#include <linux/fiemap.h>
+ #include <asm/uaccess.h>
+ 
+ #include "gfs2.h"
+@@ -1212,6 +1213,48 @@ static int gfs2_removexattr(struct dentry *dentry, const char *name)
+ 	return gfs2_ea_remove(GFS2_I(dentry->d_inode), &er);
  }
  
-+static void gfs2_jdesc_make_dirty(struct gfs2_sbd *sdp, unsigned int jid)
++static int gfs2_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
++		       u64 start, u64 len)
 +{
-+	struct gfs2_jdesc *jd;
++	struct gfs2_inode *ip = GFS2_I(inode);
++	struct gfs2_holder gh;
++	int ret;
 +
-+	spin_lock(&sdp->sd_jindex_spin);
-+	list_for_each_entry(jd, &sdp->sd_jindex_list, jd_list) {
-+		if (jd->jd_jid != jid)
-+			continue;
-+		jd->jd_dirty = 1;
-+		break;
-+	}
-+	spin_unlock(&sdp->sd_jindex_spin);
-+}
++	ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC);
++	if (ret)
++		return ret;
 +
- /**
-  * gfs2_glock_cb - Callback used by locking module
-  * @sdp: Pointer to the superblock
-diff --git a/fs/gfs2/ops_super.c b/fs/gfs2/ops_super.c
-index 29f8a5c..08837a7 100644
---- a/fs/gfs2/ops_super.c
-+++ b/fs/gfs2/ops_super.c
-@@ -257,6 +257,137 @@ static void gfs2_unlockfs(struct super_block *sb)
- }
- 
- /**
-+ * statfs_fill - fill in the sg for a given RG
-+ * @rgd: the RG
-+ * @sc: the sc structure
-+ *
-+ * Returns: 0 on success, -ESTALE if the LVB is invalid
-+ */
++	mutex_lock(&inode->i_mutex);
 +
-+static int statfs_slow_fill(struct gfs2_rgrpd *rgd,
-+			    struct gfs2_statfs_change_host *sc)
-+{
-+	gfs2_rgrp_verify(rgd);
-+	sc->sc_total += rgd->rd_data;
-+	sc->sc_free += rgd->rd_free;
-+	sc->sc_dinodes += rgd->rd_dinodes;
-+	return 0;
-+}
-+
-+/**
-+ * gfs2_statfs_slow - Stat a filesystem using asynchronous locking
-+ * @sdp: the filesystem
-+ * @sc: the sc info that will be returned
-+ *
-+ * Any error (other than a signal) will cause this routine to fall back
-+ * to the synchronous version.
-+ *
-+ * FIXME: This really shouldn't busy wait like this.
-+ *
-+ * Returns: errno
-+ */
-+
-+static int gfs2_statfs_slow(struct gfs2_sbd *sdp, struct gfs2_statfs_change_host *sc)
-+{
-+	struct gfs2_holder ri_gh;
-+	struct gfs2_rgrpd *rgd_next;
-+	struct gfs2_holder *gha, *gh;
-+	unsigned int slots = 64;
-+	unsigned int x;
-+	int done;
-+	int error = 0, err;
-+
-+	memset(sc, 0, sizeof(struct gfs2_statfs_change_host));
-+	gha = kcalloc(slots, sizeof(struct gfs2_holder), GFP_KERNEL);
-+	if (!gha)
-+		return -ENOMEM;
-+
-+	error = gfs2_rindex_hold(sdp, &ri_gh);
-+	if (error)
++	ret = gfs2_glock_nq_init(ip->i_gl, LM_ST_SHARED, 0, &gh);
++	if (ret)
 +		goto out;
 +
-+	rgd_next = gfs2_rgrpd_get_first(sdp);
-+
-+	for (;;) {
-+		done = 1;
-+
-+		for (x = 0; x < slots; x++) {
-+			gh = gha + x;
-+
-+			if (gh->gh_gl && gfs2_glock_poll(gh)) {
-+				err = gfs2_glock_wait(gh);
-+				if (err) {
-+					gfs2_holder_uninit(gh);
-+					error = err;
-+				} else {
-+					if (!error)
-+						error = statfs_slow_fill(
-+							gh->gh_gl->gl_object, sc);
-+					gfs2_glock_dq_uninit(gh);
-+				}
-+			}
-+
-+			if (gh->gh_gl)
-+				done = 0;
-+			else if (rgd_next && !error) {
-+				error = gfs2_glock_nq_init(rgd_next->rd_gl,
-+							   LM_ST_SHARED,
-+							   GL_ASYNC,
-+							   gh);
-+				rgd_next = gfs2_rgrpd_get_next(rgd_next);
-+				done = 0;
-+			}
-+
-+			if (signal_pending(current))
-+				error = -ERESTARTSYS;
-+		}
-+
-+		if (done)
-+			break;
-+
-+		yield();
++	if (gfs2_is_stuffed(ip)) {
++		u64 phys = ip->i_no_addr << inode->i_blkbits;
++		u64 size = i_size_read(inode);
++		u32 flags = FIEMAP_EXTENT_LAST|FIEMAP_EXTENT_NOT_ALIGNED|
++			    FIEMAP_EXTENT_DATA_INLINE;
++		phys += sizeof(struct gfs2_dinode);
++		phys += start;
++		if (start + len > size)
++			len = size - start;
++		if (start < size)
++			ret = fiemap_fill_next_extent(fieinfo, start, phys,
++						      len, flags);
++		if (ret == 1)
++			ret = 0;
++	} else {
++		ret = __generic_block_fiemap(inode, fieinfo, start, len,
++					     gfs2_block_map);
 +	}
 +
-+	gfs2_glock_dq_uninit(&ri_gh);
-+
++	gfs2_glock_dq_uninit(&gh);
 +out:
-+	kfree(gha);
-+	return error;
++	mutex_unlock(&inode->i_mutex);
++	return ret;
 +}
 +
+ const struct inode_operations gfs2_file_iops = {
+ 	.permission = gfs2_permission,
+ 	.setattr = gfs2_setattr,
+@@ -1220,6 +1263,7 @@ const struct inode_operations gfs2_file_iops = {
+ 	.getxattr = gfs2_getxattr,
+ 	.listxattr = gfs2_listxattr,
+ 	.removexattr = gfs2_removexattr,
++	.fiemap = gfs2_fiemap,
+ };
+ 
+ const struct inode_operations gfs2_dir_iops = {
+@@ -1239,6 +1283,7 @@ const struct inode_operations gfs2_dir_iops = {
+ 	.getxattr = gfs2_getxattr,
+ 	.listxattr = gfs2_listxattr,
+ 	.removexattr = gfs2_removexattr,
++	.fiemap = gfs2_fiemap,
+ };
+ 
+ const struct inode_operations gfs2_symlink_iops = {
+@@ -1251,5 +1296,6 @@ const struct inode_operations gfs2_symlink_iops = {
+ 	.getxattr = gfs2_getxattr,
+ 	.listxattr = gfs2_listxattr,
+ 	.removexattr = gfs2_removexattr,
++	.fiemap = gfs2_fiemap,
+ };
+ 
+diff --git a/fs/ioctl.c b/fs/ioctl.c
+index d152856..f9b5c24 100644
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -231,7 +231,8 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+ #define blk_to_logical(inode, blk) (blk << (inode)->i_blkbits)
+ #define logical_to_blk(inode, offset) (offset >> (inode)->i_blkbits);
+ 
+-/*
 +/**
-+ * gfs2_statfs_i - Do a statfs
-+ * @sdp: the filesystem
-+ * @sg: the sg structure
++ * __generic_block_fiemap - FIEMAP for block based inodes (no locking)
+  * @inode - the inode to map
+  * @arg - the pointer to userspace where we copy everything to
+  * @get_block - the fs's get_block function
+@@ -242,11 +243,15 @@ static int ioctl_fiemap(struct file *filp, unsigned long arg)
+  *
+  * If it is possible to have data blocks beyond a hole past @inode->i_size, then
+  * please do not use this function, it will stop at the first unmapped block
+- * beyond i_size
++ * beyond i_size.
 + *
-+ * Returns: errno
++ * If you use this function directly, you need to do your own locking. Use
++ * generic_block_fiemap if you want the locking done for you.
+  */
+-int generic_block_fiemap(struct inode *inode,
+-			 struct fiemap_extent_info *fieinfo, u64 start,
+-			 u64 len, get_block_t *get_block)
++
++int __generic_block_fiemap(struct inode *inode,
++			   struct fiemap_extent_info *fieinfo, u64 start,
++			   u64 len, get_block_t *get_block)
+ {
+ 	struct buffer_head tmp;
+ 	unsigned int start_blk;
+@@ -260,9 +265,6 @@ int generic_block_fiemap(struct inode *inode,
+ 
+ 	start_blk = logical_to_blk(inode, start);
+ 
+-	/* guard against change */
+-	mutex_lock(&inode->i_mutex);
+-
+ 	length = (long long)min_t(u64, len, i_size_read(inode));
+ 	map_len = length;
+ 
+@@ -334,14 +336,36 @@ int generic_block_fiemap(struct inode *inode,
+ 		cond_resched();
+ 	} while (1);
+ 
+-	mutex_unlock(&inode->i_mutex);
+-
+ 	/* if ret is 1 then we just hit the end of the extent array */
+ 	if (ret == 1)
+ 		ret = 0;
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL(__generic_block_fiemap);
++
++/**
++ * generic_block_fiemap - FIEMAP for block based inodes
++ * @inode: The inode to map
++ * @fieinfo: The mapping information
++ * @start: The initial block to map
++ * @len: The length of the extect to attempt to map
++ * @get_block: The block mapping function for the fs
++ *
++ * Calls __generic_block_fiemap to map the inode, after taking
++ * the inode's mutex lock.
 + */
 +
-+static int gfs2_statfs_i(struct gfs2_sbd *sdp, struct gfs2_statfs_change_host *sc)
++int generic_block_fiemap(struct inode *inode,
++			 struct fiemap_extent_info *fieinfo, u64 start,
++			 u64 len, get_block_t *get_block)
 +{
-+	struct gfs2_statfs_change_host *m_sc = &sdp->sd_statfs_master;
-+	struct gfs2_statfs_change_host *l_sc = &sdp->sd_statfs_local;
-+
-+	spin_lock(&sdp->sd_statfs_spin);
-+
-+	*sc = *m_sc;
-+	sc->sc_total += l_sc->sc_total;
-+	sc->sc_free += l_sc->sc_free;
-+	sc->sc_dinodes += l_sc->sc_dinodes;
-+
-+	spin_unlock(&sdp->sd_statfs_spin);
-+
-+	if (sc->sc_free < 0)
-+		sc->sc_free = 0;
-+	if (sc->sc_free > sc->sc_total)
-+		sc->sc_free = sc->sc_total;
-+	if (sc->sc_dinodes < 0)
-+		sc->sc_dinodes = 0;
-+
-+	return 0;
++	int ret;
++	mutex_lock(&inode->i_mutex);
++	ret = __generic_block_fiemap(inode, fieinfo, start, len, get_block);
++	mutex_unlock(&inode->i_mutex);
++	return ret;
 +}
-+
-+/**
-  * gfs2_statfs - Gather and return stats about the filesystem
-  * @sb: The superblock
-  * @statfsbuf: The buffer
-diff --git a/fs/gfs2/recovery.c b/fs/gfs2/recovery.c
-index b56ba3d..efd09c3 100644
---- a/fs/gfs2/recovery.c
-+++ b/fs/gfs2/recovery.c
-@@ -585,6 +585,28 @@ fail:
- 	return error;
- }
+ EXPORT_SYMBOL(generic_block_fiemap);
  
-+static struct gfs2_jdesc *gfs2_jdesc_find_dirty(struct gfs2_sbd *sdp)
-+{
-+	struct gfs2_jdesc *jd;
-+	int found = 0;
-+
-+	spin_lock(&sdp->sd_jindex_spin);
-+
-+	list_for_each_entry(jd, &sdp->sd_jindex_list, jd_list) {
-+		if (jd->jd_dirty) {
-+			jd->jd_dirty = 0;
-+			found = 1;
-+			break;
-+		}
-+	}
-+	spin_unlock(&sdp->sd_jindex_spin);
-+
-+	if (!found)
-+		jd = NULL;
-+
-+	return jd;
-+}
-+
- /**
-  * gfs2_check_journals - Recover any dirty journals
-  * @sdp: the filesystem
-diff --git a/fs/gfs2/super.c b/fs/gfs2/super.c
-index 3dd9f57..141b781 100644
---- a/fs/gfs2/super.c
-+++ b/fs/gfs2/super.c
-@@ -96,39 +96,6 @@ struct gfs2_jdesc *gfs2_jdesc_find(struct gfs2_sbd *sdp, unsigned int jid)
- 	return jd;
- }
+ #endif  /*  CONFIG_BLOCK  */
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 0dcdd94..e12e9e0 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2043,6 +2043,9 @@ extern int vfs_fstat(unsigned int, struct kstat *);
  
--void gfs2_jdesc_make_dirty(struct gfs2_sbd *sdp, unsigned int jid)
--{
--	struct gfs2_jdesc *jd;
--
--	spin_lock(&sdp->sd_jindex_spin);
--	jd = jdesc_find_i(&sdp->sd_jindex_list, jid);
--	if (jd)
--		jd->jd_dirty = 1;
--	spin_unlock(&sdp->sd_jindex_spin);
--}
--
--struct gfs2_jdesc *gfs2_jdesc_find_dirty(struct gfs2_sbd *sdp)
--{
--	struct gfs2_jdesc *jd;
--	int found = 0;
--
--	spin_lock(&sdp->sd_jindex_spin);
--
--	list_for_each_entry(jd, &sdp->sd_jindex_list, jd_list) {
--		if (jd->jd_dirty) {
--			jd->jd_dirty = 0;
--			found = 1;
--			break;
--		}
--	}
--	spin_unlock(&sdp->sd_jindex_spin);
--
--	if (!found)
--		jd = NULL;
--
--	return jd;
--}
--
- int gfs2_jdesc_check(struct gfs2_jdesc *jd)
- {
- 	struct gfs2_inode *ip = GFS2_I(jd->jd_inode);
-@@ -353,137 +320,6 @@ out:
- 	return error;
- }
- 
--/**
-- * gfs2_statfs_i - Do a statfs
-- * @sdp: the filesystem
-- * @sg: the sg structure
-- *
-- * Returns: errno
-- */
--
--int gfs2_statfs_i(struct gfs2_sbd *sdp, struct gfs2_statfs_change_host *sc)
--{
--	struct gfs2_statfs_change_host *m_sc = &sdp->sd_statfs_master;
--	struct gfs2_statfs_change_host *l_sc = &sdp->sd_statfs_local;
--
--	spin_lock(&sdp->sd_statfs_spin);
--
--	*sc = *m_sc;
--	sc->sc_total += l_sc->sc_total;
--	sc->sc_free += l_sc->sc_free;
--	sc->sc_dinodes += l_sc->sc_dinodes;
--
--	spin_unlock(&sdp->sd_statfs_spin);
--
--	if (sc->sc_free < 0)
--		sc->sc_free = 0;
--	if (sc->sc_free > sc->sc_total)
--		sc->sc_free = sc->sc_total;
--	if (sc->sc_dinodes < 0)
--		sc->sc_dinodes = 0;
--
--	return 0;
--}
--
--/**
-- * statfs_fill - fill in the sg for a given RG
-- * @rgd: the RG
-- * @sc: the sc structure
-- *
-- * Returns: 0 on success, -ESTALE if the LVB is invalid
-- */
--
--static int statfs_slow_fill(struct gfs2_rgrpd *rgd,
--			    struct gfs2_statfs_change_host *sc)
--{
--	gfs2_rgrp_verify(rgd);
--	sc->sc_total += rgd->rd_data;
--	sc->sc_free += rgd->rd_free;
--	sc->sc_dinodes += rgd->rd_dinodes;
--	return 0;
--}
--
--/**
-- * gfs2_statfs_slow - Stat a filesystem using asynchronous locking
-- * @sdp: the filesystem
-- * @sc: the sc info that will be returned
-- *
-- * Any error (other than a signal) will cause this routine to fall back
-- * to the synchronous version.
-- *
-- * FIXME: This really shouldn't busy wait like this.
-- *
-- * Returns: errno
-- */
--
--int gfs2_statfs_slow(struct gfs2_sbd *sdp, struct gfs2_statfs_change_host *sc)
--{
--	struct gfs2_holder ri_gh;
--	struct gfs2_rgrpd *rgd_next;
--	struct gfs2_holder *gha, *gh;
--	unsigned int slots = 64;
--	unsigned int x;
--	int done;
--	int error = 0, err;
--
--	memset(sc, 0, sizeof(struct gfs2_statfs_change_host));
--	gha = kcalloc(slots, sizeof(struct gfs2_holder), GFP_KERNEL);
--	if (!gha)
--		return -ENOMEM;
--
--	error = gfs2_rindex_hold(sdp, &ri_gh);
--	if (error)
--		goto out;
--
--	rgd_next = gfs2_rgrpd_get_first(sdp);
--
--	for (;;) {
--		done = 1;
--
--		for (x = 0; x < slots; x++) {
--			gh = gha + x;
--
--			if (gh->gh_gl && gfs2_glock_poll(gh)) {
--				err = gfs2_glock_wait(gh);
--				if (err) {
--					gfs2_holder_uninit(gh);
--					error = err;
--				} else {
--					if (!error)
--						error = statfs_slow_fill(
--							gh->gh_gl->gl_object, sc);
--					gfs2_glock_dq_uninit(gh);
--				}
--			}
--
--			if (gh->gh_gl)
--				done = 0;
--			else if (rgd_next && !error) {
--				error = gfs2_glock_nq_init(rgd_next->rd_gl,
--							   LM_ST_SHARED,
--							   GL_ASYNC,
--							   gh);
--				rgd_next = gfs2_rgrpd_get_next(rgd_next);
--				done = 0;
--			}
--
--			if (signal_pending(current))
--				error = -ERESTARTSYS;
--		}
--
--		if (done)
--			break;
--
--		yield();
--	}
--
--	gfs2_glock_dq_uninit(&ri_gh);
--
--out:
--	kfree(gha);
--	return error;
--}
--
- struct lfcc {
- 	struct list_head list;
- 	struct gfs2_holder gh;
-diff --git a/fs/gfs2/super.h b/fs/gfs2/super.h
-index c625459..f6b8b00 100644
---- a/fs/gfs2/super.h
-+++ b/fs/gfs2/super.h
-@@ -28,8 +28,6 @@ static inline unsigned int gfs2_jindex_size(struct gfs2_sbd *sdp)
- void gfs2_jindex_free(struct gfs2_sbd *sdp);
- 
- struct gfs2_jdesc *gfs2_jdesc_find(struct gfs2_sbd *sdp, unsigned int jid);
--void gfs2_jdesc_make_dirty(struct gfs2_sbd *sdp, unsigned int jid);
--struct gfs2_jdesc *gfs2_jdesc_find_dirty(struct gfs2_sbd *sdp);
- int gfs2_jdesc_check(struct gfs2_jdesc *jd);
- 
- int gfs2_lookup_in_master_dir(struct gfs2_sbd *sdp, char *filename,
-@@ -41,8 +39,6 @@ int gfs2_statfs_init(struct gfs2_sbd *sdp);
- void gfs2_statfs_change(struct gfs2_sbd *sdp,
- 			s64 total, s64 free, s64 dinodes);
- int gfs2_statfs_sync(struct gfs2_sbd *sdp);
--int gfs2_statfs_i(struct gfs2_sbd *sdp, struct gfs2_statfs_change_host *sc);
--int gfs2_statfs_slow(struct gfs2_sbd *sdp, struct gfs2_statfs_change_host *sc);
- 
- int gfs2_freeze_fs(struct gfs2_sbd *sdp);
- void gfs2_unfreeze_fs(struct gfs2_sbd *sdp);
+ extern int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
+ 		    unsigned long arg);
++extern int __generic_block_fiemap(struct inode *inode,
++				  struct fiemap_extent_info *fieinfo, u64 start,
++				  u64 len, get_block_t *get_block);
+ extern int generic_block_fiemap(struct inode *inode,
+ 				struct fiemap_extent_info *fieinfo, u64 start,
+ 				u64 len, get_block_t *get_block);
 -- 
 1.6.0.3
 
