@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752250AbYLQSwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751887AbYLQSvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752250AbYLQSwK (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 13:52:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYLQSvw
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1751887AbYLQSvw (ORCPT <rfc822;akpm@linux-foundation.org>);
 	Wed, 17 Dec 2008 13:51:52 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:51943 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751792AbYLQSvu (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYLQSvk
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 17 Dec 2008 13:51:40 -0500
+Received: from outbound-mail-110.bluehost.com ([69.89.22.10]:43150 "HELO
+	outbound-mail-110.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751060AbYLQSvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 13:51:50 -0500
-Message-ID: <49494A50.3090201@vlnb.net>
-Date: Wed, 17 Dec 2008 21:52:00 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 17 Dec 2008 13:51:40 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=iQuNt2ANY2Eu0QVIf/PwK6kk7KPrxWfi4F5xGiPIE+OI7Xu1fOk9hiTRiQ0XWy3XjZWOMRon3Ffenhve2Q2SQn+6PT2bF3gj2aHEybZIdX6u+PtDsaUywQKiu9eV7G11;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rose, Gregory V" <gregory.v.rose@intel.com>
+Subject: Re: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
+Date: Wed, 17 Dec 2008 10:51:35 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: Greg KH <greg@kroah.com>, Jike Song <albcamus@gmail.com>,
+        "Zhao, Yu" <yu.zhao@intel.com>,
+        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+        "achiang@hp.com" <achiang@hp.com>,
+        "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>,
+        "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+        "mingo@elte.hu" <mingo@elte.hu>, "matthew@wil.cx" <matthew@wil.cx>,
+        "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+        "rdreier@cisco.com" <rdreier@cisco.com>,
+        "horms@verge.net.au" <horms@verge.net.au>,
+        "yinghai@kernel.org" <yinghai@kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+        "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com> <20081217060608.GA12618@kroah.com> <43F901BD926A4E43B106BF17856F07554B525811@orsmsx508.amr.corp.intel.com>
+In-Reply-To: <43F901BD926A4E43B106BF17856F07554B525811@orsmsx508.amr.corp.intel.com>
 MIME-Version: 1.0
-To: Fabio Checconi <fabio@gandalf.sssup.it>
-CC: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Dynamic switching of io_context
-References: <4942B90F.6050807@vlnb.net> <20081216082235.GD3284@gandalf.sssup.it>
-In-Reply-To: <20081216082235.GD3284@gandalf.sssup.it>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+jJa/9TAG6S5F8j6+2gXpoXtaTenEozAi/7GY
- elN5Z0v7hnCuNDb/Obxg4Tzmt7zphT+ft7CJ6RI81YR/DIGdSs
- MY/GZpRovLLh+YTB076mg==
+Content-Disposition: inline
+Message-Id: <200812171051.36645.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fabio Checconi, on 12/16/2008 11:22 AM wrote:
->> In SCST (http://scst.sf.net) in some cases IO can be submitted 
->> asynchronously. This is possible for pass-through (i.e. using 
->> scsi_execute_async()) and BLOCKIO (i.e. using direct bio interface, see 
->> blockio_exec_rw() in 
->> http://scst.svn.sourceforge.net/viewvc/scst/trunk/scst/src/dev_handlers/scst_vdisk.c?revision=614&view=markup) 
->> backend. For them there's no need to have a per device pool of threads, one 
->> or more global thread(s) can perfectly do all the work. But it is very 
->> desirable for performance that all the IO is submitted in a dedicated IO 
->> context for each initiator (i.e. client), which originated it. I.e. 
->> commands from initiator 1 submitted in IO context IOC1, from initiator 2 - 
->> IOC2, etc. Most likely, the same approach would be very useful for NFS 
->> server as well.
->>
->> To achieve that it is necessary to have a possibility to switch IO 
->> context of the threads on the fly. I tried to implement that (see the 
->> attached patch), but hit BUG_ON(!cic->dead_key) in cic_free_func(), when 
->> session for initiator with the corresponding IO context was being 
->> destroyed by scst_free_tgt_dev(). At that point it was guaranteed that 
->> there was no outstanding IO with this IO context.
->>
->> So, I had to go to a more defensive approach to have for each pool of 
->> threads, including threads for async. IO, a dedicated IO context, which 
->> is currently implemented.
->>
->> Could you advice please what was going wrong? What should I do to 
->> achieve what's desired?
-> 
-> I think the problem may be that cfq expects cfq_exit_io_context()
-> to be called before the last reference to an io context is put.
-> Since cfq_exit_io_context() is called during process exit, and AFAICT
-> you are not calling exit_io_context() on the given ioc, cfq finds it
-> in an incorrect state.
+On Wednesday, December 17, 2008 8:44 am Rose, Gregory V wrote:
+> As noted in the attached email to the netdev list, we (e1000_devel) will
+> support the API.
 
-With your hint I figured out that put_io_context() isn't sufficient and 
-I should also call exit_io_context() instead of the latest 
-put_io_context(). Thanks!
+Do you think you'll have those changes ready for 2.6.29?  Would merging core 
+SR-IOV support now make that any more likely?
 
-> I haven't seen the rest of the code, so I may be wrong, but I suppose
-> that a better approach would be to use CLONE_IO to share io contexts,
-> if possible.
-
-Unfortunately, it would be very non-optimal. As it is known, to achieve 
-the best performance with async. IO, it should be submitted by a limited 
-number of threads <= CPU count. So, the only way to submit IO from each 
-of, e.g. 100, clients in a dedicated per-client IO context is to 
-dynamically switch io_context of the current threads to io_context of 
-the client before IO submission.
-
-Vlad
-
+Thanks,
+Jesse
