@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753177AbYLQVfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752184AbYLQVk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177AbYLQVfb (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 16:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYLQVey
+	id S1752184AbYLQVk3 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 16:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbYLQVkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 16:34:54 -0500
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:38962 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751649AbYLQVex (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 16:34:53 -0500
-Date: Wed, 17 Dec 2008 22:34:48 +0100
-From: Sebastian Andrzej Siewior <linuxppc-dev@ml.breakpoint.cc>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: "booke: Fix problem with _tlbil_va being interrupted" causes BUG()
-Message-ID: <20081217213448.GA27343@Chamillionaire.breakpoint.cc>
+	Wed, 17 Dec 2008 16:40:12 -0500
+Received: from gw.goop.org ([64.81.55.164]:32925 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751364AbYLQVkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 16:40:11 -0500
+Message-ID: <494971B6.6040508@goop.org>
+Date: Wed, 17 Dec 2008 13:40:06 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: mingo@elte.hu, viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
+        xen-devel@lists.xensource.com, alex.zeffertt@eu.citrix.com,
+        Ian.Campbell@citrix.com
+Subject: Re: [PATCH UPDATED] xen/xenfs: fix xenbus message reads
+References: <49480F39.2010102@goop.org> <20081216125425.30524946.akpm@linux-foundation.org> <49496E17.2010703@goop.org>
+In-Reply-To: <49496E17.2010703@goop.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just pulled from Linus and the Kernel I booted gave me this:
-| Freeing unused kernel memory: 152k init
-| BUG: sleeping function called from invalid context at /home/bigeasy/git/linux-2.6-powerpc/fs/exec.c:417
-| in_atomic(): 0, irqs_disabled(): 1, pid: 1, name: swapper
-| Call Trace:
-| [ef831dd0] [c0007764] show_stack+0x48/0x154 (unreliable)
-| [ef831e00] [c002b4d0] __might_sleep+0x118/0x11c
-| [ef831e10] [c009bcfc] copy_strings+0x70/0x324
-| [ef831e70] [c009bfd0] copy_strings_kernel+0x20/0x38
-| [ef831e90] [c009d3b8] do_execve+0x15c/0x1ec
-| [ef831ec0] [c00084ac] sys_execve+0x58/0x84
-| [ef831ee0] [c000f0e8] ret_from_syscall+0x0/0x3c
-| [ef831fa0] [c0001d68] init_post+0x54/0x174
-| [ef831fc0] [c038a1c0] kernel_init+0xdc/0x104
-| [ef831ff0] [c000ee68] kernel_thread+0x4c/0x68
-| ------------[ cut here ]------------
+Compute the remaining data size properly.
 
-It looks like userspace starts here. A bisect leads to
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ drivers/xen/xenfs/xenbus.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-|commit e5e774d8833de1a0037be2384efccadf16935675
-|Author: Kumar Gala <galak@kernel.crashing.org>
-|Date:   Sat Dec 13 17:01:37 2008 -0600
-|
-|    powerpc/fsl-booke: Fix problem with _tlbil_va being interrupted
-|    
-|    An example calling sequence which we did see:
-|    
-|    copy_user_highpage -> kmap_atomic -> flush_tlb_page -> _tlbil_va
-|    
-|    We got interrupted after setting up the MAS registers before the
-|    tlbwe and the interrupt handler that caused the interrupt also did
-|    a kmap_atomic (ide code) and thus on returning from the interrupt
-|    the MAS registers no longer contained the proper values.
-|    
-|    Since we dont save/restore MAS registers for normal interrupts we
-|    need to disable interrupts in _tlbil_va to ensure atomicity.
-|    
-|    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-|
-|:040000 040000 1f298a8930bd2704f4481307f3d22589943bb5c0 7e3847dab748c332c8533111de32d23731ec778b M      arch
+===================================================================
+--- a/drivers/xen/xenfs/xenbus.c
++++ b/drivers/xen/xenfs/xenbus.c
+@@ -132,7 +132,7 @@
+ 	rb = list_entry(u->read_buffers.next, struct read_buffer, list);
+ 	i = 0;
+ 	while (i < len) {
+-		unsigned sz = min((unsigned)len - i, rb->cons - rb->len);
++		unsigned sz = min((unsigned)len - i, rb->len - rb->cons);
+ 
+ 		ret = copy_to_user(ubuf + i, &rb->msg[rb->cons], sz);
+ 
 
-as the guilty commit.
-This box has highmem.
 
-Sebastian
