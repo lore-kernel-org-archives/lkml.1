@@ -1,70 +1,97 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752042AbYLQUTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752118AbYLQUWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752042AbYLQUTM (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 15:19:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYLQUSz
+	id S1752118AbYLQUWg (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 15:22:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbYLQUW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 15:18:55 -0500
-Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:1451 "EHLO
-	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751047AbYLQUSy (ORCPT
+	Wed, 17 Dec 2008 15:22:26 -0500
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:41674 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751169AbYLQUWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 15:18:54 -0500
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [BUG] cdev_put() race condition
-Date: Wed, 17 Dec 2008 21:18:29 +0100
-User-Agent: KMail/1.9.9
-Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
-References: <200812082156.26522.hverkuil@xs4all.nl> <200812172039.03436.hverkuil@xs4all.nl> <20081217195329.GB25211@kroah.com>
-In-Reply-To: <20081217195329.GB25211@kroah.com>
+	Wed, 17 Dec 2008 15:22:25 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=VqKhj/+8RrrEe/vL22Fw+Dgx2/aY0LLfa0zdOVSDmWJkPlw8Fky9Z3act4fTmijhkuOFnVuJAfXbhLUhONMbgLyVDvU5K4xMBoZ6Lyx2l2NHoY59pdGMlM08avyzodQNQjjYS58B6Ra0Bs8rocV1ZrIm3Nz88lo1eEXOdJshD+U=  ;
+X-YMail-OSG: rErEeEIVM1k23Hy7ZqEjPlKPeAivNRrjkC0d2KkkdlTBZC.lBFnmfuLiJWAl5hsuQW6Njmy8DJEmcPEpgIfSA4Wcfws3IJpmTUx6Jg8vhPMg7E2g42HmcGaMkBc6ts1Gty4UIACp7988C0jg3tPRTNGSr72gg.ba54ZUqTWQLnxRgWvszHEiN9331KrTXwJoTx74ZZpl4FDV0aLlK0mrubRtMWg-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 10/11] drivers/spi: Move a dereference below a NULL test
+Date: Wed, 17 Dec 2008 12:22:23 -0800
+User-Agent: KMail/1.9.10
+Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+        kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0812161615090.20444@pc-004.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0812161615090.20444@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812172118.29574.hverkuil@xs4all.nl>
+Message-Id: <200812171222.23785.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 December 2008 20:53:29 Greg KH wrote:
-> On Wed, Dec 17, 2008 at 08:39:03PM +0100, Hans Verkuil wrote:
-> > On Wednesday 17 December 2008 20:30:32 Hans Verkuil wrote:
-> > > This solves this particular problem. But this will certainly break
-> > > v4l as it is right now, since the spin_lock means that the kref's
-> > > release cannot do any sleeps, which is possible in v4l. If we want to
-> > > allow that in cdev, then the spinlock has to be replaced by a mutex.
-> > > But I have the strong feeling that that's not going to happen :-)
-> >
-> > Note that if we ever allow drivers to hook in their own release
-> > callback, then we certainly should switch to a mutex in the cdev
-> > struct, rather than a global mutex. It obviously makes life more
-> > complicated for cdev, but much easier for drivers.
->
-> I don't see it being easier for drivers, you should provide this kind of
-> infrastructure within your framework already.
->
-> Actually, we already do provide this kind of framework, what's wrong
-> with using "struct device" for this, like the rest of the kernel does?
-> That is the device you need to be doing the reference counting and
-> release code for, it is exactly what it is there for.
->
-> So why is V4L different than the rest of the kernel in that it wishes to
-> do things differently?
+On Tuesday 16 December 2008, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> In each case, if the NULL test is necessary, then the dereference should be
+> moved below the NULL test.
+> 
+> The semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @@
+> type T;
+> expression E;
+> identifier i,fld;
+> statement S;
+> @@
+> 
+> - T i = E->fld;
+> + T i;
+>   ... when != E
+>       when != i
+>   if (E == NULL) S
+> + i = E->fld;
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Because it has almost no proper framework to speak of and what little there 
-is has been pretty much unchanged since the very beginning.
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
-I'm trying to develop a decent framework that should help support upcoming 
-devices and generally make life easier for v4l driver developers.
+... and I'm *still* glad to see tools shaking loose
+goofage like this.  :)
 
-And I've no idea why we don't just use the device's release() callback for 
-this. I'm going to implement this right now :-)
 
-Regards,
+> 
+> ---
+>  drivers/spi/pxa2xx_spi.c            |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/spi/pxa2xx_spi.c b/drivers/spi/pxa2xx_spi.c
+> index cf12f2d..fbad7e4 100644
+> --- a/drivers/spi/pxa2xx_spi.c
+> +++ b/drivers/spi/pxa2xx_spi.c
+> @@ -1561,11 +1561,12 @@ out_error_master_alloc:
+>  static int pxa2xx_spi_remove(struct platform_device *pdev)
+>  {
+>  	struct driver_data *drv_data = platform_get_drvdata(pdev);
+> -	struct ssp_device *ssp = drv_data->ssp;
+> +	struct ssp_device *ssp;
+>  	int status = 0;
+>  
+>  	if (!drv_data)
+>  		return 0;
+> +	ssp = drv_data->ssp;
+>  
+>  	/* Remove the queue */
+>  	status = destroy_queue(drv_data);
+> 
+> 
 
-	Hans
 
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
