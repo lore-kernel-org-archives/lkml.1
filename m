@@ -1,218 +1,240 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759847AbYLQFOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758966AbYLQFN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759847AbYLQFOY (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 00:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbYLQFMd
+	id S1758966AbYLQFN4 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 00:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759415AbYLQFMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 00:12:33 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37065 "EHLO
+	Wed, 17 Dec 2008 00:12:23 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37061 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759459AbYLQFMc (ORCPT
+	with ESMTP id S1757883AbYLQFMW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 00:12:32 -0500
+	Wed, 17 Dec 2008 00:12:22 -0500
 To: linux-audit@redhat.com
-Subject: [PATCH 9/15] sanitize audit_fd_pair()
+Subject: [PATCH 8/15] sanitize audit_mq_open()
 Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1LCohy-0000De-Tc@ZenIV.linux.org.uk>
+Message-Id: <E1LCoho-0000Cr-TT@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Wed, 17 Dec 2008 05:12:30 +0000
+Date: Wed, 17 Dec 2008 05:12:20 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* no allocations
-* return void
+* don't bother with allocations
+* don't do double copy_from_user()
+* don't duplicate parts of check for audit_dummy_context()
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/pipe.c             |    7 +------
- include/linux/audit.h |    9 ++++-----
- kernel/auditsc.c      |   44 ++++++++++++++------------------------------
- net/socket.c          |    9 +--------
- 4 files changed, 20 insertions(+), 49 deletions(-)
+ include/linux/audit.h |    9 +++----
+ ipc/mqueue.c          |   23 ++++++++---------
+ kernel/auditsc.c      |   65 +++++++++++++++++-------------------------------
+ 3 files changed, 38 insertions(+), 59 deletions(-)
 
-diff --git a/fs/pipe.c b/fs/pipe.c
-index 7aea8b8..5341421 100644
---- a/fs/pipe.c
-+++ b/fs/pipe.c
-@@ -1016,10 +1016,7 @@ int do_pipe_flags(int *fd, int flags)
- 		goto err_fdr;
- 	fdw = error;
- 
--	error = audit_fd_pair(fdr, fdw);
--	if (error < 0)
--		goto err_fdw;
--
-+	audit_fd_pair(fdr, fdw);
- 	fd_install(fdr, fr);
- 	fd_install(fdw, fw);
- 	fd[0] = fdr;
-@@ -1027,8 +1024,6 @@ int do_pipe_flags(int *fd, int flags)
- 
- 	return 0;
- 
-- err_fdw:
--	put_unused_fd(fdw);
-  err_fdr:
- 	put_unused_fd(fdr);
-  err_read_pipe:
 diff --git a/include/linux/audit.h b/include/linux/audit.h
-index ed6bdfc..c5e95e7 100644
+index dd3f62c..ed6bdfc 100644
 --- a/include/linux/audit.h
 +++ b/include/linux/audit.h
-@@ -446,7 +446,7 @@ extern void __audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid, mod
- extern int audit_bprm(struct linux_binprm *bprm);
- extern void audit_socketcall(int nargs, unsigned long *args);
+@@ -448,7 +448,7 @@ extern void audit_socketcall(int nargs, unsigned long *args);
  extern int audit_sockaddr(int len, void *addr);
--extern int __audit_fd_pair(int fd1, int fd2);
-+extern void __audit_fd_pair(int fd1, int fd2);
+ extern int __audit_fd_pair(int fd1, int fd2);
  extern int audit_set_macxattr(const char *name);
- extern void __audit_mq_open(int oflag, mode_t mode, struct mq_attr *attr);
+-extern int __audit_mq_open(int oflag, mode_t mode, struct mq_attr __user *u_attr);
++extern void __audit_mq_open(int oflag, mode_t mode, struct mq_attr *attr);
  extern void __audit_mq_sendrecv(mqd_t mqdes, size_t msg_len, unsigned int msg_prio, const struct timespec *abs_timeout);
-@@ -458,11 +458,10 @@ static inline void audit_ipc_obj(struct kern_ipc_perm *ipcp)
+ extern void __audit_mq_notify(mqd_t mqdes, const struct sigevent *notification);
+ extern void __audit_mq_getsetattr(mqd_t mqdes, struct mq_attr *mqstat);
+@@ -469,11 +469,10 @@ static inline void audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid
  	if (unlikely(!audit_dummy_context()))
- 		__audit_ipc_obj(ipcp);
+ 		__audit_ipc_set_perm(qbytes, uid, gid, mode);
  }
--static inline int audit_fd_pair(int fd1, int fd2)
-+static inline void audit_fd_pair(int fd1, int fd2)
+-static inline int audit_mq_open(int oflag, mode_t mode, struct mq_attr __user *u_attr)
++static inline void audit_mq_open(int oflag, mode_t mode, struct mq_attr *attr)
  {
  	if (unlikely(!audit_dummy_context()))
--		return __audit_fd_pair(fd1, fd2);
+-		return __audit_mq_open(oflag, mode, u_attr);
 -	return 0;
-+		__audit_fd_pair(fd1, fd2);
++		__audit_mq_open(oflag, mode, attr);
  }
- static inline void audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid, mode_t mode)
+ static inline void audit_mq_sendrecv(mqd_t mqdes, size_t msg_len, unsigned int msg_prio, const struct timespec *abs_timeout)
  {
-@@ -513,7 +512,7 @@ extern int audit_signals;
- #define audit_ipc_set_perm(q,u,g,m) ((void)0)
- #define audit_bprm(p) ({ 0; })
- #define audit_socketcall(n,a) ((void)0)
--#define audit_fd_pair(n,a) ({ 0; })
-+#define audit_fd_pair(n,a) ((void)0)
+@@ -517,7 +516,7 @@ extern int audit_signals;
+ #define audit_fd_pair(n,a) ({ 0; })
  #define audit_sockaddr(len, addr) ({ 0; })
  #define audit_set_macxattr(n) do { ; } while (0)
- #define audit_mq_open(o,m,a) ((void)0)
+-#define audit_mq_open(o,m,a) ({ 0; })
++#define audit_mq_open(o,m,a) ((void)0)
+ #define audit_mq_sendrecv(d,l,p,t) ((void)0)
+ #define audit_mq_notify(d,n) ((void)0)
+ #define audit_mq_getsetattr(d,s) ((void)0)
+diff --git a/ipc/mqueue.c b/ipc/mqueue.c
+index 20fd43e..27199b9 100644
+--- a/ipc/mqueue.c
++++ b/ipc/mqueue.c
+@@ -588,21 +588,17 @@ static int mq_attr_ok(struct mq_attr *attr)
+  * Invoked when creating a new queue via sys_mq_open
+  */
+ static struct file *do_create(struct dentry *dir, struct dentry *dentry,
+-			int oflag, mode_t mode, struct mq_attr __user *u_attr)
++			int oflag, mode_t mode, struct mq_attr *attr)
+ {
+-	struct mq_attr attr;
+ 	struct file *result;
+ 	int ret;
+ 
+-	if (u_attr) {
+-		ret = -EFAULT;
+-		if (copy_from_user(&attr, u_attr, sizeof(attr)))
+-			goto out;
++	if (attr) {
+ 		ret = -EINVAL;
+-		if (!mq_attr_ok(&attr))
++		if (!mq_attr_ok(attr))
+ 			goto out;
+ 		/* store for use during create */
+-		dentry->d_fsdata = &attr;
++		dentry->d_fsdata = attr;
+ 	}
+ 
+ 	mode &= ~current->fs->umask;
+@@ -657,11 +653,13 @@ asmlinkage long sys_mq_open(const char __user *u_name, int oflag, mode_t mode,
+ 	struct dentry *dentry;
+ 	struct file *filp;
+ 	char *name;
++	struct mq_attr attr;
+ 	int fd, error;
+ 
+-	error = audit_mq_open(oflag, mode, u_attr);
+-	if (error != 0)
+-		return error;
++	if (u_attr && copy_from_user(&attr, u_attr, sizeof(struct mq_attr)))
++		return -EFAULT;
++
++	audit_mq_open(oflag, mode, u_attr ? &attr : NULL);
+ 
+ 	if (IS_ERR(name = getname(u_name)))
+ 		return PTR_ERR(name);
+@@ -687,7 +685,8 @@ asmlinkage long sys_mq_open(const char __user *u_name, int oflag, mode_t mode,
+ 			filp = do_open(dentry, oflag);
+ 		} else {
+ 			filp = do_create(mqueue_mnt->mnt_root, dentry,
+-						oflag, mode, u_attr);
++						oflag, mode,
++						u_attr ? &attr : NULL);
+ 		}
+ 	} else {
+ 		error = -ENOENT;
 diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index ac89cd3..5de0087 100644
+index fa8793d..ac89cd3 100644
 --- a/kernel/auditsc.c
 +++ b/kernel/auditsc.c
-@@ -119,11 +119,6 @@ struct audit_aux_data_execve {
- 	struct mm_struct *mm;
- };
+@@ -112,13 +112,6 @@ struct audit_aux_data {
+ /* Number of target pids per aux struct. */
+ #define AUDIT_AUX_PIDS	16
  
--struct audit_aux_data_fd_pair {
--	struct	audit_aux_data d;
--	int	fd[2];
+-struct audit_aux_data_mq_open {
+-	struct audit_aux_data	d;
+-	int			oflag;
+-	mode_t			mode;
+-	struct mq_attr		attr;
 -};
 -
- struct audit_aux_data_pids {
+ struct audit_aux_data_execve {
  	struct audit_aux_data	d;
- 	pid_t			target_pid[AUDIT_AUX_PIDS];
-@@ -215,6 +210,7 @@ struct audit_context {
- 			struct mq_attr		attr;
- 		} mq_open;
+ 	int argc;
+@@ -216,6 +209,11 @@ struct audit_context {
+ 			unsigned int		msg_prio;
+ 			struct timespec		abs_timeout;
+ 		} mq_sendrecv;
++		struct {
++			int			oflag;
++			mode_t			mode;
++			struct mq_attr		attr;
++		} mq_open;
  	};
-+	int fds[2];
  
  #if AUDIT_DEBUG
- 	int		    put_count;
-@@ -1321,11 +1317,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
- 			audit_log_execve_info(context, &ab, axi);
- 			break; }
- 
--		case AUDIT_FD_PAIR: {
--			struct audit_aux_data_fd_pair *axs = (void *)aux;
--			audit_log_format(ab, "fd0=%d fd1=%d", axs->fd[0], axs->fd[1]);
--			break; }
--
+@@ -1204,6 +1202,16 @@ static void show_special(struct audit_context *context, int *call_panic)
+ 				return;
  		}
- 		audit_log_end(ab);
- 	}
-@@ -1333,6 +1324,15 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
- 	if (context->type)
- 		show_special(context, &call_panic);
+ 		break; }
++	case AUDIT_MQ_OPEN: {
++		audit_log_format(ab,
++			"oflag=0x%x mode=%#o mq_flags=0x%lx mq_maxmsg=%ld "
++			"mq_msgsize=%ld mq_curmsgs=%ld",
++			context->mq_open.oflag, context->mq_open.mode,
++			context->mq_open.attr.mq_flags,
++			context->mq_open.attr.mq_maxmsg,
++			context->mq_open.attr.mq_msgsize,
++			context->mq_open.attr.mq_curmsgs);
++		break; }
+ 	case AUDIT_MQ_SENDRECV: {
+ 		audit_log_format(ab,
+ 			"mqdes=%d msg_len=%zd msg_prio=%u "
+@@ -1307,15 +1315,6 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
+ 			continue; /* audit_panic has been called */
  
-+	if (context->fds[0] >= 0) {
-+		ab = audit_log_start(context, GFP_KERNEL, AUDIT_FD_PAIR);
-+		if (ab) {
-+			audit_log_format(ab, "fd0=%d fd1=%d",
-+					context->fds[0], context->fds[1]);
-+			audit_log_end(ab);
-+		}
-+	}
-+
- 	if (context->sockaddr_len) {
- 		ab = audit_log_start(context, GFP_KERNEL, AUDIT_SOCKADDR);
- 		if (ab) {
-@@ -1611,6 +1611,7 @@ void audit_syscall_exit(int valid, long return_code)
- 		context->target_sid = 0;
- 		context->sockaddr_len = 0;
- 		context->type = 0;
-+		context->fds[0] = -1;
- 		kfree(context->filterkey);
- 		context->filterkey = NULL;
- 		tsk->audit_context = context;
-@@ -2177,29 +2178,12 @@ void audit_socketcall(int nargs, unsigned long *args)
-  * @fd1: the first file descriptor
-  * @fd2: the second file descriptor
+ 		switch (aux->type) {
+-		case AUDIT_MQ_OPEN: {
+-			struct audit_aux_data_mq_open *axi = (void *)aux;
+-			audit_log_format(ab,
+-				"oflag=0x%x mode=%#o mq_flags=0x%lx mq_maxmsg=%ld "
+-				"mq_msgsize=%ld mq_curmsgs=%ld",
+-				axi->oflag, axi->mode, axi->attr.mq_flags,
+-				axi->attr.mq_maxmsg, axi->attr.mq_msgsize,
+-				axi->attr.mq_curmsgs);
+-			break; }
+ 
+ 		case AUDIT_EXECVE: {
+ 			struct audit_aux_data_execve *axi = (void *)aux;
+@@ -2021,38 +2020,20 @@ int audit_set_loginuid(struct task_struct *task, uid_t loginuid)
+  * @mode: mode bits
+  * @u_attr: queue attributes
   *
 - * Returns 0 for success or NULL context or < 0 on error.
   */
--int __audit_fd_pair(int fd1, int fd2)
-+void __audit_fd_pair(int fd1, int fd2)
+-int __audit_mq_open(int oflag, mode_t mode, struct mq_attr __user *u_attr)
++void __audit_mq_open(int oflag, mode_t mode, struct mq_attr *attr)
  {
+-	struct audit_aux_data_mq_open *ax;
  	struct audit_context *context = current->audit_context;
--	struct audit_aux_data_fd_pair *ax;
--
--	if (likely(!context)) {
+ 
+-	if (!audit_enabled)
 -		return 0;
--	}
 -
--	ax = kmalloc(sizeof(*ax), GFP_KERNEL);
--	if (!ax) {
+-	if (likely(!context))
+-		return 0;
+-
+-	ax = kmalloc(sizeof(*ax), GFP_ATOMIC);
+-	if (!ax)
 -		return -ENOMEM;
--	}
 -
--	ax->fd[0] = fd1;
--	ax->fd[1] = fd2;
--
--	ax->d.type = AUDIT_FD_PAIR;
+-	if (u_attr != NULL) {
+-		if (copy_from_user(&ax->attr, u_attr, sizeof(ax->attr))) {
+-			kfree(ax);
+-			return -EFAULT;
+-		}
+-	} else
+-		memset(&ax->attr, 0, sizeof(ax->attr));
++	if (attr)
++		memcpy(&context->mq_open.attr, attr, sizeof(struct mq_attr));
++	else
++		memset(&context->mq_open.attr, 0, sizeof(struct mq_attr));
+ 
+-	ax->oflag = oflag;
+-	ax->mode = mode;
++	context->mq_open.oflag = oflag;
++	context->mq_open.mode = mode;
+ 
+-	ax->d.type = AUDIT_MQ_OPEN;
 -	ax->d.next = context->aux;
 -	context->aux = (void *)ax;
 -	return 0;
-+	context->fds[0] = fd1;
-+	context->fds[1] = fd2;
++	context->type = AUDIT_MQ_OPEN;
  }
  
  /**
-diff --git a/net/socket.c b/net/socket.c
-index aba5a50..a383608 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -1314,13 +1314,7 @@ asmlinkage long sys_socketpair(int family, int type, int protocol,
- 		goto out_fd1;
- 	}
- 
--	err = audit_fd_pair(fd1, fd2);
--	if (err < 0) {
--		fput(newfile1);
--		fput(newfile2);
--		goto out_fd;
--	}
--
-+	audit_fd_pair(fd1, fd2);
- 	fd_install(fd1, newfile1);
- 	fd_install(fd2, newfile2);
- 	/* fd1 and fd2 may be already another descriptors.
-@@ -1350,7 +1344,6 @@ out_fd2:
- out_fd1:
- 	put_filp(newfile2);
- 	sock_release(sock2);
--out_fd:
- 	put_unused_fd(fd1);
- 	put_unused_fd(fd2);
- 	goto out;
 -- 
 1.5.6.5
 
