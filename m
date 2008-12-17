@@ -1,113 +1,57 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753120AbYLQOa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753410AbYLQOoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753120AbYLQOa2 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 09:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYLQOaM
+	id S1753410AbYLQOoH (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 09:44:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbYLQOnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 09:30:12 -0500
-Received: from postman.teamix.net ([194.150.191.120]:54628 "EHLO
-	rproxy.teamix.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751041AbYLQOaL (ORCPT
+	Wed, 17 Dec 2008 09:43:52 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:1964 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbYLQOnv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 09:30:11 -0500
-From: Martin Steigerwald <ms@teamix.de>
-Organization: team(ix) GmbH
-To: linux-kernel@vger.kernel.org
-Subject: Re: physical memory limit of 64-bit linux
-Date: Wed, 17 Dec 2008 15:30:06 +0100
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-        Andi Kleen <andi@firstfloor.org>,
-        Jeremy Fitzhardinge <jeremy@goop.org>,
-        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-References: <200812161556.25518.ms@teamix.de> <200812161654.17291.rjw@sisk.pl> <20081216184742.GL11683@elte.hu>
-In-Reply-To: <20081216184742.GL11683@elte.hu>
+	Wed, 17 Dec 2008 09:43:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Q3DAd7F1zisYsDTGkoklbP3sKtYd2D6kzuPmgJulIVCdbvtofk3CpwJHjqFJq5TGw3
+         xZWlCzD7P8w8l6ci2tvb8tc4+cecgepbTvb6Ub9GEhdcfv4kBfw5rK8Q8CdTnQR0slBf
+         X48gV2JB+N9M21Mq/7knJYhIRRHT8PqqsJpM8=
+Date: Wed, 17 Dec 2008 17:43:45 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>, linux-arch@vger.kernel.org,
+        Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH last/many] x86: checking framework for correct use of
+	ENTRY/PROC
+Message-ID: <20081217144345.GA8078@localhost>
+References: <1229505475-10219-1-git-send-email-heukelum@fastmail.fm> <1229505475-10219-2-git-send-email-heukelum@fastmail.fm> <1229505475-10219-3-git-send-email-heukelum@fastmail.fm> <aa79d98a0812170351rb64c595gc933456c661317c5@mail.gmail.com> <20081217120450.GA8600@mailshack.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1978444.ChWvtmH0M3";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200812171530.07946.ms@teamix.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081217120450.GA8600@mailshack.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1978444.ChWvtmH0M3
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+[Alexander van Heukelum - Wed, Dec 17, 2008 at 01:04:50PM +0100]
+...
+| > Thanks Alexander!
+| > 
+| > You know I think you meant __ASSEMBLY__ while
+| > were typing __ASSEMBLER__. Don't you? :)
+| 
+| If it matters there is some cleanup to do in the kernel tree ;).
+| 
+| Greetings,
+|     Alexander
+| 
 
-Am Dienstag, 16. Dezember 2008 schrieb Ingo Molnar:
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Tuesday, 16 of December 2008, Martin Steigerwald wrote:
-> > > Hi!
-> > >
-> > > What is the physical memory limit for 64-bit Linux? I read about 40
-> > > bit address bus for AMD Athlon X2 (1 TB) and 48 bit for Barcelona X4
-> > > (256 TB).
-> > >
-> > > Is 64-bit linux able to use that amount - provided that one would
-> > > manage to build it into a machine? Or does it have a lower limit?
-> > >
-> > > Looking into the Google crystal ball gives unclear pictures... I tend
-> > > to assume that Linux would handle it, but I am not sure.
-> >
-> > IIRC, the current maximal virtual memory space size of the kernel on
-> > x86_64 is 2^46.
->
-> Almost: the real current upstream kernel hard memory limit on x86-64 is 44
-> bits, i.e. 16 TB.
->
-> There's a couple of limits to consider here.
->
-> Firstly, there's the architectural limit imposed by the CPU - that is 48
-> bits, 256 TB. That is the full virtual memory range that x86-64 CPUs are
-> able to address: non-canonical addresses outside that range create an
-> exception.
->
-> I.e. valid addresses on x86-64 are in the range of:
->
->         [ 0xffff800000000000...0x00007fffffffffff ]
->
-> Which is minus 128 TB to plus 128 TB.
+I somehow missed the line the pointed to not apply this patch
+that is why I was amaized since I dont remember where we use
+__ASSEMBLER__. Got it :)
 
-[...]
-
-> This problem is academic because there are no such systems in existence,
-> and because we have another limit on the size of physical memory:
->
->   arch/x86/include/asm/sparsemem.h:
->   # define MAX_PHYSMEM_BITS	44
-
-So this gives a real 16 TB for userspace applications or is it splitted int=
-o=20
-minus 8 TB for kernel and plus 8 TB for userspace again?
-
-How much memory can a process consume? On 32-Bit with 1GB/3GB split its 3=20
-GB... are there special process limits on x86_64 or IA64?
-
-BTW should any of those limits by documented outside of source or this=20
-mailinglist? Maybe doesn't make too much sense cause it could change anytim=
-e=20
-anyway.
-
-Ciao,
-=2D-=20
-Martin Steigerwald - team(ix) GmbH - http://www.teamix.de
-gpg: 19E3 8D42 896F D004 08AC A0CA 1E10 C593 0399 AE90
-
---nextPart1978444.ChWvtmH0M3
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAklJDO8ACgkQHhDFkwOZrpAPYgCdFihmQHDlftH+SLsJrewmiuGI
-hRkAnjrLpmqeeoUVe4OEHUG24OIj3am5
-=3NQj
------END PGP SIGNATURE-----
-
---nextPart1978444.ChWvtmH0M3--
+		- Cyrill -
