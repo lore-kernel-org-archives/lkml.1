@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752349AbYLQVG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752466AbYLQVLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752349AbYLQVG1 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 16:06:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYLQVGR
+	id S1752466AbYLQVLB (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 16:11:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYLQVKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 16:06:17 -0500
-Received: from sandeen.net ([209.173.210.139]:20120 "EHLO sandeen.net"
+	Wed, 17 Dec 2008 16:10:50 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48169 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751056AbYLQVGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 16:06:16 -0500
-Message-ID: <494969C6.4090500@sandeen.net>
-Date: Wed, 17 Dec 2008 15:06:14 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
-MIME-Version: 1.0
-To: Mark Fasheh <mfasheh@suse.com>
-CC: Ankit Jain <me@ankitjain.org>, linux-kernel@vger.kernel.org,
-        joel.becker@oracle.com, Christoph Hellwig <hch@infradead.org>,
-        xfs-masters@oss.sgi.com, Al Viro <viro@zeniv.linux.org.uk>,
-        linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com,
-        ocfs2-devel@oss.oracle.com
-Subject: Re: [xfs-masters] [PATCH][RFC] fs: Add new pre-allocation ioctls
- to vfs for compatibility with legacy xfs ioctls
-References: <49460F88.2080408@ankitjain.org> <20081217202815.GE8791@wotan.suse.de>
-In-Reply-To: <20081217202815.GE8791@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1750961AbYLQVKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 16:10:50 -0500
+Subject: Re: [PATCH 11/15] fixing audit rule ordering mess, part 1
+From: Eric Paris <eparis@redhat.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Al Viro <viro@ftp.linux.org.uk>, linux-audit@redhat.com,
+        linux-kernel@vger.kernel.org
+In-Reply-To: <20081217205902.GH28946@ZenIV.linux.org.uk>
+References: <E1LCoiI-0000Eu-Ty@ZenIV.linux.org.uk>
+	 <1229538488.3384.33.camel@localhost.localdomain>
+	 <20081217205902.GH28946@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Wed, 17 Dec 2008 16:10:44 -0500
+Message-Id: <1229548244.3384.49.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Fasheh wrote:
-> On Mon, Dec 15, 2008 at 01:34:24PM +0530, Ankit Jain wrote:
->> This patch adds ioctls to vfs for compatibility with legacy XFS
->> pre-allocation ioctls (XFS_IOC_*RESVP*). The implementation
->> effectively invokes sys_fallocate for the new ioctls.
->> Note: These legacy ioctls are also implemented by OCFS2.
->>
->> There are some things that I'm not sure about:
->> 1. Should the struct space_resv be exposed to user-space? If not,
->> then what would be the right place to put it? And the ioctl
->> definitions?
+On Wed, 2008-12-17 at 20:59 +0000, Al Viro wrote:
+> On Wed, Dec 17, 2008 at 01:28:08PM -0500, Eric Paris wrote:
 > 
-> Yes. As far as where to put it, I'm not sure. Maybe falloc.h?
+> > I don't see why prio is only important on AUDIT_FILTER_EXIT.  Couldn't I
+> > end up with stupidity with entry,never  ?
+> 
+> 
+> AUDIT_WATCH and AUDIT_INODE can live only on exit chain.  I.e. we don't have
+> that problem - other chains sit on the lists of their own and there the
+> list ordering itself takes care of everything.  Exit chain has parts in
+> sitting in hash instead of the primary list.
 
-I'd sort of rather not; why should that legacy struct space_resv be
-available in a header... I thought this was for people already using the
-xfs ioctl, in which case they are already using the xfs header... and if
-they want preallocation in any new work, they should use fallocate()
-instead, yes?
-
-I mean it wouldn't hurt anything but it sort of confuses the interface
-story IMHO.
+Makes perfect sense.  They all look good to me.
 
 -Eric
+
