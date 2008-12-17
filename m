@@ -1,148 +1,107 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759619AbYLQIib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759613AbYLQIt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759619AbYLQIib (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 03:38:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759698AbYLQIiI
+	id S1759613AbYLQIt3 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 03:49:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbYLQItS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 03:38:08 -0500
-Received: from viefep17-int.chello.at ([62.179.121.37]:41949 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755417AbYLQIiH (ORCPT
+	Wed, 17 Dec 2008 03:49:18 -0500
+Received: from rv-out-0506.google.com ([209.85.198.235]:4101 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753567AbYLQItR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 03:38:07 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [patch] sched: fix uneven per-cpu task_group share distribution
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ken Chen <kenchen@google.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <b040c32a0812152337r4c708d59q7d71ebbcda8fe05a@mail.gmail.com>
-References: <b040c32a0812152337r4c708d59q7d71ebbcda8fe05a@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 17 Dec 2008 09:38:01 +0100
-Message-Id: <1229503081.9487.51.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Wed, 17 Dec 2008 03:49:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XaqG4sHJ6HvnPpz/UhBd55vbdzRRwJUvzrdnr/IZksmnQ4aMtCNjuQZEAuBQr6IxtS
+         N4/n5sl4iHiYASLQzSN6jzQsu9ZGZ2i3khMO4SGtETuA7CKDPAnMtmWwo7z5A+p8xp+t
+         WyFfsCf3m+4wLIqWsXD+i7jv9BBVXapEBf8mg=
+Message-ID: <f17812d70812170049y5df3ecd9y57122387075b8302@mail.gmail.com>
+Date: Wed, 17 Dec 2008 16:49:16 +0800
+From: "Eric Miao" <eric.y.miao@gmail.com>
+To: "Mike Rapoport" <mike@compulab.co.il>
+Subject: Re: [RFC PATCH 1/2] Add Dialog DA9030 battery charger driver
+Cc: LKML <linux-kernel@vger.kernel.org>, sameo@openedhand.com,
+        "eric miao" <eric.miao@marvell.com>, cbou@mail.ru,
+        "David Woodhouse" <dwmw2@infradead.org>,
+        "Jonathan Cameron" <jic23@cam.ac.uk>
+In-Reply-To: <4948B099.1080008@compulab.co.il>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4948B099.1080008@compulab.co.il>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-12-15 at 23:37 -0800, Ken Chen wrote:
-> While testing CFS scheduler on linux-2.6-tip tree
-> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> 
-> We found that task which is pinned to a CPU could be starved relative to its
-> allocated fair share.
-> 
-> The per-cpu sched_enetity load share calculation in tg_shares_up /
-> update_group_shares_cpu distributes total task_group's share among all CPUs
-> for a given SD domain, this would dilute task_group's per-cpu share because
-> it distributes share to CPU that even has no load.  The trapped share is now
-> un-consumable and it leads to fair share starvation on the runnable CPU.
-> Peter was right that it is still required for the low level function to make
-> distinction between a boosted share that don't have any load and actual tg
-> share that should be distributed among CPUs in which the tg is running.
-> 
-> Patch to add that boost and we think the scheduler should only boost one
-> times of tg shares over all empty CPU that don't have any load for the
-> specific task_group in order to bound maximum temporary boost that a given
-> task_group can have.
+On Wed, Dec 17, 2008 at 3:56 PM, Mike Rapoport <mike@compulab.co.il> wrote:
+> This patch amends DA903x MFD driver with definitions and methods needed for
+> battery charger driver.
+>
 
-Yeah I was worried about you removing that boost, but since you seemed
-to be doing serious testing on the thing.. A well, this sounds good.
+Patch looks generally good, see some of my concerns below:
 
-> Signed-off-by: Ken Chen <kenchen@google.com>
-
-OK, patch looks good too, thanks!
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 1d673a9..7198a26 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -1465,24 +1465,34 @@ static void __set_se_shares(
->   * Calculate and set the cpu's group shares.
->   */
->  static void
-> -update_group_shares_cpu(struct task_group *tg, int cpu,
-> +update_group_shares_cpu(struct task_group *tg, int cpu, int empty,
->  			unsigned long sd_shares, unsigned long sd_rq_weight)
->  {
-> -	unsigned long shares;
-> +	unsigned long shares, raw_shares;
->  	unsigned long rq_weight;
-> 
->  	if (!tg->se[cpu])
->  		return;
-> 
->  	rq_weight = tg->cfs_rq[cpu]->rq_weight;
-> -
-> -	/*
-> -	 *           \Sum shares * rq_weight
-> -	 * shares =  -----------------------
-> -	 *               \Sum rq_weight
-> -	 *
-> -	 */
-> -	shares = (sd_shares * rq_weight) / sd_rq_weight;
-> +	if (rq_weight) {
-> +		/*
-> +		 *           \Sum shares * rq_weight
-> +		 * shares =  -----------------------
-> +		 *               \Sum rq_weight
-> +		 *
-> +		 */
-> +		raw_shares = (sd_shares * rq_weight) / sd_rq_weight;
-> +		shares = raw_shares;
-> +	} else {
-> +		/*
-> +		 * If there are currently no tasks on the cpu pretend there
-> +		 * is one of average load so that when a new task gets to
-> +		 * run here it will not get delayed by group starvation.
-> +		 */
-> +		raw_shares = 0;
-> +		shares = sd_shares / empty;
-> +	}
->  	shares = clamp_t(unsigned long, shares, MIN_SHARES, MAX_SHARES);
-> 
->  	if (abs(shares - tg->se[cpu]->load.weight) >
-> @@ -1491,7 +1501,7 @@ update_group_shares_cpu(
->  		unsigned long flags;
-> 
->  		spin_lock_irqsave(&rq->lock, flags);
-> -		tg->cfs_rq[cpu]->shares = shares;
-> +		tg->cfs_rq[cpu]->shares = raw_shares;
-> 
->  		__set_se_shares(tg->se[cpu], shares);
->  		spin_unlock_irqrestore(&rq->lock, flags);
-> @@ -1508,17 +1518,12 @@ static int tg_shares_up(
->  	unsigned long weight, rq_weight = 0;
->  	unsigned long shares = 0;
->  	struct sched_domain *sd = data;
-> -	int i;
-> +	int i, empty = 0;
-> 
->  	for_each_cpu(i, sched_domain_span(sd)) {
-> -		/*
-> -		 * If there are currently no tasks on the cpu pretend there
-> -		 * is one of average load so that when a new task gets to
-> -		 * run here it will not get delayed by group starvation.
-> -		 */
->  		weight = tg->cfs_rq[i]->load.weight;
->  		if (!weight)
-> -			weight = NICE_0_LOAD;
-> +			empty++;
-> 
->  		tg->cfs_rq[i]->rq_weight = weight;
->  		rq_weight += weight;
-> @@ -1532,7 +1537,7 @@ static int tg_shares_up(
->  		shares = tg->shares;
-> 
->  	for_each_cpu(i, sched_domain_span(sd))
-> -		update_group_shares_cpu(tg, i, shares, rq_weight);
-> +		update_group_shares_cpu(tg, i, empty, shares, rq_weight);
-> 
->  	return 0;
+> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+>
+>  drivers/mfd/da903x.c       |   16 +++++++++++++++-
+>  include/linux/mfd/da903x.h |   44 ++++++++++++++++++++++++++++++++++++++++++--
+>  2 files changed, 57 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/mfd/da903x.c b/drivers/mfd/da903x.c
+> index 0b5bd85..2e04b44 100644
+> --- a/drivers/mfd/da903x.c
+> +++ b/drivers/mfd/da903x.c
+> @@ -151,12 +151,24 @@ int da903x_write(struct device *dev, int reg, uint8_t val)
 >  }
+>  EXPORT_SYMBOL_GPL(da903x_write);
+>
+> +int da903x_writes(struct device *dev, int reg, int len, uint8_t *val)
+> +{
+> +       return __da903x_writes(to_i2c_client(dev), reg, len, val);
+> +}
+> +EXPORT_SYMBOL_GPL(da903x_writes);
+> +
+>  int da903x_read(struct device *dev, int reg, uint8_t *val)
+>  {
+>        return __da903x_read(to_i2c_client(dev), reg, val);
+>  }
+>  EXPORT_SYMBOL_GPL(da903x_read);
+>
+> +int da903x_reads(struct device *dev, int reg, int len, uint8_t *val)
+> +{
+> +       return __da903x_reads(to_i2c_client(dev), reg, len, val);
+> +}
+> +EXPORT_SYMBOL_GPL(da903x_reads);
+> +
+>  int da903x_set_bits(struct device *dev, int reg, uint8_t bit_mask)
+>  {
+>        struct da903x_chip *chip = dev_get_drvdata(dev);
+> @@ -254,7 +266,7 @@ static int da9030_unmask_events(struct da903x_chip *chip, unsigned int events)
+>  {
+>        uint8_t v[3];
+>
+> -       chip->events_mask &= ~events;
+> +       chip->events_mask |= events;
+>
 
+I wonder if this is true, it may also impact the da9030_mask_events(),
+which is a pair.
+
+>        v[0] = (chip->events_mask & 0xff);
+>        v[1] = (chip->events_mask >> 8) & 0xff;
+> @@ -391,6 +403,8 @@ static void da903x_irq_work(struct work_struct *work)
+>                if (chip->ops->read_events(chip, &events))
+>                        break;
+>
+> +/*             pr_info("%s: events=%x events_mask=%x\n", */
+> +/*                     __func__, events, chip->events_mask); */
+
+I'd prefer to remove this if it is annoying, sorry for this initial garbage
+I sent.
+
+>                events &= ~chip->events_mask;
+>                if (events == 0)
+>                        break;
