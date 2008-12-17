@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752657AbYLQU7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752561AbYLQVAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752657AbYLQU7U (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 15:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbYLQU7F
+	id S1752561AbYLQVAb (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 16:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYLQVAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 15:59:05 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:33219 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751495AbYLQU7E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 15:59:04 -0500
-Date: Wed, 17 Dec 2008 20:59:02 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Eric Paris <eparis@redhat.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>, linux-audit@redhat.com,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/15] fixing audit rule ordering mess, part 1
-Message-ID: <20081217205902.GH28946@ZenIV.linux.org.uk>
-References: <E1LCoiI-0000Eu-Ty@ZenIV.linux.org.uk> <1229538488.3384.33.camel@localhost.localdomain>
+	Wed, 17 Dec 2008 16:00:22 -0500
+Received: from kroah.org ([198.145.64.141]:40581 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751214AbYLQVAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 16:00:21 -0500
+Date: Wed, 17 Dec 2008 12:52:49 -0800
+From: Greg KH <greg@kroah.com>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] cdev_put() race condition
+Message-ID: <20081217205249.GA25893@kroah.com>
+References: <200812082156.26522.hverkuil@xs4all.nl> <200812172039.03436.hverkuil@xs4all.nl> <20081217195329.GB25211@kroah.com> <200812172118.29574.hverkuil@xs4all.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229538488.3384.33.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200812172118.29574.hverkuil@xs4all.nl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 01:28:08PM -0500, Eric Paris wrote:
+On Wed, Dec 17, 2008 at 09:18:29PM +0100, Hans Verkuil wrote:
+> On Wednesday 17 December 2008 20:53:29 Greg KH wrote:
+> > So why is V4L different than the rest of the kernel in that it wishes to
+> > do things differently?
+> 
+> Because it has almost no proper framework to speak of and what little there 
+> is has been pretty much unchanged since the very beginning.
 
-> I don't see why prio is only important on AUDIT_FILTER_EXIT.  Couldn't I
-> end up with stupidity with entry,never  ?
+Ick.
 
+> I'm trying to develop a decent framework that should help support upcoming 
+> devices and generally make life easier for v4l driver developers.
+> 
+> And I've no idea why we don't just use the device's release() callback for 
+> this. I'm going to implement this right now :-)
 
-AUDIT_WATCH and AUDIT_INODE can live only on exit chain.  I.e. we don't have
-that problem - other chains sit on the lists of their own and there the
-list ordering itself takes care of everything.  Exit chain has parts in
-sitting in hash instead of the primary list.
+Thanks, that makes oh so much more sense.  Let me know when you've
+completed it so I can make your cdev change as well.
+
+thanks,
+
+greg k-h
