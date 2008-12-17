@@ -1,102 +1,68 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1756111AbYLQBOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757295AbYLQBPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbYLQBOi (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 20:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYLQBO0
+	id S1757295AbYLQBPy (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 20:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYLQBPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 20:14:26 -0500
-Received: from mga01.intel.com ([192.55.52.88]:50663 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750983AbYLQBOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 20:14:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.36,233,1228118400"; 
-   d="asc'?scan'208";a="415085337"
-Subject: Re: [RFC PATCH crypto] AES: Add support to Intel
-	AES-NI	instructions
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-        Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>,
-        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-        "mingo@elte.hu" <mingo@elte.hu>,
-        "tglx@linutronix.de" <tglx@linutronix.de>
-In-Reply-To: <20081216233128.GA13942@gondor.apana.org.au>
-References: <1229054926.5936.160.camel@yhuang-dev.sh.intel.com>
-	 <20081212195722.GA24489@Chamillionaire.breakpoint.cc>
-	 <1229307542.5936.204.camel@yhuang-dev.sh.intel.com>
-	 <20081215033842.GA28499@gondor.apana.org.au>
-	 <1229318099.5936.224.camel@yhuang-dev.sh.intel.com>
-	 <20081215052106.GA29324@gondor.apana.org.au>
-	 <20081215123801.GA32485@gondor.apana.org.au>
-	 <20081216233128.GA13942@gondor.apana.org.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8wFTIG7607i674qXOQEh"
-Date: Wed, 17 Dec 2008 09:14:22 +0800
-Message-Id: <1229476462.5936.314.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 16 Dec 2008 20:15:43 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:48191 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750983AbYLQBPm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 20:15:42 -0500
+Date: Tue, 16 Dec 2008 20:13:34 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: greg@kroah.com, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+        akpm@linux-foundation.org
+Subject: Re: [PATCH] ibmphp: Fix module ref count underflow
+Message-ID: <20081217011334.GA5857@localhost.localdomain>
+References: <20081210194334.GA25257@hmsreliant.think-freely.org> <200812161042.09345.jbarnes@virtuousgeek.org> <20081216195620.GA10231@hmsreliant.think-freely.org> <200812161252.51191.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200812161252.51191.jbarnes@virtuousgeek.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-8wFTIG7607i674qXOQEh
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2008-12-17 at 07:31 +0800, Herbert Xu wrote:
-> On Mon, Dec 15, 2008 at 11:38:01PM +1100, Herbert Xu wrote:
-> > On Mon, Dec 15, 2008 at 04:21:06PM +1100, Herbert Xu wrote:
+On Tue, Dec 16, 2008 at 12:52:50PM -0800, Jesse Barnes wrote:
+> On Tuesday, December 16, 2008 11:56 am Neil Horman wrote:
+> > On Tue, Dec 16, 2008 at 10:42:08AM -0800, Jesse Barnes wrote:
+> > > On Wednesday, December 10, 2008 11:43 am Neil Horman wrote:
+> > > > Hey-
+> > > > 	I happened to notice that the ibmphp hotplug driver does something
+> > > > rather silly in its init routine.  It purposely calls module_put so as
+> > > > to underflow its module ref count to avoid being removed from the
+> > > > kernel. This is bad practice, and wrong, since it provides a window for
+> > > > subsequent module_gets to reset the refcount to zero, allowing an
+> > > > unload to race in and cause all sorts of mysterious panics.  If the
+> > > > module is unsafe to load, it should inform the kernel as such with a
+> > > > call to __unsafe.  The patch below does that.
 > > >
-> > > > a. Do not touch SSE state in soft_irq
-> > > > b. Disable/restore soft_irq in kernel_fpu_begin/kernel_fpu_end
-> > > > c. Use a per-CPU data structure to save kernel FPU state during
-> > > > soft_irq.
-> =20
-> > Here's another option
-> >=20
-> > d. When we're in interrupt context, schedule a task to perform
-> > the encryption asynchronously.
->=20
-> We can also hybridise b. and d.:
->=20
-> e. When we're in interrupt context, if TS is clear, then we defer
-> the operation to a thread.  Otherwise if user-space has touched
-> the FPU we save the state, if not then we simply clear TS.  In
-> either case we perform the operation immediately and then reset
-> TS if user-space didn't touch the FPU.
->=20
-> This is based on the fact that it should be fairly rare for us
-> to interrupt a kernel FPU/SSE operation.  The common case would
-> be interrupting a user process or a kernel context which is not
-> engaging in any kernel FPU operations.
-
-Yes. This is a better solution with much better performance. How about
-hybridise b. and a.:
-
-f. if TS is clear, then use x86_64 implementation. Otherwise if
-user-space has touched the FPU, we save the state, if not then simply
-clear TS.
-
-I think that could be simpler to be implemented.
-
-Best Regards,
-Huang Ying
-
-
---=-8wFTIG7607i674qXOQEh
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAklIUmsACgkQKhFGF+eHlpi7ngCfUVxnHxaNgJ/3tA++ZdAVP4tl
-XGUAoJvXU1klnocrdYPax0mM+0SxMSwJ
-=Acci
------END PGP SIGNATURE-----
-
---=-8wFTIG7607i674qXOQEh--
+> > > Thanks Neil, applied this to my for-linus branch since it sounds
+> > > potentially serious (but also low risk since who uses ibmphp anymore? :)
+> >
+> > Dang it!  Sorry, Jesse.  Yes, youre absolutely right, it is low risk.  It
+> > really just a bit of sillyness all around.
+> >
+> > Unfortunately, I took part in the sillyness.  The problem was reported to
+> > me on RHEL, and I tested there, without checking upstream too closely.  As 
+> > aresult, the patch I gave you is a bit out of date, and won't compile. 
+> > I've tested the new patch here much more closely.  apologies.  I informed
+> > akpm who was looking at it, but neglected to copy you.
+> >
+> > This patch corrects the same problem in that it prevents module unloads in
+> > a sane fashion, by not registering an exit routine
+> >
+> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+> Ah was just doing my testing & building now so I would have caught it in a 
+> minute. :)  I'll replace the patch I have with this one, thanks.
+> 
+> Jesse
+> 
+Thank you, that matches what Andrew has in his tree.  Apologies for the noise
+Neil
 
