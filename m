@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753185AbYLQWpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752258AbYLQWmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185AbYLQWpT (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 17:45:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYLQWpE
+	id S1752258AbYLQWmI (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 17:42:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYLQWlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 17:45:04 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:47812 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750961AbYLQWpD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 17:45:03 -0500
-To: Rogier Wolff <R.E.Wolff@BitWizard.nl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: FPU emulation broken in 2.6.28-rc8 ?
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081217085620.GA20184@bitwizard.nl>
-	<20081217203227.GA10899@bitwizard.nl>
-Date: Wed, 17 Dec 2008 23:45:39 +0100
-In-Reply-To: <20081217203227.GA10899@bitwizard.nl> (Rogier Wolff's message of "Wed, 17 Dec 2008 21:32:27 +0100")
-Message-ID: <878wqe1kvg.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Wed, 17 Dec 2008 17:41:42 -0500
+Received: from ozlabs.org ([203.10.76.45]:46756 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752187AbYLQWll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 17:41:41 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18761.32798.327649.628188@cargo.ozlabs.ibm.com>
+Date: Thu, 18 Dec 2008 09:41:34 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
+        linuxppc-dev@ozlabs.org
+Subject: Re: Please pull from 'merge' for 2.6.28
+In-Reply-To: <Pine.LNX.4.64.0812171006580.12026@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0812171006580.12026@blarg.am.freescale.net>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rogier Wolff <R.E.Wolff@BitWizard.nl> writes:
->> 
->> I'm trying to set up a thin client, which runs on a geode, which
->> apparently doesn't have a FPU.... (/proc/cpuinfo mentions the flag 
->> "fpu", what does THAT mean?)
+Kumar Gala writes:
 
-Geodes all have FPUs to my knowledge.
-The only FPU less x87s are 386s and special 486s (and a few emulators)
+> The following changes since commit 23e0e8afafd9ac065d81506524adf3339584044b:
+>   Arnd Bergmann (1):
+>         powerpc/cell/axon-msi: Fix MSI after kexec
+> 
+> are available in the git repository at:
+> 
+>   master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git merge
 
-If the FPU doesn't work on the Geode something else must be broken
-(or your CPU is not really a Geode)
+Linus, please pull Kumar's tree directly, since I have no other
+commits needing to go in 2.6.28 at this stage.
 
--Andi
-
--- 
-ak@linux.intel.com
+Thanks,
+Paul.
