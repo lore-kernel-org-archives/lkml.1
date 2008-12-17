@@ -1,41 +1,43 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752853AbYLQTjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752547AbYLQTjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbYLQTjf (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 14:39:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbYLQTjH
+	id S1752547AbYLQTjU (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 14:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYLQTjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 14:39:07 -0500
-Received: from kroah.org ([198.145.64.141]:52735 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751421AbYLQTjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 17 Dec 2008 14:39:05 -0500
-Date: Wed, 17 Dec 2008 11:38:12 -0800
+Received: from kroah.org ([198.145.64.141]:52731 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751199AbYLQTjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 14:39:04 -0500
+Date: Wed, 17 Dec 2008 11:35:25 -0800
 From: Greg KH <greg@kroah.com>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: linux-kernel@vger.kernel.org, v4l <video4linux-list@redhat.com>,
-        Laurent Pinchart <laurent.pinchart@skynet.be>
+To: Laurent Pinchart <laurent.pinchart@skynet.be>
+Cc: Hans Verkuil <hverkuil@xs4all.nl>, linux-kernel@vger.kernel.org,
+        v4l <video4linux-list@redhat.com>
 Subject: Re: [BUG] cdev_put() race condition
-Message-ID: <20081217193812.GB24916@kroah.com>
-References: <200812082156.26522.hverkuil@xs4all.nl> <200812171437.33695.hverkuil@xs4all.nl> <20081217181645.GA26161@kroah.com> <200812172030.32535.hverkuil@xs4all.nl>
+Message-ID: <20081217193525.GA24916@kroah.com>
+References: <200812082156.26522.hverkuil@xs4all.nl> <200812171437.33695.hverkuil@xs4all.nl> <20081217181645.GA26161@kroah.com> <200812172027.13771.laurent.pinchart@skynet.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200812172030.32535.hverkuil@xs4all.nl>
+In-Reply-To: <200812172027.13771.laurent.pinchart@skynet.be>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 08:30:32PM +0100, Hans Verkuil wrote:
-> On Wednesday 17 December 2008 19:16:45 Greg KH wrote:
+On Wed, Dec 17, 2008 at 08:27:13PM +0100, Laurent Pinchart wrote:
+> Hi Greg,
+> 
+> On Wednesday 17 December 2008, Greg KH wrote:
 > > On Wed, Dec 17, 2008 at 02:37:33PM +0100, Hans Verkuil wrote:
 > > > > Again, don't use cdev's reference counting for your own object
-> > > > lifecycle, it is different and will cause problems, like you have
-> > > > found out.
+> > > > lifecycle, it is different and will cause problems, like you have found
+> > > > out.
 > > >
-> > > Sigh. It has nothing to do with how v4l uses it. And to demonstrate
-> > > this, here is how you reproduce it with the sg module (tested it with
-> > > my USB harddisk).
+> > > Sigh. It has nothing to do with how v4l uses it. And to demonstrate this,
+> > > here is how you reproduce it with the sg module (tested it with my USB
+> > > harddisk).
 > > >
 > > > 1) apply this patch to char_dev.c:
 > >
@@ -45,82 +47,21 @@ On Wed, Dec 17, 2008 at 08:30:32PM +0100, Hans Verkuil wrote:
 > > counting is incorrect, I'll have to go change the cdev code to prevent
 > > you from doing this :(
 > 
-> Erm, you haven't told me yet why it's a bad idea. You just said "don't do 
-> it", but I haven't seen the reason for it. There doesn't seem to be any 
-> documentation on how to properly use cdev besides the Kernel Device Drivers 
-> book, which (if memory serves) doesn't mention anything on this topic.
-
-The reason is that it was not designed to do such a thing.  It was
-designed to handle the character device lookup, and that's it.
-
-> I really don't mind implementing refcounting in the v4l framework, I just 
-> want to understand why it should be done like that!
-
-Because the lifecycle of your device should be separate from the
-lifecycle of the character device node, you should not tie the two
-together.
-
-> It seems to me that I will just be shadowing the refcounting of cdev if I 
-> implement refcounting in v4l: init to 1 on creation, increase on open, 
-> decrease on close, decrease on deletion. It's all terribly familiar...
-
-You shouldn't, odds are there are other ways to grab the reference on
-your device from outside of the character node, right?  Like the USB
-probe/disconnect path?  So you should have an independant reference
-count in order to handle all of the different ways the device can be
-accessed.
-
-> > Anyway, do you have a patch for the cdev code to propose how to fix this
-> > issue you are having?
+> Don't give up yet :-)
 > 
-> Sure, here it is:
-> 
-> --- fs/char_dev.c.orig	2008-12-17 20:28:40.000000000 +0100
-> +++ fs/char_dev.c	2008-12-17 20:28:49.000000000 +0100
-> @@ -345,7 +345,9 @@
->  {
->  	if (p) {
->  		struct module *owner = p->owner;
-> +		spin_lock(&cdev_lock);
->  		kobject_put(&p->kobj);
-> +		spin_unlock(&cdev_lock);
->  		module_put(owner);
->  	}
->  }
-> @@ -415,14 +417,12 @@
->  
->  static void cdev_purge(struct cdev *cdev)
->  {
-> -	spin_lock(&cdev_lock);
->  	while (!list_empty(&cdev->list)) {
->  		struct inode *inode;
->  		inode = container_of(cdev->list.next, struct inode, i_devices);
->  		list_del_init(&inode->i_devices);
->  		inode->i_cdev = NULL;
->  	}
-> -	spin_unlock(&cdev_lock);
->  }
->  
->  /*
-> @@ -478,7 +478,9 @@
->  void cdev_del(struct cdev *p)
->  {
->  	cdev_unmap(p->dev, p->count);
-> +	spin_lock(&cdev_lock);
->  	kobject_put(&p->kobj);
-> +	spin_unlock(&cdev_lock);
->  }
-> 
-> This solves this particular problem. But this will certainly break v4l as it 
-> is right now, since the spin_lock means that the kref's release cannot do 
-> any sleeps, which is possible in v4l. If we want to allow that in cdev, 
-> then the spinlock has to be replaced by a mutex. But I have the strong 
-> feeling that that's not going to happen :-)
+> As v4l isn't the only kernel subsystem wrongly using cdev (Hans showed that sg 
+> also suffered from race conditions), people seem not to understand cdev 
+> properly.
 
-True :)
+I totally agree, it is not the most easily understood chunk of code.
 
-I'll be glad to queue this change up for 2.6.29 if you are going to fix
-up the v4l code to not break if I add this code.
+> Maybe you should start by explaining what cdev has been designed to
+> handle and how to use it in device drivers (such as sg or v4l) instead
+> of telling us what not to do.
+
+As I didn't create this code, but for some reason seem to maintain it,
+I'll work on creating a document to do this.  But as the holidays are
+rapidly approaching, it might be a while before I can get to it.
 
 thanks,
 
