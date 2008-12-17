@@ -1,246 +1,84 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752671AbYLQR6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751502AbYLQR7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752671AbYLQR6y (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 12:58:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYLQR62
+	id S1751502AbYLQR7T (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 12:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbYLQR65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 12:58:28 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:54637 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbYLQR61 (ORCPT
+	Wed, 17 Dec 2008 12:58:57 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:56244 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751520AbYLQR6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 12:58:27 -0500
-Date: Wed, 17 Dec 2008 11:58:23 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Linux Containers <containers@lists.osdl.org>,
-        Subrata Modak1 <subrata.modak@in.ibm.com>
-Subject: [LTP PATCH 4/4] posix mqns: test that user mount of posixmq
-	survivies the ipcns
-Message-ID: <20081217175823.GF23331@us.ibm.com>
-References: <20081217175513.GA23291@us.ibm.com>
-MIME-Version: 1.0
+	Wed, 17 Dec 2008 12:58:55 -0500
+Date: Wed, 17 Dec 2008 19:00:23 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>, linux-arch@vger.kernel.org,
+        Alexander van Heukelum <heukelum@mailshack.com>,
+        Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/many] PROC macro to annotate functions in assembly files
+Message-ID: <20081217180023.GA5783@uranus.ravnborg.org>
+References: <1229505475-10219-1-git-send-email-heukelum@fastmail.fm> <1229505475-10219-2-git-send-email-heukelum@fastmail.fm> <20081217172640.GB5436@uranus.ravnborg.org> <20081217173824.GF8078@localhost>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081217175513.GA23291@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081217173824.GF8078@localhost>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the mqueuefs for a ipc namespace is mounted in a mounts namespace
-which outlives the ipcns, then the view of the fs remains valid
-until someone umounts it.  Run some tests to make sure that all is
-sane.
+On Wed, Dec 17, 2008 at 08:38:24PM +0300, Cyrill Gorcunov wrote:
+> [Sam Ravnborg - Wed, Dec 17, 2008 at 06:26:40PM +0100]
+> | On Wed, Dec 17, 2008 at 10:17:54AM +0100, Alexander van Heukelum wrote:
+> | > Introduce the PROC macro in the generic header file
+> | > include/linux/linkage.h to annotate functions in assembly
+> | > files. This is a first step to fully annotate functions
+> | > (procedures) in .S-files. The PROC macro complements the
+> | > already existing and being used ENDPROC macro. The generic
+> | > implementation of PROC is exactly the same as ENTRY.
+> | > 
+> | > The goal is to annotate functions, at least those called
+> | > from C code, with PROC at the beginning and ENDPROC at the
+> | > end. This is for the benefit of debugging and tracing. It
+> | > will also allow to introduce a framework to check for
+> | > nesting problems and missing annotations in a later stage
+> | > by overriding ENTRY/END and PROC/ENDPROC in architecture-
+> | > specific code, after the annotation errors have been fixed.
+> | > 
+> | > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> | > Cc: Sam Ravnborg <sam@ravnborg.org>
+> | > Cc: Andrew Morton <akpm@linux-foundation.org>
+> | 
+> | I understand where you are coming from with these.
+> | But what I see now is:
+> | 
+> | ENTRY/END
+> | PROC/ENDPROC
+> | KPROBE_ENTRY/KPROBE_END
+> | 
+> | And it is not obvious for me reading the comment when I should
+> | expect which one to be used.
+> | 
+> | Could we try to keep it down to two variants?
+> | And then document when to use which one.
+> | 
+> | 	Sam
+> | 
+> 
+> Sam, I think eventually we should get something like this:
+> 
+> - KPROBE will be eliminated and explicit section descriptions
+>   are to be used
+> - ENTRY could be used / or renamed for something more descriptive
+>   and being used aligned jmp targets or in case of procs with
+>   shared body
+> - PROC/ENDPROC are to replace old ENTRY/END for procs being called
+>   mostly from C code
 
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
----
- testcases/kernel/containers/mqns/mqns.h         |    1 +
- testcases/kernel/containers/mqns/mqns_04.c      |  169 +++++++++++++++++++++++
- testcases/kernel/containers/mqns/runmqnstest.sh |    2 +-
- 3 files changed, 171 insertions(+), 1 deletions(-)
- create mode 100644 testcases/kernel/containers/mqns/mqns_04.c
+So what prevents us from extending ENTRY/END instead of introducing
+another set?
+Let us try to extend what we have and not introduce something new.
 
-diff --git a/testcases/kernel/containers/mqns/mqns.h b/testcases/kernel/containers/mqns/mqns.h
-index 4bf1e1f..33166d2 100644
---- a/testcases/kernel/containers/mqns/mqns.h
-+++ b/testcases/kernel/containers/mqns/mqns.h
-@@ -8,6 +8,7 @@
- 
- 
- #define DEV_MQUEUE "/dev/mqueue"
-+#define DEV_MQUEUE2 "/dev/mqueue2"
- #define SLASH_MQ1 "/MQ1"
- #define SLASH_MQ2 "/MQ2"
- 
-diff --git a/testcases/kernel/containers/mqns/mqns_04.c b/testcases/kernel/containers/mqns/mqns_04.c
-new file mode 100644
-index 0000000..ef76f0a
---- /dev/null
-+++ b/testcases/kernel/containers/mqns/mqns_04.c
-@@ -0,0 +1,169 @@
-+/*
-+* Copyright (c) International Business Machines Corp., 2007
-+* This program is free software; you can redistribute it and/or modify
-+* it under the terms of the GNU General Public License as published by
-+* the Free Software Foundation; either version 2 of the License, or
-+* (at your option) any later version.
-+*
-+* This program is distributed in the hope that it will be useful,
-+* but WITHOUT ANY WARRANTY; without even the implied warranty of
-+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-+* the GNU General Public License for more details.
-+* You should have received a copy of the GNU General Public License
-+* along with this program; if not, write to the Free Software
-+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+*
-+* Author: Serge Hallyn <serue@us.ibm.com>
-+*
-+* Check mqueuefs lifetime
-+* . parent creates /dev/mqueue2
-+* . child mounts mqueue there
-+* . child does mq_open("/ab")
-+* . parent checks for /dev/mqueue2
-+* . child exits
-+* . parent checks for /dev/mqueue2
-+* . parent tries 'touch /dev/mqueue2/dd' -> should fail
-+* . parent umounts /dev/mqueue2
-+
-+***************************************************************************/
-+
-+#define _GNU_SOURCE 1
-+#include <sys/wait.h>
-+#include <assert.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <string.h>
-+#include <errno.h>
-+#include "mqns.h"
-+
-+char *TCID = "posixmq_namespace_04";
-+int TST_TOTAL=1;
-+
-+int p1[2];
-+int p2[2];
-+
-+#define FNAM1 DEV_MQUEUE2 SLASH_MQ1
-+#define FNAM2 DEV_MQUEUE2 SLASH_MQ2
-+
-+int check_mqueue(void *vtest)
-+{
-+	char buf[30];
-+	mqd_t mqd;
-+	int rc;
-+
-+	close(p1[1]);
-+	close(p2[0]);
-+
-+	read(p1[0], buf, 3); /* go */
-+
-+	mqd = mq_open(SLASH_MQ1, O_RDWR|O_CREAT|O_EXCL, 0755, NULL);
-+	if (mqd == -1) {
-+		write(p2[1], "mqfail", 7);
-+		tst_exit(3);
-+	}
-+
-+	mq_close(mqd);
-+
-+	rc = mount("mqueue", DEV_MQUEUE2, "mqueue", 0, NULL);
-+	if (rc == -1) {
-+		perror("mount");
-+		write(p2[1], "mount", 6);
-+		tst_exit(3);
-+	}
-+
-+	write(p2[1], "go", 3);
-+	read(p1[0], buf, 3);
-+
-+	tst_exit(0);
-+
-+	/* NOT REACHED */
-+	return 0;
-+}
-+
-+
-+int main(int argc, char *argv[])
-+{
-+	int r = TFAIL;
-+	int rc;
-+	int status;
-+	char buf[7];
-+	struct stat statbuf;
-+	int use_clone = T_UNSHARE;
-+
-+	if (argc == 2 && strcmp(argv[1], "-clone") == 0) {
-+		tst_resm(TINFO, "Testing posix mq namespaces through clone(2).\n");
-+		use_clone = T_CLONE;
-+	} else
-+		tst_resm(TINFO, "Testing posix mq namespaces through unshare(2).\n");
-+
-+	if (pipe(p1) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
-+	if (pipe(p2) == -1) { perror("pipe"); exit(EXIT_FAILURE); }
-+
-+	mkdir(DEV_MQUEUE2, 0755);
-+
-+	tst_resm(TINFO, "Checking mqueue filesystem lifetime\n");
-+
-+	/* fire off the test */
-+	rc = do_clone_unshare_test(use_clone, CLONE_NEWIPC, check_mqueue, NULL);
-+	if (rc < 0) {
-+		tst_resm(TFAIL, "failed clone/unshare\n");
-+		goto fail;
-+	}
-+
-+	close(p1[0]);
-+	close(p2[1]);
-+	write(p1[1], "go", 3);
-+
-+	read(p2[0], buf, 7);
-+	if (!strcmp(buf, "mqfail")) {
-+		tst_resm(TFAIL, "child process could not create mqueue\n");
-+		goto fail;
-+	} else if (!strcmp(buf, "mount")) {
-+		tst_resm(TFAIL, "child process could not mount mqueue\n");
-+		goto fail;
-+	}
-+
-+	rc = stat(FNAM1, &statbuf);
-+	if (rc == -1) {
-+		perror("stat");
-+		write(p1[1], "go", 3);
-+		tst_resm(TFAIL, "parent could not see child's created mq\n");
-+		goto fail;
-+	}
-+	write(p1[1], "go", 3);
-+
-+	rc = wait(&status);
-+	if (rc == -1) {
-+		perror("wait");
-+		tst_resm(TFAIL, "error while parent waited on child to exit\n");
-+		goto fail;
-+	}
-+	if (!WIFEXITED(status)) {
-+		tst_resm(TFAIL, "Child did not exit normally (status %d)\n", status);
-+		goto fail;
-+	}
-+	rc = stat(FNAM1, &statbuf);
-+	if (rc == -1) {
-+		tst_resm(TFAIL, "parent's view of child's mq died with child\n");
-+		goto fail;
-+	}
-+
-+	rc = creat(FNAM2, 0755);
-+	if (rc != -1) {
-+		tst_resm(TFAIL, "parent was able to create a file in dead child's mqfs\n");
-+		goto fail;
-+	}
-+
-+	tst_resm(TPASS, "Child mqueue fs still visible for parent\n");
-+
-+	r = 0;
-+
-+fail:
-+	umount(DEV_MQUEUE2);
-+	rmdir(DEV_MQUEUE2);
-+	tst_exit(r);
-+
-+	/* NOT REACHED */
-+	return 0;
-+}
-diff --git a/testcases/kernel/containers/mqns/runmqnstest.sh b/testcases/kernel/containers/mqns/runmqnstest.sh
-index b518d28..9008fd0 100755
---- a/testcases/kernel/containers/mqns/runmqnstest.sh
-+++ b/testcases/kernel/containers/mqns/runmqnstest.sh
-@@ -20,7 +20,7 @@
- ################################################################################
- 
- exit_code=0
--tests_list='mqns_01 mqns_02 mqns_03'
-+tests_list='mqns_01 mqns_02 mqns_03 mqns_04'
- 
- for t in $tests_list
- do
--- 
-1.6.0.5
-
+	Sam
