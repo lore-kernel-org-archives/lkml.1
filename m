@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760698AbYLQMiD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760289AbYLQMgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760698AbYLQMiD (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 07:38:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbYLQM3i
+	id S1760289AbYLQMgI (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 07:36:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbYLQM3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 07:29:38 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53755 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755020AbYLQM3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 17 Dec 2008 07:29:32 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53748 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755026AbYLQM3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 07:29:25 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 23/24] GFS2: Send useful information with uevent messages
-Date: Wed, 17 Dec 2008 11:30:22 +0000
-Message-Id: <1229513423-19105-24-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1229513423-19105-23-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 18/24] GFS2: Send some sensible sysfs stuff
+Date: Wed, 17 Dec 2008 11:30:17 +0000
+Message-Id: <1229513423-19105-19-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1229513423-19105-18-git-send-email-swhiteho@redhat.com>
 References: <1229513423-19105-1-git-send-email-swhiteho@redhat.com>
  <1229513423-19105-2-git-send-email-swhiteho@redhat.com>
  <1229513423-19105-3-git-send-email-swhiteho@redhat.com>
@@ -34,69 +34,77 @@ References: <1229513423-19105-1-git-send-email-swhiteho@redhat.com>
  <1229513423-19105-16-git-send-email-swhiteho@redhat.com>
  <1229513423-19105-17-git-send-email-swhiteho@redhat.com>
  <1229513423-19105-18-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-19-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-20-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-21-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-22-git-send-email-swhiteho@redhat.com>
- <1229513423-19105-23-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Whitehouse <swhiteho@redhat.com>
 
-In order to distinguish between two differing uevent messages
-and to avoid using the (racy) method of reading status from
-sysfs in future, this adds some status information to our
-uevent messages.
-
-Btw, before anybody says "sysfs isn't racy", I'm aware of that,
-but the way that GFS2 was using it (send an ambiugous uevent and
-then expect the receiver to read sysfs to find out the status
-of the reported operation) was.
-
-The additional benefit of using the new interface is that it
-should be possible for a node to recover multiple journals
-at the same time, since there is no longer any confusion as
-to which journal the status belongs to.
-
-At some future stage, when all the userland programs have been
-converted, I intend to remove the old interface.
+We ought to inform the user of the locktable and lockproto for each
+uevent we generate.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/locking/dlm/mount.c b/fs/gfs2/locking/dlm/mount.c
-index 0c4cbe6..1aa7eb6 100644
---- a/fs/gfs2/locking/dlm/mount.c
-+++ b/fs/gfs2/locking/dlm/mount.c
-@@ -194,17 +194,25 @@ out:
- static void gdlm_recovery_done(void *lockspace, unsigned int jid,
-                                unsigned int message)
- {
-+	char env_jid[20];
-+	char env_status[20];
-+	char *envp[] = { env_jid, env_status, NULL };
- 	struct gdlm_ls *ls = lockspace;
- 	ls->recover_jid_done = jid;
- 	ls->recover_jid_status = message;
--	kobject_uevent(&ls->kobj, KOBJ_CHANGE);
-+	sprintf(env_jid, "JID=%d", jid);
-+	sprintf(env_status, "RECOVERY=%s",
-+		message == LM_RD_SUCCESS ? "Done" : "Failed");
-+	kobject_uevent_env(&ls->kobj, KOBJ_CHANGE, envp);
+diff --git a/fs/gfs2/locking/dlm/sysfs.c b/fs/gfs2/locking/dlm/sysfs.c
+index 4ec571c..9b7edcf 100644
+--- a/fs/gfs2/locking/dlm/sysfs.c
++++ b/fs/gfs2/locking/dlm/sysfs.c
+@@ -195,9 +195,23 @@ void gdlm_kobject_release(struct gdlm_ls *ls)
+ 	kobject_put(&ls->kobj);
  }
  
- static void gdlm_others_may_mount(void *lockspace)
++static int gdlm_uevent(struct kset *kset, struct kobject *kobj,
++		       struct kobj_uevent_env *env)
++{
++        struct gdlm_ls *ls = container_of(kobj, struct gdlm_ls, kobj);
++        add_uevent_var(env, "LOCKTABLE=%s:%s", ls->clustername, ls->fsname);
++        add_uevent_var(env, "LOCKPROTO=lock_dlm");
++        return 0;
++}
++
++static struct kset_uevent_ops gdlm_uevent_ops = {
++	.uevent = gdlm_uevent,
++};
++
++
+ int gdlm_sysfs_init(void)
  {
-+	char *message = "FIRSTMOUNT=Done";
-+	char *envp[] = { message, NULL };
- 	struct gdlm_ls *ls = lockspace;
- 	ls->first_done = 1;
--	kobject_uevent(&ls->kobj, KOBJ_CHANGE);
-+	kobject_uevent_env(&ls->kobj, KOBJ_CHANGE, envp);
+-	gdlm_kset = kset_create_and_add("lock_dlm", NULL, kernel_kobj);
++	gdlm_kset = kset_create_and_add("lock_dlm", &gdlm_uevent_ops, kernel_kobj);
+ 	if (!gdlm_kset) {
+ 		printk(KERN_WARNING "%s: can not create kset\n", __func__);
+ 		return -ENOMEM;
+diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
+index 67ba5b7..298bcb6 100644
+--- a/fs/gfs2/sys.c
++++ b/fs/gfs2/sys.c
+@@ -461,11 +461,25 @@ void gfs2_sys_fs_del(struct gfs2_sbd *sdp)
+ 	kobject_put(&sdp->sd_kobj);
  }
  
- /* Userspace gets the offline uevent, blocks new gfs locks on
++static int gfs2_uevent(struct kset *kset, struct kobject *kobj,
++		       struct kobj_uevent_env *env)
++{
++	struct gfs2_sbd *sdp = container_of(kobj, struct gfs2_sbd, sd_kobj);
++	add_uevent_var(env, "LOCKTABLE=%s", sdp->sd_table_name);
++	add_uevent_var(env, "LOCKPROTO=%s", sdp->sd_proto_name);
++	return 0;
++}
++
++static struct kset_uevent_ops gfs2_uevent_ops = {
++	.uevent = gfs2_uevent,
++};
++
++
+ int gfs2_sys_init(void)
+ {
+ 	gfs2_sys_margs = NULL;
+ 	spin_lock_init(&gfs2_sys_margs_lock);
+-	gfs2_kset = kset_create_and_add("gfs2", NULL, fs_kobj);
++	gfs2_kset = kset_create_and_add("gfs2", &gfs2_uevent_ops, fs_kobj);
+ 	if (!gfs2_kset)
+ 		return -ENOMEM;
+ 	return 0;
 -- 
 1.6.0.3
 
