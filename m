@@ -1,150 +1,165 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753369AbYLRAAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753587AbYLRAAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbYLRAAl (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 19:00:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbYLRAAb
+	id S1753587AbYLRAAz (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 19:00:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbYLRAAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 19:00:31 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:31438 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752471AbYLRAAa (ORCPT
+	Wed, 17 Dec 2008 19:00:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60110 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752843AbYLRAAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 19:00:30 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=c5qPxvBgzwrRkqAfRAJZRL1Qz9UA/tFTtoN4qyDPJIVIk/vVGZBPQMTNXMb2/mzLy
-	V+blGmb3pV3Nuw8Tn375Q==
-MIME-Version: 1.0
-In-Reply-To: <5df78e1d0812121626k367043c6hbb0232dc20b1db78@mail.gmail.com>
-References: <5df78e1d0812121626k367043c6hbb0232dc20b1db78@mail.gmail.com>
-Date: Wed, 17 Dec 2008 16:00:27 -0800
-Message-ID: <5df78e1d0812171600g15cb7c53m7fb8cc0893f861f3@mail.gmail.com>
-Subject: Re: races when reserving an event in the unified trace buffer
-From: Jiaying Zhang <jiayingz@google.com>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Michael Rubin <mrubin@google.com>,
-        Michael Davidson <md@google.com>, Martin Bligh <mbligh@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 17 Dec 2008 19:00:35 -0500
+Date: Wed, 17 Dec 2008 15:59:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tracing/function-graph-tracer: prevent from hrtimer
+ interrupt eternal loop
+Message-Id: <20081217155940.138d0b6e.akpm@linux-foundation.org>
+In-Reply-To: <494990CF.70504@gmail.com>
+References: <494990CF.70504@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve,
+On Thu, 18 Dec 2008 00:52:47 +0100
+Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-I mentioned in my last email that I saw the warning about the trace buffer
-became full because of an interrupt storm even with my posted patch applied.
-After adding more debugging messages, I found that the problem was actually
-caused by another race in the code. I saw the events in the buffer were
-not just interrupts but include other kernel events as well. Looks
-like the commit
-page failed to advance because of a race between the update of tail_page in
-__rb_reserve_next_event and the following lines in the rb_set_commit_to_write:
+> Impact: fix a system hang on slow systems
+> 
+> While testing the function graph tracer on VirtualBox, I had a system hang
+> immediately after enabling the tracer.
+> If hrtimer is enabled on kernel, a slow system can spend too much time during
+> tracing the hrtimer_interrupt which will do eternal loops, assuming it always
+> have to retry its process because too much time elapsed during its time
+> update.
+> Now we provide a feature which lurks at the number of retries on
+> hrtimer_interrupt. After 10 retries, the function graph tracer will finally stop
+> its tracing.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> ---
+>  arch/x86/kernel/ftrace.c |    2 ++
+>  include/linux/ftrace.h   |   31 +++++++++++++++++++++++++++++++
+>  kernel/hrtimer.c         |    5 +++++
+>  3 files changed, 38 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index 1b43086..244f178 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -389,6 +389,8 @@ void ftrace_nmi_exit(void)
+>  
+>  #endif /* !CONFIG_DYNAMIC_FTRACE */
+>  
+> +DEFINE_PER_CPU(int, ftrace_graph_hrtimer_loop) = LOCAL_INIT(0);
 
-        while (cpu_buffer->commit_page != cpu_buffer->tail_page) {
-                cpu_buffer->commit_page->page->commit =
-                        cpu_buffer->commit_page->write;
-                rb_inc_page(cpu_buffer, &cpu_buffer->commit_page);
-                ...
-        }
-        while (rb_commit_index(cpu_buffer) !=
-               rb_page_write(cpu_buffer->commit_page)) {
-                cpu_buffer->commit_page->page->commit =
-                        cpu_buffer->commit_page->write;
-                barrier();
-        }
+Strange.  This has type `int', but we initialise it with a local_t?
 
-The problem is that an interrupt can happen right after a kernel event finishes
-the condition check "cpu_buffer->commit_page != cpu_buffer->tail_page" but
-before it updates the commit value of the commit_page. If we were at the tail
-of the tail_page and the commit_page was the same as the tail_page when
-the first kernel event checked that, neither of the events would advance the
-commit_page pointer because the interrupt event was NOT the commit event
-before the kernel event updated the commit pointer and the kernel event did
-NOT see the change of the tail_page made by the interrupt event. Once we
-got into this situation, the trace buffer would soon become full and reject
-any further reservation requests.
+>  /* Add a function return address to the trace stack on thread info.*/
+>  static int push_return_trace(unsigned long ret, unsigned long long time,
+>  				unsigned long func, int *depth)
+> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> index 286af82..39be782 100644
+> --- a/include/linux/ftrace.h
+> +++ b/include/linux/ftrace.h
+> @@ -408,6 +408,34 @@ extern void unregister_ftrace_graph(void);
+>  extern void ftrace_graph_init_task(struct task_struct *t);
+>  extern void ftrace_graph_exit_task(struct task_struct *t);
+>  
+> +/*
+> + * Those two functions prevent from eternal loops on hrtimer_interrupt
 
-A possible fix I think is to update the commit pointer of the commit_page
-both before and after updating the commit_page in rb_set_commit_to_write().
-Here is the proposed fix. Please let me know if my analysis makes sense
-to you. Thanks a lot!
+"These two functions prevent infinite ..."
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 7f69cfe..b345ba7 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -839,6 +839,12 @@ rb_set_commit_to_write(struct ring_buffer_per_cpu
-*cpu_buffer)
-         * back to us). This allows us to do a simple loop to
-         * assign the commit to the tail.
-         */
-+       while (rb_commit_index(cpu_buffer) !=
-+              rb_page_write(cpu_buffer->commit_page)) {
-+               cpu_buffer->commit_page->page->commit =
-+                       cpu_buffer->commit_page->write;
-+               barrier();
-+       }
-        while (cpu_buffer->commit_page != cpu_buffer->tail_page) {
-                cpu_buffer->commit_page->page->commit =
-                        cpu_buffer->commit_page->write;
+> + * because the function graph tracer can cause two much time processing
 
-Jiaying
+"can consume too much"
 
-On Fri, Dec 12, 2008 at 4:26 PM, Jiaying Zhang <jiayingz@google.com> wrote:
-> Hi Steve,
->
-> I am doing some load testing with our kernel tracing prototype
-> that uses the unified trace buffer for managing its data. I sometimes
-> saw kernel stack dump caused by the following checking in
-> function  __rb_reserve_next:
->        if (unlikely(next_page == cpu_buffer->commit_page)) {
->                 WARN_ON_ONCE(1);
->                 goto out_unlock;
->       }
-> The comments above the code say the problem is caused by
-> "an interrupt storm that made it all the way around the buffer".
-> But I think there is race here that a single interrupt can cause
-> the check to fail. Suppose this is what happens:
-> An event is traced and calls __rb_reserve_next. Right after it
-> gets the current tail_page (line tail_page = cpu_buffer->tail_page;),
-> an interrupt happens that is also traced. The interrupt also takes
-> the same tail_page. The interrupt event moves the tail_page
-> forward if the tail_page is full. Note that the interrupt event gets
-> the old 'write' value because the first event has not updated that yet.
-> So the interrupt event may also update the commit_page if it is
-> the same as the tail_page. As a result, the above check would
-> fail after the interrupt finishes and the first event resumes its execution.
->
-> I have seen the problem happens frequently under heavy loads
-> on a multi-core machine. Interestingly, I also saw the above
-> warning that might actually be caused by an interrupt storm.
-> I was using 64k buffer size and am not sure whether it is possible
-> for so many interrupts to happen in a short time window.
->
-> I think we can use the time_stamp to distinguish the two cases.
-> Also, in either case, it seems bad to leave the tail_page->write with
-> an invalid value because it can cause problem when a reader
-> reads the page. Here is my proposed fix for the problem:
->
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index 7f69cfe..1500f78 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -982,8 +982,11 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
->                 * it all the way around the buffer, bail, and warn
->                 * about it.
->                 */
-> -               if (unlikely(next_page == cpu_buffer->commit_page)) {
-> +               if (unlikely(next_page == cpu_buffer->commit_page) &&
-> +                               tail_page->time_stamp > next_page->time_stamp) {
->                        WARN_ON_ONCE(1);
-> +                       if (tail <= BUF_PAGE_SIZE)
-> +                               local_set(&tail_page->write, tail);
->                        goto out_unlock;
->                }
->
->
-> Jiaying
->
+> + * on slow systems, and the hrtimer_interrupt can relaunch its processing
+> + * if too much time elapsed during its previous time update.
+> + *
+> + * Note that we don't need an atomic counter for loops here because
+> + * interrupts are disabled in hrtimer_interrupt.
+> + */
+> +
+> +extern DEFINE_PER_CPU(int, ftrace_graph_hrtimer_loop);
+
+We have DECLARE_PER_CPU() for this.
+
+> +static inline void ftrace_graph_hrtimer_enter(void)
+> +{
+> +	__get_cpu_var(ftrace_graph_hrtimer_loop) = 0;
+> +}
+> +
+> +static inline void ftrace_graph_hrtimer_retry(void)
+> +{
+> +	__get_cpu_var(ftrace_graph_hrtimer_loop)++;
+> +
+> +	if (__get_cpu_var(ftrace_graph_hrtimer_loop) == 10) {
+> +		ftrace_graph_stop();
+> +		printk(KERN_WARNING "function-graph-tracer: hrtimer_interrupt "
+> +				"exceeded 10 loops. Stopping tracing\n");
+> +	}
+> +}
+
+I suspect this code would end up considerably neater (and less likely
+to break the build) if these functons were not inlined.  For a start,
+ftrace_graph_hrtimer_loop would not need global scope.
+
+>  static inline int task_curr_ret_stack(struct task_struct *t)
+>  {
+>  	return t->curr_ret_stack;
+> @@ -437,6 +465,9 @@ static inline int task_curr_ret_stack(struct task_struct *tsk)
+>  
+>  static inline void pause_graph_tracing(void) { }
+>  static inline void unpause_graph_tracing(void) { }
+> +
+> +static inline void ftrace_graph_hrtimer_enter(void) { };
+> +static inline void ftrace_graph_hrtimer_retry(void) { };
+
+Unneeded semicolons.
+
+Please consider doing
+
+static inline void ftrace_graph_hrtimer_enter(void)
+{
+}
+
+>  #endif
+>  
+>  #ifdef CONFIG_TRACING
+> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> index b741f85..662eb53 100644
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+> @@ -44,6 +44,7 @@
+>  #include <linux/seq_file.h>
+>  #include <linux/err.h>
+>  #include <linux/debugobjects.h>
+> +#include <linux/ftrace.h>
+>  
+>  #include <asm/uaccess.h>
+>  
+> @@ -1186,7 +1187,11 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+>  	cpu_base->nr_events++;
+>  	dev->next_event.tv64 = KTIME_MAX;
+>  
+> +	ftrace_graph_hrtimer_enter();
+>   retry:
+> +	/* Prevent from eternal loop on slow systems while tracing */
+> +	ftrace_graph_hrtimer_retry();
+> +
+>  	now = ktime_get();
+>  
+>  	expires_next.tv64 = KTIME_MAX;
+> -- 
+> 1.6.0.4
