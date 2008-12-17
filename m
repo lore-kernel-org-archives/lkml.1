@@ -1,39 +1,106 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755417AbYLQQjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755318AbYLQQnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbYLQQjp (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 11:39:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYLQQjf
+	id S1755318AbYLQQnd (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 11:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYLQQmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 11:39:35 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:41100 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbYLQQjf (ORCPT
+	Wed, 17 Dec 2008 11:42:07 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:65194 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751411AbYLQQmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 11:39:35 -0500
-Date: Wed, 17 Dec 2008 17:51:49 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: Tejun Heo <tj@kernel.org>, George Spelvin <linux@horizon.com>,
-        peterz@infradead.org, andi@firstfloor.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [RFC] globmatch() helper function
-Message-ID: <20081217165149.GG25779@one.firstfloor.org>
-References: <20081217104247.28440.qmail@science.horizon.com> <87hc530w39.fsf@basil.nowhere.org> <1229526942.9487.75.camel@twins> <20081217160417.18507.qmail@science.horizon.com> <49492733.9000108@kernel.org> <1229531466.30177.12.camel@localhost.localdomain> <494929E5.8060302@kernel.org> <1229531826.30177.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1229531826.30177.14.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 17 Dec 2008 11:42:03 -0500
+Message-Id: <20081217164036.660327919@vixen.sonytel.be>
+References: <20081217163634.998961917@vixen.sonytel.be>
+User-Agent: quilt/0.46-1
+Date: Wed, 17 Dec 2008 17:36:39 +0100
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH/RFC 4/8] crypto: api - Add type init function to crypto_tfm
+Content-Disposition: inline; filename=crypto-add-tfm-init.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OK, lets compromise with WARN_ON_ONCE() ;-)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-I don't think WARN_ON is the right way to handle bad user input.
-It implies that when someone typos the result might end up in Arjan's 
-kerneloops.org database, which is not good.
+Add a type init function to crypto_tfm, so transforms can override the default
+action of calling the algorithm's cra_init() method.
 
--Andi
+This will be used by the "comp" compatibility layer for the "pcomp" type, which
+needs to call the algorithm's coa_setup() method, in addition to the cra_init()
+method.
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ crypto/api.c           |   20 ++++++++++++++++----
+ include/linux/crypto.h |    1 +
+ 2 files changed, 17 insertions(+), 4 deletions(-)
+
+--- a/crypto/api.c
++++ b/crypto/api.c
+@@ -390,8 +390,14 @@ struct crypto_tfm *__crypto_alloc_tfm(st
+ 	if (err)
+ 		goto out_free_tfm;
+ 
+-	if (!tfm->exit && alg->cra_init && (err = alg->cra_init(tfm)))
+-		goto cra_init_failed;
++	if (!tfm->exit) {
++		if (tfm->init)
++			err = tfm->init(tfm);
++		else if (alg->cra_init)
++			err = alg->cra_init(tfm);
++		if (err)
++			goto cra_init_failed;
++	}
+ 
+ 	goto out;
+ 
+@@ -487,8 +493,14 @@ struct crypto_tfm *crypto_create_tfm(str
+ 	if (err)
+ 		goto out_free_tfm;
+ 
+-	if (!tfm->exit && alg->cra_init && (err = alg->cra_init(tfm)))
+-		goto cra_init_failed;
++	if (!tfm->exit) {
++		if (tfm->init)
++			err = tfm->init(tfm);
++		else if (alg->cra_init)
++			err = alg->cra_init(tfm);
++		if (err)
++			goto cra_init_failed;
++	}
+ 
+ 	goto out;
+ 
+--- a/include/linux/crypto.h
++++ b/include/linux/crypto.h
+@@ -527,6 +527,7 @@ struct crypto_tfm {
+ 		struct rng_tfm rng;
+ 	} crt_u;
+ 
++	int (*init)(struct crypto_tfm *tfm);
+ 	void (*exit)(struct crypto_tfm *tfm);
+ 	
+ 	struct crypto_alg *__crt_alg;
+
 -- 
-ak@linux.intel.com
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+
