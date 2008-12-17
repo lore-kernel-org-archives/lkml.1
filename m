@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759985AbYLQAMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759465AbYLQAIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759985AbYLQAMX (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 19:12:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759703AbYLQAGp
+	id S1759465AbYLQAIs (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 19:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759342AbYLQAGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 19:06:45 -0500
-Received: from kroah.org ([198.145.64.141]:41437 "EHLO coco.kroah.org"
+	Tue, 16 Dec 2008 19:06:09 -0500
+Received: from kroah.org ([198.145.64.141]:41314 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759782AbYLQAGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 19:06:19 -0500
-Date: Tue, 16 Dec 2008 16:04:43 -0800
+	id S1759687AbYLQAGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 19:06:06 -0500
+Date: Tue, 16 Dec 2008 16:04:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,15 +23,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
         Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
         Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
         torvalds@linux-foundation.org, akpm@linux-foundation.org,
-        alan@lxorguk.ukuu.org.uk, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [patch 22/22] setup_per_zone_pages_min(): take zone->lock instead
-	of zone->lru_lock
-Message-ID: <20081217000443.GW4504@kroah.com>
+        alan@lxorguk.ukuu.org.uk, Ingo Brueckl <ib@wupperonline.de>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Egmont Koblinger <egmont@uhulinux.hu>
+Subject: [patch 13/22] console ASCII glyph 1:1 mapping
+Message-ID: <20081217000425.GN4504@kroah.com>
 References: <20081216235704.347182084@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="setup_per_zone_pages_min-take-zone-lock-instead-of-zone-lru_lock.patch"
+Content-Disposition: inline; filename="console-ascii-glyph-1-1-mapping.patch"
 In-Reply-To: <20081217000306.GA4504@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,44 +42,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+From: Ingo Brueckl <ib@wupperonline.de>
 
-commit 1125b4e3949949b44a7c80b619507c6f61d62911 upstream.
+commit 1c55f18717304100a5f624c923f7cb6511b4116d upstream.
 
-This replaces zone->lru_lock in setup_per_zone_pages_min() with zone->lock.
-There seems to be no need for the lru_lock anymore, but there is a need for
-zone->lock instead, because that function may call move_freepages() via
-setup_zone_migrate_reserve().
+For the console, there is a 1:1 mapping of glyphs which cannot be found
+in the current font.  This seems to be meant as a kind of 'emergency
+fallback' for fonts without unicode mapping which otherwise would
+display nothing readable on the screen.
 
-Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Tested-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+At the moment it affects all chars for which no substitution character
+is defined.  In particular this means that for all chars (>= 128) where
+there is no iso88591-1/unicode character (e.g.  control character area)
+you'll get the very strange 1:1 mapping of the (cp437) graphics card
+glyphs.
+
+I'm pretty sure that the 1:1 mapping should only affect strict ASCII
+code characters, i.e.  chars < 128.
+
+The patch limits the mapping as it probably was meant anyway.
+
+Signed-off-by: Ingo Brueckl <ib@wupperonline.de>
+Acked-by: H. Peter Anvin <hpa@zytor.com>
+Cc: Egmont Koblinger <egmont@uhulinux.hu>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page_alloc.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/char/vt.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -4224,7 +4224,7 @@ void setup_per_zone_pages_min(void)
- 	for_each_zone(zone) {
- 		u64 tmp;
- 
--		spin_lock_irqsave(&zone->lru_lock, flags);
-+		spin_lock_irqsave(&zone->lock, flags);
- 		tmp = (u64)pages_min * zone->present_pages;
- 		do_div(tmp, lowmem_pages);
- 		if (is_highmem(zone)) {
-@@ -4256,7 +4256,7 @@ void setup_per_zone_pages_min(void)
- 		zone->pages_low   = zone->pages_min + (tmp >> 2);
- 		zone->pages_high  = zone->pages_min + (tmp >> 1);
- 		setup_zone_migrate_reserve(zone);
--		spin_unlock_irqrestore(&zone->lru_lock, flags);
-+		spin_unlock_irqrestore(&zone->lock, flags);
- 	}
- 
- 	/* update totalreserve_pages */
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -2287,7 +2287,7 @@ rescan_last_byte:
+ 				    continue; /* nothing to display */
+ 				}
+ 				/* Glyph not found */
+-				if ((!(vc->vc_utf && !vc->vc_disp_ctrl) || c < 128) && !(c & ~charmask)) {
++				if ((!(vc->vc_utf && !vc->vc_disp_ctrl) && c < 128) && !(c & ~charmask)) {
+ 				    /* In legacy mode use the glyph we get by a 1:1 mapping.
+ 				       This would make absolutely no sense with Unicode in mind,
+ 				       but do this for ASCII characters since a font may lack
 
