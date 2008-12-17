@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752316AbYLQRSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1754435AbYLQRZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752316AbYLQRSu (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 12:18:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYLQRSj
+	id S1754435AbYLQRZl (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 12:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbYLQRZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 12:18:39 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48614 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751078AbYLQRSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 12:18:39 -0500
-Subject: Re: [PATCH 9/15] sanitize audit_fd_pair()
-From: Eric Paris <eparis@redhat.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <E1LCohy-0000De-Tc@ZenIV.linux.org.uk>
-References: <E1LCohy-0000De-Tc@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Wed, 17 Dec 2008 12:18:32 -0500
-Message-Id: <1229534312.3384.11.camel@localhost.localdomain>
+	Wed, 17 Dec 2008 12:25:12 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:43690 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752455AbYLQRZK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Dec 2008 12:25:10 -0500
+Date: Wed, 17 Dec 2008 18:26:40 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: linux-arch@vger.kernel.org,
+        Alexander van Heukelum <heukelum@mailshack.com>,
+        Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: [PATCH 1/many] PROC macro to annotate functions in assembly files
+Message-ID: <20081217172640.GB5436@uranus.ravnborg.org>
+References: <1229505475-10219-1-git-send-email-heukelum@fastmail.fm> <1229505475-10219-2-git-send-email-heukelum@fastmail.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1229505475-10219-2-git-send-email-heukelum@fastmail.fm>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-17 at 05:12 +0000, Al Viro wrote:
-> * no allocations
-> * return void
+On Wed, Dec 17, 2008 at 10:17:54AM +0100, Alexander van Heukelum wrote:
+> Introduce the PROC macro in the generic header file
+> include/linux/linkage.h to annotate functions in assembly
+> files. This is a first step to fully annotate functions
+> (procedures) in .S-files. The PROC macro complements the
+> already existing and being used ENDPROC macro. The generic
+> implementation of PROC is exactly the same as ENTRY.
 > 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> The goal is to annotate functions, at least those called
+> from C code, with PROC at the beginning and ENDPROC at the
+> end. This is for the benefit of debugging and tracing. It
+> will also allow to introduce a framework to check for
+> nesting problems and missing annotations in a later stage
+> by overriding ENTRY/END and PROC/ENDPROC in architecture-
+> specific code, after the annotation errors have been fixed.
+> 
+> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
 
+I understand where you are coming from with these.
+But what I see now is:
 
-> diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-> index ac89cd3..5de0087 100644
-> --- a/kernel/auditsc.c
-> +++ b/kernel/auditsc.c
-> @@ -215,6 +210,7 @@ struct audit_context {
->  			struct mq_attr		attr;
->  		} mq_open;
->  	};
-> +	int fds[2];
->  
->  #if AUDIT_DEBUG
->  	int		    put_count;
+ENTRY/END
+PROC/ENDPROC
+KPROBE_ENTRY/KPROBE_END
 
-Waste of space, at least on a 32 bit machine where the size of the ipc
-aux data is definitely larger than the sockcall aux data.  But I guess
-what you did is a whole lot easier and clearer than to try to hack up
-adding it to both sockcall and new pipe_fds and using the right one at
-the right time.  I guess if we cared about 64 bits per audited thread we
-wouldn't be moving the aux data into the audit_context anyway.
+And it is not obvious for me reading the comment when I should
+expect which one to be used.
 
-Acked-by: Eric Paris <eparis@redhat.com>
+Could we try to keep it down to two variants?
+And then document when to use which one.
 
+	Sam
