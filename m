@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757551AbYLQL0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758761AbYLQL1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbYLQL0I (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 06:26:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYLQLZy
+	id S1758761AbYLQL1o (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 06:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbYLQL1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 06:25:54 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50323 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751442AbYLQLZx (ORCPT
+	Wed, 17 Dec 2008 06:27:34 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58051 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750994AbYLQL1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 06:25:53 -0500
+	Wed, 17 Dec 2008 06:27:33 -0500
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] profile: don't include <asm/ptrace.h> twice.
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] mm: kill page_queue_congested()
 Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20081217202505.FF20.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20081217202547.FF22.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed, 17 Dec 2008 20:25:46 +0900 (JST)
+Date: Wed, 17 Dec 2008 20:27:30 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 ==
-Subject: [PATCH] profile: don't include <asm/ptrace.h> twice.
+Subject: [PATCH] mm: kill page_queue_congested()
 
-Currently, kernel/profile.c include <asm/ptrace.h> twice.
+page_queue_congested() was introduced at 2002.
+but it is unused until now at all.
+
 it can be removed.
 
 
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- kernel/profile.c |    1 -
- 1 file changed, 1 deletion(-)
+ mm/swapfile.c |   20 --------------------
+ 1 file changed, 20 deletions(-)
 
-Index: b/kernel/profile.c
+Index: b/mm/swapfile.c
 ===================================================================
---- a/kernel/profile.c
-+++ b/kernel/profile.c
-@@ -437,7 +437,6 @@ void profile_tick(int type)
- #ifdef CONFIG_PROC_FS
- #include <linux/proc_fs.h>
- #include <asm/uaccess.h>
--#include <asm/ptrace.h>
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -1203,26 +1203,6 @@ out:
+ 	return ret;
+ }
  
- static int prof_cpu_mask_read_proc(char *page, char **start, off_t off,
- 			int count, int *eof, void *data)
+-#if 0	/* We don't need this yet */
+-#include <linux/backing-dev.h>
+-int page_queue_congested(struct page *page)
+-{
+-	struct backing_dev_info *bdi;
+-
+-	BUG_ON(!PageLocked(page));	/* It pins the swap_info_struct */
+-
+-	if (PageSwapCache(page)) {
+-		swp_entry_t entry = { .val = page_private(page) };
+-		struct swap_info_struct *sis;
+-
+-		sis = get_swap_info_struct(swp_type(entry));
+-		bdi = sis->bdev->bd_inode->i_mapping->backing_dev_info;
+-	} else
+-		bdi = page->mapping->backing_dev_info;
+-	return bdi_write_congested(bdi);
+-}
+-#endif
+-
+ asmlinkage long sys_swapoff(const char __user * specialfile)
+ {
+ 	struct swap_info_struct * p = NULL;
 
 
