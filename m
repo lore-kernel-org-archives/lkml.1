@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1757295AbYLQBPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1756904AbYLQBST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757295AbYLQBPy (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 16 Dec 2008 20:15:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYLQBPn
+	id S1756904AbYLQBST (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 16 Dec 2008 20:18:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYLQBSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Dec 2008 20:15:43 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:48191 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750983AbYLQBPm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Dec 2008 20:15:42 -0500
-Date: Tue, 16 Dec 2008 20:13:34 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: greg@kroah.com, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-        akpm@linux-foundation.org
-Subject: Re: [PATCH] ibmphp: Fix module ref count underflow
-Message-ID: <20081217011334.GA5857@localhost.localdomain>
-References: <20081210194334.GA25257@hmsreliant.think-freely.org> <200812161042.09345.jbarnes@virtuousgeek.org> <20081216195620.GA10231@hmsreliant.think-freely.org> <200812161252.51191.jbarnes@virtuousgeek.org>
+	Tue, 16 Dec 2008 20:18:04 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:59347 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750983AbYLQBSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Dec 2008 20:18:03 -0500
+Message-ID: <494852FA.3000101@cn.fujitsu.com>
+Date: Wed, 17 Dec 2008 09:16:42 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812161252.51191.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Paul Menage <menage@google.com>
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Make cgroup_path() RCU-safe
+References: <6599ad830812161558t4da0e5e7l4ad7d6f3a0dfbe6e@mail.gmail.com>
+In-Reply-To: <6599ad830812161558t4da0e5e7l4ad7d6f3a0dfbe6e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16, 2008 at 12:52:50PM -0800, Jesse Barnes wrote:
-> On Tuesday, December 16, 2008 11:56 am Neil Horman wrote:
-> > On Tue, Dec 16, 2008 at 10:42:08AM -0800, Jesse Barnes wrote:
-> > > On Wednesday, December 10, 2008 11:43 am Neil Horman wrote:
-> > > > Hey-
-> > > > 	I happened to notice that the ibmphp hotplug driver does something
-> > > > rather silly in its init routine.  It purposely calls module_put so as
-> > > > to underflow its module ref count to avoid being removed from the
-> > > > kernel. This is bad practice, and wrong, since it provides a window for
-> > > > subsequent module_gets to reset the refcount to zero, allowing an
-> > > > unload to race in and cause all sorts of mysterious panics.  If the
-> > > > module is unsafe to load, it should inform the kernel as such with a
-> > > > call to __unsafe.  The patch below does that.
-> > >
-> > > Thanks Neil, applied this to my for-linus branch since it sounds
-> > > potentially serious (but also low risk since who uses ibmphp anymore? :)
-> >
-> > Dang it!  Sorry, Jesse.  Yes, youre absolutely right, it is low risk.  It
-> > really just a bit of sillyness all around.
-> >
-> > Unfortunately, I took part in the sillyness.  The problem was reported to
-> > me on RHEL, and I tested there, without checking upstream too closely.  As 
-> > aresult, the patch I gave you is a bit out of date, and won't compile. 
-> > I've tested the new patch here much more closely.  apologies.  I informed
-> > akpm who was looking at it, but neglected to copy you.
-> >
-> > This patch corrects the same problem in that it prevents module unloads in
-> > a sane fashion, by not registering an exit routine
-> >
-> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Paul Menage wrote:
+> Make cgroup_path() RCU safe
 > 
-> Ah was just doing my testing & building now so I would have caught it in a 
-> minute. :)  I'll replace the patch I have with this one, thanks.
+> This patch fixes races between /proc/sched_debug by freeing
+> cgroup objects via an RCU callback. Thus any cgroup reference obtained
+> from an RCU-safe source will remain valid during the RCU section. Since
+> dentries are also RCU-safe, this allows us to traverse up the tree safely.
 > 
-> Jesse
+> Additionally, make cgroup_path() check for a NULL cgrp->dentry to avoid
+> trying to report a path for a partially-created cgroup.
 > 
-Thank you, that matches what Andrew has in his tree.  Apologies for the noise
-Neil
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
 
+Thanks!
+
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+Tested-by: Li Zefan <lizf@cn.fujitsu.com>
+
+But the patch is word wrapped..
+
+> --
+> 
+> There are more RCU changes that I can make for 2.6.29+, but this
+> should fix the problem in 2.6.28
+
+...
+
+> +/*
+> + * cgroup_path() fills in a filesystem-like path for the given cgroup
+> + * into "buf", up to "buflen" characters. Should be called with
+> + * cgroup_mutex held, or else in an RCU section with an RCU-protected
+> + * cgroup reference
+> + */
+
+minor comment:
+
+We already have kernel-doc for cgroup_path(), why do we need those comments
+in cgroup.h.
+
+>  int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen);
+> 
