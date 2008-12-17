@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752198AbYLQRQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752763AbYLQRVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752198AbYLQRQn (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 12:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYLQRQd
+	id S1752763AbYLQRVY (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 12:21:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYLQRVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 12:16:33 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:39937 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbYLQRQd (ORCPT
+	Wed, 17 Dec 2008 12:21:07 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60616 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751365AbYLQRVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 12:16:33 -0500
-Date: Wed, 17 Dec 2008 18:18:00 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, geert@linux-m68k.org, dhowells@redhat.com,
-        gerg@uclinux.org
-Subject: Re: [PATCH] get rid of the last symlink in uml build
-Message-ID: <20081217171800.GA5436@uranus.ravnborg.org>
-References: <20081217061250.GX28946@ZenIV.linux.org.uk> <20081217072620.GA3551@uranus.ravnborg.org> <20081217083734.GA28946@ZenIV.linux.org.uk> <20081217085539.GA4152@uranus.ravnborg.org> <20081217091058.GB28946@ZenIV.linux.org.uk> <20081217112723.GA5027@uranus.ravnborg.org> <20081217170257.GE28946@ZenIV.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081217170257.GE28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 17 Dec 2008 12:21:05 -0500
+Date: Wed, 17 Dec 2008 12:19:16 -0500 (EST)
+From: Jeff Arnold <jbarnold@MIT.EDU>
+To: Dave Jones <davej@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Tim Abbott <tabbott@MIT.EDU>,
+        linux-kernel@vger.kernel.org,
+        Denys Vlasenko <vda.linux@googlemail.com>,
+        Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+        Nikanth Karthikesan <knikanth@suse.de>,
+        Ben Collins <bcollins@ubuntu.com>
+Subject: Re: [PATCH 0/7] Ksplice: Rebootless kernel updates
+In-Reply-To: <20081217035316.GA24620@redhat.com>
+Message-ID: <alpine.DEB.2.00.0812170046550.27419@vinegar-pot.mit.edu>
+References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <alpine.DEB.2.00.0812162133360.25958@vinegar-pot.mit.edu> <20081216190740.9db323ee.akpm@linux-foundation.org> <20081217035316.GA24620@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 05:02:57PM +0000, Al Viro wrote:
-> 	BTW, after taking a look at the remaing asm-*...
-> 
-> * frv, m32r and h8300 should be as trivial as git mv
+On Tue, 16 Dec 2008, Dave Jones wrote:
 
-Yep - I already have positive feedback from arch maintainers that
-they will fix it in the -rc1 timeframe.
+Hi Dave.  Thanks for your feedback.  I thought that it might be helpful 
+for me to provide some information about how Ksplice tries to address 
+these concerns.
 
-> * m68k has a bit of extra PITA - we need to clean up two non-trivial
->   includes from m68knommu (pci.h and setup.h) first, then it's a matter
->   of git mv, adding arch/m68k/include to search path on m68knommu and
->   removal of dummy headers from the latter.
+> It comes down to 'what happens when something goes wrong'.
+> When the end-user is running a ksplice-patched kernel with an unknown
+> number of patches, reproducability can get really complicated.
 
-I took a different route here and unified the headers for m68k and m68knommu
-under arch/m68k/include/asm
-It was based on a script originally developed by Arnd Bergmann.
+Ksplice does everything that we've been able to think of to help with 
+reproducibility and debugging.
 
-Geert already acked it, and I expect Greg to apply it in the -rc1 timeframe.
+The taint flag tells you whether any Ksplice updates have been loaded.  
+The list of loaded modules gives you an ID string for every Ksplice update 
+that has been loaded (which, if you have a copy of those updates, tells 
+you everything that Ksplice has done to the kernel, in the order that it 
+has done it).
 
-http://marc.info/?l=linux-kbuild&m=122927123805002&w=2 has Geert's ack,
-but original patch did not hit marc?!?
+Ksplice verifies the kernel's text before applying each update to make 
+sure that the kernel text exactly matches Ksplice's expectations (Ksplice 
+takes into account code modifications that have already happened, such as 
+from altinstructions and previous Ksplice updates).
 
-> * xtensa is already moved in linux-next
-Yes.
+> but we don't always get to see tainted flags in bug reports (the 
+> non-oops variants for eg).
 
+Perhaps it is possible to make taint information appear in bug reports 
+more frequently?  It seems as though useful bug reports already need to 
+contain quite a bit of other information.
 
-> * arm seems to be lacking the final push for few remaining headers; presumably
->   will happen eventually
-rmk knows it and takes care.
+> Which just leaves the "we can't afford downtime" argument, which leads
+> me to question how well reviewed runtime patches are.
 
-> * mn10300 is playing with symlinks - the last one to do that for headers,
->   AFAICS.
-> 
-> I've thrown together a patch series on top of linux-next doing m68k and
-> mn10300.  *WARNING* - it's completely untested, basically about half an
-> hour diversion from sifting through the mailbox for missed VFS patches.
-> And that half and hour did *not* include anything resembling building
-> the resulting tree.  So take that with a trainload of salt.
-Thanks Al.
-I will take a closer look at the mn10300 bits and send them to David
-in due time.
+I'm not sure whether you're worried about the Ksplice code itself or the 
+patches that people might apply using Ksplice.
 
-	Sam
+As for the Ksplice code itself, I suppose that I can only say that we've 
+done our best and we invite people to find problems in it.
+
+If you're concerned about the patches that people might apply using 
+Ksplice:  yes, I agree that writing new custom code for hot updates is 
+scary.  Ksplice has, in fact, been designed around the idea of avoiding 
+new code for hot updates.  88% of CVEs from May 2005 to May 2008 can be 
+corrected without writing a single line of new code [1]--Ksplice 
+constructs the update based entirely on the existing mainline patch.  
+(The remaining CVEs require an average of roughly 20 semicolon-terminated 
+new lines of code per CVE).  Updates should still be generated by someone 
+competent, but we've tried to minimize the burden and risk involved.
+
+[1] http://www.ksplice.com/cve-evaluation
+
+Jeff Arnold
+jbarnold@mit.edu
