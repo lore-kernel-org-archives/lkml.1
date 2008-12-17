@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759647AbYLQJdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1759679AbYLQJfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759647AbYLQJdH (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 04:33:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYLQJcz
+	id S1759679AbYLQJfP (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 04:35:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbYLQJe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 04:32:55 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51150 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbYLQJcy (ORCPT
+	Wed, 17 Dec 2008 04:34:58 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:62914 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750865AbYLQJe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 04:32:54 -0500
-Date: Wed, 17 Dec 2008 09:32:45 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: James Morris <jmorris@namei.org>
-Cc: Al Viro <viro@ftp.linux.org.uk>, linux-audit@redhat.com,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/15] sanitize audit_ipc_obj()
-Message-ID: <20081217093245.GC28946@ZenIV.linux.org.uk>
-References: <E1LCoh0-00009T-Sd@ZenIV.linux.org.uk> <alpine.LRH.1.10.0812171823430.22856@tundra.namei.org>
+	Wed, 17 Dec 2008 04:34:57 -0500
+Message-ID: <4948C71C.2000700@nokia.com>
+Date: Wed, 17 Dec 2008 11:32:12 +0200
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.1.10.0812171823430.22856@tundra.namei.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: David Woodhouse <David.Woodhouse@intel.com>, linux-next@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Adrian Hunter <ext-adrian.hunter@nokia.com>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: mtd tree build failures (Was: Re: linux-next: Tree
+ for December 16)
+References: <20081216223754.0c8e21d4.sfr@canb.auug.org.au>	<20081216152607.f232fafd.akpm@linux-foundation.org> <20081217175911.594ae84f.sfr@canb.auug.org.au>
+In-Reply-To: <20081217175911.594ae84f.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 17 Dec 2008 09:34:28.0593 (UTC) FILETIME=[A856E610:01C9602A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 06:24:40PM +1100, James Morris wrote:
-> On Wed, 17 Dec 2008, Al Viro wrote:
+ext Stephen Rothwell wrote:
+> On Tue, 16 Dec 2008 15:26:07 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+>> This MTD patch:
+>>
+>> commit 69423d99fc182a81f3c5db3eb5c140acc6fc64be
+>> Author:     Adrian Hunter <ext-adrian.hunter@nokia.com>
+>> AuthorDate: Wed Dec 10 13:37:21 2008 +0000
+>> Commit:     David Woodhouse <David.Woodhouse@intel.com>
+>> CommitDate: Wed Dec 10 13:37:21 2008 +0000
+>>
+>>     [MTD] update internal API to support 64-bit device size
+>>
+>> broke the i386 build:
 > 
-> > +		struct {
-> > +			uid_t			uid;
-> > +			gid_t			gid;
-> > +			mode_t			mode;
-> > +			u32			osid;
-> > +		} ipc;
-> 
-> 'osid' should be converted into 'secid' someday.
+> Also a few arm configs and the m68k allmodconfig.  I shall revert the mtd
+> tree from linux-next today.
 
-Eh?  Do you mean the field name there or the actual output?  Either is
-trivial, of course, but the latter is up to userland folks and the
-former alone seems to be rather pointless...
+It would be nice if you sent the error messages. I do not have m68k
+compilers, but I could fix the errors anyway, because it is just
+about doing divisions with 'do_div()'.
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
