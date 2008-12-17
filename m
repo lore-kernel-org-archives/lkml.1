@@ -1,89 +1,52 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753833AbYLQRin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751712AbYLQRv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbYLQRin (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 12:38:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYLQRi3
+	id S1751712AbYLQRv7 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 12:51:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbYLQRvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 12:38:29 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:45074 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbYLQRi1 (ORCPT
+	Wed, 17 Dec 2008 12:51:49 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54012 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbYLQRvt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 12:38:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=dEnJ8Zz4SDP/gpH5lX+eYqM+ZVg7dvmai3BBcGd+W0v/3QSCVdwo5wPkZxsJ0pY7Fh
-         m3I4tu2d/FDe/dcTJOxeFcpjoqwL8PVNajneX7p61fGfmormJXU1QV/Cfl5M52BeDgCe
-         K9cH0V+IEzZOC8R9LP1+Cglket3yK2MRT87hE=
-Date: Wed, 17 Dec 2008 20:38:24 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>, linux-arch@vger.kernel.org,
-        Alexander van Heukelum <heukelum@mailshack.com>,
-        Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/many] PROC macro to annotate functions in assembly
-	files
-Message-ID: <20081217173824.GF8078@localhost>
-References: <1229505475-10219-1-git-send-email-heukelum@fastmail.fm> <1229505475-10219-2-git-send-email-heukelum@fastmail.fm> <20081217172640.GB5436@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081217172640.GB5436@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 17 Dec 2008 12:51:49 -0500
+Subject: [PATCH] x86: process.c declare c1e_remove_cpu before they get used
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+        Andi Kleen <andi@firstfloor.org>
+Content-Type: text/plain
+Date: Wed, 17 Dec 2008 23:20:05 +0530
+Message-Id: <1229536205.23068.6.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sam Ravnborg - Wed, Dec 17, 2008 at 06:26:40PM +0100]
-| On Wed, Dec 17, 2008 at 10:17:54AM +0100, Alexander van Heukelum wrote:
-| > Introduce the PROC macro in the generic header file
-| > include/linux/linkage.h to annotate functions in assembly
-| > files. This is a first step to fully annotate functions
-| > (procedures) in .S-files. The PROC macro complements the
-| > already existing and being used ENDPROC macro. The generic
-| > implementation of PROC is exactly the same as ENTRY.
-| > 
-| > The goal is to annotate functions, at least those called
-| > from C code, with PROC at the beginning and ENDPROC at the
-| > end. This is for the benefit of debugging and tracing. It
-| > will also allow to introduce a framework to check for
-| > nesting problems and missing annotations in a later stage
-| > by overriding ENTRY/END and PROC/ENDPROC in architecture-
-| > specific code, after the annotation errors have been fixed.
-| > 
-| > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-| > Cc: Sam Ravnborg <sam@ravnborg.org>
-| > Cc: Andrew Morton <akpm@linux-foundation.org>
-| 
-| I understand where you are coming from with these.
-| But what I see now is:
-| 
-| ENTRY/END
-| PROC/ENDPROC
-| KPROBE_ENTRY/KPROBE_END
-| 
-| And it is not obvious for me reading the comment when I should
-| expect which one to be used.
-| 
-| Could we try to keep it down to two variants?
-| And then document when to use which one.
-| 
-| 	Sam
-| 
+Impact: cleanup
 
-Sam, I think eventually we should get something like this:
+Included asm/idle.h for c1e_remove_cpu declaration.
 
-- KPROBE will be eliminated and explicit section descriptions
-  are to be used
-- ENTRY could be used / or renamed for something more descriptive
-  and being used aligned jmp targets or in case of procs with
-  shared body
-- PROC/ENDPROC are to replace old ENTRY/END for procs being called
-  mostly from C code
+Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
+---
+ arch/x86/kernel/process.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Did I miss something? Does it sound like a good/bad plan?
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index f50f8bf..25313de 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -10,6 +10,7 @@
+ #include <linux/ftrace.h>
+ #include <asm/system.h>
+ #include <asm/apic.h>
++#include <asm/idle.h>
+ 
+ unsigned long idle_halt;
+ EXPORT_SYMBOL(idle_halt);
+-- 
+1.5.5.1
 
-		- Cyrill -
+
+
