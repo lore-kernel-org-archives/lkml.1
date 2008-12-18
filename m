@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752191AbYLRRye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753022AbYLRRxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752191AbYLRRye (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 12:54:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYLRRxS
+	id S1753022AbYLRRxU (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 12:53:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYLRRwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 12:53:18 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:52919 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752938AbYLRRxR (ORCPT
+	Thu, 18 Dec 2008 12:52:51 -0500
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:50208 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752158AbYLRRwu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 12:53:17 -0500
+	Thu, 18 Dec 2008 12:52:50 -0500
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH v7 5/8] sched: bias task wakeups to preferred semi-idle
-	packages
+Subject: [PATCH v7 1/8] sched: convert BALANCE_FOR_xx_POWER to inline functions
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
         Suresh B Siddha <suresh.b.siddha@intel.com>,
         Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -27,8 +26,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
         Pavel Machek <pavel@suse.cz>,
         Andrew Morton <akpm@linux-foundation.org>,
         Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Thu, 18 Dec 2008 23:26:29 +0530
-Message-ID: <20081218175629.29812.16699.stgit@drishya.in.ibm.com>
+Date: Thu, 18 Dec 2008 23:26:02 +0530
+Message-ID: <20081218175602.29812.66863.stgit@drishya.in.ibm.com>
 In-Reply-To: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
 References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -39,67 +38,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Preferred wakeup cpu (from a semi idle package) has been
-nominated in find_busiest_group() in the previous patch.  Use
-this information in sched_mc_preferred_wakeup_cpu in function
-wake_idle() to bias task wakeups if the following conditions
-are satisfied:
-        - The present cpu that is trying to wakeup the process is
-          idle and waking the target process on this cpu will
-          potentially wakeup a completely idle package
-        - The previous cpu on which the target process ran is
-          also idle and hence selecting the previous cpu may
-          wakeup a semi idle cpu package
-        - The task being woken up is allowed to run in the
-          nominated cpu (cpu affinity and restrictions)
+BALANCE_FOR_MC_POWER and similar macros defined in sched.h are
+not constants and have various condition checks and significant
+amount of code that is not suitable to be contain in a macro.
+Also there could be side effects on the expressions passed to
+some of them like test_sd_parent().
 
-Basically if both the current cpu and the previous cpu on
-which the task ran is idle, select the nominated cpu from semi
-idle cpu package for running the new task that is waking up.
-
-Cache hotness is considered since the actual biasing happens
-in wake_idle() only if the application is cache cold.
-
-This technique will effectively move short running bursty jobs in
-a mostly idle system.
-
-Wakeup biasing for power savings gets automatically disabled if
-system utilisation increases due to the fact that the probability
-of finding both this_cpu and prev_cpu idle decreases.
+This patch converts all complex macros related to power savings
+balance to inline functions.
 
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
 
- kernel/sched_fair.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+ include/linux/sched.h    |   33 ++++++++++++++++++++++++---------
+ include/linux/topology.h |    4 ++--
+ 2 files changed, 26 insertions(+), 11 deletions(-)
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 98345e4..c82386c 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1027,6 +1027,24 @@ static int wake_idle(int cpu, struct task_struct *p)
- 	cpumask_t tmp;
- 	struct sched_domain *sd;
- 	int i;
-+	unsigned int chosen_wakeup_cpu;
-+	int this_cpu;
-+
-+	/*
-+	 * At POWERSAVINGS_BALANCE_WAKEUP level, if both this_cpu and prev_cpu
-+	 * are idle and this is not a kernel thread and this task's affinity
-+	 * allows it to be moved to preferred cpu, then just move!
-+	 */
-+
-+	this_cpu = smp_processor_id();
-+	chosen_wakeup_cpu =
-+		cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu;
-+
-+	if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP &&
-+		idle_cpu(cpu) && idle_cpu(this_cpu) &&
-+		p->mm && !(p->flags & PF_KTHREAD) &&
-+		cpu_isset(chosen_wakeup_cpu, p->cpus_allowed))
-+		return chosen_wakeup_cpu;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 55e30d1..311122f 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -764,15 +764,23 @@ enum cpu_idle_type {
+ #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
+ #define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
  
- 	/*
- 	 * If it is idle, then it is the best cpu to run this task.
+-#define BALANCE_FOR_MC_POWER	\
+-	(sched_smt_power_savings ? SD_POWERSAVINGS_BALANCE : 0)
++extern int sched_mc_power_savings, sched_smt_power_savings;
++
++static inline int sd_balance_for_mc_power(void)
++{
++	if (sched_smt_power_savings)
++		return SD_POWERSAVINGS_BALANCE;
+ 
+-#define BALANCE_FOR_PKG_POWER	\
+-	((sched_mc_power_savings || sched_smt_power_savings) ?	\
+-	 SD_POWERSAVINGS_BALANCE : 0)
++	return 0;
++}
+ 
+-#define test_sd_parent(sd, flag)	((sd->parent &&		\
+-					 (sd->parent->flags & flag)) ? 1 : 0)
++static inline int sd_balance_for_package_power(void)
++{
++	if (sched_mc_power_savings | sched_smt_power_savings)
++		return SD_POWERSAVINGS_BALANCE;
++
++	return 0;
++}
+ 
+ 
+ struct sched_group {
+@@ -1358,6 +1366,15 @@ struct task_struct {
+ 	struct list_head	*scm_work_list;
+ };
+ 
++/* Test a flag in parent sched domain */
++static inline int test_sd_parent(struct sched_domain *sd, int flag)
++{
++	if (sd->parent && (sd->parent->flags & flag))
++		return 1;
++
++	return 0;
++}
++
+ /*
+  * Priority of a process goes from 0..MAX_PRIO-1, valid RT
+  * priority is 0..MAX_RT_PRIO-1, and SCHED_NORMAL/SCHED_BATCH
+@@ -2215,8 +2232,6 @@ __trace_special(void *__tr, void *__data,
+ extern long sched_setaffinity(pid_t pid, const cpumask_t *new_mask);
+ extern long sched_getaffinity(pid_t pid, cpumask_t *mask);
+ 
+-extern int sched_mc_power_savings, sched_smt_power_savings;
+-
+ extern void normalize_rt_tasks(void);
+ 
+ #ifdef CONFIG_GROUP_SCHED
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index 117f1b7..7f10439 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -125,7 +125,7 @@ void arch_update_cpu_topology(void);
+ 				| SD_WAKE_AFFINE	\
+ 				| SD_WAKE_BALANCE	\
+ 				| SD_SHARE_PKG_RESOURCES\
+-				| BALANCE_FOR_MC_POWER,	\
++				| sd_balance_for_mc_power(),\
+ 	.last_balance		= jiffies,		\
+ 	.balance_interval	= 1,			\
+ }
+@@ -150,7 +150,7 @@ void arch_update_cpu_topology(void);
+ 				| SD_BALANCE_FORK	\
+ 				| SD_WAKE_AFFINE	\
+ 				| SD_WAKE_BALANCE	\
+-				| BALANCE_FOR_PKG_POWER,\
++				| sd_balance_for_package_power(),\
+ 	.last_balance		= jiffies,		\
+ 	.balance_interval	= 1,			\
+ }
 
