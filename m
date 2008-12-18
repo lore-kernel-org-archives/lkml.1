@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752201AbYLRIKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752471AbYLRIM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752201AbYLRIKm (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 03:10:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbYLRIKc
+	id S1752471AbYLRIM5 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 03:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbYLRIMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 03:10:32 -0500
-Received: from netgear.net.ru ([195.178.208.66]:37883 "EHLO tservice.net.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751231AbYLRIKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 03:10:31 -0500
-Date: Thu, 18 Dec 2008 11:10:29 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
-Subject: Re: [4/7] dst: thread pool.
-Message-ID: <20081218081029.GA20336@ioremap.net>
-References: <1229521998-7870-1-git-send-email-zbr@ioremap.net> <1229521998-7870-4-git-send-email-zbr@ioremap.net> <1229521998-7870-5-git-send-email-zbr@ioremap.net> <200812171655.05020.arnd@arndb.de> <1229544192.16253.37.camel@pasglop> <20081217233203.GA30039@ioremap.net> <1229561507.19360.0.camel@pasglop>
+	Thu, 18 Dec 2008 03:12:46 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:65207 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751269AbYLRIMp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 03:12:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=fzkUcoAxy2bK7ZS3BanhImWAzRf+VoRDZ+4YDigWXFJnXS6Il0a/IF6V8ct4kB33e2
+         IBsGR67T6qLUTwXvQnVB61U5t6YROp1eXYAx4umfa0hgNy32S/QYV8pPMLe4zkiokYLj
+         0LhT81BrKjt5Ts5kRaRDGfs9lWIT+AHhdr/aQ=
+Message-ID: <494A05F6.7040101@panasas.com>
+Date: Thu, 18 Dec 2008 10:12:38 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1229561507.19360.0.camel@pasglop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Hans Verkuil <hverkuil@xs4all.nl>, Greg KH <greg@kroah.com>,
+        linux-kernel@vger.kernel.org, v4l <video4linux-list@redhat.com>,
+        Laurent Pinchart <laurent.pinchart@skynet.be>,
+        Tejun Heo <tj@kernel.org>
+Subject: Re: [BUG] cdev_put() race condition
+References: <200812082156.26522.hverkuil@xs4all.nl> <200812171607.41713.hverkuil@xs4all.nl> <49492437.7020105@panasas.com> <200812171833.39735.hverkuil@xs4all.nl> <20081217180805.GG28946@ZenIV.linux.org.uk>
+In-Reply-To: <20081217180805.GG28946@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben.
+Al Viro wrote:
+> On Wed, Dec 17, 2008 at 06:33:38PM +0100, Hans Verkuil wrote:
+>> On Wednesday 17 December 2008 17:09:27 Boaz Harrosh wrote:
+>>> Hans Verkuil wrote:
+>>>> On Wednesday 17 December 2008 15:52:38 Boaz Harrosh wrote:
+>>>>> Hans Verkuil wrote:
+>>>>>> On Wednesday 17 December 2008 00:30:39 Greg KH wrote:
+>>>>>>> On Wed, Dec 17, 2008 at 12:23:41AM +0100, Hans Verkuil wrote:
+>>>>>>>> On Tuesday 16 December 2008 22:21:50 Greg KH wrote:
+>>>>>>>>> On Tue, Dec 16, 2008 at 10:00:51PM +0100, Hans Verkuil wrote:
+>>>>>>>>>> On Tuesday 16 December 2008 21:22:48 Greg KH wrote:
+>>>>>>>>>>> On Mon, Dec 08, 2008 at 09:56:26PM +0100, Hans Verkuil wrote:
+>>>>>>>>>>>> Hi Greg,
+> 
+> [snip 400-odd lines, with ~30 lines of original contents]
+> 
+> Could the esteemed sir kindly consider trimming the fucking crap or taking
+> that to alt.cascade?
+> --
 
-On Thu, Dec 18, 2008 at 11:51:47AM +1100, Benjamin Herrenschmidt (benh@kernel.crashing.org) wrote:
-> Heh. I think I counted 3 or 4 thread pool implementations already in the
-> kernel though they are all ad-hoc attached to a given subsystem.
+Sorry, I apologize for that. I was CCing someone new and felt I might need
+to leave the context of the conversation. But you are right it was getting
+out of hand.
 
-That's how such projects are implemented: when developers need to
-extend some other sybsystem they do that with own implementation of the
-needed feature. Moreover people frequently argue against importing some
-new feature if there are no direct users of it (like may happen with
-thread pools, which no one will use immediately), so why bother with
-that crap (och, well, and interfaces, there will be definitely people
-who do not like them) when it is possible just to make working what
-you like? So I fully understand those who implemented it in theirs
-subsystems. I would even call blaming them for not pushing theirs
-implementations into generic location somewhat hypocritically because
-of above :)
-
--- 
-	Evgeniy Polyakov
+Boaz
