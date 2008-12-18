@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752040AbYLRMg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753378AbYLRMk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752040AbYLRMg6 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 07:36:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYLRMgq
+	id S1753378AbYLRMk0 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 07:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYLRMkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 07:36:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33978 "EHLO mx2.mail.elte.hu"
+	Thu, 18 Dec 2008 07:40:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47314 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751670AbYLRMgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 07:36:45 -0500
-Date: Thu, 18 Dec 2008 13:36:38 +0100
+	id S1751412AbYLRMkN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 07:40:13 -0500
+Date: Thu, 18 Dec 2008 13:39:24 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh <jaswinder@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] x86: time_64.c timer_interrupt should be static
-Message-ID: <20081218123638.GF25715@elte.hu>
-References: <1229536041.23068.1.camel@jaswinder.satnam>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
+        Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@sisk.pl>,
+        Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: TSC not updating after resume: Bug or Feature?
+Message-ID: <20081218123924.GH25715@elte.hu>
+References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net> <1229536210.30177.21.camel@localhost.localdomain> <1229592279.9487.133.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229536041.23068.1.camel@jaswinder.satnam>
+In-Reply-To: <1229592279.9487.133.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,15 +37,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh <jaswinder@infradead.org> wrote:
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-> Impact: cleanup, reduce kernel size a bit
-> 
-> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
-> ---
->  arch/x86/kernel/time_64.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> Rafael, would something like this explain why we had to revert Shaggy's 
+> patch? His patch fixes the backward motion filter and I'm at an utter 
+> loss why that would break suspend.
 
-applied to tip/x86/cleanups, thanks Jaswinder!
+yes, i'd love to have this commit reinstated:
+
+ 5b7dba4: sched_clock: prevent scd->clock from moving backwards
+
+and the bug triggered by hibernation fixed instead.
 
 	Ingo
