@@ -1,120 +1,74 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752273AbYLRH6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752084AbYLRIAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752273AbYLRH6j (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 02:58:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYLRH63
+	id S1752084AbYLRIAj (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 03:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYLRIA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 02:58:29 -0500
-Received: from ocean.emcraft.com ([213.221.7.182]:55774 "EHLO
-	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbYLRH63 (ORCPT
+	Thu, 18 Dec 2008 03:00:29 -0500
+Received: from science.horizon.com ([192.35.100.1]:11998 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751125AbYLRIA3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 02:58:29 -0500
-From: Yuri Tikhonov <yur@emcraft.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH][v2] fork_init: fix division by zero
-Date: Thu, 18 Dec 2008 10:47:50 +0300
-User-Agent: KMail/1.9.4
-Cc: Andrew Morton <akpm@linux-foundation.org>, wd@denx.de, dzu@denx.de,
-        linux-kernel@vger.kernel.org, miltonm@bga.com, linuxppc-dev@ozlabs.org,
-        viro@zeniv.linux.org.uk, Geert.Uytterhoeven@sonycom.com,
-        yanok@emcraft.com
-References: <200812101950.51958.yur@emcraft.com> <20081211121635.ff58193f.akpm@linux-foundation.org> <18753.46301.944770.779390@cargo.ozlabs.ibm.com>
-In-Reply-To: <18753.46301.944770.779390@cargo.ozlabs.ibm.com>
+	Thu, 18 Dec 2008 03:00:29 -0500
+Message-ID: <20081218080027.27011.qmail@science.horizon.com>
+From: "George Spelvin" <linux@horizon.com>
+Date: Thu, 18 Dec 2008 03:00:27 -0500
+To: srostedt@redhat.com, peterz@infradead.org
+Cc: tj@kernel.org, linux@horizon.com, linux-kernel@vger.kernel.org,
+        andi@firstfloor.org
+Subject: Re: [RFC] globmatch() helper function
+References: <20081217104247.28440.qmail@science.horizon.com>
+ <87hc530w39.fsf@basil.nowhere.org> <1229526942.9487.75.camel@twins>
+ <1229528856.30177.4.camel@localhost.localdomain>
+In-Reply-To: <1229528856.30177.4.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812181047.50332.yur@emcraft.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Paul,
+Steven Rostedt <srostedt@redhat.com> wrote:
+> I need to look at your code (I would like a generalized glob feature for
+> user input). Can you accomplish the same with using a loop instead of
+> recursion?
 
-On Friday 12 December 2008 03:48, Paul Mackerras wrote:
-> Andrew Morton writes:
-> 
-> > > +#if (8 * THREAD_SIZE) > PAGE_SIZE
-> > >  	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
-> > > +#else
-> > > +	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
-> > > +#endif
-> > 
-> > The expression you've chosen here can be quite inacccurate, because
-> > ((PAGE_SIZE / (8 * THREAD_SIZE)) is a small number.  The way to
-> > preserve accuracy is
-> 
-> The assumption is that THREAD_SIZE is a power of 2, as is PAGE_SIZE.
-> 
-> I think Yuri should be increasing THREAD_SIZE for the larger page
-> sizes he's implementing, because we have on-stack arrays whose size
-> depends on the page size.  I suspect that having THREAD_SIZE less than
-> 1/8 of PAGE_SIZE risks stack overflows, and the better fix is for Yuri
-> to make sure THREAD_SIZE is at least 1/8 of PAGE_SIZE.  (In fact, more
-> may be needed - someone should work out what fraction is actually
-> needed.)
+Unfortunately, no.  Matching multiple * characters inherently requires
+backtracking, and backtracking requires a stack.
 
-  Right, thanks for pointing this. I guess, I was just lucky since didn't run into
-problems with stack overflows. So, I agree that we should increase the 
-THREAD_SIZE in case of 256KB pages up to 1/8 of PAGE_SIZE, that is up 
-to 32KB.
+I could make it a finite-depth explicit stack rather than using
+the C stack implicitly, but it doesn't save much on reasonable
+patterns.
 
- There is one more warning from the common code when I use 256KB pages:
+But if you want it for user input, I can work at making it more
+robust.  What are your sped needs?
+0 - Runs once only, speed unimportant
+1 - Runs several thousand times (counting all NxM matches), would like
+    it to not be too slow.
+2 - Run a thousand times per second, but it's a debug feature so
+    a speed hit is acceptable.
+3 - Common code path, maybe rearchitect to save time.
+4 - Kernel fast path, every cycle counts!
 
-   CC      mm/shmem.o
-mm/shmem.c: In function 'shmem_truncate_range':
-mm/shmem.c:613: warning: division by zero
-mm/shmem.c:619: warning: division by zero
-mm/shmem.c:644: warning: division by zero
-mm/shmem.c: In function 'shmem_unuse_inode':
-mm/shmem.c:873: warning: division by zero
+There are quite a few things (with commensurate code size increases)
+that can't help the big-O worst-case performance, but improve the average
+case considerably.
 
- The problem here is that ENTRIES_PER_PAGEPAGE becomes 0x1.0000.0000
-when PAGE_SIZE is 256K.
+One thing I don't do that's quite possible is to find the fixed-length
+head and tail of the pattern (the parts before the first * and after the
+last) and match those before dealing with the annoying middle.
 
- How about the following fix ?
+That would avoid all backtracking in cases with a single *, and make a
+good pre-filter before doing anything expensive in the middle.
 
-diff --git a/mm/shmem.c b/mm/shmem.c
-index 0ed0752..99d7c91 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -57,7 +57,7 @@
- #include <asm/pgtable.h>
- 
- #define ENTRIES_PER_PAGE (PAGE_CACHE_SIZE/sizeof(unsigned long))
--#define ENTRIES_PER_PAGEPAGE (ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
-+#define ENTRIES_PER_PAGEPAGE ((unsigned long long)ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
- #define BLOCKS_PER_PAGE  (PAGE_CACHE_SIZE/512)
- 
- #define SHMEM_MAX_INDEX  (SHMEM_NR_DIRECT + (ENTRIES_PER_PAGEPAGE/2) * (ENTRIES_PER_PAGE+1))
-@@ -95,7 +95,7 @@ static unsigned long shmem_default_max_inodes(void)
- }
- #endif
- 
--static int shmem_getpage(struct inode *inode, unsigned long idx,
-+static int shmem_getpage(struct inode *inode, unsigned long long idx,
- 			 struct page **pagep, enum sgp_type sgp, int *type);
- 
- static inline struct page *shmem_dir_alloc(gfp_t gfp_mask)
-@@ -533,7 +533,7 @@ static void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end)
- 	int punch_hole;
- 	spinlock_t *needs_lock;
- 	spinlock_t *punch_lock;
--	unsigned long upper_limit;
-+	unsigned long long upper_limit;
- 
- 	inode->i_ctime = inode->i_mtime = CURRENT_TIME;
- 	idx = (start + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-@@ -1175,7 +1175,7 @@ static inline struct mempolicy *shmem_get_sbmpol(struct shmem_sb_info *sbinfo)
-  * vm. If we swap it in we mark it dirty since we also free the swap
-  * entry since a page cannot live in both the swap and page cache
-  */
--static int shmem_getpage(struct inode *inode, unsigned long idx,
-+static int shmem_getpage(struct inode *inode, unsigned long long idx,
- 			struct page **pagep, enum sgp_type sgp, int *type)
- {
- 	struct address_space *mapping = inode->i_mapping;
+H'm... I think there's an equivalent and more general version based on
+the number of characters a pattern matches.  Any pattern's length is
+N characters, plus a flag indicating if that's fixed or just a minimum.
 
-Regards, Yuri
+When matching a *, compute the length of the following pattern and only
+try matching cases which have the right length.
+
+If we need to do a lot of matching against a single pattern, it's possible
+to preprocess it to find the fixed-length spans and their lengths.
+(The current blacklist application is exactly the opposite: matching
+one string against a list of patterns.)
