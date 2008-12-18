@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752105AbYLROSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752144AbYLROYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752105AbYLROSy (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 09:18:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbYLROSo
+	id S1752144AbYLROYy (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 09:24:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYLROYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 09:18:44 -0500
-Received: from mail.inf.tu-dresden.de ([141.76.2.1]:62304 "EHLO
-	mail.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbYLROSn (ORCPT
+	Thu, 18 Dec 2008 09:24:42 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50063 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbYLROYl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 09:18:43 -0500
-Message-ID: <494A5BBF.8000807@inf.tu-dresden.de>
-Date: Thu, 18 Dec 2008 15:18:39 +0100
-From: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Thu, 18 Dec 2008 09:24:41 -0500
+Date: Thu, 18 Dec 2008 09:24:20 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: David Howells <dhowells@redhat.com>,
+        Trond Myklebust <trond.myklebust@fys.uio.no>, steved@redhat.com,
+        rwheeler@redhat.com, bfields@fieldses.org, nfsv4@linux-nfs.org,
+        linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Pull request for FS-Cache, including NFS patches
+Message-ID: <20081218142420.GA16728@infradead.org>
+References: <8930.1229560221@redhat.com> <20081218224418.804f10bc.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] ide: Fix ata_id_has_dword_io to return DWORD I/O support
- properly
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081218224418.804f10bc.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes ata_id_has_dword_io to return 1 (supported) if
-the drive is compliant to ATA2 or newer and evaluates the config
-word for older drives.
+On Thu, Dec 18, 2008 at 10:44:18PM +1100, Stephen Rothwell wrote:
+> Added from today.
+> 
+> Usual spiel: all patches in that branch must have been
+> 	posted to a relevant mailing list
+> 	reviewed
+> 	unit tested
+> 	destined for the next merge window (or the current release)
+> *before* they are included.
 
-Signed-off-by: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
----
- include/linux/ata.h |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/include/linux/ata.h b/include/linux/ata.h
-index a53318b..d0d6a9c 100644
---- a/include/linux/ata.h
-+++ b/include/linux/ata.h
-@@ -700,12 +700,12 @@ static inline int ata_id_has_tpm(const u16 *id)
-
- static inline int ata_id_has_dword_io(const u16 *id)
- {
--	/* ATA 8 reuses this flag for "trusted" computing */
--	if (ata_id_major_version(id) > 7)
--		return 0;
--	if (id[ATA_ID_DWORD_IO] & (1 << 0))
--		return 1;
--	return 0;
-+	/* This flag is defined up to ATA1 and deprecated since then
-+	   (ATA 8 reuses this flag for "trusted" computing). */
-+	if (ata_id_major_version(id) <= 1)
-+		return (id[ATA_ID_DWORD_IO] & (1 << 0)) != 0;
-+	/* later revision drives support DWORD I/O just fine */
-+	return 1;
- }
-
- static inline int ata_id_has_unload(const u16 *id)
--- 
-1.5.6.3
+I don't think we want fscache for .29 yet.  I'd rather let the
+credential code settle for one release, and have more time for actually
+reviewing it properly and have it 100% ready for .30.
 
