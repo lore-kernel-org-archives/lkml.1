@@ -1,41 +1,91 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753220AbYLRSUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752822AbYLRSb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753220AbYLRSUh (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 13:20:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYLRSU0
+	id S1752822AbYLRSb3 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 13:31:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbYLRSbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 13:20:26 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55920 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751136AbYLRSU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 13:20:26 -0500
-Message-ID: <494A945C.6010806@redhat.com>
-Date: Thu, 18 Dec 2008 12:20:12 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Thu, 18 Dec 2008 13:31:19 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50608 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbYLRSbS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 13:31:18 -0500
+Date: Thu, 18 Dec 2008 19:33:10 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Paul.Clements@steeleye.com, kernel list <linux-kernel@vger.kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: nbd: fix locking in case of error
+Message-ID: <20081218183310.GA21260@elf.ucw.cz>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Pascal Terjan <pterjan@mandriva.com>, Andrey Borzenkov <arvidjaar@mail.ru>,
-        pterjan@mandriva.org, linux-ext4@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Possible ext3 corruption with 1K block size
-References: <200810150724.42180.arvidjaar@mail.ru> <48F5E6D4.8080603@redhat.com> <200810151824.36119.arvidjaar@mail.ru> <48F601A5.1050405@redhat.com> <1224164860.11578.14.camel@plop> <48F751E9.8070705@redhat.com> <20081218181249.GD6797@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20081218181249.GD6797@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
->   Hi Eric,
-> 
 
+This cleans up error handling some more, and prevents return with lock
+held from nbd_handle_req when nbd_send_req() fails. It also switches
+calling convention of nbd_send_req from 0 = ok, 1 = failed to 0 /
+-errno.
 
->   Have you been able to track this down? Anything interesting?
-> 
-> 								Honza
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-No, unfortunately this kind of dropped off my radar recently...
+diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
+index fcefbe4..d36787d 100644
+--- a/drivers/block/nbd.c
++++ b/drivers/block/nbd.c
+@@ -280,7 +280,7 @@ static int nbd_send_req(struct nbd_devic
+ 	return 0;
+ 
+ error_out:
+-	return 1;
++	return -EIO;
+ }
+ 
+ static struct request *nbd_find_request(struct nbd_device *lo,
+@@ -467,10 +467,9 @@ static void nbd_handle_req(struct nbd_de
+ 
+ 	mutex_lock(&lo->tx_lock);
+ 	if (unlikely(!lo->sock)) {
+-		mutex_unlock(&lo->tx_lock);
+ 		printk(KERN_ERR "%s: Attempted send on closed socket\n",
+ 		       lo->disk->disk_name);
+-		goto error_out;
++		goto error_out_unlock;
+ 	}
+ 
+ 	lo->active_req = req;
+@@ -478,7 +477,7 @@ static void nbd_handle_req(struct nbd_de
+ 	if (nbd_send_req(lo, req) != 0) {
+ 		printk(KERN_ERR "%s: Request send failed\n",
+ 				lo->disk->disk_name);
+-		goto error_out;
++		goto error_out_unlock;
+ 	} else {
+ 		spin_lock(&lo->queue_lock);
+ 		list_add(&req->queuelist, &lo->queue_head);
+@@ -491,6 +490,8 @@ static void nbd_handle_req(struct nbd_de
+ 
+ 	return;
+ 
++error_out_unlock:
++	mutex_unlock(&lo->tx_lock);
+ error_out:
+ 	req->errors++;
+ 	nbd_end_request(req);
+@@ -531,7 +532,7 @@ static int nbd_thread(void *data)
+  *   { printk( "Warning: Ignoring result!\n"); nbd_end_request( req ); }
+  */
+ 
+-static void do_nbd_request(struct request_queue * q)
++static void do_nbd_request(struct request_queue *q)
+ {
+ 	struct request *req;
+ 	
 
--Eric
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
