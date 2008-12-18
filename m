@@ -1,116 +1,62 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753263AbYLRKxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752458AbYLRKyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753263AbYLRKxc (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 05:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYLRKxX
+	id S1752458AbYLRKyr (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 05:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbYLRKyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 05:53:23 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39170 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750796AbYLRKxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 05:53:22 -0500
-Date: Thu, 18 Dec 2008 11:53:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+	Thu, 18 Dec 2008 05:54:36 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:45462 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750746AbYLRKyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 05:54:35 -0500
+Date: Thu, 18 Dec 2008 11:57:01 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+        David Brownell <david-b@pacbell.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
         LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Pull request: merge-x86-12-16
-Message-ID: <20081218105300.GB14332@elte.hu>
-References: <49498AB4.3020500@sgi.com>
+Subject: Re: linux-next: Tree for December 15 (mfd)
+Message-ID: <20081218105700.GC2517@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <20081216020642.fc1007d9.sfr@canb.auug.org.au> <4946AF6A.8030107@oracle.com> <20081217114300.9476f8da.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49498AB4.3020500@sgi.com>
+In-Reply-To: <20081217114300.9476f8da.randy.dunlap@oracle.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Travis <travis@sgi.com> wrote:
-
-> Hi Ingo,
+On Wed, Dec 17, 2008 at 11:43:00AM -0800, Randy Dunlap wrote:
+> On Mon, 15 Dec 2008 11:26:34 -0800 Randy Dunlap wrote:
 > 
-> Would you pull the following?
+> > Lots of mfd build failures like this:
+> > 
+> > 
+> > build-r7123.out:/local/linsrc/linux-next-20081215/drivers/mfd/twl4030-irq.c:183: error: 'irq_desc' undeclared (first use in this function)
+> > build-r7123.out:/local/linsrc/linux-next-20081215/drivers/mfd/twl4030-irq.c:455: error: 'irq_desc' undeclared (first use in this function)
+> > build-r7123.out:/local/linsrc/linux-next-20081215/drivers/mfd/twl4030-irq.c:515: error: 'irq_desc' undeclared (first use in this function)
+> > build-r7123.out:make[3]: *** [drivers/mfd/twl4030-irq.o] Error 1
 > 
-> Thanks!
-> Mike
-> --- 
-> The following changes since commit b77f911294aa099e53af754b9277b34783f629b4:
->   Rusty Russell (1):
->         x86: Introduce topology_core_cpumask()/topology_thread_cpumask()
 > 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/travis/linux-2.6-cpus4096-for-ingo.git merge-x86-12-16
-> 
-> Mike Travis (2):
->       x86: fix cpu_mask_to_apicid_and to include cpu_online_mask
->       x86: use possible_cpus=NUM to extend the possible cpus allowed
-> 
->  Documentation/cpu-hotplug.txt                 |   17 +++++-----
->  arch/x86/include/asm/bigsmp/apic.h            |    4 ++-
->  arch/x86/include/asm/es7000/apic.h            |   40 +++++++++++-------------
->  arch/x86/include/asm/mach-default/mach_apic.h |    3 +-
->  arch/x86/include/asm/summit/apic.h            |   30 ++++++++++--------
->  arch/x86/kernel/apic.c                        |   16 ++++++----
->  arch/x86/kernel/genapic_flat_64.c             |    4 ++-
->  arch/x86/kernel/genx2apic_cluster.c           |    4 ++-
->  arch/x86/kernel/genx2apic_phys.c              |    4 ++-
->  arch/x86/kernel/genx2apic_uv_x.c              |    4 ++-
->  arch/x86/kernel/smpboot.c                     |   25 +++++++++++++--
->  11 files changed, 92 insertions(+), 59 deletions(-)
+> This build error still happens in linux-next-20081217.
+It should be fixed with the latest mfd tree.
+David, are you ok with this fix:
+http://git.o-hand.com/cgit.cgi/linux-mfd/commit/?h=for-next&id=1e6b6a411fd4f6f99e4d9f003946823007e3c34f
 
-pulled, thanks Travis!
+Cheers,
+Samuel.
 
-Note, your patches from yesterday worked fine in -tip testing. There was 
-one trivial build issue that needed to be addressed, see it below. (your 
-change crossed with another change from the sparseirq tree - that is what 
-caused this complication)
-
-	Ingo
-
------------------>
->From d733e00d7c10cc68333fbb88108bb15bb044f61b Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 17 Dec 2008 13:35:51 +0100
-Subject: [PATCH] x86: update io_apic.c to the new cpumask code
-
-Impact: build fix
-
-The sparseirq tree crossed with the cpumask changes, fix the fallout.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/io_apic.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index 6bd51ce..58938cc 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -347,13 +347,14 @@ void arch_free_chip_data(struct irq_desc *old_desc, struct irq_desc *desc)
- 	}
- }
  
--static void set_extra_move_desc(struct irq_desc *desc, cpumask_t mask)
-+static void
-+set_extra_move_desc(struct irq_desc *desc, const struct cpumask *mask)
- {
- 	struct irq_cfg *cfg = desc->chip_data;
- 
- 	if (!cfg->move_in_progress) {
- 		/* it means that domain is not changed */
--		if (!cpus_intersects(desc->affinity, mask))
-+		if (!cpumask_intersects(&desc->affinity, mask))
- 			cfg->move_desc_pending = 1;
- 	}
- }
+> It only occurs when I2C=y (see drivers/mfd/Kconfig).
+> 
+> Stephen, doing an allyesconfig i386 or x86_64 build will catch this,
+> then you can drop the mfd tree and hopefully prod someone into fixing this...
+> 
+> ---
+> ~Randy
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
