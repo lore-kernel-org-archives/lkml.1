@@ -1,76 +1,80 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752440AbYLRLs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753578AbYLRLqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752440AbYLRLs5 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 06:48:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbYLRLsr
+	id S1753578AbYLRLqi (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 06:46:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbYLRLq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 06:48:47 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38277 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbYLRLsq (ORCPT
+	Thu, 18 Dec 2008 06:46:27 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33381 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751250AbYLRLq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 06:48:46 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2008-12-16-00-43 uploaded (fs)
-Cc: kosaki.motohiro@jp.fujitsu.com, Randy Dunlap <randy.dunlap@oracle.com>,
-        linux-kernel@vger.kernel.org, npiggin@suse.de
-In-Reply-To: <20081218200145.D7B3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081216102136.08ba1714.akpm@linux-foundation.org> <20081218200145.D7B3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20081218204759.D7B6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu, 18 Dec 2008 20:48:44 +0900 (JST)
+	Thu, 18 Dec 2008 06:46:26 -0500
+Date: Thu, 18 Dec 2008 11:44:27 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: David Howells <dhowells@redhat.com>,
+        Alexander van Heukelum <heukelum@fastmail.fm>,
+        linux-arch@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Sam Ravnborg <sam@ravnborg.org>, Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: PROC macro to annotate functions in assembly files
+Message-ID: <20081218114427.GD10593@flint.arm.linux.org.uk>
+Mail-Followup-To: Alexander van Heukelum <heukelum@mailshack.com>,
+	David Howells <dhowells@redhat.com>,
+	Alexander van Heukelum <heukelum@fastmail.fm>,
+	linux-arch@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Cyrill Gorcunov <gorcunov@gmail.com>
+References: <1229505475-10219-1-git-send-email-heukelum@fastmail.fm> <1636.1229511233@redhat.com> <20081217111213.GA8342@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081217111213.GA8342@mailshack.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have fixing patch. this patch series have
-> 
-> 1) reiser4 fix
-> 2) ubifs fix
-> 3) fuse fix
-> 
+On Wed, Dec 17, 2008 at 12:12:14PM +0100, Alexander van Heukelum wrote:
+> Yeah, assembly files contain some interesting nesting. In this
+> particular case I think the solution is simple... Just use PROC
+> and ENDPROC around the complete functions, and leave the explicit
+> .global's for the additional entry points.
 
+I'm sorry, that doesn't work in all cases.
 
+On ARM with later toolchains, there's additional metadata associated with
+every symbol, and it's beginning to matter getting this right.  That
+metadata includes whether it's a function, and more importantly whether
+the code pointed to by the symbol is Thumb or ARM.
 
-Tested on mmotm1217 + fs-symlink-write_begin-allocation-context-fix.patch
+This leads to:
 
-==
-Subject: [PATCH 2/3] fix ubifs build error of fs-symlink-write_begin-allocation-context-fix.patch
+ENTRY(__ashldi3)
+ENTRY(__aeabi_llsl)
 
-build fix.
+...
 
+ENDPROC(__ashldi3)
+ENDPROC(__aeabi_llsl)
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- fs/ubifs/file.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+and we want both of those symbols to have exactly the same attributes.
 
-Index: b/fs/ubifs/file.c
-===================================================================
---- a/fs/ubifs/file.c
-+++ b/fs/ubifs/file.c
-@@ -219,7 +219,8 @@ static void release_existing_page_budget
- }
- 
- static int write_begin_slow(struct address_space *mapping,
--			    loff_t pos, unsigned len, struct page **pagep)
-+			    loff_t pos, unsigned len, struct page **pagep,
-+			    unsigned flags)
- {
- 	struct inode *inode = mapping->host;
- 	struct ubifs_info *c = inode->i_sb->s_fs_info;
-@@ -485,7 +486,7 @@ static int ubifs_write_begin(struct file
- 		unlock_page(page);
- 		page_cache_release(page);
- 
--		return write_begin_slow(mapping, pos, len, pagep);
-+		return write_begin_slow(mapping, pos, len, pagep, flags);
- 	}
- 
- 	/*
+Merely adding a .globl for the second name doesn't do that.  It needs
+.globl, .size, and .type.
 
+So what you're actually talking about using your approach is enforcing
+the pairing of the existing ENTRY/ENDPROC and open coding everything
+else.
 
+Forgive me if I think this is a backward step.  It certainly seems to
+add some insane restrictions.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
