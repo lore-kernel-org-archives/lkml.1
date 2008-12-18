@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753037AbYLRNSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753280AbYLRNXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753037AbYLRNSp (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 08:18:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYLRNSf
+	id S1753280AbYLRNXw (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 08:23:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbYLRNXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 08:18:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33498 "EHLO mx2.mail.elte.hu"
+	Thu, 18 Dec 2008 08:23:42 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38859 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750923AbYLRNSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 08:18:35 -0500
-Date: Thu, 18 Dec 2008 14:18:12 +0100
+	id S1750940AbYLRNXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 08:23:42 -0500
+Date: Thu, 18 Dec 2008 14:23:13 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, viro@ftp.linux.org.uk,
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
         linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-        alex.zeffertt@eu.citrix.com, Ian.Campbell@citrix.com
-Subject: Re: [PATCH UPDATED] xen: add xenfs to allow usermode <-> Xen
-	interaction
-Message-ID: <20081218131812.GD32135@elte.hu>
-References: <49480F39.2010102@goop.org> <20081216125425.30524946.akpm@linux-foundation.org> <49496E17.2010703@goop.org> <20081217133429.b64e6421.akpm@linux-foundation.org>
+        x86@kernel.org, ian.campbell@citrix.com, jbeulich@novell.com,
+        joerg.roedel@amd.com
+Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use
+	of swiotlb
+Message-ID: <20081218132313.GE32135@elte.hu>
+References: <20081216203513.GA14787@elte.hu> <20081217142637V.fujita.tomonori@lab.ntt.co.jp> <4949296F.7000701@goop.org> <20081218015705Z.fujita.tomonori@lab.ntt.co.jp> <49494BE4.1070408@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081217133429.b64e6421.akpm@linux-foundation.org>
+In-Reply-To: <49494BE4.1070408@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,38 +38,61 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> On Wed, 17 Dec 2008 13:24:39 -0800
-> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> 
-> > The xenfs filesystem exports various interfaces to usermode.  Initially
-> > this exports a file to allow usermode to interact with xenbus/xenstore.
-> > 
-> > Traditionally this appeared in /proc/xen.  Rather than extending procfs,
-> > this patch adds a backward-compat mountpoint on /proc/xen, and provides
-> > a xenfs filesystem which can be mounted there.
-> > 
-> > [ 
-> >   I did quite a lot of work to this code as a result of review, which is
-> >   why this is a repost rather than a delta.  The changes are:
-> > 
-> >    - Moved the XENFS_SUPER_MAGIC to linux/magic.h
-> >    - Added comments to answer the "what's this for?" questions (I hope)
-> >    - Split things out into smaller functions
-> >    - Cleaned up type of queue_reply(), removed casts
-> >    - Added a mutex to protect struct xenbus_file_priv.  This protects
-> >       the list heads, and the partial message buffer.  There were
-> >       several ways in which usermode could overwrite the kernel's
-> >       memory via races without this locking.
-> >    - Fixed a bug in which usermode could start sending a message
-> >       which can never be sent, leaving the file descriptor in a
-> >       useless state.
-> 
-> I'm bored of your filesystem, so I think I'll just merge it, unless
-> someone else wants to ;)
+> FUJITA Tomonori wrote:
+>> On Wed, 17 Dec 2008 08:31:43 -0800
+>> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>>
+>>   
+>>>> I think that the whole patchset is against the swiotlb design. swiotlb
+>>>> is designed to be used as a library. Each architecture implements the
+>>>> own swiotlb by using swiotlb library
+>>>> (e.g. arch/x86/kernel/pci-swiotlb_64.c).
+>>>>         
+>>> The whole patchset?  The bulk of the changes to lib/swiotlb.c are  
+>>> relatively minor to remove the unwarranted assumptions it is making 
+>>> in the face of a new user.  They will have no effect on other 
+>>> existing users, including non-Xen x86 builds.
+>>>
+>>> If you have specific objections we can discuss those, but I don't 
+>>> think there's anything fundamentally wrong with making lib/swiotlb.c 
+>>> a bit more generically useful.
+>>>     
+>>
+>> Sorry, but the highmem support is not generically useful.
+>>   
+>
+> That's a circular argument.  lib/swiotlb currently used by 1 1/2 of the 
+> 23 architectures, neither of which happens to use highmem.  If you 
+> consider swiotlb to be a general purpose mechanism, then presumably the 
+> other 21 1/2 architectures are at least potential users (and 6 1/2 of 
+> those have highmem configurations).  If you base your judgement of 
+> what's a "generically useful" change based on what the current users 
+> need, then you'll naturally exclude the requirements of all the other 
+> (potential) users.
+>
+> And the matter arises now because we're trying to unify the use of 
+> swiotlb in x86, bringing the number of users up to 2.
+>
+>> I'm especially against the highmem support. As you said, the rest looks 
+>> fine but if you go with pci-swiotlb_32.c, I think that you don't need 
+>> the most of them.
+>>   
+>
+> I really don't want to have to duplicate a lot of code just to 
+> incorporate a few small changes.  In fact the original Xen patch set 
+> included its own swiotlb implementation, and that was rejected on the 
+> grounds that we should use the common swiotlb.c.
 
-please do - there should be no big overlap with existing other Xen bits in 
-tip/*.
+duplicating that would not be a very good design - and 32-bit highmem is a 
+reality we have to live with for some time to come. The impact:
+
+   10 files changed, 251 insertions(+), 81 deletions(-)
+
+looks rather to the point and seems relatively compressed. In fact 32-bit 
+Xen could end up being the largest user (and tester) of swiotlb facilities 
+in general, as modern 64-bit platforms tend to have hw IOMMUs. Having more 
+code sharing and more testers is a plus.
 
 	Ingo
