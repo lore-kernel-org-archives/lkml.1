@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbYLRWXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbYLRW0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754054AbYLRWXx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 17:23:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYLRWXn
+	id S1753910AbYLRW0E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 17:26:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYLRWZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 17:23:43 -0500
-Received: from mga02.intel.com ([134.134.136.20]:63509 "EHLO mga02.intel.com"
+	Thu, 18 Dec 2008 17:25:53 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:51045 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752131AbYLRWXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 17:23:42 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.36,245,1228118400"; 
-   d="scan'208";a="475211290"
-Date: Thu, 18 Dec 2008 14:23:41 -0800
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "jeremy@goop.org" <jeremy@goop.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [patch 3/7] x86 PAT: hooks in generic vm code to help archs to track pfnmap regions - v3
-Message-ID: <20081218222340.GC3331@linux-os.sc.intel.com>
-References: <20081218194126.963894000@intel.com> <20081218194617.408164000@intel.com> <20081218213557.GF10681@wotan.suse.de>
+	id S1752131AbYLRWZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 17:25:53 -0500
+Subject: Re: TSC not updating after resume: Bug or Feature?
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <200812182319.57235.rjw@sisk.pl>
+References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net>
+	 <1229592279.9487.133.camel@twins> <20081218123924.GH25715@elte.hu>
+	 <200812182319.57235.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 18 Dec 2008 16:25:49 -0600
+Message-Id: <1229639149.6613.2.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081218213557.GF10681@wotan.suse.de>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 18, 2008 at 01:35:57PM -0800, Nick Piggin wrote:
-> On Thu, Dec 18, 2008 at 11:41:29AM -0800, venkatesh.pallipadi@intel.com wrote:
-> > Introduce generic hooks in remap_pfn_range and vm_insert_pfn and
-> > corresponding copy and free routines with reserve and free tracking.
+On Thu, 2008-12-18 at 23:19 +0100, Rafael J. Wysocki wrote:
+> On Thursday, 18 of December 2008, Ingo Molnar wrote:
+> > 
+> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > Rafael, would something like this explain why we had to revert Shaggy's 
+> > > patch?
 > 
-> These should be inline so that they can be folded out (I'm sure gcc
-> with -Os and "optimize" inlining will do something stupid here).
-> Also, the normal way to add such arch hooks is to put the default
-> into asm-generic and have other archs include it... that would be
-> nicer than sticking it into mm/memory.c wouldn't it?
+> Well, I have yet to understand what the suspend-resume of the timekeeping code
+> actually does.
+> 
+> The original description sounds worrisome to me, it looks like we've overlooked
+> something at least.
+> 
+> > > His patch fixes the backward motion filter and I'm at an utter  
+> > > loss why that would break suspend.
+> > 
+> > yes, i'd love to have this commit reinstated:
+> > 
+> >  5b7dba4: sched_clock: prevent scd->clock from moving backwards
+> > 
+> > and the bug triggered by hibernation fixed instead.
+> 
+> Shaggy said he had an idea of what was wrong, so I expect an updated version
+> of the patch to appear.
 
-I did check that these calls were optimized by gcc when there is no arch
-specific definitions. But, as you pointed out, it should be cleaner to put this
-in asm-generic, though I may have to touch more files.
+Not really.  I said I'd look at it, but all I know is that it looks like
+something clock-related isn't initialized correctly after resume.  I
+don't know enough to have any idea how to fix it.
 
-> Sigh, fork/exit paths slow down yet again. But oh well. Maybe can
-> you add some branch hints?
-
-OK. Will add branch hints for these..
-
-Thanks,
-Venki
+> Thanks,
+> Rafael
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
