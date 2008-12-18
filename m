@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752969AbYLRF5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752095AbYLRF51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752969AbYLRF5I (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 00:57:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbYLRF4v
+	id S1752095AbYLRF51 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 00:57:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbYLRF5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 00:56:51 -0500
-Received: from mail.openmoko.org ([88.198.124.205]:51523 "EHLO
+	Thu, 18 Dec 2008 00:57:11 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:51589 "EHLO
 	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752502AbYLRF4t (ORCPT
+	with ESMTP id S1752512AbYLRF5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 00:56:49 -0500
+	Thu, 18 Dec 2008 00:57:07 -0500
 From: Balaji Rao <balajirrao@openmoko.org>
-Subject: [PATCH V2 1/7] mfd: PCF50633 core driver
+Subject: [PATCH V2 2/7] mfd: PCF50633 adc driver
 To: linux-kernel@vger.kernel.org
 Cc: Balaji Rao <balajirrao@openmoko.org>, Andy Green <andy@openmoko.com>,
         Samuel Ortiz <sameo@openedhand.com>
-Date: Thu, 18 Dec 2008 11:26:36 +0530
-Message-ID: <20081218055636.31696.60232.stgit@cff.thadambail>
+Date: Thu, 18 Dec 2008 11:26:53 +0530
+Message-ID: <20081218055653.31696.4361.stgit@cff.thadambail>
 In-Reply-To: <20081218055618.31696.65002.stgit@cff.thadambail>
 References: <20081218055618.31696.65002.stgit@cff.thadambail>
 User-Agent: StGIT/0.14.3.270.g0f36
@@ -27,776 +27,341 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements the core of the PCF50633 driver. This core driver has
-generic register read/write functions and does interrupt management for its
-sub devices.
+This patch adds basic support for the PCF50633 ADC. The subtractive mode
+is not supported yet.
+
+Since we don't have adc subsystem, it currently lives in drivers/mfd.
 
 Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
 Cc: Andy Green <andy@openmoko.com>
 Cc: Samuel Ortiz <sameo@openedhand.com>
 ---
- drivers/mfd/Kconfig               |    9 
- drivers/mfd/Makefile              |    4 
- drivers/mfd/pcf50633-core.c       |  707 +++++++++++++++++++++++++++++++++++++
- include/linux/mfd/pcf50633/core.h |  218 +++++++++++
- 4 files changed, 937 insertions(+), 1 deletions(-)
- create mode 100644 drivers/mfd/pcf50633-core.c
- create mode 100644 include/linux/mfd/pcf50633/core.h
+ drivers/mfd/Kconfig              |    7 +
+ drivers/mfd/Makefile             |    1 
+ drivers/mfd/pcf50633-adc.c       |  277 ++++++++++++++++++++++++++++++++++++++
+ include/linux/mfd/pcf50633/adc.h |   72 ++++++++++
+ 4 files changed, 357 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mfd/pcf50633-adc.c
+ create mode 100644 include/linux/mfd/pcf50633/adc.h
 
 diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 8cd3dd9..fb1f0f7 100644
+index fb1f0f7..02e3d73 100644
 --- a/drivers/mfd/Kconfig
 +++ b/drivers/mfd/Kconfig
-@@ -153,6 +153,15 @@ config MFD_WM8350_I2C
- 	  I2C as the control interface.  Additional options must be
- 	  selected to enable support for the functionality of the chip.
+@@ -162,6 +162,13 @@ config MFD_PCF50633
+ 	  facilities, and registers devices for the various functions
+ 	  so that function-specific drivers can bind to them.
  
-+config MFD_PCF50633
-+	tristate "Support for NXP PCF50633"
-+	depends on I2C
++config PCF50633_ADC
++	tristate "Support for NXP PCF50633 ADC"
++	depends on MFD_PCF50633
 +	help
-+	  Say yes here if you have NXP PCF50633 chip on your board.
-+	  This core driver provides register access and IRQ handling
-+	  facilities, and registers devices for the various functions
-+	  so that function-specific drivers can bind to them.
++	 Say yes here if you want to include support for ADC in the
++	 NXP PCF50633 chip.
 +
  endmenu
  
  menu "Multimedia Capabilities Port drivers"
 diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 9a5ad8a..6a4add8 100644
+index 6a4add8..7a12b09 100644
 --- a/drivers/mfd/Makefile
 +++ b/drivers/mfd/Makefile
-@@ -31,4 +31,6 @@ obj-$(CONFIG_MCP_UCB1200)	+= ucb1x00-assabet.o
- endif
- obj-$(CONFIG_UCB1400_CORE)	+= ucb1400_core.o
+@@ -34,3 +34,4 @@ obj-$(CONFIG_UCB1400_CORE)	+= ucb1400_core.o
+ obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
  
--obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
-\ No newline at end of file
-+obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
-+
-+obj-$(CONFIG_MFD_PCF50633)	+= pcf50633-core.o
-diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
+ obj-$(CONFIG_MFD_PCF50633)	+= pcf50633-core.o
++obj-$(CONFIG_PCF50633_ADC)	+= pcf50633-adc.o
+diff --git a/drivers/mfd/pcf50633-adc.c b/drivers/mfd/pcf50633-adc.c
 new file mode 100644
-index 0000000..07f433c
+index 0000000..f5f1fb0
 --- /dev/null
-+++ b/drivers/mfd/pcf50633-core.c
-@@ -0,0 +1,707 @@
-+/* NXP PCF50633 Power Management Unit (PMU) driver
++++ b/drivers/mfd/pcf50633-adc.c
+@@ -0,0 +1,277 @@
++/* NXP PCF50633 ADC Driver
 + *
 + * (C) 2006-2008 by Openmoko, Inc.
-+ * Author: Harald Welte <laforge@openmoko.org>
-+ * 	   Balaji Rao <balajirrao@openmoko.org>
++ * Author: Balaji Rao <balajirrao@openmoko.org>
 + * All rights reserved.
++ *
++ * Broken down from monstrous PCF50633 driver mainly by
++ * Harald Welte, Andy Green and Werner Almesberger
 + *
 + *  This program is free software; you can redistribute  it and/or modify it
 + *  under  the terms of  the GNU General  Public License as published by the
 + *  Free Software Foundation;  either version 2 of the  License, or (at your
 + *  option) any later version.
 + *
++ *  NOTE: This driver does not yet support subtractive ADC mode, which means
++ *  you can do only one measurement per read request.
 + */
 +
 +#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <linux/sysfs.h>
-+#include <linux/device.h>
 +#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/interrupt.h>
-+#include <linux/workqueue.h>
++#include <linux/init.h>
++#include <linux/device.h>
 +#include <linux/platform_device.h>
-+#include <linux/i2c.h>
-+#include <linux/irq.h>
++#include <linux/completion.h>
 +
 +#include <linux/mfd/pcf50633/core.h>
++#include <linux/mfd/pcf50633/adc.h>
 +
-+/* Two MBCS registers used during cold start */
-+#define PCF50633_REG_MBCS1		0x4b
-+#define PCF50633_REG_MBCS2		0x4c
-+#define PCF50633_MBCS1_USBPRES 		0x01
-+#define PCF50633_MBCS1_ADAPTPRES	0x01
++struct pcf50633_adc_request {
++	int mux;
++	int avg;
++	int result;
++	void (*callback)(struct pcf50633 *, void *, int);
++	void *callback_param;
 +
-+static int __pcf50633_read(struct pcf50633 *pcf, u8 reg, int num, u8 *data)
-+{
-+	int ret;
++	/* Used in case of sync requests */
++	struct completion completion;
 +
-+	ret = i2c_smbus_read_i2c_block_data(pcf->i2c_client, reg,
-+				num, data);
-+	if (ret < 0)
-+		dev_err(pcf->dev, "Error reading %d regs at %d\n", num, reg);
-+
-+	return ret;
-+}
-+
-+static int __pcf50633_write(struct pcf50633 *pcf, u8 reg, int num, u8 *data)
-+{
-+	int ret;
-+
-+	ret = i2c_smbus_write_i2c_block_data(pcf->i2c_client, reg,
-+				num, data);
-+	if (ret < 0)
-+		dev_err(pcf->dev, "Error writing %d regs at %d\n", num, reg);
-+
-+	return ret;
-+
-+}
-+
-+/* Read a block of upto 32 regs  */
-+int pcf50633_read_block(struct pcf50633 *pcf, u8 reg,
-+					int nr_regs, u8 *data)
-+{
-+	int ret;
-+
-+	mutex_lock(&pcf->lock);
-+	ret = __pcf50633_read(pcf, reg, nr_regs, data);
-+	mutex_unlock(&pcf->lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_read_block);
-+
-+/* Write a block of upto 32 regs  */
-+int pcf50633_write_block(struct pcf50633 *pcf , u8 reg,
-+					int nr_regs, u8 *data)
-+{
-+	int ret;
-+
-+	mutex_lock(&pcf->lock);
-+	ret = __pcf50633_write(pcf, reg, nr_regs, data);
-+	mutex_unlock(&pcf->lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_write_block);
-+
-+u8 pcf50633_reg_read(struct pcf50633 *pcf, u8 reg)
-+{
-+	u8 val;
-+
-+	mutex_lock(&pcf->lock);
-+	__pcf50633_read(pcf, reg, 1, &val);
-+	mutex_unlock(&pcf->lock);
-+
-+	return val;
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_reg_read);
-+
-+int pcf50633_reg_write(struct pcf50633 *pcf, u8 reg, u8 val)
-+{
-+	int ret;
-+
-+	mutex_lock(&pcf->lock);
-+	ret = __pcf50633_write(pcf, reg, 1, &val);
-+	mutex_unlock(&pcf->lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_reg_write);
-+
-+int pcf50633_reg_set_bit_mask(struct pcf50633 *pcf, u8 reg, u8 mask, u8 val)
-+{
-+	int ret;
-+	u8 tmp;
-+
-+	val &= mask;
-+
-+	mutex_lock(&pcf->lock);
-+	ret = __pcf50633_read(pcf, reg, 1, &tmp);
-+	if (ret < 0)
-+		goto out;
-+
-+	tmp &= ~mask;
-+	tmp |= val;
-+	ret = __pcf50633_write(pcf, reg, 1, &tmp);
-+
-+out:
-+	mutex_unlock(&pcf->lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_reg_set_bit_mask);
-+
-+int pcf50633_reg_clear_bits(struct pcf50633 *pcf, u8 reg, u8 val)
-+{
-+	int ret;
-+	u8 tmp;
-+
-+	mutex_lock(&pcf->lock);
-+	ret = __pcf50633_read(pcf, reg, 1, &tmp);
-+	if (ret < 0)
-+		goto out;
-+
-+	tmp &= ~val;
-+	ret = __pcf50633_write(pcf, reg, 1, &tmp);
-+
-+out:
-+	mutex_unlock(&pcf->lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_reg_clear_bits);
-+
-+/* sysfs attributes */
-+static ssize_t show_dump_regs(struct device *dev, struct device_attribute *attr,
-+			    char *buf)
-+{
-+	struct pcf50633 *pcf = dev_get_drvdata(dev);
-+	u8 dump[16];
-+	int n, n1, idx = 0;
-+	char *buf1 = buf;
-+	static u8 address_no_read[] = { /* must be ascending */
-+		PCF50633_REG_INT1,
-+		PCF50633_REG_INT2,
-+		PCF50633_REG_INT3,
-+		PCF50633_REG_INT4,
-+		PCF50633_REG_INT5,
-+		0 /* terminator */
-+	};
-+
-+	for (n = 0; n < 256; n += sizeof(dump)) {
-+		for (n1 = 0; n1 < sizeof(dump); n1++)
-+			if (n == address_no_read[idx]) {
-+				idx++;
-+				dump[n1] = 0x00;
-+			} else
-+				dump[n1] = pcf50633_reg_read(pcf, n + n1);
-+
-+		hex_dump_to_buffer(dump, sizeof(dump), 16, 1, buf1, 128, 0);
-+		buf1 += strlen(buf1);
-+		*buf1++ = '\n';
-+		*buf1 = '\0';
-+	}
-+
-+	return buf1 - buf;
-+}
-+static DEVICE_ATTR(dump_regs, 0400, show_dump_regs, NULL);
-+
-+static ssize_t show_resume_reason(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct pcf50633 *pcf = dev_get_drvdata(dev);
-+	int n;
-+
-+	n = sprintf(buf, "%02x%02x%02x%02x%02x\n",
-+				pcf->resume_reason[0],
-+				pcf->resume_reason[1],
-+				pcf->resume_reason[2],
-+				pcf->resume_reason[3],
-+				pcf->resume_reason[4]);
-+
-+	return n;
-+}
-+static DEVICE_ATTR(resume_reason, 0400, show_resume_reason, NULL);
-+
-+static struct attribute *pcf_sysfs_entries[] = {
-+	&dev_attr_dump_regs.attr,
-+	&dev_attr_resume_reason.attr,
-+	NULL,
 +};
 +
-+static struct attribute_group pcf_attr_group = {
-+	.name	= NULL,			/* put in device directory */
-+	.attrs	= pcf_sysfs_entries,
-+};
++#define PCF50633_MAX_ADC_FIFO_DEPTH 8
 +
-+int pcf50633_register_irq(struct pcf50633 *pcf, int irq,
-+			void (*handler) (int, void *), void *data)
-+{
-+	if (irq < 0 || irq > PCF50633_NUM_IRQ || !handler)
-+		return -EINVAL;
-+
-+	if (WARN_ON(pcf->irq_handler[irq].handler))
-+		return -EBUSY;
-+
-+	mutex_lock(&pcf->lock);
-+	pcf->irq_handler[irq].handler = handler;
-+	pcf->irq_handler[irq].data = data;
-+	mutex_unlock(&pcf->lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_register_irq);
-+
-+int pcf50633_free_irq(struct pcf50633 *pcf, int irq)
-+{
-+	if (irq < 0 || irq > PCF50633_NUM_IRQ)
-+		return -EINVAL;
-+
-+	mutex_lock(&pcf->lock);
-+	pcf->irq_handler[irq].handler = NULL;
-+	mutex_unlock(&pcf->lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_free_irq);
-+
-+static int __pcf50633_irq_mask_set(struct pcf50633 *pcf, int irq, u8 mask)
-+{
-+	u8 reg, bits, tmp;
-+	int ret = 0, idx;
-+
-+	idx = irq >> 3;
-+	reg =  PCF50633_REG_INT1M + idx;
-+	bits = 1 << (irq & 0x07);
-+
-+	mutex_lock(&pcf->lock);
-+
-+	if (mask) {
-+		ret = __pcf50633_read(pcf, reg, 1, &tmp);
-+		if (ret < 0)
-+			goto out;
-+
-+		tmp |= bits;
-+
-+		ret = __pcf50633_write(pcf, reg, 1, &tmp);
-+		if (ret < 0)
-+			goto out;
-+
-+		pcf->mask_regs[idx] &= ~bits;
-+		pcf->mask_regs[idx] |= bits;
-+	} else {
-+		ret = __pcf50633_read(pcf, reg, 1, &tmp);
-+		if (ret < 0)
-+			goto out;
-+
-+		tmp &= ~bits;
-+
-+		ret = __pcf50633_write(pcf, reg, 1, &tmp);
-+		if (ret < 0)
-+			goto out;
-+
-+		pcf->mask_regs[idx] &= ~bits;
-+	}
-+out:
-+	mutex_unlock(&pcf->lock);
-+
-+	return ret;
-+}
-+
-+int pcf50633_irq_mask(struct pcf50633 *pcf, int irq)
-+{
-+	dev_info(pcf->dev, "Masking IRQ %d\n", irq);
-+
-+	return __pcf50633_irq_mask_set(pcf, irq, 1);
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_irq_mask);
-+
-+int pcf50633_irq_unmask(struct pcf50633 *pcf, int irq)
-+{
-+	dev_info(pcf->dev, "Unmasking IRQ %d\n", irq);
-+
-+	return __pcf50633_irq_mask_set(pcf, irq, 0);
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_irq_unmask);
-+
-+int pcf50633_irq_mask_get(struct pcf50633 *pcf, int irq)
-+{
-+	u8 reg, bits;
-+
-+	reg =  irq >> 3;
-+	bits = 1 << (irq & 0x07);
-+
-+	return pcf->mask_regs[reg] & bits;
-+}
-+EXPORT_SYMBOL_GPL(pcf50633_irq_mask_get);
-+
-+static void pcf50633_irq_call_handler(struct pcf50633 *pcf, int irq)
-+{
-+	if (pcf->irq_handler[irq].handler)
-+		pcf->irq_handler[irq].handler(irq, pcf->irq_handler[irq].data);
-+}
-+
-+/* Maximum amount of time ONKEY is held before emergency action is taken */
-+#define PCF50633_ONKEY1S_TIMEOUT 8
-+
-+static void pcf50633_irq_worker(struct work_struct *work)
-+{
++struct pcf50633_adc {
 +	struct pcf50633 *pcf;
-+	int ret, i, j;
-+	u8 pcf_int[5], chgstat;
 +
-+	pcf = container_of(work, struct pcf50633, irq_work);
++	/* Private stuff */
++	struct pcf50633_adc_request *queue[PCF50633_MAX_ADC_FIFO_DEPTH];
++	int queue_head;
++	int queue_tail;
++	struct mutex queue_mutex;
++};
 +
-+	/* Read the 5 INT regs in one transaction */
-+	ret = pcf50633_read_block(pcf, PCF50633_REG_INT1,
-+						ARRAY_SIZE(pcf_int), pcf_int);
-+	if (ret != ARRAY_SIZE(pcf_int)) {
-+		dev_err(pcf->dev, "Error reading INT registers\n");
-+
-+		/*
-+		 * If this doesn't ACK the interrupt to the chip, we'll be
-+		 * called once again as we're level triggered.
-+		 */
-+		goto out;
-+	}
-+
-+	/* We immediately read the usb and adapter status. We thus make sure
-+	 * only of USBINS/USBREM IRQ handlers are called */
-+	if (pcf_int[0] & (PCF50633_INT1_USBINS | PCF50633_INT1_USBREM)) {
-+		chgstat = pcf50633_reg_read(pcf, PCF50633_REG_MBCS2);
-+		if (chgstat & (0x3 << 4))
-+			pcf_int[0] &= ~(1 << PCF50633_INT1_USBREM);
-+		else
-+			pcf_int[0] &= ~(1 << PCF50633_INT1_USBINS);
-+	}
-+
-+	/* Make sure only one of ADPINS or ADPREM is set */
-+	if (pcf_int[0] & (PCF50633_INT1_ADPINS | PCF50633_INT1_ADPREM)) {
-+		chgstat = pcf50633_reg_read(pcf, PCF50633_REG_MBCS2);
-+		if (chgstat & (0x3 << 4))
-+			pcf_int[0] &= ~(1 << PCF50633_INT1_ADPREM);
-+		else
-+			pcf_int[0] &= ~(1 << PCF50633_INT1_ADPINS);
-+	}
-+
-+	dev_dbg(pcf->dev, "INT1=0x%02x INT2=0x%02x INT3=0x%02x "
-+			"INT4=0x%02x INT5=0x%02x\n", pcf_int[0],
-+			pcf_int[1], pcf_int[2], pcf_int[3], pcf_int[4]);
-+
-+	/* Some revisions of the chip don't have a 8s standby mode on
-+	 * ONKEY1S press. We try to manually do it in such cases. */
-+	if ((pcf_int[0] & PCF50633_INT1_SECOND) && pcf->onkey1s_held) {
-+		dev_info(pcf->dev, "ONKEY1S held for %d secs\n",
-+							pcf->onkey1s_held);
-+		if (pcf->onkey1s_held++ == PCF50633_ONKEY1S_TIMEOUT)
-+			if (pcf->pdata->force_shutdown)
-+				pcf->pdata->force_shutdown(pcf);
-+	}
-+
-+	if (pcf_int[2] & PCF50633_INT3_ONKEY1S) {
-+		dev_info(pcf->dev, "ONKEY1S held\n");
-+		pcf->onkey1s_held = 1 ;
-+
-+		/* Unmask IRQ_SECOND */
-+		pcf50633_reg_clear_bits(pcf, PCF50633_REG_INT1M,
-+						PCF50633_INT1_SECOND);
-+
-+		/* Unmask IRQ_ONKEYR */
-+		pcf50633_reg_clear_bits(pcf, PCF50633_REG_INT2M,
-+						PCF50633_INT2_ONKEYR);
-+	}
-+
-+	if ((pcf_int[1] & PCF50633_INT2_ONKEYR) && pcf->onkey1s_held) {
-+		pcf->onkey1s_held = 0;
-+
-+		/* Mask SECOND and ONKEYR interrupts */
-+		if (pcf->mask_regs[0] & PCF50633_INT1_SECOND)
-+			pcf50633_reg_set_bit_mask(pcf,
-+					PCF50633_REG_INT1M,
-+					PCF50633_INT1_SECOND,
-+					PCF50633_INT1_SECOND);
-+
-+		if (pcf->mask_regs[1] & PCF50633_INT2_ONKEYR)
-+			pcf50633_reg_set_bit_mask(pcf,
-+					PCF50633_REG_INT2M,
-+					PCF50633_INT2_ONKEYR,
-+					PCF50633_INT2_ONKEYR);
-+	}
-+
-+	/* Have we just resumed ? */
-+	if (pcf->is_suspended) {
-+		pcf->is_suspended = 0;
-+
-+		/* Set the resume reason filtering out non resumers */
-+		for (i = 0; i < ARRAY_SIZE(pcf_int); i++)
-+			pcf->resume_reason[i] = pcf_int[i] &
-+						pcf->pdata->resumers[i];
-+
-+		/* Make sure we don't pass on any ONKEY events to
-+		 * userspace now */
-+		pcf_int[1] &= ~(PCF50633_INT2_ONKEYR | PCF50633_INT2_ONKEYF);
-+	}
-+
-+	for (i = 0; i < ARRAY_SIZE(pcf_int); i++) {
-+		/* Unset masked interrupts */
-+		pcf_int[i] &= ~pcf->mask_regs[i];
-+
-+		for (j = 0; j < 8 ; j++)
-+			if (pcf_int[i] & (1 << j))
-+				pcf50633_irq_call_handler(pcf, (i * 8) + j);
-+	}
-+
-+out:
-+	put_device(pcf->dev);
-+	enable_irq(pcf->irq);
++static inline struct pcf50633_adc *__to_adc(struct pcf50633 *pcf)
++{
++	return platform_get_drvdata(pcf->adc_pdev);
 +}
 +
-+static irqreturn_t pcf50633_irq(int irq, void *data)
++static void adc_read_setup(struct pcf50633 *pcf, int channel, int avg)
 +{
-+	struct pcf50633 *pcf = data;
++	channel &= PCF50633_ADCC1_ADCMUX_MASK;
 +
-+	dev_dbg(pcf->dev, "pcf50633_irq\n");
++	/* kill ratiometric, but enable ACCSW biasing */
++	pcf50633_reg_write(pcf, PCF50633_REG_ADCC2, 0x00);
++	pcf50633_reg_write(pcf, PCF50633_REG_ADCC3, 0x01);
 +
-+	get_device(pcf->dev);
-+	disable_irq(pcf->irq);
-+	schedule_work(&pcf->irq_work);
++	/* start ADC conversion on selected channel */
++	pcf50633_reg_write(pcf, PCF50633_REG_ADCC1, channel | avg |
++		    PCF50633_ADCC1_ADCSTART | PCF50633_ADCC1_RES_10BIT);
++}
 +
-+	return IRQ_HANDLED;
++static void trigger_next_adc_job_if_any(struct pcf50633 *pcf)
++{
++	struct pcf50633_adc *adc = __to_adc(pcf);
++	int head;
++
++	mutex_lock(&adc->queue_mutex);
++
++	head = adc->queue_head;
++
++	if (!adc->queue[head]) {
++		mutex_unlock(&adc->queue_mutex);
++		return;
++	}
++	mutex_unlock(&adc->queue_mutex);
++
++	adc_read_setup(pcf, adc->queue[head]->mux, adc->queue[head]->avg);
++}
++
++static int
++adc_enqueue_request(struct pcf50633 *pcf, struct pcf50633_adc_request *req)
++{
++	struct pcf50633_adc *adc = __to_adc(pcf);
++	int head, tail;
++
++	mutex_lock(&adc->queue_mutex);
++
++	head = adc->queue_head;
++	tail = adc->queue_tail;
++
++	if (adc->queue[tail]) {
++		mutex_unlock(&adc->queue_mutex);
++		return -EBUSY;
++	}
++
++	adc->queue[tail] = req;
++	adc->queue_tail = (tail + 1) & (PCF50633_MAX_ADC_FIFO_DEPTH - 1);
++
++	mutex_unlock(&adc->queue_mutex);
++
++	trigger_next_adc_job_if_any(pcf);
++
++	return 0;
 +}
 +
 +static void
-+pcf50633_client_dev_register(struct pcf50633 *pcf, const char *name,
-+						struct platform_device **pdev)
++pcf50633_adc_sync_read_callback(struct pcf50633 *pcf, void *param, int result)
 +{
-+	struct pcf50633_subdev_pdata *subdev_pdata;
-+	int ret;
++	struct pcf50633_adc_request *req = param;
 +
-+	*pdev = platform_device_alloc(name, -1);
-+	if (!*pdev) {
-+		dev_err(pcf->dev, "Falied to allocate %s\n", name);
-+		return;
-+	}
-+
-+	subdev_pdata = kmalloc(sizeof(*subdev_pdata), GFP_KERNEL);
-+	if (!subdev_pdata) {
-+		dev_err(pcf->dev, "Error allocating subdev pdata\n");
-+		platform_device_put(*pdev);
-+	}
-+
-+	subdev_pdata->pcf = pcf;
-+	platform_device_add_data(*pdev, subdev_pdata, sizeof(*subdev_pdata));
-+
-+	(*pdev)->dev.parent = pcf->dev;
-+
-+	ret = platform_device_add(*pdev);
-+	if (ret) {
-+		dev_err(pcf->dev, "Failed to register %s: %d\n", name, ret);
-+		platform_device_put(*pdev);
-+		*pdev = NULL;
-+	}
++	req->result = result;
++	complete(&req->completion);
 +}
 +
-+#ifdef CONFIG_PM
-+static int pcf50633_suspend(struct device *dev, pm_message_t state)
++int pcf50633_adc_sync_read(struct pcf50633 *pcf, int mux, int avg)
 +{
-+	struct pcf50633 *pcf;
-+	int ret = 0, i;
-+	u8 res[5];
++	struct pcf50633_adc_request *req;
 +
-+	pcf = dev_get_drvdata(dev);
-+
-+	/* Make sure our interrupt handlers are not called
-+	 * henceforth */
-+	disable_irq(pcf->irq);
-+
-+	/* Make sure that any running IRQ worker has quit */
-+	cancel_work_sync(&pcf->irq_work);
-+
-+	/* Save the masks */
-+	ret = pcf50633_read_block(pcf, PCF50633_REG_INT1M,
-+				ARRAY_SIZE(pcf->suspend_irq_masks),
-+					pcf->suspend_irq_masks);
-+	if (ret < 0) {
-+		dev_err(pcf->dev, "error saving irq masks\n");
-+		goto out;
-+	}
-+
-+	/* Write wakeup irq masks */
-+	for (i = 0; i < ARRAY_SIZE(res); i++)
-+		res[i] = ~pcf->pdata->resumers[i];
-+
-+	ret = pcf50633_write_block(pcf, PCF50633_REG_INT1M,
-+					ARRAY_SIZE(res), &res[0]);
-+	if (ret < 0) {
-+		dev_err(pcf->dev, "error writing wakeup irq masks\n");
-+		goto out;
-+	}
-+
-+	pcf->is_suspended = 1;
-+
-+out:
-+	return ret;
-+}
-+
-+static int pcf50633_resume(struct device *dev)
-+{
-+	struct pcf50633 *pcf;
-+	int ret;
-+
-+	pcf = dev_get_drvdata(dev);
-+
-+	/* Write the saved mask registers */
-+	ret = pcf50633_write_block(pcf, PCF50633_REG_INT1M,
-+				ARRAY_SIZE(pcf->suspend_irq_masks),
-+					pcf->suspend_irq_masks);
-+	if (ret < 0)
-+		dev_err(pcf->dev, "Error restoring saved suspend masks\n");
-+
-+	get_device(pcf->dev);
-+
-+	/*
-+	 * Clear any pending interrupts and set resume reason if any.
-+	 * This will leave with enable_irq()
-+	 */
-+	pcf50633_irq_worker(&pcf->irq_work);
-+
-+	return 0;
-+}
-+#else
-+#define pcf50633_suspend NULL
-+#define pcf50633_resume NULL
-+#endif
-+
-+static int __devinit pcf50633_probe(struct i2c_client *client,
-+				const struct i2c_device_id *ids)
-+{
-+	struct pcf50633 *pcf;
-+	struct pcf50633_platform_data *pdata = client->dev.platform_data;
-+	int i, ret = 0;
-+	int version, variant;
-+
-+	pcf = kzalloc(sizeof(*pcf), GFP_KERNEL);
-+	if (!pcf)
++	/* req is freed when the result is ready, in interrupt handler */
++	req = kzalloc(sizeof(*req), GFP_KERNEL);
++	if (!req)
 +		return -ENOMEM;
 +
-+	pcf->pdata = pdata;
++	req->mux = mux;
++	req->avg = avg;
++	req->callback =  pcf50633_adc_sync_read_callback;
++	req->callback_param = req;
 +
-+	mutex_init(&pcf->lock);
++	init_completion(&req->completion);
++	adc_enqueue_request(pcf, req);
++	wait_for_completion(&req->completion);
 +
-+	i2c_set_clientdata(client, pcf);
-+	pcf->dev = &client->dev;
-+	pcf->i2c_client = client;
-+	pcf->irq = client->irq;
-+
-+	INIT_WORK(&pcf->irq_work, pcf50633_irq_worker);
-+
-+	version = pcf50633_reg_read(pcf, 0);
-+	variant = pcf50633_reg_read(pcf, 1);
-+	if (version < 0 || variant < 0) {
-+		dev_err(pcf->dev, "Unable to probe pcf50633\n");
-+		ret = -ENODEV;
-+		goto err;
-+	}
-+
-+	dev_info(pcf->dev, "Probed device version %d variant %d\n",
-+							version, variant);
-+
-+	/* Enable all interrupts except RTC SECOND */
-+	pcf->mask_regs[0] = 0x80;
-+	pcf50633_reg_write(pcf, PCF50633_REG_INT1M, pcf->mask_regs[0]);
-+	pcf50633_reg_write(pcf, PCF50633_REG_INT2M, 0x00);
-+	pcf50633_reg_write(pcf, PCF50633_REG_INT3M, 0x00);
-+	pcf50633_reg_write(pcf, PCF50633_REG_INT4M, 0x00);
-+	pcf50633_reg_write(pcf, PCF50633_REG_INT5M, 0x00);
-+
-+	/* Create sub devices */
-+	pcf50633_client_dev_register(pcf, "pcf50633-input",
-+						&pcf->input_pdev);
-+	pcf50633_client_dev_register(pcf, "pcf50633-rtc",
-+						&pcf->rtc_pdev);
-+	pcf50633_client_dev_register(pcf, "pcf50633-mbc",
-+						&pcf->mbc_pdev);
-+	pcf50633_client_dev_register(pcf, "pcf50633-adc",
-+						&pcf->adc_pdev);
-+
-+	for (i = 0; i < PCF50633_NUM_REGULATORS; i++) {
-+		struct platform_device *pdev;
-+
-+		pdev = platform_device_alloc("pcf50633-regltr", i);
-+		if (!pdev) {
-+			dev_err(pcf->dev, "Cannot create regulator\n");
-+			continue;
-+		}
-+
-+		pdev->dev.parent = pcf->dev;
-+		pdev->dev.platform_data = &pdata->reg_init_data[i];
-+		pdev->dev.driver_data = pcf;
-+		pcf->regulator_pdev[i] = pdev;
-+
-+		platform_device_add(pdev);
-+	}
-+
-+	if (client->irq) {
-+		set_irq_handler(client->irq, handle_level_irq);
-+		ret = request_irq(client->irq, pcf50633_irq,
-+				IRQF_TRIGGER_LOW, "pcf50633", pcf);
-+
-+		if (ret) {
-+			dev_err(pcf->dev, "Failed to request IRQ %d\n", ret);
-+			goto err;
-+		}
-+	} else {
-+		dev_err(pcf->dev, "No IRQ configured\n");
-+		goto err;
-+	}
-+
-+	if (enable_irq_wake(client->irq) < 0)
-+		dev_err(pcf->dev, "IRQ %u cannot be enabled as wake-up source"
-+			"in this hardware revision", client->irq);
-+
-+	ret = sysfs_create_group(&client->dev.kobj, &pcf_attr_group);
-+	if (ret)
-+		dev_err(pcf->dev, "error creating sysfs entries\n");
-+
-+	if (pdata->probe_done)
-+		pdata->probe_done(pcf);
-+
-+	return 0;
-+
-+err:
-+	kfree(pcf);
-+	return ret;
++	return req->result;
 +}
++EXPORT_SYMBOL_GPL(pcf50633_adc_sync_read);
 +
-+static int __devexit pcf50633_remove(struct i2c_client *client)
++int pcf50633_adc_async_read(struct pcf50633 *pcf, int mux, int avg,
++			     void (*callback)(struct pcf50633 *, void *, int),
++			     void *callback_param)
 +{
-+	struct pcf50633 *pcf = i2c_get_clientdata(client);
-+	int i;
++	struct pcf50633_adc_request *req;
 +
-+	free_irq(pcf->irq, pcf);
++	/* req is freed when the result is ready, in interrupt handler */
++	req = kmalloc(sizeof(*req), GFP_KERNEL);
++	if (!req)
++		return -ENOMEM;
 +
-+	platform_device_unregister(pcf->input_pdev);
-+	platform_device_unregister(pcf->rtc_pdev);
-+	platform_device_unregister(pcf->mbc_pdev);
-+	platform_device_unregister(pcf->adc_pdev);
++	req->mux = mux;
++	req->avg = avg;
++	req->callback = callback;
++	req->callback_param = callback_param;
 +
-+	for (i = 0; i < PCF50633_NUM_REGULATORS; i++)
-+		platform_device_unregister(pcf->regulator_pdev[i]);
++	adc_enqueue_request(pcf, req);
 +
-+	kfree(pcf);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pcf50633_adc_async_read);
++
++static int adc_result(struct pcf50633 *pcf)
++{
++	u8 adcs1, adcs3;
++	u16 result;
++
++	adcs1 = pcf50633_reg_read(pcf, PCF50633_REG_ADCS1);
++	adcs3 = pcf50633_reg_read(pcf, PCF50633_REG_ADCS3);
++	result = (adcs1 << 2) | (adcs3 & PCF50633_ADCS3_ADCDAT1L_MASK);
++
++	dev_dbg(pcf->dev, "adc result = %d\n", result);
++
++	return result;
++}
++
++static void pcf50633_adc_irq(int irq, void *data)
++{
++	struct pcf50633_adc *adc = data;
++	struct pcf50633 *pcf = adc->pcf;
++	struct pcf50633_adc_request *req;
++	int head;
++
++	mutex_lock(&adc->queue_mutex);
++	head = adc->queue_head;
++
++	req = adc->queue[head];
++	if (WARN_ON(!req)) {
++		dev_err(pcf->dev, "pcf50633-adc irq: ADC queue empty!\n");
++		mutex_unlock(&adc->queue_mutex);
++		return;
++	}
++	adc->queue[head] = NULL;
++	adc->queue_head = (head + 1) &
++				      (PCF50633_MAX_ADC_FIFO_DEPTH - 1);
++
++	mutex_unlock(&adc->queue_mutex);
++
++	req->callback(pcf, req->callback_param, adc_result(pcf));
++	kfree(req);
++
++	trigger_next_adc_job_if_any(pcf);
++}
++
++static int __devinit pcf50633_adc_probe(struct platform_device *pdev)
++{
++	struct pcf50633_subdev_pdata *pdata = pdev->dev.platform_data;
++	struct pcf50633_adc *adc;
++
++	adc = kzalloc(sizeof(*adc), GFP_KERNEL);
++	if (!adc)
++		return -ENOMEM;
++
++	adc->pcf = pdata->pcf;
++	platform_set_drvdata(pdev, adc);
++
++	pcf50633_register_irq(pdata->pcf, PCF50633_IRQ_ADCRDY,
++					pcf50633_adc_irq, adc);
++
++	mutex_init(&adc->queue_mutex);
 +
 +	return 0;
 +}
 +
-+static struct i2c_device_id pcf50633_id_table[] = {
-+	{"pcf50633", 0x73},
-+};
++static int __devexit pcf50633_adc_remove(struct platform_device *pdev)
++{
++	struct pcf50633_adc *adc = platform_get_drvdata(pdev);
++	int i, head;
 +
-+static struct i2c_driver pcf50633_driver = {
++	pcf50633_free_irq(adc->pcf, PCF50633_IRQ_ADCRDY);
++
++	mutex_lock(&adc->queue_mutex);
++	head = adc->queue_head;
++
++	if (WARN_ON(adc->queue[head]))
++		dev_err(adc->pcf->dev,
++			"adc driver removed with request pending\n");
++
++	for (i = 0; i < PCF50633_MAX_ADC_FIFO_DEPTH; i++)
++		kfree(adc->queue[i]);
++
++	mutex_unlock(&adc->queue_mutex);
++	kfree(adc);
++
++	return 0;
++}
++
++static struct platform_driver pcf50633_adc_driver = {
 +	.driver = {
-+		.name	= "pcf50633",
-+		.suspend = pcf50633_suspend,
-+		.resume	= pcf50633_resume,
++		.name = "pcf50633-adc",
 +	},
-+	.id_table = pcf50633_id_table,
-+	.probe = pcf50633_probe,
-+	.remove = __devexit_p(pcf50633_remove),
++	.probe = pcf50633_adc_probe,
++	.remove = __devexit_p(pcf50633_adc_remove),
 +};
 +
-+static int __init pcf50633_init(void)
++static int __init pcf50633_adc_init(void)
 +{
-+	return i2c_add_driver(&pcf50633_driver);
++	return platform_driver_register(&pcf50633_adc_driver);
 +}
++module_init(pcf50633_adc_init);
 +
-+static void __exit pcf50633_exit(void)
++static void __exit pcf50633_adc_exit(void)
 +{
-+	i2c_del_driver(&pcf50633_driver);
++	platform_driver_unregister(&pcf50633_adc_driver);
 +}
++module_exit(pcf50633_adc_exit);
 +
-+MODULE_DESCRIPTION("I2C chip driver for NXP PCF50633 PMU");
-+MODULE_AUTHOR("Harald Welte <laforge@openmoko.org>");
++MODULE_AUTHOR("Balaji Rao <balajirrao@openmoko.org>");
++MODULE_DESCRIPTION("PCF50633 adc driver");
 +MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:pcf50633-adc");
 +
-+module_init(pcf50633_init);
-+module_exit(pcf50633_exit);
-diff --git a/include/linux/mfd/pcf50633/core.h b/include/linux/mfd/pcf50633/core.h
+diff --git a/include/linux/mfd/pcf50633/adc.h b/include/linux/mfd/pcf50633/adc.h
 new file mode 100644
-index 0000000..4455b21
+index 0000000..56669b4
 --- /dev/null
-+++ b/include/linux/mfd/pcf50633/core.h
-@@ -0,0 +1,218 @@
++++ b/include/linux/mfd/pcf50633/adc.h
+@@ -0,0 +1,72 @@
 +/*
-+ * core.h  -- Core driver for NXP PCF50633
++ * adc.h  -- Driver for NXP PCF50633 ADC
 + *
 + * (C) 2006-2008 by Openmoko, Inc.
 + * All rights reserved.
@@ -807,210 +372,64 @@ index 0000000..4455b21
 + * option) any later version.
 + */
 +
-+#ifndef __LINUX_MFD_PCF50633_CORE_H
-+#define __LINUX_MFD_PCF50633_CORE_H
++#ifndef __LINUX_MFD_PCF50633_ADC_H
++#define __LINUX_MFD_PCF50633_ADC_H
 +
-+#include <linux/i2c.h>
-+#include <linux/workqueue.h>
-+#include <linux/regulator/driver.h>
-+#include <linux/regulator/machine.h>
-+#include <linux/power_supply.h>
++#include <linux/mfd/pcf50633/core.h>
++#include <linux/platform_device.h>
 +
-+struct pcf50633;
++/* ADC Registers */
++#define PCF50633_REG_ADCC3		0x52
++#define PCF50633_REG_ADCC2		0x53
++#define PCF50633_REG_ADCC1		0x54
++#define PCF50633_REG_ADCS1		0x55
++#define PCF50633_REG_ADCS2		0x56
++#define PCF50633_REG_ADCS3		0x57
 +
-+#define PCF50633_NUM_REGULATORS	11
++#define PCF50633_ADCC1_ADCSTART		0x01
++#define PCF50633_ADCC1_RES_10BIT	0x02
++#define PCF50633_ADCC1_AVERAGE_NO	0x00
++#define PCF50633_ADCC1_AVERAGE_4	0x04
++#define PCF50633_ADCC1_AVERAGE_8	0x08
++#define PCF50633_ADCC1_AVERAGE_16	0x0c
++#define PCF50633_ADCC1_MUX_BATSNS_RES	0x00
++#define PCF50633_ADCC1_MUX_BATSNS_SUBTR	0x10
++#define PCF50633_ADCC1_MUX_ADCIN2_RES	0x20
++#define PCF50633_ADCC1_MUX_ADCIN2_SUBTR	0x30
++#define PCF50633_ADCC1_MUX_BATTEMP	0x60
++#define PCF50633_ADCC1_MUX_ADCIN1	0x70
++#define PCF50633_ADCC1_AVERAGE_MASK	0x0c
++#define PCF50633_ADCC1_ADCMUX_MASK	0xf0
 +
-+struct pcf50633_platform_data {
-+	struct regulator_init_data reg_init_data[PCF50633_NUM_REGULATORS];
++#define PCF50633_ADCC2_RATIO_NONE	0x00
++#define PCF50633_ADCC2_RATIO_BATTEMP	0x01
++#define PCF50633_ADCC2_RATIO_ADCIN1	0x02
++#define PCF50633_ADCC2_RATIO_BOTH	0x03
++#define PCF50633_ADCC2_RATIOSETTL_100US 0x04
 +
-+	char **batteries;
-+	int num_batteries;
++#define PCF50633_ADCC3_ACCSW_EN		0x01
++#define PCF50633_ADCC3_NTCSW_EN		0x04
++#define PCF50633_ADCC3_RES_DIV_TWO	0x10
++#define PCF50633_ADCC3_RES_DIV_THREE	0x00
 +
-+	/* Callbacks */
-+	void (*probe_done)(struct pcf50633 *);
-+	void (*mbc_event_callback)(struct pcf50633 *, int);
-+	void (*regulator_registered)(struct pcf50633 *, int);
-+	void (*force_shutdown)(struct pcf50633 *);
++#define PCF50633_ADCS3_REF_NTCSW	0x00
++#define PCF50633_ADCS3_REF_ACCSW	0x10
++#define PCF50633_ADCS3_REF_2V0		0x20
++#define PCF50633_ADCS3_REF_VISA		0x30
++#define PCF50633_ADCS3_REF_2V0_2	0x70
++#define PCF50633_ADCS3_ADCRDY		0x80
 +
-+	u8 resumers[5];
-+};
++#define PCF50633_ADCS3_ADCDAT1L_MASK	0x03
++#define PCF50633_ADCS3_ADCDAT2L_MASK	0x0c
++#define PCF50633_ADCS3_ADCDAT2L_SHIFT	2
++#define PCF50633_ASCS3_REF_MASK		0x70
 +
-+struct pcf50633_subdev_pdata {
-+	struct pcf50633 *pcf;
-+};
++extern int
++pcf50633_adc_async_read(struct pcf50633 *pcf, int mux, int avg,
++		void (*callback)(struct pcf50633 *, void *, int),
++		void *callback_param);
++extern int
++pcf50633_adc_sync_read(struct pcf50633 *pcf, int mux, int avg);
 +
-+struct pcf50633_irq {
-+	void (*handler) (int, void *);
-+	void *data;
-+};
-+
-+int pcf50633_register_irq(struct pcf50633 *pcf, int irq,
-+			void (*handler) (int, void *), void *data);
-+int pcf50633_free_irq(struct pcf50633 *pcf, int irq);
-+
-+int pcf50633_irq_mask(struct pcf50633 *pcf, int irq);
-+int pcf50633_irq_unmask(struct pcf50633 *pcf, int irq);
-+int pcf50633_irq_mask_get(struct pcf50633 *pcf, int irq);
-+
-+int pcf50633_read_block(struct pcf50633 *, u8 reg,
-+					int nr_regs, u8 *data);
-+int pcf50633_write_block(struct pcf50633 *pcf, u8 reg,
-+					int nr_regs, u8 *data);
-+u8 pcf50633_reg_read(struct pcf50633 *, u8 reg);
-+int pcf50633_reg_write(struct pcf50633 *pcf, u8 reg, u8 val);
-+
-+int pcf50633_reg_set_bit_mask(struct pcf50633 *pcf, u8 reg, u8 mask, u8 val);
-+int pcf50633_reg_clear_bits(struct pcf50633 *pcf, u8 reg, u8 bits);
-+
-+/* Interrupt registers */
-+
-+#define PCF50633_REG_INT1	0x02
-+#define PCF50633_REG_INT2	0x03
-+#define PCF50633_REG_INT3	0x04
-+#define PCF50633_REG_INT4	0x05
-+#define PCF50633_REG_INT5	0x06
-+
-+#define PCF50633_REG_INT1M	0x07
-+#define PCF50633_REG_INT2M	0x08
-+#define PCF50633_REG_INT3M	0x09
-+#define PCF50633_REG_INT4M	0x0a
-+#define PCF50633_REG_INT5M	0x0b
-+
-+enum {
-+	/* Chip IRQs */
-+	PCF50633_IRQ_ADPINS,
-+	PCF50633_IRQ_ADPREM,
-+	PCF50633_IRQ_USBINS,
-+	PCF50633_IRQ_USBREM,
-+	PCF50633_IRQ_RESERVED1,
-+	PCF50633_IRQ_RESERVED2,
-+	PCF50633_IRQ_ALARM,
-+	PCF50633_IRQ_SECOND,
-+	PCF50633_IRQ_ONKEYR,
-+	PCF50633_IRQ_ONKEYF,
-+	PCF50633_IRQ_EXTON1R,
-+	PCF50633_IRQ_EXTON1F,
-+	PCF50633_IRQ_EXTON2R,
-+	PCF50633_IRQ_EXTON2F,
-+	PCF50633_IRQ_EXTON3R,
-+	PCF50633_IRQ_EXTON3F,
-+	PCF50633_IRQ_BATFULL,
-+	PCF50633_IRQ_CHGHALT,
-+	PCF50633_IRQ_THLIMON,
-+	PCF50633_IRQ_THLIMOFF,
-+	PCF50633_IRQ_USBLIMON,
-+	PCF50633_IRQ_USBLIMOFF,
-+	PCF50633_IRQ_ADCRDY,
-+	PCF50633_IRQ_ONKEY1S,
-+	PCF50633_IRQ_LOWSYS,
-+	PCF50633_IRQ_LOWBAT,
-+	PCF50633_IRQ_HIGHTMP,
-+	PCF50633_IRQ_AUTOPWRFAIL,
-+	PCF50633_IRQ_DWN1PWRFAIL,
-+	PCF50633_IRQ_DWN2PWRFAIL,
-+	PCF50633_IRQ_LEDPWRFAIL,
-+	PCF50633_IRQ_LEDOVP,
-+	PCF50633_IRQ_LDO1PWRFAIL,
-+	PCF50633_IRQ_LDO2PWRFAIL,
-+	PCF50633_IRQ_LDO3PWRFAIL,
-+	PCF50633_IRQ_LDO4PWRFAIL,
-+	PCF50633_IRQ_LDO5PWRFAIL,
-+	PCF50633_IRQ_LDO6PWRFAIL,
-+	PCF50633_IRQ_HCLDOPWRFAIL,
-+	PCF50633_IRQ_HCLDOOVL,
-+
-+	/* Always last */
-+	PCF50633_NUM_IRQ,
-+};
-+
-+struct pcf50633 {
-+	struct device *dev;
-+	struct i2c_client *i2c_client;
-+
-+	struct pcf50633_platform_data *pdata;
-+	int irq;
-+	struct pcf50633_irq irq_handler[PCF50633_NUM_IRQ];
-+	struct work_struct irq_work;
-+	struct mutex lock;
-+
-+	u8 mask_regs[5];
-+
-+	u8 suspend_irq_masks[5];
-+	u8 resume_reason[5];
-+	int is_suspended;
-+
-+	int onkey1s_held;
-+
-+	struct platform_device *rtc_pdev;
-+	struct platform_device *mbc_pdev;
-+	struct platform_device *adc_pdev;
-+	struct platform_device *input_pdev;
-+	struct platform_device *regulator_pdev[PCF50633_NUM_REGULATORS];
-+};
-+
-+enum pcf50633_reg_int1 {
-+	PCF50633_INT1_ADPINS	= 0x01,	/* Adapter inserted */
-+	PCF50633_INT1_ADPREM	= 0x02,	/* Adapter removed */
-+	PCF50633_INT1_USBINS	= 0x04,	/* USB inserted */
-+	PCF50633_INT1_USBREM	= 0x08,	/* USB removed */
-+	/* reserved */
-+	PCF50633_INT1_ALARM	= 0x40, /* RTC alarm time is reached */
-+	PCF50633_INT1_SECOND	= 0x80,	/* RTC periodic second interrupt */
-+};
-+
-+enum pcf50633_reg_int2 {
-+	PCF50633_INT2_ONKEYR	= 0x01, /* ONKEY rising edge */
-+	PCF50633_INT2_ONKEYF	= 0x02, /* ONKEY falling edge */
-+	PCF50633_INT2_EXTON1R	= 0x04, /* EXTON1 rising edge */
-+	PCF50633_INT2_EXTON1F	= 0x08, /* EXTON1 falling edge */
-+	PCF50633_INT2_EXTON2R	= 0x10, /* EXTON2 rising edge */
-+	PCF50633_INT2_EXTON2F	= 0x20, /* EXTON2 falling edge */
-+	PCF50633_INT2_EXTON3R	= 0x40, /* EXTON3 rising edge */
-+	PCF50633_INT2_EXTON3F	= 0x80, /* EXTON3 falling edge */
-+};
-+
-+enum pcf50633_reg_int3 {
-+	PCF50633_INT3_BATFULL	= 0x01, /* Battery full */
-+	PCF50633_INT3_CHGHALT	= 0x02,	/* Charger halt */
-+	PCF50633_INT3_THLIMON	= 0x04,
-+	PCF50633_INT3_THLIMOFF	= 0x08,
-+	PCF50633_INT3_USBLIMON	= 0x10,
-+	PCF50633_INT3_USBLIMOFF	= 0x20,
-+	PCF50633_INT3_ADCRDY	= 0x40, /* ADC result ready */
-+	PCF50633_INT3_ONKEY1S	= 0x80,	/* ONKEY pressed 1 second */
-+};
-+
-+enum pcf50633_reg_int4 {
-+	PCF50633_INT4_LOWSYS		= 0x01,
-+	PCF50633_INT4_LOWBAT		= 0x02,
-+	PCF50633_INT4_HIGHTMP		= 0x04,
-+	PCF50633_INT4_AUTOPWRFAIL	= 0x08,
-+	PCF50633_INT4_DWN1PWRFAIL	= 0x10,
-+	PCF50633_INT4_DWN2PWRFAIL	= 0x20,
-+	PCF50633_INT4_LEDPWRFAIL	= 0x40,
-+	PCF50633_INT4_LEDOVP		= 0x80,
-+};
-+
-+enum pcf50633_reg_int5 {
-+	PCF50633_INT5_LDO1PWRFAIL	= 0x01,
-+	PCF50633_INT5_LDO2PWRFAIL	= 0x02,
-+	PCF50633_INT5_LDO3PWRFAIL	= 0x04,
-+	PCF50633_INT5_LDO4PWRFAIL	= 0x08,
-+	PCF50633_INT5_LDO5PWRFAIL	= 0x10,
-+	PCF50633_INT5_LDO6PWRFAIL	= 0x20,
-+	PCF50633_INT5_HCLDOPWRFAIL	= 0x40,
-+	PCF50633_INT5_HCLDOOVL		= 0x80,
-+};
-+
-+/* misc. registers */
-+#define PCF50633_REG_OOCSHDWN	0x0c
-+
-+/* LED registers */
-+#define PCF50633_REG_LEDOUT 0x28
-+#define PCF50633_REG_LEDENA 0x29
-+#define PCF50633_REG_LEDCTL 0x2a
-+#define PCF50633_REG_LEDDIM 0x2b
-+
-+#endif
-+
++#endif /* __LINUX_PCF50633_ADC_H */
 
