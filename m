@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752614AbYLRQtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752774AbYLRQtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752614AbYLRQtm (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 11:49:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYLRQtb
+	id S1752774AbYLRQtz (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 11:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYLRQtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 11:49:31 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:41474 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892AbYLRQtb (ORCPT
+	Thu, 18 Dec 2008 11:49:33 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:24021 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751810AbYLRQtc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 11:49:31 -0500
-Date: Thu, 18 Dec 2008 10:49:07 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Catalin Marinas <catalin.marinas@arm.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/15] kmemleak: Add the slab memory allocation/freeing
- hooks
-In-Reply-To: <1229618308.16418.50.camel@pc1117.cambridge.arm.com>
-Message-ID: <Pine.LNX.4.64.0812181048160.12300@quilx.com>
-References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com> 
- <20081210182710.30323.57396.stgit@pc1117.cambridge.arm.com> 
- <494184AA.8090509@cs.helsinki.fi>  <1229092065.15045.35.camel@pc1117.cambridge.arm.com>
-  <1229597162.1047.48.camel@penberg-laptop> <1229618308.16418.50.camel@pc1117.cambridge.arm.com>
+	Thu, 18 Dec 2008 11:49:32 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] x86 gart: don't complain if no AMD GART found
+Date: Thu, 18 Dec 2008 09:49:27 -0700
+User-Agent: KMail/1.9.10
+Cc: Joerg Roedel <joerg.roedel@amd.com>, iommu@lists.linux-foundation.org,
+        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+        hpa@zytor.com, linux-kernel@vger.kernel.org
+References: <20081217195234.13603.96737.stgit@bob.kio> <20081217202724.GB9475@redhat.com>
+In-Reply-To: <20081217202724.GB9475@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812180949.28042.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Dec 2008, Catalin Marinas wrote:
+On Wednesday 17 December 2008 01:27:24 pm Dave Jones wrote:
+> On Wed, Dec 17, 2008 at 12:52:34PM -0700, Bjorn Helgaas wrote:
+>  > It's perfectly normal for no AMD GART to be present, e.g., if you have
+>  > Intel CPUs.
+> 
+> Yes! That's annoyed me for some time too.
+> 
+>  >  None of the other iommu_init() functions makes noise when
+>  > it finds nothing.
+>  
+> The Calgary stuff is pretty noisy in the face of non-existant hardware too.
+> Makes for noisy distro kernels..
+> 
+> Calgary: detecting Calgary via BIOS EBDA area
+> Calgary: Unable to locate Rio Grande table in EBDA - bailing!
 
-> In the ____cache_alloc() kmemleak clears the
-> cachep->array->entry[ac->avail] pointer but this may not be enough as
-> freed and later re-allocated objects may have pointers in the alien
-> cache (is that correct?). A better approach (haven't tried it yet) would
-> be not to scan objects allocated via alloc_arraycache() at all. However,
-> there is still the initarray_cache/generic which are automatically
-> scanned via the data section (unless I add an attribute to place them in
-> a different, not scanned, section).
+Yeah, I considered removing that, too.  At least the Calgary stuff
+is KERN_DEBUG, so it's not quite as visible.  But I'm in favor of
+removing it anyway.
 
-An allocated object is not part of any cache in SLAB. Only freed objects
-are kept in the slab queues. A freed object can only be in one queue at a
-time.
-
+Bjorn
