@@ -1,228 +1,73 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752620AbYLRLPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752356AbYLRLQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752620AbYLRLPd (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 06:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYLRLPX
+	id S1752356AbYLRLQl (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 06:16:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYLRLQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 06:15:23 -0500
-Received: from mail.gmx.net ([213.165.64.20]:38157 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750950AbYLRLPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 06:15:22 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX191PdIFksh1RbHJ75OiTr9VAbcFphWlVhNfixc6ZX
-	Rb7ER7yIKI8RJQ
-Date: Thu, 18 Dec 2008 12:15:28 +0100 (CET)
-From: Guennadi Liakhovetski <lg@denx.de>
-X-X-Sender: lyakh@axis700.grange
-To: linux-kernel@vger.kernel.org
-cc: rpurdie@rpsys.net
-Subject: [PATCH] leds: add a dac124s085 SPI LED driver
-Message-ID: <Pine.LNX.4.64.0812181213540.5510@axis700.grange>
+	Thu, 18 Dec 2008 06:16:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46015 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751341AbYLRLQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 06:16:28 -0500
+Date: Thu, 18 Dec 2008 12:16:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] tracing/function-graph-tracer: prevent from hrtimer
+	interrupt infinite loop
+Message-ID: <20081218111612.GD14332@elte.hu>
+References: <4949A2CC.6040209@gmail.com> <20081218103459.GD10513@elte.hu> <c62985530812180251k7fde4f13tce5118a3eac4975b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.41
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530812180251k7fde4f13tce5118a3eac4975b@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A simple LED driver using the DAC124S085 DAC from NatSemi
 
-Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
----
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 
-Needs a previous patch making brightness resolution configurable:
+> 2008/12/18 Ingo Molnar <mingo@elte.hu>:
+> >
+> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> >
+> >> Impact: fix a system hang on slow systems
+> >>
+> >> While testing the function graph tracer on VirtualBox, I had a system hang
+> >> immediatly after enabling the tracer.
+> >>
+> >> If hrtimer is enabled on kernel, a slow system can spend too much time
+> >> during tracing the hrtimer_interrupt which will do eternal loops,
+> >> assuming it always have to retry its process because too much time
+> >> elapsed during its time update. Now we provide a feature which lurks at
+> >> the number of retries on hrtimer_interrupt. After 10 retries, the
+> >> function graph tracer will definetly stop its tracing.
+> >
+> > hm, i dont really like this solution - it just works around the problem by
+> > 'speeding up' the system. If we have a _real_ slow system, there's no such
+> > way for us to speed it up.
+> 
+> 
+> It doesn' speed up the system actually. That's not the goal of this 
+> patch.
 
-http://marc.info/?l=linux-kernel&m=122771446123369&w=2
+i meant that abstractly. The "solution" here is that your patch turns off 
+the function-graph-tracer. The practical effect of that is: the system 
+gets much faster at processing hrtimer IRQs and effectively "speeds up".
 
-Richard, what's its status btw?
+ok?
 
- drivers/leds/Kconfig           |    7 ++
- drivers/leds/Makefile          |    3 +
- drivers/leds/leds-dac124s085.c |  141 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 151 insertions(+), 0 deletions(-)
- create mode 100644 drivers/leds/leds-dac124s085.c
-
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index a4a1ae2..a28635f 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -178,6 +178,13 @@ config LEDS_DA903X
- 	  This option enables support for on-chip LED drivers found
- 	  on Dialog Semiconductor DA9030/DA9034 PMICs.
- 
-+config LEDS_DAC124S085
-+	tristate "LED Support for DAC124S085 SPI DAC"
-+	depends on LEDS_CLASS && SPI
-+	help
-+	  This option enables support for DAC124S085 SPI DAC from NatSemi,
-+	  which can be used to control up to four LEDs.
-+
- comment "LED Triggers"
- 
- config LEDS_TRIGGERS
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index bc247cb..8780152 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -26,6 +26,9 @@ obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
- obj-$(CONFIG_LEDS_HP_DISK)		+= leds-hp-disk.o
- obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
- 
-+# LED SPI Drivers
-+obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
-+
- # LED Triggers
- obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
- obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)	+= ledtrig-ide-disk.o
-diff --git a/drivers/leds/leds-dac124s085.c b/drivers/leds/leds-dac124s085.c
-new file mode 100644
-index 0000000..415a437
---- /dev/null
-+++ b/drivers/leds/leds-dac124s085.c
-@@ -0,0 +1,141 @@
-+/*
-+ * Copyright 2008
-+ * Guennadi Liakhovetski, DENX Software Engineering, <lg@denx.de>
-+ *
-+ * This file is subject to the terms and conditions of version 2 of
-+ * the GNU General Public License.  See the file COPYING in the main
-+ * directory of this archive for more details.
-+ *
-+ * LED driver for the DAC124S085 SPI DAC
-+ */
-+
-+#include <linux/leds.h>
-+#include <linux/mutex.h>
-+#include <linux/spinlock.h>
-+#include <linux/workqueue.h>
-+#include <linux/spi/spi.h>
-+
-+struct dac124s085_led {
-+	struct led_classdev	ldev;
-+	struct spi_device	*spi;
-+	int			id;
-+	int			brightness;
-+	char			name[sizeof("dac124s085-3")];
-+
-+	struct mutex		mutex;
-+	struct work_struct	work;
-+	spinlock_t		lock;
-+};
-+
-+struct dac124s085 {
-+	struct dac124s085_led leds[4];
-+};
-+
-+static void dac124s085_led_work(struct work_struct *work)
-+{
-+	struct dac124s085_led *led = container_of(work, struct dac124s085_led,
-+						  work);
-+	u16 word;
-+
-+	mutex_lock(&led->mutex);
-+	word = ((led->id) << 14) | (1 << 12) | (led->brightness & 0xfff);
-+	spi_write(led->spi, (const u8 *)&word, sizeof(word));
-+	mutex_unlock(&led->mutex);
-+}
-+
-+static void dac124s085_set_brightness(struct led_classdev *ldev,
-+				      enum led_brightness brightness)
-+{
-+	struct dac124s085_led *led = container_of(ldev, struct dac124s085_led,
-+						  ldev);
-+
-+	spin_lock(&led->lock);
-+	led->brightness = brightness;
-+	schedule_work(&led->work);
-+	spin_unlock(&led->lock);
-+}
-+
-+static int dac124s085_probe(struct spi_device *spi)
-+{
-+	struct dac124s085	*dac;
-+	struct dac124s085_led	*led;
-+	int i, ret;
-+
-+	dac = kzalloc(sizeof(*dac), GFP_KERNEL);
-+	if (!dac)
-+		return -ENOMEM;
-+
-+	spi->bits_per_word = 16;
-+
-+	for (i = 0; i < 4; i++) {
-+		led		= dac->leds + i;
-+		led->id		= i;
-+		led->brightness	= LED_OFF;
-+		led->spi	= spi;
-+		snprintf(led->name, sizeof(led->name), "dac124s085-%d", i);
-+		spin_lock_init(&led->lock);
-+		INIT_WORK(&led->work, dac124s085_led_work);
-+		mutex_init(&led->mutex);
-+		led->ldev.name = led->name;
-+		led->ldev.brightness = LED_OFF;
-+		led->ldev.max_brightness = 0xfff;
-+		led->ldev.brightness_set = dac124s085_set_brightness;
-+		ret = led_classdev_register(&spi->dev, &led->ldev);
-+		if (ret < 0)
-+			goto eledcr;
-+	}
-+
-+	spi_set_drvdata(spi, dac);
-+
-+	return 0;
-+
-+eledcr:
-+	while (i--)
-+		led_classdev_unregister(&dac->leds[i].ldev);
-+
-+	spi_set_drvdata(spi, NULL);
-+	kfree(dac);
-+	return ret;
-+}
-+
-+static int dac124s085_remove(struct spi_device *spi)
-+{
-+	struct dac124s085	*dac = spi_get_drvdata(spi);
-+	int i;
-+
-+	for (i = 0; i < 4; i++) {
-+		led_classdev_unregister(&dac->leds[i].ldev);
-+		cancel_work_sync(&dac->leds[i].work);
-+	}
-+
-+	spi_set_drvdata(spi, NULL);
-+	kfree(dac);
-+
-+	return 0;
-+}
-+
-+static struct spi_driver dac124s085_driver = {
-+	.probe		= dac124s085_probe,
-+	.remove		= dac124s085_remove,
-+	.driver = {
-+		.name	= "dac124s085",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init dac124s085_leds_init(void)
-+{
-+	return spi_register_driver(&dac124s085_driver);
-+}
-+
-+static void __exit dac124s085_leds_exit(void)
-+{
-+	spi_unregister_driver(&dac124s085_driver);
-+}
-+
-+module_init(dac124s085_leds_init);
-+module_exit(dac124s085_leds_exit);
-+
-+MODULE_AUTHOR("Guennadi Liakhovetski <lg@denx.de>");
-+MODULE_DESCRIPTION("DAC124S085 LED driver");
-+MODULE_LICENSE("GPL v2");
--- 
-1.5.4
-
+	Ingo
