@@ -1,56 +1,141 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752167AbYLRPjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752095AbYLRPqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752167AbYLRPjU (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 10:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbYLRPjH
+	id S1752095AbYLRPqm (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 10:46:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbYLRPqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 10:39:07 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:51647 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750940AbYLRPjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 10:39:06 -0500
-Date: Thu, 18 Dec 2008 16:38:49 +0100
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-        AVR32 Linux Kernel <kernel@avr32linux.org>
-Subject: [GIT PULL] AVR32 fixes
-Message-ID: <20081218163849.5e6a07d9@hskinnemoen-d830>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+	Thu, 18 Dec 2008 10:46:31 -0500
+Received: from sh.osrg.net ([192.16.179.4]:39667 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750973AbYLRPqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 10:46:30 -0500
+Date: Fri, 19 Dec 2008 00:45:50 +0900
+To: mingo@elte.hu
+Cc: jeremy@goop.org, fujita.tomonori@lab.ntt.co.jp,
+        linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+        x86@kernel.org, ian.campbell@citrix.com, jbeulich@novell.com,
+        joerg.roedel@amd.com
+Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use
+	of swiotlb
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081218132313.GE32135@elte.hu>
+References: <20081218015705Z.fujita.tomonori@lab.ntt.co.jp>
+	<49494BE4.1070408@goop.org>
+	<20081218132313.GE32135@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20081219004454D.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, 18 Dec 2008 14:23:13 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Please pull
+> 
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> 
+> > FUJITA Tomonori wrote:
+> >> On Wed, 17 Dec 2008 08:31:43 -0800
+> >> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> >>
+> >>   
+> >>>> I think that the whole patchset is against the swiotlb design. swiotlb
+> >>>> is designed to be used as a library. Each architecture implements the
+> >>>> own swiotlb by using swiotlb library
+> >>>> (e.g. arch/x86/kernel/pci-swiotlb_64.c).
+> >>>>         
+> >>> The whole patchset?  The bulk of the changes to lib/swiotlb.c are  
+> >>> relatively minor to remove the unwarranted assumptions it is making 
+> >>> in the face of a new user.  They will have no effect on other 
+> >>> existing users, including non-Xen x86 builds.
+> >>>
+> >>> If you have specific objections we can discuss those, but I don't 
+> >>> think there's anything fundamentally wrong with making lib/swiotlb.c 
+> >>> a bit more generically useful.
+> >>>     
+> >>
+> >> Sorry, but the highmem support is not generically useful.
+> >>   
+> >
+> > That's a circular argument.  lib/swiotlb currently used by 1 1/2 of the 
+> > 23 architectures, neither of which happens to use highmem.  If you 
+> > consider swiotlb to be a general purpose mechanism, then presumably the 
+> > other 21 1/2 architectures are at least potential users (and 6 1/2 of 
+> > those have highmem configurations).  If you base your judgement of 
+> > what's a "generically useful" change based on what the current users 
+> > need, then you'll naturally exclude the requirements of all the other 
+> > (potential) users.
+> >
+> > And the matter arises now because we're trying to unify the use of 
+> > swiotlb in x86, bringing the number of users up to 2.
+> >
+> >> I'm especially against the highmem support. As you said, the rest looks 
+> >> fine but if you go with pci-swiotlb_32.c, I think that you don't need 
+> >> the most of them.
+> >>   
+> >
+> > I really don't want to have to duplicate a lot of code just to 
+> > incorporate a few small changes.  In fact the original Xen patch set 
+> > included its own swiotlb implementation, and that was rejected on the 
+> > grounds that we should use the common swiotlb.c.
+> 
+> duplicating that would not be a very good design - and 32-bit highmem is a 
+> reality we have to live with for some time to come. The impact:
+> 
+>    10 files changed, 251 insertions(+), 81 deletions(-)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git fixes
+It's not about the number of the lines. For example, X86_64 and IA64
+have to use the following ugly code:
 
-to get the following last-minute fixes for AVR32. Most of it is a
-defconfig update for ATSTK1006 enabling JFFS2 write buffering support,
-without which it can't boot from a JFFS2 file system stored in NAND
-flash.
++static struct swiotlb_phys_addr swiotlb_bus_to_phys_addr(char *dma_addr)
++{
++	int index = (dma_addr - io_tlb_start) >> IO_TLB_SHIFT;
++	struct swiotlb_phys_addr buffer = io_tlb_orig_addr[index];
++	buffer.offset += (long)dma_addr & ((1 << IO_TLB_SHIFT) - 1);
++	buffer.page += buffer.offset >> PAGE_SHIFT;
++	buffer.offset &= PAGE_SIZE - 1;
++	return buffer;
++}
 
-There's also a fix/workaround for a new "feature" in binutils 2.18
-which causes it to build unbootable kernel images.
+Why do they suffers such code even if they don't need it at all?
 
-Anders Blomdell (1):
-      avr32: Enable pullup on USART TX lines
 
-Haavard Skinnemoen (2):
-      ATSTK1006: Fix boot from NAND flash
-      avr32: favr-32 build fix
+> looks rather to the point and seems relatively compressed. In fact 32-bit 
+> Xen could end up being the largest user (and tester) of swiotlb facilities 
+> in general, as modern 64-bit platforms tend to have hw IOMMUs.
 
-Hans-Christian Egtvedt (1):
-      avr32: remove .note.gnu.build-id section when making vmlinux.bin
+I don't think so. Yes, modern 64-bit platforms tend to have hw IOMMUs
+but I think that the majority don't use it. The modern I/O devices
+(such as HBA) are capable of 64bit address DMA. So if you don't use
+virtualization, you don't want IOMMU overheads (software and
+hardware). So I think that 32-bit Xen is a fringe user of swiotlb.
 
- arch/avr32/boards/favr-32/flash.c      |    2 +-
- arch/avr32/boards/favr-32/setup.c      |    8 +-
- arch/avr32/boot/images/Makefile        |    2 +-
- arch/avr32/configs/atstk1006_defconfig |  134 +++++++++++++++++++++++---------
- arch/avr32/mach-at32ap/at32ap700x.c    |    8 +-
- 5 files changed, 107 insertions(+), 47 deletions(-)
+
+> Having more code sharing and more testers is a plus.
+
+If you read the patch (such as the above code), it unnecessarily adds
+huge complicity to X86_64 and IA64. It just hurts stability,
+readability and maintainability. There is no plus.
+
+If multiple architectures need highmem in swiotlb, adding it to
+lib/swiotlb.c makes sense. But what Xen people insist is, we should be
+prepare for unlikely events, such as 'x86_64 would want to support
+highmem' and they have no idea about who but we should be prepare for
+someone who could use it.
+
+I believe that adding ugly complicity to the generic code for unlikely
+events is a bad idea.
+
+I don't insist that Xen people need to duplicate all the swiotlb
+code. It's fine to make it usable for x86. But I'm against adding the
+code that only x86 uses to lib/swiotlb.c. That's should be in
+arch/x86/pci-swiotlb_32.c. We already have
+arch/x86/pci-swiotlb_64.c. If you add the code that only x86_32 use to
+the generic library code (lib/swiotlb.c), why do we have
+arch/x86/pci-swiotlb_64.c?
+
+
+I know that you will merge the patchset anyway but I'm strongly
+against the highmem patch.
