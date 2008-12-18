@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752160AbYLRHl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753051AbYLRHl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752160AbYLRHl2 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 02:41:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbYLRHlD
+	id S1753051AbYLRHl5 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 02:41:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYLRHlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 02:41:03 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:39855 "EHLO
+	Thu, 18 Dec 2008 02:41:07 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:38264 "EHLO
 	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbYLRHlB (ORCPT
+	with ESMTP id S1750817AbYLRHlB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 18 Dec 2008 02:41:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=OXsCena1jetT4Go///W1g8s9r20ghFdZFE2yfys/Vn7EUd6EYkPsTbe87BTcqMcK1v
-         mA0qp+8ZGijmtMsyz75NZnbIEXq8B6EfhAnfwkW0Ey9OXRsBv+EqjIy+YGPAOjGZrJzt
-         TWWyi2oVDczybgkdRvqaGPhGP7DxsdwvTsLRM=
+        b=EyCFktvjHf87SWFFpoyVg8Dc/twpCQV+A/D2qfkkQZjOX4dp5O3VTZNBxPPq7IZSVf
+         V+ESgKQriAcjbXi10EwVWffTN7vPINRhqdAhfE6UBzieIfHvTn7R0V2mtETJ6QMVcX3I
+         U84Q2LCH7MH2FJULWNeQbDsl9emrpB2JV8N8g=
 To: <bzolnier@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
         Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 1/8] ide-atapi: compute cmd_len based on device type in ide_transfer_pc
-Date: Thu, 18 Dec 2008 08:40:45 +0100
-Message-Id: <1229586052-3542-2-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 4/8] ide-cd: remove xferlen arg to cdrom_start_packet_command
+Date: Thu, 18 Dec 2008 08:40:48 +0100
+Message-Id: <1229586052-3542-5-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1229586052-3542-1-git-send-email-petkovbb@gmail.com>
 References: <1229586052-3542-1-git-send-email-petkovbb@gmail.com>
@@ -34,62 +34,53 @@ There should be no functionality change resulting from this patch.
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-atapi.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+ drivers/ide/ide-cd.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index d412bd2..5c143b4 100644
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -15,6 +15,8 @@
- #define debug_log(fmt, args...) do {} while (0)
- #endif
- 
-+#define ATAPI_MIN_CDB_BYTES	12
-+
- static inline int dev_is_idecd(ide_drive_t *drive)
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 105e4d8..34981f5 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -520,10 +520,13 @@ end_request:
+  * will be called immediately after the drive is prepared for the transfer.
+  */
+ static ide_startstop_t cdrom_start_packet_command(ide_drive_t *drive,
+-						  int xferlen,
+ 						  ide_handler_t *handler)
  {
- 	return drive->media == ide_cdrom || drive->media == ide_optical;
-@@ -492,6 +494,7 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
- 	struct request *rq = hwif->hwgroup->rq;
- 	ide_expiry_t *expiry;
- 	unsigned int timeout;
-+	int cmd_len;
- 	ide_startstop_t startstop;
- 	u8 ireason;
+ 	ide_hwif_t *hwif = drive->hwif;
++	struct request *rq = hwif->hwgroup->rq;
++	int xferlen;
++
++	xferlen = ide_cd_get_xferlen(rq);
  
-@@ -506,6 +509,14 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
- 			drive->waiting_for_dma = 1;
+ 	ide_debug_log(IDE_DBG_PC, "Call %s, xferlen: %d\n", __func__, xferlen);
+ 
+@@ -1175,15 +1178,12 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
+ 					sector_t block)
+ {
+ 	ide_handler_t *fn;
+-	int xferlen;
+ 
+ 	ide_debug_log(IDE_DBG_RQ, "Call %s, rq->cmd[0]: 0x%x, "
+ 		      "rq->cmd_type: 0x%x, block: %llu\n",
+ 		      __func__, rq->cmd[0], rq->cmd_type,
+ 		      (unsigned long long)block);
+ 
+-	xferlen = ide_cd_get_xferlen(rq);
+-
+ 	if (blk_fs_request(rq)) {
+ 		fn = cdrom_start_rw_cont;
+ 
+@@ -1210,7 +1210,7 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
+ 		return ide_stopped;
  	}
  
-+	if (dev_is_idecd(drive)) {
-+		/* ATAPI commands get padded out to 12 bytes minimum */
-+		cmd_len = COMMAND_SIZE(rq->cmd[0]);
-+		if (cmd_len < ATAPI_MIN_CDB_BYTES)
-+			cmd_len = ATAPI_MIN_CDB_BYTES;
-+	} else
-+		cmd_len = ATAPI_MIN_CDB_BYTES;
-+
- 	ireason = ide_read_ireason(drive);
- 	if (drive->media == ide_tape)
- 		ireason = ide_wait_ireason(drive, ireason);
-@@ -513,6 +524,7 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
- 	if ((ireason & ATAPI_COD) == 0 || (ireason & ATAPI_IO)) {
- 		printk(KERN_ERR "%s: (IO,CoD) != (0,1) while issuing "
- 				"a packet command\n", drive->name);
-+
- 		return ide_do_reset(drive);
- 	}
- 
-@@ -541,7 +553,7 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
- 
- 	/* Send the actual packet */
- 	if ((drive->atapi_flags & IDE_AFLAG_ZIP_DRIVE) == 0)
--		hwif->tp_ops->output_data(drive, NULL, rq->cmd, 12);
-+		hwif->tp_ops->output_data(drive, NULL, rq->cmd, cmd_len);
- 
- 	return ide_started;
+-	return cdrom_start_packet_command(drive, xferlen, fn);
++	return cdrom_start_packet_command(drive, fn);
  }
+ 
+ /*
 -- 
 1.6.0.4
 
