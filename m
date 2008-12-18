@@ -1,93 +1,57 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752736AbYLRRTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753022AbYLRRUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752736AbYLRRTM (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 12:19:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbYLRRSm
+	id S1753022AbYLRRUL (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 12:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYLRRTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 12:18:42 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:54174 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752821AbYLRRSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 12:18:41 -0500
-Date: Thu, 18 Dec 2008 18:18:36 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: lrodriguez@atheros.com, jmalinen@atheros.com,
-        linux-wireless@vger.kernel.org, ath9k-devel@venema.h4ckr.net,
-        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 7/11] drivers/net/wireless/ath9k: Move a dereference
- below a NULL test
-In-Reply-To: <20081218155042.GF4121@tuxdriver.com>
-Message-ID: <Pine.LNX.4.64.0812181818170.23988@ask.diku.dk>
-References: <Pine.LNX.4.64.0812161613510.20444@pc-004.diku.dk>
- <20081218155042.GF4121@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 18 Dec 2008 12:19:55 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:33978 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751838AbYLRRTy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 12:19:54 -0500
+Date: Thu, 18 Dec 2008 09:19:00 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: v4l-dvb-maintainer@linuxtv.org, mchehab@infradead.org,
+        linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 17 (DVB)
+Message-Id: <20081218091900.84d510a1.randy.dunlap@oracle.com>
+In-Reply-To: <20081217161311.454e58ce.randy.dunlap@oracle.com>
+References: <20081217232536.0b18f4a7.sfr@canb.auug.org.au>
+	<20081217161311.454e58ce.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.494A8609.009A:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Indeed the code seems to have complete changed.
+On Wed, 17 Dec 2008 16:13:11 -0800 Randy Dunlap wrote:
 
-julia
-
-
-On Thu, 18 Dec 2008, John W. Linville wrote:
-
-> On Tue, Dec 16, 2008 at 04:14:28PM +0100, Julia Lawall wrote:
-> > From: Julia Lawall <julia@diku.dk>
-> > 
-> > In each case, if the NULL test is necessary, then the dereference should be
-> > moved below the NULL test.
-> > 
-> > The semantic patch that makes this change is as follows:
-> > (http://www.emn.fr/x-info/coccinelle/)
-> > 
-> > // <smpl>
-> > @@
-> > type T;
-> > expression E;
-> > identifier i,fld;
-> > statement S;
-> > @@
-> > 
-> > - T i = E->fld;
-> > + T i;
-> >   ... when != E
-> >       when != i
-> >   if (E == NULL) S
-> > + i = E->fld;
-> > // </smpl>
-> > 
-> > Signed-off-by: Julia Lawall <julia@diku.dk>
-> > 
-> > ---
-> >  drivers/net/wireless/ath9k/hw.c     |    3 ++-
-> >  1 files changed, 2 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/net/wireless/ath9k/hw.c b/drivers/net/wireless/ath9k/hw.c
-> > index 98bc25c..7d1dac6 100644
-> > --- a/drivers/net/wireless/ath9k/hw.c
-> > +++ b/drivers/net/wireless/ath9k/hw.c
-> > @@ -5581,11 +5581,12 @@ static inline bool ath9k_hw_run_init_cals(struct ath_hal *ah,
-> >  	struct ath9k_channel ichan;
-> >  	bool isCalDone;
-> >  	struct hal_cal_list *currCal = ahp->ah_cal_list_curr;
-> > -	const struct hal_percal_data *calData = currCal->calData;
-> > +	const struct hal_percal_data *calData;
-> >  	int i;
-> >  
-> >  	if (currCal == NULL)
-> >  		return false;
-> > +	calData = currCal->calData;
-> >  
-> >  	ichan.CalValid = 0;
+> On Wed, 17 Dec 2008 23:25:36 +1100 Stephen Rothwell wrote:
 > 
-> This patch doesn't seem to apply.  I don't see this code anywhere.
-> Perhaps this is against some older version?
+> > Hi all,
+> > 
+> > Changes since 20081216:
+> > 
+> > Undropped tree:
+> > 	v4l-dvb
 > 
-> John
-> -- 
-> John W. Linville		Linux should be at the core
-> linville@tuxdriver.com			of your literate lifestyle.
 > 
+> build-r7329.out:/local/linsrc/linux-next-20081217/drivers/media/video/tuner-core.c:1111: error: 'tuner_ioctl' undeclared here (not in a function)
+> build-r7329.out:make[4]: *** [drivers/media/video/tuner-core.o] Error 1
+> 
+> config attached.
+
+
+Same build error in next-20081218.
+
+
+---
+~Randy
