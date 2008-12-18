@@ -1,200 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbYLRXRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbYLRX1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752552AbYLRXRW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 18:17:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYLRXRL
+	id S1753715AbYLRX1Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 18:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYLRX1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 18:17:11 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53339 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752908AbYLRXRJ (ORCPT
+	Thu, 18 Dec 2008 18:27:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40291 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752270AbYLRX1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 18:17:09 -0500
-Date: Fri, 19 Dec 2008 00:17:07 +0100
-From: Jan Kara <jack@suse.cz>
-To: Arthur Jones <ajones@riverbed.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "sandeen@redhat.com" <sandeen@redhat.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-Message-ID: <20081218231707.GB20092@atrey.karlin.mff.cuni.cz>
-References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081103201428.GB30565@ajones-laptop.nbttech.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 18 Dec 2008 18:27:14 -0500
+Date: Thu, 18 Dec 2008 15:26:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bernd Schubert <bernd.schubert@fastmail.fm>
+Cc: nfsv4@linux-nfs.org, hch@infradead.org, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, steved@redhat.com, dhowells@redhat.com,
+       linux-fsdevel@vger.kernel.org, rwheeler@redhat.com
+Subject: Re: Pull request for FS-Cache, including NFS patches
+Message-Id: <20081218152616.a24c013f.akpm@linux-foundation.org>
+In-Reply-To: <200812190007.34581.bernd.schubert@fastmail.fm>
+References: <8930.1229560221@redhat.com>
+	<20081218142420.GA16728@infradead.org>
+	<20081218123601.11810b7f.akpm@linux-foundation.org>
+	<200812190007.34581.bernd.schubert@fastmail.fm>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+On Fri, 19 Dec 2008 00:07:33 +0100
+Bernd Schubert <bernd.schubert@fastmail.fm> wrote:
 
-  I'm sorry I'm replying late but I got time to react to this only now...
-
-> On Mon, Nov 03, 2008 at 11:33:18AM -0800, Andrew Morton wrote:
-> > [...]
-> > > --- a/fs/ext3/super.c
-> > > +++ b/fs/ext3/super.c
-> > > @@ -2392,7 +2392,13 @@ static int ext3_sync_fs(struct super_block *sb, int wait)
-> > >       if (journal_start_commit(EXT3_SB(sb)->s_journal, &target)) {
-> > >               if (wait)
-> > >                       log_wait_commit(EXT3_SB(sb)->s_journal, target);
-> > > -     }
-> > > +     } else if (wait)
-> > > +             /*
-> > > +              * We may have a commit in progress, clear it out
-> > > +              * before we go on...
-> > > +              */
-> > > +             ext3_force_commit(sb);
-> > > +
-> > >       return 0;
-> > >  }
-> > 
-> > Can we do
-> > 
-> >         sb->s_dirt = 0;
-> >         if (wait)
-> >                 ext3_force_commit(...);
-> >         else
-> >                 journal_start_commit(...);
+> On Thursday 18 December 2008, Andrew Morton wrote:
+> > On Thu, 18 Dec 2008 09:24:20 -0500
+> >
+> > Christoph Hellwig <hch@infradead.org> wrote:
+> > > On Thu, Dec 18, 2008 at 10:44:18PM +1100, Stephen Rothwell wrote:
+> > > > Added from today.
+> > > >
+> > > > Usual spiel: all patches in that branch must have been
+> > > > 	posted to a relevant mailing list
+> > > > 	reviewed
+> > > > 	unit tested
+> > > > 	destined for the next merge window (or the current release)
+> > > > *before* they are included.
+> > >
+> > > I don't think we want fscache for .29 yet.  I'd rather let the
+> > > credential code settle for one release, and have more time for actually
+> > > reviewing it properly and have it 100% ready for .30.
+> >
+> > I don't believe that it has yet been convincingly demonstrated that we
+> > want to merge it at all.
+> >
+> > It's a huuuuuuuuge lump of new code, so it really needs to provide
+> > decent value.  Can we revisit this?  Yet again?  What do we get from
+> > all this?
+> >
 > 
-> I think this is what you had in mind:
+> I really don't understand why fs-cache is always rejected.
+
+It's never been rejected.  For a long time it has been in a state where
+we're looking for the data which would allow us to agree that its
+benefits are worth its costs.  AFAIK that has never really been
+convincingly demonstrated.  Nor has the converse case been
+demonstrated, so it floats in limbo.
+
+> Actually it is the 
+> perfect solution for NFS booted systems - you have a big cluster of nodes and 
+> in order to minimize administration overhead the nodes are booted over NFS 
+> from one common chroot. With unionfs (preferred solution here is unionfs-fuse) 
+> one then maintains files required to be differently by different clients.
 > 
+> Caching files on the local disk minimized the network access and boosts the 
+> performance, so at least for this usage example fs-cache would be great.
+> (Actually I have been thinking about to implement a caching branch into 
+> unionfs-fuse, but if the kernel can do it on its own, it is also fine.)
+
+Have you actually used cachefs/cachefiles for this?
+
+> In the past David already posted many benchmarks and just a few weeks ago 
+> again:
 > 
-> diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-> index 18eaa78..2b48b85 100644
-> --- a/fs/ext3/super.c
-> +++ b/fs/ext3/super.c
-> @@ -2386,13 +2386,12 @@ static void ext3_write_super (struct super_block * sb)
->  
->  static int ext3_sync_fs(struct super_block *sb, int wait)
->  {
-> -	tid_t target;
-> -
->  	sb->s_dirt = 0;
-> -	if (journal_start_commit(EXT3_SB(sb)->s_journal, &target)) {
-> -		if (wait)
-> -			log_wait_commit(EXT3_SB(sb)->s_journal, target);
-> -	}
-> +	if (wait)
-> +		ext3_force_commit(sb);
-> +	else
-> +		journal_start_commit(EXT3_SB(sb)->s_journal, NULL);
-> +
->  	return 0;
->  }
->  
-> I tried this and it too fixes the problem.  FWIW I agree it
-> looks better...
-  Well, shouldn't we rather fix what journal_start_commit() returns?
-The interface which returns 1 when a transaction is already committing or
-a transaction commit has just been started but 0 when we race with
-somebody staring the commit is fairly unusable. Moreover
-ext3_force_commit() will unnecessarily create new sync transaction and
-commit it if there's no transaction running which is quite expensive
-(even merging empty sync handle is not for free because of sync
-transaction batching). But this is minor problem since we probably
-don't care too much about sync() performance - BTW this is probably a
-cause for bug 12224, isn't it?
-  BTW: ocfs2 would need fixing as well if done your way since it's
-sync_fs function has been copied over from ext3.
-  To summarized I'd rather see a patch like below (untested) going in
-and your patch reverted... Opinions? I can cookup a JBD2 version of
-the patch in case we agree to go this way.
+> http://lkml.indiana.edu/hypermail/linux/kernel/0811.3/00584.html
 
-								Honza
+OK, benchmarks are good.   But look:
 
->From 0a578ba1b56fe655570ee6dad41748863a120dbc Mon Sep 17 00:00:00 2001
-From: Jan Kara <jack@suse.cz>
-Date: Fri, 19 Dec 2008 00:05:34 +0100
-Subject: [PATCH] jbd: Fix return value of journal_start_commit()
+ 303 files changed, 21049 insertions(+), 3726 deletions(-)
 
-journal_start_commit() returns 1 if either a transaction is committing or the
-function has queued a transaction commit. But it returns 0 if we raced with
-somebody queueing the transaction commit as well. This resulted in
-ext3_sync_fs() not functioning correctly (description from Arthur Jones):
-In the case of a data=ordered umount with pending long symlinks which are
-delayed due to a long list of other I/O on the backing block device, this
-causes the buffer associated with the long symlinks to not be moved to the
-inode dirty list in the second phase of fsync_super.  Then, before they can be
-dirtied again, kjournald exits, seeing the UMOUNT flag and the dirty pages are
-never written to the backing block device, causing long symlink corruption and
-exposing new or previously freed block data to userspace.
+it's an enormous hunk of code.  That will be in the kernel for ever and
+ever, needing maintenance, adding additional burden to our effort to
+evolve the kernel, etc.
 
-This can be reproduced with a script created by Eric Sandeen
-<sandeen@redhat.com>:
 
-        #!/bin/bash
-
-        umount /mnt/test2
-        mount /dev/sdb4 /mnt/test2
-        rm -f /mnt/test2/*
-        dd if=/dev/zero of=/mnt/test2/bigfile bs=1M count=512
-        touch /mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
-        ln -s /mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
-        /mnt/test2/link
-        umount /mnt/test2
-        mount /dev/sdb4 /mnt/test2
-        ls /mnt/test2/
-
-This patch fixes journal_start_commit() to always return 1 when there's
-a transaction committing or queued for commit.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/jbd/journal.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
-
-diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-index 9e4fa52..e79c078 100644
---- a/fs/jbd/journal.c
-+++ b/fs/jbd/journal.c
-@@ -427,7 +427,7 @@ int __log_space_left(journal_t *journal)
- }
- 
- /*
-- * Called under j_state_lock.  Returns true if a transaction was started.
-+ * Called under j_state_lock.  Returns true if a transaction commit was started.
-  */
- int __log_start_commit(journal_t *journal, tid_t target)
- {
-@@ -495,7 +495,8 @@ int journal_force_commit_nested(journal_t *journal)
- 
- /*
-  * Start a commit of the current running transaction (if any).  Returns true
-- * if a transaction was started, and fills its tid in at *ptid
-+ * if a transaction is going to be committed (or is currently already
-+ * committing), and fills its tid in at *ptid
-  */
- int journal_start_commit(journal_t *journal, tid_t *ptid)
- {
-@@ -505,15 +506,19 @@ int journal_start_commit(journal_t *journal, tid_t *ptid)
- 	if (journal->j_running_transaction) {
- 		tid_t tid = journal->j_running_transaction->t_tid;
- 
--		ret = __log_start_commit(journal, tid);
--		if (ret && ptid)
-+		__log_start_commit(journal, tid);
-+		/* There's a running transaction and we've just made sure
-+		 * it's commit has been scheduled. */
-+		if (ptid)
- 			*ptid = tid;
--	} else if (journal->j_committing_transaction && ptid) {
-+		ret = 1;
-+	} else if (journal->j_committing_transaction) {
- 		/*
- 		 * If ext3_write_super() recently started a commit, then we
- 		 * have to wait for completion of that transaction
- 		 */
--		*ptid = journal->j_committing_transaction->t_tid;
-+		if (ptid)
-+			*ptid = journal->j_committing_transaction->t_tid;
- 		ret = 1;
- 	}
- 	spin_unlock(&journal->j_state_lock);
--- 
-1.6.0.2
+Are any distros pushing for this?  Or shipping it?  If so, are they
+able to weigh in and help us with this quite difficult decision?
 
