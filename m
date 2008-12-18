@@ -1,285 +1,59 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752866AbYLRGxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753081AbYLRG4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752866AbYLRGxI (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 01:53:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbYLRGww
+	id S1753081AbYLRG4V (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 01:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbYLRG4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 01:52:52 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:55594 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751064AbYLRGwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 01:52:51 -0500
-In-Reply-To: <49460F88.2080408@ankitjain.org>
-References: <49460F88.2080408@ankitjain.org>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9D2593C9-08EB-486C-AAF5-E83A1EAEE9B9@sgi.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@infradead.org>,
-        linux-fsdevel@vger.kernel.org, mfasheh@suse.com,
-        joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
-        linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com, xfs@oss.sgi.com
-Content-Transfer-Encoding: 7bit
-From: Felix Blyakher <felixb@sgi.com>
-Subject: Re: [PATCH][RFC] fs: Add new pre-allocation ioctls to vfs for compatibility with legacy xfs ioctls
-Date: Thu, 18 Dec 2008 00:49:19 -0600
-To: Ankit Jain <me@ankitjain.org>
-X-Mailer: Apple Mail (2.753.1)
+	Thu, 18 Dec 2008 01:56:09 -0500
+Received: from vps1.tull.net ([66.180.172.116]:34569 "HELO vps1.tull.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751288AbYLRG4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 01:56:08 -0500
+Date: Thu, 18 Dec 2008 17:56:04 +1100
+From: Nick Andrew <nick@nick-andrew.net>
+To: Dylan Taft <d13f00l@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: MDADM Software Raid Woes
+Message-ID: <20081218065603.GA21265@mail.local.tull.net>
+References: <47ed01bd0812172033p1065b472t62491e4f2eed901@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47ed01bd0812172033p1065b472t62491e4f2eed901@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Dec 17, 2008 at 11:33:31PM -0500, Dylan Taft wrote:
+> I created the raids with the mdadm tool, originally configured manually
+> /dev/md0 for sdb1/sdc1 raid1 to be mounted as /boot
+> /dev/md1 for sdb2/sdc2 raid0
+> 
+> I created 3 partitions on md1, one for future /, one for swap, one for
+> future /home.
+> So I had /dev/md0, md1, and /dev/md1p1,/dev/md1p2/dev/md1p3
 
-On Dec 15, 2008, at 2:04 AM, Ankit Jain wrote:
+Why not use LVM for /dev/md1 ?
 
-> This patch adds ioctls to vfs for compatibility with legacy XFS
-> pre-allocation ioctls (XFS_IOC_*RESVP*). The implementation
-> effectively invokes sys_fallocate for the new ioctls.
+	pvcreate /dev/md1
+	vgcreate myvg /dev/md1
+	lvcreate -L 10G -n root myvg
+	lvcreate -L 2G -n swap myvg
+	lvcreate -L 20G -n home myvg
 
-I don't think we can use sys_fallocate for XFS_IOC_UNRESVSP*
-commands, which suppose to release currently allocated file
-blocks.
-See more comments below.
+Also since you have specified raid0 for /dev/md1 you could
+use striping under LVM instead of RAID:
 
-Felix
+	pvcreate /dev/sdb2 /dev/sdc2
+	vgcreate myvg /dev/sdb2 /dev/sdc2
+	lvcreate -L 10G -n root -i 2 -I 32 myvg
+	lvcreate -L 2G -n swap -i 2 -I 32 myvg
+	lvcreate -L 20G -n home -i 2 -I 32 myvg
 
-> Note: These legacy ioctls are also implemented by OCFS2.
->
-> There are some things that I'm not sure about:
-> 1. Should the struct space_resv be exposed to user-space? If not,
-> then what would be the right place to put it? And the ioctl
-> definitions?
-> 2. Should the corresponding ioctls be removed from ocfs2?
->
-> Signed-off-by: Ankit Jain <me@ankitjain.org>
-> ---
->  fs/ioctl.c             |   37 +++++++++++++++++++++++++++
->  fs/open.c              |   51 ++++++++++++++++++-------------------
->  include/linux/falloc.h |   19 ++++++++++++++
->  include/linux/fs.h     |    2 +
->  4 files changed, 83 insertions(+), 26 deletions(-)
->
-> diff --git a/fs/ioctl.c b/fs/ioctl.c
-> index 43e8b2c..5e565c8 100644
-> --- a/fs/ioctl.c
-> +++ b/fs/ioctl.c
-> @@ -15,6 +15,7 @@
->  #include <linux/uaccess.h>
->  #include <linux/writeback.h>
->  #include <linux/buffer_head.h>
-> +#include <linux/falloc.h>
->
->  #include <asm/ioctls.h>
->
-> @@ -346,6 +347,37 @@ EXPORT_SYMBOL(generic_block_fiemap);
->
->  #endif  /*  CONFIG_BLOCK  */
->
-> +/*
-> + * This provides compatibility with legacy XFS pre-allocation ioctls
-> + * which predate the fallocate syscall.
-> + *
-> + * Only the l_start, l_len and l_whence fields of the 'struct  
-> space_resv'
-> + * are used here, rest are ignored.
-> + */
-> +static int ioctl_preallocate(struct file *filp, unsigned long arg)
-> +{
-> +	struct inode *inode = filp->f_path.dentry->d_inode;
-> +	struct space_resv sr;
-> +
-> +	if (copy_from_user(&sr, (struct space_resv __user *) arg, sizeof 
-> (sr)))
-> +		return -EFAULT;
-> +
-> +	switch (sr.l_whence) {
-> +	case SEEK_SET:
-> +		break;
-> +	case SEEK_CUR:
-> +		sr.l_start += filp->f_pos;
-> +		break;
-> +	case SEEK_END:
-> +		sr.l_start += i_size_read(inode);
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	return do_fallocate(filp, FALLOC_FL_KEEP_SIZE, sr.l_start,  
-> sr.l_len);
-> +}
-> +
->  static int file_ioctl(struct file *filp, unsigned int cmd,
->  		unsigned long arg)
->  {
-> @@ -361,6 +393,11 @@ static int file_ioctl(struct file *filp,  
-> unsigned int cmd,
->  		return put_user(inode->i_sb->s_blocksize, p);
->  	case FIONREAD:
->  		return put_user(i_size_read(inode) - filp->f_pos, p);
-> +	case F_IOC_RESVSP:
-> +	case F_IOC_RESVSP64:
-> +	case F_IOC_UNRESVSP:
-> +	case F_IOC_UNRESVSP64:
-> +		return ioctl_preallocate(filp, arg);
+That way you have some flexibility in your use of sdb2
+and sdc2, e.g. you can move your LVs off sdc2 if you want
+to replace or extend it later.
 
-At this point the original command 'cmd' is dropped,
-and ioctl_preallocate() assumes F_IOC_RESVSP*.
-Indeed, in the following path
-
-     ioctl_preallocate
-         do_fallocate
-             .fallocate/xfs_vn_fallocate
-                 xfs_change_file_space(XFS_IOC_RESVSP)
-
-UNRESVSP is never considered.
-
->  	}
->
->  	return vfs_ioctl(filp, cmd, arg);
-> diff --git a/fs/open.c b/fs/open.c
-> index 83cdb9d..0703bcb 100644
-> --- a/fs/open.c
-> +++ b/fs/open.c
-> @@ -360,62 +360,61 @@ asmlinkage long sys_ftruncate64(unsigned int  
-> fd, loff_t length)
->  }
->  #endif
->
-> -asmlinkage long sys_fallocate(int fd, int mode, loff_t offset,  
-> loff_t len)
-> +long do_fallocate(struct file *file, int mode, loff_t offset,  
-> loff_t len)
->  {
-> -	struct file *file;
->  	struct inode *inode;
-> -	long ret = -EINVAL;
-> +	long ret;
->
->  	if (offset < 0 || len <= 0)
-> -		goto out;
-> +		return -EINVAL;
->
->  	/* Return error if mode is not supported */
-> -	ret = -EOPNOTSUPP;
->  	if (mode && !(mode & FALLOC_FL_KEEP_SIZE))
-> -		goto out;
-> +		return -EOPNOTSUPP;
->
-> -	ret = -EBADF;
-> -	file = fget(fd);
-> -	if (!file)
-> -		goto out;
-> -	if (!(file->f_mode & FMODE_WRITE))
-> -		goto out_fput;
-> +	if (!file || !(file->f_mode & FMODE_WRITE))
-> +		return -EBADF;
->  	/*
->  	 * Revalidate the write permissions, in case security policy has
->  	 * changed since the files were opened.
->  	 */
->  	ret = security_file_permission(file, MAY_WRITE);
->  	if (ret)
-> -		goto out_fput;
-> +		return ret;
->
->  	inode = file->f_path.dentry->d_inode;
-> -
-> -	ret = -ESPIPE;
->  	if (S_ISFIFO(inode->i_mode))
-> -		goto out_fput;
-> +		return -ESPIPE;
->
-> -	ret = -ENODEV;
->  	/*
->  	 * Let individual file system decide if it supports preallocation
->  	 * for directories or not.
->  	 */
->  	if (!S_ISREG(inode->i_mode) && !S_ISDIR(inode->i_mode))
-> -		goto out_fput;
-> +		return -ENODEV;
->
-> -	ret = -EFBIG;
->  	/* Check for wrap through zero too */
->  	if (((offset + len) > inode->i_sb->s_maxbytes) || ((offset + len)  
-> < 0))
-> -		goto out_fput;
-> +		return -EFBIG;
->
->  	if (inode->i_op && inode->i_op->fallocate)
-> -		ret = inode->i_op->fallocate(inode, mode, offset, len);
-> +		return inode->i_op->fallocate(inode, mode, offset, len);
->  	else
-> -		ret = -EOPNOTSUPP;
-> +		return -EOPNOTSUPP;
-> +}
->
-> -out_fput:
-> -	fput(file);
-> -out:
-> -	return ret;
-> +asmlinkage long sys_fallocate(int fd, int mode, loff_t offset,  
-> loff_t len)
-> +{
-> +	struct file *file;
-> +	int error = -EBADF;
-> +
-> +	file = fget(fd);
-> +	if (file) {
-> +		error = do_fallocate(file, mode, offset, len);
-> +		fput(file);
-> +	}
-> +
-> +	return error;
->  }
->
->  /*
-> diff --git a/include/linux/falloc.h b/include/linux/falloc.h
-> index 8e912ab..4f2a727 100644
-> --- a/include/linux/falloc.h
-> +++ b/include/linux/falloc.h
-> @@ -3,4 +3,23 @@
->
->  #define FALLOC_FL_KEEP_SIZE	0x01 /* default is extend size */
->
-> +/*
-> + * Space reservation / allocation ioctls and argument structure
-> + * are designed to be compatible with the legacy XFS ioctls.
-> + */
-> +struct space_resv {
-> +	__s16		l_type;
-> +	__s16		l_whence;
-> +	__s64		l_start;
-> +	__s64		l_len;		/* len == 0 means until end of file */
-> +	__s32		l_sysid;
-> +	__u32		l_pid;
-> +	__s32		l_pad[4];	/* reserve area			    */
-> +};
-> +
-> +#define F_IOC_RESVSP		_IOW('X', 40, struct space_resv)
-> +#define F_IOC_UNRESVSP	_IOW('X', 41, struct space_resv)
-> +#define F_IOC_RESVSP64	_IOW('X', 42, struct space_resv)
-> +#define F_IOC_UNRESVSP64	_IOW('X', 43, struct space_resv)
-> +
->  #endif /* _FALLOC_H_ */
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 4a853ef..b1d8f12 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1671,6 +1671,8 @@ static inline int break_lease(struct inode  
-> *inode, unsigned int mode)
->
->  extern int do_truncate(struct dentry *, loff_t start, unsigned int  
-> time_attrs,
->  		       struct file *filp);
-> +extern long do_fallocate(struct file *file, int mode, loff_t offset,
-> +			loff_t len);
->  extern long do_sys_open(int dfd, const char __user *filename, int  
-> flags,
->  			int mode);
->  extern struct file *filp_open(const char *, int, int);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Nick.
