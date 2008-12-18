@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752423AbYLRVZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbYLRV0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752423AbYLRVZV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 16:25:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYLRVZG
+	id S1753646AbYLRV0b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 16:26:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbYLRV0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 16:25:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37016 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbYLRVZF (ORCPT
+	Thu, 18 Dec 2008 16:26:22 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:11330 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751790AbYLRV0V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 16:25:05 -0500
-Message-ID: <494ABDED.60308@zytor.com>
-Date: Thu, 18 Dec 2008 13:17:33 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 18 Dec 2008 16:26:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=NWXt1K8bKFiwsbYh9eWtYpJZpKfPAvHohvzoF4VE9BsOUK4V11aNqScln4sy5oqlp7
+         ohoW4vjZEz5ThLWXHCM5Pqt4J2iap13ldu5+jikxEcCqs4y0wS0DBk1exj/PaAGK0A9i
+         CYJwwCeKAqDVZ+S4PecsX2a+Jf/U0MQEsSb0A=
+Message-ID: <f19298770812181326g97be6d1x358723bb799a2854@mail.gmail.com>
+Date: Fri, 19 Dec 2008 00:26:18 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Eric Paris" <eparis@redhat.com>
+Subject: Re: kernel BUG at arch/x86/mm/ioremap.c:39 from 2.6.28-rc8-next-20081218 on x86_64 vmware guest
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1229622223.3374.9.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: venkatesh.pallipadi@intel.com
-CC: mingo@elte.hu, tglx@linutronix.de, akpm@linux-foundation.org,
-       npiggin@suse.de, hugh@veritas.com, arjan@infradead.org,
-       jbarnes@virtuousgeek.org, rdreier@cisco.com, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [patch 0/7] x86 PAT: track pfnmap mappings with remap_pfn_range
- vm_insert_pfn - v3
-References: <20081218194126.963894000@intel.com>
-In-Reply-To: <20081218194126.963894000@intel.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1229622223.3374.9.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id mBILSMki007022
 
-venkatesh.pallipadi@intel.com wrote:
-> v3: Patches updated based on Andrew's comments on the earlier version.
-> 
-> Drivers use mmap followed by pgprot_* and remap_pfn_range or vm_insert_pfn,
-> in order to export reserved memory to userspace. Currently, such mappings are
-> not tracked and hence not kept consistent with other mappings (/dev/mem,
-> pci resource, ioremap) for the sme memory, that may exist in the system.
-> 
-> The following patchset adds x86 PAT attribute tracking and untracking for
-> pfnmap related APIs.
-> 
-> First three patches in the patchset are changing the generic mm code to fit
-> in this tracking. Last four patches are x86 specific to make things work
-> with x86 PAT code. The patchset aso introduces pgprot_writecombine interface,
-> which gives writecombine mapping when enabled, falling back to
-> pgprot_noncached otherwise.
-
-Series applied to tip:x86/pat2, thanks!
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+On Thu, Dec 18, 2008 at 20:43, Eric Paris <eparis@redhat.com> wrote:> I also saw this yesterday with 2.6.28-rc8-next-20081217 (which> incidentally was the first time I tried to boot a linux-next kernel so> that's pretty useless information).  This is a guest on an x86_64 vmware> server virtual machine.  This is very early in the boot cycle the last> thing before the bug was messages about serial 8250 initialization.  I> will attach the full dmesg and config.  I'm going to start poking> around, but I'm hoping someone will know it or will give me an idea> where to poke.  I took my working config from 2.6.28-rc8 and just> answered questions for linux next including turning on some of the debug> options but typically taking the defaults.>> [    2.489258] ------------[ cut here ]------------> [    2.490031] kernel BUG at arch/x86/mm/ioremap.c:39!> [    2.490031] invalid opcode: 0000 [#1] SMP DEBUG_PAGEALLOC> [    2.490031] last sysfs file:> [    2.490031] CPU 1> [    2.490031] Modules linked in:> [    2.490031] Pid: 1, comm: swapper Not tainted 2.6.28-rc8-next-20081218 #160> [    2.490031] RIP: 0010:[<ffffffff8103488e>]  [<ffffffff8103488e>] __phys_addr+0x7e/0xe2> [    2.490031] RSP: 0018:ffff880017609800  EFLAGS: 00010202> [    2.490031] RAX: ffff87ffffffffff RBX: 0000000000000001 RCX: 0000000000000003> [    2.490031] RDX: 0000000000000000 RSI: 0000000000000001 RDI: ffffffff8164ac30> [    2.490031] RBP: ffff880017609810 R08: 0000000000000000 R09: ffff8800159148d8> [    2.490031] R10: 000000000000005a R11: ffffffff811ccd2d R12: 6b6b6b6b6b6b6b6b> [    2.490031] R13: 6b6b6b6b6b6b6b6b R14: ffff880015920820 R15: ffffffff81612e80> [    2.490031] FS:  0000000000000000(0000) GS:ffff880016fe2320(0000) knlGS:0000000000000000> [    2.490031] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b> [    2.490031] CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0> [    2.490031] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000> [    2.490031] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400> [    2.490031] Process swapper (pid: 1, threadinfo ffff880017608000, task ffff880017600000)> [    2.490031] Stack:> [    2.490031]  0000000000000000 ffff880015914720 ffff880017609830 ffffffff810e6abc> [    2.490031]  0000000000000000 ffff880015914720 ffff880017609880 ffffffff810e7dc7> [    2.490031]  ffff8800159146d8 ffffffff816150c0 ffff880015920820 ffff8800159146d8> [    2.490031] Call Trace:> [    2.490031]  [<ffffffff810e6abc>] virt_to_head_page+0x11/0x5d> [    2.490031]  [<ffffffff810e7dc7>] kfree+0x43/0x19e> [    2.490031]  [<ffffffff81253dba>] device_release+0x73/0x77> [    2.490031]  [<ffffffff811c255a>] kobject_release+0xcb/0xf2> [    2.490031]  [<ffffffff811c248f>] ? kobject_release+0x0/0xf2> [    2.490031]  [<ffffffff811c34d4>] kref_put+0xb9/0xc9> [    2.490031]  [<ffffffff811c23e7>] kobject_put+0x47/0x4b> [    2.490031]  [<ffffffff81252b41>] put_device+0x17/0x19> [    2.490031]  [<ffffffff81253635>] device_unregister+0x83/0x88> [    2.490031]  [<ffffffff81253675>] device_destroy+0x3b/0x3f> [    2.490031]  [<ffffffff8122a4f6>] tty_unregister_device+0x26/0x28> [    2.490031]  [<ffffffff8124e74f>] uart_remove_one_port+0xc9/0x132> [    2.490031]  [<ffffffff81250be4>] serial8250_register_port+0xdd/0x212> [    2.490031]  [<ffffffff813a03dc>] serial_pnp_probe+0x189/0x1cb> [    2.490031]  [<ffffffff8121dd4b>] ? match_device+0x2a/0x41> [    2.490031]  [<ffffffff8121de05>] pnp_device_probe+0x80/0xa5> [    2.490031]  [<ffffffff81256e0b>] driver_probe_device+0x1f8/0x2f6> [    2.490031]  [<ffffffff81256f66>] __driver_attach+0x5d/0x80> [    2.490031]  [<ffffffff81256f09>] ? __driver_attach+0x0/0x80> [    2.490031]  [<ffffffff81255fe0>] bus_for_each_dev+0x54/0x83> [    2.490031]  [<ffffffff81256a0a>] driver_attach+0x21/0x23> [    2.490031]  [<ffffffff81255a5e>] bus_add_driver+0x124/0x279> [    2.490031]  [<ffffffff817085d0>] ? serial8250_pnp_init+0x0/0x12> [    2.490031]  [<ffffffff8125715e>] driver_register+0x98/0x10f> [    2.490031]  [<ffffffff817085d0>] ? serial8250_pnp_init+0x0/0x12> [    2.490031]  [<ffffffff8121db78>] pnp_register_driver+0x21/0x23> [    2.490031]  [<ffffffff817085e0>] serial8250_pnp_init+0x10/0x12> [    2.490031]  [<ffffffff8100a075>] do_one_initcall+0x75/0x18c> [    2.490031]  [<ffffffff810740b9>] ? mark_lock+0x1c/0x35b> [    2.490031]  [<ffffffff8107444a>] ? mark_held_locks+0x52/0x72> [    2.490031]  [<ffffffff810740b9>] ? mark_lock+0x1c/0x35b> [    2.490031]  [<ffffffff81074ee7>] ? __lock_acquire+0x44b/0xb2a> [    2.490031]  [<ffffffff811c174f>] ? ida_get_new_above+0x167/0x188> [    2.490031]  [<ffffffff81018cdc>] ? native_sched_clock+0x53/0x57> [    2.490031]  [<ffffffff81018b60>] ? sched_clock+0x9/0xc> [    2.490031]  [<ffffffff81072ddc>] ? lock_release_holdtime+0x4e/0x53> [    2.490031]  [<ffffffff811cc0f9>] ? _raw_spin_unlock+0xf5/0xfb> [    2.490031]  [<ffffffff813ae35a>] ? _spin_unlock+0x2b/0x2f> [    2.490031]  [<ffffffff81140c91>] ? proc_register+0x189/0x19d> [    2.490031]  [<ffffffff81140dc2>] ? create_proc_entry+0x79/0x8f> [    2.490031]  [<ffffffff8109fc22>] ? register_irq_proc+0xb3/0xcf> [    2.490031]  [<ffffffff81140000>] ? proc_pid_lookup+0xfd/0x15e> [    2.490031]  [<ffffffff816dd92d>] kernel_init+0x12d/0x17e> [    2.490031]  [<ffffffff813ae00d>] ? trace_hardirqs_on_thunk+0x3a/0x3f> [    2.490031]  [<ffffffff81013aaa>] child_rip+0xa/0x20> [    2.490031]  [<ffffffff810133be>] ? restore_args+0x0/0x30> [    2.490031]  [<ffffffff816dd800>] ? kernel_init+0x0/0x17e> [    2.490031]  [<ffffffff81013aa0>] ? child_rip+0x0/0x20>>
+I think I'm seeing the same stuff:So at least it has nothing to do with 8250 or atkbd.
+Non-volatile memory driver v1.2Linux agpgart interface v0.103Serial: 8250/16550 driver4 ports, IRQ sharing enabledÔøΩserial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16450brd: module loadedDriver 'sd' needs updating - please use bus_type methodsserio: i8042 KBD port at 0x60,0x64 irq 1serio: i8042 AUX port at 0x60,0x64 irq 12mice: PS/2 mouse device common for all mice------------[ cut here ]------------kernel BUG at arch/x86/mm/ioremap.c:80!invalid opcode: 0000 [#1] DEBUG_PAGEALLOClast sysfs file:Modules linked in:
+Pid: 73, comm: kseriod Not tainted (2.6.28-rc8-next-20081218 #141)EIP: 0060:[<c040d7c6>] EFLAGS: 00000a97 CPU: 0EIP is at __phys_addr+0xc/0x41EAX: 6b6b6b6b EBX: c1000000 ECX: 00000000 EDX: 6b6b6b6bESI: c06a0d2c EDI: 6b6b6b6b EBP: c7a0de64 ESP: c7a0de64 DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068Process kseriod (pid: 73, ti=c7a0c000 task=c79c34e0 task.ti=c7a0c000)Stack: c7a0de84 c046f088 c79c9890 c06a0d2c 00000000 c79c9f70 c06a0d2c 00000000 c7a0de90 c052bb31 c79c9f78 c7a0dea4 c04e5983 c79c9f94 c04e5943 c79c9890 c7a0deb4 c04e650a c79c9f78 ffffffed c7a0dec0 c04e58bf c79ca8f0 c7a0dec8Call Trace: [<c046f088>] ? kfree+0x1f/0xee [<c052bb31>] ? device_release+0x56/0x5b [<c04e5983>] ? kobject_release+0x40/0x50 [<c04e5943>] ? kobject_release+0x0/0x50 [<c04e650a>] ? kref_put+0x3b/0x49 [<c04e58bf>] ? kobject_put+0x37/0x3c [<c052ab48>] ? put_device+0xf/0x11 [<c0543a0b>] ? input_free_device+0x11/0x13 [<c0548e48>] ? atkbd_connect+0x1f9/0x20a [<c054107d>] ? serio_connect_driver+0x20/0x30 [<c05410a0>] ? serio_driver_probe+0x13/0x15 [<c052d1d8>] ? driver_probe_device+0xaa/0x11e [<c052d2ab>] ? __device_attach+0x0/0xa [<c052d2b3>] ? __device_attach+0x8/0xa [<c052c66a>] ? bus_for_each_drv+0x39/0x63 [<c052d319>] ? device_attach+0x45/0x5c [<c052d2ab>] ? __device_attach+0x0/0xa [<c052c5ff>] ? bus_attach_device+0x21/0x53 [<c052b8d9>] ? device_add+0x34a/0x47d [<c04327f2>] ? trace_hardirqs_on+0xb/0xd [<c0541a3f>] ? serio_thread+0xc9/0x25e [<c04272cd>] ? autoremove_wake_function+0x0/0x33 [<c0541976>] ? serio_thread+0x0/0x25e [<c0427206>] ? kthread+0x39/0x5f [<c04271cd>] ? kthread+0x0/0x5f [<c0403417>] ? kernel_thread_helper+0x7/0x10Code: 00 00 00 3b 75 f0 75 05 83 ce ff eb 0a 43 89 f8 c1 e8 0c 39 c372 d3 5b 89 f0 5b 5e 5f 5d c3 55 3d ff ff ff bf 89 e5 89 c2 77 04 <0f>0b eb fe 83 3d 10 90 6e c0 00 74 20 a1 10 8b ab c0 05 00 00EIP: [<c040d7c6>] __phys_addr+0xc/0x41 SS:ESP 0068:c7a0de64---[ end trace 2e78afd4d31eefa4 ]---kseriod used greatest stack depth: 6184 bytes leftTCP cubic registeredNET: Registered protocol family 17Using IPI Shortcut moderegistered taskstats version 1
+Can't find anything relevant in git log. Will bisect, as it reproduces in qemu.ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
