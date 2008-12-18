@@ -1,47 +1,106 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753157AbYLRUbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753311AbYLRUcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbYLRUbT (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 15:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYLRUbB
+	id S1753311AbYLRUcU (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 15:32:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYLRUcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 15:31:01 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:58363 "EHLO slimlogic.co.uk"
+	Thu, 18 Dec 2008 15:32:08 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49418 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751771AbYLRUbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 15:31:00 -0500
-Subject: Re: [PATCH V2 7/7] regulator: PCF50633 pmic driver
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Balaji Rao <balajirrao@openmoko.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-        linux-kernel@vger.kernel.org, Andy Green <andy@openmoko.com>
-In-Reply-To: <20081218151431.GB2284@cff.thadambail>
-References: <20081218055618.31696.65002.stgit@cff.thadambail>
-	 <20081218055817.31696.67376.stgit@cff.thadambail>
-	 <20081218100835.GA27075@rakim.wolfsonmicro.main>
-	 <20081218151431.GB2284@cff.thadambail>
-Content-Type: text/plain
-Date: Thu, 18 Dec 2008 20:30:54 +0000
-Message-Id: <1229632254.24727.1394.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	id S1751771AbYLRUcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 15:32:05 -0500
+Date: Thu, 18 Dec 2008 21:31:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+        Suresh B Siddha <suresh.b.siddha@intel.com>,
+        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+        Peter Zijlstra <a.p.zijlstra@chello.nl>,
+        Dipankar Sarma <dipankar@in.ibm.com>,
+        Balbir Singh <balbir@linux.vnet.ibm.com>,
+        Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+        Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+        Tim Connors <tconnors@astro.swin.edu.au>,
+        Max Krasnyansky <maxk@qualcomm.com>,
+        Gregory Haskins <gregory.haskins@gmail.com>,
+        Pavel Machek <pavel@suse.cz>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
+Message-ID: <20081218203140.GA18757@elte.hu>
+References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <20081218201938.GB12376@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081218201938.GB12376@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-18 at 20:44 +0530, Balaji Rao wrote:
-> On Thu, Dec 18, 2008 at 10:08:35AM +0000, Mark Brown wrote:
-> > On Thu, Dec 18, 2008 at 11:28:17AM +0530, Balaji Rao wrote:
-> > > Changes from V1:
-> > > 	- Removed support for suspend_enable & suspend_disable functions.
-> > > 
-> > > Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
-> > > Cc: Andy Green <andy@openmoko.com>
-> > > Cc: Liam Girdwood <lrg@simlogic.co.uk>
 
-Applied.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Thanks
+> thanks, applied - and i started testing them. [...]
 
-Liam
+the sched.h bits needed the small fix below. (struct sched_domain is not 
+defined on UP)
 
+	Ingo
+
+------------->
+>From edb4c71953409c1deac1a80528ac0aa768762b33 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu, 18 Dec 2008 21:30:23 +0100
+Subject: [PATCH] sched: move test_sd_parent() to an SMP section of sched.h
+
+Impact: build fix
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/sched.h |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 5a933d9..e5f928a 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -920,6 +920,15 @@ extern void partition_sched_domains(int ndoms_new, struct cpumask *doms_new,
+ 				    struct sched_domain_attr *dattr_new);
+ extern int arch_reinit_sched_domains(void);
+ 
++/* Test a flag in parent sched domain */
++static inline int test_sd_parent(struct sched_domain *sd, int flag)
++{
++	if (sd->parent && (sd->parent->flags & flag))
++		return 1;
++
++	return 0;
++}
++
+ #else /* CONFIG_SMP */
+ 
+ struct sched_domain_attr;
+@@ -1431,15 +1440,6 @@ struct task_struct {
+ #endif
+ };
+ 
+-/* Test a flag in parent sched domain */
+-static inline int test_sd_parent(struct sched_domain *sd, int flag)
+-{
+-	if (sd->parent && (sd->parent->flags & flag))
+-		return 1;
+-
+-	return 0;
+-}
+-
+ /*
+  * Priority of a process goes from 0..MAX_PRIO-1, valid RT
+  * priority is 0..MAX_RT_PRIO-1, and SCHED_NORMAL/SCHED_BATCH
