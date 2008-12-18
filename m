@@ -1,37 +1,47 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752427AbYLRTXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752952AbYLRT06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752427AbYLRTXU (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 14:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYLRTXG
+	id S1752952AbYLRT06 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 14:26:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYLRT0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 14:23:06 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:38312 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751801AbYLRTXF (ORCPT
+	Thu, 18 Dec 2008 14:26:47 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:56369 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbYLRT0r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 14:23:05 -0500
-Date: Thu, 18 Dec 2008 20:24:33 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-        Nick Andrew <nick@nick-andrew.net>, Matthew Wilcox <matthew@wil.cx>,
-        Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] headerdep: a tool for detecting inclusion cycles in header files
-Message-ID: <20081218192433.GA15206@uranus.ravnborg.org>
-References: <20081213222259.GB29080@uranus.ravnborg.org> <20081216115249.GA3901@localhost.localdomain>
+	Thu, 18 Dec 2008 14:26:47 -0500
+Date: Thu, 18 Dec 2008 11:26:17 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: "Helight.Xu" <helight.xu@gmail.com>, linux-kernel@vger.kernel.org,
+        rmk+kernel@arm.linux.org.uk
+Subject: Re: [PATCH] fix some code style that line over 80 characters
+Message-Id: <20081218112617.09fd97bd.randy.dunlap@oracle.com>
+In-Reply-To: <20081210150116.GB21396@x200.localdomain>
+References: <20081210135143.GB4595@helight>
+	<20081210150116.GB21396@x200.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081216115249.GA3901@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.494AA3DD.0041:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 10 Dec 2008 18:01:16 +0300 Alexey Dobriyan wrote:
+
+> On Wed, Dec 10, 2008 at 09:51:43PM +0800, Helight.Xu wrote:
+> > -static inline struct s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
+> > +static inline struct
+> > +s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
 > 
-> This one is probably a bit too noisy? But if we can eliminate the existing
-> cycles, it would be nice, I agree. Thanks for the feedback! :)
+> NAK!
 
-Applied to kbuild-next.
+OK, but please includes reason(s) for NAKs...
 
-	Sam
+---
+~Randy
