@@ -1,244 +1,58 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753355AbYLRMGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752321AbYLRM1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753355AbYLRMGf (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 07:06:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbYLRMG0
+	id S1752321AbYLRM1W (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 07:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbYLRM1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 07:06:26 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:52672 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751320AbYLRMGZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 07:06:25 -0500
-Date: Thu, 18 Dec 2008 12:06:19 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Guennadi Liakhovetski <lg@denx.de>
-Cc: linux-kernel@vger.kernel.org, rpurdie@rpsys.net
-Subject: Re: [PATCH] leds: add a dac124s085 SPI LED driver
-Message-ID: <20081218120619.GJ12431@fluff.org.uk>
-References: <Pine.LNX.4.64.0812181213540.5510@axis700.grange>
+	Thu, 18 Dec 2008 07:27:12 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57597 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750796AbYLRM1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 07:27:12 -0500
+Date: Thu, 18 Dec 2008 13:26:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, iommu@lists.linux-foundation.org,
+        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+        hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 gart: don't complain if no AMD GART found
+Message-ID: <20081218122635.GB25715@elte.hu>
+References: <20081217195234.13603.96737.stgit@bob.kio> <20081217205308.GA11528@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812181213540.5510@axis700.grange>
-X-Disclaimer: These are my own opinions, so there!
+In-Reply-To: <20081217205308.GA11528@amd.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 18, 2008 at 12:15:28PM +0100, Guennadi Liakhovetski wrote:
-> A simple LED driver using the DAC124S085 DAC from NatSemi
+
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
+
+> On Wed, Dec 17, 2008 at 12:52:34PM -0700, Bjorn Helgaas wrote:
+> > It's perfectly normal for no AMD GART to be present, e.g., if you have
+> > Intel CPUs.  None of the other iommu_init() functions makes noise when
+> > it finds nothing.
 > 
-> Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
-> ---
+> True, there are even 64bit AMD processors without GART.
 > 
-> Needs a previous patch making brightness resolution configurable:
+> Ingo,
 > 
-> http://marc.info/?l=linux-kernel&m=122771446123369&w=2
+> do you want to pick this patch up or should I do it?
 > 
-> Richard, what's its status btw?
+> > Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 > 
->  drivers/leds/Kconfig           |    7 ++
->  drivers/leds/Makefile          |    3 +
->  drivers/leds/leds-dac124s085.c |  141 ++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 151 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/leds/leds-dac124s085.c
-> 
-> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-> index a4a1ae2..a28635f 100644
-> --- a/drivers/leds/Kconfig
-> +++ b/drivers/leds/Kconfig
-> @@ -178,6 +178,13 @@ config LEDS_DA903X
->  	  This option enables support for on-chip LED drivers found
->  	  on Dialog Semiconductor DA9030/DA9034 PMICs.
->  
-> +config LEDS_DAC124S085
-> +	tristate "LED Support for DAC124S085 SPI DAC"
-> +	depends on LEDS_CLASS && SPI
-> +	help
-> +	  This option enables support for DAC124S085 SPI DAC from NatSemi,
-> +	  which can be used to control up to four LEDs.
-> +
->  comment "LED Triggers"
->  
->  config LEDS_TRIGGERS
-> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-> index bc247cb..8780152 100644
-> --- a/drivers/leds/Makefile
-> +++ b/drivers/leds/Makefile
-> @@ -26,6 +26,9 @@ obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
->  obj-$(CONFIG_LEDS_HP_DISK)		+= leds-hp-disk.o
->  obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
->  
-> +# LED SPI Drivers
-> +obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
-> +
->  # LED Triggers
->  obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
->  obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)	+= ledtrig-ide-disk.o
-> diff --git a/drivers/leds/leds-dac124s085.c b/drivers/leds/leds-dac124s085.c
-> new file mode 100644
-> index 0000000..415a437
-> --- /dev/null
-> +++ b/drivers/leds/leds-dac124s085.c
-> @@ -0,0 +1,141 @@
-> +/*
-> + * Copyright 2008
-> + * Guennadi Liakhovetski, DENX Software Engineering, <lg@denx.de>
-> + *
-> + * This file is subject to the terms and conditions of version 2 of
-> + * the GNU General Public License.  See the file COPYING in the main
-> + * directory of this archive for more details.
-> + *
-> + * LED driver for the DAC124S085 SPI DAC
-> + */
-> +
-> +#include <linux/leds.h>
-> +#include <linux/mutex.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/workqueue.h>
-> +#include <linux/spi/spi.h>
-> +
-> +struct dac124s085_led {
-> +	struct led_classdev	ldev;
-> +	struct spi_device	*spi;
-> +	int			id;
-> +	int			brightness;
-> +	char			name[sizeof("dac124s085-3")];
-> +
-> +	struct mutex		mutex;
-> +	struct work_struct	work;
-> +	spinlock_t		lock;
-> +};
-> +
-> +struct dac124s085 {
-> +	struct dac124s085_led leds[4];
-> +};
-> +
-> +static void dac124s085_led_work(struct work_struct *work)
-> +{
-> +	struct dac124s085_led *led = container_of(work, struct dac124s085_led,
-> +						  work);
-> +	u16 word;
-> +
-> +	mutex_lock(&led->mutex);
-> +	word = ((led->id) << 14) | (1 << 12) | (led->brightness & 0xfff);
+> Acked-by: Joerg Roedel <joerg.roedel@amd.com>
 
-magic constant, please define and use a define.
+I have applied it to tip/x86/urgent, thanks guys!
 
-> +	spi_write(led->spi, (const u8 *)&word, sizeof(word));
-
-casting between u16 and u8 is just waiting for endian-ness problems to
-happen.
-
-> +	mutex_unlock(&led->mutex);
-> +}
-> +
-> +static void dac124s085_set_brightness(struct led_classdev *ldev,
-> +				      enum led_brightness brightness)
-> +{
-> +	struct dac124s085_led *led = container_of(ldev, struct dac124s085_led,
-> +						  ldev);
-> +
-> +	spin_lock(&led->lock);
-> +	led->brightness = brightness;
-> +	schedule_work(&led->work);
-> +	spin_unlock(&led->lock);
-> +}
-> +
-> +static int dac124s085_probe(struct spi_device *spi)
-> +{
-> +	struct dac124s085	*dac;
-> +	struct dac124s085_led	*led;
-> +	int i, ret;
-> +
-> +	dac = kzalloc(sizeof(*dac), GFP_KERNEL);
-> +	if (!dac)
-> +		return -ENOMEM;
-> +
-> +	spi->bits_per_word = 16;
-> +
-> +	for (i = 0; i < 4; i++) {
-
-how about ARRAY_SIZE(dac->leds) instead of 4.
-
-> +		led		= dac->leds + i;
-> +		led->id		= i;
-> +		led->brightness	= LED_OFF;
-> +		led->spi	= spi;
-> +		snprintf(led->name, sizeof(led->name), "dac124s085-%d", i);
-> +		spin_lock_init(&led->lock);
-> +		INIT_WORK(&led->work, dac124s085_led_work);
-> +		mutex_init(&led->mutex);
-> +		led->ldev.name = led->name;
-> +		led->ldev.brightness = LED_OFF;
-> +		led->ldev.max_brightness = 0xfff;
-> +		led->ldev.brightness_set = dac124s085_set_brightness;
-> +		ret = led_classdev_register(&spi->dev, &led->ldev);
-> +		if (ret < 0)
-> +			goto eledcr;
-> +	}
-> +
-> +	spi_set_drvdata(spi, dac);
-> +
-> +	return 0;
-> +
-> +eledcr:
-> +	while (i--)
-> +		led_classdev_unregister(&dac->leds[i].ldev);
-> +
-> +	spi_set_drvdata(spi, NULL);
-> +	kfree(dac);
-> +	return ret;
-> +}
-> +
-> +static int dac124s085_remove(struct spi_device *spi)
-> +{
-> +	struct dac124s085	*dac = spi_get_drvdata(spi);
-> +	int i;
-> +
-> +	for (i = 0; i < 4; i++) {
-
-see previous comment.
-
-> +		led_classdev_unregister(&dac->leds[i].ldev);
-> +		cancel_work_sync(&dac->leds[i].work);
-> +	}
-> +
-> +	spi_set_drvdata(spi, NULL);
-> +	kfree(dac);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct spi_driver dac124s085_driver = {
-> +	.probe		= dac124s085_probe,
-> +	.remove		= dac124s085_remove,
-> +	.driver = {
-> +		.name	= "dac124s085",
-> +		.owner	= THIS_MODULE,
-> +	},
-> +};
-> +
-> +static int __init dac124s085_leds_init(void)
-> +{
-> +	return spi_register_driver(&dac124s085_driver);
-> +}
-> +
-> +static void __exit dac124s085_leds_exit(void)
-> +{
-> +	spi_unregister_driver(&dac124s085_driver);
-> +}
-> +
-> +module_init(dac124s085_leds_init);
-> +module_exit(dac124s085_leds_exit);
-> +
-> +MODULE_AUTHOR("Guennadi Liakhovetski <lg@denx.de>");
-> +MODULE_DESCRIPTION("DAC124S085 LED driver");
-> +MODULE_LICENSE("GPL v2");
-
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+	Ingo
