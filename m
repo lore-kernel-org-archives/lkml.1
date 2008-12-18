@@ -1,73 +1,84 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752356AbYLRLQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752351AbYLRLQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752356AbYLRLQl (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 06:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYLRLQ3
+	id S1752351AbYLRLQS (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 06:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYLRLPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 06:16:29 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46015 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751341AbYLRLQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 06:16:28 -0500
-Date: Thu, 18 Dec 2008 12:16:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] tracing/function-graph-tracer: prevent from hrtimer
-	interrupt infinite loop
-Message-ID: <20081218111612.GD14332@elte.hu>
-References: <4949A2CC.6040209@gmail.com> <20081218103459.GD10513@elte.hu> <c62985530812180251k7fde4f13tce5118a3eac4975b@mail.gmail.com>
+	Thu, 18 Dec 2008 06:15:43 -0500
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:54850 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752732AbYLRLPl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 06:15:41 -0500
+Message-ID: <494A30DA.5030605@in.ibm.com>
+Date: Thu, 18 Dec 2008 16:45:38 +0530
+From: Sharyathi Nagesh <sharyath@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530812180251k7fde4f13tce5118a3eac4975b@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Serge E. Hallyn" <serge@hallyn.com>, LKML <linux-kernel@vger.kernel.org>
+CC: Paul Menage <menage@google.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+        balbir <balbir@linux.vnet.ibm.com>,
+        "Rishikesh K. Rajak" <risrajak@in.ibm.com>, akpm@linux-foundation.org
+Subject: Re: Error with cgroups: "unused subsystem ns"
+References: <4948D3C4.9060900@in.ibm.com> <20081218010841.GA17385@hallyn.com>
+In-Reply-To: <20081218010841.GA17385@hallyn.com>
+Content-Type: multipart/mixed;
+ boundary="------------080109060701060504060109"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------080109060701060504060109
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
-
-> 2008/12/18 Ingo Molnar <mingo@elte.hu>:
-> >
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> >
-> >> Impact: fix a system hang on slow systems
-> >>
-> >> While testing the function graph tracer on VirtualBox, I had a system hang
-> >> immediatly after enabling the tracer.
-> >>
-> >> If hrtimer is enabled on kernel, a slow system can spend too much time
-> >> during tracing the hrtimer_interrupt which will do eternal loops,
-> >> assuming it always have to retry its process because too much time
-> >> elapsed during its time update. Now we provide a feature which lurks at
-> >> the number of retries on hrtimer_interrupt. After 10 retries, the
-> >> function graph tracer will definetly stop its tracing.
-> >
-> > hm, i dont really like this solution - it just works around the problem by
-> > 'speeding up' the system. If we have a _real_ slow system, there's no such
-> > way for us to speed it up.
+Serge
 > 
+> Resend the patch to lkml.  Assuming you are talking about commit id
+> 93af30a60055a83a00188ae04b88bbd9b4e1489a, go ahead and add my
+> Acked-by.
+Yes it is the same patch. I am attaching the patch for 2.6.28-rc8 let me 
+know: when this can accepted into main line?
+
+> Converting it to a pr_debug() might be another thing to consider, but
+> I'm not sure anyone wants these messages.
 > 
-> It doesn' speed up the system actually. That's not the goal of this 
-> patch.
+> -serge
 
-i meant that abstractly. The "solution" here is that your patch turns off 
-the function-graph-tracer. The practical effect of that is: the system 
-gets much faster at processing hrtimer IRQs and effectively "speeds up".
+Thanks
+Yeehaw
 
-ok?
 
-	Ingo
+
+
+--------------080109060701060504060109
+Content-Type: text/x-diff;
+ name="unused_subsystem_ns.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="unused_subsystem_ns.patch"
+
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Sharyathi Nagesh <sharyathi@in.ibm.com>
+
+Acked-by: Serge E. Hallyn <serge@hallyn.com>
+-----------------
+
+
+Index: linux-2.6.28-rc8/kernel/cgroup.c
+===================================================================
+--- linux-2.6.28-rc8.orig/kernel/cgroup.c	2008-12-11 04:41:51.000000000 +0530
++++ linux-2.6.28-rc8/kernel/cgroup.c	2008-12-18 21:55:58.000000000 +0530
+@@ -2934,9 +2934,6 @@
+  again:
+ 	root = subsys->root;
+ 	if (root == &rootnode) {
+-		printk(KERN_INFO
+-		       "Not cloning cgroup for unused subsystem %s\n",
+-		       subsys->name);
+ 		mutex_unlock(&cgroup_mutex);
+ 		return 0;
+ 	}
+
+--------------080109060701060504060109--
