@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753701AbYLRF5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753752AbYLRF66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753701AbYLRF5o (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 00:57:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbYLRF5X
+	id S1753752AbYLRF66 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 00:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbYLRF6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 00:57:23 -0500
-Received: from mail.openmoko.org ([88.198.124.205]:51611 "EHLO
+	Thu, 18 Dec 2008 00:58:32 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:51804 "EHLO
 	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbYLRF5W (ORCPT
+	with ESMTP id S1753918AbYLRF6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 00:57:22 -0500
+	Thu, 18 Dec 2008 00:58:30 -0500
 From: Balaji Rao <balajirrao@openmoko.org>
-Subject: [PATCH V2 3/7] mfd: PCF50633 gpio support
+Subject: [PATCH V2 7/7] regulator: PCF50633 pmic driver
 To: linux-kernel@vger.kernel.org
 Cc: Balaji Rao <balajirrao@openmoko.org>, Andy Green <andy@openmoko.com>,
-        Samuel Ortiz <sameo@openedhand.com>
-Date: Thu, 18 Dec 2008 11:27:10 +0530
-Message-ID: <20081218055709.31696.93092.stgit@cff.thadambail>
+        Liam Girdwood <lrg@simlogic.co.uk>,
+        Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Thu, 18 Dec 2008 11:28:17 +0530
+Message-ID: <20081218055817.31696.67376.stgit@cff.thadambail>
 In-Reply-To: <20081218055618.31696.65002.stgit@cff.thadambail>
 References: <20081218055618.31696.65002.stgit@cff.thadambail>
 User-Agent: StGIT/0.14.3.270.g0f36
@@ -27,63 +28,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What the PCF05633 calls as a 'GPIO' is much more than the GPIO in the linux
-sense and there are only 4 of them - which means, the gpiolib is not used
-here.
+Changes from V1:
+	- Removed support for suspend_enable & suspend_disable functions.
 
 Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
 Cc: Andy Green <andy@openmoko.com>
-Cc: Samuel Ortiz <sameo@openedhand.com>
+Cc: Liam Girdwood <lrg@simlogic.co.uk>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- drivers/mfd/Kconfig               |    7 ++
- drivers/mfd/Makefile              |    1 
- drivers/mfd/pcf50633-gpio.c       |  118 +++++++++++++++++++++++++++++++++++++
- include/linux/mfd/pcf50633/gpio.h |   52 ++++++++++++++++
- 4 files changed, 178 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mfd/pcf50633-gpio.c
- create mode 100644 include/linux/mfd/pcf50633/gpio.h
+ drivers/regulator/Kconfig              |    7 +
+ drivers/regulator/Makefile             |    1 
+ drivers/regulator/pcf50633-regulator.c |  330 ++++++++++++++++++++++++++++++++
+ include/linux/mfd/pcf50633/pmic.h      |   68 +++++++
+ 4 files changed, 406 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/regulator/pcf50633-regulator.c
+ create mode 100644 include/linux/mfd/pcf50633/pmic.h
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 02e3d73..cdb178b 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -169,6 +169,13 @@ config PCF50633_ADC
- 	 Say yes here if you want to include support for ADC in the
- 	 NXP PCF50633 chip.
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index 39360e2..e7e0cf1 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -73,4 +73,11 @@ config REGULATOR_DA903X
+ 	  Say y here to support the BUCKs and LDOs regulators found on
+ 	  Dialog Semiconductor DA9030/DA9034 PMIC.
  
-+config PCF50633_GPIO
-+	tristate "Support for NXP PCF50633 GPIO"
-+	depends on MFD_PCF50633
++config REGULATOR_PCF50633
++	tristate "PCF50633 regulator driver"
++        depends on MFD_PCF50633
 +	help
-+	 Say yes here if you want to include support GPIO for pins on
-+	 the PCF50633 chip.
++	 Say Y here to support the voltage regulators and convertors
++	 on PCF50633
 +
- endmenu
+ endif
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 254d40c..61b30c6 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -11,5 +11,6 @@ obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
+ obj-$(CONFIG_REGULATOR_WM8350) += wm8350-regulator.o
+ obj-$(CONFIG_REGULATOR_WM8400) += wm8400-regulator.o
+ obj-$(CONFIG_REGULATOR_DA903X)	+= da903x.o
++obj-$(CONFIG_REGULATOR_PCF50633) += pcf50633-regulator.o
  
- menu "Multimedia Capabilities Port drivers"
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 7a12b09..5bc7c9f 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -35,3 +35,4 @@ obj-$(CONFIG_PMIC_DA903X)	+= da903x.o
- 
- obj-$(CONFIG_MFD_PCF50633)	+= pcf50633-core.o
- obj-$(CONFIG_PCF50633_ADC)	+= pcf50633-adc.o
-+obj-$(CONFIG_PCF50633_GPIO)	+= pcf50633-gpio.o
-diff --git a/drivers/mfd/pcf50633-gpio.c b/drivers/mfd/pcf50633-gpio.c
+ ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
+diff --git a/drivers/regulator/pcf50633-regulator.c b/drivers/regulator/pcf50633-regulator.c
 new file mode 100644
-index 0000000..2fa2eca
+index 0000000..7a5d732
 --- /dev/null
-+++ b/drivers/mfd/pcf50633-gpio.c
-@@ -0,0 +1,118 @@
-+/* NXP PCF50633 GPIO Driver
++++ b/drivers/regulator/pcf50633-regulator.c
+@@ -0,0 +1,330 @@
++/* NXP PCF50633 PMIC Driver
 + *
 + * (C) 2006-2008 by Openmoko, Inc.
 + * Author: Balaji Rao <balajirrao@openmoko.org>
 + * All rights reserved.
 + *
 + * Broken down from monstrous PCF50633 driver mainly by
-+ * Harald Welte, Andy Green and Werner Almesberger
++ * Harald Welte and Andy Green and Werner Almesberger
 + *
 + *  This program is free software; you can redistribute  it and/or modify it
 + *  under  the terms of  the GNU General  Public License as published by the
@@ -93,35 +94,23 @@ index 0000000..2fa2eca
 + */
 +
 +#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/platform_device.h>
 +
 +#include <linux/mfd/pcf50633/core.h>
-+#include <linux/mfd/pcf50633/gpio.h>
++#include <linux/mfd/pcf50633/pmic.h>
 +
-+enum pcf50633_regulator_id {
-+	PCF50633_REGULATOR_AUTO,
-+	PCF50633_REGULATOR_DOWN1,
-+	PCF50633_REGULATOR_DOWN2,
-+	PCF50633_REGULATOR_LDO1,
-+	PCF50633_REGULATOR_LDO2,
-+	PCF50633_REGULATOR_LDO3,
-+	PCF50633_REGULATOR_LDO4,
-+	PCF50633_REGULATOR_LDO5,
-+	PCF50633_REGULATOR_LDO6,
-+	PCF50633_REGULATOR_HCLDO,
-+	PCF50633_REGULATOR_MEMLDO,
-+};
-+
-+#define PCF50633_REG_AUTOOUT	0x1a
-+#define PCF50633_REG_DOWN1OUT	0x1e
-+#define PCF50633_REG_DOWN2OUT	0x22
-+#define PCF50633_REG_MEMLDOOUT	0x26
-+#define PCF50633_REG_LDO1OUT	0x2d
-+#define PCF50633_REG_LDO2OUT	0x2f
-+#define PCF50633_REG_LDO3OUT	0x31
-+#define PCF50633_REG_LDO4OUT	0x33
-+#define PCF50633_REG_LDO5OUT	0x35
-+#define PCF50633_REG_LDO6OUT	0x37
-+#define PCF50633_REG_HCLDOOUT	0x39
++#define PCF50633_REGULATOR(_name, _id) 		\
++	{					\
++		.name = _name, 			\
++		.id = _id,			\
++		.ops = &pcf50633_regulator_ops,	\
++		.type = REGULATOR_VOLTAGE, 	\
++		.owner = THIS_MODULE, 		\
++	}
 +
 +static const u8 pcf50633_regulator_registers[PCF50633_NUM_REGULATORS] = {
 +	[PCF50633_REGULATOR_AUTO]	= PCF50633_REG_AUTOOUT,
@@ -137,119 +126,359 @@ index 0000000..2fa2eca
 +	[PCF50633_REGULATOR_HCLDO]	= PCF50633_REG_HCLDOOUT,
 +};
 +
-+int pcf50633_gpio_set(struct pcf50633 *pcf, int gpio, u8 val)
++/* Bits from voltage value */
++static u8 auto_voltage_bits(unsigned int millivolts)
 +{
-+	u8 reg;
++	if (millivolts < 1800)
++		return 0;
++	if (millivolts > 3800)
++		return 0xff;
 +
-+	reg = gpio - PCF50633_GPIO1 + PCF50633_REG_GPIO1CFG;
++	millivolts -= 625;
 +
-+	return pcf50633_reg_set_bit_mask(pcf, reg, 0x07, val);
++	return millivolts / 25;
 +}
-+EXPORT_SYMBOL_GPL(pcf50633_gpio_set);
 +
-+u8 pcf50633_gpio_get(struct pcf50633 *pcf, int gpio)
++static u8 down_voltage_bits(unsigned int millivolts)
 +{
-+	u8 reg, val;
++	if (millivolts < 625)
++		return 0;
++	else if (millivolts > 3000)
++		return 0xff;
 +
-+	reg = gpio - PCF50633_GPIO1 + PCF50633_REG_GPIO1CFG;
-+	val = pcf50633_reg_read(pcf, reg) & 0x07;
++	millivolts -= 625;
 +
-+	return val;
++	return millivolts / 25;
 +}
-+EXPORT_SYMBOL_GPL(pcf50633_gpio_get);
 +
-+int pcf50633_gpio_invert_set(struct pcf50633 *pcf, int gpio, int invert)
++static u8 ldo_voltage_bits(unsigned int millivolts)
 +{
-+	u8 val, reg;
++	if (millivolts < 900)
++		return 0;
++	else if (millivolts > 3600)
++		return 0x1f;
 +
-+	reg = gpio - PCF50633_GPIO1 + PCF50633_REG_GPIO1CFG;
-+	val = !!invert << 3;
-+
-+	return pcf50633_reg_set_bit_mask(pcf, reg, 1 << 3, val);
++	millivolts -= 900;
++	return millivolts / 100;
 +}
-+EXPORT_SYMBOL_GPL(pcf50633_gpio_invert_set);
 +
-+int pcf50633_gpio_invert_get(struct pcf50633 *pcf, int gpio)
++/* Obtain voltage value from bits */
++static unsigned int auto_voltage_value(u8 bits)
 +{
-+	u8 reg, val;
++	if (bits < 0x2f)
++		return 0;
 +
-+	reg = gpio - PCF50633_GPIO1 + PCF50633_REG_GPIO1CFG;
-+	val = pcf50633_reg_read(pcf, reg);
-+
-+	return val & (1 << 3);
++	return 625 + (bits * 25);
 +}
-+EXPORT_SYMBOL_GPL(pcf50633_gpio_invert_get);
 +
-+int pcf50633_gpio_power_supply_set(struct pcf50633 *pcf,
-+					int gpio, int regulator, int on)
++
++static unsigned int down_voltage_value(u8 bits)
 +{
-+	u8 reg, val, mask;
++	return 625 + (bits * 25);
++}
++
++
++static unsigned int ldo_voltage_value(u8 bits)
++{
++	bits &= 0x1f;
++
++	return 900 + (bits * 100);
++}
++
++static int pcf50633_regulator_set_voltage(struct regulator_dev *rdev,
++						int min_uV, int max_uV)
++{
++	struct pcf50633 *pcf;
++	int regulator_id, millivolts;
++	u8 volt_bits, regnr;
++
++	pcf = rdev_get_drvdata(rdev);
++
++	regulator_id = rdev_get_id(rdev);
++	if (regulator_id >= PCF50633_NUM_REGULATORS)
++		return -EINVAL;
++
++	millivolts = min_uV / 1000;
++
++	regnr = pcf50633_regulator_registers[regulator_id];
++
++	switch (regulator_id) {
++	case PCF50633_REGULATOR_AUTO:
++		volt_bits = auto_voltage_bits(millivolts);
++		break;
++	case PCF50633_REGULATOR_DOWN1:
++		volt_bits = down_voltage_bits(millivolts);
++		break;
++	case PCF50633_REGULATOR_DOWN2:
++		volt_bits = down_voltage_bits(millivolts);
++		break;
++	case PCF50633_REGULATOR_LDO1:
++	case PCF50633_REGULATOR_LDO2:
++	case PCF50633_REGULATOR_LDO3:
++	case PCF50633_REGULATOR_LDO4:
++	case PCF50633_REGULATOR_LDO5:
++	case PCF50633_REGULATOR_LDO6:
++	case PCF50633_REGULATOR_HCLDO:
++		volt_bits = ldo_voltage_bits(millivolts);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return pcf50633_reg_write(pcf, regnr, volt_bits);
++}
++
++static int pcf50633_regulator_get_voltage(struct regulator_dev *rdev)
++{
++	struct pcf50633 *pcf;
++	int regulator_id, millivolts, volt_bits;
++	u8 regnr;
++
++	pcf = rdev_get_drvdata(rdev);;
++
++	regulator_id = rdev_get_id(rdev);
++	if (regulator_id >= PCF50633_NUM_REGULATORS)
++		return -EINVAL;
++
++	regnr = pcf50633_regulator_registers[regulator_id];
++
++	volt_bits = pcf50633_reg_read(pcf, regnr);
++	if (volt_bits < 0)
++		return -1;
++
++	switch (regulator_id) {
++	case PCF50633_REGULATOR_AUTO:
++		millivolts = auto_voltage_value(volt_bits);
++		break;
++	case PCF50633_REGULATOR_DOWN1:
++		millivolts = down_voltage_value(volt_bits);
++		break;
++	case PCF50633_REGULATOR_DOWN2:
++		millivolts = down_voltage_value(volt_bits);
++		break;
++	case PCF50633_REGULATOR_LDO1:
++	case PCF50633_REGULATOR_LDO2:
++	case PCF50633_REGULATOR_LDO3:
++	case PCF50633_REGULATOR_LDO4:
++	case PCF50633_REGULATOR_LDO5:
++	case PCF50633_REGULATOR_LDO6:
++	case PCF50633_REGULATOR_HCLDO:
++		millivolts = ldo_voltage_value(volt_bits);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return millivolts * 1000;
++}
++
++static int pcf50633_regulator_enable(struct regulator_dev *rdev)
++{
++	struct pcf50633 *pcf = rdev_get_drvdata(rdev);
++	int regulator_id;
++	u8 regnr;
++
++	regulator_id = rdev_get_id(rdev);
++	if (regulator_id >= PCF50633_NUM_REGULATORS)
++		return -EINVAL;
++
++	/* The *ENA register is always one after the *OUT register */
++	regnr = pcf50633_regulator_registers[regulator_id] + 1;
++
++	return pcf50633_reg_set_bit_mask(pcf, regnr, PCF50633_REGULATOR_ON,
++						       PCF50633_REGULATOR_ON);
++
++}
++
++static int pcf50633_regulator_disable(struct regulator_dev *rdev)
++{
++	struct pcf50633 *pcf = rdev_get_drvdata(rdev);
++	int regulator_id;
++	u8 regnr;
++
++	regulator_id = rdev_get_id(rdev);
++	if (regulator_id >= PCF50633_NUM_REGULATORS)
++		return -EINVAL;
 +
 +	/* the *ENA register is always one after the *OUT register */
-+	reg = pcf50633_regulator_registers[regulator] + 1;
++	regnr = pcf50633_regulator_registers[regulator_id] + 1;
 +
-+	val = !!on << (gpio - PCF50633_GPIO1);
-+	mask = 1 << (gpio - PCF50633_GPIO1);
-+
-+	return pcf50633_reg_set_bit_mask(pcf, reg, mask, val);
++	return pcf50633_reg_set_bit_mask(pcf, regnr,
++					PCF50633_REGULATOR_ON, 0);
 +}
-+EXPORT_SYMBOL_GPL(pcf50633_gpio_power_supply_set);
-diff --git a/include/linux/mfd/pcf50633/gpio.h b/include/linux/mfd/pcf50633/gpio.h
-new file mode 100644
-index 0000000..a42b845
---- /dev/null
-+++ b/include/linux/mfd/pcf50633/gpio.h
-@@ -0,0 +1,52 @@
-+/*
-+ * gpio.h -- GPIO driver for NXP PCF50633
-+ *
-+ * (C) 2006-2008 by Openmoko, Inc.
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
 +
-+#ifndef __LINUX_MFD_PCF50633_GPIO_H
-+#define __LINUX_MFD_PCF50633_GPIO_H
++static int pcf50633_regulator_is_enabled(struct regulator_dev *rdev)
++{
++	struct pcf50633 *pcf = rdev_get_drvdata(rdev);
++	int regulator_id = rdev_get_id(rdev);
++	u8 regnr;
 +
-+#include <linux/mfd/pcf50633/core.h>
++	regulator_id = rdev_get_id(rdev);
++	if (regulator_id >= PCF50633_NUM_REGULATORS)
++		return -EINVAL;
 +
-+#define PCF50633_GPIO1		1
-+#define PCF50633_GPIO2		2
-+#define PCF50633_GPIO3		3
-+#define PCF50633_GPO		4
++	/* the *ENA register is always one after the *OUT register */
++	regnr = pcf50633_regulator_registers[regulator_id] + 1;
 +
-+#define PCF50633_REG_GPIO1CFG	0x14
-+#define PCF50633_REG_GPIO2CFG	0x15
-+#define PCF50633_REG_GPIO3CFG	0x16
-+#define PCF50633_REG_GPOCFG 	0x17
++	return pcf50633_reg_read(pcf, regnr) & PCF50633_REGULATOR_ON;
++}
 +
-+#define PCF50633_GPOCFG_GPOSEL_MASK	0x07
-+
-+enum pcf50633_reg_gpocfg {
-+	PCF50633_GPOCFG_GPOSEL_0	= 0x00,
-+	PCF50633_GPOCFG_GPOSEL_LED_NFET	= 0x01,
-+	PCF50633_GPOCFG_GPOSEL_SYSxOK	= 0x02,
-+	PCF50633_GPOCFG_GPOSEL_CLK32K	= 0x03,
-+	PCF50633_GPOCFG_GPOSEL_ADAPUSB	= 0x04,
-+	PCF50633_GPOCFG_GPOSEL_USBxOK	= 0x05,
-+	PCF50633_GPOCFG_GPOSEL_ACTPH4	= 0x06,
-+	PCF50633_GPOCFG_GPOSEL_1	= 0x07,
-+	PCF50633_GPOCFG_GPOSEL_INVERSE	= 0x08,
++static struct regulator_ops pcf50633_regulator_ops = {
++	.set_voltage = pcf50633_regulator_set_voltage,
++	.get_voltage = pcf50633_regulator_get_voltage,
++	.enable = pcf50633_regulator_enable,
++	.disable = pcf50633_regulator_disable,
++	.is_enabled = pcf50633_regulator_is_enabled,
 +};
 +
-+int pcf50633_gpio_set(struct pcf50633 *pcf, int gpio, u8 val);
-+u8 pcf50633_gpio_get(struct pcf50633 *pcf, int gpio);
++static struct regulator_desc regulators[] = {
++	[PCF50633_REGULATOR_AUTO] =
++		PCF50633_REGULATOR("auto", PCF50633_REGULATOR_AUTO),
++	[PCF50633_REGULATOR_DOWN1] =
++		PCF50633_REGULATOR("down1", PCF50633_REGULATOR_DOWN1),
++	[PCF50633_REGULATOR_DOWN2] =
++		PCF50633_REGULATOR("down2", PCF50633_REGULATOR_DOWN2),
++	[PCF50633_REGULATOR_LDO1] =
++		PCF50633_REGULATOR("ldo1", PCF50633_REGULATOR_LDO1),
++	[PCF50633_REGULATOR_LDO2] =
++		PCF50633_REGULATOR("ldo2", PCF50633_REGULATOR_LDO2),
++	[PCF50633_REGULATOR_LDO3] =
++		PCF50633_REGULATOR("ldo3", PCF50633_REGULATOR_LDO3),
++	[PCF50633_REGULATOR_LDO4] =
++		PCF50633_REGULATOR("ldo4", PCF50633_REGULATOR_LDO4),
++	[PCF50633_REGULATOR_LDO5] =
++		PCF50633_REGULATOR("ldo5", PCF50633_REGULATOR_LDO5),
++	[PCF50633_REGULATOR_LDO6] =
++		PCF50633_REGULATOR("ldo6", PCF50633_REGULATOR_LDO6),
++	[PCF50633_REGULATOR_HCLDO] =
++		PCF50633_REGULATOR("hcldo", PCF50633_REGULATOR_HCLDO),
++	[PCF50633_REGULATOR_MEMLDO] =
++		PCF50633_REGULATOR("memldo", PCF50633_REGULATOR_MEMLDO),
++};
 +
-+int pcf50633_gpio_invert_set(struct pcf50633 *, int gpio, int invert);
-+int pcf50633_gpio_invert_get(struct pcf50633 *pcf, int gpio);
++static int __devinit pcf50633_regulator_probe(struct platform_device *pdev)
++{
++	struct regulator_dev *rdev;
++	struct pcf50633 *pcf;
 +
-+int pcf50633_gpio_power_supply_set(struct pcf50633 *,
-+					int gpio, int regulator, int on);
-+#endif /* __LINUX_MFD_PCF50633_GPIO_H */
++	/* Already set by core driver */
++	pcf = platform_get_drvdata(pdev);
 +
++	rdev = regulator_register(&regulators[pdev->id], &pdev->dev, pcf);
++	if (IS_ERR(rdev))
++		return PTR_ERR(rdev);
++
++	if (pcf->pdata->regulator_registered)
++		pcf->pdata->regulator_registered(pcf, pdev->id);
++
++	return 0;
++}
++
++static int __devexit pcf50633_regulator_remove(struct platform_device *pdev)
++{
++	struct regulator_dev *rdev = platform_get_drvdata(pdev);
++
++	regulator_unregister(rdev);
++
++	return 0;
++}
++
++static struct platform_driver pcf50633_regulator_driver = {
++	.driver = {
++		.name = "pcf50633-regltr",
++	},
++	.probe = pcf50633_regulator_probe,
++	.remove = __devexit_p(pcf50633_regulator_remove),
++};
++
++static int __init pcf50633_regulator_init(void)
++{
++	return platform_driver_register(&pcf50633_regulator_driver);
++}
++module_init(pcf50633_regulator_init);
++
++static void __exit pcf50633_regulator_exit(void)
++{
++	platform_driver_unregister(&pcf50633_regulator_driver);
++}
++module_exit(pcf50633_regulator_exit);
++
++MODULE_AUTHOR("Balaji Rao <balajirrao@openmoko.org>");
++MODULE_DESCRIPTION("PCF50633 regulator driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:pcf50633-regulator");
+diff --git a/include/linux/mfd/pcf50633/pmic.h b/include/linux/mfd/pcf50633/pmic.h
+new file mode 100644
+index 0000000..8c567a1
+--- /dev/null
++++ b/include/linux/mfd/pcf50633/pmic.h
+@@ -0,0 +1,68 @@
++#ifndef __LINUX_MFD_PCF50633_PMIC_H
++#define __LINUX_MFD_PCF50633_PMIC_H
++
++#include <linux/mfd/pcf50633/core.h>
++#include <linux/platform_device.h>
++
++#define PCF50633_REG_AUTOOUT	0x1a
++#define PCF50633_REG_AUTOENA	0x1b
++#define PCF50633_REG_AUTOCTL	0x1c
++#define PCF50633_REG_AUTOMXC	0x1d
++#define PCF50633_REG_DOWN1OUT	0x1e
++#define PCF50633_REG_DOWN1ENA	0x1f
++#define PCF50633_REG_DOWN1CTL	0x20
++#define PCF50633_REG_DOWN1MXC	0x21
++#define PCF50633_REG_DOWN2OUT	0x22
++#define PCF50633_REG_DOWN2ENA	0x23
++#define PCF50633_REG_DOWN2CTL	0x24
++#define PCF50633_REG_DOWN2MXC	0x25
++#define PCF50633_REG_MEMLDOOUT	0x26
++#define PCF50633_REG_MEMLDOENA	0x27
++#define PCF50633_REG_LDO1OUT	0x2d
++#define PCF50633_REG_LDO1ENA	0x2e
++#define PCF50633_REG_LDO2OUT	0x2f
++#define PCF50633_REG_LDO2ENA	0x30
++#define PCF50633_REG_LDO3OUT	0x31
++#define PCF50633_REG_LDO3ENA	0x32
++#define PCF50633_REG_LDO4OUT	0x33
++#define PCF50633_REG_LDO4ENA	0x34
++#define PCF50633_REG_LDO5OUT	0x35
++#define PCF50633_REG_LDO5ENA	0x36
++#define PCF50633_REG_LDO6OUT	0x37
++#define PCF50633_REG_LDO6ENA	0x38
++#define PCF50633_REG_HCLDOOUT	0x39
++#define PCF50633_REG_HCLDOENA	0x3a
++#define PCF50633_REG_HCLDOOVL	0x40
++
++enum pcf50633_regulator_enable {
++	PCF50633_REGULATOR_ON		= 0x01,
++	PCF50633_REGULATOR_ON_GPIO1	= 0x02,
++	PCF50633_REGULATOR_ON_GPIO2	= 0x04,
++	PCF50633_REGULATOR_ON_GPIO3	= 0x08,
++};
++#define PCF50633_REGULATOR_ON_MASK	0x0f
++
++enum pcf50633_regulator_phase {
++	PCF50633_REGULATOR_ACTPH1	= 0x00,
++	PCF50633_REGULATOR_ACTPH2	= 0x10,
++	PCF50633_REGULATOR_ACTPH3	= 0x20,
++	PCF50633_REGULATOR_ACTPH4	= 0x30,
++};
++#define PCF50633_REGULATOR_ACTPH_MASK	0x30
++
++enum pcf50633_regulator_id {
++	PCF50633_REGULATOR_AUTO,
++	PCF50633_REGULATOR_DOWN1,
++	PCF50633_REGULATOR_DOWN2,
++	PCF50633_REGULATOR_LDO1,
++	PCF50633_REGULATOR_LDO2,
++	PCF50633_REGULATOR_LDO3,
++	PCF50633_REGULATOR_LDO4,
++	PCF50633_REGULATOR_LDO5,
++	PCF50633_REGULATOR_LDO6,
++	PCF50633_REGULATOR_HCLDO,
++	PCF50633_REGULATOR_MEMLDO,
++};
++
++#endif
 +
 
