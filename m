@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753178AbYLRR2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752853AbYLRR2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753178AbYLRR2k (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 12:28:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbYLRR2T
+	id S1752853AbYLRR2X (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 12:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYLRR17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 12:28:19 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:56222 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752423AbYLRR2R (ORCPT
+	Thu, 18 Dec 2008 12:27:59 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:59359 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbYLRR16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 12:28:17 -0500
-Date: Thu, 18 Dec 2008 18:28:09 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC 2/8] crypto: compress - Add pcomp interface
-In-Reply-To: <20081218061908.GB27951@gondor.apana.org.au>
-Message-ID: <Pine.LNX.4.64.0812181820100.25762@vixen.sonytel.be>
-References: <20081217163634.998961917@vixen.sonytel.be>
- <20081217164036.539681327@vixen.sonytel.be> <20081218061908.GB27951@gondor.apana.org.au>
+	Thu, 18 Dec 2008 12:27:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=YAkhtl2gpLIDp1Kmg2MK35iyTtcYTKhLlQ7supx5zUczuQkEd65eswOjENzjjM1DA4
+         FaixI5AcDg1xgeKUr6qwrSznqa6XP48kegm5K/tVs3xW3vushRo6GyY6rT8c28FeshRN
+         8Jte9RZGtfjjr498SCW0b9+Pkl2Yy7WANG3jY=
+Message-ID: <e9c3a7c20812180927q7488f8b9n9641cf313363fcc5@mail.gmail.com>
+Date: Thu, 18 Dec 2008 10:27:56 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+Subject: Re: [PATCH 07/13] dmaengine: introduce dma_request_channel and private channels
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+        "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
+        "g.liakhovetski@gmx.de" <g.liakhovetski@gmx.de>,
+        "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
+In-Reply-To: <129600E5E5FB004392DDC3FB599660D70C984F6A@irsmsx504.ger.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
+	 <20081114213453.32354.53002.stgit@dwillia2-linux.ch.intel.com>
+	 <129600E5E5FB004392DDC3FB599660D70C8F3406@irsmsx504.ger.corp.intel.com>
+	 <e9c3a7c20812151555g14080561q18cf2d0db4c1813b@mail.gmail.com>
+	 <129600E5E5FB004392DDC3FB599660D70C984F6A@irsmsx504.ger.corp.intel.com>
+X-Google-Sender-Auth: fff47676d9f6754a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Dec 2008, Herbert Xu wrote:
-> On Wed, Dec 17, 2008 at 05:36:37PM +0100, Geert Uytterhoeven wrote:
-> > @@ -3,7 +3,7 @@
-> >  #
-> >  
-> >  obj-$(CONFIG_CRYPTO) += crypto.o
-> > -crypto-objs := api.o cipher.o digest.o compress.o
-> > +crypto-objs := api.o cipher.o digest.o compress.o pcompress.o
-> 
-> Sorry, you modelled it on the wrong type.  These are the original
-> and obsolete types.  You should model it on one of the others.  I
-> recommend the crypto_shash type which is most recent.
+On Thu, Dec 18, 2008 at 7:33 AM, Sosnowski, Maciej
+<maciej.sosnowski@intel.com> wrote:
+> What about situation, where some or all "public" channels in the system
+> have been claimed by one client for its exclusive usage
+> before another client appears trying to use available "public" channels?
+> Despite of presence in the system of channels that supposed to be "public",
+> the second cilent realizes that the channels are not available anymore at all
+> or at least limited...
+> Doesn't it contradict the general idea of "public" (general purpose) channels?
+>
 
-Can you please elaborate a bit more?
+If a greedy module comes along and grabs all the channels via
+dma_request_channel() then yes, there will be nothing left for the
+public pool.  So, there is a requirement to "play nice".  If this
+becomes an issue in practice we could add a DMA_NO_PRIVATE flag to
+reserve a channel for public-only usage.
 
-You mean pcomp should provide a struct crypto_type?
-And the underlying algorithms shouldn't use crypto_alg directly anymore?
-
-Thanks!
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+Regards,
+Dan
