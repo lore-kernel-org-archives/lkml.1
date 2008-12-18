@@ -1,67 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbYLRW0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbYLRW0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbYLRW0E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 17:26:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYLRWZx
+	id S1754234AbYLRW0Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 17:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbYLRW0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 17:25:53 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:51045 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752131AbYLRWZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 17:25:53 -0500
-Subject: Re: TSC not updating after resume: Bug or Feature?
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <200812182319.57235.rjw@sisk.pl>
-References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net>
-	 <1229592279.9487.133.camel@twins> <20081218123924.GH25715@elte.hu>
-	 <200812182319.57235.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Thu, 18 Dec 2008 16:25:49 -0600
-Message-Id: <1229639149.6613.2.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Dec 2008 17:26:04 -0500
+Received: from kroah.org ([198.145.64.141]:59527 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753806AbYLRW0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 17:26:03 -0500
+Date: Thu, 18 Dec 2008 14:23:29 -0800
+From: Greg KH <greg@kroah.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, gregkh@suse.de
+Subject: Re: mmotm 2008-12-17-16-41 uploaded
+Message-ID: <20081218222329.GA1398@kroah.com>
+References: <200812180057.mBI0vpPt013574@imap1.linux-foundation.org> <20081218131015.735da05e.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081218131015.735da05e.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-18 at 23:19 +0100, Rafael J. Wysocki wrote:
-> On Thursday, 18 of December 2008, Ingo Molnar wrote:
-> > 
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > Rafael, would something like this explain why we had to revert Shaggy's 
-> > > patch?
+On Thu, Dec 18, 2008 at 01:10:15PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 17 Dec 2008 16:41:54 -0800
+> akpm@linux-foundation.org wrote:
 > 
-> Well, I have yet to understand what the suspend-resume of the timekeeping code
-> actually does.
-> 
-> The original description sounds worrisome to me, it looks like we've overlooked
-> something at least.
-> 
-> > > His patch fixes the backward motion filter and I'm at an utter  
-> > > loss why that would break suspend.
+> > The mm-of-the-moment snapshot 2008-12-17-16-41 has been uploaded to
 > > 
-> > yes, i'd love to have this commit reinstated:
+> >    http://userweb.kernel.org/~akpm/mmotm/
 > > 
-> >  5b7dba4: sched_clock: prevent scd->clock from moving backwards
+> > and will soon be available at
 > > 
-> > and the bug triggered by hibernation fixed instead.
+> >    git://git.zen-sources.org/zen/mmotm.git
+> > 
 > 
-> Shaggy said he had an idea of what was wrong, so I expect an updated version
-> of the patch to appear.
+> This was necessary. I'm not sure my patch description is corrcect...
+> but this helps me ;)
+> This change kfree(dev->p) comes from linux-next.
+> 
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> dev->release() may free struct dev itself. To free dev->p
+> in safe way, remember dev->p.
+> 
+> Signed-off-by:KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  drivers/base/core.c |    7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+> 
+> Index: mmotm-2.6.28-Dec17/drivers/base/core.c
+> ===================================================================
+> --- mmotm-2.6.28-Dec17.orig/drivers/base/core.c
+> +++ mmotm-2.6.28-Dec17/drivers/base/core.c
+> @@ -109,6 +109,7 @@ static struct sysfs_ops dev_sysfs_ops = 
+>  static void device_release(struct kobject *kobj)
+>  {
+>  	struct device *dev = to_dev(kobj);
+> +	struct device_private *p = dev->p;
+>  
+>  	if (dev->release)
+>  		dev->release(dev);
+> @@ -116,11 +117,13 @@ static void device_release(struct kobjec
+>  		dev->type->release(dev);
+>  	else if (dev->class && dev->class->dev_release)
+>  		dev->class->dev_release(dev);
+> -	else
+> +	else {
+>  		WARN(1, KERN_ERR "Device '%s' does not have a release() "
+>  			"function, it is broken and must be fixed.\n",
+>  			dev_name(dev));
+> -	kfree(dev->p);
+> +		return;
+> +	}
+> +	kfree(p);
 
-Not really.  I said I'd look at it, but all I know is that it looks like
-something clock-related isn't initialized correctly after resume.  I
-don't know enough to have any idea how to fix it.
+You have a memory leak for when there is no release function for a
+device, don't return if that happens.
 
-> Thanks,
-> Rafael
--- 
-David Kleikamp
-IBM Linux Technology Center
+I've now fixed this up in my tree, thanks for pointing it out.
 
+greg k-h
