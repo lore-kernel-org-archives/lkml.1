@@ -1,149 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbYLRXk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbYLRXkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbYLRXk3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 18:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYLRXkL
+	id S1754543AbYLRXkp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 18:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbYLRXkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 18:40:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55167 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752601AbYLRXkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 18:40:08 -0500
-Subject: Re: linux-next: Tree for December 17 (Radeon DRM BUG)
-From: Dave Airlie <airlied@redhat.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Dave Airlie <airlied@gmail.com>, Kevin Winchester <kjwinchester@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200812182309.23254.bzolnier@gmail.com>
-References: <20081217232536.0b18f4a7.sfr@canb.auug.org.au>
-	 <200812182000.41727.bzolnier@gmail.com> <1229633355.5650.4.camel@optimus>
-	 <200812182309.23254.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Fri, 19 Dec 2008 09:39:24 +1000
-Message-Id: <1229643564.11646.5.camel@clockmaker.usersys.redhat.com>
-Mime-Version: 1.0
+	Thu, 18 Dec 2008 18:40:18 -0500
+Received: from outbound-mail-104.bluehost.com ([69.89.22.14]:58931 "HELO
+	outbound-mail-104.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752681AbYLRXkQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 18:40:16 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=lyj+LUDv6re78RQucePvbxJ+9YqlWVd/IXEt1BZDgu2dcGmaR5URoSW7j/UyhYWhsv5ei7UpPqOtLa52n0l0r8v8yU11obZVXlH76EB6mGiBDEHPdagnPanqYpI4qTxC;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: dri-devel@lists.sourceforge.net
+Subject: Re: [PATCH 6/6] drm/i915: add prototype for 'intelfb_panic' to header file
+Date: Thu, 18 Dec 2008 15:40:07 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.27.5-41.fc9.x86_64; KDE/4.1.3; x86_64; ; )
+Cc: Hannes Eder <hannes@hanneseder.net>, David Airlie <airlied@linux.ie>,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <494ad5e4.0baa660a.04de.7bb4@mx.google.com>
+In-Reply-To: <494ad5e4.0baa660a.04de.7bb4@mx.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812181540.08366.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-18 at 23:09 +0100, Bartlomiej Zolnierkiewicz wrote:
-> tOn Thursday 18 December 2008, Dave Airlie wrote:
-> > On Thu, 2008-12-18 at 20:00 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > On Thursday 18 December 2008, Dave Airlie wrote:
-> > > > On Thu, Dec 18, 2008 at 10:14 AM, Kevin Winchester
-> > > > <kjwinchester@gmail.com> wrote:
-> > > > > Stephen Rothwell wrote:
-> > > > >>
-> > > > >> Hi all,
-> > > > >>
-> > > > >>
-> > > > >
-> > > > > I get the following BUG in the radeon drm code with today's linux-next when
-> > > > > I run "startx".  I have not built or tested linux-next in a while, but the
-> > > > > problem definitely does not occur in mainline.
-> > > 
-> > > [...]
-> > > 
-> > > This reminds me that drm tree in linux-next still results in BSOD (Black
-> > > Screen Of Death) on starting X for me (as reported on Saturday [1]).
-> > > 
-> > > Actually there is more to it as I discovered that my custom X radeon driver
-> > > (which is xorg-x11-drv-ati-6.9.0-61.fc10.i386 with "radeon: no need for this
-> > > anymore" from radeon-gem-cs change reverted, please see [2] for my previous
-> > > monologue) works fine while following stock driver versions:
-> > > 
-> > > 	xorg-x11-drv-ati-6.8.0-19.fc9.i386
-> > > 	xorg-x11-drv-ati-6.9.0-61.fc10.i386
-> > > 	xorg-x11-drv-ati-6.9.0-62.fc10.i386
-> > > 
-> > > result in BSOD.  OTOH they all work with next-20081128 (modulo hangs with
-> > > fc10 ones when "radeon: no need for this anymore" change is not reverted).
-> > > 
-> > > [ BTW xorg-x11-drv-ati-6.9.0-62.fc10.i386 still causes hangs when used with
-> > >   non-Fedora kernels and Fedora/kms kernel still has performance problems ]
-> > > 
-> > > IOW there are a lot of compatibility issues in recent drm/radeon changes.
-> > > 
-> > > Dave, could you please start looking into these problems?  I'm sure that we
-> > > all want recent drm changes + kms in 2.6.29 but given tight schedule and the
-> > > way things are looking right now I'm quite sceptical...
-> > > 
-> > > [1] http://lkml.org/lkml/2008/12/13/76
-> > > [2] http://lkml.org/lkml/2008/12/13/77
-> > > 
-> > 
-> > Bart,
-> > 
-> > please file bugs in RH bugzilla for Fedora issues. Fedora is shipping
-> > drivers that aren't upstream, and I'm attempting to resolve the issues
-> > as they arise. However not having a bug to track stuff in means it just
-> > goes far enough out of my inbox that I forget about it.
-> 
-> OK, I'll try to put all issues into RH bugzilla once I find some time. 
-> 
-> [ OTOH the hang issue mentioned above happens only with vanilla kernels,
->   Fedora kernels are not affected because they ship KMS.  Anyway, you
->   could have just told me that you prefer to have a RH bugzilla bug for
->   it two weeks ago (and indeed KMS performance issue should have been
->   handled through bugzilla -- however this one is of lower priority). ]
+On Thursday, December 18, 2008 1:32 pm Hannes Eder wrote:
+> Fix this sparse warning:
+>
+>   drivers/gpu/drm/i915/intel_fb.c:417:5: warning: symbol 'intelfb_panic'
+> was not declared. Should it be static?
 
-I know, literally I didn't see a mail in my inbox and forgot about this
-bug until it showed up again, so I should mention Fedora BZ for Fedora
-bugs earlier indeed..
+Yep, this one should be static instead (I think, just double checking now to 
+make sure it's not used elsewhere, iirc it's not).
 
-drm-next should be fine in the next iteration, there was a missing patch
-hunk in the last commit, and then a locking bug after that.
-
-I'll try and look at the other stability issues you are seeing with
-Fedora today,
-
-however halving the amount of video RAM everyone gets as a fix for an
-issue you are seeing is clearly not the answer, I'd like to actually
-track down the root cause of where it went wrong.
-
-Dave.
-
-> 
-> > The revert isn't a fix for -ati, and I haven't seen any reports of
-> > performance problems with profiles attached in my bugzilla.
-> 
-> "isn't a fix" is a brave statement since it makes a difference between hang
-> within minutes and rock stable operation (sure the revert itself may not be
-> a proper fix but it works and is a good starting point).  I spend quite some
-> time narrowing down the bug and this is not exactly the reaction I expected.
-> 
-> [ Well, I can fix/workaround the issues that I encounter quite quickly and I
->   don't really have to put extra time into narrowing them down so they can be
->   fixed in upstream distro if distro people don't see a value in such work. ]
-> 
-> > I'm booting drm-next on more various radeon hw today to see what I can
-> > reproduce, most of the kms changes for 2.6.29 are nothing to do with
-> > radeon at all, we are only upstreaming KMS for Intel hw, so I'm not sure
-> > what the sceptical bit is about. Its much more likely this is
-> 
-> F9 -> F10 upgrade has been a nightmare for me thanks to radeon/kms
-> changes (which are still Fedora specific stuff and it is good to hear
-> that they will not be upstreamed now).
-> 
-> On top of it drm-next tree has been broken for me since next-20081203
-> (yes, that is two weeks period!).
-> 
-> It could be just my luck and things may be working perfectly for 99.9%
-> of other people but are you still surprised that I'm sceptical?
-> 
-> > multi-master changes before KMS that are interacting badly.
-> 
-> Yes, multi-master changes are to blame but currently KMS patch depends on
-> them (though maybe it could be made independent -- I don't know this).
-> 
-> If you want me to try some debugging I will be happy to help but please
-> start taking more serious approach, and if you don't have the idea where
-> the problem is or don't have time to work on it currently please just
-> drop the broken changes from drm-next tree for now.
-> 
-> Thanks,
-> Bart
+-- 
+Jesse Barnes, Intel Open Source Technology Center
 
