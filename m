@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753680AbYLRRyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753416AbYLRRyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbYLRRyx (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 12:54:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYLRRx1
+	id S1753416AbYLRRyS (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 12:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYLRRxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 12:53:27 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:57373 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753063AbYLRRxZ (ORCPT
+	Thu, 18 Dec 2008 12:53:12 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:46455 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752878AbYLRRxK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 12:53:25 -0500
+	Thu, 18 Dec 2008 12:53:10 -0500
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH v7 6/8] sched: activate active load balancing in new idle cpus
+Subject: [PATCH v7 4/8] sched: nominate preferred wakeup cpu
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
         Suresh B Siddha <suresh.b.siddha@intel.com>,
         Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -26,8 +26,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
         Pavel Machek <pavel@suse.cz>,
         Andrew Morton <akpm@linux-foundation.org>,
         Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Thu, 18 Dec 2008 23:26:36 +0530
-Message-ID: <20081218175635.29812.82242.stgit@drishya.in.ibm.com>
+Date: Thu, 18 Dec 2008 23:26:22 +0530
+Message-ID: <20081218175622.29812.69201.stgit@drishya.in.ibm.com>
 In-Reply-To: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
 References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -38,95 +38,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Active load balancing is a process by which migration thread
-is woken up on the target CPU in order to pull current
-running task on another package into this newly idle
-package.
+When the system utilisation is low and more cpus are idle,
+then the process waking up from sleep should prefer to
+wakeup an idle cpu from semi-idle cpu package (multi core
+package) rather than a completely idle cpu package which
+would waste power.
 
-This method is already in use with normal load_balance(),
-this patch introduces this method to new idle cpus when
-sched_mc is set to POWERSAVINGS_BALANCE_WAKEUP.
+Use the sched_mc balance logic in find_busiest_group() to
+nominate a preferred wakeup cpu.
 
-This logic provides effective consolidation of short running
-daemon jobs in a almost idle system
-
-The side effect of this patch may be ping-ponging of tasks
-if the system is moderately utilised. May need to adjust the
-iterations before triggering.
+This info can be sored in appropriate sched_domain, but
+updating this info in all copies of sched_domain is not
+practical.  Hence this information is stored in root_domain
+struct which is one copy per partitioned sched domain.
+The root_domain can be accessed from each cpu's runqueue
+and there is one copy per partitioned sched domain.
 
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
 
- kernel/sched.c |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 54 insertions(+), 0 deletions(-)
+ kernel/sched.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 3415fa3..f82a7a0 100644
+index 0b9bbbd..3415fa3 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -3692,10 +3692,64 @@ redo:
+@@ -493,6 +493,14 @@ struct root_domain {
+ #ifdef CONFIG_SMP
+ 	struct cpupri cpupri;
+ #endif
++#if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
++	/*
++	 * Preferred wake up cpu nominated by sched_mc balance that will be
++	 * used when most cpus are idle in the system indicating overall very
++	 * low system utilisation. Triggered at POWERSAVINGS_BALANCE_WAKEUP(2)
++	 */
++	unsigned int sched_mc_preferred_wakeup_cpu;
++#endif
+ };
+ 
+ /*
+@@ -3407,6 +3415,10 @@ out_balanced:
+ 
+ 	if (this == group_leader && group_leader != group_min) {
+ 		*imbalance = min_load_per_task;
++		if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP) {
++			cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu =
++					first_cpu(group_leader->cpumask);
++		}
+ 		return group_min;
  	}
- 
- 	if (!ld_moved) {
-+		int active_balance;
-+
- 		schedstat_inc(sd, lb_failed[CPU_NEWLY_IDLE]);
- 		if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
- 		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
- 			return -1;
-+
-+		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
-+			return -1;
-+
-+		if (sd->nr_balance_failed++ < 2)
-+			return -1;
-+
-+		/*
-+		 * The only task running in a non-idle cpu can be moved to this
-+		 * cpu in an attempt to completely freeup the other CPU
-+		 * package. The same method used to move task in load_balance()
-+		 * have been extended for load_balance_newidle() to speedup
-+		 * consolidation at sched_mc=POWERSAVINGS_BALANCE_WAKEUP (2)
-+		 *
-+		 * The package power saving logic comes from
-+		 * find_busiest_group().  If there are no imbalance, then
-+		 * f_b_g() will return NULL.  However when sched_mc={1,2} then
-+		 * f_b_g() will select a group from which a running task may be
-+		 * pulled to this cpu in order to make the other package idle.
-+		 * If there is no opportunity to make a package idle and if
-+		 * there are no imbalance, then f_b_g() will return NULL and no
-+		 * action will be taken in load_balance_newidle().
-+		 *
-+		 * Under normal task pull operation due to imbalance, there
-+		 * will be more than one task in the source run queue and
-+		 * move_tasks() will succeed.  ld_moved will be true and this
-+		 * active balance code will not be triggered.
-+		 */
-+
-+		/* Lock busiest in correct order while this_rq is held */
-+		double_lock_balance(this_rq, busiest);
-+
-+		/*
-+		 * don't kick the migration_thread, if the curr
-+		 * task on busiest cpu can't be moved to this_cpu
-+		 */
-+		if (!cpu_isset(this_cpu, busiest->curr->cpus_allowed)) {
-+			double_unlock_balance(this_rq, busiest);
-+			all_pinned = 1;
-+			return ld_moved;
-+		}
-+
-+		if (!busiest->active_balance) {
-+			busiest->active_balance = 1;
-+			busiest->push_cpu = this_cpu;
-+			active_balance = 1;
-+		}
-+
-+		double_unlock_balance(this_rq, busiest);
-+		if (active_balance)
-+			wake_up_process(busiest->migration_thread);
-+
- 	} else
- 		sd->nr_balance_failed = 0;
- 
+ #endif
 
