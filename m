@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752517AbYLRRI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752609AbYLRRLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752517AbYLRRI2 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 12:08:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYLRRIR
+	id S1752609AbYLRRLh (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 12:11:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYLRRLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 12:08:17 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:58176 "EHLO mail.dvmed.net"
+	Thu, 18 Dec 2008 12:11:21 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:45000 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751666AbYLRRIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 12:08:16 -0500
-Message-ID: <494A837A.50801@garzik.org>
-Date: Thu, 18 Dec 2008 12:08:10 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	id S1750958AbYLRRLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 12:11:20 -0500
+Date: Thu, 18 Dec 2008 18:11:15 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: lrodriguez@atheros.com, jmalinen@atheros.com,
+        linux-wireless@vger.kernel.org, ath9k-devel@venema.h4ckr.net,
+        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 7/11] drivers/net/wireless/ath9k: Move a dereference
+ below a NULL test
+In-Reply-To: <20081218155042.GF4121@tuxdriver.com>
+Message-ID: <Pine.LNX.4.64.0812181807330.23988@ask.diku.dk>
+References: <Pine.LNX.4.64.0812161613510.20444@pc-004.diku.dk>
+ <20081218155042.GF4121@tuxdriver.com>
 MIME-Version: 1.0
-To: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-        linux-kernel@vger.kernel.org,
-        Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] ide: Fix ata_id_has_dword_io to return DWORD I/O support
- properly
-References: <494A5BBF.8000807@inf.tu-dresden.de>
-In-Reply-To: <494A5BBF.8000807@inf.tu-dresden.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mario Schwalbe wrote:
-> This patch fixes ata_id_has_dword_io to return 1 (supported) if
-> the drive is compliant to ATA2 or newer and evaluates the config
-> word for older drives.
+On Thu, 18 Dec 2008, John W. Linville wrote:
+
+> On Tue, Dec 16, 2008 at 04:14:28PM +0100, Julia Lawall wrote:
+> > From: Julia Lawall <julia@diku.dk>
+> > 
+> > In each case, if the NULL test is necessary, then the dereference should be
+> > moved below the NULL test.
+> > 
+> > The semantic patch that makes this change is as follows:
+> > (http://www.emn.fr/x-info/coccinelle/)
+> > 
+> > // <smpl>
+> > @@
+> > type T;
+> > expression E;
+> > identifier i,fld;
+> > statement S;
+> > @@
+> > 
+> > - T i = E->fld;
+> > + T i;
+> >   ... when != E
+> >       when != i
+> >   if (E == NULL) S
+> > + i = E->fld;
+> > // </smpl>
+> > 
+> > Signed-off-by: Julia Lawall <julia@diku.dk>
+> > 
+> > ---
+> >  drivers/net/wireless/ath9k/hw.c     |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/net/wireless/ath9k/hw.c b/drivers/net/wireless/ath9k/hw.c
+> > index 98bc25c..7d1dac6 100644
+> > --- a/drivers/net/wireless/ath9k/hw.c
+> > +++ b/drivers/net/wireless/ath9k/hw.c
+> > @@ -5581,11 +5581,12 @@ static inline bool ath9k_hw_run_init_cals(struct ath_hal *ah,
+> >  	struct ath9k_channel ichan;
+> >  	bool isCalDone;
+> >  	struct hal_cal_list *currCal = ahp->ah_cal_list_curr;
+> > -	const struct hal_percal_data *calData = currCal->calData;
+> > +	const struct hal_percal_data *calData;
+> >  	int i;
+> >  
+> >  	if (currCal == NULL)
+> >  		return false;
+> > +	calData = currCal->calData;
+> >  
+> >  	ichan.CalValid = 0;
 > 
-> Signed-off-by: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
-> ---
->  include/linux/ata.h |   12 ++++++------
->  1 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/include/linux/ata.h b/include/linux/ata.h
-> index a53318b..d0d6a9c 100644
-> --- a/include/linux/ata.h
-> +++ b/include/linux/ata.h
-> @@ -700,12 +700,12 @@ static inline int ata_id_has_tpm(const u16 *id)
-> 
->  static inline int ata_id_has_dword_io(const u16 *id)
->  {
-> -	/* ATA 8 reuses this flag for "trusted" computing */
-> -	if (ata_id_major_version(id) > 7)
-> -		return 0;
-> -	if (id[ATA_ID_DWORD_IO] & (1 << 0))
-> -		return 1;
-> -	return 0;
-> +	/* This flag is defined up to ATA1 and deprecated since then
-> +	   (ATA 8 reuses this flag for "trusted" computing). */
-> +	if (ata_id_major_version(id) <= 1)
-> +		return (id[ATA_ID_DWORD_IO] & (1 << 0)) != 0;
-> +	/* later revision drives support DWORD I/O just fine */
-> +	return 1;
+> This patch doesn't seem to apply.  I don't see this code anywhere.
+> Perhaps this is against some older version?
+
+I used the following version of linux-next, which indeed a bit out of 
+date:
+
+commit feaf3848a813a106f163013af6fcf6c4bfec92d9
+Merge: a771132... 0e435ac...
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Wed Dec 3 16:45:56 2008 -0800
 
 
-This seems like a risky assumption...
+But I see the same code in the following version of linux-2.6
 
-	Jeff
+commit 1bda71282ded6a2e09a2db7c8884542fb46bfd4f
+Merge: 7a62b17... 25a41b2...
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Tue Dec 16 09:49:10 2008 -0800
 
-
+julia
