@@ -1,459 +1,104 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752338AbYLRJEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752524AbYLRJ1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752338AbYLRJEJ (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 04:04:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYLRJDq
+	id S1752524AbYLRJ1z (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 04:27:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbYLRJ1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 04:03:46 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:56296 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751269AbYLRJDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 04:03:41 -0500
-Date: Thu, 18 Dec 2008 10:03:10 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Balaji Rao <balajirrao@openmoko.org>
-Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@openmoko.org>,
-        Andy Green <andy@openmoko.com>,
-        Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com
-Subject: Re: [PATCH V2 4/7] rtc: PCF50633 rtc driver
-Message-ID: <20081218100310.385bb808@i1501.lan.towertech.it>
-In-Reply-To: <20081218055726.31696.80688.stgit@cff.thadambail>
-References: <20081218055618.31696.65002.stgit@cff.thadambail>
-	<20081218055726.31696.80688.stgit@cff.thadambail>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Dec 2008 04:27:45 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:2327 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbYLRJ1m convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 04:27:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=BkDkyf1+VyHDYzURQi3/P+hrxqVu161X3AB8vKMnFmxhZ6OX8EdoWQPHUuJR+a2RCC
+         lrL+eUHkaY39oJ82DtHAnXVtUglCrYAug6kq/xpetHJOa8GUU2nydUGXFiUYzTsg3LMo
+         4WYKXy7jwrAvpYHk6ERgJ4fe7nhu/7TeLSIu8=
+Message-ID: <9b06e8d20812180127s2b6cdbl410333336c7c9beb@mail.gmail.com>
+Date: Thu, 18 Dec 2008 10:27:40 +0100
+From: "=?ISO-8859-1?Q?Lo=EFc_Greni=E9?=" <loic.grenie@gmail.com>
+To: "Neil Horman" <nhorman@tuxdriver.com>
+Subject: Re: Dracut -- Cross distribution initramfs infrastructure
+Cc: initramfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+        "Kay Sievers" <kay.sievers@vrfy.org>, "Dave Jones" <davej@redhat.com>,
+        cjwatson@ubuntu.com
+In-Reply-To: <20081217193151.GA7356@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <1229540094.28858.150.camel@aglarond.local>
+	 <20081217193151.GA7356@hmsreliant.think-freely.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Dec 2008 11:27:26 +0530
-Balaji Rao <balajirrao@openmoko.org> wrote:
+2008/12/17 Neil Horman <nhorman@tuxdriver.com>:
+> On Wed, Dec 17, 2008 at 01:54:54PM -0500, Jeremy Katz wrote:
 
-> Changes from V1:
-> 	- Removed include/linux/mfd/pcf50633/rtc.h and moved defenitions into
-> 	  the source file.
-> 	- Remove PIE and introduce UIE support. UIE being the one actually
-> 	  supported in the chip.
-> 
-> Alessandro, I'll change to the new API for AIE once it appears upstream.
+[snip]
 
- Ok, I guess the driver will not go in tomorrow, so you can wait.
- I'd add it now, while you're at it :)
+>> Therefore I've started on a new project, dracut, to try to be a new
+>> initramfs tool that can be used across various distributions.  From the
+>> README...
+>>
+>> Unlike existing initramfs's, this is an attempt at having as little as
+>> possible hard-coded into the initramfs as possible.  The initramfs has
+>> (basically) one purpose in life -- getting the rootfs mounted so that we
+>> can transition to the real rootfs.
 
- some comments below:
+[snip]
 
+> Not that I don't think a unifying tool to create an initramfs is a bad idea
+> (quite the contrary, I think it would be great), but I'd like to point out that
+> one of your underlying premises is a bit shaky.  That an initramfs has one
+> purpose, that being to get the rootfs mounted, isn't entirely accurate.  Kdump
+> and various embedded systems being the prime examples here.  Many embedded
+> systems run entirely out of the initramfs, and contain all the code they need to
+> do so in them.  Additionally, kdump in most environments, attemps to capture
+> core files entirely from the initramfs as well, operating under the assumption
+> that the rootfs may not be functioning properly after a crash.  By and large
+> these initramfs images tend to be larger and offer a more typical (if not
+> standard) user operating environment.  I'm looking at your tree now, and it
+> looks like a good start on standardizing the initramfs for the nominal case.  Do
+> you have plans to include (or are you interested in including) support for
+> alternate infrastructure (like busybox instead of nash), interactive setup, etc?
 
-> Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
-> Cc: Andy Green <andy@openmoko.com>
-> Cc: Alessandro Zummo <a.zummo@towertech.it>
-> Cc: Paul Gortmaker <a.zummo@towertech.it>
-> Cc: rtc-linux@googlegroups.com
-> ---
->  drivers/rtc/Kconfig        |    6 +
->  drivers/rtc/Makefile       |    1 
->  drivers/rtc/rtc-pcf50633.c |  336 ++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 343 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/rtc/rtc-pcf50633.c
-> 
-> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-> index 123092d..68e68d2 100644
-> --- a/drivers/rtc/Kconfig
-> +++ b/drivers/rtc/Kconfig
-> @@ -497,6 +497,12 @@ config RTC_DRV_WM8350
->  	  This driver can also be built as a module. If so, the module
->  	  will be called "rtc-wm8350".
->  
-> +config RTC_DRV_PCF50633
-> +	depends on MFD_PCF50633
-> +	tristate "NXP PCF50633 RTC"
-> +	help
-> +	  If you say yes here you get support for the NXP PCF50633 RTC.
+    Seconded: as a user of (various) distributions, I've come across
+the following
+  problem: sometimes the initramfs, for whatever reason, does not manage to
+  find or mount the rootfs. In those cases I hate the developpers of
+the distribution
+  because there is basically nothing that can be done in the initramfs
+to see, test,
+  try, mount, modprobe, umount, ping, telnet, etc... Please, please, throw in a
+  full-featured busybox. Here is a good compromise I use:
 
- a more detailed description please stating which platforms commonly
- have this rtc
+Currently defined functions:
+        [, [[, arp, arping, ash, awk, basename, brctl, bunzip2, bzcat,
+        bzip2, cat, chgrp, chmod, chown, chroot, chvt, clear, cmp, comm,
+        cp, cpio, cut, date, dc, dd, deallocvt, depmod, df, diff, dirname,
+        dmesg, dos2unix, dpkg, dpkg-deb, du, dumpkmap, echo, egrep, eject,
+        env, expr, false, fbset, fdflush, fdformat, fdisk, fgrep, find,
+        findfs, ftpget, ftpput, grep, gunzip, gzip, halt, head, hexdump,
+        hostname, hwclock, ifconfig, ifenslave, insmod, ip, ipcalc, kbd_mode,
+        kill, killall, killall5, less, linux32, linux64, ln, loadfont,
+        loadkmap, losetup, ls, lsmod, md5sum, microcom, mkdir, mkfifo,
+        mknod, mkswap, mktemp, more, mount, mv, nice, od, openvt, patch,
+        pgrep, pidof, ping, ping6, pivot_root, pkill, poweroff, printf,
+        ps, pwd, readlink, reboot, reset, rm, rmdir, rmmod, route, rpm2cpio,
+        rtcwake, sed, setarch, setkeycodes, sh, sha1sum, sleep, sort,
+        stat, strings, stty, su, swapoff, swapon, switch_root, sync, tac,
+        tail, tar, tee, telnet, test, touch, tr, traceroute, true, tty,
+        udhcpc, umount, uname, uniq, unix2dos, unzip, vi, wc, wget, which,
+        xargs, yes, zcat
 
->  comment "on-CPU RTC drivers"
->  
->  config RTC_DRV_OMAP
-> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-> index 6e79c91..a717fec 100644
-> --- a/drivers/rtc/Makefile
-> +++ b/drivers/rtc/Makefile
-> @@ -70,3 +70,4 @@ obj-$(CONFIG_RTC_DRV_V3020)	+= rtc-v3020.o
->  obj-$(CONFIG_RTC_DRV_VR41XX)	+= rtc-vr41xx.o
->  obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
->  obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
-> +obj-$(CONFIG_RTC_DRV_PCF50633)	+= rtc-pcf50633.o
-> diff --git a/drivers/rtc/rtc-pcf50633.c b/drivers/rtc/rtc-pcf50633.c
-> new file mode 100644
-> index 0000000..2f33509
-> --- /dev/null
-> +++ b/drivers/rtc/rtc-pcf50633.c
-> @@ -0,0 +1,336 @@
-> +/* NXP PCF50633 RTC Driver
-> + *
-> + * (C) 2006-2008 by Openmoko, Inc.
-> + * Author: Balaji Rao <balajirrao@openmoko.org>
-> + * All rights reserved.
-> + *
-> + * Broken down from monstrous PCF50633 driver mainly by
-> + * Harald Welte, Andy Green and Werner Almesberger
-> + *
-> + *  This program is free software; you can redistribute  it and/or modify it
-> + *  under  the terms of  the GNU General  Public License as published by the
-> + *  Free Software Foundation;  either version 2 of the  License, or (at your
-> + *  option) any later version.
-> + *
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/device.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/rtc.h>
-> +#include <linux/bcd.h>
-> +#include <linux/err.h>
-> +
-> +#include <linux/mfd/pcf50633/core.h>
-> +
-> +#define PCF50633_REG_RTCSC	0x59 /* Second */
-> +#define PCF50633_REG_RTCMN	0x5a /* Minute */
-> +#define PCF50633_REG_RTCHR	0x5b /* Hour */
-> +#define PCF50633_REG_RTCWD	0x5c /* Weekday */
-> +#define PCF50633_REG_RTCDT	0x5d /* Day */
-> +#define PCF50633_REG_RTCMT	0x5e /* Month */
-> +#define PCF50633_REG_RTCYR	0x5f /* Year */
-> +#define PCF50633_REG_RTCSCA	0x60 /* Alarm Second */
-> +#define PCF50633_REG_RTCMNA	0x61 /* Alarm Minute */
-> +#define PCF50633_REG_RTCHRA	0x62 /* Alarm Hour */
-> +#define PCF50633_REG_RTCWDA	0x63 /* Alarm Weekday */
-> +#define PCF50633_REG_RTCDTA	0x64 /* Alarm Day */
-> +#define PCF50633_REG_RTCMTA	0x65 /* Alarm Month */
-> +#define PCF50633_REG_RTCYRA	0x66 /* Alarm Year */
-> +
-> +enum pcf50633_time_indexes {
-> +	PCF50633_TI_SEC,
-> +	PCF50633_TI_MIN,
-> +	PCF50633_TI_HOUR,
-> +	PCF50633_TI_WKDAY,
-> +	PCF50633_TI_DAY,
-> +	PCF50633_TI_MONTH,
-> +	PCF50633_TI_YEAR,
-> +	PCF50633_TI_EXTENT /* always last */
-> +};
-> +
-> +struct pcf50633_time {
-> +	u_int8_t time[PCF50633_TI_EXTENT];
-> +};
-> +
-> +struct pcf50633_rtc {
-> +	int alarm_enabled;
-> +	int second_enabled;
-> +
-> +	struct pcf50633 *pcf;
-> +	struct rtc_device *rtc_dev;
-> +};
-> +
-> +static void pcf2rtc_time(struct rtc_time *rtc, struct pcf50633_time *pcf)
-> +{
-> +	rtc->tm_sec = bcd2bin(pcf->time[PCF50633_TI_SEC]);
-> +	rtc->tm_min = bcd2bin(pcf->time[PCF50633_TI_MIN]);
-> +	rtc->tm_hour = bcd2bin(pcf->time[PCF50633_TI_HOUR]);
-> +	rtc->tm_wday = bcd2bin(pcf->time[PCF50633_TI_WKDAY]);
-> +	rtc->tm_mday = bcd2bin(pcf->time[PCF50633_TI_DAY]);
-> +	rtc->tm_mon = bcd2bin(pcf->time[PCF50633_TI_MONTH]);
-> +	rtc->tm_year = bcd2bin(pcf->time[PCF50633_TI_YEAR]) + 100;
-> +}
-> +
-> +static void rtc2pcf_time(struct pcf50633_time *pcf, struct rtc_time *rtc)
-> +{
-> +	pcf->time[PCF50633_TI_SEC] = bin2bcd(rtc->tm_sec);
-> +	pcf->time[PCF50633_TI_MIN] = bin2bcd(rtc->tm_min);
-> +	pcf->time[PCF50633_TI_HOUR] = bin2bcd(rtc->tm_hour);
-> +	pcf->time[PCF50633_TI_WKDAY] = bin2bcd(rtc->tm_wday);
-> +	pcf->time[PCF50633_TI_DAY] = bin2bcd(rtc->tm_mday);
-> +	pcf->time[PCF50633_TI_MONTH] = bin2bcd(rtc->tm_mon);
-> +	pcf->time[PCF50633_TI_YEAR] = bin2bcd(rtc->tm_year % 100);
-> +}
-> +
-> +static int
-> +pcf50633_rtc_ioctl(struct device *dev, unsigned int cmd, unsigned long arg)
-> +{
-> +	struct pcf50633_rtc *rtc = dev_get_drvdata(dev);
-> +
-> +	switch (cmd) {
-> +	case RTC_AIE_OFF:
-> +		rtc->alarm_enabled = 0;
-> +		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_ALARM);
-> +		return 0;
-> +	case RTC_AIE_ON:
-> +		rtc->alarm_enabled = 1;
-> +		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_ALARM);
-> +		return 0;
-> +	case RTC_UIE_OFF:
-> +		rtc->second_enabled = 0;
-> +		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_SECOND);
-> +		return 0;
-> +	case RTC_UIE_ON:
-> +		rtc->second_enabled = 1;
-> +		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_SECOND);
-> +		return 0;
-> +	}
-> +
-> +	return -ENOIOCTLCMD;
-> +}
-> +
-> +static int pcf50633_rtc_read_time(struct device *dev, struct rtc_time *tm)
-> +{
-> +	struct pcf50633_rtc *rtc;
-> +	struct pcf50633_time pcf_tm;
-> +	int ret;
-> +
-> +	rtc = dev_get_drvdata(dev);
-> +
-> +	ret = pcf50633_read_block(rtc->pcf, PCF50633_REG_RTCSC,
-> +					    PCF50633_TI_EXTENT,
-> +					    &pcf_tm.time[0]);
-> +	if (ret != PCF50633_TI_EXTENT) {
-> +		dev_err(dev, "Failed to read time\n");
-> +		return -EIO;
-> +	}
-> +
-> +	dev_dbg(dev, "PCF_TIME: %02x.%02x.%02x %02x:%02x:%02x\n",
-> +		pcf_tm.time[PCF50633_TI_DAY],
-> +		pcf_tm.time[PCF50633_TI_MONTH],
-> +		pcf_tm.time[PCF50633_TI_YEAR],
-> +		pcf_tm.time[PCF50633_TI_HOUR],
-> +		pcf_tm.time[PCF50633_TI_MIN],
-> +		pcf_tm.time[PCF50633_TI_SEC]);
-> +
-> +	pcf2rtc_time(tm, &pcf_tm);
-> +
-> +	dev_dbg(dev, "RTC_TIME: %u.%u.%u %u:%u:%u\n",
-> +		tm->tm_mday, tm->tm_mon, tm->tm_year,
-> +		tm->tm_hour, tm->tm_min, tm->tm_sec);
-> +
-> +	return rtc_valid_tm(tm);
-> +}
-> +
-> +static int pcf50633_rtc_set_time(struct device *dev, struct rtc_time *tm)
-> +{
-> +	struct pcf50633_rtc *rtc;
-> +	struct pcf50633_time pcf_tm;
-> +	int second_masked, alarm_masked, ret = 0;
-> +
-> +	rtc = dev_get_drvdata(dev);
-> +
-> +	dev_dbg(dev, "RTC_TIME: %u.%u.%u %u:%u:%u\n",
-> +		tm->tm_mday, tm->tm_mon, tm->tm_year,
-> +		tm->tm_hour, tm->tm_min, tm->tm_sec);
-> +
-> +	rtc2pcf_time(&pcf_tm, tm);
-> +
-> +	dev_dbg(dev, "PCF_TIME: %02x.%02x.%02x %02x:%02x:%02x\n",
-> +		pcf_tm.time[PCF50633_TI_DAY],
-> +		pcf_tm.time[PCF50633_TI_MONTH],
-> +		pcf_tm.time[PCF50633_TI_YEAR],
-> +		pcf_tm.time[PCF50633_TI_HOUR],
-> +		pcf_tm.time[PCF50633_TI_MIN],
-> +		pcf_tm.time[PCF50633_TI_SEC]);
-> +
-> +
-> +	second_masked = pcf50633_irq_mask_get(rtc->pcf, PCF50633_IRQ_SECOND);
-> +	alarm_masked = pcf50633_irq_mask_get(rtc->pcf, PCF50633_IRQ_ALARM);
-> +
-> +	if (!second_masked)
-> +		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_SECOND);
-> +	if (!alarm_masked)
-> +		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_ALARM);
-> +
-> +	/* Returns 0 on success */
-> +	ret = pcf50633_write_block(rtc->pcf, PCF50633_REG_RTCSC,
-> +					     PCF50633_TI_EXTENT,
-> +					     &pcf_tm.time[0]);
-> +
-> +	if (!second_masked)
-> +		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_SECOND);
-> +	if (!alarm_masked)
-> +		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_ALARM);
-> +
-> +	return ret;
-> +}
-> +
-> +static int pcf50633_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
-> +{
-> +	struct pcf50633_rtc *rtc;
-> +	struct pcf50633_time pcf_tm;
-> +	int ret = 0;
-> +
-> +	rtc = dev_get_drvdata(dev);
-> +
-> +	alrm->enabled = rtc->alarm_enabled;
-> +
-> +	ret = pcf50633_read_block(rtc->pcf, PCF50633_REG_RTCSCA,
-> +				PCF50633_TI_EXTENT, &pcf_tm.time[0]);
-> +	if (ret != PCF50633_TI_EXTENT) {
-> +		dev_err(dev, "Failed to read time\n");
-> +		return -EIO;
-> +	}
-> +
-> +	pcf2rtc_time(&alrm->time, &pcf_tm);
-> +
-> +	return rtc_valid_tm(&alrm->time);
-> +}
-> +
-> +static int pcf50633_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
-> +{
-> +	struct pcf50633_rtc *rtc;
-> +	struct pcf50633_time pcf_tm;
-> +	int alarm_masked, ret = 0;
-> +
-> +	rtc = dev_get_drvdata(dev);
-> +
-> +	rtc2pcf_time(&pcf_tm, &alrm->time);
-> +
-> +	/* do like mktime does and ignore tm_wday */
-> +	pcf_tm.time[PCF50633_TI_WKDAY] = 7;
-> +
-> +	alarm_masked = pcf50633_irq_mask_get(rtc->pcf, PCF50633_IRQ_ALARM);
-> +
-> +	/* disable alarm interrupt */
-> +	if (!alarm_masked)
-> +		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_ALARM);
-> +
-> +	/* Returns 0 on success */
-> +	ret = pcf50633_write_block(rtc->pcf, PCF50633_REG_RTCSCA,
-> +				PCF50633_TI_EXTENT, &pcf_tm.time[0]);
-> +
-> +	if (!alarm_masked)
-> +		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_ALARM);
-> +
-> +	return ret;
-> +}
-> +
-> +static struct rtc_class_ops pcf50633_rtc_ops = {
-> +	.ioctl		= pcf50633_rtc_ioctl,
-> +	.read_time	= pcf50633_rtc_read_time,
-> +	.set_time	= pcf50633_rtc_set_time,
-> +	.read_alarm	= pcf50633_rtc_read_alarm,
-> +	.set_alarm	= pcf50633_rtc_set_alarm,
-> +};
-> +
-> +static void pcf50633_rtc_irq(int irq, void *data)
-> +{
-> +	struct pcf50633_rtc *rtc = data;
-> +
-> +	switch (irq) {
-> +	case PCF50633_IRQ_ALARM:
-> +		rtc_update_irq(rtc->rtc_dev, 1, RTC_AF | RTC_IRQF);
-> +		break;
-> +	case PCF50633_IRQ_SECOND:
-> +		rtc_update_irq(rtc->rtc_dev, 1, RTC_UF | RTC_IRQF);
-> +		break;
-> +	}
-> +}
-> +
-> +static int __devinit pcf50633_rtc_probe(struct platform_device *pdev)
-> +{
-> +	struct pcf50633_subdev_pdata *pdata;
-> +	struct pcf50633_rtc *rtc;
-> +	struct rtc_device *rtc_dev;
-> +
-> +	rtc_dev = rtc_device_register("pcf50633-rtc", &pdev->dev,
-> +				&pcf50633_rtc_ops, THIS_MODULE);
-> +
-> +	if (IS_ERR(rtc_dev))
-> +		return PTR_ERR(rtc_dev);
-> +
-> +	rtc = kzalloc(sizeof(*rtc), GFP_KERNEL);
-> +	if (!rtc) {
-> +		dev_err(&pdev->dev, "allocation of pcf50633_rtc failed\n");
-> +		rtc_device_unregister(rtc_dev);
-> +		return -ENOMEM;
-> +	}
+  (linux32 and linux64 are probably not useful for general initramfs). With that
+  configuration, busybox (v1.13.0.svn, x86-32 executable) is 416224 bytes long
+  (dynamically linked with libc as only library needed).
 
- once registered, the rtc could be immediately in use. you should first allocate
- and setup your data structures and only then register the device:
-
-	rtc = kzalloc(....
-	if (rtc == NULL)
-		return -ENOMEM;
-
-	..setup rtc structs here...
-
-	rtc->dev = rtc_register(...
-
-	..irqs...
-
-> +	pdata = pdev->dev.platform_data;
-> +	rtc->pcf = pdata->pcf;
-> +	rtc->rtc_dev = rtc_dev;
-> +	platform_set_drvdata(pdev, rtc);
-> +
-> +	pcf50633_register_irq(rtc->pcf, PCF50633_IRQ_ALARM,
-> +					pcf50633_rtc_irq, rtc);
-> +	pcf50633_register_irq(rtc->pcf, PCF50633_IRQ_SECOND,
-> +					pcf50633_rtc_irq, rtc);
-> +
-> +	return 0;
-> +}
-> +
-> +static int __devexit pcf50633_rtc_remove(struct platform_device *pdev)
-> +{
-> +	struct pcf50633_rtc *rtc;
-> +
-> +	rtc = platform_get_drvdata(pdev);
-> +	rtc_device_unregister(rtc->rtc_dev);
-> +
-> +	pcf50633_free_irq(rtc->pcf, PCF50633_IRQ_ALARM);
-> +	pcf50633_free_irq(rtc->pcf, PCF50633_IRQ_SECOND);
-
- please remove rtc before unregistering
-
-> +	kfree(rtc);
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +static struct platform_driver pcf50633_rtc_driver = {
-> +	.driver = {
-> +		.name = "pcf50633-rtc",
-> +	},
-> +	.probe = pcf50633_rtc_probe,
-> +	.remove = __devexit_p(pcf50633_rtc_remove),
-> +};
-> +
-> +static int __init pcf50633_rtc_init(void)
-> +{
-> +	return platform_driver_register(&pcf50633_rtc_driver);
-> +}
-> +module_init(pcf50633_rtc_init);
-> +
-> +static void __exit pcf50633_rtc_exit(void)
-> +{
-> +	platform_driver_unregister(&pcf50633_rtc_driver);
-> +}
-> +module_exit(pcf50633_rtc_exit);
-> +
-> +MODULE_DESCRIPTION("PCF50633 RTC driver");
-> +MODULE_AUTHOR("Balaji Rao <balajirrao@openmoko.org>");
-> +MODULE_LICENSE("GPL");
-> +
-> 
-
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+          Loïc Grenié
