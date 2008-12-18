@@ -1,104 +1,105 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752524AbYLRJ1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752301AbYLRJX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752524AbYLRJ1z (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 04:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbYLRJ1p
+	id S1752301AbYLRJX0 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 04:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbYLRJXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 04:27:45 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:2327 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbYLRJ1m convert rfc822-to-8bit (ORCPT
+	Thu, 18 Dec 2008 04:23:10 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:56144 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750762AbYLRJXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 04:27:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=BkDkyf1+VyHDYzURQi3/P+hrxqVu161X3AB8vKMnFmxhZ6OX8EdoWQPHUuJR+a2RCC
-         lrL+eUHkaY39oJ82DtHAnXVtUglCrYAug6kq/xpetHJOa8GUU2nydUGXFiUYzTsg3LMo
-         4WYKXy7jwrAvpYHk6ERgJ4fe7nhu/7TeLSIu8=
-Message-ID: <9b06e8d20812180127s2b6cdbl410333336c7c9beb@mail.gmail.com>
-Date: Thu, 18 Dec 2008 10:27:40 +0100
-From: "=?ISO-8859-1?Q?Lo=EFc_Greni=E9?=" <loic.grenie@gmail.com>
-To: "Neil Horman" <nhorman@tuxdriver.com>
-Subject: Re: Dracut -- Cross distribution initramfs infrastructure
-Cc: initramfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-        "Kay Sievers" <kay.sievers@vrfy.org>, "Dave Jones" <davej@redhat.com>,
-        cjwatson@ubuntu.com
-In-Reply-To: <20081217193151.GA7356@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 18 Dec 2008 04:23:08 -0500
+Message-Id: <1229592186.26511.1290697613@webmail.messagingengine.com>
+X-Sasl-Enc: yqqjgthYMIcgwCUthee5HMt1DtSutjtw9v1pWO6ADcij 1229592186
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Cc: "Jan Beulich" <jbeulich@novell.com>, linux-arch@vger.kernel.org,
+        "Alexander van Heukelum" <heukelum@mailshack.com>,
+        "Ingo Molnar" <mingo@elte.hu>, "LKML" <linux-kernel@vger.kernel.org>,
+        "Andrew Morton" <akpm@linux-foundation.org>,
+        "Cyrill Gorcunov" <gorcunov@gmail.com>
 Content-Disposition: inline
-References: <1229540094.28858.150.camel@aglarond.local>
-	 <20081217193151.GA7356@hmsreliant.think-freely.org>
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <1229505475-10219-1-git-send-email-heukelum@fastmail.fm>
+ <1229505475-10219-2-git-send-email-heukelum@fastmail.fm>
+ <20081217172640.GB5436@uranus.ravnborg.org>
+Subject: Re: [PATCH 1/many] PROC macro to annotate functions in assembly files
+In-Reply-To: <20081217172640.GB5436@uranus.ravnborg.org>
+Date: Thu, 18 Dec 2008 10:23:06 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/17 Neil Horman <nhorman@tuxdriver.com>:
-> On Wed, Dec 17, 2008 at 01:54:54PM -0500, Jeremy Katz wrote:
+On Wed, 17 Dec 2008 18:26:40 +0100, "Sam Ravnborg" <sam@ravnborg.org>
+said:
+> On Wed, Dec 17, 2008 at 10:17:54AM +0100, Alexander van Heukelum wrote:
+> > Introduce the PROC macro in the generic header file
+> > include/linux/linkage.h to annotate functions in assembly
+> > files. This is a first step to fully annotate functions
+> > (procedures) in .S-files. The PROC macro complements the
+> > already existing and being used ENDPROC macro. The generic
+> > implementation of PROC is exactly the same as ENTRY.
+> > 
+> > The goal is to annotate functions, at least those called
+> > from C code, with PROC at the beginning and ENDPROC at the
+> > end. This is for the benefit of debugging and tracing. It
+> > will also allow to introduce a framework to check for
+> > nesting problems and missing annotations in a later stage
+> > by overriding ENTRY/END and PROC/ENDPROC in architecture-
+> > specific code, after the annotation errors have been fixed.
+> > 
+> > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> > Cc: Sam Ravnborg <sam@ravnborg.org>
+> > Cc: Andrew Morton <akpm@linux-foundation.org>
+> 
+> I understand where you are coming from with these.
+> But what I see now is:
+> 
+> ENTRY/END
+> PROC/ENDPROC
+> KPROBE_ENTRY/KPROBE_END
+> 
+> And it is not obvious for me reading the comment when I should
+> expect which one to be used.
+> 
+> Could we try to keep it down to two variants?
+> And then document when to use which one.
 
-[snip]
+Hi Sam,
 
->> Therefore I've started on a new project, dracut, to try to be a new
->> initramfs tool that can be used across various distributions.  From the
->> README...
->>
->> Unlike existing initramfs's, this is an attempt at having as little as
->> possible hard-coded into the initramfs as possible.  The initramfs has
->> (basically) one purpose in life -- getting the rootfs mounted so that we
->> can transition to the real rootfs.
+Patches to remove KPROBE_ENTRY and KPROBE_END are currently
+in the x86-tree.
 
-[snip]
+PROC/ENDPROC should be used around code.
 
-> Not that I don't think a unifying tool to create an initramfs is a bad idea
-> (quite the contrary, I think it would be great), but I'd like to point out that
-> one of your underlying premises is a bit shaky.  That an initramfs has one
-> purpose, that being to get the rootfs mounted, isn't entirely accurate.  Kdump
-> and various embedded systems being the prime examples here.  Many embedded
-> systems run entirely out of the initramfs, and contain all the code they need to
-> do so in them.  Additionally, kdump in most environments, attemps to capture
-> core files entirely from the initramfs as well, operating under the assumption
-> that the rootfs may not be functioning properly after a crash.  By and large
-> these initramfs images tend to be larger and offer a more typical (if not
-> standard) user operating environment.  I'm looking at your tree now, and it
-> looks like a good start on standardizing the initramfs for the nominal case.  Do
-> you have plans to include (or are you interested in including) support for
-> alternate infrastructure (like busybox instead of nash), interactive setup, etc?
+ENTRY/END should be used around objects which are never
+executed, like data arrays.
 
-    Seconded: as a user of (various) distributions, I've come across
-the following
-  problem: sometimes the initramfs, for whatever reason, does not manage to
-  find or mount the rootfs. In those cases I hate the developpers of
-the distribution
-  because there is basically nothing that can be done in the initramfs
-to see, test,
-  try, mount, modprobe, umount, ping, telnet, etc... Please, please, throw in a
-  full-featured busybox. Here is a good compromise I use:
+That should be clear enough, I think. The only catch is how
+to decide where to use the annotations at all. I have no
+complete answer to that. However, in general it would be
+good to annotate any object for which an address can be
+found in registers, on the stack or in variables. Doubly
+so if addresses are within the object but not exactly at
+the start of it. This includes assembly functions called
+from C (instruction pointer) and arrays.
 
-Currently defined functions:
-        [, [[, arp, arping, ash, awk, basename, brctl, bunzip2, bzcat,
-        bzip2, cat, chgrp, chmod, chown, chroot, chvt, clear, cmp, comm,
-        cp, cpio, cut, date, dc, dd, deallocvt, depmod, df, diff, dirname,
-        dmesg, dos2unix, dpkg, dpkg-deb, du, dumpkmap, echo, egrep, eject,
-        env, expr, false, fbset, fdflush, fdformat, fdisk, fgrep, find,
-        findfs, ftpget, ftpput, grep, gunzip, gzip, halt, head, hexdump,
-        hostname, hwclock, ifconfig, ifenslave, insmod, ip, ipcalc, kbd_mode,
-        kill, killall, killall5, less, linux32, linux64, ln, loadfont,
-        loadkmap, losetup, ls, lsmod, md5sum, microcom, mkdir, mkfifo,
-        mknod, mkswap, mktemp, more, mount, mv, nice, od, openvt, patch,
-        pgrep, pidof, ping, ping6, pivot_root, pkill, poweroff, printf,
-        ps, pwd, readlink, reboot, reset, rm, rmdir, rmmod, route, rpm2cpio,
-        rtcwake, sed, setarch, setkeycodes, sh, sha1sum, sleep, sort,
-        stat, strings, stty, su, swapoff, swapon, switch_root, sync, tac,
-        tail, tar, tee, telnet, test, touch, tr, traceroute, true, tty,
-        udhcpc, umount, uname, uniq, unix2dos, unzip, vi, wc, wget, which,
-        xargs, yes, zcat
+The macro's are used to align code and data, to identify the
+object as code or data and to add object size information to
+the debugging info.
 
-  (linux32 and linux64 are probably not useful for general initramfs). With that
-  configuration, busybox (v1.13.0.svn, x86-32 executable) is 416224 bytes long
-  (dynamically linked with libc as only library needed).
+Greetings,
+    Alexander
 
-          Loïc Grenié
+> 	Sam
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
+
+-- 
+http://www.fastmail.fm - Access your email from home and the web
+
