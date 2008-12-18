@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753539AbYLRU5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753296AbYLRVDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753539AbYLRU5T (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 15:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYLRU44
+	id S1753296AbYLRVDV (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 16:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYLRVDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 15:56:56 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:34360 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752136AbYLRU4z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 15:56:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=a4BSOkxcX1WAyVVcdxx62FCM0lmCvd2oudoxVZRyXbH4LAQP1H4XaNnhwCqcz+Jh6Y
-         a63IaETFuDZ3YieDsn/6YzviZoc1pWycysjRzJedtItDfh2O109r5Bzy0pUjS9IgaTGt
-         Rdc9rA1RejZu/OnWwvRu/XpoN5Z+nfWf+hVLk=
-Message-ID: <8bd0f97a0812181256j68326d28t15cf4370571b04bd@mail.gmail.com>
-Date: Thu, 18 Dec 2008 15:56:53 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Samuel Ortiz" <sameo@openedhand.com>
-Subject: Re: section mismatches with _sm501_register_gpio() and _sm501_gpio_register_chip()
-Cc: ben@simtec.co.uk, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081124194911.GC2604@sortiz.org>
+	Thu, 18 Dec 2008 16:03:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48328 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751568AbYLRVDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 16:03:09 -0500
+Date: Thu, 18 Dec 2008 22:02:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Becky Bruce <beckyb@kernel.crashing.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+        Jeremy Fitzhardinge <jeremy@goop.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        xen-devel@lists.xensource.com, x86@kernel.org, ian.campbell@citrix.com,
+        jbeulich@novell.com, joerg.roedel@amd.com,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use
+	of swiotlb
+Message-ID: <20081218210231.GB24271@elte.hu>
+References: <20081216203513.GA14787@elte.hu> <20081217142637V.fujita.tomonori@lab.ntt.co.jp> <4949296F.7000701@goop.org> <20081218015705Z.fujita.tomonori@lab.ntt.co.jp> <E5300CC0-1D08-46F7-91F6-DEC36202F1DE@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <8bd0f97a0811202013r170c9906i15797ca953844cff@mail.gmail.com>
-	 <20081124194911.GC2604@sortiz.org>
+In-Reply-To: <E5300CC0-1D08-46F7-91F6-DEC36202F1DE@kernel.crashing.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 24, 2008 at 14:49, Samuel Ortiz wrote:
-> On Thu, Nov 20, 2008 at 11:13:31PM -0500, Mike Frysinger wrote:
->> WARNING: drivers/mfd/built-in.o(.text+0x8d6): Section mismatch in
->> reference from the function _sm501_register_gpio() to the function
->> .devinit.text:_sm501_gpio_register_chip()
->> The function _sm501_register_gpio() references
->> the function __devinit _sm501_gpio_register_chip().
->> This is often because _sm501_register_gpio lacks a __devinit
->> annotation or the annotation of _sm501_gpio_register_chip is wrong.
->>
->> WARNING: drivers/mfd/built-in.o(.text+0x90a): Section mismatch in
->> reference from the function _sm501_register_gpio() to the function
->> .devinit.text:_sm501_gpio_register_chip()
->> The function _sm501_register_gpio() references
->> the function __devinit _sm501_gpio_register_chip().
->> This is often because _sm501_register_gpio lacks a __devinit
->> annotation or the annotation of _sm501_gpio_register_chip is wrong.
->
-> Which kernel are you triggering this on ?
 
-sorry, i missed this response ... this was in 2.6.28-rc2
--mike
+* Becky Bruce <beckyb@kernel.crashing.org> wrote:
+
+>> Can you be more specific? What architecture is plan to use highmem 
+>> support in swiotlb?
+>
+> 32-bit powerpc needs this support - I was actually about to push a 
+> similar set of patches.  We have several processors that support 36 bits 
+> of physical address space and do not have any iommu capability.  The 
+> rest of the kernel support for those processors is now in place, so 
+> swiotlb is the last piece of the puzzle for that to be fully functional.  
+> I need to take a closer look at this series to see exactly what it's 
+> doing and how it differs from what I've been testing.
+>
+> So there is another immediate use case, and I'd really hate to see this 
+> code duplicated.  It should be entirely possible to remove the 
+> assumption that we can save off the VA of the original buffer, which is 
+> the thing that precludes HIGHMEM support, and still have nice readable, 
+> maintainable code.
+
+you can have a look at Jeremy's current lineup of patches in 
+tip/core/iotlb:
+
+   http://people.redhat.com/mingo/tip.git/README
+
+(also integrated into tip/master)
+
+What would be needed to make it suit your usecase too?
+
+	Ingo
