@@ -1,40 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbYLRWRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYLRWUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754144AbYLRWRU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 17:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYLRWRB
+	id S1753960AbYLRWUk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 17:20:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYLRWU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 17:17:01 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49634 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751958AbYLRWRA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 17:17:00 -0500
-Date: Thu, 18 Dec 2008 14:16:37 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Hollis Blanchard <hollisb@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       kvm-devel <kvm@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Define smp_call_function_many for UP
-In-Reply-To: <200812190840.13995.rusty@rustcorp.com.au>
-Message-ID: <alpine.LFD.2.00.0812181415480.14014@localhost.localdomain>
-References: <20081208160945.7535A25006E@cleopatra.tlv.redhat.com> <1229014284.26586.9.camel@localhost.localdomain> <200812151904.36554.rusty@rustcorp.com.au> <200812190840.13995.rusty@rustcorp.com.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 18 Dec 2008 17:20:27 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41728 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752089AbYLRWU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 17:20:26 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: TSC not updating after resume: Bug or Feature?
+Date: Thu, 18 Dec 2008 23:19:56 +0100
+User-Agent: KMail/1.9.9
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net> <1229592279.9487.133.camel@twins> <20081218123924.GH25715@elte.hu>
+In-Reply-To: <20081218123924.GH25715@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812182319.57235.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday, 18 of December 2008, Ingo Molnar wrote:
+> 
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > Rafael, would something like this explain why we had to revert Shaggy's 
+> > patch?
 
+Well, I have yet to understand what the suspend-resume of the timekeeping code
+actually does.
 
-On Fri, 19 Dec 2008, Rusty Russell wrote:
->
-> Linus, please apply.  Otherwise those using it in transition patches (eg. kvm)
-> can't compile with CONFIG_SMP=n:
+The original description sounds worrisome to me, it looks like we've overlooked
+something at least.
 
-Umm. I already applied this a long time ago. It's commit 
-d2ff911882b6bc693d86ca9566daac70aacbb2b3
+> > His patch fixes the backward motion filter and I'm at an utter  
+> > loss why that would break suspend.
+> 
+> yes, i'd love to have this commit reinstated:
+> 
+>  5b7dba4: sched_clock: prevent scd->clock from moving backwards
+> 
+> and the bug triggered by hibernation fixed instead.
 
-		Linus
+Shaggy said he had an idea of what was wrong, so I expect an updated version
+of the patch to appear.
+
+Thanks,
+Rafael
