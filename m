@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbYLRXhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYLRXkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753982AbYLRXhs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 18:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYLRXhi
+	id S1753869AbYLRXkA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 18:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYLRXjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 18:37:38 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59839 "EHLO mx2.redhat.com"
+	Thu, 18 Dec 2008 18:39:52 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41939 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752026AbYLRXhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 18:37:38 -0500
-Message-ID: <494ADEB3.8010109@redhat.com>
-Date: Thu, 18 Dec 2008 17:37:23 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	id S1752243AbYLRXjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 18:39:51 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: TSC not updating after resume: Bug or Feature?
+Date: Fri, 19 Dec 2008 00:39:33 +0100
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net> <200812182319.57235.rjw@sisk.pl> <1229639149.6613.2.camel@norville.austin.ibm.com>
+In-Reply-To: <1229639149.6613.2.camel@norville.austin.ibm.com>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Arthur Jones <ajones@riverbed.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20081218231707.GB20092@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812190039.34184.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
->   Hello,
+On Thursday, 18 of December 2008, Dave Kleikamp wrote:
+> On Thu, 2008-12-18 at 23:19 +0100, Rafael J. Wysocki wrote:
+> > On Thursday, 18 of December 2008, Ingo Molnar wrote:
+> > > 
+> > > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > > 
+> > > > Rafael, would something like this explain why we had to revert Shaggy's 
+> > > > patch?
+> > 
+> > Well, I have yet to understand what the suspend-resume of the timekeeping code
+> > actually does.
+> > 
+> > The original description sounds worrisome to me, it looks like we've overlooked
+> > something at least.
+> > 
+> > > > His patch fixes the backward motion filter and I'm at an utter  
+> > > > loss why that would break suspend.
+> > > 
+> > > yes, i'd love to have this commit reinstated:
+> > > 
+> > >  5b7dba4: sched_clock: prevent scd->clock from moving backwards
+> > > 
+> > > and the bug triggered by hibernation fixed instead.
+> > 
+> > Shaggy said he had an idea of what was wrong, so I expect an updated version
+> > of the patch to appear.
 > 
->   I'm sorry I'm replying late but I got time to react to this only now...
-> 
+> Not really.  I said I'd look at it, but all I know is that it looks like
+> something clock-related isn't initialized correctly after resume.  I
+> don't know enough to have any idea how to fix it.
 
-<snip>
+Well, thanks for the update.
 
->> I tried this and it too fixes the problem.  FWIW I agree it
->> looks better...
->   Well, shouldn't we rather fix what journal_start_commit() returns?
-> The interface which returns 1 when a transaction is already committing or
-> a transaction commit has just been started but 0 when we race with
-> somebody staring the commit is fairly unusable. Moreover
-> ext3_force_commit() will unnecessarily create new sync transaction and
-> commit it if there's no transaction running which is quite expensive
-> (even merging empty sync handle is not for free because of sync
-> transaction batching). But this is minor problem since we probably
-> don't care too much about sync() performance - BTW this is probably a
-> cause for bug 12224, isn't it?
+I'm going to have a look at the thing tomorrow, but I'm not sure I'll be able
+to fix it.
 
-Yep, it is!  :)
-
->   BTW: ocfs2 would need fixing as well if done your way since it's
-> sync_fs function has been copied over from ext3.
->   To summarized I'd rather see a patch like below (untested) going in
-> and your patch reverted... Opinions? I can cookup a JBD2 version of
-> the patch in case we agree to go this way.
-
-Thanks, I'll look that over.
-
-In looking at what we have today, I wonder if we can make things smarter
-so that we don't commit empty transactions in any case?
-
--Eric
+Thanks,
+Rafael
