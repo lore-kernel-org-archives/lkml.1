@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbYLRW37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYLRWdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754175AbYLRW37 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 17:29:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbYLRW3u
+	id S1753869AbYLRWdT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 17:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbYLRWdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 17:29:50 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:37022 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750746AbYLRW3t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 17:29:49 -0500
-Date: Thu, 18 Dec 2008 22:29:36 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Jean Delvare <khali@linux-fr.org>, Ben Dooks <ben-linux@fluff.org>,
-       linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
-Subject: Re: GPIO: Fix probe() error return in gpio driver probes
-Message-ID: <20081218222936.GI8032@fluff.org.uk>
-References: <20081212152426.745254309@fluff.org.uk> <20081215101616.GB12431@fluff.org.uk> <20081215112226.18f7fb29@hyperion.delvare> <200812181016.28184.david-b@pacbell.net>
-MIME-Version: 1.0
+	Thu, 18 Dec 2008 17:33:09 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50962 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752580AbYLRWdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 17:33:09 -0500
+Date: Thu, 18 Dec 2008 23:33:03 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: "mingo@elte.hu" <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "arjan@infradead.org" <arjan@infradead.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "jeremy@goop.org" <jeremy@goop.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [patch 1/7] x86 PAT: store vm_pgoff for all linear_over_vma_region mappings - v3
+Message-ID: <20081218223303.GK10681@wotan.suse.de>
+References: <20081218194126.963894000@intel.com> <20081218194617.091839000@intel.com> <20081218212728.GD10681@wotan.suse.de> <20081218221057.GA3331@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200812181016.28184.david-b@pacbell.net>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081218221057.GA3331@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 18, 2008 at 10:16:27AM -0800, David Brownell wrote:
-> On Monday 15 December 2008, Jean Delvare wrote:
+On Thu, Dec 18, 2008 at 02:10:57PM -0800, Pallipadi, Venkatesh wrote:
+> On Thu, Dec 18, 2008 at 01:27:28PM -0800, Nick Piggin wrote:
 > > 
-> > > > > I was thinking that -EINVAL is almost the least informative
-> > > > > diagnostic code possible, since so many places return it
-> > > > > that it's usually hard to find out *which* invalid parameter
-> > > > > triggered ...
-> > > > > 
-> > > > > Is there a less-overloaded code you could return?
-> > > > 
-> > > > -EINVAL sounds right to me, all that's really missing is dev_dbg()
-> > > > messages in the drivers to log what the exact problem was. 
+> > This is fine by me, however:
+> > 1. Can you add some comments to say "this is not for core vm but for pat,
+> >    oh and a pgoff of zero is not going to work".
 > 
-> Fair enough, though it just papers over how ambiguous -EINVAL is.
-
-Unforunately there's not a lot of choice in errno.h for other options.
- 
-> > > It might be more acceptable to be dev_err(), that way it will get
-> > > printed no matter what debug options have been selected. If so, a
-> > > seperate patch is probably in order to make the change.
-> > 
-> > As far as I can see, such errors would be caused by development-time
-> > mistakes, so dev_dbg() seems appropriate. dev_err() would make the
-> > binaries larger for all end-users.
+> OK. Will add comments about both the points.
 > 
-> Right, dev_dbg() is the way to go.  I'd ack a version of this patch
-> which pairs these -EINVAL changes with dev_dbg() messages to make
-> these problems less painful to track down.  dev_err() is much abused.
+> > 2. Can you please justify to me (or the changelog) roughly why PAT wants
+> >    to know if the mapping is linear or not? Presumably it has to handle
+> >    both types? If performance wasn't an issue, then you could manually scan
+> >    the ptes to verify (which would solve your zero-offset bug). etc.
+> 
+> The main reason is performance. If we know it is linear, we can track the entire
+> region as one block and do the reserve free for entire region. But, if it is
+> not linear, then we have to reserve memtype of physical addresses page by page.
+> This will not be optimal as it will result in reserve and free becoming
+> slower. Almost all users that we find in kernel today (atleast in x86)  are
+> all linear.
 
-Ok, I'll try and sort that out for you as soon as possible.
+OK, so it is not a bug to miss the zero pgoff case then. That's good
+to know and should be added to comments.
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
