@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752207AbYLRHiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752302AbYLRHgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752207AbYLRHiu (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 02:38:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbYLRHik
+	id S1752302AbYLRHgX (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 02:36:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYLRHgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 02:38:40 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35307 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbYLRHik (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 02:38:40 -0500
-Date: Thu, 18 Dec 2008 08:38:25 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
-Cc: linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: time_is_after_jiffies misnomer
-Message-ID: <20081218073824.GB2110@ucw.cz>
-References: <200812161131.mBGBVfV17064@inv.it.uc3m.es>
+	Thu, 18 Dec 2008 02:36:12 -0500
+Received: from cantor.suse.de ([195.135.220.2]:55947 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750963AbYLRHgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 02:36:12 -0500
+Message-ID: <4949FD67.6040906@suse.de>
+Date: Thu, 18 Dec 2008 08:36:07 +0100
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200812161131.mBGBVfV17064@inv.it.uc3m.es>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Christoph Hellwig <hch@infradead.org>
+Cc: initramfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Kay Sievers <kay.sievers@vrfy.org>, Dave Jones <davej@redhat.com>,
+        cjwatson@ubuntu.com, Bernhard Walle <bwalle@novell.com>
+Subject: Re: Dracut -- Cross distribution initramfs infrastructure
+References: <1229540094.28858.150.camel@aglarond.local> <20081217190700.GA15377@infradead.org>
+In-Reply-To: <20081217190700.GA15377@infradead.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-12-16 12:31:41, Peter T. Breuer wrote:
+Christoph Hellwig wrote:
+> On Wed, Dec 17, 2008 at 01:54:54PM -0500, Jeremy Katz wrote:
+>> As davej started talking about a few months ago at Kernel Summit and
+>> LPC, there's a lot of duplication between distros on the tools used to
+>> generate the initramfs as well as the contents and how the initramfs
+>> works.  Ultimately, there's little reason for this not to be something
+>> that is shared and worked on by everyone.  Added to this is the fact
+>> that everyone's infrastructures for this have grown up over a long-ish
+>> period of time without significant amounts of reworking for the way that
+>> the kernel and early boot works these days.
+>>
+>> Therefore I've started on a new project, dracut, to try to be a new
+>> initramfs tool that can be used across various distributions.  From the
+>> README...
 > 
-> I thought at first that
+> It looks like Hannes has also been working on a new, modular initramfs
+> for a while:
 > 
->     time_is_after_jiffies(foo)
+> 	http://git.kernel.org/?p=linux/kernel/git/hare/mkinitrd.git;a=summary
 > 
-> meant that the current time is later than foo jiffies. In fact, it's
-> the reverse! (as far as I can tell! 2.6.26-11). 
-> 
-> Can we change this name or provide an alternative? Perhaps
-> 
->    jiffies_is_later_than(foo)
-> 
-> ??
+> I hope you guys can get together and agree on one implementation..
 
-Yes, it is confusing and yes, it should be fixed. Probably by
-introducing better names and switching callers to them.
+Thanks hch for pointing this out.
 
+We definitely should get together to hammer our one implementation.
+Having different scripts for every distributions is a PITA.
+
+I'm not saying my implementation is the greatest on earth, so
+if anyone has any better suggestions I'm all ears.
+
+If anyone is interested I can give a short overview of it.
+As per normal, proper documentation is about to be written RSN.
+
+Cheers,
+
+Hannes
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
