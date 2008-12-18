@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752458AbYLRKyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752151AbYLRK47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752458AbYLRKyr (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 05:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbYLRKyg
+	id S1752151AbYLRK47 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 05:56:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbYLRK4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 05:54:36 -0500
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:45462 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750746AbYLRKyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 05:54:35 -0500
-Date: Thu, 18 Dec 2008 11:57:01 +0100
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>,
-        David Brownell <david-b@pacbell.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for December 15 (mfd)
-Message-ID: <20081218105700.GC2517@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <20081216020642.fc1007d9.sfr@canb.auug.org.au> <4946AF6A.8030107@oracle.com> <20081217114300.9476f8da.randy.dunlap@oracle.com>
+	Thu, 18 Dec 2008 05:56:49 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:30183 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897AbYLRK4s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 05:56:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=kAG60ZZzPqjxZXSG9KBpBjzI12yp4L+uUi8lFo+KQu/aq4GmFMPkjm/4r96olcBiqY
+         cCEUHEHE/SEl6m/kVT/h4r7SuqOK+MNwG2OdpitL4RTR0KER0c1v82KB+JHfo2WhTxeW
+         FJUr0YH5JsIjE1m9VAadCFGK8RAz2UoF6h0W0=
+Message-ID: <c62985530812180256l34f1d9bs55dfe705f74838ed@mail.gmail.com>
+Date: Thu, 18 Dec 2008 11:56:47 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [PATCH v2] tracing/function-graph-tracer: prevent from hrtimer interrupt infinite loop
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
+        "Andrew Morton" <akpm@linux-foundation.org>,
+        "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0812181136410.3492@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081217114300.9476f8da.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <4949A2CC.6040209@gmail.com> <20081218103459.GD10513@elte.hu>
+	 <alpine.LFD.2.00.0812181136410.3492@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 11:43:00AM -0800, Randy Dunlap wrote:
-> On Mon, 15 Dec 2008 11:26:34 -0800 Randy Dunlap wrote:
-> 
-> > Lots of mfd build failures like this:
-> > 
-> > 
-> > build-r7123.out:/local/linsrc/linux-next-20081215/drivers/mfd/twl4030-irq.c:183: error: 'irq_desc' undeclared (first use in this function)
-> > build-r7123.out:/local/linsrc/linux-next-20081215/drivers/mfd/twl4030-irq.c:455: error: 'irq_desc' undeclared (first use in this function)
-> > build-r7123.out:/local/linsrc/linux-next-20081215/drivers/mfd/twl4030-irq.c:515: error: 'irq_desc' undeclared (first use in this function)
-> > build-r7123.out:make[3]: *** [drivers/mfd/twl4030-irq.o] Error 1
-> 
-> 
-> This build error still happens in linux-next-20081217.
-It should be fixed with the latest mfd tree.
-David, are you ok with this fix:
-http://git.o-hand.com/cgit.cgi/linux-mfd/commit/?h=for-next&id=1e6b6a411fd4f6f99e4d9f003946823007e3c34f
+2008/12/18 Thomas Gleixner <tglx@linutronix.de>:
+> On Thu, 18 Dec 2008, Ingo Molnar wrote:
+>> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+>>
+>> > Impact: fix a system hang on slow systems
+>> >
+>> > While testing the function graph tracer on VirtualBox, I had a system hang
+>> > immediatly after enabling the tracer.
+>> >
+>> > If hrtimer is enabled on kernel, a slow system can spend too much time
+>> > during tracing the hrtimer_interrupt which will do eternal loops,
+>> > assuming it always have to retry its process because too much time
+>> > elapsed during its time update. Now we provide a feature which lurks at
+>> > the number of retries on hrtimer_interrupt. After 10 retries, the
+>> > function graph tracer will definetly stop its tracing.
+>>
+>> hm, i dont really like this solution - it just works around the problem by
+>> 'speeding up' the system. If we have a _real_ slow system, there's no such
+>> way for us to speed it up.
+>>
+>> Thomas, what do you think - would you expect this lockup to happen on
+>> really slow systems? If yes, is there a way we could avoid it from
+>> happening - by driving some sort of 'mandatory interval', that is doubled
+>> in size every time we detect such a bad hrtimer loop?
+>
+> In reality I have not seen such a problem yet, even on an old real
+> slow P1 which I tricked to do highres, but of course if we add such
+> time consuming debugs and make it slow enough the system will spend
+> all the time running the tick timer :)
+>
+> We should at least warn once about such a loop.
+>
+> I'm not sure about the mandatory interval though:
+>
+> Try the same test with HZ=1000 periodic mode (HIGHRES/NOHZ=off) and I
+> bet you see the same problem, just not in hrtimer_interrupt().
+>
+> Thanks,
+>
+>        tglx
+>
 
-Cheers,
-Samuel.
-
- 
-> It only occurs when I2C=y (see drivers/mfd/Kconfig).
-> 
-> Stephen, doing an allyesconfig i386 or x86_64 build will catch this,
-> then you can drop the mfd tree and hopefully prod someone into fixing this...
-> 
-> ---
-> ~Randy
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+That's right. I hesitate to propagate this patch more globally for all
+interrupts....
