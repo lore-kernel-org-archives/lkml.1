@@ -1,105 +1,149 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752301AbYLRJX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752130AbYLRJZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752301AbYLRJX0 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 04:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbYLRJXK
+	id S1752130AbYLRJZb (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 04:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYLRJZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 04:23:10 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:56144 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750762AbYLRJXI (ORCPT
+	Thu, 18 Dec 2008 04:25:21 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55158 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750762AbYLRJZT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 04:23:08 -0500
-Message-Id: <1229592186.26511.1290697613@webmail.messagingengine.com>
-X-Sasl-Enc: yqqjgthYMIcgwCUthee5HMt1DtSutjtw9v1pWO6ADcij 1229592186
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Cc: "Jan Beulich" <jbeulich@novell.com>, linux-arch@vger.kernel.org,
-        "Alexander van Heukelum" <heukelum@mailshack.com>,
-        "Ingo Molnar" <mingo@elte.hu>, "LKML" <linux-kernel@vger.kernel.org>,
-        "Andrew Morton" <akpm@linux-foundation.org>,
-        "Cyrill Gorcunov" <gorcunov@gmail.com>
-Content-Disposition: inline
+	Thu, 18 Dec 2008 04:25:19 -0500
+Subject: Re: TSC not updating after resume: Bug or Feature?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: dsaxena@plexity.net, Ingo Molnar <mingo@elte.hu>,
+        Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@sisk.pl>,
+        Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+In-Reply-To: <1229536210.30177.21.camel@localhost.localdomain>
+References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net>
+	 <1229536210.30177.21.camel@localhost.localdomain>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <1229505475-10219-1-git-send-email-heukelum@fastmail.fm>
- <1229505475-10219-2-git-send-email-heukelum@fastmail.fm>
- <20081217172640.GB5436@uranus.ravnborg.org>
-Subject: Re: [PATCH 1/many] PROC macro to annotate functions in assembly files
-In-Reply-To: <20081217172640.GB5436@uranus.ravnborg.org>
-Date: Thu, 18 Dec 2008 10:23:06 +0100
+Date: Thu, 18 Dec 2008 10:24:39 +0100
+Message-Id: <1229592279.9487.133.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Dec 2008 18:26:40 +0100, "Sam Ravnborg" <sam@ravnborg.org>
-said:
-> On Wed, Dec 17, 2008 at 10:17:54AM +0100, Alexander van Heukelum wrote:
-> > Introduce the PROC macro in the generic header file
-> > include/linux/linkage.h to annotate functions in assembly
-> > files. This is a first step to fully annotate functions
-> > (procedures) in .S-files. The PROC macro complements the
-> > already existing and being used ENDPROC macro. The generic
-> > implementation of PROC is exactly the same as ENTRY.
+On Wed, 2008-12-17 at 12:50 -0500, Steven Rostedt wrote:
+> I added Peter Zijlstra too, since he works on the cpu clock as well.
+
+Thanks Steve..
+
+> On Wed, 2008-12-17 at 09:27 -0800, Deepak Saxena wrote:
+> > Hi,
 > > 
-> > The goal is to annotate functions, at least those called
-> > from C code, with PROC at the beginning and ENDPROC at the
-> > end. This is for the benefit of debugging and tracing. It
-> > will also allow to introduce a framework to check for
-> > nesting problems and missing annotations in a later stage
-> > by overriding ENTRY/END and PROC/ENDPROC in architecture-
-> > specific code, after the annotation errors have been fixed.
+> > I am using ftrace to get a detailed timing analysis of the resume process 
+> > on the OLPC XO laptop and am seeing that when we start running again, the
+> > system timestamep is not being updated for several (hundreds of) thousands 
+> > of cycles (~2000 ftrace entries). From following the ftrace, what is 
+> > happening is that the clocksource is not updated until we run the cpu_idle() 
+> > thread due to an explicit scheduling operation in the resume path that occurs 
+> > via call to msleep from pci_set_power_state().  As I'm still fully groking the 
+> > timekeeping code, the question(s) I have is whether this is expected behaviour 
+> > and I should not assume valid timestamp data in the initial bits of the suspend path, 
+> > whether this is an OLPC-specific bug, or whether I've uncovered a generic bug in 
+> > the timekeeping implementation.  This is on 2.6.27.7 as I've not gotten 28-rc 
+> > up and running on the XO but can move that up in priority if this behaviour
+> > is different in newer kernels.
+
+Right, so cpu_clock() relies on gtod and tsc to generate a timestamp. We
+use a tick_raw (tsc) and tick_gtod, we then use tick_raw to compute a
+delta in tsc and add that to tick_gtod and clip the stuff to a jiffy
+window and filter backward motion.
+
+On resume I imagine the TSC has a totally unrelated value to the TSC
+before suspend, this would mean the clock would quickly end up either at
+whatever place the backward motion filter saw last (new TSC < old TSC)
+or at the jiffy window clip (new TSC > old TSC).
+
+Time will only start running correctly again once the jiffy tick starts.
+
+Then there is the acpi idle code and NOHZ stuff, that call the
+sched_clock_tick() by hand in order to re-sync time (because an unknown
+quantity of time passed and gtod has all the machinery of figuring that
+out).
+
+So yes, this is expected behaviour,.. OTOH I really didn't think much
+about code relying on this timesource _that_ early and such.
+
+Rafael, would something like this explain why we had to revert Shaggy's
+patch? His patch fixes the backward motion filter and I'm at an utter
+loss why that would break suspend.
+
 > > 
-> > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-> > Cc: Sam Ravnborg <sam@ravnborg.org>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> 
-> I understand where you are coming from with these.
-> But what I see now is:
-> 
-> ENTRY/END
-> PROC/ENDPROC
-> KPROBE_ENTRY/KPROBE_END
-> 
-> And it is not obvious for me reading the comment when I should
-> expect which one to be used.
-> 
-> Could we try to keep it down to two variants?
-> And then document when to use which one.
-
-Hi Sam,
-
-Patches to remove KPROBE_ENTRY and KPROBE_END are currently
-in the x86-tree.
-
-PROC/ENDPROC should be used around code.
-
-ENTRY/END should be used around objects which are never
-executed, like data arrays.
-
-That should be clear enough, I think. The only catch is how
-to decide where to use the annotations at all. I have no
-complete answer to that. However, in general it would be
-good to annotate any object for which an address can be
-found in registers, on the stack or in variables. Doubly
-so if addresses are within the object but not exactly at
-the start of it. This includes assembly functions called
-from C (instruction pointer) and arrays.
-
-The macro's are used to align code and data, to identify the
-object as code or data and to add object size information to
-the debugging info.
-
-Greetings,
-    Alexander
-
-> 	Sam
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
-
--- 
-http://www.fastmail.fm - Access your email from home and the web
+> > # dsaxena: Return from firmware
+> >  do_suspend_trac-1267  [00]   154.925216: restore_processor_state <-ret_point
+> >  do_suspend_trac-1267  [00]   154.925216: enable_sep_cpu <-restore_processor_state
+> >  do_suspend_trac-1267  [00]   154.925216: olpc_fixup_wakeup <-olpc_pm_enter
+> >  do_suspend_trac-1267  [00]   154.925216: geode_get_dev_base <-olpc_fixup_wakeup
+> >  do_suspend_trac-1267  [00]   154.925216: olpc_ec_cmd <-olpc_fixup_wakeup
+> >  do_suspend_trac-1267  [00]   154.925216: _spin_lock_irqsave <-olpc_ec_cmd
+> >  do_suspend_trac-1267  [00]   154.925216: __wait_on_ibf <-olpc_ec_cmd
+> >  do_suspend_trac-1267  [00]   154.925216: printk <-olpc_ec_cmd
+> >  do_suspend_trac-1267  [00]   154.925216: vprintk <-printk
+> >  do_suspend_trac-1267  [00]   154.925216: _spin_lock <-vprintk
+> >  do_suspend_trac-1267  [00]   154.925216: emit_log_char <-vprintk
+> >  do_suspend_trac-1267  [00]   154.925216: emit_log_char <-vprintk
+> > ....
+> > # pci_set_power_state() calls msleep(10) as per PCI spec
+> >  do_suspend_trac-1267  [00]   154.925216: msleep <-pci_set_power_state
+> >  do_suspend_trac-1267  [00]   154.925216: msecs_to_jiffies <-msleep
+> >  do_suspend_trac-1267  [00]   154.925216: schedule_timeout_uninterruptible <-msleep
+> >  do_suspend_trac-1267  [00]   154.925216: schedule_timeout <-schedule_timeout_uninterruptible
+> >  do_suspend_trac-1267  [00]   154.925216: init_timer_on_stack <-schedule_timeout
+> >  do_suspend_trac-1267  [00]   154.925216: __init_timer <-init_timer_on_stack
+> >  do_suspend_trac-1267  [00]   154.925216: __mod_timer <-schedule_timeout
+> >  do_suspend_trac-1267  [00]   154.925216: __timer_stats_timer_set_start_info <-__mod_timer
+> >  do_suspend_trac-1267  [00]   154.925216: lock_timer_base <-__mod_timer
+> >  do_suspend_trac-1267  [00]   154.925216: _spin_lock_irqsave <-lock_timer_base
+> >  do_suspend_trac-1267  [00]   154.925216: internal_add_timer <-__mod_timer
+> >  do_suspend_trac-1267  [00]   154.925216: _spin_unlock_irqrestore <-__mod_timer
+> >  do_suspend_trac-1267  [00]   154.925216: _spin_lock <-schedule
+> >  do_suspend_trac-1267  [00]   154.925216: marker_probe_cb <-schedule
+> >  do_suspend_trac-1267  [00]   154.925216: _spin_unlock <-tracing_record_cmdline
+> >  do_suspend_trac-1267  [00]   154.925216: __switch_to <-schedule
+> >           <idle>-0     [00]   154.925216: _spin_unlock_irq <-finish_task_switch
+> >           <idle>-0     [00]   154.925216: tick_nohz_stop_sched_tick <-cpu_idle
+> >           <idle>-0     [00]   154.925216: ktime_get <-tick_nohz_stop_sched_tick
+> >           <idle>-0     [00]   154.925216: ktime_get_ts <-ktime_get
+> >           <idle>-0     [00]   154.925216: getnstimeofday <-ktime_get_ts
+> >           <idle>-0     [00]   154.925216: set_normalized_timespec <-ktime_get_ts
+> >           <idle>-0     [00]   154.925216: get_next_timer_interrupt <-tick_nohz_stop_sched_tick
+> >           <idle>-0     [00]   154.925216: _spin_lock <-get_next_timer_interrupt
+> >           <idle>-0     [00]   154.925216: _spin_unlock <-get_next_timer_interrupt
+> >           <idle>-0     [00]   154.925216: hrtimer_get_next_event <-get_next_timer_interrupt
+> >           <idle>-0     [00]   154.925216: _spin_lock_irqsave <-hrtimer_get_next_event
+> >           <idle>-0     [00]   154.925216: _spin_unlock_irqrestore <-hrtimer_get_next_event
+> >           <idle>-0     [00]   154.925216: rcu_needs_cpu <-tick_nohz_stop_sched_tick
+> >           <idle>-0     [00]   154.925216: rcu_pending <-rcu_needs_cpu
+> >           <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
+> >           <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
+> >           <idle>-0     [00]   154.925216: rcu_pending <-cpu_idle
+> >           <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
+> >           <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
+> >           <idle>-0     [00]   154.925216: default_idle <-cpu_idle
+> >           <idle>-0     [00]   154.925216: do_IRQ <-common_interrupt
+> >           <idle>-0     [00]   154.925216: irq_enter <-do_IRQ
+> >           <idle>-0     [00]   154.925216: tick_nohz_stop_idle <-irq_enter
+> >           <idle>-0     [00]   154.925216: ktime_get <-tick_nohz_stop_idle
+> >           <idle>-0     [00]   154.925216: ktime_get_ts <-ktime_get
+> >           <idle>-0     [00]   154.925216: getnstimeofday <-ktime_get_ts
+> >           <idle>-0     [00]   154.925216: set_normalized_timespec <-ktime_get_ts
+> >           <idle>-0     [00]   154.925216: ktime_get <-sched_clock_tick
+> >           <idle>-0     [00]   154.925216: ktime_get_ts <-ktime_get
+> >           <idle>-0     [00]   154.925216: getnstimeofday <-ktime_get_ts
+> >           <idle>-0     [00]   154.925216: set_normalized_timespec <-ktime_get_ts
+> > # ktime_get_ts() calls getnstimeofday() which ends up calling clocksource_read()
+> > # thus updating the kernel timestamp. note that we call getnstimeofday()
+> > # twice above but for some reason they do not impact the time stamp...
+> > # There is an IRQ in here, possibly an HRT-driven IRQ and I'm wondering
+> > # if that is kicking the TSC into ticking?
+> >           <idle>-0     [00]   154.929837: touch_softlockup_watchdog <-sched_clock_idle_wakeup_event
+> >           <idle>-0     [00]   154.929839: tick_nohz_update_jiffies <-irq_enter
 
