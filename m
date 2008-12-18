@@ -1,121 +1,120 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752252AbYLRQc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752424AbYLRQeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752252AbYLRQc6 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 11:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYLRQcq
+	id S1752424AbYLRQeZ (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 11:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYLRQeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 11:32:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40523 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751212AbYLRQcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 11:32:45 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: irqs_disabled() vs ACPI interpreter vs suspend
-Date: Thu, 18 Dec 2008 17:32:17 +0100
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-acpi@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>
-References: <20081125110508.GA1943@elf.ucw.cz> <200812170040.07977.rjw@sisk.pl> <alpine.LFD.2.00.0812180107150.17738@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0812180107150.17738@localhost.localdomain>
+	Thu, 18 Dec 2008 11:34:15 -0500
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:40794 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751320AbYLRQeO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 11:34:14 -0500
+Subject: Re: [RFC Patch 1/9] Introducing generic hardware breakpoint handler
+ interfaces
+X-KeepSent: A914CE54:07AAD97A-80257523:005AEE9D;
+ type=4; name=$KeepSent
+To: linux-kernel@vger.kernel.org
+X-Mailer: Lotus Notes Release 8.0.2 August 07, 2008
+Message-ID: <OFA914CE54.07AAD97A-ON80257523.005AEE9D-80257523.005B04E7@uk.ibm.com>
+From: Richard J Moore <richardj_moore@uk.ibm.com>
+Date: Thu, 18 Dec 2008 16:34:11 +0000
+X-MIMETrack: Serialize by Router on D06ML065/06/M/IBM(Release 8.0.1|February 07, 2008) at
+ 18/12/2008 16:34:11
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812181732.18023.rjw@sisk.pl>
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 18 of December 2008, Len Brown wrote:
-> Rafael,
-> 
-> to answer your question "what happens at boot"...
-> 
-> interrupts are enabled in start_kernel()
-> well before the ACPI interpreter is started
-> up in a subsys_initcall().
-> 
-> The first use of the interpreter indeed allocates memory
-> (as every invocation of acpi_evaluate_object() does)
-> to evaluate _PIC
-> ie. when we print out "ACPI: Using IOAPIC for interrupt routing".
-> 
-> So one would first think we could WARN_ON(irqs_disabled())
-> right at acpi_evaluate_object(), or at any external
-> entry to the AML interpreter.
-> 
-> But _GTS and _BFS are counter-examples --
-> they are ONLY evaluated with interrupts OFF,
-> since they are between the invocation of arch_suspend_disable_irqs()
-> and arch_suspend_enable_irqs().  I believe that they are the
-> ONLY counter-examples, and for those we'd conceivably
-> WARN_ON(!irqs_disabled).
-> 
-> But at resume...
-> irqrouter_resume() is called to restore ACPI PCI Interrupt Link Devices
-> while we still have interrupts disabled.  If we called it after interrupts
-> were enabled, then an incorrectly resumed link could cause a
-> screaming interrupt.
-> 
-> This is different from boot-time.  At boot time
-> we disable all the links b/c we know that the drivers
-> that use them will all request_irq() and we'll set
-> up the links one by one at that time.
-> 
-> Originally we had planned for suspend to be like boot --
-> every driver would free_irq() at .suspend
-> and request_irq() at .resume -- indirectly for pci devices
-> via pci_enable_device()...
-> This would leave the Links disabled at suspend time, like we
-> disable them at boot time -- and then the request_irq()'s would
-> come in from the resumed drivers and the links would be re-programmed.
-> I don't think we succeeded here, and IIR Linus didn't like our
-> suggestion that every driver must do something, rather than do nothing....
-> So the irqrouter_resume safety-net remains.
-> 
-> But restoring a PCI Interrupt Link Device evaluates _CRS, _PRS, _SRS --
-> general methods which are also invoked at other times with
-> interrupts enabled.  So for those we'd not be able to WARN_ON()
-> for either irqs enabled or disabled:-(
-> 
-> I have to think about irqrouter_resume a bit.
-> I don't like it, but I don't see an alternative -- unless we
-> do something like ENFORCE all users of the links have to
-> stop using them at suspend, so we can _DIS them,
-> and they must request their IRQs at resume
-> like they do at boot...
 
-Well, that was my question to Linus in a recent discussion.
+"K.Prasad" <prasad@linux.vnet.ibm.com> wrote on 17/12/2008 03:47:03:
 
-I see some technical reasons to require drivers to free IRQs during
-suspend.  First, the issue above.  Second, some removable devices may not
-even be present during resume while we may still think they use an IRQ
-(or is that impossible for some reason?).
+> [image removed]
+>
+> Re: [RFC Patch 1/9] Introducing generic hardware breakpoint handler
+interfaces
+>
+> K.Prasad
+>
+> to:.
+>
+> David Daney
+>
+> 17/12/2008 03:47
+>
+> Cc:
+>
+> Linux Kernel Mailing List, Alan Stern, Roland McGrath, akpm, mingo,
+> Richard J Moore>
+>
+> Please respond to prasad
+>
+> On Thu, Dec 04, 2008 at 11:38:17AM -0800, David Daney wrote:
+> > K.Prasad wrote:
+> > [...]
+> >> + * len and type values are defined in include/asm/hw_breakpoint.h.
+> >> + * Available values vary according to the architecture.  On i386 the
+> >> + * possibilities are:
+> >> + *
+> >> + *   HW_BREAKPOINT_LEN_1
+> >> + *   HW_BREAKPOINT_LEN_2
+> >> + *   HW_BREAKPOINT_LEN_4
+> >> + *   HW_BREAKPOINT_LEN_EXECUTE
+> >> + *   HW_BREAKPOINT_RW
+> >> + *   HW_BREAKPOINT_READ
+> >> + *   HW_BREAKPOINT_EXECUTE
+> >> + *
+> >> + * On other architectures HW_BREAKPOINT_LEN_8 may be available, and
+the
+> >> + * 1-, 2-, and 4-byte lengths may be unavailable.  There also may be
+> >> + * HW_BREAKPOINT_WRITE.  You can use #ifdef to check at compile time.
+> >> + */
+> >
+> > On MIPS we support breakpoint lengths that are powers of 2 between 8
+and
+> > 4096.  Do you really want symbolic values for these?  The debuggers
+have
+> > to do calculations with the length values, so translating between the
+> > symbolic values and numeric values would be tedious at best.
+> >
+> >
+> > David Daney
+>
+> Given that the possible values for length are finite and small on
+> x86(just three of them), it was chosen to be defined as constants.
+>
+> For architectures such as MIPS where a range of lengths can be possibly
+> monitored using HW Breakpoints, the arch_validate_hwbkpt_settings()
+> maybe suitably written to validate the input and the 'length' may also
+> be specified in numeric terms to the kernel interface (say
+> register_kernel_hw_breakpoint()).
+>
+> Thanks,
+> K.Prasad
+>
 
-Now, _if_ we decide we want devices to free IRQs during suspend, we can make
-the core do that, so that the drivers won't have to worry about it.
+I think you need to cater for an arch-specific filter that validates the
+appearance of breakpoint interrupt. On the System Z, for example, one
+specifies a range using the pair of control registers, one for the start
+and the other of the end. You might think that this limits you to having
+only one contiguous range of addresses which generate a h/w bp interrupt.
+Not so. We use an algorithm, which employes a wrapping range
+(i.e start addr > end addr) and we continually resize the gap, whenever we
+take a BP interrupt, to begin at the next valid BP. That way we avoid too
+many erroneous interrupts and we also benignly filter the erroneous ones.
 
-Does the ACPI spec say anything about handling interrupts during
-suspend-resume?
+Other architectures that employ a variable range could do something
+similar.
+I'm thinking here of IA64 for example.
 
-> IIR we'd have to add some reference counting to handle shard links
-> so we could _DIS when the last user freed the irq.
-> 
-> So it looks like we will indeed need something like the
-> patch to transform ACPI's use of GFP_KERNEL
-> to GFP_ATOMIC across late suspend
-> and early resume; to avoid warnings from
-> _GTS, _BFS, and irqrouter_resume use of kmalloc.
+The other thing that occurs to me is whether you should also include
+HW_BREAKPOINT_IO for completeness. Of course not everyone supports
+breakpointing the I/O address space, but some do, so it ought to be catered
 
-OK, so there are two possibilities, IMO.
+for.
 
-Either we switch that in the suspend callbacks like in my patch #1, or we
-can add a bool variable that will be 'true' is the system is during
-suspend-resume with interrupts off.  Any of them is fine by me, so please let
-me know.
 
-Thanks,
-Rafael
+Richard
+zVM CP Development
+
