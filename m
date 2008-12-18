@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752015AbYLRN03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753392AbYLRN0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752015AbYLRN03 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 08:26:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYLRN0E
+	id S1753392AbYLRN0J (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 08:26:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbYLRNZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 08:26:04 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40095 "HELO mail.gmx.net"
+	Thu, 18 Dec 2008 08:25:55 -0500
+Received: from mail.gmx.net ([213.165.64.20]:38655 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752438AbYLRN0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 08:26:02 -0500
+	id S1750985AbYLRNZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 08:25:54 -0500
 X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+mrFs0Z6ym0NRI5BBQCfJ9VVjahSHgqtWQ+U002p
-	FTmYRx/bUiotZG
-Date: Thu, 18 Dec 2008 14:26:10 +0100 (CET)
+X-Provags-ID: V01U2FsdGVkX1+4WDdRv8a4zOJrgAv1A8EcIFj3Jd9SjWf8Jdg6lX
+	7E4ErWUjlNWdjE
+Date: Thu, 18 Dec 2008 14:26:02 +0100 (CET)
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 To: linux-kernel@vger.kernel.org
 cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
         Sascha Hauer <s.hauer@pengutronix.de>,
         linux-arm-kernel@lists.arm.linux.org.uk,
         Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 1/4 v4] dmaengine: add async_tx_clear_ack() macro
-In-Reply-To: <Pine.LNX.4.64.0812181406000.5510@axis700.grange>
-Message-ID: <Pine.LNX.4.64.0812181412190.5510@axis700.grange>
-References: <Pine.LNX.4.64.0812181406000.5510@axis700.grange>
+Subject: [PATCH 0/4 v4] i.MX31: dmaengine and framebuffer drivers
+Message-ID: <Pine.LNX.4.64.0812181406000.5510@axis700.grange>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Guennadi Liakhovetski <lg@denx.de>
+Hi,
 
-To complete the DMA_CTRL_ACK handling API add a async_tx_clear_ack() 
-macro.
+This is version 4 of dmaengine and framebuffer drivers for i.MX31.
 
-Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
+Changes since version 3: fixed idmac_issue_pending() to not reset the 
+current buffer, fixed return value from idmac_tx_submit(), fixed 
+framebuffer panning.
+
+Changes since version 2: now uses a tasklet to clean up completed 
+transaction descriptors, as suggested by Dan Williams.
+
+Changes since version 1: rebased on the updated dmaengine framework.
+
+I'd really like to get this in for 2.6.29, so, please, review and comment.
+
+Based on linux-next as of commit f0e0e8954d03b414927650a6129ace01d554afdc.
+
+Thanks
+Guennadi
 ---
-
-No change since previous version. Included for completeness.
-
- include/linux/dmaengine.h |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 64dea2a..c820a3f 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -287,6 +287,11 @@ static inline void async_tx_ack(struct dma_async_tx_descriptor *tx)
- 	tx->flags |= DMA_CTRL_ACK;
- }
- 
-+static inline void async_tx_clear_ack(struct dma_async_tx_descriptor *tx)
-+{
-+	tx->flags &= ~DMA_CTRL_ACK;
-+}
-+
- static inline bool async_tx_test_ack(struct dma_async_tx_descriptor *tx)
- {
- 	return (tx->flags & DMA_CTRL_ACK) == DMA_CTRL_ACK;
--- 
-1.5.4
-
+Guennadi Liakhovetski
