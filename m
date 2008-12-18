@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752913AbYLRGOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751481AbYLRGTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752913AbYLRGOU (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 01:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbYLRGOG
+	id S1751481AbYLRGTW (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 01:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYLRGTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 01:14:06 -0500
-Received: from ozlabs.org ([203.10.76.45]:58511 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752144AbYLRGOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 01:14:05 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH 1/4] cpumask: cpu_coregroup_mask(): x86
-Date: Thu, 18 Dec 2008 16:44:00 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Ingo Molnar <mingo@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-        LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-        Jack Steiner <steiner@sgi.com>
-References: <200812011646.35018.rusty@rustcorp.com.au> <4949831B.2000809@sgi.com>
-In-Reply-To: <4949831B.2000809@sgi.com>
+	Thu, 18 Dec 2008 01:19:11 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:46805 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751574AbYLRGTK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 01:19:10 -0500
+Date: Thu, 18 Dec 2008 17:19:08 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC 2/8] crypto: compress - Add pcomp interface
+Message-ID: <20081218061908.GB27951@gondor.apana.org.au>
+References: <20081217163634.998961917@vixen.sonytel.be> <20081217164036.539681327@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812181644.00796.rusty@rustcorp.com.au>
+In-Reply-To: <20081217164036.539681327@vixen.sonytel.be>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 18 December 2008 09:24:19 Mike Travis wrote:
-> Rusty Russell wrote:
-> > Like cpu_coregroup_map, but returns a (const) pointer.
-> > 
-> > (This will go to Ingo separately as part of the x86 series, just
-> > airing it here for thoroughness).
-> > 
-> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> > Signed-off-by: Mike Travis <travis@sgi.com>
-> > Cc: Ingo Molnar <mingo@redhat.com>
-> 
-> I've pulled this patch into the queue for my cpus4096-for-ingo tree.
-> 
-> 	[PATCH 1/4] cpumask: cpu_coregroup_mask(): x86
-> 
-> I can also line up a queue for sched related changes:
-> 
-> 	[PATCH 4/4] cpumask: Replace cpu_coregroup_map with cpu_coregroup_map()
-> 
-> Is there any status on the corresponding changes for sparc, s390?  (I assume
-> that they'll need to be merged into linux-next?)
-> 
-> 	[PATCH 2/4] cpumask: cpu_coregroup_mask(): sparc
-> 	[PATCH 3/4] cpumask: cpu_coregroup_mask(): s390
+On Wed, Dec 17, 2008 at 05:36:37PM +0100, Geert Uytterhoeven wrote:
+>
+> @@ -3,7 +3,7 @@
+>  #
+>  
+>  obj-$(CONFIG_CRYPTO) += crypto.o
+> -crypto-objs := api.o cipher.o digest.o compress.o
+> +crypto-objs := api.o cipher.o digest.o compress.o pcompress.o
 
-You can't take 4/4 until 2/4 and 3/4 are merged, and since it's not
-x86-specific as well, we'll leave it in my tree.
+Sorry, you modelled it on the wrong type.  These are the original
+and obsolete types.  You should model it on one of the others.  I
+recommend the crypto_shash type which is most recent.
 
 Thanks,
-Rusty.
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
