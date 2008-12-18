@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753206AbYLRRxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752690AbYLRRw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbYLRRxi (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 12:53:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbYLRRw4
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1752690AbYLRRw4 (ORCPT <rfc822;akpm@linux-foundation.org>);
 	Thu, 18 Dec 2008 12:52:56 -0500
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:60419 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752585AbYLRRwz (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYLRRwn
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 18 Dec 2008 12:52:43 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:59404 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379AbYLRRwm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 12:52:55 -0500
+	Thu, 18 Dec 2008 12:52:42 -0500
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [PATCH v7 2/8] sched: Framework for sched_mc/smt_power_savings=N
+Subject: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
         Suresh B Siddha <suresh.b.siddha@intel.com>,
         Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -26,10 +26,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
         Pavel Machek <pavel@suse.cz>,
         Andrew Morton <akpm@linux-foundation.org>,
         Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Thu, 18 Dec 2008 23:26:09 +0530
-Message-ID: <20081218175609.29812.36685.stgit@drishya.in.ibm.com>
-In-Reply-To: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
-References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
+Date: Thu, 18 Dec 2008 23:25:50 +0530
+Message-ID: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -38,86 +36,154 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gautham R Shenoy <ego@in.ibm.com>
+Hi,
 
-Currently the sched_mc/smt_power_savings variable is a boolean,
-which either enables or disables topology based power savings.
-This patch extends the behaviour of the variable from boolean to
-multivalued, such that based on the value, we decide how
-aggressively do we want to perform powersavings balance at
-appropriate sched domain based on topology.
+The existing power saving loadbalancer CONFIG_SCHED_MC attempts to run
+the workload in the system on minimum number of CPU packages and tries
+to keep rest of the CPU packages idle for longer duration. Thus
+consolidating workloads to fewer packages help other packages to be in
+idle state and save power.  The current implementation is very
+conservative and does not work effectively across different workloads.
+Initial idea of tunable sched_mc_power_savings=n was proposed to
+enable tuning of the power saving load balancer based on the system
+configuration, workload characteristics and end user requirements.
 
-Variable levels of power saving tunable would benefit end user to
-match the required level of power savings vs performance
-trade-off depending on the system configuration and workloads.
+The power savings and performance of the given workload in an under
+utilised system can be controlled by setting values of 0, 1 or 2 to
+/sys/devices/system/cpu/sched_mc_power_savings with 0 being highest
+performance and least power savings and level 2 indicating maximum
+power savings even at the cost of slight performance degradation.
 
-This version makes the sched_mc_power_savings global variable to
-take more values (0,1,2).  Later versions can have a single
-tunable called sched_power_savings instead of
-sched_{mc,smt}_power_savings.
+Please refer to the following discussions and article for details.
 
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+[1]Making power policy just work
+http://lwn.net/Articles/287924/ 
+
+[2][RFC v1] Tunable sched_mc_power_savings=n
+http://lwn.net/Articles/287882/
+                                                                                                               
+v2: http://lwn.net/Articles/297306/
+v3: http://lkml.org/lkml/2008/11/10/260
+v4: http://lkml.org/lkml/2008/11/21/47
+v5: http://lkml.org/lkml/2008/12/11/178
+v6: http://lwn.net/Articles/311830/
+
+The following series of patch demonstrates the basic framework for
+tunable sched_mc_power_savings.
+
+This version of the patch incorporates comments and feedback received
+on the previous post from Andrew Morton.
+
+Changes form v6:
+----------------
+* Convert BALANCE_FOR_xx_POWER and related macros to inline functions
+  based on comments from Andrew and Ingo.
+* Ran basic kernelbench test and did not see any performance variation
+  due to the changes.
+
+Changes form v5:
+---------------
+* Fixed the sscanf bug and checking for (p->flags & PF_KTHREAD)
+* Dropped the RFC prefix to indicate that the patch is ready for
+  testing and inclusion  
+* Patch series against 2.6.28-rc8 kernel
+
+Changes from v4:
+----------------
+
+* Conditionally added SD_BALANCE_NEWIDLE flag to MC and CPU level
+  domain to help task consolidation when sched_mc > 0
+  Removing this flag significantly reduces the number load_balance
+  calls and considerably slows down task consolidation and in effect
+  power savings.
+
+  Ingo and Mike Galbraith removed this flag to improve performance for
+  select benchmarks.  I have added the flags only when power savings
+  is requested and restore to full performance mode if sched_mc=0
+
+* Fixed few whitespace issues
+* Patch series against 2.6.28-rc8 kernel
+
+Changes from v3:
+----------------
+
+* Fixed the locking code with double_lock_balance() in
+  active-balance-newidle.patch
+
+* Moved sched_mc_preferred_wakeup_cpu to root_domain structure so that
+  each partitioned sched domain will get independent nominated cpu
+
+* More comments in active-balance-newidle.patch
+
+* Reverted sched MC level and CPU level fine tuning in v2.6.28-rc4 for
+  now.  These affect consolidation since SD_BALANCE_NEWIDLE is
+  removed.  I will rework the tuning in the next iteration to
+  selectively enable them at sched_mc=2
+
+* Patch series on 2.6.28-rc6 kernel  
+
+Changes from v2:
+----------------
+
+* Fixed locking order issue in active-balance new-idle
+* Moved the wakeup biasing code to wake_idle() function and preserve
+  wake_affine function.  Previous version would break wake affine in
+  order to aggressively consolidate tasks  
+* Removed sched_mc_preferred_wakeup_cpu global variable and moved to
+  doms_cur/dattr_cur and added a per_cpu pointer to appropriate
+  storage in partitioned sched domain.  This changed is needed to
+  preserve functionality in case of partitioned sched domains
+* Patch on 2.6.28-rc3 kernel  
+
+Results:
+--------
+
+Basic functionality of the code has not changed and the power vs
+performance benefits for kernbench are similar to the ones posted
+earlier.
+
+KERNBENCH Runs: make -j4 on a x86 8 core, dual socket quad core cpu
+package system
+
+SchedMC Run Time     Package Idle    Energy  Power
+0	81.68	     52.83% 54.71%  1.00x J 1.00y W
+1	80.70	     36.62% 70.11%  0.95x J 0.96y W
+2	74.95	     19.53% 85.92%  0.90x J 0.98y W
+
+The results are marginally better than the previous version of the
+patch series which could be within the test variation.
+
+Please feel free to test, and let me know your comments and feedback.
+I will post more experimental results with various benchmarks.
+
+Hi Ingo,
+
+Please review and include in sched development tree for testing.
+
+Thanks,
+Vaidy
+
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+
 ---
 
- include/linux/sched.h |   11 +++++++++++
- kernel/sched.c        |   17 ++++++++++++++---
- 2 files changed, 25 insertions(+), 3 deletions(-)
+Gautham R Shenoy (1):
+      sched: Framework for sched_mc/smt_power_savings=N
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 311122f..5fe906b 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -764,6 +764,17 @@ enum cpu_idle_type {
- #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
- #define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
- 
-+enum powersavings_balance_level {
-+	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
-+	POWERSAVINGS_BALANCE_BASIC,	/* Fill one thread/core/package
-+					 * first for long running threads
-+					 */
-+	POWERSAVINGS_BALANCE_WAKEUP,	/* Also bias task wakeups to semi-idle
-+					 * cpu package for power savings
-+					 */
-+	MAX_POWERSAVINGS_BALANCE_LEVELS
-+};
-+
- extern int sched_mc_power_savings, sched_smt_power_savings;
- 
- static inline int sd_balance_for_mc_power(void)
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e4bb1dd..16897ab 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7879,14 +7879,25 @@ int arch_reinit_sched_domains(void)
- static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
- {
- 	int ret;
-+	unsigned int level = 0;
- 
--	if (buf[0] != '0' && buf[0] != '1')
-+	if (sscanf(buf, "%u", &level) != 1)
-+		return -EINVAL;
-+
-+	/*
-+	 * level is always be positive so don't check for
-+	 * level < POWERSAVINGS_BALANCE_NONE which is 0
-+	 * What happens on 0 or 1 byte write,
-+	 * need to check for count as well?
-+	 */
-+
-+	if (level >= MAX_POWERSAVINGS_BALANCE_LEVELS)
- 		return -EINVAL;
- 
- 	if (smt)
--		sched_smt_power_savings = (buf[0] == '1');
-+		sched_smt_power_savings = level;
- 	else
--		sched_mc_power_savings = (buf[0] == '1');
-+		sched_mc_power_savings = level;
- 
- 	ret = arch_reinit_sched_domains();
- 
+Vaidyanathan Srinivasan (7):
+      sched: idle_balance() does not call load_balance_newidle()
+      sched: add SD_BALANCE_NEWIDLE at MC and CPU level for sched_mc>0
+      sched: activate active load balancing in new idle cpus
+      sched: bias task wakeups to preferred semi-idle packages
+      sched: nominate preferred wakeup cpu
+      sched: favour lower logical cpu number for sched_mc balance
+      sched: convert BALANCE_FOR_xx_POWER to inline functions
 
+
+ include/linux/sched.h    |   57 +++++++++++++++++++++++++----
+ include/linux/topology.h |    6 ++-
+ kernel/sched.c           |   89 +++++++++++++++++++++++++++++++++++++++++++---
+ kernel/sched_fair.c      |   18 +++++++++
+ 4 files changed, 153 insertions(+), 17 deletions(-)
+
+-- 
