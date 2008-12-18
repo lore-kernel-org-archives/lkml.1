@@ -1,120 +1,58 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752424AbYLRQeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752367AbYLRQjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752424AbYLRQeZ (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 11:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbYLRQeP
+	id S1752367AbYLRQjK (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 11:39:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYLRQiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 11:34:15 -0500
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:40794 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751320AbYLRQeO (ORCPT
+	Thu, 18 Dec 2008 11:38:55 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45179 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751435AbYLRQiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 11:34:14 -0500
-Subject: Re: [RFC Patch 1/9] Introducing generic hardware breakpoint handler
- interfaces
-X-KeepSent: A914CE54:07AAD97A-80257523:005AEE9D;
- type=4; name=$KeepSent
-To: linux-kernel@vger.kernel.org
-X-Mailer: Lotus Notes Release 8.0.2 August 07, 2008
-Message-ID: <OFA914CE54.07AAD97A-ON80257523.005AEE9D-80257523.005B04E7@uk.ibm.com>
-From: Richard J Moore <richardj_moore@uk.ibm.com>
-Date: Thu, 18 Dec 2008 16:34:11 +0000
-X-MIMETrack: Serialize by Router on D06ML065/06/M/IBM(Release 8.0.1|February 07, 2008) at
- 18/12/2008 16:34:11
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+	Thu, 18 Dec 2008 11:38:55 -0500
+Subject: Re: [PATCH 03/15] kmemleak: Add the slab memory allocation/freeing
+	hooks
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org
+In-Reply-To: <1229597162.1047.48.camel@penberg-laptop>
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
+	 <20081210182710.30323.57396.stgit@pc1117.cambridge.arm.com>
+	 <494184AA.8090509@cs.helsinki.fi>
+	 <1229092065.15045.35.camel@pc1117.cambridge.arm.com>
+	 <1229597162.1047.48.camel@penberg-laptop>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 18 Dec 2008 16:38:28 +0000
+Message-Id: <1229618308.16418.50.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Dec 2008 16:38:30.0357 (UTC) FILETIME=[0F39C050:01C9612F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-12-18 at 12:46 +0200, Pekka Enberg wrote:
+> On Fri, 2008-12-12 at 14:27 +0000, Catalin Marinas wrote:
+> > > Do you take care of the per-node lists as well?
+> > 
+> > I can't figure out what other location should be erased.
+> 
+> As far as I can tell, you need to tell kmemleak not to scan the alien
+> caches and the shared array that is shared by all CPUs that belong to
+> one node. I'm adding Christoph to the CC in case he wants to comment on
+> this.
 
-"K.Prasad" <prasad@linux.vnet.ibm.com> wrote on 17/12/2008 03:47:03:
+In the ____cache_alloc() kmemleak clears the
+cachep->array->entry[ac->avail] pointer but this may not be enough as
+freed and later re-allocated objects may have pointers in the alien
+cache (is that correct?). A better approach (haven't tried it yet) would
+be not to scan objects allocated via alloc_arraycache() at all. However,
+there is still the initarray_cache/generic which are automatically
+scanned via the data section (unless I add an attribute to place them in
+a different, not scanned, section).
 
-> [image removed]
->
-> Re: [RFC Patch 1/9] Introducing generic hardware breakpoint handler
-interfaces
->
-> K.Prasad
->
-> to:.
->
-> David Daney
->
-> 17/12/2008 03:47
->
-> Cc:
->
-> Linux Kernel Mailing List, Alan Stern, Roland McGrath, akpm, mingo,
-> Richard J Moore>
->
-> Please respond to prasad
->
-> On Thu, Dec 04, 2008 at 11:38:17AM -0800, David Daney wrote:
-> > K.Prasad wrote:
-> > [...]
-> >> + * len and type values are defined in include/asm/hw_breakpoint.h.
-> >> + * Available values vary according to the architecture.  On i386 the
-> >> + * possibilities are:
-> >> + *
-> >> + *   HW_BREAKPOINT_LEN_1
-> >> + *   HW_BREAKPOINT_LEN_2
-> >> + *   HW_BREAKPOINT_LEN_4
-> >> + *   HW_BREAKPOINT_LEN_EXECUTE
-> >> + *   HW_BREAKPOINT_RW
-> >> + *   HW_BREAKPOINT_READ
-> >> + *   HW_BREAKPOINT_EXECUTE
-> >> + *
-> >> + * On other architectures HW_BREAKPOINT_LEN_8 may be available, and
-the
-> >> + * 1-, 2-, and 4-byte lengths may be unavailable.  There also may be
-> >> + * HW_BREAKPOINT_WRITE.  You can use #ifdef to check at compile time.
-> >> + */
-> >
-> > On MIPS we support breakpoint lengths that are powers of 2 between 8
-and
-> > 4096.  Do you really want symbolic values for these?  The debuggers
-have
-> > to do calculations with the length values, so translating between the
-> > symbolic values and numeric values would be tedious at best.
-> >
-> >
-> > David Daney
->
-> Given that the possible values for length are finite and small on
-> x86(just three of them), it was chosen to be defined as constants.
->
-> For architectures such as MIPS where a range of lengths can be possibly
-> monitored using HW Breakpoints, the arch_validate_hwbkpt_settings()
-> maybe suitably written to validate the input and the 'length' may also
-> be specified in numeric terms to the kernel interface (say
-> register_kernel_hw_breakpoint()).
->
-> Thanks,
-> K.Prasad
->
-
-I think you need to cater for an arch-specific filter that validates the
-appearance of breakpoint interrupt. On the System Z, for example, one
-specifies a range using the pair of control registers, one for the start
-and the other of the end. You might think that this limits you to having
-only one contiguous range of addresses which generate a h/w bp interrupt.
-Not so. We use an algorithm, which employes a wrapping range
-(i.e start addr > end addr) and we continually resize the gap, whenever we
-take a BP interrupt, to begin at the next valid BP. That way we avoid too
-many erroneous interrupts and we also benignly filter the erroneous ones.
-
-Other architectures that employ a variable range could do something
-similar.
-I'm thinking here of IA64 for example.
-
-The other thing that occurs to me is whether you should also include
-HW_BREAKPOINT_IO for completeness. Of course not everyone supports
-breakpointing the I/O address space, but some do, so it ought to be catered
-
-for.
-
-
-Richard
-zVM CP Development
+-- 
+Catalin
 
