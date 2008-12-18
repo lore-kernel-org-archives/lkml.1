@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751803AbYLRILX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752463AbYLRIT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751803AbYLRILX (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 03:11:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbYLRILN
+	id S1752463AbYLRIT7 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 03:19:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYLRITt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 03:11:13 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:25668 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbYLRILM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 03:11:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=nMm1dj26mBHewteZKZcPvqW3s4/joskSyah60X4MfFRjncTunJ+LkqkyESlrITKkK9
-         Db47tqk7+12BGNALUIxBp9iXXn7XJsvmGuVgf5Xx+31smm3c+ZOh77hqO52f8jJmKOzo
-         eo2VV1QEAbMSbsMaiQOpEuXJSZeiiYBdHcIfc=
-Message-ID: <494A059A.8050602@gmail.com>
-Date: Thu, 18 Dec 2008 00:11:06 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Thu, 18 Dec 2008 03:19:49 -0500
+Received: from dtp.xs4all.nl ([80.101.171.8]:20112 "HELO abra2.bitwizard.nl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751456AbYLRITs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 03:19:48 -0500
+Date: Thu, 18 Dec 2008 09:19:46 +0100
+From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Rogier Wolff <R.E.Wolff@BitWizard.nl>, linux-kernel@vger.kernel.org
+Subject: Re: FPU emulation broken in 2.6.28-rc8 ?
+Message-ID: <20081218081946.GA3879@bitwizard.nl>
+References: <20081217085620.GA20184@bitwizard.nl> <20081217203227.GA10899@bitwizard.nl> <878wqe1kvg.fsf@basil.nowhere.org> <20081217225221.GA6247@bitwizard.nl> <20081217233357.GI25779@one.firstfloor.org>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Matthew Garrett <mjg59@srcf.ucam.org>,
-        "Brian J. Murrell" <brian@interlinx.bc.ca>, linux-acpi@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: suspend/resume fails on second attempt in LNXVIDEO:00
-References: <gi247o$iog$1@ger.gmane.org> <200812161625.37318.rjw@sisk.pl> <gi8jf1$m5f$5@ger.gmane.org> <200812161713.08451.rjw@sisk.pl> <20081216163746.GA9478@srcf.ucam.org> <gi8qoj$m5f$7@ger.gmane.org> <20081216205335.GA14332@srcf.ucam.org> <20081218075226.GD2110@ucw.cz>
-In-Reply-To: <20081218075226.GD2110@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081217233357.GI25779@one.firstfloor.org>
+Organization: BitWizard.nl
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Tue 2008-12-16 20:53:35, Matthew Garrett wrote:
->   
->> On Tue, Dec 16, 2008 at 06:07:15PM +0000, Brian J. Murrell wrote:
->>     
->>> On Tue, 16 Dec 2008 16:37:46 +0000, Matthew Garrett wrote:
->>>       
->>>> I seem to be missing the original message, but: no, s2ram doesn't exist
->>>> in Ubuntu because pm-utils handles that role.
->>>>         
->>> Well, that's *their* argument but lots of people think otherwise.  There 
->>> appears to be no shortage of people for whom pm-utils does NOT work yet 
->>> s2ram does.  https://bugs.launchpad.net/ubuntu/+source/uswsusp/+bug/134238
->>>       
->> The right answer to "This piece of software contains bugs" is not 
->> "Provide two pieces of software with the same features but different 
->> bugs". The only real functional difference between the two is that
->>     
->
-> Yes, and that's why pm-utils should die: they have design problems
-> (depend on hal, can't be pagelocked, unusable for suspend debugging).
-> 									Pavel
->   
-When using ubuntu intrepid, s2ram
-did work, but instead of grabbing
-the package from ubuntu, I used Debian
-SID instead. (I have a tendency of mixing
-packages);
+On Thu, Dec 18, 2008 at 12:33:57AM +0100, Andi Kleen wrote:
+> On Wed, Dec 17, 2008 at 11:52:21PM +0100, Rogier Wolff wrote:
+> > On Wed, Dec 17, 2008 at 11:45:39PM +0100, Andi Kleen wrote:
+> > > Rogier Wolff <R.E.Wolff@BitWizard.nl> writes:
+> > > >> 
+> > > >> I'm trying to set up a thin client, which runs on a geode, which
+> > > >> apparently doesn't have a FPU.... (/proc/cpuinfo mentions the flag 
+> > > >> "fpu", what does THAT mean?)
+> > > 
+> > > Geodes all have FPUs to my knowledge.
+> > > The only FPU less x87s are 386s and special 486s (and a few emulators)
+> > > 
+> > > If the FPU doesn't work on the Geode something else must be broken
+> > > (or your CPU is not really a Geode)
+> > 
+> > Although the /proc/cpuinfo file shows the FPU flag, the kernel stops
+> > with "no fpu found, and math emulation not present" if I disable
+> > FP emulation.... 
+> 
+> As I said then the problem is likely with the FPU check.
+> 
+> That said I don't doubt that FPU emulation might have broken
+> again (that is because hardly anyone uses it), just that fixing
+> it is not the real fix for your problem.
 
-regards;
+In the past, I've compiled kernels with math emulation "just in case". 
+That was in that time that if my with-fpu machine would break down, I
+might have to put a motherboard without FPU in there, and I liked the
+prospect of being able to boot in such a case. 
 
-Justin P. Mattock
+So, if an FPU is present, the math emulation code should just sit 
+dormant. Even when the detection then thinks that no FPU is present, 
+the "illegal instruction" traps that the math emulation is based on
+simply should not occur.
 
+But even if the math emulation code is actually active, then it should 
+simply work, and emulate any FPU instructions without problem. 
 
+	Roger.
+
+-- 
+** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
+**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
+*-- BitWizard writes Linux device drivers for any device you may have! --*
+Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
+Does it sit on the couch all day? Is it unemployed? Please be specific! 
+Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
