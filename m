@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751728AbYLROiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752153AbYLRPFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751728AbYLROiU (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 09:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbYLROiH
+	id S1752153AbYLRPFs (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 10:05:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbYLRPFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 09:38:07 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40729 "EHLO mx3.mail.elte.hu"
+	Thu, 18 Dec 2008 10:05:37 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:37176 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751271AbYLROiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 09:38:04 -0500
-Date: Thu, 18 Dec 2008 15:37:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, rjw@sisk.pl, a.p.zijlstra@chello.nl,
-        linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: Re: [Bug #12208] uml is very slow on 2.6.28 host
-Message-ID: <20081218143752.GB10548@elte.hu>
-References: <u7kfEgp36eE.A.qpG.Y4_QJB@chimera> <T1gm2CtAHBF.A.u6G.g4_QJB@chimera> <E1LCO85-0000rR-Br@pomaz-ex.szeredi.hu> <1229397927.5296.48.camel@marge.simson.net> <E1LCX8h-0001sh-Uo@pomaz-ex.szeredi.hu> <1229437180.5379.76.camel@marge.simson.net> <E1LCbpI-0002MN-7R@pomaz-ex.szeredi.hu> <1229494628.5280.24.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1229494628.5280.24.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751481AbYLRPFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 10:05:36 -0500
+Subject: Re: [RFC v11][PATCH 05/13] Dump memory address space
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Mike Waychison <mikew@google.com>, jeremy@goop.org, arnd@arndb.de,
+        linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+        Linux Torvalds <torvalds@linux-foundation.org>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <494A2F94.2090800@cs.columbia.edu>
+References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
+	 <1228498282-11804-6-git-send-email-orenl@cs.columbia.edu>
+	 <4949B4ED.9060805@google.com>  <494A2F94.2090800@cs.columbia.edu>
+Content-Type: text/plain
+Date: Thu, 18 Dec 2008 07:05:20 -0800
+Message-Id: <1229612720.17206.505.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Galbraith <efault@gmx.de> wrote:
-
-> On Tue, 2008-12-16 at 16:27 +0100, Miklos Szeredi wrote:
+On Thu, 2008-12-18 at 06:10 -0500, Oren Laadan wrote:
+> >> +    mutex_lock(&mm->context.lock);
+> >> +
+> >> +    hh->ldt_entry_size = LDT_ENTRY_SIZE;
+> >> +    hh->nldt = mm->context.size;
+> >> +
+> >> +    cr_debug("nldt %d\n", hh->nldt);
+> >> +
+> >> +    ret = cr_write_obj(ctx, &h, hh);
+> >> +    cr_hbuf_put(ctx, sizeof(*hh));
+> >> +    if (ret < 0)
+> >> +        goto out;
+> >> +
+> >> +    ret = cr_kwrite(ctx, mm->context.ldt,
+> >> +            mm->context.size * LDT_ENTRY_SIZE);
+> > 
+> > Do we really want to emit anything under lock?  I realize that this
+> > patch goes and does a ton of writes with mmap_sem held for read -- is
+> > this ok?
 > 
-> > Is there a way to trace what is happening in the scheduler?
+> Because all tasks in the container must be frozen during the checkpoint,
+> there is no performance penalty for keeping the locks. Although the object
+> should not change in the interim anyways, the locks protects us from, e.g.
+> the task unfreezing somehow, or being killed by the OOM killer, or any
+> other change incurred from the "outside world" (even future code).
 > 
-> Sure.  Ingo has a script for gathering info (attached), if you run it, 
-> please gzip up the output and send me a copy offline to eyeball.
+> Put in other words - in the long run it is safer to assume that the
+> underlying object may otherwise change.
 > 
-> There's also ftrace, but I've not tried that yet, so can't offer any 
-> advice, I use primitive but effective time_after() + printk() with klogd 
-> wakeup disabled (deadlock).
+> (If we want to drop the lock here before cr_kwrite(), we need to copy the
+> data to a temporary buffer first. If we also want to drop mmap_sem(), we
+> need to be more careful with following the vma's.)
+> 
+> Do you see a reason to not keeping the locks ?
 
-btw., there's a recent commit:
+Mike, although we're doing writes of the checkpoint file here, the *mm*
+access is read-only.  We only need really mmap_sem for write if we're
+creating new VMAs, which we only do on restore.  Was there an action
+taken on the mm that would require a write that we missed?
 
-  32a7600: printk: make printk more robust by not allowing recursion
+Oren, I never considered the locking overhead, either.  The fact that
+the processes are frozen is very, very important here.  The code is fine
+as it stands because this *is* a very simple way to do it.  But, this
+probably deserves a comment. 
 
-since then printk shouldnt deadlock anymore, even if called from within 
-the scheduler.
+-- Dave
 
-Btw., ftrace_printk() can be used similarly (and you can capture it 
-nonstop via /debug/tracing/trace_pipe), and should not deadlock either.
-
-	Ingo
