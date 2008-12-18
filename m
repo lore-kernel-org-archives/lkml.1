@@ -1,30 +1,23 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753541AbYLRBoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753197AbYLRB5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541AbYLRBoE (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 20:44:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbYLRBnx
+	id S1753197AbYLRB5T (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 20:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750746AbYLRB5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 20:43:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35306 "EHLO
+	Wed, 17 Dec 2008 20:57:04 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53010 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750696AbYLRBnw (ORCPT
+	by vger.kernel.org with ESMTP id S1750696AbYLRB5C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 20:43:52 -0500
-Date: Wed, 17 Dec 2008 17:42:54 -0800
+	Wed, 17 Dec 2008 20:57:02 -0500
+Date: Wed, 17 Dec 2008 17:56:58 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
-        venkatesh.pallipadi@intel.com, a.p.zijlstra@chello.nl, mingo@elte.hu,
-        dipankar@in.ibm.com, balbir@linux.vnet.ibm.com,
-        vatsa@linux.vnet.ibm.com, ego@in.ibm.com, andi@firstfloor.org,
-        davecb@sun.com, tconnors@astro.swin.edu.au, maxk@qualcomm.com,
-        gregory.haskins@gmail.com, pavel@suse.cz, svaidy@linux.vnet.ibm.com
-Subject: Re: [PATCH v6 6/7] sched: add SD_BALANCE_NEWIDLE at MC and CPU
- level for sched_mc>0
-Message-Id: <20081217174254.ea19a246.akpm@linux-foundation.org>
-In-Reply-To: <20081217172738.534.3118.stgit@drishya.in.ibm.com>
-References: <20081217172309.534.28847.stgit@drishya.in.ibm.com>
-	<20081217172738.534.3118.stgit@drishya.in.ibm.com>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: [PATCH] clocksource: pass clocksource to read() callback
+Message-Id: <20081217175658.0706a07f.akpm@linux-foundation.org>
+In-Reply-To: <20081211114802.17622.54609.sendpatchset@rx1.opensource.se>
+References: <20081211114802.17622.54609.sendpatchset@rx1.opensource.se>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -33,46 +26,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Dec 2008 22:57:38 +0530
-Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+On Thu, 11 Dec 2008 20:48:02 +0900
+Magnus Damm <magnus.damm@gmail.com> wrote:
 
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -782,6 +782,16 @@ enum powersavings_balance_level {
->  	((sched_mc_power_savings || sched_smt_power_savings) ?	\
->  	 SD_POWERSAVINGS_BALANCE : 0)
+> Pass clocksource pointer to the read() callback for clocksources.
+> This allows us to share the callback between multiple instances.
 
-What's with all the crappy macros in here?
-
-> +/*
-> + * Optimise SD flags for power savings:
-> + * SD_BALANCE_NEWIDLE helps agressive task consolidation and power savings.
-> + * Keep default SD flags if sched_{smt,mc}_power_saving=0
-> + */
-> +
-> +#define POWERSAVING_SD_FLAGS	\
-> +	((sched_mc_power_savings || sched_smt_power_savings) ?	\
-> +	  SD_BALANCE_NEWIDLE : 0)
-
-This one purports to be a constant, but it isn't - it's code.
-
-It would be cleaner, clearer and more idiomatic to do
-
-static inline int powersaving_sd_flags(void)
-{
-	...
-}
-
-Also, doing (sched_mc_power_savings | sched_smt_power_saving) might
-save a branch.
-
->  #define test_sd_parent(sd, flag)	((sd->parent &&		\
->  					 (sd->parent->flags & flag)) ? 1 : 0)
-
-buggy when passed an expression with side-effects.  Doesn't need to be
-implemented as a macro.
+sparc64 allmodconfig:
 
 
-Sigh.
-
-
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-sparc
+  CC      arch/sparc/kernel/asm-offsets.s
+In file included from include/linux/ktime.h:25,
+                 from include/linux/timer.h:5,
+                 from include/linux/clocksource.h:16,
+                 from /usr/src/devel/arch/sparc/include/asm/timer_64.h:11,
+                 from /usr/src/devel/arch/sparc/include/asm/timer.h:4,
+                 from /usr/src/devel/arch/sparc/include/asm/timex_64.h:9,
+                 from /usr/src/devel/arch/sparc/include/asm/timex.h:4,
+                 from include/linux/timex.h:170,
+                 from include/linux/sched.h:54,
+                 from arch/sparc/kernel/asm-offsets.c:13:
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: division by zero in #if
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: division by zero in #if
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: division by zero in #if
+include/linux/jiffies.h:247:31: division by zero in #if
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: division by zero in #if
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: division by zero in #if
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+include/linux/jiffies.h:247:31: division by zero in #if
