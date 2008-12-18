@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752325AbYLRNmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752116AbYLRNri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752325AbYLRNmU (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 08:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbYLRNmI
+	id S1752116AbYLRNri (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 08:47:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYLRNrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 08:42:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36757 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751028AbYLRNmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 08:42:06 -0500
-Date: Thu, 18 Dec 2008 14:42:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ken Chen <kenchen@google.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] sched: fix uneven per-cpu task_group share distribution
-Message-ID: <20081218134200.GC4624@elte.hu>
-References: <b040c32a0812152337r4c708d59q7d71ebbcda8fe05a@mail.gmail.com> <1229503081.9487.51.camel@twins>
+	Thu, 18 Dec 2008 08:47:25 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:62654 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750985AbYLRNrY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 08:47:24 -0500
+Message-ID: <494A546C.2020003@vlnb.net>
+Date: Thu, 18 Dec 2008 16:47:24 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1229503081.9487.51.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Fabio Checconi <fabio@gandalf.sssup.it>, linux-kernel@vger.kernel.org
+Subject: Re: Dynamic switching of io_context
+References: <4942B90F.6050807@vlnb.net> <20081216082235.GD3284@gandalf.sssup.it> <49494A50.3090201@vlnb.net> <20081218134006.GP32491@kernel.dk>
+In-Reply-To: <20081218134006.GP32491@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/gRyyfI2q2kfke+jbVYawsn8tyP6aMGsBPIO+
+ dhUTYIXVgMYbIVz41MobC2K5farE86AWhC403buofmTyJPLRMZ
+ IcjyaOm36gx9PTAq3Xvcw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Mon, 2008-12-15 at 23:37 -0800, Ken Chen wrote:
-> > While testing CFS scheduler on linux-2.6-tip tree
-> > git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> > 
-> > We found that task which is pinned to a CPU could be starved relative to its
-> > allocated fair share.
-> > 
-> > The per-cpu sched_enetity load share calculation in tg_shares_up /
-> > update_group_shares_cpu distributes total task_group's share among all CPUs
-> > for a given SD domain, this would dilute task_group's per-cpu share because
-> > it distributes share to CPU that even has no load.  The trapped share is now
-> > un-consumable and it leads to fair share starvation on the runnable CPU.
-> > Peter was right that it is still required for the low level function to make
-> > distinction between a boosted share that don't have any load and actual tg
-> > share that should be distributed among CPUs in which the tg is running.
-> > 
-> > Patch to add that boost and we think the scheduler should only boost one
-> > times of tg shares over all empty CPU that don't have any load for the
-> > specific task_group in order to bound maximum temporary boost that a given
-> > task_group can have.
+Jens Axboe, on 12/18/2008 04:40 PM wrote:
+> On Wed, Dec 17 2008, Vladislav Bolkhovitin wrote:
+>>> I haven't seen the rest of the code, so I may be wrong, but I suppose
+>>> that a better approach would be to use CLONE_IO to share io contexts,
+>>> if possible.
+>> Unfortunately, it would be very non-optimal. As it is known, to achieve 
+>> the best performance with async. IO, it should be submitted by a limited 
+>> number of threads <= CPU count. So, the only way to submit IO from each 
+>> of, e.g. 100, clients in a dedicated per-client IO context is to 
+>> dynamically switch io_context of the current threads to io_context of 
+>> the client before IO submission.
 > 
-> Yeah I was worried about you removing that boost, but since you seemed
-> to be doing serious testing on the thing.. A well, this sounds good.
+> There's also likely to be another use of exactly the same type of thing
+> - the acall patches from Zach. At least my vision of the punt-to-thread
+> approach would be very similar: grab an available thread and attach it
+> to a given IO context.
 > 
-> > Signed-off-by: Ken Chen <kenchen@google.com>
-> 
-> OK, patch looks good too, thanks!
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> So while I did mention exactly what Fabio outlines in my initial mail on
+> this, a generic way to attach/detach IO contexts from processes/threads
+> would be useful outside of this project. nfsd comes to mind as well.
 
-applied to tip/cpus4096. [not in the tip/sched/core branch, because 
-cpumask_t changes conflict with Ken's fix so this is the proper ordering.]
+I fully agree. Looking forward to use that facility in 2.6.29! (I guess, 
+from your reference on Zach's patches, that the work is being done. If 
+I'm wrong and you need my participation in implementing it, just let me 
+know.)
 
-	Ingo
+Thanks,
+Vlad
+
+
