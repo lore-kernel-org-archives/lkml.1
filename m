@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYLRWUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbYLRWWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYLRWUk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 17:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYLRWU1
+	id S1753868AbYLRWWt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 17:22:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYLRWWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 17:20:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41728 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752089AbYLRWU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 17:20:26 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: TSC not updating after resume: Bug or Feature?
-Date: Thu, 18 Dec 2008 23:19:56 +0100
-User-Agent: KMail/1.9.9
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net> <1229592279.9487.133.camel@twins> <20081218123924.GH25715@elte.hu>
-In-Reply-To: <20081218123924.GH25715@elte.hu>
+	Thu, 18 Dec 2008 17:22:41 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:48512 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752089AbYLRWWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 17:22:40 -0500
+Date: Thu, 18 Dec 2008 23:25:04 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] MFD updates
+Message-ID: <20081218222503.GB21233@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <20081218104301.GA12649@rakim.wolfsonmicro.main> <20081218105804.GD2517@sortiz.org> <20081218110425.GA32176@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812182319.57235.rjw@sisk.pl>
+In-Reply-To: <20081218110425.GA32176@rakim.wolfsonmicro.main>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 18 of December 2008, Ingo Molnar wrote:
+On Thu, Dec 18, 2008 at 11:04:25AM +0000, Mark Brown wrote:
+> On Thu, Dec 18, 2008 at 11:58:05AM +0100, Samuel Ortiz wrote:
 > 
-> * Peter Zijlstra <peterz@infradead.org> wrote:
+> > I just applied those 2 from your last mail.
+> > I'll look at the remaining ones later today.
 > 
-> > Rafael, would something like this explain why we had to revert Shaggy's 
-> > patch?
+> Thanks - I rebased my for-sameo branch against your current for-next
+> branch in case that's useful.
+Thanks, all 6 patches (plus the missing break one) applied now.
 
-Well, I have yet to understand what the suspend-resume of the timekeeping code
-actually does.
+Cheers,
+Samuel.
 
-The original description sounds worrisome to me, it looks like we've overlooked
-something at least.
-
-> > His patch fixes the backward motion filter and I'm at an utter  
-> > loss why that would break suspend.
-> 
-> yes, i'd love to have this commit reinstated:
-> 
->  5b7dba4: sched_clock: prevent scd->clock from moving backwards
-> 
-> and the bug triggered by hibernation fixed instead.
-
-Shaggy said he had an idea of what was wrong, so I expect an updated version
-of the patch to appear.
-
-Thanks,
-Rafael
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
