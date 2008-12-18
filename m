@@ -1,124 +1,78 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752331AbYLRPTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752293AbYLRP3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752331AbYLRPTl (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 10:19:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYLRPTb
+	id S1752293AbYLRP3o (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 10:29:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbYLRP3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 10:19:31 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:33641 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751670AbYLRPTa (ORCPT
+	Thu, 18 Dec 2008 10:29:35 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:33053 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751093AbYLRP3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 10:19:30 -0500
-Date: Thu, 18 Dec 2008 20:52:30 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-        suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com,
-        a.p.zijlstra@chello.nl, dipankar@in.ibm.com, balbir@linux.vnet.ibm.com,
-        vatsa@linux.vnet.ibm.com, ego@in.ibm.com, andi@firstfloor.org,
-        davecb@sun.com, tconnors@astro.swin.edu.au, maxk@qualcomm.com,
-        gregory.haskins@gmail.com, pavel@suse.cz
-Subject: Re: [PATCH v6 6/7] sched: add SD_BALANCE_NEWIDLE at MC and CPU
-	level for sched_mc>0
-Message-ID: <20081218152230.GA22463@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20081217172309.534.28847.stgit@drishya.in.ibm.com> <20081217172738.534.3118.stgit@drishya.in.ibm.com> <20081217174254.ea19a246.akpm@linux-foundation.org> <20081218093538.GB4272@dirshya.in.ibm.com> <20081218124644.GA31733@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20081218124644.GA31733@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 18 Dec 2008 10:29:34 -0500
+Subject: Re: [PATCH 05/15] kmemleak: Add the slub memory allocation/freeing
+	hooks
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <1229597465.1047.54.camel@penberg-laptop>
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
+	 <20081210182721.30323.55530.stgit@pc1117.cambridge.arm.com>
+	 <4941866D.5040005@cs.helsinki.fi>
+	 <1229089544.15045.24.camel@pc1117.cambridge.arm.com>
+	 <1229597465.1047.54.camel@penberg-laptop>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 18 Dec 2008 15:28:55 +0000
+Message-Id: <1229614135.16418.33.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Dec 2008 15:28:56.0693 (UTC) FILETIME=[57872A50:01C96125]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2008-12-18 13:46:44]:
+Hi Pekka,
 
-> 
-> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> 
-> > * Andrew Morton <akpm@linux-foundation.org> [2008-12-17 17:42:54]:
+On Thu, 2008-12-18 at 12:51 +0200, Pekka Enberg wrote:
+> On Fri, 2008-12-12 at 13:45 +0000, Catalin Marinas wrote:
+> > Pekka Enberg wrote:
+> > > Hmm, I'm not sure I understand why struct kmem_cache_cpu ->freelist is 
+> > > never scanned. 
+> >
+> > Why would the ->freelist be a problem? I don't fully understand the slub
+> > allocator. Aren't objects added to the freelist only after they were
+> > freed? In __slab_alloc there seems to be a line:
 > > 
-> > > On Wed, 17 Dec 2008 22:57:38 +0530
-> > > Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > --- a/include/linux/sched.h
-> > > > +++ b/include/linux/sched.h
-> > > > @@ -782,6 +782,16 @@ enum powersavings_balance_level {
-> > > >  	((sched_mc_power_savings || sched_smt_power_savings) ?	\
-> > > >  	 SD_POWERSAVINGS_BALANCE : 0)
-> > > 
-> > > What's with all the crappy macros in here?
+> > c->page->freelist = NULL;
 > > 
-> > Hi Andrew,
-> > 
-> > These macros set the SD_POWERSAVINGS_BALANCE flag based on the
-> > sysfs tunable.
-> >  
-> > > > +/*
-> > > > + * Optimise SD flags for power savings:
-> > > > + * SD_BALANCE_NEWIDLE helps agressive task consolidation and power savings.
-> > > > + * Keep default SD flags if sched_{smt,mc}_power_saving=0
-> > > > + */
-> > > > +
-> > > > +#define POWERSAVING_SD_FLAGS	\
-> > > > +	((sched_mc_power_savings || sched_smt_power_savings) ?	\
-> > > > +	  SD_BALANCE_NEWIDLE : 0)
-> > > 
-> > > This one purports to be a constant, but it isn't - it's code.
-> > > 
-> > > It would be cleaner, clearer and more idiomatic to do
-> > > 
-> > > static inline int powersaving_sd_flags(void)
-> > > {
-> > > 	...
-> > > }
-> > 
-> > Your are suggesting to move these to inline functions.   I will write
-> > a patch and post for review.
-> >  
-> > > Also, doing (sched_mc_power_savings | sched_smt_power_saving) might
-> > > save a branch.
-> > > 
-> > > >  #define test_sd_parent(sd, flag)	((sd->parent &&		\
-> > > >  					 (sd->parent->flags & flag)) ? 1 : 0)
-> > > 
-> > > buggy when passed an expression with side-effects.  Doesn't need to be
-> > > implemented as a macro.
-> > 
-> > Agreed, but these macros are used throughout sched.c and are performance 
-> > sensitive.  Inline functions are a close enough replacement for the 
-> > macro let me look for any performance penalty as well and report.
+> > so the freelist won't count as a reference anymore. After freeing an
+> > object, kmemleak no longer cares about references to it.
 > 
-> those macros are historic so feel free to convert them to inlines without 
-> re-measuring performance impact.
+> I think we're talking about two different things here. Don't we then
+> have false negatives because we reach ->freelist of struct
+> kmem_cache_cpu which contains a pointer to an object that is free'd
+> (take a look at slab_free() fast-path)?
 
-Sure Ingo.  I will go ahead and change them in my next iteration.
- 
-> The patchset looks pretty good in principle otherwise, so if you could 
-> address Andrew's comments and clean up those bits in the next iteration we 
-> could start testing it in the scheduler tree. (Please also add Balbir 
-> Singh's acks to the next iteration.)
+Just to make sure I understand it correctly, the slab_free() fast path
+stores the pointer to the freed object into c->freelist. However, this
+object is no longer tracked by kmemleak because of the
+kmemleak_free_recursive() call at the beginning of this function (false
+negatives make sense only for allocated objects).
 
-Thank you for acking the patch.  I will address Andrew's comments and
-post the next iteration along with Balbir's acks.
+On the slab_alloc() fast path, the pointer to an allocated object is
+obtained from the c->freelist pointer but this seems to be overridden by
+the pointer to the next free object, object[c->offset], which isn't yet
+tracked by kmemleak. So, during a memory scan, it shouldn't matter that
+the kmem_cache_cpu structures are called as they don't contain any
+pointer to an allocated (not free) object.
 
-> and please fix your mailer to not inject stuff like this:
-> 
->  Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
->         linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
->         venkatesh.pallipadi@intel.com, a.p.zijlstra@chello.nl,
->         mingo@elte.hu, dipankar@in.ibm.com, balbir@linux.vnet.ibm.com,
->         vatsa@linux.vnet.ibm.com, ego@in.ibm.com, andi@firstfloor.org,
->         davecb@sun.com, tconnors@astro.swin.edu.au, maxk@qualcomm.com,
->         gregory.haskins@gmail.com, pavel@suse.cz
-> 
-> It utterly messed up the addressing mode of my reply here and i had to 
-> edit the raw email headers manually to fix it up ;-)
+The new slabs are allocated with alloc_pages() and these are not tracked
+by kmemleak.
 
-OOPS! My bad mutt config!  I have tried to fix this.  Hopefully this
-will not cause trouble anymore.
+Is my understanding correct? Thanks.
 
-Thanks,
-Vaidy
+-- 
+Catalin
+
