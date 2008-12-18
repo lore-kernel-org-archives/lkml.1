@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbYLRWk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbYLRWm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbYLRWk3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 17:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbYLRWkT
+	id S1753660AbYLRWm6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 17:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYLRWms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 17:40:19 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36062 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752694AbYLRWkS (ORCPT
+	Thu, 18 Dec 2008 17:42:48 -0500
+Received: from mga09.intel.com ([134.134.136.24]:39824 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752031AbYLRWmr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 17:40:18 -0500
-Date: Thu, 18 Dec 2008 22:40:10 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Jeff Garzik <jeff@garzik.org>,
-       Mario Schwalbe <schwalbe@inf.tu-dresden.de>,
-       linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] ide: Fix ata_id_has_dword_io to return DWORD I/O
- support properly
-Message-ID: <20081218224010.45e3ce55@lxorguk.ukuu.org.uk>
-In-Reply-To: <200812182142.16533.bzolnier@gmail.com>
-References: <494A5BBF.8000807@inf.tu-dresden.de>
-	<494A837A.50801@garzik.org>
-	<494A8768.4080100@ru.mvista.com>
-	<200812182142.16533.bzolnier@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Dec 2008 17:42:47 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.36,245,1228118400"; 
+   d="scan'208";a="372112179"
+From: "Rose, Gregory V" <gregory.v.rose@intel.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Greg KH <greg@kroah.com>, Jike Song <albcamus@gmail.com>,
+       "Zhao, Yu" <yu.zhao@intel.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "achiang@hp.com" <achiang@hp.com>,
+       "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, "matthew@wil.cx" <matthew@wil.cx>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "horms@verge.net.au" <horms@verge.net.au>,
+       "yinghai@kernel.org" <yinghai@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Date: Thu, 18 Dec 2008 14:42:38 -0800
+Subject: RE: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
+Thread-Topic: [PATCH 0/13 v7] PCI: Linux kernel SR-IOV support
+Thread-Index: Aclgibtj3D4gaS0KQQCQi96EvjTmSgA1/1mA
+Message-ID: <43F901BD926A4E43B106BF17856F07554B582F35@orsmsx508.amr.corp.intel.com>
+References: <20081121183605.GA7810@yzhao12-linux.sh.intel.com>
+ <200812171051.36645.jbarnes@virtuousgeek.org>
+ <43F901BD926A4E43B106BF17856F07554B525A02@orsmsx508.amr.corp.intel.com>
+ <200812171142.56170.jbarnes@virtuousgeek.org>
+In-Reply-To: <200812171142.56170.jbarnes@virtuousgeek.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OTOH the current patch is safe even for 2.6.28 (based on years of experience
-> with the check that we had in IDE subsystem) and will fix some libata drivers
-> (pata_legacy, pata_qdi and pata_winbond) to use dword IO on >= ATA-2 devices.
+Jesse Barnes wrote:
 > 
-> [ In reality this a regression fix for IDE -> libata conversion as it is a
->   huge performance improvement for the above mentioned DMA-less drivers. ]
+> Hm, that's not the answer I was hoping for. :)  (Was looking for,
+> "Yeah we just need this bits queued and we'll send an update for
+> e1000 right away." :) 
+> 
+> I really don't want the SR-IOV stuff to sit out another merge cycle
+> though... Arg.
 
-The 32bit PIO support is already queued up and went to Jeff a while ago
-so thats all in hand - its btw a big win on some suprising chipset cases
-including Intel ICH chipsets.
+We will have drivers that support these API's posted to the 
+lists within two or three days.  These drivers are RFC only 
+and not to be pushed upstream.  More non-Xen testing needs to 
+happen with the 82576 HW.
 
-> Jeff, I would like to merge it through IDE tree since the other patch depends
-> on it but if you want to go ahead and push it to Linus earlier feel free to
-> do it (or I can include it into the next IDE fixes pull request if you like).
+- Greg
 
-Its still broken. You cannot use the version check for versions below 3.
-I remain unconvinced we should be looking at it anywhere except specific
-pure ISA cycle pass through hardware and thus it belongs as a helper for
-those drivers not as ata_has_mumble stuff as its not ATA - eide_* maybe.
-
-Doubly complicating it is the small detail that ATA1 devices don't
-all respond to IDENTIFY in the first place....
-
-Alan
