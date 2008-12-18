@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751481AbYLRGTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753171AbYLRGWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751481AbYLRGTW (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 01:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYLRGTL
+	id S1753171AbYLRGWv (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 01:22:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYLRGWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 01:19:11 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:46805 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751574AbYLRGTK (ORCPT
+	Thu, 18 Dec 2008 01:22:38 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58883 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750904AbYLRGWi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 01:19:10 -0500
-Date: Thu, 18 Dec 2008 17:19:08 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC 2/8] crypto: compress - Add pcomp interface
-Message-ID: <20081218061908.GB27951@gondor.apana.org.au>
-References: <20081217163634.998961917@vixen.sonytel.be> <20081217164036.539681327@vixen.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081217164036.539681327@vixen.sonytel.be>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 18 Dec 2008 01:22:38 -0500
+Date: Wed, 17 Dec 2008 22:22:21 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andrew Paprocki" <andrew@ishiboo.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, dz@debian.org,
+        "Federico Heinz" <fheinz@vialibre.org.ar>,
+        "Andy Spencer" <spenceal@rose-hulman.edu>
+Subject: Re: i8k: fails to detect Dell XPS M1530, fails to get SMM BIOS
+ version with force=1
+Message-Id: <20081217222221.ac2c6f3a.akpm@linux-foundation.org>
+In-Reply-To: <76366b180812171707j7ad58957xf153d40efb7c7d59@mail.gmail.com>
+References: <76366b180812171634k6c5a25d6uad0de0d6c514ebb5@mail.gmail.com>
+	<76366b180812171707j7ad58957xf153d40efb7c7d59@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 05:36:37PM +0100, Geert Uytterhoeven wrote:
->
-> @@ -3,7 +3,7 @@
->  #
->  
->  obj-$(CONFIG_CRYPTO) += crypto.o
-> -crypto-objs := api.o cipher.o digest.o compress.o
-> +crypto-objs := api.o cipher.o digest.o compress.o pcompress.o
+On Wed, 17 Dec 2008 20:07:02 -0500 "Andrew Paprocki" <andrew@ishiboo.com> wrote:
 
-Sorry, you modelled it on the wrong type.  These are the original
-and obsolete types.  You should model it on one of the others.  I
-recommend the crypto_shash type which is most recent.
+> On Wed, Dec 17, 2008 at 7:34 PM, Andrew Paprocki <andrew@ishiboo.com> wrote:
+> > I see two problems with the i8k module and the Dell XPS M1530. First,
+> > the laptop is not detected. Second, even if it is detected, the module
+> > prints that it is unable to get the SMM BIOS version even though the
+> > module appears to be working:
+> 
+> It appears that the Dell Vostro & Precision series have the same issue
+> and the driver was never updated for those as well. Patches were
+> submitted back in 2007-11 and 2008-04 respectively:
+> 
+> http://marc.info/?l=linux-kernel&m=119401935026583&w=2
+> http://marc.info/?l=linux-kernel&m=120822526223412&w=2
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Thanks, I picked up all three (much to various people's surprise, I expect).
+
+> The same message prints for (at least one of) those as well:
+> 
+> i8k: unable to get SMM BIOS version
+
+hm.  But the driver works OK anyway?
