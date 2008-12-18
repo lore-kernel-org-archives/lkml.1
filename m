@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752249AbYLROcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751794AbYLROeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752249AbYLROcN (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 09:32:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYLROb5
+	id S1751794AbYLROeN (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 09:34:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYLROdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 09:31:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33152 "EHLO mx3.mail.elte.hu"
+	Thu, 18 Dec 2008 09:33:45 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33434 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751513AbYLROb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 09:31:57 -0500
-Date: Thu, 18 Dec 2008 15:31:31 +0100
+	id S1751762AbYLROdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 09:33:44 -0500
+Date: Thu, 18 Dec 2008 15:33:35 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Hugh Dickins <hugh@veritas.com>, "hpa@zytor.com" <hpa@zytor.com>,
-        "tglx@linutronix.de" <tglx@linutronix.de>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/7] x86 PAT: v2 - track pfnmap mappings with
-	remap_pfn_range and vm_insert_pfn
-Message-ID: <20081218143131.GD9051@elte.hu>
-References: <20081126002157.475142000@intel.com> <7E82351C108FA840AB1866AC776AEC464338C11E@orsmsx505.amr.corp.intel.com> <20081216195154.GB4501@elte.hu> <20081216220502.GC22722@wotan.suse.de> <20081216220746.GE14787@elte.hu> <20081217081932.GC26179@wotan.suse.de>
+To: Jaswinder Singh <jaswinderlinux@gmail.com>
+Cc: Jaswinder Singh <jaswinder@infradead.org>,
+        LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] x86: traps.c declare functions before they get used
+Message-ID: <20081218143335.GA10548@elte.hu>
+References: <1229360145.15326.5.camel@jaswinder.satnam> <20081216201956.GA14505@elte.hu> <3f9a31f40812162028j5a0e12f5h2215daae12ce3441@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081217081932.GC26179@wotan.suse.de>
+In-Reply-To: <3f9a31f40812162028j5a0e12f5h2215daae12ce3441@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,25 +35,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Nick Piggin <npiggin@suse.de> wrote:
+* Jaswinder Singh <jaswinderlinux@gmail.com> wrote:
 
-> On Tue, Dec 16, 2008 at 11:07:46PM +0100, Ingo Molnar wrote:
-> > 
-> > * Nick Piggin <npiggin@suse.de> wrote:
-> > > > So when you sent this a month ago i asked the MM folks whether they have 
-> > > > any problems with these patches. Acks (or objections) from Andrew, Nick or 
-> > > > Hugh would be nice to have.
-> > > 
-> > > Last I looked at them, I think all my questions were cleared up.
-> > 
-> > does that transform into a:
-> > 
-> >   Acked-by: Nick Piggin <npiggin@suse.de>
+> Hello Ingo,
 > 
-> I should think so ;), but I'll take another glance at the next round 
-> after Andrew's comments were incorporated. Are those available?
+> On Wed, Dec 17, 2008 at 1:49 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >> +#ifndef CONFIG_MATH_EMULATION
+> >>  asmlinkage void math_emulate(long);
+> >>  #endif
+> >
+> > uhm, shouldnt that #ifndef CONFIG_MATH_EMULATION be #ifdef
+> > CONFIG_MATH_EMULATION?
+> >
+> 
+> Sorry, but it seems correct to me in traps case will be opposite.
+> 
+> If someone tries to access math_emulate() and MATH_EMULATION is not 
+> defined then he will be trapped ;-)
 
-not yet available - Venki, would you mind to resend the series with those 
-bits fixed, so that Nick can have a look at the end result? Thanks,
+you should build-test your patch with MATH_EMULATION enabled.
 
 	Ingo
