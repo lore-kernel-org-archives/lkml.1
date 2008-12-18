@@ -1,69 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYLRXkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbYLRXk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbYLRXkA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 18:40:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYLRXjw
+	id S1754237AbYLRXk3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 18:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbYLRXkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 18:39:52 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41939 "EHLO ogre.sisk.pl"
+	Thu, 18 Dec 2008 18:40:11 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55167 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752243AbYLRXjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 18:39:51 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: Re: TSC not updating after resume: Bug or Feature?
-Date: Fri, 19 Dec 2008 00:39:33 +0100
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net> <200812182319.57235.rjw@sisk.pl> <1229639149.6613.2.camel@norville.austin.ibm.com>
-In-Reply-To: <1229639149.6613.2.camel@norville.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	id S1752601AbYLRXkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 18:40:08 -0500
+Subject: Re: linux-next: Tree for December 17 (Radeon DRM BUG)
+From: Dave Airlie <airlied@redhat.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Dave Airlie <airlied@gmail.com>, Kevin Winchester <kjwinchester@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200812182309.23254.bzolnier@gmail.com>
+References: <20081217232536.0b18f4a7.sfr@canb.auug.org.au>
+	 <200812182000.41727.bzolnier@gmail.com> <1229633355.5650.4.camel@optimus>
+	 <200812182309.23254.bzolnier@gmail.com>
+Content-Type: text/plain
+Date: Fri, 19 Dec 2008 09:39:24 +1000
+Message-Id: <1229643564.11646.5.camel@clockmaker.usersys.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812190039.34184.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 18 of December 2008, Dave Kleikamp wrote:
-> On Thu, 2008-12-18 at 23:19 +0100, Rafael J. Wysocki wrote:
-> > On Thursday, 18 of December 2008, Ingo Molnar wrote:
+On Thu, 2008-12-18 at 23:09 +0100, Bartlomiej Zolnierkiewicz wrote:
+> tOn Thursday 18 December 2008, Dave Airlie wrote:
+> > On Thu, 2008-12-18 at 20:00 +0100, Bartlomiej Zolnierkiewicz wrote:
+> > > On Thursday 18 December 2008, Dave Airlie wrote:
+> > > > On Thu, Dec 18, 2008 at 10:14 AM, Kevin Winchester
+> > > > <kjwinchester@gmail.com> wrote:
+> > > > > Stephen Rothwell wrote:
+> > > > >>
+> > > > >> Hi all,
+> > > > >>
+> > > > >>
+> > > > >
+> > > > > I get the following BUG in the radeon drm code with today's linux-next when
+> > > > > I run "startx".  I have not built or tested linux-next in a while, but the
+> > > > > problem definitely does not occur in mainline.
 > > > 
-> > > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > > [...]
 > > > 
-> > > > Rafael, would something like this explain why we had to revert Shaggy's 
-> > > > patch?
+> > > This reminds me that drm tree in linux-next still results in BSOD (Black
+> > > Screen Of Death) on starting X for me (as reported on Saturday [1]).
+> > > 
+> > > Actually there is more to it as I discovered that my custom X radeon driver
+> > > (which is xorg-x11-drv-ati-6.9.0-61.fc10.i386 with "radeon: no need for this
+> > > anymore" from radeon-gem-cs change reverted, please see [2] for my previous
+> > > monologue) works fine while following stock driver versions:
+> > > 
+> > > 	xorg-x11-drv-ati-6.8.0-19.fc9.i386
+> > > 	xorg-x11-drv-ati-6.9.0-61.fc10.i386
+> > > 	xorg-x11-drv-ati-6.9.0-62.fc10.i386
+> > > 
+> > > result in BSOD.  OTOH they all work with next-20081128 (modulo hangs with
+> > > fc10 ones when "radeon: no need for this anymore" change is not reverted).
+> > > 
+> > > [ BTW xorg-x11-drv-ati-6.9.0-62.fc10.i386 still causes hangs when used with
+> > >   non-Fedora kernels and Fedora/kms kernel still has performance problems ]
+> > > 
+> > > IOW there are a lot of compatibility issues in recent drm/radeon changes.
+> > > 
+> > > Dave, could you please start looking into these problems?  I'm sure that we
+> > > all want recent drm changes + kms in 2.6.29 but given tight schedule and the
+> > > way things are looking right now I'm quite sceptical...
+> > > 
+> > > [1] http://lkml.org/lkml/2008/12/13/76
+> > > [2] http://lkml.org/lkml/2008/12/13/77
+> > > 
 > > 
-> > Well, I have yet to understand what the suspend-resume of the timekeeping code
-> > actually does.
+> > Bart,
 > > 
-> > The original description sounds worrisome to me, it looks like we've overlooked
-> > something at least.
-> > 
-> > > > His patch fixes the backward motion filter and I'm at an utter  
-> > > > loss why that would break suspend.
-> > > 
-> > > yes, i'd love to have this commit reinstated:
-> > > 
-> > >  5b7dba4: sched_clock: prevent scd->clock from moving backwards
-> > > 
-> > > and the bug triggered by hibernation fixed instead.
-> > 
-> > Shaggy said he had an idea of what was wrong, so I expect an updated version
-> > of the patch to appear.
+> > please file bugs in RH bugzilla for Fedora issues. Fedora is shipping
+> > drivers that aren't upstream, and I'm attempting to resolve the issues
+> > as they arise. However not having a bug to track stuff in means it just
+> > goes far enough out of my inbox that I forget about it.
 > 
-> Not really.  I said I'd look at it, but all I know is that it looks like
-> something clock-related isn't initialized correctly after resume.  I
-> don't know enough to have any idea how to fix it.
+> OK, I'll try to put all issues into RH bugzilla once I find some time. 
+> 
+> [ OTOH the hang issue mentioned above happens only with vanilla kernels,
+>   Fedora kernels are not affected because they ship KMS.  Anyway, you
+>   could have just told me that you prefer to have a RH bugzilla bug for
+>   it two weeks ago (and indeed KMS performance issue should have been
+>   handled through bugzilla -- however this one is of lower priority). ]
 
-Well, thanks for the update.
+I know, literally I didn't see a mail in my inbox and forgot about this
+bug until it showed up again, so I should mention Fedora BZ for Fedora
+bugs earlier indeed..
 
-I'm going to have a look at the thing tomorrow, but I'm not sure I'll be able
-to fix it.
+drm-next should be fine in the next iteration, there was a missing patch
+hunk in the last commit, and then a locking bug after that.
 
-Thanks,
-Rafael
+I'll try and look at the other stability issues you are seeing with
+Fedora today,
+
+however halving the amount of video RAM everyone gets as a fix for an
+issue you are seeing is clearly not the answer, I'd like to actually
+track down the root cause of where it went wrong.
+
+Dave.
+
+> 
+> > The revert isn't a fix for -ati, and I haven't seen any reports of
+> > performance problems with profiles attached in my bugzilla.
+> 
+> "isn't a fix" is a brave statement since it makes a difference between hang
+> within minutes and rock stable operation (sure the revert itself may not be
+> a proper fix but it works and is a good starting point).  I spend quite some
+> time narrowing down the bug and this is not exactly the reaction I expected.
+> 
+> [ Well, I can fix/workaround the issues that I encounter quite quickly and I
+>   don't really have to put extra time into narrowing them down so they can be
+>   fixed in upstream distro if distro people don't see a value in such work. ]
+> 
+> > I'm booting drm-next on more various radeon hw today to see what I can
+> > reproduce, most of the kms changes for 2.6.29 are nothing to do with
+> > radeon at all, we are only upstreaming KMS for Intel hw, so I'm not sure
+> > what the sceptical bit is about. Its much more likely this is
+> 
+> F9 -> F10 upgrade has been a nightmare for me thanks to radeon/kms
+> changes (which are still Fedora specific stuff and it is good to hear
+> that they will not be upstreamed now).
+> 
+> On top of it drm-next tree has been broken for me since next-20081203
+> (yes, that is two weeks period!).
+> 
+> It could be just my luck and things may be working perfectly for 99.9%
+> of other people but are you still surprised that I'm sceptical?
+> 
+> > multi-master changes before KMS that are interacting badly.
+> 
+> Yes, multi-master changes are to blame but currently KMS patch depends on
+> them (though maybe it could be made independent -- I don't know this).
+> 
+> If you want me to try some debugging I will be happy to help but please
+> start taking more serious approach, and if you don't have the idea where
+> the problem is or don't have time to work on it currently please just
+> drop the broken changes from drm-next tree for now.
+> 
+> Thanks,
+> Bart
+
