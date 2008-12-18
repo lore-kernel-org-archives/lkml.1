@@ -1,35 +1,35 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752140AbYLRMsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753453AbYLRMun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752140AbYLRMsc (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 07:48:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbYLRMsV
+	id S1753453AbYLRMun (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 07:50:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYLRMub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 07:48:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45056 "EHLO mx2.mail.elte.hu"
+	Thu, 18 Dec 2008 07:50:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52392 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751361AbYLRMsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 07:48:21 -0500
-Date: Thu, 18 Dec 2008 13:48:03 +0100
+	id S1751320AbYLRMua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 07:50:30 -0500
+Date: Thu, 18 Dec 2008 13:50:14 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ring_bufer: fix BUF_PAGE_SIZE
-Message-ID: <20081218124803.GA31763@elte.hu>
-References: <4948CADF.6050205@cn.fujitsu.com>
+Subject: Re: [PATCH] ring_buffer: remove unused ring_buffer size
+Message-ID: <20081218125014.GA32135@elte.hu>
+References: <4948CAE7.107@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4948CADF.6050205@cn.fujitsu.com>
+In-Reply-To: <4948CAE7.107@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
+X-ELTE-SpamScore: -1.1
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0155]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,39 +37,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
+> struct ring_buffer.size is not set after ring_buffer is initialized
+> or resized. it is always 0.
 > 
-> impact: make BUF_PAGE_SIZE changeable.
-> 
-> Except allocating/freeing page and the code using PAGE_MASK,
-> all code expect buffer_page's length is BUF_PAGE_SIZE.
-> 
-> This patch make this behavior more concordant.
+> we can use "buffer->pages * BUF_PAGE_SIZE" to get ring_buffer's size
 > 
 > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index 668bbb5..0cf6caf 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -158,6 +158,10 @@ struct buffer_page {
->  	void *page;			/* Actual data page */
->  };
->  
-> +#define BUF_PAGE_ORDER 0
-> +#define BUF_PAGE_SIZE (PAGE_SIZE << BUF_PAGE_ORDER)
-> +#define BUF_PAGE_MASK (~(BUF_PAGE_SIZE - 1))
-> +
->  /*
->   * Also stolen from mm/slob.c. Thanks to Mathieu Desnoyers for pointing
->   * this issue out.
-> @@ -165,7 +169,7 @@ struct buffer_page {
->  static inline void free_buffer_page(struct buffer_page *bpage)
->  {
->  	if (bpage->page)
-> -		free_page((unsigned long)bpage->page);
-> +		free_pages((unsigned long)bpage->page, BUF_PAGE_ORDER);
 
-hm, why? Non-order-0 allocations are pretty evil - why would we ever want 
-to do them?
+applied to tip/tracing/ring-buffer, thanks!
 
 	Ingo
