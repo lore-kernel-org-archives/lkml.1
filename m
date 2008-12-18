@@ -1,149 +1,140 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752130AbYLRJZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752921AbYLRJ3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752130AbYLRJZb (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 04:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbYLRJZV
+	id S1752921AbYLRJ3d (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 04:29:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYLRJ3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 04:25:21 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55158 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750762AbYLRJZT (ORCPT
+	Thu, 18 Dec 2008 04:29:16 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:46843 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751949AbYLRJ3O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 04:25:19 -0500
-Subject: Re: TSC not updating after resume: Bug or Feature?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: dsaxena@plexity.net, Ingo Molnar <mingo@elte.hu>,
-        Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-        "Rafael J. Wysocki" <rjw@sisk.pl>,
-        Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-In-Reply-To: <1229536210.30177.21.camel@localhost.localdomain>
-References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net>
-	 <1229536210.30177.21.camel@localhost.localdomain>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 18 Dec 2008 10:24:39 +0100
-Message-Id: <1229592279.9487.133.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
+	Thu, 18 Dec 2008 04:29:14 -0500
+Date: Thu, 18 Dec 2008 01:27:44 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+        Louis Rilling <louis.rilling@kerlabs.com>,
+        linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
+        swhiteho@redhat.com
+Subject: Re: [PATCH] configfs: Silence lockdep on mkdir(), rmdir() and
+	configfs_depend_item()
+Message-ID: <20081218092744.GB30789@mail.oracle.com>
+Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Louis Rilling <louis.rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
+	swhiteho@redhat.com
+References: <20081212100615.GD19128@hawkmoon.kerlabs.com> <1229095751-23984-1-git-send-email-louis.rilling@kerlabs.com> <20081217134020.42da55fc.akpm@linux-foundation.org> <1229585208.9487.112.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1229585208.9487.112.camel@twins>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020B.494A17C6.013F:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-12-17 at 12:50 -0500, Steven Rostedt wrote:
-> I added Peter Zijlstra too, since he works on the cpu clock as well.
+On Thu, Dec 18, 2008 at 08:26:48AM +0100, Peter Zijlstra wrote:
+> On Wed, 2008-12-17 at 13:40 -0800, Andrew Morton wrote:
+> > On Fri, 12 Dec 2008 16:29:11 +0100
+> > Louis Rilling <louis.rilling@kerlabs.com> wrote:
+> > > >From inside configfs it is not possible to serialize those recursive
+> > > locking with a top-level one, because mkdir() and rmdir() are already
+> > > called with inodes locked by the VFS. So using some
+> > > mutex_lock_nest_lock() is not an option.
 
-Thanks Steve..
-
-> On Wed, 2008-12-17 at 09:27 -0800, Deepak Saxena wrote:
-> > Hi,
-> > 
-> > I am using ftrace to get a detailed timing analysis of the resume process 
-> > on the OLPC XO laptop and am seeing that when we start running again, the
-> > system timestamep is not being updated for several (hundreds of) thousands 
-> > of cycles (~2000 ftrace entries). From following the ftrace, what is 
-> > happening is that the clocksource is not updated until we run the cpu_idle() 
-> > thread due to an explicit scheduling operation in the resume path that occurs 
-> > via call to msleep from pci_set_power_state().  As I'm still fully groking the 
-> > timekeeping code, the question(s) I have is whether this is expected behaviour 
-> > and I should not assume valid timestamp data in the initial bits of the suspend path, 
-> > whether this is an OLPC-specific bug, or whether I've uncovered a generic bug in 
-> > the timekeeping implementation.  This is on 2.6.27.7 as I've not gotten 28-rc 
-> > up and running on the XO but can move that up in priority if this behaviour
-> > is different in newer kernels.
-
-Right, so cpu_clock() relies on gtod and tsc to generate a timestamp. We
-use a tick_raw (tsc) and tick_gtod, we then use tick_raw to compute a
-delta in tsc and add that to tick_gtod and clip the stuff to a jiffy
-window and filter backward motion.
-
-On resume I imagine the TSC has a totally unrelated value to the TSC
-before suspend, this would mean the clock would quickly end up either at
-whatever place the backward motion filter saw last (new TSC < old TSC)
-or at the jiffy window clip (new TSC > old TSC).
-
-Time will only start running correctly again once the jiffy tick starts.
-
-Then there is the acpi idle code and NOHZ stuff, that call the
-sched_clock_tick() by hand in order to re-sync time (because an unknown
-quantity of time passed and gtod has all the machinery of figuring that
-out).
-
-So yes, this is expected behaviour,.. OTOH I really didn't think much
-about code relying on this timesource _that_ early and such.
-
-Rafael, would something like this explain why we had to revert Shaggy's
-patch? His patch fixes the backward motion filter and I'm at an utter
-loss why that would break suspend.
+<snip>
 
 > > 
-> > # dsaxena: Return from firmware
-> >  do_suspend_trac-1267  [00]   154.925216: restore_processor_state <-ret_point
-> >  do_suspend_trac-1267  [00]   154.925216: enable_sep_cpu <-restore_processor_state
-> >  do_suspend_trac-1267  [00]   154.925216: olpc_fixup_wakeup <-olpc_pm_enter
-> >  do_suspend_trac-1267  [00]   154.925216: geode_get_dev_base <-olpc_fixup_wakeup
-> >  do_suspend_trac-1267  [00]   154.925216: olpc_ec_cmd <-olpc_fixup_wakeup
-> >  do_suspend_trac-1267  [00]   154.925216: _spin_lock_irqsave <-olpc_ec_cmd
-> >  do_suspend_trac-1267  [00]   154.925216: __wait_on_ibf <-olpc_ec_cmd
-> >  do_suspend_trac-1267  [00]   154.925216: printk <-olpc_ec_cmd
-> >  do_suspend_trac-1267  [00]   154.925216: vprintk <-printk
-> >  do_suspend_trac-1267  [00]   154.925216: _spin_lock <-vprintk
-> >  do_suspend_trac-1267  [00]   154.925216: emit_log_char <-vprintk
-> >  do_suspend_trac-1267  [00]   154.925216: emit_log_char <-vprintk
-> > ....
-> > # pci_set_power_state() calls msleep(10) as per PCI spec
-> >  do_suspend_trac-1267  [00]   154.925216: msleep <-pci_set_power_state
-> >  do_suspend_trac-1267  [00]   154.925216: msecs_to_jiffies <-msleep
-> >  do_suspend_trac-1267  [00]   154.925216: schedule_timeout_uninterruptible <-msleep
-> >  do_suspend_trac-1267  [00]   154.925216: schedule_timeout <-schedule_timeout_uninterruptible
-> >  do_suspend_trac-1267  [00]   154.925216: init_timer_on_stack <-schedule_timeout
-> >  do_suspend_trac-1267  [00]   154.925216: __init_timer <-init_timer_on_stack
-> >  do_suspend_trac-1267  [00]   154.925216: __mod_timer <-schedule_timeout
-> >  do_suspend_trac-1267  [00]   154.925216: __timer_stats_timer_set_start_info <-__mod_timer
-> >  do_suspend_trac-1267  [00]   154.925216: lock_timer_base <-__mod_timer
-> >  do_suspend_trac-1267  [00]   154.925216: _spin_lock_irqsave <-lock_timer_base
-> >  do_suspend_trac-1267  [00]   154.925216: internal_add_timer <-__mod_timer
-> >  do_suspend_trac-1267  [00]   154.925216: _spin_unlock_irqrestore <-__mod_timer
-> >  do_suspend_trac-1267  [00]   154.925216: _spin_lock <-schedule
-> >  do_suspend_trac-1267  [00]   154.925216: marker_probe_cb <-schedule
-> >  do_suspend_trac-1267  [00]   154.925216: _spin_unlock <-tracing_record_cmdline
-> >  do_suspend_trac-1267  [00]   154.925216: __switch_to <-schedule
-> >           <idle>-0     [00]   154.925216: _spin_unlock_irq <-finish_task_switch
-> >           <idle>-0     [00]   154.925216: tick_nohz_stop_sched_tick <-cpu_idle
-> >           <idle>-0     [00]   154.925216: ktime_get <-tick_nohz_stop_sched_tick
-> >           <idle>-0     [00]   154.925216: ktime_get_ts <-ktime_get
-> >           <idle>-0     [00]   154.925216: getnstimeofday <-ktime_get_ts
-> >           <idle>-0     [00]   154.925216: set_normalized_timespec <-ktime_get_ts
-> >           <idle>-0     [00]   154.925216: get_next_timer_interrupt <-tick_nohz_stop_sched_tick
-> >           <idle>-0     [00]   154.925216: _spin_lock <-get_next_timer_interrupt
-> >           <idle>-0     [00]   154.925216: _spin_unlock <-get_next_timer_interrupt
-> >           <idle>-0     [00]   154.925216: hrtimer_get_next_event <-get_next_timer_interrupt
-> >           <idle>-0     [00]   154.925216: _spin_lock_irqsave <-hrtimer_get_next_event
-> >           <idle>-0     [00]   154.925216: _spin_unlock_irqrestore <-hrtimer_get_next_event
-> >           <idle>-0     [00]   154.925216: rcu_needs_cpu <-tick_nohz_stop_sched_tick
-> >           <idle>-0     [00]   154.925216: rcu_pending <-rcu_needs_cpu
-> >           <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
-> >           <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
-> >           <idle>-0     [00]   154.925216: rcu_pending <-cpu_idle
-> >           <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
-> >           <idle>-0     [00]   154.925216: __rcu_pending <-rcu_pending
-> >           <idle>-0     [00]   154.925216: default_idle <-cpu_idle
-> >           <idle>-0     [00]   154.925216: do_IRQ <-common_interrupt
-> >           <idle>-0     [00]   154.925216: irq_enter <-do_IRQ
-> >           <idle>-0     [00]   154.925216: tick_nohz_stop_idle <-irq_enter
-> >           <idle>-0     [00]   154.925216: ktime_get <-tick_nohz_stop_idle
-> >           <idle>-0     [00]   154.925216: ktime_get_ts <-ktime_get
-> >           <idle>-0     [00]   154.925216: getnstimeofday <-ktime_get_ts
-> >           <idle>-0     [00]   154.925216: set_normalized_timespec <-ktime_get_ts
-> >           <idle>-0     [00]   154.925216: ktime_get <-sched_clock_tick
-> >           <idle>-0     [00]   154.925216: ktime_get_ts <-ktime_get
-> >           <idle>-0     [00]   154.925216: getnstimeofday <-ktime_get_ts
-> >           <idle>-0     [00]   154.925216: set_normalized_timespec <-ktime_get_ts
-> > # ktime_get_ts() calls getnstimeofday() which ends up calling clocksource_read()
-> > # thus updating the kernel timestamp. note that we call getnstimeofday()
-> > # twice above but for some reason they do not impact the time stamp...
-> > # There is an IRQ in here, possibly an HRT-driven IRQ and I'm wondering
-> > # if that is kicking the TSC into ticking?
-> >           <idle>-0     [00]   154.929837: touch_softlockup_watchdog <-sched_clock_idle_wakeup_event
-> >           <idle>-0     [00]   154.929839: tick_nohz_update_jiffies <-irq_enter
+> > Oh dear, what an unpleasant patch.
+> > 
+> > Peter, can this be saved?
+> 
+> I'm still not sure why configfs is the only virtual filesystem that
+> suffers this - something in its design is weird (and not so wonderfull).
+> 
+> Also, while I usually applaud fine grained locking, is configfs really
+> in need of that?, I mean, its not like its meant to create and remove
+> directories all day every day at breakneck speed, right? AFAIK you just
+> stomp some data in to configure some kernel stuff and then let it sit
+> for the duration of whatever that kernel thing does while it does it.
 
+	It's not about breakneck speed, it's about living in the VFS.
+But I think you get that later.
+
+> See I'm not even clear on what configfs is.. and why its better than
+> sysfs for example.. - /me goes read configfs.txt
+> 
+> Right, so basically we avoid syscalls by making vfs ops do stuff..
+> lovely - still not seeing it though - regular filesystems seems to cope
+> just fine and they get to create arbitrary tree structures too.
+
+	It's about the default_groups and how they build up and tear
+down small bits of tree.
+	A simple creation of a config_item, a mkdir(2), is a normal VFS
+lock set and doesn't make lockdep unhappy.  But if the new config_item
+has a default_group or two, they need locking too.  Not so much on
+mkdir(2), but on rmdir(2).
+
+> Yes lockdep has 2 major weaknesses - 1) it doesn't support arbitrary
+> lock depths (and I've tried, twice, to fix that, but its a _hard_
+> problem) and 2) it can't deal with arbitrary recursion.
+
+	I know it's hard, or I'd have sent you patches :-)  In fact,
+Louis tried to use the subclass bits to make this work to a depth of N
+(where N was probably deep enough in practice).  However, this creates
+subclasses that don't get seen by the regular VFS locking - and the big
+deal here is making sure configfs's use of i_mutex meshes with the VFS.
+That is, his code made the warnings go away, but removed much of
+lockdep's ability to see when we got the locking wrong.
+
+> The thing is, in practise it turns out that reworking code to not run
+> into these issues often makes the code better - if only for the fact
+> that taking locks is expensive and doing less is better, and holding
+> locks stifles concurrency, so holding less it better (yes, I said
+> _often_, there likely are counter cases but I don't believe configfs is
+> one of them).
+
+	This isn't about concurrency or speed.  This is about safety
+while configfs is attaching or (especially) detaching config_items from
+the filesystem view it presents.  When the VFS travels down a path, it
+unlocks the trailing directory.  We can't do that when tearing down
+default groups, because we need to lock that small hunk and tear it out
+atomically.
+
+> Anyway - I'm against just turning lockdep off, that will make folks
+> complacent and let the stuff rot to bits inside - and I for one will
+> refuse to run anything using it (but since that only seems to be
+> dlm/ocfs and I'm of the believe that centralized cluster stuff sucks
+> rocks anyway that won't be a problem).
+
+	Oh, be nice :-)
+	You are absolutely right that turning off lockdep leaves the
+possibility of complacency and bitrot.  That's precisely why I didn't
+like Louis' subclass solution - again, bitrot might go unnoticed.
+	Now, I know that I will be paying attention to the locking and
+going over it with a fine-toothed comb.  But I'd much rather have an
+actual working lockdep analysis.  Whether that means we find a way for
+lockdep to describe what's happening here, or we find another way to
+keep folks out of the tree we're removing, I don't care.
+
+Joel
+
+-- 
+
+Life's Little Instruction Book #109
+
+	"Know how to drive a stick shift."
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
