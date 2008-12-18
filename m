@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752792AbYLRRSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752124AbYLRRSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752792AbYLRRSS (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 12:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYLRRR6
+	id S1752124AbYLRRSu (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 12:18:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYLRRSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 12:17:58 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:54154 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915AbYLRRR5 (ORCPT
+	Thu, 18 Dec 2008 12:18:37 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:23415 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbYLRRSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 12:17:57 -0500
-Date: Thu, 18 Dec 2008 22:47:08 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-        LKML <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org,
-        heiko.carstens@de.ibm.com
-Subject: Re: [BUILD-FAILURE] next-20081217-s390x-'struct device' has no
-	member named 'knode_parent'
-Message-ID: <20081218171708.GA28135@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20081217232536.0b18f4a7.sfr@canb.auug.org.au> <20081217181745.GA18420@linux.vnet.ibm.com> <1229593665.7086.1.camel@localhost>
+	Thu, 18 Dec 2008 12:18:36 -0500
+Message-ID: <494A85EB.9010505@ct.jp.nec.com>
+Date: Thu, 18 Dec 2008 09:18:35 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1229593665.7086.1.camel@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: sigframe.h: add guard macro
+References: <4949B9B5.2050701@ct.jp.nec.com> <20081218102934.GC10513@elte.hu>
+In-Reply-To: <20081218102934.GC10513@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Martin Schwidefsky <schwidefsky@de.ibm.com> [2008-12-18 10:47:45]:
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-> On Wed, 2008-12-17 at 23:47 +0530, Kamalesh Babulal wrote:
-> > drivers/s390/cio/device.c: In function 'io_subchannel_register':
-> > drivers/s390/cio/device.c:913: error: 'struct device' has no member
-> > named 'knode_parent'
-> > make[2]: *** [drivers/s390/cio/device.o] Error 1
-> > make[1]: *** [drivers/s390/cio] Error 2
-> > make: *** [drivers/s390] Error 2
-> 
-> Should be fixed now by the following patch from Cornelia:
-> 
-> commit efe46b59567ae999ff7d344170d21f093159ad80
-> Author: Cornelia Huck <cornelia.huck@de.ibm.com>
-> Date:   Thu Dec 18 10:26:55 2008 +0100
-> 
->     [S390] cio: Use device_is_registered().
-> 
->     Check if a ccw device is registered via device_is_registered()
->     and not via the old kludge of checking the membership in driver
->     core internal klists.
-> 
->     Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
->     Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> You'll find the fix in the features branch of git390 which will be
-> included in the next linux-next kernel.
+Impact: cleanup
 
-Hi Martin,
+Add missing guard macro _ASM_X86_SIGFRAME_H.
 
-	Thanks, the patch fixes the build failure.I tested the patch with
-today's next (20081218), which also has the same build failure.
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+I forgot include guard:)
 
-> 
-> -- 
-> blue skies,
->   Martin.
-> 
-> "Reality continues to ruin my life." - Calvin.
-> 
-> 
+ arch/x86/include/asm/sigframe.h |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
+diff --git a/arch/x86/include/asm/sigframe.h b/arch/x86/include/asm/sigframe.h
+index 491a087..3bd0f42 100644
+--- a/arch/x86/include/asm/sigframe.h
++++ b/arch/x86/include/asm/sigframe.h
+@@ -1,3 +1,6 @@
++#ifndef _ASM_X86_SIGFRAME_H
++#define _ASM_X86_SIGFRAME_H
++
+ #ifdef CONFIG_X86_32
+ #define sigframe_ia32		sigframe
+ #define rt_sigframe_ia32	rt_sigframe
+@@ -59,3 +62,5 @@ struct rt_sigframe {
+ 	/* fp state follows here */
+ };
+ #endif /* CONFIG_X86_64 */
++
++#endif /* _ASM_X86_SIGFRAME_H */
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+1.6.0.4
+
