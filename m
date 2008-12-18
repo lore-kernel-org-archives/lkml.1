@@ -1,45 +1,111 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752217AbYLRIRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752640AbYLRISA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752217AbYLRIRf (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 03:17:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbYLRIRZ
+	id S1752640AbYLRISA (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 03:18:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbYLRIRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 03:17:25 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:39089 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbYLRIRY (ORCPT
+	Thu, 18 Dec 2008 03:17:46 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:37110 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbYLRIRo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 03:17:24 -0500
-Message-ID: <494A0711.7010804@davidnewall.com>
-Date: Thu, 18 Dec 2008 18:47:21 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Thu, 18 Dec 2008 03:17:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ZzaswHvAGCXey4QoadCotac4/TBgVsyCIpp2JW/I5saEpkZxidI1nTp+W4+LqxLOYC
+         jEt9tGTzfC1vokaHJMWUW5etrv6jm0KR2Sn9WcRj3oQ1HKKBeAcj+tgZ+m1MKb46ZiWS
+         rSqdAyczz0ME2SWzmt44Z4qdF/MXgpKQkUucg=
+Date: Thu, 18 Dec 2008 08:17:37 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Badalian Vyacheslav <slavon@bigtelecom.ru>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: deadlocks if use htb
+Message-ID: <20081218081737.GA8416@ff.dom.local>
+References: <20081010090426.GA6054@ff.dom.local> <20081010095129.GB6054@ff.dom.local> <48F6FB3E.7060903@bigtelecom.ru> <20081016084027.GA17632@ff.dom.local> <48FEC302.5090707@bigtelecom.ru> <20081022070200.GB4178@ff.dom.local> <493FDCD4.5020108@bigtelecom.ru> <20081211084606.GA4129@ff.dom.local> <20081215111308.GA5853@ff.dom.local> <4949F127.6030105@bigtelecom.ru>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Halted system won't halt
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4949F127.6030105@bigtelecom.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've got a remote machine running ubuntu 2.6.24-19-generic which I ssh
-into.  When I said "poweroff -f -p" it strangely came back after a few
-seconds.  Perhaps my banging on the keyboard made a difference.  The
-same thing happened when I said "halt -f -p".  Sounds like user error to
-me, except the log file shows kernel halt messages.  These are the last
-n lines logged:
+On Thu, Dec 18, 2008 at 09:43:51AM +0300, Badalian Vyacheslav wrote:
+> Hello
+> result: Patch 2+3 = uptime 7 days without crashes.
+> May i revert patches and try single new patch?
 
-Dec 19 01:48:32 ubuntu -- MARK --
-Dec 19 02:08:32 ubuntu -- MARK --
-Dec 19 02:18:20 ubuntu kernel: [40201.658595] EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
-Dec 19 02:22:02 ubuntu kernel: [40423.339196] sd 1:0:1:0: [sda] Stopping disk
-Dec 19 02:22:03 ubuntu kernel: [40424.243004] System halted.
-Dec 19 02:23:33 ubuntu kernel: [40514.506694] sd 1:0:1:0: [sda] Stopping disk
-Dec 19 02:23:33 ubuntu kernel: [40514.506748] ata2.01: DISK MIGHT NOT BE SPUN DOWN PROPERLY. UPDATE SHUTDOWN UTILITY
-Dec 19 02:23:33 ubuntu kernel: [40514.506756] ata2.01: For more info, visit http://linux-ata.org/shutdown.html
-Dec 19 02:23:38 ubuntu kernel: [40519.703866] psmouse.c: Failed to deactivate mouse on isa0060/serio1
-Dec 19 02:23:40 ubuntu kernel: [40521.903111] System halted.
+Here is my current opinion on this bug:
 
+1) I'm almost sure it's not a htb, but hrtimers bug (some race),
 
-I can't explain that.
+2) the htb patches you've tested are not "the proper" way of fixing
+   it; I see substantial changes in hrtimers code in the "-tip" tree
+   (probably for 2.6.29), which, probably, you'll be advised by
+   hrtimers maintainers to try, and I guess, it's not easy on a
+   production system,
+
+So, it's up to you:
+
+1) since these patches work for you, you can stop with testing and
+   wait with these patched kernels until 2.6.29 (I can propose this
+   #2 patch as a temporary fix then),
+
+2) for curiosity you could try this patch #4 alone on one box first
+   (after reverting at least patch #2), but again: if it works, it
+   could be only treated as a temporary hack, and alternative of #2.
+
+Thanks,
+Jarek P.
+
+> 
+> > On Thu, Dec 11, 2008 at 08:46:06AM +0000, Jarek Poplawski wrote:
+> >   
+> >> On Wed, Dec 10, 2008 at 06:14:28PM +0300, Badalian Vyacheslav wrote:
+> >>     
+> >>> Hello again! Sorry for long away.
+> >>>       
+> >> Hi!
+> >>
+> >>     
+> >>> I was go away from this work for long time.
+> >>>
+> >>> May we return to this bug?
+> >>> Servers at last stable kernel 2.6.27.8
+> >>> HZ=1000, HR=off, DynamicTicks=off, hysteresis=1
+> >>> Sorry - no patched, update do not i. Do you have fresh patches or ideas
+> >>> for tests?
+> >>>       
+> >> Not much, but I can have if you only are willing to test them...
+> >> I attach below a patch which combines 2 patches I sent yesterday to
+> >> netdev (PATCH 7/6 and 8/6) vs. 2.6.27.7 (named testing patch #3 here).
+> >>
+> >> You can still try the testing patch #2 I sent previously (quoted below)
+> >> with or without this new #3 patch.
+> >>
+> >>     
+> >
+> > Here is another idea worth checking (instead of patch #2).
+> >
+> > Jarek P.
+> >
+> > --- (testing patch #4)
+> >
+> > diff -Nurp a2.6.27.7/net/sched/sch_htb.c b2.6.27.7/net/sched/sch_htb.c
+> > --- a2.6.27.7/net/sched/sch_htb.c	2008-12-11 08:16:16.000000000 +0000
+> > +++ b2.6.27.7/net/sched/sch_htb.c	2008-12-15 10:44:32.000000000 +0000
+> > @@ -924,6 +924,7 @@ static struct sk_buff *htb_dequeue(struc
+> >  		}
+> >  	}
+> >  	sch->qstats.overlimits++;
+> > +	qdisc_watchdog_cancel(&q->watchdog);
+> >  	qdisc_watchdog_schedule(&q->watchdog, next_event);
+> >  fin:
+> >  	return skb;
+> >
+> >
+> >   
+> 
