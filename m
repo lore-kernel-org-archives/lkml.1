@@ -1,81 +1,105 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753033AbYLRTNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752739AbYLRTU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753033AbYLRTNg (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 14:13:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYLRTN0
+	id S1752739AbYLRTU3 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 14:20:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbYLRTUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 14:13:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40150 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752006AbYLRTNZ (ORCPT
+	Thu, 18 Dec 2008 14:20:18 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:40418 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbYLRTUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 14:13:25 -0500
-Date: Thu, 18 Dec 2008 11:12:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sharyathi Nagesh <sharyath@in.ibm.com>
-Cc: serge@hallyn.com, linux-kernel@vger.kernel.org, menage@google.com,
-        adobriyan@gmail.com, balbir@linux.vnet.ibm.com, risrajak@in.ibm.com
-Subject: Re: Error with cgroups: "unused subsystem ns"
-Message-Id: <20081218111255.3d95bd1c.akpm@linux-foundation.org>
-In-Reply-To: <494A30DA.5030605@in.ibm.com>
-References: <4948D3C4.9060900@in.ibm.com>
-	<20081218010841.GA17385@hallyn.com>
-	<494A30DA.5030605@in.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Dec 2008 14:20:17 -0500
+Date: Fri, 19 Dec 2008 00:48:39 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+        Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+        Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+        Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+        Bharata B Rao <bharata.rao@in.ibm.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        libcg-devel <libcg-devel@lists.sourceforge.net>
+Subject: Re: [BUG][PANIC] cgroup panics with mmotm for 2.6.28-rc7
+Message-ID: <20081218191839.GI26572@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Li Zefan <lizf@cn.fujitsu.com>,
+	Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+	Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+	Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+	Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+	Bharata B Rao <bharata.rao@in.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	libcg-devel <libcg-devel@lists.sourceforge.net>
+References: <20081215113253.GL18403@balbir.in.ibm.com> <6599ad830812151757t5362ae16y81b469b06022135c@mail.gmail.com> <49471540.8090304@cn.fujitsu.com> <4947183C.6010606@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <4947183C.6010606@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Dec 2008 16:45:38 +0530
-Sharyathi Nagesh <sharyath@in.ibm.com> wrote:
+* Li Zefan <lizf@cn.fujitsu.com> [2008-12-16 10:53:48]:
 
-> Serge
+> Li Zefan wrote:
+> > Paul Menage wrote:
+> >> That implies that we ran out of css_set objects when moving the task
+> >> into the new cgroup.
+> >>
+> >> Did you have all of the configured controllers mounted, or just a subset?
+> >>
+> >> What date was this mmotm? Was it after Li's patch fixes went in on 8th Dec?
+> >>
 > > 
-> > Resend the patch to lkml.  Assuming you are talking about commit id
-> > 93af30a60055a83a00188ae04b88bbd9b4e1489a, go ahead and add my
-> > Acked-by.
-> Yes it is the same patch. I am attaching the patch for 2.6.28-rc8 let me 
-> know: when this can accepted into main line?
-> 
-> > Converting it to a pr_debug() might be another thing to consider, but
-> > I'm not sure anyone wants these messages.
+> > It is probably my fault. :( I'm looking into this problem.
 > > 
-> > -serge
+> > There are 2 related cleanup patches in -mm:
+> > 
+> > cgroups-add-inactive-subsystems-to-rootnodesubsys_list.patch (and -fix.patch)
+> > cgroups-introduce-link_css_set-to-remove-duplicate-code.patch (and -fix.patch)
+> > 
+> > If the bug is reproducable, could you revert the above patches and seee if the
+> > bug is still there.
+> > 
+> >> Paul
+> >>
+> >> On Mon, Dec 15, 2008 at 3:32 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >>> Hi, Paul,
+> >>>
+> >>> I see the following stack trace when I run my tests. I've not yet
+> >>> investigated the problem.
+> >>>
+> >>> ------------[ cut here ]------------
+> >>> kernel BUG at kernel/cgroup.c:392!
 > 
-> Thanks
-> Yeehaw
+> In latest -mm, this BUG_ON is line 398, and before the below 2 fixlet patches,
+> the BUG_ON is line 392, so I guess you were using older -mm:
 > 
+> cgroups-add-inactive-subsystems-to-rootnodesubsys_list-fix.patch
+> cgroups-introduce-link_css_set-to-remove-duplicate-code-fix.patch
 > 
+> Could you try the latest -mm kernel, or apply
+> cgroups-add-inactive-subsystems-to-rootnodesubsys_list-fix.patch ?
 > 
+> diff -puN kernel/cgroup.c~cgroups-add-inactive-subsystems-to-rootnodesubsys_list-fix kernel/cgroup.c
+> --- a/kernel/cgroup.c~cgroups-add-inactive-subsystems-to-rootnodesubsys_list-fix
+> +++ a/kernel/cgroup.c
+> @@ -2521,7 +2521,7 @@ static void __init cgroup_init_subsys(st
+>  	printk(KERN_INFO "Initializing cgroup subsys %s\n", ss->name);
 > 
-> 
-> [unused_subsystem_ns.patch  text/x-diff (667B)]
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> Signed-off-by: Sharyathi Nagesh <sharyathi@in.ibm.com>
-> 
-> Acked-by: Serge E. Hallyn <serge@hallyn.com>
-> -----------------
-> 
-> 
-> Index: linux-2.6.28-rc8/kernel/cgroup.c
-> ===================================================================
-> --- linux-2.6.28-rc8.orig/kernel/cgroup.c	2008-12-11 04:41:51.000000000 +0530
-> +++ linux-2.6.28-rc8/kernel/cgroup.c	2008-12-18 21:55:58.000000000 +0530
-> @@ -2934,9 +2934,6 @@
->   again:
->  	root = subsys->root;
->  	if (root == &rootnode) {
-> -		printk(KERN_INFO
-> -		       "Not cloning cgroup for unused subsystem %s\n",
-> -		       subsys->name);
->  		mutex_unlock(&cgroup_mutex);
->  		return 0;
->  	}
-> 
+>  	/* Create the top cgroup state for this subsystem */
+> -	list_add(&ss->sibling, &rootnode.root_list);
+> +	list_add(&ss->sibling, &rootnode.subsys_list);
+>  	ss->root = &rootnode;
+>  	css = ss->create(ss, dummytop);
+>  	/* We don't handle early failures gracefully */
+>
 
-I'm unsure waht to make of this.  It has no changelog.  It appears to have
-been authored by yourself, although it's unclear why it has Alexey's
-signoff as well.
+Yes, this fix does work for me,
+ 
+
+-- 
+        Thanks!
+	Balbir
