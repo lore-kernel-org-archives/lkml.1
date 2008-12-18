@@ -1,31 +1,28 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752582AbYLRJAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752338AbYLRJEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752582AbYLRJAA (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 04:00:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbYLRI7v
+	id S1752338AbYLRJEJ (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 04:04:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYLRJDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 03:59:51 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41617 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbYLRI7u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 03:59:50 -0500
-Date: Thu, 18 Dec 2008 17:58:50 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-mm@kvack.org" <linux-mm@kvack.org>,
-        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-        "menage@google.com" <menage@google.com>,
-        "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-        "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-        "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-Subject: [PATCH 2/2] memcg: use css_tryget in memcg
-Message-Id: <20081218175850.5bb55f3f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081218175403.40ad184a.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081218175403.40ad184a.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 18 Dec 2008 04:03:46 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:56296 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751269AbYLRJDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 04:03:41 -0500
+Date: Thu, 18 Dec 2008 10:03:10 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Balaji Rao <balajirrao@openmoko.org>
+Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@openmoko.org>,
+        Andy Green <andy@openmoko.com>,
+        Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com
+Subject: Re: [PATCH V2 4/7] rtc: PCF50633 rtc driver
+Message-ID: <20081218100310.385bb808@i1501.lan.towertech.it>
+In-Reply-To: <20081218055726.31696.80688.stgit@cff.thadambail>
+References: <20081218055618.31696.65002.stgit@cff.thadambail>
+	<20081218055726.31696.80688.stgit@cff.thadambail>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,222 +30,430 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 18 Dec 2008 11:27:26 +0530
+Balaji Rao <balajirrao@openmoko.org> wrote:
 
-From:KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Use css_tryget() in memcg.
-Based on cgroups-add-css_tryget.patch
+> Changes from V1:
+> 	- Removed include/linux/mfd/pcf50633/rtc.h and moved defenitions into
+> 	  the source file.
+> 	- Remove PIE and introduce UIE support. UIE being the one actually
+> 	  supported in the chip.
+> 
+> Alessandro, I'll change to the new API for AIE once it appears upstream.
 
-css_tryget() newly is added and we can know css is alive or not and
-get refcnt of css in very safe way.
-("alive" here means "rmdir/destroy" is not called.)
+ Ok, I guess the driver will not go in tomorrow, so you can wait.
+ I'd add it now, while you're at it :)
 
-This patch replaces css_get() to css_tryget(), where I cannot explain
-why css_get() is safe. And removes memcg->obsolete flag.
+ some comments below:
 
-Changelog (v0) -> (v1):
-   - fixed css_ref leak bug at swap-in.
 
-Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
-Index: mmotm-2.6.28-Dec17/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.28-Dec17.orig/mm/memcontrol.c
-+++ mmotm-2.6.28-Dec17/mm/memcontrol.c
-@@ -162,7 +162,6 @@ struct mem_cgroup {
- 	 */
- 	bool use_hierarchy;
- 	unsigned long	last_oom_jiffies;
--	int		obsolete;
- 	atomic_t	refcnt;
- 
- 	unsigned int	swappiness;
-@@ -283,6 +282,31 @@ struct mem_cgroup *mem_cgroup_from_task(
- 				struct mem_cgroup, css);
- }
- 
-+static struct mem_cgroup *try_get_mem_cgroup_from_mm(struct mm_struct *mm)
-+{
-+	struct mem_cgroup *mem = NULL;
-+	/*
-+	 * Because we have no locks, mm->owner's may be being moved to other
-+	 * cgroup. We use css_tryget() here even if this looks
-+	 * pessimistic (rather than adding locks here).
-+	 */
-+	rcu_read_lock();
-+	do {
-+		mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
-+		if (unlikely(!mem))
-+			break;
-+	} while (!css_tryget(&mem->css));
-+	rcu_read_unlock();
-+	return mem;
-+}
-+
-+static bool mem_cgroup_is_obsolete(struct mem_cgroup *mem)
-+{
-+	if (!mem)
-+		return true;
-+	return css_is_removed(&mem->css);
-+}
-+
- /*
-  * Following LRU functions are allowed to be used without PCG_LOCK.
-  * Operations are called by routine of global LRU independently from memcg.
-@@ -617,8 +641,9 @@ mem_cgroup_get_first_node(struct mem_cgr
- {
- 	struct cgroup *cgroup;
- 	struct mem_cgroup *ret;
--	bool obsolete = (root_mem->last_scanned_child &&
--				root_mem->last_scanned_child->obsolete);
-+	bool obsolete;
-+
-+	obsolete = mem_cgroup_is_obsolete(root_mem->last_scanned_child);
- 
- 	/*
- 	 * Scan all children under the mem_cgroup mem
-@@ -706,7 +731,7 @@ static int mem_cgroup_hierarchical_recla
- 	next_mem = mem_cgroup_get_first_node(root_mem);
- 
- 	while (next_mem != root_mem) {
--		if (next_mem->obsolete) {
-+		if (mem_cgroup_is_obsolete(next_mem)) {
- 			mem_cgroup_put(next_mem);
- 			next_mem = mem_cgroup_get_first_node(root_mem);
- 			continue;
-@@ -762,23 +787,17 @@ static int __mem_cgroup_try_charge(struc
- 	 * thread group leader migrates. It's possible that mm is not
- 	 * set, if so charge the init_mm (happens for pagecache usage).
- 	 */
--	if (likely(!*memcg)) {
--		rcu_read_lock();
--		mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
--		if (unlikely(!mem)) {
--			rcu_read_unlock();
--			return 0;
--		}
--		/*
--		 * For every charge from the cgroup, increment reference count
--		 */
--		css_get(&mem->css);
-+	mem = *memcg;
-+	if (likely(!mem)) {
-+		mem = try_get_mem_cgroup_from_mm(mm);
- 		*memcg = mem;
--		rcu_read_unlock();
- 	} else {
--		mem = *memcg;
- 		css_get(&mem->css);
- 	}
-+	if (unlikely(!mem))
-+		return 0;
-+
-+	VM_BUG_ON(mem_cgroup_is_obsolete(mem));
- 
- 	while (1) {
- 		int ret;
-@@ -1065,12 +1084,19 @@ int mem_cgroup_cache_charge(struct page 
- 				MEM_CGROUP_CHARGE_TYPE_SHMEM, NULL);
- }
- 
-+/*
-+ * While swap-in, try_charge -> commit or cancel, the page is locked.
-+ * And when try_charge() successfully returns, one refcnt to memcg without
-+ * struct page_cgroup is aquired. This refcnt will be cumsumed by
-+ * "commit()" or removed by "cancel()"
-+ */
- int mem_cgroup_try_charge_swapin(struct mm_struct *mm,
- 				 struct page *page,
- 				 gfp_t mask, struct mem_cgroup **ptr)
- {
- 	struct mem_cgroup *mem;
- 	swp_entry_t     ent;
-+	int ret;
- 
- 	if (mem_cgroup_disabled())
- 		return 0;
-@@ -1089,10 +1115,15 @@ int mem_cgroup_try_charge_swapin(struct 
- 	ent.val = page_private(page);
- 
- 	mem = lookup_swap_cgroup(ent);
--	if (!mem || mem->obsolete)
-+	if (!mem)
-+		goto charge_cur_mm;
-+	if (!css_tryget(&mem->css))
- 		goto charge_cur_mm;
- 	*ptr = mem;
--	return __mem_cgroup_try_charge(NULL, mask, ptr, true);
-+	ret = __mem_cgroup_try_charge(NULL, mask, ptr, true);
-+	/* drop extra refcnt from tryget */
-+	css_put(&mem->css);
-+	return ret;
- charge_cur_mm:
- 	if (unlikely(!mm))
- 		mm = &init_mm;
-@@ -1123,13 +1154,18 @@ int mem_cgroup_cache_charge_swapin(struc
- 		ent.val = page_private(page);
- 		if (do_swap_account) {
- 			mem = lookup_swap_cgroup(ent);
--			if (mem && mem->obsolete)
--				mem = NULL;
--			if (mem)
--				mm = NULL;
-+			if (mem) {
-+				if (css_tryget(&mem->css))
-+					mm = NULL; /* charge to recorded */
-+				else
-+					mem = NULL; /* charge to current */
-+			}
- 		}
- 		ret = mem_cgroup_charge_common(page, mm, mask,
- 				MEM_CGROUP_CHARGE_TYPE_SHMEM, mem);
-+		/* drop extra refcnt from tryget */
-+		if (mem)
-+			css_put(&mem->css);
- 
- 		if (!ret && do_swap_account) {
- 			/* avoid double counting */
-@@ -1171,7 +1207,6 @@ void mem_cgroup_commit_charge_swapin(str
- 		struct mem_cgroup *memcg;
- 		memcg = swap_cgroup_record(ent, NULL);
- 		if (memcg) {
--			/* If memcg is obsolete, memcg can be != ptr */
- 			res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
- 			mem_cgroup_put(memcg);
- 		}
-@@ -1414,14 +1449,9 @@ int mem_cgroup_shrink_usage(struct mm_st
- 	if (!mm)
- 		return 0;
- 
--	rcu_read_lock();
--	mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
--	if (unlikely(!mem)) {
--		rcu_read_unlock();
-+	mem = try_get_mem_cgroup_from_mm(mm);
-+	if (unlikely(!mem))
- 		return 0;
--	}
--	css_get(&mem->css);
--	rcu_read_unlock();
- 
- 	do {
- 		progress = mem_cgroup_hierarchical_reclaim(mem, gfp_mask, true);
-@@ -2079,9 +2109,6 @@ static struct mem_cgroup *mem_cgroup_all
-  * the number of reference from swap_cgroup and free mem_cgroup when
-  * it goes down to 0.
-  *
-- * When mem_cgroup is destroyed, mem->obsolete will be set to 0 and
-- * entry which points to this memcg will be ignore at swapin.
-- *
-  * Removal of cgroup itself succeeds regardless of refs from swap.
-  */
- 
-@@ -2167,7 +2194,6 @@ static void mem_cgroup_pre_destroy(struc
- 					struct cgroup *cont)
- {
- 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
--	mem->obsolete = 1;
- 	mem_cgroup_force_empty(mem, false);
- }
- 
+> Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
+> Cc: Andy Green <andy@openmoko.com>
+> Cc: Alessandro Zummo <a.zummo@towertech.it>
+> Cc: Paul Gortmaker <a.zummo@towertech.it>
+> Cc: rtc-linux@googlegroups.com
+> ---
+>  drivers/rtc/Kconfig        |    6 +
+>  drivers/rtc/Makefile       |    1 
+>  drivers/rtc/rtc-pcf50633.c |  336 ++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 343 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/rtc/rtc-pcf50633.c
+> 
+> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+> index 123092d..68e68d2 100644
+> --- a/drivers/rtc/Kconfig
+> +++ b/drivers/rtc/Kconfig
+> @@ -497,6 +497,12 @@ config RTC_DRV_WM8350
+>  	  This driver can also be built as a module. If so, the module
+>  	  will be called "rtc-wm8350".
+>  
+> +config RTC_DRV_PCF50633
+> +	depends on MFD_PCF50633
+> +	tristate "NXP PCF50633 RTC"
+> +	help
+> +	  If you say yes here you get support for the NXP PCF50633 RTC.
+
+ a more detailed description please stating which platforms commonly
+ have this rtc
+
+>  comment "on-CPU RTC drivers"
+>  
+>  config RTC_DRV_OMAP
+> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+> index 6e79c91..a717fec 100644
+> --- a/drivers/rtc/Makefile
+> +++ b/drivers/rtc/Makefile
+> @@ -70,3 +70,4 @@ obj-$(CONFIG_RTC_DRV_V3020)	+= rtc-v3020.o
+>  obj-$(CONFIG_RTC_DRV_VR41XX)	+= rtc-vr41xx.o
+>  obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
+>  obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
+> +obj-$(CONFIG_RTC_DRV_PCF50633)	+= rtc-pcf50633.o
+> diff --git a/drivers/rtc/rtc-pcf50633.c b/drivers/rtc/rtc-pcf50633.c
+> new file mode 100644
+> index 0000000..2f33509
+> --- /dev/null
+> +++ b/drivers/rtc/rtc-pcf50633.c
+> @@ -0,0 +1,336 @@
+> +/* NXP PCF50633 RTC Driver
+> + *
+> + * (C) 2006-2008 by Openmoko, Inc.
+> + * Author: Balaji Rao <balajirrao@openmoko.org>
+> + * All rights reserved.
+> + *
+> + * Broken down from monstrous PCF50633 driver mainly by
+> + * Harald Welte, Andy Green and Werner Almesberger
+> + *
+> + *  This program is free software; you can redistribute  it and/or modify it
+> + *  under  the terms of  the GNU General  Public License as published by the
+> + *  Free Software Foundation;  either version 2 of the  License, or (at your
+> + *  option) any later version.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/rtc.h>
+> +#include <linux/bcd.h>
+> +#include <linux/err.h>
+> +
+> +#include <linux/mfd/pcf50633/core.h>
+> +
+> +#define PCF50633_REG_RTCSC	0x59 /* Second */
+> +#define PCF50633_REG_RTCMN	0x5a /* Minute */
+> +#define PCF50633_REG_RTCHR	0x5b /* Hour */
+> +#define PCF50633_REG_RTCWD	0x5c /* Weekday */
+> +#define PCF50633_REG_RTCDT	0x5d /* Day */
+> +#define PCF50633_REG_RTCMT	0x5e /* Month */
+> +#define PCF50633_REG_RTCYR	0x5f /* Year */
+> +#define PCF50633_REG_RTCSCA	0x60 /* Alarm Second */
+> +#define PCF50633_REG_RTCMNA	0x61 /* Alarm Minute */
+> +#define PCF50633_REG_RTCHRA	0x62 /* Alarm Hour */
+> +#define PCF50633_REG_RTCWDA	0x63 /* Alarm Weekday */
+> +#define PCF50633_REG_RTCDTA	0x64 /* Alarm Day */
+> +#define PCF50633_REG_RTCMTA	0x65 /* Alarm Month */
+> +#define PCF50633_REG_RTCYRA	0x66 /* Alarm Year */
+> +
+> +enum pcf50633_time_indexes {
+> +	PCF50633_TI_SEC,
+> +	PCF50633_TI_MIN,
+> +	PCF50633_TI_HOUR,
+> +	PCF50633_TI_WKDAY,
+> +	PCF50633_TI_DAY,
+> +	PCF50633_TI_MONTH,
+> +	PCF50633_TI_YEAR,
+> +	PCF50633_TI_EXTENT /* always last */
+> +};
+> +
+> +struct pcf50633_time {
+> +	u_int8_t time[PCF50633_TI_EXTENT];
+> +};
+> +
+> +struct pcf50633_rtc {
+> +	int alarm_enabled;
+> +	int second_enabled;
+> +
+> +	struct pcf50633 *pcf;
+> +	struct rtc_device *rtc_dev;
+> +};
+> +
+> +static void pcf2rtc_time(struct rtc_time *rtc, struct pcf50633_time *pcf)
+> +{
+> +	rtc->tm_sec = bcd2bin(pcf->time[PCF50633_TI_SEC]);
+> +	rtc->tm_min = bcd2bin(pcf->time[PCF50633_TI_MIN]);
+> +	rtc->tm_hour = bcd2bin(pcf->time[PCF50633_TI_HOUR]);
+> +	rtc->tm_wday = bcd2bin(pcf->time[PCF50633_TI_WKDAY]);
+> +	rtc->tm_mday = bcd2bin(pcf->time[PCF50633_TI_DAY]);
+> +	rtc->tm_mon = bcd2bin(pcf->time[PCF50633_TI_MONTH]);
+> +	rtc->tm_year = bcd2bin(pcf->time[PCF50633_TI_YEAR]) + 100;
+> +}
+> +
+> +static void rtc2pcf_time(struct pcf50633_time *pcf, struct rtc_time *rtc)
+> +{
+> +	pcf->time[PCF50633_TI_SEC] = bin2bcd(rtc->tm_sec);
+> +	pcf->time[PCF50633_TI_MIN] = bin2bcd(rtc->tm_min);
+> +	pcf->time[PCF50633_TI_HOUR] = bin2bcd(rtc->tm_hour);
+> +	pcf->time[PCF50633_TI_WKDAY] = bin2bcd(rtc->tm_wday);
+> +	pcf->time[PCF50633_TI_DAY] = bin2bcd(rtc->tm_mday);
+> +	pcf->time[PCF50633_TI_MONTH] = bin2bcd(rtc->tm_mon);
+> +	pcf->time[PCF50633_TI_YEAR] = bin2bcd(rtc->tm_year % 100);
+> +}
+> +
+> +static int
+> +pcf50633_rtc_ioctl(struct device *dev, unsigned int cmd, unsigned long arg)
+> +{
+> +	struct pcf50633_rtc *rtc = dev_get_drvdata(dev);
+> +
+> +	switch (cmd) {
+> +	case RTC_AIE_OFF:
+> +		rtc->alarm_enabled = 0;
+> +		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_ALARM);
+> +		return 0;
+> +	case RTC_AIE_ON:
+> +		rtc->alarm_enabled = 1;
+> +		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_ALARM);
+> +		return 0;
+> +	case RTC_UIE_OFF:
+> +		rtc->second_enabled = 0;
+> +		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_SECOND);
+> +		return 0;
+> +	case RTC_UIE_ON:
+> +		rtc->second_enabled = 1;
+> +		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_SECOND);
+> +		return 0;
+> +	}
+> +
+> +	return -ENOIOCTLCMD;
+> +}
+> +
+> +static int pcf50633_rtc_read_time(struct device *dev, struct rtc_time *tm)
+> +{
+> +	struct pcf50633_rtc *rtc;
+> +	struct pcf50633_time pcf_tm;
+> +	int ret;
+> +
+> +	rtc = dev_get_drvdata(dev);
+> +
+> +	ret = pcf50633_read_block(rtc->pcf, PCF50633_REG_RTCSC,
+> +					    PCF50633_TI_EXTENT,
+> +					    &pcf_tm.time[0]);
+> +	if (ret != PCF50633_TI_EXTENT) {
+> +		dev_err(dev, "Failed to read time\n");
+> +		return -EIO;
+> +	}
+> +
+> +	dev_dbg(dev, "PCF_TIME: %02x.%02x.%02x %02x:%02x:%02x\n",
+> +		pcf_tm.time[PCF50633_TI_DAY],
+> +		pcf_tm.time[PCF50633_TI_MONTH],
+> +		pcf_tm.time[PCF50633_TI_YEAR],
+> +		pcf_tm.time[PCF50633_TI_HOUR],
+> +		pcf_tm.time[PCF50633_TI_MIN],
+> +		pcf_tm.time[PCF50633_TI_SEC]);
+> +
+> +	pcf2rtc_time(tm, &pcf_tm);
+> +
+> +	dev_dbg(dev, "RTC_TIME: %u.%u.%u %u:%u:%u\n",
+> +		tm->tm_mday, tm->tm_mon, tm->tm_year,
+> +		tm->tm_hour, tm->tm_min, tm->tm_sec);
+> +
+> +	return rtc_valid_tm(tm);
+> +}
+> +
+> +static int pcf50633_rtc_set_time(struct device *dev, struct rtc_time *tm)
+> +{
+> +	struct pcf50633_rtc *rtc;
+> +	struct pcf50633_time pcf_tm;
+> +	int second_masked, alarm_masked, ret = 0;
+> +
+> +	rtc = dev_get_drvdata(dev);
+> +
+> +	dev_dbg(dev, "RTC_TIME: %u.%u.%u %u:%u:%u\n",
+> +		tm->tm_mday, tm->tm_mon, tm->tm_year,
+> +		tm->tm_hour, tm->tm_min, tm->tm_sec);
+> +
+> +	rtc2pcf_time(&pcf_tm, tm);
+> +
+> +	dev_dbg(dev, "PCF_TIME: %02x.%02x.%02x %02x:%02x:%02x\n",
+> +		pcf_tm.time[PCF50633_TI_DAY],
+> +		pcf_tm.time[PCF50633_TI_MONTH],
+> +		pcf_tm.time[PCF50633_TI_YEAR],
+> +		pcf_tm.time[PCF50633_TI_HOUR],
+> +		pcf_tm.time[PCF50633_TI_MIN],
+> +		pcf_tm.time[PCF50633_TI_SEC]);
+> +
+> +
+> +	second_masked = pcf50633_irq_mask_get(rtc->pcf, PCF50633_IRQ_SECOND);
+> +	alarm_masked = pcf50633_irq_mask_get(rtc->pcf, PCF50633_IRQ_ALARM);
+> +
+> +	if (!second_masked)
+> +		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_SECOND);
+> +	if (!alarm_masked)
+> +		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_ALARM);
+> +
+> +	/* Returns 0 on success */
+> +	ret = pcf50633_write_block(rtc->pcf, PCF50633_REG_RTCSC,
+> +					     PCF50633_TI_EXTENT,
+> +					     &pcf_tm.time[0]);
+> +
+> +	if (!second_masked)
+> +		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_SECOND);
+> +	if (!alarm_masked)
+> +		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_ALARM);
+> +
+> +	return ret;
+> +}
+> +
+> +static int pcf50633_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+> +{
+> +	struct pcf50633_rtc *rtc;
+> +	struct pcf50633_time pcf_tm;
+> +	int ret = 0;
+> +
+> +	rtc = dev_get_drvdata(dev);
+> +
+> +	alrm->enabled = rtc->alarm_enabled;
+> +
+> +	ret = pcf50633_read_block(rtc->pcf, PCF50633_REG_RTCSCA,
+> +				PCF50633_TI_EXTENT, &pcf_tm.time[0]);
+> +	if (ret != PCF50633_TI_EXTENT) {
+> +		dev_err(dev, "Failed to read time\n");
+> +		return -EIO;
+> +	}
+> +
+> +	pcf2rtc_time(&alrm->time, &pcf_tm);
+> +
+> +	return rtc_valid_tm(&alrm->time);
+> +}
+> +
+> +static int pcf50633_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+> +{
+> +	struct pcf50633_rtc *rtc;
+> +	struct pcf50633_time pcf_tm;
+> +	int alarm_masked, ret = 0;
+> +
+> +	rtc = dev_get_drvdata(dev);
+> +
+> +	rtc2pcf_time(&pcf_tm, &alrm->time);
+> +
+> +	/* do like mktime does and ignore tm_wday */
+> +	pcf_tm.time[PCF50633_TI_WKDAY] = 7;
+> +
+> +	alarm_masked = pcf50633_irq_mask_get(rtc->pcf, PCF50633_IRQ_ALARM);
+> +
+> +	/* disable alarm interrupt */
+> +	if (!alarm_masked)
+> +		pcf50633_irq_mask(rtc->pcf, PCF50633_IRQ_ALARM);
+> +
+> +	/* Returns 0 on success */
+> +	ret = pcf50633_write_block(rtc->pcf, PCF50633_REG_RTCSCA,
+> +				PCF50633_TI_EXTENT, &pcf_tm.time[0]);
+> +
+> +	if (!alarm_masked)
+> +		pcf50633_irq_unmask(rtc->pcf, PCF50633_IRQ_ALARM);
+> +
+> +	return ret;
+> +}
+> +
+> +static struct rtc_class_ops pcf50633_rtc_ops = {
+> +	.ioctl		= pcf50633_rtc_ioctl,
+> +	.read_time	= pcf50633_rtc_read_time,
+> +	.set_time	= pcf50633_rtc_set_time,
+> +	.read_alarm	= pcf50633_rtc_read_alarm,
+> +	.set_alarm	= pcf50633_rtc_set_alarm,
+> +};
+> +
+> +static void pcf50633_rtc_irq(int irq, void *data)
+> +{
+> +	struct pcf50633_rtc *rtc = data;
+> +
+> +	switch (irq) {
+> +	case PCF50633_IRQ_ALARM:
+> +		rtc_update_irq(rtc->rtc_dev, 1, RTC_AF | RTC_IRQF);
+> +		break;
+> +	case PCF50633_IRQ_SECOND:
+> +		rtc_update_irq(rtc->rtc_dev, 1, RTC_UF | RTC_IRQF);
+> +		break;
+> +	}
+> +}
+> +
+> +static int __devinit pcf50633_rtc_probe(struct platform_device *pdev)
+> +{
+> +	struct pcf50633_subdev_pdata *pdata;
+> +	struct pcf50633_rtc *rtc;
+> +	struct rtc_device *rtc_dev;
+> +
+> +	rtc_dev = rtc_device_register("pcf50633-rtc", &pdev->dev,
+> +				&pcf50633_rtc_ops, THIS_MODULE);
+> +
+> +	if (IS_ERR(rtc_dev))
+> +		return PTR_ERR(rtc_dev);
+> +
+> +	rtc = kzalloc(sizeof(*rtc), GFP_KERNEL);
+> +	if (!rtc) {
+> +		dev_err(&pdev->dev, "allocation of pcf50633_rtc failed\n");
+> +		rtc_device_unregister(rtc_dev);
+> +		return -ENOMEM;
+> +	}
+
+ once registered, the rtc could be immediately in use. you should first allocate
+ and setup your data structures and only then register the device:
+
+	rtc = kzalloc(....
+	if (rtc == NULL)
+		return -ENOMEM;
+
+	..setup rtc structs here...
+
+	rtc->dev = rtc_register(...
+
+	..irqs...
+
+> +	pdata = pdev->dev.platform_data;
+> +	rtc->pcf = pdata->pcf;
+> +	rtc->rtc_dev = rtc_dev;
+> +	platform_set_drvdata(pdev, rtc);
+> +
+> +	pcf50633_register_irq(rtc->pcf, PCF50633_IRQ_ALARM,
+> +					pcf50633_rtc_irq, rtc);
+> +	pcf50633_register_irq(rtc->pcf, PCF50633_IRQ_SECOND,
+> +					pcf50633_rtc_irq, rtc);
+> +
+> +	return 0;
+> +}
+> +
+> +static int __devexit pcf50633_rtc_remove(struct platform_device *pdev)
+> +{
+> +	struct pcf50633_rtc *rtc;
+> +
+> +	rtc = platform_get_drvdata(pdev);
+> +	rtc_device_unregister(rtc->rtc_dev);
+> +
+> +	pcf50633_free_irq(rtc->pcf, PCF50633_IRQ_ALARM);
+> +	pcf50633_free_irq(rtc->pcf, PCF50633_IRQ_SECOND);
+
+ please remove rtc before unregistering
+
+> +	kfree(rtc);
+> +
+> +	return 0;
+> +}
+> +
+> +
+> +static struct platform_driver pcf50633_rtc_driver = {
+> +	.driver = {
+> +		.name = "pcf50633-rtc",
+> +	},
+> +	.probe = pcf50633_rtc_probe,
+> +	.remove = __devexit_p(pcf50633_rtc_remove),
+> +};
+> +
+> +static int __init pcf50633_rtc_init(void)
+> +{
+> +	return platform_driver_register(&pcf50633_rtc_driver);
+> +}
+> +module_init(pcf50633_rtc_init);
+> +
+> +static void __exit pcf50633_rtc_exit(void)
+> +{
+> +	platform_driver_unregister(&pcf50633_rtc_driver);
+> +}
+> +module_exit(pcf50633_rtc_exit);
+> +
+> +MODULE_DESCRIPTION("PCF50633 RTC driver");
+> +MODULE_AUTHOR("Balaji Rao <balajirrao@openmoko.org>");
+> +MODULE_LICENSE("GPL");
+> +
+> 
+
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
