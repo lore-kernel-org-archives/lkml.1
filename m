@@ -1,106 +1,58 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753311AbYLRUcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752888AbYLRUjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753311AbYLRUcU (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 15:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYLRUcI
+	id S1752888AbYLRUjV (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 15:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYLRUjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 15:32:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49418 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751771AbYLRUcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 15:32:05 -0500
-Date: Thu, 18 Dec 2008 21:31:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-        Suresh B Siddha <suresh.b.siddha@intel.com>,
-        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-        Dipankar Sarma <dipankar@in.ibm.com>,
-        Balbir Singh <balbir@linux.vnet.ibm.com>,
-        Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-        Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-        Tim Connors <tconnors@astro.swin.edu.au>,
-        Max Krasnyansky <maxk@qualcomm.com>,
-        Gregory Haskins <gregory.haskins@gmail.com>,
-        Pavel Machek <pavel@suse.cz>,
-        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-Message-ID: <20081218203140.GA18757@elte.hu>
-References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <20081218201938.GB12376@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081218201938.GB12376@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 18 Dec 2008 15:39:06 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38176 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750888AbYLRUjD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 15:39:03 -0500
+Date: Thu, 18 Dec 2008 12:36:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: sfr@canb.auug.org.au, dhowells@redhat.com, trond.myklebust@fys.uio.no,
+        steved@redhat.com, rwheeler@redhat.com, bfields@fieldses.org,
+        nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org
+Subject: Re: Pull request for FS-Cache, including NFS patches
+Message-Id: <20081218123601.11810b7f.akpm@linux-foundation.org>
+In-Reply-To: <20081218142420.GA16728@infradead.org>
+References: <8930.1229560221@redhat.com>
+	<20081218224418.804f10bc.sfr@canb.auug.org.au>
+	<20081218142420.GA16728@infradead.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 18 Dec 2008 09:24:20 -0500
+Christoph Hellwig <hch@infradead.org> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> On Thu, Dec 18, 2008 at 10:44:18PM +1100, Stephen Rothwell wrote:
+> > Added from today.
+> > 
+> > Usual spiel: all patches in that branch must have been
+> > 	posted to a relevant mailing list
+> > 	reviewed
+> > 	unit tested
+> > 	destined for the next merge window (or the current release)
+> > *before* they are included.
+> 
+> I don't think we want fscache for .29 yet.  I'd rather let the
+> credential code settle for one release, and have more time for actually
+> reviewing it properly and have it 100% ready for .30.
+> 
 
-> thanks, applied - and i started testing them. [...]
+I don't believe that it has yet been convincingly demonstrated that we
+want to merge it at all.
 
-the sched.h bits needed the small fix below. (struct sched_domain is not 
-defined on UP)
+It's a huuuuuuuuge lump of new code, so it really needs to provide
+decent value.  Can we revisit this?  Yet again?  What do we get from
+all this?
 
-	Ingo
-
-------------->
->From edb4c71953409c1deac1a80528ac0aa768762b33 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 18 Dec 2008 21:30:23 +0100
-Subject: [PATCH] sched: move test_sd_parent() to an SMP section of sched.h
-
-Impact: build fix
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/sched.h |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 5a933d9..e5f928a 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -920,6 +920,15 @@ extern void partition_sched_domains(int ndoms_new, struct cpumask *doms_new,
- 				    struct sched_domain_attr *dattr_new);
- extern int arch_reinit_sched_domains(void);
- 
-+/* Test a flag in parent sched domain */
-+static inline int test_sd_parent(struct sched_domain *sd, int flag)
-+{
-+	if (sd->parent && (sd->parent->flags & flag))
-+		return 1;
-+
-+	return 0;
-+}
-+
- #else /* CONFIG_SMP */
- 
- struct sched_domain_attr;
-@@ -1431,15 +1440,6 @@ struct task_struct {
- #endif
- };
- 
--/* Test a flag in parent sched domain */
--static inline int test_sd_parent(struct sched_domain *sd, int flag)
--{
--	if (sd->parent && (sd->parent->flags & flag))
--		return 1;
--
--	return 0;
--}
--
- /*
-  * Priority of a process goes from 0..MAX_PRIO-1, valid RT
-  * priority is 0..MAX_RT_PRIO-1, and SCHED_NORMAL/SCHED_BATCH
