@@ -1,105 +1,56 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752739AbYLRTU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753119AbYLRTYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752739AbYLRTU3 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 14:20:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbYLRTUS
+	id S1753119AbYLRTYL (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 14:24:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYLRTX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 14:20:18 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:40418 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbYLRTUR (ORCPT
+	Thu, 18 Dec 2008 14:23:56 -0500
+Received: from p02c12o144.mxlogic.net ([208.65.145.77]:35999 "EHLO
+	p02c12o144.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751380AbYLRTXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 14:20:17 -0500
-Date: Fri, 19 Dec 2008 00:48:39 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-        Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-        Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-        Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-        Bharata B Rao <bharata.rao@in.ibm.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        libcg-devel <libcg-devel@lists.sourceforge.net>
-Subject: Re: [BUG][PANIC] cgroup panics with mmotm for 2.6.28-rc7
-Message-ID: <20081218191839.GI26572@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Li Zefan <lizf@cn.fujitsu.com>,
-	Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-	Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-	Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-	Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-	Bharata B Rao <bharata.rao@in.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	libcg-devel <libcg-devel@lists.sourceforge.net>
-References: <20081215113253.GL18403@balbir.in.ibm.com> <6599ad830812151757t5362ae16y81b469b06022135c@mail.gmail.com> <49471540.8090304@cn.fujitsu.com> <4947183C.6010606@cn.fujitsu.com>
+	Thu, 18 Dec 2008 14:23:55 -0500
+X-Greylist: delayed 455 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Dec 2008 14:23:54 EST
+Message-ID: <494AA15B.2010000@steeleye.com>
+Date: Thu, 18 Dec 2008 14:15:39 -0500
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <4947183C.6010606@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Pavel Machek <pavel@suse.cz>
+CC: kernel list <linux-kernel@vger.kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: nbd: clean up error handling
+References: <20081218182108.GA13546@elf.ucw.cz>
+In-Reply-To: <20081218182108.GA13546@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Dec 2008 19:15:40.0447 (UTC) FILETIME=[03FF4AF0:01C96145]
+X-Spam: [F=0.2000000000; S=0.200(2008120801)]
+X-MAIL-FROM: <paul.clements@steeleye.com>
+X-SOURCE-IP: [71.30.118.242]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Li Zefan <lizf@cn.fujitsu.com> [2008-12-16 10:53:48]:
+Hi Pavel,
 
-> Li Zefan wrote:
-> > Paul Menage wrote:
-> >> That implies that we ran out of css_set objects when moving the task
-> >> into the new cgroup.
-> >>
-> >> Did you have all of the configured controllers mounted, or just a subset?
-> >>
-> >> What date was this mmotm? Was it after Li's patch fixes went in on 8th Dec?
-> >>
-> > 
-> > It is probably my fault. :( I'm looking into this problem.
-> > 
-> > There are 2 related cleanup patches in -mm:
-> > 
-> > cgroups-add-inactive-subsystems-to-rootnodesubsys_list.patch (and -fix.patch)
-> > cgroups-introduce-link_css_set-to-remove-duplicate-code.patch (and -fix.patch)
-> > 
-> > If the bug is reproducable, could you revert the above patches and seee if the
-> > bug is still there.
-> > 
-> >> Paul
-> >>
-> >> On Mon, Dec 15, 2008 at 3:32 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >>> Hi, Paul,
-> >>>
-> >>> I see the following stack trace when I run my tests. I've not yet
-> >>> investigated the problem.
-> >>>
-> >>> ------------[ cut here ]------------
-> >>> kernel BUG at kernel/cgroup.c:392!
-> 
-> In latest -mm, this BUG_ON is line 398, and before the below 2 fixlet patches,
-> the BUG_ON is line 392, so I guess you were using older -mm:
-> 
-> cgroups-add-inactive-subsystems-to-rootnodesubsys_list-fix.patch
-> cgroups-introduce-link_css_set-to-remove-duplicate-code-fix.patch
-> 
-> Could you try the latest -mm kernel, or apply
-> cgroups-add-inactive-subsystems-to-rootnodesubsys_list-fix.patch ?
-> 
-> diff -puN kernel/cgroup.c~cgroups-add-inactive-subsystems-to-rootnodesubsys_list-fix kernel/cgroup.c
-> --- a/kernel/cgroup.c~cgroups-add-inactive-subsystems-to-rootnodesubsys_list-fix
-> +++ a/kernel/cgroup.c
-> @@ -2521,7 +2521,7 @@ static void __init cgroup_init_subsys(st
->  	printk(KERN_INFO "Initializing cgroup subsys %s\n", ss->name);
-> 
->  	/* Create the top cgroup state for this subsystem */
-> -	list_add(&ss->sibling, &rootnode.root_list);
-> +	list_add(&ss->sibling, &rootnode.subsys_list);
->  	ss->root = &rootnode;
->  	css = ss->create(ss, dummytop);
->  	/* We don't handle early failures gracefully */
->
+hanks for the patch...
 
-Yes, this fix does work for me,
- 
+Pavel Machek wrote:
+> Uses existing error_out: label instead of hardcoding error action.
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
 
--- 
-        Thanks!
-	Balbir
+> @@ -475,8 +473,7 @@ static void nbd_handle_req(struct nbd_de
+>  	if (nbd_send_req(lo, req) != 0) {
+>  		printk(KERN_ERR "%s: Request send failed\n",
+>  				lo->disk->disk_name);
+> -		req->errors++;
+> -		nbd_end_request(req);
+> +		goto error_out;
+
+This one is not correct. We don't return immediately here.
+
+
+--
+Paul
