@@ -1,98 +1,85 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752492AbYLRLWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752555AbYLRL1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752492AbYLRLWw (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 06:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbYLRLWl
+	id S1752555AbYLRL1H (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 06:27:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbYLRL0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 06:22:41 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35985 "EHLO mx3.mail.elte.hu"
+	Thu, 18 Dec 2008 06:26:53 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59994 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbYLRLWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 06:22:41 -0500
-Date: Thu, 18 Dec 2008 12:22:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-        Steven Rostedt <rostedt@goodmis.org>,
+	id S1750789AbYLRL0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 06:26:53 -0500
+Subject: Re: [PATCH] configfs: Silence lockdep on mkdir(), rmdir() and
+	configfs_depend_item()
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
         Andrew Morton <akpm@linux-foundation.org>,
-        Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] tracing/function-graph-tracer: prevent from hrtimer
-	interrupt infinite loop
-Message-ID: <20081218112216.GE14332@elte.hu>
-References: <4949A2CC.6040209@gmail.com> <20081218103459.GD10513@elte.hu> <alpine.LFD.2.00.0812181136410.3492@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0812181136410.3492@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+        Louis Rilling <louis.rilling@kerlabs.com>,
+        linux-kernel@vger.kernel.org, cluster-devel@redhat.com
+In-Reply-To: <20081218092744.GB30789@mail.oracle.com>
+References: <20081212100615.GD19128@hawkmoon.kerlabs.com>
+	 <1229095751-23984-1-git-send-email-louis.rilling@kerlabs.com>
+	 <20081217134020.42da55fc.akpm@linux-foundation.org>
+	 <1229585208.9487.112.camel@twins>  <20081218092744.GB30789@mail.oracle.com>
+Content-Type: text/plain
+Organization: Red Hat UK Ltd
+Date: Thu, 18 Dec 2008 11:26:58 +0000
+Message-Id: <1229599618.3538.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+I have to say that when I brought this subject up, I didn't realise
+quite how tricky this was going to be, however...
 
-> On Thu, 18 Dec 2008, Ingo Molnar wrote:
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > Impact: fix a system hang on slow systems
-> > > 
-> > > While testing the function graph tracer on VirtualBox, I had a system hang
-> > > immediatly after enabling the tracer.
-> > >
-> > > If hrtimer is enabled on kernel, a slow system can spend too much time 
-> > > during tracing the hrtimer_interrupt which will do eternal loops, 
-> > > assuming it always have to retry its process because too much time 
-> > > elapsed during its time update. Now we provide a feature which lurks at 
-> > > the number of retries on hrtimer_interrupt. After 10 retries, the 
-> > > function graph tracer will definetly stop its tracing.
-> > 
-> > hm, i dont really like this solution - it just works around the problem by 
-> > 'speeding up' the system. If we have a _real_ slow system, there's no such 
-> > way for us to speed it up.
-> > 
-> > Thomas, what do you think - would you expect this lockup to happen on 
-> > really slow systems? If yes, is there a way we could avoid it from 
-> > happening - by driving some sort of 'mandatory interval', that is doubled 
-> > in size every time we detect such a bad hrtimer loop?
+On Thu, 2008-12-18 at 01:27 -0800, Joel Becker wrote:
+> On Thu, Dec 18, 2008 at 08:26:48AM +0100, Peter Zijlstra wrote:
+> > On Wed, 2008-12-17 at 13:40 -0800, Andrew Morton wrote:
+> > > On Fri, 12 Dec 2008 16:29:11 +0100
+> > > Louis Rilling <louis.rilling@kerlabs.com> wrote:
+> > > > >From inside configfs it is not possible to serialize those recursive
+> > > > locking with a top-level one, because mkdir() and rmdir() are already
+> > > > called with inodes locked by the VFS. So using some
+> > > > mutex_lock_nest_lock() is not an option.
 > 
-> In reality I have not seen such a problem yet, even on an old real slow 
-> P1 which I tricked to do highres, but of course if we add such time 
-> consuming debugs and make it slow enough the system will spend all the 
-> time running the tick timer :)
+> <snip>
 > 
-> We should at least warn once about such a loop.
+<more snipping>
+
+> > Right, so basically we avoid syscalls by making vfs ops do stuff..
+> > lovely - still not seeing it though - regular filesystems seems to cope
+> > just fine and they get to create arbitrary tree structures too.
 > 
-> I'm not sure about the mandatory interval though:
+> 	It's about the default_groups and how they build up and tear
+> down small bits of tree.
+> 	A simple creation of a config_item, a mkdir(2), is a normal VFS
+> lock set and doesn't make lockdep unhappy.  But if the new config_item
+> has a default_group or two, they need locking too.  Not so much on
+> mkdir(2), but on rmdir(2).
 > 
-> Try the same test with HZ=1000 periodic mode (HIGHRES/NOHZ=off) and I 
-> bet you see the same problem, just not in hrtimer_interrupt().
+So if I've understood this correctly, the dentries created upon mkdir
+live until such time as they are removed at some later date, presumably
+with rmdir?
 
-that would be important to double-check. Frederic, does the system lock up 
-with a periodic 1khz HZ tick just as much? I.e. does the processing of a 
-single timer interrupt take more than 1 milliseconds?
+When creating the tree, would it be possible to build it starting from
+the bottom and working towards the point of attachment and then to not
+actually attach it until the last moment? That way it would not be
+visible from userland until it was linked into the existing dir and that
+solves the locking issue for mkdir I think.
 
-Granted, if the system is too slow to process the system clock, it's not 
-useful.
+As you say, rmdir seems the harder problem, but again, is it possible to
+separate the unlink operation from the destruction of the tree by
+keeping the tree, after its been unlinked, until the last userland
+reference has gone away? At least I assume that is why the locking is
+there. I may be a bit off the mark, but it seems like this is quite
+similar to how the VFS does umount, so maybe there are some hints in
+that code which may help us solve this issue?
 
-But that's my point: instead of just randomly disabling functionality 
-until the system gets 'fast enough' to process timer IRQs, how about 
-dynamically and adaptively extending the required minimal timeout between 
-hr-timer IRQs?
+Steve.
 
-That will in essence self-tune the system into some minimally working 
-state - instead of locking it up. Note that such a method would work with 
-any source of timer IRQ slowness - not just tracing.
 
-( And maybe the lockup is somehow hrtimer IRQ induced. If a 1khz clock
-  still works for Frederic then that angle has to be investigated. )
-
-	Ingo
