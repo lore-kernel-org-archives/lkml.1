@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752885AbYLRSAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753243AbYLRRzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752885AbYLRSAc (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 13:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbYLRSAW
+	id S1753243AbYLRRzP (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 12:55:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbYLRRxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 13:00:22 -0500
-Received: from bohort.kerlabs.com ([62.160.40.57]:38300 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbYLRSAV (ORCPT
+	Thu, 18 Dec 2008 12:53:49 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:59557 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753304AbYLRRxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 13:00:21 -0500
-From: Louis Rilling <louis.rilling@kerlabs.com>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-        cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
-Subject: Make lockdep happy with configfs
-Date: Thu, 18 Dec 2008 19:00:16 +0100
-Message-Id: <1229623218-8056-1-git-send-email-louis.rilling@kerlabs.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <20081218111536.GR19128@hawkmoon.kerlabs.com>
-References: <20081218111536.GR19128@hawkmoon.kerlabs.com>
+	Thu, 18 Dec 2008 12:53:48 -0500
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: [PATCH v7 8/8] sched: idle_balance() does not call
+	load_balance_newidle()
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+        Suresh B Siddha <suresh.b.siddha@intel.com>,
+        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+        Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+        Balbir Singh <balbir@linux.vnet.ibm.com>,
+        Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+        Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+        Tim Connors <tconnors@astro.swin.edu.au>,
+        Max Krasnyansky <maxk@qualcomm.com>,
+        Gregory Haskins <gregory.haskins@gmail.com>,
+        Pavel Machek <pavel@suse.cz>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Date: Thu, 18 Dec 2008 23:26:59 +0530
+Message-ID: <20081218175658.29812.62512.stgit@drishya.in.ibm.com>
+In-Reply-To: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
+References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+load_balance_newidle() does not get called if SD_BALANCE_NEWIDLE
+is set at higher level domain (3-CPU) and not in low level domain
+(2-MC).
 
-Hi,
+pulled_task is initialised to -1 and checked for non-zero which
+is always true if the lowest level sched_domain does not have
+SD_BALANCE_NEWIDLE flag set.
 
-Here is a patchset implementing a more lockdep-friendly solution to make lockdep
-happy with configfs.
+Trivial fix to initialise pulled_task to zero.
 
-The first patch could probably be cleaner, but first let's see if the
-approach is ok.
-I don't have a good setup to test the second patch beyond compilation, but I
-guess that Joel has one :)
+This patch has been queued for 2.6.29
+http://lkml.org/lkml/2008/12/8/213
 
-So, does it look better?
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+---
 
-Louis
+ kernel/sched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Louis Rilling (2):
-      configfs: Silence lockdep on mkdir() and rmdir()
-      configfs: Rework configfs_depend_item() locking and make lockdep happy
+diff --git a/kernel/sched.c b/kernel/sched.c
+index f82a7a0..e6a88bf 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3773,7 +3773,7 @@ out_balanced:
+ static void idle_balance(int this_cpu, struct rq *this_rq)
+ {
+ 	struct sched_domain *sd;
+-	int pulled_task = -1;
++	int pulled_task = 0;
+ 	unsigned long next_balance = jiffies + HZ;
+ 	cpumask_t tmpmask;
+ 
 
- fs/configfs/configfs_internal.h |    3 +
- fs/configfs/dir.c               |  131 +++++++++++++++++++++++----------------
- fs/configfs/inode.c             |   28 ++++++++
- 3 files changed, 108 insertions(+), 54 deletions(-)
--- 
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
