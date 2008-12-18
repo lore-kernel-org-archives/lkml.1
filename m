@@ -1,52 +1,111 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752222AbYLRUL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753206AbYLRUUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752222AbYLRUL5 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 15:11:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYLRULn
+	id S1753206AbYLRUUa (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 15:20:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbYLRUUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 15:11:43 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:57934 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753495AbYLRULl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 15:11:41 -0500
-Date: Thu, 18 Dec 2008 21:13:11 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] strip generated symbols from *.ko
-Message-ID: <20081218201311.GA16647@uranus.ravnborg.org>
-References: <49479EDE.76E4.0078.0@novell.com>
-Mime-Version: 1.0
+	Thu, 18 Dec 2008 15:20:20 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54326 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751511AbYLRUUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 15:20:19 -0500
+Date: Thu, 18 Dec 2008 21:19:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+        Suresh B Siddha <suresh.b.siddha@intel.com>,
+        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+        Peter Zijlstra <a.p.zijlstra@chello.nl>,
+        Dipankar Sarma <dipankar@in.ibm.com>,
+        Balbir Singh <balbir@linux.vnet.ibm.com>,
+        Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+        Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+        Tim Connors <tconnors@astro.swin.edu.au>,
+        Max Krasnyansky <maxk@qualcomm.com>,
+        Gregory Haskins <gregory.haskins@gmail.com>,
+        Pavel Machek <pavel@suse.cz>,
+        Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
+Message-ID: <20081218201938.GB12376@elte.hu>
+References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49479EDE.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16, 2008 at 11:28:14AM +0000, Jan Beulich wrote:
-> This patch changes the way __crc_ symbols are being resolved from
-> using ld to do so to using the assembler, thus allowing these symbols
-> to be marked local (the linker creates then as global ones) and hence
-> allow stripping (for modules) or ignoring (for vmlinux) them. While at
-> this, also strip other generated symbols during module installation.
-> 
-> One potentially debatable point is the handling of the flags passeed
-> to gcc when translating the intermediate assembly file into an object:
-> passing $(c_flags) unchanged doesn't work as gcc passes --gdwarf2 to
-> gas whenever is sees any -g* option, even for -g0, and despite the
-> fact that the compiler would have already produced all necessary debug
-> info in the C->assembly translation phase. I took the approach of just
-> filtering out all -g* options, but an alternative to such negative
-> filtering might be to have a positive filter which might, in the ideal
-> case allow just all the -Wa,* options to pass through.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-Both patches are encoded so I end up with "=20", "=3D" in the saved file.
-Can you please resend as attachment or fix your mailer.
+* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
 
-Thanks,
-	Sam
+> Hi,
+> 
+> The existing power saving loadbalancer CONFIG_SCHED_MC attempts to run 
+> the workload in the system on minimum number of CPU packages and tries 
+> to keep rest of the CPU packages idle for longer duration. Thus 
+> consolidating workloads to fewer packages help other packages to be in 
+> idle state and save power.  The current implementation is very 
+> conservative and does not work effectively across different workloads. 
+> Initial idea of tunable sched_mc_power_savings=n was proposed to enable 
+> tuning of the power saving load balancer based on the system 
+> configuration, workload characteristics and end user requirements.
+> 
+> The power savings and performance of the given workload in an under 
+> utilised system can be controlled by setting values of 0, 1 or 2 to 
+> /sys/devices/system/cpu/sched_mc_power_savings with 0 being highest 
+> performance and least power savings and level 2 indicating maximum power 
+> savings even at the cost of slight performance degradation.
+> 
+> Please refer to the following discussions and article for details.
+> 
+> [1]Making power policy just work
+> http://lwn.net/Articles/287924/ 
+> 
+> [2][RFC v1] Tunable sched_mc_power_savings=n
+> http://lwn.net/Articles/287882/
+>                                                                                                                
+> v2: http://lwn.net/Articles/297306/
+> v3: http://lkml.org/lkml/2008/11/10/260
+> v4: http://lkml.org/lkml/2008/11/21/47
+> v5: http://lkml.org/lkml/2008/12/11/178
+> v6: http://lwn.net/Articles/311830/
+> 
+> The following series of patch demonstrates the basic framework for
+> tunable sched_mc_power_savings.
+> 
+> This version of the patch incorporates comments and feedback received
+> on the previous post from Andrew Morton.
+> 
+> Changes form v6:
+> ----------------
+> * Convert BALANCE_FOR_xx_POWER and related macros to inline functions
+>   based on comments from Andrew and Ingo.
+> * Ran basic kernelbench test and did not see any performance variation
+>   due to the changes.
+> 
+> Changes form v5:
+> ---------------
+> * Fixed the sscanf bug and checking for (p->flags & PF_KTHREAD)
+> * Dropped the RFC prefix to indicate that the patch is ready for
+>   testing and inclusion  
+> * Patch series against 2.6.28-rc8 kernel
+
+thanks, applied - and i started testing them. It needed some help here and 
+there to resolve conflicts with pending cpumask changes. Could you please 
+double-check the merged up end result in the latest scheduler devel tree:
+
+  http://people.redhat.com/mingo/tip.git/README
+
+thanks,
+
+	Ingo
