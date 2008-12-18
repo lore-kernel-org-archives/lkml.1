@@ -1,297 +1,244 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753649AbYLRMHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753355AbYLRMGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753649AbYLRMHD (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 07:07:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYLRMGv
+	id S1753355AbYLRMGf (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 07:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbYLRMG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 07:06:51 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:37954 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753294AbYLRMGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 07:06:49 -0500
-Date: Thu, 18 Dec 2008 23:06:37 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for December 18
-Message-Id: <20081218230637.c879a046.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__18_Dec_2008_23_06_37_+1100_=Cn.R6/uGWX2yg7N"
+	Thu, 18 Dec 2008 07:06:26 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:52672 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751320AbYLRMGZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 07:06:25 -0500
+Date: Thu, 18 Dec 2008 12:06:19 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Guennadi Liakhovetski <lg@denx.de>
+Cc: linux-kernel@vger.kernel.org, rpurdie@rpsys.net
+Subject: Re: [PATCH] leds: add a dac124s085 SPI LED driver
+Message-ID: <20081218120619.GJ12431@fluff.org.uk>
+References: <Pine.LNX.4.64.0812181213540.5510@axis700.grange>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0812181213540.5510@axis700.grange>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__18_Dec_2008_23_06_37_+1100_=Cn.R6/uGWX2yg7N
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Dec 18, 2008 at 12:15:28PM +0100, Guennadi Liakhovetski wrote:
+> A simple LED driver using the DAC124S085 DAC from NatSemi
+> 
+> Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
+> ---
+> 
+> Needs a previous patch making brightness resolution configurable:
+> 
+> http://marc.info/?l=linux-kernel&m=122771446123369&w=2
+> 
+> Richard, what's its status btw?
+> 
+>  drivers/leds/Kconfig           |    7 ++
+>  drivers/leds/Makefile          |    3 +
+>  drivers/leds/leds-dac124s085.c |  141 ++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 151 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/leds/leds-dac124s085.c
+> 
+> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+> index a4a1ae2..a28635f 100644
+> --- a/drivers/leds/Kconfig
+> +++ b/drivers/leds/Kconfig
+> @@ -178,6 +178,13 @@ config LEDS_DA903X
+>  	  This option enables support for on-chip LED drivers found
+>  	  on Dialog Semiconductor DA9030/DA9034 PMICs.
+>  
+> +config LEDS_DAC124S085
+> +	tristate "LED Support for DAC124S085 SPI DAC"
+> +	depends on LEDS_CLASS && SPI
+> +	help
+> +	  This option enables support for DAC124S085 SPI DAC from NatSemi,
+> +	  which can be used to control up to four LEDs.
+> +
+>  comment "LED Triggers"
+>  
+>  config LEDS_TRIGGERS
+> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+> index bc247cb..8780152 100644
+> --- a/drivers/leds/Makefile
+> +++ b/drivers/leds/Makefile
+> @@ -26,6 +26,9 @@ obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
+>  obj-$(CONFIG_LEDS_HP_DISK)		+= leds-hp-disk.o
+>  obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
+>  
+> +# LED SPI Drivers
+> +obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
+> +
+>  # LED Triggers
+>  obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
+>  obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)	+= ledtrig-ide-disk.o
+> diff --git a/drivers/leds/leds-dac124s085.c b/drivers/leds/leds-dac124s085.c
+> new file mode 100644
+> index 0000000..415a437
+> --- /dev/null
+> +++ b/drivers/leds/leds-dac124s085.c
+> @@ -0,0 +1,141 @@
+> +/*
+> + * Copyright 2008
+> + * Guennadi Liakhovetski, DENX Software Engineering, <lg@denx.de>
+> + *
+> + * This file is subject to the terms and conditions of version 2 of
+> + * the GNU General Public License.  See the file COPYING in the main
+> + * directory of this archive for more details.
+> + *
+> + * LED driver for the DAC124S085 SPI DAC
+> + */
+> +
+> +#include <linux/leds.h>
+> +#include <linux/mutex.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/workqueue.h>
+> +#include <linux/spi/spi.h>
+> +
+> +struct dac124s085_led {
+> +	struct led_classdev	ldev;
+> +	struct spi_device	*spi;
+> +	int			id;
+> +	int			brightness;
+> +	char			name[sizeof("dac124s085-3")];
+> +
+> +	struct mutex		mutex;
+> +	struct work_struct	work;
+> +	spinlock_t		lock;
+> +};
+> +
+> +struct dac124s085 {
+> +	struct dac124s085_led leds[4];
+> +};
+> +
+> +static void dac124s085_led_work(struct work_struct *work)
+> +{
+> +	struct dac124s085_led *led = container_of(work, struct dac124s085_led,
+> +						  work);
+> +	u16 word;
+> +
+> +	mutex_lock(&led->mutex);
+> +	word = ((led->id) << 14) | (1 << 12) | (led->brightness & 0xfff);
 
-Hi all,
+magic constant, please define and use a define.
 
-Changes since 20081217:
+> +	spi_write(led->spi, (const u8 *)&word, sizeof(word));
 
-New tree:
-	fscache
+casting between u16 and u8 is just waiting for endian-ness problems to
+happen.
 
-Undropped tree:
-	nommu
-	boot-params
+> +	mutex_unlock(&led->mutex);
+> +}
+> +
+> +static void dac124s085_set_brightness(struct led_classdev *ldev,
+> +				      enum led_brightness brightness)
+> +{
+> +	struct dac124s085_led *led = container_of(ldev, struct dac124s085_led,
+> +						  ldev);
+> +
+> +	spin_lock(&led->lock);
+> +	led->brightness = brightness;
+> +	schedule_work(&led->work);
+> +	spin_unlock(&led->lock);
+> +}
+> +
+> +static int dac124s085_probe(struct spi_device *spi)
+> +{
+> +	struct dac124s085	*dac;
+> +	struct dac124s085_led	*led;
+> +	int i, ret;
+> +
+> +	dac = kzalloc(sizeof(*dac), GFP_KERNEL);
+> +	if (!dac)
+> +		return -ENOMEM;
+> +
+> +	spi->bits_per_word = 16;
+> +
+> +	for (i = 0; i < 4; i++) {
 
-Dropped trees (temporarily):
-	scsi (build problem)
-	mtd (build problems)
-	kvm (build problem)
-	rr (quilt series import problem)
-	semaphore-removal (due to unfixed conflicts against Linus' tree)
-	cpu_alloc (build problem)
-	perfmon3 (concerns from the x86 team)
-	audit (difficult conflicts)
+how about ARRAY_SIZE(dac->leds) instead of 4.
 
-The sound tree lost its conflict and merge fixup patch.
+> +		led		= dac->leds + i;
+> +		led->id		= i;
+> +		led->brightness	= LED_OFF;
+> +		led->spi	= spi;
+> +		snprintf(led->name, sizeof(led->name), "dac124s085-%d", i);
+> +		spin_lock_init(&led->lock);
+> +		INIT_WORK(&led->work, dac124s085_led_work);
+> +		mutex_init(&led->mutex);
+> +		led->ldev.name = led->name;
+> +		led->ldev.brightness = LED_OFF;
+> +		led->ldev.max_brightness = 0xfff;
+> +		led->ldev.brightness_set = dac124s085_set_brightness;
+> +		ret = led_classdev_register(&spi->dev, &led->ldev);
+> +		if (ret < 0)
+> +			goto eledcr;
+> +	}
+> +
+> +	spi_set_drvdata(spi, dac);
+> +
+> +	return 0;
+> +
+> +eledcr:
+> +	while (i--)
+> +		led_classdev_unregister(&dac->leds[i].ldev);
+> +
+> +	spi_set_drvdata(spi, NULL);
+> +	kfree(dac);
+> +	return ret;
+> +}
+> +
+> +static int dac124s085_remove(struct spi_device *spi)
+> +{
+> +	struct dac124s085	*dac = spi_get_drvdata(spi);
+> +	int i;
+> +
+> +	for (i = 0; i < 4; i++) {
 
-The watchdog tree lost its conflict.
+see previous comment.
 
-The boot-params tree gained a conflict against the sh tree but lost its
-build problems.
+> +		led_classdev_unregister(&dac->leds[i].ldev);
+> +		cancel_work_sync(&dac->leds[i].work);
+> +	}
+> +
+> +	spi_set_drvdata(spi, NULL);
+> +	kfree(dac);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct spi_driver dac124s085_driver = {
+> +	.probe		= dac124s085_probe,
+> +	.remove		= dac124s085_remove,
+> +	.driver = {
+> +		.name	= "dac124s085",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +};
+> +
+> +static int __init dac124s085_leds_init(void)
+> +{
+> +	return spi_register_driver(&dac124s085_driver);
+> +}
+> +
+> +static void __exit dac124s085_leds_exit(void)
+> +{
+> +	spi_unregister_driver(&dac124s085_driver);
+> +}
+> +
+> +module_init(dac124s085_leds_init);
+> +module_exit(dac124s085_leds_exit);
+> +
+> +MODULE_AUTHOR("Guennadi Liakhovetski <lg@denx.de>");
+> +MODULE_DESCRIPTION("DAC124S085 LED driver");
+> +MODULE_LICENSE("GPL v2");
 
-The kvm tree gained a build problem and was dropped.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
-i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 134 trees (counting Linus' and 15 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging audit-current/for-linus
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-CONFLICT (content): Merge conflict in drivers/char/Makefile
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in arch/powerpc/platforms/85xx/mpc85xx_m=
-ds.c
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-CONFLICT (content): Merge conflict in scripts/recordmcount.pl
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-CONFLICT (content): Merge conflict in drivers/md/dm.c
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-CONFLICT (content): Merge conflict in fs/xfs/xfs_rename.c
-Merging infiniband/for-next
-Merging acpi/test
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-CONFLICT (content): Merge conflict in arch/x86/kernel/reboot.c
-Merging dlm/next
-Merging ocfs2/linux-next
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (delete/modify): arch/sparc64/kernel/idprom.c deleted in HEAD and =
-modified in net/master. Version net/master of arch/sparc64/kernel/idprom.c =
-left in tree.
-CONFLICT (content): Merge conflict in fs/lockd/host.c
-CONFLICT (content): Merge conflict in fs/lockd/mon.c
-$ git rm -f arch/sparc64/kernel/idprom.c
-Applying: net: async_tx merge fix
-Merging wireless/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging rr_cpumask/master
-CONFLICT (content): Merge conflict in arch/x86/kernel/io_apic.c
-CONFLICT (content): Merge conflict in kernel/sched.c
-CONFLICT (content): Merge conflict in kernel/sched_stats.h
-Merging cifs/master
-CONFLICT (content): Merge conflict in fs/cifs/connect.c
-Applying: cifs: update for new IP4/6 address printing
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging bkl-removal/bkl-removal
-CONFLICT (content): Merge conflict in fs/ioctl.c
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in fs/bio.c
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/net/tg3.c
-CONFLICT (content): Merge conflict in firmware/Makefile
-CONFLICT (content): Merge conflict in firmware/WHENCE
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in arch/x86/mm/Makefile
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-CONFLICT (content): Merge conflict in drivers/char/tty_audit.c
-CONFLICT (content): Merge conflict in fs/cifs/cifs_fs_sb.h
-CONFLICT (content): Merge conflict in fs/ocfs2/namei.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_cred.h
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_globals.h
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_ioctl.c
-CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.h
-Merging lblnet/master
-CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
-e.txt
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in fs/devpts/inode.c
-Merging agp/agp-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-CONFLICT (content): Merge conflict in kernel/sched.c
-Merging osd/linux-next
-Merging fatfs/master
-Merging fuse/for-next
-Merging jc_docs/docs-next
-Merging nommu/master
-CONFLICT (content): Merge conflict in Documentation/sysctl/vm.txt
-CONFLICT (content): Merge conflict in kernel/fork.c
-Merging boot-params/master
-CONFLICT (content): Merge conflict in arch/arm/kernel/setup.c
-CONFLICT (content): Merge conflict in arch/parisc/kernel/setup.c
-CONFLICT (content): Merge conflict in arch/sh/boards/mach-microdev/setup.c
-CONFLICT (content): Merge conflict in arch/sh/boards/mach-migor/setup.c
-CONFLICT (content): Merge conflict in init/main.c
-Merging trivial/for-next
-Merging quilt/staging
-CONFLICT (delete/modify): drivers/staging/winbond/linux/wbusb.c deleted in =
-quilt/staging and modified in HEAD. Version HEAD of drivers/staging/winbond=
-/linux/wbusb.c left in tree.
-CONFLICT (content): Merge conflict in drivers/staging/wlan-ng/p80211netdev.c
-CONFLICT (content): Merge conflict in drivers/staging/wlan-ng/p80211wext.c
-$ git rm -f drivers/staging/winbond/linux/wbusb.c
-Merging scsi-post-merge/master
-Merging fscache/master
-Created commit b19a7ac: Revert "Merge commit 'kvm/master'"
-
---Signature=_Thu__18_Dec_2008_23_06_37_+1100_=Cn.R6/uGWX2yg7N
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAklKPM0ACgkQjjKRsyhoI8wb5ACfc9nzO3VNY48tKpUktkFlx6pk
-yM4AnigAfRMf8TugGxNIkNh0b/MfvY/T
-=csYn
------END PGP SIGNATURE-----
-
---Signature=_Thu__18_Dec_2008_23_06_37_+1100_=Cn.R6/uGWX2yg7N--
+  'a smiley only costs 4 bytes'
