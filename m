@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752839AbYLRT6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752956AbYLRUBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839AbYLRT6T (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 14:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbYLRT6G
+	id S1752956AbYLRUBQ (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 15:01:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYLRUA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 14:58:06 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56710 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751568AbYLRT6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 14:58:05 -0500
-Date: Thu, 18 Dec 2008 20:57:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-        linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: revert CONFIG_RELOCATABLE=y defconfig change
-Message-ID: <20081218195755.GA10786@elte.hu>
-References: <20081218173506.GA29781@localhost.localdomain>
+	Thu, 18 Dec 2008 15:00:58 -0500
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:47504 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbYLRUA5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 15:00:57 -0500
+Message-ID: <494AABDB.80408@cs.columbia.edu>
+Date: Thu, 18 Dec 2008 15:00:27 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081218173506.GA29781@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Mike Waychison <mikew@google.com>, jeremy@goop.org, arnd@arndb.de,
+        linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+        Linux Torvalds <torvalds@linux-foundation.org>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC v11][PATCH 05/13] Dump memory address space
+References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>	 <1228498282-11804-6-git-send-email-orenl@cs.columbia.edu>	 <4949B4ED.9060805@google.com>  <494A2F94.2090800@cs.columbia.edu> <1229615676.17206.518.camel@nimitz>
+In-Reply-To: <1229615676.17206.518.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
-> >From 37a92bc970ce025d8a42fed27413485fd341db31 Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Thu, 18 Dec 2008 18:03:20 +0100
-> Subject: [PATCH] x86: revert CONFIG_RELOCATABLE=y defconfig change
+Dave Hansen wrote:
+> On Thu, 2008-12-18 at 06:10 -0500, Oren Laadan wrote:
+>>>> +    for (i = pgarr->nr_used; i--; /**/)
+>>>> +        page_cache_release(pgarr->pages[i]);
+>>> This is sorta hard to read (and non-intuitive).  Is it easier to do:
+>>>
+>>> for (i = 0; i < pgarr->nr_used; i++)
+>>>     page_cache_release(pgarr->pages[i]);
+>>>
+>>> It shouldn't matter what order you release the pages in..
+>> Was meant to avoid a dereference to 'pgarr->nr_used' in the comparison.
+>> (though I doubt if the performance impact is at all visible)
 > 
-> This commit:
+> That's a bit to aggressive an optimization.  You two piqued my
+> curiosity, so I tried a little experiment with this .c file:
 > 
-> commit 5cb04df8d3f03e37a19f2502591a84156be71772
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Sun May 4 19:49:04 2008 +0200
+> extern void bar(int i);
 > 
->    x86: defconfig updates
+> struct s {
+>         int *array;
+>         int size;
+> };
 > 
-> changed CONFIG_RELOCATABLE from n to y, which may lead to a mismatch
-> between the vmlinux debug information and the runtime location of the
-> kernel, even when the bootloader does not relocate the kernel.
+> extern struct s *s;
+> void foo(void)
+> {
+>         int i;
+> #ifdef OREN
+>         for (i = s->size; i--; )
+> #else
+>         for (i = 0; i < s->size; i++)
+> #endif
+>                 bar(s->array[i]);
+> }
 > 
-> Revert the specific change. Works for me with GRUB and qemu.
-> 
-> Reference: http://lkml.org/lkml/2008/11/25/243
-> 
-> Cc: Huang Ying <ying.huang@intel.com>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-> ---
->  arch/x86/configs/i386_defconfig   |    2 +-
->  arch/x86/configs/x86_64_defconfig |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+> for O in "" -O -O1 -O2 -O3 -Os; do
+> 	gcc -DOREN $O -c f1.c -o oren.o;
+> 	gcc $O -c f1.c -o mike.o;
+> 	echo -n Oren:; objdump -d oren.o | grep ret;
+> 	echo -n Mike:; objdump -d mike.o | grep ret;
+> done
 
-applied to tip/x86/defconfig, thanks Vegard!
+For what it's worth, the idea was to improve time... (not code length).
+I changed the code anyway (in response to another comment).
 
-	Ingo
+Oren.
+
