@@ -1,200 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYLRVgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbYLRVge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753487AbYLRVgR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 16:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYLRVgA
+	id S1752713AbYLRVge (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 16:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbYLRVgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 16:36:00 -0500
-Received: from mx1.suse.de ([195.135.220.2]:58092 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752427AbYLRVf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 16:35:59 -0500
-Date: Thu, 18 Dec 2008 22:35:57 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: venkatesh.pallipadi@intel.com
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, hugh@veritas.com, arjan@infradead.org,
-       jbarnes@virtuousgeek.org, rdreier@cisco.com, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [patch 3/7] x86 PAT: hooks in generic vm code to help archs to track pfnmap regions - v3
-Message-ID: <20081218213557.GF10681@wotan.suse.de>
-References: <20081218194126.963894000@intel.com> <20081218194617.408164000@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 18 Dec 2008 16:36:22 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:48437 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753749AbYLRVgV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 16:36:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=It5w281XJHaHlVGZZDJvyc6CjxKsxdZPAwo4nTvyKBNp7Qlo8BrzSe9yOrdpUCBZta
+         sT3L6oHGvdctsGzJdzap7BCKkbf7CZIcj459gvIDQ6U1KoY0M86uNrY3GRO9LtVLFwDu
+         69i/P8sE5iSPdDKrP0BTKyAbyjJwFw+4+pvkM=
+Message-ID: <c62985530812181336m6ab39c8ah410dff763bd02d24@mail.gmail.com>
+Date: Thu, 18 Dec 2008 22:36:19 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH v2] tracing/function-graph-tracer: prevent from hrtimer interrupt infinite loop
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081218211637.GF24271@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20081218194617.408164000@intel.com>
-User-Agent: Mutt/1.5.9i
+References: <4949A2CC.6040209@gmail.com> <20081218103459.GD10513@elte.hu>
+	 <alpine.LFD.2.00.0812181136410.3492@localhost.localdomain>
+	 <20081218112216.GE14332@elte.hu>
+	 <c62985530812181307k4fc35770x3698101b3981879a@mail.gmail.com>
+	 <20081218211637.GF24271@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 18, 2008 at 11:41:29AM -0800, venkatesh.pallipadi@intel.com wrote:
-> Introduce generic hooks in remap_pfn_range and vm_insert_pfn and
-> corresponding copy and free routines with reserve and free tracking.
+2008/12/18 Ingo Molnar <mingo@elte.hu>:
+>
+> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+>
+>> Hmm. No, I just tested by setting 1000 HZ and disabled NOHZ, the system
+>> doesn't lockup unless I turn on the function graph tracer.
+>
+> but that's what we are interested in: the system locks up with HZ=1000 and
+> with the tracer on - right?
 
-These should be inline so that they can be folded out (I'm sure gcc
-with -Os and "optimize" inlining will do something stupid here).
-Also, the normal way to add such arch hooks is to put the default
-into asm-generic and have other archs include it... that would be
-nicer than sticking it into mm/memory.c wouldn't it?
+Yes.
 
-Sigh, fork/exit paths slow down yet again. But oh well. Maybe can
-you add some branch hints?
+> Which means that it's not some hrtimer problem, but simply the traced
+> timer tick takes more than 1 millisecond to execute under this
+> virtualization.
+>
+>        Ingo
+>
 
- 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> 
-> ---
->  include/linux/mm.h |    6 ++++
->  mm/memory.c        |   76 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
->  2 files changed, 81 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/mm/memory.c
-> ===================================================================
-> --- linux-2.6.orig/mm/memory.c	2008-12-18 10:10:50.000000000 -0800
-> +++ linux-2.6/mm/memory.c	2008-12-18 10:11:23.000000000 -0800
-> @@ -99,6 +99,50 @@ int randomize_va_space __read_mostly =
->  					2;
->  #endif
->  
-> +#ifndef track_pfn_vma_new
-> +/*
-> + * Interface that can be used by architecture code to keep track of
-> + * memory type of pfn mappings (remap_pfn_range, vm_insert_pfn)
-> + *
-> + * track_pfn_vma_new is called when a _new_ pfn mapping is being established
-> + * for physical range indicated by pfn and size.
-> + */
-> +int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t prot,
-> +			unsigned long pfn, unsigned long size)
-> +{
-> +	return 0;
-> +}
-> +#endif
-> +
-> +#ifndef track_pfn_vma_copy
-> +/*
-> + * Interface that can be used by architecture code to keep track of
-> + * memory type of pfn mappings (remap_pfn_range, vm_insert_pfn)
-> + *
-> + * track_pfn_vma_copy is called when vma that is covering the pfnmap gets
-> + * copied through copy_page_range().
-> + */
-> +int track_pfn_vma_copy(struct vm_area_struct *vma)
-> +{
-> +	return 0;
-> +}
-> +#endif
-> +
-> +#ifndef untrack_pfn_vma
-> +/*
-> + * Interface that can be used by architecture code to keep track of
-> + * memory type of pfn mappings (remap_pfn_range, vm_insert_pfn)
-> + *
-> + * untrack_pfn_vma is called while unmapping a pfnmap for a region.
-> + * untrack can be called for a specific region indicated by pfn and size or
-> + * can be for the entire vma (in which case size can be zero).
-> + */
-> +void untrack_pfn_vma(struct vm_area_struct *vma, unsigned long pfn,
-> +			unsigned long size)
-> +{
-> +}
-> +#endif
-> +
->  static int __init disable_randmaps(char *s)
->  {
->  	randomize_va_space = 0;
-> @@ -669,6 +713,16 @@ int copy_page_range(struct mm_struct *ds
->  	if (is_vm_hugetlb_page(vma))
->  		return copy_hugetlb_page_range(dst_mm, src_mm, vma);
->  
-> +	if (is_pfn_mapping(vma)) {
-> +		/*
-> +		 * We do not free on error cases below as remove_vma
-> +		 * gets called on error from higher level routine
-> +		 */
-> +		ret = track_pfn_vma_copy(vma);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
->  	/*
->  	 * We need to invalidate the secondary MMU mappings only when
->  	 * there could be a permission downgrade on the ptes of the
-> @@ -915,6 +969,9 @@ unsigned long unmap_vmas(struct mmu_gath
->  		if (vma->vm_flags & VM_ACCOUNT)
->  			*nr_accounted += (end - start) >> PAGE_SHIFT;
->  
-> +		if (is_pfn_mapping(vma))
-> +			untrack_pfn_vma(vma, 0, 0);
-> +
->  		while (start != end) {
->  			if (!tlb_start_valid) {
->  				tlb_start = start;
-> @@ -1473,6 +1530,7 @@ out:
->  int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
->  			unsigned long pfn)
->  {
-> +	int ret;
->  	/*
->  	 * Technically, architectures with pte_special can avoid all these
->  	 * restrictions (same for remap_pfn_range).  However we would like
-> @@ -1487,7 +1545,15 @@ int vm_insert_pfn(struct vm_area_struct 
->  
->  	if (addr < vma->vm_start || addr >= vma->vm_end)
->  		return -EFAULT;
-> -	return insert_pfn(vma, addr, pfn, vma->vm_page_prot);
-> +	if (track_pfn_vma_new(vma, vma->vm_page_prot, pfn, PAGE_SIZE))
-> +		return -EINVAL;
-> +
-> +  	ret = insert_pfn(vma, addr, pfn, vma->vm_page_prot);
-> +
-> +	if (ret)
-> +		untrack_pfn_vma(vma, pfn, PAGE_SIZE);
-> +
-> +	return ret;
->  }
->  EXPORT_SYMBOL(vm_insert_pfn);
->  
-> @@ -1625,6 +1691,10 @@ int remap_pfn_range(struct vm_area_struc
->  
->  	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP;
->  
-> +	err = track_pfn_vma_new(vma, prot, pfn, PAGE_ALIGN(size));
-> +	if (err)
-> +		return -EINVAL;
-> +
->  	BUG_ON(addr >= end);
->  	pfn -= addr >> PAGE_SHIFT;
->  	pgd = pgd_offset(mm, addr);
-> @@ -1636,6 +1706,10 @@ int remap_pfn_range(struct vm_area_struc
->  		if (err)
->  			break;
->  	} while (pgd++, addr = next, addr != end);
-> +
-> +	if (err)
-> +		untrack_pfn_vma(vma, pfn, PAGE_ALIGN(size));
-> +
->  	return err;
->  }
->  EXPORT_SYMBOL(remap_pfn_range);
-> Index: linux-2.6/include/linux/mm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm.h	2008-12-18 10:10:50.000000000 -0800
-> +++ linux-2.6/include/linux/mm.h	2008-12-18 10:11:23.000000000 -0800
-> @@ -155,6 +155,12 @@ static inline int is_pfn_mapping(struct 
->  	return (vma->vm_flags & VM_PFNMAP);
->  }
->  
-> +extern int track_pfn_vma_new(struct vm_area_struct *vma, pgprot_t prot,
-> +				unsigned long pfn, unsigned long size);
-> +extern int track_pfn_vma_copy(struct vm_area_struct *vma);
-> +extern void untrack_pfn_vma(struct vm_area_struct *vma, unsigned long pfn,
-> +				unsigned long size);
-> +
->  /*
->   * vm_fault is filled by the the pagefault handler and passed to the vma's
->   * ->fault function. The vma's ->fault is responsible for returning a bitmask
-> 
-> -- 
+Oh ok I see. Sorry I'm a bit slow today...
+So the solution would be to adapt dynamically the timeout between
+hrtimer irq. But I don't know that much hrtimer
+to implement such a feature...
