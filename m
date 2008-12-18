@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752354AbYLRQJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752169AbYLRQYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752354AbYLRQJs (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 11:09:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYLRQJi
+	id S1752169AbYLRQYY (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 11:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYLRQYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 11:09:38 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45121 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751046AbYLRQJh (ORCPT
+	Thu, 18 Dec 2008 11:24:12 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:54844 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751358AbYLRQYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 11:09:37 -0500
-Message-ID: <494A74CA.7060403@cs.helsinki.fi>
-Date: Thu, 18 Dec 2008 18:05:30 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.18 (Macintosh/20081105)
+	Thu, 18 Dec 2008 11:24:08 -0500
+Date: Thu, 18 Dec 2008 17:24:06 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Andy Whitcroft <apw@shadowen.org>, Joel Schopp <jschopp@austin.ibm.com>,
+        Randy Dunlap <rdunlap@xenotime.net>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: checkpatch and pr_fmt()?
+Message-ID: <Pine.LNX.4.64.0812181718250.1445@vixen.sonytel.be>
 MIME-Version: 1.0
-To: Catalin Marinas <catalin.marinas@arm.com>
-CC: linux-kernel@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH 05/15] kmemleak: Add the slub memory allocation/freeing
- hooks
-References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>	 <20081210182721.30323.55530.stgit@pc1117.cambridge.arm.com>	 <4941866D.5040005@cs.helsinki.fi>	 <1229089544.15045.24.camel@pc1117.cambridge.arm.com>	 <1229597465.1047.54.camel@penberg-laptop> <1229614135.16418.33.camel@pc1117.cambridge.arm.com>
-In-Reply-To: <1229614135.16418.33.camel@pc1117.cambridge.arm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Catalin,
+When using the recently introduced pr_fmt() infrastructure (commit
+d091c2f58ba32029495a933b721e8e02fbd12caa, "Add 'pr_fmt()' format modifier to
+pr_xyz macros."), checkpatch spits out the following annoying error:
 
-Catalin Marinas wrote:
-> Just to make sure I understand it correctly, the slab_free() fast path
-> stores the pointer to the freed object into c->freelist. However, this
-> object is no longer tracked by kmemleak because of the
-> kmemleak_free_recursive() call at the beginning of this function (false
-> negatives make sense only for allocated objects).
+| ERROR: Macros with complex values should be enclosed in parenthesis
+| +#define pr_fmt(fmt)    "%s: " fmt, __func__
 
-Indeed. For SLAB, it's a problem because the per-CPU cache pointer is 
-not cleared from the struct array_cache upon _allocation_ which is the 
-culprit of the false negative there.
+Unfortunately, adding parentheses is not a solution, as it creates illegal C
+code.
 
-Catalin Marinas wrote:
-> Is my understanding correct? Thanks.
+With kind regards,
 
-Yes, it is and I was just confused. Thanks!
+Geert Uytterhoeven
+Software Architect
 
-		Pekka
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
