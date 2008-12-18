@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753247AbYLRUGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752640AbYLRUGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753247AbYLRUGV (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 15:06:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYLRUGG
+	id S1752640AbYLRUGw (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 15:06:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYLRUG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 15:06:06 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:31461 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915AbYLRUGF (ORCPT
+	Thu, 18 Dec 2008 15:06:26 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:59162 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753250AbYLRUGY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 15:06:05 -0500
-Subject: Re: sshd segmentation fault on ia64 on 28-rc7-mmotm-081203
-	-	bisected
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <494AAA5C.6060601@gmail.com>
-References: <1228322600.6693.61.camel@lts-notebook>
-	 <1228940487.6139.68.camel@lts-notebook>  <494AAA5C.6060601@gmail.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Thu, 18 Dec 2008 15:05:44 -0500
-Message-Id: <1229630744.6667.3.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 18 Dec 2008 15:06:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=SgtS0NPKxSoDFaA54vC2i4MT2OedIYxclHTwAKd6ZQoOgd3jxgifqaPs8YtpNez6/G
+         YDoC8EjIpPRNzOzdm1PsU2qKe4WL0hoA4MRGYWPo49ypb4RA/mp8Y+V96JJ/RJmeA3Po
+         pgNDAoeU/Rp8O0z9dkef1GPb8ZbCzwqmcpYms=
+Message-ID: <84144f020812181206o3d85fbd3t6b30346d7cf76d9d@mail.gmail.com>
+Date: Thu, 18 Dec 2008 22:06:21 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christoph Lameter" <cl@linux-foundation.org>
+Subject: Re: [PATCH 03/15] kmemleak: Add the slab memory allocation/freeing hooks
+Cc: "Catalin Marinas" <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0812181334590.17255@quilx.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com>
+	 <20081210182710.30323.57396.stgit@pc1117.cambridge.arm.com>
+	 <494184AA.8090509@cs.helsinki.fi>
+	 <1229092065.15045.35.camel@pc1117.cambridge.arm.com>
+	 <1229597162.1047.48.camel@penberg-laptop>
+	 <1229618308.16418.50.camel@pc1117.cambridge.arm.com>
+	 <Pine.LNX.4.64.0812181048160.12300@quilx.com>
+	 <1229619764.16418.54.camel@pc1117.cambridge.arm.com>
+	 <Pine.LNX.4.64.0812181334590.17255@quilx.com>
+X-Google-Sender-Auth: 67fa6da3dc351c0e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-18 at 20:54 +0100, Franck Bui-Huu wrote:
-> Hello,
-> 
-> [ Sorry for the late reply ]
-> 
-> Lee Schermerhorn wrote:
-> > On Wed, 2008-12-03 at 11:43 -0500, Lee Schermerhorn wrote:
-> >> I couldn't find anything on the list about this.
-> >>
-> >> I've built and booted 28-rc7-mmotm-081203 on both x86_64 and ia64.  I
-> >> can ssh into the x86_64 platform fine.  On the ia64, I'm seeing sshd
-> >> [from RHEL5 distro] seg faulting.  [Same sshd worked on the
-> >> 28-rc6-mmotm-081201 kernel.]
-> >>
-> >> Has anyone else seen this?
-> >>
-> > 
-> > I finally got around to bisecting this--sshd fails with SEGV on ia64--on
-> > mmotm-081208.  It appears to be caused by the patch duo:
-> > 
-> > do_mpage_readpage-remove-first_logical_block-parameter.patch
-> > do_mpage_readpage-remove-first_logical_block-parameter-fix.patch
-> 
-> Unfortunately I don't see why this patch causes such breakage.
-> 
-> Could you apply the following patch with the previous patch applied
-> and see if sshd still segfaults ?
-> 
-> It basically reverts:
-> 
->    do_mpage_readpage-remove-first_logical_block-parameter-fix.patch
-> 
-> Therefore I can see which part of the patch is broken.
+On Thu, Dec 18, 2008 at 9:35 PM, Christoph Lameter
+<cl@linux-foundation.org> wrote:
+> On Thu, 18 Dec 2008, Catalin Marinas wrote:
+>
+>> OK, but is there a chance that an stale pointer remains in such caches?
+>
+> Definitely. The pointers are never cleared. There are counters in the
+> caches that are used to index into an array.
+>
+>> There seems to be the transfer_objects() function that moves pointers
+>> around but doesn't clear the source values.
+>
+> No need to. The counter updates take care of things.
 
-Will do, but I won't get to this before our lab shuts down for the rest
-of the year.
-
-> 
-> Also can you tell me what the block size used by the file system
-> hosting sshd ?
-
-4K block size and fragment size, ext3.  system page size is 16K [ia64].
-
-Lee
-
+For kmemleak, that's a problem. Unless we explicitly annotate the
+caches, it will scan them and think that there's a pointer to a leaked
+object (i.e. false negative). Catalin already took care of the per-CPU
+caches but AFAICT we still need to take care of the per-node caches
+and the shared caches.
