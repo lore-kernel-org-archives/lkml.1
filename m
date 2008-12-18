@@ -1,119 +1,120 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752506AbYLRHzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752273AbYLRH6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752506AbYLRHzb (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 02:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbYLRHzU
+	id S1752273AbYLRH6j (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 02:58:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYLRH63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 02:55:20 -0500
-Received: from wf-out-1314.google.com ([209.85.200.174]:35197 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbYLRHzR (ORCPT
+	Thu, 18 Dec 2008 02:58:29 -0500
+Received: from ocean.emcraft.com ([213.221.7.182]:55774 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbYLRH63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 02:55:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SjX/mkttjvrXNbvTzOKMlIxf6sNOvTJ2K+SOqUmMWio8jk5gB0mUUFBnd84bbyrI5l
-         4Lr7WbRF15O1/uHj2hocAd2IHv9UNBUGTPXJUaOHqIUcKJbfP0Rmc87v1XmI987AbYt/
-         ujD9+YorYi7mmibZ/8NxVdn/Mut4hAzy3QTYc=
-Message-ID: <5d5443650812172355j6e548fa9scd55a2636341abfb@mail.gmail.com>
-Date: Thu, 18 Dec 2008 13:25:16 +0530
-From: "Trilok Soni" <soni.trilok@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>,
-        "Lauri Leukkunen" <lauri.leukkunen@nokia.com>
-Subject: Re: [PATCH] Add TI TSC2005 Touchscreen driver
-Cc: "David Brownell" <david-b@pacbell.net>, dmitry.torokhov@gmail.com,
-        "linux-omap@vger.kernel.org Mailing List" 
-	<linux-omap@vger.kernel.org>,
-        linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-        linux-input@vger.kernel.org
-In-Reply-To: <20081208182648.GA9740@uranus.ravnborg.org>
+	Thu, 18 Dec 2008 02:58:29 -0500
+From: Yuri Tikhonov <yur@emcraft.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH][v2] fork_init: fix division by zero
+Date: Thu, 18 Dec 2008 10:47:50 +0300
+User-Agent: KMail/1.9.4
+Cc: Andrew Morton <akpm@linux-foundation.org>, wd@denx.de, dzu@denx.de,
+        linux-kernel@vger.kernel.org, miltonm@bga.com, linuxppc-dev@ozlabs.org,
+        viro@zeniv.linux.org.uk, Geert.Uytterhoeven@sonycom.com,
+        yanok@emcraft.com
+References: <200812101950.51958.yur@emcraft.com> <20081211121635.ff58193f.akpm@linux-foundation.org> <18753.46301.944770.779390@cargo.ozlabs.ibm.com>
+In-Reply-To: <18753.46301.944770.779390@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <5d5443650812080949h5aff6010mb7341f581841f126@mail.gmail.com>
-	 <20081208182648.GA9740@uranus.ravnborg.org>
+Message-Id: <200812181047.50332.yur@emcraft.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam/Lauri,
+Hello Paul,
 
->>
->> +config TOUCHSCREEN_TSC2005
->> +     tristate "TSC2005 touchscreen support"
-> I would be good to see Texas Instruments spelled out here.
->> +     depends on SPI_MASTER
->> +     help
->> +       Say Y here for if you are using the touchscreen features of TSC2005.
-> And maybe with a bit text explaining where it is used or maybe where to find info.
+On Friday 12 December 2008 03:48, Paul Mackerras wrote:
+> Andrew Morton writes:
+> 
+> > > +#if (8 * THREAD_SIZE) > PAGE_SIZE
+> > >  	max_threads = mempages / (8 * THREAD_SIZE / PAGE_SIZE);
+> > > +#else
+> > > +	max_threads = mempages * (PAGE_SIZE / (8 * THREAD_SIZE));
+> > > +#endif
+> > 
+> > The expression you've chosen here can be quite inacccurate, because
+> > ((PAGE_SIZE / (8 * THREAD_SIZE)) is a small number.  The way to
+> > preserve accuracy is
+> 
+> The assumption is that THREAD_SIZE is a power of 2, as is PAGE_SIZE.
+> 
+> I think Yuri should be increasing THREAD_SIZE for the larger page
+> sizes he's implementing, because we have on-stack arrays whose size
+> depends on the page size.  I suspect that having THREAD_SIZE less than
+> 1/8 of PAGE_SIZE risks stack overflows, and the better fix is for Yuri
+> to make sure THREAD_SIZE is at least 1/8 of PAGE_SIZE.  (In fact, more
+> may be needed - someone should work out what fraction is actually
+> needed.)
 
-I can add this.
+  Right, thanks for pointing this. I guess, I was just lucky since didn't run into
+problems with stack overflows. So, I agree that we should increase the 
+THREAD_SIZE in case of 256KB pages up to 1/8 of PAGE_SIZE, that is up 
+to 32KB.
 
->
->> +#define TSC2005_VDD_LOWER_27
->> +
->> +#ifdef TSC2005_VDD_LOWER_27
->> +#define TSC2005_HZ     (10000000)
->> +#else
->> +#define TSC2005_HZ     (25000000)
->> +#endif
->
-> You define TSC2005_VDD_LOWER_27 and test for it two
-> lines later - looks strange.
+ There is one more warning from the common code when I use 256KB pages:
 
-I will this as is right now, probably Lauri can explain if there is
-some other way possible to pass it using platform hook if it is
-specific to particular board design.
+   CC      mm/shmem.o
+mm/shmem.c: In function 'shmem_truncate_range':
+mm/shmem.c:613: warning: division by zero
+mm/shmem.c:619: warning: division by zero
+mm/shmem.c:644: warning: division by zero
+mm/shmem.c: In function 'shmem_unuse_inode':
+mm/shmem.c:873: warning: division by zero
 
->
->> +
->> +static void tsc2005_cmd(struct tsc2005 *ts, u8 cmd)
->> +{
->> +     u16 data = TSC2005_CMD | TSC2005_CMD_12BIT | cmd;
->> +     struct spi_message msg;
->> +     struct spi_transfer xfer = { 0 };
->> +
->> +     xfer.tx_buf = &data;
->> +     xfer.rx_buf = NULL;
->> +     xfer.len = 1;
->> +     xfer.bits_per_word = 8;
-> data is a 16 bit quantity yet you specify a len of 1.
-> Maybe len is counted from 0?
->
+ The problem here is that ENTRIES_PER_PAGEPAGE becomes 0x1.0000.0000
+when PAGE_SIZE is 256K.
 
-This looks like bug. I will change data to u8. Lauri please confirm.
+ How about the following fix ?
 
->> +static void tsc2005_write(struct tsc2005 *ts, u8 reg, u16 value)
->> +{
->> +     u32 tx;
->> +     struct spi_message msg;
->> +     struct spi_transfer xfer = { 0 };
->> +
->> +     tx = (TSC2005_REG | reg | TSC2005_REG_PND0 |
->> +            TSC2005_REG_WRITE) << 16;
->> +     tx |= value;
-> Is this endian safe? Does spi know about LSB/MSB in the value?
->
->> +
->> +     xfer.tx_buf = &tx;
->> +     xfer.rx_buf = NULL;
->> +     xfer.len = 4;
->> +     xfer.bits_per_word = 24;
->> +
+diff --git a/mm/shmem.c b/mm/shmem.c
+index 0ed0752..99d7c91 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -57,7 +57,7 @@
+ #include <asm/pgtable.h>
+ 
+ #define ENTRIES_PER_PAGE (PAGE_CACHE_SIZE/sizeof(unsigned long))
+-#define ENTRIES_PER_PAGEPAGE (ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
++#define ENTRIES_PER_PAGEPAGE ((unsigned long long)ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
+ #define BLOCKS_PER_PAGE  (PAGE_CACHE_SIZE/512)
+ 
+ #define SHMEM_MAX_INDEX  (SHMEM_NR_DIRECT + (ENTRIES_PER_PAGEPAGE/2) * (ENTRIES_PER_PAGE+1))
+@@ -95,7 +95,7 @@ static unsigned long shmem_default_max_inodes(void)
+ }
+ #endif
+ 
+-static int shmem_getpage(struct inode *inode, unsigned long idx,
++static int shmem_getpage(struct inode *inode, unsigned long long idx,
+ 			 struct page **pagep, enum sgp_type sgp, int *type);
+ 
+ static inline struct page *shmem_dir_alloc(gfp_t gfp_mask)
+@@ -533,7 +533,7 @@ static void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end)
+ 	int punch_hole;
+ 	spinlock_t *needs_lock;
+ 	spinlock_t *punch_lock;
+-	unsigned long upper_limit;
++	unsigned long long upper_limit;
+ 
+ 	inode->i_ctime = inode->i_mtime = CURRENT_TIME;
+ 	idx = (start + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+@@ -1175,7 +1175,7 @@ static inline struct mempolicy *shmem_get_sbmpol(struct shmem_sb_info *sbinfo)
+  * vm. If we swap it in we mark it dirty since we also free the swap
+  * entry since a page cannot live in both the swap and page cache
+  */
+-static int shmem_getpage(struct inode *inode, unsigned long idx,
++static int shmem_getpage(struct inode *inode, unsigned long long idx,
+ 			struct page **pagep, enum sgp_type sgp, int *type)
+ {
+ 	struct address_space *mapping = inode->i_mapping;
 
-As per this bits_per_word and length we have 4 messages of 24 bits
-each, and so it is job of omap2_mcspi_txrx_pio in
-drivers/spi/omap2_mcspi.c to handle this messages and proper order.
-AFAIR, OMAP2 mcspi block has registers settings for this byte-order
-stuf. Lauri could you please add some points here. I don't have access
-to OMAP2 TRM anymore. Thanks.
-
-
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+Regards, Yuri
