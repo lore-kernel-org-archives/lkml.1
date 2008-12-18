@@ -1,102 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYLRXH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYLRXHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754763AbYLRXH1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 18:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbYLRXGy
+	id S1755115AbYLRXHw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 18:07:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYLRXHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 18:06:54 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:35591 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754885AbYLRXGx (ORCPT
+	Thu, 18 Dec 2008 18:07:39 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48280 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753455AbYLRXHi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 18:06:53 -0500
-Message-ID: <494AD77A.1070804@us.ibm.com>
-Date: Thu, 18 Dec 2008 15:06:34 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Thu, 18 Dec 2008 18:07:38 -0500
+X-Sasl-enc: W7XuJ+uOdCS8MC4EPJ0W8raou5cGECUxKW9kMR742JCL 1229641656
+From: Bernd Schubert <bernd.schubert@fastmail.fm>
+To: nfsv4@linux-nfs.org
+Subject: Re: Pull request for FS-Cache, including NFS patches
+Date: Fri, 19 Dec 2008 00:07:33 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rc5-bs4-00019-ge14c8bf; KDE/4.1.3; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, steved@redhat.com, dhowells@redhat.com,
+       linux-fsdevel@vger.kernel.org, rwheeler@redhat.com
+References: <8930.1229560221@redhat.com> <20081218142420.GA16728@infradead.org> <20081218123601.11810b7f.akpm@linux-foundation.org>
+In-Reply-To: <20081218123601.11810b7f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "lkml, " <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "Morton, Andrew" <akpm@osdl.org>
-CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] futex: Cleanup futex_(un)lock_pi fault handling
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200812190007.34581.bernd.schubert@fastmail.fm>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some apparently left over cruft code was complicating the fault logic.  Testing if uval != -EFAULT doesn't have any meaning, get_user() sets ret to either 0 or -EFAULT, there's no need to compare uval, especially not against EFAULT which it will never be.  This patch removes the superfluous test and clarifies the comment blocks.
+On Thursday 18 December 2008, Andrew Morton wrote:
+> On Thu, 18 Dec 2008 09:24:20 -0500
+>
+> Christoph Hellwig <hch@infradead.org> wrote:
+> > On Thu, Dec 18, 2008 at 10:44:18PM +1100, Stephen Rothwell wrote:
+> > > Added from today.
+> > >
+> > > Usual spiel: all patches in that branch must have been
+> > > 	posted to a relevant mailing list
+> > > 	reviewed
+> > > 	unit tested
+> > > 	destined for the next merge window (or the current release)
+> > > *before* they are included.
+> >
+> > I don't think we want fscache for .29 yet.  I'd rather let the
+> > credential code settle for one release, and have more time for actually
+> > reviewing it properly and have it 100% ready for .30.
+>
+> I don't believe that it has yet been convincingly demonstrated that we
+> want to merge it at all.
+>
+> It's a huuuuuuuuge lump of new code, so it really needs to provide
+> decent value.  Can we revisit this?  Yet again?  What do we get from
+> all this?
+>
 
-Build and boot tested on an 8way x86_64 system.
+I really don't understand why fs-cache is always rejected. Actually it is the 
+perfect solution for NFS booted systems - you have a big cluster of nodes and 
+in order to minimize administration overhead the nodes are booted over NFS 
+from one common chroot. With unionfs (preferred solution here is unionfs-fuse) 
+one then maintains files required to be differently by different clients.
 
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
----
+Caching files on the local disk minimized the network access and boosts the 
+performance, so at least for this usage example fs-cache would be great.
+(Actually I have been thinking about to implement a caching branch into 
+unionfs-fuse, but if the kernel can do it on its own, it is also fine.)
 
- kernel/futex.c |   26 ++++++++++++--------------
- 1 files changed, 12 insertions(+), 14 deletions(-)
+In the past David already posted many benchmarks and just a few weeks ago 
+again:
+
+http://lkml.indiana.edu/hypermail/linux/kernel/0811.3/00584.html
 
 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 99f8acc..b4f87ba 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1565,12 +1565,11 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 
-  uaddr_faulted:
- 	/*
--	 * We have to r/w  *(int __user *)uaddr, but we can't modify it
--	 * non-atomically.  Therefore, if get_user below is not
--	 * enough, we need to handle the fault ourselves, while
--	 * still holding the mmap_sem.
--	 *
--	 * ... and hb->lock. :-) --ANK
-+	 * We have to r/w  *(int __user *)uaddr, and we have to modify it
-+	 * atomically.  Therefore, if we continue to fault after get_user()
-+	 * below, we need to handle the fault ourselves, while still holding
-+	 * the mmap_sem.  This can occur if the uaddr is under contention as
-+	 * we have to drop the mmap_sem in order to call get_user().
- 	 */
- 	queue_unlock(&q, hb);
- 
-@@ -1582,7 +1581,7 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 	}
- 
- 	ret = get_user(uval, uaddr);
--	if (!ret && (uval != -EFAULT))
-+	if (!ret)
- 		goto retry;
- 
- 	if (to)
-@@ -1676,12 +1675,11 @@ out:
- 
- pi_faulted:
- 	/*
--	 * We have to r/w  *(int __user *)uaddr, but we can't modify it
--	 * non-atomically.  Therefore, if get_user below is not
--	 * enough, we need to handle the fault ourselves, while
--	 * still holding the mmap_sem.
--	 *
--	 * ... and hb->lock. --ANK
-+	 * We have to r/w  *(int __user *)uaddr, and we have to modify it
-+	 * atomically.  Therefore, if we continue to fault after get_user()
-+	 * below, we need to handle the fault ourselves, while still holding
-+	 * the mmap_sem.  This can occur if the uaddr is under contention as
-+	 * we have to drop the mmap_sem in order to call get_user().
- 	 */
- 	spin_unlock(&hb->lock);
- 
-@@ -1694,7 +1692,7 @@ pi_faulted:
- 	}
- 
- 	ret = get_user(uval, uaddr);
--	if (!ret && (uval != -EFAULT))
-+	if (!ret)
- 		goto retry;
- 
- 	return ret;
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+Cheers,
+Bernd
+
+
