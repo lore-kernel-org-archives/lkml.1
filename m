@@ -1,65 +1,109 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752892AbYLRSQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753339AbYLRSYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbYLRSQq (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 13:16:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbYLRSQg
+	id S1753339AbYLRSYr (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 13:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbYLRSYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 13:16:36 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:25048 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751577AbYLRSQf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 13:16:35 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=1vDvicmaabe6FeZTub77fhLg9O4YneA42LRBbZ1Qu0DR31EvXLRGucxKQuqVnnTnaPQDI5n1Qa1RJMoJSGgva6vOUbA+q6jJc4ClvQfQl2NH2BcGqCGpvtb7NRwXwtkLbhOw62vwZdEBsSLI/klGdkhIOl9/5w3sAX0uD58s8wA=  ;
-X-YMail-OSG: w0ln1mMVM1nQ4jjOQb4pqI7cWNc9rVqBTKaSn2fkAd4ETaTYXCChNbDl74TCywy7f3le5oadj62dCzyY1JFecrqcoe0xbERDC9upIaHKSsTcaJ7OW3GS9YQPcTnI_vxpuhAxUr8ssE5ioBnHSVZQOuYfxbc6Chl.X9GsIdCL8Ixl2vg23blhOOCvVBuE
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Jean Delvare <khali@linux-fr.org>, Ben Dooks <ben-linux@fluff.org>
-Subject: Re: GPIO: Fix probe() error return in gpio driver probes
-Date: Thu, 18 Dec 2008 10:16:27 -0800
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
-References: <20081212152426.745254309@fluff.org.uk> <20081215101616.GB12431@fluff.org.uk> <20081215112226.18f7fb29@hyperion.delvare>
-In-Reply-To: <20081215112226.18f7fb29@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 18 Dec 2008 13:24:35 -0500
+Received: from gate.crashing.org ([63.228.1.57]:57801 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752472AbYLRSYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 13:24:35 -0500
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        xen-devel@lists.xensource.com, x86@kernel.org, ian.campbell@citrix.com,
+        jbeulich@novell.com, joerg.roedel@amd.com,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-Id: <E5300CC0-1D08-46F7-91F6-DEC36202F1DE@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081218015705Z.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812181016.28184.david-b@pacbell.net>
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use of swiotlb
+Date: Thu, 18 Dec 2008 12:17:54 -0600
+References: <20081216203513.GA14787@elte.hu> <20081217142637V.fujita.tomonori@lab.ntt.co.jp> <4949296F.7000701@goop.org> <20081218015705Z.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 December 2008, Jean Delvare wrote:
-> 
-> > > > I was thinking that -EINVAL is almost the least informative
-> > > > diagnostic code possible, since so many places return it
-> > > > that it's usually hard to find out *which* invalid parameter
-> > > > triggered ...
-> > > > 
-> > > > Is there a less-overloaded code you could return?
-> > > 
-> > > -EINVAL sounds right to me, all that's really missing is dev_dbg()
-> > > messages in the drivers to log what the exact problem was. 
 
-Fair enough, though it just papers over how ambiguous -EINVAL is.
+On Dec 17, 2008, at 10:56 AM, FUJITA Tomonori wrote:
 
+> On Wed, 17 Dec 2008 08:31:43 -0800
+> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>>> I think that the whole patchset is against the swiotlb design.  
+>>> swiotlb
+>>> is designed to be used as a library. Each architecture implements  
+>>> the
+>>> own swiotlb by using swiotlb library
+>>> (e.g. arch/x86/kernel/pci-swiotlb_64.c).
+>>>
+>>
+>> The whole patchset?  The bulk of the changes to lib/swiotlb.c are
+>> relatively minor to remove the unwarranted assumptions it is making  
+>> in
+>> the face of a new user.  They will have no effect on other existing
+>> users, including non-Xen x86 builds.
+>>
+>> If you have specific objections we can discuss those, but I don't  
+>> think
+>> there's anything fundamentally wrong with making lib/swiotlb.c a bit
+>> more generically useful.
+>
+> Sorry, but the highmem support is not generically useful.
+>
+> I'm especially against the highmem support. As you said, the rest
+> looks fine but if you go with pci-swiotlb_32.c, I think that you don't
+> need the most of them.
 
-> > It might be more acceptable to be dev_err(), that way it will get
-> > printed no matter what debug options have been selected. If so, a
-> > seperate patch is probably in order to make the change.
-> 
-> As far as I can see, such errors would be caused by development-time
-> mistakes, so dev_dbg() seems appropriate. dev_err() would make the
-> binaries larger for all end-users.
+>
+>
+>
+>>> For example, adding the following code (9/14) for just Xen that the
+>>> majority of swiotbl users (x86_64 and IA64) don't need to the  
+>>> library
+>>> is against the design.
+>>>
+>>
+>> If the architecture doesn't support highmem then this code will  
+>> compile
+>> to nothing - PageHighMem() will always evaluate to 0.  It will  
+>> therefore
+>
+> I'm not talking about it will be complied or not. As I wrote in
+> another mail, I'm talking about the maintainability and readability of
+> the common library.
+>
+>
+>> have zero effect on the code generated for IA64 or x86-64.  This is  
+>> not
+>> really a Xen-specific change, but a result of adding swiotlb  
+>> support for
+>> i386.  Other architectures which support a notion of highmem would  
+>> also
+>> need this code if they wanted to use swiotlb.
+>
+> Can you be more specific? What architecture is plan to use highmem
+> support in swiotlb?
 
-Right, dev_dbg() is the way to go.  I'd ack a version of this patch
-which pairs these -EINVAL changes with dev_dbg() messages to make
-these problems less painful to track down.  dev_err() is much abused.
+32-bit powerpc needs this support - I was actually about to push a  
+similar set of patches.  We have several processors that support 36  
+bits of physical address space and do not have any iommu capability.   
+The rest of the kernel support for those processors is now in place,  
+so swiotlb is the last piece of the puzzle for that to be fully  
+functional.  I need to take a closer look at this series to see  
+exactly what it's doing and how it differs from what I've been testing.
 
-- Dave
+So there is another immediate use case, and I'd really hate to see  
+this code duplicated.  It should be entirely possible to remove the  
+assumption that we can save off the VA of the original buffer, which  
+is the thing that precludes HIGHMEM support, and still have nice  
+readable, maintainable code.
+
+Cheers,
+-Becky
 
