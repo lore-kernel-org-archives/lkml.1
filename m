@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752449AbYLROTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752105AbYLROSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752449AbYLROTR (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 09:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYLROSv
+	id S1752105AbYLROSy (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 09:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbYLROSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 09:18:51 -0500
-Received: from mail.inf.tu-dresden.de ([141.76.2.1]:62416 "EHLO
+	Thu, 18 Dec 2008 09:18:44 -0500
+Received: from mail.inf.tu-dresden.de ([141.76.2.1]:62304 "EHLO
 	mail.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751946AbYLROSu (ORCPT
+	with ESMTP id S1751013AbYLROSn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 09:18:50 -0500
-Message-ID: <494A5BC9.7000605@inf.tu-dresden.de>
-Date: Thu, 18 Dec 2008 15:18:49 +0100
+	Thu, 18 Dec 2008 09:18:43 -0500
+Message-ID: <494A5BBF.8000807@inf.tu-dresden.de>
+Date: Thu, 18 Dec 2008 15:18:39 +0100
 From: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
 User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] ide: Fix drive's DWORD-IO handling
+Subject: [PATCH] ide: Fix ata_id_has_dword_io to return DWORD I/O support
+ properly
 X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
@@ -25,31 +26,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resubmitted on request.
-
-According the documentation, id[ATA_ID_DWORD_IO] is non-zero if
-the drive supports dword IO, while the code disables support by
-setting IDE_DFLAG_NO_IO_32BIT. In addition, this word has been
-reused by the ATA8 specification. This patch fixes both cases.
+This patch fixes ata_id_has_dword_io to return 1 (supported) if
+the drive is compliant to ATA2 or newer and evaluates the config
+word for older drives.
 
 Signed-off-by: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
 ---
- drivers/ide/ide-probe.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ include/linux/ata.h |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index c55bdbd..859b0e5 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -856,7 +856,7 @@ static void ide_port_tune_devices(ide_hwif_t *hwif)
- 		ide_drive_t *drive = &hwif->drives[unit];
+diff --git a/include/linux/ata.h b/include/linux/ata.h
+index a53318b..d0d6a9c 100644
+--- a/include/linux/ata.h
++++ b/include/linux/ata.h
+@@ -700,12 +700,12 @@ static inline int ata_id_has_tpm(const u16 *id)
 
- 		if ((hwif->host_flags & IDE_HFLAG_NO_IO_32BIT) ||
--		    drive->id[ATA_ID_DWORD_IO])
-+		    !ata_id_has_dword_io(drive->id))
- 			drive->dev_flags |= IDE_DFLAG_NO_IO_32BIT;
- 		else
- 			drive->dev_flags &= ~IDE_DFLAG_NO_IO_32BIT;
+ static inline int ata_id_has_dword_io(const u16 *id)
+ {
+-	/* ATA 8 reuses this flag for "trusted" computing */
+-	if (ata_id_major_version(id) > 7)
+-		return 0;
+-	if (id[ATA_ID_DWORD_IO] & (1 << 0))
+-		return 1;
+-	return 0;
++	/* This flag is defined up to ATA1 and deprecated since then
++	   (ATA 8 reuses this flag for "trusted" computing). */
++	if (ata_id_major_version(id) <= 1)
++		return (id[ATA_ID_DWORD_IO] & (1 << 0)) != 0;
++	/* later revision drives support DWORD I/O just fine */
++	return 1;
+ }
+
+ static inline int ata_id_has_unload(const u16 *id)
 -- 
 1.5.6.3
 
