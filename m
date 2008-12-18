@@ -1,56 +1,37 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753119AbYLRTYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752427AbYLRTXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753119AbYLRTYL (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 14:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYLRTX4
+	id S1752427AbYLRTXU (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 14:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYLRTXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 14:23:56 -0500
-Received: from p02c12o144.mxlogic.net ([208.65.145.77]:35999 "EHLO
-	p02c12o144.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751380AbYLRTXz (ORCPT
+	Thu, 18 Dec 2008 14:23:06 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:38312 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751801AbYLRTXF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 14:23:55 -0500
-X-Greylist: delayed 455 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Dec 2008 14:23:54 EST
-Message-ID: <494AA15B.2010000@steeleye.com>
-Date: Thu, 18 Dec 2008 14:15:39 -0500
-From: Paul Clements <paul.clements@steeleye.com>
-User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: kernel list <linux-kernel@vger.kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: nbd: clean up error handling
-References: <20081218182108.GA13546@elf.ucw.cz>
-In-Reply-To: <20081218182108.GA13546@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Dec 2008 19:15:40.0447 (UTC) FILETIME=[03FF4AF0:01C96145]
-X-Spam: [F=0.2000000000; S=0.200(2008120801)]
-X-MAIL-FROM: <paul.clements@steeleye.com>
-X-SOURCE-IP: [71.30.118.242]
+	Thu, 18 Dec 2008 14:23:05 -0500
+Date: Thu, 18 Dec 2008 20:24:33 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+        Nick Andrew <nick@nick-andrew.net>, Matthew Wilcox <matthew@wil.cx>,
+        Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] headerdep: a tool for detecting inclusion cycles in header files
+Message-ID: <20081218192433.GA15206@uranus.ravnborg.org>
+References: <20081213222259.GB29080@uranus.ravnborg.org> <20081216115249.GA3901@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081216115249.GA3901@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
-
-hanks for the patch...
-
-Pavel Machek wrote:
-> Uses existing error_out: label instead of hardcoding error action.
 > 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> This one is probably a bit too noisy? But if we can eliminate the existing
+> cycles, it would be nice, I agree. Thanks for the feedback! :)
 
-> @@ -475,8 +473,7 @@ static void nbd_handle_req(struct nbd_de
->  	if (nbd_send_req(lo, req) != 0) {
->  		printk(KERN_ERR "%s: Request send failed\n",
->  				lo->disk->disk_name);
-> -		req->errors++;
-> -		nbd_end_request(req);
-> +		goto error_out;
+Applied to kbuild-next.
 
-This one is not correct. We don't return immediately here.
-
-
---
-Paul
+	Sam
