@@ -1,89 +1,100 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752509AbYLRPq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751660AbYLRPzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752509AbYLRPq7 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 10:46:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYLRPqn
+	id S1751660AbYLRPzA (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 10:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYLRPyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 10:46:43 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:55369 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752030AbYLRPql (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 10:46:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=UTZtRadUNPsDZunU2RULOke3Z+6sHi7JpN4kLkxxMUgBqvv51zjdY3SbZyPh9lr7tS
-         rs4DhE0T1+x82LLJhcJP5bA2tNYQ4uAA2HLSTOOTBk1+o6El0YbMO0YylTzeKNAX+5LB
-         XpQvftxBcK80xZt7LLUtV86W2gn7P1/YPxNOI=
-Date: Thu, 18 Dec 2008 18:46:36 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: David Miller <davem@davemloft.net>,
-        Andrew Morton <akpm@linux-foundation.org>
-Cc: Pavel Emelyanov <xemul@openvz.org>, NKML <netdev@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] net: ppp_generic - use DEFINE_IDR for static initialization
-Message-ID: <20081218154636.GB12874@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 18 Dec 2008 10:54:43 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:57100 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752026AbYLRPym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 10:54:42 -0500
+Subject: Re: [RFC v11][PATCH 05/13] Dump memory address space
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Mike Waychison <mikew@google.com>, jeremy@goop.org, arnd@arndb.de,
+        linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+        Linux Torvalds <torvalds@linux-foundation.org>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <494A2F94.2090800@cs.columbia.edu>
+References: <1228498282-11804-1-git-send-email-orenl@cs.columbia.edu>
+	 <1228498282-11804-6-git-send-email-orenl@cs.columbia.edu>
+	 <4949B4ED.9060805@google.com>  <494A2F94.2090800@cs.columbia.edu>
+Content-Type: text/plain
+Date: Thu, 18 Dec 2008 07:54:36 -0800
+Message-Id: <1229615676.17206.518.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please review.
+On Thu, 2008-12-18 at 06:10 -0500, Oren Laadan wrote:
+> >> +    for (i = pgarr->nr_used; i--; /**/)
+> >> +        page_cache_release(pgarr->pages[i]);
+> > 
+> > This is sorta hard to read (and non-intuitive).  Is it easier to do:
+> > 
+> > for (i = 0; i < pgarr->nr_used; i++)
+> >     page_cache_release(pgarr->pages[i]);
+> > 
+> > It shouldn't matter what order you release the pages in..
+> 
+> Was meant to avoid a dereference to 'pgarr->nr_used' in the comparison.
+> (though I doubt if the performance impact is at all visible)
 
----
->From 17bbdd601fc1be761876165488879def4649c968 Mon Sep 17 00:00:00 2001
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-Date: Thu, 18 Dec 2008 18:41:42 +0300
-Subject: [PATCH] net: ppp_generic - use DEFINE_IDR for static initialization
+That's a bit to aggressive an optimization.  You two piqued my
+curiosity, so I tried a little experiment with this .c file:
 
-We could use DEFINE_IDR for statically allocated idr
-that allow us to save a few lines of code.
+extern void bar(int i);
 
-And spell fix.
+struct s {
+        int *array;
+        int size;
+};
 
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: David Miller <davem@davemloft.net>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- drivers/net/ppp_generic.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+extern struct s *s;
+void foo(void)
+{
+        int i;
+#ifdef OREN
+        for (i = s->size; i--; )
+#else
+        for (i = 0; i < s->size; i++)
+#endif
+                bar(s->array[i]);
+}
 
-diff --git a/drivers/net/ppp_generic.c b/drivers/net/ppp_generic.c
-index 293e1c4..b13e600 100644
---- a/drivers/net/ppp_generic.c
-+++ b/drivers/net/ppp_generic.c
-@@ -178,7 +178,7 @@ struct channel {
-  */
- static DEFINE_MUTEX(all_ppp_mutex);
- static atomic_t ppp_unit_count = ATOMIC_INIT(0);
--static struct idr ppp_units_idr;
-+static DEFINE_IDR(ppp_units_idr);
- 
- /*
-  * all_channels_lock protects all_channels and last_channel_index,
-@@ -841,8 +841,6 @@ static int __init ppp_init(void)
- 		device_create(ppp_class, NULL, MKDEV(PPP_MAJOR, 0), "ppp");
- 	}
- 
--	idr_init(&ppp_units_idr);
--
- out:
- 	if (err)
- 		printk(KERN_ERR "failed to register PPP device (%d)\n", err);
-@@ -2426,7 +2424,7 @@ ppp_create_interface(int unit, int *retp)
- 		if (unit_find(&ppp_units_idr, unit))
- 			goto out2; /* unit already exists */
- 		else {
--			/* darn, someone is cheatting us? */
-+			/* darn, someone is cheating us? */
- 			*retp = -EINVAL;
- 			goto out2;
- 		}
--- 
-1.6.0.4.603.gbc9c0
+for O in "" -O -O1 -O2 -O3 -Os; do
+	gcc -DOREN $O -c f1.c -o oren.o;
+	gcc $O -c f1.c -o mike.o;
+	echo -n Oren:; objdump -d oren.o | grep ret;
+	echo -n Mike:; objdump -d mike.o | grep ret;
+done
+
+Smaller numbers are better, and indicate the size of that function,
+basically:
+
+Oren:  38:	c3                   	ret    
+Mike:  3b:	c3                   	ret    
+Oren:  44:	c3                   	ret    
+Mike:  36:	c3                   	ret    
+Oren:  44:	c3                   	ret    
+Mike:  36:	c3                   	ret    
+Oren:  43:	c3                   	ret    
+Mike:  34:	c3                   	ret    
+Oren:  43:	c3                   	ret    
+Mike:  34:	c3                   	ret    
+Oren:  3a:	c3                   	ret    
+Mike:  2a:	c3                   	ret    
+
+gcc version 4.2.4 (Ubuntu 4.2.4-1ubuntu3).  In all but the unoptimized
+case, Mike's version wins.  Readability, and icache footprint all in one
+package!
+
+-- Dave
 
