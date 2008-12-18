@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752145AbYLRN6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752449AbYLROTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752145AbYLRN6F (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 08:58:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYLRN5w
+	id S1752449AbYLROTR (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 09:19:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYLROSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 08:57:52 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:28772 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751395AbYLRN5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 08:57:52 -0500
-Date: Thu, 18 Dec 2008 14:57:21 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: scameron@beardog.cca.cpqcorp.net
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-        mikem@roadking.cca.cpqcorp.net
-Subject: Re: [patch] cciss: Fix problem that deleting multiple logical drives could cause a panic
-Message-ID: <20081218135720.GR32491@kernel.dk>
-References: <20081216201703.GL1126@beardog.cca.cpqcorp.net> <20081216202730.GZ32491@kernel.dk> <20081216204945.GN1126@beardog.cca.cpqcorp.net>
+	Thu, 18 Dec 2008 09:18:51 -0500
+Received: from mail.inf.tu-dresden.de ([141.76.2.1]:62416 "EHLO
+	mail.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751946AbYLROSu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 09:18:50 -0500
+Message-ID: <494A5BC9.7000605@inf.tu-dresden.de>
+Date: Thu, 18 Dec 2008 15:18:49 +0100
+From: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081216204945.GN1126@beardog.cca.cpqcorp.net>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] ide: Fix drive's DWORD-IO handling
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 16 2008, scameron@beardog.cca.cpqcorp.net wrote:
-> On Tue, Dec 16, 2008 at 09:27:30PM +0100, Jens Axboe wrote:
-> > On Tue, Dec 16 2008, scameron@beardog.cca.cpqcorp.net wrote:
-> > > 
-> > > Fix problem that deleting multiple logical drives could cause a panic.
-> > 
-> > This looks like a 2.6.28 candidate, correct?
-> 
-> Yes, and we would like to get it in anywhere else it needs to go
-> (backport to 2.6.27.x? if that makes sense.)
-> 
-> It fixes a panic which can be easily reproduced in the following
-> way: Just create several "arrays," each with multiple logical 
-> drives via hpacucli, then delete the first array, and it will blow
-> up in deregister_disk(), in the call to get_host() when it tries to
-> dig the hba pointer out of a NULL queue pointer.
-> 
-> The problem has been present since my code to make 
-> rebuild_lun_table behave better went in.
+Resubmitted on request.
 
-OK, I'll make sure it goes upstream for 2.6.28. I've merged your other
-cciss patch for 2.6.29.
+According the documentation, id[ATA_ID_DWORD_IO] is non-zero if
+the drive supports dword IO, while the code disables support by
+setting IDE_DFLAG_NO_IO_32BIT. In addition, this word has been
+reused by the ATA8 specification. This patch fixes both cases.
 
+Signed-off-by: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
+---
+ drivers/ide/ide-probe.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+index c55bdbd..859b0e5 100644
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -856,7 +856,7 @@ static void ide_port_tune_devices(ide_hwif_t *hwif)
+ 		ide_drive_t *drive = &hwif->drives[unit];
+
+ 		if ((hwif->host_flags & IDE_HFLAG_NO_IO_32BIT) ||
+-		    drive->id[ATA_ID_DWORD_IO])
++		    !ata_id_has_dword_io(drive->id))
+ 			drive->dev_flags |= IDE_DFLAG_NO_IO_32BIT;
+ 		else
+ 			drive->dev_flags &= ~IDE_DFLAG_NO_IO_32BIT;
 -- 
-Jens Axboe
+1.5.6.3
 
