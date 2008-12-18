@@ -1,72 +1,102 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753429AbYLRLoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752221AbYLRLsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753429AbYLRLoq (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 06:44:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYLRLoe
+	id S1752221AbYLRLsV (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 06:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYLRLsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 06:44:34 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:33319 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751212AbYLRLod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 06:44:33 -0500
-Date: Thu, 18 Dec 2008 22:44:18 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Howells <dhowells@redhat.com>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, steved@redhat.com,
-        rwheeler@redhat.com, bfields@fieldses.org, nfsv4@linux-nfs.org,
-        linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Pull request for FS-Cache, including NFS patches
-Message-Id: <20081218224418.804f10bc.sfr@canb.auug.org.au>
-In-Reply-To: <8930.1229560221@redhat.com>
-References: <8930.1229560221@redhat.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__18_Dec_2008_22_44_18_+1100_9Kz1EiBeOSAn1TCy"
+	Thu, 18 Dec 2008 06:48:04 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38245 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751425AbYLRLsD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 06:48:03 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: mmotm 2008-12-16-00-43 uploaded (fs)
+Cc: kosaki.motohiro@jp.fujitsu.com, Randy Dunlap <randy.dunlap@oracle.com>,
+        linux-kernel@vger.kernel.org, npiggin@suse.de
+In-Reply-To: <20081216102136.08ba1714.akpm@linux-foundation.org>
+References: <4947ECD8.6050500@oracle.com> <20081216102136.08ba1714.akpm@linux-foundation.org>
+Message-Id: <20081218200145.D7B3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu, 18 Dec 2008 20:47:57 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__18_Dec_2008_22_44_18_+1100_9Kz1EiBeOSAn1TCy
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Tue, 16 Dec 2008 10:00:56 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > Randy Dunlap wrote:
+> > > akpm@linux-foundation.org wrote:
+> > >> The mm-of-the-moment snapshot 2008-12-16-00-43 has been uploaded to
+> > >>
+> > >>    http://userweb.kernel.org/~akpm/mmotm/
+> > >>
+> > >> It contains the following patches against 2.6.28-rc8:
+> > >>
+> > >> fs-symlink-write_begin-allocation-context-fix.patch
+> > > 
+> > > Nick,
+> > > 
+> > > fuse and reiser4 still use __grab_cache_page() although your patch
+> > > removed it:
+> > > 
+> > > build-r7257.out:/local/linsrc/tmp/mmotm-2008-1216-0043/fs/reiser4/plugin/file/file_conversi
+> > > on.c:689: error: implicit declaration of function '__grab_cache_page'
+> > > build-r7257.out:make[3]: *** [fs/reiser4/plugin/file/file_conversion.o] Error 1
+> > > 
+> > > build-r7248.out:/local/linsrc/tmp/mmotm-2008-1216-0043/fs/fuse/file.c:792: error: implicit declaration of function '__grab_cache_page'
+> > > build-r7248.out:make[3]: *** [fs/fuse/file.o] Error 1
+> > 
+> > 
+> > One more related error:
+> > 
+> > build-r7258.out:/local/linsrc/tmp/mmotm-2008-1216-0043/fs/ubifs/file.c:251: error: 'flags' undeclared (first use in this function)
+> > build-r7258.out:make[3]: *** [fs/ubifs/file.o] Error 1
+> 
+> thanks, I dropped it.
 
-Hi David,
+I'm sad ;)
 
-On Thu, 18 Dec 2008 00:30:21 +0000 David Howells <dhowells@redhat.com> wrot=
-e:
->
-> Can you try pulling the master branch of this tree:
->=20
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-2.6-nfs-fsc=
-ache.git
->=20
-> into linux-next, please?
+I have fixing patch. this patch series have
 
-Added from today.
+1) reiser4 fix
+2) ubifs fix
+3) fuse fix
 
-Usual spiel: all patches in that branch must have been
-	posted to a relevant mailing list
-	reviewed
-	unit tested
-	destined for the next merge window (or the current release)
-*before* they are included.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Thu__18_Dec_2008_22_44_18_+1100_9Kz1EiBeOSAn1TCy
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Tested on mmotm1217 + fs-symlink-write_begin-allocation-context-fix.patch
 
-iEYEARECAAYFAklKN5IACgkQjjKRsyhoI8wvzgCfTY3tvRx4VCugiFKP1UHJ4FUk
-MXsAn3f5wDrjTqTgf2v4oFpYgN3pL970
-=TJMK
------END PGP SIGNATURE-----
+==
+Subject: [PATCH 1/3] fix reiser4 build error of fs-symlink-write_begin-allocation-context-fix.patch
 
---Signature=_Thu__18_Dec_2008_22_44_18_+1100_9Kz1EiBeOSAn1TCy--
+build fix.
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ fs/reiser4/plugin/file/file_conversion.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: b/fs/reiser4/plugin/file/file_conversion.c
+===================================================================
+--- a/fs/reiser4/plugin/file/file_conversion.c
++++ b/fs/reiser4/plugin/file/file_conversion.c
+@@ -686,7 +686,8 @@ int reiser4_write_begin_careful(struct f
+ 	start = pos & (PAGE_CACHE_SIZE - 1);
+ 	end = start + len;
+ 
+-	page = __grab_cache_page(mapping, index);
++	page = grab_cache_page_write_begin(mapping, index,
++					   flags & AOP_FLAG_NOFS);
+ 	*pagep = page;
+ 	if (!page)
+ 		return -ENOMEM;
+
+
+
+
