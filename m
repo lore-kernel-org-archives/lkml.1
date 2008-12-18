@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752822AbYLRKaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752459AbYLRKf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbYLRKaA (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 05:30:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbYLRK3u
+	id S1752459AbYLRKf2 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 05:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750776AbYLRKfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 05:29:50 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57742 "EHLO mx3.mail.elte.hu"
+	Thu, 18 Dec 2008 05:35:12 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51942 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751506AbYLRK3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 05:29:49 -0500
-Date: Thu, 18 Dec 2008 11:29:34 +0100
+	id S1751015AbYLRKfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 05:35:10 -0500
+Date: Thu, 18 Dec 2008 11:34:59 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] x86: signal: move ia32 func declarations into
-	arch/x86/kernel/signal.c
-Message-ID: <20081218102934.GC10513@elte.hu>
-References: <4949B9B5.2050701@ct.jp.nec.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+        Thomas Gleixner <tglx@linutronix.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] tracing/function-graph-tracer: prevent from hrtimer
+	interrupt infinite loop
+Message-ID: <20081218103459.GD10513@elte.hu>
+References: <4949A2CC.6040209@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4949B9B5.2050701@ct.jp.nec.com>
+In-Reply-To: <4949A2CC.6040209@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,15 +38,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I have applied your patches to tip/x86/signal:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
- d98f9d8: x86: ia32_signal: use sigframe.h
- 3b0d29e: x86: ia32_signal: rename struct sigframe and rt_sigframe
- c85c2ff: x86: signal: prepare to include from ia32_signal.c
- 41af86f: x86: signal: move sigframe.h to arch/x86/include/asm
- a5c56eb: x86: signal: rename sigframe and rt_sigframe on 32-bit
- f522376: x86: signal: move ia32 func declarations into arch/x86/kernel/signal.c
+> Impact: fix a system hang on slow systems
+> 
+> While testing the function graph tracer on VirtualBox, I had a system hang
+> immediatly after enabling the tracer.
+>
+> If hrtimer is enabled on kernel, a slow system can spend too much time 
+> during tracing the hrtimer_interrupt which will do eternal loops, 
+> assuming it always have to retry its process because too much time 
+> elapsed during its time update. Now we provide a feature which lurks at 
+> the number of retries on hrtimer_interrupt. After 10 retries, the 
+> function graph tracer will definetly stop its tracing.
 
-they are nice cleanups! Thanks,
+hm, i dont really like this solution - it just works around the problem by 
+'speeding up' the system. If we have a _real_ slow system, there's no such 
+way for us to speed it up.
+
+Thomas, what do you think - would you expect this lockup to happen on 
+really slow systems? If yes, is there a way we could avoid it from 
+happening - by driving some sort of 'mandatory interval', that is doubled 
+in size every time we detect such a bad hrtimer loop?
 
 	Ingo
