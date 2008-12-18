@@ -1,122 +1,71 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752187AbYLRO1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752171AbYLROa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752187AbYLRO1X (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 09:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYLRO1I
+	id S1752171AbYLROa2 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 09:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbYLROaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 09:27:08 -0500
-Received: from mga11.intel.com ([192.55.52.93]:25898 "EHLO mga11.intel.com"
+	Thu, 18 Dec 2008 09:30:11 -0500
+Received: from smtp.movial.fi ([62.236.91.34]:36697 "EHLO smtp.movial.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751047AbYLRO1G convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 09:27:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.36,243,1228118400"; 
-   d="scan'208";a="415559392"
-From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-To: "Williams, Dan J" <dan.j.williams@intel.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-        "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
-        "g.liakhovetski@gmx.de" <g.liakhovetski@gmx.de>,
-        "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
-Date: Thu, 18 Dec 2008 14:26:00 +0000
-Subject: RE: [PATCH 03/13] dmaengine: up-level reference counting to the
- module level
-Thread-Topic: [PATCH 03/13] dmaengine: up-level reference counting to the
- module level
-Thread-Index: AclfAkZO18EnLcsTQAmDmJ6Vs59cHgCDvBKA
-Message-ID: <129600E5E5FB004392DDC3FB599660D70C984F5D@irsmsx504.ger.corp.intel.com>
-References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
-	 <20081114213432.32354.2427.stgit@dwillia2-linux.ch.intel.com>
-	 <129600E5E5FB004392DDC3FB599660D70C8F3405@irsmsx504.ger.corp.intel.com>
- <e9c3a7c20812151412va63c2ceob7d57ea91a8c208@mail.gmail.com>
-In-Reply-To: <e9c3a7c20812151412va63c2ceob7d57ea91a8c208@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1751185AbYLROaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 09:30:09 -0500
+Message-ID: <494A5E6F.70505@movial.fi>
+Date: Thu, 18 Dec 2008 16:30:07 +0200
+From: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
+Organization: Movial Creative Technologies
+User-Agent: Icedove 1.5.0.14eol (X11/20080724)
 MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Ben Dooks <ben-linux@fluff.org>, Julia Lawall <julia@diku.dk>,
+        khali@linux-fr.org, linux-i2c@vger.kernel.org,
+        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/28] drivers/ide: Drop return value from	platform_driver
+ remove functions
+References: <Pine.LNX.4.64.0812101727230.21998@ask.diku.dk> <20081216195734.GA8032@fluff.org.uk> <4948F56A.7020501@movial.fi> <20081217213226.GA26832@kroah.com>
+In-Reply-To: <20081217213226.GA26832@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
-> On Fri, Dec 12, 2008 at 7:28 AM, Sosnowski, Maciej
-> <maciej.sosnowski@intel.com> wrote:
->> Dan,
->>
->> General concern I see about this change is that it makes impossible
->> to rmmod ioatdma in case of NET_DMA enabled.
->> This is a specific case of situation when client is permanently
->> registered in dmaengine,
->> making it impossible to rmmod any device with "public" channels.
->> Ioatdma is just an example here.
->> However in ioatdma case it would be problematic now to switch
->> between CPU and DMA copy modes.
->> It seems that the only way to disable DMA after loading ioatdma
->> would be raising tcp_dma_copybreak to some high enough value to
->> direct all buffers to CPU copy path.
->> This way is yet rather more like hacking than "normal" usage way
->> (like "rmmod ioatdma" used so far).
->>
->
-> Hi Maciej,
->
-> I have been waiting for you to point this out because I believe it
-> shows where more work is needed in net_dma.  The problem with net_dma
-> is that it never says "I am done with dma channels".  The result was
-> the old/complicated per-operation reference counting in dmaengine that
-> lead to the, now deleted, comment for ioat_remove():
->
-> /*
->  * It is unsafe to remove this module: if removed while a requested
->  * dma is outstanding, esp. from tcp, it is possible to hang while
->  * waiting for something that will never finish.  However, if you're
->  * feeling lucky, this usually works just fine.
->  */
->
-> This also required the complexity of each client needing to handle
-> asynchronous channel removal events.  In all other cases in the kernel
-> a module is pinned as long as it has users, so dmaengine was backwards
-> in this regard.
->
-> Putting the end-node principal to work here means that the
-> complexity/effort of determining when net_dma is done with channels
-> should reside in net_dma, not dmaengine.  Since we cannot hook into a
-> "rmmod net" event to drop the dmaengine reference we will need some
-> out-of-band signal to enable "rmmod ioatdma" like detecting
-> network-idle, or having an explicit "dma disable" sysctl.
+Greg KH wrote:
+> On Wed, Dec 17, 2008 at 02:49:46PM +0200, Dmitri Vorobiev wrote:
+>> Ben Dooks wrote:
+>>> On Wed, Dec 10, 2008 at 05:27:56PM +0100, Julia Lawall wrote:
+>>>> From: Julia Lawall <julia@diku.dk>
+>>>>
+>>>> The return value of the remove function of a driver structure, and thus of
+>>>> a platform_driver structure, is ultimately ignored, and is thus
+>>>> unnecessary.  This patch removes the return value for the remove function
+>>>> stored in a platform_driver structure.
+>>>>
+>>>> For the files drivers/i2c/busses/i2c-at91.c and
+>>>> drivers/i2c/busses/i2c-mv64xxx.c, the original return value was the value
+>>>> of a variable storing the result of calling i2c_del_adapter.  I have thus
+>>>> also deleted the declaration and initialization of this variable.  For the
+>>>> other files, the return values were always 0.
+>>>>
+>>>> A simplified version of the semantic patch that makes this change is as
+>>>> follows: (http://www.emn.fr/x-info/coccinelle/)
+>>> I take it remove_new will eventually be renamed to remove once all
+>>> the changes have been made?
+>>>
+>>> Unless there are any objections I'll add this to the merge list for
+>>> the next window.
+>> Please be careful since the drivers/base/ part has not been applied
+>> yet, so I'm Cc:ing Greg now for his opinion.
+> 
+> The more I think about it, the more I think it should not be changed,
+> sorry.  We should leave the return value and do something based on the
+> value of it if we can.
 
-Hi Dan,
-I agree that net_dma needs to be modified
-so that it releases dma channels if not used.
-However in the mean time, as long as net_dma is not ready to do this,
-the problem of "rmmod ioatdma" in the redesigned dmaengine remains...
+Thanks for the reply, it's justifying the changes in the SGI SCSI controller driver :)
 
->
->> Another issue I find problematic in this solution is that _any_
->> client
->> declaring its presence in dmaengine causes holding reference for
->> _all_ channels (and blocking them), does not matter if they are used
->> or not.
->> I agree with Guennadi's doubts here.
->> Why not at least hold a reference only for channels with
->> capabilities matching client's ones?
->>
->
-> All channels share the same parent module, so taking a reference on
-> one will always involve blocking all channels.
+Dmitri
 
-This is true for channels of the same device/module.
-However, if we have two different devices with different capabilities,
-should they both be blocked by single client?
-For example, what is use of blocking channels of device
-with DMA_MEMCPY capabilities only
-by a client interested in DMA_XOR or DMA_MEMSET?
+> 
+> thanks,
+> 
+> greg k-h
 
-Thanks,
-Maciej
