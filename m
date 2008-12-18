@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752853AbYLRR2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752685AbYLRR01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbYLRR2X (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 12:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYLRR17
+	id S1752685AbYLRR01 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 12:26:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbYLRR0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 12:27:59 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:59359 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751046AbYLRR16 (ORCPT
+	Thu, 18 Dec 2008 12:26:17 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:47103 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbYLRR0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 12:27:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=YAkhtl2gpLIDp1Kmg2MK35iyTtcYTKhLlQ7supx5zUczuQkEd65eswOjENzjjM1DA4
-         FaixI5AcDg1xgeKUr6qwrSznqa6XP48kegm5K/tVs3xW3vushRo6GyY6rT8c28FeshRN
-         8Jte9RZGtfjjr498SCW0b9+Pkl2Yy7WANG3jY=
-Message-ID: <e9c3a7c20812180927q7488f8b9n9641cf313363fcc5@mail.gmail.com>
-Date: Thu, 18 Dec 2008 10:27:56 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-Subject: Re: [PATCH 07/13] dmaengine: introduce dma_request_channel and private channels
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-        "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
-        "g.liakhovetski@gmx.de" <g.liakhovetski@gmx.de>,
-        "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
-In-Reply-To: <129600E5E5FB004392DDC3FB599660D70C984F6A@irsmsx504.ger.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 18 Dec 2008 12:26:16 -0500
+Date: Thu, 18 Dec 2008 09:25:57 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, dhowells@redhat.com
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 18 (fscache)
+Message-Id: <20081218092557.b274e9dd.randy.dunlap@oracle.com>
+In-Reply-To: <20081218230637.c879a046.sfr@canb.auug.org.au>
+References: <20081218230637.c879a046.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
-	 <20081114213453.32354.53002.stgit@dwillia2-linux.ch.intel.com>
-	 <129600E5E5FB004392DDC3FB599660D70C8F3406@irsmsx504.ger.corp.intel.com>
-	 <e9c3a7c20812151555g14080561q18cf2d0db4c1813b@mail.gmail.com>
-	 <129600E5E5FB004392DDC3FB599660D70C984F6A@irsmsx504.ger.corp.intel.com>
-X-Google-Sender-Auth: fff47676d9f6754a
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.494A87A9.003F:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 18, 2008 at 7:33 AM, Sosnowski, Maciej
-<maciej.sosnowski@intel.com> wrote:
-> What about situation, where some or all "public" channels in the system
-> have been claimed by one client for its exclusive usage
-> before another client appears trying to use available "public" channels?
-> Despite of presence in the system of channels that supposed to be "public",
-> the second cilent realizes that the channels are not available anymore at all
-> or at least limited...
-> Doesn't it contradict the general idea of "public" (general purpose) channels?
->
+On Thu, 18 Dec 2008 23:06:37 +1100 Stephen Rothwell wrote:
 
-If a greedy module comes along and grabs all the channels via
-dma_request_channel() then yes, there will be nothing left for the
-public pool.  So, there is a requirement to "play nice".  If this
-becomes an issue in practice we could add a DMA_NO_PRIVATE flag to
-reserve a channel for public-only usage.
+> Hi all,
+> 
+> Changes since 20081217:
+> 
+> New tree:
+> 	fscache
 
-Regards,
-Dan
+
+When CONFIG_BLOCK=n:
+
+build-r7417.out:/local/linsrc/linux-next-20081218/fs/cachefiles/cf-interface.c:357: error: implicit declaration of function 'fsync_super'
+build-r7417.out:make[3]: *** [fs/cachefiles/cf-interface.o] Error 1
+
+
+Should include/linux/buffer_head.h have an empty stub for fsync_super()
+or does fscache even make sense when CONFIG_BLOCK=n?
+
+---
+~Randy
