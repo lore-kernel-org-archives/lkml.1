@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752977AbYLRJpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752587AbYLRJno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752977AbYLRJpa (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 04:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbYLRJpK
+	id S1752587AbYLRJno (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 04:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYLRJnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 04:45:10 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:52311 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751AbYLRJpI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 04:45:08 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Subject: Re: [4/7] dst: thread pool.
-Date: Thu, 18 Dec 2008 10:44:27 +0100
-User-Agent: KMail/1.9.9
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
-References: <1229521998-7870-1-git-send-email-zbr@ioremap.net> <1229561507.19360.0.camel@pasglop> <20081218081029.GA20336@ioremap.net>
-In-Reply-To: <20081218081029.GA20336@ioremap.net>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 18 Dec 2008 04:43:33 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:41219 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751575AbYLRJnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 04:43:33 -0500
+Date: Thu, 18 Dec 2008 10:45:57 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 15 (mfd)
+Message-ID: <20081218094556.GA2517@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <20081216020642.fc1007d9.sfr@canb.auug.org.au> <4946AF6A.8030107@oracle.com> <20081217114300.9476f8da.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812181044.28157.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18WQOoGW9B0umRXtIIfZe6kfrBSB5pirZ9oZnU
- pWh8HTy51Vrdf3Gqrrb7C1/tlVKLqyjSVEmOSNvspq4YMM0OGB
- p3QsEiUDeKLZ5IBv71Hfw==
+In-Reply-To: <20081217114300.9476f8da.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 18 December 2008, Evgeniy Polyakov wrote:
+On Wed, Dec 17, 2008 at 11:43:00AM -0800, Randy Dunlap wrote:
+> On Mon, 15 Dec 2008 11:26:34 -0800 Randy Dunlap wrote:
+> 
+> > Lots of mfd build failures like this:
+> > 
+> > 
+> > build-r7123.out:/local/linsrc/linux-next-20081215/drivers/mfd/twl4030-irq.c:183: error: 'irq_desc' undeclared (first use in this function)
+> > build-r7123.out:/local/linsrc/linux-next-20081215/drivers/mfd/twl4030-irq.c:455: error: 'irq_desc' undeclared (first use in this function)
+> > build-r7123.out:/local/linsrc/linux-next-20081215/drivers/mfd/twl4030-irq.c:515: error: 'irq_desc' undeclared (first use in this function)
+> > build-r7123.out:make[3]: *** [drivers/mfd/twl4030-irq.o] Error 1
+> 
+> 
+> This build error still happens in linux-next-20081217.
+> 
+> It only occurs when I2C=y (see drivers/mfd/Kconfig).
+> 
+> Stephen, doing an allyesconfig i386 or x86_64 build will catch this,
+> then you can drop the mfd tree and hopefully prod someone into fixing this...
+Sorry for the delay, I was away from the interweb for the last 2 days.
+I'll look into it.
 
-> That's how such projects are implemented: when developers need to
-> extend some other sybsystem they do that with own implementation of the
-> needed feature. Moreover people frequently argue against importing some
-> new feature if there are no direct users of it (like may happen with
-> thread pools, which no one will use immediately), so why bother with
-> that crap (och, well, and interfaces, there will be definitely people
-> who do not like them) when it is possible just to make working what
-> you like? So I fully understand those who implemented it in theirs
-> subsystems. I would even call blaming them for not pushing theirs
-> implementations into generic location somewhat hypocritically because
-> of above :)
+Cheers,
+Samuel.
 
-I agree, and I don't think anyone has done anything wrong so far with
-this. The natural way that internal features get into the kernel is
-roughly:
+ 
+> ---
+> ~Randy
 
-1. Someone needs a feature and does a minimal implementation suiting
-a specific purpose.
-2. A few other people implement something similar, in slightly
-different ways.
-3. One of the implementations gets mentioned in a howto or a textbook
-and people start copying from that.
-4. One person gets fed up with the duplication and proposes a generic
-solution as a patch.
-5. After some discussion, this or another implementation gets merged.
-6. The majority of the previous implementations get moved over to
-the common code.
-7. During that process, a deficiency in the interface gets noticed
-and it gets changed again, forcing everyone who moved over to also
-change again.
-
-We are currently in stage 2, and I'm not sure if it's even a good idea
-to skip any of the following stages. If we're lucky, we can skip stage 3.
-
-	Arnd <><
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
