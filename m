@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753395AbYLRBQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752998AbYLRBYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753395AbYLRBQp (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 20:16:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYLRBQc
+	id S1752998AbYLRBYU (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 20:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbYLRBYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 20:16:32 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40372 "EHLO
+	Wed, 17 Dec 2008 20:24:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55140 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751028AbYLRBQb (ORCPT
+	by vger.kernel.org with ESMTP id S1750749AbYLRBYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 20:16:31 -0500
-Date: Wed, 17 Dec 2008 17:16:25 -0800
+	Wed, 17 Dec 2008 20:24:04 -0500
+Date: Wed, 17 Dec 2008 17:22:55 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: davem@davemloft.net, paulus@samba.org, linux-kernel@vger.kernel.org,
-        netdev@vger.kernel.org, xemul@openvz.org
-Subject: Re: [PATCH] net: ppp_generic - use idr technique instead of
- cardmaps
-Message-Id: <20081217171625.776d4e46.akpm@linux-foundation.org>
-In-Reply-To: <20081216192000.GF26390@localhost>
-References: <20081216192000.GF26390@localhost>
+To: swhiteho@redhat.com
+Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
+        swhiteho@redhat.com, tytso@mit.edu, sandeen@redhat.com
+Subject: Re: [PATCH 01/24] GFS2: Support for FIEMAP ioctl
+Message-Id: <20081217172255.44700cb6.akpm@linux-foundation.org>
+In-Reply-To: <1229513423-19105-2-git-send-email-swhiteho@redhat.com>
+References: <1229513423-19105-1-git-send-email-swhiteho@redhat.com>
+	<1229513423-19105-2-git-send-email-swhiteho@redhat.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,73 +28,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Dec 2008 22:20:00 +0300
-Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+On Wed, 17 Dec 2008 11:30:00 +0000
+swhiteho@redhat.com wrote:
 
-> Here is an attempt to convert cardmaps into ird.
-> I would really appreciate any feedback.
-> 
-> I've tested ird under qemu (by some hacks not real ppp connection)
-> so real loadings could reveal problems with the patch - review
-> carefully please. (i'm not subcribed for netdev list CC me).
-> 
-> Any comments are _quite_ welcome! Paul?
-> 
-> ---
-> From: Cyrill Gorcunov <gorcunov@openvz.org>
-> Date: Tue, 16 Dec 2008 19:39:08 +0300
-> Subject: [PATCH] net: ppp_generic - use idr technique instead of cardmaps
-> 
-> Use idr technique instead of own implemented cardmaps.
-> It saves us a number of lines and gives an ability
-> to use library functions.
->
-> ...
->
-> +static struct idr ppp_units_idr;
-
-Could use DEFINE_IDR()
-
-> @@ -859,6 +841,8 @@ static int __init ppp_init(void)
->  		device_create(ppp_class, NULL, MKDEV(PPP_MAJOR, 0), "ppp");
->  	}
->  
-> +	idr_init(&ppp_units_idr);
-
-then remove this.
-
->  out:
->  	if (err)
->  		printk(KERN_ERR "failed to register PPP device (%d)\n", err);
-> @@ -2431,10 +2415,22 @@ ppp_create_interface(int unit, int *retp)
->  
->  	ret = -EEXIST;
->  	mutex_lock(&all_ppp_mutex);
-> -	if (unit < 0)
-> -		unit = cardmap_find_first_free(all_ppp_units);
-> -	else if (cardmap_get(all_ppp_units, unit) != NULL)
-> -		goto out2;	/* unit already exists */
+> +static int gfs2_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
+> +		       u64 start, u64 len)
+> +{
+> +	struct gfs2_inode *ip = GFS2_I(inode);
+> +	struct gfs2_holder gh;
+> +	int ret;
 > +
-> +	if (unit < 0) {
-> +		unit = unit_get(&ppp_units_idr, ppp);
-> +		if (unit < 0) {
-> +			*retp = unit;
-> +			goto out2;
-> +		}
-> +	} else {
-> +		if (unit_find(&ppp_units_idr, unit))
-> +			goto out2; /* unit already exists */
-> +		else {
-> +			/* darn, someone is cheatting us? */
+> +	ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC);
+> +	if (ret)
+> +		return ret;
+> +
+> +	mutex_lock(&inode->i_mutex);
+> +
+> +	ret = gfs2_glock_nq_init(ip->i_gl, LM_ST_SHARED, 0, &gh);
+> +	if (ret)
+> +		goto out;
+> +
+> +	if (gfs2_is_stuffed(ip)) {
+> +		u64 phys = ip->i_no_addr << inode->i_blkbits;
+> +		u64 size = i_size_read(inode);
 
-"cheating" ;)
+It's actually safe to directly access i_size inside i_mutex.  Although
+not terribly maintainable.
 
-> +			*retp = -EINVAL;
-> +			goto out2;
-> +		}
-> +	}
 
-It certainly cleaned things up.
-
-What is the locking for the IDR tree?  all_ppp_mutex?
-
+> +		u32 flags = FIEMAP_EXTENT_LAST|FIEMAP_EXTENT_NOT_ALIGNED|
+> +			    FIEMAP_EXTENT_DATA_INLINE;
+> +		phys += sizeof(struct gfs2_dinode);
+> +		phys += start;
