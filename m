@@ -1,204 +1,125 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753422AbYLRASA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753625AbYLRAOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422AbYLRASA (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Wed, 17 Dec 2008 19:18:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYLRARv
+	id S1753625AbYLRAOi (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 17 Dec 2008 19:14:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbYLRAOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Dec 2008 19:17:51 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:29759 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751742AbYLRARu (ORCPT
+	Wed, 17 Dec 2008 19:14:23 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:11816 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753184AbYLRAOU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Dec 2008 19:17:50 -0500
+	Wed, 17 Dec 2008 19:14:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YDNZOD5WvUcROtIhmf+OhklJ21/4Y+jJeaWl0XNmJmSdNyfvuRBLnSq2GX3gV7W138
-         y1FUGfiYRoue8HrvIL2LEAQN9xpt1g0MWHgLWWwNGUe+tKftOr57BaTpg4v11XX3UV7C
-         5l39TCN+yo43DgNxxTw8eQ5T79jXVtIxh6qug=
-Message-ID: <c62985530812171617j128e1790se33b2dd8b58db389@mail.gmail.com>
-Date: Thu, 18 Dec 2008 01:17:48 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] tracing/function-graph-tracer: prevent from hrtimer interrupt eternal loop
-Cc: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de,
-        linux-kernel@vger.kernel.org
-In-Reply-To: <20081217155940.138d0b6e.akpm@linux-foundation.org>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=KvIEOxeOunVvAjDTowGBwrJWqNt3FdZUur6Ssg6BiDm9OgrSBk4N/EbFswyjqMvMQX
+         VINzrsaa5McT27YHSl6LxntBELjgDkGpvBJrw4YIJnxCWX3pSHT1Gflm2n5RVmUhxjPp
+         uAnZXnmdYyGpPcvam4qrDCWXq/Wi6BugrkCR4=
+Message-ID: <494995D7.6090009@gmail.com>
+Date: Wed, 17 Dec 2008 20:14:15 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+        Dave Airlie <airlied@redhat.com>
+Subject: Re: linux-next: Tree for December 17 (Radeon DRM BUG)
+References: <20081217232536.0b18f4a7.sfr@canb.auug.org.au>
+In-Reply-To: <20081217232536.0b18f4a7.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <494990CF.70504@gmail.com>
-	 <20081217155940.138d0b6e.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/12/18 Andrew Morton <akpm@linux-foundation.org>:
-> On Thu, 18 Dec 2008 00:52:47 +0100
-> Frederic Weisbecker <fweisbec@gmail.com> wrote:
+Stephen Rothwell wrote:
+> Hi all,
 >
->> Impact: fix a system hang on slow systems
->>
->> While testing the function graph tracer on VirtualBox, I had a system hang
->> immediately after enabling the tracer.
->> If hrtimer is enabled on kernel, a slow system can spend too much time during
->> tracing the hrtimer_interrupt which will do eternal loops, assuming it always
->> have to retry its process because too much time elapsed during its time
->> update.
->> Now we provide a feature which lurks at the number of retries on
->> hrtimer_interrupt. After 10 retries, the function graph tracer will finally stop
->> its tracing.
->>
->> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->> Cc: Thomas Gleixner <tglx@linutronix.de>
->> Cc: Steven Rostedt <rostedt@goodmis.org>
->> ---
->>  arch/x86/kernel/ftrace.c |    2 ++
->>  include/linux/ftrace.h   |   31 +++++++++++++++++++++++++++++++
->>  kernel/hrtimer.c         |    5 +++++
->>  3 files changed, 38 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
->> index 1b43086..244f178 100644
->> --- a/arch/x86/kernel/ftrace.c
->> +++ b/arch/x86/kernel/ftrace.c
->> @@ -389,6 +389,8 @@ void ftrace_nmi_exit(void)
->>
->>  #endif /* !CONFIG_DYNAMIC_FTRACE */
->>
->> +DEFINE_PER_CPU(int, ftrace_graph_hrtimer_loop) = LOCAL_INIT(0);
->
-> Strange.  This has type `int', but we initialise it with a local_t?
+>   
 
+I get the following BUG in the radeon drm code with today's linux-next 
+when I run "startx".  I have not built or tested linux-next in a while, 
+but the problem definitely does not occur in mainline.
 
-Oops...
+Dec 17 20:02:41 winchester [   43.741709] BUG: unable to handle kernel 
+NULL pointer dereference at 0000000000000000
+Dec 17 20:02:41 winchester [   43.741723] IP: [<ffffffff8038411d>] 
+radeon_cp_init+0x311/0x9f6
+Dec 17 20:02:41 winchester [   43.741740] PGD 4d501067 PUD 4d533067 PMD 0
+Dec 17 20:02:41 winchester [   43.741747] Oops: 0002 [#1]
+Dec 17 20:02:41 winchester [   43.741751] last sysfs file: 
+/sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/resource
+Dec 17 20:02:41 winchester [   43.741757] CPU 0
+Dec 17 20:02:41 winchester [   43.741760] Modules linked in:
+Dec 17 20:02:41 winchester [   43.741766] Pid: 3630, comm: X Not tainted 
+2.6.28-rc8-next-20081217 #192
+Dec 17 20:02:41 winchester [   43.741771] RIP: 
+0010:[<ffffffff8038411d>]  [<ffffffff8038411d>] radeon_cp_init+0x311/0x9f6
+Dec 17 20:02:41 winchester [   43.741780] RSP: 0018:ffff88004d575e18  
+EFLAGS: 00010282
+Dec 17 20:02:41 winchester [   43.741784] RAX: ffff88004f36d640 RBX: 
+ffff88004f257400 RCX: ffff88004f36d640
+Dec 17 20:02:41 winchester [   43.741789] RDX: 0000002000000002 RSI: 
+ffff88004f3fd000 RDI: ffff88004f085800
+Dec 17 20:02:41 winchester [   43.741793] RBP: ffff88004d575e38 R08: 
+ffff88004d559600 R09: ffff88004d575ef8
+Dec 17 20:02:41 winchester [   43.741798] R10: 0000000000000000 R11: 
+0000000000003202 R12: ffff88004f085800
+Dec 17 20:02:41 winchester [   43.741802] R13: ffff88004eb9d500 R14: 
+0000000000000000 R15: ffff88004eb9db00
+Dec 17 20:02:41 winchester [   43.741808] FS:  00007f845ffa26f0(0000) 
+GS:ffffffff80699e40(0000) knlGS:0000000000000000
+Dec 17 20:02:41 winchester [   43.741813] CS:  0010 DS: 0000 ES: 0000 
+CR0: 000000008005003b
+Dec 17 20:02:41 winchester [   43.741817] CR2: 0000000000000000 CR3: 
+000000004d55f000 CR4: 00000000000006e0
+Dec 17 20:02:41 winchester [   43.741822] DR0: 0000000000000000 DR1: 
+0000000000000000 DR2: 0000000000000000
+Dec 17 20:02:41 winchester [   43.741826] DR3: 0000000000000000 DR6: 
+00000000ffff0ff0 DR7: 0000000000000400
+Dec 17 20:02:41 winchester [   43.741832] Process X (pid: 3630, 
+threadinfo ffff88004d574000, task ffff88004f287330)
+Dec 17 20:02:41 winchester [   43.741835] Stack:
+Dec 17 20:02:41 winchester [   43.741838]  00000000fffffff4 
+0000000040786440 ffff88004f085800 ffffffff80383e0c
+Dec 17 20:02:41 winchester [   43.741845]  ffff88004d575e98 
+ffffffff8037249e ffff88004d575e48 ffff88004d575e48
+Dec 17 20:02:41 winchester [   43.741852]  00007fff67fbf5a0 
+ffff88004eb9d500 ffff88004f08583c ffff88004d559600
+Dec 17 20:02:41 winchester [   43.741860] Call Trace:
+Dec 17 20:02:41 winchester [   43.741865]  [<ffffffff80383e0c>] ? 
+radeon_cp_init+0x0/0x9f6
+Dec 17 20:02:41 winchester [   43.741871]  [<ffffffff8037249e>] 
+drm_ioctl+0x1de/0x270
+Dec 17 20:02:41 winchester [   43.741881]  [<ffffffff80298d2e>] 
+vfs_ioctl+0x4a/0x55
+Dec 17 20:02:41 winchester [   43.741890]  [<ffffffff8029911a>] 
+do_vfs_ioctl+0x3b2/0x3ff
+Dec 17 20:02:41 winchester [   43.741896]  [<ffffffff8028d0fa>] ? 
+fsnotify_modify+0x4e/0x53
+Dec 17 20:02:41 winchester [   43.741904]  [<ffffffff802991ac>] 
+sys_ioctl+0x45/0x80
+Dec 17 20:02:41 winchester [   43.741910]  [<ffffffff8028de98>] ? 
+sys_write+0x62/0x72
+Dec 17 20:02:41 winchester [   43.741917]  [<ffffffff8020b94b>] 
+system_call_fastpath+0x16/0x1b
+Dec 17 20:02:41 winchester [   43.741925] Code: 00 00 49 8b 45 60 48 89 
+83 f8 00 00 00 49 8b 45 68 48 89 83 00 01 00 00 49 8b 45 70 48 89 83 08 
+01 00 00 e8 7e da fe ff 48 85 c0 <49> 89 06 48 c7 c6 b0 4e 4d 80 48 c7 
+c7 13 4a 5c 80 0f 84 a7 fd
+Dec 17 20:02:41 winchester [   43.741970] RIP  [<ffffffff8038411d>] 
+radeon_cp_init+0x311/0x9f6
+Dec 17 20:02:41 winchester [   43.741977]  RSP <ffff88004d575e18>
+Dec 17 20:02:41 winchester [   43.741980] CR2: 0000000000000000
+Dec 17 20:02:41 winchester [   43.741984] ---[ end trace 
+dc6d31ddec008340 ]---
+Dec 17 20:02:41 winchester [   43.761235] [drm:drm_release] *ERROR* 
+Device busy: 1
 
+What other information can I provide?
 
->>  /* Add a function return address to the trace stack on thread info.*/
->>  static int push_return_trace(unsigned long ret, unsigned long long time,
->>                               unsigned long func, int *depth)
->> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
->> index 286af82..39be782 100644
->> --- a/include/linux/ftrace.h
->> +++ b/include/linux/ftrace.h
->> @@ -408,6 +408,34 @@ extern void unregister_ftrace_graph(void);
->>  extern void ftrace_graph_init_task(struct task_struct *t);
->>  extern void ftrace_graph_exit_task(struct task_struct *t);
->>
->> +/*
->> + * Those two functions prevent from eternal loops on hrtimer_interrupt
->
-> "These two functions prevent infinite ..."
->
->> + * because the function graph tracer can cause two much time processing
->
-> "can consume too much"
->
+-- 
+Kevin Winchester
 
-
-Yeah, I had bad marks at school in english :-)
-
-
->> + * on slow systems, and the hrtimer_interrupt can relaunch its processing
->> + * if too much time elapsed during its previous time update.
->> + *
->> + * Note that we don't need an atomic counter for loops here because
->> + * interrupts are disabled in hrtimer_interrupt.
->> + */
->> +
->> +extern DEFINE_PER_CPU(int, ftrace_graph_hrtimer_loop);
->
-> We have DECLARE_PER_CPU() for this.
-
-
-Ok.
-
-
->> +static inline void ftrace_graph_hrtimer_enter(void)
->> +{
->> +     __get_cpu_var(ftrace_graph_hrtimer_loop) = 0;
->> +}
->> +
->> +static inline void ftrace_graph_hrtimer_retry(void)
->> +{
->> +     __get_cpu_var(ftrace_graph_hrtimer_loop)++;
->> +
->> +     if (__get_cpu_var(ftrace_graph_hrtimer_loop) == 10) {
->> +             ftrace_graph_stop();
->> +             printk(KERN_WARNING "function-graph-tracer: hrtimer_interrupt "
->> +                             "exceeded 10 loops. Stopping tracing\n");
->> +     }
->> +}
->
-> I suspect this code would end up considerably neater (and less likely
-> to break the build) if these functons were not inlined.  For a start,
-> ftrace_graph_hrtimer_loop would not need global scope.
-
-
-I agree. I wanted to make them inlined to minimize the performance issues on
-hrtimer_interrupt. But that will only have an impact if this tracer is
-configured.
-I will move these functions and the per_cpu counters in
-kernel/trace/ftrace.c and make
-ftrace_graph_hrtimer_loop as static.
-
->>  static inline int task_curr_ret_stack(struct task_struct *t)
->>  {
->>       return t->curr_ret_stack;
->> @@ -437,6 +465,9 @@ static inline int task_curr_ret_stack(struct task_struct *tsk)
->>
->>  static inline void pause_graph_tracing(void) { }
->>  static inline void unpause_graph_tracing(void) { }
->> +
->> +static inline void ftrace_graph_hrtimer_enter(void) { };
->> +static inline void ftrace_graph_hrtimer_retry(void) { };
->
-> Unneeded semicolons.
->
-> Please consider doing
->
-> static inline void ftrace_graph_hrtimer_enter(void)
-> {
-> }
-
-
-Ok.
-
-
->>  #endif
->>
->>  #ifdef CONFIG_TRACING
->> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
->> index b741f85..662eb53 100644
->> --- a/kernel/hrtimer.c
->> +++ b/kernel/hrtimer.c
->> @@ -44,6 +44,7 @@
->>  #include <linux/seq_file.h>
->>  #include <linux/err.h>
->>  #include <linux/debugobjects.h>
->> +#include <linux/ftrace.h>
->>
->>  #include <asm/uaccess.h>
->>
->> @@ -1186,7 +1187,11 @@ void hrtimer_interrupt(struct clock_event_device *dev)
->>       cpu_base->nr_events++;
->>       dev->next_event.tv64 = KTIME_MAX;
->>
->> +     ftrace_graph_hrtimer_enter();
->>   retry:
->> +     /* Prevent from eternal loop on slow systems while tracing */
->> +     ftrace_graph_hrtimer_retry();
->> +
->>       now = ktime_get();
->>
->>       expires_next.tv64 = KTIME_MAX;
->> --
->> 1.6.0.4
->
-
-
-Thanks Andrew!
-I will send a V2 to apply your comments.
