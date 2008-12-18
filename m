@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1751511AbYLRTbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752869AbYLRTgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751511AbYLRTbs (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 14:31:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYLRTbg
+	id S1752869AbYLRTgb (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 14:36:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYLRTgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 14:31:36 -0500
-Received: from p02c12o148.mxlogic.net ([208.65.145.81]:52350 "EHLO
-	p02c12o148.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750746AbYLRTbf (ORCPT
+	Thu, 18 Dec 2008 14:36:21 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:47825 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751185AbYLRTgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 14:31:35 -0500
-Message-ID: <494AA4DB.5000807@steeleye.com>
-Date: Thu, 18 Dec 2008 14:30:35 -0500
-From: Paul Clements <paul.clements@steeleye.com>
-User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
+	Thu, 18 Dec 2008 14:36:20 -0500
+Date: Thu, 18 Dec 2008 13:35:50 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Catalin Marinas <catalin.marinas@arm.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 03/15] kmemleak: Add the slab memory allocation/freeing
+ hooks
+In-Reply-To: <1229619764.16418.54.camel@pc1117.cambridge.arm.com>
+Message-ID: <Pine.LNX.4.64.0812181334590.17255@quilx.com>
+References: <20081210182652.30323.4594.stgit@pc1117.cambridge.arm.com> 
+ <20081210182710.30323.57396.stgit@pc1117.cambridge.arm.com> 
+ <494184AA.8090509@cs.helsinki.fi>  <1229092065.15045.35.camel@pc1117.cambridge.arm.com>
+  <1229597162.1047.48.camel@penberg-laptop>  <1229618308.16418.50.camel@pc1117.cambridge.arm.com>
+  <Pine.LNX.4.64.0812181048160.12300@quilx.com> <1229619764.16418.54.camel@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: kernel list <linux-kernel@vger.kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: nbd: fix locking in case of error
-References: <20081218183310.GA21260@elf.ucw.cz>
-In-Reply-To: <20081218183310.GA21260@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Dec 2008 19:30:35.0709 (UTC) FILETIME=[199D6ED0:01C96147]
-X-Spam: [F=0.2000000000; S=0.200(2008120801)]
-X-MAIL-FROM: <paul.clements@steeleye.com>
-X-SOURCE-IP: [71.30.118.242]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> This cleans up error handling some more, and prevents return with lock
-> held from nbd_handle_req when nbd_send_req() fails. It also switches
+On Thu, 18 Dec 2008, Catalin Marinas wrote:
 
->  static struct request *nbd_find_request(struct nbd_device *lo,
-> @@ -467,10 +467,9 @@ static void nbd_handle_req(struct nbd_de
->  
->  	mutex_lock(&lo->tx_lock);
->  	if (unlikely(!lo->sock)) {
-> -		mutex_unlock(&lo->tx_lock);
->  		printk(KERN_ERR "%s: Attempted send on closed socket\n",
->  		       lo->disk->disk_name);
-> -		goto error_out;
-> +		goto error_out_unlock;
->  	}
->  
->  	lo->active_req = req;
-> @@ -478,7 +477,7 @@ static void nbd_handle_req(struct nbd_de
->  	if (nbd_send_req(lo, req) != 0) {
->  		printk(KERN_ERR "%s: Request send failed\n",
->  				lo->disk->disk_name);
-> -		goto error_out;
-> +		goto error_out_unlock;
->  	} else {
->  		spin_lock(&lo->queue_lock);
->  		list_add(&req->queuelist, &lo->queue_head);
-> @@ -491,6 +490,8 @@ static void nbd_handle_req(struct nbd_de
->  
->  	return;
->  
-> +error_out_unlock:
-> +	mutex_unlock(&lo->tx_lock);
->  error_out:
->  	req->errors++;
->  	nbd_end_request(req);
+> OK, but is there a chance that an stale pointer remains in such caches?
 
-Not sure I see the problem. tx_lock is unlocked in every return path 
-AFAICS. You introduced the tx_lock problem with the previous patch, 
-where the second error_out was not correct.
+Definitely. The pointers are never cleared. There are counters in the
+caches that are used to index into an array.
 
---
-Paul
+> There seems to be the transfer_objects() function that moves pointers
+> around but doesn't clear the source values.
+
+No need to. The counter updates take care of things.
+
