@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753127AbYLRSMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1752506AbYLRSMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753127AbYLRSMw (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 13:12:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbYLRSMj
+	id S1752506AbYLRSMa (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 13:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbYLRSMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 13:12:39 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:60322 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbYLRSMi (ORCPT
+	Thu, 18 Dec 2008 13:12:20 -0500
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:34414 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751729AbYLRSMS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 13:12:38 -0500
-Date: Thu, 18 Dec 2008 23:41:15 +0530
+	Thu, 18 Dec 2008 13:12:18 -0500
+Date: Thu, 18 Dec 2008 23:42:10 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
@@ -25,9 +25,8 @@ Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
         Gregory Haskins <gregory.haskins@gmail.com>,
         Pavel Machek <pavel@suse.cz>,
         Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v7 5/8] sched: bias task wakeups to preferred semi-idle
-	packages
-Message-ID: <20081218181115.GF26572@balbir.in.ibm.com>
+Subject: Re: [PATCH v7 4/8] sched: nominate preferred wakeup cpu
+Message-ID: <20081218181210.GG26572@balbir.in.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
 Mail-Followup-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
 	Linux Kernel <linux-kernel@vger.kernel.org>,
@@ -43,81 +42,70 @@ Mail-Followup-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
 	Gregory Haskins <gregory.haskins@gmail.com>,
 	Pavel Machek <pavel@suse.cz>,
 	Andrew Morton <akpm@linux-foundation.org>
-References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <20081218175629.29812.16699.stgit@drishya.in.ibm.com>
+References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <20081218175622.29812.69201.stgit@drishya.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20081218175629.29812.16699.stgit@drishya.in.ibm.com>
+In-Reply-To: <20081218175622.29812.69201.stgit@drishya.in.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-12-18 23:26:29]:
+* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-12-18 23:26:22]:
 
-> Preferred wakeup cpu (from a semi idle package) has been
-> nominated in find_busiest_group() in the previous patch.  Use
-> this information in sched_mc_preferred_wakeup_cpu in function
-> wake_idle() to bias task wakeups if the following conditions
-> are satisfied:
->         - The present cpu that is trying to wakeup the process is
->           idle and waking the target process on this cpu will
->           potentially wakeup a completely idle package
->         - The previous cpu on which the target process ran is
->           also idle and hence selecting the previous cpu may
->           wakeup a semi idle cpu package
->         - The task being woken up is allowed to run in the
->           nominated cpu (cpu affinity and restrictions)
+> When the system utilisation is low and more cpus are idle,
+> then the process waking up from sleep should prefer to
+> wakeup an idle cpu from semi-idle cpu package (multi core
+> package) rather than a completely idle cpu package which
+> would waste power.
 > 
-> Basically if both the current cpu and the previous cpu on
-> which the task ran is idle, select the nominated cpu from semi
-> idle cpu package for running the new task that is waking up.
+> Use the sched_mc balance logic in find_busiest_group() to
+> nominate a preferred wakeup cpu.
 > 
-> Cache hotness is considered since the actual biasing happens
-> in wake_idle() only if the application is cache cold.
-> 
-> This technique will effectively move short running bursty jobs in
-> a mostly idle system.
-> 
-> Wakeup biasing for power savings gets automatically disabled if
-> system utilisation increases due to the fact that the probability
-> of finding both this_cpu and prev_cpu idle decreases.
+> This info can be sored in appropriate sched_domain, but
+> updating this info in all copies of sched_domain is not
+> practical.  Hence this information is stored in root_domain
+> struct which is one copy per partitioned sched domain.
+> The root_domain can be accessed from each cpu's runqueue
+> and there is one copy per partitioned sched domain.
 > 
 > Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 > ---
 > 
->  kernel/sched_fair.c |   18 ++++++++++++++++++
->  1 files changed, 18 insertions(+), 0 deletions(-)
+>  kernel/sched.c |   12 ++++++++++++
+>  1 files changed, 12 insertions(+), 0 deletions(-)
 > 
-> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> index 98345e4..c82386c 100644
-> --- a/kernel/sched_fair.c
-> +++ b/kernel/sched_fair.c
-> @@ -1027,6 +1027,24 @@ static int wake_idle(int cpu, struct task_struct *p)
->  	cpumask_t tmp;
->  	struct sched_domain *sd;
->  	int i;
-> +	unsigned int chosen_wakeup_cpu;
-> +	int this_cpu;
-> +
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 0b9bbbd..3415fa3 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -493,6 +493,14 @@ struct root_domain {
+>  #ifdef CONFIG_SMP
+>  	struct cpupri cpupri;
+>  #endif
+> +#if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
 > +	/*
-> +	 * At POWERSAVINGS_BALANCE_WAKEUP level, if both this_cpu and prev_cpu
-> +	 * are idle and this is not a kernel thread and this task's affinity
-> +	 * allows it to be moved to preferred cpu, then just move!
+> +	 * Preferred wake up cpu nominated by sched_mc balance that will be
+> +	 * used when most cpus are idle in the system indicating overall very
+> +	 * low system utilisation. Triggered at POWERSAVINGS_BALANCE_WAKEUP(2)
 > +	 */
-> +
-> +	this_cpu = smp_processor_id();
-> +	chosen_wakeup_cpu =
-> +		cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu;
-> +
-> +	if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP &&
-> +		idle_cpu(cpu) && idle_cpu(this_cpu) &&
-> +		p->mm && !(p->flags & PF_KTHREAD) &&
-> +		cpu_isset(chosen_wakeup_cpu, p->cpus_allowed))
-> +		return chosen_wakeup_cpu;
+> +	unsigned int sched_mc_preferred_wakeup_cpu;
+> +#endif
+>  };
 > 
->  	/*
->  	 * If it is idle, then it is the best cpu to run this task.
+>  /*
+> @@ -3407,6 +3415,10 @@ out_balanced:
+> 
+>  	if (this == group_leader && group_leader != group_min) {
+>  		*imbalance = min_load_per_task;
+> +		if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP) {
+> +			cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu =
+> +					first_cpu(group_leader->cpumask);
+> +		}
+>  		return group_min;
+>  	}
+>  #endif
 
 Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
