@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753506AbYLRUye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753539AbYLRU5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbYLRUye (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 18 Dec 2008 15:54:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbYLRUyI
+	id S1753539AbYLRU5T (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 18 Dec 2008 15:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYLRU44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 15:54:08 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:34605 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752401AbYLRUyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 15:54:07 -0500
-Subject: Re: [PATCH V2 7/7] regulator: PCF50633 pmic driver
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Balaji Rao <balajirrao@openmoko.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-        linux-kernel@vger.kernel.org, Andy Green <andy@openmoko.com>
-In-Reply-To: <20081218204705.GD2284@cff.thadambail>
-References: <20081218055618.31696.65002.stgit@cff.thadambail>
-	 <20081218055817.31696.67376.stgit@cff.thadambail>
-	 <20081218100835.GA27075@rakim.wolfsonmicro.main>
-	 <20081218151431.GB2284@cff.thadambail>
-	 <1229632254.24727.1394.camel@vega.slimlogic.co.uk>
-	 <20081218204705.GD2284@cff.thadambail>
-Content-Type: text/plain
-Date: Thu, 18 Dec 2008 20:54:04 +0000
-Message-Id: <1229633644.24727.1452.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Thu, 18 Dec 2008 15:56:56 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:34360 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752136AbYLRU4z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 15:56:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=a4BSOkxcX1WAyVVcdxx62FCM0lmCvd2oudoxVZRyXbH4LAQP1H4XaNnhwCqcz+Jh6Y
+         a63IaETFuDZ3YieDsn/6YzviZoc1pWycysjRzJedtItDfh2O109r5Bzy0pUjS9IgaTGt
+         Rdc9rA1RejZu/OnWwvRu/XpoN5Z+nfWf+hVLk=
+Message-ID: <8bd0f97a0812181256j68326d28t15cf4370571b04bd@mail.gmail.com>
+Date: Thu, 18 Dec 2008 15:56:53 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Samuel Ortiz" <sameo@openedhand.com>
+Subject: Re: section mismatches with _sm501_register_gpio() and _sm501_gpio_register_chip()
+Cc: ben@simtec.co.uk, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081124194911.GC2604@sortiz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8bd0f97a0811202013r170c9906i15797ca953844cff@mail.gmail.com>
+	 <20081124194911.GC2604@sortiz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-19 at 02:17 +0530, Balaji Rao wrote:
-> On Thu, Dec 18, 2008 at 08:30:54PM +0000, Liam Girdwood wrote:
-> > On Thu, 2008-12-18 at 20:44 +0530, Balaji Rao wrote:
-> > > On Thu, Dec 18, 2008 at 10:08:35AM +0000, Mark Brown wrote:
-> > > > On Thu, Dec 18, 2008 at 11:28:17AM +0530, Balaji Rao wrote:
-> > > > > Changes from V1:
-> > > > > 	- Removed support for suspend_enable & suspend_disable functions.
-> > > > > 
-> > > > > Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
-> > > > > Cc: Andy Green <andy@openmoko.com>
-> > > > > Cc: Liam Girdwood <lrg@simlogic.co.uk>
-> > 
-> > Applied.
-> > 
-> > Thanks
-> > 
-> 
-> Liam, the pcf50633-regulator.c has depends on
-> include/linux/mfd/pcf50633/core.patch which is not here, but in
-> [PATCH 1/7] of the series. So, pcf50633-regulator.c it wouldn't
-> build.
-> 
-> I was expecting it to make it to -next via linux-mfd - I've asked
-> Samuel Ortiz about this in [0/7].
-> 
-> So, I was hoping you to ack this so that Samuel can take it into
-> linux-mfd.
-> 
-> I apologize for the confusion.
+On Mon, Nov 24, 2008 at 14:49, Samuel Ortiz wrote:
+> On Thu, Nov 20, 2008 at 11:13:31PM -0500, Mike Frysinger wrote:
+>> WARNING: drivers/mfd/built-in.o(.text+0x8d6): Section mismatch in
+>> reference from the function _sm501_register_gpio() to the function
+>> .devinit.text:_sm501_gpio_register_chip()
+>> The function _sm501_register_gpio() references
+>> the function __devinit _sm501_gpio_register_chip().
+>> This is often because _sm501_register_gpio lacks a __devinit
+>> annotation or the annotation of _sm501_gpio_register_chip is wrong.
+>>
+>> WARNING: drivers/mfd/built-in.o(.text+0x90a): Section mismatch in
+>> reference from the function _sm501_register_gpio() to the function
+>> .devinit.text:_sm501_gpio_register_chip()
+>> The function _sm501_register_gpio() references
+>> the function __devinit _sm501_gpio_register_chip().
+>> This is often because _sm501_register_gpio lacks a __devinit
+>> annotation or the annotation of _sm501_gpio_register_chip is wrong.
+>
+> Which kernel are you triggering this on ?
 
-Ok. Np.
-
-Thanks
-
-Liam 
-
+sorry, i missed this response ... this was in 2.6.28-rc2
+-mike
