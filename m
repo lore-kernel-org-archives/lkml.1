@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752174AbYLSWDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757092AbYLSWDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752174AbYLSWDh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:03:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbYLSVzA
+	id S1757092AbYLSWDL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:03:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbYLSVy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:55:00 -0500
-Received: from mx2.suse.de ([195.135.220.15]:48983 "EHLO mx2.suse.de"
+	Fri, 19 Dec 2008 16:54:57 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48977 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755268AbYLSVy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 16:54:58 -0500
+	id S1755258AbYLSVy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:54:56 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Tiger Yang <tiger.yang@oracle.com>, Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 27/45] ocfs2: add POSIX ACL API
-Date: Fri, 19 Dec 2008 13:53:46 -0800
-Message-Id: <1229723644-13630-28-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 26/45] ocfs2: add ocfs2_xattr_get_nolock
+Date: Fri, 19 Dec 2008 13:53:45 -0800
+Message-Id: <1229723644-13630-27-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
 References: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
@@ -25,512 +25,100 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tiger Yang <tiger.yang@oracle.com>
 
-This patch adds POSIX ACL(access control lists) APIs in ocfs2. We convert
-struct posix_acl to many ocfs2_acl_entry and regard them as an extended
-attribute entry.
+This function does the work of ocfs2_xattr_get under an open lock.
 
 Signed-off-by: Tiger Yang <tiger.yang@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/Makefile |    4 +
- fs/ocfs2/acl.c    |  378 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/ocfs2/acl.h    |   29 ++++
- fs/ocfs2/ocfs2.h  |    1 +
- fs/ocfs2/xattr.c  |   10 ++
- fs/ocfs2/xattr.h  |    4 +
- 6 files changed, 426 insertions(+), 0 deletions(-)
- create mode 100644 fs/ocfs2/acl.c
- create mode 100644 fs/ocfs2/acl.h
+ fs/ocfs2/xattr.c |   40 ++++++++++++++++++++++++++++------------
+ fs/ocfs2/xattr.h |    2 ++
+ 2 files changed, 30 insertions(+), 12 deletions(-)
 
-diff --git a/fs/ocfs2/Makefile b/fs/ocfs2/Makefile
-index 589dcdf..e9ef5d1 100644
---- a/fs/ocfs2/Makefile
-+++ b/fs/ocfs2/Makefile
-@@ -37,6 +37,10 @@ ocfs2-objs := \
- 	ver.o			\
- 	xattr.o
+diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
+index 2cab0d6..ba9b870 100644
+--- a/fs/ocfs2/xattr.c
++++ b/fs/ocfs2/xattr.c
+@@ -925,12 +925,8 @@ cleanup:
+ 	return ret;
+ }
  
-+ifeq ($(CONFIG_OCFS2_FS_POSIX_ACL),y)
-+ocfs2-objs += acl.o
-+endif
+-/* ocfs2_xattr_get()
+- *
+- * Copy an extended attribute into the buffer provided.
+- * Buffer is NULL to compute the size of buffer required.
+- */
+-static int ocfs2_xattr_get(struct inode *inode,
++int ocfs2_xattr_get_nolock(struct inode *inode,
++			   struct buffer_head *di_bh,
+ 			   int name_index,
+ 			   const char *name,
+ 			   void *buffer,
+@@ -938,7 +934,6 @@ static int ocfs2_xattr_get(struct inode *inode,
+ {
+ 	int ret;
+ 	struct ocfs2_dinode *di = NULL;
+-	struct buffer_head *di_bh = NULL;
+ 	struct ocfs2_inode_info *oi = OCFS2_I(inode);
+ 	struct ocfs2_xattr_search xis = {
+ 		.not_found = -ENODATA,
+@@ -953,11 +948,6 @@ static int ocfs2_xattr_get(struct inode *inode,
+ 	if (!(oi->ip_dyn_features & OCFS2_HAS_XATTR_FL))
+ 		ret = -ENODATA;
+ 
+-	ret = ocfs2_inode_lock(inode, &di_bh, 0);
+-	if (ret < 0) {
+-		mlog_errno(ret);
+-		return ret;
+-	}
+ 	xis.inode_bh = xbs.inode_bh = di_bh;
+ 	di = (struct ocfs2_dinode *)di_bh->b_data;
+ 
+@@ -968,6 +958,32 @@ static int ocfs2_xattr_get(struct inode *inode,
+ 		ret = ocfs2_xattr_block_get(inode, name_index, name, buffer,
+ 					    buffer_size, &xbs);
+ 	up_read(&oi->ip_xattr_sem);
 +
- ocfs2_stackglue-objs := stackglue.o
- ocfs2_stack_o2cb-objs := stack_o2cb.o
- ocfs2_stack_user-objs := stack_user.o
-diff --git a/fs/ocfs2/acl.c b/fs/ocfs2/acl.c
-new file mode 100644
-index 0000000..62d0faa
---- /dev/null
-+++ b/fs/ocfs2/acl.c
-@@ -0,0 +1,378 @@
-+/* -*- mode: c; c-basic-offset: 8; -*-
-+ * vim: noexpandtab sw=8 ts=8 sts=0:
-+ *
-+ * acl.c
-+ *
-+ * Copyright (C) 2004, 2008 Oracle.  All rights reserved.
-+ *
-+ * CREDITS:
-+ * Lots of code in this file is copy from linux/fs/ext3/acl.c.
-+ * Copyright (C) 2001-2003 Andreas Gruenbacher, <agruen@suse.de>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+
-+#define MLOG_MASK_PREFIX ML_INODE
-+#include <cluster/masklog.h>
-+
-+#include "ocfs2.h"
-+#include "alloc.h"
-+#include "dlmglue.h"
-+#include "file.h"
-+#include "ocfs2_fs.h"
-+
-+#include "xattr.h"
-+#include "acl.h"
-+
-+/*
-+ * Convert from xattr value to acl struct.
-+ */
-+static struct posix_acl *ocfs2_acl_from_xattr(const void *value, size_t size)
-+{
-+	int n, count;
-+	struct posix_acl *acl;
-+
-+	if (!value)
-+		return NULL;
-+	if (size < sizeof(struct posix_acl_entry))
-+		return ERR_PTR(-EINVAL);
-+
-+	count = size / sizeof(struct posix_acl_entry);
-+	if (count < 0)
-+		return ERR_PTR(-EINVAL);
-+	if (count == 0)
-+		return NULL;
-+
-+	acl = posix_acl_alloc(count, GFP_NOFS);
-+	if (!acl)
-+		return ERR_PTR(-ENOMEM);
-+	for (n = 0; n < count; n++) {
-+		struct ocfs2_acl_entry *entry =
-+			(struct ocfs2_acl_entry *)value;
-+
-+		acl->a_entries[n].e_tag  = le16_to_cpu(entry->e_tag);
-+		acl->a_entries[n].e_perm = le16_to_cpu(entry->e_perm);
-+		acl->a_entries[n].e_id   = le32_to_cpu(entry->e_id);
-+		value += sizeof(struct posix_acl_entry);
-+
-+	}
-+	return acl;
++	return ret;
 +}
 +
-+/*
-+ * Convert acl struct to xattr value.
++/* ocfs2_xattr_get()
++ *
++ * Copy an extended attribute into the buffer provided.
++ * Buffer is NULL to compute the size of buffer required.
 + */
-+static void *ocfs2_acl_to_xattr(const struct posix_acl *acl, size_t *size)
++static int ocfs2_xattr_get(struct inode *inode,
++			   int name_index,
++			   const char *name,
++			   void *buffer,
++			   size_t buffer_size)
 +{
-+	struct ocfs2_acl_entry *entry = NULL;
-+	char *ocfs2_acl;
-+	size_t n;
-+
-+	*size = acl->a_count * sizeof(struct posix_acl_entry);
-+
-+	ocfs2_acl = kmalloc(*size, GFP_NOFS);
-+	if (!ocfs2_acl)
-+		return ERR_PTR(-ENOMEM);
-+
-+	entry = (struct ocfs2_acl_entry *)ocfs2_acl;
-+	for (n = 0; n < acl->a_count; n++, entry++) {
-+		entry->e_tag  = cpu_to_le16(acl->a_entries[n].e_tag);
-+		entry->e_perm = cpu_to_le16(acl->a_entries[n].e_perm);
-+		entry->e_id   = cpu_to_le32(acl->a_entries[n].e_id);
-+	}
-+	return ocfs2_acl;
-+}
-+
-+static struct posix_acl *ocfs2_get_acl_nolock(struct inode *inode,
-+					      int type,
-+					      struct buffer_head *di_bh)
-+{
-+	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-+	int name_index;
-+	char *value = NULL;
-+	struct posix_acl *acl;
-+	int retval;
-+
-+	if (!(osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL))
-+		return NULL;
-+
-+	switch (type) {
-+	case ACL_TYPE_ACCESS:
-+		name_index = OCFS2_XATTR_INDEX_POSIX_ACL_ACCESS;
-+		break;
-+	case ACL_TYPE_DEFAULT:
-+		name_index = OCFS2_XATTR_INDEX_POSIX_ACL_DEFAULT;
-+		break;
-+	default:
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	retval = ocfs2_xattr_get_nolock(inode, di_bh, name_index, "", NULL, 0);
-+	if (retval > 0) {
-+		value = kmalloc(retval, GFP_NOFS);
-+		if (!value)
-+			return ERR_PTR(-ENOMEM);
-+		retval = ocfs2_xattr_get_nolock(inode, di_bh, name_index,
-+						"", value, retval);
-+	}
-+
-+	if (retval > 0)
-+		acl = ocfs2_acl_from_xattr(value, retval);
-+	else if (retval == -ENODATA || retval == 0)
-+		acl = NULL;
-+	else
-+		acl = ERR_PTR(retval);
-+
-+	kfree(value);
-+
-+	return acl;
-+}
-+
-+
-+/*
-+ * Get posix acl.
-+ */
-+static struct posix_acl *ocfs2_get_acl(struct inode *inode, int type)
-+{
-+	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-+	struct buffer_head *di_bh = NULL;
-+	struct posix_acl *acl;
 +	int ret;
-+
-+	if (!(osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL))
-+		return NULL;
++	struct buffer_head *di_bh = NULL;
 +
 +	ret = ocfs2_inode_lock(inode, &di_bh, 0);
 +	if (ret < 0) {
 +		mlog_errno(ret);
-+		acl = ERR_PTR(ret);
-+		return acl;
++		return ret;
 +	}
++	ret = ocfs2_xattr_get_nolock(inode, di_bh, name_index,
++				     name, buffer, buffer_size);
 +
-+	acl = ocfs2_get_acl_nolock(inode, type, di_bh);
-+
-+	ocfs2_inode_unlock(inode, 0);
-+
-+	brelse(di_bh);
-+
-+	return acl;
-+}
-+
-+/*
-+ * Set the access or default ACL of an inode.
-+ */
-+static int ocfs2_set_acl(handle_t *handle,
-+			 struct inode *inode,
-+			 struct buffer_head *di_bh,
-+			 int type,
-+			 struct posix_acl *acl,
-+			 struct ocfs2_alloc_context *meta_ac,
-+			 struct ocfs2_alloc_context *data_ac)
-+{
-+	int name_index;
-+	void *value = NULL;
-+	size_t size = 0;
-+	int ret;
-+
-+	if (S_ISLNK(inode->i_mode))
-+		return -EOPNOTSUPP;
-+
-+	switch (type) {
-+	case ACL_TYPE_ACCESS:
-+		name_index = OCFS2_XATTR_INDEX_POSIX_ACL_ACCESS;
-+		if (acl) {
-+			mode_t mode = inode->i_mode;
-+			ret = posix_acl_equiv_mode(acl, &mode);
-+			if (ret < 0)
-+				return ret;
-+			else {
-+				inode->i_mode = mode;
-+				if (ret == 0)
-+					acl = NULL;
-+			}
-+		}
-+		break;
-+	case ACL_TYPE_DEFAULT:
-+		name_index = OCFS2_XATTR_INDEX_POSIX_ACL_DEFAULT;
-+		if (!S_ISDIR(inode->i_mode))
-+			return acl ? -EACCES : 0;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (acl) {
-+		value = ocfs2_acl_to_xattr(acl, &size);
-+		if (IS_ERR(value))
-+			return (int)PTR_ERR(value);
-+	}
-+
-+	if (handle)
-+		ret = ocfs2_xattr_set_handle(handle, inode, di_bh, name_index,
-+					     "", value, size, 0,
-+					     meta_ac, data_ac);
-+	else
-+		ret = ocfs2_xattr_set(inode, name_index, "", value, size, 0);
-+
-+	kfree(value);
-+
-+	return ret;
-+}
-+
-+static size_t ocfs2_xattr_list_acl_access(struct inode *inode,
-+					  char *list,
-+					  size_t list_len,
-+					  const char *name,
-+					  size_t name_len)
-+{
-+	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-+	const size_t size = sizeof(POSIX_ACL_XATTR_ACCESS);
-+
-+	if (!(osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL))
-+		return 0;
-+
-+	if (list && size <= list_len)
-+		memcpy(list, POSIX_ACL_XATTR_ACCESS, size);
-+	return size;
-+}
-+
-+static size_t ocfs2_xattr_list_acl_default(struct inode *inode,
-+					   char *list,
-+					   size_t list_len,
-+					   const char *name,
-+					   size_t name_len)
-+{
-+	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-+	const size_t size = sizeof(POSIX_ACL_XATTR_DEFAULT);
-+
-+	if (!(osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL))
-+		return 0;
-+
-+	if (list && size <= list_len)
-+		memcpy(list, POSIX_ACL_XATTR_DEFAULT, size);
-+	return size;
-+}
-+
-+static int ocfs2_xattr_get_acl(struct inode *inode,
-+			       int type,
-+			       void *buffer,
-+			       size_t size)
-+{
-+	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-+	struct posix_acl *acl;
-+	int ret;
-+
-+	if (!(osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL))
-+		return -EOPNOTSUPP;
-+
-+	acl = ocfs2_get_acl(inode, type);
-+	if (IS_ERR(acl))
-+		return PTR_ERR(acl);
-+	if (acl == NULL)
-+		return -ENODATA;
-+	ret = posix_acl_to_xattr(acl, buffer, size);
-+	posix_acl_release(acl);
-+
-+	return ret;
-+}
-+
-+static int ocfs2_xattr_get_acl_access(struct inode *inode,
-+				      const char *name,
-+				      void *buffer,
-+				      size_t size)
-+{
-+	if (strcmp(name, "") != 0)
-+		return -EINVAL;
-+	return ocfs2_xattr_get_acl(inode, ACL_TYPE_ACCESS, buffer, size);
-+}
-+
-+static int ocfs2_xattr_get_acl_default(struct inode *inode,
-+				       const char *name,
-+				       void *buffer,
-+				       size_t size)
-+{
-+	if (strcmp(name, "") != 0)
-+		return -EINVAL;
-+	return ocfs2_xattr_get_acl(inode, ACL_TYPE_DEFAULT, buffer, size);
-+}
-+
-+static int ocfs2_xattr_set_acl(struct inode *inode,
-+			       int type,
-+			       const void *value,
-+			       size_t size)
-+{
-+	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-+	struct posix_acl *acl;
-+	int ret = 0;
-+
-+	if (!(osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL))
-+		return -EOPNOTSUPP;
-+
-+	if (!is_owner_or_cap(inode))
-+		return -EPERM;
-+
-+	if (value) {
-+		acl = posix_acl_from_xattr(value, size);
-+		if (IS_ERR(acl))
-+			return PTR_ERR(acl);
-+		else if (acl) {
-+			ret = posix_acl_valid(acl);
-+			if (ret)
-+				goto cleanup;
-+		}
-+	} else
-+		acl = NULL;
-+
-+	ret = ocfs2_set_acl(NULL, inode, NULL, type, acl, NULL, NULL);
-+
-+cleanup:
-+	posix_acl_release(acl);
-+	return ret;
-+}
-+
-+static int ocfs2_xattr_set_acl_access(struct inode *inode,
-+				      const char *name,
-+				      const void *value,
-+				      size_t size,
-+				      int flags)
-+{
-+	if (strcmp(name, "") != 0)
-+		return -EINVAL;
-+	return ocfs2_xattr_set_acl(inode, ACL_TYPE_ACCESS, value, size);
-+}
-+
-+static int ocfs2_xattr_set_acl_default(struct inode *inode,
-+				       const char *name,
-+				       const void *value,
-+				       size_t size,
-+				       int flags)
-+{
-+	if (strcmp(name, "") != 0)
-+		return -EINVAL;
-+	return ocfs2_xattr_set_acl(inode, ACL_TYPE_DEFAULT, value, size);
-+}
-+
-+struct xattr_handler ocfs2_xattr_acl_access_handler = {
-+	.prefix	= POSIX_ACL_XATTR_ACCESS,
-+	.list	= ocfs2_xattr_list_acl_access,
-+	.get	= ocfs2_xattr_get_acl_access,
-+	.set	= ocfs2_xattr_set_acl_access,
-+};
-+
-+struct xattr_handler ocfs2_xattr_acl_default_handler = {
-+	.prefix	= POSIX_ACL_XATTR_DEFAULT,
-+	.list	= ocfs2_xattr_list_acl_default,
-+	.get	= ocfs2_xattr_get_acl_default,
-+	.set	= ocfs2_xattr_set_acl_default,
-+};
-diff --git a/fs/ocfs2/acl.h b/fs/ocfs2/acl.h
-new file mode 100644
-index 0000000..1b39f3e
---- /dev/null
-+++ b/fs/ocfs2/acl.h
-@@ -0,0 +1,29 @@
-+/* -*- mode: c; c-basic-offset: 8; -*-
-+ * vim: noexpandtab sw=8 ts=8 sts=0:
-+ *
-+ * acl.h
-+ *
-+ * Copyright (C) 2004, 2008 Oracle.  All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+#ifndef OCFS2_ACL_H
-+#define OCFS2_ACL_H
-+
-+#include <linux/posix_acl_xattr.h>
-+
-+struct ocfs2_acl_entry {
-+	__le16 e_tag;
-+	__le16 e_perm;
-+	__le32 e_id;
-+};
-+
-+#endif /* OCFS2_ACL_H */
-diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
-index 3fed9e3..25d07ff 100644
---- a/fs/ocfs2/ocfs2.h
-+++ b/fs/ocfs2/ocfs2.h
-@@ -195,6 +195,7 @@ enum ocfs2_mount_options
- 	OCFS2_MOUNT_LOCALFLOCKS = 1 << 5, /* No cluster aware user file locks */
- 	OCFS2_MOUNT_NOUSERXATTR = 1 << 6, /* No user xattr */
- 	OCFS2_MOUNT_INODE64 = 1 << 7,	/* Allow inode numbers > 2^32 */
-+	OCFS2_MOUNT_POSIX_ACL = 1 << 8,	/* POSIX access control lists */
- };
+ 	ocfs2_inode_unlock(inode, 0);
  
- #define OCFS2_OSB_SOFT_RO	0x0001
-diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index ba9b870..2e273c2 100644
---- a/fs/ocfs2/xattr.c
-+++ b/fs/ocfs2/xattr.c
-@@ -91,6 +91,10 @@ static struct ocfs2_xattr_def_value_root def_xv = {
- 
- struct xattr_handler *ocfs2_xattr_handlers[] = {
- 	&ocfs2_xattr_user_handler,
-+#ifdef CONFIG_OCFS2_FS_POSIX_ACL
-+	&ocfs2_xattr_acl_access_handler,
-+	&ocfs2_xattr_acl_default_handler,
-+#endif
- 	&ocfs2_xattr_trusted_handler,
- 	&ocfs2_xattr_security_handler,
- 	NULL
-@@ -98,6 +102,12 @@ struct xattr_handler *ocfs2_xattr_handlers[] = {
- 
- static struct xattr_handler *ocfs2_xattr_handler_map[OCFS2_XATTR_MAX] = {
- 	[OCFS2_XATTR_INDEX_USER]	= &ocfs2_xattr_user_handler,
-+#ifdef CONFIG_OCFS2_FS_POSIX_ACL
-+	[OCFS2_XATTR_INDEX_POSIX_ACL_ACCESS]
-+					= &ocfs2_xattr_acl_access_handler,
-+	[OCFS2_XATTR_INDEX_POSIX_ACL_DEFAULT]
-+					= &ocfs2_xattr_acl_default_handler,
-+#endif
- 	[OCFS2_XATTR_INDEX_TRUSTED]	= &ocfs2_xattr_trusted_handler,
- 	[OCFS2_XATTR_INDEX_SECURITY]	= &ocfs2_xattr_security_handler,
- };
+ 	brelse(di_bh);
 diff --git a/fs/ocfs2/xattr.h b/fs/ocfs2/xattr.h
-index 86aa10f..6163df3 100644
+index 188ef6b..86aa10f 100644
 --- a/fs/ocfs2/xattr.h
 +++ b/fs/ocfs2/xattr.h
-@@ -40,6 +40,10 @@ struct ocfs2_security_xattr_info {
- extern struct xattr_handler ocfs2_xattr_user_handler;
- extern struct xattr_handler ocfs2_xattr_trusted_handler;
- extern struct xattr_handler ocfs2_xattr_security_handler;
-+#ifdef CONFIG_OCFS2_FS_POSIX_ACL
-+extern struct xattr_handler ocfs2_xattr_acl_access_handler;
-+extern struct xattr_handler ocfs2_xattr_acl_default_handler;
-+#endif
+@@ -43,6 +43,8 @@ extern struct xattr_handler ocfs2_xattr_security_handler;
  extern struct xattr_handler *ocfs2_xattr_handlers[];
  
  ssize_t ocfs2_listxattr(struct dentry *, char *, size_t);
++int ocfs2_xattr_get_nolock(struct inode *, struct buffer_head *, int,
++			   const char *, void *, size_t);
+ int ocfs2_xattr_set(struct inode *, int, const char *, const void *,
+ 		    size_t, int);
+ int ocfs2_xattr_set_handle(handle_t *, struct inode *, struct buffer_head *,
 -- 
 1.5.6
 
