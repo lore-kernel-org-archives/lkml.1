@@ -1,35 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbYLSWja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYLSWpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755362AbYLSWja (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbYLSWjR
+	id S1754236AbYLSWpS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:45:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbYLSWpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 17:39:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33729 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754580AbYLSWjQ (ORCPT
+	Fri, 19 Dec 2008 17:45:04 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:53774 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbYLSWpB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 17:39:16 -0500
-Date: Fri, 19 Dec 2008 14:38:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: yinghai@kernel.org, svaidy@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
-       venkatesh.pallipadi@intel.com, a.p.zijlstra@chello.nl,
-       dipankar@in.ibm.com, balbir@linux.vnet.ibm.com,
-       vatsa@linux.vnet.ibm.com, ego@in.ibm.com, andi@firstfloor.org,
-       davecb@sun.com, tconnors@astro.swin.edu.au, maxk@qualcomm.com,
-       gregory.haskins@gmail.com, pavel@suse.cz, rusty@rustcorp.com.au
-Subject: Re: [PATCH v7 4/8] sched: nominate preferred wakeup cpu
-Message-Id: <20081219143832.f2e2c4d1.akpm@linux-foundation.org>
-In-Reply-To: <20081219223130.GA13172@elte.hu>
-References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com>
-	<20081218175622.29812.69201.stgit@drishya.in.ibm.com>
-	<20081219135508.9c6217ba.akpm@linux-foundation.org>
-	<20081219141928.3c2939ef.akpm@linux-foundation.org>
-	<20081219222709.GN2351@elte.hu>
-	<20081219223130.GA13172@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 19 Dec 2008 17:45:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
+         :x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=SU94ZrSzw1YUGUX3mykLlhPG1VgV2u+OB6vVYx2glcuvQDcEO5mIEPmrrggHS94Nb+
+         m4woCWrrciGb8oYZ8ScnW7vik5mazJ5i9NFK+AgkJ1gILm+9A4vmg1icS/d4u4azxOC5
+         De2bnRRAK0NzD9fb0dJBADY6E6neaCd2sW5jU=
+Date: Sat, 20 Dec 2008 00:44:53 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org,
+       Markus Metzger <markus.t.metzger@gmail.com>
+Subject: ftrace behaviour (was: [PATCH] ftrace: introduce
+ tracing_reset_online_cpus() helper)
+Message-ID: <20081220004453.50aec846@daedalus.pq.iki.fi>
+In-Reply-To: <alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com>
+References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI>
+	<c62985530812190247i705d9c3er7662a1b133c6eb29@mail.gmail.com>
+	<alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -37,46 +39,87 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Dec 2008 23:31:30 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Steven,
 
-> * Ingo Molnar <mingo@elte.hu> wrote:
+I have some critique on where the tracing infrastructure has been going
+to lately. Please, let me know if I am just out-of-date on the current
+state or misunderstood something.
+
+On Fri, 19 Dec 2008 12:20:18 -0500 (EST)
+Steven Rostedt <rostedt@goodmis.org> wrote:
+
 > 
-> > > [   74.013893]  <EOI> <0>Code: 8b 47 08 4a 8b 0c 00 48 85 c9 0f 84 c3 00 00 00 49 8b 47 10 4a 8b 04 00 48 8b 80 a8 00 00 00 48 85 c0 74 13 48 0f af 45 c8 31 d2 <48> f7 75 c0 49 89 c6 48 89 c6 eb 16 48 63 55 d0 48 8b 45 c8 45 
-> > > [   74.013893] RIP  [<ffffffff802375d8>] tg_shares_up+0x113/0x1f1
-> > > [   74.013893]  RSP <ffff88025e057d88>
-> > > [   74.020022] ---[ end trace 2fc4046e394f2312 ]---
-> > > [   74.020188] Kernel panic - not syncing: Fatal exception in interrupt
-> > > 
-> > > config: http://userweb.kernel.org/~akpm/config-akpm2.txt
-> > > 
-> > > I'll try hacking some div-by-zero avoidance into update_group_shares_cpu().
+> On Fri, 19 Dec 2008, Fr?d?ric Weisbecker wrote:
 > > 
-> > hm, weird - Yinghai noticed this crash in -tip and we have that patch 
-> > zapped from all -*-next branches already.
+> > 
+> > That's looks good.
+
+The mmiotrace part looks good, too.
+
+> > By the past, I also suggested Steven to automatically reset the traces
+> > buffer each time a tracer is started, that
+> > would factor out the code a bit more. I don't think one tracer would
+> > avoid to reset the buffer once it is started, and
+> > I don't think it is needed to reset twice on tracer switching: on stop
+> > of the old tracer and on start on the new. Only
+> > on start should be enough.
 > 
-> I guess you applied Ken's patch from email and had it in -mm?
-
-Nope.
-
-> We have a 
-> new version of that patch from Ken now based on Yinghai's bugreport - only 
-> lightly tested for now.
+> I'm actually against the idea of reseting a trace everytime we enable it.
+> That is:
 > 
-> 	Ingo
+> echo 1 > /debug/tracing/tracing_enabled
 > 
-> ----------->
-> >From d71f5a7c8bf9cd7c74159a53e522e363f2eddaf5 Mon Sep 17 00:00:00 2001
-> From: Ken Chen <kenchen@google.com>
-> Date: Fri, 19 Dec 2008 10:11:50 -0800
-> Subject: [PATCH] sched: fix uneven per-cpu task_group share distribution
+> This should not reset the tracer. I actually do tracing where I disable 
+> and enable it around areas I am interested in. I want all tracing, not 
+> just the last one.
 
-linux-next has:
+But doesn't this go against the fact, that you need to write 0 there to
+be able to change the ring buffer size?
 
-commit 6eed5aaacae0ced9a43a923633befd2c695d6620
-Author: Ken Chen <kenchen@google.com>
-Date:   Mon Dec 15 23:37:50 2008 -0800
+I mean, is tracing_enabled a "pause button" as I recall you explaining
+a long time ago, and again now, or "kill it all" as required for changing
+the ring buffer size?
 
-    sched: fix uneven per-cpu task_group share distribution
+Or has something changed that I don't know about?
 
-so I guess we have a latency problem.
+Also another important but not so related question:
+are the ring buffers allocated always on boot, whenever any tracer
+(say, only mmiotrace) is enabled in the kernel configuration?
+
+The ring buffers are huge and eat a considerable chunk of precious RAM.
+How could distributors ever enable mmiotrace in their kernel
+configurations by default, if it eats lots of memory for nothing?
+
+If distributors do not enable mmiotrace by default, we are in a worse
+situation than with out-of-tree mmiotrace module (if it could work).
+Users need to reconfigure and recompile their kernels, which is
+something we wanted to avoid. This is the reality right now.
+
+Unless you have an answer to this, I'd like to suggest we resurrect the
+"none" tracer. When "none" is the current tracer, there would be no
+buffers allocated at all, and you could request a new buffer size.
+"none" would be the default. Do you see any problems here?
+
+AFAIK the "nop" tracer will not do, because it still allows text
+messages (markers) to be written, and hence the ring buffer must
+exist. Or am I wrong?
+
+> Now we have recently added /debug/tracing/tracing_on which can quickly 
+> stop tracing. I may be able to use that, and we can let the 
+> tracing_enable" reset it too.
+
+Does this mean I have to implement yet another on/off hook?
+
+IMHO it is starting to be confusing having all these
+current_tracer, tracing_enabled, tracing_on etc.
+
+> I'll have to take a look at my scripts to see if that would work.
+> 
+> -- Steve
+
+
+Thanks.
+
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
