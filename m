@@ -1,88 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbYLSX1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbYLSX2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755747AbYLSX1w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 18:27:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbYLSX12
+	id S1755836AbYLSX2P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 18:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbYLSX1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 18:27:28 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:50093 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755186AbYLSX11 (ORCPT
+	Fri, 19 Dec 2008 18:27:37 -0500
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:38283 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755530AbYLSX1f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 18:27:27 -0500
-Date: Fri, 19 Dec 2008 18:27:23 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Pekka Paalanen <pq@iki.fi>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Markus Metzger <markus.t.metzger@gmail.com>
-Subject: Re: ftrace behaviour (was: [PATCH] ftrace: introduce
- tracing_reset_online_cpus() helper)
-In-Reply-To: <20081219225717.GK13409@elte.hu>
-Message-ID: <alpine.DEB.1.10.0812191810110.26234@gandalf.stny.rr.com>
-References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI> <c62985530812190247i705d9c3er7662a1b133c6eb29@mail.gmail.com> <alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com> <20081220004453.50aec846@daedalus.pq.iki.fi>
- <20081219225717.GK13409@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 19 Dec 2008 18:27:35 -0500
+X-YMail-OSG: miySc1YVM1liDHddQ_lzgIaVEIUFIZ8_U6usYac9MZo6FCLRO8ZsmvsxlP_u_uNbiyeuqxfQiI8aHaq81okLa5BnHlxQJYnFJZI1nAOYgVQZve2oa5AZ9AmnXpOAuVUtKYf7auHYrJ4LiHTg5w9EWWFGligiwifX3STWdjUJwfUWuy8_Ctch6v6FL9NKvEZ7jnzpC2v3B6ynlTgu15U6xfn.GdDkswmZ6lUcDs_YZkcT5XMekFI-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [Target_Core_Mod 4/6]: Updates for generic portal group
+	functionality
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 19 Dec 2008 15:27:06 -0800
+Message-Id: <1229729226.4560.90.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From 08d57bc6a705f5b9f03afa2fbbb50a607e69b985 Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Fri, 19 Dec 2008 13:21:59 -0800
+Subject: [PATCH] [Target_Core_Mod]: Updates for generic portal group functionality
 
-On Fri, 19 Dec 2008, Ingo Molnar wrote:
+This patch exports symbols for core_tpg_check_initiator_node_acl() and
+core_tpg_set_initiator_node_queue_depth().
 
-> 
-> * Pekka Paalanen <pq@iki.fi> wrote:
-> 
-> > > I'm actually against the idea of reseting a trace everytime we enable it.
-> > > That is:
-> > > 
-> > > echo 1 > /debug/tracing/tracing_enabled
-> > > 
-> > > This should not reset the tracer. I actually do tracing where I disable 
-> > > and enable it around areas I am interested in. I want all tracing, not 
-> > > just the last one.
-> > 
-> > But doesn't this go against the fact, that you need to write 0 there to 
-> > be able to change the ring buffer size?
-> 
-> hm, that ftrace behavior is silly. Steve, i think i mentioned this a long 
-> time ago and i thought it got fixed? Changing the ring buffer size is a 
-> slow op, it should include an implicit reset and should be plug-and-play 
-> with no dependencies of having to stop the trace or something.
+It also adds 'int se_tpg_type' parameter to core_tpg_register().
 
-I think you are referencing a different issue, where we passed in a NULL 
-buffer pointer and expected it to be resized. I still think that should 
-not return a success, but that's a different issue altogether.
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/target_core_tpg.c |   20 +++++++++++++++-----
+ drivers/lio-core/target_core_tpg.h |    4 ++--
+ 2 files changed, 17 insertions(+), 7 deletions(-)
 
-Before the ring buffer, the only safe way to resize the buffer was to 
-switch the tracer to none (aka nop).  Now, the only thing you need to do 
-is disable tracing. This is probably a good thing since it forces the user 
-to stop tracing, otherwise the tracing will stop during the resize anyway, 
-and the user will wonder why they lost data.
+diff --git a/drivers/lio-core/target_core_tpg.c b/drivers/lio-core/target_core_tpg.c
+index 57dca83..768890a 100644
+--- a/drivers/lio-core/target_core_tpg.c
++++ b/drivers/lio-core/target_core_tpg.c
+@@ -309,6 +309,8 @@ extern se_node_acl_t *core_tpg_check_initiator_node_acl (
+ 	return(acl);
+ }
+ 
++EXPORT_SYMBOL(core_tpg_check_initiator_node_acl);
++
+ /*	core_tpg_free_node_acls():
+  *
+  *
+@@ -409,6 +411,7 @@ extern se_node_acl_t *core_tpg_add_initiator_node_acl (
+ 	}
+ 
+ 	spin_lock_init(&acl->device_list_lock);
++	acl->fabric_acl_ptr = fabric_acl_ptr;
+ 	acl->queue_depth = queue_depth;
+ 	snprintf(acl->initiatorname, TRANSPORT_IQN_LEN, "%s", initiatorname);
+ 	acl->se_tpg = tpg;
+@@ -452,7 +455,7 @@ EXPORT_SYMBOL(core_tpg_add_initiator_node_acl);
+  *
+  *
+  */
+-#warning FIXME: core_tpg_del_initiator_node_acl() broken
++#warning FIXME: core_tpg_del_initiator_node_acl() force session shudown is broken
+ extern int core_tpg_del_initiator_node_acl (
+ 	se_portal_group_t *tpg,
+ 	const char *initiatorname,
+@@ -648,9 +651,12 @@ extern int core_tpg_set_initiator_node_queue_depth (
+ 	return(0);
+ }
+ 
++EXPORT_SYMBOL(core_tpg_set_initiator_node_queue_depth);
++
+ extern se_portal_group_t *core_tpg_register (
+ 	struct target_core_fabric_ops *tfo,
+-	void *tpg_fabric_ptr)
++	void *tpg_fabric_ptr,
++	int se_tpg_type)
+ {
+ 	se_lun_t *lun;
+ 	se_portal_group_t *se_tpg;
+@@ -682,17 +688,21 @@ extern se_portal_group_t *core_tpg_register (
+ 		spin_lock_init(&lun->lun_sep_lock);
+ 	}
+ 
++	se_tpg->se_tpg_type = se_tpg_type;
+ 	se_tpg->se_tpg_fabric_ptr = tpg_fabric_ptr;
+ 	se_tpg->se_tpg_tfo = tfo;
+ 	INIT_LIST_HEAD(&se_tpg->se_tpg_list);
++	INIT_LIST_HEAD(&se_tpg->tpg_sess_list);
+ 	spin_lock_init(&se_tpg->acl_node_lock);
+ 	spin_lock_init(&se_tpg->session_lock);
+ 	spin_lock_init(&se_tpg->tpg_lun_lock);
+ #warning FIXME: Add se_portal_group to list..
+ 
+-	printk("TARGET_CORE[%s]: Allocated se_portal_group_t for endpoint %s %u\n",
+-		tfo->get_fabric_name(), tfo->tpg_get_wwn(se_tpg),
+-		tfo->tpg_get_tag(se_tpg));
++	printk("TARGET_CORE[%s]: Allocated %s se_portal_group_t for endpoint:"
++		" %s, Portal Tag: %u\n", tfo->get_fabric_name(),
++		(se_tpg->se_tpg_type == TRANSPORT_TPG_TYPE_NORMAL) ?
++		"Normal" : "Discovery", (tfo->tpg_get_wwn(se_tpg) == NULL) ?
++		"None" : tfo->tpg_get_wwn(se_tpg), tfo->tpg_get_tag(se_tpg));
+ 
+ 	return(se_tpg);
+ }
+diff --git a/drivers/lio-core/target_core_tpg.h b/drivers/lio-core/target_core_tpg.h
+index d3a3523..b898450 100644
+--- a/drivers/lio-core/target_core_tpg.h
++++ b/drivers/lio-core/target_core_tpg.h
+@@ -35,10 +35,10 @@ extern void core_tpg_add_node_to_devs (struct se_node_acl_s *, struct se_portal_
+ extern struct se_node_acl_s *core_tpg_check_initiator_node_acl (struct se_portal_group_s *, unsigned char *);
+ extern void core_tpg_free_node_acls (struct se_portal_group_s *);
+ extern void core_tpg_clear_object_luns (struct se_portal_group_s *);
+-extern se_node_acl_t *core_tpg_add_initiator_node_acl (se_portal_group_t *, const char *, u32, int *);
++extern se_node_acl_t *core_tpg_add_initiator_node_acl (se_portal_group_t *, void *, const char *, u32, int *);
+ extern int core_tpg_del_initiator_node_acl (se_portal_group_t *, const char *, int);
+ extern int core_tpg_set_initiator_node_queue_depth (se_portal_group_t *, unsigned char *, u32, int);
+-extern se_portal_group_t *core_tpg_register (struct target_core_fabric_ops *, void *);
++extern se_portal_group_t *core_tpg_register (struct target_core_fabric_ops *, void *, int);
+ extern int core_tpg_deregister (struct se_portal_group_s *);
+ extern se_lun_t *core_tpg_pre_addlun (se_portal_group_t *, u32, int *);
+ extern int core_tpg_post_addlun (se_portal_group_t *, se_lun_t *, int, u32, void *, struct se_obj_lun_type_s *);
+-- 
+1.5.4.1
 
-Resizing is a dangerous operation to do while tracing. Right now ftrace 
-enforces the the protection of writes to the ring buffer during resize 
-(the ftrace infrastructure does, the plugins do not need to worry about 
-it).
 
-Now that we have other ways to disable writing to the ring buffer, we can 
-move that down to the ring buffer layer. When the ring buffer was 
-originaly written, there was no such method to stop writing. What would 
-need to be done now, is the ring buffers would disable writing to all CPU 
-buffers, do a synchronize sched, since writing requires preemption 
-disabled. Then we would need to grab all the reader spin locks for each 
-cpu buffer (that will be ugly :-( ), and then we could safely change the 
-size of the buffers.
-
-I could easily write this up. I'll see if I can get to it after I release 
-the -rt trees. But like I said, there will be time when tracing will be 
-stopped, and it would be a good idea to make the user stop it so they do 
-not get confused about why they are missing trace output after they did a 
-resize.
-
--- Steve
 
