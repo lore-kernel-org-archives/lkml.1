@@ -1,61 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbYLSR5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbYLSR6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753097AbYLSR5b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 12:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYLSR5S
+	id S1753620AbYLSR6X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 12:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYLSR6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 12:57:18 -0500
-Received: from mout-bounce.kundenserver.de ([212.227.17.1]:57665 "EHLO
-	mout-bounce.kundenserver.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751660AbYLSR5R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 12:57:17 -0500
-Message-ID: <494BE08D.30101@vlnb.net>
-Date: Fri, 19 Dec 2008 20:57:33 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 19 Dec 2008 12:58:14 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:52631 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751763AbYLSR6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 12:58:13 -0500
+Date: Fri, 19 Dec 2008 11:58:09 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 02/45] Make slow-work thread pool actually dynamic [ver
+	#41]
+Message-ID: <20081219175809.GA17113@us.ibm.com>
+References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk> <20081120144150.10667.42993.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-mm@kvack.org, Christoph Hellwig <hch@infradead.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>, netdev@vger.kernel.org
-Subject: Re: [RFC]: Support for zero-copy TCP transmit of user space data
-References: <4941590F.3070705@vlnb.net> <1229022734.3266.67.camel@localhost.localdomain> <4942BAB8.4050007@vlnb.net> <1229110673.3262.94.camel@localhost.localdomain> <49469ADB.6010709@vlnb.net> <20081215231801.GA27168@infradead.org> <4947FA1C.2090509@vlnb.net> <494A97DD.7080503@vlnb.net> <87zlisz9pg.fsf@basil.nowhere.org> <494BDBFC.7060707@vlnb.net> <20081219180009.GP25779@one.firstfloor.org>
-In-Reply-To: <20081219180009.GP25779@one.firstfloor.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/vUsux8DobkJubLjp60JWQBTsuBLrfwmDULez
- u4v9QkD/TpJU9sRFrUfMGWngx4DNQl8B5arLnZTwHtmdfj0/uk
- +/hIOK8Hia/i13K+TlLQg==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081120144150.10667.42993.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen, on 12/19/2008 09:00 PM wrote:
->> Sure, this is why I propose to disable that option by default in 
->> distribution kernels, so it would produce no harm.
+Quoting David Howells (dhowells@redhat.com):
+> Make the slow-work thread pool actually dynamic in the number of threads it
+> contains.  With this patch, it will both create additional threads when it has
+> extra work to do, and cull excess threads that aren't doing anything.
 > 
-> That would make the option useless for most users. You might as well
-> not bother merging then.
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-I believe 99.(9)% of users prefer don't patch kernel, if possible.
+Looks good.
 
->> first, only then enable that option, then rebuild the kernel. (I'm 
->> repeating it to make sure you didn't miss this my point; it was in the 
->> part of my original message, which you cut out.)
-> 
-> That was such a ridiculous suggestion, I didn't take it seriously.
-> 
-> Also it should be really not rocket science to use a separate 
-> table for this.
-
-Sorry, what do you mean? If usage of something like a hash table to map 
-pages to the corresponding iSCSI commands, this approach was evaluated 
-and rejected, because it wouldn't provide much performance increase, 
-which would worth the effort. See details in the end of the patch 
-description in http://lkml.org/lkml/2008/12/10/296
-
-Thanks,
-Vlad
+Acked-by: Serge Hallyn <serue@us.ibm.com>
