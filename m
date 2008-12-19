@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbYLSOsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752094AbYLSPBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296AbYLSOsV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 09:48:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYLSOr6
+	id S1752094AbYLSPBa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 10:01:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbYLSPBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 09:47:58 -0500
-Received: from cmpxchg.org ([85.214.51.133]:47630 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751563AbYLSOr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 09:47:57 -0500
-Date: Fri, 19 Dec 2008 15:47:26 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Guennadi Liakhovetski <lg@denx.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] bitmap: fix bitmap_find_free_region()
-Message-ID: <20081219144726.GA1991@cmpxchg.org>
-References: <Pine.LNX.4.64.0812191202130.4536@axis700.grange> <20081219130211.GA1560@cmpxchg.org> <Pine.LNX.4.64.0812191413520.4536@axis700.grange>
+	Fri, 19 Dec 2008 10:01:22 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:64785 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbYLSPBV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 10:01:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type
+         :content-transfer-encoding;
+        b=uH0Lgn/FYZGBT/vY5E4nh9MRXtlVuWwQR2O7HAd+Sehk6j9GFX0029t4TdK8A5k5jb
+         GWYKSeSDXWsgw8B6+eKM2vnbAjm2INpaHJGnwmjEPQzPBC2nAEPU0JkXM3lRv8pVW2Fk
+         JjxPKHmAi+coaMICRu3ngU2Kt/h6diu6rxgYA=
+Date: Fri, 19 Dec 2008 13:01:14 -0200
+From: Guilherme Malschitzky Schroeder <guilherme.m.schroeder@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.28-rc9 - ioremap.c:226 warning - GEM stuff?
+Message-Id: <20081219130114.5fc87cfc.guilherme.m.schroeder@gmail.com>
+X-Mailer: Sylpheed 2.6.0rc (GTK+ 2.14.5; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812191413520.4536@axis700.grange>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 19, 2008 at 02:18:22PM +0100, Guennadi Liakhovetski wrote:
-> On Fri, 19 Dec 2008, Johannes Weiner wrote:
-> 
-> > On Fri, Dec 19, 2008 at 12:26:41PM +0100, Guennadi Liakhovetski wrote:
-> > > Currently bitmap_find_free_region() assumes, that the requested region 
-> > > size is smaller than the entire bitmap. If this is not the case it fails 
-> > > to detect it and returns success, while pointing at a position outside of 
-> > > the region.
-> > > 
-> > > Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
-> > > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > > ---
-> > > It is hard to believe, that this is a bug, last time this code was touched 
-> > > in 2006... Or should the caller guarantee, that the requested region is 
-> > > not larger than the bitmap? Then dma_alloc_from_coherent() is buggy, which 
-> > > is where I hit this bug. But it seems to me bitmap_find_free_region() 
-> > > should be fixed.
-> > > 
-> > > diff --git a/lib/bitmap.c b/lib/bitmap.c
-> > > index 1338469..079c5e3 100644
-> > > --- a/lib/bitmap.c
-> > > +++ b/lib/bitmap.c
-> > > @@ -950,6 +950,9 @@ int bitmap_find_free_region(unsigned long *bitmap, int bits, int order)
-> > >  {
-> > >  	int pos;		/* scans bitmap by regions of size order */
-> > >  
-> > > +	if (bits < 1 << order)
-> > > +		return -ENOMEM;
-> > 
-> > I think this is an error on the callsite, so a WARN_ON() might be good
-> > to spot these.  I would be interested in the callpath that triggered
-> > this bug for you.
-> 
-> As I said above it's called from dma_alloc_from_coherent() from 
-> dma_alloc_coherent().
+Hi,
 
-Sure, but someone must have done dma_declare_coherent_memory() before
-with a size smaller than it later passed to dma_alloc_coherent(), no?
+I'm running 2.6.28-rc9 on Debian sid/experimental with Xorg 1.5.3, intel driver 2.5.1 and i'm getting this warning in dmesg:
 
-I think we should add the check, WARN if it's true and return an
-appropriate error number.  It will be handled gracefully then and we
-still know which callsite screwed up.
+resource map sanity check conflict: 0xe0000000 0xefffffff 0xe0000000 0xe1feffff vesafb
+------------[ cut here ]------------
+WARNING: at arch/x86/mm/ioremap.c:226 __ioremap_caller+0xc8/0x2cd()
+Modules linked in: kvm_intel kvm loop i2c_i801
+Pid: 2101, comm: Xorg Not tainted 2.6.28-rc9 #10
+Call Trace:
+ [<ffffffff8022be25>] warn_on_slowpath+0x51/0x75
+ [<ffffffff80230b5d>] iomem_map_sanity_check+0x75/0xac
+ [<ffffffff8021fba0>] __ioremap_caller+0xc8/0x2cd
+ [<ffffffff80360ffd>] i915_gem_entervt_ioctl+0x444/0x4d0
+ [<ffffffff80360ffd>] i915_gem_entervt_ioctl+0x444/0x4d0
+ [<ffffffff80360bb9>] i915_gem_entervt_ioctl+0x0/0x4d0
+ [<ffffffff803548e3>] drm_ioctl+0x1c9/0x253
+ [<ffffffff80280fc3>] vfs_ioctl+0x56/0x6c
+ [<ffffffff8028135e>] do_vfs_ioctl+0x385/0x3b2
+ [<ffffffff80276994>] vfs_write+0x121/0x136
+ [<ffffffff802813c8>] sys_ioctl+0x3d/0x5c
+ [<ffffffff8020b18b>] system_call_fastpath+0x16/0x1b
+---[ end trace 05cd7e3729e479d6 ]---
+Xorg:2101 conflicting memory types e0000000-f0000000 write-combining<->uncached-minus
+reserve_memtype failed 0xe0000000-0xf0000000, track write-combining, req write-combining
+Xorg:2101 conflicting memory types e0000000-f0000000 write-combining<->uncached-minus
+reserve_memtype failed 0xe0000000-0xf0000000, track write-combining, req write-combining
 
-	Hannes
+I think is something related to GEM as my card supports it.
+
+(II) intel(0): Integrated Graphics Chipset: Intel(R) Mobile Intel® GM45 Express Chipset
+
+It's ok to just ignore?
+
+If you need more info, let me know.
+
+Thanks.
+
