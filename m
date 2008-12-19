@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbYLSL0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbYLSL1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753733AbYLSL0p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 06:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbYLSL0h
+	id S1752821AbYLSL1G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 06:27:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbYLSL0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 06:26:37 -0500
-Received: from mail.gmx.net ([213.165.64.20]:44196 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750873AbYLSL0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 06:26:37 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19GeTdqUflG1ZiTcWI1glwoHU7ze4Cq6hUtN9cdZ+
-	L6Vz13++qPGexb
-Date: Fri, 19 Dec 2008 12:26:41 +0100 (CET)
-From: Guennadi Liakhovetski <lg@denx.de>
-X-X-Sender: lyakh@axis700.grange
-To: linux-kernel@vger.kernel.org
-cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] bitmap: fix bitmap_find_free_region()
-Message-ID: <Pine.LNX.4.64.0812191202130.4536@axis700.grange>
+	Fri, 19 Dec 2008 06:26:46 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:35995 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753513AbYLSL0p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 06:26:45 -0500
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: linux-mm@kvack.org, Christoph Hellwig <hch@infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>, netdev@vger.kernel.org
+Subject: Re: [RFC]: Support for zero-copy TCP transmit of user space data
+From: Andi Kleen <andi@firstfloor.org>
+References: <494009D7.4020602@vlnb.net> <494012C4.7090304@vlnb.net>
+	<20081210214500.GA24212@ioremap.net> <4941590F.3070705@vlnb.net>
+	<1229022734.3266.67.camel@localhost.localdomain>
+	<4942BAB8.4050007@vlnb.net>
+	<1229110673.3262.94.camel@localhost.localdomain>
+	<49469ADB.6010709@vlnb.net> <20081215231801.GA27168@infradead.org>
+	<4947FA1C.2090509@vlnb.net> <494A97DD.7080503@vlnb.net>
+Date: Fri, 19 Dec 2008 12:27:23 +0100
+In-Reply-To: <494A97DD.7080503@vlnb.net> (Vladislav Bolkhovitin's message of "Thu, 18 Dec 2008 21:35:09 +0300")
+Message-ID: <87zlisz9pg.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.59
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently bitmap_find_free_region() assumes, that the requested region 
-size is smaller than the entire bitmap. If this is not the case it fails 
-to detect it and returns success, while pointing at a position outside of 
-the region.
+Vladislav Bolkhovitin <vst@vlnb.net> writes:
+>
+>  - Although usage of struct page to keep network related pointer might
+> look as a layering violation, it isn't. I wrote in
+> http://lkml.org/lkml/2008/12/15/190 why.
 
-Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
-It is hard to believe, that this is a bug, last time this code was touched 
-in 2006... Or should the caller guarantee, that the requested region is 
-not larger than the bitmap? Then dma_alloc_from_coherent() is buggy, which 
-is where I hit this bug. But it seems to me bitmap_find_free_region() 
-should be fixed.
+Sorry but extending struct page for this is really a bad idea because
+of the extreme memory overhead even when it's not used (which is a 
+problem on distribution kernels) Find some other way to store this
+information.  Even for patches with more general value it was not
+acceptable.
 
-diff --git a/lib/bitmap.c b/lib/bitmap.c
-index 1338469..079c5e3 100644
---- a/lib/bitmap.c
-+++ b/lib/bitmap.c
-@@ -950,6 +950,9 @@ int bitmap_find_free_region(unsigned long *bitmap, int bits, int order)
- {
- 	int pos;		/* scans bitmap by regions of size order */
- 
-+	if (bits < 1 << order)
-+		return -ENOMEM;
-+
- 	for (pos = 0; pos < bits; pos += (1 << order))
- 		if (__reg_op(bitmap, pos, order, REG_OP_ISFREE))
- 			break;
+-Andi
+
+
+-- 
+ak@linux.intel.com
