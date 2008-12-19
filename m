@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbYLSWBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbYLSWCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756070AbYLSWBj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:01:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYLSVys
+	id S1756893AbYLSWCT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbYLSVyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:54:48 -0500
-Received: from ns2.suse.de ([195.135.220.15]:48953 "EHLO mx2.suse.de"
+	Fri, 19 Dec 2008 16:54:51 -0500
+Received: from mx1.suse.de ([195.135.220.2]:58016 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753267AbYLSVyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 16:54:46 -0500
+	id S1753263AbYLSVyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:54:50 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 21/45] ocfs2: turn __ocfs2_remove_inode_range() into ocfs2_remove_btree_range()
-Date: Fri, 19 Dec 2008 13:53:40 -0800
-Message-Id: <1229723644-13630-22-git-send-email-mfasheh@suse.com>
+       Tiger Yang <tiger.yang@oracle.com>, Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 23/45] ocfs2: add ocfs2_xattr_set_handle
+Date: Fri, 19 Dec 2008 13:53:42 -0800
+Message-Id: <1229723644-13630-24-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
 References: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
@@ -23,231 +23,114 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch genericizes the high level handling of extent removal.
-ocfs2_remove_btree_range() is nearly identical to
-__ocfs2_remove_inode_range(), except that extent tree operations have been
-used where necessary. We update ocfs2_remove_inode_range() to use the
-generic helper. Now extent tree based structures have an easy way to
-truncate ranges.
+From: Tiger Yang <tiger.yang@oracle.com>
 
+This function is used to set xattr's in a started transaction. It is only
+called during inode creation inode for initial security/acl xattrs of the
+new inode. These xattrs could be put into ibody or extent block, so xattr
+bucket would not be use in this case.
+
+Signed-off-by: Tiger Yang <tiger.yang@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
-Acked-by: Joel Becker <joel.becker@oracle.com>
 ---
- fs/ocfs2/alloc.c |   72 +++++++++++++++++++++++++++++++++++++++++++++
- fs/ocfs2/alloc.h |    5 +++
- fs/ocfs2/file.c  |   85 +++--------------------------------------------------
- 3 files changed, 82 insertions(+), 80 deletions(-)
+ fs/ocfs2/xattr.c |   68 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ocfs2/xattr.h |    4 +++
+ 2 files changed, 72 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
-index 4614614..5592a2f 100644
---- a/fs/ocfs2/alloc.c
-+++ b/fs/ocfs2/alloc.c
-@@ -5255,6 +5255,78 @@ out:
- 	return ret;
+diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
+index 7a90892..6480254 100644
+--- a/fs/ocfs2/xattr.c
++++ b/fs/ocfs2/xattr.c
+@@ -2326,6 +2326,74 @@ out:
  }
  
-+int ocfs2_remove_btree_range(struct inode *inode,
-+			     struct ocfs2_extent_tree *et,
-+			     u32 cpos, u32 phys_cpos, u32 len,
-+			     struct ocfs2_cached_dealloc_ctxt *dealloc)
+ /*
++ * This function only called duing creating inode
++ * for init security/acl xattrs of the new inode.
++ * The xattrs could be put into ibody or extent block,
++ * xattr bucket would not be use in this case.
++ * transanction credits also be reserved in here.
++ */
++int ocfs2_xattr_set_handle(handle_t *handle,
++			   struct inode *inode,
++			   struct buffer_head *di_bh,
++			   int name_index,
++			   const char *name,
++			   const void *value,
++			   size_t value_len,
++			   int flags,
++			   struct ocfs2_alloc_context *meta_ac,
++			   struct ocfs2_alloc_context *data_ac)
 +{
++	struct ocfs2_dinode *di;
 +	int ret;
-+	u64 phys_blkno = ocfs2_clusters_to_blocks(inode->i_sb, phys_cpos);
-+	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-+	struct inode *tl_inode = osb->osb_tl_inode;
-+	handle_t *handle;
-+	struct ocfs2_alloc_context *meta_ac = NULL;
 +
-+	ret = ocfs2_lock_allocators(inode, et, 0, 1, NULL, &meta_ac);
-+	if (ret) {
-+		mlog_errno(ret);
-+		return ret;
-+	}
++	struct ocfs2_xattr_info xi = {
++		.name_index = name_index,
++		.name = name,
++		.value = value,
++		.value_len = value_len,
++	};
 +
-+	mutex_lock(&tl_inode->i_mutex);
++	struct ocfs2_xattr_search xis = {
++		.not_found = -ENODATA,
++	};
 +
-+	if (ocfs2_truncate_log_needs_flush(osb)) {
-+		ret = __ocfs2_flush_truncate_log(osb);
-+		if (ret < 0) {
-+			mlog_errno(ret);
-+			goto out;
-+		}
-+	}
++	struct ocfs2_xattr_search xbs = {
++		.not_found = -ENODATA,
++	};
 +
-+	handle = ocfs2_start_trans(osb, OCFS2_REMOVE_EXTENT_CREDITS);
-+	if (IS_ERR(handle)) {
-+		ret = PTR_ERR(handle);
-+		mlog_errno(ret);
-+		goto out;
-+	}
++	struct ocfs2_xattr_set_ctxt ctxt = {
++		.handle = handle,
++		.meta_ac = meta_ac,
++		.data_ac = data_ac,
++	};
 +
-+	ret = ocfs2_journal_access(handle, inode, et->et_root_bh,
-+				   OCFS2_JOURNAL_ACCESS_WRITE);
-+	if (ret) {
-+		mlog_errno(ret);
-+		goto out;
-+	}
++	if (!ocfs2_supports_xattr(OCFS2_SB(inode->i_sb)))
++		return -EOPNOTSUPP;
 +
-+	ret = ocfs2_remove_extent(inode, et, cpos, len, handle, meta_ac,
-+				  dealloc);
-+	if (ret) {
-+		mlog_errno(ret);
-+		goto out_commit;
-+	}
++	xis.inode_bh = xbs.inode_bh = di_bh;
++	di = (struct ocfs2_dinode *)di_bh->b_data;
 +
-+	ocfs2_et_update_clusters(inode, et, -len);
++	down_write(&OCFS2_I(inode)->ip_xattr_sem);
 +
-+	ret = ocfs2_journal_dirty(handle, et->et_root_bh);
-+	if (ret) {
-+		mlog_errno(ret);
-+		goto out_commit;
-+	}
-+
-+	ret = ocfs2_truncate_log_append(osb, handle, phys_blkno, len);
++	ret = ocfs2_xattr_ibody_find(inode, name_index, name, &xis);
 +	if (ret)
-+		mlog_errno(ret);
++		goto cleanup;
++	if (xis.not_found) {
++		ret = ocfs2_xattr_block_find(inode, name_index, name, &xbs);
++		if (ret)
++			goto cleanup;
++	}
 +
-+out_commit:
-+	ocfs2_commit_trans(osb, handle);
-+out:
-+	mutex_unlock(&tl_inode->i_mutex);
++	ret = __ocfs2_xattr_set_handle(inode, di, &xi, &xis, &xbs, &ctxt);
 +
-+	if (meta_ac)
-+		ocfs2_free_alloc_context(meta_ac);
++cleanup:
++	up_write(&OCFS2_I(inode)->ip_xattr_sem);
++	brelse(xbs.xattr_bh);
 +
 +	return ret;
 +}
 +
- int ocfs2_truncate_log_needs_flush(struct ocfs2_super *osb)
- {
- 	struct buffer_head *tl_bh = osb->osb_tl_bh;
-diff --git a/fs/ocfs2/alloc.h b/fs/ocfs2/alloc.h
-index 3eb735e..0fbf8fc 100644
---- a/fs/ocfs2/alloc.h
-+++ b/fs/ocfs2/alloc.h
-@@ -110,6 +110,11 @@ int ocfs2_remove_extent(struct inode *inode,
- 			u32 cpos, u32 len, handle_t *handle,
- 			struct ocfs2_alloc_context *meta_ac,
- 			struct ocfs2_cached_dealloc_ctxt *dealloc);
-+int ocfs2_remove_btree_range(struct inode *inode,
-+			     struct ocfs2_extent_tree *et,
-+			     u32 cpos, u32 phys_cpos, u32 len,
-+			     struct ocfs2_cached_dealloc_ctxt *dealloc);
-+
- int ocfs2_num_free_extents(struct ocfs2_super *osb,
- 			   struct inode *inode,
- 			   struct ocfs2_extent_tree *et);
-diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
-index e2570a3..3605491 100644
---- a/fs/ocfs2/file.c
-+++ b/fs/ocfs2/file.c
-@@ -1226,83 +1226,6 @@ out:
- 	return ret;
- }
++/*
+  * ocfs2_xattr_set()
+  *
+  * Set, replace or remove an extended attribute for this inode.
+diff --git a/fs/ocfs2/xattr.h b/fs/ocfs2/xattr.h
+index 1d8314c..8fbdc16 100644
+--- a/fs/ocfs2/xattr.h
++++ b/fs/ocfs2/xattr.h
+@@ -37,6 +37,10 @@ extern struct xattr_handler *ocfs2_xattr_handlers[];
+ ssize_t ocfs2_listxattr(struct dentry *, char *, size_t);
+ int ocfs2_xattr_set(struct inode *, int, const char *, const void *,
+ 		    size_t, int);
++int ocfs2_xattr_set_handle(handle_t *, struct inode *, struct buffer_head *,
++			   int, const char *, const void *, size_t, int,
++			   struct ocfs2_alloc_context *,
++			   struct ocfs2_alloc_context *);
+ int ocfs2_xattr_remove(struct inode *, struct buffer_head *);
  
--static int __ocfs2_remove_inode_range(struct inode *inode,
--				      struct buffer_head *di_bh,
--				      u32 cpos, u32 phys_cpos, u32 len,
--				      struct ocfs2_cached_dealloc_ctxt *dealloc)
--{
--	int ret;
--	u64 phys_blkno = ocfs2_clusters_to_blocks(inode->i_sb, phys_cpos);
--	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
--	struct inode *tl_inode = osb->osb_tl_inode;
--	handle_t *handle;
--	struct ocfs2_alloc_context *meta_ac = NULL;
--	struct ocfs2_dinode *di = (struct ocfs2_dinode *)di_bh->b_data;
--	struct ocfs2_extent_tree et;
--
--	ocfs2_init_dinode_extent_tree(&et, inode, di_bh);
--
--	ret = ocfs2_lock_allocators(inode, &et, 0, 1, NULL, &meta_ac);
--	if (ret) {
--		mlog_errno(ret);
--		return ret;
--	}
--
--	mutex_lock(&tl_inode->i_mutex);
--
--	if (ocfs2_truncate_log_needs_flush(osb)) {
--		ret = __ocfs2_flush_truncate_log(osb);
--		if (ret < 0) {
--			mlog_errno(ret);
--			goto out;
--		}
--	}
--
--	handle = ocfs2_start_trans(osb, OCFS2_REMOVE_EXTENT_CREDITS);
--	if (IS_ERR(handle)) {
--		ret = PTR_ERR(handle);
--		mlog_errno(ret);
--		goto out;
--	}
--
--	ret = ocfs2_journal_access(handle, inode, di_bh,
--				   OCFS2_JOURNAL_ACCESS_WRITE);
--	if (ret) {
--		mlog_errno(ret);
--		goto out;
--	}
--
--	ret = ocfs2_remove_extent(inode, &et, cpos, len, handle, meta_ac,
--				  dealloc);
--	if (ret) {
--		mlog_errno(ret);
--		goto out_commit;
--	}
--
--	OCFS2_I(inode)->ip_clusters -= len;
--	di->i_clusters = cpu_to_le32(OCFS2_I(inode)->ip_clusters);
--
--	ret = ocfs2_journal_dirty(handle, di_bh);
--	if (ret) {
--		mlog_errno(ret);
--		goto out_commit;
--	}
--
--	ret = ocfs2_truncate_log_append(osb, handle, phys_blkno, len);
--	if (ret)
--		mlog_errno(ret);
--
--out_commit:
--	ocfs2_commit_trans(osb, handle);
--out:
--	mutex_unlock(&tl_inode->i_mutex);
--
--	if (meta_ac)
--		ocfs2_free_alloc_context(meta_ac);
--
--	return ret;
--}
--
- /*
-  * Truncate a byte range, avoiding pages within partial clusters. This
-  * preserves those pages for the zeroing code to write to.
-@@ -1402,7 +1325,9 @@ static int ocfs2_remove_inode_range(struct inode *inode,
- 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
- 	struct ocfs2_cached_dealloc_ctxt dealloc;
- 	struct address_space *mapping = inode->i_mapping;
-+	struct ocfs2_extent_tree et;
- 
-+	ocfs2_init_dinode_extent_tree(&et, inode, di_bh);
- 	ocfs2_init_dealloc_ctxt(&dealloc);
- 
- 	if (byte_len == 0)
-@@ -1458,9 +1383,9 @@ static int ocfs2_remove_inode_range(struct inode *inode,
- 
- 		/* Only do work for non-holes */
- 		if (phys_cpos != 0) {
--			ret = __ocfs2_remove_inode_range(inode, di_bh, cpos,
--							 phys_cpos, alloc_size,
--							 &dealloc);
-+			ret = ocfs2_remove_btree_range(inode, &et, cpos,
-+						       phys_cpos, alloc_size,
-+						       &dealloc);
- 			if (ret) {
- 				mlog_errno(ret);
- 				goto out;
+ #endif /* OCFS2_XATTR_H */
 -- 
 1.5.6
 
