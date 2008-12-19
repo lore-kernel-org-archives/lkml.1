@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753162AbYLSUXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbYLSU3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753162AbYLSUXr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 15:23:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbYLSUXk
+	id S1752760AbYLSU3M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 15:29:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYLSU24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 15:23:40 -0500
-Received: from rv-out-0506.google.com ([209.85.198.224]:41986 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbYLSUXj (ORCPT
+	Fri, 19 Dec 2008 15:28:56 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:53560 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750978AbYLSU2z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 15:23:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YWLx/+FqvMe/gjAFVjaDY0ityfXgzcwjQ8ykBBZZ1PttdzgZZSDLeIImbBHE6xErH6
-         0kNhjXMEx32EKPpwJwJkAf03Y4F5Y4ilCSd5aVCI99Fw2aRuwYp2TPek7g5gA4jHXrrw
-         kJNOPu6X4lqd0kREPLJW2h744N6Wyufv2hZ4I=
-Message-ID: <3f9a31f40812191223g72b8a1eey2780f8e1a0ebf7aa@mail.gmail.com>
-Date: Sat, 20 Dec 2008 01:53:38 +0530
-From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-To: martin@valinux.com, gareth@valinux.com, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Jaswinder Singh" <jaswinder@infradead.org>
-Subject: Re: [PATCH] radeon_cp: use request_firmware
-In-Reply-To: <1218095497.4016.3.camel@jaswinder.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 19 Dec 2008 15:28:55 -0500
+Subject: Re: Firmware patches for SCSI
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jaswinder Singh <jaswinderlinux@gmail.com>
+Cc: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <3f9a31f40812191153n636888f4i549409453266d58c@mail.gmail.com>
+References: <3f9a31f40812191153n636888f4i549409453266d58c@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 19 Dec 2008 15:29:03 -0500
+Message-Id: <1229718543.18778.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1218095497.4016.3.camel@jaswinder.satnam>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Sat, 2008-12-20 at 01:23 +0530, Jaswinder Singh wrote:
+> Hello all,
+> 
+> These SCSI's firmware patches are floating in linux-next from long time :
+> 
+> 1. qla1280: use request_firmware
+> http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=7c84df1aec1bbb4e43ac9e2ba65b137042279a8d
+> 2. advansys: use request_firmware
+> http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=baca2b168d3b7340eac87414c046f7d49de4bf71
+> 3. qlogicpti: use request_firmware
+> http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=2c68b5b6db13786a425accc8576217b120f885f2
+> 
+> Should I need to resend these patches to merge main-stream.
 
-On Thu, Aug 7, 2008 at 1:21 PM, Jaswinder Singh <jaswinder@infradead.org> wrote:
-> Moved datah before datal because datah is required before datal.
->
-> Firmware blob looks like this...
->        __be32 datah
->        __be32 datal
->
-> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
-> ---
->  drivers/gpu/drm/radeon/radeon_cp.c        |  152 ++-
->  drivers/gpu/drm/radeon/radeon_drv.h       |    6 +
->  drivers/gpu/drm/radeon/radeon_microcode.h | 1844 -----------------------------
->  firmware/Makefile                         |    4 +
->  firmware/WHENCE                           |   40 +
->  firmware/radeon/R100_cp.bin.ihex          |  130 ++
->  firmware/radeon/R200_cp.bin.ihex          |  130 ++
->  firmware/radeon/R300_cp.bin.ihex          |  130 ++
->  firmware/radeon/R420_cp.bin.ihex          |  130 ++
->  firmware/radeon/R520_cp.bin.ihex          |  130 ++
->  firmware/radeon/RS600_cp.bin.ihex         |  130 ++
->  firmware/radeon/RS690_cp.bin.ihex         |  130 ++
->  12 files changed, 1050 insertions(+), 1906 deletions(-)
->  delete mode 100644 drivers/gpu/drm/radeon/radeon_microcode.h
->  create mode 100644 firmware/radeon/R100_cp.bin.ihex
->  create mode 100644 firmware/radeon/R200_cp.bin.ihex
->  create mode 100644 firmware/radeon/R300_cp.bin.ihex
->  create mode 100644 firmware/radeon/R420_cp.bin.ihex
->  create mode 100644 firmware/radeon/R520_cp.bin.ihex
->  create mode 100644 firmware/radeon/RS600_cp.bin.ihex
->  create mode 100644 firmware/radeon/RS690_cp.bin.ihex
->
+Um ... depends how they got into linux-next.  The head commit just says
 
-Is available at
-http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git?a=commit;h=3a911a216742e4ab998f3281409d46a62f252716
+Merge commit 'firmware/master'
+
+Which isn't very descriptive of where it came from.  It looks like
+either a tree that linux-next shouldn't pull (or one the owner forgot to
+push to linus).
+
+James
 
 
-Please let me know, should I need to resend this patch for :
-1. git kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
-OR
-2. git kernel.org:/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-
-Thank you,
-
-Jaswinder Singh.
