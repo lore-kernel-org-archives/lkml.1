@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbYLSVj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbYLSVj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbYLSVj1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 16:39:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYLSVit
+	id S1754659AbYLSVj4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 16:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbYLSVi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:38:49 -0500
-Received: from www.tglx.de ([62.245.132.106]:55761 "EHLO www.tglx.de"
+	Fri, 19 Dec 2008 16:38:56 -0500
+Received: from www.tglx.de ([62.245.132.106]:55782 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753622AbYLSVir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 16:38:47 -0500
-Message-Id: <20081219211945.404968770@linutronix.de>
+	id S1753452AbYLSViy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:38:54 -0500
+Message-Id: <20081219211948.043710919@linutronix.de>
 References: <20081219211656.875192771@linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Fri, 19 Dec 2008 21:22:44 -0000
+Date: Fri, 19 Dec 2008 21:23:02 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
@@ -20,114 +20,89 @@ Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Clark Williams <clark.williams@gmail.com>,
        Gregory Haskins <ghaskins@novell.com>,
        Linux-rt <linux-rt-users@vger.kernel.org>
-Subject: [patch 1/7] ftrace: fix task state printout
-Content-Disposition: inline; filename=ftrace-fix-task-state-printout.patch
+Subject: [patch 5/7] rtmutex: remove uber optimization
+Content-Disposition: inline; filename=rtmutex-remove-uber-optimization.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: tracer task state decoding is wrong, size check is buggy
+The adaptive spin patches introduced an overdesigned optimization for
+the adaptive path. This avoidance of those code pathes is not worth
+the extra conditionals and furthermore it is inconsistent in itself.
 
-The tracing code has interesting varieties of printing out task state.
-Unfortunalely only one of the instances is correct as it copies the
-code from sched.c:sched_show_task(). The others are plain wrong as
-they treatthe bitfield as an integer offset into the character
-array. Also the size check of the character array is wrong as it
-includes the trailing \0.
-
-Use a common state decoder inline which does the Right Thing.
+Remove it and use the same mechanism as the other lock pathes. That
+way we have a consistent state manipulation scheme and less extra
+cases.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- kernel/trace/trace.c |   40 ++++++++++++++++++----------------------
- 1 file changed, 18 insertions(+), 22 deletions(-)
+ kernel/rtmutex.c |   18 +++---------------
+ 1 file changed, 3 insertions(+), 15 deletions(-)
 
-Index: linux-2.6.24/kernel/trace/trace.c
+Index: linux-2.6.24/kernel/rtmutex.c
 ===================================================================
---- linux-2.6.24.orig/kernel/trace/trace.c
-+++ linux-2.6.24/kernel/trace/trace.c
-@@ -1626,6 +1626,13 @@ lat_print_timestamp(struct trace_seq *s,
+--- linux-2.6.24.orig/kernel/rtmutex.c
++++ linux-2.6.24/kernel/rtmutex.c
+@@ -839,7 +839,6 @@ rt_spin_lock_slowlock(struct rt_mutex *l
+ 	struct rt_mutex_waiter waiter;
+ 	unsigned long saved_state, flags;
+ 	struct task_struct *orig_owner;
+-	int missed = 0;
  
- static const char state_to_char[] = TASK_STATE_TO_CHAR_STR;
+ 	debug_rt_mutex_init_waiter(&waiter);
+ 	waiter.task = NULL;
+@@ -861,20 +860,15 @@ rt_spin_lock_slowlock(struct rt_mutex *l
+ 	 * about original state TASK_INTERRUPTIBLE as well, as we
+ 	 * could miss a wakeup_interruptible()
+ 	 */
+-	saved_state = current->state;
++	saved_state = rt_set_current_blocked_state(current->state);
  
-+static int task_state_char(unsigned long state)
-+{
-+	int bit = state ? __ffs(state) + 1 : 0;
-+
-+	return bit < sizeof(state_to_char) - 1 ? state_to_char[bit] : '?';
-+}
-+
- extern unsigned long sys_call_table[NR_syscalls];
+ 	for (;;) {
+ 		unsigned long saved_flags;
+ 		int saved_lock_depth = current->lock_depth;
  
- #if defined(CONFIG_COMPAT) && defined(CONFIG_X86)
-@@ -1654,7 +1661,6 @@ print_lat_fmt(struct trace_iterator *ite
- 	char *comm;
- 	int S, T;
- 	int i;
--	unsigned state;
+ 		/* Try to acquire the lock */
+-		if (do_try_to_take_rt_mutex(lock, STEAL_LATERAL)) {
+-			/* If we never blocked break out now */
+-			if (!missed)
+-				goto unlock;
++		if (do_try_to_take_rt_mutex(lock, STEAL_LATERAL))
+ 			break;
+-		}
+-		missed = 1;
  
- 	if (!next_entry)
- 		next_entry = entry;
-@@ -1685,11 +1691,8 @@ print_lat_fmt(struct trace_iterator *ite
- 		break;
- 	case TRACE_CTX:
- 	case TRACE_WAKE:
--		T = entry->ctx.next_state < sizeof(state_to_char) ?
--			state_to_char[entry->ctx.next_state] : 'X';
--
--		state = entry->ctx.prev_state ? __ffs(entry->ctx.prev_state) + 1 : 0;
--		S = state < sizeof(state_to_char) - 1 ? state_to_char[state] : 'X';
-+		T = task_state_char(entry->ctx.next_state);
-+		S = task_state_char(entry->ctx.prev_state);
- 		comm = trace_find_cmdline(entry->ctx.next_pid);
- 		trace_seq_printf(s, " %5d:%3d:%c %s %5d:%3d:%c %s\n",
- 				 entry->ctx.prev_pid,
-@@ -1862,10 +1865,8 @@ static int print_trace_fmt(struct trace_
- 		break;
- 	case TRACE_CTX:
- 	case TRACE_WAKE:
--		S = entry->ctx.prev_state < sizeof(state_to_char) ?
--			state_to_char[entry->ctx.prev_state] : 'X';
--		T = entry->ctx.next_state < sizeof(state_to_char) ?
--			state_to_char[entry->ctx.next_state] : 'X';
-+		T = task_state_char(entry->ctx.next_state);
-+		S = task_state_char(entry->ctx.prev_state);
- 		ret = trace_seq_printf(s, " %5d:%3d:%c %s %5d:%3d:%c\n",
- 				       entry->ctx.prev_pid,
- 				       entry->ctx.prev_prio,
-@@ -2012,12 +2013,10 @@ static int print_raw_fmt(struct trace_it
- 		break;
- 	case TRACE_CTX:
- 	case TRACE_WAKE:
--		S = entry->ctx.prev_state < sizeof(state_to_char) ?
--			state_to_char[entry->ctx.prev_state] : 'X';
--		T = entry->ctx.next_state < sizeof(state_to_char) ?
--			state_to_char[entry->ctx.next_state] : 'X';
--		if (entry->type == TRACE_WAKE)
--			S = '+';
-+		T = task_state_char(entry->ctx.next_state);
-+		S = entry->type == TRACE_WAKE ? '+' :
-+			task_state_char(entry->ctx.prev_state);
-+
- 		ret = trace_seq_printf(s, "%d %d %c %d %d %c\n",
- 				       entry->ctx.prev_pid,
- 				       entry->ctx.prev_prio,
-@@ -2073,12 +2072,9 @@ static int print_hex_fmt(struct trace_it
- 		break;
- 	case TRACE_CTX:
- 	case TRACE_WAKE:
--		S = entry->ctx.prev_state < sizeof(state_to_char) ?
--			state_to_char[entry->ctx.prev_state] : 'X';
--		T = entry->ctx.next_state < sizeof(state_to_char) ?
--			state_to_char[entry->ctx.next_state] : 'X';
--		if (entry->type == TRACE_WAKE)
--			S = '+';
-+		T = task_state_char(entry->ctx.next_state);
-+		S = entry->type == TRACE_WAKE ? '+' :
-+			task_state_char(entry->ctx.prev_state);
- 		SEQ_PUT_HEX_FIELD_RET(s, entry->ctx.prev_pid);
- 		SEQ_PUT_HEX_FIELD_RET(s, entry->ctx.prev_prio);
- 		SEQ_PUT_HEX_FIELD_RET(s, S);
+ 		/*
+ 		 * waiter.task is NULL the first time we come here and
+@@ -904,12 +898,6 @@ rt_spin_lock_slowlock(struct rt_mutex *l
+ 		if (adaptive_wait(&waiter, orig_owner)) {
+ 			put_task_struct(orig_owner);
+ 
+-			saved_state = rt_set_current_blocked_state(saved_state);
+-			/*
+-			 * The xchg() in update_current() is an implicit
+-			 * barrier which we rely upon to ensure current->state
+-			 * is visible before we test waiter.task.
+-			 */
+ 			if (waiter.task)
+ 				schedule_rt_mutex(lock);
+ 		} else
+@@ -918,6 +906,7 @@ rt_spin_lock_slowlock(struct rt_mutex *l
+ 		spin_lock_irqsave(&lock->wait_lock, flags);
+ 		current->flags |= saved_flags;
+ 		current->lock_depth = saved_lock_depth;
++		saved_state = rt_set_current_blocked_state(saved_state);
+ 	}
+ 
+ 	rt_restore_current_state(saved_state);
+@@ -936,7 +925,6 @@ rt_spin_lock_slowlock(struct rt_mutex *l
+ 	 */
+ 	fixup_rt_mutex_waiters(lock);
+ 
+- unlock:
+ 	spin_unlock_irqrestore(&lock->wait_lock, flags);
+ 
+ 	debug_rt_mutex_free_waiter(&waiter);
 
 -- 
 
