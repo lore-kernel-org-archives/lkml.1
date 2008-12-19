@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYLSWEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbYLSWFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbYLSWEg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbYLSVzG
+	id S1756643AbYLSWFZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbYLSVzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:55:06 -0500
-Received: from ns1.suse.de ([195.135.220.2]:58038 "EHLO mx1.suse.de"
+	Fri, 19 Dec 2008 16:55:11 -0500
+Received: from mx1.suse.de ([195.135.220.2]:58047 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754060AbYLSVzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 16:55:03 -0500
+	id S1755193AbYLSVzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:55:08 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Tiger Yang <tiger.yang@oracle.com>, Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 30/45] ocfs2: add ocfs2_init_acl in mknod
-Date: Fri, 19 Dec 2008 13:53:49 -0800
-Message-Id: <1229723644-13630-31-git-send-email-mfasheh@suse.com>
+       Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 32/45] ocfs2: Wrap inode block reads in a dedicated function.
+Date: Fri, 19 Dec 2008 13:53:51 -0800
+Message-Id: <1229723644-13630-33-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
 References: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
@@ -23,281 +23,547 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tiger Yang <tiger.yang@oracle.com>
+From: Joel Becker <joel.becker@oracle.com>
 
-We need to get the parent directories acls and let the new child inherit it.
-To this, we add additional calculations for data/metadata allocation.
+The ocfs2 code currently reads inodes off disk with a simple
+ocfs2_read_block() call.  Each place that does this has a different set
+of sanity checks it performs.  Some check only the signature.  A couple
+validate the block number (the block read vs di->i_blkno).  A couple
+others check for VALID_FL.  Only one place validates i_fs_generation.  A
+couple check nothing.  Even when an error is found, they don't all do
+the same thing.
 
-Signed-off-by: Tiger Yang <tiger.yang@oracle.com>
+We wrap inode reading into ocfs2_read_inode_block().  This will validate
+all the above fields, going readonly if they are invalid (they never
+should be).  ocfs2_read_inode_block_full() is provided for the places
+that want to pass read_block flags.  Every caller is passing a struct
+inode with a valid ip_blkno, so we don't need a separate blkno argument
+either.
+
+We will remove the validation checks from the rest of the code in a
+later commit, as they are no longer necessary.
+
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/acl.c   |   59 ++++++++++++++++++++++++++++++++++++++++
- fs/ocfs2/acl.h   |   14 +++++++++
- fs/ocfs2/namei.c |   23 ++++++++++-----
- fs/ocfs2/xattr.c |   79 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/ocfs2/xattr.h |    3 ++
- 5 files changed, 170 insertions(+), 8 deletions(-)
+ fs/ocfs2/alloc.c      |    2 +-
+ fs/ocfs2/aops.c       |   11 +---
+ fs/ocfs2/dir.c        |    6 +-
+ fs/ocfs2/dlmglue.c    |   12 ++---
+ fs/ocfs2/extent_map.c |    2 +-
+ fs/ocfs2/file.c       |   21 ++------
+ fs/ocfs2/inode.c      |  136 +++++++++++++++++++++++++++++++++++--------------
+ fs/ocfs2/inode.h      |   16 +++++-
+ fs/ocfs2/journal.c    |    3 +-
+ fs/ocfs2/localalloc.c |    8 ++--
+ fs/ocfs2/namei.c      |   14 +----
+ fs/ocfs2/symlink.c    |    2 +-
+ 12 files changed, 136 insertions(+), 97 deletions(-)
 
-diff --git a/fs/ocfs2/acl.c b/fs/ocfs2/acl.c
-index df72256..12dfb44 100644
---- a/fs/ocfs2/acl.c
-+++ b/fs/ocfs2/acl.c
-@@ -272,6 +272,65 @@ int ocfs2_acl_chmod(struct inode *inode)
- 	return ret;
- }
+diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
+index 5592a2f..9c598ad 100644
+--- a/fs/ocfs2/alloc.c
++++ b/fs/ocfs2/alloc.c
+@@ -5658,7 +5658,7 @@ static int ocfs2_get_truncate_log_info(struct ocfs2_super *osb,
+ 		goto bail;
+ 	}
  
-+/*
-+ * Initialize the ACLs of a new inode. If parent directory has default ACL,
-+ * then clone to new inode. Called from ocfs2_mknod.
-+ */
-+int ocfs2_init_acl(handle_t *handle,
-+		   struct inode *inode,
-+		   struct inode *dir,
-+		   struct buffer_head *di_bh,
-+		   struct buffer_head *dir_bh,
-+		   struct ocfs2_alloc_context *meta_ac,
-+		   struct ocfs2_alloc_context *data_ac)
-+{
-+	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-+	struct posix_acl *acl = NULL;
-+	int ret = 0;
-+
-+	if (!S_ISLNK(inode->i_mode)) {
-+		if (osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL) {
-+			acl = ocfs2_get_acl_nolock(dir, ACL_TYPE_DEFAULT,
-+						   dir_bh);
-+			if (IS_ERR(acl))
-+				return PTR_ERR(acl);
-+		}
-+		if (!acl)
-+			inode->i_mode &= ~current->fs->umask;
-+	}
-+	if ((osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL) && acl) {
-+		struct posix_acl *clone;
-+		mode_t mode;
-+
-+		if (S_ISDIR(inode->i_mode)) {
-+			ret = ocfs2_set_acl(handle, inode, di_bh,
-+					    ACL_TYPE_DEFAULT, acl,
-+					    meta_ac, data_ac);
-+			if (ret)
-+				goto cleanup;
-+		}
-+		clone = posix_acl_clone(acl, GFP_NOFS);
-+		ret = -ENOMEM;
-+		if (!clone)
-+			goto cleanup;
-+
-+		mode = inode->i_mode;
-+		ret = posix_acl_create_masq(clone, &mode);
-+		if (ret >= 0) {
-+			inode->i_mode = mode;
-+			if (ret > 0) {
-+				ret = ocfs2_set_acl(handle, inode,
-+						    di_bh, ACL_TYPE_ACCESS,
-+						    clone, meta_ac, data_ac);
-+			}
-+		}
-+		posix_acl_release(clone);
-+	}
-+cleanup:
-+	posix_acl_release(acl);
-+	return ret;
-+}
-+
- static size_t ocfs2_xattr_list_acl_access(struct inode *inode,
- 					  char *list,
- 					  size_t list_len,
-diff --git a/fs/ocfs2/acl.h b/fs/ocfs2/acl.h
-index 68ffd64..8f6389e 100644
---- a/fs/ocfs2/acl.h
-+++ b/fs/ocfs2/acl.h
-@@ -30,6 +30,10 @@ struct ocfs2_acl_entry {
+-	status = ocfs2_read_block(inode, OCFS2_I(inode)->ip_blkno, &bh);
++	status = ocfs2_read_inode_block(inode, &bh);
+ 	if (status < 0) {
+ 		iput(inode);
+ 		mlog_errno(status);
+diff --git a/fs/ocfs2/aops.c b/fs/ocfs2/aops.c
+index c22543b..e219f8b 100644
+--- a/fs/ocfs2/aops.c
++++ b/fs/ocfs2/aops.c
+@@ -68,20 +68,13 @@ static int ocfs2_symlink_get_block(struct inode *inode, sector_t iblock,
+ 		goto bail;
+ 	}
  
- extern int ocfs2_check_acl(struct inode *, int);
- extern int ocfs2_acl_chmod(struct inode *);
-+extern int ocfs2_init_acl(handle_t *, struct inode *, struct inode *,
-+			  struct buffer_head *, struct buffer_head *,
-+			  struct ocfs2_alloc_context *,
-+			  struct ocfs2_alloc_context *);
+-	status = ocfs2_read_block(inode, OCFS2_I(inode)->ip_blkno, &bh);
++	status = ocfs2_read_inode_block(inode, &bh);
+ 	if (status < 0) {
+ 		mlog_errno(status);
+ 		goto bail;
+ 	}
+ 	fe = (struct ocfs2_dinode *) bh->b_data;
  
- #else /* CONFIG_OCFS2_FS_POSIX_ACL*/
+-	if (!OCFS2_IS_VALID_DINODE(fe)) {
+-		mlog(ML_ERROR, "Invalid dinode #%llu: signature = %.*s\n",
+-		     (unsigned long long)le64_to_cpu(fe->i_blkno), 7,
+-		     fe->i_signature);
+-		goto bail;
+-	}
+-
+ 	if ((u64)iblock >= ocfs2_clusters_to_blocks(inode->i_sb,
+ 						    le32_to_cpu(fe->i_clusters))) {
+ 		mlog(ML_ERROR, "block offset is outside the allocated size: "
+@@ -262,7 +255,7 @@ static int ocfs2_readpage_inline(struct inode *inode, struct page *page)
+ 	BUG_ON(!PageLocked(page));
+ 	BUG_ON(!(OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL));
  
-@@ -38,6 +42,16 @@ static inline int ocfs2_acl_chmod(struct inode *inode)
+-	ret = ocfs2_read_block(inode, OCFS2_I(inode)->ip_blkno, &di_bh);
++	ret = ocfs2_read_inode_block(inode, &di_bh);
+ 	if (ret) {
+ 		mlog_errno(ret);
+ 		goto out;
+diff --git a/fs/ocfs2/dir.c b/fs/ocfs2/dir.c
+index 026e6eb..5777045 100644
+--- a/fs/ocfs2/dir.c
++++ b/fs/ocfs2/dir.c
+@@ -231,7 +231,7 @@ static struct buffer_head *ocfs2_find_entry_id(const char *name,
+ 	struct ocfs2_dinode *di;
+ 	struct ocfs2_inline_data *data;
+ 
+-	ret = ocfs2_read_block(dir, OCFS2_I(dir)->ip_blkno, &di_bh);
++	ret = ocfs2_read_inode_block(dir, &di_bh);
+ 	if (ret) {
+ 		mlog_errno(ret);
+ 		goto out;
+@@ -458,7 +458,7 @@ static inline int ocfs2_delete_entry_id(handle_t *handle,
+ 	struct ocfs2_dinode *di;
+ 	struct ocfs2_inline_data *data;
+ 
+-	ret = ocfs2_read_block(dir, OCFS2_I(dir)->ip_blkno, &di_bh);
++	ret = ocfs2_read_inode_block(dir, &di_bh);
+ 	if (ret) {
+ 		mlog_errno(ret);
+ 		goto out;
+@@ -636,7 +636,7 @@ static int ocfs2_dir_foreach_blk_id(struct inode *inode,
+ 	struct ocfs2_inline_data *data;
+ 	struct ocfs2_dir_entry *de;
+ 
+-	ret = ocfs2_read_block(inode, OCFS2_I(inode)->ip_blkno, &di_bh);
++	ret = ocfs2_read_inode_block(inode, &di_bh);
+ 	if (ret) {
+ 		mlog(ML_ERROR, "Unable to read inode block for dir %llu\n",
+ 		     (unsigned long long)OCFS2_I(inode)->ip_blkno);
+diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
+index 6e6cc0a..9f2a7f7 100644
+--- a/fs/ocfs2/dlmglue.c
++++ b/fs/ocfs2/dlmglue.c
+@@ -2024,7 +2024,7 @@ static int ocfs2_inode_lock_update(struct inode *inode,
+ 	} else {
+ 		/* Boo, we have to go to disk. */
+ 		/* read bh, cast, ocfs2_refresh_inode */
+-		status = ocfs2_read_block(inode, oi->ip_blkno, bh);
++		status = ocfs2_read_inode_block(inode, bh);
+ 		if (status < 0) {
+ 			mlog_errno(status);
+ 			goto bail_refresh;
+@@ -2032,18 +2032,14 @@ static int ocfs2_inode_lock_update(struct inode *inode,
+ 		fe = (struct ocfs2_dinode *) (*bh)->b_data;
+ 
+ 		/* This is a good chance to make sure we're not
+-		 * locking an invalid object.
++		 * locking an invalid object.  ocfs2_read_inode_block()
++		 * already checked that the inode block is sane.
+ 		 *
+ 		 * We bug on a stale inode here because we checked
+ 		 * above whether it was wiped from disk. The wiping
+ 		 * node provides a guarantee that we receive that
+ 		 * message and can mark the inode before dropping any
+ 		 * locks associated with it. */
+-		if (!OCFS2_IS_VALID_DINODE(fe)) {
+-			OCFS2_RO_ON_INVALID_DINODE(inode->i_sb, fe);
+-			status = -EIO;
+-			goto bail_refresh;
+-		}
+ 		mlog_bug_on_msg(inode->i_generation !=
+ 				le32_to_cpu(fe->i_generation),
+ 				"Invalid dinode %llu disk generation: %u "
+@@ -2085,7 +2081,7 @@ static int ocfs2_assign_bh(struct inode *inode,
+ 		return 0;
+ 	}
+ 
+-	status = ocfs2_read_block(inode, OCFS2_I(inode)->ip_blkno, ret_bh);
++	status = ocfs2_read_inode_block(inode, ret_bh);
+ 	if (status < 0)
+ 		mlog_errno(status);
+ 
+diff --git a/fs/ocfs2/extent_map.c b/fs/ocfs2/extent_map.c
+index 2baedac..b686b31 100644
+--- a/fs/ocfs2/extent_map.c
++++ b/fs/ocfs2/extent_map.c
+@@ -630,7 +630,7 @@ int ocfs2_get_clusters(struct inode *inode, u32 v_cluster,
+ 	if (ret == 0)
+ 		goto out;
+ 
+-	ret = ocfs2_read_block(inode, OCFS2_I(inode)->ip_blkno, &di_bh);
++	ret = ocfs2_read_inode_block(inode, &di_bh);
+ 	if (ret) {
+ 		mlog_errno(ret);
+ 		goto out;
+diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
+index 4636aa6..41001d5 100644
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -402,12 +402,9 @@ static int ocfs2_truncate_file(struct inode *inode,
+ 		   (unsigned long long)OCFS2_I(inode)->ip_blkno,
+ 		   (unsigned long long)new_i_size);
+ 
++	/* We trust di_bh because it comes from ocfs2_inode_lock(), which
++	 * already validated it */
+ 	fe = (struct ocfs2_dinode *) di_bh->b_data;
+-	if (!OCFS2_IS_VALID_DINODE(fe)) {
+-		OCFS2_RO_ON_INVALID_DINODE(inode->i_sb, fe);
+-		status = -EIO;
+-		goto bail;
+-	}
+ 
+ 	mlog_bug_on_msg(le64_to_cpu(fe->i_size) != i_size_read(inode),
+ 			"Inode %llu, inode i_size = %lld != di "
+@@ -546,18 +543,12 @@ static int __ocfs2_extend_allocation(struct inode *inode, u32 logical_start,
+ 	 */
+ 	BUG_ON(mark_unwritten && !ocfs2_sparse_alloc(osb));
+ 
+-	status = ocfs2_read_block(inode, OCFS2_I(inode)->ip_blkno, &bh);
++	status = ocfs2_read_inode_block(inode, &bh);
+ 	if (status < 0) {
+ 		mlog_errno(status);
+ 		goto leave;
+ 	}
+-
+ 	fe = (struct ocfs2_dinode *) bh->b_data;
+-	if (!OCFS2_IS_VALID_DINODE(fe)) {
+-		OCFS2_RO_ON_INVALID_DINODE(inode->i_sb, fe);
+-		status = -EIO;
+-		goto leave;
+-	}
+ 
+ restart_all:
+ 	BUG_ON(le32_to_cpu(fe->i_clusters) != OCFS2_I(inode)->ip_clusters);
+@@ -1135,9 +1126,8 @@ static int ocfs2_write_remove_suid(struct inode *inode)
  {
+ 	int ret;
+ 	struct buffer_head *bh = NULL;
+-	struct ocfs2_inode_info *oi = OCFS2_I(inode);
+ 
+-	ret = ocfs2_read_block(inode, oi->ip_blkno, &bh);
++	ret = ocfs2_read_inode_block(inode, &bh);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
+ 		goto out;
+@@ -1163,8 +1153,7 @@ static int ocfs2_allocate_unwritten_extents(struct inode *inode,
+ 	struct buffer_head *di_bh = NULL;
+ 
+ 	if (OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL) {
+-		ret = ocfs2_read_block(inode, OCFS2_I(inode)->ip_blkno,
+-				       &di_bh);
++		ret = ocfs2_read_inode_block(inode, &di_bh);
+ 		if (ret) {
+ 			mlog_errno(ret);
+ 			goto out;
+diff --git a/fs/ocfs2/inode.c b/fs/ocfs2/inode.c
+index 7aa00d5..9eb701b 100644
+--- a/fs/ocfs2/inode.c
++++ b/fs/ocfs2/inode.c
+@@ -214,12 +214,11 @@ static int ocfs2_init_locked_inode(struct inode *inode, void *opaque)
  	return 0;
  }
-+static inline int ocfs2_init_acl(handle_t *handle,
-+				 struct inode *inode,
-+				 struct inode *dir,
-+				 struct buffer_head *di_bh,
-+				 struct buffer_head *dir_bh,
-+				 struct ocfs2_alloc_context *meta_ac,
-+				 struct ocfs2_alloc_context *data_ac)
-+{
-+	return 0;
-+}
  
- #endif /* CONFIG_OCFS2_FS_POSIX_ACL*/
+-int ocfs2_populate_inode(struct inode *inode, struct ocfs2_dinode *fe,
+-		     	 int create_ino)
++void ocfs2_populate_inode(struct inode *inode, struct ocfs2_dinode *fe,
++			  int create_ino)
+ {
+ 	struct super_block *sb;
+ 	struct ocfs2_super *osb;
+-	int status = -EINVAL;
+ 	int use_plocks = 1;
  
-diff --git a/fs/ocfs2/namei.c b/fs/ocfs2/namei.c
-index b361aec..ed7ed74 100644
---- a/fs/ocfs2/namei.c
-+++ b/fs/ocfs2/namei.c
-@@ -61,6 +61,7 @@
- #include "sysfile.h"
- #include "uptodate.h"
- #include "xattr.h"
-+#include "acl.h"
+ 	mlog_entry("(0x%p, size:%llu)\n", inode,
+@@ -232,25 +231,17 @@ int ocfs2_populate_inode(struct inode *inode, struct ocfs2_dinode *fe,
+ 	    ocfs2_mount_local(osb) || !ocfs2_stack_supports_plocks())
+ 		use_plocks = 0;
  
- #include "buffer_head_io.h"
+-	/* this means that read_inode cannot create a superblock inode
+-	 * today.  change if needed. */
+-	if (!OCFS2_IS_VALID_DINODE(fe) ||
+-	    !(fe->i_flags & cpu_to_le32(OCFS2_VALID_FL))) {
+-		mlog(0, "Invalid dinode: i_ino=%lu, i_blkno=%llu, "
+-		     "signature = %.*s, flags = 0x%x\n",
+-		     inode->i_ino,
+-		     (unsigned long long)le64_to_cpu(fe->i_blkno), 7,
+-		     fe->i_signature, le32_to_cpu(fe->i_flags));
+-		goto bail;
+-	}
++	/*
++	 * These have all been checked by ocfs2_read_inode_block() or set
++	 * by ocfs2_mknod_locked(), so a failure is a code bug.
++	 */
++	BUG_ON(!OCFS2_IS_VALID_DINODE(fe));  /* This means that read_inode
++						cannot create a superblock
++						inode today.  change if
++						that is needed. */
++	BUG_ON(!(fe->i_flags & cpu_to_le32(OCFS2_VALID_FL)));
++	BUG_ON(le32_to_cpu(fe->i_fs_generation) != osb->fs_generation);
  
-@@ -302,14 +303,13 @@ static int ocfs2_mknod(struct inode *dir,
+-	if (le32_to_cpu(fe->i_fs_generation) != osb->fs_generation) {
+-		mlog(ML_ERROR, "file entry generation does not match "
+-		     "superblock! osb->fs_generation=%x, "
+-		     "fe->i_fs_generation=%x\n",
+-		     osb->fs_generation, le32_to_cpu(fe->i_fs_generation));
+-		goto bail;
+-	}
+ 
+ 	OCFS2_I(inode)->ip_clusters = le32_to_cpu(fe->i_clusters);
+ 	OCFS2_I(inode)->ip_attr = le32_to_cpu(fe->i_attr);
+@@ -354,10 +345,7 @@ int ocfs2_populate_inode(struct inode *inode, struct ocfs2_dinode *fe,
+ 
+ 	ocfs2_set_inode_flags(inode);
+ 
+-	status = 0;
+-bail:
+-	mlog_exit(status);
+-	return status;
++	mlog_exit_void();
+ }
+ 
+ static int ocfs2_read_locked_inode(struct inode *inode,
+@@ -460,11 +448,14 @@ static int ocfs2_read_locked_inode(struct inode *inode,
  		}
  	}
  
--	/* calculate meta data/clusters for setting security xattr */
--	if (si.enable) {
--		status = ocfs2_calc_security_init(dir, &si, &want_clusters,
--						  &xattr_credits, &xattr_ac);
--		if (status < 0) {
--			mlog_errno(status);
--			goto leave;
--		}
-+	/* calculate meta data/clusters for setting security and acl xattr */
-+	status = ocfs2_calc_xattr_init(dir, parent_fe_bh, mode,
-+					&si, &want_clusters,
-+					&xattr_credits, &xattr_ac);
-+	if (status < 0) {
-+		mlog_errno(status);
-+		goto leave;
- 	}
- 
- 	/* Reserve a cluster if creating an extent based directory. */
-@@ -363,6 +363,13 @@ static int ocfs2_mknod(struct inode *dir,
- 		inc_nlink(dir);
- 	}
- 
-+	status = ocfs2_init_acl(handle, inode, dir, new_fe_bh, parent_fe_bh,
-+				xattr_ac, data_ac);
-+	if (status < 0) {
-+		mlog_errno(status);
-+		goto leave;
+-	if (can_lock)
+-		status = ocfs2_read_blocks(inode, args->fi_blkno, 1, &bh,
+-					   OCFS2_BH_IGNORE_CACHE);
+-	else
++	if (can_lock) {
++		status = ocfs2_read_inode_block_full(inode, &bh,
++						     OCFS2_BH_IGNORE_CACHE);
++	} else {
+ 		status = ocfs2_read_blocks_sync(osb, args->fi_blkno, 1, &bh);
++		if (!status)
++			status = ocfs2_validate_inode_block(osb->sb, bh);
 +	}
-+
- 	if (si.enable) {
- 		status = ocfs2_init_security_set(handle, inode, new_fe_bh, &si,
- 						 xattr_ac, data_ac);
-diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index 2e273c2..3cc8385 100644
---- a/fs/ocfs2/xattr.c
-+++ b/fs/ocfs2/xattr.c
-@@ -84,6 +84,10 @@ struct ocfs2_xattr_set_ctxt {
- #define OCFS2_XATTR_FREE_IN_IBODY	(OCFS2_MIN_XATTR_INLINE_SIZE \
- 					 - sizeof(struct ocfs2_xattr_header) \
- 					 - sizeof(__u32))
-+#define OCFS2_XATTR_FREE_IN_BLOCK(ptr)	((ptr)->i_sb->s_blocksize \
-+					 - sizeof(struct ocfs2_xattr_block) \
-+					 - sizeof(struct ocfs2_xattr_header) \
-+					 - sizeof(__u32))
+ 	if (status < 0) {
+ 		mlog_errno(status);
+ 		goto bail;
+@@ -472,12 +463,6 @@ static int ocfs2_read_locked_inode(struct inode *inode,
  
- static struct ocfs2_xattr_def_value_root def_xv = {
- 	.xv.xr_list.l_count = cpu_to_le16(1),
-@@ -402,6 +406,81 @@ int ocfs2_calc_security_init(struct inode *dir,
- 	return ret;
+ 	status = -EINVAL;
+ 	fe = (struct ocfs2_dinode *) bh->b_data;
+-	if (!OCFS2_IS_VALID_DINODE(fe)) {
+-		mlog(0, "Invalid dinode #%llu: signature = %.*s\n",
+-		     (unsigned long long)args->fi_blkno, 7,
+-		     fe->i_signature);
+-		goto bail;
+-	}
+ 
+ 	/*
+ 	 * This is a code bug. Right now the caller needs to
+@@ -491,10 +476,9 @@ static int ocfs2_read_locked_inode(struct inode *inode,
+ 
+ 	if (S_ISCHR(le16_to_cpu(fe->i_mode)) ||
+ 	    S_ISBLK(le16_to_cpu(fe->i_mode)))
+-    		inode->i_rdev = huge_decode_dev(le64_to_cpu(fe->id1.dev1.i_rdev));
++		inode->i_rdev = huge_decode_dev(le64_to_cpu(fe->id1.dev1.i_rdev));
+ 
+-	if (ocfs2_populate_inode(inode, fe, 0) < 0)
+-		goto bail;
++	ocfs2_populate_inode(inode, fe, 0);
+ 
+ 	BUG_ON(args->fi_blkno != le64_to_cpu(fe->i_blkno));
+ 
+@@ -1264,3 +1248,79 @@ void ocfs2_refresh_inode(struct inode *inode,
+ 
+ 	spin_unlock(&OCFS2_I(inode)->ip_lock);
  }
- 
-+int ocfs2_calc_xattr_init(struct inode *dir,
-+			  struct buffer_head *dir_bh,
-+			  int mode,
-+			  struct ocfs2_security_xattr_info *si,
-+			  int *want_clusters,
-+			  int *xattr_credits,
-+			  struct ocfs2_alloc_context **xattr_ac)
++
++int ocfs2_validate_inode_block(struct super_block *sb,
++			       struct buffer_head *bh)
 +{
-+	int ret = 0;
-+	struct ocfs2_super *osb = OCFS2_SB(dir->i_sb);
-+	int s_size = 0;
-+	int a_size = 0;
-+	int acl_len = 0;
++	int rc = -EINVAL;
++	struct ocfs2_dinode *di = (struct ocfs2_dinode *)bh->b_data;
 +
-+	if (si->enable)
-+		s_size = ocfs2_xattr_entry_real_size(strlen(si->name),
-+						     si->value_len);
++	BUG_ON(!buffer_uptodate(bh));
 +
-+	if (osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL) {
-+		acl_len = ocfs2_xattr_get_nolock(dir, dir_bh,
-+					OCFS2_XATTR_INDEX_POSIX_ACL_DEFAULT,
-+					"", NULL, 0);
-+		if (acl_len > 0) {
-+			a_size = ocfs2_xattr_entry_real_size(0, acl_len);
-+			if (S_ISDIR(mode))
-+				a_size <<= 1;
-+		} else if (acl_len != 0 && acl_len != -ENODATA) {
-+			mlog_errno(ret);
-+			return ret;
-+		}
++	if (!OCFS2_IS_VALID_DINODE(di)) {
++		ocfs2_error(sb, "Invalid dinode #%llu: signature = %.*s\n",
++			    (unsigned long long)bh->b_blocknr, 7,
++			    di->i_signature);
++		goto bail;
 +	}
 +
-+	if (!(s_size + a_size))
-+		return ret;
-+
-+	/*
-+	 * The max space of security xattr taken inline is
-+	 * 256(name) + 80(value) + 16(entry) = 352 bytes,
-+	 * The max space of acl xattr taken inline is
-+	 * 80(value) + 16(entry) * 2(if directory) = 192 bytes,
-+	 * when blocksize = 512, may reserve one more cluser for
-+	 * xattr bucket, otherwise reserve one metadata block
-+	 * for them is ok.
-+	 */
-+	if (dir->i_sb->s_blocksize == OCFS2_MIN_BLOCKSIZE ||
-+	    (s_size + a_size) > OCFS2_XATTR_FREE_IN_IBODY) {
-+		ret = ocfs2_reserve_new_metadata_blocks(osb, 1, xattr_ac);
-+		if (ret) {
-+			mlog_errno(ret);
-+			return ret;
-+		}
-+		*xattr_credits += OCFS2_XATTR_BLOCK_CREATE_CREDITS;
++	if (le64_to_cpu(di->i_blkno) != bh->b_blocknr) {
++		ocfs2_error(sb, "Invalid dinode #%llu: i_blkno is %llu\n",
++			    (unsigned long long)bh->b_blocknr,
++			    (unsigned long long)le64_to_cpu(di->i_blkno));
++		goto bail;
 +	}
 +
-+	if (dir->i_sb->s_blocksize == OCFS2_MIN_BLOCKSIZE &&
-+	    (s_size + a_size) > OCFS2_XATTR_FREE_IN_BLOCK(dir)) {
-+		*want_clusters += 1;
-+		*xattr_credits += ocfs2_blocks_per_xattr_bucket(dir->i_sb);
++	if (!(di->i_flags & cpu_to_le32(OCFS2_VALID_FL))) {
++		ocfs2_error(sb,
++			    "Invalid dinode #%llu: OCFS2_VALID_FL not set\n",
++			    (unsigned long long)bh->b_blocknr);
++		goto bail;
 +	}
 +
-+	/* reserve clusters for xattr value which will be set in B tree*/
-+	if (si->enable && si->value_len > OCFS2_XATTR_INLINE_SIZE)
-+		*want_clusters += ocfs2_clusters_for_bytes(dir->i_sb,
-+							   si->value_len);
-+	if (osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL &&
-+	    acl_len > OCFS2_XATTR_INLINE_SIZE) {
-+		*want_clusters += ocfs2_clusters_for_bytes(dir->i_sb, acl_len);
-+		if (S_ISDIR(mode))
-+			*want_clusters += ocfs2_clusters_for_bytes(dir->i_sb,
-+								   acl_len);
++	if (le32_to_cpu(di->i_fs_generation) !=
++	    OCFS2_SB(sb)->fs_generation) {
++		ocfs2_error(sb,
++			    "Invalid dinode #%llu: fs_generation is %u\n",
++			    (unsigned long long)bh->b_blocknr,
++			    le32_to_cpu(di->i_fs_generation));
++		goto bail;
 +	}
 +
-+	return ret;
++	rc = 0;
++
++bail:
++	return rc;
 +}
 +
- static int ocfs2_xattr_extend_allocation(struct inode *inode,
- 					 u32 clusters_to_add,
- 					 struct buffer_head *xattr_bh,
-diff --git a/fs/ocfs2/xattr.h b/fs/ocfs2/xattr.h
-index 6163df3..9a67e7d 100644
---- a/fs/ocfs2/xattr.h
-+++ b/fs/ocfs2/xattr.h
-@@ -66,5 +66,8 @@ int ocfs2_init_security_set(handle_t *, struct inode *,
- int ocfs2_calc_security_init(struct inode *,
- 			     struct ocfs2_security_xattr_info *,
- 			     int *, int *, struct ocfs2_alloc_context **);
-+int ocfs2_calc_xattr_init(struct inode *, struct buffer_head *,
-+			  int, struct ocfs2_security_xattr_info *,
-+			  int *, int *, struct ocfs2_alloc_context **);
++int ocfs2_read_inode_block_full(struct inode *inode, struct buffer_head **bh,
++				int flags)
++{
++	int rc;
++	struct buffer_head *tmp = *bh;
++
++	rc = ocfs2_read_blocks(inode, OCFS2_I(inode)->ip_blkno, 1, &tmp,
++			       flags);
++	if (rc)
++		goto out;
++
++	if (!(flags & OCFS2_BH_READAHEAD)) {
++		rc = ocfs2_validate_inode_block(inode->i_sb, tmp);
++		if (rc) {
++			brelse(tmp);
++			goto out;
++		}
++	}
++
++	/* If ocfs2_read_blocks() got us a new bh, pass it up. */
++	if (!*bh)
++		*bh = tmp;
++
++out:
++	return rc;
++}
++
++int ocfs2_read_inode_block(struct inode *inode, struct buffer_head **bh)
++{
++	return ocfs2_read_inode_block_full(inode, bh, 0);
++}
+diff --git a/fs/ocfs2/inode.h b/fs/ocfs2/inode.h
+index 2f37af9..b79c371 100644
+--- a/fs/ocfs2/inode.h
++++ b/fs/ocfs2/inode.h
+@@ -128,8 +128,8 @@ struct inode *ocfs2_iget(struct ocfs2_super *osb, u64 feoff, unsigned flags,
+ 			 int sysfile_type);
+ int ocfs2_inode_init_private(struct inode *inode);
+ int ocfs2_inode_revalidate(struct dentry *dentry);
+-int ocfs2_populate_inode(struct inode *inode, struct ocfs2_dinode *fe,
+-			 int create_ino);
++void ocfs2_populate_inode(struct inode *inode, struct ocfs2_dinode *fe,
++			  int create_ino);
+ void ocfs2_read_inode(struct inode *inode);
+ void ocfs2_read_inode2(struct inode *inode, void *opaque);
+ ssize_t ocfs2_rw_direct(int rw, struct file *filp, char *buf,
+@@ -153,4 +153,16 @@ static inline blkcnt_t ocfs2_inode_sector_count(struct inode *inode)
+ 	return (blkcnt_t)(OCFS2_I(inode)->ip_clusters << c_to_s_bits);
+ }
  
- #endif /* OCFS2_XATTR_H */
++/* Validate that a bh contains a valid inode */
++int ocfs2_validate_inode_block(struct super_block *sb,
++			       struct buffer_head *bh);
++/*
++ * Read an inode block into *bh.  If *bh is NULL, a bh will be allocated.
++ * This is a cached read.  The inode will be validated with
++ * ocfs2_validate_inode_block().
++ */
++int ocfs2_read_inode_block(struct inode *inode, struct buffer_head **bh);
++/* The same, but can be passed OCFS2_BH_* flags */
++int ocfs2_read_inode_block_full(struct inode *inode, struct buffer_head **bh,
++				int flags);
+ #endif /* OCFS2_INODE_H */
+diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
+index 99fe9d5..877aaa0 100644
+--- a/fs/ocfs2/journal.c
++++ b/fs/ocfs2/journal.c
+@@ -1135,8 +1135,7 @@ static int ocfs2_read_journal_inode(struct ocfs2_super *osb,
+ 	}
+ 	SET_INODE_JOURNAL(inode);
+ 
+-	status = ocfs2_read_blocks(inode, OCFS2_I(inode)->ip_blkno, 1, bh,
+-				   OCFS2_BH_IGNORE_CACHE);
++	status = ocfs2_read_inode_block_full(inode, bh, OCFS2_BH_IGNORE_CACHE);
+ 	if (status < 0) {
+ 		mlog_errno(status);
+ 		goto bail;
+diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
+index 687b287..19cfb1b 100644
+--- a/fs/ocfs2/localalloc.c
++++ b/fs/ocfs2/localalloc.c
+@@ -248,8 +248,8 @@ int ocfs2_load_local_alloc(struct ocfs2_super *osb)
+ 		goto bail;
+ 	}
+ 
+-	status = ocfs2_read_blocks(inode, OCFS2_I(inode)->ip_blkno, 1,
+-				   &alloc_bh, OCFS2_BH_IGNORE_CACHE);
++	status = ocfs2_read_inode_block_full(inode, &alloc_bh,
++					     OCFS2_BH_IGNORE_CACHE);
+ 	if (status < 0) {
+ 		mlog_errno(status);
+ 		goto bail;
+@@ -459,8 +459,8 @@ int ocfs2_begin_local_alloc_recovery(struct ocfs2_super *osb,
+ 
+ 	mutex_lock(&inode->i_mutex);
+ 
+-	status = ocfs2_read_blocks(inode, OCFS2_I(inode)->ip_blkno, 1,
+-				   &alloc_bh, OCFS2_BH_IGNORE_CACHE);
++	status = ocfs2_read_inode_block_full(inode, &alloc_bh,
++					     OCFS2_BH_IGNORE_CACHE);
+ 	if (status < 0) {
+ 		mlog_errno(status);
+ 		goto bail;
+diff --git a/fs/ocfs2/namei.c b/fs/ocfs2/namei.c
+index ed7ed74..98fd325 100644
+--- a/fs/ocfs2/namei.c
++++ b/fs/ocfs2/namei.c
+@@ -531,15 +531,7 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
+ 		goto leave;
+ 	}
+ 
+-	if (ocfs2_populate_inode(inode, fe, 1) < 0) {
+-		mlog(ML_ERROR, "populate inode failed! bh->b_blocknr=%llu, "
+-		     "i_blkno=%llu, i_ino=%lu\n",
+-		     (unsigned long long)(*new_fe_bh)->b_blocknr,
+-		     (unsigned long long)le64_to_cpu(fe->i_blkno),
+-		     inode->i_ino);
+-		BUG();
+-	}
+-
++	ocfs2_populate_inode(inode, fe, 1);
+ 	ocfs2_inode_set_new(osb, inode);
+ 	if (!ocfs2_mount_local(osb)) {
+ 		status = ocfs2_create_new_inode_locks(inode);
+@@ -1864,9 +1856,7 @@ static int ocfs2_orphan_add(struct ocfs2_super *osb,
+ 
+ 	mlog_entry("(inode->i_ino = %lu)\n", inode->i_ino);
+ 
+-	status = ocfs2_read_block(orphan_dir_inode,
+-				  OCFS2_I(orphan_dir_inode)->ip_blkno,
+-				  &orphan_dir_bh);
++	status = ocfs2_read_inode_block(orphan_dir_inode, &orphan_dir_bh);
+ 	if (status < 0) {
+ 		mlog_errno(status);
+ 		goto leave;
+diff --git a/fs/ocfs2/symlink.c b/fs/ocfs2/symlink.c
+index cbd03df..ed0a0cf 100644
+--- a/fs/ocfs2/symlink.c
++++ b/fs/ocfs2/symlink.c
+@@ -84,7 +84,7 @@ static char *ocfs2_fast_symlink_getlink(struct inode *inode,
+ 
+ 	mlog_entry_void();
+ 
+-	status = ocfs2_read_block(inode, OCFS2_I(inode)->ip_blkno, bh);
++	status = ocfs2_read_inode_block(inode, bh);
+ 	if (status < 0) {
+ 		mlog_errno(status);
+ 		link = ERR_PTR(status);
 -- 
 1.5.6
 
