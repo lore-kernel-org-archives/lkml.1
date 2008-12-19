@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbYLSLWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbYLSL0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbYLSLWF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 06:22:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYLSLVy
+	id S1753733AbYLSL0p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 06:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbYLSL0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 06:21:54 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:6194 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752231AbYLSLVx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 06:21:53 -0500
-X-BigFish: VPS-38(zz1432R98dR936eQ1805M936fOzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KC4FK1-03-AK7-01
-Date: Fri, 19 Dec 2008 12:21:37 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Pavel Machek <pavel@suse.cz>
-CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 01/22] AMD IOMMU: enable device isolation per default
-Message-ID: <20081219112137.GN3407@amd.com>
-References: <20081216235704.347182084@mini.kroah.org> <20081217000353.GB4504@kroah.com> <20081218130015.GA1420@ucw.cz>
+	Fri, 19 Dec 2008 06:26:37 -0500
+Received: from mail.gmx.net ([213.165.64.20]:44196 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750873AbYLSL0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 06:26:37 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19GeTdqUflG1ZiTcWI1glwoHU7ze4Cq6hUtN9cdZ+
+	L6Vz13++qPGexb
+Date: Fri, 19 Dec 2008 12:26:41 +0100 (CET)
+From: Guennadi Liakhovetski <lg@denx.de>
+X-X-Sender: lyakh@axis700.grange
+To: linux-kernel@vger.kernel.org
+cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] bitmap: fix bitmap_find_free_region()
+Message-ID: <Pine.LNX.4.64.0812191202130.4536@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20081218130015.GA1420@ucw.cz>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 19 Dec 2008 11:21:37.0400 (UTC) FILETIME=[F5087F80:01C961CB]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.59
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 18, 2008 at 02:00:15PM +0100, Pavel Machek wrote:
-> On Tue 2008-12-16 16:03:53, Greg KH wrote:
-> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > 
-> > From: Joerg Roedel <joerg.roedel@amd.com>
-> > 
-> > commit 3ce1f93c6d53c3f91c3846cf66b018276c8ac2e7 upstream.
-> > 
-> > Impact: makes device isolation the default for AMD IOMMU
-> > 
-> > Some device drivers showed double-free bugs of DMA memory while testing
-> > them with AMD IOMMU. If all devices share the same protection domain
-> > this can lead to data corruption and data loss. Prevent this by putting
-> > each device into its own protection domain per default.
-> > 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> This does not look like 'fix for a serious bug' to
-> me. stable_kernel_rules.txt says '...not a "this could be a problem"
-> type thing'.
+Currently bitmap_find_free_region() assumes, that the requested region 
+size is smaller than the entire bitmap. If this is not the case it fails 
+to detect it and returns success, while pointing at a position outside of 
+the region.
 
-So you don't consider lost data because your filesystem is corrupted
-as a problem? This is exactly what can happen (and I suffered from it
-one time) if you use IOMMU with a buggy driver (typically a network card
-driver).
+Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+It is hard to believe, that this is a bug, last time this code was touched 
+in 2006... Or should the caller guarantee, that the requested region is 
+not larger than the bitmap? Then dma_alloc_from_coherent() is buggy, which 
+is where I hit this bug. But it seems to me bitmap_find_free_region() 
+should be fixed.
 
-Joerg
-
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+diff --git a/lib/bitmap.c b/lib/bitmap.c
+index 1338469..079c5e3 100644
+--- a/lib/bitmap.c
++++ b/lib/bitmap.c
+@@ -950,6 +950,9 @@ int bitmap_find_free_region(unsigned long *bitmap, int bits, int order)
+ {
+ 	int pos;		/* scans bitmap by regions of size order */
+ 
++	if (bits < 1 << order)
++		return -ENOMEM;
++
+ 	for (pos = 0; pos < bits; pos += (1 << order))
+ 		if (__reg_op(bitmap, pos, order, REG_OP_ISFREE))
+ 			break;
