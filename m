@@ -1,75 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbYLSX0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbYLSX1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755313AbYLSX0e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 18:26:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYLSX0X
+	id S1752743AbYLSX1A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 18:27:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYLSX0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 18:26:23 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:27997 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751515AbYLSX0W (ORCPT
+	Fri, 19 Dec 2008 18:26:51 -0500
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:5404 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752356AbYLSX0u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 18:26:22 -0500
-X-YMail-OSG: rxJMtogVM1nfDb04eGGvOYL5nLWy.B8UfPAI_1TRWWT6f3Rzpg3ahxkqCXeYfuREYt77w3ywslR9vVbu3jmovgz2NxHTszQRe90I_pPmaglS.AJE7e0KQW2v5L6Kez7Sva811rwtxUabBSkpob5LjramumtL.RmHT4WN0r6HXQNMfgOJIIHz.O2G1T0wP7kvLgm_t3H9oCs0INmirYI.h8wjkEuc5cthpTgUMUDev69fQaQ2tN0-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] [Target_Core_Mod 2/6]: Update struct target_core_fabric_ops
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
+	Fri, 19 Dec 2008 18:26:50 -0500
+X-Greylist: delayed 610 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Dec 2008 18:26:49 EST
+X-Trace: 118567176/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.245/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 80.44.176.245
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.2 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArEEAEy5S0lQLLD1/2dsb2JhbACBa7w+WJBwgwM
+X-IronPort-AV: E=Sophos;i="4.36,251,1228089600"; 
+   d="scan'208";a="118567176"
+Subject: [PATCH] sh: maple: add support for Maple controller as a joystick
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-sh <linux-sh@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Paul Mundt <lethal@linux-sh.org>
 Content-Type: text/plain
-Date: Fri, 19 Dec 2008 15:25:53 -0800
-Message-Id: <1229729153.4560.86.camel@haakon2.linux-iscsi.org>
+Date: Fri, 19 Dec 2008 23:15:42 +0000
+Message-Id: <1229728542.1441.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From d2f819ffd998f362d1e6a5543ec91ee73c2133f7 Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Fri, 19 Dec 2008 13:10:31 -0800
-Subject: [PATCH] [Target_Core_Mod]: Update struct target_core_fabric_ops
+Not sure what happened with earlier submissions, so here is an up-to-date
+patch for the Dreamcast Maple controlled.
 
-Add tpg_check_demo_mode_cache() function pointer
 
-Update tpg_release_node_acl() and stop_session() to return 'void'
+Add support for the SEGA Dreamcast Maple controller as a joystick
 
-Remove the now no-longer required dec_nacl_count().
-
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
 ---
- drivers/lio-core/target_core_fabric_ops.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/lio-core/target_core_fabric_ops.h b/drivers/lio-core/target_core_fabric_ops.h
-index 37aa015..6499005 100644
---- a/drivers/lio-core/target_core_fabric_ops.h
-+++ b/drivers/lio-core/target_core_fabric_ops.h
-@@ -4,16 +4,16 @@ struct target_core_fabric_ops {
- 	u32 (*tpg_get_tag)(struct se_portal_group_s *);
- 	u32 (*tpg_get_default_depth)(struct se_portal_group_s *);
- 	int (*tpg_check_demo_mode)(struct se_portal_group_s *);
-+	int (*tpg_check_demo_mode_cache)(struct se_portal_group_s *);
- 	int (*tpg_check_demo_mode_write_protect)(struct se_portal_group_s *);
--	int (*tpg_release_node_acl)(struct se_portal_group_s *, struct se_node_acl_s *);
-+	void (*tpg_release_node_acl)(struct se_portal_group_s *, struct se_node_acl_s *);
- 	int (*tpg_get_inst_index)(struct se_portal_group_s *);
-         void (*release_cmd_to_pool)(struct se_cmd_s *);
-         void (*release_cmd_direct)(struct se_cmd_s *);
- 	int (*dev_del_lun)(struct se_portal_group_s *, __u32);
--	int (*stop_session)(struct se_session_s *, int, int);
-+	void (*stop_session)(struct se_session_s *, int, int);
- 	void (*fall_back_to_erl0)(struct se_session_s *);
- 	int (*write_pending)(struct se_cmd_s *);
--	void (*dec_nacl_count)(struct se_node_acl_s *, struct se_cmd_s *);
- 	void (*set_default_node_attributes)(struct se_node_acl_s *);
- 	void *(*scsi_auth_intr_seq_start)(struct seq_file *, loff_t *);
- 	void *(*scsi_auth_intr_seq_next)(struct seq_file *, void *, loff_t *);
--- 
-1.5.4.1
-
-
+diff --git a/drivers/input/joystick/Kconfig b/drivers/input/joystick/Kconfig
+index be5c14a..ca7ce42 100644
+--- a/drivers/input/joystick/Kconfig
++++ b/drivers/input/joystick/Kconfig
+@@ -294,4 +294,17 @@ config JOYSTICK_XPAD_LEDS
+ 	  This option enables support for the LED which surrounds the Big X on
+ 	  XBox 360 controller.
+ 
++config JOYSTICK_MAPLE
++	tristate "Dreamcast control pad"
++	depends on SH_DREAMCAST
++	select MAPLE
++	help
++	  Say Y here if you have a SEGA Dreamcast and want to use your
++	  controller as a joystick.
++
++	  Most Dreamcast users will say Y.
++
++	  To compile this as a module choose M here: the module will be called
++	  maplecontrol.
++
+ endif
+diff --git a/drivers/input/joystick/Makefile b/drivers/input/joystick/Makefile
+index fdbf8c4..bfd848d 100644
+--- a/drivers/input/joystick/Makefile
++++ b/drivers/input/joystick/Makefile
+@@ -10,6 +10,7 @@ obj-$(CONFIG_JOYSTICK_AMIGA)		+= amijoy.o
+ obj-$(CONFIG_JOYSTICK_ANALOG)		+= analog.o
+ obj-$(CONFIG_JOYSTICK_COBRA)		+= cobra.o
+ obj-$(CONFIG_JOYSTICK_DB9)		+= db9.o
++obj-$(CONFIG_JOYSTICK_MAPLE)		+= maplecontrol.o
+ obj-$(CONFIG_JOYSTICK_GAMECON)		+= gamecon.o
+ obj-$(CONFIG_JOYSTICK_GF2K)		+= gf2k.o
+ obj-$(CONFIG_JOYSTICK_GRIP)		+= grip.o
+diff --git a/drivers/input/joystick/maplecontrol.c b/drivers/input/joystick/maplecontrol.c
+new file mode 100644
+index 0000000..e4308d8
+--- /dev/null
++++ b/drivers/input/joystick/maplecontrol.c
+@@ -0,0 +1,194 @@
++/*
++ * 	SEGA Dreamcast controller driver
++ *	Based on drivers/usb/iforce.c
++ *
++ * 	Copyright Yaegashi Takeshi, 2001
++ *	Adrian McMenamin, 2008
++ */
++
++#include <linux/kernel.h>
++#include <linux/slab.h>
++#include <linux/input.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/timer.h>
++#include <linux/maple.h>
++
++MODULE_AUTHOR("Adrian McMenamin <adrian@mcmen.demon.co.uk>");
++MODULE_DESCRIPTION("SEGA Dreamcast controller driver");
++MODULE_LICENSE("GPL");
++
++struct dc_pad {
++	struct input_dev *dev;
++	struct maple_device *mdev;
++};
++
++static void dc_pad_callback(struct mapleq *mq)
++{
++	unsigned short buttons;
++	struct maple_device *mapledev = mq->dev;
++	struct dc_pad *pad = maple_get_drvdata(mapledev);
++	struct input_dev *dev = pad->dev;
++	unsigned char *res = mq->recvbuf;
++
++	buttons = ~cpu_to_le16(*(unsigned short *)(res + 8));
++
++	input_report_abs(dev, ABS_HAT0Y,
++			 (buttons & 0x0010 ? -1:0) + (buttons & 0x0020 ? 1:0));
++	input_report_abs(dev, ABS_HAT0X,
++			 (buttons & 0x0040 ? -1:0) + (buttons & 0x0080 ? 1:0));
++	input_report_abs(dev, ABS_HAT1Y,
++			 (buttons & 0x1000 ? -1:0) + (buttons & 0x2000 ? 1:0));
++	input_report_abs(dev, ABS_HAT1X,
++			 (buttons & 0x4000 ? -1:0) + (buttons & 0x8000 ? 1:0));
++
++	input_report_key(dev, BTN_C,      buttons & 0x0001);
++	input_report_key(dev, BTN_B,      buttons & 0x0002);
++	input_report_key(dev, BTN_A,      buttons & 0x0004);
++	input_report_key(dev, BTN_START,  buttons & 0x0008);
++	input_report_key(dev, BTN_Z,      buttons & 0x0100);
++	input_report_key(dev, BTN_Y,      buttons & 0x0200);
++	input_report_key(dev, BTN_X,      buttons & 0x0400);
++	input_report_key(dev, BTN_SELECT, buttons & 0x0800);
++
++	input_report_abs(dev, ABS_GAS,   res[10]);
++	input_report_abs(dev, ABS_BRAKE, res[11]);
++	input_report_abs(dev, ABS_X,     res[12]);
++	input_report_abs(dev, ABS_Y,     res[13]);
++	input_report_abs(dev, ABS_RX,    res[14]);
++	input_report_abs(dev, ABS_RY,    res[15]);
++}
++
++static int dc_pad_open(struct input_dev *dev)
++{
++	struct dc_pad *pad;
++
++	pad = dev->dev.platform_data;
++	maple_getcond_callback(pad->mdev, dc_pad_callback, HZ/20,
++		MAPLE_FUNC_CONTROLLER);
++	return 0;
++}
++
++static void dc_pad_close(struct input_dev *dev)
++{
++	struct dc_pad *pad;
++	
++	pad = dev->dev.platform_data;
++	maple_getcond_callback(pad->mdev, dc_pad_callback, 0,
++		MAPLE_FUNC_CONTROLLER);
++}
++
++/* allow the controller to be used */
++static int probe_maple_controller(struct device *dev)
++{
++	struct maple_device *mdev = to_maple_dev(dev);
++	struct maple_driver *mdrv = to_maple_driver(dev->driver);
++	int i, error;
++	struct dc_pad *pad;
++	struct input_dev *idev;
++	unsigned long data = be32_to_cpu(mdev->devinfo.function_data[0]);
++
++	const short btn_bit[32] = {
++		BTN_C, BTN_B, BTN_A, BTN_START, -1, -1, -1, -1,
++		BTN_Z, BTN_Y, BTN_X, BTN_SELECT, -1, -1, -1, -1,
++		-1, -1, -1, -1, -1, -1, -1, -1,
++		-1, -1, -1, -1, -1, -1, -1, -1,
++	};
++
++	const short abs_bit[32] = {
++		-1, -1, -1, -1, ABS_HAT0Y, ABS_HAT0Y, ABS_HAT0X, ABS_HAT0X,
++		-1, -1, -1, -1, ABS_HAT1Y, ABS_HAT1Y, ABS_HAT1X, ABS_HAT1X,
++		ABS_GAS, ABS_BRAKE, ABS_X, ABS_Y, ABS_RX, ABS_RY, -1, -1,
++		-1, -1, -1, -1, -1, -1, -1, -1,
++	};
++
++	pad = kzalloc(sizeof(struct dc_pad), GFP_KERNEL);
++	idev = input_allocate_device();
++	if (!pad || !idev){
++		error = ENOMEM;
++		goto fail;
++	}
++
++	pad->dev = idev;
++	pad->mdev = mdev;
++
++	idev->open = dc_pad_open;
++	idev->close = dc_pad_close;
++
++	for (i = 0; i < 32; i++)
++		if (data & (1<<i) && btn_bit[i] >= 0)
++			idev->keybit[BIT_WORD(BTN_JOYSTICK)] |= BIT_MASK(btn_bit[i]);
++
++	if (idev->keybit[BTN_JOYSTICK/32])
++		idev->evbit[0] |= BIT_MASK(EV_KEY);
++
++	for (i = 0; i < 32; i++)
++		if (data & (1<<i) && abs_bit[i] >= 0)
++			idev->absbit[0] |= BIT_MASK(abs_bit[i]);
++
++	if (idev->absbit[0])
++		idev->evbit[0] |= BIT_MASK(EV_ABS);
++
++	for (i = ABS_X; i <= ABS_BRAKE; i++)
++		input_set_abs_params(idev, i, 0, 255, 0, 0);
++
++	for (i = ABS_HAT0X; i <= ABS_HAT3Y; i++)
++		input_set_abs_params(idev, i, 1, -1, 0, 0);
++
++	idev->dev.platform_data = pad;
++	idev->event = NULL;
++	idev->dev.parent = &mdev->dev;
++	idev->name = mdev->product_name;
++	idev->id.bustype = BUS_HOST;
++	input_set_drvdata(idev, pad);
++
++	error = input_register_device(idev);
++	if (error)
++		goto fail;
++
++	mdev->driver = mdrv;
++	maple_set_drvdata(mdev, pad);
++
++	return error;
++
++fail:
++	input_free_device(pad->dev);
++	kfree(pad);
++	maple_set_drvdata(mdev, NULL);
++	return -error;
++}
++
++static int remove_maple_controller(struct device *dev)
++{
++	struct maple_device *mdev = to_maple_dev(dev);
++	struct dc_pad *pad = maple_get_drvdata(mdev);
++
++	mdev->callback = NULL;
++	input_unregister_device(pad->dev);
++	maple_set_drvdata(mdev, NULL);
++	kfree(pad);
++	return 0;
++}
++
++static struct maple_driver dc_pad_driver = {
++	.function =	MAPLE_FUNC_CONTROLLER,
++	.drv = {
++		.name = "Dreamcast_controller",
++		.probe = probe_maple_controller,
++		.remove = remove_maple_controller,
++	},
++};
++
++static int __init dc_pad_init(void)
++{
++	return 	maple_driver_register(&dc_pad_driver);
++}
++
++static void __exit dc_pad_exit(void)
++{
++	maple_driver_unregister(&dc_pad_driver);
++}
++
++module_init(dc_pad_init);
++module_exit(dc_pad_exit);
 
