@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbYLSXZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYLSXZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754948AbYLSXZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 18:25:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbYLSXZF
+	id S1755255AbYLSXZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 18:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYLSXZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 18:25:05 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:37350 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754475AbYLSXZE (ORCPT
+	Fri, 19 Dec 2008 18:25:47 -0500
+Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:46347 "HELO
+	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751164AbYLSXZq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 18:25:04 -0500
-X-YMail-OSG: c.q4b2gVM1lLQpjs1sprz9lTDLWAxrnisSCn.e5Hg9M6LQFYMPceSVT.2Y7Ad8JmJcjuX20edJ1VMZ62bAK5IhRqkvRsxYYLJ0En_4ILqpdB0KZd0sCzOLzCIaq_GV_bfzLEeYUsG201s23HqBD06f2I79C7NKNDpqnLoswyonj1LTASqXyLVWgX4T2rjHKDWnPgCj6ekt.EggY5deq99kZQqYdXqRM-
+	Fri, 19 Dec 2008 18:25:46 -0500
+X-YMail-OSG: zIlb0HsVM1nRhkDXW5HS4HKmO5dLv1UI.0CVglIJZPaA2kD7Crf0.vIesjzF5G4khLE.x4GeoTgbFKlg35OCa3ya68WmkG.DesreWnuwTVtJNMe_5.dJ.FwBaY3qaDBn73lyTPA0VlH_vPkrdWvE04dHh0J6JWhNKR.mZJNy4TE9iIrUymGy1ksUrx.xXRT_PaCmUFCz9kPMkeQ._IhMIIcNr8zhLXOj3jQfeGJXvzlGW_tIrf8-
 X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] [Target_Core_Mod 0/6] More update for generic
-	functionality in v3.0
+Subject: [PATCH] [Target_Core_Mod 1/6] Updates for core data structures
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: "Linux-iSCSI.org Target Dev" 
 	<linux-iscsi-target-dev@googlegroups.com>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        linux-scsi <linux-scsi@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 19 Dec 2008 15:24:33 -0800
-Message-Id: <1229729073.4560.82.camel@haakon2.linux-iscsi.org>
+Date: Fri, 19 Dec 2008 15:25:17 -0800
+Message-Id: <1229729117.4560.83.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -29,43 +28,130 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all,
+>From a56e1e6d783ddac851244b4ed2eba253eeb911ec Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Fri, 19 Dec 2008 13:06:52 -0800
+Subject: [PATCH] [Target_Core_Mod] Updates for core data structures
 
-This patch set for Target_Core_Mod continues the process of making iSCSI
-and LIO-Target specific code into generic code that is intended to be
-used used across multiple $FABRIC_MODs.  This patch also includes using
-kmem_cache() for se_cmd_t and se_session_t data structures, and updates
-to transport_[register,deregister]_session().
+This patch adds TRANSPORT_TPG_TYPE_* defines used for core_tpg_register() and
+adds ____cacheline_aligned to all of the se_* prefixed data structures.
 
-Also included is a change to the Target_Core_Mod/PSCSI subsystem plugin
-for v2.6.28 that involves setting struct bio->bi_bdev w/o
-bio_add_pc_page() now that scsi_execute_async() have been removed for
-v2.6.28-FINAL.
+For se_node_acl_t, it adds a *nacl_sess and ConfigFS struct config_groups.
+For se_portal_group_t, it makes the former session headless list to use list_head.
 
-They are made against against lio-core-2.6.git/master and tested on
-v2.6.28-rc7.  The lio-core-2.6.git tree can be found at:
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/target_core_base.h |   32 ++++++++++++++++++++------------
+ 1 files changed, 20 insertions(+), 12 deletions(-)
 
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+diff --git a/drivers/lio-core/target_core_base.h b/drivers/lio-core/target_core_base.h
+index 5a036e5..7349131 100644
+--- a/drivers/lio-core/target_core_base.h
++++ b/drivers/lio-core/target_core_base.h
+@@ -140,6 +140,10 @@
+ #define TRANSPORT_LUN_TYPE_NONE			0
+ #define TRANSPORT_LUN_TYPE_DEVICE		1
+ 
++/* se_portal_group_t->se_tpg_type */
++#define TRANSPORT_TPG_TYPE_NORMAL		0
++#define TRANSPORT_TPG_TYPE_DISCOVERY		1
++
+ /* Used for se_node_acl->nodeacl_flags */
+ #define NAF_DYNAMIC_NODE_ACL                    0x01
+ 
+@@ -227,7 +231,7 @@
+ 
+ typedef struct se_obj_s {
+ 	atomic_t obj_access_count;
+-} se_obj_t;
++} ____cacheline_aligned se_obj_t;
+ 
+ typedef struct t10_wwn_s {
+         unsigned char vendor[8];
+@@ -236,7 +240,7 @@ typedef struct t10_wwn_s {
+         unsigned char unit_serial[INQUIRY_EVPD_SERIAL_LEN];
+ 	u32 device_identifier_code_set;
+ 	unsigned char device_identifier[INQUIRY_EVPD_DEVICE_IDENTIFIER_LEN];
+-} t10_wwn_t;
++} ____cacheline_aligned t10_wwn_t;
+ 
+ typedef struct se_queue_req_s {
+         int                     state;
+@@ -432,7 +436,7 @@ typedef struct se_cmd_s {
+ 
+ typedef struct se_tmr_req_s {
+ 	void 			*fabric_tmr_ptr;	
+-} se_tmr_req_t;
++} ____cacheline_aligned se_tmr_req_t;
+ 
+ typedef struct se_node_acl_s {
+ 	char			initiatorname[TRANSPORT_IQN_LEN];
+@@ -446,22 +450,26 @@ typedef struct se_node_acl_s {
+ 	spinlock_t		stats_lock;
+ #endif /* SNMP_SUPPORT */
+ 	struct se_dev_entry_s	*device_list;
++	struct se_session_s	*nacl_sess;
+ 	struct se_portal_group_s *se_tpg;
+ 	void			*fabric_acl_ptr;
+ 	spinlock_t		device_list_lock;
+ 	spinlock_t		nacl_sess_lock;
++	struct config_group	acl_group;
++	struct config_group	acl_param_group;
+ 	struct se_node_acl_s	*next;
+ 	struct se_node_acl_s	*prev;
+-} se_node_acl_t;
++} ____cacheline_aligned se_node_acl_t;
+ 
+ typedef struct se_session_s {
+-	struct se_node_acl_s	*node_acl;
++	struct se_node_acl_s	*se_node_acl;
+ 	struct se_portal_group_s *se_tpg;
+ 	void			*fabric_sess_ptr;
+-} se_session_t;
++	struct list_head	sess_list;
++} ____cacheline_aligned se_session_t;
+ 
+ #define SE_SESS(cmd)		((struct se_session_s *)(cmd)->se_sess)
+-#define SE_NODE_ACL(sess)	((struct se_node_acl_s *)(sess)->node_acl)
++#define SE_NODE_ACL(sess)	((struct se_node_acl_s *)(sess)->se_node_acl)
+ 
+ struct se_device_s;
+ struct se_transform_info_s;
+@@ -642,9 +650,10 @@ typedef struct se_port_s {
+         struct se_lun_s *sep_lun;
+         struct se_portal_group_s *sep_tpg;
+         struct list_head sep_list;
+-} se_port_t;
++} ____cacheline_aligned se_port_t;
+ 
+ typedef struct se_portal_group_s {
++	int			se_tpg_type;	/* Type of target portal group */
+ 	u32			num_node_acls;  /* Number of ACLed Initiator Nodes for this TPG */
+ 	spinlock_t		acl_node_lock;  /* Spinlock for adding/removing ACLed Nodes */
+ 	spinlock_t		session_lock;   /* Spinlock for adding/removing sessions */
+@@ -654,10 +663,9 @@ typedef struct se_portal_group_s {
+ 	struct se_lun_s		*tpg_lun_list;
+ 	struct se_node_acl_s	*acl_node_head; /* Pointer to start of Initiator ACL list */
+ 	struct se_node_acl_s	*acl_node_tail; /* Pointer to end of Initiator ACL list */
+-	struct se_session_s	*session_head;  /* Pointer to start of iSCSI session list */
+-	struct se_session_s	*session_tail;  /* Pointer to end of iSCSI session list */
++	struct list_head	tpg_sess_list;	/* List of TCM sessions assoicated wth this TPG */
+ 	struct target_core_fabric_ops *se_tpg_tfo; /* Pointer to $FABRIC_MOD dependent code */
+-} se_portal_group_t;
++} ____cacheline_aligned se_portal_group_t;
+ 
+ #define TPG_TFO(se_tpg)		((struct target_core_fabric_ops *)(se_tpg)->se_tpg_tfo)
+ 
+@@ -671,6 +679,6 @@ typedef struct se_global_s {
+ #ifdef DEBUG_DEV
+         spinlock_t              debug_dev_lock;
+ #endif
+-} se_global_t;
++} ____cacheline_aligned se_global_t;
+ 
+ #endif /* TARGET_CORE_BASE_H */
+-- 
+1.5.4.1
 
---nab
-
- drivers/lio-core/target_core_base.h       |   32 +++--
- drivers/lio-core/target_core_device.c     |   44 +++++-
- drivers/lio-core/target_core_device.h     |    1 +
- drivers/lio-core/target_core_fabric_ops.h |    6 +-
- drivers/lio-core/target_core_pscsi.c      |   36 ++++-
- drivers/lio-core/target_core_pscsi.h      |    1 +
- drivers/lio-core/target_core_tpg.c        |   20 ++-
- drivers/lio-core/target_core_tpg.h        |    4 +-
- drivers/lio-core/target_core_transport.c  |  247 +++++++++++++++--------------
- drivers/lio-core/target_core_transport.h  |    6 +-
- 10 files changed, 249 insertions(+), 148 deletions(-)
-
-[PATCH] [Target_Core_Mod 1/6] Updates for core data structures
-[PATCH] [Target_Core_Mod 2/6]: Update struct target_core_fabric_ops
-[PATCH] [Target_Core_Mod 3/6]: Updates for transport_[register,deregister]_session() logic
-[PATCH] [Target_Core_Mod 4/6]: Updates for generic portal group functionality
-[PATCH] [Target_Core_Mod 5/6]: Updates for generic device core
-[PATCH] [Target_Core_Mod/PSCSI 6/6]: Grab temporary pointer to struct block_device for BIO for v2.6.28
 
 
