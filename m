@@ -1,118 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbYLSRGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbYLSRIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752052AbYLSRGm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 12:06:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYLSRGc
+	id S1753207AbYLSRIh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 12:08:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbYLSRI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 12:06:32 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:39423 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751492AbYLSRGb (ORCPT
+	Fri, 19 Dec 2008 12:08:26 -0500
+Received: from mu-out-0910.google.com ([209.85.134.186]:9943 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826AbYLSRIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 12:06:31 -0500
-X-Greylist: delayed 48672 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Dec 2008 12:06:30 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArEEAPRcS0lMROB9/2dsb2JhbACBbL1TWIUACItngXIIgQk
-Date: Fri, 19 Dec 2008 12:06:27 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: David Miller <davem@davemloft.net>, rostedt@goodmis.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       paulus@samba.org, benh@kernel.crashing.org, linux-ia64@vger.kernel.org,
-       linux-s390@vger.kernel.org, Christoph Lameter <christoph@lameter.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Martin Bligh <mbligh@google.com>
-Subject: Re: local_add_return
-Message-ID: <20081219170627.GB1339@Krystal>
-References: <alpine.DEB.1.10.0812150823370.18692@gandalf.stny.rr.com> <200812190922.57629.rusty@rustcorp.com.au> <20081219033514.GA7162@Krystal> <200812191624.46580.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 19 Dec 2008 12:08:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=kviPns1N+HNPl9J9Fj+wTnLFBu7N36gLOHhxzp3sV+SnoHCn/Qv+V+ZHq9eLmLRpEv
+         W/+0SOGibesLlNvwDKR4SFCu1E7zxD2VlaBRGZtnzspfZm3TNpUm4DYICqFd32w83DiF
+         GUZvLeT8PGngCzi1pTbvS8UKxjtjpXjJxBK1M=
+Message-ID: <c6d9bea0812190908k223b6156j238763baeda8a0b7@mail.gmail.com>
+Date: Fri, 19 Dec 2008 12:08:22 -0500
+From: "C. Scott Ananian" <cscott@laptop.org>
+To: "Michael J Gruber" <git@drmicha.warpmail.net>
+Subject: Re: [PATCH] Simplified GIT usage guide
+Cc: "David Howells" <dhowells@redhat.com>, git@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <494B68B8.20107@drmicha.warpmail.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200812191624.46580.rusty@rustcorp.com.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:49:41 up 32 days, 17:30,  4 users,  load average: 1.92, 3.31,
-	2.43
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
+	 <c6d9bea0812181647n55fbb6b9w333702fc80127198@mail.gmail.com>
+	 <494B68B8.20107@drmicha.warpmail.net>
+X-Google-Sender-Auth: 0bceeb69eff1a97e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell (rusty@rustcorp.com.au) wrote:
-> On Friday 19 December 2008 14:05:14 Mathieu Desnoyers wrote:
-> > * Rusty Russell (rusty@rustcorp.com.au) wrote:
-> > But can we turn what you call "nmi_safe_t" into "local_atomic_t" then ?
-> > Because we have to specify that this type must only be used as part of
-> > per-cpu data with preemption disabled, and we also specify that it is
-> > atomic.
-> > 
-> > Plus, nmi_safe_t does not make much sense on architectures without NMIs,
-> > where we sometimes disable interrupts to make the modification "atomic"
-> > wrt all other interrupts that can happen.
-> 
-> But those archs can use local_t.  I don't like either name local_t nor
-> atomic_local_t, but renaming sucks too.
-> 
-> OK, how about a different approach?  Since there's really only one case
-> where we need this local_t property outside arch-specific code, how about
-> we define ARCH_LOCAL_T_TRACE_SAFE for x86?
-> 
-> Then some trace-specific typedef like "trace_counter_t" which goes to local_t
-> or atomic_(long?)_t?
-> 
-> Should be a simple patch and pretty clear.
-> 
+On Fri, Dec 19, 2008 at 4:26 AM, Michael J Gruber
+<git@drmicha.warpmail.net> wrote:
+> C. Scott Ananian venit, vidit, dixit 19.12.2008 01:47:
+>> On Fri, Dec 12, 2008 at 1:28 PM, David Howells <dhowells@redhat.com> wrote:
+>>> Add a guide to using GIT's simpler features.
+>>> diff --git a/Documentation/git-haters-guide.txt b/Documentation/git-haters-guide.txt
+>>> +In the above example, I've assumed that you've got your own tree with the head
+>>> +at commit C3, and that you've got a branch that you want to merge, which has
+>>> +its head at commit B3.  After merging them, you'd end up with a directed,
+>>> +cyclic tree:
+>>
+>> That should be, "acyclic".  There are no cycles, because the graph is directed.
+>
+> Well, directed graphs can have cycles. But the revision graph of a
+> revision control system has to be an acyclic directed graph. Otherwise
+> parenthood would be a complicated matter ;)
 
-Hrm, is it me or linking a basic type definition to a single user seems
-like the wrong approach ?
-
-The idea behind declaring new types is, to me, that they should describe
-as generally as possible what they provide and what they are. If we
-think of the future, where we might want to use such local atomic types
-for other purposes than tracing, I think we will end up regretting such
-specific naming scheme. I don't think the argument "because the type has
-only one arch-independent user" holds, because the idea behind new types
-is that they _will_ be used by others eventually. For instance, we've
-done some work on moving the slub allocator to such local atomic
-operations last year, and it gave very good results on architectures
-where disabling interrupt is costly (threefold acceleration of the
-fastpath).
-
-In your trace_counter_t proposal, you don't take into account that (what
-I call) local_atomic_long_t is a _new_ primitive, which cannot be
-implemented by a trivalue and differs from atomic_long_t, on more
-architectures than x86. On mips and powerpc, at least, it can be
-implemented as an atomic operation without the memory barriers, which
-improves performances a lot.
-
-I think the following scheme would be pretty simple and yet not tied to
-any specific user :
-
-local_long_t
-  - Fast per-cpu counter, not necessarily atomic.
-    Implements long trivalues, or uses local_atomic_long_t.
-local_atomic_long_t
-  - Fast per-cpu atomic counter.
-    Implements per-cpu atomic counters or uses atomic_long_t.
-atomic_long_t
-  - Global atomic counter.
-    Implements globally synchronized atomic operations.
-
-We could do the same with "int" type for :
-local_t
-local_atomic_t
-atomic_t
-
-If we need smaller counters.
-
-Mathieu
-
-
-> Thanks,
-> Rusty.
+I mean that the example given didn't have a cycle (even though it has
+nodes arranged in a circle) because of the orientation of the edges.
+But you're right, "directed acyclic graph" is a better correction; the
+nodes in git do not form a tree.
+ --scott
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+                         ( http://cscott.net/ )
