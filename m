@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbYLSJho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbYLSJl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754078AbYLSJho (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 04:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYLSJhf
+	id S1754257AbYLSJl3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 04:41:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYLSJlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 04:37:35 -0500
-Received: from styx.suse.cz ([82.119.242.94]:50502 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751361AbYLSJhe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 04:37:34 -0500
-Date: Fri, 19 Dec 2008 10:37:33 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Hannes Eder <hannes@hanneseder.net>, Ben Dooks <ben-linux@fluff.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] HID: avoid sparse warning in HID_COMPAT_LOAD_DRIVER
-In-Reply-To: <494B5BC4.100@gmail.com>
-Message-ID: <alpine.LNX.1.10.0812191037110.26265@jikos.suse.cz>
-References: <4947a48f.08b6660a.34ca.ffffa1e8@mx.google.com>  <20081216155822.GD12431@fluff.org.uk>  <alpine.LNX.1.10.0812161659580.21089@jikos.suse.cz>  <20081216194113.GF12431@fluff.org.uk> <154e089b0812161144x3c9579f5g8731b616fde6484c@mail.gmail.com>
- <494B5BC4.100@gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 19 Dec 2008 04:41:21 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56014 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751477AbYLSJlU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 04:41:20 -0500
+Date: Fri, 19 Dec 2008 18:40:17 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "Hugh Dickins" <hugh@veritas.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [bug][mmtom] memcg: MEM_CGROUP_ZSTAT underflow
+Message-Id: <20081219184017.7da8748e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081219182929.428380df.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081219172903.7ca9b123.nishimura@mxp.nes.nec.co.jp>
+	<20081219182929.428380df.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Dec 2008, Jiri Slaby wrote:
+On Fri, 19 Dec 2008 18:29:29 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> > But, don't ask my why the void functions with empty function bodies 
-> > are exported.
-> Because of autoload to create a dependency. Note that this is a temporary
-> solution to workaround the non-presence of hid bus in module-init-tools and will
-> be removed in next few releases.
+> +	/*
+> + 	 * Don't clear pc->mem_cgroup because del_from_lru() will see this.
+> + 	 * The fully unchaged page is assumed to be freed after us, so it's
+> + 	 * safe. When this page is reused before free, we have to be careful.
+> + 	 * (In SwapCache case...it can happen.)
+> +  	 */
+>  
+Maybe this is better.
+==
+       /*
+         * Don't clear pc->mem_cgroup because del_from_lru() may see this.
+         * If this page is fully unchaged, it's assumed to be freed soon,or it
+         * is isolated from LRU.  When this page is reused before free
+         * (and on LRU), we have to be careful.
+         * (In SwapCache case...it can happen.)
+         */
+==
+Hmm.
 
-BTW while we are at it -- what is the status with module-init-tools? Has 
-the support been merged already?
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
