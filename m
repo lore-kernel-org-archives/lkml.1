@@ -1,149 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbYLSRJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753674AbYLSRJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753387AbYLSRJb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 12:09:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYLSRJX
+	id S1753674AbYLSRJv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 12:09:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYLSRJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 12:09:23 -0500
-Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.65]:39514 "EHLO
-	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751507AbYLSRJW (ORCPT
+	Fri, 19 Dec 2008 12:09:42 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:48683 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751739AbYLSRJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 12:09:22 -0500
-X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
-Date: Sat, 20 Dec 2008 02:08:36 +0900
-From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "Hugh Dickins" <hugh@veritas.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       d-nishimura@mtf.biglobe.ne.jp,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [bug][mmtom] memcg: MEM_CGROUP_ZSTAT underflow
-Message-Id: <20081220020836.aed6199a.d-nishimura@mtf.biglobe.ne.jp>
-In-Reply-To: <20081219182929.428380df.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081219172903.7ca9b123.nishimura@mxp.nes.nec.co.jp>
-	<20081219182929.428380df.kamezawa.hiroyu@jp.fujitsu.com>
-Reply-To: nishimura@mxp.nes.nec.co.jp
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Fri, 19 Dec 2008 12:09:41 -0500
+Subject: [PATCH] x86: perf_counter.c intel_perfmon_event_map and
+	max_intel_perfmon_events should be static
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       perfctr-devel@lists.sourceforge.net,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Date: Fri, 19 Dec 2008 22:37:58 +0530
+Message-Id: <1229706478.7625.5.camel@jaswinder.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Dec 2008 18:29:29 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Impact: cleanup, avoid sparse warnings, reduce kernel size a bit
 
-> On Fri, 19 Dec 2008 17:29:03 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> 
-> > Hi.
-> > 
-> > Current(I'm testing 2008-12-16-15-50 with some patches, though) memcg have
-> > MEM_CGROUP_ZSTAT underflow problem.
-> > 
-> > How to reproduce:
-> > - make a directory, set mem.limit.
-> > - run some programs exceeding mem.limit.
-> > - make another directory, and all the tasks in old directory to new one.
-> > - New directory's "inactive_anon" in memory.stat underflows.
-> > 
-> > From my investigation:
-> > - This problem seems to happen only when swapping anonymous pages. It seems
-> >   not to happen about shmem.
-> > - After removing memcg-fix-swap-accounting-leak-v3.patch(and of course
-> >   memcg-fix-swap-accounting-leak-doc-fix.patch), this problem doesn't happen.
-> > 
-> > Thoughts?
-> > 
-> 
-> Thanks, then we need v4 ...but it just because my memcg-synchronized-lru.patch's
-> assumption about SwapCache was broken or not sane.
-> 
-> It assumes pc->page_cgroup is not changed after added to LRU, but now, it changes
-> because it can be dropped from SwapCache and new pc->mem_cgroup can be assigned.
-> Maybe mem_cgroup_lru_fixup() isn't enough, now.
-> 
-make sense.
+Fixes these sparse warnings:
+arch/x86/kernel/cpu/perf_counter.c:44:11: warning: symbol 'intel_perfmon_event_map' was not declared. Should it be static?
+arch/x86/kernel/cpu/perf_counter.c:54:11: warning: symbol 'max_intel_perfmon_events' was not declared. Should it be static?
 
-> Then..could you try this ? I can't do test right now, sorry.
-Yes, this patch fixes the probrem.
+Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
+---
+ arch/x86/kernel/cpu/perf_counter.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Just a few comments.
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> As memcg-fix-swap-accounting-leak-v3.patch pointed out, SwapCache
-> can be not SwapCache before commit.
-> 
-> In this case, 
-> 	- the page is completely uncharged.
-> 	- but still on Old LRU.
-> 	- pc->mem_cgroup is changed before it's removed from LRU.
-> 
-> For avoiding race, remove page_cgroup from old LRU before we call commit.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  mm/memcontrol.c |   21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
-> 
-> Index: mmotm-Dec-17/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-Dec-17.orig/mm/memcontrol.c
-> +++ mmotm-Dec-17/mm/memcontrol.c
-> @@ -1152,12 +1152,27 @@ int mem_cgroup_cache_charge_swapin(struc
->  void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
->  {
->  	struct page_cgroup *pc;
-> +	struct zone *zone;
->  
->  	if (mem_cgroup_disabled())
->  		return;
->  	if (!ptr)
->  		return;
-> +
->  	pc = lookup_page_cgroup(page);
-> +
-> +	zone = page_zone(page);
-> +	spin_lock(&zone->lru_lock);
-> +	if (!PageSwapCache(page) && !list_empty(&pc->lru)) {
-list_empty check isn't necessarily needed(mem_cgroup_del_lru does it).
-
-> +		/*
-> + 		 * We need to forget old LRU before modifying pc->mem_cgroup.
-> + 		 * This is necessary only when the page is already uncharged
-> + 		 * by delete_from_swap_cache().
-> + 		 * (Nothing happens when pc->mem_cgroup is NULL.)
-> +  		 */
-I think mem_cgroup_del_lru causes NULL pointer dereference bug
-in !pc->mem_cgroup case.
-
-> +		mem_cgroup_del_lru(page);
-> +	}
-> +	spin_unlock(&zone->lru_lock);
->  	__mem_cgroup_commit_charge(ptr, pc, MEM_CGROUP_CHARGE_TYPE_MAPPED);
->  	/*
->  	 * Now swap is on-memory. This means this page may be
-> @@ -1246,6 +1261,12 @@ __mem_cgroup_uncharge_common(struct page
->  
->  	mem_cgroup_charge_statistics(mem, pc, false);
->  	ClearPageCgroupUsed(pc);
-> +	/*
-> + 	 * Don't clear pc->mem_cgroup because del_from_lru() will see this.
-> + 	 * The fully unchaged page is assumed to be freed after us, so it's
-> + 	 * safe. When this page is reused before free, we have to be careful.
-> + 	 * (In SwapCache case...it can happen.)
-> +  	 */
->  
->  	mz = page_cgroup_zoneinfo(pc);
->  	unlock_page_cgroup(pc);
-> 
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index 8a154bd..bdbdb56 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -41,7 +41,7 @@ struct cpu_hw_counters {
+  */
+ static DEFINE_PER_CPU(struct cpu_hw_counters, cpu_hw_counters);
+ 
+-const int intel_perfmon_event_map[] =
++static const int intel_perfmon_event_map[] =
+ {
+   [PERF_COUNT_CYCLES]			= 0x003c,
+   [PERF_COUNT_INSTRUCTIONS]		= 0x00c0,
+@@ -51,7 +51,7 @@ const int intel_perfmon_event_map[] =
+   [PERF_COUNT_BRANCH_MISSES]		= 0x00c5,
+ };
+ 
+-const int max_intel_perfmon_events = ARRAY_SIZE(intel_perfmon_event_map);
++static const int max_intel_perfmon_events = ARRAY_SIZE(intel_perfmon_event_map);
+ 
+ /*
+  * Propagate counter elapsed time into the generic counter.
+-- 
+1.5.5.1
 
 
-Thanks,
-Daisuke Nishimura.
+
