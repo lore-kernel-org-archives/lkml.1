@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbYLSSP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbYLSSQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755200AbYLSSP5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 13:15:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbYLSSNf
+	id S1754511AbYLSSQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 13:16:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbYLSSNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 13:13:35 -0500
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:41537 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754136AbYLSSNd (ORCPT
+	Fri, 19 Dec 2008 13:13:39 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:50368 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754193AbYLSSNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 13:13:33 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-Content-type: text/plain; charset=iso-8859-15
-X-IronPort-AV: E=Sophos;i="4.36,250,1228086000";   d="scan'208";a="94361013"
-Date: Fri, 19 Dec 2008 19:13:30 +0100
-From: markus reichelt <ml@mareichelt.de>
+	Fri, 19 Dec 2008 13:13:38 -0500
+Subject: [PATCH 07/14] kmemleak: Add kmemleak_alloc callback from
+	alloc_large_system_hash
 To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop scaring users with "treason uncloaked!"
-Message-id: <20081219181330.GC3692@tatooine.rebelbase.local>
-Mail-followup-to: linux-kernel@vger.kernel.org
-References: <1229638581.3726.546.camel@calx>
- <Pine.LNX.4.64.0812190028560.12061@wrl-59.cs.helsinki.fi>
- <1229644234.3726.577.camel@calx>
- <20081218.161513.241236470.davem@davemloft.net>
-In-reply-to: <20081218.161513.241236470.davem@davemloft.net>
-Organization: still stuck in reorganization mode
-X-PGP-Key: 0xC2A3FEE4
-X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
-X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
-User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Fri, 19 Dec 2008 18:13:35 +0000
+Message-ID: <20081219181335.7778.62548.stgit@pc1117.cambridge.arm.com>
+In-Reply-To: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.14.3.292.gb975
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Dec 2008 18:13:36.0610 (UTC) FILETIME=[82D49C20:01C96205]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Miller <davem@davemloft.net> wrote:
+The alloc_large_system_hash function is called from various places in
+the kernel and it contains pointers to other allocated structures. It
+therefore needs to be traced by kmemleak.
 
-> 	TCP: Unexpected shrink of advertised window detected ...
-> 
-> is probably the best.
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+---
+ mm/page_alloc.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-What about this?
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index d8ac014..c154b8d 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -46,6 +46,7 @@
+ #include <linux/page-isolation.h>
+ #include <linux/page_cgroup.h>
+ #include <linux/debugobjects.h>
++#include <linux/kmemleak.h>
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/div64.h>
+@@ -4570,6 +4571,16 @@ void *__init alloc_large_system_hash(const char *tablename,
+ 	if (_hash_mask)
+ 		*_hash_mask = (1 << log2qty) - 1;
+ 
++	/*
++	 * If hashdist is set, the table allocation is done with __vmalloc()
++	 * which invokes the kmemleak_alloc() callback. This function may also
++	 * be called before the slab and kmemleak are initialised when
++	 * kmemleak simply buffers the request to be executed later
++	 * (GFP_ATOMIC flag ignored in this case).
++	 */
++	if (!hashdist)
++		kmemleak_alloc(table, size, 1, GFP_ATOMIC);
++
+ 	return table;
+ }
+ 
 
-       TCP: A Momentary Lapse Of Treason detected ...
-
-SCNR
--- 
-left blank, right bald
