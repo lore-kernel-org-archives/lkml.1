@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbYLSWHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbYLSWIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757016AbYLSWHn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbYLSVzU
+	id S1757910AbYLSWIE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:08:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbYLSVzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:55:20 -0500
-Received: from ns1.suse.de ([195.135.220.2]:58069 "EHLO mx1.suse.de"
+	Fri, 19 Dec 2008 16:55:22 -0500
+Received: from mx2.suse.de ([195.135.220.15]:49024 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754759AbYLSVzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 16:55:18 -0500
+	id S1755326AbYLSVzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:55:19 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 38/45] ocfs2: Wrap dirblock reads in a dedicated function.
-Date: Fri, 19 Dec 2008 13:53:57 -0800
-Message-Id: <1229723644-13630-39-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 39/45] ocfs2: Wrap xattr block reads in a dedicated function
+Date: Fri, 19 Dec 2008 13:53:58 -0800
+Message-Id: <1229723644-13630-40-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
 References: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
@@ -25,240 +25,180 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-We have ocfs2_bread() as a vestige of the original ext-based dir code.
-It's only used by directories, though.  Turn it into
-ocfs2_read_dir_block(), with a prototype matching the other metadata
-read functions.  It's set up to validate dirblocks when the time comes.
+We weren't consistently checking xattr blocks after we read them.
+Most places checked the signature, but none checked xb_blkno or
+xb_fs_signature.  Create a toplevel ocfs2_read_xattr_block() that does
+the read and the validation.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/dir.c |  150 +++++++++++++++++++++++++++++++++-----------------------
- 1 files changed, 88 insertions(+), 62 deletions(-)
+ fs/ocfs2/xattr.c |   94 ++++++++++++++++++++++++++++++++++++++++--------------
+ 1 files changed, 70 insertions(+), 24 deletions(-)
 
-diff --git a/fs/ocfs2/dir.c b/fs/ocfs2/dir.c
-index 5777045..c2f3fd9 100644
---- a/fs/ocfs2/dir.c
-+++ b/fs/ocfs2/dir.c
-@@ -82,49 +82,6 @@ static int ocfs2_do_extend_dir(struct super_block *sb,
- 			       struct ocfs2_alloc_context *meta_ac,
- 			       struct buffer_head **new_bh);
- 
--static struct buffer_head *ocfs2_bread(struct inode *inode,
--				       int block, int *err, int reada)
--{
--	struct buffer_head *bh = NULL;
--	int tmperr;
--	u64 p_blkno;
--	int readflags = 0;
--
--	if (reada)
--		readflags |= OCFS2_BH_READAHEAD;
--
--	if (((u64)block << inode->i_sb->s_blocksize_bits) >=
--	    i_size_read(inode)) {
--		BUG_ON(!reada);
--		return NULL;
--	}
--
--	down_read(&OCFS2_I(inode)->ip_alloc_sem);
--	tmperr = ocfs2_extent_map_get_blocks(inode, block, &p_blkno, NULL,
--					     NULL);
--	up_read(&OCFS2_I(inode)->ip_alloc_sem);
--	if (tmperr < 0) {
--		mlog_errno(tmperr);
--		goto fail;
--	}
--
--	tmperr = ocfs2_read_blocks(inode, p_blkno, 1, &bh, readflags);
--	if (tmperr < 0)
--		goto fail;
--
--	tmperr = 0;
--
--	*err = 0;
--	return bh;
--
--fail:
--	brelse(bh);
--	bh = NULL;
--
--	*err = -EIO;
--	return NULL;
--}
--
- /*
-  * bh passed here can be an inode block or a dir data block, depending
-  * on the inode inline data flag.
-@@ -250,6 +207,76 @@ out:
- 	return NULL;
+diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
+index 3cc8385..ef4aa54 100644
+--- a/fs/ocfs2/xattr.c
++++ b/fs/ocfs2/xattr.c
+@@ -314,6 +314,65 @@ static void ocfs2_xattr_bucket_copy_data(struct ocfs2_xattr_bucket *dest,
+ 	}
  }
  
-+static int ocfs2_validate_dir_block(struct super_block *sb,
-+				    struct buffer_head *bh)
++static int ocfs2_validate_xattr_block(struct super_block *sb,
++				      struct buffer_head *bh)
 +{
-+	/*
-+	 * Nothing yet.  We don't validate dirents here, that's handled
-+	 * in-place when the code walks them.
-+	 */
++	struct ocfs2_xattr_block *xb =
++		(struct ocfs2_xattr_block *)bh->b_data;
++
++	mlog(0, "Validating xattr block %llu\n",
++	     (unsigned long long)bh->b_blocknr);
++
++	if (!OCFS2_IS_VALID_XATTR_BLOCK(xb)) {
++		ocfs2_error(sb,
++			    "Extended attribute block #%llu has bad "
++			    "signature %.*s",
++			    (unsigned long long)bh->b_blocknr, 7,
++			    xb->xb_signature);
++		return -EINVAL;
++	}
++
++	if (le64_to_cpu(xb->xb_blkno) != bh->b_blocknr) {
++		ocfs2_error(sb,
++			    "Extended attribute block #%llu has an "
++			    "invalid xb_blkno of %llu",
++			    (unsigned long long)bh->b_blocknr,
++			    (unsigned long long)le64_to_cpu(xb->xb_blkno));
++		return -EINVAL;
++	}
++
++	if (le32_to_cpu(xb->xb_fs_generation) != OCFS2_SB(sb)->fs_generation) {
++		ocfs2_error(sb,
++			    "Extended attribute block #%llu has an invalid "
++			    "xb_fs_generation of #%u",
++			    (unsigned long long)bh->b_blocknr,
++			    le32_to_cpu(xb->xb_fs_generation));
++		return -EINVAL;
++	}
 +
 +	return 0;
 +}
 +
-+/*
-+ * This function forces all errors to -EIO for consistency with its
-+ * predecessor, ocfs2_bread().  We haven't audited what returning the
-+ * real error codes would do to callers.  We log the real codes with
-+ * mlog_errno() before we squash them.
-+ */
-+static int ocfs2_read_dir_block(struct inode *inode, u64 v_block,
-+				struct buffer_head **bh, int flags)
++static int ocfs2_read_xattr_block(struct inode *inode, u64 xb_blkno,
++				  struct buffer_head **bh)
 +{
-+	int rc = 0;
++	int rc;
 +	struct buffer_head *tmp = *bh;
-+	u64 p_blkno;
 +
-+	if (((u64)v_block << inode->i_sb->s_blocksize_bits) >=
-+	    i_size_read(inode)) {
-+		BUG_ON(!(flags & OCFS2_BH_READAHEAD));
-+		goto out;
-+	}
-+
-+	down_read(&OCFS2_I(inode)->ip_alloc_sem);
-+	rc = ocfs2_extent_map_get_blocks(inode, v_block, &p_blkno, NULL,
-+					 NULL);
-+	up_read(&OCFS2_I(inode)->ip_alloc_sem);
-+	if (rc) {
-+		mlog_errno(rc);
-+		goto out;
-+	}
-+
-+	if (!p_blkno) {
-+		rc = -EIO;
-+		mlog(ML_ERROR,
-+		     "Directory #%llu contains a hole at offset %llu\n",
-+		     (unsigned long long)OCFS2_I(inode)->ip_blkno,
-+		     (unsigned long long)v_block << inode->i_sb->s_blocksize_bits);
-+		goto out;
-+	}
-+
-+	rc = ocfs2_read_blocks(inode, p_blkno, 1, &tmp, flags);
-+	if (rc) {
-+		mlog_errno(rc);
-+		goto out;
-+	}
-+
-+	if (!(flags & OCFS2_BH_READAHEAD)) {
-+		rc = ocfs2_validate_dir_block(inode->i_sb, tmp);
-+		if (rc) {
++	rc = ocfs2_read_block(inode, xb_blkno, &tmp);
++	if (!rc) {
++		rc = ocfs2_validate_xattr_block(inode->i_sb, tmp);
++		if (rc)
 +			brelse(tmp);
-+			goto out;
-+		}
 +	}
 +
-+	/* If ocfs2_read_blocks() got us a new bh, pass it up.  */
-+	if (!*bh)
++	/* If ocfs2_read_block() got us a new bh, pass it up. */
++	if (!rc && !*bh)
 +		*bh = tmp;
 +
-+out:
-+	return rc ? -EIO : 0;
++	return rc;
 +}
 +
- static struct buffer_head *ocfs2_find_entry_el(const char *name, int namelen,
- 					       struct inode *dir,
- 					       struct ocfs2_dir_entry **res_dir)
-@@ -296,15 +323,17 @@ restart:
- 				}
- 				num++;
+ static inline const char *ocfs2_xattr_prefix(int name_index)
+ {
+ 	struct xattr_handler *handler = NULL;
+@@ -739,18 +798,14 @@ static int ocfs2_xattr_block_list(struct inode *inode,
+ 	if (!di->i_xattr_loc)
+ 		return ret;
  
--				bh = ocfs2_bread(dir, b++, &err, 1);
-+				bh = NULL;
-+				err = ocfs2_read_dir_block(dir, b++, &bh,
-+							   OCFS2_BH_READAHEAD);
- 				bh_use[ra_max] = bh;
- 			}
- 		}
- 		if ((bh = bh_use[ra_ptr++]) == NULL)
- 			goto next;
--		if (ocfs2_read_block(dir, block, &bh)) {
-+		if (ocfs2_read_dir_block(dir, block, &bh, 0)) {
- 			/* read error, skip block & hope for the best.
--			 * ocfs2_read_block() has released the bh. */
-+			 * ocfs2_read_dir_block() has released the bh. */
- 			ocfs2_error(dir->i_sb, "reading directory %llu, "
- 				    "offset %lu\n",
- 				    (unsigned long long)OCFS2_I(dir)->ip_blkno,
-@@ -724,7 +753,6 @@ static int ocfs2_dir_foreach_blk_el(struct inode *inode,
- 	int i, stored;
- 	struct buffer_head * bh, * tmp;
- 	struct ocfs2_dir_entry * de;
--	int err;
- 	struct super_block * sb = inode->i_sb;
- 	unsigned int ra_sectors = 16;
- 
-@@ -735,12 +763,8 @@ static int ocfs2_dir_foreach_blk_el(struct inode *inode,
- 
- 	while (!error && !stored && *f_pos < i_size_read(inode)) {
- 		blk = (*f_pos) >> sb->s_blocksize_bits;
--		bh = ocfs2_bread(inode, blk, &err, 0);
--		if (!bh) {
--			mlog(ML_ERROR,
--			     "directory #%llu contains a hole at offset %lld\n",
--			     (unsigned long long)OCFS2_I(inode)->ip_blkno,
--			     *f_pos);
-+		if (ocfs2_read_dir_block(inode, blk, &bh, 0)) {
-+			/* Skip the corrupt dirblock and keep trying */
- 			*f_pos += sb->s_blocksize - offset;
- 			continue;
- 		}
-@@ -754,8 +778,10 @@ static int ocfs2_dir_foreach_blk_el(struct inode *inode,
- 		    || (((last_ra_blk - blk) << 9) <= (ra_sectors / 2))) {
- 			for (i = ra_sectors >> (sb->s_blocksize_bits - 9);
- 			     i > 0; i--) {
--				tmp = ocfs2_bread(inode, ++blk, &err, 1);
--				brelse(tmp);
-+				tmp = NULL;
-+				if (!ocfs2_read_dir_block(inode, ++blk, &tmp,
-+							  OCFS2_BH_READAHEAD))
-+					brelse(tmp);
- 			}
- 			last_ra_blk = blk;
- 			ra_sectors = 8;
-@@ -828,6 +854,7 @@ revalidate:
- 		}
- 		offset = 0;
- 		brelse(bh);
-+		bh = NULL;
+-	ret = ocfs2_read_block(inode, le64_to_cpu(di->i_xattr_loc), &blk_bh);
++	ret = ocfs2_read_xattr_block(inode, le64_to_cpu(di->i_xattr_loc),
++				     &blk_bh);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
+ 		return ret;
  	}
  
- 	stored = 0;
-@@ -1680,8 +1707,8 @@ static int ocfs2_find_dir_space_el(struct inode *dir, const char *name,
- 	struct super_block *sb = dir->i_sb;
- 	int status;
- 
--	bh = ocfs2_bread(dir, 0, &status, 0);
--	if (!bh) {
-+	status = ocfs2_read_dir_block(dir, 0, &bh, 0);
-+	if (status) {
- 		mlog_errno(status);
- 		goto bail;
+ 	xb = (struct ocfs2_xattr_block *)blk_bh->b_data;
+-	if (!OCFS2_IS_VALID_XATTR_BLOCK(xb)) {
+-		ret = -EIO;
+-		goto cleanup;
+-	}
+-
+ 	if (!(le16_to_cpu(xb->xb_flags) & OCFS2_XATTR_INDEXED)) {
+ 		struct ocfs2_xattr_header *header = &xb->xb_attrs.xb_header;
+ 		ret = ocfs2_xattr_list_entries(inode, header,
+@@ -760,7 +815,7 @@ static int ocfs2_xattr_block_list(struct inode *inode,
+ 		ret = ocfs2_xattr_tree_list_index_block(inode, xt,
+ 						   buffer, buffer_size);
  	}
-@@ -1702,11 +1729,10 @@ static int ocfs2_find_dir_space_el(struct inode *dir, const char *name,
- 				status = -ENOSPC;
- 				goto bail;
- 			}
--			bh = ocfs2_bread(dir,
--					 offset >> sb->s_blocksize_bits,
--					 &status,
--					 0);
--			if (!bh) {
-+			status = ocfs2_read_dir_block(dir,
-+					     offset >> sb->s_blocksize_bits,
-+					     &bh, 0);
-+			if (status) {
- 				mlog_errno(status);
- 				goto bail;
- 			}
+-cleanup:
++
+ 	brelse(blk_bh);
+ 
+ 	return ret;
+@@ -1693,24 +1748,19 @@ static int ocfs2_xattr_free_block(struct inode *inode,
+ 	u64 blk, bg_blkno;
+ 	u16 bit;
+ 
+-	ret = ocfs2_read_block(inode, block, &blk_bh);
++	ret = ocfs2_read_xattr_block(inode, block, &blk_bh);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
+ 		goto out;
+ 	}
+ 
+-	xb = (struct ocfs2_xattr_block *)blk_bh->b_data;
+-	if (!OCFS2_IS_VALID_XATTR_BLOCK(xb)) {
+-		ret = -EIO;
+-		goto out;
+-	}
+-
+ 	ret = ocfs2_xattr_block_remove(inode, blk_bh);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
+ 		goto out;
+ 	}
+ 
++	xb = (struct ocfs2_xattr_block *)blk_bh->b_data;
+ 	blk = le64_to_cpu(xb->xb_blkno);
+ 	bit = le16_to_cpu(xb->xb_suballoc_bit);
+ 	bg_blkno = ocfs2_which_suballoc_group(blk, bit);
+@@ -1950,19 +2000,15 @@ static int ocfs2_xattr_block_find(struct inode *inode,
+ 	if (!di->i_xattr_loc)
+ 		return ret;
+ 
+-	ret = ocfs2_read_block(inode, le64_to_cpu(di->i_xattr_loc), &blk_bh);
++	ret = ocfs2_read_xattr_block(inode, le64_to_cpu(di->i_xattr_loc),
++				     &blk_bh);
+ 	if (ret < 0) {
+ 		mlog_errno(ret);
+ 		return ret;
+ 	}
+ 
+-	xb = (struct ocfs2_xattr_block *)blk_bh->b_data;
+-	if (!OCFS2_IS_VALID_XATTR_BLOCK(xb)) {
+-		ret = -EIO;
+-		goto cleanup;
+-	}
+-
+ 	xs->xattr_bh = blk_bh;
++	xb = (struct ocfs2_xattr_block *)blk_bh->b_data;
+ 
+ 	if (!(le16_to_cpu(xb->xb_flags) & OCFS2_XATTR_INDEXED)) {
+ 		xs->header = &xb->xb_attrs.xb_header;
+@@ -2259,9 +2305,9 @@ meta_guess:
+ 	/* calculate metadata allocation. */
+ 	if (di->i_xattr_loc) {
+ 		if (!xbs->xattr_bh) {
+-			ret = ocfs2_read_block(inode,
+-					       le64_to_cpu(di->i_xattr_loc),
+-					       &bh);
++			ret = ocfs2_read_xattr_block(inode,
++						     le64_to_cpu(di->i_xattr_loc),
++						     &bh);
+ 			if (ret) {
+ 				mlog_errno(ret);
+ 				goto out;
 -- 
 1.5.6
 
