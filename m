@@ -1,82 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYLSNSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYLSNVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYLSNSW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 08:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbYLSNSP
+	id S1754021AbYLSNVP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 08:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYLSNU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 08:18:15 -0500
-Received: from mail.gmx.net ([213.165.64.20]:37420 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753121AbYLSNSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 08:18:14 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18S6zBSA1ESr/Eo68Q2RIASCjL2hAMDREH5iivf43
-	qRlK/B/3ptVs5u
-Date: Fri, 19 Dec 2008 14:18:22 +0100 (CET)
-From: Guennadi Liakhovetski <lg@denx.de>
-X-X-Sender: lyakh@axis700.grange
-To: Johannes Weiner <hannes@cmpxchg.org>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] bitmap: fix bitmap_find_free_region()
-In-Reply-To: <20081219130211.GA1560@cmpxchg.org>
-Message-ID: <Pine.LNX.4.64.0812191413520.4536@axis700.grange>
-References: <Pine.LNX.4.64.0812191202130.4536@axis700.grange>
- <20081219130211.GA1560@cmpxchg.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
+	Fri, 19 Dec 2008 08:20:58 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55747 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752893AbYLSNU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 08:20:57 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <7A24DF798E223B4C9864E8F92E8C93EC01AAF3F8@SACMVEXC1-PRD.hq.netapp.com>
+References: <7A24DF798E223B4C9864E8F92E8C93EC01AAF3F8@SACMVEXC1-PRD.hq.netapp.com>
+To: "Muntz, Daniel" <Dan.Muntz@netapp.com>
+Cc: dhowells@redhat.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org,
+       steved@redhat.com, linux-fsdevel@vger.kernel.org, rwheeler@redhat.com
+Subject: Re: Pull request for FS-Cache, including NFS patches
+Date: Fri, 19 Dec 2008 13:20:46 +0000
+Message-ID: <10926.1229692846@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Dec 2008, Johannes Weiner wrote:
+Muntz, Daniel <Dan.Muntz@netapp.com> wrote:
 
-> On Fri, Dec 19, 2008 at 12:26:41PM +0100, Guennadi Liakhovetski wrote:
-> > Currently bitmap_find_free_region() assumes, that the requested region 
-> > size is smaller than the entire bitmap. If this is not the case it fails 
-> > to detect it and returns success, while pointing at a position outside of 
-> > the region.
-> > 
-> > Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > ---
-> > It is hard to believe, that this is a bug, last time this code was touched 
-> > in 2006... Or should the caller guarantee, that the requested region is 
-> > not larger than the bitmap? Then dma_alloc_from_coherent() is buggy, which 
-> > is where I hit this bug. But it seems to me bitmap_find_free_region() 
-> > should be fixed.
-> > 
-> > diff --git a/lib/bitmap.c b/lib/bitmap.c
-> > index 1338469..079c5e3 100644
-> > --- a/lib/bitmap.c
-> > +++ b/lib/bitmap.c
-> > @@ -950,6 +950,9 @@ int bitmap_find_free_region(unsigned long *bitmap, int bits, int order)
-> >  {
-> >  	int pos;		/* scans bitmap by regions of size order */
-> >  
-> > +	if (bits < 1 << order)
-> > +		return -ENOMEM;
-> 
-> I think this is an error on the callsite, so a WARN_ON() might be good
-> to spot these.  I would be interested in the callpath that triggered
-> this bug for you.
+> Local disk cache was great for AFS back around 1992.  Typical networks
+> were 10 or 100Mbps (slower than disk access at the time), and memories
+> were small (typical 16MB).
 
-As I said above it's called from dma_alloc_from_coherent() from 
-dma_alloc_coherent().
+Yes.  If you connect an NFS client to an NFS server by GigE and have no other
+load on the net, and the NFS server can keep the whole dataset in RAM, then
+the CacheFiles backend kills your performance.  I have pointed out that you
+need to consider carefully whether a local cache is right for you.
 
-> And return -ENOSPC?
+> FS-Cache appears to help only with read traffic--one reason why the web
+> loves caching--and only for reads that would miss the buffer/page cache
+> (memories are now "large").
 
-So, you agree that a check should be added to bitmap_find_free_region()? 
-As for details - to warn or not to warn and what error code to return, 
-that can be discussed, although "No space left on device" doesn't seem to 
-fit very well IMHO:-)
+FS-Cache itself doesn't care whether you're trying to cache read traffic or
+write traffic.  The in-kernel AFS filesystem will cache reads and writes, but
+the NFS fs will only cache reads as I have currently implemented it.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
+The reason I did this is that if you make a write on an AFS file, you can
+immediately tell if it overlapped with a write from another client, and you
+can then nuke your caches.
 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+On NFS, you can't, at least not without proper change attribute support in
+NFSv4.  This is not so much a problem with the NFS protocol as a problem with
+the fact that the backing filesystems that NFS uses don't or didn't support
+it.
+
+However, the same problem affects the NFS pagecache.  If you do a write to an
+NFS server, *that* can then be undetectably out of sync with the server.  If
+you don't mind that state persisting on disk, FS-Cache presents no barrier to
+NFS files that are open for writing being cached too.
+
+> Solaris has had CacheFS since ~1995, HPUX had a port of it since ~1997.  I'd
+> be interested in evidence of even a small fraction of Solaris and/or HPUX
+> shops using CacheFS.  I am aware of customers who thought it sounded like a
+> good idea, but ended up ditching it for various reasons (e.g., CacheFS just
+> adds overhead if you almost always hit your local mem cache).
+
+I know that Solaris and Windows have it; I don't have any facts about how
+widely it is used.
+
+> One argument in favor that I don't see here is that local disk cache is
+> persistent (I'm assuming it is in your implementation).
+
+It can be.  As I said in my email:
+
+	I've tried to implement just the minimal useful functionality for
+	persistent caching.  There is more to be added, but it's not immediately
+	necessary.
+
+The CacheFiles backend is persistent, but you could write a backend that
+isn't, if you, for example, wanted to make use of the >4G of RAM permitted to
+some Pentium motherboards as a huge ramdisk.
+
+Not having fully persistent caching allows you to skimp on what metadata you
+store to disk.
+
+> Addressing 1 and 2 in your list, I'd be curious how often a miss in core
+> is a hit on disk.
+
+It depends on what you're doing.  I'm not sure I can give you a better answer
+than that.
+
+> Number 3 scares me.  How does this play with the expected semantics of NFS?
+
+I don't know.  Yet it's something you want to do for AFS, I think.
+
+> Number 5 is hard, if not provably requiring human intervention to do syncs
+> when writes are involved (see Disconnected AFS work by UM/CITI/Huston, and
+> work at CMU).
+
+Yeah, I appreciate that it's, erm, 'yucky'.  You can aliken it to doing a GIT
+pull or CVS update into your tree and then having to manually fix up the
+conflicts.
+
+David
