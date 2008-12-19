@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbYLSCpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbYLSCsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752692AbYLSCpu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 21:45:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYLSCpZ
+	id S1753863AbYLSCsf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 21:48:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYLSCsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 21:45:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49056 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752630AbYLSCpW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 21:45:22 -0500
-Date: Thu, 18 Dec 2008 18:44:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, sfr@canb.auug.org.au,
-       trond.myklebust@fys.uio.no, steved@redhat.com, rwheeler@redhat.com,
-       bfields@fieldses.org, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Pull request for FS-Cache, including NFS patches
-Message-Id: <20081218184443.d73f5431.akpm@linux-foundation.org>
-In-Reply-To: <7633.1229653644@redhat.com>
-References: <20081218123601.11810b7f.akpm@linux-foundation.org>
-	<8930.1229560221@redhat.com>
-	<20081218224418.804f10bc.sfr@canb.auug.org.au>
-	<20081218142420.GA16728@infradead.org>
-	<7633.1229653644@redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 18 Dec 2008 21:48:25 -0500
+Received: from sh.osrg.net ([192.16.179.4]:36749 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751519AbYLSCsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 21:48:25 -0500
+Date: Fri, 19 Dec 2008 11:47:42 +0900
+To: beckyb@kernel.crashing.org
+Cc: fujita.tomonori@lab.ntt.co.jp, jeremy@goop.org, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       x86@kernel.org, ian.campbell@citrix.com, jbeulich@novell.com,
+       joerg.roedel@amd.com, benh@kernel.crashing.org
+Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use
+ of swiotlb
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <E5300CC0-1D08-46F7-91F6-DEC36202F1DE@kernel.crashing.org>
+References: <4949296F.7000701@goop.org>
+	<20081218015705Z.fujita.tomonori@lab.ntt.co.jp>
+	<E5300CC0-1D08-46F7-91F6-DEC36202F1DE@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20081219114808C.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Dec 2008 02:27:24 +0000 David Howells <dhowells@redhat.com> wrote:
+On Thu, 18 Dec 2008 12:17:54 -0600
+Becky Bruce <beckyb@kernel.crashing.org> wrote:
 
-> > Are any distros pushing for this?  Or shipping it?  If so, are they
-> > able to weigh in and help us with this quite difficult decision?
+> > Can you be more specific? What architecture is plan to use highmem
+> > support in swiotlb?
 > 
-> We (Red Hat) have shipped it in RHEL-5 and some Fedora releases.  Doing so is
-> quite an effort, though, precisely because the code is not yet upstream.  We
-> have customers using it and are gaining more customers who want it.  There
-> even appear to be CentOS users using it (or at least complaining when it
-> breaks).
+> 32-bit powerpc needs this support - I was actually about to push a  
+> similar set of patches.  We have several processors that support 36  
+> bits of physical address space and do not have any iommu capability.   
+> The rest of the kernel support for those processors is now in place,  
+> so swiotlb is the last piece of the puzzle for that to be fully  
+> functional.  I need to take a closer look at this series to see  
+> exactly what it's doing and how it differs from what I've been testing.
 
-That's useful news.
+Ah, thanks,
 
-> 
-> I don't know what will convince you.  I've given you theoretical reasons why
-> caching ought to be useful; I've backed up the ones I've implemented with
-> benchmarks; I've given you examples of what our customers are doing with it or
-> want to do with it.
-
-Was that information captured/maintained somewhere?  It really is important (I
-think) for something of this magnitude.
-
-> Please help me understand what else you want.
-
-I want to be able to have an answer when someone asks me "why was all that
-stuff merged".  One which I can believe.
-
-> Do you perhaps want the netfs maintainers (such as Trond) to say that it's
-> necessary?
-
-Of course, their opinions (and supporting explanations) would be valuable.
+Then I accept that highmem support in lib/swiotbl.c is generically
+useful and we have to live with the ugly complication due to it.
