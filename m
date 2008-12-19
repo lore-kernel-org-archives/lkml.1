@@ -1,125 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbYLSETw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754390AbYLSEUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbYLSETw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 23:19:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbYLSETH
+	id S1754390AbYLSEUQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 23:20:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYLSETK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 23:19:07 -0500
-Received: from ti-out-0910.google.com ([209.85.142.187]:44365 "EHLO
+	Thu, 18 Dec 2008 23:19:10 -0500
+Received: from ti-out-0910.google.com ([209.85.142.191]:41143 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752578AbYLSETG (ORCPT
+	with ESMTP id S1752613AbYLSETI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 23:19:06 -0500
+	Thu, 18 Dec 2008 23:19:08 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=KjPU49x6QTHqSzPnq1hKFsqPKmyF6hOwtfbXp8rWAoxBlZ+pRy1pD4emUBrUiuwBHs
-         uQqkPku+Lob5fnWMhNOWuPUqx30JIOkhryRzLxZxtnI1ZhYHmsbKYfOdZUhPvI0jKpr4
-         WIOn9XE9Iffmw2oryMwXjofrbHxnAlkLfyito=
+        b=uyvgDaqA3LgWtmpL/j6V7rfbA73uNXqVqvIsK0+fNgFgnNxF21K5uIV8hUvEZy+U5U
+         CjDMiQKQ/VpD5yvWuGP8MaInRAo37eNYML1h4KOFVDWq9IU0q91iGHk4t0bX8R94Iftm
+         eIbmC+ZD8Gl+D9so1Uy5ggAkOZXP+5TEbWSGM=
 From: crquan@gmail.com
 To: dm-devel@redhat.com
 Cc: Alasdair G Kergon <agk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] dm-target: use pointer reference instead of making a copy
-Date: Fri, 19 Dec 2008 12:19:44 +0800
-Message-Id: <1229660385-17153-3-git-send-email-crquan@gmail.com>
+Subject: [PATCH 3/3] dm-target: embed internally used list_head into target_type
+Date: Fri, 19 Dec 2008 12:19:45 +0800
+Message-Id: <1229660385-17153-4-git-send-email-crquan@gmail.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1229660385-17153-2-git-send-email-crquan@gmail.com>
+In-Reply-To: <1229660385-17153-3-git-send-email-crquan@gmail.com>
 References: <1229660385-17153-1-git-send-email-crquan@gmail.com>
  <1229660385-17153-2-git-send-email-crquan@gmail.com>
+ <1229660385-17153-3-git-send-email-crquan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Cheng Renquan <crquan@gmail.com>
 
-The tt_internal always use target_type read-only, so there's no need to
-making a copy, just a pointer reference is good, this could save
- (sizeof(target_type) - sizeof(pointer)) bytes memory per target_type.
+The tt_internal is really just a list_head to manage registered target_type
+in a double linked list,
 
-  -		ti->tt = *t;
-  +		ti->tt = t;
+Here embed the list_head into target_type directly,
+1. to avoid kmalloc/kfree;
+2. then tt_internal is really unneeded;
 
 Signed-off-by: Cheng Renquan <crquan@gmail.com>
 ---
- drivers/md/dm-target.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/md/dm-target.c        |   95 +++++++++++++++--------------------------
+ include/linux/device-mapper.h |    3 +
+ 2 files changed, 37 insertions(+), 61 deletions(-)
 
 diff --git a/drivers/md/dm-target.c b/drivers/md/dm-target.c
-index 018df35..a713c7f 100644
+index a713c7f..ee120a9 100644
 --- a/drivers/md/dm-target.c
 +++ b/drivers/md/dm-target.c
-@@ -15,7 +15,7 @@
+@@ -14,40 +14,34 @@
+ 
  #define DM_MSG_PREFIX "target"
  
- struct tt_internal {
--	struct target_type tt;
+-struct tt_internal {
+-	struct target_type *tt;
+-
+-	struct list_head list;
+-};
+-
+ static LIST_HEAD(_targets);
+ static DECLARE_RWSEM(_lock);
+ 
+ #define DM_MOD_NAME_SIZE 32
+ 
+-static inline struct tt_internal *__find_target_type(const char *name)
++static inline struct target_type *__find_target_type(const char *name)
+ {
+-	struct tt_internal *ti;
 +	struct target_type *tt;
  
- 	struct list_head list;
- };
-@@ -30,7 +30,7 @@ static inline struct tt_internal *__find_target_type(const char *name)
- 	struct tt_internal *ti;
- 
- 	list_for_each_entry (ti, &_targets, list)
--		if (!strcmp(name, ti->tt.name))
-+		if (!strcmp(name, ti->tt->name))
- 			return ti;
+-	list_for_each_entry (ti, &_targets, list)
+-		if (!strcmp(name, ti->tt->name))
+-			return ti;
++	list_for_each_entry (tt, &_targets, list)
++		if (!strcmp(name, tt->name))
++			return tt;
  
  	return NULL;
-@@ -43,7 +43,7 @@ static struct tt_internal *get_target_type(const char *name)
+ }
+ 
+-static struct tt_internal *get_target_type(const char *name)
++static struct target_type *get_target_type(const char *name)
+ {
+-	struct tt_internal *ti;
++	struct target_type *tt;
+ 
  	down_read(&_lock);
  
- 	ti = __find_target_type(name);
--	if (ti && !try_module_get(ti->tt.module))
-+	if (ti && !try_module_get(ti->tt->module))
- 		ti = NULL;
+-	ti = __find_target_type(name);
+-	if (ti && !try_module_get(ti->tt->module))
+-		ti = NULL;
++	tt = __find_target_type(name);
++	if (tt && !try_module_get(tt->module))
++		tt = NULL;
  
  	up_read(&_lock);
-@@ -64,7 +64,7 @@ struct target_type *dm_get_target_type(const char *name)
- 		ti = get_target_type(name);
+-	return ti;
++	return tt;
+ }
+ 
+ static void load_module(const char *name)
+@@ -57,91 +51,70 @@ static void load_module(const char *name)
+ 
+ struct target_type *dm_get_target_type(const char *name)
+ {
+-	struct tt_internal *ti = get_target_type(name);
++	struct target_type *tt = get_target_type(name);
+ 
+-	if (!ti) {
++	if (!tt) {
+ 		load_module(name);
+-		ti = get_target_type(name);
++		tt = get_target_type(name);
  	}
  
--	return ti ? &ti->tt : NULL;
-+	return ti ? ti->tt : NULL;
+-	return ti ? ti->tt : NULL;
++	return tt;
  }
  
- void dm_put_target_type(struct target_type *t)
-@@ -72,7 +72,7 @@ void dm_put_target_type(struct target_type *t)
- 	struct tt_internal *ti = (struct tt_internal *) t;
- 
+-void dm_put_target_type(struct target_type *t)
++void dm_put_target_type(struct target_type *tt)
+ {
+-	struct tt_internal *ti = (struct tt_internal *) t;
+-
  	down_read(&_lock);
--	module_put(ti->tt.module);
-+	module_put(ti->tt->module);
+-	module_put(ti->tt->module);
++	module_put(tt->module);
  	up_read(&_lock);
- 
- 	return;
-@@ -83,7 +83,7 @@ static struct tt_internal *alloc_target(struct target_type *t)
- 	struct tt_internal *ti = kzalloc(sizeof(*ti), GFP_KERNEL);
- 
- 	if (ti)
--		ti->tt = *t;
-+		ti->tt = t;
- 
- 	return ti;
+-
+-	return;
  }
-@@ -96,7 +96,7 @@ int dm_target_iterate(void (*iter_func)(struct target_type *tt,
+ 
+-static struct tt_internal *alloc_target(struct target_type *t)
+-{
+-	struct tt_internal *ti = kzalloc(sizeof(*ti), GFP_KERNEL);
+-
+-	if (ti)
+-		ti->tt = t;
+-
+-	return ti;
+-}
+-
+-
+ int dm_target_iterate(void (*iter_func)(struct target_type *tt,
+ 					void *param), void *param)
+ {
+-	struct tt_internal *ti;
++	struct target_type *tt;
  
  	down_read(&_lock);
- 	list_for_each_entry (ti, &_targets, list)
--		iter_func(&ti->tt, param);
-+		iter_func(ti->tt, param);
+-	list_for_each_entry (ti, &_targets, list)
+-		iter_func(ti->tt, param);
++	list_for_each_entry (tt, &_targets, list)
++		iter_func(tt, param);
  	up_read(&_lock);
  
  	return 0;
-@@ -132,7 +132,7 @@ int dm_unregister_target(struct target_type *t)
- 		return -EINVAL;
+ }
+ 
+-int dm_register_target(struct target_type *t)
++int dm_register_target(struct target_type *tt)
+ {
+ 	int rv = 0;
+-	struct tt_internal *ti = alloc_target(t);
+-
+-	if (!ti)
+-		return -ENOMEM;
+ 
+ 	down_write(&_lock);
+-	if (__find_target_type(t->name))
++	if (__find_target_type(tt->name))
+ 		rv = -EEXIST;
+ 	else
+-		list_add(&ti->list, &_targets);
++		list_add(&tt->list, &_targets);
+ 
+ 	up_write(&_lock);
+-	if (rv)
+-		kfree(ti);
+ 	return rv;
+ }
+ 
+-int dm_unregister_target(struct target_type *t)
++int dm_unregister_target(struct target_type *tt)
+ {
+-	struct tt_internal *ti;
++	int rv = 0;
+ 
+ 	down_write(&_lock);
+-	if (!(ti = __find_target_type(t->name))) {
+-		up_write(&_lock);
+-		return -EINVAL;
++	if (!__find_target_type(tt->name)) {
++		rv = -EINVAL;
++		goto out;
  	}
  
--	if (ti->tt.module && module_refcount(ti->tt.module)) {
-+	if (ti->tt->module && module_refcount(ti->tt->module)) {
- 		up_write(&_lock);
- 		return -ETXTBSY;
+-	if (ti->tt->module && module_refcount(ti->tt->module)) {
+-		up_write(&_lock);
+-		return -ETXTBSY;
++	if (tt->module && module_refcount(tt->module)) {
++		rv = -ETXTBSY;
++		goto out;
  	}
+ 
+-	list_del(&ti->list);
+-	kfree(ti);
++	list_del(&tt->list);
+ 
++ out:
+ 	up_write(&_lock);
+-	return 0;
++	return rv;
+ }
+ 
+ /*
+diff --git a/include/linux/device-mapper.h b/include/linux/device-mapper.h
+index c17fd33..8bcc7f5 100644
+--- a/include/linux/device-mapper.h
++++ b/include/linux/device-mapper.h
+@@ -117,6 +117,9 @@ struct target_type {
+ 	dm_message_fn message;
+ 	dm_ioctl_fn ioctl;
+ 	dm_merge_fn merge;
++
++	/* for internal use only */
++	struct list_head list;
+ };
+ 
+ struct io_restrictions {
 -- 
 1.6.0.2.GIT
 
