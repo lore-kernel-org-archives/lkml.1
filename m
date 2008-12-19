@@ -1,37 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbYLSXmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYLSXv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755887AbYLSXmR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 18:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYLSXmD
+	id S1754846AbYLSXv4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 18:51:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYLSXvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 18:42:03 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:2889 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750961AbYLSXmB (ORCPT
+	Fri, 19 Dec 2008 18:51:45 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50277 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbYLSXvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 18:42:01 -0500
-Message-ID: <8bb80c380812191542g72b541b3s14001aaa234e79cc@mail.gmail.com>
-Date: Fri, 19 Dec 2008 15:42:00 -0800
-From: "Mike Chan" <mike@android.com>
-To: linux-kernel@vger.kernel.org
-Subject: per uid based resource tracking
+	Fri, 19 Dec 2008 18:51:44 -0500
+Message-ID: <494C31C8.1050502@zytor.com>
+Date: Fri, 19 Dec 2008 15:44:08 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: venkatesh.pallipadi@intel.com
+CC: mingo@elte.hu, tglx@linutronix.de, akpm@linux-foundation.org,
+       npiggin@suse.de, hugh@veritas.com, arjan@infradead.org,
+       jbarnes@virtuousgeek.org, rdreier@cisco.com, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [patch 0/5] Changes based on review comments for PAT pfnmap tracking
+References: <20081219214725.125171000@intel.com>
+In-Reply-To: <20081219214725.125171000@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's a bunch of patches that export resource tracking per-pid
-(which you can effectively map back to uid). However if you are
-collecting aggregated stats, this requires polling from userspace in
-case you have processes that die or the kernel oom killer kicks in and
-you lose that stats.
+venkatesh.pallipadi@intel.com wrote:
+> Incremental patches to address the review comments from Nick Piggin
+> for v3 version of x86 PAT pfnmap changes patchset here
+> 
+> http://lkml.indiana.edu/hypermail/linux/kernel/0812.2/01330.html
+> 
 
-What are people's thoughts on yet another stats in either /proc or
-/sys to export resources (network, cpu, io) aggregated per uid. Or
-does this already exist in 2.6.27 somewhere?
+Applied to tip:x86/pat2, thanks!
 
--- 
-MIke Chan
+	-hpa
