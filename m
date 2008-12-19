@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbYLSISz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbYLSITV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754805AbYLSISz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 03:18:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbYLSISq
+	id S1754901AbYLSITV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 03:19:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbYLSITE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 03:18:46 -0500
-Received: from ns1.suse.de ([195.135.220.2]:32879 "EHLO mx1.suse.de"
+	Fri, 19 Dec 2008 03:19:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35084 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753186AbYLSISo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 03:18:44 -0500
-Date: Fri, 19 Dec 2008 09:18:41 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: Seewer Philippe <philippe.seewer@bfh.ch>
-Cc: Hannes Reinecke <hare@suse.de>, Christoph Hellwig <hch@infradead.org>,
-       <initramfs@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Dave Jones <davej@redhat.com>,
-       <cjwatson@ubuntu.com>, Bernhard Walle <bwalle@novell.com>
-Subject: Re: Dracut -- Cross distribution initramfs infrastructure
-Message-ID: <20081219091841.207bc951@kopernikus.site>
-In-Reply-To: <494B5031.5080306@bfh.ch>
-References: <1229540094.28858.150.camel@aglarond.local>
-	<20081217190700.GA15377@infradead.org>
-	<4949FD67.6040906@suse.de>
-	<494B5031.5080306@bfh.ch>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753097AbYLSITD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 03:19:03 -0500
+Date: Fri, 19 Dec 2008 09:18:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: beckyb@kernel.crashing.org, jeremy@goop.org, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, x86@kernel.org, ian.campbell@citrix.com,
+       jbeulich@novell.com, joerg.roedel@amd.com, benh@kernel.crashing.org
+Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use
+	of swiotlb
+Message-ID: <20081219081835.GA9097@elte.hu>
+References: <4949296F.7000701@goop.org> <20081218015705Z.fujita.tomonori@lab.ntt.co.jp> <E5300CC0-1D08-46F7-91F6-DEC36202F1DE@kernel.crashing.org> <20081219114808C.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081219114808C.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Seewer Philippe [2008-12-19 08:41]:
->
-> Hannes Reinecke wrote:
-> [snip]
-> > If anyone is interested I can give a short overview of it.
-> Please do so, would be appreciated.
 
-A good start is the manual page in section 5:
-http://git.opensuse.org/?p=projects/mkinitrd.git;a=blob_plain;f=man/mkinitrd.5.txt;hb=7583c3cc047edc3e8f1a06e8b7925bd27ac0228c
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-(The git.kernel.org and the opensuse.org repos are basically the same,
-we just switched to opensuse.org after the internal maintainership has
-been transferred from Hannes to myself because it was easier to add
-new users there. The opensuse.org git repo site didn't exist when the
-kernel.org mkinitrd repo was created.)
+> On Thu, 18 Dec 2008 12:17:54 -0600
+> Becky Bruce <beckyb@kernel.crashing.org> wrote:
+> 
+> > > Can you be more specific? What architecture is plan to use highmem
+> > > support in swiotlb?
+> > 
+> > 32-bit powerpc needs this support - I was actually about to push a  
+> > similar set of patches.  We have several processors that support 36  
+> > bits of physical address space and do not have any iommu capability.   
+> > The rest of the kernel support for those processors is now in place,  
+> > so swiotlb is the last piece of the puzzle for that to be fully  
+> > functional.  I need to take a closer look at this series to see  
+> > exactly what it's doing and how it differs from what I've been testing.
+> 
+> Ah, thanks,
+> 
+> Then I accept that highmem support in lib/swiotbl.c is generically 
+> useful and we have to live with the ugly complication due to it.
 
-Anyway:
+Great! And we of course want to make the best possible job here - so 
+whenever you notice any area that could be done better and less 
+intrusively, please mention it.
 
-The basic idea is to have most stuff not in the main 'mkinitrd' script
-but in modules. Each module has (normally) a setup script part that is
-executed when the initrd is created, and a boot part that is executed
-when the initrd is running. For example, NFS root is in the 'nfs-util'
-package, not in 'mkinitrd'. Same for iSCSI. Or the kdump part is
-not in the main mkinitrd but in our 'kdump' package [1]. So the main
-initrd  package is quite small but still very flexible.
-
-It's also flexible enough to use Busybox as module that resides in the
-'busybox' package and can then be enabled with -F busybox (feature)
-when building the initrd.
-
-Only documentation is at the current time a bit weak, one has to fiddle
-some stuff from the sources when writing new modules. But that's easy
-to fix. :-)
-
-Hannes may explain more ...
-
-
-
-    Bernhard
-
-[1] hg clone http://freehg.org/u/bwalle/kdump/
+	Ingo
