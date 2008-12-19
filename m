@@ -1,106 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbYLSUWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753162AbYLSUXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752814AbYLSUWH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 15:22:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYLSUVu
+	id S1753162AbYLSUXr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 15:23:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbYLSUXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 15:21:50 -0500
-Received: from gw.goop.org ([64.81.55.164]:55521 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751320AbYLSUVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 15:21:48 -0500
-Message-ID: <494C0255.8010208@goop.org>
-Date: Fri, 19 Dec 2008 12:21:41 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Fri, 19 Dec 2008 15:23:40 -0500
+Received: from rv-out-0506.google.com ([209.85.198.224]:41986 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750817AbYLSUXj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 15:23:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YWLx/+FqvMe/gjAFVjaDY0ityfXgzcwjQ8ykBBZZ1PttdzgZZSDLeIImbBHE6xErH6
+         0kNhjXMEx32EKPpwJwJkAf03Y4F5Y4ilCSd5aVCI99Fw2aRuwYp2TPek7g5gA4jHXrrw
+         kJNOPu6X4lqd0kREPLJW2h744N6Wyufv2hZ4I=
+Message-ID: <3f9a31f40812191223g72b8a1eey2780f8e1a0ebf7aa@mail.gmail.com>
+Date: Sat, 20 Dec 2008 01:53:38 +0530
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: martin@valinux.com, gareth@valinux.com, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       "Jaswinder Singh" <jaswinder@infradead.org>
+Subject: Re: [PATCH] radeon_cp: use request_firmware
+In-Reply-To: <1218095497.4016.3.camel@jaswinder.satnam>
 MIME-Version: 1.0
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-CC: linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user
- space data
-References: <494009D7.4020602@vlnb.net> <494012C4.7090304@vlnb.net>
-In-Reply-To: <494012C4.7090304@vlnb.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1218095497.4016.3.camel@jaswinder.satnam>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vladislav Bolkhovitin wrote:
-> This patch implements support for zero-copy TCP transmit of user space 
-> data. It is necessary in iSCSI-SCST target driver for transmitting data 
-> from user space buffers, supplied by user space backend handlers. In 
-> this case SCST core needs to know when TCP finished transmitting the 
-> data, so the corresponding buffers can be reused or freed. Without this 
-> patch it isn't possible, so iSCSI-SCST has to use data copying to TCP 
-> send buffers function sock_sendpage(). ISCSI-SCST also works without 
-> this patch, but that this patch gives a nice performance improvement.
->   
+Hello all,
 
-In Xen networking it looks like we're going to need to solve a very 
-similar problem.
+On Thu, Aug 7, 2008 at 1:21 PM, Jaswinder Singh <jaswinder@infradead.org> wrote:
+> Moved datah before datal because datah is required before datal.
+>
+> Firmware blob looks like this...
+>        __be32 datah
+>        __be32 datal
+>
+> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
+> ---
+>  drivers/gpu/drm/radeon/radeon_cp.c        |  152 ++-
+>  drivers/gpu/drm/radeon/radeon_drv.h       |    6 +
+>  drivers/gpu/drm/radeon/radeon_microcode.h | 1844 -----------------------------
+>  firmware/Makefile                         |    4 +
+>  firmware/WHENCE                           |   40 +
+>  firmware/radeon/R100_cp.bin.ihex          |  130 ++
+>  firmware/radeon/R200_cp.bin.ihex          |  130 ++
+>  firmware/radeon/R300_cp.bin.ihex          |  130 ++
+>  firmware/radeon/R420_cp.bin.ihex          |  130 ++
+>  firmware/radeon/R520_cp.bin.ihex          |  130 ++
+>  firmware/radeon/RS600_cp.bin.ihex         |  130 ++
+>  firmware/radeon/RS690_cp.bin.ihex         |  130 ++
+>  12 files changed, 1050 insertions(+), 1906 deletions(-)
+>  delete mode 100644 drivers/gpu/drm/radeon/radeon_microcode.h
+>  create mode 100644 firmware/radeon/R100_cp.bin.ihex
+>  create mode 100644 firmware/radeon/R200_cp.bin.ihex
+>  create mode 100644 firmware/radeon/R300_cp.bin.ihex
+>  create mode 100644 firmware/radeon/R420_cp.bin.ihex
+>  create mode 100644 firmware/radeon/R520_cp.bin.ihex
+>  create mode 100644 firmware/radeon/RS600_cp.bin.ihex
+>  create mode 100644 firmware/radeon/RS690_cp.bin.ihex
+>
 
-When a guest (non-privileged, with no direct hardware access) wants to 
-send a network packet, it passes it over to the privileged (host) 
-domain, who then puts it into the network stack for transmission.
+Is available at
+http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git?a=commit;h=3a911a216742e4ab998f3281409d46a62f252716
 
-The packet gets passed over in a page granted (read "borrowed") from the 
-guest domain.   We can't return it to the guest while its tangled up in 
-the host's network stack, so we need notification of when the stack has 
-finished with the page.
 
-The out of tree Xen patches do this by marking a page as having been 
-allocated by a foreign allocator, and overloads the private memory of 
-struct page with a destructor function pointer, which put_page calls as 
-appropriate.  We can do this because the page is definitely "owned" by 
-the Xen subsystem, so most of the fields are available for recycling; 
-the main problem is that we need to grab another page flag.  Your case 
-sounds more complex because the source page can be mapped by userspace 
-and/or be in the pagecache, so everything is already claimed.
+Please let me know, should I need to resend this patch for :
+1. git kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+OR
+2. git kernel.org:/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 
-As with your case, we can simply copy the page data if this mechanism 
-isn't available.  But it would be nice if it were.
+Thank you,
 
-> 1. Add net_priv analog in struct sk_buff, not in struct page. But then 
-> it would be required that all the pages in each skb must be from the 
-> same originator, i.e. with the same net_priv. It is unpractical to 
-> change all the operations with skb's to forbid merging them, if they 
-> have different net_priv. I tried, but quickly gave up. There are too 
-> many such places in very not obvious code pieces.
->   
-
-I think Rusty has a patch to put some kind of put notifier in struct 
-skb_shared_info, but I'm not sure of the details.
-
-> 2. Have in iSCSI-SCST a hashed list to translate page to iSCSI cmd by a 
-> simple search function. This approach was rejected, because to copy a 
-> page a modern CPU needs using MMX about 1500 ticks.
-
-Is that the cold cache timing?
-
->  It was observed, 
-> that each page can be referenced by TCP during transmit about 20 times 
-> or even more. So, if each search needs, say, 20 ticks, the overall 
-> search time will be 20*20*2 (to get() and put()) = 800 ticks. So, this 
-> approach would considerably worse performance-wise to the chosen 
-> approach and provide not too much benefit.
->   
-
-Wouldn't you only need to do the lookup on the last put?
-
-An external lookup table might well for for us, if the net_put_page() 
-change is acceptable to the network folk.
-
-    J
+Jaswinder Singh.
