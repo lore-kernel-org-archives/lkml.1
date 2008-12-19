@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbYLSRsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYLSRsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbYLSRsU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 12:48:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYLSRrs
+	id S1754278AbYLSRsp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 12:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYLSRsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 12:47:48 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:39751 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752128AbYLSRrr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 12:47:47 -0500
-Date: Fri, 19 Dec 2008 19:00:09 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
-       Christoph Hellwig <hch@infradead.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>, netdev@vger.kernel.org
-Subject: Re: [RFC]: Support for zero-copy TCP transmit of user space data
-Message-ID: <20081219180009.GP25779@one.firstfloor.org>
-References: <4941590F.3070705@vlnb.net> <1229022734.3266.67.camel@localhost.localdomain> <4942BAB8.4050007@vlnb.net> <1229110673.3262.94.camel@localhost.localdomain> <49469ADB.6010709@vlnb.net> <20081215231801.GA27168@infradead.org> <4947FA1C.2090509@vlnb.net> <494A97DD.7080503@vlnb.net> <87zlisz9pg.fsf@basil.nowhere.org> <494BDBFC.7060707@vlnb.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <494BDBFC.7060707@vlnb.net>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 19 Dec 2008 12:48:36 -0500
+Received: from gw.goop.org ([64.81.55.164]:50372 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752225AbYLSRsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 12:48:35 -0500
+Message-ID: <494BDE71.5010903@goop.org>
+Date: Fri, 19 Dec 2008 09:48:33 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: Becky Bruce <beckyb@kernel.crashing.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xen-devel@lists.xensource.com, x86@kernel.org, ian.campbell@citrix.com,
+       jbeulich@novell.com, joerg.roedel@amd.com,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use
+ of swiotlb
+References: <20081216203513.GA14787@elte.hu> <20081217142637V.fujita.tomonori@lab.ntt.co.jp> <4949296F.7000701@goop.org> <20081218015705Z.fujita.tomonori@lab.ntt.co.jp> <E5300CC0-1D08-46F7-91F6-DEC36202F1DE@kernel.crashing.org> <20081218210231.GB24271@elte.hu> <3853A0F2-F817-4263-9EF9-9A0655BF95CD@kernel.crashing.org> <494B46E8.1000104@goop.org> <65BDE147-2DF2-4963-B924-7482DE42D655@kernel.crashing.org>
+In-Reply-To: <65BDE147-2DF2-4963-B924-7482DE42D655@kernel.crashing.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sure, this is why I propose to disable that option by default in 
-> distribution kernels, so it would produce no harm.
+Becky Bruce wrote:
+>
+> On Dec 19, 2008, at 1:02 AM, Jeremy Fitzhardinge wrote:
+>
+>> Becky Bruce wrote:
+>>>
+>>>
+>>> Unfortunately, this is horrible timing for me, as starting tomorrow, 
+>>> I'm going to be offline for a week and a half or so in podunk 
+>>> Louisiana with essentially no net access.  I can integrate my code 
+>>> into your tree and test on PPC as soon as I return to the real world.
+>>
+>> Yeah, I think that's OK.  The important thing at this point is to 
+>> determine whether the two patch sets are aligned or conflicting.  It 
+>> sounds like they're largely aligned, and so generating a delta from 
+>> my patches to match your needs will be relatively straightforward.
+>>
+>> I'm trying to line all this Xen stuff up for this merge window, so 
+>> I'd prefer to revisit it in the next dev cycle.  Did you want to get 
+>> something into this merge window?
+>
+> I was originally hoping to get something into this merge window, but 
+> the timing just isn't working out for me.  The rest of the support is 
+> already in the kernel for ppc (actually, most everything is in 
+> 2.6.28), and swiotlb is the last bit I need to get this working.   Ah 
+> well.... I'll hop to work on this from the ppc point of view as soon 
+> as I get back online, and we'll see where that takes us. 
 
-That would make the option useless for most users. You might as well
-not bother merging then.
 
-> first, only then enable that option, then rebuild the kernel. (I'm 
-> repeating it to make sure you didn't miss this my point; it was in the 
-> part of my original message, which you cut out.)
+Hm, yes, they're really very similar patch sets.  We can definitely turn 
+this into something that will work for both.
 
-That was such a ridiculous suggestion, I didn't take it seriously.
-
-Also it should be really not rocket science to use a separate 
-table for this.
-
--Andi
-
--- 
-ak@linux.intel.com
+    J
