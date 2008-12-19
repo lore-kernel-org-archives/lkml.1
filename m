@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbYLSPa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752514AbYLSQB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbYLSPa0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 10:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYLSPaM
+	id S1752514AbYLSQB7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 11:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYLSQBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 10:30:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55750 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751206AbYLSPaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 10:30:11 -0500
-Date: Fri, 19 Dec 2008 16:30:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: rostedt@goodmis.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ftrace: introduce tracing_reset_online_cpus() helper
-Message-ID: <20081219153001.GA13130@elte.hu>
-References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 19 Dec 2008 11:01:47 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:59904 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750989AbYLSQBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 11:01:46 -0500
+Message-Id: <20081219160144.697518000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 19 Dec 2008 08:01:44 -0800
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8] x86 cpumask: more cpumask updates to core kernel routines
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+Patches for review only.  Will be pushed via one git conduit or another.
 
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> This patch factors out common code from multiple tracers into a
-> tracing_reset_online_cpus() function and converts the tracers to use it.
-> 
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  kernel/trace/trace.c              |   10 ++++++++++
->  kernel/trace/trace.h              |    1 +
->  kernel/trace/trace_boot.c         |   12 +-----------
->  kernel/trace/trace_functions.c    |   14 ++------------
->  kernel/trace/trace_hw_branches.c  |   14 ++------------
->  kernel/trace/trace_mmiotrace.c    |    6 +-----
->  kernel/trace/trace_sched_switch.c |   14 ++------------
->  kernel/trace/trace_sysprof.c      |   12 +-----------
->  8 files changed, 20 insertions(+), 63 deletions(-)
+Remove 20 more cpumask_t references (down to *only* 518... ;-)
 
-looks like a nice simplification! Applied to tip/tracing/ftrace, thanks 
-Pekka!
+Pulled the following patches from:
 
-	Ingo
+http://ozlabs.org/~rusty/kernel/rr-2008-12-18-1.tar.bz2
+
+	cpumask:convert-kernel_compat.c.patch
+	cpumask:convert-kernel_workqueue.c.patch
+	cpumask:convert-kernel_time.patch
+	cpumask:convert-kernel_trace.patch
+	cpumask:convert-kernel.patch
+	cpumask:convert-mm.patch
+	cpumask:convert-drivers.patch
+	cpumask:convert-misc.patch
+
+... and edited slightly/built/tested on x86_64
+
+In addition, the following are OBSOLETE:
+
+	cpumask:get-rid-of-_nr-core.patch
+	(folded into the above patches to avoid inter-patch dependencies)
+
+The affected files are:
+
+(* - interdepency on 'irq_default_affinity')
+
+    (*)	arch/alpha/kernel/irq.c
+	drivers/base/cpu.c
+	drivers/misc/sgi-xp/xpc_main.c
+	drivers/net/sfc/efx.c
+	drivers/oprofile/buffer_sync.c
+	drivers/oprofile/buffer_sync.h
+	drivers/oprofile/oprof.c
+	drivers/xen/manage.c
+	fs/seq_file.c
+	include/linux/interrupt.h
+	include/linux/rcuclassic.h
+	include/linux/seq_file.h
+	include/linux/stop_machine.h
+	include/linux/tick.h
+	kernel/compat.c
+	kernel/cpu.c
+	kernel/irq/manage.c
+	kernel/irq/proc.c
+	kernel/power/poweroff.c
+	kernel/profile.c
+	kernel/rcuclassic.c
+	kernel/rcupreempt.c
+	kernel/rcutorture.c
+	kernel/softlockup.c
+	kernel/stop_machine.c
+	kernel/taskstats.c
+	kernel/time/clocksource.c
+	kernel/time/tick-broadcast.c
+	kernel/time/tick-common.c
+	kernel/trace/ring_buffer.c
+	kernel/trace/trace.c
+	kernel/trace/trace_sysprof.c
+	kernel/workqueue.c
+	lib/smp_processor_id.c
+	mm/pdflush.c
+	mm/slab.c
+	mm/slub.c
+	mm/vmscan.c
+	mm/vmstat.c
+	net/iucv/iucv.c
+
+-- 
