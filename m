@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbYLSSXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbYLSSYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753868AbYLSSXT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 13:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbYLSSXI
+	id S1754178AbYLSSYt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 13:24:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYLSSYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 13:23:08 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:28201 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbYLSSXH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 13:23:07 -0500
-Message-ID: <494BE687.2040700@ct.jp.nec.com>
-Date: Fri, 19 Dec 2008 10:23:03 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Toshikazu Nakayama <nakayama.ts@ncos.nec.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] printk: fix discarding message when recursion_bug
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Dec 2008 13:24:38 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58406 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751747AbYLSSYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 13:24:38 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <7A24DF798E223B4C9864E8F92E8C93EC01AAF504@SACMVEXC1-PRD.hq.netapp.com>
+References: <7A24DF798E223B4C9864E8F92E8C93EC01AAF504@SACMVEXC1-PRD.hq.netapp.com>
+To: "Muntz, Daniel" <Dan.Muntz@netapp.com>
+Cc: dhowells@redhat.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org,
+       steved@redhat.com, linux-fsdevel@vger.kernel.org, rwheeler@redhat.com
+Subject: Re: Pull request for FS-Cache, including NFS patches
+Date: Fri, 19 Dec 2008 18:24:19 +0000
+Message-ID: <12342.1229711059@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Muntz, Daniel <Dan.Muntz@netapp.com> wrote:
 
-Impact: fix
+> AFS was designed to support local disk cache, so with callbacks you can get a
+> consistent system.
 
-When recursion_bug is true, kernel discards original message because printk_buf
-contains recursion_bug_msg with NULL terminator. The sizeof(recursion_bug_msg)
-makes this, use strlen() to get correct length without NULL terminator.
+It's less the callbacks and more the data version number that's important.
 
-Reported-by: Toshikazu Nakayama <nakayama.ts@ncos.nec.co.jp>
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- kernel/printk.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> I'll ass-u-me that Linux flavors of AFS have callbacks. 
 
-diff --git a/kernel/printk.c b/kernel/printk.c
-index f492f15..e651ab0 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -662,7 +662,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 	if (recursion_bug) {
- 		recursion_bug = 0;
- 		strcpy(printk_buf, recursion_bug_msg);
--		printed_len = sizeof(recursion_bug_msg);
-+		printed_len = strlen(recursion_bug_msg);
- 	}
- 	/* Emit the output into the temporary buffer */
- 	printed_len += vscnprintf(printk_buf + printed_len,
--- 
-1.6.0.4
+They do.
 
+> It should be possible to *integrate* NFSv4.x with FS-Cache similarly (i.e., I
+> don't think you could drop it in as a 'black-box' without breaking something,
+> unless you explicitly build an independent proxy cache server).
+
+NFSv4 has equivalents of both the data version number and callbacks.
+
+David
