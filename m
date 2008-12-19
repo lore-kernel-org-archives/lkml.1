@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbYLSV5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbYLSV5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755411AbYLSV5T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 16:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbYLSVyZ
+	id S1755978AbYLSV5y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 16:57:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYLSVy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:54:25 -0500
-Received: from mx1.suse.de ([195.135.220.2]:57962 "EHLO mx1.suse.de"
+	Fri, 19 Dec 2008 16:54:27 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48913 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754663AbYLSVyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 16:54:21 -0500
+	id S1754688AbYLSVyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:54:25 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 08/45] ocfs2: Copy xattr buckets with a dedicated function.
-Date: Fri, 19 Dec 2008 13:53:27 -0800
-Message-Id: <1229723644-13630-9-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 10/45] ocfs2: Use buckets in ocfs2_xattr_bucket_find().
+Date: Fri, 19 Dec 2008 13:53:29 -0800
+Message-Id: <1229723644-13630-11-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
 References: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
@@ -25,73 +25,196 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-Now that the places that copy whole buckets are using struct
-ocfs2_xattr_bucket, we can do the copy in a dedicated function.
+Change the ocfs2_xattr_bucket_find() function to use ocfs2_xattr_bucket
+as its abstraction.  This makes for more efficient reads, as buckets are
+linear blocks, and also has improved caching characteristics.  It also
+reads better.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/xattr.c |   26 ++++++++++++++++----------
- 1 files changed, 16 insertions(+), 10 deletions(-)
+ fs/ocfs2/xattr.c |   89 +++++++++++++++++++-----------------------------------
+ 1 files changed, 31 insertions(+), 58 deletions(-)
 
 diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index 99aefe4..71d9e7b 100644
+index 766494e..46986c6 100644
 --- a/fs/ocfs2/xattr.c
 +++ b/fs/ocfs2/xattr.c
-@@ -240,6 +240,19 @@ static void ocfs2_xattr_bucket_journal_dirty(handle_t *handle,
- 		ocfs2_journal_dirty(handle, bucket->bu_bhs[i]);
- }
+@@ -2248,7 +2248,7 @@ typedef int (xattr_bucket_func)(struct inode *inode,
+ 				void *para);
  
-+static void ocfs2_xattr_bucket_copy_data(struct inode *inode,
-+					 struct ocfs2_xattr_bucket *dest,
-+					 struct ocfs2_xattr_bucket *src)
-+{
-+	int i;
-+	int blocksize = inode->i_sb->s_blocksize;
-+	int blks = ocfs2_blocks_per_xattr_bucket(inode->i_sb);
-+
-+	for (i = 0; i < blks; i++) {
-+		memcpy(bucket_block(dest, i), bucket_block(src, i),
-+		       blocksize);
-+	}
-+}
- 
- static inline const char *ocfs2_xattr_prefix(int name_index)
+ static int ocfs2_find_xe_in_bucket(struct inode *inode,
+-				   struct buffer_head *header_bh,
++				   struct ocfs2_xattr_bucket *bucket,
+ 				   int name_index,
+ 				   const char *name,
+ 				   u32 name_hash,
+@@ -2256,11 +2256,9 @@ static int ocfs2_find_xe_in_bucket(struct inode *inode,
+ 				   int *found)
  {
-@@ -3299,9 +3312,7 @@ static int ocfs2_divide_xattr_bucket(struct inode *inode,
+ 	int i, ret = 0, cmp = 1, block_off, new_offset;
+-	struct ocfs2_xattr_header *xh =
+-			(struct ocfs2_xattr_header *)header_bh->b_data;
++	struct ocfs2_xattr_header *xh = bucket_xh(bucket);
+ 	size_t name_len = strlen(name);
+ 	struct ocfs2_xattr_entry *xe = NULL;
+-	struct buffer_head *name_bh = NULL;
+ 	char *xe_name;
+ 
+ 	/*
+@@ -2291,19 +2289,8 @@ static int ocfs2_find_xe_in_bucket(struct inode *inode,
+ 			break;
+ 		}
+ 
+-		ret = ocfs2_read_block(inode, header_bh->b_blocknr + block_off,
+-				       &name_bh);
+-		if (ret) {
+-			mlog_errno(ret);
+-			break;
+-		}
+-		xe_name = name_bh->b_data + new_offset;
+-
+-		cmp = memcmp(name, xe_name, name_len);
+-		brelse(name_bh);
+-		name_bh = NULL;
+-
+-		if (cmp == 0) {
++		xe_name = bucket_block(bucket, block_off) + new_offset;
++		if (!memcmp(name, xe_name, name_len)) {
+ 			*xe_index = i;
+ 			*found = 1;
+ 			ret = 0;
+@@ -2333,39 +2320,42 @@ static int ocfs2_xattr_bucket_find(struct inode *inode,
+ 				   struct ocfs2_xattr_search *xs)
+ {
+ 	int ret, found = 0;
+-	struct buffer_head *bh = NULL;
+-	struct buffer_head *lower_bh = NULL;
+ 	struct ocfs2_xattr_header *xh = NULL;
+ 	struct ocfs2_xattr_entry *xe = NULL;
+ 	u16 index = 0;
+ 	u16 blk_per_bucket = ocfs2_blocks_per_xattr_bucket(inode->i_sb);
+ 	int low_bucket = 0, bucket, high_bucket;
++	struct ocfs2_xattr_bucket *search;
+ 	u32 last_hash;
+-	u64 blkno;
++	u64 blkno, lower_blkno = 0;
+ 
+-	ret = ocfs2_read_block(inode, p_blkno, &bh);
++	search = ocfs2_xattr_bucket_new(inode);
++	if (!search) {
++		ret = -ENOMEM;
++		mlog_errno(ret);
++		goto out;
++	}
++
++	ret = ocfs2_read_xattr_bucket(search, p_blkno);
+ 	if (ret) {
+ 		mlog_errno(ret);
+ 		goto out;
  	}
  
- 	/* copy the whole bucket to the new first. */
--	for (i = 0; i < blk_per_bucket; i++)
--		memcpy(bucket_block(&t_bucket, i), bucket_block(&s_bucket, i),
--		       blocksize);
-+	ocfs2_xattr_bucket_copy_data(inode, &t_bucket, &s_bucket);
+-	xh = (struct ocfs2_xattr_header *)bh->b_data;
++	xh = bucket_xh(search);
+ 	high_bucket = le16_to_cpu(xh->xh_num_buckets) - 1;
+-
+ 	while (low_bucket <= high_bucket) {
+-		brelse(bh);
+-		bh = NULL;
+-		bucket = (low_bucket + high_bucket) / 2;
++		ocfs2_xattr_bucket_relse(search);
  
- 	/* update the new bucket. */
- 	xh = bucket_xh(&t_bucket);
-@@ -3410,9 +3421,7 @@ static int ocfs2_cp_xattr_bucket(struct inode *inode,
- 				 u64 t_blkno,
- 				 int t_is_new)
- {
--	int ret, i;
--	int blk_per_bucket = ocfs2_blocks_per_xattr_bucket(inode->i_sb);
--	int blocksize = inode->i_sb->s_blocksize;
-+	int ret;
- 	struct ocfs2_xattr_bucket s_bucket, t_bucket;
++		bucket = (low_bucket + high_bucket) / 2;
+ 		blkno = p_blkno + bucket * blk_per_bucket;
+-
+-		ret = ocfs2_read_block(inode, blkno, &bh);
++		ret = ocfs2_read_xattr_bucket(search, blkno);
+ 		if (ret) {
+ 			mlog_errno(ret);
+ 			goto out;
+ 		}
  
- 	BUG_ON(s_blkno == t_blkno);
-@@ -3443,10 +3452,7 @@ static int ocfs2_cp_xattr_bucket(struct inode *inode,
- 	if (ret)
- 		goto out;
+-		xh = (struct ocfs2_xattr_header *)bh->b_data;
++		xh = bucket_xh(search);
+ 		xe = &xh->xh_entries[0];
+ 		if (name_hash < le32_to_cpu(xe->xe_name_hash)) {
+ 			high_bucket = bucket - 1;
+@@ -2382,10 +2372,8 @@ static int ocfs2_xattr_bucket_find(struct inode *inode,
  
--	for (i = 0; i < blk_per_bucket; i++) {
--		memcpy(bucket_block(&t_bucket, i), bucket_block(&s_bucket, i),
--		       blocksize);
--	}
-+	ocfs2_xattr_bucket_copy_data(inode, &t_bucket, &s_bucket);
- 	ocfs2_xattr_bucket_journal_dirty(handle, inode, &t_bucket);
+ 		last_hash = le32_to_cpu(xe->xe_name_hash);
+ 
+-		/* record lower_bh which may be the insert place. */
+-		brelse(lower_bh);
+-		lower_bh = bh;
+-		bh = NULL;
++		/* record lower_blkno which may be the insert place. */
++		lower_blkno = blkno;
+ 
+ 		if (name_hash > le32_to_cpu(xe->xe_name_hash)) {
+ 			low_bucket = bucket + 1;
+@@ -2393,7 +2381,7 @@ static int ocfs2_xattr_bucket_find(struct inode *inode,
+ 		}
+ 
+ 		/* the searched xattr should reside in this bucket if exists. */
+-		ret = ocfs2_find_xe_in_bucket(inode, lower_bh,
++		ret = ocfs2_find_xe_in_bucket(inode, search,
+ 					      name_index, name, name_hash,
+ 					      &index, &found);
+ 		if (ret) {
+@@ -2408,35 +2396,21 @@ static int ocfs2_xattr_bucket_find(struct inode *inode,
+ 	 * When the xattr's hash value is in the gap of 2 buckets, we will
+ 	 * always set it to the previous bucket.
+ 	 */
+-	if (!lower_bh) {
+-		/*
+-		 * We can't find any bucket whose first name_hash is less
+-		 * than the find name_hash.
+-		 */
+-		BUG_ON(bh->b_blocknr != p_blkno);
+-		lower_bh = bh;
+-		bh = NULL;
++	if (!lower_blkno)
++		lower_blkno = p_blkno;
++
++	/* This should be in cache - we just read it during the search */
++	ret = ocfs2_read_xattr_bucket(xs->bucket, lower_blkno);
++	if (ret) {
++		mlog_errno(ret);
++		goto out;
+ 	}
+-	xs->bucket->bu_bhs[0] = lower_bh;
+-	lower_bh = NULL;
+ 
+ 	xs->header = bucket_xh(xs->bucket);
+ 	xs->base = bucket_block(xs->bucket, 0);
+ 	xs->end = xs->base + inode->i_sb->s_blocksize;
+ 
+ 	if (found) {
+-		/*
+-		 * If we have found the xattr enty, read all the blocks in
+-		 * this bucket.
+-		 */
+-		ret = ocfs2_read_blocks(inode, bucket_blkno(xs->bucket) + 1,
+-					blk_per_bucket - 1, &xs->bucket->bu_bhs[1],
+-					0);
+-		if (ret) {
+-			mlog_errno(ret);
+-			goto out;
+-		}
+-
+ 		xs->here = &xs->header->xh_entries[index];
+ 		mlog(0, "find xattr %s in bucket %llu, entry = %u\n", name,
+ 		     (unsigned long long)bucket_blkno(xs->bucket), index);
+@@ -2444,8 +2418,7 @@ static int ocfs2_xattr_bucket_find(struct inode *inode,
+ 		ret = -ENODATA;
  
  out:
+-	brelse(bh);
+-	brelse(lower_bh);
++	ocfs2_xattr_bucket_free(search);
+ 	return ret;
+ }
+ 
 -- 
 1.5.6
 
