@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbYLSFzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbYLSGcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754452AbYLSFzn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 00:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbYLSFzf
+	id S1753752AbYLSGcW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 01:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYLSGcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 00:55:35 -0500
-Received: from ocean.emcraft.com ([213.221.7.182]:33787 "EHLO
-	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752231AbYLSFze (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 00:55:34 -0500
-From: Yuri Tikhonov <yur@emcraft.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] mm/shmem.c: fix division by zero
-Date: Fri, 19 Dec 2008 08:44:57 +0300
-User-Agent: KMail/1.9.4
-Cc: linuxppc-dev@ozlabs.org, hugh@veritas.com, akpm@linux-foundation.org,
-       paulus@samba.org, wd@denx.de, dzu@denx.de, yanok@emcraft.com,
-       miltonm@bga.com, viro@zeniv.linux.org.uk,
-       Geert.Uytterhoeven@sonycom.com
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Dec 2008 01:32:10 -0500
+Received: from 1wt.eu ([62.212.114.60]:1071 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751355AbYLSGcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 01:32:09 -0500
+Date: Fri, 19 Dec 2008 07:33:02 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: sverre@rabbelier.nl
+Cc: David Howells <dhowells@redhat.com>, Jakub Narebski <jnareb@gmail.com>,
+       torvalds@osdl.org, git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Simplified GIT usage guide
+Message-ID: <20081219063301.GA6800@1wt.eu>
+References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk> <m33agtgp2v.fsf@localhost.localdomain> <32073.1229130284@redhat.com> <bd6139dc0812121716w73ea1145w7f870e887e00adc0@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812190844.57996.yur@emcraft.com>
+In-Reply-To: <bd6139dc0812121716w73ea1145w7f870e887e00adc0@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Dec 13, 2008 at 02:16:34AM +0100, Sverre Rabbelier wrote:
+> On Sat, Dec 13, 2008 at 02:04, David Howells <dhowells@redhat.com> wrote:
+> >  (3) You put some non-basic stuff in the basic section (branching - this isn't
+> >     ordinarily useful, IMHO), but you miss other stuff out ('git rm' for
+> >     example).
+> 
+> Erm, branching is not ordinarily useful? I think you're Doing It Wrong
+> (TM) then, since branching is a Big Thing (also TM) in DVC, not using
+> branches would be a bit like only using the first 4 gears in a car;
+> sure, it's possible, but you're missing all that extra power!
 
-The following patch fixes division by zero, which we have in
-shmem_truncate_range() and shmem_unuse_inode(), if use big
-PAGE_SIZE values (e.g. 256KB on ppc44x).
+People who want to use it as a CVS replacement don't realize that they're
+using branches. They work in their local "master" branch, and don't realize
+that when they fetch updates, they fetch them into a different branch.
 
-With 256KB PAGE_SIZE the ENTRIES_PER_PAGEPAGE constant becomes
-too large (0x1.0000.0000), so this patch just changes the types
-from 'ulong' to 'ullong' where it's necessary.
+CVS people are afraid of branches, so trying to explain them how they can
+do what they're used to is better than telling them they'll have to do
+what they're afraid of.
 
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
----
- mm/shmem.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+I found David's howto quite understandable. I've taught Git to people who
+only knew about SVN and to people who had never heard about any SCM at all. I
+tried to use the same approach each time, and while I noticed that explaining
+how Git works and why it works like that appeared obvious to the newbies,
+it was very awkward with SVN users. I switched to something more like
+David's approach for those people and it helped a lot. They have plenty
+of time after that to discover the tool by themselves.
 
-diff --git a/mm/shmem.c b/mm/shmem.c
-index 0ed0752..99d7c91 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -57,7 +57,7 @@
- #include <asm/pgtable.h>
- 
- #define ENTRIES_PER_PAGE (PAGE_CACHE_SIZE/sizeof(unsigned long))
--#define ENTRIES_PER_PAGEPAGE (ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
-+#define ENTRIES_PER_PAGEPAGE ((unsigned long long)ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
- #define BLOCKS_PER_PAGE  (PAGE_CACHE_SIZE/512)
- 
- #define SHMEM_MAX_INDEX  (SHMEM_NR_DIRECT + (ENTRIES_PER_PAGEPAGE/2) * (ENTRIES_PER_PAGE+1))
-@@ -95,7 +95,7 @@ static unsigned long shmem_default_max_inodes(void)
- }
- #endif
- 
--static int shmem_getpage(struct inode *inode, unsigned long idx,
-+static int shmem_getpage(struct inode *inode, unsigned long long idx,
- 			 struct page **pagep, enum sgp_type sgp, int *type);
- 
- static inline struct page *shmem_dir_alloc(gfp_t gfp_mask)
-@@ -533,7 +533,7 @@ static void shmem_truncate_range(struct inode *inode, loff_t start, loff_t end)
- 	int punch_hole;
- 	spinlock_t *needs_lock;
- 	spinlock_t *punch_lock;
--	unsigned long upper_limit;
-+	unsigned long long upper_limit;
- 
- 	inode->i_ctime = inode->i_mtime = CURRENT_TIME;
- 	idx = (start + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-@@ -1175,7 +1175,7 @@ static inline struct mempolicy *shmem_get_sbmpol(struct shmem_sb_info *sbinfo)
-  * vm. If we swap it in we mark it dirty since we also free the swap
-  * entry since a page cannot live in both the swap and page cache
-  */
--static int shmem_getpage(struct inode *inode, unsigned long idx,
-+static int shmem_getpage(struct inode *inode, unsigned long long idx,
- 			struct page **pagep, enum sgp_type sgp, int *type)
- {
- 	struct address_space *mapping = inode->i_mapping;
--- 
-1.6.0.4
+I really think that David should maintain his doc after applying a few
+fixes to it, just like Jeff maintains his own. Also, having several docs
+out of the tree is better for a user looking for different analysis of
+the tool than having everything offered as the product's documentation,
+provided the links are easy to find (might be linked to from the Git doc).
+
+Willy
+
