@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbYLSDKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbYLSDZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752986AbYLSDKk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 22:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYLSDKa
+	id S1752835AbYLSDZq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 22:25:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbYLSDZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 22:10:30 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41007 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752137AbYLSDK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 22:10:29 -0500
-Message-ID: <494B1092.1020600@redhat.com>
-Date: Thu, 18 Dec 2008 22:10:10 -0500
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+	Thu, 18 Dec 2008 22:25:37 -0500
+Received: from kroah.org ([198.145.64.141]:36952 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752297AbYLSDZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 22:25:37 -0500
+Date: Thu, 18 Dec 2008 19:24:04 -0800
+From: Greg KH <greg@kroah.com>
+To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+Cc: Eric Paris <eparis@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: kernel BUG at arch/x86/mm/ioremap.c:39 from
+	2.6.28-rc8-next-20081218 on x86_64 vmware guest
+Message-ID: <20081219032404.GA28379@kroah.com>
+References: <1229622223.3374.9.camel@localhost.localdomain> <f19298770812181326g97be6d1x358723bb799a2854@mail.gmail.com> <f19298770812181856y44441d70k3b00aa346148f259@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Howells <dhowells@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       sfr@canb.auug.org.au, trond.myklebust@fys.uio.no, steved@redhat.com,
-       bfields@fieldses.org, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Pull request for FS-Cache, including NFS patches
-References: <20081218123601.11810b7f.akpm@linux-foundation.org>	<8930.1229560221@redhat.com>	<20081218224418.804f10bc.sfr@canb.auug.org.au>	<20081218142420.GA16728@infradead.org>	<7633.1229653644@redhat.com> <20081218184443.d73f5431.akpm@linux-foundation.org>
-In-Reply-To: <20081218184443.d73f5431.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f19298770812181856y44441d70k3b00aa346148f259@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 19 Dec 2008 02:27:24 +0000 David Howells <dhowells@redhat.com> wrote:
->
->   
->>> Are any distros pushing for this?  Or shipping it?  If so, are they
->>> able to weigh in and help us with this quite difficult decision?
->>>       
->> We (Red Hat) have shipped it in RHEL-5 and some Fedora releases.  Doing so is
->> quite an effort, though, precisely because the code is not yet upstream.  We
->> have customers using it and are gaining more customers who want it.  There
->> even appear to be CentOS users using it (or at least complaining when it
->> breaks).
->>     
->
-> That's useful news.
->   
+On Fri, Dec 19, 2008 at 05:56:43AM +0300, Alexey Zaytsev wrote:
+> The commit to blame was
+> commit 33930cd1ccf6cf8c6124dc147d70641eb5d89a19
+> Author: Greg Kroah-Hartman <gregkh@suse.de>
+> Date:   Tue Dec 16 12:23:36 2008 -0800
+> 
+>     driver core: create a private portion of struct device
+> 
+>     This is to be used to move things out of struct device that no code
+>     outside of the driver core should ever touch.
+> 
+>     Cc: Kay Sievers <kay.sievers@vrfy.org>
+>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> 
+> And an obvious fix:
 
-The users that I spoke to from the financial sector that tried it are 
-still quite interested. One simple use case for them is a very large 
-cluster of NFS clients for read-mostly workloads (say, 1000 or more NFS 
-clients for shared system partitions). They like the ability to do 
-persistent caching across reboots which allows them to have less (and 
-less beefy) NFS servers for all of those boxes trying to reboot at once.
+<snip>
 
-The other use case was for the large rendering customers, but I don't 
-have first hand knowledge of the details...
+Thanks for the patch, was already fixed a few hours ago and will show up
+in the next -next release :)
 
-Regards,
-
-Ric
-
+greg k-h
