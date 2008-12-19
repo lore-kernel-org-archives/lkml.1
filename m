@@ -1,323 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbYLSSZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbYLSSbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754451AbYLSSZa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 13:25:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYLSSZX
+	id S1753450AbYLSSbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 13:31:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbYLSSbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 13:25:23 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:53676 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752028AbYLSSZW (ORCPT
+	Fri, 19 Dec 2008 13:31:08 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:37334 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751738AbYLSSbH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 13:25:22 -0500
-Date: Fri, 19 Dec 2008 12:25:10 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Linux Containers <containers@lists.osdl.org>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Subject: [PATCH 3/3] mqueue namespace: adapt sysctl
-Message-ID: <20081219182510.GA19759@us.ibm.com>
-References: <20081219171930.GA17335@us.ibm.com>
+	Fri, 19 Dec 2008 13:31:07 -0500
+Message-ID: <494BE84E.4000201@oracle.com>
+Date: Fri, 19 Dec 2008 10:30:38 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081219171930.GA17335@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/14] kmemleak: Add documentation on the memory leak
+ detector
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com> <20081219181307.7778.42984.stgit@pc1117.cambridge.arm.com>
+In-Reply-To: <20081219181307.7778.42984.stgit@pc1117.cambridge.arm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.494BE856.0122:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(resending since lkml appears to have disappeared from the earlier
-headers)
+Catalin Marinas wrote:
+> This patch adds the Documentation/kmemleak.txt file with some
+> information about how kmemleak works.
+> 
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> ---
+>  Documentation/kernel-parameters.txt |    4 +
+>  Documentation/kmemleak.txt          |  142 +++++++++++++++++++++++++++++++++++
+>  2 files changed, 146 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/kmemleak.txt
+> 
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index e0f346d..7f5f642 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -1042,6 +1042,10 @@ and is between 256 and 4096 characters. It is defined in the file
+>  			Configure the RouterBoard 532 series on-chip
+>  			Ethernet adapter MAC address.
+>  
+> +	kmemleak=	[KNL] Boot-time kmemleak enable/disable
+> +			Valid arguments: on, off
+> +			Default: on
+> +
+>  	l2cr=		[PPC]
+>  
+>  	l3cr=		[PPC]
+> diff --git a/Documentation/kmemleak.txt b/Documentation/kmemleak.txt
+> new file mode 100644
+> index 0000000..c84d91b
+> --- /dev/null
+> +++ b/Documentation/kmemleak.txt
+> @@ -0,0 +1,142 @@
+> +Kernel Memory Leak Detector
+> +===========================
+> +
+> +Introduction
+> +------------
+> +
+> +Kmemleak provides a way of detecting possible kernel memory leaks in a
+> +way similar to a tracing garbage collector
+> +(http://en.wikipedia.org/wiki/Garbage_collection_%28computer_science%29#Tracing_garbage_collectors),
+> +with the difference that the orphan objects are not freed but only
+> +reported via /sys/kernel/debug/kmemleak. A similar method is used by the
+> +Valgrind tool (memcheck --leak-check) to detect the memory leaks in
+> +user-space applications.
+> +
+> +Usage
+> +-----
+> +
+> +CONFIG_DEBUG_KMEMLEAK in "Kernel hacking" has to be enabled. A kernel
+> +thread scans the memory every 10 min (by default) and prints any new
 
-From: Nadia Derbey <Nadia.Derbey@bull.net>
+                                    minutes
 
-Largely inspired from ipc/ipc_sysctl.c. This patch isolates the mqueue
-sysctl stuff in its own file.
+> +unreferenced objects found. To trigger an intermediate scan and display
+> +all the possible memory leaks:
 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- include/linux/ipc_namespace.h |   14 +++++
- init/Kconfig                  |    6 ++
- ipc/Makefile                  |    1 +
- ipc/mq_sysctl.c               |  125 +++++++++++++++++++++++++++++++++++++++++
- ipc/mqueue.c                  |   65 +---------------------
- 5 files changed, 147 insertions(+), 64 deletions(-)
- create mode 100644 ipc/mq_sysctl.c
+Looks good otherwise.  Thanks.
 
-diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
-index a73bbef..9f57f55 100644
---- a/include/linux/ipc_namespace.h
-+++ b/include/linux/ipc_namespace.h
-@@ -121,4 +121,18 @@ static inline void put_ipc_ns(struct ipc_namespace *ns)
- {
- }
- #endif
-+
-+#ifdef CONFIG_POSIX_MQUEUE_SYSCTL
-+
-+struct ctl_table_header;
-+extern struct ctl_table_header *mq_register_sysctl_table(void);
-+
-+#else /* CONFIG_POSIX_MQUEUE_SYSCTL */
-+
-+static inline struct ctl_table_header *mq_register_sysctl_table(void)
-+{
-+	return NULL;
-+}
-+
-+#endif /* CONFIG_POSIX_MQUEUE_SYSCTL */
- #endif
-diff --git a/init/Kconfig b/init/Kconfig
-index 32c6315..5d96f40 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -148,6 +148,12 @@ config POSIX_MQUEUE
- 
- 	  If unsure, say Y.
- 
-+config POSIX_MQUEUE_SYSCTL
-+	bool
-+	depends on POSIX_MQUEUE
-+	depends on SYSCTL
-+	default y
-+
- config BSD_PROCESS_ACCT
- 	bool "BSD Process Accounting"
- 	help
-diff --git a/ipc/Makefile b/ipc/Makefile
-index 65c3843..4e1955e 100644
---- a/ipc/Makefile
-+++ b/ipc/Makefile
-@@ -8,4 +8,5 @@ obj-$(CONFIG_SYSVIPC_SYSCTL) += ipc_sysctl.o
- obj_mq-$(CONFIG_COMPAT) += compat_mq.o
- obj-$(CONFIG_POSIX_MQUEUE) += mqueue.o msgutil.o $(obj_mq-y)
- obj-$(CONFIG_IPC_NS) += namespace.o
-+obj-$(CONFIG_POSIX_MQUEUE_SYSCTL) += mq_sysctl.o
- 
-diff --git a/ipc/mq_sysctl.c b/ipc/mq_sysctl.c
-new file mode 100644
-index 0000000..81f01b7
---- /dev/null
-+++ b/ipc/mq_sysctl.c
-@@ -0,0 +1,125 @@
-+/*
-+ *  Copyright (C) 2007 IBM Corporation
-+ *
-+ *  Author: Cedric Le Goater <clg@fr.ibm.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License as
-+ *  published by the Free Software Foundation, version 2 of the
-+ *  License.
-+ */
-+
-+#include <linux/nsproxy.h>
-+#include <linux/ipc_namespace.h>
-+#include <linux/sysctl.h>
-+
-+/*
-+ * Define the ranges various user-specified maximum values can
-+ * be set to.
-+ */
-+#define MIN_MSGMAX	1		/* min value for msg_max */
-+#define MAX_MSGMAX	HARD_MSGMAX	/* max value for msg_max */
-+#define MIN_MSGSIZEMAX	128		/* min value for msgsize_max */
-+#define MAX_MSGSIZEMAX	(8192*128)	/* max value for msgsize_max */
-+
-+static void *get_mq(ctl_table *table)
-+{
-+	char *which = table->data;
-+	struct ipc_namespace *ipc_ns = current->nsproxy->ipc_ns;
-+	which = (which - (char *)&init_ipc_ns) + (char *)ipc_ns;
-+	return which;
-+}
-+
-+#ifdef CONFIG_PROC_FS
-+static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
-+	void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	struct ctl_table mq_table;
-+	memcpy(&mq_table, table, sizeof(mq_table));
-+	mq_table.data = get_mq(table);
-+
-+	return proc_dointvec(&mq_table, write, filp, buffer, lenp, ppos);
-+}
-+
-+static int proc_mq_dointvec_minmax(ctl_table *table, int write,
-+	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	struct ctl_table mq_table;
-+	memcpy(&mq_table, table, sizeof(mq_table));
-+	mq_table.data = get_mq(table);
-+
-+	return proc_dointvec_minmax(&mq_table, write, filp, buffer,
-+					lenp, ppos);
-+}
-+#else /* CONFIG_PROC_FS */
-+static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
-+	void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	return -ENOSYS;
-+}
-+
-+static int proc_mq_dointvec_minmax(ctl_table *table, int write,
-+	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
-+{
-+	return -ENOSYS;
-+}
-+#endif /* CONFIG_PROC_FS */
-+
-+static int msg_max_limit_min = MIN_MSGMAX;
-+static int msg_max_limit_max = MAX_MSGMAX;
-+
-+static int msg_maxsize_limit_min = MIN_MSGSIZEMAX;
-+static int msg_maxsize_limit_max = MAX_MSGSIZEMAX;
-+
-+static ctl_table mq_sysctls[] = {
-+	{
-+		.procname	= "queues_max",
-+		.data		= &init_ipc_ns.mq_queues_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_mq_dointvec,
-+	},
-+	{
-+		.procname	= "msg_max",
-+		.data		= &init_ipc_ns.mq_msg_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_mq_dointvec_minmax,
-+		.extra1		= &msg_max_limit_min,
-+		.extra2		= &msg_max_limit_max,
-+	},
-+	{
-+		.procname	= "msgsize_max",
-+		.data		= &init_ipc_ns.mq_msgsize_max,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_mq_dointvec_minmax,
-+		.extra1		= &msg_maxsize_limit_min,
-+		.extra2		= &msg_maxsize_limit_max,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table mq_sysctl_dir[] = {
-+	{
-+		.procname	= "mqueue",
-+		.mode		= 0555,
-+		.child		= mq_sysctls,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table mq_sysctl_root[] = {
-+	{
-+		.ctl_name	= CTL_FS,
-+		.procname	= "fs",
-+		.mode		= 0555,
-+		.child		= mq_sysctl_dir,
-+	},
-+	{ .ctl_name = 0 }
-+};
-+
-+struct ctl_table_header *mq_register_sysctl_table(void)
-+{
-+	return register_sysctl_table(mq_sysctl_root);
-+}
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index 464dc9d..827fddc 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -47,15 +47,6 @@
- #define STATE_PENDING	1
- #define STATE_READY	2
- 
--/*
-- * Define the ranges various user-specified maximum values can
-- * be set to.
-- */
--#define MIN_MSGMAX	1		/* min value for msg_max */
--#define MAX_MSGMAX	HARD_MSGMAX	/* max value for msg_max */
--#define MIN_MSGSIZEMAX	128		/* min value for msgsize_max */
--#define MAX_MSGSIZEMAX	(8192*128)	/* max value for msgsize_max */
--
- struct ext_wait_queue {		/* queue of sleeping tasks */
- 	struct task_struct *task;
- 	struct list_head list;
-@@ -1295,60 +1286,6 @@ void mq_put_mnt(struct ipc_namespace *ns)
- 	mntput(ns->mq_mnt);
- }
- 
--static int msg_max_limit_min = MIN_MSGMAX;
--static int msg_max_limit_max = MAX_MSGMAX;
--
--static int msg_maxsize_limit_min = MIN_MSGSIZEMAX;
--static int msg_maxsize_limit_max = MAX_MSGSIZEMAX;
--
--static ctl_table mq_sysctls[] = {
--	{
--		.procname	= "queues_max",
--		.data		= &init_ipc_ns.mq_queues_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
--	},
--	{
--		.procname	= "msg_max",
--		.data		= &init_ipc_ns.mq_msg_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
--		.extra1		= &msg_max_limit_min,
--		.extra2		= &msg_max_limit_max,
--	},
--	{
--		.procname	= "msgsize_max",
--		.data		= &init_ipc_ns.mq_msgsize_max,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
--		.extra1		= &msg_maxsize_limit_min,
--		.extra2		= &msg_maxsize_limit_max,
--	},
--	{ .ctl_name = 0 }
--};
--
--static ctl_table mq_sysctl_dir[] = {
--	{
--		.procname	= "mqueue",
--		.mode		= 0555,
--		.child		= mq_sysctls,
--	},
--	{ .ctl_name = 0 }
--};
--
--static ctl_table mq_sysctl_root[] = {
--	{
--		.ctl_name	= CTL_FS,
--		.procname	= "fs",
--		.mode		= 0555,
--		.child		= mq_sysctl_dir,
--	},
--	{ .ctl_name = 0 }
--};
--
- static int __init init_mqueue_fs(void)
- {
- 	int error;
-@@ -1360,7 +1297,7 @@ static int __init init_mqueue_fs(void)
- 		return -ENOMEM;
- 
- 	/* ignore failues - they are not fatal */
--	mq_sysctl_table = register_sysctl_table(mq_sysctl_root);
-+	mq_sysctl_table = mq_register_sysctl_table();
- 
- 	error = register_filesystem(&mqueue_fs_type);
- 	if (error)
 -- 
-1.5.4.3
-
+~Randy
