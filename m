@@ -1,121 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbYLSHAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbYLSHCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbYLSHAT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 02:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbYLSG76
+	id S1754231AbYLSHCT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 02:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbYLSHCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 01:59:58 -0500
-Received: from main.gmane.org ([80.91.229.2]:48938 "EHLO ciao.gmane.org"
+	Fri, 19 Dec 2008 02:02:04 -0500
+Received: from gw.goop.org ([64.81.55.164]:52490 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753534AbYLSG74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 01:59:56 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Roman Kononov <kernel@kononov.ftml.net>
-Subject: BUG: soft lockup - is this XFS problem?
-Date: Fri, 19 Dec 2008 00:59:44 -0600
-Message-ID: <gifgp1$8ic$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------070603020606020502000605"
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: adsl-70-131-220-76.dsl.emhril.sbcglobal.net
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	id S1752615AbYLSHCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 02:02:03 -0500
+Message-ID: <494B46E8.1000104@goop.org>
+Date: Thu, 18 Dec 2008 23:02:00 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
+MIME-Version: 1.0
+To: Becky Bruce <beckyb@kernel.crashing.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xen-devel@lists.xensource.com, x86@kernel.org, ian.campbell@citrix.com,
+       jbeulich@novell.com, joerg.roedel@amd.com,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use
+ of swiotlb
+References: <20081216203513.GA14787@elte.hu> <20081217142637V.fujita.tomonori@lab.ntt.co.jp> <4949296F.7000701@goop.org> <20081218015705Z.fujita.tomonori@lab.ntt.co.jp> <E5300CC0-1D08-46F7-91F6-DEC36202F1DE@kernel.crashing.org> <20081218210231.GB24271@elte.hu> <3853A0F2-F817-4263-9EF9-9A0655BF95CD@kernel.crashing.org>
+In-Reply-To: <3853A0F2-F817-4263-9EF9-9A0655BF95CD@kernel.crashing.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070603020606020502000605
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Becky Bruce wrote:
+> I've taken a quick look at the series posted to the list, and they're 
+> actually very similar to what I've done.  I think there are really 
+> only 3 fairly minor issues that need to be resolved to make this work 
+> on ppc:
+>
+> 1) We need to add swiotlb_map/unmap_page calls, as those are part the 
+> ppc dma_mapping_ops (in fact, we don't have map/unmap_single in the 
+> dma_mapping_ops struct on ppc anymore - those just call 
+> map/unmap_page).  This is really just a matter of moving some code 
+> around and making some minor changes, as swiotlb_map/unmap_single can 
+> call swiotlb_map/unmap_page once the args have been converted.  
+> There's a patch in my series that should make this pretty obvious.
+>
+> 2) To convert any address to/from a bus address, we also need the 
+> hwdev pointer passed as an argument since ppc supports a per-device 
+> offset accessed via the device ptr that is used to calculate the bus 
+> address.  I'd also given my conversion functions more generic names, 
+> as it seemed highly likely that these would eventually be useful 
+> outside of the swiotlb code.
+>
+> 3) powerpc uses enum dma_data_direction for the direction argument to 
+> its dma_ops, which is, from reading the kernel docs, the correct 
+> argument type for the DMA API functions.  However, the iotlb/x86/ia64 
+> code is currently using an int.  This causes a build warning when we 
+> initialize the dma_ops struct using the swiotlb funcs.  Is there a 
+> reason for the use of "int" in x86/ia64?  The Right Thing(TM) here 
+> seems to be to convert those over to using the enum, and I have a big 
+> patch that starts doing that, but I've probably missed some places.  I 
+> could instead do some hackery on the ppc side, and leave the other 
+> platforms alone, but I'd prefer to do it cleanly. Thoughts?
+>
+> Unfortunately, this is horrible timing for me, as starting tomorrow, 
+> I'm going to be offline for a week and a half or so in podunk 
+> Louisiana with essentially no net access.  I can integrate my code 
+> into your tree and test on PPC as soon as I return to the real world.
 
+Yeah, I think that's OK.  The important thing at this point is to 
+determine whether the two patch sets are aligned or conflicting.  It 
+sounds like they're largely aligned, and so generating a delta from my 
+patches to match your needs will be relatively straightforward.
 
+I'm trying to line all this Xen stuff up for this merge window, so I'd 
+prefer to revisit it in the next dev cycle.  Did you want to get 
+something into this merge window?
 
---------------070603020606020502000605
-Content-Type: text/plain;
- name="log.txt"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="log.txt"
-
-RGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6IEJVRzogc29mdCBsb2NrdXAg
-LSBDUFUjMCBzdHVjayBmb3IgNjFzISBbcG9zdG1hc3RlcjoyMzIzN10KRGVjIDE5IDAwOjM0
-OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6IE1vZHVsZXMgbGlua2VkIGluOiB4ZDEwMDAKRGVj
-IDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6IENQVSAwOgpEZWMgMTkgMDA6MzQ6
-MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogTW9kdWxlcyBsaW5rZWQgaW46IHhkMTAwMApEZWMg
-MTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogUGlkOiAyMzIzNywgY29tbTogcG9z
-dG1hc3RlciBOb3QgdGFpbnRlZCAyLjYuMjcuOSAjMQpEZWMgMTkgMDA6MzQ6MTggMTAuMTAu
-MTAuMTAwIGtlcm5lbDogUklQOiAwMDEwOls8ZmZmZmZmZmY4MDI2Yzg3Mj5dICBbPGZmZmZm
-ZmZmODAyNmM4NzI+XSBmaW5kX2dldF9wYWdlcysweDcyLzB4MTIwCkRlYyAxOSAwMDozNDox
-OCAxMC4xMC4xMC4xMDAga2VybmVsOiBSU1A6IDAwMTg6ZmZmZjg4MDEyZTlmMzQ5OCAgRUZM
-QUdTOiAwMDAwMDI5NwpEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogUkFY
-OiBmZmZmODgwMGE0ZDc1MmEwIFJCWDogMDAwMDAwMDAwMDAwMDAwYyBSQ1g6IDAwMDAwMDAw
-MDAwMDAwMDMKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6IFJEWDogMDAw
-MDAwMDAwMDAwMDAwNCBSU0k6IDAwMDAwMDAwMDAwMDAwMDAgUkRJOiBmZmZmZTIwMDAwNGFi
-NzgwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiBSQlA6IGZmZmY4ODAy
-M2Y2YjUwMjggUjA4OiBmZmZmZTIwMDAwNGFiMjgwIFIwOTogMDAwMDAwMDAwMDAwMDAwZApE
-ZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogUjEwOiAwMDAwMDAwMDAwMDAw
-MDIxIFIxMTogMDAwMDAwMDAwMDBhZWYyMiBSMTI6IGZmZmZmZmZmODAyNzNlM2MKRGVjIDE5
-IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6IFIxMzogZmZmZmUyMDAwMTIwODYwOCBS
-MTQ6IDAxMDAwMDAwMDAwMDAyODYgUjE1OiBmZmZmODgwMjNmNmI1MDI4CkRlYyAxOSAwMDoz
-NDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiBGUzogIDAwMDA3ZmQzOTdmYjU3MDAoMDAwMCkg
-R1M6ZmZmZmZmZmY4MDZkNzU0MCgwMDAwKSBrbmxHUzowMDAwMDAwMDAwMDAwMDAwCkRlYyAx
-OSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiBDUzogIDAwMTAgRFM6IDAwMDAgRVM6
-IDAwMDAgQ1IwOiAwMDAwMDAwMDgwMDUwMDNiCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4x
-MDAga2VybmVsOiBDUjI6IDAwMDAyYWFhYWJhMDAwMDAgQ1IzOiAwMDAwMDAwMTc5MTFjMDAw
-IENSNDogMDAwMDAwMDAwMDAwMDZlMApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtl
-cm5lbDogRFIwOiAwMDAwMDAwMDAwMDAwMDAwIERSMTogMDAwMDAwMDAwMDAwMDAwMCBEUjI6
-IDAwMDAwMDAwMDAwMDAwMDAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6
-IERSMzogMDAwMDAwMDAwMDAwMDAwMCBEUjY6IDAwMDAwMDAwZmZmZjBmZjAgRFI3OiAwMDAw
-MDAwMDAwMDAwNDAwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOgpEZWMg
-MTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogQ2FsbCBUcmFjZToKRGVjIDE5IDAw
-OjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAyNmM4NDI+XSA/IGZp
-bmRfZ2V0X3BhZ2VzKzB4NDIvMHgxMjAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBr
-ZXJuZWw6ICBbPGZmZmZmZmZmODAyNzYxMDc+XSA/IHBhZ2V2ZWNfbG9va3VwKzB4MTcvMHgy
-MApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogIFs8ZmZmZmZmZmY4MDNh
-NjcwMT5dID8geGZzX2NsdXN0ZXJfd3JpdGUrMHg5MS8weDE2MApEZWMgMTkgMDA6MzQ6MTgg
-MTAuMTAuMTAuMTAwIGtlcm5lbDogIFs8ZmZmZmZmZmY4MDNhNmU3Mz5dID8geGZzX3BhZ2Vf
-c3RhdGVfY29udmVydCsweDUyMy8weDZjMApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAw
-IGtlcm5lbDogIFs8ZmZmZmZmZmY4MDNhNzMwMT5dID8geGZzX3ZtX3dyaXRlcGFnZSsweDcx
-LzB4MTIwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZm
-ZjgwMjc4MDkyPl0gPyBzaHJpbmtfcGFnZV9saXN0KzB4NTkyLzB4NzAwCkRlYyAxOSAwMDoz
-NDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZmZjgwMjc4NGI3Pl0gPyBzaHJp
-bmtfem9uZSsweDJiNy8weGM3MApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5l
-bDogIFs8ZmZmZmZmZmY4MDI3OThjND5dID8gdHJ5X3RvX2ZyZWVfcGFnZXMrMHgyNDQvMHgz
-YjAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAy
-Nzc5MjA+XSA/IGlzb2xhdGVfcGFnZXNfZ2xvYmFsKzB4MC8weDQwCkRlYyAxOSAwMDozNDox
-OCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZmZjgwMjdiMmQzPl0gPyBjb25nZXN0
-aW9uX3dhaXQrMHg4My8weGEwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVs
-OiAgWzxmZmZmZmZmZjgwMjRmNWYwPl0gPyBhdXRvcmVtb3ZlX3dha2VfZnVuY3Rpb24rMHgw
-LzB4MzAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZm
-ODAyNzM2Njg+XSA/IF9fYWxsb2NfcGFnZXNfaW50ZXJuYWwrMHgyMTgvMHg0ZTAKRGVjIDE5
-IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAyNmQwOGY+XSA/
-IF9fZ3JhYl9jYWNoZV9wYWdlKzB4NmYvMHhjMApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAu
-MTAwIGtlcm5lbDogIFs8ZmZmZmZmZmY4MDJjNjlhZD5dID8gYmxvY2tfd3JpdGVfYmVnaW4r
-MHg3ZC8weGUwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZm
-ZmZmZjgwM2E3MWUyPl0gPyB4ZnNfdm1fd3JpdGVfYmVnaW4rMHgyMi8weDMwCkRlYyAxOSAw
-MDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZmZjgwM2E1ZTEwPl0gPyB4
-ZnNfZ2V0X2Jsb2NrcysweDAvMHgxMApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtl
-cm5lbDogIFs8ZmZmZmZmZmY4MDI2ZGY1Yj5dID8gZ2VuZXJpY19maWxlX2J1ZmZlcmVkX3dy
-aXRlKzB4MWNiLzB4NzkwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAg
-WzxmZmZmZmZmZjgwNTkxNDVmPl0gPyBfc3Bpbl9sb2NrX2lycXNhdmUrMHgxZi8weDUwCkRl
-YyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZmZjgwM2FlNjNj
-Pl0gPyB4ZnNfd3JpdGUrMHg2NWMvMHg5NTAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEw
-MCBrZXJuZWw6ICBbPGZmZmZmZmZmODA1OTE2ODE+XSA/IF9zcGluX3VubG9ja19pcnErMHgx
-MS8weDQwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZm
-ZjgwMjljMGNiPl0gPyBkb19zeW5jX3dyaXRlKzB4ZGIvMHgxMjAKRGVjIDE5IDAwOjM0OjE4
-IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAyNWMxNjk+XSA/IGRvX2Z1dGV4
-KzB4MTA5LzB4OWYwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxm
-ZmZmZmZmZjgwMjRmNWYwPl0gPyBhdXRvcmVtb3ZlX3dha2VfZnVuY3Rpb24rMHgwLzB4MzAK
-RGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAyMzE1
-ZjA+XSA/IHdha2VfdXBfbmV3X3Rhc2srMHhjMC8weDEwMApEZWMgMTkgMDA6MzQ6MTggMTAu
-MTAuMTAuMTAwIGtlcm5lbDogIFs8ZmZmZmZmZmY4MDI5Y2FlYj5dID8gdmZzX3dyaXRlKzB4
-Y2IvMHgxNzAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZm
-ZmZmODAyOWNjOTM+XSA/IHN5c193cml0ZSsweDUzLzB4YTAKRGVjIDE5IDAwOjM0OjE4IDEw
-LjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAyMGM0NGI+XSA/IHN5c3RlbV9jYWxs
-X2Zhc3RwYXRoKzB4MTYvMHgxYgpEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5l
-bDogIFs8ZmZmZmZmZmY4MDIwYzQ0Yj5dID8gc3lzdGVtX2NhbGxfZmFzdHBhdGgrMHgxNi8w
-eDFiCg==
---------------070603020606020502000605--
-
+    J
