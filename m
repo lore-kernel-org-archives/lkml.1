@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbYLSWEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbYLSWEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757294AbYLSWEU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:04:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbYLSVzE
+	id S1757417AbYLSWEt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:04:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbYLSVzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:55:04 -0500
-Received: from ns.suse.de ([195.135.220.2]:58032 "EHLO mx1.suse.de"
+	Fri, 19 Dec 2008 16:55:08 -0500
+Received: from ns.suse.de ([195.135.220.2]:58042 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754691AbYLSVzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 16:55:01 -0500
+	id S1752649AbYLSVzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:55:05 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Tiger Yang <tiger.yang@oracle.com>, Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 29/45] ocfs2: add ocfs2_acl_chmod
-Date: Fri, 19 Dec 2008 13:53:48 -0800
-Message-Id: <1229723644-13630-30-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 31/45] ocfs2: add mount option and Kconfig option for acl
+Date: Fri, 19 Dec 2008 13:53:50 -0800
+Message-Id: <1229723644-13630-32-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
 References: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
@@ -25,91 +25,141 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tiger Yang <tiger.yang@oracle.com>
 
-This function is used to update acl xattrs during file mode changes.
+This patch adds the Kconfig option "CONFIG_OCFS2_FS_POSIX_ACL"
+and mount options "acl" to enable acls in Ocfs2.
 
 Signed-off-by: Tiger Yang <tiger.yang@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/acl.c  |   27 +++++++++++++++++++++++++++
- fs/ocfs2/acl.h  |    5 +++++
- fs/ocfs2/file.c |    6 ++++++
- 3 files changed, 38 insertions(+), 0 deletions(-)
+ Documentation/filesystems/ocfs2.txt |    3 ++-
+ fs/Kconfig                          |    9 +++++++++
+ fs/ocfs2/super.c                    |   33 +++++++++++++++++++++++++++++++++
+ 3 files changed, 44 insertions(+), 1 deletions(-)
 
-diff --git a/fs/ocfs2/acl.c b/fs/ocfs2/acl.c
-index a6a2bf6..df72256 100644
---- a/fs/ocfs2/acl.c
-+++ b/fs/ocfs2/acl.c
-@@ -245,6 +245,33 @@ int ocfs2_check_acl(struct inode *inode, int mask)
- 	return -EAGAIN;
- }
+diff --git a/Documentation/filesystems/ocfs2.txt b/Documentation/filesystems/ocfs2.txt
+index 67310fb..c2a0871 100644
+--- a/Documentation/filesystems/ocfs2.txt
++++ b/Documentation/filesystems/ocfs2.txt
+@@ -31,7 +31,6 @@ Features which OCFS2 does not support yet:
+ 	- quotas
+ 	- Directory change notification (F_NOTIFY)
+ 	- Distributed Caching (F_SETLEASE/F_GETLEASE/break_lease)
+-	- POSIX ACLs
  
-+int ocfs2_acl_chmod(struct inode *inode)
-+{
-+	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-+	struct posix_acl *acl, *clone;
-+	int ret;
+ Mount options
+ =============
+@@ -79,3 +78,5 @@ inode64			Indicates that Ocfs2 is allowed to create inodes at
+ 			bits of significance.
+ user_xattr	(*)	Enables Extended User Attributes.
+ nouser_xattr		Disables Extended User Attributes.
++acl			Enables POSIX Access Control Lists support.
++noacl		(*)	Disables POSIX Access Control Lists support.
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 522469a..3af6024 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -268,6 +268,15 @@ config OCFS2_COMPAT_JBD
+ 	  is backwards compatible with JBD.  It is safe to say N here.
+ 	  However, if you really want to use the original JBD, say Y here.
+ 
++config OCFS2_FS_POSIX_ACL
++	bool "OCFS2 POSIX Access Control Lists"
++	depends on OCFS2_FS
++	select FS_POSIX_ACL
++	default n
++	help
++	  Posix Access Control Lists (ACLs) support permissions for users and
++	  groups beyond the owner/group/world scheme.
 +
-+	if (S_ISLNK(inode->i_mode))
-+		return -EOPNOTSUPP;
-+
-+	if (!(osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL))
-+		return 0;
-+
-+	acl = ocfs2_get_acl(inode, ACL_TYPE_ACCESS);
-+	if (IS_ERR(acl) || !acl)
-+		return PTR_ERR(acl);
-+	clone = posix_acl_clone(acl, GFP_KERNEL);
-+	posix_acl_release(acl);
-+	if (!clone)
-+		return -ENOMEM;
-+	ret = posix_acl_chmod_masq(clone, inode->i_mode);
-+	if (!ret)
-+		ret = ocfs2_set_acl(NULL, inode, NULL, ACL_TYPE_ACCESS,
-+				    clone, NULL, NULL);
-+	posix_acl_release(clone);
-+	return ret;
-+}
-+
- static size_t ocfs2_xattr_list_acl_access(struct inode *inode,
- 					  char *list,
- 					  size_t list_len,
-diff --git a/fs/ocfs2/acl.h b/fs/ocfs2/acl.h
-index fef10f1..68ffd64 100644
---- a/fs/ocfs2/acl.h
-+++ b/fs/ocfs2/acl.h
-@@ -29,10 +29,15 @@ struct ocfs2_acl_entry {
- #ifdef CONFIG_OCFS2_FS_POSIX_ACL
+ endif # BLOCK
  
- extern int ocfs2_check_acl(struct inode *, int);
-+extern int ocfs2_acl_chmod(struct inode *);
+ config DNOTIFY
+diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+index 304b63a..9e7accc 100644
+--- a/fs/ocfs2/super.c
++++ b/fs/ocfs2/super.c
+@@ -158,6 +158,8 @@ enum {
+ 	Opt_user_xattr,
+ 	Opt_nouser_xattr,
+ 	Opt_inode64,
++	Opt_acl,
++	Opt_noacl,
+ 	Opt_err,
+ };
  
- #else /* CONFIG_OCFS2_FS_POSIX_ACL*/
+@@ -180,6 +182,8 @@ static const match_table_t tokens = {
+ 	{Opt_user_xattr, "user_xattr"},
+ 	{Opt_nouser_xattr, "nouser_xattr"},
+ 	{Opt_inode64, "inode64"},
++	{Opt_acl, "acl"},
++	{Opt_noacl, "noacl"},
+ 	{Opt_err, NULL}
+ };
  
- #define ocfs2_check_acl NULL
-+static inline int ocfs2_acl_chmod(struct inode *inode)
-+{
-+	return 0;
-+}
- 
- #endif /* CONFIG_OCFS2_FS_POSIX_ACL*/
- 
-diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
-index 7bad7d9..4636aa6 100644
---- a/fs/ocfs2/file.c
-+++ b/fs/ocfs2/file.c
-@@ -990,6 +990,12 @@ bail_unlock_rw:
- bail:
+@@ -466,6 +470,8 @@ unlock_osb:
+ 	if (!ret) {
+ 		/* Only save off the new mount options in case of a successful
+ 		 * remount. */
++		if (!(osb->s_feature_incompat & OCFS2_FEATURE_INCOMPAT_XATTR))
++			parsed_options.mount_opt &= ~OCFS2_MOUNT_POSIX_ACL;
+ 		osb->s_mount_opt = parsed_options.mount_opt;
+ 		osb->s_atime_quantum = parsed_options.atime_quantum;
+ 		osb->preferred_slot = parsed_options.slot;
+@@ -651,6 +657,10 @@ static int ocfs2_fill_super(struct super_block *sb, void *data, int silent)
+ 	}
  	brelse(bh);
- 
-+	if (!status && attr->ia_valid & ATTR_MODE) {
-+		status = ocfs2_acl_chmod(inode);
-+		if (status < 0)
-+			mlog_errno(status);
-+	}
+ 	bh = NULL;
 +
- 	mlog_exit(status);
- 	return status;
++	if (!(osb->s_feature_incompat & OCFS2_FEATURE_INCOMPAT_XATTR))
++		parsed_options.mount_opt &= ~OCFS2_MOUNT_POSIX_ACL;
++
+ 	osb->s_mount_opt = parsed_options.mount_opt;
+ 	osb->s_atime_quantum = parsed_options.atime_quantum;
+ 	osb->preferred_slot = parsed_options.slot;
+@@ -664,6 +674,9 @@ static int ocfs2_fill_super(struct super_block *sb, void *data, int silent)
+ 
+ 	sb->s_magic = OCFS2_SUPER_MAGIC;
+ 
++	sb->s_flags = (sb->s_flags & ~MS_POSIXACL) |
++		((osb->s_mount_opt & OCFS2_MOUNT_POSIX_ACL) ? MS_POSIXACL : 0);
++
+ 	/* Hard readonly mode only if: bdev_read_only, MS_RDONLY,
+ 	 * heartbeat=none */
+ 	if (bdev_read_only(sb->s_bdev)) {
+@@ -945,6 +958,19 @@ static int ocfs2_parse_options(struct super_block *sb,
+ 		case Opt_inode64:
+ 			mopt->mount_opt |= OCFS2_MOUNT_INODE64;
+ 			break;
++#ifdef CONFIG_OCFS2_FS_POSIX_ACL
++		case Opt_acl:
++			mopt->mount_opt |= OCFS2_MOUNT_POSIX_ACL;
++			break;
++		case Opt_noacl:
++			mopt->mount_opt &= ~OCFS2_MOUNT_POSIX_ACL;
++			break;
++#else
++		case Opt_acl:
++		case Opt_noacl:
++			printk(KERN_INFO "ocfs2 (no)acl options not supported\n");
++			break;
++#endif
+ 		default:
+ 			mlog(ML_ERROR,
+ 			     "Unrecognized mount option \"%s\" "
+@@ -1017,6 +1043,13 @@ static int ocfs2_show_options(struct seq_file *s, struct vfsmount *mnt)
+ 	if (opts & OCFS2_MOUNT_INODE64)
+ 		seq_printf(s, ",inode64");
+ 
++#ifdef CONFIG_OCFS2_FS_POSIX_ACL
++	if (opts & OCFS2_MOUNT_POSIX_ACL)
++		seq_printf(s, ",acl");
++	else
++		seq_printf(s, ",noacl");
++#endif
++
+ 	return 0;
  }
+ 
 -- 
 1.5.6
 
