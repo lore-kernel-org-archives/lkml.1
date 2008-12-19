@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbYLSFWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYLSFZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbYLSFWX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 00:22:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbYLSFWM
+	id S1754026AbYLSFZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 00:25:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYLSFZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 00:22:12 -0500
-Received: from vms173005pub.verizon.net ([206.46.173.5]:49709 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbYLSFWL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 00:22:11 -0500
-Date: Fri, 19 Dec 2008 00:22:06 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 2.6.28-rc6] ACPICA: don't cond_resched() when
- irqs_disabled()
-In-reply-to: <20081126135508.GA1891@localhost>
-X-X-Sender: lenb@localhost.localdomain
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Sitsofe Wheeler <sitsofe@yahoo.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       linux-acpi@vger.kernel.org
-Message-id: <alpine.LFD.2.00.0812190016120.6312@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <20081126135508.GA1891@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 19 Dec 2008 00:25:47 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:52655 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751507AbYLSFZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 00:25:46 -0500
+Date: Thu, 18 Dec 2008 21:25:43 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Johannes Schindelin <Johannes.Schindelin@gmx.de>
+Cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org,
+       git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Simplified GIT usage guide
+Message-ID: <20081219052543.GA7155@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk> <alpine.DEB.1.00.0812121952320.5873@eeepc-johanness> <20081219000218.GA23990@linux.vnet.ibm.com> <alpine.DEB.1.00.0812190336450.14632@racer>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.00.0812190336450.14632@racer>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Dec 19, 2008 at 03:38:58AM +0100, Johannes Schindelin wrote:
+> Hi,
+> 
+> On Thu, 18 Dec 2008, Paul E. McKenney wrote:
+> 
+> > On Fri, Dec 12, 2008 at 07:57:38PM +0100, Johannes Schindelin wrote:
+> > 
+> > > On Fri, 12 Dec 2008, David Howells wrote:
+> > > 
+> > > >  Documentation/git-haters-guide.txt | 1283 ++++++++++++++++++++++++++++++++++++
+> > > 
+> > > I am sure we want to have something like that in git.git.
+> > 
+> > So am I.  Except that I am not being sarcastic.  ;-)
+> 
+> Good idea.  Ask somebody to put up some advertisement _against_ her own 
+> product into their shop window.
+> 
+> Very good idea.
 
-On Wed, 26 Nov 2008, Wu Fengguang wrote:
+Actually works fairly well in many cases.  But it is your shop, not mine.
+Do what you like.
 
-> [add CC to <stable@kernel.org>, since this bug was introduced in the
-> 2.6.27-rcX time frame, and should help 2.6.28 and 2.6.27.x alike]
+> Ciao,
+> Dscho
+> 
+> P.S.: Can I ask you to shoot yourself in the foot?
 
-Actually, ACPI_PREEMPTION_POINT() went in to 2.6.28-rc1,
-it is not present in 2.6.27.stable so this patch
-does not apply to 27.stable.
+Sure, go ahead.
 
-> The ACPI routines could be called from run_workqueue() with irqs disabled.
-> So we should test irqs_disabled() before calling cond_resched().
+> P.P.S.: If you are really a Git hater, why are you lurking here?  Go away, 
+> Subversion is not that bad.
 
-I don't know how you provoked this failure.
-The ACPI interpreter should always be run with interrupts enabled.
-If it isn't then that is a (different) bug.
+My friend, you are shooting yourself in the foot.
 
-There is, however, one exception, and it is during suspend/resume;
-and that _is_ a legal way to provoke this bug:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=12252
-
-and thus the fix is actually correct, and I'll apply it.
-
-thanks,
--- Len Brown, Intel Open Source Technology Center
-
-
-> --- a/include/acpi/platform/aclinux.h
-> +++ b/include/acpi/platform/aclinux.h
-> @@ -141,6 +141,10 @@ static inline void *acpi_os_acquire_object(acpi_cache_t * cache)
->  /*
->   * We need to show where it is safe to preempt execution of ACPICA
->   */
-> -#define ACPI_PREEMPTION_POINT()	cond_resched()
-> +#define ACPI_PREEMPTION_POINT()		\
-> +	do {				\
-> +		if (!irqs_disabled())	\
-> +			cond_resched();	\
-> +	} while (0)
->  
->  #endif				/* __ACLINUX_H__ */
-> --
+							Thanx, Paul
