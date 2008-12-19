@@ -1,43 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbYLSG75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbYLSHAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753936AbYLSG75 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 01:59:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbYLSG7p
+	id S1754480AbYLSHAT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 02:00:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbYLSG76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 01:59:45 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34261
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751507AbYLSG7p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 01:59:45 -0500
-Date: Thu, 18 Dec 2008 22:59:46 -0800 (PST)
-Message-Id: <20081218.225946.98418595.davem@davemloft.net>
-To: gorcunov@gmail.com
-Cc: akpm@linux-foundation.org, xemul@openvz.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: Re: [PATCH] net: ppp_generic - use DEFINE_IDR for static
- initialization
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081218154636.GB12874@localhost>
-References: <20081218154636.GB12874@localhost>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 19 Dec 2008 01:59:58 -0500
+Received: from main.gmane.org ([80.91.229.2]:48938 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753534AbYLSG74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 01:59:56 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Roman Kononov <kernel@kononov.ftml.net>
+Subject: BUG: soft lockup - is this XFS problem?
+Date: Fri, 19 Dec 2008 00:59:44 -0600
+Message-ID: <gifgp1$8ic$1@ger.gmane.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed;
+ boundary="------------070603020606020502000605"
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: adsl-70-131-220-76.dsl.emhril.sbcglobal.net
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-Date: Thu, 18 Dec 2008 18:46:36 +0300
+This is a multi-part message in MIME format.
+--------------070603020606020502000605
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> net: ppp_generic - use DEFINE_IDR for static initialization
-> 
-> We could use DEFINE_IDR for statically allocated idr
-> that allow us to save a few lines of code.
-> 
-> And spell fix.
-> 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
 
-Applied, thank you.
+
+--------------070603020606020502000605
+Content-Type: text/plain;
+ name="log.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="log.txt"
+
+RGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6IEJVRzogc29mdCBsb2NrdXAg
+LSBDUFUjMCBzdHVjayBmb3IgNjFzISBbcG9zdG1hc3RlcjoyMzIzN10KRGVjIDE5IDAwOjM0
+OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6IE1vZHVsZXMgbGlua2VkIGluOiB4ZDEwMDAKRGVj
+IDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6IENQVSAwOgpEZWMgMTkgMDA6MzQ6
+MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogTW9kdWxlcyBsaW5rZWQgaW46IHhkMTAwMApEZWMg
+MTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogUGlkOiAyMzIzNywgY29tbTogcG9z
+dG1hc3RlciBOb3QgdGFpbnRlZCAyLjYuMjcuOSAjMQpEZWMgMTkgMDA6MzQ6MTggMTAuMTAu
+MTAuMTAwIGtlcm5lbDogUklQOiAwMDEwOls8ZmZmZmZmZmY4MDI2Yzg3Mj5dICBbPGZmZmZm
+ZmZmODAyNmM4NzI+XSBmaW5kX2dldF9wYWdlcysweDcyLzB4MTIwCkRlYyAxOSAwMDozNDox
+OCAxMC4xMC4xMC4xMDAga2VybmVsOiBSU1A6IDAwMTg6ZmZmZjg4MDEyZTlmMzQ5OCAgRUZM
+QUdTOiAwMDAwMDI5NwpEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogUkFY
+OiBmZmZmODgwMGE0ZDc1MmEwIFJCWDogMDAwMDAwMDAwMDAwMDAwYyBSQ1g6IDAwMDAwMDAw
+MDAwMDAwMDMKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6IFJEWDogMDAw
+MDAwMDAwMDAwMDAwNCBSU0k6IDAwMDAwMDAwMDAwMDAwMDAgUkRJOiBmZmZmZTIwMDAwNGFi
+NzgwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiBSQlA6IGZmZmY4ODAy
+M2Y2YjUwMjggUjA4OiBmZmZmZTIwMDAwNGFiMjgwIFIwOTogMDAwMDAwMDAwMDAwMDAwZApE
+ZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogUjEwOiAwMDAwMDAwMDAwMDAw
+MDIxIFIxMTogMDAwMDAwMDAwMDBhZWYyMiBSMTI6IGZmZmZmZmZmODAyNzNlM2MKRGVjIDE5
+IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6IFIxMzogZmZmZmUyMDAwMTIwODYwOCBS
+MTQ6IDAxMDAwMDAwMDAwMDAyODYgUjE1OiBmZmZmODgwMjNmNmI1MDI4CkRlYyAxOSAwMDoz
+NDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiBGUzogIDAwMDA3ZmQzOTdmYjU3MDAoMDAwMCkg
+R1M6ZmZmZmZmZmY4MDZkNzU0MCgwMDAwKSBrbmxHUzowMDAwMDAwMDAwMDAwMDAwCkRlYyAx
+OSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiBDUzogIDAwMTAgRFM6IDAwMDAgRVM6
+IDAwMDAgQ1IwOiAwMDAwMDAwMDgwMDUwMDNiCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4x
+MDAga2VybmVsOiBDUjI6IDAwMDAyYWFhYWJhMDAwMDAgQ1IzOiAwMDAwMDAwMTc5MTFjMDAw
+IENSNDogMDAwMDAwMDAwMDAwMDZlMApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtl
+cm5lbDogRFIwOiAwMDAwMDAwMDAwMDAwMDAwIERSMTogMDAwMDAwMDAwMDAwMDAwMCBEUjI6
+IDAwMDAwMDAwMDAwMDAwMDAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6
+IERSMzogMDAwMDAwMDAwMDAwMDAwMCBEUjY6IDAwMDAwMDAwZmZmZjBmZjAgRFI3OiAwMDAw
+MDAwMDAwMDAwNDAwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOgpEZWMg
+MTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogQ2FsbCBUcmFjZToKRGVjIDE5IDAw
+OjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAyNmM4NDI+XSA/IGZp
+bmRfZ2V0X3BhZ2VzKzB4NDIvMHgxMjAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBr
+ZXJuZWw6ICBbPGZmZmZmZmZmODAyNzYxMDc+XSA/IHBhZ2V2ZWNfbG9va3VwKzB4MTcvMHgy
+MApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5lbDogIFs8ZmZmZmZmZmY4MDNh
+NjcwMT5dID8geGZzX2NsdXN0ZXJfd3JpdGUrMHg5MS8weDE2MApEZWMgMTkgMDA6MzQ6MTgg
+MTAuMTAuMTAuMTAwIGtlcm5lbDogIFs8ZmZmZmZmZmY4MDNhNmU3Mz5dID8geGZzX3BhZ2Vf
+c3RhdGVfY29udmVydCsweDUyMy8weDZjMApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAw
+IGtlcm5lbDogIFs8ZmZmZmZmZmY4MDNhNzMwMT5dID8geGZzX3ZtX3dyaXRlcGFnZSsweDcx
+LzB4MTIwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZm
+ZjgwMjc4MDkyPl0gPyBzaHJpbmtfcGFnZV9saXN0KzB4NTkyLzB4NzAwCkRlYyAxOSAwMDoz
+NDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZmZjgwMjc4NGI3Pl0gPyBzaHJp
+bmtfem9uZSsweDJiNy8weGM3MApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5l
+bDogIFs8ZmZmZmZmZmY4MDI3OThjND5dID8gdHJ5X3RvX2ZyZWVfcGFnZXMrMHgyNDQvMHgz
+YjAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAy
+Nzc5MjA+XSA/IGlzb2xhdGVfcGFnZXNfZ2xvYmFsKzB4MC8weDQwCkRlYyAxOSAwMDozNDox
+OCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZmZjgwMjdiMmQzPl0gPyBjb25nZXN0
+aW9uX3dhaXQrMHg4My8weGEwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVs
+OiAgWzxmZmZmZmZmZjgwMjRmNWYwPl0gPyBhdXRvcmVtb3ZlX3dha2VfZnVuY3Rpb24rMHgw
+LzB4MzAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZm
+ODAyNzM2Njg+XSA/IF9fYWxsb2NfcGFnZXNfaW50ZXJuYWwrMHgyMTgvMHg0ZTAKRGVjIDE5
+IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAyNmQwOGY+XSA/
+IF9fZ3JhYl9jYWNoZV9wYWdlKzB4NmYvMHhjMApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAu
+MTAwIGtlcm5lbDogIFs8ZmZmZmZmZmY4MDJjNjlhZD5dID8gYmxvY2tfd3JpdGVfYmVnaW4r
+MHg3ZC8weGUwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZm
+ZmZmZjgwM2E3MWUyPl0gPyB4ZnNfdm1fd3JpdGVfYmVnaW4rMHgyMi8weDMwCkRlYyAxOSAw
+MDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZmZjgwM2E1ZTEwPl0gPyB4
+ZnNfZ2V0X2Jsb2NrcysweDAvMHgxMApEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtl
+cm5lbDogIFs8ZmZmZmZmZmY4MDI2ZGY1Yj5dID8gZ2VuZXJpY19maWxlX2J1ZmZlcmVkX3dy
+aXRlKzB4MWNiLzB4NzkwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAg
+WzxmZmZmZmZmZjgwNTkxNDVmPl0gPyBfc3Bpbl9sb2NrX2lycXNhdmUrMHgxZi8weDUwCkRl
+YyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZmZjgwM2FlNjNj
+Pl0gPyB4ZnNfd3JpdGUrMHg2NWMvMHg5NTAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEw
+MCBrZXJuZWw6ICBbPGZmZmZmZmZmODA1OTE2ODE+XSA/IF9zcGluX3VubG9ja19pcnErMHgx
+MS8weDQwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxmZmZmZmZm
+ZjgwMjljMGNiPl0gPyBkb19zeW5jX3dyaXRlKzB4ZGIvMHgxMjAKRGVjIDE5IDAwOjM0OjE4
+IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAyNWMxNjk+XSA/IGRvX2Z1dGV4
+KzB4MTA5LzB4OWYwCkRlYyAxOSAwMDozNDoxOCAxMC4xMC4xMC4xMDAga2VybmVsOiAgWzxm
+ZmZmZmZmZjgwMjRmNWYwPl0gPyBhdXRvcmVtb3ZlX3dha2VfZnVuY3Rpb24rMHgwLzB4MzAK
+RGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAyMzE1
+ZjA+XSA/IHdha2VfdXBfbmV3X3Rhc2srMHhjMC8weDEwMApEZWMgMTkgMDA6MzQ6MTggMTAu
+MTAuMTAuMTAwIGtlcm5lbDogIFs8ZmZmZmZmZmY4MDI5Y2FlYj5dID8gdmZzX3dyaXRlKzB4
+Y2IvMHgxNzAKRGVjIDE5IDAwOjM0OjE4IDEwLjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZm
+ZmZmODAyOWNjOTM+XSA/IHN5c193cml0ZSsweDUzLzB4YTAKRGVjIDE5IDAwOjM0OjE4IDEw
+LjEwLjEwLjEwMCBrZXJuZWw6ICBbPGZmZmZmZmZmODAyMGM0NGI+XSA/IHN5c3RlbV9jYWxs
+X2Zhc3RwYXRoKzB4MTYvMHgxYgpEZWMgMTkgMDA6MzQ6MTggMTAuMTAuMTAuMTAwIGtlcm5l
+bDogIFs8ZmZmZmZmZmY4MDIwYzQ0Yj5dID8gc3lzdGVtX2NhbGxfZmFzdHBhdGgrMHgxNi8w
+eDFiCg==
+--------------070603020606020502000605--
+
