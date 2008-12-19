@@ -1,117 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbYLSFEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbYLSFLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752727AbYLSFEx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 00:04:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbYLSFEo
+	id S1752874AbYLSFLl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 00:11:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbYLSFL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 00:04:44 -0500
-Received: from gate.crashing.org ([63.228.1.57]:59023 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750833AbYLSFEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 00:04:44 -0500
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       xen-devel@lists.xensource.com, x86@kernel.org, ian.campbell@citrix.com,
-       jbeulich@novell.com, joerg.roedel@amd.com,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-Id: <3853A0F2-F817-4263-9EF9-9A0655BF95CD@kernel.crashing.org>
+	Fri, 19 Dec 2008 00:11:29 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:42909 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751057AbYLSFL2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 00:11:28 -0500
 From: Becky Bruce <beckyb@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
+To: mingo@elte.hu, jeremy@goop.org
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       ian.campbell@citrix.com, jbeulich@novell.com, joerg.roedel@amd.com,
+       benh@kernel.crashing.org, Becky Bruce <beckyb@kernel.crashing.org>
+Subject: [PATCH 06/11] swiotlb: Store phys address in io_tlb_orig_addr array
+Date: Thu, 18 Dec 2008 23:11:17 -0600
+Message-Id: <1229663480-10757-7-git-send-email-beckyb@kernel.crashing.org>
+X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <20081218210231.GB24271@elte.hu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH 00 of 14] swiotlb/x86: lay groundwork for xen dom0 use of swiotlb
-Date: Thu, 18 Dec 2008 23:03:05 -0600
-References: <20081216203513.GA14787@elte.hu> <20081217142637V.fujita.tomonori@lab.ntt.co.jp> <4949296F.7000701@goop.org> <20081218015705Z.fujita.tomonori@lab.ntt.co.jp> <E5300CC0-1D08-46F7-91F6-DEC36202F1DE@kernel.crashing.org> <20081218210231.GB24271@elte.hu>
-X-Mailer: Apple Mail (2.929.2)
+References: <20081218210231.GB24271@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When we enable swiotlb for platforms that support HIGHMEM, we
+can no longer store the virtual address of the original dma
+buffer, because that buffer might not have a permament mapping.
+Change the iotlb code to instead store the physical address of
+the original buffer.
 
-On Dec 18, 2008, at 3:02 PM, Ingo Molnar wrote:
+Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+---
+ lib/swiotlb.c |   47 ++++++++++++++++++++++++-----------------------
+ 1 files changed, 24 insertions(+), 23 deletions(-)
 
->
-> * Becky Bruce <beckyb@kernel.crashing.org> wrote:
->
->>> Can you be more specific? What architecture is plan to use highmem
->>> support in swiotlb?
->>
->> 32-bit powerpc needs this support - I was actually about to push a
->> similar set of patches.  We have several processors that support 36  
->> bits
->> of physical address space and do not have any iommu capability.  The
->> rest of the kernel support for those processors is now in place, so
->> swiotlb is the last piece of the puzzle for that to be fully  
->> functional.
->> I need to take a closer look at this series to see exactly what it's
->> doing and how it differs from what I've been testing.
->>
->> So there is another immediate use case, and I'd really hate to see  
->> this
->> code duplicated.  It should be entirely possible to remove the
->> assumption that we can save off the VA of the original buffer,  
->> which is
->> the thing that precludes HIGHMEM support, and still have nice  
->> readable,
->> maintainable code.
->
-> you can have a look at Jeremy's current lineup of patches in
-> tip/core/iotlb:
->
->   http://people.redhat.com/mingo/tip.git/README
->
-> (also integrated into tip/master)
->
-> What would be needed to make it suit your usecase too?
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index ed4f44a..e9d5bf6 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -118,7 +118,7 @@ static unsigned int io_tlb_index;
+  * We need to save away the original address corresponding to a mapped entry
+  * for the sync operations.
+  */
+-static unsigned char **io_tlb_orig_addr;
++static phys_addr_t *io_tlb_orig_addr;
+ 
+ /*
+  * Protect the above data structures in the map and unmap calls
+@@ -175,7 +175,7 @@ swiotlb_init_with_default_size(size_t default_size)
+ 	for (i = 0; i < io_tlb_nslabs; i++)
+  		io_tlb_list[i] = IO_TLB_SEGSIZE - OFFSET(i, IO_TLB_SEGSIZE);
+ 	io_tlb_index = 0;
+-	io_tlb_orig_addr = alloc_bootmem(io_tlb_nslabs * sizeof(char *));
++	io_tlb_orig_addr = alloc_bootmem(io_tlb_nslabs * sizeof(phys_addr_t));
+ 
+ 	/*
+ 	 * Get the overflow emergency buffer
+@@ -253,12 +253,14 @@ swiotlb_late_init_with_default_size(size_t default_size)
+  		io_tlb_list[i] = IO_TLB_SEGSIZE - OFFSET(i, IO_TLB_SEGSIZE);
+ 	io_tlb_index = 0;
+ 
+-	io_tlb_orig_addr = (unsigned char **)__get_free_pages(GFP_KERNEL,
+-	                           get_order(io_tlb_nslabs * sizeof(char *)));
++	io_tlb_orig_addr = (phys_addr_t *)
++		__get_free_pages(GFP_KERNEL,
++				 get_order(io_tlb_nslabs *
++					   sizeof(phys_addr_t)));
+ 	if (!io_tlb_orig_addr)
+ 		goto cleanup3;
+ 
+-	memset(io_tlb_orig_addr, 0, io_tlb_nslabs * sizeof(char *));
++	memset(io_tlb_orig_addr, 0, io_tlb_nslabs * sizeof(phys_addr_t));
+ 
+ 	/*
+ 	 * Get the overflow emergency buffer
+@@ -276,8 +278,8 @@ swiotlb_late_init_with_default_size(size_t default_size)
+ 	return 0;
+ 
+ cleanup4:
+-	free_pages((unsigned long)io_tlb_orig_addr, get_order(io_tlb_nslabs *
+-	                                                      sizeof(char *)));
++	free_pages((unsigned long)io_tlb_orig_addr,
++		   get_order(io_tlb_nslabs * sizeof(phys_addr_t)));
+ 	io_tlb_orig_addr = NULL;
+ cleanup3:
+ 	free_pages((unsigned long)io_tlb_list, get_order(io_tlb_nslabs *
+@@ -307,7 +309,7 @@ static int is_swiotlb_buffer(char *addr)
+  * Allocates bounce buffer and returns its kernel virtual address.
+  */
+ static void *
+-map_single(struct device *hwdev, char *buffer, size_t size, int dir)
++map_single(struct device *hwdev, phys_addr_t phys, size_t size, int dir)
+ {
+ 	unsigned long flags;
+ 	char *dma_addr;
+@@ -398,9 +400,9 @@ found:
+ 	 * needed.
+ 	 */
+ 	for (i = 0; i < nslots; i++)
+-		io_tlb_orig_addr[index+i] = buffer + (i << IO_TLB_SHIFT);
++		io_tlb_orig_addr[index+i] = phys + (i << IO_TLB_SHIFT);
+ 	if (dir == DMA_TO_DEVICE || dir == DMA_BIDIRECTIONAL)
+-		memcpy(dma_addr, buffer, size);
++		memcpy(dma_addr, phys_to_virt(phys), size);
+ 
+ 	return dma_addr;
+ }
+@@ -414,17 +416,17 @@ unmap_single(struct device *hwdev, char *dma_addr, size_t size, int dir)
+ 	unsigned long flags;
+ 	int i, count, nslots = ALIGN(size, 1 << IO_TLB_SHIFT) >> IO_TLB_SHIFT;
+ 	int index = (dma_addr - io_tlb_start) >> IO_TLB_SHIFT;
+-	char *buffer = io_tlb_orig_addr[index];
++	phys_addr_t phys = io_tlb_orig_addr[index];
+ 
+ 	/*
+ 	 * First, sync the memory before unmapping the entry
+ 	 */
+-	if (buffer && ((dir == DMA_FROM_DEVICE) || (dir == DMA_BIDIRECTIONAL)))
++	if (phys && ((dir == DMA_FROM_DEVICE) || (dir == DMA_BIDIRECTIONAL)))
+ 		/*
+ 		 * bounce... copy the data back into the original buffer * and
+ 		 * delete the bounce buffer.
+ 		 */
+-		memcpy(buffer, dma_addr, size);
++		memcpy(phys_to_virt(phys), dma_addr, size);
+ 
+ 	/*
+ 	 * Return the buffer to the free list by setting the corresponding
+@@ -457,20 +459,20 @@ sync_single(struct device *hwdev, char *dma_addr, size_t size,
+ 	    int dir, int target)
+ {
+ 	int index = (dma_addr - io_tlb_start) >> IO_TLB_SHIFT;
+-	char *buffer = io_tlb_orig_addr[index];
++	phys_addr_t phys = io_tlb_orig_addr[index];
+ 
+-	buffer += ((unsigned long)dma_addr & ((1 << IO_TLB_SHIFT) - 1));
++	phys += ((unsigned long)dma_addr & ((1 << IO_TLB_SHIFT) - 1));
+ 
+ 	switch (target) {
+ 	case SYNC_FOR_CPU:
+ 		if (likely(dir == DMA_FROM_DEVICE || dir == DMA_BIDIRECTIONAL))
+-			memcpy(buffer, dma_addr, size);
++			memcpy(phys_to_virt(phys), dma_addr, size);
+ 		else
+ 			BUG_ON(dir != DMA_TO_DEVICE);
+ 		break;
+ 	case SYNC_FOR_DEVICE:
+ 		if (likely(dir == DMA_TO_DEVICE || dir == DMA_BIDIRECTIONAL))
+-			memcpy(dma_addr, buffer, size);
++			memcpy(dma_addr, phys_to_virt(phys), size);
+ 		else
+ 			BUG_ON(dir != DMA_FROM_DEVICE);
+ 		break;
+@@ -509,7 +511,7 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 		 * swiotlb_map_single(), which will grab memory from
+ 		 * the lowest available address range.
+ 		 */
+-		ret = map_single(hwdev, NULL, size, DMA_FROM_DEVICE);
++		ret = map_single(hwdev, 0, size, DMA_FROM_DEVICE);
+ 		if (!ret)
+ 			return NULL;
+ 	}
+@@ -591,7 +593,7 @@ swiotlb_map_single_attrs(struct device *hwdev, void *ptr, size_t size,
+ 	/*
+ 	 * Oh well, have to allocate and map a bounce buffer.
+ 	 */
+-	map = map_single(hwdev, ptr, size, dir);
++	map = map_single(hwdev, virt_to_phys(ptr), size, dir);
+ 	if (!map) {
+ 		swiotlb_full(hwdev, size, dir, 1);
+ 		map = io_tlb_overflow_buffer;
+@@ -736,18 +738,17 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+ 		     int dir, struct dma_attrs *attrs)
+ {
+ 	struct scatterlist *sg;
+-	void *addr;
+ 	dma_addr_t dev_addr;
+ 	int i;
+ 
+ 	BUG_ON(dir == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nelems, i) {
+-		addr = sg_virt(sg);
+-		dev_addr = virt_to_dma_addr(hwdev, addr);
++		dev_addr = SG_ENT_BUS_ADDRESS(hwdev, sg);
+ 		if (swiotlb_force ||
+ 		    swiotlb_addr_needs_mapping(hwdev, dev_addr, sg->length)) {
+-			void *map = map_single(hwdev, addr, sg->length, dir);
++			void *map = map_single(hwdev, sg_phys(sg), sg->length,
++					       dir);
+ 			if (!map) {
+ 				/* Don't panic here, we expect map_sg users
+ 				   to do proper error handling. */
+-- 
+1.5.6.5
 
-Ingo,
-
-I've taken a quick look at the series posted to the list, and they're  
-actually very similar to what I've done.  I think there are really  
-only 3 fairly minor issues that need to be resolved to make this work  
-on ppc:
-
-1) We need to add swiotlb_map/unmap_page calls, as those are part the  
-ppc dma_mapping_ops (in fact, we don't have map/unmap_single in the  
-dma_mapping_ops struct on ppc anymore - those just call map/ 
-unmap_page).  This is really just a matter of moving some code around  
-and making some minor changes, as swiotlb_map/unmap_single can call  
-swiotlb_map/unmap_page once the args have been converted.  There's a  
-patch in my series that should make this pretty obvious.
-
-2) To convert any address to/from a bus address, we also need the  
-hwdev pointer passed as an argument since ppc supports a per-device  
-offset accessed via the device ptr that is used to calculate the bus  
-address.  I'd also given my conversion functions more generic names,  
-as it seemed highly likely that these would eventually be useful  
-outside of the swiotlb code.
-
-3) powerpc uses enum dma_data_direction for the direction argument to  
-its dma_ops, which is, from reading the kernel docs, the correct  
-argument type for the DMA API functions.  However, the iotlb/x86/ia64  
-code is currently using an int.  This causes a build warning when we  
-initialize the dma_ops struct using the swiotlb funcs.  Is there a  
-reason for the use of "int" in x86/ia64?  The Right Thing(TM) here  
-seems to be to convert those over to using the enum, and I have a big  
-patch that starts doing that, but I've probably missed some places.  I  
-could instead do some hackery on the ppc side, and leave the other  
-platforms alone, but I'd prefer to do it cleanly. Thoughts?
-
-Unfortunately, this is horrible timing for me, as starting tomorrow,  
-I'm going to be offline for a week and a half or so in podunk  
-Louisiana with essentially no net access.  I can integrate my code  
-into your tree and test on PPC as soon as I return to the real world.   
-I'll go ahead and post my current patch series for reference, since  
-I'm about to disappear - it's not been tested on anything other than  
-powerpc (which is all I have for testing - it's highly likely I've  
-done something that's bogus on x86), it needs some cleanup, and I've  
-only built the entire series on x86_64 (not the individual pieces),  
-but it should definitely give you an idea of what we need to make  
-things work on ppc - the code is stable running LTP on a 2-core 32-bit  
-MPC8641 board with 6GB of RAM.
-
-Cheers,
-Becky
