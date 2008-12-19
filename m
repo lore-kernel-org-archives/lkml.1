@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYLSV7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbYLSWAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756353AbYLSV7g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 16:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754959AbYLSVyf
+	id S1756538AbYLSWAQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:00:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755040AbYLSVyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:54:35 -0500
-Received: from mx2.suse.de ([195.135.220.15]:48942 "EHLO mx2.suse.de"
+	Fri, 19 Dec 2008 16:54:39 -0500
+Received: from ns.suse.de ([195.135.220.2]:58001 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754938AbYLSVye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 16:54:34 -0500
+	id S1754236AbYLSVyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:54:38 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Tao Ma <tao.ma@oracle.com>, Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 15/45] ocfs2/xattr: Only set buffer update if it doesn't exist in cache.
-Date: Fri, 19 Dec 2008 13:53:34 -0800
-Message-Id: <1229723644-13630-16-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 17/45] ocfs2: Add clusters free in dealloc_ctxt.
+Date: Fri, 19 Dec 2008 13:53:36 -0800
+Message-Id: <1229723644-13630-18-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
 References: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
@@ -25,36 +25,197 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tao Ma <tao.ma@oracle.com>
 
-When we call ocfs2_init_xattr_bucket, we deem that the new buffer head
-will be written to disk immediately, so we just use sb_getblk. But in
-some cases the buffer may have already been in ocfs2 uptodate cache,
-so we only call ocfs2_set_buffer_uptodate if the buffer head isn't
-in the cache.
+Now in ocfs2 xattr set, the whole process are divided into many small
+parts and they are wrapped into diffrent transactions and it make the
+set doesn't look like a real transaction. So we want to integrate it
+into a real one.
+
+In some cases we will allocate some clusters and free some in just one
+transaction. e.g, one xattr is larger than inline size, so it and its
+value root is stored within the inode while the value is outside in a
+cluster. Then we try to update it with a smaller value(larger than the
+size of root but smaller than inline size), we may need to free the
+outside cluster while allocate a new bucket(one cluster) since now the
+inode may be full. The old solution will lock the global_bitmap(if the
+local alloc failed in stress test) and then the truncate log. This will
+cause a ABBA lock with truncate log flush.
+
+This patch add the clusters free in dealloc_ctxt, so that we can record
+the free clusters during the transaction and then free it after we
+release the global_bitmap in xattr set.
 
 Signed-off-by: Tao Ma <tao.ma@oracle.com>
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/xattr.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ fs/ocfs2/alloc.c |  106 ++++++++++++++++++++++++++++++++++++++++++++++++++----
+ fs/ocfs2/alloc.h |    4 ++
+ 2 files changed, 103 insertions(+), 7 deletions(-)
 
-diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index 87cf39d..d8fc714 100644
---- a/fs/ocfs2/xattr.c
-+++ b/fs/ocfs2/xattr.c
-@@ -219,8 +219,10 @@ static int ocfs2_init_xattr_bucket(struct ocfs2_xattr_bucket *bucket,
- 			break;
- 		}
+diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
+index 0cc2deb..4614614 100644
+--- a/fs/ocfs2/alloc.c
++++ b/fs/ocfs2/alloc.c
+@@ -5800,7 +5800,10 @@ int ocfs2_truncate_log_init(struct ocfs2_super *osb)
+  */
  
--		ocfs2_set_new_buffer_uptodate(bucket->bu_inode,
--					      bucket->bu_bhs[i]);
-+		if (!ocfs2_buffer_uptodate(bucket->bu_inode,
-+					   bucket->bu_bhs[i]))
-+			ocfs2_set_new_buffer_uptodate(bucket->bu_inode,
-+						      bucket->bu_bhs[i]);
+ /*
+- * Describes a single block free from a suballocator
++ * Describe a single bit freed from a suballocator.  For the block
++ * suballocators, it represents one block.  For the global cluster
++ * allocator, it represents some clusters and free_bit indicates
++ * clusters number.
+  */
+ struct ocfs2_cached_block_free {
+ 	struct ocfs2_cached_block_free		*free_next;
+@@ -5815,10 +5818,10 @@ struct ocfs2_per_slot_free_list {
+ 	struct ocfs2_cached_block_free		*f_first;
+ };
+ 
+-static int ocfs2_free_cached_items(struct ocfs2_super *osb,
+-				   int sysfile_type,
+-				   int slot,
+-				   struct ocfs2_cached_block_free *head)
++static int ocfs2_free_cached_blocks(struct ocfs2_super *osb,
++				    int sysfile_type,
++				    int slot,
++				    struct ocfs2_cached_block_free *head)
+ {
+ 	int ret;
+ 	u64 bg_blkno;
+@@ -5893,6 +5896,82 @@ out:
+ 	return ret;
+ }
+ 
++int ocfs2_cache_cluster_dealloc(struct ocfs2_cached_dealloc_ctxt *ctxt,
++				u64 blkno, unsigned int bit)
++{
++	int ret = 0;
++	struct ocfs2_cached_block_free *item;
++
++	item = kmalloc(sizeof(*item), GFP_NOFS);
++	if (item == NULL) {
++		ret = -ENOMEM;
++		mlog_errno(ret);
++		return ret;
++	}
++
++	mlog(0, "Insert clusters: (bit %u, blk %llu)\n",
++	     bit, (unsigned long long)blkno);
++
++	item->free_blk = blkno;
++	item->free_bit = bit;
++	item->free_next = ctxt->c_global_allocator;
++
++	ctxt->c_global_allocator = item;
++	return ret;
++}
++
++static int ocfs2_free_cached_clusters(struct ocfs2_super *osb,
++				      struct ocfs2_cached_block_free *head)
++{
++	struct ocfs2_cached_block_free *tmp;
++	struct inode *tl_inode = osb->osb_tl_inode;
++	handle_t *handle;
++	int ret = 0;
++
++	mutex_lock(&tl_inode->i_mutex);
++
++	while (head) {
++		if (ocfs2_truncate_log_needs_flush(osb)) {
++			ret = __ocfs2_flush_truncate_log(osb);
++			if (ret < 0) {
++				mlog_errno(ret);
++				break;
++			}
++		}
++
++		handle = ocfs2_start_trans(osb, OCFS2_TRUNCATE_LOG_UPDATE);
++		if (IS_ERR(handle)) {
++			ret = PTR_ERR(handle);
++			mlog_errno(ret);
++			break;
++		}
++
++		ret = ocfs2_truncate_log_append(osb, handle, head->free_blk,
++						head->free_bit);
++
++		ocfs2_commit_trans(osb, handle);
++		tmp = head;
++		head = head->free_next;
++		kfree(tmp);
++
++		if (ret < 0) {
++			mlog_errno(ret);
++			break;
++		}
++	}
++
++	mutex_unlock(&tl_inode->i_mutex);
++
++	while (head) {
++		/* Premature exit may have left some dangling items. */
++		tmp = head;
++		head = head->free_next;
++		kfree(tmp);
++	}
++
++	return ret;
++}
++
+ int ocfs2_run_deallocs(struct ocfs2_super *osb,
+ 		       struct ocfs2_cached_dealloc_ctxt *ctxt)
+ {
+@@ -5908,8 +5987,10 @@ int ocfs2_run_deallocs(struct ocfs2_super *osb,
+ 		if (fl->f_first) {
+ 			mlog(0, "Free items: (type %u, slot %d)\n",
+ 			     fl->f_inode_type, fl->f_slot);
+-			ret2 = ocfs2_free_cached_items(osb, fl->f_inode_type,
+-						       fl->f_slot, fl->f_first);
++			ret2 = ocfs2_free_cached_blocks(osb,
++							fl->f_inode_type,
++							fl->f_slot,
++							fl->f_first);
+ 			if (ret2)
+ 				mlog_errno(ret2);
+ 			if (!ret)
+@@ -5920,6 +6001,17 @@ int ocfs2_run_deallocs(struct ocfs2_super *osb,
+ 		kfree(fl);
  	}
  
- 	if (rc)
++	if (ctxt->c_global_allocator) {
++		ret2 = ocfs2_free_cached_clusters(osb,
++						  ctxt->c_global_allocator);
++		if (ret2)
++			mlog_errno(ret2);
++		if (!ret)
++			ret = ret2;
++
++		ctxt->c_global_allocator = NULL;
++	}
++
+ 	return ret;
+ }
+ 
+diff --git a/fs/ocfs2/alloc.h b/fs/ocfs2/alloc.h
+index 70257c8..c301cf2 100644
+--- a/fs/ocfs2/alloc.h
++++ b/fs/ocfs2/alloc.h
+@@ -167,11 +167,15 @@ int __ocfs2_flush_truncate_log(struct ocfs2_super *osb);
+  */
+ struct ocfs2_cached_dealloc_ctxt {
+ 	struct ocfs2_per_slot_free_list		*c_first_suballocator;
++	struct ocfs2_cached_block_free 		*c_global_allocator;
+ };
+ static inline void ocfs2_init_dealloc_ctxt(struct ocfs2_cached_dealloc_ctxt *c)
+ {
+ 	c->c_first_suballocator = NULL;
++	c->c_global_allocator = NULL;
+ }
++int ocfs2_cache_cluster_dealloc(struct ocfs2_cached_dealloc_ctxt *ctxt,
++				u64 blkno, unsigned int bit);
+ int ocfs2_run_deallocs(struct ocfs2_super *osb,
+ 		       struct ocfs2_cached_dealloc_ctxt *ctxt);
+ 
 -- 
 1.5.6
 
