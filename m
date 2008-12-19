@@ -1,62 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbYLSUP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbYLSUWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752558AbYLSUP0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 15:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbYLSUPO
+	id S1752814AbYLSUWH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 15:22:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYLSUVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 15:15:14 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:37745 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbYLSUPN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 15:15:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=MAA8EYrj7aNbPsSAdaX3RKY0/rU042XySokQpiEnqo7+B9Iy6kFpYECOtsfPDxRBLY
-         WJq1rE4UqZMjKeCeRuhW5njNB2lFM/6lRhGoA9rxH8S3rUzXcRLWe0tITmKruOqpHYRt
-         lefLq9wmVuyvCc40V0N8YaVcDC2qmltQrjXqk=
-Message-ID: <84144f020812191215i432fd70fq3248d9feb981d4cf@mail.gmail.com>
-Date: Fri, 19 Dec 2008 22:15:11 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Catalin Marinas" <catalin.marinas@arm.com>
-Subject: Re: [PATCH 11/14] kmemleak: Remove some of the kmemleak false positives
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081219181357.7778.9552.stgit@pc1117.cambridge.arm.com>
+	Fri, 19 Dec 2008 15:21:50 -0500
+Received: from gw.goop.org ([64.81.55.164]:55521 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751320AbYLSUVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 15:21:48 -0500
+Message-ID: <494C0255.8010208@goop.org>
+Date: Fri, 19 Dec 2008 12:21:41 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+CC: linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user
+ space data
+References: <494009D7.4020602@vlnb.net> <494012C4.7090304@vlnb.net>
+In-Reply-To: <494012C4.7090304@vlnb.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
-	 <20081219181357.7778.9552.stgit@pc1117.cambridge.arm.com>
-X-Google-Sender-Auth: ccf50d2d08fac6c3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 19, 2008 at 8:13 PM, Catalin Marinas
-<catalin.marinas@arm.com> wrote:
-> There are allocations for which the main pointer cannot be found but
-> they are not memory leaks. This patch fixes some of them. For more
-> information on false positives, see Documentation/kmemleak.txt.
->
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Vladislav Bolkhovitin wrote:
+> This patch implements support for zero-copy TCP transmit of user space 
+> data. It is necessary in iSCSI-SCST target driver for transmitting data 
+> from user space buffers, supplied by user space backend handlers. In 
+> this case SCST core needs to know when TCP finished transmitting the 
+> data, so the corresponding buffers can be reused or freed. Without this 
+> patch it isn't possible, so iSCSI-SCST has to use data copying to TCP 
+> send buffers function sock_sendpage(). ISCSI-SCST also works without 
+> this patch, but that this patch gives a nice performance improvement.
+>   
 
-> @@ -2882,6 +2883,12 @@ static int __init con_init(void)
->         */
->        for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
->                vc_cons[currcons].d = vc = alloc_bootmem(sizeof(struct vc_data));
-> +               /*
-> +                * Kmemleak does not track the memory allocated via
-> +                * alloc_bootmem() but this block contains pointers to
-> +                * other blocks allocated via kmalloc.
-> +                */
-> +               kmemleak_alloc(vc, sizeof(struct vc_data), 1, GFP_ATOMIC);
->                INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
->                visual_init(vc, currcons, 1);
->                vc->vc_screenbuf = (unsigned short *)alloc_bootmem(vc->vc_screenbuf_size);
+In Xen networking it looks like we're going to need to solve a very 
+similar problem.
 
-I think there was some discussion about adding hooks to the bootmem
-allocator. Didn't that work out?
+When a guest (non-privileged, with no direct hardware access) wants to 
+send a network packet, it passes it over to the privileged (host) 
+domain, who then puts it into the network stack for transmission.
+
+The packet gets passed over in a page granted (read "borrowed") from the 
+guest domain.   We can't return it to the guest while its tangled up in 
+the host's network stack, so we need notification of when the stack has 
+finished with the page.
+
+The out of tree Xen patches do this by marking a page as having been 
+allocated by a foreign allocator, and overloads the private memory of 
+struct page with a destructor function pointer, which put_page calls as 
+appropriate.  We can do this because the page is definitely "owned" by 
+the Xen subsystem, so most of the fields are available for recycling; 
+the main problem is that we need to grab another page flag.  Your case 
+sounds more complex because the source page can be mapped by userspace 
+and/or be in the pagecache, so everything is already claimed.
+
+As with your case, we can simply copy the page data if this mechanism 
+isn't available.  But it would be nice if it were.
+
+> 1. Add net_priv analog in struct sk_buff, not in struct page. But then 
+> it would be required that all the pages in each skb must be from the 
+> same originator, i.e. with the same net_priv. It is unpractical to 
+> change all the operations with skb's to forbid merging them, if they 
+> have different net_priv. I tried, but quickly gave up. There are too 
+> many such places in very not obvious code pieces.
+>   
+
+I think Rusty has a patch to put some kind of put notifier in struct 
+skb_shared_info, but I'm not sure of the details.
+
+> 2. Have in iSCSI-SCST a hashed list to translate page to iSCSI cmd by a 
+> simple search function. This approach was rejected, because to copy a 
+> page a modern CPU needs using MMX about 1500 ticks.
+
+Is that the cold cache timing?
+
+>  It was observed, 
+> that each page can be referenced by TCP during transmit about 20 times 
+> or even more. So, if each search needs, say, 20 ticks, the overall 
+> search time will be 20*20*2 (to get() and put()) = 800 ticks. So, this 
+> approach would considerably worse performance-wise to the chosen 
+> approach and provide not too much benefit.
+>   
+
+Wouldn't you only need to do the lookup on the last put?
+
+An external lookup table might well for for us, if the net_put_page() 
+change is acceptable to the network folk.
+
+    J
