@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbYLSHVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbYLSHar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbYLSHVz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 02:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbYLSHVr
+	id S1754218AbYLSHar (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 02:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYLSHai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 02:21:47 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55130 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752526AbYLSHVq (ORCPT
+	Fri, 19 Dec 2008 02:30:38 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:7294 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752694AbYLSHah (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 02:21:46 -0500
-Date: Thu, 18 Dec 2008 14:00:15 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Joerg Roedel <joerg.roedel@amd.com>
-Subject: Re: [patch 01/22] AMD IOMMU: enable device isolation per default
-Message-ID: <20081218130015.GA1420@ucw.cz>
-References: <20081216235704.347182084@mini.kroah.org> <20081217000353.GB4504@kroah.com>
+	Fri, 19 Dec 2008 02:30:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OYzlGqcZyWc2tIFLMo34gsjsiPTx0olJbWTAVu/iF4onldWEh1Igv0KRj2KtcNJw4+
+         Zt3LqrgEr2pjHsuK/soCu3rVPFZpPijT1U5PQCHHcNc95ZDlumVK52et8ErOxMEl/ot7
+         SS8sQNUyw7pPPX/iKwZRZ9++mVCm8uTmA6oys=
+Message-ID: <aec7e5c30812182330u6e907867i971396923c167ddf@mail.gmail.com>
+Date: Fri, 19 Dec 2008 16:30:36 +0900
+From: "Magnus Damm" <magnus.damm@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] clocksource: pass clocksource to read() callback
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net
+In-Reply-To: <20081217175658.0706a07f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081217000353.GB4504@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20081211114802.17622.54609.sendpatchset@rx1.opensource.se>
+	 <20081217175658.0706a07f.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-12-16 16:03:53, Greg KH wrote:
-> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> 
-> From: Joerg Roedel <joerg.roedel@amd.com>
-> 
-> commit 3ce1f93c6d53c3f91c3846cf66b018276c8ac2e7 upstream.
-> 
-> Impact: makes device isolation the default for AMD IOMMU
-> 
-> Some device drivers showed double-free bugs of DMA memory while testing
-> them with AMD IOMMU. If all devices share the same protection domain
-> this can lead to data corruption and data loss. Prevent this by putting
-> each device into its own protection domain per default.
-> 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+On Thu, Dec 18, 2008 at 10:56 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Thu, 11 Dec 2008 20:48:02 +0900
+> Magnus Damm <magnus.damm@gmail.com> wrote:
+>
+>> Pass clocksource pointer to the read() callback for clocksources.
+>> This allows us to share the callback between multiple instances.
+>
+> sparc64 allmodconfig:
+>
+>
+>  CHK     include/linux/version.h
+>  CHK     include/linux/utsrelease.h
+>  SYMLINK include/asm -> include/asm-sparc
+>  CC      arch/sparc/kernel/asm-offsets.s
+> In file included from include/linux/ktime.h:25,
+>                 from include/linux/timer.h:5,
+>                 from include/linux/clocksource.h:16,
+>                 from /usr/src/devel/arch/sparc/include/asm/timer_64.h:11,
+>                 from /usr/src/devel/arch/sparc/include/asm/timer.h:4,
+>                 from /usr/src/devel/arch/sparc/include/asm/timex_64.h:9,
+>                 from /usr/src/devel/arch/sparc/include/asm/timex.h:4,
+>                 from include/linux/timex.h:170,
+>                 from include/linux/sched.h:54,
+>                 from arch/sparc/kernel/asm-offsets.c:13:
+> include/linux/jiffies.h:247:31: warning: "CLOCK_TICK_RATE" is not defined
+[lot's of warning snipped]
 
-This does not look like 'fix for a serious bug' to
-me. stable_kernel_rules.txt says '...not a "this could be a problem"
-type thing'.
+How about the (unfortunately most likely mangled) patch below? Does it
+help? If not then i'll setup a cross compiler.
 
-Yes, maybe iommu is mature enough that we want it enabled, but...
+Dave, do you want me to rework the patch somehow?
 
-(Or maybe Documentation/stable_kernel_rules.txt needs updating. The
-patch for penguin dirty feet already got in.....)
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks!
+
+/ magnus
+
+--- 0001/arch/sparc/include/asm/timex_64.h
++++ work/arch/sparc/include/asm/timex_64.h	2008-12-19 16:21:53.000000000 +0900
+@@ -6,10 +6,10 @@
+ #ifndef _ASMsparc64_TIMEX_H
+ #define _ASMsparc64_TIMEX_H
+
+-#include <asm/timer.h>
+-
+ #define CLOCK_TICK_RATE	1193180 /* Underlying HZ */
+
++#include <asm/timer.h>
++
+ /* Getting on the cycle counter on sparc64. */
+ typedef unsigned long cycles_t;
+ #define get_cycles()	tick_ops->get_tick()
