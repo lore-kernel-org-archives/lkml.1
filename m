@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbYLSQ5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbYLSQ7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752565AbYLSQ5V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 11:57:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYLSQ5N
+	id S1752614AbYLSQ7f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 11:59:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYLSQ7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 11:57:13 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43640 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751660AbYLSQ5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 11:57:12 -0500
-Cc: initramfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-Id: <9C4F1B7D-CCBC-48D7-8624-9A7C314C1590@redhat.com>
-From: Jeremy Katz <katzj@redhat.com>
-To: Theodore Tso <tytso@mit.edu>
-In-Reply-To: <20081219152708.GE9871@mit.edu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: Dracut -- Cross distribution initramfs infrastructure
-Date: Fri, 19 Dec 2008 11:56:47 -0500
-References: <1229540094.28858.150.camel@aglarond.local> <20081217190700.GA15377@infradead.org> <4949FD67.6040906@suse.de> <494B5031.5080306@bfh.ch> <20081219091841.207bc951@kopernikus.site> <494BA7CE.2020007@suse.de> <20081219152708.GE9871@mit.edu>
+	Fri, 19 Dec 2008 11:59:25 -0500
+Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:53266 "EHLO
+	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751466AbYLSQ7Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 11:59:24 -0500
+X-Greylist: delayed 629 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Dec 2008 11:59:23 EST
+Date: Fri, 19 Dec 2008 17:48:51 +0100
+From: Gabor Gombas <gombasg@sztaki.hu>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>, sfr@canb.auug.org.au,
+       steved@redhat.com, rwheeler@redhat.com, bfields@fieldses.org,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Pull request for FS-Cache, including NFS patches
+Message-ID: <20081219164851.GG5209@boogie.lpds.sztaki.hu>
+References: <20081218123601.11810b7f.akpm@linux-foundation.org> <8930.1229560221@redhat.com> <20081218224418.804f10bc.sfr@canb.auug.org.au> <20081218142420.GA16728@infradead.org> <7633.1229653644@redhat.com> <20081218184443.d73f5431.akpm@linux-foundation.org> <1229690036.7789.113.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1229690036.7789.113.camel@heimdal.trondhjem.org>
+X-Copyright: Forwarding or publishing without permission is prohibited.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 19, 2008, at 10:27 AM, Theodore Tso wrote:
-> On Fri, Dec 19, 2008 at 02:55:26PM +0100, Hannes Reinecke wrote:
->>
->> The goal of the initrd is to activate and mount the root fs.
->> And the root fs _only_. Every other system should be configured
->> once the main system is running.
->
-> Don't forget resuming from hibernation....
+On Fri, Dec 19, 2008 at 07:33:56AM -0500, Trond Myklebust wrote:
 
-I haven't, although I haven't sat down to implement it yet.
+> One interesting use case that I didn't see David mention is for cluster
+> boot up. In a lot of the HPC clustered set-ups there tend be a number of
+> 'hot' files that all clients need to access at roughly the same time in
+> the boot cycle. Pre-loading these files into the persistent cache before
+> booting the cluster is one way to solve this problem. Server replication
+> and/or copying the files to local storage on the clients are other
+> solutions.
 
-> And of course, activating and mounting the root filesystem can be
-> quite complicated --- it can involve loading driver modules,
-> activiating md and/or lvm, prompting for a password, setting up
-> networking (dhcp, routing, dns) for iSCSI and/or NFS/AFS/Lustre/et.al,
-> the equivalent setup for Fiber Channel attached disks, etc.  If
-> there's any cryptography involved, the user may need to be prompted
-> for a password and/or key and/or fingerprint scan to unlock TPM unit
-> to access the key, etc.
+Not just boot up. Consider a room full of thin clients using nfsroot and
+the lecturer saying "Now everybody open a browser" or "Now everybody
+open Openoffice". With just NFS, it takes ages (there is a bottleneck of
+a single gigabit link between the clients and the NFS server even though
+the server itself has a 10gig card). If we redirect most of /usr/lib to
+a small local flash with some LD_LIBRARY_PATH and bind mount trickery we
+get an acceptable startup time. The flash is too small to hold even
+/usr/lib (flash size: 500M, /usr/lib is: 927M) so it is not possible to
+keep everything locally.
 
-Well, driver modules should be being loaded by udev.  Period.  If  
-something requires a manual modprobe, that's a bug IMHO.  The other  
-stuff, while non-trivial, is surprisingly doable from udev rules.
+It would be really nice if the local caching could be handled
+automatically and we would not need so many hacks, so I really look
+forward trying FS-Cache if I have time. I used cachefs on Solaris ages
+ago and I had good experiences back then; it would be really nice if
+Linux would catch up.
 
-> There may also be times when it is useful to operate on the root
-> filesystem in some way before it is mounted; in most cases the
-> operation can bedone on a filesystem mounted read-only, yes --- but at
-> the cost of needing to reboot afterwards if the root filesystem needs
-> to be modified by said userspace tool.
+Gabor
 
-I think that once you start getting into this realm, though, you end  
-up with an incredibly over-complicated and slow initramfs.  If we  
-instead focus on keeping things "fast", the reboot afterwards isn't  
-that costly.
-
-> Finally, note that part the discussion at the Kernel Summit, and also
-> what David Jones was looking to work at, was to do something that
-> could included as part of the kernel sources.  The idea is that as
-> responsibility for early boot is moved from the kernel, an mkinitramfs
-> which is fixed and distributed by the distribution might not work with
-> a newer kernel.org kernel.  So the idea that was explored was adding a
-> common mkinitramfs with basic functionality into kernel sources, with
-> the ability for distributions to add various "value add" enhancements
-> if they like.  This way if the kernel wants to move more functionality
-> (for example, in the area of resuming from hibernation) out of the
-> kernel into initramfs, it can do so without breaking the ability of
-> older distributions from being able to use kernel.org kernels.
->
-> So IMHO, it's important not only that the distributions standardize on
-> a single initramfs framework, but that framework get integrated into
-> the kernel sources.
-
-Yeah, Dave and I have talked a fair bit about that.  It's just  
-significantly easier to get something going _outside_ of the kernel  
-sources and then work towards integrating it.  The plus side of  
-integrating it is that the existing bits to generate a built-in  
-initramfs can go away.
-
-Jeremy
+-- 
+     ---------------------------------------------------------
+     MTA SZTAKI Computer and Automation Research Institute
+                Hungarian Academy of Sciences
+     ---------------------------------------------------------
