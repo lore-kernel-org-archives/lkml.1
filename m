@@ -1,119 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYLSADm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbYLSAEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754744AbYLSADm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 19:03:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbYLSACZ
+	id S1754810AbYLSAEM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 19:04:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbYLSADw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 19:02:25 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:46447 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752371AbYLSACV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 19:02:21 -0500
-Date: Thu, 18 Dec 2008 16:02:18 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Johannes Schindelin <Johannes.Schindelin@gmx.de>
-Cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org,
-       git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Simplified GIT usage guide
-Message-ID: <20081219000218.GA23990@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk> <alpine.DEB.1.00.0812121952320.5873@eeepc-johanness>
+	Thu, 18 Dec 2008 19:03:52 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:62719 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752324AbYLSADu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 19:03:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=E/zYhTjx0CyKFVIHoiCF7yD9CXJCFotbABPMXRxSGcq1r1y9FlQ+KY+yVblcx2RfoD
+         G3uoBMDCqhGxKLwAoOVxKjoqG9+3DIzbnelHBaSR1qxPy0ghnSp4YtRQKCiRKfYYlV2k
+         jTXS+2O6K39Gg40dC9l3zAnqy0ipOOjHQ2/3Q=
+Message-ID: <47ed01bd0812181603t53a500adgadab6884a7a4a586@mail.gmail.com>
+Date: Thu, 18 Dec 2008 19:03:49 -0500
+From: "Dylan Taft" <d13f00l@gmail.com>
+To: NeilBrown <neilb@suse.de>
+Subject: Re: MDADM Software Raid Woes
+Cc: "Nick Andrew" <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+In-Reply-To: <44f470466dcf22c47f6700502caf9cbd.squirrel@neil.brown.name>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0812121952320.5873@eeepc-johanness>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <47ed01bd0812172033p1065b472t62491e4f2eed901@mail.gmail.com>
+	 <20081218065603.GA21265@mail.local.tull.net>
+	 <47ed01bd0812180508t89d1aecr13d2b9e8402ed885@mail.gmail.com>
+	 <44f470466dcf22c47f6700502caf9cbd.squirrel@neil.brown.name>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 07:57:38PM +0100, Johannes Schindelin wrote:
-> Hi,
-> 
-> On Fri, 12 Dec 2008, David Howells wrote:
-> 
-> >  Documentation/git-haters-guide.txt | 1283 ++++++++++++++++++++++++++++++++++++
-> 
-> I am sure we want to have something like that in git.git.
+I'm running gentoo, udev 124-r1
+I cleared all superblocks on all devices I raided, and undid all the
+partition tables, and started from scratch, putting the filesystem on
+the raid devices themselves instead of partitioning the raid devices.
 
-So am I.  Except that I am not being sarcastic.  ;-)
+Everything is working now, I think it's probably best to keep it
+simple, or use LVM
+MD is referenced in the udev config files, but everything is working now.
 
-> > +I don't really know what I'm doing with GIT either.
-> 
-> Strike the "either".
+Sorry, I think it was user error. :)
+Thanks
+Dylan
 
-Not in my case.  And I am far from alone.
-
-Let's face it, if you really do know what you are doing with GIT, you
-probably are not a GIT-hater, and thus not in the target audience for
-Dave's document.
-
-> > +===============
-> > +OVERVIEW OF GIT
-> > +===============
-> 
-> Your overview seems to be what "Git from the bottom up" is all about (see 
-> the Git Wiki for more information where to find it).
-> 
-> From my experience with new users, this is exactly the wrong way to go 
-> about it.  You don't introduce object types of the Git database before 
-> telling the users what the heck they are good for.  And most users do not 
-> need to bother with tree objects either, anyway.  So maybe you just tell 
-> them what the heck the object types are good for, without even teaching 
-> them the object types at all.
-> 
-> So I think that your document might do a good job scaring people away from 
-> Git.  But I do not believe that your document, especially in the tone it 
-> is written, does a good job of helping Git newbies.
-> 
-> Ciao,
-> Dscho
-> 
-> P.S.: No, I haven't read the whole document.  Still, I think I am 
-> qualified enough to estimate what the average reader's first impression 
-> would be.
-
-Not sure I agree.  You might well know too much about git to understand
-what it looks like to a new user, particularly a new user with a
-couple decades experience with earlier source-code control system.
-(RCS, anyone?)
-
-In particular, David's guide was quite helpful to me.  It would have been
-even more helpful had it existed when I first tried (unsuccessfully)
-to use GIT.  In particular, GIT's requirement that I tell it about new
-versions of existing files (either with "git add" or "git commit -a")
-was extremely counter-intuitive, and caused me no end of pain.
-
-There might well be a need for different approaches for different types
-of newbies.  Guys like myself who have used source-code control tools
-of one type or another for a couple decades can -definitely- benefit
-from Dave's approach.  In particular, Dave's broad-brush description of
-GIT's internals is enough to explain why the heck I should have to tell
-GIT about a new version of a file THAT IT ALREADY KNOWS ABOUT!!!
-"Why should I need to add a file that is already there???"
-
-Don't get me wrong -- as I have gained experience with GIT over the past
-six months or so, I have found a number of situations where GIT's
-insisting that I tell it about new versions of existing files has been
-helpful, for example, when I suddenly realize that a given change should
-be applied in multiple commits, with different groups of files in each
-commit.  In that case, doing a series of "git add" and "git commit"
-commands works very nicely.
-
-So I am -not- suggesting changing git.  Once you get used to it, it
-works out well.  I suppose that you could have a "git new-version"
-command as a synonym for "git add", but I doubt that it is worth it.
-
-But the "git add" issue turned me away from git several times in the past
-three years.  And for quite some time, I used git in read-only mode,
-because very strange things happened (from my viewpoint) whenever I
-tried changing anything.
-
-After using GIT reasonably heavily for the past six months, I am actually
-learning to like it, and have even starting using it for my own projects.
-But my experience is that git is at best an acquired taste for those of
-us who grew up with traditional source-code control systems.  Such
-people will benefit greatly from a git-haters guide, and git's user
-population will grow as a result.
-
-							Thanx, Paul
+On Thu, Dec 18, 2008 at 3:06 PM, NeilBrown <neilb@suse.de> wrote:
+> On Fri, December 19, 2008 12:08 am, Dylan Taft wrote:
+>> I may give that a shot.
+>>
+>> But it also looks like my major numbers are wrong on the actual device
+>> nodes?
+>> brw-r-----  1 root disk   9, 0 Dec 17 19:13 0
+>> brw-r-----  1 root disk 259, 0 Dec 17 19:13 1
+>> brw-r-----  1 root disk 259, 1 Dec 17 19:13 2
+>> brw-r-----  1 root disk 259, 2 Dec 17 19:13 3
+>>
+>> Shouldn't this be 9,something, not 259?
+>>
+>> If I change the partition type from fd to something else, and don't
+>> allow the kernel to auto assemble, then assemble manually via mdadm,
+>> things work right.
+>> Any idea what could cause thee major numbers to be wrong?
+>
+> Almost certainly some udev configuration going wrong.
+> What distro are you running?
+> Is there are file in /lib/udev/rules.d or /etc/udev/rules.d with 'md'
+> in the name?  What is in that file?
+>
+> Prior to 2.6.28, normal md devices (major number 9) could not be
+> partitioned. You needed to use "mdp" devices (major number close to 254).
+> To get autodetect to create these use the kernel parameter
+> "raid=partitionable".
+>
+> In 2.6.28, partitions don't have to have the same major number as the
+> base device.
+> In you case,
+>  md0 is 9,0
+>  md1 is 9,1
+>
+>  md1p1 is 259,0
+>  md1p2 is 259.1
+>  md1p3 is 259,2
+>
+> as you can see, the device nodes have been created with the wrong
+> name.  In each case the name used is md followed by the last digit
+> of what should have been used.  udev is the only thing that could have
+> done that.
+>
+> Hence my questions about your distro and udev configuration.
+>
+> NeilBrown
+>
+>
