@@ -1,166 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbYLSXPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYLSXSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754208AbYLSXPm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 18:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbYLSXPd
+	id S1754353AbYLSXSX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 18:18:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYLSXSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 18:15:33 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:4776 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751474AbYLSXPb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 18:15:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=a0IB/mWu8PbYFfkVoNK2dPJMpA8ErLBatmRJLq9a1kc03XVIHTho8yZI2jJEQn7PqT
-         PSo61iVyFkVe3Jv/zrqF5KipVnhYMhvVkvsX2dP27NL/r+ZWlvt/59Zo7DrU+Qh8bVPu
-         9PRQjSECPwayIg7L2K7iv4uefvjY+5VQdOgEU=
-Subject: [patch] Re: [Bug #12100] resume (S2R) broken by Intel microcode
-	module, on A110L
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Andreas Mohr <andi@lisas.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 20 Dec 2008 00:15:24 +0100
-Message-Id: <1229728524.5122.13.camel@earth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Dec 2008 18:18:16 -0500
+Received: from Powered.by.Root24.eu ([81.169.180.23]:60743 "EHLO Root24.de"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751490AbYLSXSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 18:18:15 -0500
+Message-ID: <494C2BA9.2080206@ionic.de>
+Date: Sat, 20 Dec 2008 00:18:01 +0100
+From: Mihai Moldovan <ionic@ionic.de>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081005)
+MIME-Version: 1.0
+To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Multiple minor glitches with 2.6.27.* and linux-NEXT
+References: <494BABB0.8050309@ionic.de> <4807377b0812191419k42b7749chff70f0e217a24cfe@mail.gmail.com>
+In-Reply-To: <4807377b0812191419k42b7749chff70f0e217a24cfe@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="------------enig4F9D5A09DD28526A89BA365D"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4F9D5A09DD28526A89BA365D
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+* On 19.12.2008 23:19, Jesse Brandeburg wrote:
+> On Fri, Dec 19, 2008 at 6:12 AM, Mihai Moldovan <ionic@ionic.de> wrote:=
 
+>  =20
+>> First of all, will the changes to e1000e be integrated in Linux 2.6.28=
 
-This is in response to the following bug report:
+>> as soon as it is released? 2.6.27 does not detect my onboard NIC, whil=
+st
+>> Linux-NEXT does. Some basic information about this:
+>>    =20
+>
+> 2.6.28 should have support for 8086/10de.
+>  =20
+Thanks, this is great. :)
 
-Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12100
-Subject         : resume (S2R) broken by Intel microcode module, on A110L
-Submitter       : Andreas Mohr <andi@lisas.de>
-Date            : 2008-11-25 08:48 (19 days old)
-Handled-By      : Dmitry Adamushko <dmitry.adamushko@gmail.com>
+>> Might anyone here be so kind to explain me whether disabling specific
+>> Cores of an Intel(R)=99 Core2Quad CPU completely ...
+>>
+>>  - is possible? I am not quite sure whether this would work at all.
+>>  - would indeed safe power/lower the power consumption? Logically
+>> disabling cores does safe hardly any power. :)
+>>    =20
+>
+> I'm not the best person to answer, but if you enable TICKLESS kernel
+> and ACPI power states (and run one of the powersave governors,
+> basically treating your desktop like a laptop) then your CPUs will use
+> very little power.
+>  =20
+Guess what I have done. ;-)
+I'm already running CPUFreq using the "ondemand" governor. "Powersave",
+by the way, is not the best method to actually save power, but I sure
+believe you know this too well. :)
 
+> You should be able to get an idea of the power being used by your
+> system by seeing how much time it spends in C1/C2/C3, using the
+> powertop application from http://www.lesswatts.org/projects/powertop/
+>
+> it will also give suggestions about how to optimize your system.
+Thanks for this rant, I have totally forgotten about powertop, shame on m=
+e!
 
----
+Out of this scope, though, another question: why was the
+CONFIG_DEBUG_KERNEL option "hardlinked" to CONFIG_FRAME_POINTER? (Well,
+rather vice versa.) I don't really see the point in making the Kernel
+larger and, even more imporant, slower when enabling CONFIG_TIMER_STATS
+or CONFIG_SCHEDSTATS... I guess you'll get it.
 
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: [microcode] fix a deadlock in microcode_resume_cpu()
+A few month ago this was different and, to my mind, also more logical.
+That is, one could disable CONFIG_FRAME_POINTER when not needed and
+still use most of the nifty statistic/"pseudo-debugging" features. For
+"real" debugging, of course, the frame pointers must be turned on. I
+guess that's a question of definition...?
+> Why
+> disable cores when the system will effectively do it for you?  If
+> you're really serious about conserving power, get a power meter that
+> goes between your power plug and the wall and measure the wattage
+> being consumed by your system.
+>  =20
+I already did play with this thought as well... Let's see where I can
+borrow a quite good device for some time. :)
 
-[ The deadlock scenario has been discovered by Andreas Mohr ]
+Thank you for your great and fast answers.
 
-I think I might have a logical explanation why the system 
-(http://bugzilla.kernel.org/show_bug.cgi?id=12100)
-might hang upon resuming, OTOH it should have likely hanged each and every time.
-
-(1) possible deadlock in microcode_resume_cpu() if either 'if' section is
-taken;
-
-(2) now, I don't see it in spec. and can't experimentally verify it (newer
-ucodes don't seem to be available for my Core2duo)... but logically-wise, I'd
-think that when read upon resuming, the 'microcode revision' (MSR 0x8B) should
-be back to its original one (we need to reload ucode anyway so it doesn't seem
-logical if a cpu doesn't drop the version)... if so, the comparison with
-memcmp() for the full 'struct cpu_signature' is wrong... and that's how one of
-the aforementioned 'if' sections might have been triggered - leading to a
-deadlock.
-
-Obviously, in my tests I simulated loading/resuming with the ucode of the same
-version (just to see that the file is loaded/re-loaded upon resuming) so this
-issue has never popped up.
-
-I'd appreciate if someone with an appropriate system might give a try to the
-2nd patch (titled "fix a comparison && deadlock...").
-
-
-In any case, the deadlock situation is a must-have fix.
-
-
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-CC: Info Molnar <mingo@elte.hu>
-CC: Andreas Mohr <andi@lisas.de>
-
-
----
-
-diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
-index 82fb280..c4b5b24 100644
---- a/arch/x86/kernel/microcode_core.c
-+++ b/arch/x86/kernel/microcode_core.c
-@@ -272,13 +272,18 @@ static struct attribute_group mc_attr_group = {
- 	.name = "microcode",
- };
- 
--static void microcode_fini_cpu(int cpu)
-+static void __microcode_fini_cpu(int cpu)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
--	mutex_lock(&microcode_mutex);
- 	microcode_ops->microcode_fini_cpu(cpu);
- 	uci->valid = 0;
-+}
-+
-+static void microcode_fini_cpu(int cpu)
-+{
-+	mutex_lock(&microcode_mutex);
-+	__microcode_fini_cpu(cpu);
- 	mutex_unlock(&microcode_mutex);
- }
- 
-@@ -306,12 +311,16 @@ static int microcode_resume_cpu(int cpu)
- 	 * to this cpu (a bit of paranoia):
- 	 */
- 	if (microcode_ops->collect_cpu_info(cpu, &nsig)) {
--		microcode_fini_cpu(cpu);
-+		__microcode_fini_cpu(cpu);
-+		printk(KERN_ERR "failed to collect_cpu_info for resuming cpu #%d\n",
-+				cpu);
- 		return -1;
- 	}
- 
--	if (memcmp(&nsig, &uci->cpu_sig, sizeof(nsig))) {
--		microcode_fini_cpu(cpu);
-+	if ((nsig.sig != uci->cpu_sig.sig) || (nsig.pf != uci->cpu_sig.pf)) {
-+		__microcode_fini_cpu(cpu);
-+		printk(KERN_ERR "cached ucode doesn't match the resuming cpu #%d\n",
-+				cpu);
- 		/* Should we look for a new ucode here? */
- 		return 1;
- 	}
-diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
-index 622dc4a..a8e6279 100644
---- a/arch/x86/kernel/microcode_intel.c
-+++ b/arch/x86/kernel/microcode_intel.c
-@@ -155,6 +155,7 @@ static DEFINE_SPINLOCK(microcode_update_lock);
- static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
- {
- 	struct cpuinfo_x86 *c = &cpu_data(cpu_num);
-+	unsigned long flags;
- 	unsigned int val[2];
- 
- 	memset(csig, 0, sizeof(*csig));
-@@ -174,11 +175,16 @@ static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
- 		csig->pf = 1 << ((val[1] >> 18) & 7);
- 	}
- 
-+	/* serialize access to the physical write to MSR 0x79 */
-+	spin_lock_irqsave(&microcode_update_lock, flags);
-+
- 	wrmsr(MSR_IA32_UCODE_REV, 0, 0);
- 	/* see notes above for revision 1.07.  Apparent chip bug */
- 	sync_core();
- 	/* get the current revision from MSR 0x8B */
- 	rdmsr(MSR_IA32_UCODE_REV, val[0], csig->rev);
-+	spin_unlock_irqrestore(&microcode_update_lock, flags);
-+
- 	pr_debug("microcode: collect_cpu_info : sig=0x%x, pf=0x%x, rev=0x%x\n",
- 			csig->sig, csig->pf, csig->rev);
- 
+Best regards,
 
 
+Mihai Moldovan
+
+
+--------------enig4F9D5A09DD28526A89BA365D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iQIcBAEBCgAGBQJJTCuuAAoJEB/WLtluJTqHO/QQAMGcCby0rOxenht3+sRfTHVo
+dcXvZvjLeom115jf/PTNJwccWmp2BXaKvxSnIY0KZBgw98rtSD9vPAAs4If6SfjY
+H4u4mIw+FqjfEW8p1aOmhrWCeW8doksitWrJpZKwVv2KKnvWCatkBqLrDMmrw6mw
+hBGFjb2VUKXglt0psmE9/jU3IwYzhVo5rI457qFJDGJAa5SFpnWLZy3+iorh9xNx
+ecg101RnLYiwAm1Zf/LwMn/Hto/xW7pD6TPScp/rfihUORmxKp1X9FlwQSZozDBR
+PWllSLF2hFIn5v9B4VaPeXmW7KU9XnIgc0VvyrwZZ49KUB+DcmRtvndvmULT51JD
+pmKoPn3b5alpa3gGko8hMfQqh+v2yuWSzoFi/3c6Q/9u6ta/eHGijMLp+xltp0wF
+L98HhCEisxT33Oy98slkZLe4CJbRDKi3hSwv0BU02ubACzim+0NtCtzlMd82iPR/
++wGDDz9b5BkVbePnq22fQacidomvjDGT8hdryHz7cOjgJjXqbZsaMPtH23thv8cz
+pHusfgTcdGSpOkCyOwxsaoVjfMS4XApDY03HYLAexY27lFHVfYLB3g/c9Gu5OhFz
+CUlEsnd29MhzOgbzARU3NIzWAIiDhNmDom/OFxf9+NXL7JzQ4NDgUW8m14sMLoYN
+tMUpC2lmuex6pO80tSbC
+=yc4Z
+-----END PGP SIGNATURE-----
+
+--------------enig4F9D5A09DD28526A89BA365D--
