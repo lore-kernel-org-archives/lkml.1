@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbYLSEUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbYLSEdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754513AbYLSEUj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 23:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbYLSETR
+	id S1753772AbYLSEdU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 23:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbYLSEdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 23:19:17 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:38920 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752770AbYLSETQ (ORCPT
+	Thu, 18 Dec 2008 23:33:11 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:4197 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752231AbYLSEdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 23:19:16 -0500
-Date: Thu, 18 Dec 2008 22:19:06 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 01/45] Create a dynamically sized pool of threads for
-	doing very slow work items [ver #41]
-Message-ID: <20081219041906.GA30320@us.ibm.com>
-References: <20081120144139.10667.75519.stgit@warthog.procyon.org.uk> <20081120144145.10667.39594.stgit@warthog.procyon.org.uk>
+	Thu, 18 Dec 2008 23:33:11 -0500
+Date: Thu, 18 Dec 2008 23:33:09 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Jens Axboe <axboe@kernel.dk>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Checking a USB drive's capacity
+In-Reply-To: <20081218224418.01fc26a4@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0812182326100.31272-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081120144145.10667.39594.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting David Howells (dhowells@redhat.com):
-> Create a dynamically sized pool of threads for doing very slow work items, such
-> as invoking mkdir() or rmdir() - things that may take a long time and may
-> sleep, holding mutexes/semaphores and hogging a thread, and are thus unsuitable
-> for workqueues.
-> 
-> The number of threads is always at least a settable minimum, but more are
-> started when there's more work to do, up to a limit.  Because of the nature of
-> the load, it's not suitable for a 1-thread-per-CPU type pool.  A system with
-> one CPU may well want several threads.
-> 
-> This is used by FS-Cache to do slow caching operations in the background, such
-> as looking up, creating or deleting cache objects.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+On Thu, 18 Dec 2008, Alan Cox wrote:
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+> > spun up yet.  Not to mention that it seems strange to read the last
+> > sector before reading the first!
+> 
+> The SCSI CD code deals with this by spotting the error is close to the
+> end and of particular types then interpreting it and adjusting the volume
+> size. This is done because the size value for a CD-R/RW is imprecise.
+
+Although it may be okay for CDs, I suspect that approach won't work for 
+disks.
+
+For one thing, this would cause the volume size to change after the 
+partition table had been read and interpreted, which doesn't seem like 
+a good idea.
+
+For another, it would cause the location of the "last" sector to change 
+in mid-flight, which might well cause problems for programs like vol_id 
+and hald_probe_storage -- they need to read the last sector to 
+determine if the volume is part of a RAID array.
+
+Now maybe these objections won't matter; the code in each case might be 
+resilient enough to handle such changes.  Do you think it could work?
+
+Alan Stern
+
