@@ -1,47 +1,323 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbYLSSYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbYLSSZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754178AbYLSSYt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 13:24:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYLSSYi
+	id S1754451AbYLSSZa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 13:25:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYLSSZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 13:24:38 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58406 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751747AbYLSSYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 13:24:38 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <7A24DF798E223B4C9864E8F92E8C93EC01AAF504@SACMVEXC1-PRD.hq.netapp.com>
-References: <7A24DF798E223B4C9864E8F92E8C93EC01AAF504@SACMVEXC1-PRD.hq.netapp.com>
-To: "Muntz, Daniel" <Dan.Muntz@netapp.com>
-Cc: dhowells@redhat.com, "Andrew Morton" <akpm@linux-foundation.org>,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org,
-       steved@redhat.com, linux-fsdevel@vger.kernel.org, rwheeler@redhat.com
-Subject: Re: Pull request for FS-Cache, including NFS patches
-Date: Fri, 19 Dec 2008 18:24:19 +0000
-Message-ID: <12342.1229711059@redhat.com>
+	Fri, 19 Dec 2008 13:25:23 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:53676 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752028AbYLSSZW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 13:25:22 -0500
+Date: Fri, 19 Dec 2008 12:25:10 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Linux Containers <containers@lists.osdl.org>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Subject: [PATCH 3/3] mqueue namespace: adapt sysctl
+Message-ID: <20081219182510.GA19759@us.ibm.com>
+References: <20081219171930.GA17335@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081219171930.GA17335@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Muntz, Daniel <Dan.Muntz@netapp.com> wrote:
+(resending since lkml appears to have disappeared from the earlier
+headers)
 
-> AFS was designed to support local disk cache, so with callbacks you can get a
-> consistent system.
+From: Nadia Derbey <Nadia.Derbey@bull.net>
 
-It's less the callbacks and more the data version number that's important.
+Largely inspired from ipc/ipc_sysctl.c. This patch isolates the mqueue
+sysctl stuff in its own file.
 
-> I'll ass-u-me that Linux flavors of AFS have callbacks. 
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+---
+ include/linux/ipc_namespace.h |   14 +++++
+ init/Kconfig                  |    6 ++
+ ipc/Makefile                  |    1 +
+ ipc/mq_sysctl.c               |  125 +++++++++++++++++++++++++++++++++++++++++
+ ipc/mqueue.c                  |   65 +---------------------
+ 5 files changed, 147 insertions(+), 64 deletions(-)
+ create mode 100644 ipc/mq_sysctl.c
 
-They do.
+diff --git a/include/linux/ipc_namespace.h b/include/linux/ipc_namespace.h
+index a73bbef..9f57f55 100644
+--- a/include/linux/ipc_namespace.h
++++ b/include/linux/ipc_namespace.h
+@@ -121,4 +121,18 @@ static inline void put_ipc_ns(struct ipc_namespace *ns)
+ {
+ }
+ #endif
++
++#ifdef CONFIG_POSIX_MQUEUE_SYSCTL
++
++struct ctl_table_header;
++extern struct ctl_table_header *mq_register_sysctl_table(void);
++
++#else /* CONFIG_POSIX_MQUEUE_SYSCTL */
++
++static inline struct ctl_table_header *mq_register_sysctl_table(void)
++{
++	return NULL;
++}
++
++#endif /* CONFIG_POSIX_MQUEUE_SYSCTL */
+ #endif
+diff --git a/init/Kconfig b/init/Kconfig
+index 32c6315..5d96f40 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -148,6 +148,12 @@ config POSIX_MQUEUE
+ 
+ 	  If unsure, say Y.
+ 
++config POSIX_MQUEUE_SYSCTL
++	bool
++	depends on POSIX_MQUEUE
++	depends on SYSCTL
++	default y
++
+ config BSD_PROCESS_ACCT
+ 	bool "BSD Process Accounting"
+ 	help
+diff --git a/ipc/Makefile b/ipc/Makefile
+index 65c3843..4e1955e 100644
+--- a/ipc/Makefile
++++ b/ipc/Makefile
+@@ -8,4 +8,5 @@ obj-$(CONFIG_SYSVIPC_SYSCTL) += ipc_sysctl.o
+ obj_mq-$(CONFIG_COMPAT) += compat_mq.o
+ obj-$(CONFIG_POSIX_MQUEUE) += mqueue.o msgutil.o $(obj_mq-y)
+ obj-$(CONFIG_IPC_NS) += namespace.o
++obj-$(CONFIG_POSIX_MQUEUE_SYSCTL) += mq_sysctl.o
+ 
+diff --git a/ipc/mq_sysctl.c b/ipc/mq_sysctl.c
+new file mode 100644
+index 0000000..81f01b7
+--- /dev/null
++++ b/ipc/mq_sysctl.c
+@@ -0,0 +1,125 @@
++/*
++ *  Copyright (C) 2007 IBM Corporation
++ *
++ *  Author: Cedric Le Goater <clg@fr.ibm.com>
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License as
++ *  published by the Free Software Foundation, version 2 of the
++ *  License.
++ */
++
++#include <linux/nsproxy.h>
++#include <linux/ipc_namespace.h>
++#include <linux/sysctl.h>
++
++/*
++ * Define the ranges various user-specified maximum values can
++ * be set to.
++ */
++#define MIN_MSGMAX	1		/* min value for msg_max */
++#define MAX_MSGMAX	HARD_MSGMAX	/* max value for msg_max */
++#define MIN_MSGSIZEMAX	128		/* min value for msgsize_max */
++#define MAX_MSGSIZEMAX	(8192*128)	/* max value for msgsize_max */
++
++static void *get_mq(ctl_table *table)
++{
++	char *which = table->data;
++	struct ipc_namespace *ipc_ns = current->nsproxy->ipc_ns;
++	which = (which - (char *)&init_ipc_ns) + (char *)ipc_ns;
++	return which;
++}
++
++#ifdef CONFIG_PROC_FS
++static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
++	void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	struct ctl_table mq_table;
++	memcpy(&mq_table, table, sizeof(mq_table));
++	mq_table.data = get_mq(table);
++
++	return proc_dointvec(&mq_table, write, filp, buffer, lenp, ppos);
++}
++
++static int proc_mq_dointvec_minmax(ctl_table *table, int write,
++	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	struct ctl_table mq_table;
++	memcpy(&mq_table, table, sizeof(mq_table));
++	mq_table.data = get_mq(table);
++
++	return proc_dointvec_minmax(&mq_table, write, filp, buffer,
++					lenp, ppos);
++}
++#else /* CONFIG_PROC_FS */
++static int proc_mq_dointvec(ctl_table *table, int write, struct file *filp,
++	void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	return -ENOSYS;
++}
++
++static int proc_mq_dointvec_minmax(ctl_table *table, int write,
++	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	return -ENOSYS;
++}
++#endif /* CONFIG_PROC_FS */
++
++static int msg_max_limit_min = MIN_MSGMAX;
++static int msg_max_limit_max = MAX_MSGMAX;
++
++static int msg_maxsize_limit_min = MIN_MSGSIZEMAX;
++static int msg_maxsize_limit_max = MAX_MSGSIZEMAX;
++
++static ctl_table mq_sysctls[] = {
++	{
++		.procname	= "queues_max",
++		.data		= &init_ipc_ns.mq_queues_max,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_mq_dointvec,
++	},
++	{
++		.procname	= "msg_max",
++		.data		= &init_ipc_ns.mq_msg_max,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_mq_dointvec_minmax,
++		.extra1		= &msg_max_limit_min,
++		.extra2		= &msg_max_limit_max,
++	},
++	{
++		.procname	= "msgsize_max",
++		.data		= &init_ipc_ns.mq_msgsize_max,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_mq_dointvec_minmax,
++		.extra1		= &msg_maxsize_limit_min,
++		.extra2		= &msg_maxsize_limit_max,
++	},
++	{ .ctl_name = 0 }
++};
++
++static ctl_table mq_sysctl_dir[] = {
++	{
++		.procname	= "mqueue",
++		.mode		= 0555,
++		.child		= mq_sysctls,
++	},
++	{ .ctl_name = 0 }
++};
++
++static ctl_table mq_sysctl_root[] = {
++	{
++		.ctl_name	= CTL_FS,
++		.procname	= "fs",
++		.mode		= 0555,
++		.child		= mq_sysctl_dir,
++	},
++	{ .ctl_name = 0 }
++};
++
++struct ctl_table_header *mq_register_sysctl_table(void)
++{
++	return register_sysctl_table(mq_sysctl_root);
++}
+diff --git a/ipc/mqueue.c b/ipc/mqueue.c
+index 464dc9d..827fddc 100644
+--- a/ipc/mqueue.c
++++ b/ipc/mqueue.c
+@@ -47,15 +47,6 @@
+ #define STATE_PENDING	1
+ #define STATE_READY	2
+ 
+-/*
+- * Define the ranges various user-specified maximum values can
+- * be set to.
+- */
+-#define MIN_MSGMAX	1		/* min value for msg_max */
+-#define MAX_MSGMAX	HARD_MSGMAX	/* max value for msg_max */
+-#define MIN_MSGSIZEMAX	128		/* min value for msgsize_max */
+-#define MAX_MSGSIZEMAX	(8192*128)	/* max value for msgsize_max */
+-
+ struct ext_wait_queue {		/* queue of sleeping tasks */
+ 	struct task_struct *task;
+ 	struct list_head list;
+@@ -1295,60 +1286,6 @@ void mq_put_mnt(struct ipc_namespace *ns)
+ 	mntput(ns->mq_mnt);
+ }
+ 
+-static int msg_max_limit_min = MIN_MSGMAX;
+-static int msg_max_limit_max = MAX_MSGMAX;
+-
+-static int msg_maxsize_limit_min = MIN_MSGSIZEMAX;
+-static int msg_maxsize_limit_max = MAX_MSGSIZEMAX;
+-
+-static ctl_table mq_sysctls[] = {
+-	{
+-		.procname	= "queues_max",
+-		.data		= &init_ipc_ns.mq_queues_max,
+-		.maxlen		= sizeof(int),
+-		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec,
+-	},
+-	{
+-		.procname	= "msg_max",
+-		.data		= &init_ipc_ns.mq_msg_max,
+-		.maxlen		= sizeof(int),
+-		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec_minmax,
+-		.extra1		= &msg_max_limit_min,
+-		.extra2		= &msg_max_limit_max,
+-	},
+-	{
+-		.procname	= "msgsize_max",
+-		.data		= &init_ipc_ns.mq_msgsize_max,
+-		.maxlen		= sizeof(int),
+-		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec_minmax,
+-		.extra1		= &msg_maxsize_limit_min,
+-		.extra2		= &msg_maxsize_limit_max,
+-	},
+-	{ .ctl_name = 0 }
+-};
+-
+-static ctl_table mq_sysctl_dir[] = {
+-	{
+-		.procname	= "mqueue",
+-		.mode		= 0555,
+-		.child		= mq_sysctls,
+-	},
+-	{ .ctl_name = 0 }
+-};
+-
+-static ctl_table mq_sysctl_root[] = {
+-	{
+-		.ctl_name	= CTL_FS,
+-		.procname	= "fs",
+-		.mode		= 0555,
+-		.child		= mq_sysctl_dir,
+-	},
+-	{ .ctl_name = 0 }
+-};
+-
+ static int __init init_mqueue_fs(void)
+ {
+ 	int error;
+@@ -1360,7 +1297,7 @@ static int __init init_mqueue_fs(void)
+ 		return -ENOMEM;
+ 
+ 	/* ignore failues - they are not fatal */
+-	mq_sysctl_table = register_sysctl_table(mq_sysctl_root);
++	mq_sysctl_table = mq_register_sysctl_table();
+ 
+ 	error = register_filesystem(&mqueue_fs_type);
+ 	if (error)
+-- 
+1.5.4.3
 
-> It should be possible to *integrate* NFSv4.x with FS-Cache similarly (i.e., I
-> don't think you could drop it in as a 'black-box' without breaking something,
-> unless you explicitly build an independent proxy cache server).
-
-NFSv4 has equivalents of both the data version number and callbacks.
-
-David
