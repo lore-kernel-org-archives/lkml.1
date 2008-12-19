@@ -1,141 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYLSCJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbYLSC1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbYLSCJb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 21:09:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbYLSCJX
+	id S1752814AbYLSC1y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 21:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbYLSC1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 21:09:23 -0500
-Received: from mga02.intel.com ([134.134.136.20]:25291 "EHLO mga02.intel.com"
+	Thu, 18 Dec 2008 21:27:43 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38900 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752186AbYLSCJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 21:09:22 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.36,246,1228118400"; 
-   d="scan'208";a="372163811"
-Date: Thu, 18 Dec 2008 18:09:21 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Dimitri Sivanich <sivanich@sgi.com>, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Intel x86_64 llc_shared_map/cpu_llc_id anomolies
-Message-ID: <20081219020921.GD26490@linux-os.sc.intel.com>
-References: <20081212214256.GA20559@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081212214256.GA20559@sgi.com>
-User-Agent: Mutt/1.4.1i
+	id S1751436AbYLSC1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 21:27:42 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20081218123601.11810b7f.akpm@linux-foundation.org>
+References: <20081218123601.11810b7f.akpm@linux-foundation.org> <8930.1229560221@redhat.com> <20081218224418.804f10bc.sfr@canb.auug.org.au> <20081218142420.GA16728@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, Christoph Hellwig <hch@infradead.org>,
+       sfr@canb.auug.org.au, trond.myklebust@fys.uio.no, steved@redhat.com,
+       rwheeler@redhat.com, bfields@fieldses.org, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Pull request for FS-Cache, including NFS patches
+Date: Fri, 19 Dec 2008 02:27:24 +0000
+Message-ID: <7633.1229653644@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 12, 2008 at 01:42:56PM -0800, Dimitri Sivanich wrote:
-> I'm seeing some behavior on a multiblade Intel x86_64 that does not
-> appear to be correct.
-> 
-> My x86_64 multiblade configuration has llc_shared_map (last level
-> cache shared map) showing cpus on different blades sharing a last
-> level cache.  With 2 cpus/blade and 4 blades (8 cpus total), I show
-> cpus 1,3,5,7 sharing llc, and 0,2,4,6 sharing llc.
-> 
-> The llc_shared_map is set based on matching values of cpu_llc_id
-> (last level cache ID).  The cpu_llc_id is set based on
-> cpuinfo_x86->apicid.  This value is set to cpuinfo_x86->initial_apicid.
-> 
-> The value of cpuinfo_x86->initial_apicid appears to be set twice
-> during startup:
-> 
-> - In generic_identify(), using the value returned by cpuid_ebx(1).
->   This is the initial_apicid set at poweron, and results in
->   cpuinfo_x86->initial_apicid having a value that is not unique across
->   blades (where the blades do not share a cpu bus).
-> 
-> - Later, in detect_extended_topology() using the value for edx returned
->   by cpuid_count(0xb,..).  This results in cpuinfo_x86->initial_apicid
->   having a value that appears to be unique across blades.
-> 
-> Between those two assignments, cpuinfo_x86->apicid is set to
-> cpuinfo_x86->initial_apicid, so it is non-unique.  Then cpu_llc_id gets
-> set in init_intel_cacheinfo(), so cpu_llc_id winds up with a value that
-> is non-unique across blades, and llc_shared_map winds up showing cpus
-> on different blades as sharing last level cache.
-> 
-> Is cpu_llc_id supposed to be unique across blades?  I assume
-> llc_shared_map should not be showing shared cache across blades.
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-x86 folks, Appended patch fixes the reported issue. Please apply.
+> I don't believe that it has yet been convincingly demonstrated that we
+> want to merge it at all.
+> 
+> It's a huuuuuuuuge lump of new code, so it really needs to provide
+> decent value.  Can we revisit this?  Yet again?  What do we get from
+> all this?
 
-thanks,
-suresh
----
+I should tell you to go and reread LKML at this point.
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch] x86: Fix apicid initialization in per cpu's cpuinfo_x86 struct
+But...  What can FS-Cache do for you?  Well, in your specific case, probably
+nothing.  If all your computers are local to your normal desktop box and are
+connected by sufficiently fast network and you have sufficiently few of them,
+or you don't use any of NFS, AFS, CIFS, Lustre, CRFS, CD-ROMs then it is
+likely that won't gain you anything.
 
-In the presence of extended topology eumeration leaf 0xb provided
-by cpuid, 32bit extended initial_apicid in cpuinfo_x86 struct will be updated
-by detect_extended_topology(). At this instance, we should also
-reinit the apicid (which could also potentially be extended to 32bit).
+Even if you do use some of those "netfs's", it won't get you anything yet
+because I haven't included patches to support anything other than NFS and the
+in-kernel AFS client yet.
 
-With out this there will potentially be duplicate apicid's populated in the
-per cpu's cpuinfo_x86 struct, resulting in wrong cache sharing topology etc
-detected by init_intel_cacheinfo().
+However, if you do use NFS (or my AFS client), and you are accessing computers
+via slow networks, or you have lots of machines spamming your NFS server, then
+it might avail you.
 
-Impact: wrong cache sharing detection on platforms supporting > 8 bit apicid's
+It's a compromise: a trade-off between the loading and latencies of your
+network vs the loading and latencies of your disk; you sacrifice disk space to
+make up for the deficiencies of your network.  The worst bit is that the
+latencies are additive under some circumstances (when doing a page read you
+may have to check disk and then go to the network).
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Reported-by: Dimitri Sivanich <sivanich@sgi.com>
-Acked-by: Dimitri Sivanich <sivanich@sgi.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>
----
- 
-diff --git a/arch/x86/kernel/cpu/addon_cpuid_features.c b/arch/x86/kernel/cpu/addon_cpuid_features.c
-index ef8f831..2cf2363 100644
---- a/arch/x86/kernel/cpu/addon_cpuid_features.c
-+++ b/arch/x86/kernel/cpu/addon_cpuid_features.c
-@@ -120,9 +120,17 @@ void __cpuinit detect_extended_topology(struct cpuinfo_x86 *c)
- 	c->cpu_core_id = phys_pkg_id(c->initial_apicid, ht_mask_width)
- 						 & core_select_mask;
- 	c->phys_proc_id = phys_pkg_id(c->initial_apicid, core_plus_mask_width);
-+	/*
-+	 * Reinit the apicid, now that we have extended initial_apicid.
-+	 */
-+	c->apicid = phys_pkg_id(c->initial_apicid, 0);
- #else
- 	c->cpu_core_id = phys_pkg_id(ht_mask_width) & core_select_mask;
- 	c->phys_proc_id = phys_pkg_id(core_plus_mask_width);
-+	/*
-+	 * Reinit the apicid, now that we have extended initial_apicid.
-+	 */
-+	c->apicid = phys_pkg_id(0);
- #endif
- 	c->x86_max_cores = (core_level_siblings / smp_num_siblings);
- 
-diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index cce0b61..57e3fba 100644
---- a/arch/x86/kernel/cpu/intel.c
-+++ b/arch/x86/kernel/cpu/intel.c
-@@ -242,6 +242,13 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
- 
- 	intel_workarounds(c);
- 
-+	/*
-+	 * Detect the extended topology information if available. This
-+	 * will reinitialise the initial_apicid which will be used
-+	 * in init_intel_cacheinfo()
-+	 */
-+	detect_extended_topology(c);
-+
- 	l2 = init_intel_cacheinfo(c);
- 	if (c->cpuid_level > 9) {
- 		unsigned eax = cpuid_eax(10);
-@@ -313,7 +320,6 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
- 
- #endif
- 
--	detect_extended_topology(c);
- 	if (!cpu_has(c, X86_FEATURE_XTOPOLOGY)) {
- 		/*
- 		 * let's use the legacy cpuid vector 0x1 and 0x4 for topology
+
+So, FS-Cache can do the following for you:
+
+ (1) Allow you to reduce network loading by diverting repeat reads to local
+     storage.
+
+ (2) Allow you to reduce the latency of slow network links by diverting repeat
+     reads to local storage.
+
+ (3) Allow you to reduce the effect of uncontactable servers by serving data
+     out of local storage.
+
+ (4) Allows you to reduce the latency of slow rotating media (such as CDROM
+     and CD-changers).
+
+ (5) Allow you to implement disconnected operation, partly by (3), but also by
+     caching changes for later syncing.
+
+Now, (1) and (2) are readily demonstrable.  I have posted benchmarks to do
+this.  (3) to (5) are not yet implemented; these have to be mostly implemented
+in the filesystems that use FS-Cache rather than FS-Cache itself.  FS-Cache
+currently has sufficient functionality to do (3) and (4), but needs some extra
+bits to do (5).
+
+I've tried to implement just the minimal useful functionality for persistent
+caching.  There is more to be added, but it's not immediately necessary.
+
+
+FS-Cache tries to make its facilities as simple and as general as possible so
+that _any_ filesystem or blockdev can use it.  I have patches here to make NFS
+and AFS use it.  I know someone is working on getting Lustre to use it, and
+other filesystem maintainers have expressed interest, subject to the code
+getting upstream.
+
+Furthermore, FS-Cache hides the implementation of the cache from the netfs.
+Not only that, it hides I/O errors in the cache from the netfs.  Why should
+the netfs have to deal with such things?
+
+
+Another way to look at things is to look at other cases of cached netfs's.
+OpenAFS for example.  It has a local cache of its own.  Solaris has local NFS
+caching.  Windows has local caching for NFS and CIFS, I think.  Even web
+browsers have local caching.
+
+>  303 files changed, 21049 insertions(+), 3726 deletions(-)
+
+A big chunk of that, particularly the deletions, is the creds patches.
+Excluding the stuff pulled from the security and NFS trees, the combined
+FS-Cache, CacheFiles and AFS+ and NFS+FS-Cache patches are, in fact:
+
+	86 files changed, 15385 insertions(+), 413 deletions(-)
+
+and over 19% of the insertions is documentation.  Most of the deletions (373)
+are in AFS.
+
+> Are any distros pushing for this?  Or shipping it?  If so, are they
+> able to weigh in and help us with this quite difficult decision?
+
+We (Red Hat) have shipped it in RHEL-5 and some Fedora releases.  Doing so is
+quite an effort, though, precisely because the code is not yet upstream.  We
+have customers using it and are gaining more customers who want it.  There
+even appear to be CentOS users using it (or at least complaining when it
+breaks).
+
+
+I don't know what will convince you.  I've given you theoretical reasons why
+caching ought to be useful; I've backed up the ones I've implemented with
+benchmarks; I've given you examples of what our customers are doing with it or
+want to do with it.  Please help me understand what else you want.
+
+Do you perhaps want the netfs maintainers (such as Trond) to say that it's
+necessary?
+
+David
