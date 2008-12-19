@@ -1,202 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbYLSSNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYLSSOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754510AbYLSSNx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 13:13:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYLSSNN
+	id S1754745AbYLSSOj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 13:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYLSSNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 13:13:13 -0500
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:50321 "EHLO
+	Fri, 19 Dec 2008 13:13:22 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:50346 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751952AbYLSSNK (ORCPT
+	by vger.kernel.org with ESMTP id S1753817AbYLSSNV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 13:13:10 -0500
-Subject: [PATCH 02/14] kmemleak: Add documentation on the memory leak detector
+	Fri, 19 Dec 2008 13:13:21 -0500
+Subject: [PATCH 04/14] kmemleak: Add the slob memory allocation/freeing hooks
 To: linux-kernel@vger.kernel.org
 From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Fri, 19 Dec 2008 18:13:07 +0000
-Message-ID: <20081219181307.7778.42984.stgit@pc1117.cambridge.arm.com>
+Date: Fri, 19 Dec 2008 18:13:18 +0000
+Message-ID: <20081219181318.7778.71269.stgit@pc1117.cambridge.arm.com>
 In-Reply-To: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
 References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
 User-Agent: StGit/0.14.3.292.gb975
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Dec 2008 18:13:08.0970 (UTC) FILETIME=[725B14A0:01C96205]
+X-OriginalArrivalTime: 19 Dec 2008 18:13:20.0064 (UTC) FILETIME=[78F7E400:01C96205]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the Documentation/kmemleak.txt file with some
-information about how kmemleak works.
+This patch adds the callbacks to kmemleak_(alloc|free) functions from the
+slob allocator.
 
 Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Acked-by: Matt Mackall <mpm@selenic.com>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- Documentation/kernel-parameters.txt |    4 +
- Documentation/kmemleak.txt          |  142 +++++++++++++++++++++++++++++++++++
- 2 files changed, 146 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/kmemleak.txt
+ mm/slob.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index e0f346d..7f5f642 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1042,6 +1042,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Configure the RouterBoard 532 series on-chip
- 			Ethernet adapter MAC address.
+diff --git a/mm/slob.c b/mm/slob.c
+index bf7e8fc..30b870f 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -60,6 +60,7 @@
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/mm.h>
++#include <linux/kmemleak.h>
+ #include <linux/cache.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+@@ -463,6 +464,7 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
+ {
+ 	unsigned int *m;
+ 	int align = max(ARCH_KMALLOC_MINALIGN, ARCH_SLAB_MINALIGN);
++	void *ret;
  
-+	kmemleak=	[KNL] Boot-time kmemleak enable/disable
-+			Valid arguments: on, off
-+			Default: on
+ 	if (size < PAGE_SIZE - align) {
+ 		if (!size)
+@@ -472,18 +474,18 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
+ 		if (!m)
+ 			return NULL;
+ 		*m = size;
+-		return (void *)m + align;
++		ret = (void *)m + align;
+ 	} else {
+-		void *ret;
+-
+ 		ret = slob_new_page(gfp | __GFP_COMP, get_order(size), node);
+ 		if (ret) {
+ 			struct page *page;
+ 			page = virt_to_page(ret);
+ 			page->private = size;
+ 		}
+-		return ret;
+ 	}
 +
- 	l2cr=		[PPC]
++	kmemleak_alloc(ret, size, 1, gfp);
++	return ret;
+ }
+ EXPORT_SYMBOL(__kmalloc_node);
  
- 	l3cr=		[PPC]
-diff --git a/Documentation/kmemleak.txt b/Documentation/kmemleak.txt
-new file mode 100644
-index 0000000..c84d91b
---- /dev/null
-+++ b/Documentation/kmemleak.txt
-@@ -0,0 +1,142 @@
-+Kernel Memory Leak Detector
-+===========================
-+
-+Introduction
-+------------
-+
-+Kmemleak provides a way of detecting possible kernel memory leaks in a
-+way similar to a tracing garbage collector
-+(http://en.wikipedia.org/wiki/Garbage_collection_%28computer_science%29#Tracing_garbage_collectors),
-+with the difference that the orphan objects are not freed but only
-+reported via /sys/kernel/debug/kmemleak. A similar method is used by the
-+Valgrind tool (memcheck --leak-check) to detect the memory leaks in
-+user-space applications.
-+
-+Usage
-+-----
-+
-+CONFIG_DEBUG_KMEMLEAK in "Kernel hacking" has to be enabled. A kernel
-+thread scans the memory every 10 min (by default) and prints any new
-+unreferenced objects found. To trigger an intermediate scan and display
-+all the possible memory leaks:
-+
-+  # mount -t debugfs nodev /sys/kernel/debug/
-+  # cat /sys/kernel/debug/kmemleak
-+
-+Note that the orphan objects are listed in the order they were allocated
-+and one object at the beginning of the list may cause other subsequent
-+objects to be reported as orphan.
-+
-+Memory scanning parameters can be modified at run-time by writing to the
-+/sys/kernel/debug/kmemleak file. The following parameters are supported:
-+
-+  off		- disable kmemleak (irreversible)
-+  stack=on	- enable the task stacks scanning
-+  stack=off	- disable the tasks stacks scanning
-+  scan=on	- start the automatic memory scanning thread
-+  scan=off	- stop the automatic memory scanning thread
-+  scan=<secs>	- set the automatic memory scanning period in seconds (0
-+		  to disable it)
-+
-+Kmemleak can also be disabled at boot-time by passing "kmemleak=off" on
-+the kernel command line.
-+
-+Basic Algorithm
-+---------------
-+
-+The memory allocations via kmalloc, vmalloc, kmem_cache_alloc and
-+friends are traced and the pointers, together with additional
-+information like size and stack trace, are stored in a prio search tree.
-+The corresponding freeing function calls are tracked and the pointers
-+removed from the kmemleak data structures.
-+
-+An allocated block of memory is considered orphan if no pointer to its
-+start address or to any location inside the block can be found by
-+scanning the memory (including saved registers). This means that there
-+might be no way for the kernel to pass the address of the allocated
-+block to a freeing function and therefore the block is considered a
-+memory leak.
-+
-+The scanning algorithm steps:
-+
-+  1. mark all objects as white (remaining white objects will later be
-+     considered orphan)
-+  2. scan the memory starting with the data section and stacks, checking
-+     the values against the addresses stored in the prio search tree. If
-+     a pointer to a white object is found, the object is added to the
-+     gray list
-+  3. scan the gray objects for matching addresses (some white objects
-+     can become gray and added at the end of the gray list) until the
-+     gray set is finished
-+  4. the remaining white objects are considered orphan and reported via
-+     /sys/kernel/debug/kmemleak
-+
-+Some allocated memory blocks have pointers stored in the kernel's
-+internal data structures and they cannot be detected as orphans. To
-+avoid this, kmemleak can also store the number of values pointing to an
-+address inside the block address range that need to be found so that the
-+block is not considered a leak. One example is __vmalloc().
-+
-+Kmemleak API
-+------------
-+
-+See the include/linux/kmemleak.h header for the functions prototype.
-+
-+kmemleak_init		 - initialize kmemleak
-+kmemleak_alloc		 - notify of a memory block allocation
-+kmemleak_free		 - notify of a memory block freeing
-+kmemleak_not_leak	 - mark an object as not a leak
-+kmemleak_ignore		 - do not scan or report an object as leak
-+kmemleak_scan_area	 - add scan areas inside a memory block
-+kmemleak_no_scan	 - do not scan a memory block
-+kmemleak_erase		 - erase an old value in a pointer variable
-+kmemleak_alloc_recursive - as kmemleak_alloc but checks the recursiveness
-+kmemleak_free_recursive	 - as kmemleak_free but checks the recursiveness
-+
-+Dealing with false positives/negatives
-+--------------------------------------
-+
-+The false negatives are real memory leaks (orphan objects) but not
-+reported by kmemleak because values found during the memory scanning
-+point to such objects. To reduce the number of false negatives, kmemleak
-+provides the kmemleak_ignore, kmemleak_scan_area, kmemleak_no_scan and
-+kmemleak_erase functions (see above). The task stacks also increase the
-+amount of false negatives and their scanning is not enabled by default.
-+
-+The false positives are objects wrongly reported as being memory leaks
-+(orphan). For objects known not to be leaks, kmemleak provides the
-+kmemleak_not_leak function. The kmemleak_ignore could also be used if
-+the memory block is known not to contain other pointers and it will no
-+longer be scanned.
-+
-+Some of the reported leaks are only transient, especially on SMP
-+systems, because of pointers temporarily stored in CPU registers or
-+stacks. Kmemleak defines MSECS_MIN_AGE (defaulting to 1000) representing
-+the minimum age of an object to be reported as a memory leak.
-+
-+Limitations and Drawbacks
-+-------------------------
-+
-+The main drawback is the reduced performance of memory allocation and
-+freeing. To avoid other penalties, the memory scanning is only performed
-+when the /sys/kernel/debug/kmemleak file is read. Anyway, this tool is
-+intended for debugging purposes where the performance might not be the
-+most important requirement.
-+
-+To keep the algorithm simple, kmemleak scans for values pointing to any
-+address inside a block's address range. This may lead to an increased
-+number of false negatives. However, it is likely that a real memory leak
-+will eventually become visible.
-+
-+Another source of false negatives is the data stored in non-pointer
-+values. In a future version, kmemleak could only scan the pointer
-+members in the allocated structures. This feature would solve many of
-+the false negative cases described above.
-+
-+The tool can report false positives. These are cases where an allocated
-+block doesn't need to be freed (some cases in the init_call functions),
-+the pointer is calculated by other methods than the usual container_of
-+macro or the pointer is stored in a location not scanned by kmemleak.
-+
-+Page allocations and ioremap are not tracked. Only the ARM and x86
-+architectures are currently supported.
+@@ -493,6 +495,7 @@ void kfree(const void *block)
+ 
+ 	if (unlikely(ZERO_OR_NULL_PTR(block)))
+ 		return;
++	kmemleak_free(block);
+ 
+ 	sp = (struct slob_page *)virt_to_page(block);
+ 	if (slob_page(sp)) {
+@@ -555,12 +558,14 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
+ 	} else if (flags & SLAB_PANIC)
+ 		panic("Cannot create slab cache %s\n", name);
+ 
++	kmemleak_alloc(c, sizeof(struct kmem_cache), 1, GFP_KERNEL);
+ 	return c;
+ }
+ EXPORT_SYMBOL(kmem_cache_create);
+ 
+ void kmem_cache_destroy(struct kmem_cache *c)
+ {
++	kmemleak_free(c);
+ 	slob_free(c, sizeof(struct kmem_cache));
+ }
+ EXPORT_SYMBOL(kmem_cache_destroy);
+@@ -577,6 +582,7 @@ void *kmem_cache_alloc_node(struct kmem_cache *c, gfp_t flags, int node)
+ 	if (c->ctor)
+ 		c->ctor(b);
+ 
++	kmemleak_alloc_recursive(b, c->size, 1, c->flags, flags);
+ 	return b;
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc_node);
+@@ -599,6 +605,7 @@ static void kmem_rcu_free(struct rcu_head *head)
+ 
+ void kmem_cache_free(struct kmem_cache *c, void *b)
+ {
++	kmemleak_free_recursive(b, c->flags);
+ 	if (unlikely(c->flags & SLAB_DESTROY_BY_RCU)) {
+ 		struct slob_rcu *slob_rcu;
+ 		slob_rcu = b + (c->size - sizeof(struct slob_rcu));
 
