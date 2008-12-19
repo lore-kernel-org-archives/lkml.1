@@ -1,125 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbYLSA2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbYLSA2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319AbYLSA2N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 19:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYLSA14
+	id S1753803AbYLSA2g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 19:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYLSA2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 19:27:56 -0500
-Received: from styx.suse.cz ([82.119.242.94]:59245 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751165AbYLSA1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 19:27:55 -0500
-Date: Fri, 19 Dec 2008 01:27:52 +0100
-From: Jan Kara <jack@suse.cz>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Arthur Jones <ajones@riverbed.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-Message-ID: <20081219002752.GE8424@duck.suse.cz>
-References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz> <494ADEB3.8010109@redhat.com>
+	Thu, 18 Dec 2008 19:28:23 -0500
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:60569 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbYLSA2W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 19:28:22 -0500
+From: Junio C Hamano <gitster@pobox.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Johannes Schindelin <Johannes.Schindelin@gmx.de>,
+       David Howells <dhowells@redhat.com>, torvalds@osdl.org,
+       git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Simplified GIT usage guide
+References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
+ <alpine.DEB.1.00.0812121952320.5873@eeepc-johanness>
+ <20081219000218.GA23990@linux.vnet.ibm.com>
+Date: Thu, 18 Dec 2008 16:28:11 -0800
+In-Reply-To: <20081219000218.GA23990@linux.vnet.ibm.com> (Paul E. McKenney's
+ message of "Thu, 18 Dec 2008 16:02:18 -0800")
+Message-ID: <7vabatf1pg.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <494ADEB3.8010109@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Pobox-Relay-ID: F07251FE-CD63-11DD-8A9B-5720C92D7133-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 18-12-08 17:37:23, Eric Sandeen wrote:
-> Jan Kara wrote:
-> >   Hello,
-> > 
-> >   I'm sorry I'm replying late but I got time to react to this only now...
-> > 
-> 
-> <snip>
-> 
-> >> I tried this and it too fixes the problem.  FWIW I agree it
-> >> looks better...
-> >   Well, shouldn't we rather fix what journal_start_commit() returns?
-> > The interface which returns 1 when a transaction is already committing or
-> > a transaction commit has just been started but 0 when we race with
-> > somebody staring the commit is fairly unusable. Moreover
-> > ext3_force_commit() will unnecessarily create new sync transaction and
-> > commit it if there's no transaction running which is quite expensive
-> > (even merging empty sync handle is not for free because of sync
-> > transaction batching). But this is minor problem since we probably
-> > don't care too much about sync() performance - BTW this is probably a
-> > cause for bug 12224, isn't it?
-> 
-> Yep, it is!  :)
-> 
-> >   BTW: ocfs2 would need fixing as well if done your way since it's
-> > sync_fs function has been copied over from ext3.
-> >   To summarized I'd rather see a patch like below (untested) going in
-> > and your patch reverted... Opinions? I can cookup a JBD2 version of
-> > the patch in case we agree to go this way.
-> 
-> Thanks, I'll look that over.
-  Thanks.
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
 
-> In looking at what we have today, I wonder if we can make things smarter
-> so that we don't commit empty transactions in any case?
-  Probably it does not make sence to commit such transactions and we might
-save some time in sync paths if we do so. So yes, I think skipping empty
-transaction commit might be worthwhile and it shouldn't be hard to do
-either. But I'd give it serious testing just in case some unexpectedly
-relies on this behaviour - wouldn't this interfere e.g. with sync
-transaction batching autotuning code? Untested patch below...
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
----
+> On Fri, Dec 12, 2008 at 07:57:38PM +0100, Johannes Schindelin wrote:
+> ...
+>> I am sure we want to have something like that in git.git.
+>
+> So am I.  Except that I am not being sarcastic.  ;-)
 
->From 3e1a8dc6a64fdce5c99d7edca0a2812178f7463c Mon Sep 17 00:00:00 2001
-From: Jan Kara <jack@suse.cz>
-Date: Fri, 19 Dec 2008 01:20:47 +0100
-Subject: [PATCH] jbd2: Skip commit of a transaction without any buffers
+Hmm, but we seem to already have too many intro-to-git documents in tree.
+Perhaps good points in the document can be used to augment or replace
+parts of existing documents?  For example, which part of the new
+documentation would have helped you avoid the pain you mentioned below...
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/jbd2/commit.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+> In particular, David's guide was quite helpful to me.  It would have been
+> even more helpful had it existed when I first tried (unsuccessfully)
+> to use GIT.  In particular, GIT's requirement that I tell it about new
+> versions of existing files (either with "git add" or "git commit -a")
+> was extremely counter-intuitive, and caused me no end of pain.
 
-diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-index ebc667b..798e021 100644
---- a/fs/jbd2/commit.c
-+++ b/fs/jbd2/commit.c
-@@ -401,6 +401,21 @@ void jbd2_journal_commit_transaction(journal_t *journal)
- 	J_ASSERT (commit_transaction->t_outstanding_credits <=
- 			journal->j_max_transaction_buffers);
- 
-+	/* Skip commit of a transaction without any buffers */
-+	spin_lock(&journal->j_list_lock);
-+	if (commit_transaction->t_reserved_list == NULL &&
-+	    commit_transaction->t_buffers == NULL &&
-+	    commit_transaction->t_forget == NULL &&
-+	    list_empty(commit_transaction->t_inode_list)) {
-+		BUG_ON(commit_transaction->t_checkpoint_list);
-+		BUG_ON(commit_transaction->t_checkpoint_io_list);
-+		BUG_ON(commit_transaction->t_iobuf_list);
-+		BUG_ON(commit_transaction->t_shadow_list);
-+		BUG_ON(commit_transaction->t_log_list);
-+		goto out_committed;
-+	}
-+	spin_unlock(&journal->j_list_lock);
-+
- 	/*
- 	 * First thing we are allowed to do is to discard any remaining
- 	 * BJ_Reserved buffers.  Note, it is _not_ permissible to assume
-@@ -934,6 +949,7 @@ restart_loop:
- 
- 	/* Done with this transaction! */
- 
-+out_committed:
- 	jbd_debug(3, "JBD: commit phase 7\n");
- 
- 	J_ASSERT(commit_transaction->t_state == T_COMMIT);
--- 
-1.6.0.2
+... and which part of the existing user manual or tutorial should have
+talked about it to help you?
 
+> But my experience is that git is at best an acquired taste for those of
+> us who grew up with traditional source-code control systems.  Such
+> people will benefit greatly from a git-haters guide,...
+
+"Acquired taste" is a much nicer and more diplomatic way to say the same
+thing as what Linus often refers as "unlearning the braindamage inflicted
+by years of using CVS." ;-)
+
+> ..., and git's user
+> population will grow as a result.
+
+I do not think it constitutes any basis for judging the merit of having
+the document in git.git tree.  The world domination is not our goal, but
+it may come as a mere side effect of being the best in the business.
