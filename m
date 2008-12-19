@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYLSAqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbYLSAr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbYLSAqn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 19:46:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYLSAqf
+	id S1754099AbYLSAr3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 19:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYLSArO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 19:46:35 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:2582 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbYLSAqe (ORCPT
+	Thu, 18 Dec 2008 19:47:14 -0500
+Received: from rv-out-0506.google.com ([209.85.198.232]:9660 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbYLSArN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 19:46:34 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Cc: <davem@davemloft.net>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>
-Subject: RE: [PATCH] Stop scaring users with "treason uncloaked!"
-Date: Thu, 18 Dec 2008 16:45:32 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEJJBPAD.davids@webmaster.com>
+	Thu, 18 Dec 2008 19:47:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=ueYJgsiTVP2zWtmkp6G8ohY1AeiGnBjrbvEIa86RNyWymqfdFeoSRZRaobDG+Op1Ga
+         S2TFCxVydukoJ8Iur3StdY2ZB1BgVR2mGNgPtN9yfExrc1MkzgEJpvfWcQJtVl974aZG
+         dHTc8k064/sZ4DQraVQYara3X+wv+7a3NpsYE=
+Message-ID: <c6d9bea0812181647n55fbb6b9w333702fc80127198@mail.gmail.com>
+Date: Thu, 18 Dec 2008 19:47:12 -0500
+From: "C. Scott Ananian" <cscott@laptop.org>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [PATCH] Simplified GIT usage guide
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-In-Reply-To: <1229641573.3726.563.camel@calx>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3350
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 18 Dec 2008 16:47:50 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 18 Dec 2008 16:47:50 -0800
+Content-Disposition: inline
+References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
+X-Google-Sender-Auth: 6ea204e53f7bbc54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Dec 12, 2008 at 1:28 PM, David Howells <dhowells@redhat.com> wrote:
+> Add a guide to using GIT's simpler features.
+> diff --git a/Documentation/git-haters-guide.txt b/Documentation/git-haters-guide.txt
+> +In the above example, I've assumed that you've got your own tree with the head
+> +at commit C3, and that you've got a branch that you want to merge, which has
+> +its head at commit B3.  After merging them, you'd end up with a directed,
+> +cyclic tree:
 
-> Most people won't actually think their printer is on fire. But most
-> people WILL think there is serious cause for concern when they see this
-> for the first time in dmesg. Many will search the net for explanations
-> and come away confused and not entirely reassured. And at least one
-> clueless guy will call the police because he still thinks he's under
-> attack.
+That should be, "acyclic".  There are no cycles, because the graph is directed.
+  --scott
 
-Messages about something or other being "illegal" occur about 345 times in
-the Linux kernel source code. Are we going to start patching those too?
-
-We have "illegal norm", "illegal input", "illegal call", "illegal type",
-"illegal bits", "illegal root port number", "illegal host number", "illegal
-DMA data", "illegal dimensions" (who do you call about that one?), "illegal
-phase", "illegal page number", "illegal seek", and on, and on, and on.
-
-I suspect that if I submitted a patch to change all of those to "invalid",
-I'd be considered a kook. (Well, more of a kook, anyway.)
-
-DS
-
-
+-- 
+                         ( http://cscott.net/ )
