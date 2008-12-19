@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752302AbYLSQxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752534AbYLSQyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752302AbYLSQxL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 11:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYLSQwz
+	id S1752534AbYLSQyS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 11:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYLSQyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 11:52:55 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:39486 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751084AbYLSQwy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 11:52:54 -0500
-Date: Fri, 19 Dec 2008 10:52:52 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 01/45] Create a dynamically sized pool of threads for
-	doing very slow work items [ver #41]
-Message-ID: <20081219165252.GA15773@us.ibm.com>
-References: <10438.1229686960@redhat.com> <20081219041401.GA29316@us.ibm.com> <20081120144139.10667.75519.stgit@warthog.procyon.org.uk> <20081120144145.10667.39594.stgit@warthog.procyon.org.uk> <10752.1229688754@redhat.com>
+	Fri, 19 Dec 2008 11:54:04 -0500
+Received: from kroah.org ([198.145.64.141]:37067 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751310AbYLSQyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 11:54:03 -0500
+Date: Fri, 19 Dec 2008 08:52:56 -0800
+From: Greg KH <greg@kroah.com>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: device driver probe return codes
+Message-ID: <20081219165256.GD14583@kroah.com>
+References: <20081216215331.GH12431@fluff.org.uk> <20081216234128.05a343bb.akpm@linux-foundation.org> <20081219051436.GA29543@kroah.com> <20081219081636.GK12431@fluff.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <10752.1229688754@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081219081636.GK12431@fluff.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting David Howells (dhowells@redhat.com):
-> David Howells <dhowells@redhat.com> wrote:
+On Fri, Dec 19, 2008 at 08:16:36AM +0000, Ben Dooks wrote:
+> On Thu, Dec 18, 2008 at 09:14:36PM -0800, Greg KH wrote:
+> > On Tue, Dec 16, 2008 at 11:41:28PM -0800, Andrew Morton wrote:
+> > > On Tue, 16 Dec 2008 21:53:31 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
+> > > 
+> > > > I would like some feedback on the following regarding some
+> > > > form of standardising return codes from a device driver probe
+> > > > to try and stop some basic mistakes.
+> > > > 
+> > > > This document is not complete, any additions would be welcone.
+> > 
+> > Hm, shouldn't you have at least copied me on this?
 > 
-> > I guess I need to stick a comment in slow_work_enqueue() to detail this,
-> > though the comments in slow_work_execute() do talk about it.
-> 
-> How about this:
-> 
-> diff --git a/kernel/slow-work.c b/kernel/slow-work.c
-> index f638f36..adf9b78 100644
-> --- a/kernel/slow-work.c
-> +++ b/kernel/slow-work.c
-> @@ -195,12 +195,32 @@ int slow_work_enqueue(struct slow_work *work)
->  	BUG_ON(!work->ops);
->  	BUG_ON(!work->ops->get_ref);
-> 
-> +	/* when honouring an enqueue request, we only promise that we will run
-> +	 * the work function in the future; we do not promise to run it once
-> +	 * per enqueue request
+> Sorry, assumed you'd be reading linux-kernel.
 
-That, there, is precisely what i needed to hear :)
+I try to, but things get through at at times.  Please always cc: me if
+you want me to read it.
 
-> +	 * we use the PENDING bit to merge together repeat requests without
-> +	 * having to disable IRQs and take the spinlock, whilst still
-> +	 * maintaining our promise
-> +	 */
->  	if (!test_and_set_bit_lock(SLOW_WORK_PENDING, &work->flags)) {
->  		spin_lock_irqsave(&slow_work_queue_lock, flags);
+> > What is this for?  Each of the different busses treat return codes for
+> > their probe functions a bit differently, are you wanting to unify them?
+> > And if so, why?
 > 
-> +		/* we promise that we will not attempt to execute the work
-> +		 * function in more than one thread simultaneously
-> +		 *
-> +		 * this, however, leaves us with a problem if we're asked to
-> +		 * enqueue the work whilst someone is executing the work
-> +		 * function as simply queueing the work immediately means that
-> +		 * another thread may try executing it whilst it is already
-> +		 * under execution
-> +		 *
-> +		 * to deal with this, we set the ENQ_DEFERRED bit instead of
-> +		 * enqueueing, and the thread currently executing the work
-> +		 * function will enqueue the work item when the work function
-> +		 * returns and it has cleared the EXECUTING bit
-> +		 */
->  		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
-> -			/* can't queue lest we cause multiple threads to try
-> -			 * executing this item, so defer for later */
->  			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
->  		} else {
->  			if (work->ops->get_ref(work) < 0)
+> I was trying to make a guide for people to try and avoid the general
+> mistakes such as returning -ENODEV when it clearly isn't the right
+> thing to do. There are a number of drivers which return this causing
+> confusion as to why devices are not being bound as they neither print
+> an error nor cause the driver core to print anything [1].
 > 
-> David
+> The idea is to provide a guide to what error numbers are acceptable
+> to return and what the best return code for the common situations
+> that drivers tend to do and what to avoid.
+> 
+> As a note, having looked at the base driver, pci, platform and i2c
+> they all pass the error straight back to the core driver probe.
+
+Fair enough, care to respin this and send it out to me for review?
 
 thanks,
--serge
+
+greg k-h
