@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbYLSWVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbYLSWXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbYLSWVh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:21:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYLSWVY
+	id S1756159AbYLSWXG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:23:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbYLSWWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 17:21:24 -0500
-Received: from gw.goop.org ([64.81.55.164]:36826 "EHLO mail.goop.org"
+	Fri, 19 Dec 2008 17:22:54 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:60934 "EHLO kumera.dghda.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751391AbYLSWVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 17:21:23 -0500
-Message-ID: <494C1E5E.7070809@goop.org>
-Date: Fri, 19 Dec 2008 14:21:18 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
-MIME-Version: 1.0
-To: Evgeniy Polyakov <zbr@ioremap.net>
-CC: Vladislav Bolkhovitin <vst@vlnb.net>, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
+	id S1752255AbYLSWWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 17:22:53 -0500
+From: "Duane Griffin" <duaneg@dghda.com>
+Date: Fri, 19 Dec 2008 22:22:48 +0000
+To: Eric Van Hensbergen <ericvh@gmail.com>
+Cc: Duane Griffin <duaneg@dghda.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
        Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user
- space data
-References: <494009D7.4020602@vlnb.net> <494012C4.7090304@vlnb.net> <494C0255.8010208@goop.org> <20081219220452.GB704@ioremap.net>
-In-Reply-To: <20081219220452.GB704@ioremap.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Ron Minnich <rminnich@sandia.gov>, Latchesar Ionkov <lucho@ionkov.net>,
+       v9fs-developer@lists.sourceforge.net
+Subject: Re: [PATCH, v5] 9p: don't print IS_ERR strings
+Message-ID: <20081219222248.GA7181@dastardly.home.dghda.com>
+References: <1229719638-6982-1-git-send-email-duaneg@dghda.com> <1229719638-6982-2-git-send-email-duaneg@dghda.com> <a4e6962a0812191407g40e14e8fw2e08f7e4e812389d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4e6962a0812191407g40e14e8fw2e08f7e4e812389d@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> On Fri, Dec 19, 2008 at 12:21:41PM -0800, Jeremy Fitzhardinge (jeremy@goop.org) wrote:
->   
->> I think Rusty has a patch to put some kind of put notifier in struct 
->> skb_shared_info, but I'm not sure of the details.
->>     
->
-> Yes, he added destructor callback into shared info.
->
-> There maybe a problem though, if iscsi will run over xen network, but in
-> this case xen may copy the data, or iscsi may do that after determining
-> that underlying network device does not allow shared info destructor
-> (vis device/route flag for example).
->   
+On Fri, Dec 19, 2008 at 04:07:53PM -0600, Eric Van Hensbergen wrote:
+> NAK - the print is a debug to mark function entry when debugging is on
+> -- it is not intended to show only success.  If an erroneous s will
+> cause the print to break then perhaps it should be parameterized, but
+> the entire print shouldn't be pushed inside the if statement.
 
-Xen only needs the callback in the case of traffic originating in 
-another Xen domain.  If iscsi is involved, it will be running in the 
-other domain, and so all its callbacks and so on will happen there.  
-There's no conflict.
+If s is an error then I suppose it will BUG when the printk tries to
+dereference it. So I think a fix is necessary. How about this?
 
->> Wouldn't you only need to do the lookup on the last put?
->>
->> An external lookup table might well for for us, if the net_put_page() 
->> change is acceptable to the network folk.
->>     
->
-> That sounds like the best solution for this problem.
->   
+diff --git a/fs/9p/vfs_inode.c b/fs/9p/vfs_inode.c
+index 8fddfe8..e10c27d 100644
+--- a/fs/9p/vfs_inode.c
++++ b/fs/9p/vfs_inode.c
+@@ -1022,7 +1022,9 @@ v9fs_vfs_put_link(struct dentry *dentry, struct nameidata *nd, void *p)
+ {
+ 	char *s = nd_get_link(nd);
+ 
+-	P9_DPRINTK(P9_DEBUG_VFS, " %s %s\n", dentry->d_name.name, s);
++	P9_DPRINTK(P9_DEBUG_VFS, " %s %s\n", dentry->d_name.name,
++			IS_ERR(s) ? "<error>" : s);
++
+ 	if (!IS_ERR(s))
+ 		__putname(s);
+ }
 
-An external lookup would just need to change put_page -> net_put_page, I 
-think.
+Cheers,
+Duane.
 
-> David, will you accept shared info destructor?
->   
-
-I'm not very familiar with the network stack, but am I right in assuming 
-that the shared_info destructor would be called when the network stack 
-has finished with all the pages it refers to?  And those pages could be 
-the combination of pages separately submitted in different skbs?
-
-    J
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
