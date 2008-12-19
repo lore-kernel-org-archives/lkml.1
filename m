@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbYLSBro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbYLSBt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851AbYLSBro (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 20:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYLSBrb
+	id S1753353AbYLSBt6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 20:49:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYLSBtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 20:47:31 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40259 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752918AbYLSBr3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 20:47:29 -0500
-X-Sasl-enc: Bbybn4ygRN9tqPHm81kCWkoHOnOatswb7d3paDljQcH/ 1229651248
-Subject: Re: [rfc git patch] union directory
-From: Ian Kent <raven@themaw.net>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-fsdevel@vger.kernel.org, jblunck@suse.de, dlezcano@fr.ibm.com,
-       linux-kernel@vger.kernel.org, bharata@linux.vnet.ibm.com,
-       viro@ZenIV.linux.org.uk, Valerie Aurora Henson <vaurora@redhat.com>
-In-Reply-To: <E1LDLzo-0007oD-Lg@pomaz-ex.szeredi.hu>
-References: <E1L616K-0005v3-Uc@pomaz-ex.szeredi.hu>
-	 <alpine.LFD.2.00.0812171350350.11591@zeus.themaw.net>
-	 <E1LDLzo-0007oD-Lg@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Fri, 19 Dec 2008 10:47:22 +0900
-Message-Id: <1229651242.3026.39.camel@zeus.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Dec 2008 20:49:50 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:54690 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750789AbYLSBtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 20:49:49 -0500
+Date: Thu, 18 Dec 2008 17:49:46 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, manfred@colorfullife.com,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
+       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
+       tglx@linutronix.de
+Subject: Re: [PATCH -tip] v9 scalable classic RCU implementation
+Message-ID: <20081219014946.GJ6912@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081202222157.GA14911@linux.vnet.ibm.com> <20081202233144.GE6703@one.firstfloor.org> <20081202235145.GF6719@linux.vnet.ibm.com> <20081203001811.GF6703@one.firstfloor.org> <20081203004759.GG6719@linux.vnet.ibm.com> <20081203011042.GH6703@one.firstfloor.org> <20081203013659.GH6719@linux.vnet.ibm.com> <20081218225403.GA24881@linux.vnet.ibm.com> <20081219012935.GO25779@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081219012935.GO25779@one.firstfloor.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-12-18 at 17:45 +0100, Miklos Szeredi wrote:
-> On Wed, 17 Dec 2008, Ian Kent wrote:
-> > On Fri, 28 Nov 2008, Miklos Szeredi wrote:
-> > 
-> > > I've been doing some small fixing/cleanup work on the union directory
-> > > patches by Jan, and just noticed there's a thread about the union
-> > > mounts on LKML, so I thought publicizing won't hurt.
+On Fri, Dec 19, 2008 at 02:29:35AM +0100, Andi Kleen wrote:
+> On Thu, Dec 18, 2008 at 02:54:03PM -0800, Paul E. McKenney wrote:
+> > On Tue, Dec 02, 2008 at 05:36:59PM -0800, Paul E. McKenney wrote:
+> > > On Wed, Dec 03, 2008 at 02:10:42AM +0100, Andi Kleen wrote:
+> > > > > On Power, I see a hang in all three flavors of RCU when CPU hotplug
+> > > > > is enabled and dynticks is not.  I have not yet seen this hang on x86.
+> > > > > On Power, the hang occurs in the CPU-offline code, and is identical to
+> > > > > the hangs I was seeing in 2.6.27, except that "sleep 1" does not hang
+> > > > > in recent 2.6.28 versions.  So the timeout is apparently failing to fire
+> > > > > (or being ignored) for some other reason.
+> > > > > 
+> > > > > Is this similar to what you are seeing on x86?
+> > > > 
+> > > > Yes it is.
 > > > 
-> > > It's still a work in progress, notably the readdir code currently only
-> > > works on a few specific filesystem types.
-> > > 
-> > > Git tree is here:
-> > > 
-> > >   git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs.git union-dir
+> > > OK, then I will consider them to be the same bug for the moment.
 > > 
-> > I'm confused?
+> > Question based on some further testing over here...
 > > 
-> > This doesn't look like the complete set of Jan Blunks union mount
-> > patches.  Am I mistaken?
+> > Do you still get failures if you refrain from offlining CPU 0?
 > 
-> You're not mistaken, this is not the original patch set, but a reduced
-> one (also by Jan), further reduced and cleaned up by me.
+> Yes, i never offlined cpu 0 in fact.
 
-OK, I'll have a closer look, sorry for side tracking the thread (even
-though I'm going to continue to do so, hehe).
+Hmmm...  Then you are most likely seeing a different failure than I see
+on Power.
 
-> 
-> The original patch set implemented deep unioning of directory trees.
-> This one implements only unioning of the mount's top level directory.
-> 
-> > But this also made me think about the issues surrounding whiteout support 
-> > as having to add per-file system support for such things is bound to lead 
-> > to a maintenance headache. So why not a well defined modular interface 
-> > layer that includes these bits and is also responsible for context 
-> > persistence, independent of file system?
-> 
-> I don't think such a layer is in the scope of this patch set.  It may
-> be a nice thing, but it will almost certainly be implemented in a
-> filesystem, not in the VFS.  Union mounts, as opposed to unionfs and
-> its ilk, are supposed to be very lightweight.
+Could you please retry with v10 of the patch, setting CONFIG_TREE_RCU?
 
-Exactly, and that is partly my point.
-
-Whether the VFS is implementing readdir for a mount's top level or also
-for deeper levels it still has the issue described by Barata Rao in
-http://marc.info/?l=linux-fsdevel&m=118914402631822&w=2. But my
-suggestion doesn't only relate to the readdir issue it implies managing
-such things as whiteout persistence also, but outside of individual file
-systems. So, yes, I'm a bit off topic but the patch series here is going
-to need something like this somewhere to ultimately be useful and all
-I'm saying is that somewhere probably shouldn't be within individual
-file systems and, yes, not in the VFS.
-
-Valerie Henson is planning to start a project (when she is done with
-current commitments) along the lines of a lightweight stacking layer
-with union support included in the file system. These continuing
-individual efforts are a little disjoint so such a project could be an
-ideal way to define what's needed, what the issues are and how it will
-be done in one place. Hopefully everyone that is keen to see progress in
-this area will want to be involved too, ;)
-
-Sorry for the off-topic rant, I just can't resist sometimes.
-
-Ian
-
+							Thanx, Paul
