@@ -1,83 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbYLSDfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbYLSDrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752897AbYLSDfc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 22:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYLSDfT
+	id S1753219AbYLSDrN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 22:47:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbYLSDq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 22:35:19 -0500
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:40999 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752124AbYLSDfS (ORCPT
+	Thu, 18 Dec 2008 22:46:56 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:15373 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752090AbYLSDqz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 22:35:18 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtYEALSlSklMROB9/2dsb2JhbACBbLwpWJBlgwY
-Date: Thu, 18 Dec 2008 22:35:14 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: David Miller <davem@davemloft.net>, rostedt@goodmis.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       paulus@samba.org, benh@kernel.crashing.org, linux-ia64@vger.kernel.org,
-       linux-s390@vger.kernel.org, Christoph Lameter <christoph@lameter.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Martin Bligh <mbligh@google.com>
-Subject: Re: local_add_return
-Message-ID: <20081219033514.GA7162@Krystal>
-References: <alpine.DEB.1.10.0812150823370.18692@gandalf.stny.rr.com> <200812170908.05423.rusty@rustcorp.com.au> <20081217000155.GA28174@Krystal> <200812190922.57629.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <200812190922.57629.rusty@rustcorp.com.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 22:32:07 up 32 days,  4:12,  2 users,  load average: 0.42, 0.70,
-	0.81
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 18 Dec 2008 22:46:55 -0500
+X-IronPort-AV: E=Sophos;i="4.36,246,1228118400"; 
+   d="scan'208";a="100526722"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Pull request for FS-Cache, including NFS patches
+Date: Thu, 18 Dec 2008 19:45:57 -0800
+Message-ID: <7A24DF798E223B4C9864E8F92E8C93EC01AAF3F8@SACMVEXC1-PRD.hq.netapp.com>
+In-Reply-To: <7633.1229653644@redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Pull request for FS-Cache, including NFS patches
+Thread-Index: AclhgWf78h0pPgdFSainorUZMMENHQABqWtg
+From: "Muntz, Daniel" <Dan.Muntz@netapp.com>
+To: "David Howells" <dhowells@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <sfr@canb.auug.org.au>, <linux-kernel@vger.kernel.org>,
+       <nfsv4@linux-nfs.org>, <steved@redhat.com>,
+       <linux-fsdevel@vger.kernel.org>, <rwheeler@redhat.com>
+X-OriginalArrivalTime: 19 Dec 2008 03:46:53.0021 (UTC) FILETIME=[6E46A8D0:01C9618C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell (rusty@rustcorp.com.au) wrote:
-> On Wednesday 17 December 2008 10:31:55 Mathieu Desnoyers wrote:
-> > I think we have two different use-cases here :
-> > 
-> > - local_t is useful as-is for things such as a tracer, which need to
-> >   modify an element of data atomically wrt local interrupts. The
-> >   atomic_long_t, in this case, is the correct fallback.
-> > - local_count_t could be used for fast counters.
+Local disk cache was great for AFS back around 1992.  Typical networks
+were 10 or 100Mbps (slower than disk access at the time), and memories
+were small (typical 16MB).  FS-Cache appears to help only with read
+traffic--one reason why the web loves caching--and only for reads that
+would miss the buffer/page cache (memories are now "large").  Solaris
+has had CacheFS since ~1995, HPUX had a port of it since ~1997.  I'd be
+interested in evidence of even a small fraction of Solaris and/or HPUX
+shops using CacheFS.  I am aware of customers who thought it sounded
+like a good idea, but ended up ditching it for various reasons (e.g.,
+CacheFS just adds overhead if you almost always hit your local mem
+cache).
+
+One argument in favor that I don't see here is that local disk cache is
+persistent (I'm assuming it is in your implementation).
+
+Addressing 1 and 2 in your list, I'd be curious how often a miss in core
+is a hit on disk.
+Number 3 scares me.  How does this play with the expected semantics of
+NFS?
+Number 5 is hard, if not provably requiring human intervention to do
+syncs when writes are involved (see Disconnected AFS work by
+UM/CITI/Huston, and work at CMU).
+Add persistence as number 6.  This may be the best reason to have it,
+imho.
+
+  -Dan
+
+-----Original Message-----
+From: David Howells [mailto:dhowells@redhat.com] 
+Sent: Thursday, December 18, 2008 6:27 PM
+To: Andrew Morton
+Cc: sfr@canb.auug.org.au; linux-kernel@vger.kernel.org;
+nfsv4@linux-nfs.org; steved@redhat.com; dhowells@redhat.com;
+linux-fsdevel@vger.kernel.org; rwheeler@redhat.com
+Subject: Re: Pull request for FS-Cache, including NFS patches
+
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> I don't believe that it has yet been convincingly demonstrated that we
+
+> want to merge it at all.
 > 
-> Hi Mathieu,
-> 
->    Complete agreement.
-> 
->    I guess I'm biassed towards local_t == counter version, something else
-> == nmi-safe version because that's what it was originally.  Looking through
-> the tree, there are only 5 users: module, dmaengine and percpu_counter want
-> a counter, and tracing and x86 nmi.c want nmi-safe.  There are several other
-> places I know of which want local_t-the-counter.
-> 
->    I'll prepare a patch which adds nmi_safe_t, and see how it looks.  There's
-> no amazing hurry on this, so I won't race to hit the merge window.
-> 
+> It's a huuuuuuuuge lump of new code, so it really needs to provide 
+> decent value.  Can we revisit this?  Yet again?  What do we get from 
+> all this?
 
-OK,
+I should tell you to go and reread LKML at this point.
 
-But can we turn what you call "nmi_safe_t" into "local_atomic_t" then ?
-Because we have to specify that this type must only be used as part of
-per-cpu data with preemption disabled, and we also specify that it is
-atomic.
+But...  What can FS-Cache do for you?  Well, in your specific case,
+probably nothing.  If all your computers are local to your normal
+desktop box and are connected by sufficiently fast network and you have
+sufficiently few of them, or you don't use any of NFS, AFS, CIFS,
+Lustre, CRFS, CD-ROMs then it is likely that won't gain you anything.
 
-Plus, nmi_safe_t does not make much sense on architectures without NMIs,
-where we sometimes disable interrupts to make the modification "atomic"
-wrt all other interrupts that can happen.
+Even if you do use some of those "netfs's", it won't get you anything
+yet because I haven't included patches to support anything other than
+NFS and the in-kernel AFS client yet.
 
-Mathieu
+However, if you do use NFS (or my AFS client), and you are accessing
+computers via slow networks, or you have lots of machines spamming your
+NFS server, then it might avail you.
 
-> Thanks!
-> Rusty.
+It's a compromise: a trade-off between the loading and latencies of your
+network vs the loading and latencies of your disk; you sacrifice disk
+space to make up for the deficiencies of your network.  The worst bit is
+that the latencies are additive under some circumstances (when doing a
+page read you may have to check disk and then go to the network).
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+So, FS-Cache can do the following for you:
+
+ (1) Allow you to reduce network loading by diverting repeat reads to
+local
+     storage.
+
+ (2) Allow you to reduce the latency of slow network links by diverting
+repeat
+     reads to local storage.
+
+ (3) Allow you to reduce the effect of uncontactable servers by serving
+data
+     out of local storage.
+
+ (4) Allows you to reduce the latency of slow rotating media (such as
+CDROM
+     and CD-changers).
+
+ (5) Allow you to implement disconnected operation, partly by (3), but
+also by
+     caching changes for later syncing.
+
+Now, (1) and (2) are readily demonstrable.  I have posted benchmarks to
+do this.  (3) to (5) are not yet implemented; these have to be mostly
+implemented in the filesystems that use FS-Cache rather than FS-Cache
+itself.  FS-Cache currently has sufficient functionality to do (3) and
+(4), but needs some extra bits to do (5).
+
+I've tried to implement just the minimal useful functionality for
+persistent caching.  There is more to be added, but it's not immediately
+necessary.
+
+
+FS-Cache tries to make its facilities as simple and as general as
+possible so that _any_ filesystem or blockdev can use it.  I have
+patches here to make NFS and AFS use it.  I know someone is working on
+getting Lustre to use it, and other filesystem maintainers have
+expressed interest, subject to the code getting upstream.
+
+Furthermore, FS-Cache hides the implementation of the cache from the
+netfs.
+Not only that, it hides I/O errors in the cache from the netfs.  Why
+should the netfs have to deal with such things?
+
+
+Another way to look at things is to look at other cases of cached
+netfs's.
+OpenAFS for example.  It has a local cache of its own.  Solaris has
+local NFS caching.  Windows has local caching for NFS and CIFS, I think.
+Even web browsers have local caching.
+
+>  303 files changed, 21049 insertions(+), 3726 deletions(-)
+
+A big chunk of that, particularly the deletions, is the creds patches.
+Excluding the stuff pulled from the security and NFS trees, the combined
+FS-Cache, CacheFiles and AFS+ and NFS+FS-Cache patches are, in fact:
+
+	86 files changed, 15385 insertions(+), 413 deletions(-)
+
+and over 19% of the insertions is documentation.  Most of the deletions
+(373) are in AFS.
+
+> Are any distros pushing for this?  Or shipping it?  If so, are they 
+> able to weigh in and help us with this quite difficult decision?
+
+We (Red Hat) have shipped it in RHEL-5 and some Fedora releases.  Doing
+so is quite an effort, though, precisely because the code is not yet
+upstream.  We have customers using it and are gaining more customers who
+want it.  There even appear to be CentOS users using it (or at least
+complaining when it breaks).
+
+
+I don't know what will convince you.  I've given you theoretical reasons
+why caching ought to be useful; I've backed up the ones I've implemented
+with benchmarks; I've given you examples of what our customers are doing
+with it or want to do with it.  Please help me understand what else you
+want.
+
+Do you perhaps want the netfs maintainers (such as Trond) to say that
+it's necessary?
+
+David
+_______________________________________________
+NFSv4 mailing list
+NFSv4@linux-nfs.org
+http://linux-nfs.org/cgi-bin/mailman/listinfo/nfsv4
