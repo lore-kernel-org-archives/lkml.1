@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbYLSWgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbYLSWhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbYLSWgb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:36:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbYLSWgO
+	id S1754499AbYLSWhe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:37:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYLSWh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 17:36:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46564 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753604AbYLSWgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 17:36:13 -0500
-Date: Fri, 19 Dec 2008 23:35:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Toshikazu Nakayama <nakayama.ts@ncos.nec.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] printk: fix discarding message when recursion_bug
-Message-ID: <20081219223558.GC13409@elte.hu>
-References: <494BE687.2040700@ct.jp.nec.com> <20081219215347.GG2351@elte.hu> <494C1D20.9000008@ct.jp.nec.com>
+	Fri, 19 Dec 2008 17:37:26 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:45248 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751115AbYLSWhZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 17:37:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=K4ayFXZWj9nYlgmRszoxnj1ajtpBY7f38uMqlWdo8hz3JtCRsRenqgIYk8LIWurzgi
+         XaBwor09egtjSu14jNdrwRMz/KdWxHtyHxQCL5lg5G/HWaAf5MHVliraLmdOngl9c1Bx
+         Mwtlx8UK5dEdC9/8esGnfHpgG1WshXZjt5Oq0=
+Message-ID: <494C222A.8050507@gmail.com>
+Date: Fri, 19 Dec 2008 23:37:30 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <494C1D20.9000008@ct.jp.nec.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Greg KH <gregkh@suse.de>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] usbip_start_threads(): handle kernel_thread failure
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+kernel_thread may fail, notice this.
 
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/staging/usbip/usbip_common.c |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
 
-> Ingo Molnar wrote:
-> > * Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-> > 
-> >> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> >>
-> >> Impact: fix
-> >>
-> >> When recursion_bug is true, kernel discards original message because printk_buf
-> >> contains recursion_bug_msg with NULL terminator. The sizeof(recursion_bug_msg)
-> >> makes this, use strlen() to get correct length without NULL terminator.
-> >>
-> >> Reported-by: Toshikazu Nakayama <nakayama.ts@ncos.nec.co.jp>
-> >> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> >> ---
-> >>  kernel/printk.c |    2 +-
-> >>  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > Good one - applied to tip/core/printk, thanks!
-> > 
-> > Btw., i'm curious: in what situation was such recursion observed, and how 
-> > did the kernel behave? You saw a truncated recursion message in dmesg - or 
-> > was it worse?
-> 
-> I'm not sure about the real situation. I've heard this issue was found 
-> in printing messages in NMI handler, maybe with artificial kernel stuck.
+diff --git a/drivers/staging/usbip/usbip_common.c b/drivers/staging/usbip/usbip_common.c
+index 72e2092..3d099e8 100644
+--- a/drivers/staging/usbip/usbip_common.c
++++ b/drivers/staging/usbip/usbip_common.c
+@@ -406,8 +406,20 @@ void usbip_start_threads(struct usbip_device *ud)
+ 	/*
+ 	 * threads are invoked per one device (per one connection).
+ 	 */
+-	kernel_thread(usbip_thread, (void *)&ud->tcp_rx, 0);
+-	kernel_thread(usbip_thread, (void *)&ud->tcp_tx, 0);
++	int retval;
++
++	retval = kernel_thread(usbip_thread, (void *)&ud->tcp_rx, 0);
++	if (retval < 0) {
++		printk(KERN_ERR "Creating tcp_rx thread for ud %p failed.\n",
++				ud); 
++		return;
++	}
++	retval = kernel_thread(usbip_thread, (void *)&ud->tcp_tx, 0);
++	if (retval < 0) {
++		printk(KERN_ERR "Creating tcp_tx thread for ud %p failed.\n",
++				ud); 
++		return;
++	}
+ 
+ 	/* confirm threads are starting */
+ 	wait_for_completion(&ud->tcp_rx.thread_done);
 
-yeah, accidental NMI recursion back into printk could indeed cause the 
-recursion message to pop up.
-
-	Ingo
