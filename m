@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbYLSWBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbYLSWBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754970AbYLSWBz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbYLSVyu
+	id S1756070AbYLSWBj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:01:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYLSVys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:54:50 -0500
-Received: from ns2.suse.de ([195.135.220.15]:48960 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755180AbYLSVys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 19 Dec 2008 16:54:48 -0500
+Received: from ns2.suse.de ([195.135.220.15]:48953 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753267AbYLSVyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:54:46 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Tiger Yang <tiger.yang@oracle.com>, Jan Kara <jack@suse.cz>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 22/45] ocfs2: move new inode allocation out of the transaction
-Date: Fri, 19 Dec 2008 13:53:41 -0800
-Message-Id: <1229723644-13630-23-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 21/45] ocfs2: turn __ocfs2_remove_inode_range() into ocfs2_remove_btree_range()
+Date: Fri, 19 Dec 2008 13:53:40 -0800
+Message-Id: <1229723644-13630-22-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
 References: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
@@ -24,255 +23,231 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tiger Yang <tiger.yang@oracle.com>
+This patch genericizes the high level handling of extent removal.
+ocfs2_remove_btree_range() is nearly identical to
+__ocfs2_remove_inode_range(), except that extent tree operations have been
+used where necessary. We update ocfs2_remove_inode_range() to use the
+generic helper. Now extent tree based structures have an easy way to
+truncate ranges.
 
-Move out inode allocation from ocfs2_mknod_locked() because
-vfs_dq_init() must be called outside of a transaction.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-Signed-off-by: Tiger Yang <tiger.yang@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+Acked-by: Joel Becker <joel.becker@oracle.com>
 ---
- fs/ocfs2/namei.c |  108 ++++++++++++++++++++++++++++++++----------------------
- 1 files changed, 64 insertions(+), 44 deletions(-)
+ fs/ocfs2/alloc.c |   72 +++++++++++++++++++++++++++++++++++++++++++++
+ fs/ocfs2/alloc.h |    5 +++
+ fs/ocfs2/file.c  |   85 +++--------------------------------------------------
+ 3 files changed, 82 insertions(+), 80 deletions(-)
 
-diff --git a/fs/ocfs2/namei.c b/fs/ocfs2/namei.c
-index f4967e6..e9118fc 100644
---- a/fs/ocfs2/namei.c
-+++ b/fs/ocfs2/namei.c
-@@ -66,12 +66,12 @@
- 
- static int ocfs2_mknod_locked(struct ocfs2_super *osb,
- 			      struct inode *dir,
--			      struct dentry *dentry, int mode,
-+			      struct inode *inode,
-+			      struct dentry *dentry,
- 			      dev_t dev,
- 			      struct buffer_head **new_fe_bh,
- 			      struct buffer_head *parent_fe_bh,
- 			      handle_t *handle,
--			      struct inode **ret_inode,
- 			      struct ocfs2_alloc_context *inode_ac);
- 
- static int ocfs2_prepare_orphan_dir(struct ocfs2_super *osb,
-@@ -186,6 +186,34 @@ bail:
+diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
+index 4614614..5592a2f 100644
+--- a/fs/ocfs2/alloc.c
++++ b/fs/ocfs2/alloc.c
+@@ -5255,6 +5255,78 @@ out:
  	return ret;
  }
  
-+static struct inode *ocfs2_get_init_inode(struct inode *dir, int mode)
++int ocfs2_remove_btree_range(struct inode *inode,
++			     struct ocfs2_extent_tree *et,
++			     u32 cpos, u32 phys_cpos, u32 len,
++			     struct ocfs2_cached_dealloc_ctxt *dealloc)
 +{
-+	struct inode *inode;
++	int ret;
++	u64 phys_blkno = ocfs2_clusters_to_blocks(inode->i_sb, phys_cpos);
++	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
++	struct inode *tl_inode = osb->osb_tl_inode;
++	handle_t *handle;
++	struct ocfs2_alloc_context *meta_ac = NULL;
 +
-+	inode = new_inode(dir->i_sb);
-+	if (!inode) {
-+		mlog(ML_ERROR, "new_inode failed!\n");
-+		return NULL;
++	ret = ocfs2_lock_allocators(inode, et, 0, 1, NULL, &meta_ac);
++	if (ret) {
++		mlog_errno(ret);
++		return ret;
 +	}
 +
-+	/* populate as many fields early on as possible - many of
-+	 * these are used by the support functions here and in
-+	 * callers. */
-+	if (S_ISDIR(mode))
-+		inode->i_nlink = 2;
-+	else
-+		inode->i_nlink = 1;
-+	inode->i_uid = current->fsuid;
-+	if (dir->i_mode & S_ISGID) {
-+		inode->i_gid = dir->i_gid;
-+		if (S_ISDIR(mode))
-+			mode |= S_ISGID;
-+	} else
-+		inode->i_gid = current->fsgid;
-+	inode->i_mode = mode;
-+	return inode;
++	mutex_lock(&tl_inode->i_mutex);
++
++	if (ocfs2_truncate_log_needs_flush(osb)) {
++		ret = __ocfs2_flush_truncate_log(osb);
++		if (ret < 0) {
++			mlog_errno(ret);
++			goto out;
++		}
++	}
++
++	handle = ocfs2_start_trans(osb, OCFS2_REMOVE_EXTENT_CREDITS);
++	if (IS_ERR(handle)) {
++		ret = PTR_ERR(handle);
++		mlog_errno(ret);
++		goto out;
++	}
++
++	ret = ocfs2_journal_access(handle, inode, et->et_root_bh,
++				   OCFS2_JOURNAL_ACCESS_WRITE);
++	if (ret) {
++		mlog_errno(ret);
++		goto out;
++	}
++
++	ret = ocfs2_remove_extent(inode, et, cpos, len, handle, meta_ac,
++				  dealloc);
++	if (ret) {
++		mlog_errno(ret);
++		goto out_commit;
++	}
++
++	ocfs2_et_update_clusters(inode, et, -len);
++
++	ret = ocfs2_journal_dirty(handle, et->et_root_bh);
++	if (ret) {
++		mlog_errno(ret);
++		goto out_commit;
++	}
++
++	ret = ocfs2_truncate_log_append(osb, handle, phys_blkno, len);
++	if (ret)
++		mlog_errno(ret);
++
++out_commit:
++	ocfs2_commit_trans(osb, handle);
++out:
++	mutex_unlock(&tl_inode->i_mutex);
++
++	if (meta_ac)
++		ocfs2_free_alloc_context(meta_ac);
++
++	return ret;
 +}
 +
- static int ocfs2_mknod(struct inode *dir,
- 		       struct dentry *dentry,
- 		       int mode,
-@@ -250,6 +278,13 @@ static int ocfs2_mknod(struct inode *dir,
- 		goto leave;
- 	}
- 
-+	inode = ocfs2_get_init_inode(dir, mode);
-+	if (!inode) {
-+		status = -ENOMEM;
-+		mlog_errno(status);
-+		goto leave;
-+	}
-+
- 	/* Reserve a cluster if creating an extent based directory. */
- 	if (S_ISDIR(mode) && !ocfs2_supports_inline_data(osb)) {
- 		status = ocfs2_reserve_clusters(osb, 1, &data_ac);
-@@ -269,9 +304,9 @@ static int ocfs2_mknod(struct inode *dir,
- 	}
- 
- 	/* do the real work now. */
--	status = ocfs2_mknod_locked(osb, dir, dentry, mode, dev,
-+	status = ocfs2_mknod_locked(osb, dir, inode, dentry, dev,
- 				    &new_fe_bh, parent_fe_bh, handle,
--				    &inode, inode_ac);
-+				    inode_ac);
- 	if (status < 0) {
- 		mlog_errno(status);
- 		goto leave;
-@@ -332,8 +367,10 @@ leave:
- 	brelse(de_bh);
- 	brelse(parent_fe_bh);
- 
--	if ((status < 0) && inode)
-+	if ((status < 0) && inode) {
-+		clear_nlink(inode);
- 		iput(inode);
-+	}
- 
- 	if (inode_ac)
- 		ocfs2_free_alloc_context(inode_ac);
-@@ -348,12 +385,12 @@ leave:
- 
- static int ocfs2_mknod_locked(struct ocfs2_super *osb,
- 			      struct inode *dir,
--			      struct dentry *dentry, int mode,
-+			      struct inode *inode,
-+			      struct dentry *dentry,
- 			      dev_t dev,
- 			      struct buffer_head **new_fe_bh,
- 			      struct buffer_head *parent_fe_bh,
- 			      handle_t *handle,
--			      struct inode **ret_inode,
- 			      struct ocfs2_alloc_context *inode_ac)
+ int ocfs2_truncate_log_needs_flush(struct ocfs2_super *osb)
  {
- 	int status = 0;
-@@ -361,14 +398,12 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
- 	struct ocfs2_extent_list *fel;
- 	u64 fe_blkno = 0;
- 	u16 suballoc_bit;
--	struct inode *inode = NULL;
+ 	struct buffer_head *tl_bh = osb->osb_tl_bh;
+diff --git a/fs/ocfs2/alloc.h b/fs/ocfs2/alloc.h
+index 3eb735e..0fbf8fc 100644
+--- a/fs/ocfs2/alloc.h
++++ b/fs/ocfs2/alloc.h
+@@ -110,6 +110,11 @@ int ocfs2_remove_extent(struct inode *inode,
+ 			u32 cpos, u32 len, handle_t *handle,
+ 			struct ocfs2_alloc_context *meta_ac,
+ 			struct ocfs2_cached_dealloc_ctxt *dealloc);
++int ocfs2_remove_btree_range(struct inode *inode,
++			     struct ocfs2_extent_tree *et,
++			     u32 cpos, u32 phys_cpos, u32 len,
++			     struct ocfs2_cached_dealloc_ctxt *dealloc);
++
+ int ocfs2_num_free_extents(struct ocfs2_super *osb,
+ 			   struct inode *inode,
+ 			   struct ocfs2_extent_tree *et);
+diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
+index e2570a3..3605491 100644
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -1226,83 +1226,6 @@ out:
+ 	return ret;
+ }
  
--	mlog_entry("(0x%p, 0x%p, %d, %lu, '%.*s')\n", dir, dentry, mode,
--		   (unsigned long)dev, dentry->d_name.len,
-+	mlog_entry("(0x%p, 0x%p, %d, %lu, '%.*s')\n", dir, dentry,
-+		   inode->i_mode, (unsigned long)dev, dentry->d_name.len,
- 		   dentry->d_name.name);
- 
- 	*new_fe_bh = NULL;
--	*ret_inode = NULL;
- 
- 	status = ocfs2_claim_new_inode(osb, handle, inode_ac, &suballoc_bit,
- 				       &fe_blkno);
-@@ -377,23 +412,11 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
- 		goto leave;
- 	}
- 
--	inode = new_inode(dir->i_sb);
--	if (!inode) {
--		status = -ENOMEM;
--		mlog(ML_ERROR, "new_inode failed!\n");
--		goto leave;
+-static int __ocfs2_remove_inode_range(struct inode *inode,
+-				      struct buffer_head *di_bh,
+-				      u32 cpos, u32 phys_cpos, u32 len,
+-				      struct ocfs2_cached_dealloc_ctxt *dealloc)
+-{
+-	int ret;
+-	u64 phys_blkno = ocfs2_clusters_to_blocks(inode->i_sb, phys_cpos);
+-	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+-	struct inode *tl_inode = osb->osb_tl_inode;
+-	handle_t *handle;
+-	struct ocfs2_alloc_context *meta_ac = NULL;
+-	struct ocfs2_dinode *di = (struct ocfs2_dinode *)di_bh->b_data;
+-	struct ocfs2_extent_tree et;
+-
+-	ocfs2_init_dinode_extent_tree(&et, inode, di_bh);
+-
+-	ret = ocfs2_lock_allocators(inode, &et, 0, 1, NULL, &meta_ac);
+-	if (ret) {
+-		mlog_errno(ret);
+-		return ret;
 -	}
 -
- 	/* populate as many fields early on as possible - many of
- 	 * these are used by the support functions here and in
- 	 * callers. */
- 	inode->i_ino = ino_from_blkno(osb->sb, fe_blkno);
- 	OCFS2_I(inode)->ip_blkno = fe_blkno;
--	if (S_ISDIR(mode))
--		inode->i_nlink = 2;
--	else
--		inode->i_nlink = 1;
--	inode->i_mode = mode;
- 	spin_lock(&osb->osb_lock);
- 	inode->i_generation = osb->s_next_generation++;
- 	spin_unlock(&osb->osb_lock);
-@@ -421,17 +444,11 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
- 	fe->i_blkno = cpu_to_le64(fe_blkno);
- 	fe->i_suballoc_bit = cpu_to_le16(suballoc_bit);
- 	fe->i_suballoc_slot = cpu_to_le16(inode_ac->ac_alloc_slot);
--	fe->i_uid = cpu_to_le32(current->fsuid);
--	if (dir->i_mode & S_ISGID) {
--		fe->i_gid = cpu_to_le32(dir->i_gid);
--		if (S_ISDIR(mode))
--			mode |= S_ISGID;
--	} else
--		fe->i_gid = cpu_to_le32(current->fsgid);
--	fe->i_mode = cpu_to_le16(mode);
--	if (S_ISCHR(mode) || S_ISBLK(mode))
-+	fe->i_uid = cpu_to_le32(inode->i_uid);
-+	fe->i_gid = cpu_to_le32(inode->i_gid);
-+	fe->i_mode = cpu_to_le16(inode->i_mode);
-+	if (S_ISCHR(inode->i_mode) || S_ISBLK(inode->i_mode))
- 		fe->id1.dev1.i_rdev = cpu_to_le64(huge_encode_dev(dev));
+-	mutex_lock(&tl_inode->i_mutex);
 -
- 	fe->i_links_count = cpu_to_le16(inode->i_nlink);
- 
- 	fe->i_last_eb_blk = 0;
-@@ -446,7 +463,7 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
- 	/*
- 	 * If supported, directories start with inline data.
- 	 */
--	if (S_ISDIR(mode) && ocfs2_supports_inline_data(osb)) {
-+	if (S_ISDIR(inode->i_mode) && ocfs2_supports_inline_data(osb)) {
- 		u16 feat = le16_to_cpu(fe->i_dyn_features);
- 
- 		fe->i_dyn_features = cpu_to_le16(feat | OCFS2_INLINE_DATA_FL);
-@@ -484,17 +501,12 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
- 	status = 0; /* error in ocfs2_create_new_inode_locks is not
- 		     * critical */
- 
--	*ret_inode = inode;
- leave:
- 	if (status < 0) {
- 		if (*new_fe_bh) {
- 			brelse(*new_fe_bh);
- 			*new_fe_bh = NULL;
- 		}
--		if (inode) {
--			clear_nlink(inode);
--			iput(inode);
+-	if (ocfs2_truncate_log_needs_flush(osb)) {
+-		ret = __ocfs2_flush_truncate_log(osb);
+-		if (ret < 0) {
+-			mlog_errno(ret);
+-			goto out;
 -		}
- 	}
+-	}
+-
+-	handle = ocfs2_start_trans(osb, OCFS2_REMOVE_EXTENT_CREDITS);
+-	if (IS_ERR(handle)) {
+-		ret = PTR_ERR(handle);
+-		mlog_errno(ret);
+-		goto out;
+-	}
+-
+-	ret = ocfs2_journal_access(handle, inode, di_bh,
+-				   OCFS2_JOURNAL_ACCESS_WRITE);
+-	if (ret) {
+-		mlog_errno(ret);
+-		goto out;
+-	}
+-
+-	ret = ocfs2_remove_extent(inode, &et, cpos, len, handle, meta_ac,
+-				  dealloc);
+-	if (ret) {
+-		mlog_errno(ret);
+-		goto out_commit;
+-	}
+-
+-	OCFS2_I(inode)->ip_clusters -= len;
+-	di->i_clusters = cpu_to_le32(OCFS2_I(inode)->ip_clusters);
+-
+-	ret = ocfs2_journal_dirty(handle, di_bh);
+-	if (ret) {
+-		mlog_errno(ret);
+-		goto out_commit;
+-	}
+-
+-	ret = ocfs2_truncate_log_append(osb, handle, phys_blkno, len);
+-	if (ret)
+-		mlog_errno(ret);
+-
+-out_commit:
+-	ocfs2_commit_trans(osb, handle);
+-out:
+-	mutex_unlock(&tl_inode->i_mutex);
+-
+-	if (meta_ac)
+-		ocfs2_free_alloc_context(meta_ac);
+-
+-	return ret;
+-}
+-
+ /*
+  * Truncate a byte range, avoiding pages within partial clusters. This
+  * preserves those pages for the zeroing code to write to.
+@@ -1402,7 +1325,9 @@ static int ocfs2_remove_inode_range(struct inode *inode,
+ 	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+ 	struct ocfs2_cached_dealloc_ctxt dealloc;
+ 	struct address_space *mapping = inode->i_mapping;
++	struct ocfs2_extent_tree et;
  
- 	mlog_exit(status);
-@@ -1542,6 +1554,13 @@ static int ocfs2_symlink(struct inode *dir,
- 		goto bail;
- 	}
++	ocfs2_init_dinode_extent_tree(&et, inode, di_bh);
+ 	ocfs2_init_dealloc_ctxt(&dealloc);
  
-+	inode = ocfs2_get_init_inode(dir, S_IFLNK | S_IRWXUGO);
-+	if (!inode) {
-+		status = -ENOMEM;
-+		mlog_errno(status);
-+		goto bail;
-+	}
-+
- 	/* don't reserve bitmap space for fast symlinks. */
- 	if (l > ocfs2_fast_symlink_chars(sb)) {
- 		status = ocfs2_reserve_clusters(osb, 1, &data_ac);
-@@ -1560,10 +1579,9 @@ static int ocfs2_symlink(struct inode *dir,
- 		goto bail;
- 	}
+ 	if (byte_len == 0)
+@@ -1458,9 +1383,9 @@ static int ocfs2_remove_inode_range(struct inode *inode,
  
--	status = ocfs2_mknod_locked(osb, dir, dentry,
--				    S_IFLNK | S_IRWXUGO, 0,
--				    &new_fe_bh, parent_fe_bh, handle,
--				    &inode, inode_ac);
-+	status = ocfs2_mknod_locked(osb, dir, inode, dentry,
-+				    0, &new_fe_bh, parent_fe_bh, handle,
-+				    inode_ac);
- 	if (status < 0) {
- 		mlog_errno(status);
- 		goto bail;
-@@ -1644,8 +1662,10 @@ bail:
- 		ocfs2_free_alloc_context(inode_ac);
- 	if (data_ac)
- 		ocfs2_free_alloc_context(data_ac);
--	if ((status < 0) && inode)
-+	if ((status < 0) && inode) {
-+		clear_nlink(inode);
- 		iput(inode);
-+	}
- 
- 	mlog_exit(status);
- 
+ 		/* Only do work for non-holes */
+ 		if (phys_cpos != 0) {
+-			ret = __ocfs2_remove_inode_range(inode, di_bh, cpos,
+-							 phys_cpos, alloc_size,
+-							 &dealloc);
++			ret = ocfs2_remove_btree_range(inode, &et, cpos,
++						       phys_cpos, alloc_size,
++						       &dealloc);
+ 			if (ret) {
+ 				mlog_errno(ret);
+ 				goto out;
 -- 
 1.5.6
 
