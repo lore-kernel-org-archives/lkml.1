@@ -1,200 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752049AbYLSQt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752302AbYLSQxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752049AbYLSQt7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 11:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbYLSQtv
+	id S1752302AbYLSQxL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 11:53:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbYLSQwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 11:49:51 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:30890 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751434AbYLSQtu (ORCPT
+	Fri, 19 Dec 2008 11:52:55 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:39486 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751084AbYLSQwy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 11:49:50 -0500
-Message-ID: <494BD09A.4020605@oracle.com>
-Date: Fri, 19 Dec 2008 08:49:30 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 19 Dec 2008 11:52:54 -0500
+Date: Fri, 19 Dec 2008 10:52:52 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 01/45] Create a dynamically sized pool of threads for
+	doing very slow work items [ver #41]
+Message-ID: <20081219165252.GA15773@us.ibm.com>
+References: <10438.1229686960@redhat.com> <20081219041401.GA29316@us.ibm.com> <20081120144139.10667.75519.stgit@warthog.procyon.org.uk> <20081120144145.10667.39594.stgit@warthog.procyon.org.uk> <10752.1229688754@redhat.com>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, samr <sam@ravnborg.org>
-Subject: [PATCH] kernel-doc: check for extra kernel-doc notations
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.494BD09E.0010:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <10752.1229688754@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Quoting David Howells (dhowells@redhat.com):
+> David Howells <dhowells@redhat.com> wrote:
+> 
+> > I guess I need to stick a comment in slow_work_enqueue() to detail this,
+> > though the comments in slow_work_execute() do talk about it.
+> 
+> How about this:
+> 
+> diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+> index f638f36..adf9b78 100644
+> --- a/kernel/slow-work.c
+> +++ b/kernel/slow-work.c
+> @@ -195,12 +195,32 @@ int slow_work_enqueue(struct slow_work *work)
+>  	BUG_ON(!work->ops);
+>  	BUG_ON(!work->ops->get_ref);
+> 
+> +	/* when honouring an enqueue request, we only promise that we will run
+> +	 * the work function in the future; we do not promise to run it once
+> +	 * per enqueue request
 
-Add functionality to check for function parameters or structure (or
-union/typedef/enum) field members that are described in kernel-doc but
-are not part of the expected (declared) parameters or structure.
-These generate warnings that are called "Excess" descriptions.
+That, there, is precisely what i needed to hear :)
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- scripts/kernel-doc |   67 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 66 insertions(+), 1 deletion(-)
+> +	 * we use the PENDING bit to merge together repeat requests without
+> +	 * having to disable IRQs and take the spinlock, whilst still
+> +	 * maintaining our promise
+> +	 */
+>  	if (!test_and_set_bit_lock(SLOW_WORK_PENDING, &work->flags)) {
+>  		spin_lock_irqsave(&slow_work_queue_lock, flags);
+> 
+> +		/* we promise that we will not attempt to execute the work
+> +		 * function in more than one thread simultaneously
+> +		 *
+> +		 * this, however, leaves us with a problem if we're asked to
+> +		 * enqueue the work whilst someone is executing the work
+> +		 * function as simply queueing the work immediately means that
+> +		 * another thread may try executing it whilst it is already
+> +		 * under execution
+> +		 *
+> +		 * to deal with this, we set the ENQ_DEFERRED bit instead of
+> +		 * enqueueing, and the thread currently executing the work
+> +		 * function will enqueue the work item when the work function
+> +		 * returns and it has cleared the EXECUTING bit
+> +		 */
+>  		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
+> -			/* can't queue lest we cause multiple threads to try
+> -			 * executing this item, so defer for later */
+>  			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
+>  		} else {
+>  			if (work->ops->get_ref(work) < 0)
+> 
+> David
 
---- linux-2.6.28-rc8-git6.orig/scripts/kernel-doc
-+++ linux-2.6.28-rc8-git6/scripts/kernel-doc
-@@ -289,6 +289,8 @@ my %parameterdescs;
- my @parameterlist;
- my %sections;
- my @sectionlist;
-+my $sectcheck;
-+my $struct_actual;
- 
- my $contents = "";
- my $section_default = "Description";	# default section
-@@ -378,10 +380,12 @@ sub dump_section {
- #	print STDERR "parameter def '$1' = '$contents'\n";
- 	$name = $1;
- 	$parameterdescs{$name} = $contents;
-+	$sectcheck = $sectcheck . $name . " ";
-     } elsif ($name eq "@\.\.\.") {
- #	print STDERR "parameter def '...' = '$contents'\n";
- 	$name = "...";
- 	$parameterdescs{$name} = $contents;
-+	$sectcheck = $sectcheck . $name . " ";
-     } else {
- #	print STDERR "other section '$name' = '$contents'\n";
- 	if (defined($sections{$name}) && ($sections{$name} ne "")) {
-@@ -1405,21 +1409,25 @@ sub dump_union($$) {
- sub dump_struct($$) {
-     my $x = shift;
-     my $file = shift;
-+    my $nested;
- 
-     if ($x =~/(struct|union)\s+(\w+)\s*{(.*)}/) {
- 	$declaration_name = $2;
- 	my $members = $3;
- 
- 	# ignore embedded structs or unions
--	$members =~ s/{.*}//g;
-+	$members =~ s/({.*})//g;
-+	$nested = $1;
- 
- 	# ignore members marked private:
- 	$members =~ s/\/\*.*?private:.*?public:.*?\*\///gos;
- 	$members =~ s/\/\*.*?private:.*//gos;
- 	# strip comments:
- 	$members =~ s/\/\*.*?\*\///gos;
-+	$nested =~ s/\/\*.*?\*\///gos;
- 
- 	create_parameterlist($members, ';', $file);
-+	check_sections($file, $declaration_name, "struct", $sectcheck, $struct_actual, $nested);
- 
- 	output_declaration($declaration_name,
- 			   'struct',
-@@ -1505,6 +1513,14 @@ sub dump_typedef($$) {
-     }
- }
- 
-+sub save_struct_actual($) {
-+    my $actual = shift;
-+
-+    # strip all spaces from the actual param so that it looks like one string item
-+    $actual =~ s/\s*//g;
-+    $struct_actual = $struct_actual . $actual . " ";
-+}
-+
- sub create_parameterlist($$$) {
-     my $args = shift;
-     my $splitter = shift;
-@@ -1537,6 +1553,7 @@ sub create_parameterlist($$$) {
- 	    $param = $1;
- 	    $type = $arg;
- 	    $type =~ s/([^\(]+\(\*?)\s*$param/$1/;
-+	    save_struct_actual($param);
- 	    push_parameter($param, $type, $file);
- 	} elsif ($arg) {
- 	    $arg =~ s/\s*:\s*/:/g;
-@@ -1561,14 +1578,17 @@ sub create_parameterlist($$$) {
- 
- 	    foreach $param (@args) {
- 		if ($param =~ m/^(\*+)\s*(.*)/) {
-+		    save_struct_actual($2);
- 		    push_parameter($2, "$type $1", $file);
- 		}
- 		elsif ($param =~ m/(.*?):(\d+)/) {
- 		    if ($type ne "") { # skip unnamed bit-fields
-+			save_struct_actual($1);
- 			push_parameter($1, "$type:$2", $file)
- 		    }
- 		}
- 		else {
-+		    save_struct_actual($param);
- 		    push_parameter($param, $type, $file);
- 		}
- 	    }
-@@ -1634,6 +1654,46 @@ sub push_parameter($$$) {
- 	$parametertypes{$param} = $type;
- }
- 
-+sub check_sections($$$$$$) {
-+	my ($file, $decl_name, $decl_type, $sectcheck, $prmscheck, $nested) = @_;
-+	my @sects = split ' ', $sectcheck;
-+	my @prms = split ' ', $prmscheck;
-+	my $err;
-+	my ($px, $sx);
-+	my $prm_clean;		# strip trailing "[array size]" and/or beginning "*"
-+
-+	foreach $sx (0 .. $#sects) {
-+		$err = 1;
-+		foreach $px (0 .. $#prms) {
-+			$prm_clean = $prms[$px];
-+			$prm_clean =~ s/\[.*\]//;
-+    			$prm_clean =~ s/__attribute__\s*\(\([a-z,_\*\s\(\)]*\)\)//;
-+			##$prm_clean =~ s/^\**//;
-+			if ($prm_clean eq $sects[$sx]) {
-+				$err = 0;
-+				last;
-+			}
-+		}
-+		if ($err) {
-+			if ($decl_type eq "function") {
-+				print STDERR "Warning(${file}:$.): " .
-+					"Excess function parameter " .
-+					"'$sects[$sx]' " .
-+					"description in '$decl_name'\n";
-+				++$warnings;
-+			} else {
-+				if ($nested !~ m/\Q$sects[$sx]\E/) {
-+				    print STDERR "Warning(${file}:$.): " .
-+					"Excess struct/union/enum/typedef member " .
-+					"'$sects[$sx]' " .
-+					"description in '$decl_name'\n";
-+				    ++$warnings;
-+				}
-+			}
-+		}
-+	}
-+}
-+
- ##
- # takes a function prototype and the name of the current file being
- # processed and spits out all the details stored in the global
-@@ -1699,6 +1759,9 @@ sub dump_function($$) {
- 	return;
-     }
- 
-+	my $prms = join " ", @parameterlist;
-+	check_sections($file, $declaration_name, "function", $sectcheck, $prms, "");
-+
-     output_declaration($declaration_name,
- 		       'function',
- 		       {'function' => $declaration_name,
-@@ -1757,6 +1820,8 @@ sub reset_state {
-     @parameterlist = ();
-     %sections = ();
-     @sectionlist = ();
-+    $sectcheck = "";
-+    $struct_actual = "";
-     $prototype = "";
- 
-     $state = 0;
+thanks,
+-serge
