@@ -1,69 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbYLSA2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbYLSAeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753803AbYLSA2g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 19:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYLSA2X
+	id S1753319AbYLSAeP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 19:34:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYLSAd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 19:28:23 -0500
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:60569 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751906AbYLSA2W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 19:28:22 -0500
-From: Junio C Hamano <gitster@pobox.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Johannes Schindelin <Johannes.Schindelin@gmx.de>,
-       David Howells <dhowells@redhat.com>, torvalds@osdl.org,
-       git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Simplified GIT usage guide
-References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk>
- <alpine.DEB.1.00.0812121952320.5873@eeepc-johanness>
- <20081219000218.GA23990@linux.vnet.ibm.com>
-Date: Thu, 18 Dec 2008 16:28:11 -0800
-In-Reply-To: <20081219000218.GA23990@linux.vnet.ibm.com> (Paul E. McKenney's
- message of "Thu, 18 Dec 2008 16:02:18 -0800")
-Message-ID: <7vabatf1pg.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: F07251FE-CD63-11DD-8A9B-5720C92D7133-77302942!a-sasl-fastnet.pobox.com
+	Thu, 18 Dec 2008 19:33:58 -0500
+Received: from kroah.org ([198.145.64.141]:57570 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750789AbYLSAd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 19:33:57 -0500
+Subject: patch uio-make-uio_info-s-name-and-version-const.patch added to gregkh-2.6 tree
+To: sfr@canb.auug.org.au, gregkh@suse.de, hjk@linutronix.de,
+       linux-kernel@vger.kernel.org, w.sang@pengutronix.de
+From: <gregkh@suse.de>
+Date: Thu, 18 Dec 2008 16:29:10 -0800
+In-Reply-To: <20081212104420.GA3084@local>
+Message-ID: <1229646550799@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
 
-> On Fri, Dec 12, 2008 at 07:57:38PM +0100, Johannes Schindelin wrote:
-> ...
->> I am sure we want to have something like that in git.git.
->
-> So am I.  Except that I am not being sarcastic.  ;-)
+This is a note to let you know that I've just added the patch titled
 
-Hmm, but we seem to already have too many intro-to-git documents in tree.
-Perhaps good points in the document can be used to augment or replace
-parts of existing documents?  For example, which part of the new
-documentation would have helped you avoid the pain you mentioned below...
+    Subject: uio: make uio_info's name and version const
 
-> In particular, David's guide was quite helpful to me.  It would have been
-> even more helpful had it existed when I first tried (unsuccessfully)
-> to use GIT.  In particular, GIT's requirement that I tell it about new
-> versions of existing files (either with "git add" or "git commit -a")
-> was extremely counter-intuitive, and caused me no end of pain.
+to my gregkh-2.6 tree.  Its filename is
 
-... and which part of the existing user manual or tutorial should have
-talked about it to help you?
+    uio-make-uio_info-s-name-and-version-const.patch
 
-> But my experience is that git is at best an acquired taste for those of
-> us who grew up with traditional source-code control systems.  Such
-> people will benefit greatly from a git-haters guide,...
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
-"Acquired taste" is a much nicer and more diplomatic way to say the same
-thing as what Linus often refers as "unlearning the braindamage inflicted
-by years of using CVS." ;-)
 
-> ..., and git's user
-> population will grow as a result.
+>From hjk@linutronix.de  Thu Dec 18 15:52:51 2008
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 12 Dec 2008 11:44:21 +0100
+Subject: uio: make uio_info's name and version const
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Wolfram Sang <w.sang@pengutronix.de>
+Message-ID: <20081212104420.GA3084@local>
+Content-Disposition: inline
 
-I do not think it constitutes any basis for judging the merit of having
-the document in git.git tree.  The world domination is not our goal, but
-it may come as a mere side effect of being the best in the business.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+
+These are only ever assigned constant strings and never modified.
+
+This was noticed because Wolfram Sang needed to cast the result of
+of_get_property() in order to assign it to the name field of a struct
+uio_info.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ Documentation/DocBook/uio-howto.tmpl |    4 ++--
+ include/linux/uio_driver.h           |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+--- a/Documentation/DocBook/uio-howto.tmpl
++++ b/Documentation/DocBook/uio-howto.tmpl
+@@ -393,12 +393,12 @@ offset = N * getpagesize();
+ 
+ <itemizedlist>
+ <listitem><para>
+-<varname>char *name</varname>: Required. The name of your driver as
++<varname>const char *name</varname>: Required. The name of your driver as
+ it will appear in sysfs. I recommend using the name of your module for this.
+ </para></listitem>
+ 
+ <listitem><para>
+-<varname>char *version</varname>: Required. This string appears in
++<varname>const char *version</varname>: Required. This string appears in
+ <filename>/sys/class/uio/uioX/version</filename>.
+ </para></listitem>
+ 
+--- a/include/linux/uio_driver.h
++++ b/include/linux/uio_driver.h
+@@ -76,8 +76,8 @@ struct uio_device;
+  */
+ struct uio_info {
+ 	struct uio_device	*uio_dev;
+-	char			*name;
+-	char			*version;
++	const char		*name;
++	const char		*version;
+ 	struct uio_mem		mem[MAX_UIO_MAPS];
+ 	struct uio_port		port[MAX_UIO_PORT_REGIONS];
+ 	long			irq;
+
+
+Patches currently in gregkh-2.6 which might be from sfr@canb.auug.org.au are
+
+usb/usb-don-t-use-__module_param_call.patch
+driver-core/uio-make-uio_info-s-name-and-version-const.patch
+staging/staging-go7007-convert-driver-to-use-video_ioctl2.patch
+staging/staging-comedi-fix-build-if-config_proc_fs-is-not-set.patch
+staging/staging-meilhaus-fix-__symbol_get-problems.patch
