@@ -1,92 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbYLSABh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbYLSABw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753676AbYLSABh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 19:01:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYLSAAe
+	id S1752145AbYLSABw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 19:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbYLSAAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 19:00:34 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:58365 "EHLO relay.sgi.com"
+	Thu, 18 Dec 2008 19:00:35 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:58369 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751541AbYLSAAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751601AbYLSAAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 18 Dec 2008 19:00:31 -0500
-Message-Id: <20081219000029.895223000@polaris-admin.engr.sgi.com>
+Message-Id: <20081219000030.567100000@polaris-admin.engr.sgi.com>
 References: <20081219000029.540121000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 18 Dec 2008 16:00:31 -0800
+Date: Thu, 18 Dec 2008 16:00:36 -0800
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@redhat.com>
-Subject: [PATCH 2/8] cpumask: Replace CPUMASK_ALLOC etc with cpumask_var_t. From: Rusty Russell <rusty@rustcorp.com.au>
-Content-Disposition: inline; filename=cpumask:get-rid-of-CPUMASK_ALLOC-x86.patch
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: [PATCH 7/8] cpumask: use percpu allocations instead of array in arch/x86/kernel/nmi.c From: Rusty Russell <rusty@rustcorp.com.au>
+Content-Disposition: inline; filename=cpumask:percpu_alloc-nmi.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+Impact: reduce memory usage, use alloc_percpu().
 
-There's only one user, and it's a fairly easy conversion.
+Instead of allocating an nr_cpu_ids array, most places should be using
+percpu_alloc().  This doesn't waste space if cpu numbers aren't
+contiguous.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
-Cc: Dave Jones <davej@redhat.com>
 ---
- arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |   21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+ arch/x86/kernel/nmi.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
---- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-@@ -458,11 +458,6 @@ static int centrino_verify (struct cpufr
-  *
-  * Sets a new CPUFreq policy.
-  */
--struct allmasks {
--	cpumask_t		saved_mask;
--	cpumask_t		covered_cpus;
--};
--
- static int centrino_target (struct cpufreq_policy *policy,
- 			    unsigned int target_freq,
- 			    unsigned int relation)
-@@ -472,12 +467,15 @@ static int centrino_target (struct cpufr
- 	struct cpufreq_freqs	freqs;
- 	int			retval = 0;
- 	unsigned int		j, k, first_cpu, tmp;
--	CPUMASK_ALLOC(allmasks);
--	CPUMASK_PTR(saved_mask, allmasks);
--	CPUMASK_PTR(covered_cpus, allmasks);
-+	cpumask_var_t saved_mask, covered_cpus;
- 
--	if (unlikely(allmasks == NULL))
-+	if (unlikely(!alloc_cpumask_var(&saved_mask, GFP_KERNEL)))
- 		return -ENOMEM;
-+	if (unlikely(!alloc_cpumask_var(&covered_cpus, GFP_KERNEL))) {
-+		free_cpumask_var(saved_mask);
-+		return -ENOMEM;
-+	}
-+	cpumask_copy(saved_mask, &current->cpus_allowed);
- 
- 	if (unlikely(per_cpu(centrino_model, cpu) == NULL)) {
- 		retval = -ENODEV;
-@@ -493,9 +491,7 @@ static int centrino_target (struct cpufr
- 		goto out;
- 	}
- 
--	*saved_mask = current->cpus_allowed;
- 	first_cpu = 1;
--	cpus_clear(*covered_cpus);
- 	for_each_cpu_mask_nr(j, policy->cpus) {
- 		const cpumask_t *mask;
- 
-@@ -605,7 +601,8 @@ migrate_end:
- 	preempt_enable();
- 	set_cpus_allowed_ptr(current, saved_mask);
- out:
--	CPUMASK_FREE(allmasks);
-+	free_cpumask_var(saved_mask);
-+	free_cpumask_var(covered_cpus);
- 	return retval;
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/nmi.c
++++ linux-2.6-for-ingo/arch/x86/kernel/nmi.c
+@@ -114,13 +114,13 @@ static __init void nmi_cpu_busy(void *da
  }
+ #endif
  
+-static void report_broken_nmi(int cpu, int *prev_nmi_count)
++static void report_broken_nmi(int cpu, int prev_nmi_count)
+ {
+ 	printk(KERN_CONT "\n");
+ 
+ 	printk(KERN_WARNING
+ 		"WARNING: CPU#%d: NMI appears to be stuck (%d->%d)!\n",
+-			cpu, prev_nmi_count[cpu], get_nmi_count(cpu));
++			cpu, prev_nmi_count, get_nmi_count(cpu));
+ 
+ 	printk(KERN_WARNING
+ 		"Please report this to bugzilla.kernel.org,\n");
+@@ -139,7 +139,7 @@ int __init check_nmi_watchdog(void)
+ 	if (!nmi_watchdog_active() || !atomic_read(&nmi_active))
+ 		return 0;
+ 
+-	prev_nmi_count = kmalloc(nr_cpu_ids * sizeof(int), GFP_KERNEL);
++	prev_nmi_count = alloc_percpu(unsigned int);
+ 	if (!prev_nmi_count)
+ 		goto error;
+ 
+@@ -151,19 +151,19 @@ int __init check_nmi_watchdog(void)
+ #endif
+ 
+ 	for_each_possible_cpu(cpu)
+-		prev_nmi_count[cpu] = get_nmi_count(cpu);
++		*per_cpu_ptr(prev_nmi_count, cpu) = get_nmi_count(cpu);
+ 	local_irq_enable();
+ 	mdelay((20 * 1000) / nmi_hz); /* wait 20 ticks */
+ 
+ 	for_each_online_cpu(cpu) {
+ 		if (!per_cpu(wd_enabled, cpu))
+ 			continue;
+-		if (get_nmi_count(cpu) - prev_nmi_count[cpu] <= 5)
+-			report_broken_nmi(cpu, prev_nmi_count);
++		if (get_nmi_count(cpu) - *per_cpu_ptr(prev_nmi_count, cpu) <= 5)
++			report_broken_nmi(cpu, *per_cpu_ptr(prev_nmi_count,cpu));
+ 	}
+ 	endflag = 1;
+ 	if (!atomic_read(&nmi_active)) {
+-		kfree(prev_nmi_count);
++		free_percpu(prev_nmi_count);
+ 		atomic_set(&nmi_active, -1);
+ 		goto error;
+ 	}
+@@ -176,7 +176,7 @@ int __init check_nmi_watchdog(void)
+ 	if (nmi_watchdog == NMI_LOCAL_APIC)
+ 		nmi_hz = lapic_adjust_nmi_hz(1);
+ 
+-	kfree(prev_nmi_count);
++	free_percpu(prev_nmi_count);
+ 	return 0;
+ error:
+ 	if (nmi_watchdog == NMI_IO_APIC && !timer_through_8259)
 
 -- 
