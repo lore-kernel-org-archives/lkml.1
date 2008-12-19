@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758739AbYLSWMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbYLSWM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758739AbYLSWMK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:12:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756425AbYLSWDQ
+	id S1758787AbYLSWM2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:12:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757425AbYLSWEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 17:03:16 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54786 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756444AbYLSWDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 17:03:14 -0500
-Date: Fri, 19 Dec 2008 23:02:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org,
+	Fri, 19 Dec 2008 17:04:55 -0500
+Received: from netgear.net.ru ([195.178.208.66]:47068 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752048AbYLSWEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 17:04:53 -0500
+Date: Sat, 20 Dec 2008 01:04:52 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Vladislav Bolkhovitin <vst@vlnb.net>, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 01/14] kmemleak: Add the base support
-Message-ID: <20081219220255.GJ2351@elte.hu>
-References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com> <20081219181302.7778.15966.stgit@pc1117.cambridge.arm.com> <84144f020812191208x66f26bc9tf087b35b6c90662a@mail.gmail.com>
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user space data
+Message-ID: <20081219220452.GB704@ioremap.net>
+References: <494009D7.4020602@vlnb.net> <494012C4.7090304@vlnb.net> <494C0255.8010208@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020812191208x66f26bc9tf087b35b6c90662a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <494C0255.8010208@goop.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Dec 19, 2008 at 12:21:41PM -0800, Jeremy Fitzhardinge (jeremy@goop.org) wrote:
+> I think Rusty has a patch to put some kind of put notifier in struct 
+> skb_shared_info, but I'm not sure of the details.
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+Yes, he added destructor callback into shared info.
 
-> On Fri, Dec 19, 2008 at 8:13 PM, Catalin Marinas
-> <catalin.marinas@arm.com> wrote:
-> > This patch adds the base support for the kernel memory leak
-> > detector. It traces the memory allocation/freeing in a way similar to
-> > the Boehm's conservative garbage collector, the difference being that
-> > the unreferenced objects are not freed but only shown in
-> > /sys/kernel/debug/kmemleak. Enabling this feature introduces an
-> > overhead to memory allocations.
-> >
-> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+There maybe a problem though, if iscsi will run over xen network, but in
+this case xen may copy the data, or iscsi may do that after determining
+that underlying network device does not allow shared info destructor
+(vis device/route flag for example).
+
+> Wouldn't you only need to do the lookup on the last put?
 > 
-> Looks good to me. I have only reviewed this lightly but all my major 
-> concerns have been addressed so feel free to add my:
-> 
-> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> An external lookup table might well for for us, if the net_put_page() 
+> change is acceptable to the network folk.
 
-Andrew, do you have any principial objections against having this in 
-v2.6.29?
+That sounds like the best solution for this problem.
+David, will you accept shared info destructor?
+And second fraglist? (Put to the new line to easily say no here :)
 
-This dragged on for a long time, and i think the debug output is useful 
-and it tells us something that we have no other tool for at the moment to 
-figure out. We can tell stuck tasks, stuck files and other stuck resources 
-easily - we can even see fast slab leaks, but we cannot really tell slow, 
-long-term slab leaks apart from regular slab prints, and we cannot 
-identify the source of them. The false positive rate of kmemleak has 
-decreased substantially as well, over the earlier design.
-
-	Ingo
+-- 
+	Evgeniy Polyakov
