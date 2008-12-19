@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbYLSLwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbYLSLys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754639AbYLSLwk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 06:52:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbYLSLwb
+	id S1754444AbYLSLys (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 06:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbYLSLyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 06:52:31 -0500
-Received: from mu-out-0910.google.com ([209.85.134.186]:61396 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbYLSLwa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 06:52:30 -0500
-Message-ID: <494b8afb.0aa5660a.589f.fffffd82@mx.google.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: David Airlie <airlied@linux.ie>
-Cc: dri-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org
-In-Reply-To: <200812181540.08366.jbarnes@virtuousgeek.org>
-References: <200812181540.08366.jbarnes@virtuousgeek.org>
-Date: Fri, 19 Dec 2008 12:34:27 +0100
-Subject: [PATCH v2 6/6] drm/i915: un-EXPORT and make 'intelfb_panic' static
-From: Hannes Eder <hannes@hanneseder.net>
+	Fri, 19 Dec 2008 06:54:39 -0500
+Received: from h155.mvista.com ([63.81.120.155]:51663 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750874AbYLSLyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 06:54:38 -0500
+Message-ID: <494B8B79.4090805@ru.mvista.com>
+Date: Fri, 19 Dec 2008 14:54:33 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/9] ide: remove 'byte' typedef
+References: <20081216193137.3959.70339.sendpatchset@localhost.localdomain> <20081216193210.3959.92852.sendpatchset@localhost.localdomain>
+In-Reply-To: <20081216193210.3959.92852.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warning:
+Hello.
 
-  drivers/gpu/drm/i915/intel_fb.c:417:5: warning: symbol 'intelfb_panic' was not declared. Should it be static?
+Bartlomiej Zolnierkiewicz wrote:
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
-
-On Fri, Dec 19, 2008 at 12:40 AM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Thursday, December 18, 2008 1:32 pm Hannes Eder wrote:
->> Fix this sparse warning:
->>
->>   drivers/gpu/drm/i915/intel_fb.c:417:5: warning: symbol 'intelfb_panic'
->> was not declared. Should it be static?
+> Just use u8 instead, also s/__u8/u8/ in ide-cd.h while at it.
 >
-> Yep, this one should be static instead (I think, just double checking now to
-> make sure it's not used elsewhere, iirc it's not).
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>   
 
-Ok, so let's make the function static and there is no need to EXPORT
-it, which wouldn't work for a static function anyway.
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-When is it safe to un-EXPORT a function?  When it is only referenced
-within the translation unit it is defined in?  But it could be
-referenced from outside the kernel source, or?
+> Index: b/drivers/ide/qd65xx.h
+> ===================================================================
+> --- a/drivers/ide/qd65xx.h
+> +++ b/drivers/ide/qd65xx.h
+> @@ -31,8 +31,8 @@
+>  
+>  #define QD_CONFIG(hwif)		((hwif)->config_data & 0x00ff)
+>  
+> -#define QD_TIMING(drive)	(byte)(((drive)->drive_data) & 0x00ff)
+> -#define QD_TIMREG(drive)	(byte)((((drive)->drive_data) & 0xff00) >> 8)
+> +#define QD_TIMING(drive)	(u8)(((drive)->drive_data) & 0x00ff)
+> +#define QD_TIMREG(drive)	(u8)((((drive)->drive_data) & 0xff00) >> 8)
+>   
 
+   Could you drop the pointless parens around (drive)->drive_data, while 
+at it?
 
- drivers/gpu/drm/i915/intel_fb.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+MBR, Sergei
 
-diff --git a/drivers/gpu/drm/i915/intel_fb.c b/drivers/gpu/drm/i915/intel_fb.c
-index 12664c3..bbf6fe0 100644
---- a/drivers/gpu/drm/i915/intel_fb.c
-+++ b/drivers/gpu/drm/i915/intel_fb.c
-@@ -414,15 +414,14 @@ EXPORT_SYMBOL(intelfb_resize);
- 
- static struct drm_mode_set kernelfb_mode;
- 
--int intelfb_panic(struct notifier_block *n, unsigned long ununsed,
--		  void *panic_str)
-+static int intelfb_panic(struct notifier_block *n, unsigned long ununsed,
-+			 void *panic_str)
- {
- 	DRM_ERROR("panic occurred, switching back to text console\n");
- 
- 	intelfb_restore();
- 	return 0;
- }
--EXPORT_SYMBOL(intelfb_panic);
- 
- static struct notifier_block paniced = {
- 	.notifier_call = intelfb_panic,
--- 
-1.5.6.3
 
