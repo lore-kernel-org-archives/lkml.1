@@ -1,58 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbYLSA0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbYLSA2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753091AbYLSA0d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 19:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYLSA0W
+	id S1753319AbYLSA2N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 19:28:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYLSA14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 19:26:22 -0500
-Received: from mail.suse.de ([195.135.220.2]:39205 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752018AbYLSA0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 19:26:21 -0500
-From: "NeilBrown" <neilb@suse.de>
-To: "Dylan Taft" <d13f00l@gmail.com>
-Date: Fri, 19 Dec 2008 11:26:12 +1100 (EST)
-Message-ID: <14ab805319e6bb1c0353ac078f41b21f.squirrel@neil.brown.name>
-In-Reply-To: <47ed01bd0812181603t53a500adgadab6884a7a4a586@mail.gmail.com>
-References: <47ed01bd0812172033p1065b472t62491e4f2eed901@mail.gmail.com>
-    <20081218065603.GA21265@mail.local.tull.net>
-    <47ed01bd0812180508t89d1aecr13d2b9e8402ed885@mail.gmail.com>
-    <44f470466dcf22c47f6700502caf9cbd.squirrel@neil.brown.name>
-    <47ed01bd0812181603t53a500adgadab6884a7a4a586@mail.gmail.com>
-Subject: Re: MDADM Software Raid Woes
-Cc: "Nick Andrew" <nick@nick-andrew.net>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-User-Agent: SquirrelMail/1.4.15
+	Thu, 18 Dec 2008 19:27:56 -0500
+Received: from styx.suse.cz ([82.119.242.94]:59245 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751165AbYLSA1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 19:27:55 -0500
+Date: Fri, 19 Dec 2008 01:27:52 +0100
+From: Jan Kara <jack@suse.cz>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Arthur Jones <ajones@riverbed.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "sct@redhat.com" <sct@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+Message-ID: <20081219002752.GE8424@duck.suse.cz>
+References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081218231707.GB20092@atrey.karlin.mff.cuni.cz> <494ADEB3.8010109@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <494ADEB3.8010109@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, December 19, 2008 11:03 am, Dylan Taft wrote:
-> I'm running gentoo, udev 124-r1
-> I cleared all superblocks on all devices I raided, and undid all the
-> partition tables, and started from scratch, putting the filesystem on
-> the raid devices themselves instead of partitioning the raid devices.
->
-> Everything is working now, I think it's probably best to keep it
-> simple, or use LVM
-> MD is referenced in the udev config files, but everything is working now.
->
-> Sorry, I think it was user error. :)
-> Thanks
-> Dylan
+On Thu 18-12-08 17:37:23, Eric Sandeen wrote:
+> Jan Kara wrote:
+> >   Hello,
+> > 
+> >   I'm sorry I'm replying late but I got time to react to this only now...
+> > 
+> 
+> <snip>
+> 
+> >> I tried this and it too fixes the problem.  FWIW I agree it
+> >> looks better...
+> >   Well, shouldn't we rather fix what journal_start_commit() returns?
+> > The interface which returns 1 when a transaction is already committing or
+> > a transaction commit has just been started but 0 when we race with
+> > somebody staring the commit is fairly unusable. Moreover
+> > ext3_force_commit() will unnecessarily create new sync transaction and
+> > commit it if there's no transaction running which is quite expensive
+> > (even merging empty sync handle is not for free because of sync
+> > transaction batching). But this is minor problem since we probably
+> > don't care too much about sync() performance - BTW this is probably a
+> > cause for bug 12224, isn't it?
+> 
+> Yep, it is!  :)
+> 
+> >   BTW: ocfs2 would need fixing as well if done your way since it's
+> > sync_fs function has been copied over from ext3.
+> >   To summarized I'd rather see a patch like below (untested) going in
+> > and your patch reverted... Opinions? I can cookup a JBD2 version of
+> > the patch in case we agree to go this way.
+> 
+> Thanks, I'll look that over.
+  Thanks.
 
-Only broken systems allow users to make errors like that.
+> In looking at what we have today, I wonder if we can make things smarter
+> so that we don't commit empty transactions in any case?
+  Probably it does not make sence to commit such transactions and we might
+save some time in sync paths if we do so. So yes, I think skipping empty
+transaction commit might be worthwhile and it shouldn't be hard to do
+either. But I'd give it serious testing just in case some unexpectedly
+relies on this behaviour - wouldn't this interfere e.g. with sync
+transaction batching autotuning code? Untested patch below...
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
+---
 
-I'd still like to see the relevant udev config files if you
-wouldn't mind.  I'd like to see if I can stop other people from
-suffering the same misfortunes as you.
+>From 3e1a8dc6a64fdce5c99d7edca0a2812178f7463c Mon Sep 17 00:00:00 2001
+From: Jan Kara <jack@suse.cz>
+Date: Fri, 19 Dec 2008 01:20:47 +0100
+Subject: [PATCH] jbd2: Skip commit of a transaction without any buffers
 
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/jbd2/commit.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-Thanks.
-NeilBrown
+diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+index ebc667b..798e021 100644
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -401,6 +401,21 @@ void jbd2_journal_commit_transaction(journal_t *journal)
+ 	J_ASSERT (commit_transaction->t_outstanding_credits <=
+ 			journal->j_max_transaction_buffers);
+ 
++	/* Skip commit of a transaction without any buffers */
++	spin_lock(&journal->j_list_lock);
++	if (commit_transaction->t_reserved_list == NULL &&
++	    commit_transaction->t_buffers == NULL &&
++	    commit_transaction->t_forget == NULL &&
++	    list_empty(commit_transaction->t_inode_list)) {
++		BUG_ON(commit_transaction->t_checkpoint_list);
++		BUG_ON(commit_transaction->t_checkpoint_io_list);
++		BUG_ON(commit_transaction->t_iobuf_list);
++		BUG_ON(commit_transaction->t_shadow_list);
++		BUG_ON(commit_transaction->t_log_list);
++		goto out_committed;
++	}
++	spin_unlock(&journal->j_list_lock);
++
+ 	/*
+ 	 * First thing we are allowed to do is to discard any remaining
+ 	 * BJ_Reserved buffers.  Note, it is _not_ permissible to assume
+@@ -934,6 +949,7 @@ restart_loop:
+ 
+ 	/* Done with this transaction! */
+ 
++out_committed:
+ 	jbd_debug(3, "JBD: commit phase 7\n");
+ 
+ 	J_ASSERT(commit_transaction->t_state == T_COMMIT);
+-- 
+1.6.0.2
 
