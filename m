@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbYLSVz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbYLSV41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755466AbYLSVz5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 16:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbYLSVyU
+	id S1755057AbYLSV41 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 16:56:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbYLSVyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:54:20 -0500
-Received: from ns2.suse.de ([195.135.220.15]:48905 "EHLO mx2.suse.de"
+	Fri, 19 Dec 2008 16:54:21 -0500
+Received: from cantor.suse.de ([195.135.220.2]:57943 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753867AbYLSVyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 16:54:15 -0500
+	id S1754265AbYLSVyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:54:17 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 04/45] ocfs2: Convenient access to an xattr bucket's header.
-Date: Fri, 19 Dec 2008 13:53:23 -0800
-Message-Id: <1229723644-13630-5-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 05/45] ocfs2: Provide a wrapper to brelse() xattr bucket buffers.
+Date: Fri, 19 Dec 2008 13:53:24 -0800
+Message-Id: <1229723644-13630-6-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
 References: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
@@ -25,135 +25,115 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-The xattr code often wants to access the ocfs2_xattr_header at the start
-of an bucket.  Rather than walk the pointer chains, let's just create
-another nice macro.  As a side benefit, we can get rid of the mostly
-spurious ->bu_xh element on the bucket structure.  The idea is ripped
-from the ocfs2_path code.
+A common theme is walking all the buffer heads on an ocfs2_xattr_bucket
+and releasing them.  Let's wrap that.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/xattr.c |   28 ++++++++++++----------------
- 1 files changed, 12 insertions(+), 16 deletions(-)
+ fs/ocfs2/xattr.c |   33 ++++++++++++++++++---------------
+ 1 files changed, 18 insertions(+), 15 deletions(-)
 
 diff --git a/fs/ocfs2/xattr.c b/fs/ocfs2/xattr.c
-index 8594df3..1b77302 100644
+index 1b77302..3478ad1 100644
 --- a/fs/ocfs2/xattr.c
 +++ b/fs/ocfs2/xattr.c
-@@ -62,7 +62,6 @@ struct ocfs2_xattr_def_value_root {
- 
- struct ocfs2_xattr_bucket {
- 	struct buffer_head *bu_bhs[OCFS2_XATTR_MAX_BLOCKS_PER_BUCKET];
--	struct ocfs2_xattr_header *bu_xh;
- };
- 
- #define OCFS2_XATTR_ROOT_SIZE	(sizeof(struct ocfs2_xattr_def_value_root))
-@@ -156,6 +155,7 @@ static inline u16 ocfs2_xattr_max_xe_in_bucket(struct super_block *sb)
- 
- #define bucket_blkno(_b) ((_b)->bu_bhs[0]->b_blocknr)
+@@ -157,6 +157,17 @@ static inline u16 ocfs2_xattr_max_xe_in_bucket(struct super_block *sb)
  #define bucket_block(_b, _n) ((_b)->bu_bhs[(_n)]->b_data)
-+#define bucket_xh(_b) ((struct ocfs2_xattr_header *)bucket_block((_b), 0))
+ #define bucket_xh(_b) ((struct ocfs2_xattr_header *)bucket_block((_b), 0))
  
++static void ocfs2_xattr_bucket_relse(struct inode *inode,
++				     struct ocfs2_xattr_bucket *bucket)
++{
++	int i, blks = ocfs2_blocks_per_xattr_bucket(inode->i_sb);
++
++	for (i = 0; i < blks; i++) {
++		brelse(bucket->bu_bhs[i]);
++		bucket->bu_bhs[i] = NULL;
++	}
++}
++
  static inline const char *ocfs2_xattr_prefix(int name_index)
  {
-@@ -798,7 +798,7 @@ static int ocfs2_xattr_block_get(struct inode *inode,
- 
- 		if (le16_to_cpu(xb->xb_flags) & OCFS2_XATTR_INDEXED) {
- 			ret = ocfs2_xattr_bucket_get_name_value(inode,
--								xs->bucket.bu_xh,
-+								bucket_xh(&xs->bucket),
- 								i,
- 								&block_off,
- 								&name_offset);
-@@ -2280,11 +2280,9 @@ static int ocfs2_xattr_bucket_find(struct inode *inode,
- 		bh = NULL;
+ 	struct xattr_handler *handler = NULL;
+@@ -820,8 +831,7 @@ static int ocfs2_xattr_block_get(struct inode *inode,
  	}
- 	xs->bucket.bu_bhs[0] = lower_bh;
--	xs->bucket.bu_xh = (struct ocfs2_xattr_header *)
--					bucket_block(&xs->bucket, 0);
- 	lower_bh = NULL;
+ 	ret = size;
+ cleanup:
+-	for (i = 0; i < OCFS2_XATTR_MAX_BLOCKS_PER_BUCKET; i++)
+-		brelse(xs->bucket.bu_bhs[i]);
++	ocfs2_xattr_bucket_relse(inode, &xs->bucket);
+ 	memset(&xs->bucket, 0, sizeof(xs->bucket));
  
--	xs->header = xs->bucket.bu_xh;
-+	xs->header = bucket_xh(&xs->bucket);
- 	xs->base = bucket_block(&xs->bucket, 0);
- 	xs->end = xs->base + inode->i_sb->s_blocksize;
+ 	brelse(xs->xattr_bh);
+@@ -1932,7 +1942,6 @@ int ocfs2_xattr_set(struct inode *inode,
+ 	struct buffer_head *di_bh = NULL;
+ 	struct ocfs2_dinode *di;
+ 	int ret;
+-	u16 i, blk_per_bucket = ocfs2_blocks_per_xattr_bucket(inode->i_sb);
  
-@@ -2379,17 +2377,16 @@ static int ocfs2_iterate_xattr_buckets(struct inode *inode,
+ 	struct ocfs2_xattr_info xi = {
+ 		.name_index = name_index,
+@@ -2034,8 +2043,7 @@ cleanup:
+ 	ocfs2_inode_unlock(inode, 1);
+ 	brelse(di_bh);
+ 	brelse(xbs.xattr_bh);
+-	for (i = 0; i < blk_per_bucket; i++)
+-		brelse(xbs.bucket.bu_bhs[i]);
++	ocfs2_xattr_bucket_relse(inode, &xbs.bucket);
+ 
+ 	return ret;
+ }
+@@ -2358,7 +2366,7 @@ static int ocfs2_iterate_xattr_buckets(struct inode *inode,
+ 				       xattr_bucket_func *func,
+ 				       void *para)
+ {
+-	int i, j, ret = 0;
++	int i, ret = 0;
+ 	int blk_per_bucket = ocfs2_blocks_per_xattr_bucket(inode->i_sb);
+ 	u32 bpc = ocfs2_xattr_buckets_per_cluster(OCFS2_SB(inode->i_sb));
+ 	u32 num_buckets = clusters * bpc;
+@@ -2395,14 +2403,12 @@ static int ocfs2_iterate_xattr_buckets(struct inode *inode,
+ 			}
+ 		}
+ 
+-		for (j = 0; j < blk_per_bucket; j++)
+-			brelse(bucket.bu_bhs[j]);
++		ocfs2_xattr_bucket_relse(inode, &bucket);
+ 		memset(&bucket, 0, sizeof(bucket));
+ 	}
+ 
+ out:
+-	for (j = 0; j < blk_per_bucket; j++)
+-		brelse(bucket.bu_bhs[j]);
++	ocfs2_xattr_bucket_relse(inode, &bucket);
+ 
+ 	return ret;
+ }
+@@ -4554,11 +4560,10 @@ static int ocfs2_xattr_set_entry_index_block(struct inode *inode,
+ 	struct ocfs2_xattr_header *xh;
+ 	struct ocfs2_xattr_entry *xe;
+ 	u16 count, header_size, xh_free_start;
+-	int i, free, max_free, need, old;
++	int free, max_free, need, old;
+ 	size_t value_size = 0, name_len = strlen(xi->name);
+ 	size_t blocksize = inode->i_sb->s_blocksize;
+ 	int ret, allocation = 0;
+-	u16 blk_per_bucket = ocfs2_blocks_per_xattr_bucket(inode->i_sb);
+ 
+ 	mlog_entry("Set xattr %s in xattr index block\n", xi->name);
+ 
+@@ -4672,9 +4677,7 @@ try_again:
  			goto out;
  		}
  
--		bucket.bu_xh = (struct ocfs2_xattr_header *)bucket_block(&bucket, 0);
- 		/*
- 		 * The real bucket num in this series of blocks is stored
- 		 * in the 1st bucket.
- 		 */
- 		if (i == 0)
--			num_buckets = le16_to_cpu(bucket.bu_xh->xh_num_buckets);
-+			num_buckets = le16_to_cpu(bucket_xh(&bucket)->xh_num_buckets);
+-		for (i = 0; i < blk_per_bucket; i++)
+-			brelse(xs->bucket.bu_bhs[i]);
+-
++		ocfs2_xattr_bucket_relse(inode, &xs->bucket);
+ 		memset(&xs->bucket, 0, sizeof(xs->bucket));
  
- 		mlog(0, "iterating xattr bucket %llu, first hash %u\n",
- 		     (unsigned long long)blkno,
--		     le32_to_cpu(bucket.bu_xh->xh_entries[0].xe_name_hash));
-+		     le32_to_cpu(bucket_xh(&bucket)->xh_entries[0].xe_name_hash));
- 		if (func) {
- 			ret = func(inode, &bucket, para);
- 			if (ret) {
-@@ -2444,14 +2441,14 @@ static int ocfs2_list_xattr_bucket(struct inode *inode,
- 	int i, block_off, new_offset;
- 	const char *prefix, *name;
- 
--	for (i = 0 ; i < le16_to_cpu(bucket->bu_xh->xh_count); i++) {
--		struct ocfs2_xattr_entry *entry = &bucket->bu_xh->xh_entries[i];
-+	for (i = 0 ; i < le16_to_cpu(bucket_xh(bucket)->xh_count); i++) {
-+		struct ocfs2_xattr_entry *entry = &bucket_xh(bucket)->xh_entries[i];
- 		type = ocfs2_xattr_get_type(entry);
- 		prefix = ocfs2_xattr_prefix(type);
- 
- 		if (prefix) {
- 			ret = ocfs2_xattr_bucket_get_name_value(inode,
--								bucket->bu_xh,
-+								bucket_xh(bucket),
- 								i,
- 								&block_off,
- 								&new_offset);
-@@ -2631,8 +2628,7 @@ static int ocfs2_xattr_update_xattr_search(struct inode *inode,
- 
- 	xs->bucket.bu_bhs[0] = new_bh;
- 	get_bh(new_bh);
--	xs->bucket.bu_xh = (struct ocfs2_xattr_header *)bucket_block(&xs->bucket, 0);
--	xs->header = xs->bucket.bu_xh;
-+	xs->header = bucket_xh(&xs->bucket);
- 
- 	xs->base = new_bh->b_data;
- 	xs->end = xs->base + inode->i_sb->s_blocksize;
-@@ -4398,7 +4394,7 @@ static void ocfs2_xattr_bucket_remove_xs(struct inode *inode,
- 					 struct ocfs2_xattr_search *xs)
- {
- 	handle_t *handle = NULL;
--	struct ocfs2_xattr_header *xh = xs->bucket.bu_xh;
-+	struct ocfs2_xattr_header *xh = bucket_xh(&xs->bucket);
- 	struct ocfs2_xattr_entry *last = &xh->xh_entries[
- 						le16_to_cpu(xh->xh_count) - 1];
- 	int ret = 0;
-@@ -4533,7 +4529,7 @@ static int ocfs2_check_xattr_bucket_collision(struct inode *inode,
- 					      struct ocfs2_xattr_bucket *bucket,
- 					      const char *name)
- {
--	struct ocfs2_xattr_header *xh = bucket->bu_xh;
-+	struct ocfs2_xattr_header *xh = bucket_xh(bucket);
- 	u32 name_hash = ocfs2_xattr_name_hash(inode, name, strlen(name));
- 
- 	if (name_hash != le32_to_cpu(xh->xh_entries[0].xe_name_hash))
-@@ -4703,7 +4699,7 @@ static int ocfs2_delete_xattr_in_bucket(struct inode *inode,
- 					void *para)
- {
- 	int ret = 0;
--	struct ocfs2_xattr_header *xh = bucket->bu_xh;
-+	struct ocfs2_xattr_header *xh = bucket_xh(bucket);
- 	u16 i;
- 	struct ocfs2_xattr_entry *xe;
- 
+ 		ret = ocfs2_xattr_index_block_find(inode, xs->xattr_bh,
 -- 
 1.5.6
 
