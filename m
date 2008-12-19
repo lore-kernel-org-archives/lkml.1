@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYLSWGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbYLSWHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbYLSWGd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:06:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755315AbYLSVzQ
+	id S1757799AbYLSWHM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:07:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbYLSVzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:55:16 -0500
-Received: from ns.suse.de ([195.135.220.2]:58059 "EHLO mx1.suse.de"
+	Fri, 19 Dec 2008 16:55:19 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:49014 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755311AbYLSVzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 16:55:13 -0500
+	id S1755316AbYLSVzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:55:17 -0500
 From: Mark Fasheh <mfasheh@suse.com>
 To: linux-kernel@vger.kernel.org
 Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
        Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 35/45] ocfs2: Wrap group descriptor reads in a dedicated function.
-Date: Fri, 19 Dec 2008 13:53:54 -0800
-Message-Id: <1229723644-13630-36-git-send-email-mfasheh@suse.com>
+Subject: [PATCH 37/45] ocfs2: Wrap extent block reads in a dedicated function.
+Date: Fri, 19 Dec 2008 13:53:56 -0800
+Message-Id: <1229723644-13630-38-git-send-email-mfasheh@suse.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
 References: <1229723644-13630-1-git-send-email-mfasheh@suse.com>
@@ -25,171 +25,74 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joel Becker <joel.becker@oracle.com>
 
-We have a clean call for validating group descriptors, but every place
-that wants the always does a read_block()+validate() call pair.  Create
-a toplevel ocfs2_read_group_descriptor() that does the right
-thing.  This allows us to leverage the single call point later for
-fancier handling.  We also add validation of gd->bg_generation against
-the superblock and gd->bg_blkno against the block we thought we read.
+We weren't consistently checking extent blocks after we read them.
+Most places checked the signature, but none checked h_blkno or
+h_fs_signature.  Create a toplevel ocfs2_read_extent_block() that does
+the read and the validation.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mfasheh@suse.com>
 ---
- fs/ocfs2/resize.c   |   12 +----
- fs/ocfs2/suballoc.c |  108 ++++++++++++++++++++++++++++++--------------------
- fs/ocfs2/suballoc.h |   19 +++++----
- 3 files changed, 78 insertions(+), 61 deletions(-)
+ fs/ocfs2/alloc.c      |  151 ++++++++++++++++++++++++++++++++-----------------
+ fs/ocfs2/alloc.h      |    8 +++
+ fs/ocfs2/extent_map.c |   23 ++------
+ fs/ocfs2/ocfs2.h      |    8 ---
+ 4 files changed, 111 insertions(+), 79 deletions(-)
 
-diff --git a/fs/ocfs2/resize.c b/fs/ocfs2/resize.c
-index a2de32a..252baff 100644
---- a/fs/ocfs2/resize.c
-+++ b/fs/ocfs2/resize.c
-@@ -330,20 +330,14 @@ int ocfs2_group_extend(struct inode * inode, int new_clusters)
- 	lgd_blkno = ocfs2_which_cluster_group(main_bm_inode,
- 					      first_new_cluster - 1);
+diff --git a/fs/ocfs2/alloc.c b/fs/ocfs2/alloc.c
+index 320545b..f430cc6 100644
+--- a/fs/ocfs2/alloc.c
++++ b/fs/ocfs2/alloc.c
+@@ -678,6 +678,66 @@ struct ocfs2_merge_ctxt {
+ 	int			c_split_covers_rec;
+ };
  
--	ret = ocfs2_read_block(main_bm_inode, lgd_blkno, &group_bh);
-+	ret = ocfs2_read_group_descriptor(main_bm_inode, fe, lgd_blkno,
-+					  &group_bh);
- 	if (ret < 0) {
- 		mlog_errno(ret);
- 		goto out_unlock;
- 	}
--
- 	group = (struct ocfs2_group_desc *)group_bh->b_data;
- 
--	ret = ocfs2_check_group_descriptor(inode->i_sb, fe, group);
--	if (ret) {
--		mlog_errno(ret);
--		goto out_unlock;
--	}
--
- 	cl_bpc = le16_to_cpu(fe->id2.i_chain.cl_bpc);
- 	if (le16_to_cpu(group->bg_bits) / cl_bpc + new_clusters >
- 		le16_to_cpu(fe->id2.i_chain.cl_cpg)) {
-@@ -400,7 +394,7 @@ static int ocfs2_check_new_group(struct inode *inode,
- 		(struct ocfs2_group_desc *)group_bh->b_data;
- 	u16 cl_bpc = le16_to_cpu(di->id2.i_chain.cl_bpc);
- 
--	ret = ocfs2_validate_group_descriptor(inode->i_sb, di, gd, 1);
-+	ret = ocfs2_validate_group_descriptor(inode->i_sb, di, group_bh, 1);
- 	if (ret)
- 		goto out;
- 
-diff --git a/fs/ocfs2/suballoc.c b/fs/ocfs2/suballoc.c
-index ddba97d..797f509 100644
---- a/fs/ocfs2/suballoc.c
-+++ b/fs/ocfs2/suballoc.c
-@@ -145,13 +145,13 @@ static u32 ocfs2_bits_per_group(struct ocfs2_chain_list *cl)
- 	return (u32)le16_to_cpu(cl->cl_cpg) * (u32)le16_to_cpu(cl->cl_bpc);
- }
- 
--/* somewhat more expensive than our other checks, so use sparingly. */
- int ocfs2_validate_group_descriptor(struct super_block *sb,
- 				    struct ocfs2_dinode *di,
--				    struct ocfs2_group_desc *gd,
-+				    struct buffer_head *bh,
- 				    int clean_error)
- {
- 	unsigned int max_bits;
-+	struct ocfs2_group_desc *gd = (struct ocfs2_group_desc *)bh->b_data;
- 
- #define do_error(fmt, ...)						\
- 	do{								\
-@@ -162,16 +162,32 @@ int ocfs2_validate_group_descriptor(struct super_block *sb,
- 	} while (0)
- 
- 	if (!OCFS2_IS_VALID_GROUP_DESC(gd)) {
--		do_error("Group Descriptor #%llu has bad signature %.*s",
--			 (unsigned long long)le64_to_cpu(gd->bg_blkno), 7,
-+		do_error("Group descriptor #%llu has bad signature %.*s",
-+			 (unsigned long long)bh->b_blocknr, 7,
- 			 gd->bg_signature);
- 		return -EINVAL;
- 	}
- 
-+	if (le64_to_cpu(gd->bg_blkno) != bh->b_blocknr) {
-+		do_error("Group descriptor #%llu has an invalid bg_blkno "
-+			 "of %llu",
-+			 (unsigned long long)bh->b_blocknr,
-+			 (unsigned long long)le64_to_cpu(gd->bg_blkno));
++static int ocfs2_validate_extent_block(struct super_block *sb,
++				       struct buffer_head *bh)
++{
++	struct ocfs2_extent_block *eb =
++		(struct ocfs2_extent_block *)bh->b_data;
++
++	if (!OCFS2_IS_VALID_EXTENT_BLOCK(eb)) {
++		ocfs2_error(sb,
++			    "Extent block #%llu has bad signature %.*s",
++			    (unsigned long long)bh->b_blocknr, 7,
++			    eb->h_signature);
 +		return -EINVAL;
 +	}
 +
-+	if (le32_to_cpu(gd->bg_generation) != OCFS2_SB(sb)->fs_generation) {
-+		do_error("Group descriptor #%llu has an invalid "
-+			 "fs_generation of #%u",
-+			 (unsigned long long)bh->b_blocknr,
-+			 le32_to_cpu(gd->bg_generation));
++	if (le64_to_cpu(eb->h_blkno) != bh->b_blocknr) {
++		ocfs2_error(sb,
++			    "Extent block #%llu has an invalid h_blkno "
++			    "of %llu",
++			    (unsigned long long)bh->b_blocknr,
++			    (unsigned long long)le64_to_cpu(eb->h_blkno));
 +		return -EINVAL;
 +	}
 +
- 	if (di->i_blkno != gd->bg_parent_dinode) {
--		do_error("Group descriptor # %llu has bad parent "
-+		do_error("Group descriptor #%llu has bad parent "
- 			 "pointer (%llu, expected %llu)",
--			 (unsigned long long)le64_to_cpu(gd->bg_blkno),
-+			 (unsigned long long)bh->b_blocknr,
- 			 (unsigned long long)le64_to_cpu(gd->bg_parent_dinode),
- 			 (unsigned long long)le64_to_cpu(di->i_blkno));
- 		return -EINVAL;
-@@ -179,33 +195,33 @@ int ocfs2_validate_group_descriptor(struct super_block *sb,
- 
- 	max_bits = le16_to_cpu(di->id2.i_chain.cl_cpg) * le16_to_cpu(di->id2.i_chain.cl_bpc);
- 	if (le16_to_cpu(gd->bg_bits) > max_bits) {
--		do_error("Group descriptor # %llu has bit count of %u",
--			 (unsigned long long)le64_to_cpu(gd->bg_blkno),
-+		do_error("Group descriptor #%llu has bit count of %u",
-+			 (unsigned long long)bh->b_blocknr,
- 			 le16_to_cpu(gd->bg_bits));
- 		return -EINVAL;
- 	}
- 
- 	if (le16_to_cpu(gd->bg_chain) >=
- 	    le16_to_cpu(di->id2.i_chain.cl_next_free_rec)) {
--		do_error("Group descriptor # %llu has bad chain %u",
--			 (unsigned long long)le64_to_cpu(gd->bg_blkno),
-+		do_error("Group descriptor #%llu has bad chain %u",
-+			 (unsigned long long)bh->b_blocknr,
- 			 le16_to_cpu(gd->bg_chain));
- 		return -EINVAL;
- 	}
- 
- 	if (le16_to_cpu(gd->bg_free_bits_count) > le16_to_cpu(gd->bg_bits)) {
--		do_error("Group descriptor # %llu has bit count %u but "
-+		do_error("Group descriptor #%llu has bit count %u but "
- 			 "claims that %u are free",
--			 (unsigned long long)le64_to_cpu(gd->bg_blkno),
-+			 (unsigned long long)bh->b_blocknr,
- 			 le16_to_cpu(gd->bg_bits),
- 			 le16_to_cpu(gd->bg_free_bits_count));
- 		return -EINVAL;
- 	}
- 
- 	if (le16_to_cpu(gd->bg_bits) > (8 * le16_to_cpu(gd->bg_size))) {
--		do_error("Group descriptor # %llu has bit count %u but "
-+		do_error("Group descriptor #%llu has bit count %u but "
- 			 "max bitmap bits of %u",
--			 (unsigned long long)le64_to_cpu(gd->bg_blkno),
-+			 (unsigned long long)bh->b_blocknr,
- 			 le16_to_cpu(gd->bg_bits),
- 			 8 * le16_to_cpu(gd->bg_size));
- 		return -EINVAL;
-@@ -215,6 +231,30 @@ int ocfs2_validate_group_descriptor(struct super_block *sb,
- 	return 0;
- }
- 
-+int ocfs2_read_group_descriptor(struct inode *inode, struct ocfs2_dinode *di,
-+				u64 gd_blkno, struct buffer_head **bh)
++	if (le32_to_cpu(eb->h_fs_generation) != OCFS2_SB(sb)->fs_generation) {
++		ocfs2_error(sb,
++			    "Extent block #%llu has an invalid "
++			    "h_fs_generation of #%u",
++			    (unsigned long long)bh->b_blocknr,
++			    le32_to_cpu(eb->h_fs_generation));
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++int ocfs2_read_extent_block(struct inode *inode, u64 eb_blkno,
++			    struct buffer_head **bh)
 +{
 +	int rc;
 +	struct buffer_head *tmp = *bh;
 +
-+	rc = ocfs2_read_block(inode, gd_blkno, &tmp);
++	rc = ocfs2_read_block(inode, eb_blkno, &tmp);
 +	if (rc)
 +		goto out;
 +
-+	rc = ocfs2_validate_group_descriptor(inode->i_sb, di, tmp, 0);
++	rc = ocfs2_validate_extent_block(inode->i_sb, tmp);
 +	if (rc) {
 +		brelse(tmp);
 +		goto out;
@@ -203,138 +106,301 @@ index ddba97d..797f509 100644
 +	return rc;
 +}
 +
- static int ocfs2_block_group_fill(handle_t *handle,
- 				  struct inode *alloc_inode,
- 				  struct buffer_head *bg_bh,
-@@ -1177,21 +1217,17 @@ static int ocfs2_search_one_group(struct ocfs2_alloc_context *ac,
- 	u16 found;
- 	struct buffer_head *group_bh = NULL;
- 	struct ocfs2_group_desc *gd;
-+	struct ocfs2_dinode *di = (struct ocfs2_dinode *)ac->ac_bh->b_data;
- 	struct inode *alloc_inode = ac->ac_inode;
++
+ /*
+  * How many free extents have we got before we need more meta data?
+  */
+@@ -697,8 +757,7 @@ int ocfs2_num_free_extents(struct ocfs2_super *osb,
+ 	last_eb_blk = ocfs2_et_get_last_eb_blk(et);
  
--	ret = ocfs2_read_block(alloc_inode, gd_blkno, &group_bh);
-+	ret = ocfs2_read_group_descriptor(alloc_inode, di, gd_blkno,
-+					  &group_bh);
- 	if (ret < 0) {
- 		mlog_errno(ret);
- 		return ret;
+ 	if (last_eb_blk) {
+-		retval = ocfs2_read_block(inode, last_eb_blk,
+-					  &eb_bh);
++		retval = ocfs2_read_extent_block(inode, last_eb_blk, &eb_bh);
+ 		if (retval < 0) {
+ 			mlog_errno(retval);
+ 			goto bail;
+@@ -900,11 +959,8 @@ static int ocfs2_add_branch(struct ocfs2_super *osb,
+ 	for(i = 0; i < new_blocks; i++) {
+ 		bh = new_eb_bhs[i];
+ 		eb = (struct ocfs2_extent_block *) bh->b_data;
+-		if (!OCFS2_IS_VALID_EXTENT_BLOCK(eb)) {
+-			OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb, eb);
+-			status = -EIO;
+-			goto bail;
+-		}
++		/* ocfs2_create_new_meta_bhs() should create it right! */
++		BUG_ON(!OCFS2_IS_VALID_EXTENT_BLOCK(eb));
+ 		eb_el = &eb->h_list;
+ 
+ 		status = ocfs2_journal_access(handle, inode, bh,
+@@ -1044,11 +1100,8 @@ static int ocfs2_shift_tree_depth(struct ocfs2_super *osb,
  	}
  
- 	gd = (struct ocfs2_group_desc *) group_bh->b_data;
--	if (!OCFS2_IS_VALID_GROUP_DESC(gd)) {
--		OCFS2_RO_ON_INVALID_GROUP_DESC(alloc_inode->i_sb, gd);
--		ret = -EIO;
--		goto out;
--	}
--
- 	ret = ac->ac_group_search(alloc_inode, group_bh, bits_wanted, min_bits,
- 				  ac->ac_max_block, bit_off, &found);
- 	if (ret < 0) {
-@@ -1248,19 +1284,14 @@ static int ocfs2_search_chain(struct ocfs2_alloc_context *ac,
- 	     bits_wanted, chain,
- 	     (unsigned long long)OCFS2_I(alloc_inode)->ip_blkno);
- 
--	status = ocfs2_read_block(alloc_inode,
--				  le64_to_cpu(cl->cl_recs[chain].c_blkno),
--				  &group_bh);
-+	status = ocfs2_read_group_descriptor(alloc_inode, fe,
-+					     le64_to_cpu(cl->cl_recs[chain].c_blkno),
-+					     &group_bh);
- 	if (status < 0) {
- 		mlog_errno(status);
- 		goto bail;
- 	}
- 	bg = (struct ocfs2_group_desc *) group_bh->b_data;
--	status = ocfs2_check_group_descriptor(alloc_inode->i_sb, fe, bg);
--	if (status) {
--		mlog_errno(status);
+ 	eb = (struct ocfs2_extent_block *) new_eb_bh->b_data;
+-	if (!OCFS2_IS_VALID_EXTENT_BLOCK(eb)) {
+-		OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb, eb);
+-		status = -EIO;
 -		goto bail;
 -	}
++	/* ocfs2_create_new_meta_bhs() should create it right! */
++	BUG_ON(!OCFS2_IS_VALID_EXTENT_BLOCK(eb));
  
- 	status = -ENOSPC;
- 	/* for now, the chain search is a bit simplistic. We just use
-@@ -1278,18 +1309,13 @@ static int ocfs2_search_chain(struct ocfs2_alloc_context *ac,
- 		next_group = le64_to_cpu(bg->bg_next_group);
- 		prev_group_bh = group_bh;
- 		group_bh = NULL;
--		status = ocfs2_read_block(alloc_inode,
--					  next_group, &group_bh);
-+		status = ocfs2_read_group_descriptor(alloc_inode, fe,
-+						     next_group, &group_bh);
+ 	eb_el = &eb->h_list;
+ 	root_el = et->et_root_el;
+@@ -1168,18 +1221,13 @@ static int ocfs2_find_branch_target(struct ocfs2_super *osb,
+ 		brelse(bh);
+ 		bh = NULL;
+ 
+-		status = ocfs2_read_block(inode, blkno, &bh);
++		status = ocfs2_read_extent_block(inode, blkno, &bh);
  		if (status < 0) {
  			mlog_errno(status);
  			goto bail;
  		}
- 		bg = (struct ocfs2_group_desc *) group_bh->b_data;
--		status = ocfs2_check_group_descriptor(alloc_inode->i_sb, fe, bg);
--		if (status) {
--			mlog_errno(status);
+ 
+ 		eb = (struct ocfs2_extent_block *) bh->b_data;
+-		if (!OCFS2_IS_VALID_EXTENT_BLOCK(eb)) {
+-			OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb, eb);
+-			status = -EIO;
+-			goto bail;
+-		}
+ 		el = &eb->h_list;
+ 
+ 		if (le16_to_cpu(el->l_next_free_rec) <
+@@ -1532,7 +1580,7 @@ static int __ocfs2_find_path(struct inode *inode,
+ 
+ 		brelse(bh);
+ 		bh = NULL;
+-		ret = ocfs2_read_block(inode, blkno, &bh);
++		ret = ocfs2_read_extent_block(inode, blkno, &bh);
+ 		if (ret) {
+ 			mlog_errno(ret);
+ 			goto out;
+@@ -1540,11 +1588,6 @@ static int __ocfs2_find_path(struct inode *inode,
+ 
+ 		eb = (struct ocfs2_extent_block *) bh->b_data;
+ 		el = &eb->h_list;
+-		if (!OCFS2_IS_VALID_EXTENT_BLOCK(eb)) {
+-			OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb, eb);
+-			ret = -EIO;
+-			goto out;
+-		}
+ 
+ 		if (le16_to_cpu(el->l_next_free_rec) >
+ 		    le16_to_cpu(el->l_count)) {
+@@ -4089,8 +4132,15 @@ ocfs2_figure_merge_contig_type(struct inode *inode, struct ocfs2_path *path,
+ 			    le16_to_cpu(new_el->l_count)) {
+ 				bh = path_leaf_bh(left_path);
+ 				eb = (struct ocfs2_extent_block *)bh->b_data;
+-				OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb,
+-								 eb);
++				ocfs2_error(inode->i_sb,
++					    "Extent block #%llu has an "
++					    "invalid l_next_free_rec of "
++					    "%d.  It should have "
++					    "matched the l_count of %d",
++					    (unsigned long long)le64_to_cpu(eb->h_blkno),
++					    le16_to_cpu(new_el->l_next_free_rec),
++					    le16_to_cpu(new_el->l_count));
++				status = -EINVAL;
+ 				goto out;
+ 			}
+ 			rec = &new_el->l_recs[
+@@ -4139,8 +4189,12 @@ ocfs2_figure_merge_contig_type(struct inode *inode, struct ocfs2_path *path,
+ 			if (le16_to_cpu(new_el->l_next_free_rec) <= 1) {
+ 				bh = path_leaf_bh(right_path);
+ 				eb = (struct ocfs2_extent_block *)bh->b_data;
+-				OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb,
+-								 eb);
++				ocfs2_error(inode->i_sb,
++					    "Extent block #%llu has an "
++					    "invalid l_next_free_rec of %d",
++					    (unsigned long long)le64_to_cpu(eb->h_blkno),
++					    le16_to_cpu(new_el->l_next_free_rec));
++				status = -EINVAL;
+ 				goto out;
+ 			}
+ 			rec = &new_el->l_recs[1];
+@@ -4286,7 +4340,9 @@ static int ocfs2_figure_insert_type(struct inode *inode,
+ 		 * ocfs2_figure_insert_type() and ocfs2_add_branch()
+ 		 * may want it later.
+ 		 */
+-		ret = ocfs2_read_block(inode, ocfs2_et_get_last_eb_blk(et), &bh);
++		ret = ocfs2_read_extent_block(inode,
++					      ocfs2_et_get_last_eb_blk(et),
++					      &bh);
+ 		if (ret) {
+ 			mlog_exit(ret);
+ 			goto out;
+@@ -4752,20 +4808,15 @@ static int __ocfs2_mark_extent_written(struct inode *inode,
+ 	if (path->p_tree_depth) {
+ 		struct ocfs2_extent_block *eb;
+ 
+-		ret = ocfs2_read_block(inode, ocfs2_et_get_last_eb_blk(et),
+-				       &last_eb_bh);
++		ret = ocfs2_read_extent_block(inode,
++					      ocfs2_et_get_last_eb_blk(et),
++					      &last_eb_bh);
+ 		if (ret) {
+ 			mlog_exit(ret);
+ 			goto out;
+ 		}
+ 
+ 		eb = (struct ocfs2_extent_block *) last_eb_bh->b_data;
+-		if (!OCFS2_IS_VALID_EXTENT_BLOCK(eb)) {
+-			OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb, eb);
+-			ret = -EROFS;
+-			goto out;
+-		}
+-
+ 		rightmost_el = &eb->h_list;
+ 	} else
+ 		rightmost_el = path_root_el(path);
+@@ -4910,8 +4961,9 @@ static int ocfs2_split_tree(struct inode *inode, struct ocfs2_extent_tree *et,
+ 
+ 	depth = path->p_tree_depth;
+ 	if (depth > 0) {
+-		ret = ocfs2_read_block(inode, ocfs2_et_get_last_eb_blk(et),
+-				       &last_eb_bh);
++		ret = ocfs2_read_extent_block(inode,
++					      ocfs2_et_get_last_eb_blk(et),
++					      &last_eb_bh);
+ 		if (ret < 0) {
+ 			mlog_errno(ret);
+ 			goto out;
+@@ -6231,11 +6283,10 @@ static int ocfs2_find_new_last_ext_blk(struct inode *inode,
+ 
+ 	eb = (struct ocfs2_extent_block *) bh->b_data;
+ 	el = &eb->h_list;
+-	if (!OCFS2_IS_VALID_EXTENT_BLOCK(eb)) {
+-		OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb, eb);
+-		ret = -EROFS;
+-		goto out;
+-	}
++
++	/* ocfs2_find_leaf() gets the eb from ocfs2_read_extent_block().
++	 * Any corruption is a code bug. */
++	BUG_ON(!OCFS2_IS_VALID_EXTENT_BLOCK(eb));
+ 
+ 	*new_last_eb = bh;
+ 	get_bh(*new_last_eb);
+@@ -7140,20 +7191,14 @@ int ocfs2_prepare_truncate(struct ocfs2_super *osb,
+ 	ocfs2_init_dealloc_ctxt(&(*tc)->tc_dealloc);
+ 
+ 	if (fe->id2.i_list.l_tree_depth) {
+-		status = ocfs2_read_block(inode, le64_to_cpu(fe->i_last_eb_blk),
+-					  &last_eb_bh);
++		status = ocfs2_read_extent_block(inode,
++						 le64_to_cpu(fe->i_last_eb_blk),
++						 &last_eb_bh);
+ 		if (status < 0) {
+ 			mlog_errno(status);
+ 			goto bail;
+ 		}
+ 		eb = (struct ocfs2_extent_block *) last_eb_bh->b_data;
+-		if (!OCFS2_IS_VALID_EXTENT_BLOCK(eb)) {
+-			OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb, eb);
+-
+-			brelse(last_eb_bh);
+-			status = -EIO;
 -			goto bail;
 -		}
  	}
- 	if (status < 0) {
- 		if (status != -ENOSPC)
-@@ -1801,18 +1827,14 @@ int ocfs2_free_suballoc_bits(handle_t *handle,
- 	     (unsigned long long)OCFS2_I(alloc_inode)->ip_blkno, count,
- 	     (unsigned long long)bg_blkno, start_bit);
  
--	status = ocfs2_read_block(alloc_inode, bg_blkno, &group_bh);
-+	status = ocfs2_read_group_descriptor(alloc_inode, fe, bg_blkno,
-+					     &group_bh);
- 	if (status < 0) {
- 		mlog_errno(status);
- 		goto bail;
- 	}
--
- 	group = (struct ocfs2_group_desc *) group_bh->b_data;
--	status = ocfs2_check_group_descriptor(alloc_inode->i_sb, fe, group);
--	if (status) {
--		mlog_errno(status);
--		goto bail;
--	}
-+
- 	BUG_ON((count + start_bit) > le16_to_cpu(group->bg_bits));
+ 	(*tc)->tc_last_eb_bh = last_eb_bh;
+diff --git a/fs/ocfs2/alloc.h b/fs/ocfs2/alloc.h
+index 0fbf8fc..59d37d1 100644
+--- a/fs/ocfs2/alloc.h
++++ b/fs/ocfs2/alloc.h
+@@ -73,6 +73,14 @@ void ocfs2_init_xattr_value_extent_tree(struct ocfs2_extent_tree *et,
+ 					struct buffer_head *bh,
+ 					struct ocfs2_xattr_value_root *xv);
  
- 	status = ocfs2_block_group_clear_bits(handle, alloc_inode,
-diff --git a/fs/ocfs2/suballoc.h b/fs/ocfs2/suballoc.h
-index 7adfcc4..43de4fd 100644
---- a/fs/ocfs2/suballoc.h
-+++ b/fs/ocfs2/suballoc.h
-@@ -164,23 +164,24 @@ void ocfs2_free_ac_resource(struct ocfs2_alloc_context *ac);
-  * and return that block offset. */
- u64 ocfs2_which_cluster_group(struct inode *inode, u32 cluster);
- 
--/* somewhat more expensive than our other checks, so use sparingly. */
- /*
-  * By default, ocfs2_validate_group_descriptor() calls ocfs2_error() when it
-  * finds a problem.  A caller that wants to check a group descriptor
-  * without going readonly passes a nonzero clean_error.  This is only
-- * resize, really.
-+ * resize, really.  Everyone else should be using
-+ * ocfs2_read_group_descriptor().
-  */
- int ocfs2_validate_group_descriptor(struct super_block *sb,
- 				    struct ocfs2_dinode *di,
--				    struct ocfs2_group_desc *gd,
-+				    struct buffer_head *bh,
- 				    int clean_error);
--static inline int ocfs2_check_group_descriptor(struct super_block *sb,
--					       struct ocfs2_dinode *di,
--					       struct ocfs2_group_desc *gd)
--{
--	return ocfs2_validate_group_descriptor(sb, di, gd, 0);
--}
 +/*
-+ * Read a group descriptor block into *bh.  If *bh is NULL, a bh will be
-+ * allocated.  This is a cached read.  The descriptor will be validated with
-+ * ocfs2_validate_group_descriptor().
++ * Read an extent block into *bh.  If *bh is NULL, a bh will be
++ * allocated.  This is a cached read.  The extent block will be validated
++ * with ocfs2_validate_extent_block().
 + */
-+int ocfs2_read_group_descriptor(struct inode *inode, struct ocfs2_dinode *di,
-+				u64 gd_blkno, struct buffer_head **bh);
++int ocfs2_read_extent_block(struct inode *inode, u64 eb_blkno,
++			    struct buffer_head **bh);
++
+ struct ocfs2_alloc_context;
+ int ocfs2_insert_extent(struct ocfs2_super *osb,
+ 			handle_t *handle,
+diff --git a/fs/ocfs2/extent_map.c b/fs/ocfs2/extent_map.c
+index b686b31..0bd9d96 100644
+--- a/fs/ocfs2/extent_map.c
++++ b/fs/ocfs2/extent_map.c
+@@ -293,7 +293,7 @@ static int ocfs2_last_eb_is_empty(struct inode *inode,
+ 	struct ocfs2_extent_block *eb;
+ 	struct ocfs2_extent_list *el;
  
- int ocfs2_lock_allocators(struct inode *inode, struct ocfs2_extent_tree *et,
- 			  u32 clusters_to_add, u32 extents_to_split,
+-	ret = ocfs2_read_block(inode, last_eb_blk, &eb_bh);
++	ret = ocfs2_read_extent_block(inode, last_eb_blk, &eb_bh);
+ 	if (ret) {
+ 		mlog_errno(ret);
+ 		goto out;
+@@ -302,12 +302,6 @@ static int ocfs2_last_eb_is_empty(struct inode *inode,
+ 	eb = (struct ocfs2_extent_block *) eb_bh->b_data;
+ 	el = &eb->h_list;
+ 
+-	if (!OCFS2_IS_VALID_EXTENT_BLOCK(eb)) {
+-		ret = -EROFS;
+-		OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb, eb);
+-		goto out;
+-	}
+-
+ 	if (el->l_tree_depth) {
+ 		ocfs2_error(inode->i_sb,
+ 			    "Inode %lu has non zero tree depth in "
+@@ -381,23 +375,16 @@ static int ocfs2_figure_hole_clusters(struct inode *inode,
+ 		if (le64_to_cpu(eb->h_next_leaf_blk) == 0ULL)
+ 			goto no_more_extents;
+ 
+-		ret = ocfs2_read_block(inode,
+-				       le64_to_cpu(eb->h_next_leaf_blk),
+-				       &next_eb_bh);
++		ret = ocfs2_read_extent_block(inode,
++					      le64_to_cpu(eb->h_next_leaf_blk),
++					      &next_eb_bh);
+ 		if (ret) {
+ 			mlog_errno(ret);
+ 			goto out;
+ 		}
+-		next_eb = (struct ocfs2_extent_block *)next_eb_bh->b_data;
+-
+-		if (!OCFS2_IS_VALID_EXTENT_BLOCK(next_eb)) {
+-			ret = -EROFS;
+-			OCFS2_RO_ON_INVALID_EXTENT_BLOCK(inode->i_sb, next_eb);
+-			goto out;
+-		}
+ 
++		next_eb = (struct ocfs2_extent_block *)next_eb_bh->b_data;
+ 		el = &next_eb->h_list;
+-
+ 		i = ocfs2_search_for_hole_index(el, v_cluster);
+ 	}
+ 
+diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
+index 82ba887..f04b229 100644
+--- a/fs/ocfs2/ocfs2.h
++++ b/fs/ocfs2/ocfs2.h
+@@ -447,14 +447,6 @@ static inline int ocfs2_uses_extended_slot_map(struct ocfs2_super *osb)
+ #define OCFS2_IS_VALID_EXTENT_BLOCK(ptr)				\
+ 	(!strcmp((ptr)->h_signature, OCFS2_EXTENT_BLOCK_SIGNATURE))
+ 
+-#define OCFS2_RO_ON_INVALID_EXTENT_BLOCK(__sb, __eb)	do {		\
+-	typeof(__eb) ____eb = (__eb);					\
+-	ocfs2_error((__sb), 						\
+-		"Extent Block # %llu has bad signature %.*s",		\
+-		(unsigned long long)le64_to_cpu((____eb)->h_blkno), 7,	\
+-		(____eb)->h_signature);					\
+-} while (0)
+-
+ #define OCFS2_IS_VALID_GROUP_DESC(ptr)					\
+ 	(!strcmp((ptr)->bg_signature, OCFS2_GROUP_DESC_SIGNATURE))
+ 
 -- 
 1.5.6
 
