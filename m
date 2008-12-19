@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbYLSX2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYLSX3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbYLSX2d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 18:28:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbYLSX2P
+	id S1756023AbYLSX3A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 18:29:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbYLSX2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 18:28:15 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:44461 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755391AbYLSX2M (ORCPT
+	Fri, 19 Dec 2008 18:28:49 -0500
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:43759 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752403AbYLSX2r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 18:28:12 -0500
-X-YMail-OSG: 8oVCFOoVM1nQKGTSTyxiMwhjCVdwylQiCgxS24bljZZugcjb9yiHios9UQX6n076X7JD7c7P591fx2v8jE8GdQO1FFRXpctWwMYdqyGN4SG0bXgvm8C9uKwDlyp8o2NhGKJ6p4rc_Fb_fLozaZN07rBURsRoV31Otd5w8lXAlQBvY8hbEb5aW5vj0boMJ8gkzxrLMnUIpxsZitf3h4.Qhb43pVSYC.HMerw0xhVI2gtUFBnO1Z8-
+	Fri, 19 Dec 2008 18:28:47 -0500
+X-YMail-OSG: 0fgVhAkVM1khaIN_giNPKBGrZWGXmysB.P2admb5BLb2HNBCLo5cH.6oEnlJx1kkRWODKQCO_4QS8hrnz2V3aQz.npxp9Z3dmbuJGkuW6cODKjgsnVLc3VdasuCGNezABp50svCJvYpbt3ggB0lrenE9AIRnQqSHE4mwi.ppRmVDg4kcigMmIq8go31L9RBXEdugn_CUhOBto0LO9utS_tdtZe4OeLhOqZqED9n4l2J4SnPh80o-
 X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] [Target_Core_Mod 5/6]: Updates for generic device core
+Subject: [PATCH] [Target_Core_Mod/PSCSI 6/6]: Grab temporary pointer to
+	struct block_device for BIO for v2.6.28
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: "Linux-iSCSI.org Target Dev" 
 	<linux-iscsi-target-dev@googlegroups.com>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Content-Type: text/plain
-Date: Fri, 19 Dec 2008 15:27:43 -0800
-Message-Id: <1229729263.4560.93.camel@haakon2.linux-iscsi.org>
+Date: Fri, 19 Dec 2008 15:28:18 -0800
+Message-Id: <1229729298.4560.95.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -28,176 +30,135 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 83f3b031993ef08fca5cffc9bc416ece901b538a Mon Sep 17 00:00:00 2001
+>From 77873e8378d6ef8fdb1c6edb9cb8be478680f5d0 Mon Sep 17 00:00:00 2001
 From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Fri, 19 Dec 2008 13:31:09 -0800
-Subject: [PATCH] [Target_Core_Mod]: Updates for generic device core
+Date: Fri, 19 Dec 2008 13:35:23 -0800
+Subject: [PATCH] [Target_Core_Mod/PSCSI]: Grab temporary pointer to struct block_device for BIO for v2.6.28
 
-This patch adds a missing SCF_SE_LUN_CMD in __transport_get_lun_for_cmd()
+Inside of pscsi_create_virtdevice_from_fd(), we set pscsi_dev_virt_t->pdv_bd from
+struct block_device in pscsi_create_virtdevice_from_fd().  This is required because
+we need to set struct bio->bi_bdev for usage with fs/bio.c:bio_add_page().
 
-Also, it adds a temporary NOP for transport_get_lun_for_tmr(), and adds
-core_dec_lacl_count().
-
-It also export the following symbols:
-
-core_update_device_list_access()
-core_dev_add_lun()
-core_dev_del_lun()
-core_get_lun_from_tpg()
-core_dev_init_initiator_node_lun_acl()
-core_dev_add_initiator_node_lun_acl()
-core_dev_del_initiator_node_lun_acl()
+This logic for sending struct scatterlist with struct request into
+struct scsi_device->request_queue will be changing post v2.6.28, but this is
+currently required to get TYPE_DISK working w/o scsi_execute_async() or bio_add_pc_page().
 
 Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 ---
- drivers/lio-core/target_core_device.c |   44 +++++++++++++++++++++++++++++++-
- drivers/lio-core/target_core_device.h |    1 +
- 2 files changed, 43 insertions(+), 2 deletions(-)
+ drivers/lio-core/target_core_pscsi.c |   37 ++++++++++++++++++++++++++++++---
+ drivers/lio-core/target_core_pscsi.h |    1 +
+ 2 files changed, 34 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/lio-core/target_core_device.c b/drivers/lio-core/target_core_device.c
-index 132bdef..9aa2f51 100644
---- a/drivers/lio-core/target_core_device.c
-+++ b/drivers/lio-core/target_core_device.c
-@@ -272,6 +272,7 @@ extern int __transport_get_lun_for_cmd (
-                 se_cmd->orig_fe_lun = unpacked_lun;
-                 se_cmd->se_orig_obj_api = ISCSI_LUN(se_cmd)->lun_obj_api;
-                 se_cmd->se_orig_obj_ptr = ISCSI_LUN(se_cmd)->lun_type_ptr;
-+		se_cmd->se_cmd_flags |= SCF_SE_LUN_CMD;
-         }
- out:
-         spin_unlock_bh(&SE_NODE_ACL(se_sess)->device_list_lock);
-@@ -279,11 +280,15 @@ out:
-         if (!se_lun) {
- 		if (read_only) {
- 			se_cmd->scsi_sense_reason = WRITE_PROTECTED;
--                        printk("Detected WRITE_PROTECTED LUN Access for 0x%08x\n",
-+                        printk("TARGET_CORE[%s]: Detected WRITE_PROTECTED LUN"
-+				" Access for 0x%08x\n",
-+				CMD_TFO(se_cmd)->get_fabric_name(),
- 				unpacked_lun);
- 		} else {
- 			se_cmd->scsi_sense_reason = NON_EXISTENT_LUN;
--                        printk("Detected NON_EXISTENT_LUN Access for  0x%08x\n",
-+                        printk("TARGET_CORE[%s]: Detected NON_EXISTENT_LUN"
-+				" Access for 0x%08x\n",
-+				CMD_TFO(se_cmd)->get_fabric_name(),
- 				unpacked_lun);
-                 }
- 		se_cmd->se_cmd_flags |= SCF_SCSI_CDB_EXCEPTION;
-@@ -333,6 +338,14 @@ out:
- 	return(0);
+diff --git a/drivers/lio-core/target_core_pscsi.c b/drivers/lio-core/target_core_pscsi.c
+index d417b1e..bcc0f72 100644
+--- a/drivers/lio-core/target_core_pscsi.c
++++ b/drivers/lio-core/target_core_pscsi.c
+@@ -583,6 +583,9 @@ extern void pscsi_free_device (void *p)
+ 	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) p;
+ 	struct scsi_device *sd = (struct scsi_device *) pdv->pdv_sd;
+ 
++	if (pdv->pdv_bd)
++		pdv->pdv_bd = NULL;
++
+ 	if (sd) {
+ 		if ((sd->type == TYPE_DISK) || (sd->type == TYPE_ROM)) 
+ 			scsi_device_put(sd);
+@@ -1041,6 +1044,11 @@ extern se_device_t *pscsi_create_virtdevice_from_fd (
+ 			return(ERR_PTR(-EINVAL));
+ 		}
+ 		/*
++		 * Keep track of the struct block_device for now, as we need it for
++		 * 
++		 */
++		pdv->pdv_bd = bd;
++		/*
+ 		 * pscsi_create_type_[disk,rom]() will release host_lock..
+ 		 */
+ 		spin_lock_irq(sh->host_lock);
+@@ -1074,6 +1082,12 @@ extern se_device_t *pscsi_create_virtdevice_from_fd (
+ 		return(ERR_PTR(-ENODEV));
+ 	}
+ 
++	/*
++	 * Clear pdv->pdv_bd on exception.
++	 */
++	if (!(dev))
++		pdv->pdv_bd = NULL;
++
+ 	iput(inode);
+ 	fput(filp);
+ 	return(dev);
+@@ -1160,7 +1174,7 @@ static void pscsi_bi_endio (struct bio *bio, int error)
+ 	bio_put(bio);
  }
  
-+#warning FIXME: Complete transport_get_lun_for_tmr()
-+extern int transport_get_lun_for_tmr (
-+	se_cmd_t *se_cmd,
-+	u32 unpacked_lun)
-+{
-+	return(-1);
-+}
-+
- extern int core_free_device_list_for_node (se_node_acl_t *nacl, se_portal_group_t *tpg)
+-static inline struct bio *pscsi_get_bio (int sg_num)
++static inline struct bio *pscsi_get_bio (pscsi_dev_virt_t *pdv, int sg_num)
  {
-         se_dev_entry_t *deve;
-@@ -370,6 +383,18 @@ extern int core_free_device_list_for_node (se_node_acl_t *nacl, se_portal_group_
-         return(0);
+ 	struct bio *bio;
+ 
+@@ -1169,11 +1183,22 @@ static inline struct bio *pscsi_get_bio (int sg_num)
+ 		return(NULL);
+ 	}
+ 	bio->bi_end_io = pscsi_bi_endio;
++
++	/*
++	 * While using fs/bio.c:bio_add_page() in pscsi_map_task_SG(), each
++	 * struct bio->bi_bdev needs to be set in order for bdev_get_queue()
++	 * to locate struct request_queue in bio_add_page().
++	 */
++	if (!(bio->bi_bdev = pdv->pdv_bd)) {
++		printk(KERN_ERR "PSCSI: Unable to locate struct block_device for BIO\n");
++		bio_put(bio);
++		return(NULL);
++	}
+ 	
+ 	return(bio);
  }
  
-+extern void core_dec_lacl_count (se_node_acl_t *se_nacl, se_cmd_t *se_cmd)
-+{
-+	se_dev_entry_t *deve;
-+
-+	spin_lock_bh(&se_nacl->device_list_lock);
-+	deve = &se_nacl->device_list[se_cmd->orig_fe_lun];
-+	deve->deve_cmds--;
-+	spin_unlock_bh(&se_nacl->device_list_lock);
-+	
-+	return;
-+}
-+
- extern void core_update_device_list_access (
-         u32 mapped_lun,
-         u32 lun_access,
-@@ -391,6 +416,8 @@ extern void core_update_device_list_access (
-         return;
- }
- 
-+EXPORT_SYMBOL(core_update_device_list_access);
-+
- /*      core_update_device_list_for_node():
-  *
-  *
-@@ -860,6 +887,8 @@ extern se_lun_t *core_dev_add_lun (
-         return(lun_p);
- }
- 
-+EXPORT_SYMBOL(core_dev_add_lun);
-+
- /*      core_dev_del_lun():
-  *
-  *
-@@ -884,6 +913,8 @@ extern int core_dev_del_lun (
-         return(0);
- }
- 
-+EXPORT_SYMBOL(core_dev_del_lun);
-+
- extern se_lun_t *core_get_lun_from_tpg (se_portal_group_t *tpg, u32 unpacked_lun)
+-#if 1
++#if 0
+ #define DEBUG_PSCSI(x...) printk(x)
+ #else
+ #define DEBUG_PSCSI(x...)
+@@ -1186,6 +1211,7 @@ static inline struct bio *pscsi_get_bio (int sg_num)
+ extern int pscsi_map_task_SG (se_task_t *task)
  {
-         se_lun_t *lun;
-@@ -912,6 +943,8 @@ extern se_lun_t *core_get_lun_from_tpg (se_portal_group_t *tpg, u32 unpacked_lun
-         return(lun);
- }
+         pscsi_plugin_task_t *pt = (pscsi_plugin_task_t *) task->transport_req;
++	pscsi_dev_virt_t *pdv = (pscsi_dev_virt_t *) task->se_dev->dev_ptr;
+ 	struct bio *bio = NULL, *hbio = NULL, *tbio = NULL;
+ 	struct page *page;
+ 	struct request *rq = pt->pscsi_req;
+@@ -1226,12 +1252,15 @@ extern int pscsi_map_task_SG (se_task_t *task)
+ 				nr_vecs = min_t(int, BIO_MAX_PAGES, nr_pages);
+ 				nr_pages -= nr_vecs;
  
-+EXPORT_SYMBOL(core_get_lun_from_tpg);
-+
- /*      core_dev_get_lun():
-  *
-  *
-@@ -976,6 +1009,8 @@ extern se_lun_acl_t *core_dev_init_initiator_node_lun_acl (
-         return(lacl);
- }
+-				if (!(bio = pscsi_get_bio(nr_vecs)))
++				if (!(bio = pscsi_get_bio(pdv, nr_vecs)))
+ 					goto fail;	
  
-+EXPORT_SYMBOL(core_dev_init_initiator_node_lun_acl);
-+
- extern int core_dev_add_initiator_node_lun_acl (
-         se_portal_group_t *tpg,
-         se_lun_acl_t *lacl,
-@@ -1017,6 +1052,8 @@ extern int core_dev_add_initiator_node_lun_acl (
-         return(0);
- }
+ 				DEBUG_PSCSI("PSCSI: Allocated bio: %p, nr_vecs: %d\n",
+ 					bio, nr_vecs);
+-				tbio = tbio->bi_next = bio;
++				if (!tbio)
++					tbio = bio;
++				else
++					tbio = tbio->bi_next = bio;
+ 			}
  
-+EXPORT_SYMBOL(core_dev_add_initiator_node_lun_acl);
-+
- /*      core_dev_del_initiator_node_lun_acl():
-  *
-  *
-@@ -1047,6 +1084,8 @@ extern int core_dev_del_initiator_node_lun_acl (
-         return(0);
- }
- 
-+EXPORT_SYMBOL(core_dev_del_initiator_node_lun_acl);
-+
- extern void core_dev_free_initiator_node_lun_acl (
-         se_portal_group_t *tpg,
-         se_lun_acl_t *lacl)
-@@ -1061,3 +1100,4 @@ extern void core_dev_free_initiator_node_lun_acl (
-         return;
- }
- 
-+EXPORT_SYMBOL(core_dev_free_initiator_node_lun_acl);
-diff --git a/drivers/lio-core/target_core_device.h b/drivers/lio-core/target_core_device.h
-index 6028c3a..128aae8 100644
---- a/drivers/lio-core/target_core_device.h
-+++ b/drivers/lio-core/target_core_device.h
-@@ -36,6 +36,7 @@ extern int se_check_devices_access (se_hba_t *);
- extern void se_disable_devices_for_hba (se_hba_t *);
- extern int transport_get_lun_for_cmd (struct se_cmd_s *, unsigned char *, u32);
- extern int core_free_device_list_for_node (se_node_acl_t *, se_portal_group_t *);
-+extern void core_dec_lacl_count (struct se_node_acl_s *, struct se_cmd_s *);
- extern void core_update_device_list_access (u32, u32, se_node_acl_t *);
- extern void core_update_device_list_for_node (se_lun_t *lun, u32, u32, se_node_acl_t *, se_portal_group_t *, int);
- extern void core_clear_lun_from_tpg (se_lun_t *, se_portal_group_t *);
+ 			DEBUG_PSCSI("PSCSI: Calling bio_add_page() i: %d bio: %p"
+diff --git a/drivers/lio-core/target_core_pscsi.h b/drivers/lio-core/target_core_pscsi.h
+index 929fbb9..8883bf6 100644
+--- a/drivers/lio-core/target_core_pscsi.h
++++ b/drivers/lio-core/target_core_pscsi.h
+@@ -115,6 +115,7 @@ typedef struct pscsi_dev_virt_s {
+ 	int	pdv_channel_id;
+ 	int	pdv_target_id;
+ 	int	pdv_lun_id;
++	struct block_device *pdv_bd; /* Temporary for v2.6.28 */
+ 	struct scsi_device *pdv_sd;
+ 	struct se_hba_s *pdv_se_hba;
+ } pscsi_dev_virt_t;
 -- 
 1.5.4.1
 
