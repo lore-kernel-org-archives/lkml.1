@@ -1,170 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYLSQDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbYLSQEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470AbYLSQDJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 11:03:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbYLSQBu
+	id S1752083AbYLSQEH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 11:04:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYLSQBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 11:01:50 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:35413 "EHLO relay.sgi.com"
+	Fri, 19 Dec 2008 11:01:53 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:59244 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751086AbYLSQBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 11:01:47 -0500
-Message-Id: <20081219160145.011014000@polaris-admin.engr.sgi.com>
+	id S1751479AbYLSQBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 11:01:48 -0500
+Message-Id: <20081219160145.535077000@polaris-admin.engr.sgi.com>
 References: <20081219160144.697518000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 19 Dec 2008 08:01:46 -0800
+Date: Fri, 19 Dec 2008 08:01:50 -0800
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@redhat.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH 2/8] cpumask: convert kernel/workqueue.c
-Content-Disposition: inline; filename=cpumask:convert-kernel_workqueue.c.patch
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>
+Subject: [PATCH 6/8] cpumask: convert kernel mm functions
+Content-Disposition: inline; filename=cpumask:convert-mm.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Reduce memory usage, use new cpumask API.
+Impact: Reduce stack usage, use new cpumask API.
 
-In this case, we replace cpu_populated_map with a cpumask_var_t rather
-than a bitmap because there's an obvious init function for workqueues
-which happens after kmalloc is available.
+Convert kernel mm functions to use struct cpumask.
+
+We skip include/linux/percpu.h and mm/allocpercpu.c, which are in flux.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Matt Mackall <mpm@selenic.com>
 ---
- kernel/workqueue.c |   39 +++++++++++++++++++++------------------
- 1 file changed, 21 insertions(+), 18 deletions(-)
+ mm/pdflush.c |   16 +++++++++++++---
+ mm/slab.c    |    2 +-
+ mm/slub.c    |   20 +++++++++++---------
+ mm/vmscan.c  |    2 +-
+ mm/vmstat.c  |    4 ++--
+ 5 files changed, 28 insertions(+), 16 deletions(-)
 
---- linux-2.6-for-ingo.orig/kernel/workqueue.c
-+++ linux-2.6-for-ingo/kernel/workqueue.c
-@@ -73,15 +73,15 @@ static DEFINE_SPINLOCK(workqueue_lock);
- static LIST_HEAD(workqueues);
- 
- static int singlethread_cpu __read_mostly;
--static cpumask_t cpu_singlethread_map __read_mostly;
-+static const struct cpumask *cpu_singlethread_map __read_mostly;
- /*
-- * _cpu_down() first removes CPU from cpu_online_map, then CPU_DEAD
-+ * _cpu_down() first removes CPU from cpu_online_mask, then CPU_DEAD
-  * flushes cwq->worklist. This means that flush_workqueue/wait_on_work
-  * which comes in between can't use for_each_online_cpu(). We could
-- * use cpu_possible_map, the cpumask below is more a documentation
-+ * use cpu_possible_mask, the cpumask below is more a documentation
-  * than optimization.
-  */
--static cpumask_t cpu_populated_map __read_mostly;
-+static cpumask_var_t cpu_populated_map __read_mostly;
- 
- /* If it's single threaded, it isn't in the list of workqueues. */
- static inline int is_single_threaded(struct workqueue_struct *wq)
-@@ -89,10 +89,10 @@ static inline int is_single_threaded(str
- 	return wq->singlethread;
- }
- 
--static const cpumask_t *wq_cpu_map(struct workqueue_struct *wq)
-+static const struct cpumask *wq_cpu_map(struct workqueue_struct *wq)
+diff --git a/mm/pdflush.c b/mm/pdflush.c
+--- a/mm/pdflush.c
++++ b/mm/pdflush.c
+@@ -172,7 +172,16 @@ static int pdflush(void *dummy)
+ static int pdflush(void *dummy)
  {
- 	return is_single_threaded(wq)
--		? &cpu_singlethread_map : &cpu_populated_map;
-+		? cpu_singlethread_map : cpu_populated_map;
- }
+ 	struct pdflush_work my_work;
+-	cpumask_t cpus_allowed;
++	cpumask_var_t cpus_allowed;
++
++	/*
++	 * Since the caller doesn't even check kthread_run() worked, let's not
++	 * freak out too much if this fails.
++	 */
++	if (!alloc_cpumask_var(&cpus_allowed, GFP_KERNEL)) {
++		printk(KERN_WARNING "pdflush failed to allocate cpumask\n");
++		return 0;
++	}
  
- static
-@@ -410,13 +410,13 @@ static int flush_cpu_workqueue(struct cp
-  */
- void flush_workqueue(struct workqueue_struct *wq)
- {
--	const cpumask_t *cpu_map = wq_cpu_map(wq);
-+	const struct cpumask *cpu_map = wq_cpu_map(wq);
- 	int cpu;
- 
- 	might_sleep();
- 	lock_map_acquire(&wq->lockdep_map);
- 	lock_map_release(&wq->lockdep_map);
--	for_each_cpu_mask_nr(cpu, *cpu_map)
-+	for_each_cpu(cpu, cpu_map)
- 		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
- }
- EXPORT_SYMBOL_GPL(flush_workqueue);
-@@ -532,7 +532,7 @@ static void wait_on_work(struct work_str
- {
- 	struct cpu_workqueue_struct *cwq;
- 	struct workqueue_struct *wq;
--	const cpumask_t *cpu_map;
-+	const struct cpumask *cpu_map;
- 	int cpu;
- 
- 	might_sleep();
-@@ -547,7 +547,7 @@ static void wait_on_work(struct work_str
- 	wq = cwq->wq;
- 	cpu_map = wq_cpu_map(wq);
- 
--	for_each_cpu_mask_nr(cpu, *cpu_map)
-+	for_each_cpu(cpu, cpu_map)
- 		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
- }
- 
-@@ -778,7 +778,7 @@ static int create_workqueue_thread(struc
- 	 *	if (caller is __create_workqueue)
- 	 *		nobody should see this wq
- 	 *	else // caller is CPU_UP_PREPARE
--	 *		cpu is not on cpu_online_map
-+	 *		cpu is not on cpu_online_mask
- 	 * so we can abort safely.
+ 	/*
+ 	 * pdflush can spend a lot of time doing encryption via dm-crypt.  We
+@@ -187,8 +196,9 @@ static int pdflush(void *dummy)
+ 	 * This is needed as pdflush's are dynamically created and destroyed.
+ 	 * The boottime pdflush's are easily placed w/o these 2 lines.
  	 */
- 	if (IS_ERR(p))
-@@ -903,7 +903,7 @@ static void cleanup_workqueue_thread(str
-  */
- void destroy_workqueue(struct workqueue_struct *wq)
+-	cpuset_cpus_allowed(current, &cpus_allowed);
+-	set_cpus_allowed_ptr(current, &cpus_allowed);
++	cpuset_cpus_allowed(current, cpus_allowed);
++	set_cpus_allowed_ptr(current, cpus_allowed);
++	free_cpumask_var(cpus_allowed);
+ 
+ 	return __pdflush(&my_work);
+ }
+diff --git a/mm/slab.c b/mm/slab.c
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2155,7 +2155,7 @@ kmem_cache_create (const char *name, siz
+ 
+ 	/*
+ 	 * We use cache_chain_mutex to ensure a consistent view of
+-	 * cpu_online_map as well.  Please see cpuup_callback
++	 * cpu_online_mask as well.  Please see cpuup_callback
+ 	 */
+ 	get_online_cpus();
+ 	mutex_lock(&cache_chain_mutex);
+diff --git a/mm/slub.c b/mm/slub.c
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1960,7 +1960,7 @@ static DEFINE_PER_CPU(struct kmem_cache_
+ 				kmem_cache_cpu)[NR_KMEM_CACHE_CPU];
+ 
+ static DEFINE_PER_CPU(struct kmem_cache_cpu *, kmem_cache_cpu_free);
+-static cpumask_t kmem_cach_cpu_free_init_once = CPU_MASK_NONE;
++static DECLARE_BITMAP(kmem_cach_cpu_free_init_once, CONFIG_NR_CPUS);
+ 
+ static struct kmem_cache_cpu *alloc_kmem_cache_cpu(struct kmem_cache *s,
+ 							int cpu, gfp_t flags)
+@@ -2035,13 +2035,13 @@ static void init_alloc_cpu_cpu(int cpu)
  {
--	const cpumask_t *cpu_map = wq_cpu_map(wq);
-+	const struct cpumask *cpu_map = wq_cpu_map(wq);
+ 	int i;
+ 
+-	if (cpu_isset(cpu, kmem_cach_cpu_free_init_once))
++	if (cpumask_test_cpu(cpu, to_cpumask(kmem_cach_cpu_free_init_once)))
+ 		return;
+ 
+ 	for (i = NR_KMEM_CACHE_CPU - 1; i >= 0; i--)
+ 		free_kmem_cache_cpu(&per_cpu(kmem_cache_cpu, cpu)[i], cpu);
+ 
+-	cpu_set(cpu, kmem_cach_cpu_free_init_once);
++	cpumask_set_cpu(cpu, to_cpumask(kmem_cach_cpu_free_init_once));
+ }
+ 
+ static void __init init_alloc_cpu(void)
+@@ -3433,7 +3433,7 @@ struct location {
+ 	long max_time;
+ 	long min_pid;
+ 	long max_pid;
+-	cpumask_t cpus;
++	DECLARE_BITMAP(cpus, NR_CPUS);
+ 	nodemask_t nodes;
+ };
+ 
+@@ -3508,7 +3508,8 @@ static int add_location(struct loc_track
+ 				if (track->pid > l->max_pid)
+ 					l->max_pid = track->pid;
+ 
+-				cpu_set(track->cpu, l->cpus);
++				cpumask_set_cpu(track->cpu,
++						to_cpumask(l->cpus));
+ 			}
+ 			node_set(page_to_nid(virt_to_page(track)), l->nodes);
+ 			return 1;
+@@ -3538,8 +3539,8 @@ static int add_location(struct loc_track
+ 	l->max_time = age;
+ 	l->min_pid = track->pid;
+ 	l->max_pid = track->pid;
+-	cpus_clear(l->cpus);
+-	cpu_set(track->cpu, l->cpus);
++	cpumask_clear(to_cpumask(l->cpus));
++	cpumask_set_cpu(track->cpu, to_cpumask(l->cpus));
+ 	nodes_clear(l->nodes);
+ 	node_set(page_to_nid(virt_to_page(track)), l->nodes);
+ 	return 1;
+@@ -3620,11 +3621,12 @@ static int list_locations(struct kmem_ca
+ 			len += sprintf(buf + len, " pid=%ld",
+ 				l->min_pid);
+ 
+-		if (num_online_cpus() > 1 && !cpus_empty(l->cpus) &&
++		if (num_online_cpus() > 1 &&
++				!cpumask_empty(to_cpumask(l->cpus)) &&
+ 				len < PAGE_SIZE - 60) {
+ 			len += sprintf(buf + len, " cpus=");
+ 			len += cpulist_scnprintf(buf + len, PAGE_SIZE - len - 50,
+-					&l->cpus);
++						 to_cpumask(l->cpus));
+ 		}
+ 
+ 		if (num_online_nodes() > 1 && !nodes_empty(l->nodes) &&
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1902,7 +1902,7 @@ static int kswapd(void *p)
+ 	};
+ 	node_to_cpumask_ptr(cpumask, pgdat->node_id);
+ 
+-	if (!cpus_empty(*cpumask))
++	if (!cpumask_empty(cpumask))
+ 		set_cpus_allowed_ptr(tsk, cpumask);
+ 	current->reclaim_state = &reclaim_state;
+ 
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -20,7 +20,7 @@ DEFINE_PER_CPU(struct vm_event_state, vm
+ DEFINE_PER_CPU(struct vm_event_state, vm_event_states) = {{0}};
+ EXPORT_PER_CPU_SYMBOL(vm_event_states);
+ 
+-static void sum_vm_events(unsigned long *ret, cpumask_t *cpumask)
++static void sum_vm_events(unsigned long *ret, const struct cpumask *cpumask)
+ {
  	int cpu;
- 
- 	cpu_maps_update_begin();
-@@ -911,7 +911,7 @@ void destroy_workqueue(struct workqueue_
- 	list_del(&wq->list);
- 	spin_unlock(&workqueue_lock);
- 
--	for_each_cpu_mask_nr(cpu, *cpu_map)
-+	for_each_cpu(cpu, cpu_map)
- 		cleanup_workqueue_thread(per_cpu_ptr(wq->cpu_wq, cpu));
-  	cpu_maps_update_done();
- 
-@@ -933,7 +933,7 @@ static int __devinit workqueue_cpu_callb
- 
- 	switch (action) {
- 	case CPU_UP_PREPARE:
--		cpu_set(cpu, cpu_populated_map);
-+		cpumask_set_cpu(cpu, cpu_populated_map);
- 	}
- undo:
- 	list_for_each_entry(wq, &workqueues, list) {
-@@ -964,7 +964,7 @@ undo:
- 	switch (action) {
- 	case CPU_UP_CANCELED:
- 	case CPU_POST_DEAD:
--		cpu_clear(cpu, cpu_populated_map);
-+		cpumask_clear_cpu(cpu, cpu_populated_map);
- 	}
- 
- 	return ret;
-@@ -1017,9 +1017,12 @@ EXPORT_SYMBOL_GPL(work_on_cpu);
- 
- void __init init_workqueues(void)
+ 	int i;
+@@ -43,7 +43,7 @@ void all_vm_events(unsigned long *ret)
+ void all_vm_events(unsigned long *ret)
  {
--	cpu_populated_map = cpu_online_map;
--	singlethread_cpu = first_cpu(cpu_possible_map);
--	cpu_singlethread_map = cpumask_of_cpu(singlethread_cpu);
-+	alloc_cpumask_var(&cpu_populated_map, GFP_KERNEL);
-+	cpumask_copy(cpu_populated_map, cpu_online_mask);
-+
-+	singlethread_cpu = cpumask_first(cpu_possible_mask);
-+	cpu_singlethread_map = cpumask_of(singlethread_cpu);
-+
- 	hotcpu_notifier(workqueue_cpu_callback, 0);
- 	keventd_wq = create_workqueue("events");
- 	BUG_ON(!keventd_wq);
+ 	get_online_cpus();
+-	sum_vm_events(ret, &cpu_online_map);
++	sum_vm_events(ret, cpu_online_mask);
+ 	put_online_cpus();
+ }
+ EXPORT_SYMBOL_GPL(all_vm_events);
 
 -- 
