@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbYLSTbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbYLSTb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbYLSTbB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 14:31:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYLSTat
+	id S1753939AbYLSTb1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 14:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbYLSTbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 14:30:49 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:60298 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751534AbYLSTas (ORCPT
+	Fri, 19 Dec 2008 14:31:10 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:57750 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751684AbYLSTbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 14:30:48 -0500
-Subject: Re: Notes on support for multiple devices for a single filesystem
-From: Chris Mason <chris.mason@oracle.com>
-To: Bryan Henderson <hbryan@us.ibm.com>
-Cc: Brad Voth <brad@voth.name>, adilger@sun.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-btrfs@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sfr@canb.auug.org.au
-In-Reply-To: <OF3415C20F.793A0D3C-ON88257524.0067548F-88257524.0068BCEC@us.ibm.com>
-References: <OF3415C20F.793A0D3C-ON88257524.0067548F-88257524.0068BCEC@us.ibm.com>
-Content-Type: text/plain
-Date: Fri, 19 Dec 2008 14:30:15 -0500
-Message-Id: <1229715015.6695.71.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Fri, 19 Dec 2008 14:31:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=r03nViyDzA7EKsAHxPED//dzDgnCpGlGnAdN5/c/Z+upnVec8n1xMBib1FNugE/ANb
+         sadOMT/kZGfV+1kK+bLP7MIn3ysepV9bbdXu5tUeTNe6slq73O9S7gH5e3eqVgvKJZtq
+         PxPja4E562aYln6PbKN2AVl661RQ8dMBQ/R74=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] ide: Fix ata_id_has_dword_io to return DWORD I/O support properly
+Date: Fri, 19 Dec 2008 20:30:34 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rc8-next-20081219; KDE/4.1.3; i686; ; )
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Jeff Garzik <jeff@garzik.org>,
+       Mario Schwalbe <schwalbe@inf.tu-dresden.de>,
+       linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+References: <494A5BBF.8000807@inf.tu-dresden.de> <200812190013.10156.bzolnier@gmail.com> <20081219105013.0e43c364@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081219105013.0e43c364@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200812192030.34554.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.494BF650.0154:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-19 at 11:03 -0800, Bryan Henderson wrote:
-> "Brad Voth" <brad@voth.name> wrote on 12/18/2008 01:36:12 PM:
+On Friday 19 December 2008, Alan Cox wrote:
+> > Sure, we can always improve things further later.  However Mario's patch
+> > is _definitely_ an improvement over the _current_ code.  Don't you agree?
 > 
-> > I can see the desire to have the snapshot at the filesystem level to
-> > ensure that the filesystem knows it is consistent.  However, this 
-> > can be a duplication of effort because of the need to have snapshots
-> > at the block device level for non-fs devices.  Such as raw logical 
-> > devices for say a database.  I would think that a viable consistent 
-> > solution would be to have the block device snapshot mechanism have a
-> > hook into the filesystem api to say, "I'm preparing to take a 
-> > snapshot, please quiesce and return" <take block snapshot> "You may 
-> > now resume, Mr. Filesystem"
+> No actually I don't. The current head dev code checks ATA > 7 as the
+> indicator that this bit is used for treacherous computing. That means the
+> behaviour for all the older drives is clearly back compatible with old
+> Linux behaviour.
+> 
+> Doing it that way around means we don't have any worries about changing
+> existing behaviours.
 
-This is what lvm does now with the write_super_lockfs calls.  They work
-well for a specific purpose.
+Please try to verify old Linux behaviour compatiblity statement with
+some ATA-[2..7] devices...  They have old ATA-1 bit set to _zero_...
 
-At the end of the day snapshots mean different things to different
-people and different workloads.  In lots of ways the lvm snapshots work
-very well.
+Mario: I don't have anymore time to spend on fixing libata problems so
+I'll be leaving ata_id_has_dword_io() issues up to libata maintainers,
+sorry for inconvenience!
 
-But, doing snapshots at the FS level gives you better performance and
-more control.
-
--chris
-
-
+Thanks,
+Bart
