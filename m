@@ -1,198 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754383AbYLSIS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbYLSISz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754383AbYLSIS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 03:18:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbYLSISW
+	id S1754805AbYLSISz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 03:18:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbYLSISq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 03:18:22 -0500
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:50545 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753063AbYLSISV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 03:18:21 -0500
-Date: Fri, 19 Dec 2008 08:17:39 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: device driver probe return codes
-Message-ID: <20081219081739.GL12431@fluff.org.uk>
-References: <20081216215331.GH12431@fluff.org.uk> <20081216234128.05a343bb.akpm@linux-foundation.org> <20081218101426.GI12431@fluff.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081218101426.GI12431@fluff.org.uk>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 19 Dec 2008 03:18:46 -0500
+Received: from ns1.suse.de ([195.135.220.2]:32879 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753186AbYLSISo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 03:18:44 -0500
+Date: Fri, 19 Dec 2008 09:18:41 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: Seewer Philippe <philippe.seewer@bfh.ch>
+Cc: Hannes Reinecke <hare@suse.de>, Christoph Hellwig <hch@infradead.org>,
+       <initramfs@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Dave Jones <davej@redhat.com>,
+       <cjwatson@ubuntu.com>, Bernhard Walle <bwalle@novell.com>
+Subject: Re: Dracut -- Cross distribution initramfs infrastructure
+Message-ID: <20081219091841.207bc951@kopernikus.site>
+In-Reply-To: <494B5031.5080306@bfh.ch>
+References: <1229540094.28858.150.camel@aglarond.local>
+	<20081217190700.GA15377@infradead.org>
+	<4949FD67.6040906@suse.de>
+	<494B5031.5080306@bfh.ch>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 18, 2008 at 10:14:26AM +0000, Ben Dooks wrote:
-> On Tue, Dec 16, 2008 at 11:41:28PM -0800, Andrew Morton wrote:
-> > On Tue, 16 Dec 2008 21:53:31 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
-> > 
-> > > I would like some feedback on the following regarding some
-> > > form of standardising return codes from a device driver probe
-> > > to try and stop some basic mistakes.
-> > > 
-> > > This document is not complete, any additions would be welcone.
-> > > 
-> > > 
-> > > probe() error return codes
-> > > ==========================
-> > > 
-> > > -ENODEV		This should be reserved for the case where there
-> > > 		really is no device here.
-> > > 
-> > > 		If you do not have a necessary resource or other setup
-> > > 		information this is NOT the error you want to return as
-> > > 		the driver core will not print any error message to the
-> > > 		user. Even if you driver prints a warning, this is still
-> > > 		not the error code to return.
-> > > 
-> > > -ENXIO		See -ENODEV, this is taken by the driver core to mean
-> > > 		there is "No such device or address (POSIX.1)".
-> > > 
-> > > -ENOMEM		This is used to signify lack of memory resources, such
-> > > 		as a failure to kmalloc() device state.
-> > > 
-> > > -EBUSY		A resource you need is not avaialable.
-> > > 
-> > > 		This is returned if you cannot get exclusive access to a
-> > > 		resource such as a request_mem_region() has failed.
-> > > 
-> > > -EINVAL		An argument to the driver is invalid.
-> > > 
-> > > -EIO		An input/output error occured. This could be due to
-> > > 		the device responding in an unexpected way or that
-> > > 		the device did not complete a request properly.
-> > > 
-> > > 
-> > 
-> > Sounds good.  I forsee a lot of patches to fix all this up :)
-> > 
-> > > 
-> > > Generic driver examples
-> > > =======================
-> > > 
-> > > Requesting an memory region
-> > > ---------------------------
-> > > 
-> > > 	if (!request_mem_region(start, len, why))
-> > > 		return -EBUSY;
-> > > 
-> > > Mapping a IO region
-> > > -------------------
-> > > 
-> > > 	regs = ioremap(base, size);
-> > > 	if (!regs)
-> > > 		return -EIO;
-> > > 
-> > > possibly -EFAULT here? 
-> > 
-> > I don't think EFAULT is appropriate here - there was no fault.
-> > 
-> > And EIO to me implies some problem with a hardware device.
-> > 
-> > > Not -ENOMEM, which a number of drivers do.
-> > 
-> > And ENOMEM should be reserved for page allocation exhaustion.
-> > 
-> > It's a bit presumptuous, but perhaps EBUSY here?
-> 
-> Ok, that might be ok, but it will get overloaded as -EBUSY is
-> a possible return from a number of resource reservation calls.
+* Seewer Philippe [2008-12-19 08:41]:
+>
+> Hannes Reinecke wrote:
+> [snip]
+> > If anyone is interested I can give a short overview of it.
+> Please do so, would be appreciated.
 
-As a note, Russell has said that -ENOMEM should be more than acceptable
-here, as generally a failure from ioremap() is due to there being
-insufficient memory to create the necessary page mappings.
-  
-> > > 
-> > > Platform driver specific examples
-> > > =================================
-> > > 
-> > > Examples when writing platform drivers.
-> > > 
-> > > All examples in this section assume the probe prototype is:
-> > > 
-> > > static int my_probe(struct platform_device *pdev)
-> > > 
-> > > 
-> > > Checking platform data
-> > > ----------------------
-> > > 
-> > > 	if (!pdev->dev.platform_data)
-> > > 		return -EINVAL;
-> > > 
-> > > should -ENOENT be returned here?
-> > 
-> > Well.. what would cause this to come about?
-> > 
-> > Perhaps BUG() is more appropriate ;)
-> 
-> WARN_ON() possibly, BUG() is a bit terminal to the whole kernel
-> process and if triggered before the console is working can be
-> rather hard to detect.
-> 
-> Possibly change this to:
-> 
-> 	 if (!pdev->dev.platform_data) {
-> 		dev_dbg(&pdev->dev, "no platform data supplied\n");
-> 		WARN();
-> 		return -EINVAL;
-> 	}
->  
-> > > 
-> > > Finding platform resource(s)
-> > > ----------------------------
-> > > 
-> > > 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> > > 	if (!res)
-> > > 		return -ENOENT;
-> > 
-> > I don't really like the practice of returning what are clearly
-> > filesystem-related errnos just because they're kinda sorta conceptually
-> > similar to what actually happened.
-> > 
-> > Again, what could actually cause this to happen?  The device doesn't
-> > have any memory resources?  So it's busted?  EIO or ENODEV?
-> 
-> ENODEV is part of the problem that we're trying to avoid returning
-> as it gets silently discarded by the device core. Unfortunately without
-> creating a new set of error codes specifically for device probes then
-> we're out of choice.
->  
-> > > 	   
-> > > Getting a clock
-> > > ---------------
-> > > 
-> > > 	clk = clk_get(&pdev->dev, NULL);
-> > > 	if (IS_ERR(clk))
-> > > 		return PTR_ERR(clk);
-> > 
-> > yup.
-> > 
-> > 
-> > But really, the drivers should be doing far less of this
-> > errno-guessing.  In the majority of cases (platform_get_resource,
-> > ioremap, request_mem_region from your examples) the core kernel
-> > function should have returned an IS_ERR value and all the driver needs
-> > to do is to return it.
-> 
-> Yes, although the work to fixup some of these might be large it certainly
-> shouldn't be too complicated to do.
-> 
-> -- 
-> Ben (ben@fluff.org, http://www.fluff.org/)
-> 
->   'a smiley only costs 4 bytes'
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+A good start is the manual page in section 5:
+http://git.opensuse.org/?p=projects/mkinitrd.git;a=blob_plain;f=man/mkinitrd.5.txt;hb=7583c3cc047edc3e8f1a06e8b7925bd27ac0228c
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+(The git.kernel.org and the opensuse.org repos are basically the same,
+we just switched to opensuse.org after the internal maintainership has
+been transferred from Hannes to myself because it was easier to add
+new users there. The opensuse.org git repo site didn't exist when the
+kernel.org mkinitrd repo was created.)
 
-  'a smiley only costs 4 bytes'
+Anyway:
+
+The basic idea is to have most stuff not in the main 'mkinitrd' script
+but in modules. Each module has (normally) a setup script part that is
+executed when the initrd is created, and a boot part that is executed
+when the initrd is running. For example, NFS root is in the 'nfs-util'
+package, not in 'mkinitrd'. Same for iSCSI. Or the kdump part is
+not in the main mkinitrd but in our 'kdump' package [1]. So the main
+initrd  package is quite small but still very flexible.
+
+It's also flexible enough to use Busybox as module that resides in the
+'busybox' package and can then be enabled with -F busybox (feature)
+when building the initrd.
+
+Only documentation is at the current time a bit weak, one has to fiddle
+some stuff from the sources when writing new modules. But that's easy
+to fix. :-)
+
+Hannes may explain more ...
+
+
+
+    Bernhard
+
+[1] hg clone http://freehg.org/u/bwalle/kdump/
