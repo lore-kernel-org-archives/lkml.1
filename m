@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbYLST3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbYLSTbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753436AbYLST3Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 14:29:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbYLST3M
+	id S1753532AbYLSTbB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 14:31:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYLSTat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 14:29:12 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50008 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751378AbYLST3K (ORCPT
+	Fri, 19 Dec 2008 14:30:49 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:60298 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751534AbYLSTas (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 14:29:10 -0500
-Date: Fri, 19 Dec 2008 11:28:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Duane Griffin" <duaneg@dghda.com>
-Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, adilger@sun.com, tytso@mit.edu,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] vfs: introduce helper function to safely NUL-terminate
- symlinks
-Message-Id: <20081219112839.2748c467.akpm@linux-foundation.org>
-In-Reply-To: <e9e943910812190703w6fb43cebmfe96f2a2e8cc47dd@mail.gmail.com>
-References: <1229442720-31056-3-git-send-email-duaneg@dghda.com>
-	<1229442720-31056-4-git-send-email-duaneg@dghda.com>
-	<1229442720-31056-5-git-send-email-duaneg@dghda.com>
-	<1229442720-31056-1-git-send-email-duaneg@dghda.com>
-	<1229442720-31056-6-git-send-email-duaneg@dghda.com>
-	<1229442720-31056-2-git-send-email-duaneg@dghda.com>
-	<20081216234638.GX5000@webber.adilger.int>
-	<e9e943910812161626i6f2cdc3eldc36c68e9a98f180@mail.gmail.com>
-	<e9e943910812190703w6fb43cebmfe96f2a2e8cc47dd@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 19 Dec 2008 14:30:48 -0500
+Subject: Re: Notes on support for multiple devices for a single filesystem
+From: Chris Mason <chris.mason@oracle.com>
+To: Bryan Henderson <hbryan@us.ibm.com>
+Cc: Brad Voth <brad@voth.name>, adilger@sun.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-btrfs@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sfr@canb.auug.org.au
+In-Reply-To: <OF3415C20F.793A0D3C-ON88257524.0067548F-88257524.0068BCEC@us.ibm.com>
+References: <OF3415C20F.793A0D3C-ON88257524.0067548F-88257524.0068BCEC@us.ibm.com>
+Content-Type: text/plain
+Date: Fri, 19 Dec 2008 14:30:15 -0500
+Message-Id: <1229715015.6695.71.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.494BF650.0154:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Dec 2008 15:03:52 +0000
-"Duane Griffin" <duaneg@dghda.com> wrote:
-
-> 2008/12/17 Duane Griffin <duaneg@dghda.com>:
-> > It is true for sysv, too. The ufs code also, but that has other
-> > issues, anyway. The generic page symlink and freevxfs patches should
-> > be fine, though.
+On Fri, 2008-12-19 at 11:03 -0800, Bryan Henderson wrote:
+> "Brad Voth" <brad@voth.name> wrote on 12/18/2008 01:36:12 PM:
 > 
-> Before I fire off another set of patches, should I be sending out the
-> complete set again or just the ones that need to be updated?
-> 
+> > I can see the desire to have the snapshot at the filesystem level to
+> > ensure that the filesystem knows it is consistent.  However, this 
+> > can be a duplication of effort because of the need to have snapshots
+> > at the block device level for non-fs devices.  Such as raw logical 
+> > devices for say a database.  I would think that a viable consistent 
+> > solution would be to have the block device snapshot mechanism have a
+> > hook into the filesystem api to say, "I'm preparing to take a 
+> > snapshot, please quiesce and return" <take block snapshot> "You may 
+> > now resume, Mr. Filesystem"
 
-It's more reliable to resend everything.
+This is what lvm does now with the write_super_lockfs calls.  They work
+well for a specific purpose.
+
+At the end of the day snapshots mean different things to different
+people and different workloads.  In lots of ways the lvm snapshots work
+very well.
+
+But, doing snapshots at the FS level gives you better performance and
+more control.
+
+-chris
+
+
