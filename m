@@ -1,108 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYLSI2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753770AbYLSIbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbYLSI2w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 03:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYLSI2o
+	id S1753770AbYLSIbV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 03:31:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbYLSIbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 03:28:44 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:58505 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753097AbYLSI2n (ORCPT
+	Fri, 19 Dec 2008 03:31:11 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:40848 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021AbYLSIbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 03:28:43 -0500
-Date: Fri, 19 Dec 2008 13:59:09 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v7 0/8] Tunable sched_mc_power_savings=n
-Message-ID: <20081219082909.GE22463@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <20081218201938.GB12376@elte.hu> <20081218203140.GA18757@elte.hu>
+	Fri, 19 Dec 2008 03:31:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=T0QQrH3SAkVX99bU7N+l6JqGaZ9B4ZGKj02IayiJebZKR6wY1w7cimByROP5kMoLqi
+         0t5TnEG02+3TMjVqDNJSq13BP45950h0kWg5yOcmoI/xGcGehT2SHq8ts/pMMIJ3ouYJ
+         9QhVR0fsoptq8JJJtyxML8a7L4KEJVhIFtN9U=
+Message-ID: <494B5BC4.100@gmail.com>
+Date: Fri, 19 Dec 2008 09:31:00 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20081218203140.GA18757@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Hannes Eder <hannes@hanneseder.net>
+CC: Ben Dooks <ben-linux@fluff.org>, Jiri Kosina <jkosina@suse.cz>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] HID: avoid sparse warning in HID_COMPAT_LOAD_DRIVER
+References: <4947a48f.08b6660a.34ca.ffffa1e8@mx.google.com>	 <20081216155822.GD12431@fluff.org.uk>	 <alpine.LNX.1.10.0812161659580.21089@jikos.suse.cz>	 <20081216194113.GF12431@fluff.org.uk> <154e089b0812161144x3c9579f5g8731b616fde6484c@mail.gmail.com>
+In-Reply-To: <154e089b0812161144x3c9579f5g8731b616fde6484c@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2008-12-18 21:31:40]:
+On 12/16/2008 08:44 PM, Hannes Eder wrote:
+> But, don't ask my why the void functions with empty function bodies
+> are exported.
 
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > thanks, applied - and i started testing them. [...]
-> 
-> the sched.h bits needed the small fix below. (struct sched_domain is not 
-> defined on UP)
-
-Thanks Ingo. I will watch out for such errors next time.
-
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-
---Vaidy
-
-> 
-> 	Ingo
-> 
-> ------------->
-> From edb4c71953409c1deac1a80528ac0aa768762b33 Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Thu, 18 Dec 2008 21:30:23 +0100
-> Subject: [PATCH] sched: move test_sd_parent() to an SMP section of sched.h
-> 
-> Impact: build fix
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  include/linux/sched.h |   18 +++++++++---------
->  1 files changed, 9 insertions(+), 9 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 5a933d9..e5f928a 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -920,6 +920,15 @@ extern void partition_sched_domains(int ndoms_new, struct cpumask *doms_new,
->  				    struct sched_domain_attr *dattr_new);
->  extern int arch_reinit_sched_domains(void);
-> 
-> +/* Test a flag in parent sched domain */
-> +static inline int test_sd_parent(struct sched_domain *sd, int flag)
-> +{
-> +	if (sd->parent && (sd->parent->flags & flag))
-> +		return 1;
-> +
-> +	return 0;
-> +}
-> +
->  #else /* CONFIG_SMP */
-> 
->  struct sched_domain_attr;
-> @@ -1431,15 +1440,6 @@ struct task_struct {
->  #endif
->  };
-> 
-> -/* Test a flag in parent sched domain */
-> -static inline int test_sd_parent(struct sched_domain *sd, int flag)
-> -{
-> -	if (sd->parent && (sd->parent->flags & flag))
-> -		return 1;
-> -
-> -	return 0;
-> -}
-> -
->  /*
->   * Priority of a process goes from 0..MAX_PRIO-1, valid RT
->   * priority is 0..MAX_RT_PRIO-1, and SCHED_NORMAL/SCHED_BATCH
+Because of autoload to create a dependency. Note that this is a temporary
+solution to workaround the non-presence of hid bus in module-init-tools and will
+be removed in next few releases.
