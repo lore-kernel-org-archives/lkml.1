@@ -1,267 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbYLSKIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754488AbYLSK3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754565AbYLSKIv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 05:08:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYLSKIn
+	id S1754488AbYLSK3Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 05:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYLSK3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 05:08:43 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48539 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbYLSKIm (ORCPT
+	Fri, 19 Dec 2008 05:29:15 -0500
+Received: from bohort.kerlabs.com ([62.160.40.57]:39553 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbYLSK3P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 05:08:42 -0500
-Date: Fri, 19 Dec 2008 12:08:39 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: rostedt@goodmis.org
-cc: mingo@elte.hu, fweisbec@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] ftrace: introduce tracing_reset_online_cpus() helper
-Message-ID: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI>
+	Fri, 19 Dec 2008 05:29:15 -0500
+Date: Fri, 19 Dec 2008 11:29:11 +0100
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       cluster-devel@redhat.com, swhiteho <swhiteho@redhat.com>
+Subject: Re: [PATCH] configfs: Silence lockdep on mkdir(), rmdir() and
+	configfs_depend_item()
+Message-ID: <20081219102911.GU19128@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
+	swhiteho <swhiteho@redhat.com>
+References: <20081212100615.GD19128@hawkmoon.kerlabs.com> <1229095751-23984-1-git-send-email-louis.rilling@kerlabs.com> <20081217134020.42da55fc.akpm@linux-foundation.org> <1229585208.9487.112.camel@twins> <20081218092744.GB30789@mail.oracle.com> <1229601399.9487.218.camel@twins> <1229603308.9487.227.camel@twins> <20081218225837.GB21870@mail.oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-21594-1229682394-0001-2"
+Content-Disposition: inline
+In-Reply-To: <20081218225837.GB21870@mail.oracle.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-This patch factors out common code from multiple tracers into a
-tracing_reset_online_cpus() function and converts the tracers to use it.
+--=_bohort-21594-1229682394-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- kernel/trace/trace.c              |   10 ++++++++++
- kernel/trace/trace.h              |    1 +
- kernel/trace/trace_boot.c         |   12 +-----------
- kernel/trace/trace_functions.c    |   14 ++------------
- kernel/trace/trace_hw_branches.c  |   14 ++------------
- kernel/trace/trace_mmiotrace.c    |    6 +-----
- kernel/trace/trace_sched_switch.c |   14 ++------------
- kernel/trace/trace_sysprof.c      |   12 +-----------
- 8 files changed, 20 insertions(+), 63 deletions(-)
+On 18/12/08 14:58 -0800, Joel Becker wrote:
+> On Thu, Dec 18, 2008 at 01:28:28PM +0100, Peter Zijlstra wrote:
+> > In fact, both (configfs) mkdir and rmdir seem to synchronize on
+> > su_mutex..
+> >=20
+> >  mkdir B/C/bar
+> >=20
+> >    C.i_mutex
+> >      su_mutex
+> >=20
+> > vs
+> >=20
+> >  rmdir foo
+> >=20
+> >    parent(foo).i_mutex
+> >      foo.i_mutex
+> >        su_mutex
+> >=20
+> >=20
+> > once holding the rmdir su_mutex you can check foo's user-content, since
+> > any mkdir will be blocked. All you have to do is then re-validate in
+> > mkdir's su_mutex that !IS_DEADDIR(C).
+>=20
+> 	We explicitly do not take any i_mutex locks after taking
+> su_mutex.  That's an ABBA risk.  su_mutex protects the hierarchy of
+> config_items.  i_mutex protects the vfs view thereof.
+> 	If you look in mkdir, we take su_mutex, get a new item from the
+> client subsystem, then drop su_mutex.  After that, we go about building
+> our filesystem structure, using i_mutex where appropriate.  More
+> importantly is rmdir(2), where we use i_mutex in
+> configfs_detach_group(), but are not holding su_sem.  Only when
+> configfs_detach_group() has successfully returned and we have torn down
+> the filesystem structure do we take su_mutex and tear down the
+> config_item structure.
+> 	In fact, we're part of the way there.  Check out that
+> USET_DROPPING flag we set in detach_prep() while scanning for user
+> objects.  That flags us racing mkdir(2).  When we are done with
+> detach_prep(), we know that mkdir(2) calls racing behind us will do
+> nothing until we safely lock them out with the locking in
+> detach_group().  All mkdir(2) calls will have exited by the time we get
+> the mutex, and no new mkdir(2) call can start because we have the mutex.
+> 	Now look in detach_groups().  We drop the groups children before
+> marking them DEAD.  Louis' plan, I think, is to perhaps mark a group
+> DEAD, disconnect it from the vfs, and then operate on its children.  In
+> this fashion, perhaps we can unlock the trailing lock like a normal VFS
+> operation.
+> 	This will require some serious auditing, however, because now
+> vfs functions can get into the vfs objects behind us.  And more vfs
+> changes affect us.  Whereas the current locking relies on the vfs's
+> parent->child lock ordering only, something that isn't likely to be
+> changed.
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 1a3d6b3..c39a0d8 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -679,6 +679,16 @@ void tracing_reset(struct trace_array *tr, int cpu)
- 	ftrace_enable_cpu();
- }
- 
-+void tracing_reset_online_cpus(struct trace_array *tr)
-+{
-+	int cpu;
-+
-+	tr->time_start = ftrace_now(tr->cpu);
-+
-+	for_each_online_cpu(cpu)
-+		tracing_reset(tr, cpu);
-+}
-+
- #define SAVED_CMDLINES 128
- static unsigned map_pid_to_cmdline[PID_MAX_DEFAULT+1];
- static unsigned map_cmdline_to_pid[SAVED_CMDLINES];
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index fc75dce..cc7a4f8 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -374,6 +374,7 @@ struct trace_iterator {
- int tracing_is_enabled(void);
- void trace_wake_up(void);
- void tracing_reset(struct trace_array *tr, int cpu);
-+void tracing_reset_online_cpus(struct trace_array *tr);
- int tracing_open_generic(struct inode *inode, struct file *filp);
- struct dentry *tracing_init_dentry(void);
- void init_tracer_sysprof_debugfs(struct dentry *d_tracer);
-diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
-index a4fa2c5..3ccebde 100644
---- a/kernel/trace/trace_boot.c
-+++ b/kernel/trace/trace_boot.c
-@@ -37,16 +37,6 @@ void disable_boot_trace(void)
- 		tracing_stop_sched_switch_record();
- }
- 
--static void reset_boot_trace(struct trace_array *tr)
--{
--	int cpu;
--
--	tr->time_start = ftrace_now(tr->cpu);
--
--	for_each_online_cpu(cpu)
--		tracing_reset(tr, cpu);
--}
--
- static int boot_trace_init(struct trace_array *tr)
- {
- 	int cpu;
-@@ -130,7 +120,7 @@ struct tracer boot_tracer __read_mostly =
- {
- 	.name		= "initcall",
- 	.init		= boot_trace_init,
--	.reset		= reset_boot_trace,
-+	.reset		= tracing_reset_online_cpus,
- 	.print_line	= initcall_print_line,
- };
- 
-diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
-index e74f6d0..9236d7e 100644
---- a/kernel/trace/trace_functions.c
-+++ b/kernel/trace/trace_functions.c
-@@ -16,20 +16,10 @@
- 
- #include "trace.h"
- 
--static void function_reset(struct trace_array *tr)
--{
--	int cpu;
--
--	tr->time_start = ftrace_now(tr->cpu);
--
--	for_each_online_cpu(cpu)
--		tracing_reset(tr, cpu);
--}
--
- static void start_function_trace(struct trace_array *tr)
- {
- 	tr->cpu = get_cpu();
--	function_reset(tr);
-+	tracing_reset_online_cpus(tr);
- 	put_cpu();
- 
- 	tracing_start_cmdline_record();
-@@ -55,7 +45,7 @@ static void function_trace_reset(struct trace_array *tr)
- 
- static void function_trace_start(struct trace_array *tr)
- {
--	function_reset(tr);
-+	tracing_reset_online_cpus(tr);
- }
- 
- static struct tracer function_trace __read_mostly =
-diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
-index ee29e01..b6a3e20 100644
---- a/kernel/trace/trace_hw_branches.c
-+++ b/kernel/trace/trace_hw_branches.c
-@@ -25,16 +25,6 @@ static DEFINE_PER_CPU(unsigned char[SIZEOF_BTS], buffer);
- #define this_buffer per_cpu(buffer, smp_processor_id())
- 
- 
--static void bts_trace_reset(struct trace_array *tr)
--{
--	int cpu;
--
--	tr->time_start = ftrace_now(tr->cpu);
--
--	for_each_online_cpu(cpu)
--		tracing_reset(tr, cpu);
--}
--
- static void bts_trace_start_cpu(void *arg)
- {
- 	if (this_tracer)
-@@ -54,7 +44,7 @@ static void bts_trace_start(struct trace_array *tr)
- {
- 	int cpu;
- 
--	bts_trace_reset(tr);
-+	tracing_reset_online_cpus(tr);
- 
- 	for_each_cpu_mask(cpu, cpu_possible_map)
- 		smp_call_function_single(cpu, bts_trace_start_cpu, NULL, 1);
-@@ -78,7 +68,7 @@ static void bts_trace_stop(struct trace_array *tr)
- 
- static int bts_trace_init(struct trace_array *tr)
- {
--	bts_trace_reset(tr);
-+	tracing_reset_online_cpus(tr);
- 	bts_trace_start(tr);
- 
- 	return 0;
-diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
-index 2fb6da6..fffcb06 100644
---- a/kernel/trace/trace_mmiotrace.c
-+++ b/kernel/trace/trace_mmiotrace.c
-@@ -22,14 +22,10 @@ static unsigned long prev_overruns;
- 
- static void mmio_reset_data(struct trace_array *tr)
- {
--	int cpu;
--
- 	overrun_detected = false;
- 	prev_overruns = 0;
--	tr->time_start = ftrace_now(tr->cpu);
- 
--	for_each_online_cpu(cpu)
--		tracing_reset(tr, cpu);
-+	tracing_reset_online_cpus(tr);
- }
- 
- static int mmio_trace_init(struct trace_array *tr)
-diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
-index 8633905..7f59f91 100644
---- a/kernel/trace/trace_sched_switch.c
-+++ b/kernel/trace/trace_sched_switch.c
-@@ -72,16 +72,6 @@ probe_sched_wakeup(struct rq *__rq, struct task_struct *wakee)
- 	local_irq_restore(flags);
- }
- 
--static void sched_switch_reset(struct trace_array *tr)
--{
--	int cpu;
--
--	tr->time_start = ftrace_now(tr->cpu);
--
--	for_each_online_cpu(cpu)
--		tracing_reset(tr, cpu);
--}
--
- static int tracing_sched_register(void)
- {
- 	int ret;
-@@ -197,7 +187,7 @@ void tracing_sched_switch_assign_trace(struct trace_array *tr)
- 
- static void start_sched_trace(struct trace_array *tr)
- {
--	sched_switch_reset(tr);
-+	tracing_reset_online_cpus(tr);
- 	tracing_start_sched_switch_record();
- }
- 
-@@ -221,7 +211,7 @@ static void sched_switch_trace_reset(struct trace_array *tr)
- 
- static void sched_switch_trace_start(struct trace_array *tr)
- {
--	sched_switch_reset(tr);
-+	tracing_reset_online_cpus(tr);
- 	tracing_start_sched_switch();
- }
- 
-diff --git a/kernel/trace/trace_sysprof.c b/kernel/trace/trace_sysprof.c
-index 54960ed..01becf1 100644
---- a/kernel/trace/trace_sysprof.c
-+++ b/kernel/trace/trace_sysprof.c
-@@ -234,20 +234,10 @@ static void stop_stack_timers(void)
- 		stop_stack_timer(cpu);
- }
- 
--static void stack_reset(struct trace_array *tr)
--{
--	int cpu;
--
--	tr->time_start = ftrace_now(tr->cpu);
--
--	for_each_online_cpu(cpu)
--		tracing_reset(tr, cpu);
--}
--
- static void start_stack_trace(struct trace_array *tr)
- {
- 	mutex_lock(&sample_timer_lock);
--	stack_reset(tr);
-+	tracing_reset_online_cpus(tr);
- 	start_stack_timers();
- 	tracer_enabled = 1;
- 	mutex_unlock(&sample_timer_lock);
--- 
-1.5.4.3
+I've thought about such plan, but I'm not comfortable enough with the VFS to
+tell how it could be done precisely, and whether it is safe to remove a who=
+le
+tree from the dcache by just unlinking its root. In particular, how could we
+deal with racing operations under default groups? Should we setup a link fr=
+om
+any default group to its youngest non-default group ancestor? As Steven
+suggested, looking at unmount might be interesting, but not today as far as=
+ I
+am concerned.
 
+Louis
+
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-21594-1229682394-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFJS3d3VKcRuvQ9Q1QRAlF5AKCxsw0f4XWG8M3M6cNZhx7ZXUBz6ACfWOi9
+SPRAlYrHuIh8gRlyJvEYQa4=
+=OIiQ
+-----END PGP SIGNATURE-----
+
+--=_bohort-21594-1229682394-0001-2--
