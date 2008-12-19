@@ -1,52 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbYLRX5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbYLSAAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752318AbYLRX5t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 18:57:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbYLRX5j
+	id S1752659AbYLSAAn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 19:00:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYLSAAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 18:57:39 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:56386 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbYLRX5i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 18:57:38 -0500
-Date: Thu, 18 Dec 2008 15:57:09 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Yinghai Lu <yinghai@kernel.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next: Tree for December 18 (irq.h documentation)
-Message-Id: <20081218155709.bf435d8c.randy.dunlap@oracle.com>
-In-Reply-To: <20081218230637.c879a046.sfr@canb.auug.org.au>
-References: <20081218230637.c879a046.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.494AE358.028C:SCFSTAT928724,ss=1,fgs=0
+	Thu, 18 Dec 2008 19:00:32 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:54797 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751502AbYLSAAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 19:00:31 -0500
+Message-Id: <20081219000029.764003000@polaris-admin.engr.sgi.com>
+References: <20081219000029.540121000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 18 Dec 2008 16:00:30 -0800
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       Dave Jones <davej@redhat.com>
+Subject: [PATCH 1/8] x86: clean up speedstep-centrino and reduce cpumask_t usage From: Rusty Russell <rusty@rustcorp.com.au>
+Content-Disposition: inline; filename=x86:speedstep-centrino-cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi YH,
+Impact: cleanup
 
-Whenever you update a struct in a header file that uses kernel-doc,
-like struct irq_desc in include/linux/irq.h, please also update the
-corresponding kernel-doc notation for the new struct members, so
-that kernel-doc warnings are not caused:
+1) The #ifdef CONFIG_HOTPLUG_CPU seems unnecessary these days.
+2) The loop can simply skip over offline cpus, rather than creating a tmp mask.
+3) set_mask is set to either a single cpu or all online cpus in a policy.
+   Since it's just used for set_cpus_allowed(), any offline cpus in a policy
+   don't matter, so we can just use cpumask_of_cpu() or the policy->cpus.
 
-from linux-next-20081218:
-
-Warning(linux-next-20081218//include/linux/irq.h:192): No description found for parameter 'timer_rand_state'
-Warning(linux-next-20081218//include/linux/irq.h:192): No description found for parameter 'kstat_irqs'
-Warning(linux-next-20081218//include/linux/irq.h:192): No description found for parameter 'irq_2_iommu'
-
-
-Please add kernel-doc notation for those missing struct members.
-
-Thanks,
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Mike Travis <travis@sgi.com>
+Cc: Dave Jones <davej@redhat.com>
 ---
-~Randy
+ arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |   51 ++++++++++-------------
+ 1 file changed, 24 insertions(+), 27 deletions(-)
+
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+@@ -459,9 +459,7 @@ static int centrino_verify (struct cpufr
+  * Sets a new CPUFreq policy.
+  */
+ struct allmasks {
+-	cpumask_t		online_policy_cpus;
+ 	cpumask_t		saved_mask;
+-	cpumask_t		set_mask;
+ 	cpumask_t		covered_cpus;
+ };
+ 
+@@ -475,9 +473,7 @@ static int centrino_target (struct cpufr
+ 	int			retval = 0;
+ 	unsigned int		j, k, first_cpu, tmp;
+ 	CPUMASK_ALLOC(allmasks);
+-	CPUMASK_PTR(online_policy_cpus, allmasks);
+ 	CPUMASK_PTR(saved_mask, allmasks);
+-	CPUMASK_PTR(set_mask, allmasks);
+ 	CPUMASK_PTR(covered_cpus, allmasks);
+ 
+ 	if (unlikely(allmasks == NULL))
+@@ -497,30 +493,28 @@ static int centrino_target (struct cpufr
+ 		goto out;
+ 	}
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-	/* cpufreq holds the hotplug lock, so we are safe from here on */
+-	cpus_and(*online_policy_cpus, cpu_online_map, policy->cpus);
+-#else
+-	*online_policy_cpus = policy->cpus;
+-#endif
+-
+ 	*saved_mask = current->cpus_allowed;
+ 	first_cpu = 1;
+ 	cpus_clear(*covered_cpus);
+-	for_each_cpu_mask_nr(j, *online_policy_cpus) {
++	for_each_cpu_mask_nr(j, policy->cpus) {
++		const cpumask_t *mask;
++
++		/* cpufreq holds the hotplug lock, so we are safe here */
++		if (!cpu_online(j))
++			continue;
++
+ 		/*
+ 		 * Support for SMP systems.
+ 		 * Make sure we are running on CPU that wants to change freq
+ 		 */
+-		cpus_clear(*set_mask);
+ 		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+-			cpus_or(*set_mask, *set_mask, *online_policy_cpus);
++			mask = &policy->cpus;
+ 		else
+-			cpu_set(j, *set_mask);
++			mask = &cpumask_of_cpu(j);
+ 
+-		set_cpus_allowed_ptr(current, set_mask);
++		set_cpus_allowed_ptr(current, mask);
+ 		preempt_disable();
+-		if (unlikely(!cpu_isset(smp_processor_id(), *set_mask))) {
++		if (unlikely(!cpu_isset(smp_processor_id(), *mask))) {
+ 			dprintk("couldn't limit to CPUs in this domain\n");
+ 			retval = -EAGAIN;
+ 			if (first_cpu) {
+@@ -548,7 +542,9 @@ static int centrino_target (struct cpufr
+ 			dprintk("target=%dkHz old=%d new=%d msr=%04x\n",
+ 				target_freq, freqs.old, freqs.new, msr);
+ 
+-			for_each_cpu_mask_nr(k, *online_policy_cpus) {
++			for_each_cpu_mask_nr(k, policy->cpus) {
++				if (!cpu_online(k))
++					continue;
+ 				freqs.cpu = k;
+ 				cpufreq_notify_transition(&freqs,
+ 					CPUFREQ_PRECHANGE);
+@@ -571,7 +567,9 @@ static int centrino_target (struct cpufr
+ 		preempt_enable();
+ 	}
+ 
+-	for_each_cpu_mask_nr(k, *online_policy_cpus) {
++	for_each_cpu_mask_nr(k, policy->cpus) {
++		if (!cpu_online(k))
++			continue;
+ 		freqs.cpu = k;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 	}
+@@ -584,18 +582,17 @@ static int centrino_target (struct cpufr
+ 		 * Best effort undo..
+ 		 */
+ 
+-		if (!cpus_empty(*covered_cpus))
+-			for_each_cpu_mask_nr(j, *covered_cpus) {
+-				set_cpus_allowed_ptr(current,
+-						     &cpumask_of_cpu(j));
+-				wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-			}
++		for_each_cpu_mask_nr(j, *covered_cpus) {
++			set_cpus_allowed_ptr(current, &cpumask_of_cpu(j));
++			wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++		}
+ 
+ 		tmp = freqs.new;
+ 		freqs.new = freqs.old;
+ 		freqs.old = tmp;
+-		for_each_cpu_mask_nr(j, *online_policy_cpus) {
+-			freqs.cpu = j;
++		for_each_cpu_mask_nr(j, policy->cpus) {
++			if (!cpu_online(j))
++				continue;
+ 			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 		}
+
+-- 
