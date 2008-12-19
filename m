@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbYLSGcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYLSGey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753752AbYLSGcW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 01:32:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYLSGcK
+	id S1754026AbYLSGey (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 01:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYLSGep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 01:32:10 -0500
-Received: from 1wt.eu ([62.212.114.60]:1071 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751355AbYLSGcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 01:32:09 -0500
-Date: Fri, 19 Dec 2008 07:33:02 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: sverre@rabbelier.nl
-Cc: David Howells <dhowells@redhat.com>, Jakub Narebski <jnareb@gmail.com>,
-       torvalds@osdl.org, git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Simplified GIT usage guide
-Message-ID: <20081219063301.GA6800@1wt.eu>
-References: <20081212182827.28408.40963.stgit@warthog.procyon.org.uk> <m33agtgp2v.fsf@localhost.localdomain> <32073.1229130284@redhat.com> <bd6139dc0812121716w73ea1145w7f870e887e00adc0@mail.gmail.com>
-Mime-Version: 1.0
+	Fri, 19 Dec 2008 01:34:45 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:56101 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751168AbYLSGeo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 01:34:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=J2lNs9nWO0vNZUrU1EGM6Jjzv6ogscMhm+o3W1eFuC9ed6pZ+Zl3qYbIVKnHz0mYTX
+         Wi0vNjdArubDwMURp/M1j82TkFLdL5PSEivebAW+kGtEmx/1PunYSlC0QGOol1UeW4dF
+         oW4nPXP2Qwlkt5BxVEe41ilaUILdmZg5Mxp9E=
+Date: Fri, 19 Dec 2008 14:34:15 +0800
+From: Zhenwen Xu <helight.xu@gmail.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix some code style that line over 80 characters
+Message-ID: <20081219063415.GB3309@helight>
+Reply-To: Zhenwen Xu <helight.xu@gmail.com>
+References: <20081210135143.GB4595@helight> <20081210150116.GB21396@x200.localdomain> <20081218112617.09fd97bd.randy.dunlap@oracle.com> <20081218193059.GA31274@flint.arm.linux.org.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <bd6139dc0812121716w73ea1145w7f870e887e00adc0@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20081218193059.GA31274@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 13, 2008 at 02:16:34AM +0100, Sverre Rabbelier wrote:
-> On Sat, Dec 13, 2008 at 02:04, David Howells <dhowells@redhat.com> wrote:
-> >  (3) You put some non-basic stuff in the basic section (branching - this isn't
-> >     ordinarily useful, IMHO), but you miss other stuff out ('git rm' for
-> >     example).
+On Thu, Dec 18, 2008 at 07:30:59PM +0000, Russell King wrote:
+> On Thu, Dec 18, 2008 at 11:26:17AM -0800, Randy Dunlap wrote:
+> > On Wed, 10 Dec 2008 18:01:16 +0300 Alexey Dobriyan wrote:
+> > 
+> > > On Wed, Dec 10, 2008 at 09:51:43PM +0800, Helight.Xu wrote:
+> > > > -static inline struct s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
+> > > > +static inline struct
+> > > > +s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
+> > > 
+> > > NAK!
+> > 
+> > OK, but please includes reason(s) for NAKs...
 > 
-> Erm, branching is not ordinarily useful? I think you're Doing It Wrong
-> (TM) then, since branching is a Big Thing (also TM) in DVC, not using
-> branches would be a bit like only using the first 4 gears in a car;
-> sure, it's possible, but you're missing all that extra power!
+> I can provide a reason - it splits "struct" and the structure name
+> across different lines.  That manes 'struct s3c2410_platform_i2c'
+> hard to grep for.
+yes, it should be:
+static inline
+struct s3c2410_platform_i2c *s3c24xx_i2c_get_platformdata(struct device *dev)
+> 
+> -- 
+> Russell King
+>  Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+>  maintainer of:
 
-People who want to use it as a CVS replacement don't realize that they're
-using branches. They work in their local "master" branch, and don't realize
-that when they fetch updates, they fetch them into a different branch.
-
-CVS people are afraid of branches, so trying to explain them how they can
-do what they're used to is better than telling them they'll have to do
-what they're afraid of.
-
-I found David's howto quite understandable. I've taught Git to people who
-only knew about SVN and to people who had never heard about any SCM at all. I
-tried to use the same approach each time, and while I noticed that explaining
-how Git works and why it works like that appeared obvious to the newbies,
-it was very awkward with SVN users. I switched to something more like
-David's approach for those people and it helped a lot. They have plenty
-of time after that to discover the tool by themselves.
-
-I really think that David should maintain his doc after applying a few
-fixes to it, just like Jeff maintains his own. Also, having several docs
-out of the tree is better for a user looking for different analysis of
-the tool than having everything offered as the product's documentation,
-provided the links are easy to find (might be linked to from the Git doc).
-
-Willy
-
+-- 
+---------------------------------
+Zhenwen Xu - Open and Free
+Home Page:	http://zhwen.org
+My Studio:	http://dim4.cn
