@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbYLSUrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbYLSUsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752313AbYLSUrj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 15:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYLSUrX
+	id S1751932AbYLSUsI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 15:48:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYLSUr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 15:47:23 -0500
-Received: from kumera.dghda.com ([80.68.90.171]:35253 "EHLO kumera.dghda.com"
+	Fri, 19 Dec 2008 15:47:27 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:35257 "EHLO kumera.dghda.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbYLSUrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 15:47:23 -0500
+	id S1751617AbYLSUr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 15:47:26 -0500
 From: "Duane Griffin" <duaneg@dghda.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 0/10] make link target handling more robust
-Date: Fri, 19 Dec 2008 20:47:08 +0000
-Message-Id: <1229719638-6982-1-git-send-email-duaneg@dghda.com>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Eric Van Hensbergen <ericvh@gmail.com>,
+       Ron Minnich <rminnich@sandia.gov>, Latchesar Ionkov <lucho@ionkov.net>,
+       v9fs-developer@lists.sourceforge.net
+Subject: [PATCH, v5] 9p: don't print IS_ERR strings
+Date: Fri, 19 Dec 2008 20:47:09 +0000
+Message-Id: <1229719638-6982-2-git-send-email-duaneg@dghda.com>
 X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <1229719638-6982-1-git-send-email-duaneg@dghda.com>
+References: <1229719638-6982-1-git-send-email-duaneg@dghda.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These patches fix potential bugs associated with link target handling,
-primarily by NUL-terminating names read from disk.
+Move the printk inside the !IS_ERR test.
 
-This is version 5 of these patches. This version fixes an off-by-one
-bug, pointed out by Andreas Dilger, where the maximum name length was
-calculated with sizeof without leaving space for the terminator.
+Cc: Eric Van Hensbergen <ericvh@gmail.com>
+Cc: Ron Minnich <rminnich@sandia.gov>
+Cc: Latchesar Ionkov <lucho@ionkov.net>
+Cc: v9fs-developer@lists.sourceforge.net
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+---
 
-This set includes patches for all affected filesystems except for jfs,
-which has already been fixed by David Kleikamp, and ufs, where I am
-still discussing some issues with the maintainer. I'll post the ufs
-patch separately once it is ready.
+Unchanged from original version.
 
-The eCryptFS fix should be considered for stable.
+ fs/9p/vfs_inode.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diffstat:
- fs/9p/vfs_inode.c        |    5 +++--
- fs/befs/linuxvfs.c       |    5 ++++-
- fs/ecryptfs/inode.c      |    3 ++-
- fs/ext2/inode.c          |    7 +++++--
- fs/ext3/inode.c          |    7 +++++--
- fs/ext4/inode.c          |    7 +++++--
- fs/freevxfs/vxfs_inode.c |    4 +++-
- fs/namei.c               |    7 +++++--
- fs/sysv/inode.c          |    6 +++++-
- include/linux/namei.h    |    5 +++++
- 10 files changed, 42 insertions(+), 14 deletions(-)
+diff --git a/fs/9p/vfs_inode.c b/fs/9p/vfs_inode.c
+index 8fddfe8..c50d555 100644
+--- a/fs/9p/vfs_inode.c
++++ b/fs/9p/vfs_inode.c
+@@ -1022,9 +1022,10 @@ v9fs_vfs_put_link(struct dentry *dentry, struct nameidata *nd, void *p)
+ {
+ 	char *s = nd_get_link(nd);
+ 
+-	P9_DPRINTK(P9_DEBUG_VFS, " %s %s\n", dentry->d_name.name, s);
+-	if (!IS_ERR(s))
++	if (!IS_ERR(s)) {
++		P9_DPRINTK(P9_DEBUG_VFS, " %s %s\n", dentry->d_name.name, s);
+ 		__putname(s);
++	}
+ }
+ 
+ /**
+-- 
+1.6.0.4
 
-Cheers,
-Duane,
