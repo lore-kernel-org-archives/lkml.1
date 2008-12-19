@@ -1,227 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYLSVlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755021AbYLSVl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497AbYLSVlD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 16:41:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbYLSVjL
+	id S1755021AbYLSVl0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 16:41:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbYLSVkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 16:39:11 -0500
-Received: from www.tglx.de ([62.245.132.106]:55815 "EHLO www.tglx.de"
+	Fri, 19 Dec 2008 16:40:37 -0500
+Received: from www.tglx.de ([62.245.132.106]:55965 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754047AbYLSVjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 16:39:08 -0500
-Message-Id: <20081219211949.341518873@linutronix.de>
-References: <20081219211656.875192771@linutronix.de>
-User-Agent: quilt/0.46-1
-Date: Fri, 19 Dec 2008 21:23:10 -0000
+	id S1754418AbYLSVkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 16:40:35 -0500
+Date: Fri, 19 Dec 2008 22:40:20 +0100 (CET)
 From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Clark Williams <clark.williams@gmail.com>,
        Gregory Haskins <ghaskins@novell.com>,
        Linux-rt <linux-rt-users@vger.kernel.org>
-Subject: [patch 7/7] rtmutex: prevent missed wakeups
-Content-Disposition: inline; filename=sched-fix-rtmutex-wakeup-handling.patch
+Subject: Re: [patch 1/7] ftrace: fix task state printout
+In-Reply-To: <c62985530812190825k4e4f5a7apa37e1ab4bc35753a@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0812192239280.3376@localhost.localdomain>
+References: <20081219155504.735865178@linutronix.de>  <20081219155555.919550408@linutronix.de> <c62985530812190825k4e4f5a7apa37e1ab4bc35753a@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-472957789-1229722822=:3376"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sleeping locks implementation based on rtmutexes can miss wakeups
-for two reasons:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-1) The unconditional usage TASK_UNINTERRUPTIBLE for the blocking state
-   
-   Results in missed wakeups from wake_up_interruptible*()
+--8323328-472957789-1229722822=:3376
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-   state = TASK_INTERRUPTIBLE;
-   blocks_on_lock()
-     state = TASK_UNINTERRUPTIBLE;
-     schedule();
-     ....
-     acquires_lock();
-     restore_state();
+On Fri, 19 Dec 2008, Frédéric Weisbecker wrote:
+> Hi Thomas,
+> 
+> 2008/12/19 Thomas Gleixner <tglx@linutronix.de>:
+> > Impact: tracer task state decoding is wrong, size check is buggy
+> >
+> > The tracing code has interesting varieties of printing out task state.
+> > Unfortunalely only one of the instances is correct as it copies the
+> > code from sched.c:sched_show_task(). The others are plain wrong as
+> > they treatthe bitfield as an integer offset into the character
+> > array. Also the size check of the character array is wrong as it
+> > includes the trailing \0.
+> >
+> > Use a common state decoder inline which does the Right Thing.
+> >
+> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> 
+> You've already sent it out. It has been applied on -tip :-)
 
-   Until the waiter has restored its state wake_up_interruptible*() will
-   fail.
+Yep, but these patches are against 2.6.24.7-rt24 as noted in the
+subject line of patch 0/7 :)
 
-2) The rtmutex wakeup intermediate state TASK_RUNNING_MUTEX
+Thanks,
 
-   Results in missed wakeups from wake_up*()
+	tglx
 
-   waiter is woken by mutex wakeup
-   	  waiter->state = TASK_RUNNING_MUTEX;
-   ....
-   acquires_lock();
-   restore_state();
-
-   Until the waiter has restored its state wake_up*() will fail.
-
-Solution:
-
-Instead of setting the state to TASK_RUNNING_MUTEX in the mutex wakeup
-case we logically OR TASK_RUNNING_MUTEX to the current waiter
-state. This keeps the original bits (TASK_INTERRUPTIBLE /
-TASK_UNINTERRUPTIBLE) intact and lets wakeups succeed. When a task
-blocks on a lock in state TASK_INTERRUPTIBLE and is woken up by a real
-wakeup, then we store the state = TASK_RUNNING for the restore and can
-safely use TASK_UNINTERRUPTIBLE from that point to avoid further
-wakeups which just let us loop in the lock code.
-
-This also removes the extra TASK_RUNNING_MUTEX flags from the
-wakeup_process*() functions as they are not longer necessary.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- kernel/rtmutex.c |   22 +++++++++++++++++++---
- kernel/sched.c   |   40 +++++++++++++++++++++++-----------------
- 2 files changed, 42 insertions(+), 20 deletions(-)
-
-Index: linux-2.6.24/kernel/rtmutex.c
-===================================================================
---- linux-2.6.24.orig/kernel/rtmutex.c
-+++ linux-2.6.24/kernel/rtmutex.c
-@@ -798,16 +798,32 @@ static int adaptive_wait(struct rt_mutex
- /*
-  * The state setting needs to preserve the original state and needs to
-  * take care of non rtmutex wakeups.
-+ *
-+ * Called with rtmutex->wait_lock held to serialize against rtmutex
-+ * wakeups().
-  */
- static inline unsigned long
- rt_set_current_blocked_state(unsigned long saved_state)
- {
--	unsigned long state;
-+	unsigned long state, block_state;
-+
-+	/*
-+	 * If state is TASK_INTERRUPTIBLE, then we set the state for
-+	 * blocking to TASK_INTERRUPTIBLE as well, otherwise we would
-+	 * miss real wakeups via wake_up_interruptible(). If such a
-+	 * wakeup happens we see the running state and preserve it in
-+	 * saved_state. Now we can ignore further wakeups as we will
-+	 * return in state running from our "spin" sleep.
-+	 */
-+	if (saved_state == TASK_INTERRUPTIBLE)
-+		block_state = TASK_INTERRUPTIBLE;
-+	else
-+		block_state = TASK_UNINTERRUPTIBLE;
- 
--	state = xchg(&current->state, TASK_UNINTERRUPTIBLE);
-+	state = xchg(&current->state, block_state);
- 	/*
- 	 * Take care of non rtmutex wakeups. rtmutex wakeups
--	 * set the state to TASK_RUNNING_MUTEX.
-+	 * or TASK_RUNNING_MUTEX to (UN)INTERRUPTIBLE.
- 	 */
- 	if (state == TASK_RUNNING)
- 		saved_state = TASK_RUNNING;
-Index: linux-2.6.24/kernel/sched.c
-===================================================================
---- linux-2.6.24.orig/kernel/sched.c
-+++ linux-2.6.24/kernel/sched.c
-@@ -1765,10 +1765,20 @@ out_activate:
- 
- out_running:
- 	trace_kernel_sched_wakeup(rq, p);
-+
-+	/*
-+	 * For a mutex wakeup we or TASK_RUNNING_MUTEX to the task
-+	 * state to preserve the original state, so a real wakeup
-+	 * still can see the (UN)INTERRUPTIBLE bits in the state check
-+	 * above. We dont have to worry about the | TASK_RUNNING_MUTEX
-+	 * here. The waiter is serialized by the mutex lock and nobody
-+	 * else can fiddle with p->state as we hold rq lock.
-+	 */
- 	if (mutex)
--		p->state = TASK_RUNNING_MUTEX;
-+		p->state |= TASK_RUNNING_MUTEX;
- 	else
- 		p->state = TASK_RUNNING;
-+
- #ifdef CONFIG_SMP
- 	if (p->sched_class->task_wake_up)
- 		p->sched_class->task_wake_up(rq, p);
-@@ -1782,38 +1792,34 @@ out:
- int fastcall wake_up_process(struct task_struct *p)
- {
- 	return try_to_wake_up(p, TASK_STOPPED | TASK_TRACED |
--			      TASK_RUNNING_MUTEX | TASK_INTERRUPTIBLE |
--			      TASK_UNINTERRUPTIBLE, 0, 0);
-+			      TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE, 0, 0);
- }
- EXPORT_SYMBOL(wake_up_process);
- 
- int fastcall wake_up_process_sync(struct task_struct * p)
- {
- 	return try_to_wake_up(p, TASK_STOPPED | TASK_TRACED |
--			      TASK_RUNNING_MUTEX | TASK_INTERRUPTIBLE |
--			      TASK_UNINTERRUPTIBLE, 1, 0);
-+			      TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE, 1, 0);
- }
- EXPORT_SYMBOL(wake_up_process_sync);
- 
- int fastcall wake_up_process_mutex(struct task_struct * p)
- {
- 	return try_to_wake_up(p, TASK_STOPPED | TASK_TRACED |
--			      TASK_RUNNING_MUTEX | TASK_INTERRUPTIBLE |
--			      TASK_UNINTERRUPTIBLE, 0, 1);
-+			      TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE, 0, 1);
- }
- EXPORT_SYMBOL(wake_up_process_mutex);
- 
- int fastcall wake_up_process_mutex_sync(struct task_struct * p)
- {
- 	return try_to_wake_up(p, TASK_STOPPED | TASK_TRACED |
--			      TASK_RUNNING_MUTEX | TASK_INTERRUPTIBLE |
--			      TASK_UNINTERRUPTIBLE, 1, 1);
-+			      TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE, 1, 1);
- }
- EXPORT_SYMBOL(wake_up_process_mutex_sync);
- 
- int fastcall wake_up_state(struct task_struct *p, unsigned int state)
- {
--	return try_to_wake_up(p, state | TASK_RUNNING_MUTEX, 0, 0);
-+	return try_to_wake_up(p, state, 0, 0);
- }
- 
- /*
-@@ -3961,10 +3967,10 @@ asmlinkage void __sched __schedule(void)
- 	clear_tsk_need_resched(prev);
- 	clear_tsk_need_resched_delayed(prev);
- 
--	if ((prev->state & ~TASK_RUNNING_MUTEX) &&
--			!(preempt_count() & PREEMPT_ACTIVE)) {
-+	if (!(prev->state & TASK_RUNNING_MUTEX) && prev->state &&
-+	    !(preempt_count() & PREEMPT_ACTIVE)) {
- 		if (unlikely((prev->state & TASK_INTERRUPTIBLE) &&
--				unlikely(signal_pending(prev)))) {
-+			     unlikely(signal_pending(prev)))) {
- 			prev->state = TASK_RUNNING;
- 		} else {
- 			touch_softlockup_watchdog();
-@@ -4184,8 +4190,7 @@ asmlinkage void __sched preempt_schedule
- int default_wake_function(wait_queue_t *curr, unsigned mode, int sync,
- 			  void *key)
- {
--	return try_to_wake_up(curr->private, mode | TASK_RUNNING_MUTEX,
--			      sync, 0);
-+	return try_to_wake_up(curr->private, mode, sync, 0);
- }
- EXPORT_SYMBOL(default_wake_function);
- 
-@@ -5421,8 +5426,9 @@ static void show_task(struct task_struct
- 	unsigned state;
- 
- 	state = p->state ? __ffs(p->state) + 1 : 0;
--	printk("%-13.13s %c [%p]", p->comm,
--		state < sizeof(stat_nam) - 1 ? stat_nam[state] : '?', p);
-+	printk("%-13.13s %c (%03lx) [%p]", p->comm,
-+	       state < sizeof(stat_nam) - 1 ? stat_nam[state] : '?',
-+	       (unsigned long) p->state, p);
- #if BITS_PER_LONG == 32
- 	if (0 && (state == TASK_RUNNING))
- 		printk(KERN_CONT " running  ");
-
--- 
-
+--8323328-472957789-1229722822=:3376--
