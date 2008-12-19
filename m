@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbYLSFoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYLSFtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbYLSFoU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 00:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbYLSFoE
+	id S1753918AbYLSFtT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 00:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYLSFtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 00:44:04 -0500
-Received: from ozlabs.org ([203.10.76.45]:50657 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535AbYLSFoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 00:44:02 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Define smp_call_function_many for UP
-Date: Fri, 19 Dec 2008 16:13:57 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Hollis Blanchard <hollisb@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       "kvm-devel" <kvm@vger.kernel.org>, linux-kernel@vger.kernel.org
-References: <20081208160945.7535A25006E@cleopatra.tlv.redhat.com> <200812190840.13995.rusty@rustcorp.com.au> <alpine.LFD.2.00.0812181415480.14014@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0812181415480.14014@localhost.localdomain>
+	Fri, 19 Dec 2008 00:49:09 -0500
+Received: from kroah.org ([198.145.64.141]:43104 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751149AbYLSFtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 00:49:08 -0500
+Date: Thu, 18 Dec 2008 21:14:36 -0800
+From: Greg KH <greg@kroah.com>
+To: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: device driver probe return codes
+Message-ID: <20081219051436.GA29543@kroah.com>
+References: <20081216215331.GH12431@fluff.org.uk> <20081216234128.05a343bb.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812191613.57719.rusty@rustcorp.com.au>
+In-Reply-To: <20081216234128.05a343bb.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 19 December 2008 08:46:37 Linus Torvalds wrote:
+On Tue, Dec 16, 2008 at 11:41:28PM -0800, Andrew Morton wrote:
+> On Tue, 16 Dec 2008 21:53:31 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
 > 
-> On Fri, 19 Dec 2008, Rusty Russell wrote:
-> >
-> > Linus, please apply.  Otherwise those using it in transition patches (eg. kvm)
-> > can't compile with CONFIG_SMP=n:
-> 
-> Umm. I already applied this a long time ago. It's commit 
-> d2ff911882b6bc693d86ca9566daac70aacbb2b3
+> > I would like some feedback on the following regarding some
+> > form of standardising return codes from a device driver probe
+> > to try and stop some basic mistakes.
+> > 
+> > This document is not complete, any additions would be welcone.
 
-Wow, it's like Santa came early!
+Hm, shouldn't you have at least copied me on this?
 
-Thanks,
-Rusty.
+What is this for?  Each of the different busses treat return codes for
+their probe functions a bit differently, are you wanting to unify them?
+And if so, why?
+
+thanks,
+
+greg k-h
