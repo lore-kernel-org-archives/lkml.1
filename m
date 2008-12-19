@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbYLSTEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbYLSTHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752841AbYLSTEQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 14:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYLSTD5
+	id S1752725AbYLSTHt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 14:07:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbYLSTHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 14:03:57 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:37950 "EHLO e2.ny.us.ibm.com"
+	Fri, 19 Dec 2008 14:07:36 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:4944 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750985AbYLSTD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 14:03:56 -0500
-In-Reply-To: <e1f6055f0812181336q105b4ebcy81d72edd2a35baa8@mail.gmail.com>
-To: "Brad Voth" <brad@voth.name>
-Cc: adilger@sun.com, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Chris Mason" <chris.mason@oracle.com>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Kay Sievers" <kay.sievers@vrfy.org>,
-       linux-btrfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
+	id S1750978AbYLSTHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 14:07:35 -0500
+Date: Fri, 19 Dec 2008 20:07:02 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: "David M. Lloyd" <dmlloyd@flurg.com>, linux-mm@kvack.org,
+       Christoph Hellwig <hch@infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>, netdev@vger.kernel.org
+Subject: Re: [RFC]: Support for zero-copy TCP transmit of user space data
+Message-ID: <20081219190701.GP32491@kernel.dk>
+References: <4941590F.3070705@vlnb.net> <1229022734.3266.67.camel@localhost.localdomain> <4942BAB8.4050007@vlnb.net> <1229110673.3262.94.camel@localhost.localdomain> <49469ADB.6010709@vlnb.net> <20081215231801.GA27168@infradead.org> <4947FA1C.2090509@vlnb.net> <494A97DD.7080503@vlnb.net> <494A99EF.6070400@flurg.com> <494BDBC5.7050701@vlnb.net>
 MIME-Version: 1.0
-Subject: Re: Notes on support for multiple devices for a single filesystem
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF3415C20F.793A0D3C-ON88257524.0067548F-88257524.0068BCEC@us.ibm.com>
-From: Bryan Henderson <hbryan@us.ibm.com>
-Date: Fri, 19 Dec 2008 11:03:56 -0800
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V85_10262008HFIGS1|October
- 26, 2008) at 12/19/2008 14:03:53,
-	Serialize complete at 12/19/2008 14:03:53
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <494BDBC5.7050701@vlnb.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Brad Voth" <brad@voth.name> wrote on 12/18/2008 01:36:12 PM:
+On Fri, Dec 19 2008, Vladislav Bolkhovitin wrote:
+> David M. Lloyd, on 12/18/2008 09:43 PM wrote:
+> >On 12/18/2008 12:35 PM, Vladislav Bolkhovitin wrote:
+> >>An iSCSI target driver iSCSI-SCST was a part of the patchset 
+> >>(http://lkml.org/lkml/2008/12/10/293). For it a nice optimization to 
+> >>have TCP zero-copy transmit of user space data was implemented. Patch, 
+> >>implementing this optimization was also sent in the patchset, see 
+> >>http://lkml.org/lkml/2008/12/10/296.
+> >
+> >I'm probably ignorant of about 90% of the context here, but isn't this the 
+> >sort of problem that was supposed to have been solved by vmsplice(2)?
+> 
+> No, vmsplice can't help here. ISCSI-SCST is a kernel space driver. But, 
+> even if it was a user space driver, vmsplice wouldn't change anything 
+> much. It doesn't have a possibility for a user to know, when 
+> transmission of the data finished. So, it is intended to be used as: 
+> vmsplice() buffer -> munmap() the buffer -> mmap() new buffer -> 
+> vmsplice() it. But on the mmap() stage kernel has to zero all the newly 
+> mapped pages and zeroing memory isn't much faster, than copying it. 
+> Hence, there would be no considerable performance increase.
 
-> I can see the desire to have the snapshot at the filesystem level to
-> ensure that the filesystem knows it is consistent.  However, this 
-> can be a duplication of effort because of the need to have snapshots
-> at the block device level for non-fs devices.  Such as raw logical 
-> devices for say a database.  I would think that a viable consistent 
-> solution would be to have the block device snapshot mechanism have a
-> hook into the filesystem api to say, "I'm preparing to take a 
-> snapshot, please quiesce and return" <take block snapshot> "You may 
-> now resume, Mr. Filesystem"
+vmsplice() isn't the right choice, but splice() very well could be. You
+could easily use splice internally as well. The vmsplice() part sort-of
+applies in the sense that you want to fill pages into a pipe, which is
+essentially what vmsplice() does. You'd need some helper to do that. And
+the ack-on-xmit-done bits is something that splice-to-socket needs
+anyway, so I think it'd be quite a suitable choice for this.
 
-But that's a layering violation.  First of all, a block device doesn't 
-know what a filesystem is, so you'd have to generalize it to making these 
-requests to whatever has the block device in some sense open.  I don't see 
-that this sequence gains you anything over the sequence I described where 
-the user makes the request of the filesystem driver and the filesystem 
-driver, while it has the filesystem quiesced, issues an order to the block 
-device to make a snapshot.
-
->In this way there is a single interface for users to take snapshots
->of the block device level whether it is a raw logical volume, or a
->filesystem sitting on a logical volume.
-
-I don't think it makes sense to have a common means of snapshotting any of 
-the various things that might reside on a block device; for some, I can't 
-even think of a meaningful concept of snapshotting the information on that 
-device.  E.g. where it's one of 4 disks on which some filesystem resides.
-
---
-Bryan Henderson                     IBM Almaden Research Center
-San Jose CA                         Storage Systems
+-- 
+Jens Axboe
 
