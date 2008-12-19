@@ -1,35 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbYLSA4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbYLSA6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753281AbYLSA4M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Dec 2008 19:56:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbYLSAzy
+	id S1753453AbYLSA6b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Dec 2008 19:58:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYLSA6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Dec 2008 19:55:54 -0500
-Received: from khc.piap.pl ([195.187.100.11]:47999 "EHLO khc.piap.pl"
+	Thu, 18 Dec 2008 19:58:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34778 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750753AbYLSAzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Dec 2008 19:55:53 -0500
-To: davids@webmaster.com
-Cc: "Herbert Xu" <herbert@gondor.apana.org.au>, <davem@davemloft.net>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-Subject: Re: [PATCH] Stop scaring users with "treason uncloaked!"
-References: <MDEHLPKNGKAHNMBLJOLKKEJJBPAD.davids@webmaster.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 19 Dec 2008 01:55:51 +0100
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEJJBPAD.davids@webmaster.com> (David Schwartz's message of "Thu\, 18 Dec 2008 16\:45\:32 -0800")
-Message-ID: <m3r645nfu0.fsf@maximus.localdomain>
+	id S1752054AbYLSA6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Dec 2008 19:58:21 -0500
+Message-ID: <494AF190.6000801@kernel.org>
+Date: Thu, 18 Dec 2008 16:57:52 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for December 18 (irq.h documentation)
+References: <20081218230637.c879a046.sfr@canb.auug.org.au> <20081218155709.bf435d8c.randy.dunlap@oracle.com> <494AEBCA.70108@kernel.org>
+In-Reply-To: <494AEBCA.70108@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"David Schwartz" <davids@webmaster.com> writes:
+please check
 
-> Messages about something or other being "illegal" occur about 345 times in
-> the Linux kernel source code. Are we going to start patching those too?
+[PATCH] sparseirq: add kernel-doc notation for new member in irq_desc -v2
 
-I think we should.
-Except for those which are part of some reasonable userspace interface.
--- 
-Krzysztof Halasa
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index 1beb63a..5845bdc 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -135,6 +135,9 @@ struct irq_2_iommu;
+ /**
+  * struct irq_desc - interrupt descriptor
+  * @irq:		interrupt number for this descriptor
++ * @timer_rand_state:	pointer to timer rand state struct
++ * @kstat_irqs:		irq stats per cpu
++ * @irq_2_iommu:	iommu with this irq
+  * @handle_irq:		highlevel irq-events handler [if NULL, __do_IRQ()]
+  * @chip:		low level interrupt hardware access
+  * @msi_desc:		MSI descriptor
+
