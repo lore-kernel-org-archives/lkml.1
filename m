@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbYLSWhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968AbYLSWiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754499AbYLSWhe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 17:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYLSWh0
+	id S1754968AbYLSWiG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 17:38:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYLSWhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 17:37:26 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:45248 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751115AbYLSWhZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 17:37:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=K4ayFXZWj9nYlgmRszoxnj1ajtpBY7f38uMqlWdo8hz3JtCRsRenqgIYk8LIWurzgi
-         XaBwor09egtjSu14jNdrwRMz/KdWxHtyHxQCL5lg5G/HWaAf5MHVliraLmdOngl9c1Bx
-         Mwtlx8UK5dEdC9/8esGnfHpgG1WshXZjt5Oq0=
-Message-ID: <494C222A.8050507@gmail.com>
-Date: Fri, 19 Dec 2008 23:37:30 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+	Fri, 19 Dec 2008 17:37:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46740 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751676AbYLSWhw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 17:37:52 -0500
+Date: Fri, 19 Dec 2008 23:37:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Darren Hart <dvhltc@us.ibm.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>
+Cc: "lkml, " <linux-kernel@vger.kernel.org>, Rusty Russell <rusty@au1.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: futex.c and fault handling
+Message-ID: <20081219223720.GD13409@elte.hu>
+References: <494C1DE5.4040901@us.ibm.com>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] usbip_start_threads(): handle kernel_thread failure
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <494C1DE5.4040901@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel_thread may fail, notice this.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/staging/usbip/usbip_common.c |   16 ++++++++++++++--
- 1 files changed, 14 insertions(+), 2 deletions(-)
+(extended the Cc: list with MM experts.)
 
-diff --git a/drivers/staging/usbip/usbip_common.c b/drivers/staging/usbip/usbip_common.c
-index 72e2092..3d099e8 100644
---- a/drivers/staging/usbip/usbip_common.c
-+++ b/drivers/staging/usbip/usbip_common.c
-@@ -406,8 +406,20 @@ void usbip_start_threads(struct usbip_device *ud)
- 	/*
- 	 * threads are invoked per one device (per one connection).
- 	 */
--	kernel_thread(usbip_thread, (void *)&ud->tcp_rx, 0);
--	kernel_thread(usbip_thread, (void *)&ud->tcp_tx, 0);
-+	int retval;
-+
-+	retval = kernel_thread(usbip_thread, (void *)&ud->tcp_rx, 0);
-+	if (retval < 0) {
-+		printk(KERN_ERR "Creating tcp_rx thread for ud %p failed.\n",
-+				ud); 
-+		return;
-+	}
-+	retval = kernel_thread(usbip_thread, (void *)&ud->tcp_tx, 0);
-+	if (retval < 0) {
-+		printk(KERN_ERR "Creating tcp_tx thread for ud %p failed.\n",
-+				ud); 
-+		return;
-+	}
- 
- 	/* confirm threads are starting */
- 	wait_for_completion(&ud->tcp_rx.thread_done);
+* Darren Hart <dvhltc@us.ibm.com> wrote:
 
+> I've been working in linux-tip core/futexes lately and have a need to be 
+> able to properly handle faults for r/w access to a uaddr.  I was 
+> planning on modeling this on the fault handling in futex_lock_pi which 
+> used both get_user() and futex_handle_fault() to get the pages.  
+> However, that used to be based on whether or not we held the mmap_sem.  
+> Now that we're using fast_gup throughout futex.c, and the mmap_sem 
+> locking has been pushed in tighter in get_futex_key(), I'm not sure if 
+> the fault handling is still correct - the comments are certainly 
+> incorrect since we no longer hold the mmap_sem when we hit 
+> uaddr_faulted: inside futex_lock_pi (and a few other places have similar 
+> comment vs. code dicrepancies):
+>
+> uaddr_faulted:
+> 	/*
+> 	 * We have to r/w  *(int __user *)uaddr, and we have to modify it
+> 	 * atomically.  Therefore, if we continue to fault after get_user()
+> 	 * below, we need to handle the fault ourselves, while still holding
+> 	 * the mmap_sem.  This can occur if the uaddr is under contention as
+> 	 * we have to drop the mmap_sem in order to call get_user().
+> 	 */
+> 	queue_unlock(&q, hb);
+>
+> 	if (attempt++) {
+> 		ret = futex_handle_fault((unsigned long)uaddr, attempt);
+> 		if (ret)
+> 			goto out_put_key;
+> 		goto retry_unlocked;
+> 	}
+>
+> ---> previous versions dropped the mmap_sem here in preparation for get_user()
+>
+> 	ret = get_user(uval, uaddr);
+> 	if (!ret)
+> 		goto retry;
+>
+>
+> So is the code still correct without the holding of mmap_sem?  I suppose 
+> get_user() is still the more efficient path, and perhaps even more so 
+> now that we don't have to release mmap_sem and reacquire it later in 
+> order to call it.  If so, then I guess all that is needed is a comments 
+> patch, which I'd be happy to write up.
+>
+> Thanks,
+>
+> -- 
+> Darren Hart
+> IBM Linux Technology Center
+> Real-Time Linux Team
