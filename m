@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYLSTxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754427AbYLSTyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754169AbYLSTxu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 14:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbYLSTxi
+	id S1754427AbYLSTyS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 14:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYLSTyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 14:53:38 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:38781 "EHLO e1.ny.us.ibm.com"
+	Fri, 19 Dec 2008 14:54:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45945 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752095AbYLSTxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 14:53:37 -0500
-In-Reply-To: <12342.1229711059@redhat.com>
-To: David Howells <dhowells@redhat.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Muntz, Daniel" <Dan.Muntz@netapp.com>, dhowells@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       nfsv4@linux-nfs.org, rwheeler@redhat.com, sfr@canb.auug.org.au,
-       steved@redhat.com
+	id S1752174AbYLSTx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 14:53:59 -0500
 MIME-Version: 1.0
-Subject: Re: Pull request for FS-Cache, including NFS patches
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF4F5F89AF.8F313531-ON88257524.006A611A-88257524.006D49B8@us.ibm.com>
-From: Bryan Henderson <hbryan@us.ibm.com>
-Date: Fri, 19 Dec 2008 11:53:38 -0800
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V85_10262008HFIGS1|October
- 26, 2008) at 12/19/2008 14:53:35,
-	Serialize complete at 12/19/2008 14:53:35
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, yumiko.sugita.yf@hitachi.com,
+       satoshi.oshima.fk@hitachi.com
+Subject: Re: [PATCH] coredump_filter: enable to change the default filter
+In-Reply-To: Hidehiro Kawai's message of  Friday, 19 December 2008 19:05:10 +0900 <494B71D6.3080602@hitachi.com>
+References: <4940B426.6040509@hitachi.com>
+	<20081211154349.5000.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081211151003.00572e04.akpm@linux-foundation.org>
+	<20081211232205.ED188FC3AB@magilla.sf.frob.com>
+	<494B71D6.3080602@hitachi.com>
+X-Shopping-List: (1) Dyno-blast seducers
+   (2) Tolerant inversions
+   (3) Runcible digressions
+Message-Id: <20081219195311.81C4AFC351@magilla.sf.frob.com>
+Date: Fri, 19 Dec 2008 11:53:11 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Muntz, Daniel <Dan.Muntz@netapp.com> wrote:
-> 
-> > AFS was designed to support local disk cache, so with callbacks 
-> you can get a
-> > consistent system.
-> 
-> It's less the callbacks and more the data version number that's 
-important.
+> It makes sense.  It also enables us to change coredump_filter for
+> user mode helpers after the system was booted.
 
-Maybe for consistency, but for the performance benefits of local disk 
-caching, I believe the callbacks are pretty important.  I say that because 
-I regularly use an NFS 3 filesystem on the IBM internal network that is 
-painfully slow on Linux and fine on AIX with CacheFS.  It was also fine 
-when this data was in AFS instead, and if I copy all the files to a local 
-disk filesystem.
+Right.
 
-In this case, the files are _all in local page cache_, so I assume the 
-waiting is for the constant stream of transactions the client uses to make 
-sure the data in the cache is still current every time I open a file.  AIX 
-CacheFS doesn't sweat the consistency, so makes these queries only 
-periodically.  AFS had the callbacks, so rather than the client asking 
-every time if the data had changed, the server just told it when it did.
+> However, we would need a special care for PID namespace if we use
+> init's coredump_filter as default.  For a process with new PID
+> namespace and new /proc, writing to /proc/1/coredump_filter doesn't
+> mean changing default, although it's not a usual operation.
 
---
-Bryan Henderson                     IBM Almaden Research Center
-San Jose CA                         Storage Systems
+I'd figured that private PID namespaces with their own init would want
+their own private settings for this default too.
 
+> The reason why I suggested the boot parameter way is most users
+> can change the default easily.  Some users have difficulty to
+> change init scripts for various reasons.
+
+I don't object to it deeply or anything.  
+I just pointed out that we do already have an alternative.
+
+
+Thanks,
+Roland
