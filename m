@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbYLSUDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbYLSUFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753939AbYLSUDy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 15:03:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYLSUDr
+	id S1754017AbYLSUFb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 15:05:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbYLSUFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 15:03:47 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:1087 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751555AbYLSUDp (ORCPT
+	Fri, 19 Dec 2008 15:05:23 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:34146 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752475AbYLSUFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 15:03:45 -0500
+	Fri, 19 Dec 2008 15:05:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=hKu/6zi9OPTyCUjKHWq7fKJhRRGWzCOqAjh+oSbdr6XDnro1nOq87nQz9Nqc3ma1MW
-         W06zKUyzHN6UKCLwDKJCRNbNS6qe1cO0aAlIoY/ud56Wfz4FnZ7AzlnMzmdmx4gh/qvp
-         gq3BrQDDEYpR3PRvjuv5QgTBEWfaThFTNe5cc=
-Message-ID: <3f9a31f40812191203v22401bb5j7a8809a5125de3ce@mail.gmail.com>
-Date: Sat, 20 Dec 2008 01:33:44 +0530
-From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-To: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, "David Woodhouse" <dwmw2@infradead.org>,
-       "Jaswinder Singh" <jaswinder@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, mchehab@redhat.com,
-       sfr@canb.auug.org.au, linux-next@vger.kernel.org
-Subject: Firmware patches for DVB
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=WHRNeWvUZrz/bBT7cjH1gddjo+M77ffkVgOLmaw3sKk29FmJ+0pYACw0xqW4ML6fuv
+         ChoCYpyb8oPNiX74NqFGuXqUea/j6qKi2EX36F7RYEIpBcFLGA2aOsnVPTwPMiKW+jMg
+         V2i626+HQfzM5c1b0hQ2ooAbOy2kgk7iemJmw=
+Message-ID: <84144f020812191205l2b147af4m550a80e32e1efb31@mail.gmail.com>
+Date: Fri, 19 Dec 2008 22:05:21 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Catalin Marinas" <catalin.marinas@arm.com>
+Subject: Re: [PATCH 03/14] kmemleak: Add the slab memory allocation/freeing hooks
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081219181313.7778.67533.stgit@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+	 <20081219181313.7778.67533.stgit@pc1117.cambridge.arm.com>
+X-Google-Sender-Auth: 743c41c5bd59586d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Fri, Dec 19, 2008 at 8:13 PM, Catalin Marinas
+<catalin.marinas@arm.com> wrote:
+> This patch adds the callbacks to kmemleak_(alloc|free) functions from
+> the slab allocator. The patch also adds the SLAB_NOLEAKTRACE flag to
+> avoid recursive calls to kmemleak when it allocates its own data
+> structures.
+>
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 
-These DVB's firmware patches are floating in linux-next from long time :
-
-1. firmware: convert av7110 driver to request_firmware()
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=402669d75012c5f12c27b799145c10db79715f51
-2. Remove fdump tool for av7110 firmware
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=43b0a12fa4ac50f6875ea5a238f9e9e26f3fe390
-
-Should I need to resend these patches to merge main-stream.
-
-Thank you,
-
-Jaswinder Singh.
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
