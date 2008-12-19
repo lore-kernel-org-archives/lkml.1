@@ -1,115 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbYLSMvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753649AbYLSMyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753453AbYLSMvU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 07:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYLSMvM
+	id S1753649AbYLSMyX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 07:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbYLSMyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 07:51:12 -0500
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:44233 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751611AbYLSMvM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 07:51:12 -0500
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <494B98CC.4050700@gmail.com>
-Date: Fri, 19 Dec 2008 12:51:24 +0000
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080801)
-MIME-Version: 1.0
-To: Andy Green <andy@openmoko.com>
-CC: Balaji Rao <balajirrao@openmoko.org>, linux-kernel@vger.kernel.org,
-       Samuel Ortiz <sameo@openedhand.com>
-Subject: Re: [PATCH V2 2/7] mfd: PCF50633 adc driver
-References: <20081218055618.31696.65002.stgit@cff.thadambail> <20081218055653.31696.4361.stgit@cff.thadambail> <494B831C.5050402@gmail.com> <494B9073.8070104@openmoko.com>
-In-Reply-To: <494B9073.8070104@openmoko.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Dec 2008 07:54:13 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55355 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751611AbYLSMyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 07:54:12 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20081218231511.d9201464.akpm@linux-foundation.org>
+References: <20081218231511.d9201464.akpm@linux-foundation.org> <20081120144139.10667.75519.stgit@warthog.procyon.org.uk> <20081120144145.10667.39594.stgit@warthog.procyon.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, trond.myklebust@fys.uio.no, viro@ZenIV.linux.org.uk,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 01/45] Create a dynamically sized pool of threads for doing very slow work items [ver #41]
+Date: Fri, 19 Dec 2008 12:54:02 +0000
+Message-ID: <10865.1229691242@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Green wrote:
-> Somebody in the thread at some point said:
->
-> Hi Johnathan -
->
-> | This needs a bit more explanation. Particularly as the data
-> | sheet describes that accsw as 'for rationmetric measurement'.
->
-> What's going on here is that ACCSW can be driven from the PMU to bias a
-> resistor divider to scale what's being measured... we use it to detect
-> resistor to 0V on ID pin of USB on our charger.
->
-> You can power accsw / that divider "by hand" which is what we're doing
-> here, or you can have the ratiometric state machine change the mux /
-> bias automatically between the two measurements it takes, which we're
-> not doing.
-That makes sense. Thanks for the explanation.
->
-> | Also, seeing as I assume this is the only driver that can touch
-> | these registers and you don't change them else where, why can't
-> | they be in initial setup code rather than here? (probably a good
-> | reason, but be nice to have it document here!)
->
-> ADCC2 setting concerned with ratiometric disable could indeed be moved
-> to init, it was done like this before I did the queuing stuff and we
-> took ADC measurement in two different places in the code.  But in fact
-> for the best we should only enable accsw until the measurement completes
-> and save a tiny bit of power.
-Either way sounds fine to me as I'd be surprised if it is a significant
-power
-drain and anyway it would come at the cost of a couple more register writes
-which, if the bus is slow, would be more of an issue.
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
->
-> |> +    /* kill ratiometric, but enable ACCSW biasing */
-> |> +    pcf50633_reg_write(pcf, PCF50633_REG_ADCC2, 0x00);
-> |> +    pcf50633_reg_write(pcf, PCF50633_REG_ADCC3, 0x01);
-> |> +
-> |> +    /* start ADC conversion on selected channel */
-> |> +    pcf50633_reg_write(pcf, PCF50633_REG_ADCC1, channel | avg |
-> | ...
-> |> +
-> |> +static void pcf50633_adc_irq(int irq, void *data)
-> |> +{
-> |> +    struct pcf50633_adc *adc = data;
-> |> +    struct pcf50633 *pcf = adc->pcf;
-> |> +    struct pcf50633_adc_request *req;
-> |> +    int head;
-> |> +    mutex_lock(&adc->queue_mutex);
-> |> +    head = adc->queue_head;
-> |> +
-> |> +    req = adc->queue[head];
-> |> +    if (WARN_ON(!req)) {
-> |> +        dev_err(pcf->dev, "pcf50633-adc irq: ADC queue empty!\n");
-> |> +        mutex_unlock(&adc->queue_mutex);
-> |> +        return;
-> |> +    }
-> |> +    adc->queue[head] = NULL;
-> |
-> | Weird formatting?
-> |
-> |> +    adc->queue_head = (head + 1) &
-> |> +                      (PCF50633_MAX_ADC_FIFO_DEPTH - 1);
-> |> +
-> |> +    mutex_unlock(&adc->queue_mutex);
->
-> This would save the power
->
-> ~    pcf50633_reg_write(pcf, PCF50633_REG_ADCC3, 0x0);
->
-> |> +    req->callback(pcf, req->callback_param, adc_result(pcf));
-> |> +    kfree(req);
-> |> +
-> |> +    trigger_next_adc_job_if_any(pcf);
-> |> +}
-> |> +
-> | Rest looks good to me.
-> |
-> | Acked-by: Jonathan Cameron
-> |
->
-> -Andy
+> This may be the most skilfully commented kernel code I've ever seen.
 
+Thanks.  I like useful comments as I may need to re-understand the code I've
+written should I have to fix it in five years time.
+
+> > +static unsigned slow_work_min_threads = 2;
+> > +static unsigned slow_work_max_threads = (NR_CPUS > 4) ? NR_CPUS : 4;
+> 
+> I suspect there will be a requirement to tune this at runtime.
+
+Yes.  See:
+
+	[PATCH 03/45] Make the slow work pool configurable [ver #41]
+
+> Using num_possible_cpus() would be more accurate here.  One could
+> easily envisage NR_CPUS=1024 on a 2-way machine.  Generally any use
+> of NR_CPUS is a red flag.  In fact there's a checkpatch warning about
+> it now.
+
+This has been fixed in ver #42, which is what is in the GIT trees.  I can post
+that as patches if you like.  Well #43, I've just noticed a bug:-(.
+
+> > +#define slow_work_available(vsmax) \
+> > +	(!list_empty(&slow_work_queue) || \
+> > +	 (!list_empty(&vslow_work_queue) && \
+> > +	  atomic_read(&vslow_work_executing_count) < (vsmax)))
+> 
+> This could be a regular C function?
+
+I suppose so.
+
+> > +			p = kthread_create(slow_work_thread, NULL,
+> > +					   "kslow%Xd", loop);
+> > +			if (!p)
+> > +				goto error;
+> > +			wake_up_process(p);
+> 
+> The above reimplements kthread_run().
+
+And wrongly.  I should use IS_ERR(p) not !p.
+
+David
