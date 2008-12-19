@@ -1,74 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbYLSXfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbYLSXfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756191AbYLSXfU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 18:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbYLSXfA
+	id S1756608AbYLSXfl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 18:35:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756003AbYLSXfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 18:35:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47813 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751739AbYLSXe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 18:34:59 -0500
-Date: Sat, 20 Dec 2008 00:34:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Pekka Paalanen <pq@iki.fi>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Markus Metzger <markus.t.metzger@gmail.com>
-Subject: Re: ftrace behaviour (was: [PATCH] ftrace: introduce
-	tracing_reset_online_cpus() helper)
-Message-ID: <20081219233443.GC17984@elte.hu>
-References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI> <c62985530812190247i705d9c3er7662a1b133c6eb29@mail.gmail.com> <alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com> <20081220004453.50aec846@daedalus.pq.iki.fi> <20081219225717.GK13409@elte.hu> <alpine.DEB.1.10.0812191810110.26234@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0812191810110.26234@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 19 Dec 2008 18:35:15 -0500
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:24012 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755882AbYLSXfN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 18:35:13 -0500
+X-YMail-OSG: pdVPDtcVM1mMgjdhRBuRxSZAljnFQm2p4WcWZKg3JixBBwHooSPMYpqKmHJjHHkWp92Sa2srUBlncqiq.xBYSqv6SNlNDMFTiJWqjSn.A8iS3RXhrBqvzHuETVLHiAEFsRfv.L6TrsuztBAns3.lKIpFee3L2JUazkokwrGLIjg9_eCdjwOfXHqUwDSPTbtl3UPdBkfq5_aYR4gcZAFbJ6ntHeJm5c0xS9bNS0gfXQcQUXmtCQ0-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [LIO-Target 8/14]: Make ErrorRecoveryLevel=1 code use
+	iscsi_tpg_get_node_attrib()
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 19 Dec 2008 15:34:36 -0800
+Message-Id: <1229729676.4560.116.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From 1aecef1154d178049c63ff2b63f69591a90b35ac Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Fri, 19 Dec 2008 14:22:26 -0800
+Subject: [PATCH] [LIO-Target]: Make ErrorRecoveryLevel=1 code use iscsi_tpg_get_node_attrib()
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+This patch gets rid of iscsi_node_acl_t usage in ERL=1 code and locates
+iscsi_node_attrib_t for DATAOUT timer settings via iscsi_tpg_get_node_attrib().
 
-> > hm, that ftrace behavior is silly. Steve, i think i mentioned this a 
-> > long time ago and i thought it got fixed? Changing the ring buffer 
-> > size is a slow op, it should include an implicit reset and should be 
-> > plug-and-play with no dependencies of having to stop the trace or 
-> > something.
-> 
-> I think you are referencing a different issue, where we passed in a NULL 
-> buffer pointer and expected it to be resized. I still think that should 
-> not return a success, but that's a different issue altogether.
-> 
-> Before the ring buffer, the only safe way to resize the buffer was to 
-> switch the tracer to none (aka nop).  Now, the only thing you need to do 
-> is disable tracing. This is probably a good thing since it forces the 
-> user to stop tracing, otherwise the tracing will stop during the resize 
-> anyway, and the user will wonder why they lost data.
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/iscsi_target_erl1.c |   26 +++++++++++++-------------
+ 1 files changed, 13 insertions(+), 13 deletions(-)
 
-uhm, the user just resized the buffer - he will not be wondering about any 
-impact.
+diff --git a/drivers/lio-core/iscsi_target_erl1.c b/drivers/lio-core/iscsi_target_erl1.c
+index 718b9e7..c95ece0 100644
+--- a/drivers/lio-core/iscsi_target_erl1.c
++++ b/drivers/lio-core/iscsi_target_erl1.c
+@@ -46,11 +46,13 @@
+ #include <iscsi_crc.h>
+ #include <iscsi_debug.h>
+ #include <iscsi_lists.h>
+-#include <iscsi_target_core.h>
++
+ #include <target_core_base.h>
++#include <target_core_transport.h>
++#include <iscsi_target_core.h>
+ #include <iscsi_target_datain_values.h>
+ #include <iscsi_target_device.h>
+-#include <target_core_transport.h>
++#include <iscsi_target_tpg.h>
+ #include <iscsi_target_util.h>
+ #include <iscsi_target_erl0.h>
+ #include <iscsi_target_erl1.h>
+@@ -1277,7 +1279,7 @@ static void iscsi_handle_dataout_timeout (
+ 	iscsi_cmd_t *cmd = (iscsi_cmd_t *) data;
+ 	iscsi_conn_t *conn = conn = CONN(cmd);
+ 	iscsi_session_t *sess = NULL;
+-	iscsi_node_acl_t *acl = NULL;
++	iscsi_node_attrib_t *na;
+ 
+ 	iscsi_inc_conn_usage_count(conn);
+ 		
+@@ -1289,7 +1291,7 @@ static void iscsi_handle_dataout_timeout (
+ 	}
+ 	cmd->dataout_timer_flags &= ~DATAOUT_TF_RUNNING;
+ 	sess = SESS(conn);
+-	acl = sess->node_acl;
++	na = iscsi_tpg_get_node_attrib(sess);
+ 	
+ 	if (!SESS_OPS(sess)->ErrorRecoveryLevel) {
+ 		TRACE(TRACE_ERL0, "Unable to recover from DataOut timeout while"
+@@ -1297,12 +1299,10 @@ static void iscsi_handle_dataout_timeout (
+ 		goto failure;
+ 	}
+ 	
+-	if (++cmd->dataout_timeout_retries ==
+-	    ISCSI_NODE_ATTRIB(acl)->dataout_timeout_retries) {
++	if (++cmd->dataout_timeout_retries == na->dataout_timeout_retries) {
+ 		TRACE(TRACE_TIMER, "Command ITT: 0x%08x exceeded max retries for"
+ 		" DataOUT timeout %u, closing iSCSI connection.\n",
+-			cmd->init_task_tag,
+-			ISCSI_NODE_ATTRIB(acl)->dataout_timeout_retries);
++			cmd->init_task_tag, na->dataout_timeout_retries);
+ 		goto failure;
+ 	}
+ 
+@@ -1363,7 +1363,7 @@ extern void iscsi_mod_dataout_timer (iscsi_cmd_t *cmd)
+ {               
+ 	iscsi_conn_t *conn = CONN(cmd);
+ 	iscsi_session_t *sess = SESS(conn);
+-	iscsi_node_acl_t *acl = sess->node_acl;
++	iscsi_node_attrib_t *na = na = iscsi_tpg_get_node_attrib(sess);	
+ 	
+ 	spin_lock_bh(&cmd->dataout_timeout_lock);
+ 	if (!(cmd->dataout_timer_flags & DATAOUT_TF_RUNNING)) {
+@@ -1371,7 +1371,7 @@ extern void iscsi_mod_dataout_timer (iscsi_cmd_t *cmd)
+ 		return;
+ 	}
+ 		                        
+-	MOD_TIMER(&cmd->dataout_timer, ISCSI_NODE_ATTRIB(acl)->dataout_timeout);
++	MOD_TIMER(&cmd->dataout_timer, na->dataout_timeout);
+ 	TRACE(TRACE_TIMER, "Updated DataOUT timer for ITT: 0x%08x",
+ 			cmd->init_task_tag);
+ 	spin_unlock_bh(&cmd->dataout_timeout_lock);
+@@ -1388,7 +1388,7 @@ extern void iscsi_start_dataout_timer (
+ 	iscsi_conn_t *conn)
+ {
+ 	iscsi_session_t *sess = SESS(conn);
+-	iscsi_node_acl_t *acl = sess->node_acl;
++	iscsi_node_attrib_t *na = na = iscsi_tpg_get_node_attrib(sess); 
+ 	
+ 	if (cmd->dataout_timer_flags & DATAOUT_TF_RUNNING)
+ 		return;
+@@ -1397,8 +1397,8 @@ extern void iscsi_start_dataout_timer (
+ 		" CID: %hu.\n", cmd->init_task_tag, conn->cid);
+ 
+ 	init_timer(&cmd->dataout_timer);
+-	SETUP_TIMER(cmd->dataout_timer, ISCSI_NODE_ATTRIB(acl)->dataout_timeout,
+-		cmd, iscsi_handle_dataout_timeout);
++	SETUP_TIMER(cmd->dataout_timer, na->dataout_timeout, cmd,
++			iscsi_handle_dataout_timeout);
+ 	cmd->dataout_timer_flags &= ~DATAOUT_TF_STOP;
+ 	cmd->dataout_timer_flags |= DATAOUT_TF_RUNNING;
+ 	add_timer(&cmd->dataout_timer);
+-- 
+1.5.4.1
 
-And that's why we should do a full reset: that makes it abundantly clear 
-what happened. We shouldnt pretend to be able to do something (seemless, 
-lightweight buffer size change with no visible impact) which we obviously 
-cannot reliably offer.
 
-Buffer resize is a slow op, and everyone realizes that. Most people will 
-in fact say: "hey, I didnt even need to reboot to change the trace buffer 
-size, cool!".
 
-The current "only allow resizing while tracing is disabled" is an 
-unintuitive and counterproductive restriction - a borderline bug in fact.
-
-	Ingo
