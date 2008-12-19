@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbYLSTin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753622AbYLSTky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753281AbYLSTin (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 14:38:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbYLSTie
+	id S1753622AbYLSTky (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 14:40:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYLSTkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 14:38:34 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:53001 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751519AbYLSTid (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 14:38:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=EUQyxKSK5nJJTnBJRw/2kHtI+JT3VxnErW/k8Flu9ZO0DF7ubsFdJ34q6dxjmHRMoG
-         dn4yNsolc6YVUzC6vuz1d4+sIEZhUN+XqZZ95UkLwU0p0dGI9Xr+czfeJbIjJMlYP/US
-         oY9FMlYl5JHBowT3czI69pW+2l4WjDqbGjI7s=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
-Subject: Re: [PATCH] ide: Fix drive's DWORD-IO handling
-Date: Fri, 19 Dec 2008 20:01:50 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rc8-next-20081219; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>
-References: <494A5BC9.7000605@inf.tu-dresden.de>
-In-Reply-To: <494A5BC9.7000605@inf.tu-dresden.de>
+	Fri, 19 Dec 2008 14:40:46 -0500
+Received: from www.tglx.de ([62.245.132.106]:41421 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751144AbYLSTkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 14:40:45 -0500
+Date: Fri, 19 Dec 2008 20:40:17 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Linux-rt <linux-rt-users@vger.kernel.org>
+Subject: Re: [patch 4/7] rtmutex: unify state manipulation
+In-Reply-To: <alpine.DEB.1.10.0812191309540.26432@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.2.00.0812192031270.3376@localhost.localdomain>
+References: <20081219155504.735865178@linutronix.de> <20081219155556.103531550@linutronix.de> <alpine.DEB.1.10.0812191309540.26432@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200812192001.51335.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 18 December 2008, Mario Schwalbe wrote:
-> Resubmitted on request.
+On Fri, 19 Dec 2008, Steven Rostedt wrote:
+> > +	} while (cmpxchg(&current->state, state, block_state) != state);
 > 
-> According the documentation, id[ATA_ID_DWORD_IO] is non-zero if
-> the drive supports dword IO, while the code disables support by
-> setting IDE_DFLAG_NO_IO_32BIT. In addition, this word has been
-> reused by the ATA8 specification. This patch fixes both cases.
-> 
-> Signed-off-by: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
-> ---
->  drivers/ide/ide-probe.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-> index c55bdbd..859b0e5 100644
-> --- a/drivers/ide/ide-probe.c
-> +++ b/drivers/ide/ide-probe.c
-> @@ -856,7 +856,7 @@ static void ide_port_tune_devices(ide_hwif_t *hwif)
->  		ide_drive_t *drive = &hwif->drives[unit];
-> 
->  		if ((hwif->host_flags & IDE_HFLAG_NO_IO_32BIT) ||
-> -		    drive->id[ATA_ID_DWORD_IO])
-> +		    !ata_id_has_dword_io(drive->id))
->  			drive->dev_flags |= IDE_DFLAG_NO_IO_32BIT;
->  		else
->  			drive->dev_flags &= ~IDE_DFLAG_NO_IO_32BIT;
+> Doesn't this break archs that do not have cmpxchg?
 
-Since it seems that libata developers need more time to fully analyze
-issues with ata_id_has_dword_io() and I don't want to delay this fix
-because if it could you please modify the patch according to Sergei's
-suggestion of removing id[ATA_ID_DWORD_IO] check altogether?
+We can use xchg. The waiter is protected against the RUNNING_MUTEX
+state change via the mutex->lock. It's just some overcautioness when I
+started to fix this.
 
-[ It is a safe thing to do since the old code has been enabling 32-bit
-  I/O _unless_ the ATA-1 dword I/O bit for VU compatibility was set... ]
+> There might be another way. We could just use your TASK_RUNNING_MUTEX or 
+> trick for both mutexes and spinlocks.
+
+The mechanisms should be the same for everything now.
+ 
+> > -	if (mtx)
+> > -		set_current_state(TASK_RUNNING);
+> > -	else {
+> > -		state = xchg(&current->state, saved_state);
+> > -		if (unlikely(state == TASK_RUNNING))
+> > -			current->state = TASK_RUNNING;
+> > -	}
+> > +	rt_restore_current_state(saved_state);
+> 
+> This is a bug. A mutex always leaves in the TASK_RUNNING state.
+ 
+Duh, yes. So this should be:
+
+     rt_restore_current_state(!mtx ? saved_state : TASK_RUNNING);
+
+> What about having the locking spinlocks and mutexes be almost identical. 
+> Like the rwlocks are (rwlocks and rwsems share the same code). We can use 
+> the RT_MUTEX_RUNNING trick for both. The only difference is that a mutex 
+> will always leave in the TASK_RUNNING state.
+
+Good point.
 
 Thanks,
-Bart
+
+	tglx
