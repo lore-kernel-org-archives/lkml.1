@@ -1,85 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbYLSQh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752049AbYLSQt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752232AbYLSQh3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 11:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYLSQhU
+	id S1752049AbYLSQt7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 11:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbYLSQtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 11:37:20 -0500
-Received: from wf-out-1314.google.com ([209.85.200.168]:27842 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbYLSQhS (ORCPT
+	Fri, 19 Dec 2008 11:49:51 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:30890 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751434AbYLSQtu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 11:37:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=IFMTjiaLHgCUBLxLg+H6CyPri6BSjLBMBkhnpeVXh3tyf4zz/wgydGqdim82I6dCRN
-         O5F5ZWBaK3wVt0fZG5Gos7K45b7ckgsD+W7l1wUzxqDsZk50BH6NOQbplljqTgYaaD9q
-         GJ15oRb0Cx0nvI5mFSm/onreUqMn5ZWjyOIMo=
-Subject: Re: [PATCH-2.6.28 final] byteorder: fix new headers for userspace
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       David Woodhouse <dwmw2@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, bluebird@gentoo.org,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <20081219090856.48666b14@infradead.org>
-References: <4943DAD6.7070402@gentoo.org>
-	 <20081216.011334.124918024.davem@davemloft.net>
-	 <1229564779.6481.26.camel@brick>
-	 <alpine.LFD.2.00.0812181208070.14014@localhost.localdomain>
-	 <alpine.LFD.2.00.0812181246420.14014@localhost.localdomain>
-	 <20081219090856.48666b14@infradead.org>
-Content-Type: text/plain
-Date: Fri, 19 Dec 2008 08:37:15 -0800
-Message-Id: <1229704635.32291.5.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Fri, 19 Dec 2008 11:49:50 -0500
+Message-ID: <494BD09A.4020605@oracle.com>
+Date: Fri, 19 Dec 2008 08:49:30 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, samr <sam@ravnborg.org>
+Subject: [PATCH] kernel-doc: check for extra kernel-doc notations
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010209.494BD09E.0010:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-19 at 09:08 +0100, Arjan van de Ven wrote:
-> On Thu, 18 Dec 2008 12:47:28 -0800 (PST)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > 
-> > 
-> > On Thu, 18 Dec 2008, Linus Torvalds wrote:
-> > > 
-> > > I think it would be better to just make it a config option, call it 
-> > > CONFIG_[LITTLE|BIG]_ENDIAN and set it up in the architecture
-> > > Kconfig file. I think some of the people who can set it dynamically
-> > > (or where it depends on the target machine) already effectively do
-> > > that.
-> > 
-> > Never mind, since we end up having to export it to user space (do
-> > we?) we can't depend on the config.h file, nor can we pollute the
-> > name space.
-> > 
-> 
-> why are we exposing byte order functions to userspace in the first
-> place ????
-> 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Hysterical raisons.  When I originally consolidated the byteorder stuff
-I removed the userspace export.  HPA (CC'd) made the point that this
-API (rightly or wrongly) was currently exported and used by userspace
-and we shouldn't pull the rug out from under them.
+Add functionality to check for function parameters or structure (or
+union/typedef/enum) field members that are described in kernel-doc but
+are not part of the expected (declared) parameters or structure.
+These generate warnings that are called "Excess" descriptions.
 
-I would have liked to un-export it, then we could also make linux/byteorder.h
-the preferred include instead of asm/ ... but we appear to be stuck with
-historical baggage here.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ scripts/kernel-doc |   67 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 66 insertions(+), 1 deletion(-)
 
-Crazy idea: could a byteorder-user.h be added that make headers-export
-will pick up instead of byteorder.h that the kernel _actually_ uses?
-
-Then we could keep exporting _something_ to avoid breaking userspace
-and allow the version the kernel actually uses to be evolved a bit
-more easily?
-
-Harvey
-
+--- linux-2.6.28-rc8-git6.orig/scripts/kernel-doc
++++ linux-2.6.28-rc8-git6/scripts/kernel-doc
+@@ -289,6 +289,8 @@ my %parameterdescs;
+ my @parameterlist;
+ my %sections;
+ my @sectionlist;
++my $sectcheck;
++my $struct_actual;
+ 
+ my $contents = "";
+ my $section_default = "Description";	# default section
+@@ -378,10 +380,12 @@ sub dump_section {
+ #	print STDERR "parameter def '$1' = '$contents'\n";
+ 	$name = $1;
+ 	$parameterdescs{$name} = $contents;
++	$sectcheck = $sectcheck . $name . " ";
+     } elsif ($name eq "@\.\.\.") {
+ #	print STDERR "parameter def '...' = '$contents'\n";
+ 	$name = "...";
+ 	$parameterdescs{$name} = $contents;
++	$sectcheck = $sectcheck . $name . " ";
+     } else {
+ #	print STDERR "other section '$name' = '$contents'\n";
+ 	if (defined($sections{$name}) && ($sections{$name} ne "")) {
+@@ -1405,21 +1409,25 @@ sub dump_union($$) {
+ sub dump_struct($$) {
+     my $x = shift;
+     my $file = shift;
++    my $nested;
+ 
+     if ($x =~/(struct|union)\s+(\w+)\s*{(.*)}/) {
+ 	$declaration_name = $2;
+ 	my $members = $3;
+ 
+ 	# ignore embedded structs or unions
+-	$members =~ s/{.*}//g;
++	$members =~ s/({.*})//g;
++	$nested = $1;
+ 
+ 	# ignore members marked private:
+ 	$members =~ s/\/\*.*?private:.*?public:.*?\*\///gos;
+ 	$members =~ s/\/\*.*?private:.*//gos;
+ 	# strip comments:
+ 	$members =~ s/\/\*.*?\*\///gos;
++	$nested =~ s/\/\*.*?\*\///gos;
+ 
+ 	create_parameterlist($members, ';', $file);
++	check_sections($file, $declaration_name, "struct", $sectcheck, $struct_actual, $nested);
+ 
+ 	output_declaration($declaration_name,
+ 			   'struct',
+@@ -1505,6 +1513,14 @@ sub dump_typedef($$) {
+     }
+ }
+ 
++sub save_struct_actual($) {
++    my $actual = shift;
++
++    # strip all spaces from the actual param so that it looks like one string item
++    $actual =~ s/\s*//g;
++    $struct_actual = $struct_actual . $actual . " ";
++}
++
+ sub create_parameterlist($$$) {
+     my $args = shift;
+     my $splitter = shift;
+@@ -1537,6 +1553,7 @@ sub create_parameterlist($$$) {
+ 	    $param = $1;
+ 	    $type = $arg;
+ 	    $type =~ s/([^\(]+\(\*?)\s*$param/$1/;
++	    save_struct_actual($param);
+ 	    push_parameter($param, $type, $file);
+ 	} elsif ($arg) {
+ 	    $arg =~ s/\s*:\s*/:/g;
+@@ -1561,14 +1578,17 @@ sub create_parameterlist($$$) {
+ 
+ 	    foreach $param (@args) {
+ 		if ($param =~ m/^(\*+)\s*(.*)/) {
++		    save_struct_actual($2);
+ 		    push_parameter($2, "$type $1", $file);
+ 		}
+ 		elsif ($param =~ m/(.*?):(\d+)/) {
+ 		    if ($type ne "") { # skip unnamed bit-fields
++			save_struct_actual($1);
+ 			push_parameter($1, "$type:$2", $file)
+ 		    }
+ 		}
+ 		else {
++		    save_struct_actual($param);
+ 		    push_parameter($param, $type, $file);
+ 		}
+ 	    }
+@@ -1634,6 +1654,46 @@ sub push_parameter($$$) {
+ 	$parametertypes{$param} = $type;
+ }
+ 
++sub check_sections($$$$$$) {
++	my ($file, $decl_name, $decl_type, $sectcheck, $prmscheck, $nested) = @_;
++	my @sects = split ' ', $sectcheck;
++	my @prms = split ' ', $prmscheck;
++	my $err;
++	my ($px, $sx);
++	my $prm_clean;		# strip trailing "[array size]" and/or beginning "*"
++
++	foreach $sx (0 .. $#sects) {
++		$err = 1;
++		foreach $px (0 .. $#prms) {
++			$prm_clean = $prms[$px];
++			$prm_clean =~ s/\[.*\]//;
++    			$prm_clean =~ s/__attribute__\s*\(\([a-z,_\*\s\(\)]*\)\)//;
++			##$prm_clean =~ s/^\**//;
++			if ($prm_clean eq $sects[$sx]) {
++				$err = 0;
++				last;
++			}
++		}
++		if ($err) {
++			if ($decl_type eq "function") {
++				print STDERR "Warning(${file}:$.): " .
++					"Excess function parameter " .
++					"'$sects[$sx]' " .
++					"description in '$decl_name'\n";
++				++$warnings;
++			} else {
++				if ($nested !~ m/\Q$sects[$sx]\E/) {
++				    print STDERR "Warning(${file}:$.): " .
++					"Excess struct/union/enum/typedef member " .
++					"'$sects[$sx]' " .
++					"description in '$decl_name'\n";
++				    ++$warnings;
++				}
++			}
++		}
++	}
++}
++
+ ##
+ # takes a function prototype and the name of the current file being
+ # processed and spits out all the details stored in the global
+@@ -1699,6 +1759,9 @@ sub dump_function($$) {
+ 	return;
+     }
+ 
++	my $prms = join " ", @parameterlist;
++	check_sections($file, $declaration_name, "function", $sectcheck, $prms, "");
++
+     output_declaration($declaration_name,
+ 		       'function',
+ 		       {'function' => $declaration_name,
+@@ -1757,6 +1820,8 @@ sub reset_state {
+     @parameterlist = ();
+     %sections = ();
+     @sectionlist = ();
++    $sectcheck = "";
++    $struct_actual = "";
+     $prototype = "";
+ 
+     $state = 0;
