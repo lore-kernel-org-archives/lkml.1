@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbYLSQ7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752958AbYLSRCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752614AbYLSQ7f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 11:59:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYLSQ7Z
+	id S1752958AbYLSRCB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 12:02:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbYLSRBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 11:59:25 -0500
-Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:53266 "EHLO
-	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751466AbYLSQ7Y (ORCPT
+	Fri, 19 Dec 2008 12:01:53 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47795 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751796AbYLSRBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 11:59:24 -0500
-X-Greylist: delayed 629 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Dec 2008 11:59:23 EST
-Date: Fri, 19 Dec 2008 17:48:51 +0100
-From: Gabor Gombas <gombasg@sztaki.hu>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>, sfr@canb.auug.org.au,
-       steved@redhat.com, rwheeler@redhat.com, bfields@fieldses.org,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Pull request for FS-Cache, including NFS patches
-Message-ID: <20081219164851.GG5209@boogie.lpds.sztaki.hu>
-References: <20081218123601.11810b7f.akpm@linux-foundation.org> <8930.1229560221@redhat.com> <20081218224418.804f10bc.sfr@canb.auug.org.au> <20081218142420.GA16728@infradead.org> <7633.1229653644@redhat.com> <20081218184443.d73f5431.akpm@linux-foundation.org> <1229690036.7789.113.camel@heimdal.trondhjem.org>
+	Fri, 19 Dec 2008 12:01:53 -0500
+Date: Fri, 19 Dec 2008 12:01:51 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mike Travis <travis@sgi.com>
+cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/8] cpumask: convert kernel trace functions
+In-Reply-To: <494BD1D0.5080201@sgi.com>
+Message-ID: <alpine.DEB.1.10.0812191201200.26432@gandalf.stny.rr.com>
+References: <20081219160144.697518000@polaris-admin.engr.sgi.com> <20081219160145.272814000@polaris-admin.engr.sgi.com> <alpine.DEB.1.10.0812191114070.28744@gandalf.stny.rr.com> <494BD1D0.5080201@sgi.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1229690036.7789.113.camel@heimdal.trondhjem.org>
-X-Copyright: Forwarding or publishing without permission is prohibited.
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 19, 2008 at 07:33:56AM -0500, Trond Myklebust wrote:
 
-> One interesting use case that I didn't see David mention is for cluster
-> boot up. In a lot of the HPC clustered set-ups there tend be a number of
-> 'hot' files that all clients need to access at roughly the same time in
-> the boot cycle. Pre-loading these files into the persistent cache before
-> booting the cluster is one way to solve this problem. Server replication
-> and/or copying the files to local storage on the clients are other
-> solutions.
+On Fri, 19 Dec 2008, Mike Travis wrote:
+> > 
+> > 
+> > How does this save memory if we just allocate a cpumask var everytime
+> > we allocate a ring buffer?  Is cpumask_var_t a mask of possible CPUS and 
+> > not NR_CPUS?
+> > 
+> > Otherwise, I see this as just adding one extra pointer.
+> > 
+> > -- Steve
+> 
+> Hi Steve,
+> 
+> Yes, eventually, the cpumask_var_t will be allocated based on cpumask_size()
+> which will become BITS_TO_LONG(nr_cpu_ids) instead of BITS_TO_LONGS(NR_CPUS)
+> as soon as the kernel becomes "cpumask" clean.  (clean being that it ignores
+> all bits >= nr_cpu_ids.)
+> 
+> Note that on small NR_CPUS count systems, cpumask_var_t is a static array
+> and no allocation happens, so it only kicks in when CONFIG_CPUMASK_OFFSTACK=y.
 
-Not just boot up. Consider a room full of thin clients using nfsroot and
-the lecturer saying "Now everybody open a browser" or "Now everybody
-open Openoffice". With just NFS, it takes ages (there is a bottleneck of
-a single gigabit link between the clients and the NFS server even though
-the server itself has a 10gig card). If we redirect most of /usr/lib to
-a small local flash with some LD_LIBRARY_PATH and bind mount trickery we
-get an acceptable startup time. The flash is too small to hold even
-/usr/lib (flash size: 500M, /usr/lib is: 927M) so it is not possible to
-keep everything locally.
+OK, that explains a lot. Thanks for the explanation.
 
-It would be really nice if the local caching could be handled
-automatically and we would not need so many hacks, so I really look
-forward trying FS-Cache if I have time. I used cachefs on Solaris ages
-ago and I had good experiences back then; it would be really nice if
-Linux would catch up.
+-- Steve
 
-Gabor
-
--- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences
-     ---------------------------------------------------------
