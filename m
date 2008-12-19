@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbYLSULu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbYLSUP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752641AbYLSULu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 15:11:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbYLSULi
+	id S1752558AbYLSUP0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 15:15:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbYLSUPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 15:11:38 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:13757 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751201AbYLSULh (ORCPT
+	Fri, 19 Dec 2008 15:15:14 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:37745 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbYLSUPN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 15:11:37 -0500
+	Fri, 19 Dec 2008 15:15:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=whtv2DEY09wK2S+mg4bYqKwQeSD5caNziRYeKmYMSyY3eRJD8hSdMsp5QkIGRBgIUS
-         /s12aH9Lq269+/aao778RPX58P4RJstHSNSHWnnjY5gsc3/O23fxRZnDa5MxdGAxLDDn
-         cWnHWilV88O7Sgc50dEhIu72PB5uvYkOqaky4=
-Message-ID: <3f9a31f40812191211x12fc08cateb3502c6765d0c4c@mail.gmail.com>
-Date: Sat, 20 Dec 2008 01:41:36 +0530
-From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-To: "Ben Hutchings" <bhutchings@solarflare.com>
-Subject: Re: Firmware patches for Network
-Cc: netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       davem@davemloft.net, "Jeff Garzik" <jeff@garzik.org>,
-       "David Woodhouse" <dwmw2@infradead.org>, sfr@canb.auug.org.au,
-       linux-next@vger.kernel.org
-In-Reply-To: <1229715971.3097.6.camel@achroite>
+         :references:x-google-sender-auth;
+        b=MAA8EYrj7aNbPsSAdaX3RKY0/rU042XySokQpiEnqo7+B9Iy6kFpYECOtsfPDxRBLY
+         WJq1rE4UqZMjKeCeRuhW5njNB2lFM/6lRhGoA9rxH8S3rUzXcRLWe0tITmKruOqpHYRt
+         lefLq9wmVuyvCc40V0N8YaVcDC2qmltQrjXqk=
+Message-ID: <84144f020812191215i432fd70fq3248d9feb981d4cf@mail.gmail.com>
+Date: Fri, 19 Dec 2008 22:15:11 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Catalin Marinas" <catalin.marinas@arm.com>
+Subject: Re: [PATCH 11/14] kmemleak: Remove some of the kmemleak false positives
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20081219181357.7778.9552.stgit@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3f9a31f40812191131m48802157r596d7773fb435f34@mail.gmail.com>
-	 <1229715971.3097.6.camel@achroite>
+References: <20081219181255.7778.52219.stgit@pc1117.cambridge.arm.com>
+	 <20081219181357.7778.9552.stgit@pc1117.cambridge.arm.com>
+X-Google-Sender-Auth: ccf50d2d08fac6c3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ben,
-
-On Sat, Dec 20, 2008 at 1:16 AM, Ben Hutchings
-<bhutchings@solarflare.com> wrote:
->> 3. git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git
+On Fri, Dec 19, 2008 at 8:13 PM, Catalin Marinas
+<catalin.marinas@arm.com> wrote:
+> There are allocations for which the main pointer cannot be found but
+> they are not memory leaks. This patch fixes some of them. For more
+> information on false positives, see Documentation/kmemleak.txt.
 >
-> This one.
->
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 
-4 out of 10 Networking's firmware patches are already floating in
-linux-next from long time :
+> @@ -2882,6 +2883,12 @@ static int __init con_init(void)
+>         */
+>        for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
+>                vc_cons[currcons].d = vc = alloc_bootmem(sizeof(struct vc_data));
+> +               /*
+> +                * Kmemleak does not track the memory allocated via
+> +                * alloc_bootmem() but this block contains pointers to
+> +                * other blocks allocated via kmalloc.
+> +                */
+> +               kmemleak_alloc(vc, sizeof(struct vc_data), 1, GFP_ATOMIC);
+>                INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+>                visual_init(vc, currcons, 1);
+>                vc->vc_screenbuf = (unsigned short *)alloc_bootmem(vc->vc_screenbuf_size);
 
-1. firmware: convert e100 driver to request_firmware()
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=c98e632b660ef49b67a9591040230b518785e38a
-2. firmware: convert acenic driver to request_firmware()
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=e39c0e190f52331b35931fbe5e34a07114d66171
-3. firmware: convert tg3 driver to request_firmware()
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=aadd3ed38a6745e21dc8d2f388bbba42ead0a085
-4. starfire: use request_firmware()
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=df3eea674103ce451357be8eb873092943ad3551
-
-Should I need to resend all 10 or remaining 6.
-
-Thank you,
-
-Jaswinder Singh.
+I think there was some discussion about adding hooks to the bootmem
+allocator. Didn't that work out?
