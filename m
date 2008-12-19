@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYLSTbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbYLSTin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbYLSTbm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 14:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbYLSTbU
+	id S1753281AbYLSTin (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 14:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbYLSTie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 14:31:20 -0500
-Received: from wf-out-1314.google.com ([209.85.200.174]:59001 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753849AbYLSTbT (ORCPT
+	Fri, 19 Dec 2008 14:38:34 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:53001 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbYLSTid (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 14:31:19 -0500
+	Fri, 19 Dec 2008 14:38:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=pwC40r8jTDD89VbNcGPNEJ9GJVUkgcklnIFwwdknJInJ7JiHStQ94NbKvLtkES2jO8
-         468Ib7Y5NRq/i/k249s2HNXev6lUvZDJ0qOeEHSHwzKzQ4wyTJmlsmEuMjaocBDw85NT
-         7BVI9MVYuWchv8zma+Xsp3scyuPGC9ZtVOv0U=
-Message-ID: <3f9a31f40812191131m48802157r596d7773fb435f34@mail.gmail.com>
-Date: Sat, 20 Dec 2008 01:01:17 +0530
-From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-To: netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       davem@davemloft.net, "Jeff Garzik" <jeff@garzik.org>,
-       "David Woodhouse" <dwmw2@infradead.org>, sfr@canb.auug.org.au
-Subject: Firmware patches for Network
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=EUQyxKSK5nJJTnBJRw/2kHtI+JT3VxnErW/k8Flu9ZO0DF7ubsFdJ34q6dxjmHRMoG
+         dn4yNsolc6YVUzC6vuz1d4+sIEZhUN+XqZZ95UkLwU0p0dGI9Xr+czfeJbIjJMlYP/US
+         oY9FMlYl5JHBowT3czI69pW+2l4WjDqbGjI7s=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
+Subject: Re: [PATCH] ide: Fix drive's DWORD-IO handling
+Date: Fri, 19 Dec 2008 20:01:50 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.28-rc8-next-20081219; KDE/4.1.3; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>
+References: <494A5BC9.7000605@inf.tu-dresden.de>
+In-Reply-To: <494A5BC9.7000605@inf.tu-dresden.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200812192001.51335.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Thursday 18 December 2008, Mario Schwalbe wrote:
+> Resubmitted on request.
+> 
+> According the documentation, id[ATA_ID_DWORD_IO] is non-zero if
+> the drive supports dword IO, while the code disables support by
+> setting IDE_DFLAG_NO_IO_32BIT. In addition, this word has been
+> reused by the ATA8 specification. This patch fixes both cases.
+> 
+> Signed-off-by: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
+> ---
+>  drivers/ide/ide-probe.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+> index c55bdbd..859b0e5 100644
+> --- a/drivers/ide/ide-probe.c
+> +++ b/drivers/ide/ide-probe.c
+> @@ -856,7 +856,7 @@ static void ide_port_tune_devices(ide_hwif_t *hwif)
+>  		ide_drive_t *drive = &hwif->drives[unit];
+> 
+>  		if ((hwif->host_flags & IDE_HFLAG_NO_IO_32BIT) ||
+> -		    drive->id[ATA_ID_DWORD_IO])
+> +		    !ata_id_has_dword_io(drive->id))
+>  			drive->dev_flags |= IDE_DFLAG_NO_IO_32BIT;
+>  		else
+>  			drive->dev_flags &= ~IDE_DFLAG_NO_IO_32BIT;
 
-I have 10 pending patches of firmware for Networking available at
-http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git?a=shortlog :
+Since it seems that libata developers need more time to fully analyze
+issues with ata_id_has_dword_io() and I don't want to delay this fix
+because if it could you please modify the patch according to Sergei's
+suggestion of removing id[ATA_ID_DWORD_IO] check altogether?
 
-1. firmware: convert e100 driver to request_firmware()
+[ It is a safe thing to do since the old code has been enabling 32-bit
+  I/O _unless_ the ATA-1 dword I/O bit for VU compatibility was set... ]
 
-2. firmware: convert acenic driver to request_firmware()
-
-3. firmware: convert tg3 driver to request_firmware()
-
-4. starfire: use request_firmware()
-
-5. myri_sbus: use request_firmware
-
-6. tehuti: use request_firmware
-
-7. typhoon: use request_firmware
-
-8. smc91c92_cs: use request_firmware
-
-9. yam: use request_firmware
-
-10. 3C359: use request_firmware
-
-Please let me know, should I update these patches for :
-1. git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-OR
-2. git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
-OR
-3. git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6.git
-OR
-4. git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
-
-Thank you,
-
-Jaswinder Singh
+Thanks,
+Bart
