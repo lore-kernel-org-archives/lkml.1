@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbYLSUu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbYLSUur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbYLSUu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 15:50:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbYLSUrr
+	id S1755113AbYLSUur (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 15:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYLSUru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 15:47:47 -0500
-Received: from kumera.dghda.com ([80.68.90.171]:35301 "EHLO kumera.dghda.com"
+	Fri, 19 Dec 2008 15:47:50 -0500
+Received: from kumera.dghda.com ([80.68.90.171]:35316 "EHLO kumera.dghda.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753313AbYLSUrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 15:47:41 -0500
+	id S1753317AbYLSUrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 15:47:47 -0500
 From: "Duane Griffin" <duaneg@dghda.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       adilger@sun.com, linux-ext4@vger.kernel.org
-Subject: [PATCH, v5] ext4: ensure fast symlinks are NUL-terminated
-Date: Fri, 19 Dec 2008 20:47:15 +0000
-Message-Id: <1229719638-6982-8-git-send-email-duaneg@dghda.com>
+       Duane Griffin <duaneg@dghda.com>, Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH, v5] freevxfs: ensure fast symlinks are NUL-terminated
+Date: Fri, 19 Dec 2008 20:47:17 +0000
+Message-Id: <1229719638-6982-10-git-send-email-duaneg@dghda.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1229719638-6982-7-git-send-email-duaneg@dghda.com>
+In-Reply-To: <1229719638-6982-9-git-send-email-duaneg@dghda.com>
 References: <1229719638-6982-1-git-send-email-duaneg@dghda.com>
  <1229719638-6982-2-git-send-email-duaneg@dghda.com>
  <1229719638-6982-3-git-send-email-duaneg@dghda.com>
@@ -27,6 +26,8 @@ References: <1229719638-6982-1-git-send-email-duaneg@dghda.com>
  <1229719638-6982-5-git-send-email-duaneg@dghda.com>
  <1229719638-6982-6-git-send-email-duaneg@dghda.com>
  <1229719638-6982-7-git-send-email-duaneg@dghda.com>
+ <1229719638-6982-8-git-send-email-duaneg@dghda.com>
+ <1229719638-6982-9-git-send-email-duaneg@dghda.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,45 +35,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Ensure fast symlink targets are NUL-terminated, even if corrupted
 on-disk.
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Theodore Ts'o <tytso@mit.edu>
-Cc: adilger@sun.com
-Cc: linux-ext4@vger.kernel.org
+Cc: Christoph Hellwig <hch@infradead.org>
 Signed-off-by: Duane Griffin <duaneg@dghda.com>
 ---
 
-Changes from v4: fixed off-by-one bug in maximum length, as pointed out by
-Andreas Dilger.
+Unchanged from v4.
 
- fs/ext4/inode.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ fs/freevxfs/vxfs_inode.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index ca88060..f940859 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -34,6 +34,7 @@
- #include <linux/writeback.h>
- #include <linux/pagevec.h>
- #include <linux/mpage.h>
-+#include <linux/namei.h>
- #include <linux/uio.h>
- #include <linux/bio.h>
- #include "ext4_jbd2.h"
-@@ -4200,9 +4201,11 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
- 		inode->i_op = &ext4_dir_inode_operations;
- 		inode->i_fop = &ext4_dir_operations;
- 	} else if (S_ISLNK(inode->i_mode)) {
--		if (ext4_inode_is_fast_symlink(inode))
-+		if (ext4_inode_is_fast_symlink(inode)) {
- 			inode->i_op = &ext4_fast_symlink_inode_operations;
--		else {
-+			nd_terminate_link(ei->i_data, inode->i_size,
-+				sizeof(ei->i_data) - 1);
+diff --git a/fs/freevxfs/vxfs_inode.c b/fs/freevxfs/vxfs_inode.c
+index 9f3f2ce..03a6ea5 100644
+--- a/fs/freevxfs/vxfs_inode.c
++++ b/fs/freevxfs/vxfs_inode.c
+@@ -325,8 +325,10 @@ vxfs_iget(struct super_block *sbp, ino_t ino)
+ 		if (!VXFS_ISIMMED(vip)) {
+ 			ip->i_op = &page_symlink_inode_operations;
+ 			ip->i_mapping->a_ops = &vxfs_aops;
+-		} else
 +		} else {
- 			inode->i_op = &ext4_symlink_inode_operations;
- 			ext4_set_aops(inode);
- 		}
+ 			ip->i_op = &vxfs_immed_symlink_iops;
++			vip->vii_immed.vi_immed[ip->i_size] = '\0';
++		}
+ 	} else
+ 		init_special_inode(ip, ip->i_mode, old_decode_dev(vip->vii_rdev));
+ 
 -- 
 1.6.0.4
 
