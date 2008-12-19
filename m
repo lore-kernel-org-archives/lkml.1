@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753040AbYLSUk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753513AbYLSUlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753040AbYLSUk3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 15:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYLSUkT
+	id S1753513AbYLSUlU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 15:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYLSUlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 15:40:19 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:35102 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751431AbYLSUkS (ORCPT
+	Fri, 19 Dec 2008 15:41:09 -0500
+Received: from rv-out-0506.google.com ([209.85.198.233]:40832 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833AbYLSUlF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 15:40:18 -0500
+	Fri, 19 Dec 2008 15:41:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=WX4/oy7aE6dnh6ELla4uAE3+ApjyocESkmr6TwiTcpgH6DmXASkNAUtZTzFCLPdHfv
-         xJNGSQfE3qZb22U7f4JzfeLEjFTSZXr7RTHck0V0g68RCY9shRDqHR8Z7MRmeXlVOITP
-         NDHeVthinyLGY8isdfwBg4XQiakD583gZdSg0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 0/8] ide-cd: first conversion batch
-Date: Fri, 19 Dec 2008 21:15:40 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.28-rc8-next-20081219; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-References: <1229586052-3542-1-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1229586052-3542-1-git-send-email-petkovbb@gmail.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Um9nRgQ8qz/ezEoRKo6GLt5ZFM5I90jfRCNsSKGXwZxmMKa1pawtsmHg36i8Z84ptH
+         5OYodUFj7UGsc9uoPHSSf1Js1MzUFGU0k+PJJrZ/Ce3v0bL9gc3V5SiHCoRKYnEzAJs2
+         A4H+gmA4wCpvLGmxwCuUX1yMwpKw8Jvp3wBvo=
+Message-ID: <3f9a31f40812191241q40dafdb0lfd2f4487f2870e2@mail.gmail.com>
+Date: Sat, 20 Dec 2008 02:11:04 +0530
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: Firmware patches for SCSI
+Cc: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       "David Woodhouse" <dwmw2@infradead.org>
+In-Reply-To: <1229718543.18778.4.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812192115.41068.bzolnier@gmail.com>
+References: <3f9a31f40812191153n636888f4i549409453266d58c@mail.gmail.com>
+	 <1229718543.18778.4.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello James,
 
-Hi,
+On Sat, Dec 20, 2008 at 1:59 AM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+>
+> Um ... depends how they got into linux-next.  The head commit just says
+>
 
-On Thursday 18 December 2008, Borislav Petkov wrote:
-> Hi Bart,
-> 
-> here's the first batch of conversion patches. Now ide_issue_pc/ide_transfer_pc
-> are almost completely aligned to their ide-cd counterparts
-> cdrom_start_packet_command/cdrom_transfer_packet_command. The only thing
+They got into linux-next via David Woodhouse. :
+http://git.infradead.org/users/dwmw2/firmware-2.6.git
 
-Looks good generally but I need more time for detailed review.
+> Merge commit 'firmware/master'
+>
+> Which isn't very descriptive of where it came from.  It looks like
+> either a tree that linux-next shouldn't pull (or one the owner forgot to
+> push to linus).
+>
 
-[ Your super-quick action on this has caught me unprepared. ;) ]
+Earlier due to Firmware issues firmware patches are going directly
+though David Woodhouse.
 
-> missing is the setting of the irq handler through ide_set_handler but this
-> is not that trivial since if i'd moved ide-cd's irq handler to ide-atapi
-> that would suck in a bunch of other ide-cd functions which is not what we
-> want, (yes/no)? and I'm going to have to ponder a little bit more on that.
+Now firmware issues are solved so David wants that the _driver_
+patches should be sent directly to the appropriate maintainers / mailing lists.
 
-Yes, we don't want to move them over.  In worst case we can add
-ide_handler_t *__old_pc_handler to ide_drive_t and set it in ide-cd
-(an acceptable hack this time) but there might be better options.
+So I am curious that should I resend these patches based on which git tree.
 
-Thanks,
-Bart
+Thank you,
+
+Jaswinder Singh.
