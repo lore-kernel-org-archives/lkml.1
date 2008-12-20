@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbYLTOeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYLTOe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755493AbYLTOeo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 09:34:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYLTOaa
+	id S1755404AbYLTOe1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 09:34:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbYLTOaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 09:30:30 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:56422 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752165AbYLTOaM (ORCPT
+	Sat, 20 Dec 2008 09:30:07 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:41292 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751561AbYLTOaF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 09:30:12 -0500
+	Sat, 20 Dec 2008 09:30:05 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 23/26] kbuild: simplify use of genksyms
-Date: Sat, 20 Dec 2008 15:31:34 +0100
-Message-Id: <1229783497-19550-23-git-send-email-sam@ravnborg.org>
+Cc: Werner Almesberger <werner@openmoko.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 07/26] remove bashisms from scripts/extract-ikconfig
+Date: Sat, 20 Dec 2008 15:31:18 +0100
+Message-Id: <1229783497-19550-7-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.0.2.GIT
 In-Reply-To: <20081220142518.GA19390@uranus.ravnborg.org>
 References: <20081220142518.GA19390@uranus.ravnborg.org>
@@ -23,62 +23,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avoid duplicating long list of options in two places
+From: Werner Almesberger <werner@openmoko.org>
 
+unbashify-extract-ikconfig.patch
+
+scripts/extract-ikconfig contains a lot of gratuituous bashisms,
+which make it fail if /bin/sh isn't bash. This patch replaces them
+with regular Bourne shell constructs.
+
+Signed-off-by: Werner Almesberger <werner@openmoko.org>
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com> # as file author
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/Makefile.build |   30 ++++++++++++------------------
- 1 files changed, 12 insertions(+), 18 deletions(-)
+ scripts/extract-ikconfig |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index d21f0ea..c1da14b 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -151,17 +151,17 @@ cmd_cc_i_c       = $(CPP) $(c_flags)   -o $@ $<
- $(obj)/%.i: $(src)/%.c FORCE
- 	$(call if_changed_dep,cc_i_c)
+diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
+index 8187e6f..72997c3 100755
+--- a/scripts/extract-ikconfig
++++ b/scripts/extract-ikconfig
+@@ -8,8 +8,8 @@ test -e $binoffset || cc -o $binoffset ./scripts/binoffset.c || exit 1
  
-+cmd_gensymtypes =                                                           \
-+    $(CPP) -D__GENKSYMS__ $(c_flags) $< |                                   \
-+    $(GENKSYMS) -T $@ -a $(ARCH)                                            \
-+     $(if $(KBUILD_PRESERVE),-p)                                            \
-+     $(if $(1),-r $(firstword $(wildcard $(@:.symtypes=.symref) /dev/null)))
-+
- quiet_cmd_cc_symtypes_c = SYM $(quiet_modtag) $@
--cmd_cc_symtypes_c	   = \
--		set -e;							\
--		$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
--		| $(GENKSYMS) -T $@					\
--			      -r $(firstword $(wildcard			\
--				     $(@:.symtypes=.symref) /dev/null))	\
--			      $(if $(KBUILD_PRESERVE),-p)		\
--			      -a $(ARCH)				\
--		  >/dev/null;						\
--		test -s $@ || rm -f $@
-+cmd_cc_symtypes_c =                                                         \
-+    set -e;                                                                 \
-+    $(call cmd_gensymtypes, true) >/dev/null;                               \
-+    test -s $@ || rm -f $@
+ IKCFG_ST="0x49 0x4b 0x43 0x46 0x47 0x5f 0x53 0x54"
+ IKCFG_ED="0x49 0x4b 0x43 0x46 0x47 0x5f 0x45 0x44"
+-function dump_config {
+-    typeset file="$1"
++dump_config() {
++    file="$1"
  
- $(obj)/%.symtypes : $(src)/%.c FORCE
- 	$(call cmd,cc_symtypes_c)
-@@ -191,14 +191,8 @@ else
- cmd_cc_o_c = $(CC) $(c_flags) -c -o $(@D)/.tmp_$(@F) $<
- cmd_modversions =							\
- 	if $(OBJDUMP) -h $(@D)/.tmp_$(@F) | grep -q __ksymtab; then	\
--		$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
--		| $(GENKSYMS) $(if $(KBUILD_SYMTYPES),			\
--			           -T $(@:.o=.symtypes))		\
--			      -r $(firstword $(wildcard			\
--				     $(@:.o=.symref) /dev/null))	\
--			      $(if $(KBUILD_PRESERVE),-p)		\
--			      -a $(ARCH)				\
--		> $(@D)/.tmp_$(@F:.o=.ver);				\
-+		$(call cmd_gensymtypes, $(KBUILD_SYMTYPES))		\
-+		    > $(@D)/.tmp_$(@F:.o=.ver);				\
- 									\
- 		$(LD) $(LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 		\
- 			-T $(@D)/.tmp_$(@F:.o=.ver);			\
+     start=`$binoffset $file $IKCFG_ST 2>/dev/null`
+     [ "$?" != "0" ] && start="-1"
+@@ -18,8 +18,8 @@ function dump_config {
+     fi
+     end=`$binoffset $file $IKCFG_ED 2>/dev/null`
+ 
+-    let start="$start + 8"
+-    let size="$end - $start"
++    start=`expr $start + 8`
++    size=`expr $end - $start`
+ 
+     dd if="$file" ibs=1 skip="$start" count="$size" 2>/dev/null | zcat
+ 
 -- 
 1.6.0.2.GIT
 
