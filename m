@@ -1,73 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbYLTBBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYLTBB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753656AbYLTBBM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 20:01:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbYLTBAy
+	id S1755389AbYLTBB3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 20:01:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYLTBAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 19 Dec 2008 20:00:54 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:40106 "EHLO relay.sgi.com"
+Received: from relay3.sgi.com ([192.48.171.31]:40107 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752581AbYLTBAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753044AbYLTBAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 19 Dec 2008 20:00:52 -0500
-Message-Id: <20081220010043.879277000@polaris-admin.engr.sgi.com>
+Message-Id: <20081220010044.846063000@polaris-admin.engr.sgi.com>
+References: <20081220010043.879277000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 19 Dec 2008 17:00:43 -0800
+Date: Fri, 19 Dec 2008 17:00:50 -0800
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@redhat.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/8] x86 cpumask: update more code to use new cpumask API
+Subject: [PATCH 7/8] cpumask: use percpu allocations instead of array in arch/x86/kernel/nmi.c From: Rusty Russell <rusty@rustcorp.com.au>
+Content-Disposition: inline; filename=cpumask:percpu_alloc-nmi.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: reduce memory usage, use alloc_percpu().
 
-Patches for review only.  Will be pushed via one git conduit or another.
+Instead of allocating an nr_cpu_ids array, most places should be using
+percpu_alloc().  This doesn't waste space if cpu numbers aren't
+contiguous.
 
-Pulled the following patches from:
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/kernel/nmi.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-http://ozlabs.org/~rusty/kernel/rr-2008-12-18-1.tar.bz2
-
- (*)	x86:speedstep-centrino-cleanup.patch
-	cpumask:get-rid-of-CPUMASK_ALLOC-x86.patch
-	cpumask:convert-acpi_processor-structs.patch
-	cpumask:convert-drivers_acpi.patch
-	cpumask:more-work_on_cpu.patch
-	x86:use-cpumask_var_t-in-acpi_boot.c
-	cpumask:percpu_alloc-nmi.patch
-	cpumask:percpu_alloc-mce_64.patch
-
-... and edited/built/tested on x86_64 Intel and AMD
-
-(* - already in linux-next/rr)
-
-In addition, the following are OBSOLETE:
-
-	x86:use-cpumask_next_zero.patch
-	x86:io_apic-leak-fix.patch
-	x86:add-NR_CPUS-sysfs
-
-
-The files are either x86 or generic:
-
-	arch/x86/kernel/acpi/boot.c
-	arch/x86/kernel/acpi/cstate.c
-	arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-	arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
-	arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-	arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-	arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-	arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
-	arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
-	arch/x86/kernel/cpu/mcheck/mce_64.c
-	arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-	arch/x86/kernel/nmi.c
-	drivers/acpi/processor_core.c
-	drivers/acpi/processor_perflib.c
-	drivers/acpi/processor_throttling.c
-	drivers/cpufreq/cpufreq.c
-	drivers/cpufreq/cpufreq_conservative.c
-	drivers/cpufreq/cpufreq_ondemand.c
-	include/acpi/processor.h
-	include/linux/cpufreq.h
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/nmi.c
++++ linux-2.6-for-ingo/arch/x86/kernel/nmi.c
+@@ -114,13 +114,13 @@ static __init void nmi_cpu_busy(void *da
+ }
+ #endif
+ 
+-static void report_broken_nmi(int cpu, int *prev_nmi_count)
++static void report_broken_nmi(int cpu, int prev_nmi_count)
+ {
+ 	printk(KERN_CONT "\n");
+ 
+ 	printk(KERN_WARNING
+ 		"WARNING: CPU#%d: NMI appears to be stuck (%d->%d)!\n",
+-			cpu, prev_nmi_count[cpu], get_nmi_count(cpu));
++			cpu, prev_nmi_count, get_nmi_count(cpu));
+ 
+ 	printk(KERN_WARNING
+ 		"Please report this to bugzilla.kernel.org,\n");
+@@ -139,7 +139,7 @@ int __init check_nmi_watchdog(void)
+ 	if (!nmi_watchdog_active() || !atomic_read(&nmi_active))
+ 		return 0;
+ 
+-	prev_nmi_count = kmalloc(nr_cpu_ids * sizeof(int), GFP_KERNEL);
++	prev_nmi_count = alloc_percpu(unsigned int);
+ 	if (!prev_nmi_count)
+ 		goto error;
+ 
+@@ -151,19 +151,19 @@ int __init check_nmi_watchdog(void)
+ #endif
+ 
+ 	for_each_possible_cpu(cpu)
+-		prev_nmi_count[cpu] = get_nmi_count(cpu);
++		*per_cpu_ptr(prev_nmi_count, cpu) = get_nmi_count(cpu);
+ 	local_irq_enable();
+ 	mdelay((20 * 1000) / nmi_hz); /* wait 20 ticks */
+ 
+ 	for_each_online_cpu(cpu) {
+ 		if (!per_cpu(wd_enabled, cpu))
+ 			continue;
+-		if (get_nmi_count(cpu) - prev_nmi_count[cpu] <= 5)
+-			report_broken_nmi(cpu, prev_nmi_count);
++		if (get_nmi_count(cpu) - *per_cpu_ptr(prev_nmi_count, cpu) <= 5)
++			report_broken_nmi(cpu, *per_cpu_ptr(prev_nmi_count,cpu));
+ 	}
+ 	endflag = 1;
+ 	if (!atomic_read(&nmi_active)) {
+-		kfree(prev_nmi_count);
++		free_percpu(prev_nmi_count);
+ 		atomic_set(&nmi_active, -1);
+ 		goto error;
+ 	}
+@@ -176,7 +176,7 @@ int __init check_nmi_watchdog(void)
+ 	if (nmi_watchdog == NMI_LOCAL_APIC)
+ 		nmi_hz = lapic_adjust_nmi_hz(1);
+ 
+-	kfree(prev_nmi_count);
++	free_percpu(prev_nmi_count);
+ 	return 0;
+ error:
+ 	if (nmi_watchdog == NMI_IO_APIC && !timer_through_8259)
 
 -- 
