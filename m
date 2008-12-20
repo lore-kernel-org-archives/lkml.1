@@ -1,89 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYLTLmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbYLTLu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYLTLmT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 06:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYLTLmK
+	id S1753971AbYLTLu2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 06:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYLTLuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 06:42:10 -0500
-Received: from smtprelay11.ispgateway.de ([80.67.29.28]:55436 "EHLO
-	smtprelay11.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbYLTLmJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 06:42:09 -0500
-X-Greylist: delayed 343 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Dec 2008 06:42:09 EST
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [PATCH 2/3] virtio: indirect ring entries (VIRTIO_RING_F_INDIRECT_DESC)
-Date: Sat, 20 Dec 2008 12:38:06 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; x86_64; ; )
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@redhat.com>
-References: <1229620222-22216-1-git-send-email-markmc@redhat.com> <1229620222-22216-2-git-send-email-markmc@redhat.com> <1229620222-22216-3-git-send-email-markmc@redhat.com>
-In-Reply-To: <1229620222-22216-3-git-send-email-markmc@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200812201238.07510.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
+	Sat, 20 Dec 2008 06:50:19 -0500
+Received: from main.gmane.org ([80.91.229.2]:53046 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752530AbYLTLuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 06:50:17 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Alessandro Bono <alessandro.bono@gmail.com>
+Subject: Re: Problem with thermal control: ACPI: Critical trip point -
+ Critical   temperature reached  - shutting down.
+Date: Sat, 20 Dec 2008 11:50:06 +0000 (UTC)
+Message-ID: <giim5e$drt$1@ger.gmane.org>
+References: <gigib1$fbj$1@ger.gmane.org> <494C8B5B.8020606@shaw.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: host-62-10-42-220.cust-adsl.tiscali.it
+User-Agent: Pan/0.132 (Waxed in Black)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+On Sat, 2008-12-20 at 00:06 -0600, Robert Hancock wrote:
 
-On Thursday 18 December 2008, Mark McLoughlin wrote:
-> diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
-> index 5777196..2330c4b 100644
-> --- a/drivers/virtio/virtio_ring.c
-> +++ b/drivers/virtio/virtio_ring.c
-> @@ -70,6 +73,55 @@ struct vring_virtqueue
->  
->  #define to_vvq(_vq) container_of(_vq, struct vring_virtqueue, vq)
->  
-> +/* Set up an indirect table of descriptors and add it to the queue. */
-> +static int vring_add_indirect(struct vring_virtqueue *vq,
-> +			      struct scatterlist sg[],
-> +			      unsigned int out,
-> +			      unsigned int in)
-> +{
-> +	struct vring_desc *desc;
-> +	unsigned head;
-> +	int i;
-> +
-> +	desc = kmalloc((out + in) * sizeof(struct vring_desc), GFP_ATOMIC);
+[...]
 
-kmalloc() returns ZERO_SIZE_PTR, if (out + in) == 0
+> Are the fan(s) running? What does /proc/acpi/fan/*/* show?
 
-> +	if (!desc)
-> +		return vq->vring.num;
-> +
-> +	/* Transfer entries from the sg list into the indirect page */
-> +	for (i = 0; i < out; i++) {
-> +		desc[i].flags = VRING_DESC_F_NEXT;
-> +		desc[i].addr = sg_phys(sg);
-> +		desc[i].len = sg->length;
-> +		desc[i].next = i+1;
-> +		sg++;
-> +	}
-> +	for (; i < (out + in); i++) {
-> +		desc[i].flags = VRING_DESC_F_NEXT|VRING_DESC_F_WRITE;
-> +		desc[i].addr = sg_phys(sg);
-> +		desc[i].len = sg->length;
-> +		desc[i].next = i+1;
-> +		sg++;
-> +	}
-> +
-> +	/* Last one doesn't continue. */
-> +	desc[i-1].flags &= ~VRING_DESC_F_NEXT;
-> +	desc[i-1].next = 0;
+yes fans are running and on load system become noisy
+below with idle system
 
-So this array index can fail (be -1).
-Please check and avoid within this function.
+sandro@champagne:~$ cat /proc/acpi/thermal_zone/*/*
+<setting not supported>                            
+<polling disabled>                                 
+state:                   active[1]                 
+temperature:             80 C                      
+critical (S5):           256 C                     
+passive:                 100 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1 
+active[0]:               85 C: devices=C387                           
+active[1]:               65 C: devices=C388                           
+active[2]:               60 C: devices=C389                           
+active[3]:               50 C: devices=C38A                           
+active[4]:               35 C: devices=C38B                           
+<setting not supported>                                               
+<polling disabled>                                                    
+state:                   ok                                           
+temperature:             67 C                                         
+critical (S5):           105 C                                        
+<setting not supported>                                               
+<polling disabled>                                                    
+state:                   active[2]                                    
+temperature:             65 C                                         
+critical (S5):           105 C                                        
+active[0]:               100 C: devices=C36F                          
+active[1]:               75 C: devices=C36A                           
+active[2]:               60 C: devices=C36B                           
+active[3]:               55 C: devices=C36C                           
+active[4]:               45 C: devices=C36D                           
+active[5]:               35 C: devices=C36E                           
+<setting not supported>                                               
+<polling disabled>                                                    
+state:                   ok                                           
+temperature:             57 C                                         
+critical (S5):           105 C                                        
+passive:                 95 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1  
+<setting not supported>                                               
+<polling disabled>                                                    
+state:                   ok                                           
+temperature:             30 C                                         
+critical (S5):           105 C                                        
+passive:                 60 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1  
+<setting not supported>
+<polling disabled>
+state:                   ok
+temperature:             75 C
+critical (S5):           110 C
+sandro@champagne:~$ acpi -V
+     Battery 0: Full, 96%
+  AC Adapter 0: on-line
+     Thermal 0: ok, 67.0 degrees C
+     Thermal 1: ok, 80.0 degrees C
+     Thermal 2: ok, 75.0 degrees C
+     Thermal 3: ok, 29.6 degrees C
+     Thermal 4: ok, 57.0 degrees C
+     Thermal 5: ok, 65.0 degrees C
+     Cooling 0: LCD 0 of 10
+     Cooling 1: Processor 0 of 10
+     Cooling 2: Processor 0 of 10
+     Cooling 3: Fan 1 of 1
+     Cooling 4: Fan 1 of 1
+     Cooling 5: Fan 1 of 1
+     Cooling 6: Fan 1 of 1
+     Cooling 7: Fan 0 of 1
+     Cooling 8: Fan 0 of 1
+     Cooling 9: Fan 1 of 1
+     Cooling 10: Fan 1 of 1
+     Cooling 11: Fan 1 of 1
+     Cooling 12: Fan 1 of 1
+     Cooling 13: Fan 0 of 1
+sandro@champagne:~$ cat /proc/acpi/fan/*/*
+status:                  off              
+status:                  on               
+status:                  on               
+status:                  on               
+status:                  on               
+status:                  off              
+status:                  off              
+status:                  on               
+status:                  on               
+status:                  on               
+status:                  on               
 
 
-Best Regards
 
-Ingo Oeser
+and on full load 
+
+
+sandro@champagne:~$ acpi -V        
+     Battery 0: Full, 96%          
+  AC Adapter 0: on-line            
+     Thermal 0: ok, 101.0 degrees C
+     Thermal 1: ok, 85.0 degrees C 
+     Thermal 2: ok, 100.0 degrees C
+     Thermal 3: ok, 30.1 degrees C 
+     Thermal 4: ok, 65.0 degrees C 
+     Thermal 5: ok, 79.0 degrees C 
+     Cooling 0: LCD 0 of 10        
+     Cooling 1: Processor 0 of 10  
+     Cooling 2: Processor 0 of 10  
+     Cooling 3: Fan 1 of 1         
+     Cooling 4: Fan 1 of 1         
+     Cooling 5: Fan 1 of 1         
+     Cooling 6: Fan 1 of 1         
+     Cooling 7: Fan 1 of 1         
+     Cooling 8: Fan 0 of 1         
+     Cooling 9: Fan 1 of 1         
+     Cooling 10: Fan 1 of 1        
+     Cooling 11: Fan 1 of 1        
+     Cooling 12: Fan 1 of 1        
+     Cooling 13: Fan 1 of 1        
+sandro@champagne:~$ cat /proc/acpi/thermal_zone/*/*
+<setting not supported>                            
+<polling disabled>                                 
+state:                   active[0]                 
+temperature:             85 C                      
+critical (S5):           256 C                     
+passive:                 100 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1 
+active[0]:               85 C: devices=C387                           
+active[1]:               65 C: devices=C388                           
+active[2]:               60 C: devices=C389                           
+active[3]:               50 C: devices=C38A                           
+active[4]:               35 C: devices=C38B                           
+<setting not supported>                                               
+<polling disabled>                                                    
+state:                   ok                                           
+temperature:             101 C                                        
+critical (S5):           105 C                                        
+<setting not supported>                                               
+<polling disabled>                                                    
+state:                   active[1]                                    
+temperature:             79 C                                         
+critical (S5):           105 C                                        
+active[0]:               100 C: devices=C36F
+active[1]:               70 C: devices=C36A
+active[2]:               60 C: devices=C36B
+active[3]:               55 C: devices=C36C
+active[4]:               45 C: devices=C36D
+active[5]:               35 C: devices=C36E
+<setting not supported>
+<polling disabled>
+state:                   ok
+temperature:             65 C
+critical (S5):           105 C
+passive:                 95 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1
+<setting not supported>
+<polling disabled>
+state:                   ok
+temperature:             30 C
+critical (S5):           105 C
+passive:                 60 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1
+<setting not supported>
+<polling disabled>
+state:                   ok
+temperature:             100 C
+critical (S5):           110 C
+sandro@champagne:~$ cat /proc/acpi/fan/*/*
+status:                  on
+status:                  on
+status:                  on
+status:                  on
+status:                  on
+status:                  off
+status:                  on
+status:                  on
+status:                  on
+status:                  on
+status:                  on
+
+
+
+---
+
+Cordiali Saluti
+Alessandro Bono
+
