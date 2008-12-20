@@ -1,84 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbYLTGlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbYLTGrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbYLTGlI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 01:41:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYLTGkx
+	id S1753558AbYLTGrU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 01:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbYLTGrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 01:40:53 -0500
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:53357 "EHLO
+	Sat, 20 Dec 2008 01:47:08 -0500
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:35375 "EHLO
 	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752141AbYLTGkw (ORCPT
+	with ESMTP id S1752157AbYLTGrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 01:40:52 -0500
+	Sat, 20 Dec 2008 01:47:06 -0500
 From: Junio C Hamano <gitster@pobox.com>
 To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.6.0.6
-cc: linux-kernel@vger.kernel.org
-Date: Fri, 19 Dec 2008 22:40:41 -0800
-Message-ID: <7vljub1h92.fsf@gitster.siamese.dyndns.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [Security] gitweb local privilege escalation (fix)
+References: <7vljub1h92.fsf@gitster.siamese.dyndns.org>
+Date: Fri, 19 Dec 2008 22:46:51 -0800
+In-Reply-To: <7vljub1h92.fsf@gitster.siamese.dyndns.org> (Junio C. Hamano's
+ message of "Fri, 19 Dec 2008 22:40:41 -0800")
+Message-ID: <7vhc4z1gys.fsf@gitster.siamese.dyndns.org>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: 23A27B82-CE61-11DD-8EB0-F83E113D384A-77302942!a-sasl-quonix.pobox.com
+Content-Type: multipart/mixed; boundary="=-=-="
+X-Pobox-Relay-ID: 00199D3E-CE62-11DD-9A9C-5720C92D7133-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.6.0.6 is available at the
-usual places:
+--=-=-=
 
-  http://www.kernel.org/pub/software/scm/git/
+Current gitweb has a possible local privilege escalation bug that allows a
+malicious repository owner to run a command of his choice by specifying
+diff.external configuration variable in his repository and running a
+crafted gitweb query.
 
-  git-1.6.0.6.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.0.6.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.0.6.tar.{gz,bz2}		(preformatted docs)
+Recent (post 1.4.3) gitweb itself never generates a link that would result
+in such a query, and the safest and cleanest fix to this issue is to
+simply drop the support for it.  Maintenance release v1.6.0.6, v1.5.6.6,
+v1.5.5.6 and v1.5.4.7 are already available at k.org (see the announcement
+for v1.6.0.6 I sent out a few minutes ago), and the master branch and
+others pushed out tonight have the same fix.
 
-The RPM binary packages for a few architectures are also provided
-as courtesy.
+This message contains two patches (credits go to Matt McCutchen, Jeff King
+and Jakub Narebski) to do the fix yourself:
 
-  RPMS/$arch/git-*-1.6.0.6-1.fc9.$arch.rpm	(RPM)
+ (1) for Git 1.5.4.X, 1.5.5.X, and 1.5.6.X, and
 
-Among miscellaneous fixes, this contains a local gitweb security fix.
-Maintenance releases for older versions (v1.5.4.7, v1.5.5.6 and v1.5.6.6)
-are also available at the same place.
+ (2) for Git 1.6.0.X.
 
-----------------------------------------------------------------
+Distro packagers and people on the vendor security list have been notified
+about this fix earlier this week; people running gitweb from vendor
+supplied binaries should be able to get updates from them as well.
 
-Changes since v1.6.0.5 are as follows:
 
-David Aguilar (1):
-      git-mergetool: properly handle "git mergetool -- filename"
+--=-=-=
+Content-Disposition: attachment; filename=0001-hotfix-1.5.456.X.txt
+Content-Description: gitweb hotfix for 1.5.[456].X series
 
-Deskin Miller (1):
-      git-svn: Make following parents atomic
+>From dfff4b7aa42de7e7d58caeebe2c6128449f09b76 Mon Sep 17 00:00:00 2001
+From: Junio C Hamano <gitster@pobox.com>
+Date: Tue, 16 Dec 2008 19:42:02 -0800
+Subject: [PATCH] gitweb: do not run "git diff" that is Porcelain
 
-Jim Meyering (1):
-      git-config.txt: fix a typo
+Jakub says that legacy-style URI to view two blob differences are never
+generated since 1.4.3.  This codepath runs "git diff" Porcelain from the
+gitweb, which is a no-no.  It can trigger diff.external command that is
+specified in the configuration file of the repository being viewed.
 
-Johannes Schindelin (2):
-      fast-import: close pack before unlinking it
-      fast-export: deal with tag objects that do not have a tagger
+This patch applies to v1.5.4 and later.
 
-Junio C Hamano (6):
-      work around Python warnings from AsciiDoc
-      git-show: do not segfault when showing a bad tag
-      pager: do not dup2 stderr if it is already redirected
-      gitweb: do not run "git diff" that is Porcelain
-      GIT 1.5.4.7
-      fast-import: make tagger information optional
+Signed-off-by: Junio C Hamano <gitster@pobox.com>
+---
+ gitweb/gitweb.perl |   38 ++------------------------------------
+ 1 files changed, 2 insertions(+), 36 deletions(-)
 
-Linus Torvalds (1):
-      fsck: reduce stack footprint
+diff --git a/gitweb/gitweb.perl b/gitweb/gitweb.perl
+index b582332..86a6ced 100755
+--- a/gitweb/gitweb.perl
++++ b/gitweb/gitweb.perl
+@@ -4809,43 +4809,9 @@ sub git_blobdiff {
+ 			or die_error(undef, "Open git-diff-tree failed");
+ 	}
+ 
+-	# old/legacy style URI
+-	if (!%diffinfo && # if new style URI failed
+-	    defined $hash && defined $hash_parent) {
+-		# fake git-diff-tree raw output
+-		$diffinfo{'from_mode'} = $diffinfo{'to_mode'} = "blob";
+-		$diffinfo{'from_id'} = $hash_parent;
+-		$diffinfo{'to_id'}   = $hash;
+-		if (defined $file_name) {
+-			if (defined $file_parent) {
+-				$diffinfo{'status'} = '2';
+-				$diffinfo{'from_file'} = $file_parent;
+-				$diffinfo{'to_file'}   = $file_name;
+-			} else { # assume not renamed
+-				$diffinfo{'status'} = '1';
+-				$diffinfo{'from_file'} = $file_name;
+-				$diffinfo{'to_file'}   = $file_name;
+-			}
+-		} else { # no filename given
+-			$diffinfo{'status'} = '2';
+-			$diffinfo{'from_file'} = $hash_parent;
+-			$diffinfo{'to_file'}   = $hash;
+-		}
+-
+-		# non-textual hash id's can be cached
+-		if ($hash =~ m/^[0-9a-fA-F]{40}$/ &&
+-		    $hash_parent =~ m/^[0-9a-fA-F]{40}$/) {
+-			$expires = '+1d';
+-		}
+-
+-		# open patch output
+-		open $fd, "-|", git_cmd(), "diff", @diff_opts,
+-			'-p', ($format eq 'html' ? "--full-index" : ()),
+-			$hash_parent, $hash, "--"
+-			or die_error(undef, "Open git-diff failed");
+-	} else  {
++	# old/legacy style URI -- not generated anymore since 1.4.3.
++	if (!%diffinfo) {
+ 		die_error('404 Not Found', "Missing one of the blob diff parameters")
+-			unless %diffinfo;
+ 	}
+ 
+ 	# header
+-- 
+1.6.1.rc3.19.g66a9
 
-Markus Heidelberg (1):
-      Documentation: fix typos, grammar, asciidoc syntax
 
-Miklos Vajna (1):
-      SubmittingPatches: mention the usage of real name in Signed-off-by: lines
+--=-=-=
+Content-Disposition: attachment; filename=0002-gitweb-hotfix-1.6.0.X.txt
+Content-Description: gitweb hotfix for 1.6.0.X series
 
-Nicolas Pitre (1):
-      make sure packs to be replaced are closed beforehand
+diff --git a/gitweb/gitweb.perl b/gitweb/gitweb.perl
+index ced7bb7..804670c 100755
+--- a/gitweb/gitweb.perl
++++ b/gitweb/gitweb.perl
+@@ -4863,43 +4863,9 @@ sub git_blobdiff {
+ 			or die_error(500, "Open git-diff-tree failed");
+ 	}
+ 
+-	# old/legacy style URI
+-	if (!%diffinfo && # if new style URI failed
+-	    defined $hash && defined $hash_parent) {
+-		# fake git-diff-tree raw output
+-		$diffinfo{'from_mode'} = $diffinfo{'to_mode'} = "blob";
+-		$diffinfo{'from_id'} = $hash_parent;
+-		$diffinfo{'to_id'}   = $hash;
+-		if (defined $file_name) {
+-			if (defined $file_parent) {
+-				$diffinfo{'status'} = '2';
+-				$diffinfo{'from_file'} = $file_parent;
+-				$diffinfo{'to_file'}   = $file_name;
+-			} else { # assume not renamed
+-				$diffinfo{'status'} = '1';
+-				$diffinfo{'from_file'} = $file_name;
+-				$diffinfo{'to_file'}   = $file_name;
+-			}
+-		} else { # no filename given
+-			$diffinfo{'status'} = '2';
+-			$diffinfo{'from_file'} = $hash_parent;
+-			$diffinfo{'to_file'}   = $hash;
+-		}
+-
+-		# non-textual hash id's can be cached
+-		if ($hash =~ m/^[0-9a-fA-F]{40}$/ &&
+-		    $hash_parent =~ m/^[0-9a-fA-F]{40}$/) {
+-			$expires = '+1d';
+-		}
+-
+-		# open patch output
+-		open $fd, "-|", git_cmd(), "diff", @diff_opts,
+-			'-p', ($format eq 'html' ? "--full-index" : ()),
+-			$hash_parent, $hash, "--"
+-			or die_error(500, "Open git-diff failed");
+-	} else  {
+-		die_error(400, "Missing one of the blob diff parameters")
+-			unless %diffinfo;
++	# old/legacy style URI -- not generated anymore since 1.4.3.
++	if (!%diffinfo) {
++		die_error('404 Not Found', "Missing one of the blob diff parameters")
+ 	}
+ 
+ 	# header
 
-Wu Fengguang (1):
-      git-send-email: handle email address with quoted comma
-
+--=-=-=--
