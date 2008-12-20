@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbYLTCAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYLTCCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755408AbYLTCAU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 21:00:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYLTCAI
+	id S1755463AbYLTCCq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 21:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbYLTCCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 21:00:08 -0500
-Received: from main.gmane.org ([80.91.229.2]:50838 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752250AbYLTCAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 21:00:06 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] ide: Fix ata_id_has_dword_io to return DWORD I/O   support
- properly
-Date: Fri, 19 Dec 2008 19:58:03 -0600
-Message-ID: <494C512B.6090304@shaw.ca>
-References: <494A5BBF.8000807@inf.tu-dresden.de>	<494A837A.50801@garzik.org> <20081218181015.2e160d5c@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 19 Dec 2008 21:02:38 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:33398 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752250AbYLTCCh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 21:02:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=GGjZuVPJyZtLv3DjXR2996V9EDaxSr4DQ91UZUscf2htJir3bv0h37c35ZQ17Q/H+O
+         ZWXddic6hT6/wC6toZLo87C5WXFEXRaqpKumqhc3kv10HNZInyf8yLgCHxjXrb1QgxC3
+         LeZuVZ3nx7obL0AojthCnLX+gut1VzOVmsXXs=
+Message-ID: <f19298770812191802g5dfbdbe3hf2ff63f66979fe7c@mail.gmail.com>
+Date: Sat, 20 Dec 2008 05:02:34 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: GIT head doesn't seem to want to build on 32bit..
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+In-Reply-To: <20081217113029.GB5027@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: linux-ide@vger.kernel.org
-X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-In-Reply-To: <20081218181015.2e160d5c@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
+Content-Disposition: inline
+References: <20081216172859.5bc030b6@lxorguk.ukuu.org.uk>
+	 <alpine.LFD.2.00.0812160946410.14014@localhost.localdomain>
+	 <20081216181133.2342b49e@lxorguk.ukuu.org.uk>
+	 <20081216183817.GA25108@uranus.ravnborg.org>
+	 <20081217100727.5cf6248c@lxorguk.ukuu.org.uk>
+	 <20081217113029.GB5027@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> This seems like a risky assumption...
-> 
-> Its wrong on various counts
-> 
-> - ata_id_major_version can't tell early ATA versions apart
-> - on anything later than the early ISA IDE paddles (the ones that
-> basically were just bus decoders) its invisible to the drive
-> 
-> Except for legacy ISA bus controllers (and even there it is questionable)
-> I would favour simply ignoring it.
+On Wed, Dec 17, 2008 at 14:30, Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Wed, Dec 17, 2008 at 10:07:27AM +0000, Alan Cox wrote:
+>>
+>> > Smells like a kbuild issue.
+>> > Please copy me and linux-kbuild@vger.kernel.org on any findings.
+>> >
+>> > [My 64 bit toolchain is br0ken atm so I could not try to reproduce]
+>>
+>> Yes I do indeed need to build x86_64 first, then make distclean or
+>> mrproper and then 32bit build fails
+>
+> I will fix my 64 bit build soonish.
+> In the meantime could someone do:
+>
 
-32-bit IO wouldn't work on any ISA controller, would it? What happens if 
-you do 32-bit IO port access on something on the ISA bus?
-
+I can't reproduce this on a 64-bit host no matter what I do.
+Alan, could you please provide your 64-bit .config?
+Also, I could give Sam ssh to this machine.
