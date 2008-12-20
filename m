@@ -1,212 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbYLTLu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbYLTL4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753971AbYLTLu2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 06:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYLTLuT
+	id S1753999AbYLTL4u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 06:56:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYLTL4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 06:50:19 -0500
-Received: from main.gmane.org ([80.91.229.2]:53046 "EHLO ciao.gmane.org"
+	Sat, 20 Dec 2008 06:56:42 -0500
+Received: from karen.lavabit.com ([72.249.41.33]:37068 "EHLO karen.lavabit.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbYLTLuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 06:50:17 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Alessandro Bono <alessandro.bono@gmail.com>
-Subject: Re: Problem with thermal control: ACPI: Critical trip point -
- Critical   temperature reached  - shutting down.
-Date: Sat, 20 Dec 2008 11:50:06 +0000 (UTC)
-Message-ID: <giim5e$drt$1@ger.gmane.org>
-References: <gigib1$fbj$1@ger.gmane.org> <494C8B5B.8020606@shaw.ca>
-Mime-Version: 1.0
+	id S1751513AbYLTL4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 06:56:42 -0500
+X-Greylist: delayed 1723 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Dec 2008 06:56:42 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=lavabit; d=lavabit.com;
+  b=y6fy9arR2c9tkb6gHVmQd9C4/WlTCJLm6QrfAlf6eG5DzSt1M/fBLowYaBpmvzZxFG5Dq1C28Czj0j038c62ty8QWvDPKy36V6iwVxPSRaqvzi/ViLYAilKBgIimsYM5OZFYhjIX3B0z2dJkrw1iBX8zsZ4Jg6U8dMxAxXfI20c=;
+  h=From:To:Cc:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+From: Nanako Shiraishi <nanako3@lavabit.com>
+To: Jakub Narebski <jnareb@gmail.com>
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Security] gitweb local privilege escalation (fix)
+Date: Sat, 20 Dec 2008 20:26:48 +0900
+MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: host-62-10-42-220.cust-adsl.tiscali.it
-User-Agent: Pan/0.132 (Waxed in Black)
+Message-Id: <20081220202648.6117@nanako3.lavabit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-20 at 00:06 -0600, Robert Hancock wrote:
+Quoting Jakub Narebski <jnareb@gmail.com>:
 
-[...]
+> Junio C Hamano <gitster@pobox.com> writes:
+>
+>> Current gitweb has a possible local privilege escalation bug that allows a
+>> malicious repository owner to run a command of his choice by specifying
+>> diff.external configuration variable in his repository and running a
+>> crafted gitweb query.
+>> 
+>> Recent (post 1.4.3) gitweb itself never generates a link that would result
+>> in such a query, and the safest and cleanest fix to this issue is to
+>> simply drop the support for it.  Maintenance release v1.6.0.6, v1.5.6.6,
+>> v1.5.5.6 and v1.5.4.7 are already available at k.org (see the announcement
+>> for v1.6.0.6 I sent out a few minutes ago), and the master branch and
+>> others pushed out tonight have the same fix.
+>
+> From what I have found diff.external works only since v1.5.4 (see
+> commit cbe02100), so when gitweb started using git-diff for old
+> legacy links to not use $tmpdir and /usr/bin/diff -u it wasn't an
+> issue...
 
-> Are the fan(s) running? What does /proc/acpi/fan/*/* show?
+Sorry, but I do not understand what you are trying to say.
 
-yes fans are running and on load system become noisy
-below with idle system
+The maintenance releases Junio listed above go only as far back as v1.5.4.X series, so it covers the necessary range of versions, and no further back than that.  Do you see a problem with that?
 
-sandro@champagne:~$ cat /proc/acpi/thermal_zone/*/*
-<setting not supported>                            
-<polling disabled>                                 
-state:                   active[1]                 
-temperature:             80 C                      
-critical (S5):           256 C                     
-passive:                 100 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1 
-active[0]:               85 C: devices=C387                           
-active[1]:               65 C: devices=C388                           
-active[2]:               60 C: devices=C389                           
-active[3]:               50 C: devices=C38A                           
-active[4]:               35 C: devices=C38B                           
-<setting not supported>                                               
-<polling disabled>                                                    
-state:                   ok                                           
-temperature:             67 C                                         
-critical (S5):           105 C                                        
-<setting not supported>                                               
-<polling disabled>                                                    
-state:                   active[2]                                    
-temperature:             65 C                                         
-critical (S5):           105 C                                        
-active[0]:               100 C: devices=C36F                          
-active[1]:               75 C: devices=C36A                           
-active[2]:               60 C: devices=C36B                           
-active[3]:               55 C: devices=C36C                           
-active[4]:               45 C: devices=C36D                           
-active[5]:               35 C: devices=C36E                           
-<setting not supported>                                               
-<polling disabled>                                                    
-state:                   ok                                           
-temperature:             57 C                                         
-critical (S5):           105 C                                        
-passive:                 95 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1  
-<setting not supported>                                               
-<polling disabled>                                                    
-state:                   ok                                           
-temperature:             30 C                                         
-critical (S5):           105 C                                        
-passive:                 60 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1  
-<setting not supported>
-<polling disabled>
-state:                   ok
-temperature:             75 C
-critical (S5):           110 C
-sandro@champagne:~$ acpi -V
-     Battery 0: Full, 96%
-  AC Adapter 0: on-line
-     Thermal 0: ok, 67.0 degrees C
-     Thermal 1: ok, 80.0 degrees C
-     Thermal 2: ok, 75.0 degrees C
-     Thermal 3: ok, 29.6 degrees C
-     Thermal 4: ok, 57.0 degrees C
-     Thermal 5: ok, 65.0 degrees C
-     Cooling 0: LCD 0 of 10
-     Cooling 1: Processor 0 of 10
-     Cooling 2: Processor 0 of 10
-     Cooling 3: Fan 1 of 1
-     Cooling 4: Fan 1 of 1
-     Cooling 5: Fan 1 of 1
-     Cooling 6: Fan 1 of 1
-     Cooling 7: Fan 0 of 1
-     Cooling 8: Fan 0 of 1
-     Cooling 9: Fan 1 of 1
-     Cooling 10: Fan 1 of 1
-     Cooling 11: Fan 1 of 1
-     Cooling 12: Fan 1 of 1
-     Cooling 13: Fan 0 of 1
-sandro@champagne:~$ cat /proc/acpi/fan/*/*
-status:                  off              
-status:                  on               
-status:                  on               
-status:                  on               
-status:                  on               
-status:                  off              
-status:                  off              
-status:                  on               
-status:                  on               
-status:                  on               
-status:                  on               
-
-
-
-and on full load 
-
-
-sandro@champagne:~$ acpi -V        
-     Battery 0: Full, 96%          
-  AC Adapter 0: on-line            
-     Thermal 0: ok, 101.0 degrees C
-     Thermal 1: ok, 85.0 degrees C 
-     Thermal 2: ok, 100.0 degrees C
-     Thermal 3: ok, 30.1 degrees C 
-     Thermal 4: ok, 65.0 degrees C 
-     Thermal 5: ok, 79.0 degrees C 
-     Cooling 0: LCD 0 of 10        
-     Cooling 1: Processor 0 of 10  
-     Cooling 2: Processor 0 of 10  
-     Cooling 3: Fan 1 of 1         
-     Cooling 4: Fan 1 of 1         
-     Cooling 5: Fan 1 of 1         
-     Cooling 6: Fan 1 of 1         
-     Cooling 7: Fan 1 of 1         
-     Cooling 8: Fan 0 of 1         
-     Cooling 9: Fan 1 of 1         
-     Cooling 10: Fan 1 of 1        
-     Cooling 11: Fan 1 of 1        
-     Cooling 12: Fan 1 of 1        
-     Cooling 13: Fan 1 of 1        
-sandro@champagne:~$ cat /proc/acpi/thermal_zone/*/*
-<setting not supported>                            
-<polling disabled>                                 
-state:                   active[0]                 
-temperature:             85 C                      
-critical (S5):           256 C                     
-passive:                 100 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1 
-active[0]:               85 C: devices=C387                           
-active[1]:               65 C: devices=C388                           
-active[2]:               60 C: devices=C389                           
-active[3]:               50 C: devices=C38A                           
-active[4]:               35 C: devices=C38B                           
-<setting not supported>                                               
-<polling disabled>                                                    
-state:                   ok                                           
-temperature:             101 C                                        
-critical (S5):           105 C                                        
-<setting not supported>                                               
-<polling disabled>                                                    
-state:                   active[1]                                    
-temperature:             79 C                                         
-critical (S5):           105 C                                        
-active[0]:               100 C: devices=C36F
-active[1]:               70 C: devices=C36A
-active[2]:               60 C: devices=C36B
-active[3]:               55 C: devices=C36C
-active[4]:               45 C: devices=C36D
-active[5]:               35 C: devices=C36E
-<setting not supported>
-<polling disabled>
-state:                   ok
-temperature:             65 C
-critical (S5):           105 C
-passive:                 95 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1
-<setting not supported>
-<polling disabled>
-state:                   ok
-temperature:             30 C
-critical (S5):           105 C
-passive:                 60 C: tc1=1 tc2=2 tsp=300 devices=CPU0 CPU1
-<setting not supported>
-<polling disabled>
-state:                   ok
-temperature:             100 C
-critical (S5):           110 C
-sandro@champagne:~$ cat /proc/acpi/fan/*/*
-status:                  on
-status:                  on
-status:                  on
-status:                  on
-status:                  on
-status:                  off
-status:                  on
-status:                  on
-status:                  on
-status:                  on
-status:                  on
-
-
-
----
-
-Cordiali Saluti
-Alessandro Bono
+-- 
+Nanako Shiraishi
+http://ivory.ap.teacup.com/nanako3/
 
