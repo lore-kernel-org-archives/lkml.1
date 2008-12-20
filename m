@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYLTOhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbYLTOhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756152AbYLTOhe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 09:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbYLTOas
+	id S1756205AbYLTOhz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 09:37:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbYLTOat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 09:30:48 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:56398 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751957AbYLTOaJ (ORCPT
+	Sat, 20 Dec 2008 09:30:49 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:41318 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751921AbYLTOaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 09:30:09 -0500
+	Sat, 20 Dec 2008 09:30:07 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 20/26] kbuild: fix string equality testing in tags.sh
-Date: Sat, 20 Dec 2008 15:31:31 +0100
-Message-Id: <1229783497-19550-20-git-send-email-sam@ravnborg.org>
+Cc: Jeremy Kerr <jk@ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 13/26] scripts/package: allow custom options to rpm
+Date: Sat, 20 Dec 2008 15:31:24 +0100
+Message-Id: <1229783497-19550-13-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.0.2.GIT
 In-Reply-To: <20081220142518.GA19390@uranus.ravnborg.org>
 References: <20081220142518.GA19390@uranus.ravnborg.org>
@@ -23,52 +24,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Jeremy Kerr <jk@ozlabs.org>
 
-Test of string equality in shells is =, not C-like ==.
+Add a RPMOPTS make variable to allow arbitrary options to be passed
+to rpm during 'make rpm-pkg'. For example:
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+ make RPMOPTS="--define '_topdir /home/jk/rpm'" rpm-pkg
+
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/tags.sh |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ scripts/package/Makefile |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/scripts/tags.sh b/scripts/tags.sh
-index 3c814ba..4e75472 100755
---- a/scripts/tags.sh
-+++ b/scripts/tags.sh
-@@ -7,7 +7,7 @@
- # Uses the following environment variables:
- # ARCH, SUBARCH, srctree, src, obj
+diff --git a/scripts/package/Makefile b/scripts/package/Makefile
+index 5e32607..c162409 100644
+--- a/scripts/package/Makefile
++++ b/scripts/package/Makefile
+@@ -47,7 +47,7 @@ rpm-pkg rpm: $(objtree)/kernel.spec FORCE
+ 	set -e; \
+ 	mv -f $(objtree)/.tmp_version $(objtree)/.version
  
--if [ $KBUILD_VERBOSE == 1 ]; then
-+if [ "$KBUILD_VERBOSE" = "1" ]; then
- 	set -x
- fi
+-	$(RPM) --target $(UTS_MACHINE) -ta ../$(KERNELPATH).tar.gz
++	$(RPM) $(RPMOPTS) --target $(UTS_MACHINE) -ta ../$(KERNELPATH).tar.gz
+ 	rm ../$(KERNELPATH).tar.gz
  
-@@ -18,7 +18,7 @@ ignore="( -name SCCS -o -name BitKeeper -o -name .svn -o \
-           -prune -o"
+ clean-files := $(objtree)/kernel.spec
+@@ -64,7 +64,8 @@ binrpm-pkg: $(objtree)/binkernel.spec FORCE
+ 	set -e; \
+ 	mv -f $(objtree)/.tmp_version $(objtree)/.version
  
- # Do not use full path is we do not use O=.. builds
--if [ "${KBUILD_SRC}" == "" ]; then
-+if [ "${KBUILD_SRC}" = "" ]; then
- 	tree=
- else
- 	tree=${srctree}/
-@@ -135,10 +135,10 @@ xtags()
+-	$(RPM) --define "_builddir $(srctree)" --target $(UTS_MACHINE) -bb $<
++	$(RPM) $(RPMOPTS) --define "_builddir $(srctree)" --target \
++		$(UTS_MACHINE) -bb $<
  
+ clean-files += $(objtree)/binkernel.spec
  
- # Support um (which uses SUBARCH)
--if [ ${ARCH} == um ]; then
--	if [ $SUBARCH == i386 ]; then
-+if [ "${ARCH}" = "um" ]; then
-+	if [ "$SUBARCH" = "i386" ]; then
- 		archinclude=x86
--	elif [ $SUBARCH == x86_64 ]; then
-+	elif [ "$SUBARCH" = "x86_64" ]; then
- 		archinclude=x86
- 	else
- 		archinclude=${SUBARCH}
 -- 
 1.6.0.2.GIT
 
