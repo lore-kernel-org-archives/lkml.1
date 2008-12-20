@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbYLTILq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbYLTISW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753916AbYLTILq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 03:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbYLTILd
+	id S1753916AbYLTISW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 03:18:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYLTISO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 03:11:33 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:51045 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752869AbYLTILc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 03:11:32 -0500
-Date: Sat, 20 Dec 2008 19:10:45 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>, Vladislav Bolkhovitin <vst@vlnb.net>,
-       linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user
-	space data
-Message-ID: <20081220081045.GA17439@gondor.apana.org.au>
-References: <494012C4.7090304@vlnb.net> <494C0255.8010208@goop.org> <20081219220452.GB704@ioremap.net> <494C1E5E.7070809@goop.org> <20081219223314.GA2736@ioremap.net> <494C50BB.5030809@goop.org> <20081220020250.GA15064@gondor.apana.org.au> <494C8D57.7040808@goop.org> <20081220065105.GA16936@gondor.apana.org.au> <494CA226.9000200@goop.org>
+	Sat, 20 Dec 2008 03:18:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48433 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752273AbYLTISM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 03:18:12 -0500
+Date: Sat, 20 Dec 2008 09:17:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Markus Metzger <markus.t.metzger@intel.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
+       markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com
+Subject: Re: [patch 1/2] x86, bts: fork and exit handling
+Message-ID: <20081220081755.GA5581@elte.hu>
+References: <20081219151024.A4960@sedona.ch.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <494CA226.9000200@goop.org>
+In-Reply-To: <20081219151024.A4960@sedona.ch.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 19, 2008 at 11:43:34PM -0800, Jeremy Fitzhardinge wrote:
->
-> Hm.  So if I get a destructor call from the shared_info, can I go an  
-> inspect the page refcounts to see if its really the last use?
 
-The pages that were originally in the shared_info at creation
-time may no longer be there by the time it's freed because of
-pskb_pull_tail.
+* Markus Metzger <markus.t.metzger@intel.com> wrote:
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> Add arch_ptrace_untrace() function that is called when the tracer
+> detaches (either voluntarily or when the tracing task dies);
+> ptrace_disable() is only called on a voluntary detach.
+> 
+> Add ptrace_fork() and arch_ptrace_fork(). They are called when a
+> traced task is forked.
+> 
+> Clear DS and BTS related fields on fork.
+> 
+> Release DS resources and reclaim memory in ptrace_untrace(). This
+> releases resources already when the tracing task dies. We used to do
+> that when the traced task dies.
+> 
+> Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+
+applied to tip/tracing/hw-branch-tracer, thanks Markus! It's a nice 
+cleanup too - to tear down any arch-level ptrace state that might come 
+around.
+
+	Ingo
