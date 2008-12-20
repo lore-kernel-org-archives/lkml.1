@@ -1,113 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbYLTOiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbYLTOmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbYLTOiz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 09:38:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYLTOay
+	id S1753982AbYLTOmd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 09:42:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYLTOmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 09:30:54 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:41319 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbYLTOaH (ORCPT
+	Sat, 20 Dec 2008 09:42:24 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:61689 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751836AbYLTOmY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 09:30:07 -0500
-From: Sam Ravnborg <sam@ravnborg.org>
-To: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 19/26] kbuild: fix make tags/cscope
-Date: Sat, 20 Dec 2008 15:31:30 +0100
-Message-Id: <1229783497-19550-19-git-send-email-sam@ravnborg.org>
-X-Mailer: git-send-email 1.6.0.2.GIT
-In-Reply-To: <20081220142518.GA19390@uranus.ravnborg.org>
-References: <20081220142518.GA19390@uranus.ravnborg.org>
+	Sat, 20 Dec 2008 09:42:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=EZXCWZNA75XOPofvQ0VjBje5Rj9lAg9+c6suYOUsX1PKazuFKXv6hVDts4hAEmalSN
+         jJeUFnifhrrcPP9NQ6cqLcybQm57IhQ+8HYt8+RlXymupEYd0EYhQ+LbDXrdJqPfmTMz
+         UYB9rAX99ZgpuoHCny06Ju3zu59ccSpDbjhnk=
+Message-ID: <ce0170d90812200642k7a820d48see9fd0a6d6bb078f@mail.gmail.com>
+Date: Sat, 20 Dec 2008 11:42:21 -0300
+From: "Sergio Luis" <eeeesti@gmail.com>
+To: "David Newall" <davidn@davidnewall.com>
+Subject: Re: Halted system won't halt
+Cc: "Pavel Machek" <pavel@suse.cz>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <494CE82E.90008@davidnewall.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <494A0711.7010804@davidnewall.com> <20081219120530.GB1599@ucw.cz>
+	 <494CE82E.90008@davidnewall.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+On Sat, Dec 20, 2008 at 9:42 AM, David Newall <davidn@davidnewall.com> wrote:
+> Pavel Machek wrote:
+>> On Thu 2008-12-18 18:47:21, David Newall wrote:
+>>
+>>> "poweroff -f -p" ... strangely came back after a few seconds.
+>>>
+>>
+>> SMP? Care to try Mark Lord's recent patch on lkml?
+> A surprise to me; yes, the kernel is configured for SMP.    (The
+> hardware isn't.)  I can't find the patch.  Got another hint for me?
+>
+> Thanks.
+> --
 
-- fix combining O=... and tags
-- don't allow * expansion during sh function calls
+This is the thread he was talking about, I guess:
+http://lkml.org/lkml/2008/12/17/225
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-[sam: use KBUILD_SRC to check if we use O=...]
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- scripts/tags.sh |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
-
-diff --git a/scripts/tags.sh b/scripts/tags.sh
-index 47274dc..3c814ba 100755
---- a/scripts/tags.sh
-+++ b/scripts/tags.sh
-@@ -18,28 +18,28 @@ ignore="( -name SCCS -o -name BitKeeper -o -name .svn -o \
-           -prune -o"
- 
- # Do not use full path is we do not use O=.. builds
--if [ ${src} == ${obj} ]; then
-+if [ "${KBUILD_SRC}" == "" ]; then
- 	tree=
- else
--	tree=${srctree}
-+	tree=${srctree}/
- fi
- 
- # find sources in arch/$ARCH
- find_arch_sources()
- {
--	find ${tree}arch/$1 $ignore -name $2 -print;
-+	find ${tree}arch/$1 $ignore -name "$2" -print;
- }
- 
- # find sources in arch/$1/include
- find_arch_include_sources()
- {
--	find ${tree}arch/$1/include $ignore -name $2 -print;
-+	find ${tree}arch/$1/include $ignore -name "$2" -print;
- }
- 
- # find sources in include/
- find_include_sources()
- {
--	find ${tree}include $ignore -name config -prune -o -name $1 -print;
-+	find ${tree}include $ignore -name config -prune -o -name "$1" -print;
- }
- 
- # find sources in rest of tree
-@@ -48,27 +48,27 @@ find_other_sources()
- {
- 	find ${tree}* $ignore \
- 	     \( -name include -o -name arch -o -name '.tmp_*' \) -prune -o \
--	       -name $1 -print;
-+	       -name "$1" -print;
- }
- 
- find_sources()
- {
--	find_arch_sources $1 $2
--	find_include_sources $2
--	find_other_sources $2
-+	find_arch_sources $1 "$2"
-+	find_include_sources "$2"
-+	find_other_sources "$2"
- }
- 
- all_sources()
- {
--	find_sources $SRCARCH *.[chS]
-+	find_sources $SRCARCH '*.[chS]'
- 	if [ ! -z "$archinclude" ]; then
--		find_arch_include_sources $archinclude *.[chS]
-+		find_arch_include_sources $archinclude '*.[chS]'
- 	fi
- }
- 
- all_kconfigs()
- {
--	find_sources $SRCARCH "Kconfig*"
-+	find_sources $SRCARCH 'Kconfig*'
- }
- 
- all_defconfigs()
--- 
-1.6.0.2.GIT
-
+Sergio.
