@@ -1,67 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbYLTSYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYLTS0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754461AbYLTSYE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 13:24:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYLTSXw
+	id S1754189AbYLTS0Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 13:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYLTS0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 13:23:52 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39828 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752190AbYLTSXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 13:23:51 -0500
-Date: Sat, 20 Dec 2008 13:22:54 -0500
-From: Dave Jones <davej@redhat.com>
-To: Daniel Pittman <daniel@rimspace.net>
-Cc: Jeremy Katz <katzj@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       initramfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Dracut -- Cross distribution initramfs infrastructure
-Message-ID: <20081220182254.GA2996@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Daniel Pittman <daniel@rimspace.net>,
-	Jeremy Katz <katzj@redhat.com>, Theodore Tso <tytso@mit.edu>,
-	initramfs@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1229540094.28858.150.camel@aglarond.local> <20081217190700.GA15377@infradead.org> <4949FD67.6040906@suse.de> <494B5031.5080306@bfh.ch> <20081219091841.207bc951@kopernikus.site> <494BA7CE.2020007@suse.de> <20081219152708.GE9871@mit.edu> <9C4F1B7D-CCBC-48D7-8624-9A7C314C1590@redhat.com> <87skojrm5e.fsf@rimspace.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87skojrm5e.fsf@rimspace.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 20 Dec 2008 13:26:00 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:37125 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751918AbYLTSZ7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 13:25:59 -0500
+X-Trace: 122278766/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.245/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 80.44.176.245
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.2 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqsEAMTHTElQLLD1/2dsb2JhbACBbLpdWJBbhkM
+X-IronPort-AV: E=Sophos;i="4.36,255,1228089600"; 
+   d="scan'208";a="122278766"
+Subject: [PATCH] sh: maple: Robust checking for errors on maple keyboard
+ initialisation
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: lkmL <linux-kernel@vger.kernel.org>,
+       linux-input <linux-input@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, Matt Fleming <matt@console-pimps.org>,
+       Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain
+Date: Sat, 20 Dec 2008 18:25:27 +0000
+Message-Id: <1229797527.6502.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 21, 2008 at 12:50:21AM +1100, Daniel Pittman wrote:
+As was pointed out in response to http://lkml.org/lkml/2008/12/19/373
+maple drivers were not properly checking for NULL pointers.
 
- > One of the features of the Debian / Ubuntu initramfs infrastructure,
- > which sounds remarkably like your design (or vice-versa), is that it
- > drops all the "standard" drivers into the initramfs.
- > 
- > This is, to me, worth several minutes of additional boot time, in terms
- > of flexibility: being able to modify the hardware and be confident that
- > the appropriate drivers are in place already makes life much, much
- > easier.
+This patch fixes this for the keyboard driver already in mainline.
 
-There's another reason this is really useful.
-If something goes wrong, remotely debugging a users initrd right is
-a lot easier if you know what it looks like.  Right now, in Fedora for eg,
-where we generate an initrd for each users system at runtime, we need
-to get a copy of the generated initrd, and pull it apart just to find
-out what modules ended up in there, what didn't, and then somehow
-try to work backwards to try and figure out how the generator got into
-that state.  After doing this for five years, let me tell you it's
-_really_ _really_ painful.
+Robust checking for errors on maple keyboard initialisation
 
- > (In practice I doubt this adds more than a second or five to boot time;
- >  certainly, it takes no longer to get to rootfs mounted than the RHEL 4
- >  systems that have nothing but what is essential in the initrd...)
+Reported-by: Matt Fleming <matt@console-pimps.org>
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+---
 
-At least in theory, with a kernel-event/udev driven system, the additional
-modules shouldn't cause any additional boot time. There wouldn't be
-events generated to cause them to be loaded, so they'd just be taking
-up space.  And the additional load time for a bigger initrd should be
-really lost in the noise of the overall boot.
+diff --git a/drivers/input/keyboard/maple_keyb.c b/drivers/input/keyboard/maple_keyb.c
+index 22f17a5..9133af8 100644
+--- a/drivers/input/keyboard/maple_keyb.c
++++ b/drivers/input/keyboard/maple_keyb.c
+@@ -159,22 +159,41 @@ static void dc_kbd_callback(struct mapleq *mq)
+ 
+ static int probe_maple_kbd(struct device *dev)
+ {
+-	struct maple_device *mdev = to_maple_dev(dev);
+-	struct maple_driver *mdrv = to_maple_driver(dev->driver);
++	struct maple_device *mdev;
++	struct maple_driver *mdrv;
+ 	int i, error;
+ 	struct dc_kbd *kbd;
+ 	struct input_dev *idev;
+ 
+-	if (!(mdev->function & MAPLE_FUNC_KEYBOARD))
+-		return -EINVAL;
++	mdev = to_maple_dev(dev);
++	if (!mdev) {
++		error = EINVAL;
++		goto fail;
++	}
++
++	mdrv = to_maple_driver(dev->driver);
++	if (!mdrv) {
++		error = EINVAL;
++		goto fail;
++	}
++
++	if (!(mdev->function & MAPLE_FUNC_KEYBOARD)) {
++		error = EINVAL;
++		goto fail;
++	}
+ 
+ 	kbd = kzalloc(sizeof(struct dc_kbd), GFP_KERNEL);
+-	idev = input_allocate_device();
+-	if (!kbd || !idev) {
+-		error = -ENOMEM;
++	if (!kbd) {
++		error = ENOMEM;
+ 		goto fail;
+ 	}
+ 
++	idev = input_allocate_device();
++	if (!idev) {
++		error = ENOMEM;
++		goto fail_idev_alloc;
++	}
++
+ 	kbd->dev = idev;
+ 	memcpy(kbd->keycode, dc_kbd_keycode, sizeof(kbd->keycode));
+ 
+@@ -195,7 +214,7 @@ static int probe_maple_kbd(struct device *dev)
+ 
+ 	error = input_register_device(idev);
+ 	if (error)
+-		goto fail;
++		goto fail_register;
+ 
+ 	/* Maple polling is locked to VBLANK - which may be just 50/s */
+ 	maple_getcond_callback(mdev, dc_kbd_callback, HZ/50,
+@@ -207,11 +226,13 @@ static int probe_maple_kbd(struct device *dev)
+ 
+ 	return error;
+ 
+-fail:
++fail_register:
++	maple_set_drvdata(mdev, NULL);
+ 	input_free_device(idev);
++fail_idev_alloc:
+ 	kfree(kbd);
+-	maple_set_drvdata(mdev, NULL);
+-	return error;
++fail:
++	return -error;
+ }
+ 
+ static int remove_maple_kbd(struct device *dev)
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
