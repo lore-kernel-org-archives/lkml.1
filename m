@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbYLTBCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYLTBCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164AbYLTBCi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 20:02:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYLTBA7
+	id S1755454AbYLTBCW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 20:02:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYLTBA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 20:00:59 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:54027 "EHLO relay.sgi.com"
+	Fri, 19 Dec 2008 20:00:58 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:40113 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753258AbYLTBAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753302AbYLTBAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 19 Dec 2008 20:00:55 -0500
-Message-Id: <20081220010044.316868000@polaris-admin.engr.sgi.com>
+Message-Id: <20081220010044.445374000@polaris-admin.engr.sgi.com>
 References: <20081220010043.879277000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 19 Dec 2008 17:00:46 -0800
+Date: Fri, 19 Dec 2008 17:00:47 -0800
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@redhat.com>
 Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
        Andreas Herrmann <andreas.herrmann3@amd.com>,
        Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>
-Subject: [PATCH 3/8] cpumask: convert shared_cpu_map in acpi_processor* structs to cpumask_var_t From: Rusty Russell <rusty@rustcorp.com.au>
-Content-Disposition: inline; filename=cpumask:convert-acpi_processor-structs.patch
+Subject: [PATCH 4/8] cpumask: convert struct cpufreq_policy to cpumask_var_t. From: Rusty Russell <rusty@rustcorp.com.au>
+Content-Disposition: inline; filename=cpumask:convert-drivers_acpi.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,364 +37,560 @@ Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
 Cc: Dave Jones <davej@redhat.com>
 Cc: Len Brown <len.brown@intel.com>
 ---
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   27 ++++++++++++++++++++++++---
- arch/x86/kernel/cpu/cpufreq/powernow-k7.c  |    9 +++++++++
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c  |   24 +++++++++++++++---------
- drivers/acpi/processor_core.c              |   14 ++++++++++----
- drivers/acpi/processor_perflib.c           |   14 +++++++-------
- drivers/acpi/processor_throttling.c        |   18 +++++++++---------
- include/acpi/processor.h                   |    4 ++--
- 7 files changed, 76 insertions(+), 34 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c       |   10 ++---
+ arch/x86/kernel/cpu/cpufreq/p4-clockmod.c        |    8 ++--
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c        |    6 +--
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.h        |    2 -
+ arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |   14 +++----
+ arch/x86/kernel/cpu/cpufreq/speedstep-ich.c      |   18 ++++-----
+ drivers/acpi/processor_perflib.c                 |   13 ++++---
+ drivers/acpi/processor_throttling.c              |   34 ++++++++++--------
+ drivers/cpufreq/cpufreq.c                        |   42 +++++++++++++++--------
+ drivers/cpufreq/cpufreq_conservative.c           |    2 -
+ drivers/cpufreq/cpufreq_ondemand.c               |    4 +-
+ include/linux/cpufreq.h                          |    4 +-
+ 12 files changed, 89 insertions(+), 68 deletions(-)
 
 --- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
 +++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -517,6 +517,17 @@ acpi_cpufreq_guess_freq(struct acpi_cpuf
- 	}
- }
+@@ -411,7 +411,7 @@ static int acpi_cpufreq_target(struct cp
  
-+static void free_acpi_perf_data(void)
-+{
-+	unsigned int i;
-+
-+	/* Freeing a NULL pointer is OK, and alloc_percpu zeroes. */
-+	for_each_possible_cpu(i)
-+		free_cpumask_var(per_cpu_ptr(acpi_perf_data, i)
-+				 ->shared_cpu_map);
-+	free_percpu(acpi_perf_data);
-+}
-+
- /*
-  * acpi_cpufreq_early_init - initialize ACPI P-States library
-  *
-@@ -527,6 +538,7 @@ acpi_cpufreq_guess_freq(struct acpi_cpuf
-  */
- static int __init acpi_cpufreq_early_init(void)
- {
-+	unsigned int i;
- 	dprintk("acpi_cpufreq_early_init\n");
- 
- 	acpi_perf_data = alloc_percpu(struct acpi_processor_performance);
-@@ -534,6 +546,15 @@ static int __init acpi_cpufreq_early_ini
- 		dprintk("Memory allocation error for acpi_perf_data.\n");
- 		return -ENOMEM;
- 	}
-+	for_each_possible_cpu(i) {
-+		if (!alloc_cpumask_var(&per_cpu_ptr(acpi_perf_data, i)
-+				       ->shared_cpu_map, GFP_KERNEL)) {
-+
-+			/* Freeing a NULL pointer is OK: alloc_percpu zeroes. */
-+			free_acpi_perf_data();
-+			return -ENOMEM;
-+		}
-+	}
- 
- 	/* Do initialization in ACPI core */
- 	acpi_processor_preregister_performance(acpi_perf_data);
-@@ -604,9 +625,9 @@ static int acpi_cpufreq_cpu_init(struct 
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	/* cpufreq holds the hotplug lock, so we are safe from here on */
+-	cpus_and(online_policy_cpus, cpu_online_map, policy->cpus);
++	cpumask_and(&online_policy_cpus, cpu_online_mask, policy->cpus);
+ #else
+ 	online_policy_cpus = policy->cpus;
+ #endif
+@@ -625,15 +625,15 @@ static int acpi_cpufreq_cpu_init(struct 
  	 */
  	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL ||
  	    policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
--		policy->cpus = perf->shared_cpu_map;
-+		cpumask_copy(&policy->cpus, perf->shared_cpu_map);
+-		cpumask_copy(&policy->cpus, perf->shared_cpu_map);
++		cpumask_copy(policy->cpus, perf->shared_cpu_map);
  	}
--	policy->related_cpus = perf->shared_cpu_map;
-+	cpumask_copy(&policy->related_cpus, perf->shared_cpu_map);
+-	cpumask_copy(&policy->related_cpus, perf->shared_cpu_map);
++	cpumask_copy(policy->related_cpus, perf->shared_cpu_map);
  
  #ifdef CONFIG_SMP
  	dmi_check_system(sw_any_bug_dmi_table);
-@@ -795,7 +816,7 @@ static int __init acpi_cpufreq_init(void
- 
- 	ret = cpufreq_register_driver(&acpi_cpufreq_driver);
- 	if (ret)
--		free_percpu(acpi_perf_data);
-+		free_acpi_perf_data();
- 
- 	return ret;
- }
---- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-@@ -310,6 +310,12 @@ static int powernow_acpi_init(void)
- 		goto err0;
- 	}
- 
-+	if (!alloc_cpumask_var(&acpi_processor_perf->shared_cpu_map,
-+								GFP_KERNEL) {
-+		retval = -ENOMEM;
-+		goto err05;
-+	}
-+
- 	if (acpi_processor_register_performance(acpi_processor_perf, 0)) {
- 		retval = -EIO;
- 		goto err1;
-@@ -412,6 +418,8 @@ static int powernow_acpi_init(void)
- err2:
- 	acpi_processor_unregister_performance(acpi_processor_perf, 0);
- err1:
-+	free_cpumask_var(acpi_processor_perf->shared_cpu_map);
-+err05:
- 	kfree(acpi_processor_perf);
- err0:
- 	printk(KERN_WARNING PFX "ACPI perflib can not be used in this platform\n");
-@@ -652,6 +660,7 @@ static int powernow_cpu_exit (struct cpu
- #ifdef CONFIG_X86_POWERNOW_K7_ACPI
- 	if (acpi_processor_perf) {
- 		acpi_processor_unregister_performance(acpi_processor_perf, 0);
-+		free_cpumask_var(acpi_processor_perf->shared_cpu_map);
- 		kfree(acpi_processor_perf);
+-	if (bios_with_sw_any_bug && cpus_weight(policy->cpus) == 1) {
++	if (bios_with_sw_any_bug && cpumask_weight(policy->cpus) == 1) {
+ 		policy->shared_type = CPUFREQ_SHARED_TYPE_ALL;
+-		policy->cpus = per_cpu(cpu_core_map, cpu);
++		cpumask_copy(policy->cpus, &per_cpu(cpu_core_map, cpu));
  	}
  #endif
+ 
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
+@@ -122,7 +122,7 @@ static int cpufreq_p4_target(struct cpuf
+ 		return 0;
+ 
+ 	/* notifiers */
+-	for_each_cpu_mask_nr(i, policy->cpus) {
++	for_each_cpu(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 	}
+@@ -130,11 +130,11 @@ static int cpufreq_p4_target(struct cpuf
+ 	/* run on each logical CPU, see section 13.15.3 of IA32 Intel Architecture Software
+ 	 * Developer's Manual, Volume 3
+ 	 */
+-	for_each_cpu_mask_nr(i, policy->cpus)
++	for_each_cpu(i, policy->cpus)
+ 		cpufreq_p4_setdc(i, p4clockmod_table[newstate].index);
+ 
+ 	/* notifiers */
+-	for_each_cpu_mask_nr(i, policy->cpus) {
++	for_each_cpu(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 	}
+@@ -200,7 +200,7 @@ static int cpufreq_p4_cpu_init(struct cp
+ 	unsigned int i;
+ 
+ #ifdef CONFIG_SMP
+-	policy->cpus = per_cpu(cpu_sibling_map, policy->cpu);
++	cpumask_copy(policy->cpus, &per_cpu(cpu_sibling_map, policy->cpu));
+ #endif
+ 
+ 	/* Errata workaround */
 --- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
 +++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -766,7 +766,7 @@ static void powernow_k8_acpi_pst_values(
- static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
- {
- 	struct cpufreq_frequency_table *powernow_table;
--	int ret_val;
-+	int ret_val = -ENODEV;
+@@ -1193,10 +1193,10 @@ static int __cpuinit powernowk8_cpu_init
+ 	set_cpus_allowed_ptr(current, &oldmask);
  
- 	if (acpi_processor_register_performance(&data->acpi_data, data->cpu)) {
- 		dprintk("register performance failed: bad ACPI data\n");
-@@ -815,6 +815,13 @@ static int powernow_k8_cpu_init_acpi(str
- 	/* notify BIOS that we exist */
- 	acpi_processor_notify_smm(THIS_MODULE);
+ 	if (cpu_family == CPU_HW_PSTATE)
+-		pol->cpus = cpumask_of_cpu(pol->cpu);
++		cpumask_copy(pol->cpus, cpumask_of(pol->cpu));
+ 	else
+-		pol->cpus = per_cpu(cpu_core_map, pol->cpu);
+-	data->available_cores = &(pol->cpus);
++		cpumask_copy(pol->cpus, &per_cpu(cpu_core_map, pol->cpu));
++	data->available_cores = pol->cpus;
  
-+	if (!alloc_cpumask_var(&data->acpi_data.shared_cpu_map, GFP_KERNEL)) {
-+		printk(KERN_ERR PFX
-+				"unable to alloc powernow_k8_data cpumask\n");
-+		ret_val = -ENOMEM;
-+		goto err_out_mem;
-+	}
-+
+ 	/* Take a crude guess here.
+ 	 * That guess was in microseconds, so multiply with 1000 */
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+@@ -53,7 +53,7 @@ struct powernow_k8_data {
+ 	/* we need to keep track of associated cores, but let cpufreq
+ 	 * handle hotplug events - so just point at cpufreq pol->cpus
+ 	 * structure */
+-	cpumask_t *available_cores;
++	struct cpumask *available_cores;
+ };
+ 
+ 
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+@@ -492,8 +492,8 @@ static int centrino_target (struct cpufr
+ 	}
+ 
+ 	first_cpu = 1;
+-	for_each_cpu_mask_nr(j, policy->cpus) {
+-		const cpumask_t *mask;
++	for_each_cpu(j, policy->cpus) {
++		const struct cpumask *mask;
+ 
+ 		/* cpufreq holds the hotplug lock, so we are safe here */
+ 		if (!cpu_online(j))
+@@ -504,9 +504,9 @@ static int centrino_target (struct cpufr
+ 		 * Make sure we are running on CPU that wants to change freq
+ 		 */
+ 		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+-			mask = &policy->cpus;
++			mask = policy->cpus;
+ 		else
+-			mask = &cpumask_of_cpu(j);
++			mask = cpumask_of(j);
+ 
+ 		set_cpus_allowed_ptr(current, mask);
+ 		preempt_disable();
+@@ -538,7 +538,7 @@ static int centrino_target (struct cpufr
+ 			dprintk("target=%dkHz old=%d new=%d msr=%04x\n",
+ 				target_freq, freqs.old, freqs.new, msr);
+ 
+-			for_each_cpu_mask_nr(k, policy->cpus) {
++			for_each_cpu(k, policy->cpus) {
+ 				if (!cpu_online(k))
+ 					continue;
+ 				freqs.cpu = k;
+@@ -563,7 +563,7 @@ static int centrino_target (struct cpufr
+ 		preempt_enable();
+ 	}
+ 
+-	for_each_cpu_mask_nr(k, policy->cpus) {
++	for_each_cpu(k, policy->cpus) {
+ 		if (!cpu_online(k))
+ 			continue;
+ 		freqs.cpu = k;
+@@ -586,7 +586,7 @@ static int centrino_target (struct cpufr
+ 		tmp = freqs.new;
+ 		freqs.new = freqs.old;
+ 		freqs.old = tmp;
+-		for_each_cpu_mask_nr(j, policy->cpus) {
++		for_each_cpu(j, policy->cpus) {
+ 			if (!cpu_online(j))
+ 				continue;
+ 			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
+@@ -229,7 +229,7 @@ static unsigned int speedstep_detect_chi
  	return 0;
- 
- err_out_mem:
-@@ -826,7 +833,7 @@ err_out:
- 	/* data->acpi_data.state_count informs us at ->exit() whether ACPI was used */
- 	data->acpi_data.state_count = 0;
- 
--	return -ENODEV;
-+	return ret_val;
  }
  
- static int fill_powernow_table_pstate(struct powernow_k8_data *data, struct cpufreq_frequency_table *powernow_table)
-@@ -929,6 +936,7 @@ static void powernow_k8_cpu_exit_acpi(st
+-static unsigned int _speedstep_get(const cpumask_t *cpus)
++static unsigned int _speedstep_get(const struct cpumask *cpus)
  {
- 	if (data->acpi_data.state_count)
- 		acpi_processor_unregister_performance(&data->acpi_data, data->cpu);
-+	free_cpumask_var(data->acpi_data.shared_cpu_map);
+ 	unsigned int speed;
+ 	cpumask_t cpus_allowed;
+@@ -244,7 +244,7 @@ static unsigned int _speedstep_get(const
+ 
+ static unsigned int speedstep_get(unsigned int cpu)
+ {
+-	return _speedstep_get(&cpumask_of_cpu(cpu));
++	return _speedstep_get(cpumask_of(cpu));
  }
  
- #else
-@@ -1134,7 +1142,8 @@ static int __cpuinit powernowk8_cpu_init
- 	data->cpu = pol->cpu;
- 	data->currpstate = HW_PSTATE_INVALID;
+ /**
+@@ -267,7 +267,7 @@ static int speedstep_target (struct cpuf
+ 	if (cpufreq_frequency_table_target(policy, &speedstep_freqs[0], target_freq, relation, &newstate))
+ 		return -EINVAL;
  
--	if (powernow_k8_cpu_init_acpi(data)) {
-+	rc = powernow_k8_cpu_init_acpi(data);
-+	if (rc) {
- 		/*
- 		 * Use the PSB BIOS structure. This is only availabe on
- 		 * an UP version, and is deprecated by AMD.
-@@ -1152,20 +1161,17 @@ static int __cpuinit powernowk8_cpu_init
- 			       "ACPI maintainers and complain to your BIOS "
- 			       "vendor.\n");
+-	freqs.old = _speedstep_get(&policy->cpus);
++	freqs.old = _speedstep_get(policy->cpus);
+ 	freqs.new = speedstep_freqs[newstate].frequency;
+ 	freqs.cpu = policy->cpu;
+ 
+@@ -279,20 +279,20 @@ static int speedstep_target (struct cpuf
+ 
+ 	cpus_allowed = current->cpus_allowed;
+ 
+-	for_each_cpu_mask_nr(i, policy->cpus) {
++	for_each_cpu(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 	}
+ 
+ 	/* switch to physical CPU where state is to be changed */
+-	set_cpus_allowed_ptr(current, &policy->cpus);
++	set_cpus_allowed_ptr(current, policy->cpus);
+ 
+ 	speedstep_set_state(newstate);
+ 
+ 	/* allow to be run on all CPUs */
+ 	set_cpus_allowed_ptr(current, &cpus_allowed);
+ 
+-	for_each_cpu_mask_nr(i, policy->cpus) {
++	for_each_cpu(i, policy->cpus) {
+ 		freqs.cpu = i;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 	}
+@@ -322,11 +322,11 @@ static int speedstep_cpu_init(struct cpu
+ 
+ 	/* only run on CPU to be set, or on its sibling */
+ #ifdef CONFIG_SMP
+-	policy->cpus = per_cpu(cpu_sibling_map, policy->cpu);
++	cpumask_copy(policy->cpus, &per_cpu(cpu_sibling_map, policy->cpu));
  #endif
--			kfree(data);
--			return -ENODEV;
-+			goto err_out;
- 		}
- 		if (pol->cpu != 0) {
- 			printk(KERN_ERR FW_BUG PFX "No ACPI _PSS objects for "
- 			       "CPU other than CPU0. Complain to your BIOS "
- 			       "vendor.\n");
--			kfree(data);
--			return -ENODEV;
-+			goto err_out;
- 		}
- 		rc = find_psb_table(data);
- 		if (rc) {
--			kfree(data);
--			return -ENODEV;
-+			goto err_out;
+ 
+ 	cpus_allowed = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &policy->cpus);
++	set_cpus_allowed_ptr(current, policy->cpus);
+ 
+ 	/* detect low and high frequency and transition latency */
+ 	result = speedstep_get_freqs(speedstep_processor,
+@@ -339,7 +339,7 @@ static int speedstep_cpu_init(struct cpu
+ 		return result;
+ 
+ 	/* get current speed setting */
+-	speed = _speedstep_get(&policy->cpus);
++	speed = _speedstep_get(policy->cpus);
+ 	if (!speed)
+ 		return -EIO;
+ 
+--- linux-2.6-for-ingo.orig/drivers/acpi/processor_perflib.c
++++ linux-2.6-for-ingo/drivers/acpi/processor_perflib.c
+@@ -588,12 +588,15 @@ int acpi_processor_preregister_performan
+ 	int count, count_target;
+ 	int retval = 0;
+ 	unsigned int i, j;
+-	cpumask_t covered_cpus;
++	cpumask_var_t covered_cpus;
+ 	struct acpi_processor *pr;
+ 	struct acpi_psd_package *pdomain;
+ 	struct acpi_processor *match_pr;
+ 	struct acpi_psd_package *match_pdomain;
+ 
++	if (!alloc_cpumask_var(&covered_cpus, GFP_KERNEL))
++		return -ENOMEM;
++
+ 	mutex_lock(&performance_mutex);
+ 
+ 	retval = 0;
+@@ -650,18 +653,18 @@ int acpi_processor_preregister_performan
  		}
  	}
  
---- linux-2.6-for-ingo.orig/drivers/acpi/processor_core.c
-+++ linux-2.6-for-ingo/drivers/acpi/processor_core.c
-@@ -826,6 +826,11 @@ static int acpi_processor_add(struct acp
- 	if (!pr)
- 		return -ENOMEM;
- 
-+	if (!alloc_cpumask_var(&pr->throttling.shared_cpu_map, GFP_KERNEL)) {
-+		kfree(pr);
-+		return -ENOMEM;
-+	}
-+
- 	pr->handle = device->handle;
- 	strcpy(acpi_device_name(device), ACPI_PROCESSOR_DEVICE_NAME);
- 	strcpy(acpi_device_class(device), ACPI_PROCESSOR_CLASS);
-@@ -845,10 +850,8 @@ static int acpi_processor_remove(struct 
- 
- 	pr = acpi_driver_data(device);
- 
--	if (pr->id >= nr_cpu_ids) {
--		kfree(pr);
--		return 0;
--	}
-+	if (pr->id >= nr_cpu_ids)
-+		goto free;
- 
- 	if (type == ACPI_BUS_REMOVAL_EJECT) {
- 		if (acpi_processor_handle_eject(pr))
-@@ -873,6 +876,9 @@ static int acpi_processor_remove(struct 
- 
- 	per_cpu(processors, pr->id) = NULL;
- 	per_cpu(processor_device_array, pr->id) = NULL;
-+
-+free:
-+	free_cpumask_var(pr->throttling.shared_cpu_map);
- 	kfree(pr);
- 
- 	return 0;
---- linux-2.6-for-ingo.orig/drivers/acpi/processor_perflib.c
-+++ linux-2.6-for-ingo/drivers/acpi/processor_perflib.c
-@@ -617,7 +617,7 @@ int acpi_processor_preregister_performan
- 		}
- 
- 		pr->performance = percpu_ptr(performance, i);
--		cpu_set(i, pr->performance->shared_cpu_map);
-+		cpumask_set_cpu(i, pr->performance->shared_cpu_map);
- 		if (acpi_processor_get_psd(pr)) {
- 			retval = -EINVAL;
+-	cpus_clear(covered_cpus);
++	cpumask_clear(covered_cpus);
+ 	for_each_possible_cpu(i) {
+ 		pr = per_cpu(processors, i);
+ 		if (!pr)
  			continue;
-@@ -660,7 +660,7 @@ int acpi_processor_preregister_performan
+ 
+-		if (cpu_isset(i, covered_cpus))
++		if (cpumask_test_cpu(i, covered_cpus))
  			continue;
  
  		pdomain = &(pr->performance->domain_info);
--		cpu_set(i, pr->performance->shared_cpu_map);
-+		cpumask_set_cpu(i, pr->performance->shared_cpu_map);
- 		cpu_set(i, covered_cpus);
+ 		cpumask_set_cpu(i, pr->performance->shared_cpu_map);
+-		cpu_set(i, covered_cpus);
++		cpumask_set_cpu(i, covered_cpus);
  		if (pdomain->num_processors <= 1)
  			continue;
-@@ -700,7 +700,7 @@ int acpi_processor_preregister_performan
+ 
+@@ -699,7 +702,7 @@ int acpi_processor_preregister_performan
+ 				goto err_ret;
  			}
  
- 			cpu_set(j, covered_cpus);
--			cpu_set(j, pr->performance->shared_cpu_map);
-+			cpumask_set_cpu(j, pr->performance->shared_cpu_map);
+-			cpu_set(j, covered_cpus);
++			cpumask_set_cpu(j, covered_cpus);
+ 			cpumask_set_cpu(j, pr->performance->shared_cpu_map);
  			count++;
  		}
- 
-@@ -718,8 +718,8 @@ int acpi_processor_preregister_performan
- 
- 			match_pr->performance->shared_type = 
- 					pr->performance->shared_type;
--			match_pr->performance->shared_cpu_map =
--				pr->performance->shared_cpu_map;
-+			cpumask_copy(match_pr->performance->shared_cpu_map,
-+				     pr->performance->shared_cpu_map);
- 		}
- 	}
- 
-@@ -731,8 +731,8 @@ err_ret:
- 
- 		/* Assume no coordination on any error parsing domain info */
- 		if (retval) {
--			cpus_clear(pr->performance->shared_cpu_map);
--			cpu_set(i, pr->performance->shared_cpu_map);
-+			cpumask_clear(pr->performance->shared_cpu_map);
-+			cpumask_set_cpu(i, pr->performance->shared_cpu_map);
- 			pr->performance->shared_type = CPUFREQ_SHARED_TYPE_ALL;
- 		}
- 		pr->performance = NULL; /* Will be set for real in register */
 --- linux-2.6-for-ingo.orig/drivers/acpi/processor_throttling.c
 +++ linux-2.6-for-ingo/drivers/acpi/processor_throttling.c
-@@ -102,7 +102,7 @@ static int acpi_processor_update_tsd_coo
+@@ -61,11 +61,14 @@ static int acpi_processor_update_tsd_coo
+ 	int count, count_target;
+ 	int retval = 0;
+ 	unsigned int i, j;
+-	cpumask_t covered_cpus;
++	cpumask_var_t covered_cpus;
+ 	struct acpi_processor *pr, *match_pr;
+ 	struct acpi_tsd_package *pdomain, *match_pdomain;
+ 	struct acpi_processor_throttling *pthrottling, *match_pthrottling;
+ 
++	if (!alloc_cpumask_var(&covered_cpus, GFP_KERNEL))
++		return -ENOMEM;
++
+ 	/*
+ 	 * Now that we have _TSD data from all CPUs, lets setup T-state
+ 	 * coordination between all CPUs.
+@@ -91,19 +94,19 @@ static int acpi_processor_update_tsd_coo
+ 	if (retval)
+ 		goto err_ret;
+ 
+-	cpus_clear(covered_cpus);
++	cpumask_clear(covered_cpus);
+ 	for_each_possible_cpu(i) {
+ 		pr = per_cpu(processors, i);
+ 		if (!pr)
+ 			continue;
+ 
+-		if (cpu_isset(i, covered_cpus))
++		if (cpumask_test_cpu(i, covered_cpus))
+ 			continue;
  		pthrottling = &pr->throttling;
  
  		pdomain = &(pthrottling->domain_info);
--		cpu_set(i, pthrottling->shared_cpu_map);
-+		cpumask_set_cpu(i, pthrottling->shared_cpu_map);
- 		cpu_set(i, covered_cpus);
+ 		cpumask_set_cpu(i, pthrottling->shared_cpu_map);
+-		cpu_set(i, covered_cpus);
++		cpumask_set_cpu(i, covered_cpus);
  		/*
  		 * If the number of processor in the TSD domain is 1, it is
-@@ -145,7 +145,7 @@ static int acpi_processor_update_tsd_coo
+ 		 * unnecessary to parse the coordination for this CPU.
+@@ -144,7 +147,7 @@ static int acpi_processor_update_tsd_coo
+ 				goto err_ret;
  			}
  
- 			cpu_set(j, covered_cpus);
--			cpu_set(j, pthrottling->shared_cpu_map);
-+			cpumask_set_cpu(j, pthrottling->shared_cpu_map);
+-			cpu_set(j, covered_cpus);
++			cpumask_set_cpu(j, covered_cpus);
+ 			cpumask_set_cpu(j, pthrottling->shared_cpu_map);
  			count++;
  		}
- 		for_each_possible_cpu(j) {
-@@ -165,8 +165,8 @@ static int acpi_processor_update_tsd_coo
- 			 * If some CPUS have the same domain, they
- 			 * will have the same shared_cpu_map.
- 			 */
--			match_pthrottling->shared_cpu_map =
--				pthrottling->shared_cpu_map;
-+			cpumask_copy(match_pthrottling->shared_cpu_map,
-+				     pthrottling->shared_cpu_map);
+@@ -171,16 +174,16 @@ static int acpi_processor_update_tsd_coo
+ 	}
+ 
+ err_ret:
+-	for_each_possible_cpu(i) {
+-		pr = per_cpu(processors, i);
+-		if (!pr)
+-			continue;
++	if (retval) {
++		for_each_possible_cpu(i) {
++			pr = per_cpu(processors, i);
++			if (!pr)
++				continue;
+ 
+-		/*
+-		 * Assume no coordination on any error parsing domain info.
+-		 * The coordination type will be forced as SW_ALL.
+-		 */
+-		if (retval) {
++			/*
++			 * Assume no coordination on any error parsing domain
++			 * info. The coordination type will be forced as SW_ALL.
++			 */
+ 			pthrottling = &(pr->throttling);
+ 			cpumask_clear(pthrottling->shared_cpu_map);
+ 			cpumask_set_cpu(i, pthrottling->shared_cpu_map);
+@@ -188,6 +191,7 @@ err_ret:
  		}
  	}
  
-@@ -182,8 +182,8 @@ err_ret:
- 		 */
- 		if (retval) {
- 			pthrottling = &(pr->throttling);
--			cpus_clear(pthrottling->shared_cpu_map);
--			cpu_set(i, pthrottling->shared_cpu_map);
-+			cpumask_clear(pthrottling->shared_cpu_map);
-+			cpumask_set_cpu(i, pthrottling->shared_cpu_map);
- 			pthrottling->shared_type = DOMAIN_COORD_TYPE_SW_ALL;
- 		}
- 	}
-@@ -567,7 +567,7 @@ static int acpi_processor_get_tsd(struct
- 	pthrottling = &pr->throttling;
- 	pthrottling->tsd_valid_flag = 1;
- 	pthrottling->shared_type = pdomain->coord_type;
--	cpu_set(pr->id, pthrottling->shared_cpu_map);
-+	cpumask_set_cpu(pr->id, pthrottling->shared_cpu_map);
- 	/*
- 	 * If the coordination type is not defined in ACPI spec,
- 	 * the tsd_valid_flag will be clear and coordination type
-@@ -1006,7 +1006,7 @@ int acpi_processor_set_throttling(struct
- 	saved_mask = current->cpus_allowed;
- 	t_state.target_state = state;
- 	p_throttling = &(pr->throttling);
--	cpus_and(online_throttling_cpus, cpu_online_map,
-+	cpumask_and(&online_throttling_cpus, cpu_online_mask,
- 			p_throttling->shared_cpu_map);
- 	/*
- 	 * The throttling notifier will be called for every
-@@ -1120,7 +1120,7 @@ int acpi_processor_get_throttling_info(s
++	free_cpumask_var(covered_cpus);
+ 	return retval;
+ }
+ 
+@@ -1120,7 +1124,7 @@ int acpi_processor_get_throttling_info(s
  	if (acpi_processor_get_tsd(pr)) {
  		pthrottling = &pr->throttling;
  		pthrottling->tsd_valid_flag = 0;
--		cpu_set(pr->id, pthrottling->shared_cpu_map);
-+		cpumask_set_cpu(pr->id, &pthrottling->shared_cpu_map);
+-		cpumask_set_cpu(pr->id, &pthrottling->shared_cpu_map);
++		cpumask_set_cpu(pr->id, pthrottling->shared_cpu_map);
  		pthrottling->shared_type = DOMAIN_COORD_TYPE_SW_ALL;
  	}
  
---- linux-2.6-for-ingo.orig/include/acpi/processor.h
-+++ linux-2.6-for-ingo/include/acpi/processor.h
-@@ -127,7 +127,7 @@ struct acpi_processor_performance {
- 	unsigned int state_count;
- 	struct acpi_processor_px *states;
- 	struct acpi_psd_package domain_info;
--	cpumask_t shared_cpu_map;
-+	cpumask_var_t shared_cpu_map;
- 	unsigned int shared_type;
+--- linux-2.6-for-ingo.orig/drivers/cpufreq/cpufreq.c
++++ linux-2.6-for-ingo/drivers/cpufreq/cpufreq.c
+@@ -584,12 +584,12 @@ out:
+ 	return i;
+ }
+ 
+-static ssize_t show_cpus(cpumask_t mask, char *buf)
++static ssize_t show_cpus(const struct cpumask *mask, char *buf)
+ {
+ 	ssize_t i = 0;
+ 	unsigned int cpu;
+ 
+-	for_each_cpu_mask_nr(cpu, mask) {
++	for_each_cpu(cpu, mask) {
+ 		if (i)
+ 			i += scnprintf(&buf[i], (PAGE_SIZE - i - 2), " ");
+ 		i += scnprintf(&buf[i], (PAGE_SIZE - i - 2), "%u", cpu);
+@@ -606,7 +606,7 @@ static ssize_t show_cpus(cpumask_t mask,
+  */
+ static ssize_t show_related_cpus(struct cpufreq_policy *policy, char *buf)
+ {
+-	if (cpus_empty(policy->related_cpus))
++	if (cpumask_empty(policy->related_cpus))
+ 		return show_cpus(policy->cpus, buf);
+ 	return show_cpus(policy->related_cpus, buf);
+ }
+@@ -801,9 +801,20 @@ static int cpufreq_add_dev(struct sys_de
+ 		ret = -ENOMEM;
+ 		goto nomem_out;
+ 	}
++	if (!alloc_cpumask_var(&policy->cpus, GFP_KERNEL)) {
++		kfree(policy);
++		ret = -ENOMEM;
++		goto nomem_out;
++	}
++	if (!alloc_cpumask_var(&policy->related_cpus, GFP_KERNEL)) {
++		free_cpumask_var(policy->cpus);
++		kfree(policy);
++		ret = -ENOMEM;
++		goto nomem_out;
++	}
+ 
+ 	policy->cpu = cpu;
+-	policy->cpus = cpumask_of_cpu(cpu);
++	cpumask_copy(policy->cpus, cpumask_of(cpu));
+ 
+ 	/* Initially set CPU itself as the policy_cpu */
+ 	per_cpu(policy_cpu, cpu) = cpu;
+@@ -838,7 +849,7 @@ static int cpufreq_add_dev(struct sys_de
+ 	}
+ #endif
+ 
+-	for_each_cpu_mask_nr(j, policy->cpus) {
++	for_each_cpu(j, policy->cpus) {
+ 		if (cpu == j)
+ 			continue;
+ 
+@@ -856,7 +867,7 @@ static int cpufreq_add_dev(struct sys_de
+ 				goto err_out_driver_exit;
+ 
+ 			spin_lock_irqsave(&cpufreq_driver_lock, flags);
+-			managed_policy->cpus = policy->cpus;
++			cpumask_copy(managed_policy->cpus, policy->cpus);
+ 			per_cpu(cpufreq_cpu_data, cpu) = managed_policy;
+ 			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+@@ -901,14 +912,14 @@ static int cpufreq_add_dev(struct sys_de
+ 	}
+ 
+ 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
+-	for_each_cpu_mask_nr(j, policy->cpus) {
++	for_each_cpu(j, policy->cpus) {
+ 		per_cpu(cpufreq_cpu_data, j) = policy;
+ 		per_cpu(policy_cpu, j) = policy->cpu;
+ 	}
+ 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+ 	/* symlink affected CPUs */
+-	for_each_cpu_mask_nr(j, policy->cpus) {
++	for_each_cpu(j, policy->cpus) {
+ 		if (j == cpu)
+ 			continue;
+ 		if (!cpu_online(j))
+@@ -948,7 +959,7 @@ static int cpufreq_add_dev(struct sys_de
+ 
+ err_out_unregister:
+ 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
+-	for_each_cpu_mask_nr(j, policy->cpus)
++	for_each_cpu(j, policy->cpus)
+ 		per_cpu(cpufreq_cpu_data, j) = NULL;
+ 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+@@ -1009,7 +1020,7 @@ static int __cpufreq_remove_dev(struct s
+ 	 */
+ 	if (unlikely(cpu != data->cpu)) {
+ 		dprintk("removing link\n");
+-		cpu_clear(cpu, data->cpus);
++		cpumask_clear_cpu(cpu, data->cpus);
+ 		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 		sysfs_remove_link(&sys_dev->kobj, "cpufreq");
+ 		cpufreq_cpu_put(data);
+@@ -1030,8 +1041,8 @@ static int __cpufreq_remove_dev(struct s
+ 	 * per_cpu(cpufreq_cpu_data) while holding the lock, and remove
+ 	 * the sysfs links afterwards.
+ 	 */
+-	if (unlikely(cpus_weight(data->cpus) > 1)) {
+-		for_each_cpu_mask_nr(j, data->cpus) {
++	if (unlikely(cpumask_weight(data->cpus) > 1)) {
++		for_each_cpu(j, data->cpus) {
+ 			if (j == cpu)
+ 				continue;
+ 			per_cpu(cpufreq_cpu_data, j) = NULL;
+@@ -1040,8 +1051,8 @@ static int __cpufreq_remove_dev(struct s
+ 
+ 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+-	if (unlikely(cpus_weight(data->cpus) > 1)) {
+-		for_each_cpu_mask_nr(j, data->cpus) {
++	if (unlikely(cpumask_weight(data->cpus) > 1)) {
++		for_each_cpu(j, data->cpus) {
+ 			if (j == cpu)
+ 				continue;
+ 			dprintk("removing link for cpu %u\n", j);
+@@ -1075,7 +1086,10 @@ static int __cpufreq_remove_dev(struct s
+ 	if (cpufreq_driver->exit)
+ 		cpufreq_driver->exit(data);
+ 
++	free_cpumask_var(data->related_cpus);
++	free_cpumask_var(data->cpus);
+ 	kfree(data);
++	per_cpu(cpufreq_cpu_data, cpu) = NULL;
+ 
+ 	cpufreq_debug_enable_ratelimit();
+ 	return 0;
+--- linux-2.6-for-ingo.orig/drivers/cpufreq/cpufreq_conservative.c
++++ linux-2.6-for-ingo/drivers/cpufreq/cpufreq_conservative.c
+@@ -498,7 +498,7 @@ static int cpufreq_governor_dbs(struct c
+ 			return rc;
+ 		}
+ 
+-		for_each_cpu_mask_nr(j, policy->cpus) {
++		for_each_cpu(j, policy->cpus) {
+ 			struct cpu_dbs_info_s *j_dbs_info;
+ 			j_dbs_info = &per_cpu(cpu_dbs_info, j);
+ 			j_dbs_info->cur_policy = policy;
+--- linux-2.6-for-ingo.orig/drivers/cpufreq/cpufreq_ondemand.c
++++ linux-2.6-for-ingo/drivers/cpufreq/cpufreq_ondemand.c
+@@ -400,7 +400,7 @@ static void dbs_check_cpu(struct cpu_dbs
+ 	/* Get Absolute Load - in terms of freq */
+ 	max_load_freq = 0;
+ 
+-	for_each_cpu_mask_nr(j, policy->cpus) {
++	for_each_cpu(j, policy->cpus) {
+ 		struct cpu_dbs_info_s *j_dbs_info;
+ 		cputime64_t cur_wall_time, cur_idle_time;
+ 		unsigned int idle_time, wall_time;
+@@ -568,7 +568,7 @@ static int cpufreq_governor_dbs(struct c
+ 			return rc;
+ 		}
+ 
+-		for_each_cpu_mask_nr(j, policy->cpus) {
++		for_each_cpu(j, policy->cpus) {
+ 			struct cpu_dbs_info_s *j_dbs_info;
+ 			j_dbs_info = &per_cpu(cpu_dbs_info, j);
+ 			j_dbs_info->cur_policy = policy;
+--- linux-2.6-for-ingo.orig/include/linux/cpufreq.h
++++ linux-2.6-for-ingo/include/linux/cpufreq.h
+@@ -80,8 +80,8 @@ struct cpufreq_real_policy {
  };
  
-@@ -172,7 +172,7 @@ struct acpi_processor_throttling {
- 	unsigned int state_count;
- 	struct acpi_processor_tx_tss *states_tss;
- 	struct acpi_tsd_package domain_info;
--	cpumask_t shared_cpu_map;
-+	cpumask_var_t shared_cpu_map;
- 	int (*acpi_processor_get_throttling) (struct acpi_processor * pr);
- 	int (*acpi_processor_set_throttling) (struct acpi_processor * pr,
- 					      int state);
+ struct cpufreq_policy {
+-	cpumask_t		cpus;	/* CPUs requiring sw coordination */
+-	cpumask_t		related_cpus; /* CPUs with any coordination */
++	cpumask_var_t		cpus;	/* CPUs requiring sw coordination */
++	cpumask_var_t		related_cpus; /* CPUs with any coordination */
+ 	unsigned int		shared_type; /* ANY or ALL affected CPUs
+ 						should set cpufreq */
+ 	unsigned int		cpu;    /* cpu nr of registered CPU */
 
 -- 
