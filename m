@@ -1,43 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbYLTBUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbYLTBeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754239AbYLTBUp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 20:20:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYLTBUf
+	id S1754590AbYLTBeV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 20:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbYLTBeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 20:20:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:57657 "EHLO mx2.redhat.com"
+	Fri, 19 Dec 2008 20:34:09 -0500
+Received: from ozlabs.org ([203.10.76.45]:47652 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751918AbYLTBUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 20:20:34 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <OF4F5F89AF.8F313531-ON88257524.006A611A-88257524.006D49B8@us.ibm.com>
-References: <OF4F5F89AF.8F313531-ON88257524.006A611A-88257524.006D49B8@us.ibm.com>
-To: Bryan Henderson <hbryan@us.ibm.com>
-Cc: dhowells@redhat.com, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Muntz, Daniel" <Dan.Muntz@netapp.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org, rwheeler@redhat.com,
-       sfr@canb.auug.org.au, steved@redhat.com
-Subject: Re: Pull request for FS-Cache, including NFS patches
-Date: Sat, 20 Dec 2008 01:20:05 +0000
-Message-ID: <13180.1229736005@redhat.com>
+	id S1752326AbYLTBeI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 20:34:08 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: local_add_return
+Date: Sat, 20 Dec 2008 12:03:50 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: David Miller <davem@davemloft.net>, rostedt@goodmis.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       paulus@samba.org, benh@kernel.crashing.org, linux-ia64@vger.kernel.org,
+       linux-s390@vger.kernel.org, Christoph Lameter <christoph@lameter.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Martin Bligh <mbligh@google.com>
+References: <alpine.DEB.1.10.0812150823370.18692@gandalf.stny.rr.com> <200812191624.46580.rusty@rustcorp.com.au> <20081219170627.GB1339@Krystal>
+In-Reply-To: <20081219170627.GB1339@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Content-Disposition: inline
+Message-Id: <200812201203.51351.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan Henderson <hbryan@us.ibm.com> wrote:
-
-> > > AFS was designed to support local disk cache, so with callbacks you can
-> > > get a consistent system.
+On Saturday 20 December 2008 03:36:27 Mathieu Desnoyers wrote:
+> * Rusty Russell (rusty@rustcorp.com.au) wrote:
+> > Then some trace-specific typedef like "trace_counter_t" which goes to local_t
+> > or atomic_(long?)_t?
 > > 
-> > It's less the callbacks and more the data version number that's important.
+> > Should be a simple patch and pretty clear.
 > 
-> Maybe for consistency, but for the performance benefits of local disk
-> caching, I believe the callbacks are pretty important.
+> Hrm, is it me or linking a basic type definition to a single user seems
+> like the wrong approach ?
 
-Indeed, but he said "so with callbacks you can get a _consistent_ system".
+Well, it's an ongoing debate.  Old school kernel coders believe that
+infrastructure should be resisted: you implement what you need to, then
+if it turns out to be generically useful you put it somewhere that the
+second user can access it.
 
-David
+Otherwise we end up with unused infrastructure, or overspecialized
+infrastructure which doesn't actually meet the general need.  local_t
+displays both these properties.
+
+> The idea behind declaring new types is, to me, that they should describe
+> as generally as possible what they provide and what they are. If we
+> think of the future, where we might want to use such local atomic types
+> for other purposes than tracing, I think we will end up regretting such
+> specific naming scheme.
+
+I can be convinced, but I'll need more than speculation.  Assuming
+local_long_atomic_t, can you produce a patch which uses it somewhere else?
+
+> local_atomic_long_t is a _new_ primitive, which cannot be
+> implemented by a trivalue and differs from atomic_long_t, on more
+> architectures than x86. On mips and powerpc, at least, it can be
+> implemented as an atomic operation without the memory barriers, which
+> improves performances a lot.
+
+OK, you lost me here.  I don't see a memory barrier in the powerpc atomic
+ops.  Is there an implied one I missed?
+
+> I think the following scheme would be pretty simple and yet not tied to
+> any specific user :
+> 
+> local_long_t
+>   - Fast per-cpu counter, not necessarily atomic.
+>     Implements long trivalues, or uses local_atomic_long_t.
+> local_atomic_long_t
+>   - Fast per-cpu atomic counter.
+>     Implements per-cpu atomic counters or uses atomic_long_t.
+
+>From the point of view of someone trying to decide what to use, the real
+difference is: use local_long_t unless you need the atomic-style operators
+which are only available on local_atomic_long_t, or NMI-safe behaviour.
+Is this correct?
+
+> We could do the same with "int" type for :
+> local_t
+> local_atomic_t
+> atomic_t
+> 
+> If we need smaller counters.
+
+Erk... no, renaming one to two is bad enough.  Changing the semantics of
+one and introducing three more is horrible.
+
+If we're going to rename, I'd choose local_counter_t and local_atomic_t
+(both long: I don't think there's a real penalty is there?).
+
+Thanks,
+Rusty.
