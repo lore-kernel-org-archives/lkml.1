@@ -1,21 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbYLTOgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbYLTOgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754943AbYLTOgJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 09:36:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYLTOal
+	id S1755477AbYLTOgb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 09:36:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYLTOan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 09:30:41 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:41324 "EHLO
+	Sat, 20 Dec 2008 09:30:43 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:41325 "EHLO
 	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752132AbYLTOaL (ORCPT
+	with ESMTP id S1752089AbYLTOaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 20 Dec 2008 09:30:11 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 21/26] kbuild: add headerdep used to detect inclusion cycles in header files
-Date: Sat, 20 Dec 2008 15:31:32 +0100
-Message-Id: <1229783497-19550-21-git-send-email-sam@ravnborg.org>
+Cc: Andreas Gruenbacher <agruen@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 12/26] genksyms: allow to ignore symbol checksum changes
+Date: Sat, 20 Dec 2008 15:31:23 +0100
+Message-Id: <1229783497-19550-12-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.0.2.GIT
 In-Reply-To: <20081220142518.GA19390@uranus.ravnborg.org>
 References: <20081220142518.GA19390@uranus.ravnborg.org>
@@ -23,240 +26,122 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vegard Nossum <vegard.nossum@gmail.com>
+From: Andreas Gruenbacher <agruen@suse.de>
 
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+This adds an "override" keyword for use in *.symvers / *.symref files.
+When a symbol is overridden, the symbol's old definition will be used for
+computing checksums instead of the new one, preserving the previous
+checksum.  (Genksyms will still warn about the change.)
+
+This is meant to allow distributions to hide minor actual as well as fake
+ABI changes.  (For example, when extra type information becomes available
+because additional headers are included, this may change checksums even
+though none of the types used have actully changed.)
+
+This approach also allows to get rid of "#ifdef __GENKSYMS__" hacks in the
+code, which are currently used in some vendor kernels to work around
+checksum changes.
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- Makefile             |    7 ++-
- scripts/headerdep.pl |  193 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 199 insertions(+), 1 deletions(-)
- create mode 100755 scripts/headerdep.pl
+ scripts/genksyms/genksyms.c |   34 ++++++++++++++++++++++++++++++----
+ scripts/genksyms/genksyms.h |    1 +
+ 2 files changed, 31 insertions(+), 4 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index 95160e5..e1c5ae8 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1026,6 +1026,10 @@ include/linux/version.h: $(srctree)/Makefile FORCE
- include/linux/utsrelease.h: include/config/kernel.release FORCE
- 	$(call filechk,utsrelease.h)
+diff --git a/scripts/genksyms/genksyms.c b/scripts/genksyms/genksyms.c
+index ddac174..3a8297b 100644
+--- a/scripts/genksyms/genksyms.c
++++ b/scripts/genksyms/genksyms.c
+@@ -191,11 +191,26 @@ struct symbol *__add_symbol(const char *name, enum symbol_type type,
+ 				/* fall through */ ;
+ 			else if (sym->type == type &&
+ 				 equal_list(sym->defn, defn)) {
++				if (!sym->is_declared && sym->is_override) {
++					print_location();
++					print_type_name(type, name);
++					fprintf(stderr, " modversion is "
++						"unchanged\n");
++				}
+ 				sym->is_declared = 1;
+ 				return sym;
+ 			} else if (!sym->is_declared) {
+-				status = is_unknown_symbol(sym) ?
+-					STATUS_DEFINED : STATUS_MODIFIED;
++				if (sym->is_override && flag_preserve) {
++					print_location();
++					fprintf(stderr, "ignoring ");
++					print_type_name(type, name);
++					fprintf(stderr, " modversion change\n");
++					sym->is_declared = 1;
++					return sym;
++				} else {
++					status = is_unknown_symbol(sym) ?
++						STATUS_DEFINED : STATUS_MODIFIED;
++				}
+ 			} else {
+ 				error_with_pos("redefinition of %s", name);
+ 				return sym;
+@@ -229,6 +244,7 @@ struct symbol *__add_symbol(const char *name, enum symbol_type type,
  
-+PHONY += headerdep
-+headerdep:
-+	$(Q)find include/ -name '*.h' | xargs --max-args 1 scripts/headerdep.pl
-+
- # ---------------------------------------------------------------------------
+ 	sym->is_declared = !is_reference;
+ 	sym->status = status;
++	sym->is_override = 0;
  
- PHONY += depend dep
-@@ -1274,7 +1278,8 @@ help:
- 	@echo  '  versioncheck    - Sanity check on version.h usage'
- 	@echo  '  includecheck    - Check for duplicate included header files'
- 	@echo  '  export_report   - List the usages of all exported symbols'
--	@echo  '  headers_check   - Sanity check on exported headers'; \
-+	@echo  '  headers_check   - Sanity check on exported headers'
-+	@echo  '  headerdep       - Detect inclusion cycles in headers'; \
- 	 echo  ''
- 	@echo  'Kernel packaging:'
- 	@$(MAKE) $(build)=$(package-dir) help
-diff --git a/scripts/headerdep.pl b/scripts/headerdep.pl
-new file mode 100755
-index 0000000..97399da
---- /dev/null
-+++ b/scripts/headerdep.pl
-@@ -0,0 +1,193 @@
-+#! /usr/bin/perl
-+#
-+# Detect cycles in the header file dependency graph
-+# Vegard Nossum <vegardno@ifi.uio.no>
-+#
-+
-+use strict;
-+use warnings;
-+
-+use Getopt::Long;
-+
-+my $opt_all;
-+my @opt_include;
-+my $opt_graph;
-+
-+&Getopt::Long::Configure(qw(bundling pass_through));
-+&GetOptions(
-+	help	=> \&help,
-+	version	=> \&version,
-+
-+	all	=> \$opt_all,
-+	I	=> \@opt_include,
-+	graph	=> \$opt_graph,
-+);
-+
-+push @opt_include, 'include';
-+my %deps = ();
-+my %linenos = ();
-+
-+my @headers = grep { strip($_) } @ARGV;
-+
-+parse_all(@headers);
-+
-+if($opt_graph) {
-+	graph();
-+} else {
-+	detect_cycles(@headers);
-+}
-+
-+
-+sub help {
-+	print "Usage: $0 [options] file...\n";
-+	print "\n";
-+	print "Options:\n";
-+	print "  --all\n";
-+	print "  --graph\n";
-+	print "\n";
-+	print "  -I includedir\n";
-+	print "\n";
-+	print "To make nice graphs, try:\n";
-+	print "  $0 --graph include/linux/kernel.h | dot -Tpng -o graph.png\n";
-+	exit;
-+}
-+
-+sub version {
-+	print "headerdep version 2\n";
-+	exit;
-+}
-+
-+# Get a file name that is relative to our include paths
-+sub strip {
-+	my $filename = shift;
-+
-+	for my $i (@opt_include) {
-+		my $stripped = $filename;
-+		$stripped =~ s/^$i\///;
-+
-+		return $stripped if $stripped ne $filename;
-+	}
-+
-+	return $filename;
-+}
-+
-+# Search for the file name in the list of include paths
-+sub search {
-+	my $filename = shift;
-+	return $filename if -f $filename;
-+
-+	for my $i (@opt_include) {
-+		my $path = "$i/$filename";
-+		return $path if -f $path;
-+	}
-+
-+	return undef;
-+}
-+
-+sub parse_all {
-+	# Parse all the headers.
-+	my @queue = @_;
-+	while(@queue) {
-+		my $header = pop @queue;
-+		next if exists $deps{$header};
-+
-+		$deps{$header} = [] unless exists $deps{$header};
-+
-+		my $path = search($header);
-+		next unless $path;
-+
-+		open(my $file, '<', $path) or die($!);
-+		chomp(my @lines = <$file>);
-+		close($file);
-+
-+		for my $i (0 .. $#lines) {
-+			my $line = $lines[$i];
-+			if(my($dep) = ($line =~ m/^#\s*include\s*<(.*?)>/)) {
-+				push @queue, $dep;
-+				push @{$deps{$header}}, [$i + 1, $dep];
-+			}
+ 	if (flag_debug) {
+ 		fprintf(debugfile, "Defn for %s %s == <",
+@@ -348,9 +364,16 @@ static void read_reference(FILE *f)
+ 	while (!feof(f)) {
+ 		struct string_list *defn = NULL;
+ 		struct string_list *sym, *def;
+-		int is_extern = 0;
++		int is_extern = 0, is_override = 0;
++		struct symbol *subsym;
+ 
+ 		sym = read_node(f);
++		if (sym && sym->tag == SYM_NORMAL &&
++		    !strcmp(sym->string, "override")) {
++			is_override = 1;
++			free_node(sym);
++			sym = read_node(f);
 +		}
-+	}
-+}
-+
-+sub print_cycle {
-+	# $cycle[n] includes $cycle[n + 1];
-+	# $cycle[-1] will be the culprit
-+	my $cycle = shift;
-+
-+	# Adjust the line numbers
-+	for my $i (0 .. $#$cycle - 1) {
-+		$cycle->[$i]->[0] = $cycle->[$i + 1]->[0];
-+	}
-+	$cycle->[-1]->[0] = 0;
-+
-+	my $first = shift @$cycle;
-+	my $last = pop @$cycle;
-+
-+	my $msg = "In file included";
-+	printf "%s from %s,\n", $msg, $last->[1] if defined $last;
-+
-+	for my $header (reverse @$cycle) {
-+		printf "%s from %s:%d%s\n",
-+			" " x length $msg,
-+			$header->[1], $header->[0],
-+			$header->[1] eq $last->[1] ? ' <-- here' : '';
-+	}
-+
-+	printf "%s:%d: warning: recursive header inclusion\n",
-+		$first->[1], $first->[0];
-+}
-+
-+# Find and print the smallest cycle starting in the specified node.
-+sub detect_cycles {
-+	my @queue = map { [[0, $_]] } @_;
-+	while(@queue) {
-+		my $top = pop @queue;
-+		my $name = $top->[-1]->[1];
-+
-+		for my $dep (@{$deps{$name}}) {
-+			my $chain = [@$top, [$dep->[0], $dep->[1]]];
-+
-+			# If the dep already exists in the chain, we have a
-+			# cycle...
-+			if(grep { $_->[1] eq $dep->[1] } @$top) {
-+				print_cycle($chain);
-+				next if $opt_all;
-+				return;
-+			}
-+
-+			push @queue, $chain;
-+		}
-+	}
-+}
-+
-+sub mangle {
-+	$_ = shift;
-+	s/\//__/g;
-+	s/\./_/g;
-+	s/-/_/g;
-+	$_;
-+}
-+
-+# Output dependency graph in GraphViz language.
-+sub graph {
-+	print "digraph {\n";
-+
-+	print "\t/* vertices */\n";
-+	for my $header (keys %deps) {
-+		printf "\t%s [label=\"%s\"];\n",
-+			mangle($header), $header;
-+	}
-+
-+	print "\n";
-+
-+	print "\t/* edges */\n";
-+	for my $header (keys %deps) {
-+		for my $dep (@{$deps{$header}}) {
-+			printf "\t%s -> %s;\n",
-+				mangle($header), mangle($dep->[1]);
-+		}
-+	}
-+
-+	print "}\n";
-+}
+ 		if (!sym)
+ 			continue;
+ 		def = read_node(f);
+@@ -365,8 +388,9 @@ static void read_reference(FILE *f)
+ 			defn = def;
+ 			def = read_node(f);
+ 		}
+-		add_reference_symbol(xstrdup(sym->string), sym->tag,
++		subsym = add_reference_symbol(xstrdup(sym->string), sym->tag,
+ 					      defn, is_extern);
++		subsym->is_override = is_override;
+ 		free_node(sym);
+ 	}
+ }
+@@ -743,6 +767,8 @@ int main(int argc, char **argv)
+ 		while (visited_symbols != (struct symbol *)-1L) {
+ 			struct symbol *sym = visited_symbols;
+ 
++			if (sym->is_override)
++				fputs("override ", dumpfile);
+ 			if (sym->type != SYM_NORMAL) {
+ 				putc(symbol_type_name[sym->type][0], dumpfile);
+ 				putc('#', dumpfile);
+diff --git a/scripts/genksyms/genksyms.h b/scripts/genksyms/genksyms.h
+index 2831158..25c4d40 100644
+--- a/scripts/genksyms/genksyms.h
++++ b/scripts/genksyms/genksyms.h
+@@ -49,6 +49,7 @@ struct symbol {
+ 	int is_extern;
+ 	int is_declared;
+ 	enum symbol_status status;
++	int is_override;
+ };
+ 
+ typedef struct string_list **yystype;
 -- 
 1.6.0.2.GIT
 
