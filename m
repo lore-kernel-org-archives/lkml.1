@@ -1,155 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYLTCST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753734AbYLTCTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbYLTCST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 21:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbYLTCSI
+	id S1753734AbYLTCTU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 21:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbYLTCTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 21:18:08 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:61133 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbYLTCSG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 21:18:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
-         :x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=u3uVAqiRQdHXgVjmai5dXTooRWEHWZ6TvFHKQJMfvZKz8WKJrxaqOHSADtDdeC5/Gc
-         s2zC1VKmwByMmN2GQsZyQxgQ6S4DGxCJ5TVGx83nJXFX9xDIm6qbOOpPqDAoZfMSg6AG
-         9Mj/Uj1IQKzVAkhfwEBlJW6s1MiuwaGW7KcV8=
-Date: Sat, 20 Dec 2008 04:17:59 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org,
-       Markus Metzger <markus.t.metzger@gmail.com>, pq@iki.fi
-Subject: Re: ftrace behaviour (was: [PATCH] ftrace: introduce
- tracing_reset_online_cpus() helper)
-Message-ID: <20081220041759.5a026f5a@daedalus.pq.iki.fi>
-In-Reply-To: <alpine.DEB.1.10.0812191827390.26234@gandalf.stny.rr.com>
-References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI>
-	<c62985530812190247i705d9c3er7662a1b133c6eb29@mail.gmail.com>
-	<alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com>
-	<20081220004453.50aec846@daedalus.pq.iki.fi>
-	<alpine.DEB.1.10.0812191827390.26234@gandalf.stny.rr.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 19 Dec 2008 21:19:12 -0500
+Received: from rtr.ca ([76.10.145.34]:35334 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833AbYLTCTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 21:19:11 -0500
+Message-ID: <494C5619.7020209@rtr.ca>
+Date: Fri, 19 Dec 2008 21:19:05 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@suse.cz>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       akpm@linux-foundation.org, rjw@sisk.pl, tglx@linutronix.de,
+       lenb@kernel.org, linux-pm@lists.linux-foundation.org, davej@redhat.com
+Subject: Re: SMP poweroff hangs:  it's baaaack!  But on x86_64 this time.
+References: <20071213053020.E28AB1454450@imap.suse.de> <4761601B.3030408@rtr.ca> <20071213164545.GA10593@suse.de> <47616C15.7030604@rtr.ca> <47616F8C.9030803@rtr.ca> <49491F32.1040400@rtr.ca> <20081219115917.GA1599@ucw.cz>
+In-Reply-To: <20081219115917.GA1599@ucw.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven,
-
-thank you for a complete reply. Few comments below.
-
-On Fri, 19 Dec 2008 19:03:42 -0500 (EST)
-Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> On Sat, 20 Dec 2008, Pekka Paalanen wrote:
+Pavel Machek wrote:
+> On Wed 2008-12-17 10:48:02, Mark Lord wrote:
+>>> Subject: Fix SMP poweroff hangs
+>>> From: Mark Lord <lkml@rtr.ca>
+>>>
+>>> We need to disable all CPUs other than the boot CPU (usually 0) before
+>>> attempting to power-off modern SMP machines.  This fixes the
+>>> hang-on-poweroff issue on my MythTV SMP box, and also on Thomas Gleixner's
+>>> new toybox.
+>>>
+>>> Signed-off-by: Mark Lord <mlord@pobox.com>
+>>> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+>>> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+>>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>>> ---
+>>>
+>>>  kernel/sys.c |    2 ++
+>>>  1 file changed, 2 insertions(+)
+>>>
+>>> diff -puN kernel/sys.c~fix-smp-poweroff-hangs kernel/sys.c
+>>> --- a/kernel/sys.c~fix-smp-poweroff-hangs
+>>> +++ a/kernel/sys.c
+>>> @@ -32,6 +32,7 @@
+>>>  #include <linux/getcpu.h>
+>>>  #include <linux/task_io_accounting_ops.h>
+>>>  #include <linux/seccomp.h>
+>>> +#include <linux/cpu.h>
+>>>   #include <linux/compat.h>
+>>>  #include <linux/syscalls.h>
+>>> @@ -878,6 +879,7 @@ void kernel_power_off(void)
+>>>  	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
+>>>  	if (pm_power_off_prepare)
+>>>  		pm_power_off_prepare();
+>>> +	disable_nonboot_cpus();
+>>>  	sysdev_shutdown();
+>>>  	printk(KERN_EMERG "Power down.\n");
+>>>  	machine_power_off();
+>> ..
+>>
+>> This bug has returned here now, but on x86_86 this time around.
+>> Same machine as before, just upgraded toa 64-bit kernel/user (2.6.27.9)
+>> from the original 32-bit kernel/user that was originally fixed (above).
+>>
+>> One hang at poweroff over the past 10 days.  Not much, but enough
+>> to destroy confidence in "unattended" operation.
+>>
+>> I lack opportunity to dig further into the code for now,
+>> but just wanted to flag the problem, in case similar reports
+>> from others might already be out there.
+>>
+>> In the meanwhile, I'm experimenting with this simple patch,
+>> garnered from the 32-bit investigations last time around.
+>> We should know in a few weeks whether it has any effect or not.
+>>
+>> --- old/kernel/sys.c	2008-10-18 13:57:22.000000000 -0400
+>> +++ linux-2.6.27.9/kernel/sys.c	2008-12-17 09:42:17.000000000 -0500
+>> @@ -303,6 +303,8 @@
+>>
+>> static void kernel_shutdown_prepare(enum system_states state)
+>> {
+>> +	set_cpus_allowed(current, cpumask_of_cpu(first_cpu(cpu_online_map)));
 > 
-> > But doesn't this go against the fact, that you need to write 0 there to
-> > be able to change the ring buffer size?
-> > 
-> > I mean, is tracing_enabled a "pause button" as I recall you explaining
-> > a long time ago, and again now, or "kill it all" as required for changing
-> > the ring buffer size?
+> Is this line neccessary?
+..
+
+One or the other is probably redundant, but it's not 100% clear *which*.  :)
+The line above was suggested by others back when the original problem
+was being worked on for 32-bit.
+
+>> +	disable_nonboot_cpus();
+>> 	blocking_notifier_call_chain(&reboot_notifier_list,
+>> 		(state == SYSTEM_HALT)?SYS_HALT:SYS_POWER_OFF, NULL);
+>> 	system_state = state;
+>> @@ -333,7 +335,6 @@
+>> 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
+>> 	if (pm_power_off_prepare)
+>> 		pm_power_off_prepare();
+>> -	disable_nonboot_cpus();
+>> 	sysdev_shutdown();
+>> 	printk(KERN_EMERG "Power down.\n");
+>> 	machine_power_off();
 > 
-> It is more now a pause than kill it all. Although it never really did
-> kill it all. Before the ring buffer, we needed to echo in 'none' to
-> the current tracer before resizing. Now we can just get by with echoing 0 
-> to the tracing_enabled.
+> Do you have any idea why it helps? BIOS will see us shutting down on
+> cpu0 anyway, so if this helps there's a linux bug somewhere...
+..
 
-I guess I don't really see what was so bad about switching to the "none"
-tracer, as the resize operation is expected wipe everything anyway.
-Likely because for mmiotrace, toggling tracing_enabled is the same as
-switching tracers.
+I don't know if it helps, yet.  Needs a lot more soak first.
+The theory here is, that all BIOS interactions from the kernel
+probably should happen only on the "boot CPU" or on "cpu 0",
+not just the "halt" sequence.
 
-> I'm starting to like the idea that tracing_enabled is a lighter weight 
-> version of echoing the the tracer into the current_tracer file. Perhaps it 
-> should reset the buffer on a echo 1 > tracing_enabled. We now have a 
-> tracing_on that we can "pause" tracing with. The only thing that the 
-> tracing_on does is to stop writes to the ring buffer. It does not stop any 
-> of the infrastructure that does the tracing.
-> 
-> Note, this is the main reason why you need to check for NULL on return of 
-> a ring_buffer_lock_reserve. That will return NULL when the tracing_on is 0.
-> 
-> > The ring buffers are huge and eat a considerable chunk of precious RAM.
-> > How could distributors ever enable mmiotrace in their kernel
-> > configurations by default, if it eats lots of memory for nothing?
-> 
-> Hmm, good point. We could change the allocation to when it is first 
-> enabled. Something other than 'nop' being put into the current_tracer 
-> file.
+By setting the CPU restriction earlier in the shutdown sequence,
+we should be on the correct CPU for all of the various device-driver
+BIOS ineractions that might happen before actually halting.
 
-I'm very much looking forward to this.
+Could be a bad theory, but I'm open to other possible suggestions.
 
-> > 
-> > If distributors do not enable mmiotrace by default, we are in a worse
-> > situation than with out-of-tree mmiotrace module (if it could work).
-> > Users need to reconfigure and recompile their kernels, which is
-> > something we wanted to avoid. This is the reality right now.
-> > 
-> > Unless you have an answer to this, I'd like to suggest we resurrect the
-> > "none" tracer. When "none" is the current tracer, there would be no
-> > buffers allocated at all, and you could request a new buffer size.
-> > "none" would be the default. Do you see any problems here?
-> > 
-> > AFAIK the "nop" tracer will not do, because it still allows text
-> > messages (markers) to be written, and hence the ring buffer must
-> > exist. Or am I wrong?
-> 
-> No, you are quite right. We could recreate the 'none' tracer again that
-> has no buffer. At boot up it would be the default tracer, unless something 
-> else changes that.
+Back on 32-bit it did seem rather unlikely that "disable_nonboot_cpus()"
+would help, but it in fact cured the problem completely there.
+On two different brands of motherboards with two different BIOSs.
 
-The "nop" having no buffers at boot would be enough, but this would be
-even better.
+Cheers
 
-> > 
-> > > Now we have recently added /debug/tracing/tracing_on which can quickly 
-> > > stop tracing. I may be able to use that, and we can let the 
-> > > tracing_enable" reset it too.
-> > 
-> > Does this mean I have to implement yet another on/off hook?
-> 
-> Nope, the on/off hook is extremely fast, and the plugins do not even know 
-> when they happen. The on/off simply turns off writing to the ring buffer. 
-> The plugin functions will still be called, it is just that they will fail 
-> to write to the ring buffers. As stated above, the 
-> ring_buffer_reserve_lock will return a NULL.
-
-Does this also increment the lost events counters?
-
-> > IMHO it is starting to be confusing having all these
-> > current_tracer, tracing_enabled, tracing_on etc.
-
-> 
-> The tracing_enabled is the way to start and stop a trace. I'm considering 
-> to implement Frederic's request to reset the buffer on enabled. This is 
-> quick but requires locks and mutexes to be taken. It calls a hook to the 
-> plugin because different plugins actually want to reset (the irq latency 
-> tracers reset with this).
-> 
-> The tracing_on is something that has been asked by developers to give a 
-> way to start and stop tracing fast as possible, with no mutexes or added 
-> locks. In fact, this option is local to the ring buffer code. Ftrace does 
-> not even use it directly.  It just a global flag to stop tracing. There's 
-> also an in-kernel equivalent tracing_on() and tracing_off(). This just 
-> sets or clears a global flag that will stop any more writes to the trace 
-> buffer.
-
-Why not call tracing_on, say, logging_enabled?
-IMHO tracing_enabled vs. tracing_on is incomprehesible, but
-tracing_enabled vs. logging_enabled is a little more understandable.
-current_tracer is self-explanatory, and tracing_enabled used to be.
-
-
-Thanks.
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
