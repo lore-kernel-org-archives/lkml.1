@@ -1,80 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbYLTOBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbYLTOPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752659AbYLTOBR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 09:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYLTOBB
+	id S1752659AbYLTOPg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 09:15:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYLTOP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 09:01:01 -0500
-Received: from ppp59-167-189-244.static.internode.on.net ([59.167.189.244]:53110
-	"EHLO isinu.rimspace.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751439AbYLTOBA convert rfc822-to-8bit (ORCPT
+	Sat, 20 Dec 2008 09:15:29 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:49190 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbYLTOP2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 09:01:00 -0500
-X-Greylist: delayed 630 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Dec 2008 09:00:58 EST
-From: Daniel Pittman <daniel@rimspace.net>
-To: Jeremy Katz <katzj@redhat.com>
-Cc: Theodore Tso <tytso@mit.edu>, initramfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Dracut -- Cross distribution initramfs infrastructure
-Organization: I know I put it down here, somewhere.
-References: <1229540094.28858.150.camel@aglarond.local>
-	<20081217190700.GA15377@infradead.org> <4949FD67.6040906@suse.de>
-	<494B5031.5080306@bfh.ch> <20081219091841.207bc951@kopernikus.site>
-	<494BA7CE.2020007@suse.de> <20081219152708.GE9871@mit.edu>
-	<9C4F1B7D-CCBC-48D7-8624-9A7C314C1590@redhat.com>
-Date: Sun, 21 Dec 2008 00:50:21 +1100
-In-Reply-To: <9C4F1B7D-CCBC-48D7-8624-9A7C314C1590@redhat.com> (Jeremy Katz's
-	message of "Fri, 19 Dec 2008 11:56:47 -0500")
-Message-ID: <87skojrm5e.fsf@rimspace.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/23.0.60 (gnu/linux)
+	Sat, 20 Dec 2008 09:15:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=D/a6ZLik3e/4bYscGE7H2QUUxfVledcRwOV6WZoSJRzWmCQsd0A9zo9Q1o4zODkpOI
+         ZZqQ7v9DSLA0CoE6l8+5d3oeKjH5IAW/lXIKNHzR3gX9wFzJCFLOGnyVWmFVCS06ZWfL
+         6x4Uvu+jpqmF/Ab2K8bsGh5fhdSpWsfOgkzik=
+Message-ID: <c62985530812200615g6030c4c4gef71489aa5e35a5d@mail.gmail.com>
+Date: Sat, 20 Dec 2008 15:15:26 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: ftrace behaviour (was: [PATCH] ftrace: introduce tracing_reset_online_cpus() helper)
+Cc: "Pekka Paalanen" <pq@iki.fi>, "Pekka J Enberg" <penberg@cs.helsinki.fi>,
+       mingo@elte.hu, linux-kernel@vger.kernel.org,
+       "Markus Metzger" <markus.t.metzger@gmail.com>
+In-Reply-To: <alpine.DEB.1.10.0812191827390.26234@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI>
+	 <c62985530812190247i705d9c3er7662a1b133c6eb29@mail.gmail.com>
+	 <alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com>
+	 <20081220004453.50aec846@daedalus.pq.iki.fi>
+	 <alpine.DEB.1.10.0812191827390.26234@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Katz <katzj@redhat.com> writes:
-> On Dec 19, 2008, at 10:27 AM, Theodore Tso wrote:
->> On Fri, Dec 19, 2008 at 02:55:26PM +0100, Hannes Reinecke wrote:
->>>
->>> The goal of the initrd is to activate and mount the root fs.
->>> And the root fs _only_. Every other system should be configured
->>> once the main system is running.
-
-[...]
-
->> There may also be times when it is useful to operate on the root
->> filesystem in some way before it is mounted; in most cases the
->> operation can bedone on a filesystem mounted read-only, yes --- but at
->> the cost of needing to reboot afterwards if the root filesystem needs
->> to be modified by said userspace tool.
+2008/12/20 Steven Rostedt <rostedt@goodmis.org>:
+> On Sat, 20 Dec 2008, Pekka Paalanen wrote:
 >
-> I think that once you start getting into this realm, though, you end
-> up with an incredibly over-complicated and slow initramfs.  If we
-> instead focus on keeping things "fast", the reboot afterwards isn't
-> that costly.
+>> Steven,
+>>
+>> I have some critique on where the tracing infrastructure has been going
+>> to lately. Please, let me know if I am just out-of-date on the current
+>> state or misunderstood something.
+>
+> I could always use a critique ;-)
+>
+>>
+>> On Fri, 19 Dec 2008 12:20:18 -0500 (EST)
+>> Steven Rostedt <rostedt@goodmis.org> wrote:
+>>
+>> >
+>> > On Fri, 19 Dec 2008, Fr?d?ric Weisbecker wrote:
+>> > >
+>> > >
+>> > > That's looks good.
+>>
+>> The mmiotrace part looks good, too.
+>>
+>> > > By the past, I also suggested Steven to automatically reset the traces
+>> > > buffer each time a tracer is started, that
+>> > > would factor out the code a bit more. I don't think one tracer would
+>> > > avoid to reset the buffer once it is started, and
+>> > > I don't think it is needed to reset twice on tracer switching: on stop
+>> > > of the old tracer and on start on the new. Only
+>> > > on start should be enough.
+>> >
+>> > I'm actually against the idea of reseting a trace everytime we enable it.
+>> > That is:
+>> >
+>> > echo 1 > /debug/tracing/tracing_enabled
+>> >
+>> > This should not reset the tracer. I actually do tracing where I disable
+>> > and enable it around areas I am interested in. I want all tracing, not
+>> > just the last one.
+>>
+>> But doesn't this go against the fact, that you need to write 0 there to
+>> be able to change the ring buffer size?
+>>
+>> I mean, is tracing_enabled a "pause button" as I recall you explaining
+>> a long time ago, and again now, or "kill it all" as required for changing
+>> the ring buffer size?
+>
+> It is more now a pause than kill it all. Although it never really did
+> kill it all. Before the ring buffer, we needed to echo in 'none' to
+> the current tracer before resizing. Now we can just get by with echoing 0
+> to the tracing_enabled.
+>
+> I'm starting to like the idea that tracing_enabled is a lighter weight
+> version of echoing the the tracer into the current_tracer file. Perhaps it
+> should reset the buffer on a echo 1 > tracing_enabled. We now have a
+> tracing_on that we can "pause" tracing with. The only thing that the
+> tracing_on does is to stop writes to the ring buffer. It does not stop any
+> of the infrastructure that does the tracing.
+>
+> Note, this is the main reason why you need to check for NULL on return of
+> a ring_buffer_lock_reserve. That will return NULL when the tracing_on is 0.
 
-One of the features of the Debian / Ubuntu initramfs infrastructure,
-which sounds remarkably like your design (or vice-versa), is that it
-drops all the "standard" drivers into the initramfs.
 
-This is, to me, worth several minutes of additional boot time, in terms
-of flexibility: being able to modify the hardware and be confident that
-the appropriate drivers are in place already makes life much, much
-easier.
+I agree with the fact that tracing_enabled and tracing_on are both
+confusing for a new user.
+Perhaps it needs a little disambiguation.
+With not rename tracing_on to ringbuffer_on ? That would give the idea
+that tracing_enabled
+acts on the tracing layer whereas ringbuffer_on is more a low level solution.
 
-(In practice I doubt this adds more than a second or five to boot time;
- certainly, it takes no longer to get to rootfs mounted than the RHEL 4
- systems that have nothing but what is essential in the initrd...)
+Or another solution if you consider to reset buffer when echo 0 >
+tracing_enabled, so this
+file can stay tracing_enabled and tracing_on could become tracing_pause.
 
 
-So, it would certainly be my hope — with my systems administration hat
-on — that your proposed system would support that similar operation as
-an option, at least.
+>> Unless you have an answer to this, I'd like to suggest we resurrect the
+>> "none" tracer. When "none" is the current tracer, there would be no
+>> buffers allocated at all, and you could request a new buffer size.
+>> "none" would be the default. Do you see any problems here?
+>>
+>> AFAIK the "nop" tracer will not do, because it still allows text
+>> messages (markers) to be written, and hence the ring buffer must
+>> exist. Or am I wrong?
+>
+> No, you are quite right. We could recreate the 'none' tracer again that
+> has no buffer. At boot up it would be the default tracer, unless something
+> else changes that.
 
-Personally, I think it makes the right default: better correct than
-fast, but obviously tastes vary there.
 
-Regards,
-        Daniel
+If none tracer is recreated, I would suggest to rename nop tracer to
+"print tracer" with
+the single purpose of allowing to print the ftrace_printk entries....
+Since there already have been
+a patch to add an ftrace_printk tracer, that would make sense.
+
+Again, that would be a future disambiguation between the nop and none
+tracer inside available_tracer file.
