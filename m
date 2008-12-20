@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbYLTLfC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYLTLmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbYLTLfC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 06:35:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbYLTLex
+	id S1753900AbYLTLmT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 06:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYLTLmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 06:34:53 -0500
-Received: from cmpxchg.org ([85.214.51.133]:48878 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752361AbYLTLex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 06:34:53 -0500
-Date: Sat, 20 Dec 2008 12:34:20 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Guennadi Liakhovetski <lg@denx.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] bitmap: fix bitmap_find_free_region()
-Message-ID: <20081220113419.GB2581@cmpxchg.org>
-References: <Pine.LNX.4.64.0812191202130.4536@axis700.grange> <20081219130211.GA1560@cmpxchg.org> <Pine.LNX.4.64.0812191413520.4536@axis700.grange> <20081219144726.GA1991@cmpxchg.org> <Pine.LNX.4.64.0812191553550.4536@axis700.grange> <20081219224532.GA2581@cmpxchg.org> <Pine.LNX.4.64.0812200005430.9649@axis700.grange>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 20 Dec 2008 06:42:10 -0500
+Received: from smtprelay11.ispgateway.de ([80.67.29.28]:55436 "EHLO
+	smtprelay11.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752372AbYLTLmJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 06:42:09 -0500
+X-Greylist: delayed 343 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Dec 2008 06:42:09 EST
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Mark McLoughlin <markmc@redhat.com>
+Subject: Re: [PATCH 2/3] virtio: indirect ring entries (VIRTIO_RING_F_INDIRECT_DESC)
+Date: Sat, 20 Dec 2008 12:38:06 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; x86_64; ; )
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@redhat.com>
+References: <1229620222-22216-1-git-send-email-markmc@redhat.com> <1229620222-22216-2-git-send-email-markmc@redhat.com> <1229620222-22216-3-git-send-email-markmc@redhat.com>
+In-Reply-To: <1229620222-22216-3-git-send-email-markmc@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812200005430.9649@axis700.grange>
+Message-Id: <200812201238.07510.ioe-lkml@rameria.de>
+X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 20, 2008 at 12:19:46AM +0100, Guennadi Liakhovetski wrote:
-> Well, I don't quite understand. Doesn't bitmap_find_free_region() _have_ 
-> to return an error if the request cannot be satisfied? Isn't it what it 
-> does if after scanning the bitmap no suitable free region is found?
+Hi Mark,
 
-There is a difference here.  In the case it already checks, the
-request was sane but couldn't be satisfied due to prior requests.
-This is an expected situation on the bitmap allocator level.
+On Thursday 18 December 2008, Mark McLoughlin wrote:
+> diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+> index 5777196..2330c4b 100644
+> --- a/drivers/virtio/virtio_ring.c
+> +++ b/drivers/virtio/virtio_ring.c
+> @@ -70,6 +73,55 @@ struct vring_virtqueue
+>  
+>  #define to_vvq(_vq) container_of(_vq, struct vring_virtqueue, vq)
+>  
+> +/* Set up an indirect table of descriptors and add it to the queue. */
+> +static int vring_add_indirect(struct vring_virtqueue *vq,
+> +			      struct scatterlist sg[],
+> +			      unsigned int out,
+> +			      unsigned int in)
+> +{
+> +	struct vring_desc *desc;
+> +	unsigned head;
+> +	int i;
+> +
+> +	desc = kmalloc((out + in) * sizeof(struct vring_desc), GFP_ATOMIC);
 
-The check you want to add is for fixing up the caller.
+kmalloc() returns ZERO_SIZE_PTR, if (out + in) == 0
 
-This API is especially clear on that separation because the caller
-even has to pass in the size of the bitmap, so itself should ensure
-that the combination of bitmap size and request size is sane.
+> +	if (!desc)
+> +		return vq->vring.num;
+> +
+> +	/* Transfer entries from the sg list into the indirect page */
+> +	for (i = 0; i < out; i++) {
+> +		desc[i].flags = VRING_DESC_F_NEXT;
+> +		desc[i].addr = sg_phys(sg);
+> +		desc[i].len = sg->length;
+> +		desc[i].next = i+1;
+> +		sg++;
+> +	}
+> +	for (; i < (out + in); i++) {
+> +		desc[i].flags = VRING_DESC_F_NEXT|VRING_DESC_F_WRITE;
+> +		desc[i].addr = sg_phys(sg);
+> +		desc[i].len = sg->length;
+> +		desc[i].next = i+1;
+> +		sg++;
+> +	}
+> +
+> +	/* Last one doesn't continue. */
+> +	desc[i-1].flags &= ~VRING_DESC_F_NEXT;
+> +	desc[i-1].next = 0;
 
-> What's the difference? Why don't we want to fix _that_ function? It
-> also has other users - currently I see 3 of them in the kernel:
-> 
-> mm/vmalloc.c
+So this array index can fail (be -1).
+Please check and avoid within this function.
 
-This has its own sanity checks.  It's a bug for the user of vb_alloc()
-to pass a size that is larger than VMAP_MAX_ALLOC pages and the bitmap
-has a minimum of VMAP_MAX_ALLOC * 2 bits.
 
-> arch/powerpc/sysdev/msi_bitmap.c (5 occurrences)
+Best Regards
 
-The users allocating irqs from there seem all sane and doing only low
-orders.  Not yet quite through, though.
-
-> arch/sh/kernel/cpu/sh4/sq.c
-
-Not yet looked into it.
-
-> Yes, I understand that the caller _can_ verify whether the requested 
-> region at all fits into the bitmap, but from the PoV of offering a 
-> consistent API this seems strange.
-
-Not really.  The user that is supposed to use the bitmap also sets it
-up.  If the requests are bogus wrt the original parameters it's the
-users fault, not that of the API.
-
-> Thanks
-> Guennadi
-
-	Hannes
+Ingo Oeser
