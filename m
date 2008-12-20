@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbYLTGdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbYLTGlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753469AbYLTGdJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 01:33:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYLTGcz
+	id S1753432AbYLTGlI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 01:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYLTGkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 01:32:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33392 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752157AbYLTGcy (ORCPT
+	Sat, 20 Dec 2008 01:40:53 -0500
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:53357 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752141AbYLTGkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 01:32:54 -0500
-Date: Fri, 19 Dec 2008 22:32:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Badalian Vyacheslav <slavon@bigtelecom.ru>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Red leds at harddisk bays on SR1530HSH after update to 2.6.27.x
-Message-Id: <20081219223246.b0aea84d.akpm@linux-foundation.org>
-In-Reply-To: <494A34CA.9030906@bigtelecom.ru>
-References: <494A34CA.9030906@bigtelecom.ru>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Dec 2008 01:40:52 -0500
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.0.6
+cc: linux-kernel@vger.kernel.org
+Date: Fri, 19 Dec 2008 22:40:41 -0800
+Message-ID: <7vljub1h92.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: 23A27B82-CE61-11DD-8EB0-F83E113D384A-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc linux-ide)
+The latest maintenance release GIT 1.6.0.6 is available at the
+usual places:
 
-On Thu, 18 Dec 2008 14:32:26 +0300 Badalian Vyacheslav <slavon@bigtelecom.ru> wrote:
+  http://www.kernel.org/pub/software/scm/git/
 
-> Hello all.
-> After update from 2.6.26 to 2.6.27 all leds at drive bays now red.
-> SATA controller in AHCI mode.
-> Platform is Intel SR1530HSH
-> 
-> Config attached.
-> 
-> Any patches for test? Any ideas? Any other info needed? Or i must go to
-> bugtracker? ;)
-> 
-> # lspci
-> 00:00.0 Host bridge: Intel Corporation 3200/3210 Chipset DRAM Controller
-> 00:19.0 Ethernet controller: Intel Corporation 82566DM-2 Gigabit Network
-> Connection (rev 02)
-> 00:1a.0 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI
-> Controller #4 (rev 02)
-> 00:1a.1 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI
-> Controller #5 (rev 02)
-> 00:1a.7 USB Controller: Intel Corporation 82801I (ICH9 Family) USB2 EHCI
-> Controller #2 (rev 02)
-> 00:1c.0 PCI bridge: Intel Corporation 82801I (ICH9 Family) PCI Express
-> Port 1 (rev 02)
-> 00:1c.4 PCI bridge: Intel Corporation 82801I (ICH9 Family) PCI Express
-> Port 5 (rev 02)
-> 00:1d.0 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI
-> Controller #1 (rev 02)
-> 00:1d.1 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI
-> Controller #2 (rev 02)
-> 00:1d.2 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI
-> Controller #3 (rev 02)
-> 00:1d.7 USB Controller: Intel Corporation 82801I (ICH9 Family) USB2 EHCI
-> Controller #1 (rev 02)
-> 00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev 92)
-> 00:1f.0 ISA bridge: Intel Corporation 82801IR (ICH9R) LPC Interface
-> Controller (rev 02)
-> 00:1f.2 SATA controller: Intel Corporation 82801IR/IO/IH (ICH9R/DO/DH) 6
-> port SATA AHCI Controller (rev 02)
-> 00:1f.3 SMBus: Intel Corporation 82801I (ICH9 Family) SMBus Controller
-> (rev 02)
-> 02:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G200e
-> [Pilot] ServerEngines (SEP1) (rev 02)
-> 03:02.0 Ethernet controller: Intel Corporation 82541GI Gigabit Ethernet
-> Controller (rev 05)
-> 
-> Thanks!
-> 
+  git-1.6.0.6.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.0.6.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.0.6.tar.{gz,bz2}		(preformatted docs)
+
+The RPM binary packages for a few architectures are also provided
+as courtesy.
+
+  RPMS/$arch/git-*-1.6.0.6-1.fc9.$arch.rpm	(RPM)
+
+Among miscellaneous fixes, this contains a local gitweb security fix.
+Maintenance releases for older versions (v1.5.4.7, v1.5.5.6 and v1.5.6.6)
+are also available at the same place.
+
+----------------------------------------------------------------
+
+Changes since v1.6.0.5 are as follows:
+
+David Aguilar (1):
+      git-mergetool: properly handle "git mergetool -- filename"
+
+Deskin Miller (1):
+      git-svn: Make following parents atomic
+
+Jim Meyering (1):
+      git-config.txt: fix a typo
+
+Johannes Schindelin (2):
+      fast-import: close pack before unlinking it
+      fast-export: deal with tag objects that do not have a tagger
+
+Junio C Hamano (6):
+      work around Python warnings from AsciiDoc
+      git-show: do not segfault when showing a bad tag
+      pager: do not dup2 stderr if it is already redirected
+      gitweb: do not run "git diff" that is Porcelain
+      GIT 1.5.4.7
+      fast-import: make tagger information optional
+
+Linus Torvalds (1):
+      fsck: reduce stack footprint
+
+Markus Heidelberg (1):
+      Documentation: fix typos, grammar, asciidoc syntax
+
+Miklos Vajna (1):
+      SubmittingPatches: mention the usage of real name in Signed-off-by: lines
+
+Nicolas Pitre (1):
+      make sure packs to be replaced are closed beforehand
+
+Wu Fengguang (1):
+      git-send-email: handle email address with quoted comma
+
