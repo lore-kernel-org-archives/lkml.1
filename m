@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbYLTKx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbYLTKyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753523AbYLTKx6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 05:53:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbYLTKxt
+	id S1753987AbYLTKyk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 05:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbYLTKy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 05:53:49 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:41450 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751555AbYLTKxt (ORCPT
+	Sat, 20 Dec 2008 05:54:29 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:45873 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752148AbYLTKy1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 05:53:49 -0500
-Date: Sat, 20 Dec 2008 16:26:52 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
-       venkatesh.pallipadi@intel.com, a.p.zijlstra@chello.nl, mingo@elte.hu,
-       dipankar@in.ibm.com, balbir@linux.vnet.ibm.com,
-       vatsa@linux.vnet.ibm.com, ego@in.ibm.com, andi@firstfloor.org,
-       davecb@sun.com, tconnors@astro.swin.edu.au, maxk@qualcomm.com,
-       gregory.haskins@gmail.com, pavel@suse.cz,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH v7 4/8] sched: nominate preferred wakeup cpu
-Message-ID: <20081220105652.GD24181@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <20081218175622.29812.69201.stgit@drishya.in.ibm.com> <20081219135508.9c6217ba.akpm@linux-foundation.org> <20081220043638.GA24181@dirshya.in.ibm.com> <20081219204455.5f954823.akpm@linux-foundation.org> <20081220100228.GB24181@dirshya.in.ibm.com> <20081220103602.GC24181@dirshya.in.ibm.com>
+	Sat, 20 Dec 2008 05:54:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=x-authentication-warning:to:cc:subject:references:from:in-reply-to
+         :message-id:lines:user-agent:mime-version:content-type:date;
+        b=iDgXu8Fj2mDaPcEeig7BcmMAlnJCO9TixCp0BlOUo5lDDAmyG14WF4FWHM/2ezpSO2
+         r2NxGkQFhsK9TkknQZaFvTm+dnEcN56mdYPp1IGvq5HKKq7Mb6eSrf56Kt5riCCM9gAP
+         zVLM410Xfi64ph9Mr169nQB/56kjwqFfFab5Q=
+To: Junio C Hamano <gitster@pobox.com>
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Security] gitweb local privilege escalation (fix)
+References: <7vljub1h92.fsf@gitster.siamese.dyndns.org>
+	<7vhc4z1gys.fsf@gitster.siamese.dyndns.org>
+From: Jakub Narebski <jnareb@gmail.com>
+In-Reply-To: <7vhc4z1gys.fsf@gitster.siamese.dyndns.org>
+Message-ID: <m3myerce39.fsf@localhost.localdomain>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20081220103602.GC24181@dirshya.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
+Date: Sat, 20 Dec 2008 02:54:25 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-12-20 16:06:02]:
+Junio C Hamano <gitster@pobox.com> writes:
 
-> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-12-20 15:32:28]:
+> Current gitweb has a possible local privilege escalation bug that allows a
+> malicious repository owner to run a command of his choice by specifying
+> diff.external configuration variable in his repository and running a
+> crafted gitweb query.
 > 
-> > * Andrew Morton <akpm@linux-foundation.org> [2008-12-19 20:44:55]:
-> > 
-> > > On Sat, 20 Dec 2008 10:06:38 +0530 Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > > 
-> > > > > kernel/sched.c: In function 'schedule':
-> > > > > kernel/sched.c:3679: warning: 'active_balance' may be used uninitialized in this function
-> > > > > 
-> > > > > This warning is correct - the code is buggy.
-> > > > 
-> > > > Yes this is my code bug.  I did not see the warning in sched.c.  Is
-> > > > there any build option that I need to pass in order to get -Wall
-> > > > effect?
-> > > 
-> > > That was just with plain old kbuild: `make allmodconfig;make'.
-> > > 
-> > > That warning was produced by gcc-4.0.2.  If you're using something more
-> > > recent then gcc has regressed.
-> > 
-> > This is an interesting problem.  I am unable to get that warning in the
-> > following GCC versions even with a combination of the following
-> > cmdline options: -Wall -Wextra -Wuninitialized
-> > 
-> > gcc version 4.1.2 20070502
-> > gcc version 4.2.3
-> > 
-> > I will look for older gcc and check this out.
-> 
-> I am able to get the above warning in 
-> gcc version 3.4.6 (Debian 3.4.6-9)
-> with default kbuild, no additional params.
-> 
-> Did not get the warning in 
-> gcc version 4.1.3 20080623
-> 
-> Hence there has been some change in GCC that prevented the
-> uninitialized warning.
+> Recent (post 1.4.3) gitweb itself never generates a link that would result
+> in such a query, and the safest and cleanest fix to this issue is to
+> simply drop the support for it.  Maintenance release v1.6.0.6, v1.5.6.6,
+> v1.5.5.6 and v1.5.4.7 are already available at k.org (see the announcement
+> for v1.6.0.6 I sent out a few minutes ago), and the master branch and
+> others pushed out tonight have the same fix.
 
-Related GCC bug: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=179
-Claimed to have been fixed in GCC 4.4, but I don't know if we are ready
-to test kernel compile with GCC 4.4.
+>From what I have found diff.external works only since v1.5.4 (see
+commit cbe02100), so when gitweb started using git-diff for old
+legacy links to not use $tmpdir and /usr/bin/diff -u it wasn't an
+issue...
 
-I have tested till gcc version 4.3.2 (Debian 4.3.2-1) and the bug
-is not fixed.  I do not get the warning from sched.c.
-
---Vaidy
+-- 
+Jakub Narebski
+Poland
+ShadeHawk on #git
