@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751633AbYLUA1B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbYLUA1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751633AbYLUA1B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 19:27:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYLUAZz
+	id S1752677AbYLUA1Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 19:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbYLUAZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sat, 20 Dec 2008 19:25:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50046 "EHLO ogre.sisk.pl"
+Received: from ogre.sisk.pl ([217.79.144.158]:50049 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751281AbYLUAZw convert rfc822-to-8bit (ORCPT
+	id S1751492AbYLUAZx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 19:25:52 -0500
+	Sat, 20 Dec 2008 19:25:53 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "roger" <rogerx@sdf.lonestar.org>
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 References: <_EB9bLpq_z.A.hAC.NkYTJB@chimera>
 In-Reply-To: <_EB9bLpq_z.A.hAC.NkYTJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <CMMRhk39O-L.A.LBD.qkYTJB@chimera>
-Subject: [Bug #11865] WOL for E100 Doesn't Work Anymore
+Message-ID: <CMMRhk39O-L.A.68C.nkYTJB@chimera>
+Subject: [Bug #11876] RCU hang on cpu re-hotplug with 2.6.27rc8
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 20 Dec 2008 23:16:13 +0100 (CET)
+Date: Sat, 20 Dec 2008 23:16:14 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,11 +36,11 @@ introduced between 2.6.26 and 2.6.27.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11865
-Subject		: WOL for E100 Doesn't Work Anymore
-Submitter	: roger <rogerx@sdf.lonestar.org>
-Date		: 2008-10-26 21:56 (56 days old)
-Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=18646&action=view
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11876
+Subject		: RCU hang on cpu re-hotplug with 2.6.27rc8
+Submitter	: Andi Kleen <andi@firstfloor.org>
+Date		: 2008-10-06 23:28 (76 days old)
+References	: http://marc.info/?l=linux-kernel&m=122333610602399&w=2
+Handled-By	: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
 
