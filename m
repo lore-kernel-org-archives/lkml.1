@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbYLTKEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbYLTKc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753151AbYLTKEp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 05:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYLTKEh
+	id S1753148AbYLTKc1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 05:32:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYLTKcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 05:04:37 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:54356 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbYLTKEg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 05:04:36 -0500
-Date: Sat, 20 Dec 2008 15:32:28 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
-       venkatesh.pallipadi@intel.com, a.p.zijlstra@chello.nl, mingo@elte.hu,
-       dipankar@in.ibm.com, balbir@linux.vnet.ibm.com,
-       vatsa@linux.vnet.ibm.com, ego@in.ibm.com, andi@firstfloor.org,
-       davecb@sun.com, tconnors@astro.swin.edu.au, maxk@qualcomm.com,
-       gregory.haskins@gmail.com, pavel@suse.cz,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH v7 4/8] sched: nominate preferred wakeup cpu
-Message-ID: <20081220100228.GB24181@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <20081218175622.29812.69201.stgit@drishya.in.ibm.com> <20081219135508.9c6217ba.akpm@linux-foundation.org> <20081220043638.GA24181@dirshya.in.ibm.com> <20081219204455.5f954823.akpm@linux-foundation.org>
+	Sat, 20 Dec 2008 05:32:14 -0500
+Received: from genesysrack.ru ([195.178.208.66]:48232 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751005AbYLTKcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 05:32:12 -0500
+Date: Sat, 20 Dec 2008 13:32:09 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Vladislav Bolkhovitin <vst@vlnb.net>, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user space data
+Message-ID: <20081220103209.GA23632@ioremap.net>
+References: <494C0255.8010208@goop.org> <20081219220452.GB704@ioremap.net> <494C1E5E.7070809@goop.org> <20081219223314.GA2736@ioremap.net> <494C50BB.5030809@goop.org> <20081220020250.GA15064@gondor.apana.org.au> <494C8D57.7040808@goop.org> <20081220065105.GA16936@gondor.apana.org.au> <494CA226.9000200@goop.org> <20081220081045.GA17439@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081219204455.5f954823.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081220081045.GA17439@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton <akpm@linux-foundation.org> [2008-12-19 20:44:55]:
-
-> On Sat, 20 Dec 2008 10:06:38 +0530 Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+On Sat, Dec 20, 2008 at 07:10:45PM +1100, Herbert Xu (herbert@gondor.apana.org.au) wrote:
+> > Hm.  So if I get a destructor call from the shared_info, can I go an  
+> > inspect the page refcounts to see if its really the last use?
 > 
-> > > 
-> > > kernel/sched.c: In function 'schedule':
-> > > kernel/sched.c:3679: warning: 'active_balance' may be used uninitialized in this function
-> > > 
-> > > This warning is correct - the code is buggy.
-> > 
-> > Yes this is my code bug.  I did not see the warning in sched.c.  Is
-> > there any build option that I need to pass in order to get -Wall
-> > effect?
-> 
-> That was just with plain old kbuild: `make allmodconfig;make'.
-> 
-> That warning was produced by gcc-4.0.2.  If you're using something more
-> recent then gcc has regressed.
+> The pages that were originally in the shared_info at creation
+> time may no longer be there by the time it's freed because of
+> pskb_pull_tail.
 
-This is an interesting problem.  I am unable to get that warning in the
-following GCC versions even with a combination of the following
-cmdline options: -Wall -Wextra -Wuninitialized
+Things should work fine, since pskb_expand_head() copies whole shared
+info structure (and thus will copy destructor), get all pages and then
+copy all pointers into the new skb, and then release old skb's data.
 
-gcc version 4.1.2 20070502
-gcc version 4.2.3
+So destructor for the pages should not rely on which skb it is called on
+and check if pages are about to be really freed (i.e. check theirs
+reference counter).
 
-I will look for older gcc and check this out.
+__pskb_pull_tail() is tricky, it just puts some pages it does not want
+to be present in the skb, but it could be possible to add there
+destructor callback from the original skb with partial flag (or just
+having destructor with two parameters: skb and page, and if page is not
+NULL, then actually only given page is freed, otherwise the whole skb).
 
---Vaidy
-
+-- 
+	Evgeniy Polyakov
