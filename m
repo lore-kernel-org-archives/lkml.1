@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbYLTRN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbYLTRkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbYLTRN5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 12:13:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYLTRNq
+	id S1754106AbYLTRkf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 12:40:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYLTRk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 12:13:46 -0500
-Received: from tservice.net.ru ([195.178.208.66]:55873 "EHLO tservice.net.ru"
+	Sat, 20 Dec 2008 12:40:27 -0500
+Received: from mail.ukfsn.org ([77.75.108.10]:39713 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752771AbYLTRNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 12:13:46 -0500
-Date: Sat, 20 Dec 2008 20:13:40 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Niraj kumar <niraj17@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org
-Subject: Re: [Question] inotify : process based filtering of events
-Message-ID: <20081220171340.GA4655@ioremap.net>
-References: <b82a89170812192251u3544f087x94775b6864f5ae8d@mail.gmail.com> <20081220104048.GB23632@ioremap.net> <b82a89170812200513q1a27b62ap590fb6fbad930a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b82a89170812200513q1a27b62ap590fb6fbad930a@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1752933AbYLTRk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 12:40:27 -0500
+Date: Sat, 20 Dec 2008 17:40:24 +0000
+From: Nick Warne <nick@ukfsn.org>
+To: "Alexander E. Patrakov" <patrakov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] New x86_64 boot logo
+Message-ID: <20081220174024.26935b65@sauron.linicks.net>
+In-Reply-To: <494CF4A6.6050200@gmail.com>
+References: <20081220105658.35ebd2bc@sauron.linicks.net>
+	<494CF4A6.6050200@gmail.com>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.9; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 20, 2008 at 06:43:01PM +0530, Niraj kumar (niraj17@gmail.com) wrote:
-> I was hoping to add a flag (similar to IN_ATTRS that you have added)
-> which, when used, will only collect events for the calling
-> process and it's children...
+On Sat, 20 Dec 2008 18:35:34 +0500
+"Alexander E. Patrakov" <patrakov@gmail.com> wrote:
 
-With nested attributes patch you can add your own callback which will
-check private list of interested pids and only add event into the queue
-when current credentials match stored data. IMHO that will br much
-smaller amount of work than extending inotify with new flag and redoing
-new event structure processing. But it is up to you to decide of course
-:)
+> Nick Warne wrote:
+> > Hi all,
+> > 
+> > I have been running a full true 64 bit system now for a few months
+> > (Slamd64), and this made me think...
+> > 
+> > Introduce a new fb boot logo to reflect running a x86_64
+> > kernel/system.
+> > 
+> > Preview: http://www.nick.ukfsn.org/stuff/logo_linux64_clut224.ppm
+> 
+> IMHO, this looks ugly. In this new logo, there are three spatially 
+> separated places with fine detail (the eyes of the penguin and the
+> paws with the number), as opposed to the old logo that had fine
+> detail only in one of these places.
 
+I haven't a clue what:
+
+"...as opposed to the old logo that had fine detail
+only in one of these places."
+
+means.
+
+I only used the original ppm as a base anyway.
+
+Nick
 -- 
-	Evgeniy Polyakov
+Free Software Foundation Associate Member 5508
