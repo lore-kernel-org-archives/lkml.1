@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYLTCCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbYLTCFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbYLTCCq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 21:02:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbYLTCCi
+	id S1754832AbYLTCFv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 21:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYLTCFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 21:02:38 -0500
-Received: from mail-bw0-f21.google.com ([209.85.218.21]:33398 "EHLO
-	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752250AbYLTCCh (ORCPT
+	Fri, 19 Dec 2008 21:05:38 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:41309 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752228AbYLTCFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 21:02:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GGjZuVPJyZtLv3DjXR2996V9EDaxSr4DQ91UZUscf2htJir3bv0h37c35ZQ17Q/H+O
-         ZWXddic6hT6/wC6toZLo87C5WXFEXRaqpKumqhc3kv10HNZInyf8yLgCHxjXrb1QgxC3
-         LeZuVZ3nx7obL0AojthCnLX+gut1VzOVmsXXs=
-Message-ID: <f19298770812191802g5dfbdbe3hf2ff63f66979fe7c@mail.gmail.com>
-Date: Sat, 20 Dec 2008 05:02:34 +0300
-From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: GIT head doesn't seem to want to build on 32bit..
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org
-In-Reply-To: <20081217113029.GB5027@uranus.ravnborg.org>
+	Fri, 19 Dec 2008 21:05:37 -0500
+Date: Sat, 20 Dec 2008 13:02:50 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Evgeniy Polyakov <zbr@ioremap.net>, Vladislav Bolkhovitin <vst@vlnb.net>,
+       linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user
+	space data
+Message-ID: <20081220020250.GA15064@gondor.apana.org.au>
+References: <494009D7.4020602@vlnb.net> <494012C4.7090304@vlnb.net> <494C0255.8010208@goop.org> <20081219220452.GB704@ioremap.net> <494C1E5E.7070809@goop.org> <20081219223314.GA2736@ioremap.net> <494C50BB.5030809@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081216172859.5bc030b6@lxorguk.ukuu.org.uk>
-	 <alpine.LFD.2.00.0812160946410.14014@localhost.localdomain>
-	 <20081216181133.2342b49e@lxorguk.ukuu.org.uk>
-	 <20081216183817.GA25108@uranus.ravnborg.org>
-	 <20081217100727.5cf6248c@lxorguk.ukuu.org.uk>
-	 <20081217113029.GB5027@uranus.ravnborg.org>
+In-Reply-To: <494C50BB.5030809@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 17, 2008 at 14:30, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Wed, Dec 17, 2008 at 10:07:27AM +0000, Alan Cox wrote:
+On Fri, Dec 19, 2008 at 05:56:11PM -0800, Jeremy Fitzhardinge wrote:
+> Evgeniy Polyakov wrote:
+>> Shared info is freed when there are no skbs referring to the shared info
+>> in question. Skb holds all pages in shared info in the fraglist array,
+>> so when it is about to be freed, it means that network stack does not
+>> use it (particulary it will putpage every page in fraglist). Usually
+>> there are two skbs in the network stack per packet in TCP (allocated at
+>> once though via fastclone mechanims): one is provided to the device
+>> (and will be freed there) and another one is placed into retransmit
+>> queue, where it will be located and freed when ack has been received.
 >>
->> > Smells like a kbuild issue.
->> > Please copy me and linux-kbuild@vger.kernel.org on any findings.
->> >
->> > [My 64 bit toolchain is br0ken atm so I could not try to reproduce]
->>
->> Yes I do indeed need to build x86_64 first, then make distclean or
->> mrproper and then 32bit build fails
->
-> I will fix my 64 bit build soonish.
-> In the meantime could someone do:
->
+>> There may be another layers which may clone skb, but its shared info
+>> structure (shared between the clones) will only be freed when all users
+>> freed appropriate cloned skbs.
 
-I can't reproduce this on a 64-bit host no matter what I do.
-Alan, could you please provide your 64-bit .config?
-Also, I could give Sam ssh to this machine.
+This is all correct.  However, please note that that if any clone
+does a pskb_expand_head then it will get its own private copy of
+of the shared info.  So you can't use the shared info to ref count
+the pages in it.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
