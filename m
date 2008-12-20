@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYLTAqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbYLTBAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754605AbYLTAqD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 19:46:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbYLTApx
+	id S1754207AbYLTBAc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 20:00:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYLTBAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 19:45:53 -0500
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:3777 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751092AbYLTApx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 19:45:53 -0500
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: v4l-dvb-maintainer@linuxtv.org
-Subject: Re: [v4l-dvb-maintainer] [PATCH -next/mmotm] media/video/tuner: fix tuner_ioctl build error
-Date: Sat, 20 Dec 2008 01:45:07 +0100
-User-Agent: KMail/1.9.9
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       video4linux-list@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <200812192254.mBJMsfia029162@imap1.linux-foundation.org> <494C3E20.1070800@oracle.com>
-In-Reply-To: <494C3E20.1070800@oracle.com>
+	Fri, 19 Dec 2008 20:00:22 -0500
+Received: from cantor.suse.de ([195.135.220.2]:40328 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752467AbYLTBAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 20:00:21 -0500
+Date: Fri, 19 Dec 2008 16:46:06 -0800
+From: Greg KH <gregkh@suse.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: v2.6.28-rc7: error in panic code? (NULL pointer dereference at
+	0000004c)
+Message-ID: <20081220004606.GA608@suse.de>
+References: <19f34abd0812181406n48712c81j41a560aaf6ba6cd8@mail.gmail.com> <19f34abd0812190919g348b581ex9ebb2e83701899c7@mail.gmail.com> <20081219173946.GA18240@suse.de> <84144f020812191235u4106766bhee28134632c302e2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200812200145.08394.hverkuil@xs4all.nl>
+In-Reply-To: <84144f020812191235u4106766bhee28134632c302e2@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 20 December 2008 01:36:48 Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> Fix drivers/media/video/tuner-core.c so that it will build when
-> CONFIG_VIDEO_ALLOW_V4L1=n:
->
-> drivers/media/video/tuner-core.c:1111: error: 'tuner_ioctl' undeclared
-> here (not in a function)
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> cc: Mauro Carvalho Chehab <mchehab@infradead.org>
-> cc: v4l-dvb-maintainer@linuxtv.org
-> cc: video4linux-list@redhat.com
-> ---
->  drivers/media/video/tuner-core.c |    5 +++++
->  1 file changed, 5 insertions(+)
->
-> --- mmotm-2008-1219-1438.orig/drivers/media/video/tuner-core.c
-> +++ mmotm-2008-1219-1438/drivers/media/video/tuner-core.c
-> @@ -919,6 +919,11 @@ static int tuner_ioctl(struct v4l2_subde
->  	}
->  	return -ENOIOCTLCMD;
->  }
-> +#else
-> +static int tuner_ioctl(struct v4l2_subdev *sd, int cmd, void *arg)
-> +{
-> +	return -ENOIOCTLCMD;
-> +}
->  #endif
->
->  static int tuner_s_config(struct v4l2_subdev *sd, const struct
-> v4l2_priv_tun_config *cfg)
+On Fri, Dec 19, 2008 at 10:35:57PM +0200, Pekka Enberg wrote:
+> Hi Greg,
+> 
+> On Fri, Dec 19, 2008 at 06:19:43PM +0100, Vegard Nossum wrote:
+> > Fixes what?  It might be quite difficult to revert that patch now, as
+> > the infrastructure is no longer in place to use a private pci device
+> > list, that code is long gone.
+> 
+> Vegard forced one oops but got two! The first one is expected and but
+> the second one shouldn't probably be there:
 
-NAK. I've already made a better fix for this and asked Mauro to pull this 
-from my tree. The tuner_ioctl function pointer should have been under the 
-CONFIG_VIDEO_ALLOW_V4L1 #ifdef as well avoiding the need to make an empty 
-function.
+"Second" oopses are known to not be reliable, I wouldn't count it as a
+real problem unless it happens on its own.
 
-Nevertheless, thanks for the effort!
+> >> > [    0.040993] EIP: [<c13b41dc>] klist_next+0x10/0x8d SS:ESP 0068:c165dd48
+> 
+> Looks like the patch Vegard identified breaks something in the oops path?
 
-Regards,
+Very wierd, I also don't understand how reverting the specific patch
+would even make a buildable system.
 
-	Hans
+thanks,
 
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
+greg k-h
