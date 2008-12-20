@@ -1,41 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbYLTGrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbYLTGvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753967AbYLTGrl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 01:47:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbYLTGra
+	id S1753755AbYLTGvp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 01:51:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYLTGvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 01:47:30 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39549 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752206AbYLTGr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 01:47:29 -0500
-X-Authenticated: #1060932
-X-Provags-ID: V01U2FsdGVkX18XELVzKsQX+ON+Wo8zCEG2Cbi331IyzOKkEJ3EFC
-	S0GDYg/sEt/cmI
-Message-ID: <494C94D8.9040703@gmx.net>
-Date: Sat, 20 Dec 2008 07:46:48 +0100
-From: Daniel Pelzl <pelzl@gmx.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Sat, 20 Dec 2008 01:51:36 -0500
+Received: from mail-ew0-f17.google.com ([209.85.219.17]:42031 "EHLO
+	mail-ew0-f17.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752227AbYLTGvf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 01:51:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=wKSjbEl61tqPDiVnHU0UIFX2koCi0jD470bEdVFTGFb/fPVTl6jQNr48reQwU++Xzv
+         MhYaLwDbnJeZQZmlLDt9PxX9fXjc3YSeRmGzXp7pQG0VOsaD29bR+ufZgoiHJbar8pHT
+         6n4pBWSCdJcrevvL95yQdzMxkGHNggfS4LM9U=
+Message-ID: <b82a89170812192251u3544f087x94775b6864f5ae8d@mail.gmail.com>
+Date: Sat, 20 Dec 2008 12:21:33 +0530
+From: "Niraj kumar" <niraj17@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org
+Subject: [Question] inotify : process based filtering of events
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: sdb2 wrong uuid
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.79
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+All,
 
-my new kernels dont boot anymore.
-The newest kernel that boots is 2.6.24
-I use debian and i have it from apt sources.
-What comes is driver sd needs updating - please use bus_type methods
-and then /dev/sdb2 not found
-and then /dev/sdb2 has wrong uuid
-What does he want to tell me?
-Not found or wrong uuid?
-But kernel 2.6.24 works with
+I am trying to use inotify to monitor filesystem events but
+my problem is that I am only interested in changes that
+is being done by a particular process and it's children
+(could be the same process which used inotify APIs).
 
+Is it possible to achieve this process based filtering of events
+using inotify infrastructure?
+
+-Niraj
