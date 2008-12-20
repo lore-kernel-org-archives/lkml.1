@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbYLTISh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbYLTIUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbYLTISh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 03:18:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYLTISZ
+	id S1754091AbYLTIUW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 03:20:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYLTIUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 03:18:25 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58033 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754017AbYLTISZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 03:18:25 -0500
-Date: Sat, 20 Dec 2008 09:18:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Markus Metzger <markus.t.metzger@intel.com>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
-       markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com
-Subject: Re: [patch 2/2] x86, bts: memory accounting
-Message-ID: <20081220081813.GB5581@elte.hu>
-References: <20081219151702.A5121@sedona.ch.intel.com>
+	Sat, 20 Dec 2008 03:20:06 -0500
+Received: from web35306.mail.mud.yahoo.com ([66.163.179.100]:43239 "HELO
+	web35306.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752831AbYLTIUF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 03:20:05 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Dec 2008 03:20:05 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=HlIDo57TcSK5uNmLfnOWk+Pw7rNM9LPwiSpIQgPNzyazANr99WILL35aFy/fx+j+MfM9ZPRMB+XBQBbqlOlv64jQUGMXTWKVVukZMgHnt7nC27XHaOMoxCQf4G3BRVHva9So45gl6Ck6wjzPC+42vDwi5dLwGnH9WiWV5/G8oBU=;
+X-YMail-OSG: dWZ8ybYVM1mt5HdB0SiihYCahEZxlnaPWferfX1JTkuNeG10XSt.r.BkFPRzF82YSjAk.QHLp.Xsgc4p69.E2XL4LQaa63bCF72i9QM2IkyyzcPEVnI22sMAa7iHjiATpFMBAqzCCthbvjrPcsJwKhYngPzOXJN6DljD.wymh3lsCfuV5HLU38POaGUomw--
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Sat, 20 Dec 2008 00:13:23 -0800 (PST)
+From: Peter <peter_mj2002@yahoo.com>
+Reply-To: peter_mj2002@yahoo.com
+Subject: sysfs programming
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081219151702.A5121@sedona.ch.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-ID: <188539.35426.qm@web35306.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi , 
+I am writing a project for my university and i am planning on using sysfs for my kernel module to communicate with user space , ive read some articles and i know how sysfs works, its just i dont know how the code should be written .
+Could you please send me a sample code about how to create an attribute file at /sys/module/(some kernel module)/ please ?
+thank you very much .
 
-* Markus Metzger <markus.t.metzger@intel.com> wrote:
 
-> Add alloc_locked_buffer() and free_locked_buffer() functions to mm/mlock.c to kalloc a buffer and account the locked memory to current.
-> 
-> Account the memory for the BTS buffer to the tracer.
-> 
-> Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
-
-applied to tip/tracing/hw-branch-tracer, thanks!
-
-	Ingo
+      
