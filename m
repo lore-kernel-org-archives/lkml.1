@@ -1,136 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbYLTXwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbYLTXys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754647AbYLTXwV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 18:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbYLTXwN
+	id S1754699AbYLTXys (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 18:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbYLTXyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 18:52:13 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:1177 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751893AbYLTXwM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 18:52:12 -0500
-X-Greylist: delayed 2046 seconds by postgrey-1.27 at vger.kernel.org; Sat, 20 Dec 2008 18:52:12 EST
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org, Dean Nelson <dcn@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Robert Richter <robert.richter@amd.com>
-In-Reply-To: <20081219160145.672392000@polaris-admin.engr.sgi.com>
-References: <20081219160144.697518000@polaris-admin.engr.sgi.com>
-	 <20081219160145.672392000@polaris-admin.engr.sgi.com>
-Content-Type: text/plain
-Organization: Solarflare Communications
-Date: Sat, 20 Dec 2008 23:22:39 +0000
-Message-Id: <1229815359.2723.19.camel@hashbaz.i.decadent.org.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.4.253
-X-SA-Exim-Mail-From: bhutchings@solarflare.com
-Subject: Re: [PATCH 7/8] cpumask: convert misc driver functions
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	Sat, 20 Dec 2008 18:54:41 -0500
+Received: from ns.suse.de ([195.135.220.2]:54569 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751021AbYLTXyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 18:54:41 -0500
+Date: Sat, 20 Dec 2008 15:31:40 -0800
+From: Greg KH <gregkh@suse.de>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] pci: fix no_pci_devices() #2
+Message-ID: <20081220233140.GA1505@suse.de>
+References: <20081220105658.GA1760@localhost.localdomain> <20081220111419.GA5367@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081220111419.GA5367@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-12-19 at 08:01 -0800, Mike Travis wrote:
-[...]
-> --- linux-2.6-for-ingo.orig/drivers/net/sfc/efx.c
-> +++ linux-2.6-for-ingo/drivers/net/sfc/efx.c
-> @@ -809,19 +809,18 @@ static void efx_fini_io(struct efx_nic *
->  /* Get number of RX queues wanted.  Return number of online CPU
->   * packages in the expectation that an IRQ balancer will spread
->   * interrupts across them. */
-> -static int efx_wanted_rx_queues(void)
-> +static int efx_wanted_rx_queues(struct cpumask *scratch)
->  {
-> -	cpumask_t core_mask;
->  	int count;
->  	int cpu;
->  
-> -	cpus_clear(core_mask);
-> +	cpumask_clear(scratch);
->  	count = 0;
->  	for_each_online_cpu(cpu) {
-> -		if (!cpu_isset(cpu, core_mask)) {
-> +		if (!cpumask_test_cpu(cpu, scratch)) {
->  			++count;
-> -			cpus_or(core_mask, core_mask,
-> -				topology_core_siblings(cpu));
-> +			cpumask_or(scratch, scratch,
-> +				   topology_core_cpumask(cpu));
->  		}
->  	}
->  
-> @@ -831,7 +830,7 @@ static int efx_wanted_rx_queues(void)
->  /* Probe the number and type of interrupts we are able to obtain, and
->   * the resulting numbers of channels and RX queues.
->   */
-> -static void efx_probe_interrupts(struct efx_nic *efx)
-> +static void efx_probe_interrupts(struct efx_nic *efx, struct cpumask *scratch)
->  {
->  	int max_channels =
->  		min_t(int, efx->type->phys_addr_channels, EFX_MAX_CHANNELS);
-> @@ -845,7 +844,8 @@ static void efx_probe_interrupts(struct 
->  		 * (or as specified by the rss_cpus module parameter).
->  		 * We will need one channel per interrupt.
->  		 */
-> -		wanted_ints = rss_cpus ? rss_cpus : efx_wanted_rx_queues();
-> +		wanted_ints = rss_cpus ? rss_cpus :
-> +					 efx_wanted_rx_queues(scratch);
->  		efx->n_rx_queues = min(wanted_ints, max_channels);
->  
->  		for (i = 0; i < efx->n_rx_queues; i++)
-> @@ -923,24 +923,29 @@ static void efx_set_channels(struct efx_
->  static int efx_probe_nic(struct efx_nic *efx)
->  {
->  	int rc;
-> +	cpumask_var_t scratch;
->  
->  	EFX_LOG(efx, "creating NIC\n");
->  
-> +	if (!alloc_cpumask_var(&scratch, GFP_KERNEL))
-> +		return -ENOMEM;
-> +
->  	/* Carry out hardware-type specific initialisation */
->  	rc = falcon_probe_nic(efx);
->  	if (rc)
-> -		return rc;
-> +		goto out;
->  
->  	/* Determine the number of channels and RX queues by trying to hook
->  	 * in MSI-X interrupts. */
-> -	efx_probe_interrupts(efx);
-> +	efx_probe_interrupts(efx, scratch);
->  
->  	efx_set_channels(efx);
->  
->  	/* Initialise the interrupt moderation settings */
->  	efx_init_irq_moderation(efx, tx_irq_mod_usec, rx_irq_mod_usec);
-> -
-> -	return 0;
-> +out:
-> +	free_cpumask_var(scratch);
-> +	return rc;
->  }
->  
->  static void efx_remove_nic(struct efx_nic *efx)
-[...]
+On Sat, Dec 20, 2008 at 12:14:19PM +0100, Vegard Nossum wrote:
+> On Sat, Dec 20, 2008 at 11:56 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > On Sat, Dec 20, 2008 at 9:58 AM, Greg KH <gregkh@suse.de> wrote:
+> >> Care to make a patch for no_pci_devices() to work properly in this kind
+> >> of situation?
+> >
+> > How does this look?
+> >
+> > I have introduced a variable pci_is_initiated, which is set after the bus
+> > has been registered.
+> 
+> This patch is simpler and also works for me. But I am not too fond of it
+> either...
+> 
+> 
+> Vegard
+> 
+> 
+> >From 1f047c86fc7a831d85174452da92344a3582a158 Mon Sep 17 00:00:00 2001
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Sat, 20 Dec 2008 12:08:18 +0100
+> Subject: [PATCH] pci: fix no_pci_devices() #2
+> 
+> In short, no_pci_devices() should not use bus_find_device() before
+> initcalls have run, because the pci bus structure has not been
+> initialized yet.
+> 
+> Reference: http://lkml.org/lkml/2008/12/20/21
+> 
+> Cc: Greg KH <gregkh@suse.de>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+> ---
+>  drivers/base/bus.c  |    1 +
+>  drivers/pci/probe.c |    3 +++
+>  2 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+> index 5aee1c0..5e83faf 100644
+> --- a/drivers/base/bus.c
+> +++ b/drivers/base/bus.c
+> @@ -931,6 +931,7 @@ bus_devices_fail:
+>  bus_uevent_fail:
+>  	kset_unregister(&bus->p->subsys);
+>  	kfree(bus->p);
+> +	bus->p = NULL;
+>  out:
+>  	return retval;
 
-I assume you're moving the allocation up to efx_probe_nic() because
-efx_wanted_rx_queues() and efx_probe_interrupts() cannot return failure.
-It really isn't worth exposing that detail up the call chain though.  I
-think it's acceptable for efx_wanted_rx_queues() to log an error message
-and return 1 in the exceedingly unlikely case that the allocation fails.
+I like this portion anyway, care to break this out into a separate
+patch and send it to me?
 
-Ben.
+The first one also looks good to me, Jesse, feel free to add my:
+	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+thanks,
 
-
+greg k-h
