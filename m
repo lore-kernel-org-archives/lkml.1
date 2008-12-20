@@ -1,98 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYLTBij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbYLTBmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbYLTBij (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 20:38:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbYLTBib
+	id S1754921AbYLTBmA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 20:42:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYLTBlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 20:38:31 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:34597 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752355AbYLTBia (ORCPT
+	Fri, 19 Dec 2008 20:41:53 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34546 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355AbYLTBlw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 20:38:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
-         :x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=vmQfzh+OMTlz9W2eyDzbBYrpD/vU18GWiVhOx/bwYY+ZLLZlQ0CFi8Pppqhe8gRBxU
-         yUWdSdQtVu8p3KWeimIJIBfh4Qu9na7xbDTBQOOL20v7gThRf36f6A44WmFt+Sx89iIK
-         TWhfYjdEmu7CyHZ9AcpaMOCMlYIZ0caZ3NFRg=
-Date: Sat, 20 Dec 2008 03:38:22 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Markus Metzger <markus.t.metzger@gmail.com>
-Subject: Re: ftrace behaviour (was: [PATCH] ftrace: introduce
- tracing_reset_online_cpus() helper)
-Message-ID: <20081220033822.362bc88a@daedalus.pq.iki.fi>
-In-Reply-To: <alpine.DEB.1.10.0812191912280.26234@gandalf.stny.rr.com>
-References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI>
-	<c62985530812190247i705d9c3er7662a1b133c6eb29@mail.gmail.com>
-	<alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com>
-	<20081220004453.50aec846@daedalus.pq.iki.fi>
-	<20081219225717.GK13409@elte.hu>
-	<alpine.DEB.1.10.0812191810110.26234@gandalf.stny.rr.com>
-	<20081219233443.GC17984@elte.hu>
-	<alpine.DEB.1.10.0812191912280.26234@gandalf.stny.rr.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 19 Dec 2008 20:41:52 -0500
+Date: Fri, 19 Dec 2008 20:41:49 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mike Travis <travis@sgi.com>
+cc: Ingo Molnar <mingo@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/8] cpumask: convert kernel trace functions
+In-Reply-To: <494BD1D0.5080201@sgi.com>
+Message-ID: <alpine.DEB.1.10.0812192041090.29275@gandalf.stny.rr.com>
+References: <20081219160144.697518000@polaris-admin.engr.sgi.com> <20081219160145.272814000@polaris-admin.engr.sgi.com> <alpine.DEB.1.10.0812191114070.28744@gandalf.stny.rr.com> <494BD1D0.5080201@sgi.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Dec 2008 19:29:30 -0500 (EST)
-Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Sat, 20 Dec 2008, Ingo Molnar wrote:
+On Fri, 19 Dec 2008, Mike Travis wrote:
+
+> Steven Rostedt wrote:
+> > On Fri, 19 Dec 2008, Mike Travis wrote:
 > > 
-> > The current "only allow resizing while tracing is disabled" is an 
-> > unintuitive and counterproductive restriction - a borderline bug in fact.
+> >> Impact: Reduce memory usage, use new cpumask API.
+> >>
+> >> Convert kernel trace functions to use struct cpumask.
+> >>
+> > How does this save memory if we just allocate a cpumask var everytime
+> > we allocate a ring buffer?  Is cpumask_var_t a mask of possible CPUS and 
+> > not NR_CPUS?
+> > 
+> > Otherwise, I see this as just adding one extra pointer.
+> > 
+> > -- Steve
 > 
-> Having to disable tracing to resize is much better than having to reboot.
+> Hi Steve,
 > 
-> I'm not defending that this is the way to go. I never planned on keeping 
-> this the defacto standard. I've been setting up infrastructure to allow 
-> for a seamless resize. If you think we should reset the buffers on resize, 
-> then that would be a great way for the user to know why they are missing 
-> **all** their data.
-
-I thought this was just about not having to do
-
-$ echo 0 > tracing_enabled
-$ echo 28764243 > buffer_size
-$ echo 1 > tracing_enabled
-
-and instead just do
-
-$ echo 28764243 > buffer_size
-
-which would do exactly the same, except being easier for the user.
-Personally I've never dreamed of any kind of resize-in-flight.
-
-> What I'm trying to say is that the more we allow during resize, the more 
-> likely there will be a critical bug that might lock up the system. The 
-> whole point about writing the ring buffer was to do it incrementally. 
-> Start out with being straight forward and simple, then we could add 
-> features as we understand things better.
+> Yes, eventually, the cpumask_var_t will be allocated based on cpumask_size()
+> which will become BITS_TO_LONG(nr_cpu_ids) instead of BITS_TO_LONGS(NR_CPUS)
+> as soon as the kernel becomes "cpumask" clean.  (clean being that it ignores
+> all bits >= nr_cpu_ids.)
 > 
-> IOW, I totally agree that we should make it as intuitive as possible. But 
-> this needs to be done step by step. I wrote 10 different versions of the 
-> ring buffer in a week. Most of them were complete rewrites. I want this to 
-> be as robust and powerful as you do, but I also want to be cautious about 
-> doing things that might crash the system.
-> 
-> Ftrace already had the infrastructure in place to protect against resize. 
-> I just used it to give me time to do other things with the ring buffer. 
-> I always planned on having the resize protection back inside the ring 
-> buffer code when I got around to it.
-> 
-> -- Steve
+> Note that on small NR_CPUS count systems, cpumask_var_t is a static array
+> and no allocation happens, so it only kicks in when CONFIG_CPUMASK_OFFSTACK=y.
 
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+For future memory savings...
+
+Acked-by: Steven Rostedt <srostedt@redhat.com>
+
+-- Steve
+
