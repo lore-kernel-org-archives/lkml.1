@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbYLTBAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbYLTBBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207AbYLTBAc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 20:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYLTBAW
+	id S1753656AbYLTBBM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 20:01:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbYLTBAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 20:00:22 -0500
-Received: from cantor.suse.de ([195.135.220.2]:40328 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752467AbYLTBAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 20:00:21 -0500
-Date: Fri, 19 Dec 2008 16:46:06 -0800
-From: Greg KH <gregkh@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: v2.6.28-rc7: error in panic code? (NULL pointer dereference at
-	0000004c)
-Message-ID: <20081220004606.GA608@suse.de>
-References: <19f34abd0812181406n48712c81j41a560aaf6ba6cd8@mail.gmail.com> <19f34abd0812190919g348b581ex9ebb2e83701899c7@mail.gmail.com> <20081219173946.GA18240@suse.de> <84144f020812191235u4106766bhee28134632c302e2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020812191235u4106766bhee28134632c302e2@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 19 Dec 2008 20:00:54 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:40106 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752581AbYLTBAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 20:00:52 -0500
+Message-Id: <20081220010043.879277000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 19 Dec 2008 17:00:43 -0800
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8] x86 cpumask: update more code to use new cpumask API
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 19, 2008 at 10:35:57PM +0200, Pekka Enberg wrote:
-> Hi Greg,
-> 
-> On Fri, Dec 19, 2008 at 06:19:43PM +0100, Vegard Nossum wrote:
-> > Fixes what?  It might be quite difficult to revert that patch now, as
-> > the infrastructure is no longer in place to use a private pci device
-> > list, that code is long gone.
-> 
-> Vegard forced one oops but got two! The first one is expected and but
-> the second one shouldn't probably be there:
 
-"Second" oopses are known to not be reliable, I wouldn't count it as a
-real problem unless it happens on its own.
+Patches for review only.  Will be pushed via one git conduit or another.
 
-> >> > [    0.040993] EIP: [<c13b41dc>] klist_next+0x10/0x8d SS:ESP 0068:c165dd48
-> 
-> Looks like the patch Vegard identified breaks something in the oops path?
+Pulled the following patches from:
 
-Very wierd, I also don't understand how reverting the specific patch
-would even make a buildable system.
+http://ozlabs.org/~rusty/kernel/rr-2008-12-18-1.tar.bz2
 
-thanks,
+ (*)	x86:speedstep-centrino-cleanup.patch
+	cpumask:get-rid-of-CPUMASK_ALLOC-x86.patch
+	cpumask:convert-acpi_processor-structs.patch
+	cpumask:convert-drivers_acpi.patch
+	cpumask:more-work_on_cpu.patch
+	x86:use-cpumask_var_t-in-acpi_boot.c
+	cpumask:percpu_alloc-nmi.patch
+	cpumask:percpu_alloc-mce_64.patch
 
-greg k-h
+... and edited/built/tested on x86_64 Intel and AMD
+
+(* - already in linux-next/rr)
+
+In addition, the following are OBSOLETE:
+
+	x86:use-cpumask_next_zero.patch
+	x86:io_apic-leak-fix.patch
+	x86:add-NR_CPUS-sysfs
+
+
+The files are either x86 or generic:
+
+	arch/x86/kernel/acpi/boot.c
+	arch/x86/kernel/acpi/cstate.c
+	arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+	arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
+	arch/x86/kernel/cpu/cpufreq/powernow-k7.c
+	arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+	arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+	arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+	arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
+	arch/x86/kernel/cpu/mcheck/mce_64.c
+	arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+	arch/x86/kernel/nmi.c
+	drivers/acpi/processor_core.c
+	drivers/acpi/processor_perflib.c
+	drivers/acpi/processor_throttling.c
+	drivers/cpufreq/cpufreq.c
+	drivers/cpufreq/cpufreq_conservative.c
+	drivers/cpufreq/cpufreq_ondemand.c
+	include/acpi/processor.h
+	include/linux/cpufreq.h
+
+-- 
