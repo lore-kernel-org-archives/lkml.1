@@ -1,98 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYLTBB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbYLTBBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbYLTBB3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 20:01:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYLTBAy
+	id S1755600AbYLTBBn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 20:01:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYLTBAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 20:00:54 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:40107 "EHLO relay.sgi.com"
+	Fri, 19 Dec 2008 20:00:55 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:40109 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753044AbYLTBAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753060AbYLTBAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 19 Dec 2008 20:00:52 -0500
-Message-Id: <20081220010044.846063000@polaris-admin.engr.sgi.com>
+Message-Id: <20081220010044.052446000@polaris-admin.engr.sgi.com>
 References: <20081220010043.879277000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 19 Dec 2008 17:00:50 -0800
+Date: Fri, 19 Dec 2008 17:00:44 -0800
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: [PATCH 7/8] cpumask: use percpu allocations instead of array in arch/x86/kernel/nmi.c From: Rusty Russell <rusty@rustcorp.com.au>
-Content-Disposition: inline; filename=cpumask:percpu_alloc-nmi.patch
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       Dave Jones <davej@redhat.com>
+Subject: [PATCH 1/8] x86: clean up speedstep-centrino and reduce cpumask_t usage From: Rusty Russell <rusty@rustcorp.com.au>
+Content-Disposition: inline; filename=x86:speedstep-centrino-cleanup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: reduce memory usage, use alloc_percpu().
+Note: This patch is already in linux-next/rr at:
 
-Instead of allocating an nr_cpu_ids array, most places should be using
-percpu_alloc().  This doesn't waste space if cpu numbers aren't
-contiguous.
+	commit 8bf4c94678eb35a18d366ff514c0f21522abef6a
+	Author: Rusty Russell <rusty@rustcorp.com.au>
+	Date:   Wed Dec 10 10:12:15 2008 +1100
+
+	    x86:speedstep-centrino-cleanup
+
+Reproduced here only because following patches depend on it.  Will be pulled
+back to x86 as soon as it's available in ../rusty/linux-2.6-for-ingo.git.
+
+Impact: cleanup
+
+1) The #ifdef CONFIG_HOTPLUG_CPU seems unnecessary these days.
+2) The loop can simply skip over offline cpus, rather than creating a tmp mask.
+3) set_mask is set to either a single cpu or all online cpus in a policy.
+   Since it's just used for set_cpus_allowed(), any offline cpus in a policy
+   don't matter, so we can just use cpumask_of_cpu() or the policy->cpus.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Mike Travis <travis@sgi.com>
+Cc: Dave Jones <davej@redhat.com>
 ---
- arch/x86/kernel/nmi.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |   51 ++++++++++-------------
+ 1 file changed, 24 insertions(+), 27 deletions(-)
 
---- linux-2.6-for-ingo.orig/arch/x86/kernel/nmi.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/nmi.c
-@@ -114,13 +114,13 @@ static __init void nmi_cpu_busy(void *da
- }
- #endif
+--- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
++++ linux-2.6-for-ingo/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+@@ -459,9 +459,7 @@ static int centrino_verify (struct cpufr
+  * Sets a new CPUFreq policy.
+  */
+ struct allmasks {
+-	cpumask_t		online_policy_cpus;
+ 	cpumask_t		saved_mask;
+-	cpumask_t		set_mask;
+ 	cpumask_t		covered_cpus;
+ };
  
--static void report_broken_nmi(int cpu, int *prev_nmi_count)
-+static void report_broken_nmi(int cpu, int prev_nmi_count)
- {
- 	printk(KERN_CONT "\n");
+@@ -475,9 +473,7 @@ static int centrino_target (struct cpufr
+ 	int			retval = 0;
+ 	unsigned int		j, k, first_cpu, tmp;
+ 	CPUMASK_ALLOC(allmasks);
+-	CPUMASK_PTR(online_policy_cpus, allmasks);
+ 	CPUMASK_PTR(saved_mask, allmasks);
+-	CPUMASK_PTR(set_mask, allmasks);
+ 	CPUMASK_PTR(covered_cpus, allmasks);
  
- 	printk(KERN_WARNING
- 		"WARNING: CPU#%d: NMI appears to be stuck (%d->%d)!\n",
--			cpu, prev_nmi_count[cpu], get_nmi_count(cpu));
-+			cpu, prev_nmi_count, get_nmi_count(cpu));
- 
- 	printk(KERN_WARNING
- 		"Please report this to bugzilla.kernel.org,\n");
-@@ -139,7 +139,7 @@ int __init check_nmi_watchdog(void)
- 	if (!nmi_watchdog_active() || !atomic_read(&nmi_active))
- 		return 0;
- 
--	prev_nmi_count = kmalloc(nr_cpu_ids * sizeof(int), GFP_KERNEL);
-+	prev_nmi_count = alloc_percpu(unsigned int);
- 	if (!prev_nmi_count)
- 		goto error;
- 
-@@ -151,19 +151,19 @@ int __init check_nmi_watchdog(void)
- #endif
- 
- 	for_each_possible_cpu(cpu)
--		prev_nmi_count[cpu] = get_nmi_count(cpu);
-+		*per_cpu_ptr(prev_nmi_count, cpu) = get_nmi_count(cpu);
- 	local_irq_enable();
- 	mdelay((20 * 1000) / nmi_hz); /* wait 20 ticks */
- 
- 	for_each_online_cpu(cpu) {
- 		if (!per_cpu(wd_enabled, cpu))
- 			continue;
--		if (get_nmi_count(cpu) - prev_nmi_count[cpu] <= 5)
--			report_broken_nmi(cpu, prev_nmi_count);
-+		if (get_nmi_count(cpu) - *per_cpu_ptr(prev_nmi_count, cpu) <= 5)
-+			report_broken_nmi(cpu, *per_cpu_ptr(prev_nmi_count,cpu));
+ 	if (unlikely(allmasks == NULL))
+@@ -497,30 +493,28 @@ static int centrino_target (struct cpufr
+ 		goto out;
  	}
- 	endflag = 1;
- 	if (!atomic_read(&nmi_active)) {
--		kfree(prev_nmi_count);
-+		free_percpu(prev_nmi_count);
- 		atomic_set(&nmi_active, -1);
- 		goto error;
- 	}
-@@ -176,7 +176,7 @@ int __init check_nmi_watchdog(void)
- 	if (nmi_watchdog == NMI_LOCAL_APIC)
- 		nmi_hz = lapic_adjust_nmi_hz(1);
  
--	kfree(prev_nmi_count);
-+	free_percpu(prev_nmi_count);
- 	return 0;
- error:
- 	if (nmi_watchdog == NMI_IO_APIC && !timer_through_8259)
+-#ifdef CONFIG_HOTPLUG_CPU
+-	/* cpufreq holds the hotplug lock, so we are safe from here on */
+-	cpus_and(*online_policy_cpus, cpu_online_map, policy->cpus);
+-#else
+-	*online_policy_cpus = policy->cpus;
+-#endif
+-
+ 	*saved_mask = current->cpus_allowed;
+ 	first_cpu = 1;
+ 	cpus_clear(*covered_cpus);
+-	for_each_cpu_mask_nr(j, *online_policy_cpus) {
++	for_each_cpu_mask_nr(j, policy->cpus) {
++		const cpumask_t *mask;
++
++		/* cpufreq holds the hotplug lock, so we are safe here */
++		if (!cpu_online(j))
++			continue;
++
+ 		/*
+ 		 * Support for SMP systems.
+ 		 * Make sure we are running on CPU that wants to change freq
+ 		 */
+-		cpus_clear(*set_mask);
+ 		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+-			cpus_or(*set_mask, *set_mask, *online_policy_cpus);
++			mask = &policy->cpus;
+ 		else
+-			cpu_set(j, *set_mask);
++			mask = &cpumask_of_cpu(j);
+ 
+-		set_cpus_allowed_ptr(current, set_mask);
++		set_cpus_allowed_ptr(current, mask);
+ 		preempt_disable();
+-		if (unlikely(!cpu_isset(smp_processor_id(), *set_mask))) {
++		if (unlikely(!cpu_isset(smp_processor_id(), *mask))) {
+ 			dprintk("couldn't limit to CPUs in this domain\n");
+ 			retval = -EAGAIN;
+ 			if (first_cpu) {
+@@ -548,7 +542,9 @@ static int centrino_target (struct cpufr
+ 			dprintk("target=%dkHz old=%d new=%d msr=%04x\n",
+ 				target_freq, freqs.old, freqs.new, msr);
+ 
+-			for_each_cpu_mask_nr(k, *online_policy_cpus) {
++			for_each_cpu_mask_nr(k, policy->cpus) {
++				if (!cpu_online(k))
++					continue;
+ 				freqs.cpu = k;
+ 				cpufreq_notify_transition(&freqs,
+ 					CPUFREQ_PRECHANGE);
+@@ -571,7 +567,9 @@ static int centrino_target (struct cpufr
+ 		preempt_enable();
+ 	}
+ 
+-	for_each_cpu_mask_nr(k, *online_policy_cpus) {
++	for_each_cpu_mask_nr(k, policy->cpus) {
++		if (!cpu_online(k))
++			continue;
+ 		freqs.cpu = k;
+ 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 	}
+@@ -584,18 +582,17 @@ static int centrino_target (struct cpufr
+ 		 * Best effort undo..
+ 		 */
+ 
+-		if (!cpus_empty(*covered_cpus))
+-			for_each_cpu_mask_nr(j, *covered_cpus) {
+-				set_cpus_allowed_ptr(current,
+-						     &cpumask_of_cpu(j));
+-				wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-			}
++		for_each_cpu_mask_nr(j, *covered_cpus) {
++			set_cpus_allowed_ptr(current, &cpumask_of_cpu(j));
++			wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++		}
+ 
+ 		tmp = freqs.new;
+ 		freqs.new = freqs.old;
+ 		freqs.old = tmp;
+-		for_each_cpu_mask_nr(j, *online_policy_cpus) {
+-			freqs.cpu = j;
++		for_each_cpu_mask_nr(j, policy->cpus) {
++			if (!cpu_online(j))
++				continue;
+ 			cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 		}
 
 -- 
