@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbYLTWzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbYLTW7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754550AbYLTWzX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 17:55:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYLTWzJ
+	id S1754638AbYLTW7d (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 17:59:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYLTW7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 17:55:09 -0500
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:63692 "EHLO
-	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751706AbYLTWzH (ORCPT
+	Sat, 20 Dec 2008 17:59:23 -0500
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:35266 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751799AbYLTW7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 17:55:07 -0500
-MIME-version: 1.0
-X-IronPort-AV: E=Sophos;i="4.36,255,1228086000";   d="scan'208";a="94432788"
-Date: Sat, 20 Dec 2008 23:55:03 +0100
-From: markus reichelt <ml@mareichelt.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] New x86_64 boot logo
-Message-id: <20081220225502.GA17357@tatooine.rebelbase.local>
-Mail-followup-to: LKML <linux-kernel@vger.kernel.org>
-References: <20081220105658.35ebd2bc@sauron.linicks.net>
- <20081220182321.GB3900@tatooine.rebelbase.local> <494D3A88.5070300@ionic.de>
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=huq684BweRXVnRxX
-Content-disposition: inline
-In-reply-to: <494D3A88.5070300@ionic.de>
-Organization: still stuck in reorganization mode
-X-PGP-Key: 0xC2A3FEE4
-X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
-X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 20 Dec 2008 17:59:22 -0500
+X-YMail-OSG: ZYi5U9MVM1mWiNrBJwVDtJjQwNZaGCcAPAdgak0FbIMPffiuiuvC_k4N5w7N1EqtmbMst9oQk84tYpBUx7x27I5XKDGC8hzRsWk_21VlcUJeeR2Ri_EyEHFSrH6XtdL3Vb74kXSZpman1WRIvJWLxoY20yO2QanM1tQN.3bpKY646QInDv6_SvJ4UTxwRinQZt0oQssc0RCYRgz7KO0PGuFCsFfzFOM-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH 0/8] [Target_Core_Mod/LIO-Target] v3.0 updates and bugfixes
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 20 Dec 2008 14:58:51 -0800
+Message-Id: <1229813931.4560.191.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greetings all,
 
---huq684BweRXVnRxX
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Just a few updates and bugfixes for the generic engine and LIO-Target as
+LIO-Target is being brought online using the v3.0 generic target core
+infrastructure.  They are made against against lio-core-2.6.git/master
+and tested on v2.6.28-rc7.  The lio-core-2.6.git tree can be found at:
 
-* Mihai Moldovan <ionic@ionic.de> wrote:
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
 
-> * On 20.12.2008 19:23, markus reichelt wrote:
-> > * Nick Warne <nick@ukfsn.org> wrote:
-> >
-> >> Preview:
-> >> http://www.nick.ukfsn.org/stuff/logo_linux64_clut224.ppm
-> >
-> > Nice idea, but I prefer mine :-)
-> >
-> > http://mareichelt.de/temp/logo_linux_clut224.ppm
->=20
-> Honestly, I do see a series of rants, hisses, curses and flames
-> coming up on this _matter of personal preference_. ;-)
+ drivers/lio-core/iscsi_target.c           |   22 +++--
+ drivers/lio-core/iscsi_target_configfs.c  |    2 -
+ drivers/lio-core/iscsi_target_login.c     |    5 +-
+ drivers/lio-core/iscsi_target_tpg.c       |   43 -----------
+ drivers/lio-core/iscsi_target_tpg.h       |    2 -
+ drivers/lio-core/target_core_fabric_ops.h |    5 -
+ drivers/lio-core/target_core_tpg.c        |  115 +++++++++++++++--------------
+ drivers/lio-core/target_core_transport.c  |   19 +----
+ drivers/lio-core/target_core_transport.h  |    3 +-
+ 9 files changed, 78 insertions(+), 138 deletions(-)
 
-Nah, neither "Theo De Rant" nor "Steve Facepalmer" read this list.
+[PATCH 1/8] [Target_Core_Mod]: Add EXPORT_SYMBOL() to transport_release_cmd_to_pool()
+[PATCH 2/8] [LIO-Target]: Properly release se_cmd_t w/ CHECK_CONDITION exception during iSCSI session recovery
+[PATCH 3/8] [Target_Core_Mod/LIO-Target]: Rename and update usage of transport_allocate_session()
+[PATCH 4/8] [Target_Core_Mod]: Add transport_free_session()
+[PATCH 5/8] [LIO-Target]: Add transport_free_session() in iscsi_target_login_thread() exception path
+[PATCH 6/8] [Target_Core_Mod]: Reenable core_tpg_del_initiator_node_acl() and core_tpg_set_initiator_node_queue_depth()
+[PATCH 7/8] [LIO-Target/ConfigFS]: Add lio_tpg_shutdown_session() and lio_tpg_close_session()
+[PATCH 8/8] [LIO-Target]: Fix leakage of ISCSI_INIT_LOGOUT_CMND for CLOSESESSION or same CID CLOSECONNECTION cases
 
-We Are Safe <tm> ;-)
+--nab
 
---=20
-left blank, right bald
-
---huq684BweRXVnRxX
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFJTXfGLMyTO8Kj/uQRAs1TAJ0f7GNBuj1wm3turbPsQG6oOfcm2gCfYsYx
-QWzFLl+ScBzGz79QLuYshKI=
-=0CGM
------END PGP SIGNATURE-----
-
---huq684BweRXVnRxX--
