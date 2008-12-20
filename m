@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbYLTU2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYLTU3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbYLTU2y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 15:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYLTU2o
+	id S1754566AbYLTU3j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 15:29:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYLTU3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 15:28:44 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:7429 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753077AbYLTU2n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 15:28:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=OqLR+KY7XZloodvFxDnRFRRzaGiM6RQmTeZrMZLpognBrOrjpWzIKhQapyiME0BVs0
-         2S5V80IBl7H9xwnXO46uEFHvfe2gSZP5JbU8aeXipVtngk671202rrhPt5FK4A3MWoWE
-         /mwnxd0Khs1+6hG/IlyDoSCau5wRznlhkNtqo=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Subject: Re: [PATCH] sh: maple: add Maple controller as a joystick device
-Date: Sat, 20 Dec 2008 12:28:20 -0800
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-134.fc10.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, "linux-sh" <linux-sh@vger.kernel.org>,
-       "linux-input" <linux-input@vger.kernel.org>,
-       Paul Mundt <lethal@linux-sh.org>, Andrew Morton <akpm@osdl.org>
-References: <1229797614.6502.20.camel@localhost.localdomain>
-In-Reply-To: <1229797614.6502.20.camel@localhost.localdomain>
+	Sat, 20 Dec 2008 15:29:31 -0500
+Received: from www.tglx.de ([62.245.132.106]:42460 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753276AbYLTU3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 15:29:31 -0500
+Date: Sat, 20 Dec 2008 21:27:34 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Eric Sesterhenn <snakebyte@gmx.de>
+cc: LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+       John Stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [BUG] Null pointer deref with hrtimer_try_to_cancel()
+In-Reply-To: <20081219172549.GA25722@alice>
+Message-ID: <alpine.LFD.2.00.0812202117310.3376@localhost.localdomain>
+References: <20081219172549.GA25722@alice>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Disposition: inline
-Message-Id: <200812201228.20767.dmitry.torokhov@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mBKKSvki028935
 
-On Saturday 20 December 2008 10:26:54 Adrian McMenamin wrote:> +       mdev = to_maple_dev(dev);> +       if (!mdev) {> +               error = EINVAL;> +               goto fail;> +       }> +       > +       mdrv = to_maple_driver(dev->driver);> +       if (!mdrv) {> +               error = EINVAL;> +               goto fail;> +       }
-This will never happen - to_maple_* are simple wrappers around container_of and so the result will never be NULL but some small offset from it if dev is NULL. I'm staying on the old version of the patch with small fixups.
--- Dmitryÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Impact: Prevent kernel crash with posix timer clockid CLOCK_MONOTONIC_RAW
+
+commit 2d42244ae71d6c7b0884b5664cf2eda30fb2ae68 (clocksource:
+introduce CLOCK_MONOTONIC_RAW) introduced a new clockid, which is only
+available to read out the raw not NTP adjusted system time.
+
+The above commit did not prevent that a posix timer can be created
+with that clockid. The timer_create() syscall succeeds and initializes
+the timer to a non existing hrtimer base. When the timer is deleted
+either by timer_delete() or by the exit() cleanup the kernel crashes.
+
+Prevent the creation of timers for CLOCK_MONOTONIC_RAW by setting the
+posix clock function to no_timer_create which returns an error code.
+
+Reported-by: Eric Sesterhenn <snakebyte@gmx.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
+index 5e79c66..a140e44 100644
+--- a/kernel/posix-timers.c
++++ b/kernel/posix-timers.c
+@@ -197,6 +197,11 @@ static int common_timer_create(struct k_itimer *new_timer)
+ 	return 0;
+ }
+ 
++static int no_timer_create(struct k_itimer *new_timer)
++{
++	return -EOPNOTSUPP;
++}
++
+ /*
+  * Return nonzero if we know a priori this clockid_t value is bogus.
+  */
+@@ -248,6 +253,7 @@ static __init int init_posix_timers(void)
+ 		.clock_getres = hrtimer_get_res,
+ 		.clock_get = posix_get_monotonic_raw,
+ 		.clock_set = do_posix_clock_nosettime,
++		.timer_create = no_timer_create,
+ 	};
+ 
+ 	register_posix_clock(CLOCK_REALTIME, &clock_realtime);
