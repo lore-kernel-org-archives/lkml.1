@@ -1,73 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbYLTQc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYLTQ4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753957AbYLTQc1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 11:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYLTQcT
+	id S1753973AbYLTQ4Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 11:56:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYLTQ4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 11:32:19 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48592 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752270AbYLTQcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 11:32:19 -0500
-Date: Sat, 20 Dec 2008 17:30:33 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Eric Sesterhenn <snakebyte@gmx.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] Null pointer deref with hrtimer_try_to_cancel()
-Message-ID: <20081220163033.GB26499@redhat.com>
-References: <20081219172549.GA25722@alice> <alpine.LFD.2.00.0812192243350.3376@localhost.localdomain> <20081220161457.GA26499@redhat.com>
+	Sat, 20 Dec 2008 11:56:15 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:9865 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752618AbYLTQ4O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 11:56:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=aNfZJxJs4FnHRCO5ElWtbsQJJnry/ewlNRnHEk7ehVkRAySayAcErS3hLvnn8f6D9d
+         ws1iQVzbQUPZA33spJ1smfPyxKMlol1VW/JsNuI2zYRdKFfPiL+2SNEUF5zS6Vq24Lvd
+         /ywbe/1zufYNcvJJJ2hA5XI3hEvbumDEfink0=
+Message-ID: <494D239B.10800@gmail.com>
+Date: Sat, 20 Dec 2008 17:55:55 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081220161457.GA26499@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Hannes Eder <hannes@hanneseder.net>, Ben Dooks <ben-linux@fluff.org>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, Jon Masters <jcm@jonmasters.org>
+Subject: Re: [PATCH] HID: avoid sparse warning in HID_COMPAT_LOAD_DRIVER
+References: <4947a48f.08b6660a.34ca.ffffa1e8@mx.google.com>  <20081216155822.GD12431@fluff.org.uk>  <alpine.LNX.1.10.0812161659580.21089@jikos.suse.cz>  <20081216194113.GF12431@fluff.org.uk> <154e089b0812161144x3c9579f5g8731b616fde6484c@mail.gmail.com> <494B5BC4.100@gmail.com> <alpine.LNX.1.10.0812191037110.26265@jikos.suse.cz>
+In-Reply-To: <alpine.LNX.1.10.0812191037110.26265@jikos.suse.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/20, Oleg Nesterov wrote:
->
-> On 12/19, Thomas Gleixner wrote:
-> >
-> > On Fri, 19 Dec 2008, Eric Sesterhenn wrote:
-> >
-> > > root@computer-desktop:~/testing/ltp-full-20081130/tools/strace_test#
-> > > ./timer_create04
-> > > timer_create04    1  FAIL  :  timer_create(2) failed to produce expected
-> > > error; 22 , errno : EINVAL and got 0
-> > > timer_create04    2  PASS  :  timer_create(2) expected failure; Got
-> > > errno - EINVAL : Invalid parameter
-> > > timer_create04    3  PASS  :  timer_create(2) expected failure; Got
-> > > errno - EFAULT : Bad address
-> > > timer_create04    4  PASS  :  timer_create(2) expected failure; Got
-> > > errno - EFAULT : Bad address
-> > > timer_create04    5  PASS  :  timer_create(2) expected failure; Got
-> > > errno - EFAULT : Bad address
-> > > timer_create04    6  PASS  :  timer_create(2) expected failure; Got
-> > > errno - EFAULT : Bad address
->
-> according to above, timer_create() always returns -EXXX ?
+Jiri Kosina wrote:
+> BTW while we are at it -- what is the status with module-init-tools? Has 
+> the support been merged already?
 
-Aaah. I misread the first "FAIL" above. timer_create() succeeds!
-
-hmm... it does timer_create(MAX_CLOCKS) and thus it should fail...
-
-Can't find the original commit at
-	http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git
-
-but now we have CLOCK_MONOTONIC_RAW == 4, and MAX_CLOCKS == 4. So the
-test should be fixed too, the first timer_create() should not fail on
-2.6.28.
-
-OK, sys_timer_create(CLOCK_MONOTONIC_RAW) calls
-__hrtimer_init(CLOCK_MONOTONIC_RAW) and this looks just wrong:
-
-	 timer->base = &cpu_base->clock_base[CLOCK_MONOTONIC_RAW];
-
-while HRTIMER_MAX_CLOCK_BASES == 2. So time->base points to
-"nowhere", this can explain the crash.
-
-Thomas?
-
-Oleg.
-
+As far as I can see, not yet. Jon, what's the status of hid bus support in
+m-i-t, please?
