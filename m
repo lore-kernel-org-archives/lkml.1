@@ -1,89 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbYLTQI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbYLTQQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753954AbYLTQI1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 11:08:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYLTQIT
+	id S1753823AbYLTQQx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 11:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYLTQQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 11:08:19 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:24628 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752142AbYLTQIS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 11:08:18 -0500
-X-Trace: 118555392/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.245/None/adrian@newgolddream.dyndns.info
-X-SBRS: None
-X-RemoteIP: 80.44.176.245
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-MUA: Evolution 2.24.2 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqsEAGunTElQLLD1/2dsb2JhbACBbLofWJBthkM
-X-IronPort-AV: E=Sophos;i="4.36,255,1228089600"; 
-   d="scan'208";a="118555392"
-Subject: Re: [PATCH] sh: maple: add support for Maple controller as a
- joystick
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Matt Fleming <matt@console-pimps.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-sh <linux-sh@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Paul Mundt <lethal@linux-sh.org>
-In-Reply-To: <20081220151511.GA6528@console-pimps.org>
-References: <1229728542.1441.6.camel@localhost.localdomain>
-	 <20081220151511.GA6528@console-pimps.org>
-Content-Type: text/plain
-Date: Sat, 20 Dec 2008 16:07:27 +0000
-Message-Id: <1229789248.6502.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Sat, 20 Dec 2008 11:16:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42137 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751847AbYLTQQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 11:16:44 -0500
+Date: Sat, 20 Dec 2008 17:14:57 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Eric Sesterhenn <snakebyte@gmx.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] Null pointer deref with hrtimer_try_to_cancel()
+Message-ID: <20081220161457.GA26499@redhat.com>
+References: <20081219172549.GA25722@alice> <alpine.LFD.2.00.0812192243350.3376@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0812192243350.3376@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-12-20 at 15:16 +0000, Matt Fleming wrote:
-> On Fri, Dec 19, 2008 at 11:15:42PM +0000, Adrian McMenamin wrote:
-> > 
-> > Add support for the SEGA Dreamcast Maple controller as a joystick
-> > 
-> 
-> [snip]
-> 
-> > +	struct dc_pad *pad = maple_get_drvdata(mapledev);
-> > +	struct input_dev *dev = pad->dev;
-> > +	unsigned char *res = mq->recvbuf;
-> > +
-> > +	buttons = ~cpu_to_le16(*(unsigned short *)(res + 8));
-> > +
-> 
-> I may be wrong but shouldn't this use the I/O accessor functions?
-> 
+On 12/19, Thomas Gleixner wrote:
+>
+> On Fri, 19 Dec 2008, Eric Sesterhenn wrote:
+>
+> > I was running the strace-test from ltp 20081130 with 2.6.28-rc9, when i got the following bug
+> > (I can reproduce the bug by simply running the testcase timer_create04)
 
-It's not iomemory, so I don't think so. The maple bus writes to a buffer
-in the physical RAM.
+Thanks a lot Eric (and thanks for .s files you sent me privately).
 
+At first glance this all is very strange.
 
-> > +
-> > +	pad = kzalloc(sizeof(struct dc_pad), GFP_KERNEL);
-> > +	idev = input_allocate_device();
-> > +	if (!pad || !idev){
-> > +		error = ENOMEM;
-> > +		goto fail;
-> > +	}
-> 
-> [snip]
-> 
-> > +fail:
-> > +	input_free_device(pad->dev);
-> 
-> Possible NULL pointer dereference?
+> > [ 2460.444044]  [<c0141070>] ? hrtimer_try_to_cancel+0x20/0x90
+> > [ 2460.444044]  [<c013cf94>] ? exit_itimers+0x94/0xf0
+> > [ 2460.444044]  [<c012cab2>] ? do_exit+0x602/0x810
 
-No, because input_free_device is:
+So, when the task exits its has a timer in ->posix_timers.
 
-void input_free_device(struct input_dev *dev)
-{
-        if (dev)
-               input_put_device(dev);
-}
-EXPORT_SYMBOL(input_free_device);
+However, this means sys_timer_create() must return 0, the code
+is very simple
+
+	spin_lock_irq(&current->sighand->siglock);
+	new_timer->it_process = process;
+	list_add(&new_timer->list, &current->signal->posix_timers);
+	spin_unlock_irq(&current->sighand->siglock);
+
+	return 0;
+
+and nobody else adds the timer to ->posix_timers.
+
+But,
+
+> > root@computer-desktop:~/testing/ltp-full-20081130/tools/strace_test#
+> > ./timer_create04
+> > timer_create04    1  FAIL  :  timer_create(2) failed to produce expected
+> > error; 22 , errno : EINVAL and got 0
+> > timer_create04    2  PASS  :  timer_create(2) expected failure; Got
+> > errno - EINVAL : Invalid parameter
+> > timer_create04    3  PASS  :  timer_create(2) expected failure; Got
+> > errno - EFAULT : Bad address
+> > timer_create04    4  PASS  :  timer_create(2) expected failure; Got
+> > errno - EFAULT : Bad address
+> > timer_create04    5  PASS  :  timer_create(2) expected failure; Got
+> > errno - EFAULT : Bad address
+> > timer_create04    6  PASS  :  timer_create(2) expected failure; Got
+> > errno - EFAULT : Bad address
+
+according to above, timer_create() always returns -EXXX ?
+
+I'll try to re-produce and investigate tomorrow.
+
+Oleg.
 
