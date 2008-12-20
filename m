@@ -1,93 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756508AbYLTBDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbYLTBUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756508AbYLTBDT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 20:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbYLTBBA
+	id S1754239AbYLTBUp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 20:20:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYLTBUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 20:01:00 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:54034 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753583AbYLTBA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 20:00:58 -0500
-Message-Id: <20081220010044.972109000@polaris-admin.engr.sgi.com>
-References: <20081220010043.879277000@polaris-admin.engr.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 19 Dec 2008 17:00:51 -0800
-From: Mike Travis <travis@sgi.com>
-To: Ingo Molnar <mingo@redhat.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [PATCH 8/8] cpumask: use percpu allocations instead of array in arch/x86/kernel/cpu/mcheck/mce_64.c From: Rusty Russell <rusty@rustcorp.com.au>
-Content-Disposition: inline; filename=cpumask:percpu_alloc-mce_64.patch
+	Fri, 19 Dec 2008 20:20:35 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57657 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751918AbYLTBUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 20:20:34 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <OF4F5F89AF.8F313531-ON88257524.006A611A-88257524.006D49B8@us.ibm.com>
+References: <OF4F5F89AF.8F313531-ON88257524.006A611A-88257524.006D49B8@us.ibm.com>
+To: Bryan Henderson <hbryan@us.ibm.com>
+Cc: dhowells@redhat.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Muntz, Daniel" <Dan.Muntz@netapp.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org, rwheeler@redhat.com,
+       sfr@canb.auug.org.au, steved@redhat.com
+Subject: Re: Pull request for FS-Cache, including NFS patches
+Date: Sat, 20 Dec 2008 01:20:05 +0000
+Message-ID: <13180.1229736005@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: reduce memory usage, use alloc_percpu().
+Bryan Henderson <hbryan@us.ibm.com> wrote:
 
-Instead of allocating an nr_cpu_ids array, most places should be using
-percpu_alloc().  This doesn't waste space if cpu numbers aren't
-contiguous.
+> > > AFS was designed to support local disk cache, so with callbacks you can
+> > > get a consistent system.
+> > 
+> > It's less the callbacks and more the data version number that's important.
+> 
+> Maybe for consistency, but for the performance benefits of local disk
+> caching, I believe the callbacks are pretty important.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Mike Travis <travis@sgi.com>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Dave Jones <davej@redhat.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>
----
- arch/x86/kernel/cpu/mcheck/mce_64.c |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+Indeed, but he said "so with callbacks you can get a _consistent_ system".
 
---- linux-2.6-for-ingo.orig/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ linux-2.6-for-ingo/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -568,7 +568,7 @@ static void collect_tscs(void *data)
- {
- 	unsigned long *cpu_tsc = (unsigned long *)data;
- 
--	rdtscll(cpu_tsc[smp_processor_id()]);
-+	rdtscll(*per_cpu_ptr(cpu_tsc, smp_processor_id()));
- }
- 
- static ssize_t mce_read(struct file *filp, char __user *ubuf, size_t usize,
-@@ -580,7 +580,7 @@ static ssize_t mce_read(struct file *fil
- 	char __user *buf = ubuf;
- 	int i, err;
- 
--	cpu_tsc = kmalloc(nr_cpu_ids * sizeof(long), GFP_KERNEL);
-+	cpu_tsc = alloc_percpu(unsigned long);
- 	if (!cpu_tsc)
- 		return -ENOMEM;
- 
-@@ -590,7 +590,7 @@ static ssize_t mce_read(struct file *fil
- 	/* Only supports full reads right now */
- 	if (*off != 0 || usize < MCE_LOG_LEN*sizeof(struct mce)) {
- 		mutex_unlock(&mce_read_mutex);
--		kfree(cpu_tsc);
-+		free_percpu(cpu_tsc);
- 		return -EINVAL;
- 	}
- 
-@@ -624,7 +624,8 @@ static ssize_t mce_read(struct file *fil
- 	on_each_cpu(collect_tscs, cpu_tsc, 1);
- 	for (i = next; i < MCE_LOG_LEN; i++) {
- 		if (mcelog.entry[i].finished &&
--		    mcelog.entry[i].tsc < cpu_tsc[mcelog.entry[i].cpu]) {
-+		    mcelog.entry[i].tsc < *per_cpu_ptr(cpu_tsc,
-+						       mcelog.entry[i].cpu)) {
- 			err |= copy_to_user(buf, mcelog.entry+i,
- 					    sizeof(struct mce));
- 			smp_rmb();
-@@ -633,7 +634,7 @@ static ssize_t mce_read(struct file *fil
- 		}
- 	}
- 	mutex_unlock(&mce_read_mutex);
--	kfree(cpu_tsc);
-+	free_percpu(cpu_tsc);
- 	return err ? -EFAULT : buf - ubuf;
- }
- 
-
--- 
+David
