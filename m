@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbYLTBqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbYLTB43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbYLTBqs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Dec 2008 20:46:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYLTBqk
+	id S1755123AbYLTB43 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Dec 2008 20:56:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYLTB4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 19 Dec 2008 20:46:40 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:55487 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbYLTBqj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Dec 2008 20:46:39 -0500
-Date: Fri, 19 Dec 2008 20:46:38 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Pekka Paalanen <pq@iki.fi>
-cc: Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Markus Metzger <markus.t.metzger@gmail.com>
-Subject: Re: ftrace behaviour (was: [PATCH] ftrace: introduce
- tracing_reset_online_cpus() helper)
-In-Reply-To: <20081220033822.362bc88a@daedalus.pq.iki.fi>
-Message-ID: <alpine.DEB.1.10.0812192043320.29275@gandalf.stny.rr.com>
-References: <Pine.LNX.4.64.0812191207130.6888@melkki.cs.Helsinki.FI> <c62985530812190247i705d9c3er7662a1b133c6eb29@mail.gmail.com> <alpine.DEB.1.10.0812191216190.26432@gandalf.stny.rr.com> <20081220004453.50aec846@daedalus.pq.iki.fi> <20081219225717.GK13409@elte.hu>
- <alpine.DEB.1.10.0812191810110.26234@gandalf.stny.rr.com> <20081219233443.GC17984@elte.hu> <alpine.DEB.1.10.0812191912280.26234@gandalf.stny.rr.com> <20081220033822.362bc88a@daedalus.pq.iki.fi>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 19 Dec 2008 20:56:17 -0500
+Received: from gw.goop.org ([64.81.55.164]:33399 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752250AbYLTB4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Dec 2008 20:56:15 -0500
+Message-ID: <494C50BB.5030809@goop.org>
+Date: Fri, 19 Dec 2008 17:56:11 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081119)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Evgeniy Polyakov <zbr@ioremap.net>
+CC: Vladislav Bolkhovitin <vst@vlnb.net>, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Jeff Garzik <jeff@garzik.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>, netdev@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH][RFC 23/23]: Support for zero-copy TCP transmit of user
+ space data
+References: <494009D7.4020602@vlnb.net> <494012C4.7090304@vlnb.net> <494C0255.8010208@goop.org> <20081219220452.GB704@ioremap.net> <494C1E5E.7070809@goop.org> <20081219223314.GA2736@ioremap.net>
+In-Reply-To: <20081219223314.GA2736@ioremap.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Evgeniy Polyakov wrote:
+> Shared info is freed when there are no skbs referring to the shared info
+> in question. Skb holds all pages in shared info in the fraglist array,
+> so when it is about to be freed, it means that network stack does not
+> use it (particulary it will putpage every page in fraglist). Usually
+> there are two skbs in the network stack per packet in TCP (allocated at
+> once though via fastclone mechanims): one is provided to the device
+> (and will be freed there) and another one is placed into retransmit
+> queue, where it will be located and freed when ack has been received.
+>
+> There may be another layers which may clone skb, but its shared info
+> structure (shared between the clones) will only be freed when all users
+> freed appropriate cloned skbs.
+>   
 
-On Sat, 20 Dec 2008, Pekka Paalanen wrote:
+I see.  One more question: how would I go about submitting some data 
+with the callback attached to it?
 
-> On Fri, 19 Dec 2008 19:29:30 -0500 (EST)
-> Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> I thought this was just about not having to do
-> 
-> $ echo 0 > tracing_enabled
-> $ echo 28764243 > buffer_size
-> $ echo 1 > tracing_enabled
-> 
-> and instead just do
-> 
-> $ echo 28764243 > buffer_size
-> 
-> which would do exactly the same, except being easier for the user.
-> Personally I've never dreamed of any kind of resize-in-flight.
-> 
-
-To implement this at the ftrace level should be a trivial change. I'm just 
-saying that doing this at the "ring buffer" level might be a bit more 
-complex. The ring buffer has no idea of ftrace. It should not. It is at 
-a lower lever than ftrace. Although, I do think some of the protecting 
-that is done at the tracing level during resize should be moved down into 
-the ring buffer layer.
-
--- Steve
-
+    J
