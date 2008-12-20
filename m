@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbYLTOcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754935AbYLTOcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754646AbYLTOcR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 09:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYLTOaO
+	id S1754935AbYLTOcr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 09:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYLTOaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 09:30:14 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:41315 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751920AbYLTOaH (ORCPT
+	Sat, 20 Dec 2008 09:30:18 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:56392 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751946AbYLTOaJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 09:30:07 -0500
+	Sat, 20 Dec 2008 09:30:09 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Cc: Peter Korsgaard <jacmet@sunsite.dk>, Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 15/26] setlocalversion: print correct subversion revision
-Date: Sat, 20 Dec 2008 15:31:26 +0100
-Message-Id: <1229783497-19550-15-git-send-email-sam@ravnborg.org>
+Cc: Mike Frysinger <vapier@gentoo.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 05/26] kbuild: use KECHO convenience echo
+Date: Sat, 20 Dec 2008 15:31:16 +0100
+Message-Id: <1229783497-19550-5-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.0.2.GIT
 In-Reply-To: <20081220142518.GA19390@uranus.ravnborg.org>
 References: <20081220142518.GA19390@uranus.ravnborg.org>
@@ -23,30 +23,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Korsgaard <jacmet@sunsite.dk>
+From: Mike Frysinger <vapier@gentoo.org>
 
-Output svn revision of latest change, instead of repo revision as thats
-what we're interested in (especially when working on a branch/tag).
+Convert a few echos in the build system to new $(kecho) so we get correct
+output according to build verbosity.
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+[sam: added kecho in a few more places for O=... builds]
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/setlocalversion |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ Makefile                    |    8 ++++----
+ arch/blackfin/boot/Makefile |    2 +-
+ scripts/Kbuild.include      |   11 ++---------
+ 3 files changed, 7 insertions(+), 14 deletions(-)
 
-diff --git a/scripts/setlocalversion b/scripts/setlocalversion
-index 72d2335..81d984b 100755
---- a/scripts/setlocalversion
-+++ b/scripts/setlocalversion
-@@ -51,7 +51,7 @@ if hgid=`hg id 2>/dev/null`; then
- fi
+diff --git a/Makefile b/Makefile
+index 3075586..3a6ac68 100644
+--- a/Makefile
++++ b/Makefile
+@@ -926,7 +926,7 @@ PHONY += prepare archprepare prepare0 prepare1 prepare2 prepare3
+ # 2) Create the include2 directory, used for the second asm symlink
+ prepare3: include/config/kernel.release
+ ifneq ($(KBUILD_SRC),)
+-	@echo '  Using $(srctree) as source for kernel'
++	@$(kecho) '  Using $(srctree) as source for kernel'
+ 	$(Q)if [ -f $(srctree)/.config -o -d $(srctree)/include/config ]; then \
+ 		echo "  $(srctree) is not clean, please run 'make mrproper'";\
+ 		echo "  in the '$(srctree)' directory.";\
+@@ -983,7 +983,7 @@ endef
+ # directory for generated filesas used by some architectures.
+ define create-symlink
+ 	if [ ! -L include/asm ]; then                                      \
+-			echo '  SYMLINK $@ -> include/asm-$(SRCARCH)';     \
++			$(kecho) '  SYMLINK $@ -> include/asm-$(SRCARCH)'; \
+ 			if [ ! -d include/asm-$(SRCARCH) ]; then           \
+ 				mkdir -p include/asm-$(SRCARCH);           \
+ 			fi;                                                \
+@@ -1096,7 +1096,7 @@ all: modules
+ PHONY += modules
+ modules: $(vmlinux-dirs) $(if $(KBUILD_BUILTIN),vmlinux)
+ 	$(Q)$(AWK) '!x[$$0]++' $(vmlinux-dirs:%=$(objtree)/%/modules.order) > $(objtree)/modules.order
+-	@echo '  Building modules, stage 2.';
++	@$(kecho) '  Building modules, stage 2.';
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.fwinst obj=firmware __fw_modbuild
  
- # Check for svn and a svn repo.
--if rev=`svn info 2>/dev/null | grep '^Revision'`; then
-+if rev=`svn info 2>/dev/null | grep '^Last Changed Rev'`; then
- 	rev=`echo $rev | awk '{print $NF}'`
- 	changes=`svn status 2>/dev/null | grep '^[AMD]' | wc -l`
+@@ -1360,7 +1360,7 @@ $(module-dirs): crmodverdir $(objtree)/Module.symvers
+ 	$(Q)$(MAKE) $(build)=$(patsubst _module_%,%,$@)
  
+ modules: $(module-dirs)
+-	@echo '  Building modules, stage 2.';
++	@$(kecho) '  Building modules, stage 2.';
+ 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
+ 
+ PHONY += modules_install
+diff --git a/arch/blackfin/boot/Makefile b/arch/blackfin/boot/Makefile
+index 522f3c1..e028d13 100644
+--- a/arch/blackfin/boot/Makefile
++++ b/arch/blackfin/boot/Makefile
+@@ -25,7 +25,7 @@ $(obj)/vmlinux.gz: $(obj)/vmlinux.bin FORCE
+ 
+ $(obj)/vmImage: $(obj)/vmlinux.gz
+ 	$(call if_changed,uimage)
+-	@echo 'Kernel: $@ is ready'
++	@$(kecho) 'Kernel: $@ is ready'
+ 
+ install:
+ 	sh $(srctree)/$(src)/install.sh $(KERNELRELEASE) $(BOOTIMAGE) System.map "$(INSTALL_PATH)"
+diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
+index 8cf87e8..c29be8f 100644
+--- a/scripts/Kbuild.include
++++ b/scripts/Kbuild.include
+@@ -46,22 +46,15 @@ kecho := $($(quiet)kecho)
+ # - If they are equal no change, and no timestamp update
+ # - stdin is piped in from the first prerequisite ($<) so one has
+ #   to specify a valid file as first prerequisite (often the kbuild file)
+-       chk_filechk = :
+- quiet_chk_filechk = echo '  CHK     $@'
+-silent_chk_filechk = :
+-       upd_filechk = :
+- quiet_upd_filechk = echo '  UPD     $@'
+-silent_upd_filechk = :
+-
+ define filechk
+ 	$(Q)set -e;				\
+-	$($(quiet)chk_filechk);			\
++	$(kecho) '  CHK     $@';		\
+ 	mkdir -p $(dir $@);			\
+ 	$(filechk_$(1)) < $< > $@.tmp;		\
+ 	if [ -r $@ ] && cmp -s $@ $@.tmp; then	\
+ 		rm -f $@.tmp;			\
+ 	else					\
+-		$($(quiet)upd_filechk);		\
++		$(kecho) '  UPD     $@';	\
+ 		mv -f $@.tmp $@;		\
+ 	fi
+ endef
 -- 
 1.6.0.2.GIT
 
