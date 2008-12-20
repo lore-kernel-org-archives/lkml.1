@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752484AbYLTObY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754383AbYLTObi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752484AbYLTObY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 09:31:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbYLTOaK
+	id S1754383AbYLTObi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 09:31:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbYLTOaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 09:30:10 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:56387 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751814AbYLTOaH (ORCPT
+	Sat, 20 Dec 2008 09:30:12 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:41286 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751868AbYLTOaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 20 Dec 2008 09:30:07 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: kbuild <linux-kbuild@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 01/26] kbuild: fix -I option expansion with O=... builds
-Date: Sat, 20 Dec 2008 15:31:12 +0100
-Message-Id: <1229783497-19550-1-git-send-email-sam@ravnborg.org>
+Cc: Mike Frysinger <vapier@gentoo.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 03/26] kbuild: kill output in silent mode of mkcompile_h
+Date: Sat, 20 Dec 2008 15:31:14 +0100
+Message-Id: <1229783497-19550-3-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.0.2.GIT
 In-Reply-To: <20081220142518.GA19390@uranus.ravnborg.org>
 References: <20081220142518.GA19390@uranus.ravnborg.org>
@@ -23,41 +23,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When adding extra -I options with O=... we could
-end up in a situation where there were no parameters to -I.
-So we had a commandline that looked like this:
+From: Mike Frysinger <vapier@gentoo.org>
 
-    ... -I -Wall ...
+The mkcompile_h script does `echo` regardless of silent mode the make is
+running at, so have it respect $quiet from kbuild and only echo when not in
+silent mode.
 
-This had the undesired side effect that gcc assumed "-Wall"
-was a path to look for include files so this options was
-effectively ignored.
-
-This happens only when we build the generated module.mod.c files
-as part of the final modules builds and is as such harmless
-with current kbuild.
-This bug was exposed when we rearranged the options to gcc.
-
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/Kbuild.include |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ scripts/mkcompile_h |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
-index 982dcae..936940b 100644
---- a/scripts/Kbuild.include
-+++ b/scripts/Kbuild.include
-@@ -144,7 +144,9 @@ ld-option = $(call try-run,\
- build := -f $(if $(KBUILD_SRC),$(srctree)/)scripts/Makefile.build obj
+diff --git a/scripts/mkcompile_h b/scripts/mkcompile_h
+index a8740df..6a12dd9 100755
+--- a/scripts/mkcompile_h
++++ b/scripts/mkcompile_h
+@@ -4,6 +4,8 @@ SMP=$3
+ PREEMPT=$4
+ CC=$5
  
- # Prefix -I with $(srctree) if it is not an absolute path.
--addtree = $(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1))) $(1)
-+# skip if -I has no parameter
-+addtree = $(if $(patsubst -I%,%,$(1)), \
-+$(if $(filter-out -I/%,$(1)),$(patsubst -I%,-I$(srctree)/%,$(1))) $(1))
++vecho() { [ "${quiet}" = "silent_" ] || echo "$@" ; }
++
+ # If compile.h exists already and we don't own autoconf.h
+ # (i.e. we're not the same user who did make *config), don't
+ # modify compile.h
+@@ -11,7 +13,7 @@ CC=$5
+ # do "compiled by root"
  
- # Find all -I options and call addtree
- flags = $(foreach o,$($(1)),$(if $(filter -I%,$(o)),$(call addtree,$(o)),$(o)))
+ if [ -r $TARGET -a ! -O include/linux/autoconf.h ]; then
+-  echo "  SKIPPED $TARGET"
++  vecho "  SKIPPED $TARGET"
+   exit 0
+ fi
+ 
+@@ -89,7 +91,7 @@ if [ -r $TARGET ] && \
+       cmp -s .tmpver.1 .tmpver.2; then
+    rm -f .tmpcompile
+ else
+-   echo "  UPD     $TARGET"
++   vecho "  UPD     $TARGET"
+    mv -f .tmpcompile $TARGET
+ fi
+ rm -f .tmpver.1 .tmpver.2
 -- 
 1.6.0.2.GIT
 
