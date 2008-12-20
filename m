@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbYLTJfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbYLTKEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624AbYLTJfY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 20 Dec 2008 04:35:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYLTJfM
+	id S1753151AbYLTKEp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 20 Dec 2008 05:04:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYLTKEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 20 Dec 2008 04:35:12 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51791 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751241AbYLTJfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 20 Dec 2008 04:35:11 -0500
-Message-ID: <494CBB6D.9070106@cn.fujitsu.com>
-Date: Sat, 20 Dec 2008 17:31:25 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Sat, 20 Dec 2008 05:04:37 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:54356 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751309AbYLTKEg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 20 Dec 2008 05:04:36 -0500
+Date: Sat, 20 Dec 2008 15:32:28 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
+       venkatesh.pallipadi@intel.com, a.p.zijlstra@chello.nl, mingo@elte.hu,
+       dipankar@in.ibm.com, balbir@linux.vnet.ibm.com,
+       vatsa@linux.vnet.ibm.com, ego@in.ibm.com, andi@firstfloor.org,
+       davecb@sun.com, tconnors@astro.swin.edu.au, maxk@qualcomm.com,
+       gregory.haskins@gmail.com, pavel@suse.cz,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH v7 4/8] sched: nominate preferred wakeup cpu
+Message-ID: <20081220100228.GB24181@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <20081218175622.29812.69201.stgit@drishya.in.ibm.com> <20081219135508.9c6217ba.akpm@linux-foundation.org> <20081220043638.GA24181@dirshya.in.ibm.com> <20081219204455.5f954823.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ring_bufer: fix BUF_PAGE_SIZE
-References: <4948CADF.6050205@cn.fujitsu.com> <20081218124803.GA31763@elte.hu>
-In-Reply-To: <20081218124803.GA31763@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20081219204455.5f954823.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> 
->> impact: make BUF_PAGE_SIZE changeable.
->>
->> Except allocating/freeing page and the code using PAGE_MASK,
->> all code expect buffer_page's length is BUF_PAGE_SIZE.
->>
->> This patch make this behavior more concordant.
->>
-[...]
-> 
-> hm, why? Non-order-0 allocations are pretty evil - why would we ever want 
-> to do them?
-> 
-> 	Ingo
-> 
+* Andrew Morton <akpm@linux-foundation.org> [2008-12-19 20:44:55]:
 
-I think since we introduce BUF_PAGE_SIZE instead of PAGE_SIZE for
-buffer_page, we should make it changeable. We can use Non-order-0
-allocations, but it doesn't mean we have to use Non-order-0 allocations.
+> On Sat, 20 Dec 2008 10:06:38 +0530 Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> 
+> > > 
+> > > kernel/sched.c: In function 'schedule':
+> > > kernel/sched.c:3679: warning: 'active_balance' may be used uninitialized in this function
+> > > 
+> > > This warning is correct - the code is buggy.
+> > 
+> > Yes this is my code bug.  I did not see the warning in sched.c.  Is
+> > there any build option that I need to pass in order to get -Wall
+> > effect?
+> 
+> That was just with plain old kbuild: `make allmodconfig;make'.
+> 
+> That warning was produced by gcc-4.0.2.  If you're using something more
+> recent then gcc has regressed.
 
-In the old codes, these lines confuse me:
-return (addr & ~PAGE_MASK) - (PAGE_SIZE - BUF_PAGE_SIZE);
-addr &= PAGE_MASK;
-This patch mostly make the codes concordant.
+This is an interesting problem.  I am unable to get that warning in the
+following GCC versions even with a combination of the following
+cmdline options: -Wall -Wextra -Wuninitialized
 
-	Lai
+gcc version 4.1.2 20070502
+gcc version 4.2.3
 
+I will look for older gcc and check this out.
+
+--Vaidy
 
