@@ -1,107 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbYLUU61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751580AbYLUU6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753043AbYLUU61 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 15:58:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYLUU5y
+	id S1751580AbYLUU6m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 15:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYLUU56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 15:57:54 -0500
-Received: from fk-out-0910.google.com ([209.85.128.190]:59074 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbYLUU5u (ORCPT
+	Sun, 21 Dec 2008 15:57:58 -0500
+Received: from mail-bw0-f21.google.com ([209.85.218.21]:56112 "EHLO
+	mail-bw0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751251AbYLUU5z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 15:57:50 -0500
+	Sun, 21 Dec 2008 15:57:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
          :mime-version:content-disposition:message-id:content-type
          :content-transfer-encoding;
-        b=tUGZdweg38Fi7vlRWHyITDTI+DiTyC3Xm+jSax2nwWDp/4kvALfrIUUzlviAn+MtWh
-         WsgI6h9trpFHHm3k2F3kFsH5YexvdwrPf7Ck6ozuVmi4boDgCjoeT1qFUQuq0h8jFEI5
-         iPBkHrGnYMxvbKGc1R2wPY1mQswFcUNSu9kFw=
+        b=LNRcBcN21g5QPobCyKgk8BSoCRsM2mL/3r7IndOE8xRxmAs2RwaowGtPLZXGmctFOD
+         3sF/Z78jXw4UdKwCzDkmOmLgOxv5JgK7Fr3qZOH0J98TN0E1oYzA/hkIqrrazl+v8wZi
+         I0NTeqkXdWveQH+sTo4N3SDi7s8Q/Z4dIA9I4=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 2/8] ide-atapi: assign expiry and timeout based on device type
-Date: Sun, 21 Dec 2008 20:06:03 +0100
+Subject: Re: [PATCH 5/8] ide-cd: remove handler wrappers
+Date: Sun, 21 Dec 2008 20:15:37 +0100
 User-Agent: KMail/1.10.3 (Linux/2.6.28-rc8-next-20081219; KDE/4.1.3; i686; ; )
 Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Borislav Petkov <petkovbb@gmail.com>
-References: <1229586052-3542-1-git-send-email-petkovbb@gmail.com> <1229586052-3542-3-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1229586052-3542-3-git-send-email-petkovbb@gmail.com>
+References: <1229586052-3542-1-git-send-email-petkovbb@gmail.com> <1229586052-3542-6-git-send-email-petkovbb@gmail.com>
+In-Reply-To: <1229586052-3542-6-git-send-email-petkovbb@gmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200812212006.04629.bzolnier@gmail.com>
+Message-Id: <200812212015.39677.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id mBLKwpki010489
 
-On Thursday 18 December 2008, Borislav Petkov wrote:
-> There should be no functionality change resulting from this patch.
-> 
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> ---
->  drivers/ide/ide-atapi.c |   35 ++++++++++++++++++++---------------
->  1 files changed, 20 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-> index 5c143b4..5295b26 100644
-> --- a/drivers/ide/ide-atapi.c
-> +++ b/drivers/ide/ide-atapi.c
-> @@ -514,9 +514,28 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
->  		cmd_len = COMMAND_SIZE(rq->cmd[0]);
->  		if (cmd_len < ATAPI_MIN_CDB_BYTES)
->  			cmd_len = ATAPI_MIN_CDB_BYTES;
-> -	} else
-> +
-> +		timeout = rq->timeout;
-> +		expiry  = ide_cd_expiry;
-> +
-> +	} else {
->  		cmd_len = ATAPI_MIN_CDB_BYTES;
->  
-> +		/*
-> +		 * If necessary schedule the packet transfer to occur 'timeout'
-> +		 * miliseconds later in ide_delayed_transfer_pc() after the
-> +		 * device says it's ready for a packet.
-> +		 */
-> +		if (drive->atapi_flags & IDE_AFLAG_ZIP_DRIVE) {
-> +			timeout = drive->pc_delay;
-> +			expiry = &ide_delayed_transfer_pc;
-> +		} else {
-> +			timeout = (drive->media == ide_floppy) ? WAIT_FLOPPY_CMD
-> +							       : WAIT_TAPE_CMD;
-> +			expiry = NULL;
-> +		}
-> +	}
-> +
->  	ireason = ide_read_ireason(drive);
->  	if (drive->media == ide_tape)
->  		ireason = ide_wait_ireason(drive, ireason);
-> @@ -528,20 +547,6 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
->  		return ide_do_reset(drive);
->  	}
-
-If we add dev_is_idecd() check here in patch #1 it won't be necessary to
-needlessly move the code around in this patch and it would also result in
-smaller resulting code (42 bytes saved on x86-32)...
-
-[ I updated patches 1-2 accordingly while merging them. ]
-
-> -	/*
-> -	 * If necessary schedule the packet transfer to occur 'timeout'
-> -	 * miliseconds later in ide_delayed_transfer_pc() after the device
-> -	 * says it's ready for a packet.
-> -	 */
-> -	if (drive->atapi_flags & IDE_AFLAG_ZIP_DRIVE) {
-> -		timeout = drive->pc_delay;
-> -		expiry = &ide_delayed_transfer_pc;
-> -	} else {
-> -		timeout = (drive->media == ide_floppy) ? WAIT_FLOPPY_CMD
-> -						       : WAIT_TAPE_CMD;
-> -		expiry = NULL;
-> -	}
-> -
->  	/* Set the interrupt routine */
->  	ide_set_handler(drive, ide_pc_intr, timeout, expiry);
+On Thursday 18 December 2008, Borislav Petkov wrote:> Remove cdrom_do_newpc_cont and cdrom_start_rw_cont wrappers and pass> cdrom_transfer_packet_command to ide_execute_command directly.> > There should be no functionality change resulting from this patch.> > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>> --->  drivers/ide/ide-cd.c |  121 ++++++++++++++++++++------------------------------>  1 files changed, 48 insertions(+), 73 deletions(-)> > diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c> index 34981f5..f3c7cc3 100644> --- a/drivers/ide/ide-cd.c> +++ b/drivers/ide/ide-cd.c> @@ -511,48 +511,7 @@ end_request:>  	return 1;>  }>  > -/*> - * Set up the device registers for transferring a packet command on DEV,> - * expecting to later transfer XFERLEN bytes.  HANDLER is the routine> - * which actually transfers the command to the drive.  If this is a> - * drq_interrupt device, this routine will arrange for HANDLER to be> - * called when the interrupt from the drive arrives.  Otherwise, HANDLER> - * will be called immediately after the drive is prepared for the transfer.> - */> -static ide_startstop_t cdrom_start_packet_command(ide_drive_t *drive,> -						  ide_handler_t *handler)> -{> -	ide_hwif_t *hwif = drive->hwif;> -	struct request *rq = hwif->hwgroup->rq;> -	int xferlen;> -> -	xferlen = ide_cd_get_xferlen(rq);> -> -	ide_debug_log(IDE_DBG_PC, "Call %s, xferlen: %d\n", __func__, xferlen);> -> -	/* FIXME: for Virtual DMA we must check harder */> -	if (drive->dma)> -		drive->dma = !hwif->dma_ops->dma_setup(drive);> -> -	/* set up the controller registers */> -	ide_pktcmd_tf_load(drive, IDE_TFLAG_OUT_NSECT | IDE_TFLAG_OUT_LBAL,> -			   xferlen, drive->dma);> -> -	if (drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT) {> -		/* waiting for CDB interrupt, not DMA yet. */> -		if (drive->dma)> -			drive->waiting_for_dma = 0;> -> -		/* packet command */> -		ide_execute_command(drive, ATA_CMD_PACKET, handler,> -				    ATAPI_WAIT_PC, ide_cd_expiry);> -		return ide_started;> -	} else {> -		ide_execute_pkt_cmd(drive);> -> -		return (*handler) (drive);> -	}> -}> +static ide_startstop_t cdrom_newpc_intr(ide_drive_t *);>  >  /*>   * Send a packet command to DRIVE described by CMD_BUF and CMD_LEN. The device> @@ -561,11 +520,10 @@ static ide_startstop_t cdrom_start_packet_command(ide_drive_t *drive,>   * there's data ready.>   */>  #define ATAPI_MIN_CDB_BYTES 12> -static ide_startstop_t cdrom_transfer_packet_command(ide_drive_t *drive,> -					  struct request *rq,> -					  ide_handler_t *handler)> +static ide_startstop_t cdrom_transfer_packet_command(ide_drive_t *drive)>  {>  	ide_hwif_t *hwif = drive->hwif;> +	struct request *rq = hwif->hwgroup->rq;>  	int cmd_len;>  	ide_startstop_t startstop;>  > @@ -592,7 +550,7 @@ static ide_startstop_t cdrom_transfer_packet_command(ide_drive_t *drive,>  	}>  >  	/* arm the interrupt handler */> -	ide_set_handler(drive, handler, rq->timeout, ide_cd_expiry);> +	ide_set_handler(drive, cdrom_newpc_intr, rq->timeout, ide_cd_expiry);>  >  	/* ATAPI commands get padded out to 12 bytes minimum */>  	cmd_len = COMMAND_SIZE(rq->cmd[0]);> @@ -610,6 +568,49 @@ static ide_startstop_t cdrom_transfer_packet_command(ide_drive_t *drive,>  }>  >  /*> + * Set up the device registers for transferring a packet command on DEV,> + * expecting to later transfer XFERLEN bytes.  HANDLER is the routine> + * which actually transfers the command to the drive.  If this is a> + * drq_interrupt device, this routine will arrange for HANDLER to be> + * called when the interrupt from the drive arrives.  Otherwise, HANDLER> + * will be called immediately after the drive is prepared for the transfer.> + */> +static ide_startstop_t cdrom_start_packet_command(ide_drive_t *drive)> +{> +	ide_hwif_t *hwif = drive->hwif;> +	struct request *rq = hwif->hwgroup->rq;> +	int xferlen;> +> +	xferlen = ide_cd_get_xferlen(rq);> +> +	ide_debug_log(IDE_DBG_PC, "Call %s, xferlen: %d\n", __func__, xferlen);> +> +	/* FIXME: for Virtual DMA we must check harder */> +	if (drive->dma)> +		drive->dma = !hwif->dma_ops->dma_setup(drive);> +> +	/* set up the controller registers */> +	ide_pktcmd_tf_load(drive, IDE_TFLAG_OUT_NSECT | IDE_TFLAG_OUT_LBAL,> +			   xferlen, drive->dma);> +> +	if (drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT) {> +		/* waiting for CDB interrupt, not DMA yet. */> +		if (drive->dma)> +			drive->waiting_for_dma = 0;> +> +		/* packet command */> +		ide_execute_command(drive, ATA_CMD_PACKET,> +				    cdrom_transfer_packet_command,> +				    ATAPI_WAIT_PC, ide_cd_expiry);> +		return ide_started;> +	} else {> +		ide_execute_pkt_cmd(drive);> +> +		return cdrom_transfer_packet_command(drive);> +	}> +}> +> +/*>   * Check the contents of the interrupt reason register from the cdrom>   * and attempt to recover if there are problems.  Returns  0 if everything's>   * ok; nonzero if the request has been terminated.> @@ -680,8 +681,6 @@ static int ide_cd_check_transfer_size(ide_drive_t *drive, int len)>  	return 1;>  }>  > -static ide_startstop_t cdrom_newpc_intr(ide_drive_t *);> ->  static ide_startstop_t ide_cd_prepare_rw_request(ide_drive_t *drive,>  						 struct request *rq)>  {> @@ -724,20 +723,6 @@ static ide_startstop_t ide_cd_prepare_rw_request(ide_drive_t *drive,>  }>  >  /*> - * Routine to send a read/write packet command to the drive. This is usually> - * called directly from cdrom_start_{read,write}(). However, for drq_interrupt> - * devices, it is called from an interrupt when the drive is ready to accept> - * the command.> - */> -static ide_startstop_t cdrom_start_rw_cont(ide_drive_t *drive)> -{> -	struct request *rq = drive->hwif->hwgroup->rq;> -> -	/* send the command to the drive and return */> -	return cdrom_transfer_packet_command(drive, rq, cdrom_newpc_intr);> -}> -> -/*>   * Fix up a possibly partially-processed request so that we can start it over>   * entirely, or even put it back on the request queue.>   */> @@ -1126,13 +1111,6 @@ static ide_startstop_t cdrom_start_rw(ide_drive_t *drive, struct request *rq)>  	return ide_started;>  }>  > -static ide_startstop_t cdrom_do_newpc_cont(ide_drive_t *drive)> -{> -	struct request *rq = HWGROUP(drive)->rq;> -> -	return cdrom_transfer_packet_command(drive, rq, cdrom_newpc_intr);> -}> ->  static void cdrom_do_block_pc(ide_drive_t *drive, struct request *rq)>  {>  > @@ -1177,7 +1155,6 @@ static void cdrom_do_block_pc(ide_drive_t *drive, struct request *rq)>  static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,>  					sector_t block)>  {> -	ide_handler_t *fn;>  >  	ide_debug_log(IDE_DBG_RQ, "Call %s, rq->cmd[0]: 0x%x, ">  		      "rq->cmd_type: 0x%x, block: %llu\n",> @@ -1185,7 +1162,6 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,>  		      (unsigned long long)block);>  >  	if (blk_fs_request(rq)) {> -		fn = cdrom_start_rw_cont;>  >  		if (cdrom_start_rw(drive, rq) == ide_stopped)>  			return ide_stopped;> @@ -1194,7 +1170,6 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,>  			return ide_stopped;>  	} else if (blk_sense_request(rq) || blk_pc_request(rq) ||>  		   rq->cmd_type == REQ_TYPE_ATA_PC) {> -		fn = cdrom_do_newpc_cont;>  >  		if (!rq->timeout)>  			rq->timeout = ATAPI_WAIT_PC;> @@ -1210,7 +1185,7 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,>  		return ide_stopped;>  	}>  > -	return cdrom_start_packet_command(drive, fn);> +	return cdrom_start_packet_command(drive);>  }
+There is no need to move cdrom_start_packet_command() around (especiallysince it goes away in patch #9/8) and not doing so allows to see changesto the function immediately.  Fixed in the merged patch version:
+From: Borislav Petkov <petkovbb@googlemail.com>Subject: [PATCH 5/8] ide-cd: remove handler wrappers
+Remove cdrom_do_newpc_cont and cdrom_start_rw_cont wrappers and passcdrom_transfer_packet_command to ide_execute_command directly.
+There should be no functionality change resulting from this patch.
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>[bart: don't move cdrom_start_packet_command() around, remove newlines]Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>--- drivers/ide/ide-cd.c |   49 +++++++++++-------------------------------------- 1 file changed, 11 insertions(+), 38 deletions(-)
+Index: b/drivers/ide/ide-cd.c===================================================================--- a/drivers/ide/ide-cd.c+++ b/drivers/ide/ide-cd.c@@ -511,6 +511,9 @@ end_request: 	return 1; } +static ide_startstop_t cdrom_transfer_packet_command(ide_drive_t *);+static ide_startstop_t cdrom_newpc_intr(ide_drive_t *);+ /*  * Set up the device registers for transferring a packet command on DEV,  * expecting to later transfer XFERLEN bytes.  HANDLER is the routine@@ -519,8 +522,7 @@ end_request:  * called when the interrupt from the drive arrives.  Otherwise, HANDLER  * will be called immediately after the drive is prepared for the transfer.  */-static ide_startstop_t cdrom_start_packet_command(ide_drive_t *drive,-						  ide_handler_t *handler)+static ide_startstop_t cdrom_start_packet_command(ide_drive_t *drive) { 	ide_hwif_t *hwif = drive->hwif; 	struct request *rq = hwif->hwgroup->rq;@@ -544,13 +546,14 @@ static ide_startstop_t cdrom_start_packe 			drive->waiting_for_dma = 0;  		/* packet command */-		ide_execute_command(drive, ATA_CMD_PACKET, handler,+		ide_execute_command(drive, ATA_CMD_PACKET,+				    cdrom_transfer_packet_command, 				    ATAPI_WAIT_PC, ide_cd_expiry); 		return ide_started; 	} else { 		ide_execute_pkt_cmd(drive); -		return (*handler) (drive);+		return cdrom_transfer_packet_command(drive); 	} } @@ -561,11 +564,10 @@ static ide_startstop_t cdrom_start_packe  * there's data ready.  */ #define ATAPI_MIN_CDB_BYTES 12-static ide_startstop_t cdrom_transfer_packet_command(ide_drive_t *drive,-					  struct request *rq,-					  ide_handler_t *handler)+static ide_startstop_t cdrom_transfer_packet_command(ide_drive_t *drive) { 	ide_hwif_t *hwif = drive->hwif;+	struct request *rq = hwif->hwgroup->rq; 	int cmd_len; 	ide_startstop_t startstop; @@ -592,7 +594,7 @@ static ide_startstop_t cdrom_transfer_pa 	}  	/* arm the interrupt handler */-	ide_set_handler(drive, handler, rq->timeout, ide_cd_expiry);+	ide_set_handler(drive, cdrom_newpc_intr, rq->timeout, ide_cd_expiry);  	/* ATAPI commands get padded out to 12 bytes minimum */ 	cmd_len = COMMAND_SIZE(rq->cmd[0]);@@ -680,8 +682,6 @@ static int ide_cd_check_transfer_size(id 	return 1; } -static ide_startstop_t cdrom_newpc_intr(ide_drive_t *);- static ide_startstop_t ide_cd_prepare_rw_request(ide_drive_t *drive, 						 struct request *rq) {@@ -724,20 +724,6 @@ static ide_startstop_t ide_cd_prepare_rw }  /*- * Routine to send a read/write packet command to the drive. This is usually- * called directly from cdrom_start_{read,write}(). However, for drq_interrupt- * devices, it is called from an interrupt when the drive is ready to accept- * the command.- */-static ide_startstop_t cdrom_start_rw_cont(ide_drive_t *drive)-{-	struct request *rq = drive->hwif->hwgroup->rq;--	/* send the command to the drive and return */-	return cdrom_transfer_packet_command(drive, rq, cdrom_newpc_intr);-}--/*  * Fix up a possibly partially-processed request so that we can start it over  * entirely, or even put it back on the request queue.  */@@ -1126,13 +1112,6 @@ static ide_startstop_t cdrom_start_rw(id 	return ide_started; } -static ide_startstop_t cdrom_do_newpc_cont(ide_drive_t *drive)-{-	struct request *rq = HWGROUP(drive)->rq;--	return cdrom_transfer_packet_command(drive, rq, cdrom_newpc_intr);-}- static void cdrom_do_block_pc(ide_drive_t *drive, struct request *rq) { @@ -1177,16 +1156,12 @@ static void cdrom_do_block_pc(ide_drive_ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq, 					sector_t block) {-	ide_handler_t *fn;- 	ide_debug_log(IDE_DBG_RQ, "Call %s, rq->cmd[0]: 0x%x, " 		      "rq->cmd_type: 0x%x, block: %llu\n", 		      __func__, rq->cmd[0], rq->cmd_type, 		      (unsigned long long)block);  	if (blk_fs_request(rq)) {-		fn = cdrom_start_rw_cont;- 		if (cdrom_start_rw(drive, rq) == ide_stopped) 			return ide_stopped; @@ -1194,8 +1169,6 @@ static ide_startstop_t ide_cd_do_request 			return ide_stopped; 	} else if (blk_sense_request(rq) || blk_pc_request(rq) || 		   rq->cmd_type == REQ_TYPE_ATA_PC) {-		fn = cdrom_do_newpc_cont;- 		if (!rq->timeout) 			rq->timeout = ATAPI_WAIT_PC; @@ -1210,7 +1183,7 @@ static ide_startstop_t ide_cd_do_request 		return ide_stopped; 	} -	return cdrom_start_packet_command(drive, fn);+	return cdrom_start_packet_command(drive); }  /* ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
