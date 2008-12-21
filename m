@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755919AbYLUPl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbYLUPmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755919AbYLUPl5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 10:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbYLUPll
+	id S1755694AbYLUPmV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 10:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbYLUPmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 10:41:41 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:51639 "EHLO mgw1.diku.dk"
+	Sun, 21 Dec 2008 10:42:01 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:51660 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754290AbYLUPlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 10:41:39 -0500
-Date: Sun, 21 Dec 2008 16:41:36 +0100 (CET)
+	id S1755936AbYLUPmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 10:42:00 -0500
+Date: Sun, 21 Dec 2008 16:41:57 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: sfrench@samba.org, linux-cifs-client@lists.samba.org,
+       samba-technical@lists.samba.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 11/13] : Remove redundant test
-Message-ID: <Pine.LNX.4.64.0812211640580.9555@pc-004.diku.dk>
+Subject: [PATCH 12/13] fs/cifs: Remove redundant test
+Message-ID: <Pine.LNX.4.64.0812211641370.9555@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,8 +24,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-priv is checked not to be NULL near the beginning of the function and not
-changed subsequently, making the test redundant.
+In fs/cifs/cifssmb.c, pLockData is tested for being NULL at the beginning
+of the function, and not reassigned subsequently.
+
+In fs/xfs/xfs_trans_buf.c, bp is tested for being NULL just a few lines
+above.
 
 A simplified version of the semantic patch that makes this change is as
 follows: (http://www.emn.fr/x-info/coccinelle/)
@@ -77,47 +81,21 @@ statement S1,S2;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/usb/gadget/pxa27x_udc.c |    2 +-
- drivers/usb/serial/ftdi_sio.c   |   16 +++++++---------
- 2 files changed, 8 insertions(+), 10 deletions(-)
+ fs/cifs/cifssmb.c                   |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/usb/gadget/pxa27x_udc.c b/drivers/usb/gadget/pxa27x_udc.c
-index 990f40f..ee0d7a0 100644
---- a/drivers/usb/gadget/pxa27x_udc.c
-+++ b/drivers/usb/gadget/pxa27x_udc.c
-@@ -278,7 +278,7 @@ static void pxa_init_debugfs(struct pxa_udc *udc)
- 		goto err_queues;
- 	eps = debugfs_create_file("epstate", 0400, root, udc,
- 			&eps_dbg_fops);
--	if (!queues)
-+	if (!eps)
- 		goto err_eps;
- 
- 	udc->debugfs_root = root;
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index ef6cfa5..ad6142e 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -1928,15 +1928,13 @@ static void ftdi_process_read(struct work_struct *work)
- 		/* Compare new line status to the old one, signal if different/
- 		   N.B. packet may be processed more than once, but differences
- 		   are only processed once.  */
--		if (priv != NULL) {
--			char new_status = data[packet_offset + 0] &
--							FTDI_STATUS_B0_MASK;
--			if (new_status != priv->prev_status) {
--				priv->diff_status |=
--					new_status ^ priv->prev_status;
--				wake_up_interruptible(&priv->delta_msr_wait);
--				priv->prev_status = new_status;
--			}
-+		char new_status = data[packet_offset + 0] &
-+						FTDI_STATUS_B0_MASK;
-+		if (new_status != priv->prev_status) {
-+			priv->diff_status |=
-+				new_status ^ priv->prev_status;
-+			wake_up_interruptible(&priv->delta_msr_wait);
-+			priv->prev_status = new_status;
+diff --git a/fs/cifs/cifssmb.c b/fs/cifs/cifssmb.c
+index 824df14..552642a 100644
+--- a/fs/cifs/cifssmb.c
++++ b/fs/cifs/cifssmb.c
+@@ -1871,10 +1871,6 @@ CIFSSMBPosixLock(const int xid, struct cifsTconInfo *tcon,
+ 			rc = -EIO;      /* bad smb */
+ 			goto plk_err_exit;
  		}
- 
- 		length = min(PKTSZ, urb->actual_length-packet_offset)-2;
+-		if (pLockData == NULL) {
+-			rc = -EINVAL;
+-			goto plk_err_exit;
+-		}
+ 		data_offset = le16_to_cpu(pSMBr->t2.DataOffset);
+ 		data_count  = le16_to_cpu(pSMBr->t2.DataCount);
+ 		if (data_count < sizeof(struct cifs_posix_lock)) {
