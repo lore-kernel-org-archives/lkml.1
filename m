@@ -1,63 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbYLUPRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbYLUP2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbYLUPRv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 10:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbYLUPRl
+	id S1754486AbYLUP2l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 10:28:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYLUP23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 10:17:41 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:9223 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752142AbYLUPRk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 10:17:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=EBhAiqcKiN9eqbLEThihQBsNTn1S/TsFrUb/jWufkTH55+dN5ynbUQxbS3a25WgVfy
-         vmugHRDFySHU72UiA5m/ZY6WW9hNKH+vcU6iLELIDDVZqdHPeGY4rOYiEW8cYs8Lgez9
-         zQOoytjjBqNjnp1k2TcdcHufiQbIveHlaELZQ=
-Message-ID: <f7848160812210717w5e5cc7a2uc5571710f755ec99@mail.gmail.com>
-Date: Sun, 21 Dec 2008 10:17:39 -0500
-From: "Parag Warudkar" <parag.lkml@gmail.com>
-To: "Anssi Hannula" <anssi.hannula@gmail.com>
-Subject: Re: 2.6.28-rc9: USB Mouse unhappy
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org
-In-Reply-To: <494E20F7.7050106@gmail.com>
+	Sun, 21 Dec 2008 10:28:29 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:41694 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752142AbYLUP22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 10:28:28 -0500
+Date: Sun, 21 Dec 2008 16:28:21 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
+       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/13] s390: Remove redundant test
+Message-ID: <Pine.LNX.4.64.0812211628030.9555@pc-004.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f7848160812201911k7988221asd095ce873fd8105f@mail.gmail.com>
-	 <20081220221253.e09b1b1f.akpm@linux-foundation.org>
-	 <f7848160812202226w1f930c86vfd17a2b0163bfc56@mail.gmail.com>
-	 <494E20F7.7050106@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 21, 2008 at 5:56 AM, Anssi Hannula <anssi.hannula@gmail.com> wrote:
->
-> This sounds to me like 'usbmouse' gets used instead of 'usbhid' on
-> 2.6.28-rc9. Many users have reported only vertical movement with
-> 'usbmouse'. Better check the kernel configuration, if you had usbmouse
-> disabled in 2.6.27, then disable it with 2.6.28-rc9 as well.
+From: Julia Lawall <julia@diku.dk>
 
-Sure enough - rmmod usbhid; modprobe usbmouse reproduces the exact
-same problem on a working kernel.
+The loop above the modified code only terminates when rc is a valid pointer.
 
-But the thing is I use the same base configuration across all kernels
-I build (sans of course the newly added config options) - so something
-changed somewhere and now usbmouse gets used instead of usbhid.
+A simplified version of the semantic patch that makes this change is as
+follows: (http://www.emn.fr/x-info/coccinelle/)
 
-What's the deal with usbmouse though - is it supposed to be working or
-is it considered lost cause in favor of usbhid? May be if people don't
-need to use it and it is not actively looked into, we can
-disable/remove it?
+// <smpl>
+@r exists@
+local idexpression x;
+expression E;
+position p1,p2;
+@@
 
-Thanks
+if (x@p1 == NULL || ...) { ... when forall
+   return ...; }
+... when != \(x=E\|x--\|x++\|--x\|++x\|x-=E\|x+=E\|x|=E\|x&=E\|&x\)
+(
+x@p2 == NULL
+|
+x@p2 != NULL
+)
 
-Parag
+// another path to the test that is not through p1?
+@s exists@
+local idexpression r.x;
+position r.p1,r.p2;
+@@
+
+... when != x@p1
+(
+x@p2 == NULL
+|
+x@p2 != NULL
+)
+
+@fix depends on !s@
+position r.p1,r.p2;
+expression x,E;
+statement S1,S2;
+@@
+
+(
+- if ((x@p2 != NULL) || ...)
+  S1
+|
+- if ((x@p2 == NULL) && ...) S1
+|
+- BUG_ON(x@p2 == NULL);
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ arch/s390/kernel/debug.c          |    2 +-
+ drivers/s390/net/qeth_core_main.c |    1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/arch/s390/kernel/debug.c b/arch/s390/kernel/debug.c
+index 3665b18..e6c141c 100644
+--- a/arch/s390/kernel/debug.c
++++ b/arch/s390/kernel/debug.c
+@@ -391,7 +391,7 @@ debug_info_copy(debug_info_t* in, int mode)
+ 		debug_info_free(rc);
+ 	} while (1);
+ 
+-        if(!rc || (mode == NO_AREAS))
++	if (mode == NO_AREAS)
+                 goto out;
+ 
+         for(i = 0; i < in->nr_areas; i++){
+diff --git a/drivers/s390/net/qeth_core_main.c b/drivers/s390/net/qeth_core_main.c
+index bbd6788..e783644 100644
+--- a/drivers/s390/net/qeth_core_main.c
++++ b/drivers/s390/net/qeth_core_main.c
+@@ -2346,7 +2346,6 @@ static int qeth_init_input_buffer(struct qeth_card *card,
+ 	 * the QETH_IN_BUF_REQUEUE_THRESHOLD we should never run  out off
+ 	 * buffers
+ 	 */
+-	BUG_ON(!pool_entry);
+ 
+ 	buf->pool_entry = pool_entry;
+ 	for (i = 0; i < QETH_MAX_BUFFER_ELEMENTS(card); ++i) {
