@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbYLUIrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752949AbYLUIyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752731AbYLUIrV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 03:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYLUIrM
+	id S1752949AbYLUIyv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 03:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYLUIyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 03:47:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51095 "EHLO mx2.mail.elte.hu"
+	Sun, 21 Dec 2008 03:54:43 -0500
+Received: from www.tglx.de ([62.245.132.106]:50267 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751222AbYLUIrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 03:47:11 -0500
-Date: Sun, 21 Dec 2008 09:46:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com,
-       a.p.zijlstra@chello.nl, dipankar@in.ibm.com, balbir@linux.vnet.ibm.com,
-       vatsa@linux.vnet.ibm.com, ego@in.ibm.com, andi@firstfloor.org,
-       davecb@sun.com, tconnors@astro.swin.edu.au, maxk@qualcomm.com,
-       gregory.haskins@gmail.com, pavel@suse.cz,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH v7 4/8] sched: nominate preferred wakeup cpu
-Message-ID: <20081221084630.GD6395@elte.hu>
-References: <20081218175313.29812.4781.stgit@drishya.in.ibm.com> <20081218175622.29812.69201.stgit@drishya.in.ibm.com> <20081219135508.9c6217ba.akpm@linux-foundation.org> <20081220043638.GA24181@dirshya.in.ibm.com> <20081219204455.5f954823.akpm@linux-foundation.org> <20081220100228.GB24181@dirshya.in.ibm.com> <20081220103602.GC24181@dirshya.in.ibm.com> <20081220105652.GD24181@dirshya.in.ibm.com>
+	id S1751124AbYLUIyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 03:54:43 -0500
+Date: Sun, 21 Dec 2008 09:53:04 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Oleg Nesterov <oleg@redhat.com>
+cc: Eric Sesterhenn <snakebyte@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       John Stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [BUG] Null pointer deref with hrtimer_try_to_cancel()
+In-Reply-To: <20081220210401.GA14447@redhat.com>
+Message-ID: <alpine.LFD.2.00.0812210950040.3376@localhost.localdomain>
+References: <20081219172549.GA25722@alice> <alpine.LFD.2.00.0812202117310.3376@localhost.localdomain> <20081220210401.GA14447@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081220105652.GD24181@dirshya.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-
-> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-12-20 16:06:02]:
+On Sat, 20 Dec 2008, Oleg Nesterov wrote:
+> On 12/20, Thomas Gleixner wrote:
+> >
+> > +static int no_timer_create(struct k_itimer *new_timer)
+> > +{
+> > +	return -EOPNOTSUPP;
+> > +}
+> > +
+> >  /*
+> >   * Return nonzero if we know a priori this clockid_t value is bogus.
+> >   */
+> > @@ -248,6 +253,7 @@ static __init int init_posix_timers(void)
+> >  		.clock_getres = hrtimer_get_res,
+> >  		.clock_get = posix_get_monotonic_raw,
+> >  		.clock_set = do_posix_clock_nosettime,
+> > +		.timer_create = no_timer_create,
 > 
-> > * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2008-12-20 15:32:28]:
-> > 
-> > > * Andrew Morton <akpm@linux-foundation.org> [2008-12-19 20:44:55]:
-> > > 
-> > > > On Sat, 20 Dec 2008 10:06:38 +0530 Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > > 
-> > > > > > kernel/sched.c: In function 'schedule':
-> > > > > > kernel/sched.c:3679: warning: 'active_balance' may be used uninitialized in this function
-> > > > > > 
-> > > > > > This warning is correct - the code is buggy.
-> > > > > 
-> > > > > Yes this is my code bug.  I did not see the warning in sched.c.  Is
-> > > > > there any build option that I need to pass in order to get -Wall
-> > > > > effect?
-> > > > 
-> > > > That was just with plain old kbuild: `make allmodconfig;make'.
-> > > > 
-> > > > That warning was produced by gcc-4.0.2.  If you're using something more
-> > > > recent then gcc has regressed.
-> > > 
-> > > This is an interesting problem.  I am unable to get that warning in the
-> > > following GCC versions even with a combination of the following
-> > > cmdline options: -Wall -Wextra -Wuninitialized
-> > > 
-> > > gcc version 4.1.2 20070502
-> > > gcc version 4.2.3
-> > > 
-> > > I will look for older gcc and check this out.
-> > 
-> > I am able to get the above warning in 
-> > gcc version 3.4.6 (Debian 3.4.6-9)
-> > with default kbuild, no additional params.
-> > 
-> > Did not get the warning in 
-> > gcc version 4.1.3 20080623
-> > 
-> > Hence there has been some change in GCC that prevented the
-> > uninitialized warning.
+> Agreed, this patch is better than mine (and thanks for your
+> explanation about CLOCK_MONOTONIC_RAW).
 > 
-> Related GCC bug: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=179 Claimed 
-> to have been fixed in GCC 4.4, but I don't know if we are ready to test 
-> kernel compile with GCC 4.4.
+> I am not sure about -EOPNOTSUPP. To clarify, I do not claim this
+> is wrong, I just do not know.
+> 
+> But please note that sys_timer_create() does:
+> 
+> 	if (invalid_clockid(which_clock))
+> 		return -EINVAL;
 
-4.4 is still way too noisy on x86 so not really practical.
+EINVAL is wrong for timer_create(CLOCK_MONOTONIC_RAW) as clockid is
+valid, just the operation of creating a timer is not supported for it.
+ 
+> And ltp's timer_create04.c expects timer_create(MAX_CLOCKS == 4)
+> returns -EINVAL.
 
-> I have tested till gcc version 4.3.2 (Debian 4.3.2-1) and the bug is not 
-> fixed.  I do not get the warning from sched.c.
+That's because timer_create04.c does not know about
+CLOCK_MONOTONIC_RAW yet.
 
-neither did i get that warning. But Andrew did so thankfully, so we've got 
-the fix :) We'll always need variance in testing.
+Thanks,
 
-	Ingo
+	tglx
