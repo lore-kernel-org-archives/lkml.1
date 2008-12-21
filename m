@@ -1,171 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbYLUPku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbYLUPlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755591AbYLUPku (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 10:40:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbYLUPkT
+	id S1754290AbYLUPlP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 10:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYLUPk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 10:40:19 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50370 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754016AbYLUPkR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 10:40:17 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 21 Dec 2008 16:39:46 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: prevent creation of multiple IR DMA contexts for
- the same channel
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-In-Reply-To: <494BAC87.2020501@s5r6.in-berlin.de>
-Message-ID: <tkrat.1c127a174726e6a0@s5r6.in-berlin.de>
-References: <494A5F34.7090300@mpifr-bonn.mpg.de>
- <494AE2E3.6030602@s5r6.in-berlin.de> <494B9356.2070000@mpifr-bonn.mpg.de>
- <494BA9C7.6070806@s5r6.in-berlin.de> <494BAC87.2020501@s5r6.in-berlin.de>
+	Sun, 21 Dec 2008 10:40:27 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:59044 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755498AbYLUPkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 10:40:24 -0500
+Date: Sun, 21 Dec 2008 16:40:22 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 10/13] drivers/scsi: Remove redundant test
+Message-ID: <Pine.LNX.4.64.0812211640020.9555@pc-004.diku.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From OHCI-1394 1.1 clause 10.4.3:  "If more than one IR DMA context
-specifies receives for packets from the same isochronous channel, the
-context destination for that channel's packets is undefined."
+From: Julia Lawall <julia@diku.dk>
 
-Any userspace client and in the future also kernelspace clients can
-allocate IR DMA contexts for any channel.  We don't want them to
-interfere with each other, hence it is preferable to return -EBUSY if
-allocation of a second context for a channel is attempted.
+In drivers/scsi/aacraid/commsup.c, dev is checked not to be NULL near the
+beginning of the function, making the test redundant.
 
-Notes:
-  - This limitation is OHCI-1394 specific, therefore its proper place of
-    implementation is down in the low-level driver.
+In drivers/scsi/sym53c8xx_2/sym_glue.c, shost is similarly checked not to
+be NULL near the beginning of the function.
 
-  - Since the <linux/firewire-cdev.h> ABI simply maps one userspace iso
-    client context to one hardware iso context, this OHCI-1394
-    limitation alas requires userspace to implement its own multiplexing
-    of iso reception from the same channel to multiple clients when
-    needed.
+A simplified version of the semantic patch that makes this change is as
+follows: (http://www.emn.fr/x-info/coccinelle/)
 
-  - The limitation is independent of channel allocation at the IRM; the
-    latter is really only important for the initiation of iso 
-    transmission but not of iso reception.
+// <smpl>
+@r exists@
+local idexpression x;
+expression E;
+position p1,p2;
+@@
 
-  - We don't need to do the same for IT DMA because OHCI-1394 does not
-    have any ties between IT contexts and channels.  Only the voluntary
-    channel allocation protocol via the IRM, globally to the FireWire
-    bus, can ensure proper isochronous transmit behaviour anyway.
+if (x@p1 == NULL || ...) { ... when forall
+   return ...; }
+... when != \(x=E\|x--\|x++\|--x\|++x\|x-=E\|x+=E\|x|=E\|x&=E\|&x\)
+(
+x@p2 == NULL
+|
+x@p2 != NULL
+)
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+// another path to the test that is not through p1?
+@s exists@
+local idexpression r.x;
+position r.p1,r.p2;
+@@
+
+... when != x@p1
+(
+x@p2 == NULL
+|
+x@p2 != NULL
+)
+
+@fix depends on !s@
+position r.p1,r.p2;
+expression x,E;
+statement S1,S2;
+@@
+
+(
+- if ((x@p2 != NULL) || ...)
+  S1
+|
+- if ((x@p2 == NULL) && ...) S1
+|
+- BUG_ON(x@p2 == NULL);
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
+ drivers/scsi/aacraid/commsup.c      |    4 ++--
+ drivers/scsi/sym53c8xx_2/sym_glue.c |    2 --
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-The same modification could or should be done to ohci1394 too.  So, if
-anybody wants to see this in the old stack too, a patch would be
-welcome.
-
- drivers/firewire/fw-iso.c         |    3 ++-
- drivers/firewire/fw-ohci.c        |   14 +++++++++++---
- drivers/firewire/fw-transaction.h |    2 +-
- 3 files changed, 14 insertions(+), 5 deletions(-)
-
-Index: linux/drivers/firewire/fw-iso.c
-===================================================================
---- linux.orig/drivers/firewire/fw-iso.c
-+++ linux/drivers/firewire/fw-iso.c
-@@ -110,7 +110,8 @@ struct fw_iso_context *fw_iso_context_cr
- {
- 	struct fw_iso_context *ctx;
+diff --git a/drivers/scsi/aacraid/commsup.c b/drivers/scsi/aacraid/commsup.c
+index 289304a..2bf0a4f 100644
+--- a/drivers/scsi/aacraid/commsup.c
++++ b/drivers/scsi/aacraid/commsup.c
+@@ -817,7 +817,7 @@ static void aac_handle_aif(struct aac_dev * dev, struct fib * fibptr)
+ 			 * see an AifEnConfigChange AIF come through.
+ 			 */
  
--	ctx = card->driver->allocate_iso_context(card, type, header_size);
-+	ctx = card->driver->allocate_iso_context(card,
-+						 type, channel, header_size);
- 	if (IS_ERR(ctx))
- 		return ctx;
+-			if ((dev != NULL) && (dev->scsi_host_ptr != NULL)) {
++			if (dev->scsi_host_ptr != NULL) {
+ 				device = scsi_device_lookup(dev->scsi_host_ptr,
+ 					CONTAINER_TO_CHANNEL(container),
+ 					CONTAINER_TO_ID(container),
+@@ -1068,7 +1068,7 @@ retry_next:
+ 	 * with changes to existing device IDs.
+ 	 */
  
-Index: linux/drivers/firewire/fw-ohci.c
-===================================================================
---- linux.orig/drivers/firewire/fw-ohci.c
-+++ linux/drivers/firewire/fw-ohci.c
-@@ -205,6 +205,7 @@ struct fw_ohci {
- 
- 	u32 it_context_mask;
- 	struct iso_context *it_context_list;
-+	u64 ir_context_channels;
- 	u32 ir_context_mask;
- 	struct iso_context *ir_context_list;
- };
-@@ -1877,20 +1878,23 @@ static int handle_it_packet(struct conte
- }
- 
- static struct fw_iso_context *ohci_allocate_iso_context(struct fw_card *card,
--						int type, size_t header_size)
-+				int type, int channel, size_t header_size)
- {
- 	struct fw_ohci *ohci = fw_ohci(card);
- 	struct iso_context *ctx, *list;
- 	descriptor_callback_t callback;
-+	u64 *channels, dont_care = ~0ULL;
- 	u32 *mask, regs;
- 	unsigned long flags;
- 	int index, ret = -ENOMEM;
- 
- 	if (type == FW_ISO_CONTEXT_TRANSMIT) {
-+		channels = &dont_care;
- 		mask = &ohci->it_context_mask;
- 		list = ohci->it_context_list;
- 		callback = handle_it_packet;
- 	} else {
-+		channels = &ohci->ir_context_channels;
- 		mask = &ohci->ir_context_mask;
- 		list = ohci->ir_context_list;
- 		if (ohci->use_dualbuffer)
-@@ -1900,9 +1904,11 @@ static struct fw_iso_context *ohci_alloc
- 	}
- 
- 	spin_lock_irqsave(&ohci->lock, flags);
--	index = ffs(*mask) - 1;
--	if (index >= 0)
-+	index = *channels & 1ULL << channel ? ffs(*mask) - 1 : -1;
-+	if (index >= 0) {
-+		*channels &= ~(1ULL << channel);
- 		*mask &= ~(1 << index);
-+	}
- 	spin_unlock_irqrestore(&ohci->lock, flags);
- 
- 	if (index < 0)
-@@ -2012,6 +2018,7 @@ static void ohci_free_iso_context(struct
- 	} else {
- 		index = ctx - ohci->ir_context_list;
- 		ohci->ir_context_mask |= 1 << index;
-+		ohci->ir_context_channels |= 1ULL << base->channel;
- 	}
- 
- 	spin_unlock_irqrestore(&ohci->lock, flags);
-@@ -2424,6 +2431,7 @@ static int __devinit pci_probe(struct pc
- 	ohci->it_context_list = kzalloc(size, GFP_KERNEL);
- 
- 	reg_write(ohci, OHCI1394_IsoXmitIntMaskSet, ~0);
-+	ohci->ir_context_channels = ~0ULL;
- 	ohci->ir_context_mask = reg_read(ohci, OHCI1394_IsoXmitIntMaskSet);
- 	reg_write(ohci, OHCI1394_IsoXmitIntMaskClear, ~0);
- 	size = sizeof(struct iso_context) * hweight32(ohci->ir_context_mask);
-Index: linux/drivers/firewire/fw-transaction.h
-===================================================================
---- linux.orig/drivers/firewire/fw-transaction.h
-+++ linux/drivers/firewire/fw-transaction.h
-@@ -383,7 +383,7 @@ struct fw_card_driver {
- 
- 	struct fw_iso_context *
- 	(*allocate_iso_context)(struct fw_card *card,
--				int type, size_t header_size);
-+				int type, int channel, size_t header_size);
- 	void (*free_iso_context)(struct fw_iso_context *ctx);
- 
- 	int (*start_iso)(struct fw_iso_context *ctx,
-
--- 
-Stefan Richter
--=====-==--- ==-- =-=-=
-http://arcgraph.de/sr/
-
+-	if (!dev || !dev->scsi_host_ptr)
++	if (!dev->scsi_host_ptr)
+ 		return;
+ 	/*
+ 	 * force reload of disk info via aac_probe_container
+diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
+index f4e6cde..b8fe82c 100644
+--- a/drivers/scsi/sym53c8xx_2/sym_glue.c
++++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
+@@ -1416,8 +1416,6 @@ static struct Scsi_Host * __devinit sym_attach(struct scsi_host_template *tpnt,
+ 		   "TERMINATION, DEVICE POWER etc.!\n", sym_name(np));
+ 	spin_unlock_irqrestore(shost->host_lock, flags);
+  attach_failed:
+-	if (!shost)
+-		return NULL;
+ 	printf_info("%s: giving up ...\n", sym_name(np));
+ 	if (np)
+ 		sym_free_resources(np, pdev);
