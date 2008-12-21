@@ -1,23 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbYLURYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbYLURaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbYLURYm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 12:24:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYLURYe
+	id S1754117AbYLURaj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 12:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbYLURa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 12:24:34 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:47043 "EHLO twin.jikos.cz"
+	Sun, 21 Dec 2008 12:30:28 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:47322 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750825AbYLURYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 12:24:33 -0500
-Date: Sun, 21 Dec 2008 18:24:29 +0100 (CET)
+	id S1750851AbYLURa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 12:30:27 -0500
+Date: Sun, 21 Dec 2008 18:30:18 +0100 (CET)
 From: Jiri Kosina <jkosina@suse.cz>
 X-X-Sender: jikos@twin.jikos.cz
 To: Parag Warudkar <parag.lkml@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>
+cc: Anssi Hannula <anssi.hannula@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
+       linux-usb@vger.kernel.org
 Subject: Re: 2.6.28-rc9: USB Mouse unhappy
-In-Reply-To: <f7848160812201911k7988221asd095ce873fd8105f@mail.gmail.com>
-Message-ID: <alpine.LRH.1.10.0812211823510.11630@twin.jikos.cz>
-References: <f7848160812201911k7988221asd095ce873fd8105f@mail.gmail.com>
+In-Reply-To: <f7848160812210717w5e5cc7a2uc5571710f755ec99@mail.gmail.com>
+Message-ID: <alpine.LRH.1.10.0812211824350.11630@twin.jikos.cz>
+References: <f7848160812201911k7988221asd095ce873fd8105f@mail.gmail.com>  <20081220221253.e09b1b1f.akpm@linux-foundation.org>  <f7848160812202226w1f930c86vfd17a2b0163bfc56@mail.gmail.com>  <494E20F7.7050106@gmail.com>
+ <f7848160812210717w5e5cc7a2uc5571710f755ec99@mail.gmail.com>
 User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -25,26 +29,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 20 Dec 2008, Parag Warudkar wrote:
+On Sun, 21 Dec 2008, Parag Warudkar wrote:
 
-> Just installed today's git on my workstation and my Logitech USB Mouse
-> only wants to move vertically around the centre of the monitor.
-> I have no clue where to look - all  I know is that it works with the
-> 2.6.27 and various 2.6.28-rcs prior to this one.
-> [parag@xw6600 ~]$ diff Xorg.0.log.not.working /var/log/Xorg.0.log |grep Logi
-> < (**) Logitech USB Receiver: Device: "/dev/input/event5"
-> > (**) Logitech USB Receiver: Device: "/dev/input/event6"
-> < (II) config/hal: Adding input device Logitech USB Receiver
-> < (**) Logitech USB Receiver: always reports core events
-> < (**) Logitech USB Receiver: Device: "/dev/input/event3"
-> < (II) Logitech USB Receiver: Found x and y relative axes
-> < (II) Logitech USB Receiver: Found mouse buttons
-> < (II) Logitech USB Receiver: Configuring as mouse
-> < (II) XINPUT: Adding extended input device "Logitech USB Receiver"
-> (type: MOUSE)
+> > This sounds to me like 'usbmouse' gets used instead of 'usbhid' on
+> > 2.6.28-rc9. Many users have reported only vertical movement with
+> > 'usbmouse'. Better check the kernel configuration, if you had usbmouse
+> > disabled in 2.6.27, then disable it with 2.6.28-rc9 as well.
+> Sure enough - rmmod usbhid; modprobe usbmouse reproduces the exact same 
+> problem on a working kernel.
+> But the thing is I use the same base configuration across all kernels
+> I build (sans of course the newly added config options) - so something
+> changed somewhere and now usbmouse gets used instead of usbhid.
 
-Could you please provide vendor and product IDs of this device? (lsusb -v 
-will tell you).
+Could you please
+
+- make sure whether usbhid is used on 2.6.27 to drive the mouse and 
+  usbmouse on 2.6.28-rc with the exact same mouse? (either check 
+  /sys/bus/usb/devices or even lsusb shouldn't ideally show usbmouse 
+  loaded at all)
+- if so, make sure that you really need to build usbmouse (please read the 
+  help text in Kconfig for explanation)
+
+> What's the deal with usbmouse though - is it supposed to be working or 
+> is it considered lost cause in favor of usbhid? May be if people don't 
+> need to use it and it is not actively looked into, we can disable/remove 
+> it?
+
+Really, please read the help text.
+
+Maybe we should make it dependent on EMBEDDED.
+
+Thanks,
 
 -- 
 Jiri Kosina
