@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbYLUMCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbYLUMOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753075AbYLUMCT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 07:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbYLUMCD
+	id S1753140AbYLUMOJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 07:14:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYLUMN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 07:02:03 -0500
-Received: from mail.gondor.com ([212.117.64.182]:1851 "EHLO moria.gondor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751490AbYLUMCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 07:02:01 -0500
-X-Greylist: delayed 379 seconds by postgrey-1.27 at vger.kernel.org; Sun, 21 Dec 2008 07:02:00 EST
-Date: Sun, 21 Dec 2008 12:55:39 +0100
-From: Jan Niehusmann <jan@gondor.com>
-To: Max Kellermann <max@duempel.org>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: KVM guest lockup
-Message-ID: <20081221115538.GA25958@x61s.gondor.com>
-References: <20081219174401.GA2730@squirrel.roonstrasse.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081219174401.GA2730@squirrel.roonstrasse.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 21 Dec 2008 07:13:56 -0500
+Received: from casper.infradead.org ([85.118.1.10]:48072 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751494AbYLUMNz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 07:13:55 -0500
+Subject: Re: [PATCH] firmware: Arrange WHENCE in alphabetical order to
+ avoid conflicts
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jaswinder Singh <jaswinder@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1229860427.6846.3.camel@jaswinder.satnam>
+References: <1229860427.6846.3.camel@jaswinder.satnam>
+Content-Type: text/plain
+Date: Sun, 21 Dec 2008 12:12:59 +0000
+Message-Id: <1229861579.22786.32.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-1.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 19, 2008 at 06:44:01PM +0100, Max Kellermann wrote:
-> By starting kvm with "-s", I was able to attach gdb to KVM.  The
-> following backtrace is with default options:
+On Sun, 2008-12-21 at 17:23 +0530, Jaswinder Singh wrote:
 > 
->  #0  0xffffffff8023f3e0 in update_wall_time () at kernel/time/timekeeping.c:515
-[...]
+> We are facing problems while we prepare patch for firmware as we add
+> new stuff at the end.
+> As per David Woodhouse suggestion, I am arranging WHENCE to
+> aplhabetical order by driver name to avoid conflicts.
+> Thanks to my son Gurchet Singh to help me in arranging driver names in
+> alphabetical order.
+> 
+> Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
 
-> The next one is with "noapic nolapic acpi=off":
->  
->  #0  0xffffffff8023f35a in update_wall_time () at kernel/time/timekeeping.c:501
-> Both backtraces are from vanilla 2.6.28-rc8, .config attached.
-[...]
+Acked-by: David Woodhouse <David.Woodhouse@intel.com>
 
-Looking at the code, both these lines of code are inside a loop which
-may run for quite a while if clocksource_read(clock) returns
-non-monotonic values:
+Now we're trying to push the remaining conversions to request_firmware()
+via the driver authors, putting it into alphabetical order should help
+to avoid the conflicts.
 
-        offset = (clocksource_read(clock) - clock->cycle_last) & clock->mask;
-	[...]
-        while (offset >= clock->cycle_interval) {
-                /* accumulate one interval */
-                offset -= clock->cycle_interval;
-	[...]
-	}
+If we could have this in before 2.6.28 (since it's purely cosmetic) or
+immediately thereafter, that would be great.
 
-As I observed such behaviour only when the host has frequency scaling
-activated: Could it be that in this case, clocksource_read(clock) on the
-guest is misbehaving?
+Thanks, Jaswinder.
 
-Jan
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
