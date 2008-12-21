@@ -1,212 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbYLUPk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbYLUPku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755522AbYLUPk2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 10:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYLUPkG
+	id S1755591AbYLUPku (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 10:40:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbYLUPkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 10:40:06 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:51557 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754007AbYLUPkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 10:40:04 -0500
-Date: Sun, 21 Dec 2008 16:40:01 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: dmitri.vorobiev@movial.fi, maciej.sosnowski@intel.com,
-       dan.j.williams@intel.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 9/28] drivers/dma: Drop return value from platform_driver
- remove functions
-Message-ID: <Pine.LNX.4.64.0812211639370.9555@pc-004.diku.dk>
+	Sun, 21 Dec 2008 10:40:19 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:50370 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754016AbYLUPkR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 10:40:17 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 21 Dec 2008 16:39:46 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: prevent creation of multiple IR DMA contexts for
+ the same channel
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <494BAC87.2020501@s5r6.in-berlin.de>
+Message-ID: <tkrat.1c127a174726e6a0@s5r6.in-berlin.de>
+References: <494A5F34.7090300@mpifr-bonn.mpg.de>
+ <494AE2E3.6030602@s5r6.in-berlin.de> <494B9356.2070000@mpifr-bonn.mpg.de>
+ <494BA9C7.6070806@s5r6.in-berlin.de> <494BAC87.2020501@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+>From OHCI-1394 1.1 clause 10.4.3:  "If more than one IR DMA context
+specifies receives for packets from the same isochronous channel, the
+context destination for that channel's packets is undefined."
 
-The return value of the remove function of a driver structure, and thus of
-a platform_driver structure, is ultimately ignored, and is thus
-unnecessary.  This patch removes the return value for the remove function
-stored in a platform_driver structure.  For the files in this patch, the
-return values are always 0.
+Any userspace client and in the future also kernelspace clients can
+allocate IR DMA contexts for any channel.  We don't want them to
+interfere with each other, hence it is preferable to return -EBUSY if
+allocation of a second context for a channel is attempted.
 
-A simplified version of the semantic patch that makes this change is as
-follows: (http://www.emn.fr/x-info/coccinelle/)
+Notes:
+  - This limitation is OHCI-1394 specific, therefore its proper place of
+    implementation is down in the low-level driver.
 
-// <smpl>
-@r@
-struct platform_driver I;
-identifier a,f;
-position p;
-@@
-I.remove = \(f@p\|a(f@p)\);
+  - Since the <linux/firewire-cdev.h> ABI simply maps one userspace iso
+    client context to one hardware iso context, this OHCI-1394
+    limitation alas requires userspace to implement its own multiplexing
+    of iso reception from the same channel to multiple clients when
+    needed.
 
-@void_called@
-identifier r.f;
-position p;
-@@
-f@p(...);
+  - The limitation is independent of channel allocation at the IRM; the
+    latter is really only important for the initiation of iso 
+    transmission but not of iso reception.
 
-@called@
-identifier r.f;
-position p1 != void_called.p;
-@@
-f@p1(...)
+  - We don't need to do the same for IT DMA because OHCI-1394 does not
+    have any ties between IT contexts and channels.  Only the voluntary
+    channel allocation protocol via the IRM, globally to the FireWire
+    bus, can ensure proper isochronous transmit behaviour anyway.
 
-@localfn@
-identifier r.f;
-@@
-static int f(...) { ... }
-
-@depends on !called && localfn@
-struct platform_driver I;
-identifier a,f;
-position r.p;
-@@
-
-I.
-- remove
-+ remove_new
-   = \(f@p\|a(f@p)\);
-
-@depends on !called && localfn@
-identifier r.f,i;
-constant C;
-expression E;
-@@
-
-- int
-+ void
-       f(...) {
-  <...
-(
--  return \(C\|i\);
-+  return;
-|
--  return E;
-+  E;
-+  return;
-)
-  ...>
-}
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- drivers/dma/dw_dmac.c  |    6 ++----
- drivers/dma/iop-adma.c |    6 ++----
- drivers/dma/mv_xor.c   |   11 ++++-------
- 3 files changed, 8 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/dma/dw_dmac.c b/drivers/dma/dw_dmac.c
-index 0778d99..7b5521a 100644
---- a/drivers/dma/dw_dmac.c
-+++ b/drivers/dma/dw_dmac.c
-@@ -1036,7 +1036,7 @@ err_kfree:
- 	return err;
- }
- 
--static int __exit dw_remove(struct platform_device *pdev)
-+static void __exit dw_remove(struct platform_device *pdev)
+The same modification could or should be done to ohci1394 too.  So, if
+anybody wants to see this in the old stack too, a patch would be
+welcome.
+
+ drivers/firewire/fw-iso.c         |    3 ++-
+ drivers/firewire/fw-ohci.c        |   14 +++++++++++---
+ drivers/firewire/fw-transaction.h |    2 +-
+ 3 files changed, 14 insertions(+), 5 deletions(-)
+
+Index: linux/drivers/firewire/fw-iso.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-iso.c
++++ linux/drivers/firewire/fw-iso.c
+@@ -110,7 +110,8 @@ struct fw_iso_context *fw_iso_context_cr
  {
- 	struct dw_dma		*dw = platform_get_drvdata(pdev);
- 	struct dw_dma_chan	*dwc, *_dwc;
-@@ -1064,8 +1064,6 @@ static int __exit dw_remove(struct platform_device *pdev)
- 	release_mem_region(io->start, DW_REGLEN);
+ 	struct fw_iso_context *ctx;
  
- 	kfree(dw);
--
--	return 0;
+-	ctx = card->driver->allocate_iso_context(card, type, header_size);
++	ctx = card->driver->allocate_iso_context(card,
++						 type, channel, header_size);
+ 	if (IS_ERR(ctx))
+ 		return ctx;
+ 
+Index: linux/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -205,6 +205,7 @@ struct fw_ohci {
+ 
+ 	u32 it_context_mask;
+ 	struct iso_context *it_context_list;
++	u64 ir_context_channels;
+ 	u32 ir_context_mask;
+ 	struct iso_context *ir_context_list;
+ };
+@@ -1877,20 +1878,23 @@ static int handle_it_packet(struct conte
  }
  
- static void dw_shutdown(struct platform_device *pdev)
-@@ -1096,7 +1094,7 @@ static int dw_resume_early(struct platform_device *pdev)
- }
- 
- static struct platform_driver dw_driver = {
--	.remove		= __exit_p(dw_remove),
-+	.remove_new	= __exit_p(dw_remove),
- 	.shutdown	= dw_shutdown,
- 	.suspend_late	= dw_suspend_late,
- 	.resume_early	= dw_resume_early,
-diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
-index c7a9306..9b89122 100644
---- a/drivers/dma/iop-adma.c
-+++ b/drivers/dma/iop-adma.c
-@@ -1100,7 +1100,7 @@ out:
- 	return err;
- }
- 
--static int __devexit iop_adma_remove(struct platform_device *dev)
-+static void __devexit iop_adma_remove(struct platform_device *dev)
+ static struct fw_iso_context *ohci_allocate_iso_context(struct fw_card *card,
+-						int type, size_t header_size)
++				int type, int channel, size_t header_size)
  {
- 	struct iop_adma_device *device = platform_get_drvdata(dev);
- 	struct dma_chan *chan, *_chan;
-@@ -1132,8 +1132,6 @@ static int __devexit iop_adma_remove(struct platform_device *dev)
- 		kfree(iop_chan);
+ 	struct fw_ohci *ohci = fw_ohci(card);
+ 	struct iso_context *ctx, *list;
+ 	descriptor_callback_t callback;
++	u64 *channels, dont_care = ~0ULL;
+ 	u32 *mask, regs;
+ 	unsigned long flags;
+ 	int index, ret = -ENOMEM;
+ 
+ 	if (type == FW_ISO_CONTEXT_TRANSMIT) {
++		channels = &dont_care;
+ 		mask = &ohci->it_context_mask;
+ 		list = ohci->it_context_list;
+ 		callback = handle_it_packet;
+ 	} else {
++		channels = &ohci->ir_context_channels;
+ 		mask = &ohci->ir_context_mask;
+ 		list = ohci->ir_context_list;
+ 		if (ohci->use_dualbuffer)
+@@ -1900,9 +1904,11 @@ static struct fw_iso_context *ohci_alloc
  	}
- 	kfree(device);
--
--	return 0;
- }
  
- static int __devinit iop_adma_probe(struct platform_device *pdev)
-@@ -1409,7 +1407,7 @@ MODULE_ALIAS("platform:iop-adma");
+ 	spin_lock_irqsave(&ohci->lock, flags);
+-	index = ffs(*mask) - 1;
+-	if (index >= 0)
++	index = *channels & 1ULL << channel ? ffs(*mask) - 1 : -1;
++	if (index >= 0) {
++		*channels &= ~(1ULL << channel);
+ 		*mask &= ~(1 << index);
++	}
+ 	spin_unlock_irqrestore(&ohci->lock, flags);
  
- static struct platform_driver iop_adma_driver = {
- 	.probe		= iop_adma_probe,
--	.remove		= iop_adma_remove,
-+	.remove_new	= iop_adma_remove,
- 	.driver		= {
- 		.owner	= THIS_MODULE,
- 		.name	= "iop-adma",
-diff --git a/drivers/dma/mv_xor.c b/drivers/dma/mv_xor.c
-index 0328da0..5103dba 100644
---- a/drivers/dma/mv_xor.c
-+++ b/drivers/dma/mv_xor.c
-@@ -1098,7 +1098,7 @@ out:
- 	return err;
- }
- 
--static int __devexit mv_xor_remove(struct platform_device *dev)
-+static void __devexit mv_xor_remove(struct platform_device *dev)
- {
- 	struct mv_xor_device *device = platform_get_drvdata(dev);
- 	struct dma_chan *chan, *_chan;
-@@ -1115,8 +1115,6 @@ static int __devexit mv_xor_remove(struct platform_device *dev)
- 		mv_chan = to_mv_xor_chan(chan);
- 		list_del(&chan->device_node);
+ 	if (index < 0)
+@@ -2012,6 +2018,7 @@ static void ohci_free_iso_context(struct
+ 	} else {
+ 		index = ctx - ohci->ir_context_list;
+ 		ohci->ir_context_mask |= 1 << index;
++		ohci->ir_context_channels |= 1ULL << base->channel;
  	}
--
--	return 0;
- }
  
- static int __devinit mv_xor_probe(struct platform_device *pdev)
-@@ -1281,7 +1279,7 @@ mv_xor_conf_mbus_windows(struct mv_xor_shared_private *msp,
+ 	spin_unlock_irqrestore(&ohci->lock, flags);
+@@ -2424,6 +2431,7 @@ static int __devinit pci_probe(struct pc
+ 	ohci->it_context_list = kzalloc(size, GFP_KERNEL);
  
- static struct platform_driver mv_xor_driver = {
- 	.probe		= mv_xor_probe,
--	.remove		= mv_xor_remove,
-+	.remove_new	= mv_xor_remove,
- 	.driver		= {
- 		.owner	= THIS_MODULE,
- 		.name	= MV_XOR_NAME,
-@@ -1329,14 +1327,13 @@ static int mv_xor_shared_probe(struct platform_device *pdev)
- 	return 0;
- }
+ 	reg_write(ohci, OHCI1394_IsoXmitIntMaskSet, ~0);
++	ohci->ir_context_channels = ~0ULL;
+ 	ohci->ir_context_mask = reg_read(ohci, OHCI1394_IsoXmitIntMaskSet);
+ 	reg_write(ohci, OHCI1394_IsoXmitIntMaskClear, ~0);
+ 	size = sizeof(struct iso_context) * hweight32(ohci->ir_context_mask);
+Index: linux/drivers/firewire/fw-transaction.h
+===================================================================
+--- linux.orig/drivers/firewire/fw-transaction.h
++++ linux/drivers/firewire/fw-transaction.h
+@@ -383,7 +383,7 @@ struct fw_card_driver {
  
--static int mv_xor_shared_remove(struct platform_device *pdev)
-+static void mv_xor_shared_remove(struct platform_device *pdev)
- {
--	return 0;
- }
+ 	struct fw_iso_context *
+ 	(*allocate_iso_context)(struct fw_card *card,
+-				int type, size_t header_size);
++				int type, int channel, size_t header_size);
+ 	void (*free_iso_context)(struct fw_iso_context *ctx);
  
- static struct platform_driver mv_xor_shared_driver = {
- 	.probe		= mv_xor_shared_probe,
--	.remove		= mv_xor_shared_remove,
-+	.remove_new	= mv_xor_shared_remove,
- 	.driver		= {
- 		.owner	= THIS_MODULE,
- 		.name	= MV_XOR_SHARED_NAME,
+ 	int (*start_iso)(struct fw_iso_context *ctx,
+
+-- 
+Stefan Richter
+-=====-==--- ==-- =-=-=
+http://arcgraph.de/sr/
+
