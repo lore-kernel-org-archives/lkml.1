@@ -1,45 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYLUWpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486AbYLUW4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753304AbYLUWpG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 17:45:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYLUWox
+	id S1752486AbYLUW4m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 17:56:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYLUW4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 17:44:53 -0500
-Received: from styx.suse.cz ([82.119.242.94]:40051 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751439AbYLUWow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 17:44:52 -0500
-Date: Sun, 21 Dec 2008 23:44:51 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Parag Warudkar <parag.lkml@gmail.com>
-cc: Anssi Hannula <anssi.hannula@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH] USBHID: Make Boot Protocol drivers depend on EMBEDDED
-In-Reply-To: <alpine.DEB.2.00.0812211720050.7101@parag-desktop>
-Message-ID: <alpine.LNX.1.10.0812212344140.26265@jikos.suse.cz>
-References: <f7848160812201911k7988221asd095ce873fd8105f@mail.gmail.com> <20081220221253.e09b1b1f.akpm@linux-foundation.org> <f7848160812202226w1f930c86vfd17a2b0163bfc56@mail.gmail.com> <494E20F7.7050106@gmail.com> <f7848160812210717w5e5cc7a2uc5571710f755ec99@mail.gmail.com>
- <alpine.LRH.1.10.0812211824350.11630@twin.jikos.cz> <alpine.DEB.2.00.0812211441300.7101@parag-desktop> <alpine.LNX.1.10.0812212247090.26265@jikos.suse.cz> <20081221140200.40c1fec1.akpm@linux-foundation.org> <alpine.LNX.1.10.0812212302400.26265@jikos.suse.cz>
- <alpine.DEB.2.00.0812211708450.7101@parag-desktop> <494EC082.2010207@gmail.com> <alpine.DEB.2.00.0812211720050.7101@parag-desktop>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sun, 21 Dec 2008 17:56:33 -0500
+Received: from mail.work.de ([212.12.32.20]:39780 "EHLO mail.work.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751349AbYLUW4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 17:56:32 -0500
+Message-ID: <494EC98A.5020700@gmail.com>
+Date: Mon, 22 Dec 2008 02:56:10 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: michael@ellerman.id.au
+CC: Grant Grundler <grundler@parisc-linux.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: MSI messages
+References: <49438290.1080502@gmail.com>	 <20081214081210.GC13371@colo.lackof.org> <4944EAC3.1020407@gmail.com>	 <20081214185239.GA2039@colo.lackof.org>  <494D5FF7.50807@gmail.com> <1229897516.8269.8.camel@localhost>
+In-Reply-To: <1229897516.8269.8.camel@localhost>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 21 Dec 2008, Parag Warudkar wrote:
+Michael Ellerman wrote:
+> On Sun, 2008-12-21 at 01:13 +0400, Manu Abraham wrote:
+>> Grant Grundler wrote:
+>>> On Sun, Dec 14, 2008 at 03:15:15PM +0400, Manu Abraham wrote:
+>>> ...
+>>>>> A "GSI" (Generic Sys Interrupt?) is associated with each entry in
+>>>>> the MSI-X table. Driver then calls request_irq() to bind an interrupt
+>>>>> handler to each GSI. So the driver never directly sees the "message".
+>>>> Oh, you mean the array of irq_handlers in the MSI-X table should 
+>>>> correspond to a particular message ?
+>>> No. I mean each MSI-X entry has an address+message pair and each MSI-X entry
+>>> is associated with the parameters passed to each call of request_irq().
+>>> Pass in unique private data to each call of request_irq() and the driver
+>>> can determine which message was delivered when the ISR gets called.
+>>> (ISR == Interrupt Service Routine, aka driver IRQ handler)
+>>
+>> Is it possible that even when the config space says that multiple messages 
+>> are supported, you cannot enable MSI-X ?
+> 
+> Yes, absolutely. Have a look at pci_msi_check_device() for starters. MSI
+> can be disabled globally, or per-device by a quirk, the bridges above
+> your device might not support MSI and the arch code may prevent
+> MSI/MSI-X for some reason (ie. platform doesn't support it).
+> 
+> There's also a check in pci_enable_msix() to make sure the entries you
+> pass in are valid.
+> 
+>>  ------------- with MSI-X -------------
+>>
+>> saa716x_pci_init (0): found a NEMO reference board PCIe card
+>> ACPI: PCI Interrupt 0000:05:00.0[A] -> GSI 19 (level, low) -> IRQ 19
+>> PCI: Setting latency timer of device 0000:05:00.0 to 64
+>> saa716x_request_irq (0): Using MSI-X mode
+>> saa716x_enable_msix (0): MSI-X request failed
+> 
+> For starters you should print the error code returned by
+> pci_enable_msix() - unfortunately it returns EINVAL for many different
+> reasons, but it will narrow it down a bit.
 
-> > It may well be that Ubuntu has usbmouse blacklisted or employs udev 
-> > rules that force usbhid to be loaded before usbmouse.
-> Right - Ubuntu blacklists it and it works. Fedora doesn't blacklist it but 
-> it is not a problem with the distro shipped kernel - somehow. The problem 
-> happens only when using vanilla kernel on Fedora - not sure what's going 
-> on there. 
+It does return -22
 
-Do they even compile usbmouse and usbkbd?
+Regards,
+Manu
 
--- 
-Jiri Kosina
-SUSE Labs
+saa716x_request_irq (0): Using MSI-X mode                                                                      
+saa716x_enable_msix (0): MSI-X request failed <-22>                                                            
+saa716x_request_irq (0): INT-A Mode                                                                            
+    SAA7160 Rev 1 [1131:0000], irq: 19,                                                                        
+    mmio: 0xf9480000                                                                                           
+    SAA7160 64Bit, MSI Disabled, MSI-X=32 msgs
