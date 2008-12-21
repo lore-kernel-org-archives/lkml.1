@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486AbYLUW4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbYLUXGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752486AbYLUW4m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 17:56:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYLUW4d
+	id S1752591AbYLUXGt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 18:06:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYLUXGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 17:56:33 -0500
-Received: from mail.work.de ([212.12.32.20]:39780 "EHLO mail.work.de"
+	Sun, 21 Dec 2008 18:06:40 -0500
+Received: from mail.work.de ([212.12.32.20]:58568 "EHLO mail.work.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751349AbYLUW4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 17:56:32 -0500
-Message-ID: <494EC98A.5020700@gmail.com>
-Date: Mon, 22 Dec 2008 02:56:10 +0400
+	id S1751016AbYLUXGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 18:06:39 -0500
+Message-ID: <494ECBC5.1040703@gmail.com>
+Date: Mon, 22 Dec 2008 03:05:41 +0400
 From: Manu Abraham <abraham.manu@gmail.com>
 User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
@@ -50,30 +50,52 @@ Michael Ellerman wrote:
 > can be disabled globally, or per-device by a quirk, the bridges above
 > your device might not support MSI and the arch code may prevent
 > MSI/MSI-X for some reason (ie. platform doesn't support it).
-> 
-> There's also a check in pci_enable_msix() to make sure the entries you
-> pass in are valid.
-> 
->>  ------------- with MSI-X -------------
->>
->> saa716x_pci_init (0): found a NEMO reference board PCIe card
->> ACPI: PCI Interrupt 0000:05:00.0[A] -> GSI 19 (level, low) -> IRQ 19
->> PCI: Setting latency timer of device 0000:05:00.0 to 64
->> saa716x_request_irq (0): Using MSI-X mode
->> saa716x_enable_msix (0): MSI-X request failed
-> 
-> For starters you should print the error code returned by
-> pci_enable_msix() - unfortunately it returns EINVAL for many different
-> reasons, but it will narrow it down a bit.
 
-It does return -22
+It seems that the bridge does support MSI. It looks like my video device is 
+using MSI.
+
 
 Regards,
 Manu
 
-saa716x_request_irq (0): Using MSI-X mode                                                                      
-saa716x_enable_msix (0): MSI-X request failed <-22>                                                            
-saa716x_request_irq (0): INT-A Mode                                                                            
-    SAA7160 Rev 1 [1131:0000], irq: 19,                                                                        
-    mmio: 0xf9480000                                                                                           
-    SAA7160 64Bit, MSI Disabled, MSI-X=32 msgs
+pci 0000:01:00.0: Boot video device                                                                            
+PCI: Setting latency timer of device 0000:00:01.0 to 64                                                        
+assign_interrupt_mode Found MSI capability                                                                     
+Allocate Port Service[0000:00:01.0:pcie00]                                                                     
+PCI: Setting latency timer of device 0000:00:1c.0 to 64                                                        
+assign_interrupt_mode Found MSI capability                                                                     
+Allocate Port Service[0000:00:1c.0:pcie00]                                                                     
+Allocate Port Service[0000:00:1c.0:pcie02]                                                                     
+PCI: Setting latency timer of device 0000:00:1c.1 to 64                                                        
+assign_interrupt_mode Found MSI capability                                                                     
+Allocate Port Service[0000:00:1c.1:pcie00]                                                                     
+Allocate Port Service[0000:00:1c.1:pcie02]                                                                     
+PCI: Setting latency timer of device 0000:00:1c.2 to 64                                                        
+assign_interrupt_mode Found MSI capability                                                                     
+Allocate Port Service[0000:00:1c.2:pcie00]                                                                     
+Allocate Port Service[0000:00:1c.2:pcie02]                                                                     
+PCI: Setting latency timer of device 0000:00:1c.3 to 64                                                        
+assign_interrupt_mode Found MSI capability                                                                     
+Allocate Port Service[0000:00:1c.3:pcie00]                                                                     
+Allocate Port Service[0000:00:1c.3:pcie02]                                                                     
+PCI: Setting latency timer of device 0000:00:1c.4 to 64                                                        
+assign_interrupt_mode Found MSI capability                                                                     
+Allocate Port Service[0000:00:1c.4:pcie00]                                                                     
+Allocate Port Service[0000:00:1c.4:pcie02]                                                                     
+vesafb: framebuffer at 0x91000000, mapped to 0xf8880000, using 10240k, total 14336k                            
+vesafb: mode is 1280x1024x16, linelength=2560, pages=1
+
+
+04:00.0 Multimedia controller: Philips Semiconductors Device 7160 (rev 02)
+        Subsystem: Technotrend Systemtechnik GmbH Device 3009
+        Flags: bus master, fast devsel, latency 0, IRQ 11
+        Memory at 93b00000 (64-bit, non-prefetchable) [size=1M]
+        Capabilities: <access denied>
+
+05:00.0 Multimedia controller: Philips Semiconductors Device 7160 (rev 01)
+        Subsystem: Philips Semiconductors Device 0000
+        Flags: bus master, fast devsel, latency 0, IRQ 19
+        Memory at 93a00000 (64-bit, non-prefetchable) [size=1M]
+        Capabilities: <access denied>
+        Kernel driver in use: SAA716x Hybrid
+
