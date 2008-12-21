@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbYLUKBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbYLUKMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753140AbYLUKBP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 05:01:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYLUKA7
+	id S1753352AbYLUKMx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 05:12:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYLUKMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 05:00:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47667 "EHLO mx3.mail.elte.hu"
+	Sun, 21 Dec 2008 05:12:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35410 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751370AbYLUKA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 05:00:58 -0500
-Date: Sun, 21 Dec 2008 11:00:47 +0100
+	id S1751577AbYLUKMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 05:12:44 -0500
+Date: Sun, 21 Dec 2008 11:12:26 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
@@ -17,12 +17,12 @@ Cc: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH v2] tracing/function-graph-tracer: prevent from hrtimer
 	interrupt infinite loop
-Message-ID: <20081221100047.GA31074@elte.hu>
-References: <4949A2CC.6040209@gmail.com> <20081218103459.GD10513@elte.hu> <alpine.LFD.2.00.0812181136410.3492@localhost.localdomain> <20081218112216.GE14332@elte.hu> <c62985530812181307k4fc35770x3698101b3981879a@mail.gmail.com> <20081218211637.GF24271@elte.hu> <c62985530812181336m6ab39c8ah410dff763bd02d24@mail.gmail.com> <20081218214458.GA30834@elte.hu>
+Message-ID: <20081221101226.GA6021@elte.hu>
+References: <4949A2CC.6040209@gmail.com> <20081218103459.GD10513@elte.hu> <alpine.LFD.2.00.0812181136410.3492@localhost.localdomain> <20081218112216.GE14332@elte.hu> <c62985530812181307k4fc35770x3698101b3981879a@mail.gmail.com> <20081218211637.GF24271@elte.hu> <c62985530812181336m6ab39c8ah410dff763bd02d24@mail.gmail.com> <20081218214458.GA30834@elte.hu> <20081221100047.GA31074@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081218214458.GA30834@elte.hu>
+In-Reply-To: <20081221100047.GA31074@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,34 +37,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-btw., a graph-tracer buglet i noticed:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-  3)               |  perf_counter_task_tick() {
-  3)               |    perf_counter_task_sched_out() {
-  3)               |      /* c:ffff88049b184000, u:0: 0000000020ca1ab0 + 0000000000000000 = 0000000020ca1ab0
- */
-  3)               |      /* sched-out counter ffff88049b184000, state: 0
- */
-  3)   5.024 us    |    }
-  3)               |    perf_counter_task_sched_in() {
-  3)               |      /* c:ffff88049b184000, u:0: 0000000020ca1ab0 + 0000000000000000 = 0000000020ca1ab0
- */
-  3)               |      /* sched-in counter ffff88049b184000, state: 1
- */
-  3)   2.605 us    |    }
-  3)   9.714 us    |  }
-  3)               |  perf_counter_task_tick() {
+> btw., a graph-tracer buglet i noticed:
 
-the bug is that the '*/' comment closing text is printed in the next line 
-- that's not a linewrap, it happened like this in the trace. 
+another thing. I turned off all the options that come ahead of the 'meat' 
+of the trace data:
 
-The reason is that the ftrace_printk did:
+# cat /debug/tracing/trace_options 
+print-parent nosym-offset nosym-addr noverbose noraw nohex nobin noblock 
+nostacktrace nosched-tree ftrace_printk noftrace_preempt nobranch annotate 
+nouserstacktrace nosym-userobj printk-msg-only nofuncgraph-overrun 
+nofuncgraph-cpu nofuncgraph-overhead nofuncgraph-proc 
 
-	ftrace_printk("c:%p, u:%d: %016Lx + %016Lx = %016Lx\n",
+but i still got the 'duration' field printed:
 
-the closing \n is pretty natural - especially for kernel hackers who might 
-just turn printk()s into ftrace_printk(), to embedd printouts in function 
-traces. So it would be nice if ftrace skipped over \n's when printing them 
-out as embedded C comments.
+# tracer: function_graph
+#
+# DURATION            FUNCTION CALLS
+#     |               |   |   |   |
+
+0.865 us    |    }
+            |    alloc_page_vma() {
+0.295 us    |      get_vma_policy();
+0.268 us    |      policy_zonelist();
+            |      __alloc_pages_internal() {
+0.257 us    |        __might_sleep();
+            |        get_page_from_freelist() {
+
+
+i'd have expected to only see the flow of execution as it happens.
 
 	Ingo
