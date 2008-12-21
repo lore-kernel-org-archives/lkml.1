@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYLUPjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbYLUPje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486AbYLUPjw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 10:39:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbYLUPjl
+	id S1754461AbYLUPje (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 10:39:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbYLUPjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 10:39:41 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:51532 "EHLO mgw1.diku.dk"
+	Sun, 21 Dec 2008 10:39:20 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:58978 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754297AbYLUPjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 10:39:39 -0500
-Date: Sun, 21 Dec 2008 16:39:37 +0100 (CET)
+	id S1755054AbYLUPjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 10:39:18 -0500
+Date: Sun, 21 Dec 2008 16:39:15 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+To: khc@pm.waw.pl, jgarzik@pobox.com, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 8/13] drivers/pci/hotplug: Remove redundant test
-Message-ID: <Pine.LNX.4.64.0812211639170.9555@pc-004.diku.dk>
+Subject: [PATCH 7/13] drivers/net/wan: Remove redundant test
+Message-ID: <Pine.LNX.4.64.0812211638550.9555@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,7 +23,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-func is checked not to be NULL a few lines before.
+arg is checked not to be NULL a few lines before.
 
 A simplified version of the semantic patch that makes this change is as
 follows: (http://www.emn.fr/x-info/coccinelle/)
@@ -76,19 +76,22 @@ statement S1,S2;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/pci/hotplug/cpqphp_ctrl.c   |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/net/wan/pc300_drv.c         |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pci/hotplug/cpqphp_ctrl.c b/drivers/pci/hotplug/cpqphp_ctrl.c
-index d947221..cc227a8 100644
---- a/drivers/pci/hotplug/cpqphp_ctrl.c
-+++ b/drivers/pci/hotplug/cpqphp_ctrl.c
-@@ -1954,7 +1954,7 @@ void cpqhp_pushbutton_thread(unsigned long slot)
- 			return ;
- 		}
- 
--		if (func != NULL && ctrl != NULL) {
-+		if (ctrl != NULL) {
- 			if (cpqhp_process_SI(ctrl, func) != 0) {
- 				amber_LED_on(ctrl, hp_slot);
- 				green_LED_off(ctrl, hp_slot);
+diff --git a/drivers/net/wan/pc300_drv.c b/drivers/net/wan/pc300_drv.c
+index d67957a..c23fde0 100644
+--- a/drivers/net/wan/pc300_drv.c
++++ b/drivers/net/wan/pc300_drv.c
+@@ -2718,9 +2718,8 @@ static int cpc_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+ 					}
+ 					pc300patrntst.num_errors =
+ 						falc_pattern_test_error(card, ch);
+-					if (!arg
+-					    || copy_to_user(arg, &pc300patrntst,
+-							    sizeof (pc300patterntst_t)))
++					if (copy_to_user(arg, &pc300patrntst,
++							 sizeof(pc300patterntst_t)))
+ 							return -EINVAL;
+ 				} else {
+ 					falc_pattern_test(card, ch, pc300patrntst.patrntst_on);
