@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbYLUPlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbYLUPle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbYLUPlP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 10:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYLUPk1
+	id S1755840AbYLUPle (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 10:41:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbYLUPlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 10:40:27 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:59044 "EHLO mgw2.diku.dk"
+	Sun, 21 Dec 2008 10:41:01 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:51598 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755498AbYLUPkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 10:40:24 -0500
-Date: Sun, 21 Dec 2008 16:40:22 +0100 (CET)
+	id S1755035AbYLUPk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 10:40:59 -0500
+Date: Sun, 21 Dec 2008 16:40:56 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 10/13] drivers/scsi: Remove redundant test
-Message-ID: <Pine.LNX.4.64.0812211640020.9555@pc-004.diku.dk>
+To: xfs-masters@oss.sgi.com, xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 9/13] fs/xfs: Remove redundant test
+Message-ID: <Pine.LNX.4.64.0812211640360.9555@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,11 +23,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-In drivers/scsi/aacraid/commsup.c, dev is checked not to be NULL near the
-beginning of the function, making the test redundant.
+In fs/cifs/cifssmb.c, pLockData is tested for being NULL at the beginning
+of the function, and not reassigned subsequently.
 
-In drivers/scsi/sym53c8xx_2/sym_glue.c, shost is similarly checked not to
-be NULL near the beginning of the function.
+In fs/xfs/xfs_trans_buf.c, bp is tested for being NULL just a few lines
+above.
 
 A simplified version of the semantic patch that makes this change is as
 follows: (http://www.emn.fr/x-info/coccinelle/)
@@ -80,42 +80,19 @@ statement S1,S2;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/scsi/aacraid/commsup.c      |    4 ++--
- drivers/scsi/sym53c8xx_2/sym_glue.c |    2 --
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ fs/xfs/xfs_trans_buf.c              |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/scsi/aacraid/commsup.c b/drivers/scsi/aacraid/commsup.c
-index 289304a..2bf0a4f 100644
---- a/drivers/scsi/aacraid/commsup.c
-+++ b/drivers/scsi/aacraid/commsup.c
-@@ -817,7 +817,7 @@ static void aac_handle_aif(struct aac_dev * dev, struct fib * fibptr)
- 			 * see an AifEnConfigChange AIF come through.
- 			 */
+diff --git a/fs/xfs/xfs_trans_buf.c b/fs/xfs/xfs_trans_buf.c
+index 8ee2f8c..22afe29 100644
+--- a/fs/xfs/xfs_trans_buf.c
++++ b/fs/xfs/xfs_trans_buf.c
+@@ -307,7 +307,7 @@ xfs_trans_read_buf(
+ 			return (flags & XFS_BUF_TRYLOCK) ?
+ 					EAGAIN : XFS_ERROR(ENOMEM);
  
--			if ((dev != NULL) && (dev->scsi_host_ptr != NULL)) {
-+			if (dev->scsi_host_ptr != NULL) {
- 				device = scsi_device_lookup(dev->scsi_host_ptr,
- 					CONTAINER_TO_CHANNEL(container),
- 					CONTAINER_TO_ID(container),
-@@ -1068,7 +1068,7 @@ retry_next:
- 	 * with changes to existing device IDs.
- 	 */
- 
--	if (!dev || !dev->scsi_host_ptr)
-+	if (!dev->scsi_host_ptr)
- 		return;
- 	/*
- 	 * force reload of disk info via aac_probe_container
-diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
-index f4e6cde..b8fe82c 100644
---- a/drivers/scsi/sym53c8xx_2/sym_glue.c
-+++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
-@@ -1416,8 +1416,6 @@ static struct Scsi_Host * __devinit sym_attach(struct scsi_host_template *tpnt,
- 		   "TERMINATION, DEVICE POWER etc.!\n", sym_name(np));
- 	spin_unlock_irqrestore(shost->host_lock, flags);
-  attach_failed:
--	if (!shost)
--		return NULL;
- 	printf_info("%s: giving up ...\n", sym_name(np));
- 	if (np)
- 		sym_free_resources(np, pdev);
+-		if ((bp != NULL) && (XFS_BUF_GETERROR(bp) != 0)) {
++		if (XFS_BUF_GETERROR(bp) != 0) {
+ 			xfs_ioerror_alert("xfs_trans_read_buf", mp,
+ 					  bp, blkno);
+ 			error = XFS_BUF_GETERROR(bp);
