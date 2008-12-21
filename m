@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbYLUO5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYLUO6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214AbYLUO5f (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 09:57:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbYLUO50
+	id S1754611AbYLUO6p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 09:58:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbYLUO6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 09:57:26 -0500
-Received: from www.tglx.de ([62.245.132.106]:37895 "EHLO www.tglx.de"
+	Sun, 21 Dec 2008 09:58:37 -0500
+Received: from www.tglx.de ([62.245.132.106]:37938 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752060AbYLUO5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 09:57:22 -0500
+	id S1752089AbYLUO6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 09:58:35 -0500
 To: linux-kernel@vger.kernel.org
 Cc: viro@zeniv.linux.org.uk, malware-list@lists.printk.net, eparis@redhat.com,
        hch@infradead.org, alan@lxorguk.ukuu.org.uk
-Subject: [PATCH 1/5] VFS: DazukoFS, stackable-fs, file access control
+Subject: [PATCH 2/5] VFS: DazukoFS, stackable-fs, file access control
 From: John Ogness <dazukocode@ogness.net>
 References: <86d4flh96z.fsf@johno-ibook.fn.ogness.net>
-Date: Sun, 21 Dec 2008 15:56:42 +0100
-In-Reply-To: <86d4flh96z.fsf@johno-ibook.fn.ogness.net> (John Ogness's message of "Sun\, 21 Dec 2008 15\:52\:36 +0100")
-Message-ID: <868wq9h905.fsf@johno-ibook.fn.ogness.net>
+	<868wq9h905.fsf@johno-ibook.fn.ogness.net>
+Date: Sun, 21 Dec 2008 15:57:52 +0100
+In-Reply-To: <868wq9h905.fsf@johno-ibook.fn.ogness.net> (John Ogness's message of "Sun\, 21 Dec 2008 15\:56\:42 +0100")
+Message-ID: <864p0xh8y7.fsf_-_@johno-ibook.fn.ogness.net>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,35 +26,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch 1: Introduces DazukoFS as a nullfs. This is the raw stackable
-         filesystem part of DazukoFS and does nothing except stack and
-         pass filesystem calls to the lower filesystem.
+Patch 2: Creates /dev/dazukofs.0 for userspace applications to perform
+         file access control. At this point, all applications are
+         considered to be working together (in the same group).
 
 Patched against 2.6.28-rc9.
 
 Signed-off-by: John Ogness <dazukocode@ogness.net>
 ---
- Documentation/filesystems/dazukofs.txt |   81 ++
- fs/Kconfig                             |   11 
- fs/Makefile                            |    1 
- fs/dazukofs/Makefile                   |    7 
- fs/dazukofs/dazukofs_fs.h              |  163 ++++
- fs/dazukofs/dentry.c                   |  183 +++++
- fs/dazukofs/file.c                     |  340 +++++++++
- fs/dazukofs/inode.c                    |  832 +++++++++++++++++++++++
- fs/dazukofs/mmap.c                     |  117 +++
- fs/dazukofs/super.c                    |  337 +++++++++
- 10 files changed, 2072 insertions(+)
-Index: linux-2.6.27/fs/dazukofs/dazukofs_fs.h
+ Documentation/filesystems/dazukofs.txt |   89 +++
+ fs/Kconfig                             |    3 
+ fs/dazukofs/Makefile                   |    3 
+ fs/dazukofs/dev.c                      |   85 +++
+ fs/dazukofs/dev.h                      |   37 +
+ fs/dazukofs/event.c                    |  628 +++++++++++++++++++++++
+ fs/dazukofs/event.h                    |   32 +
+ fs/dazukofs/file.c                     |    7 
+ fs/dazukofs/group_dev.c                |  159 +++++
+ fs/dazukofs/super.c                    |   16 
+ 10 files changed, 1046 insertions(+), 13 deletions(-)
+Index: linux-2.6.27/fs/dazukofs/dev.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.27/fs/dazukofs/dazukofs_fs.h	2008-12-21 15:09:53.000000000 +0100
-@@ -0,0 +1,163 @@
++++ linux-2.6.27/fs/dazukofs/dev.c	2008-12-21 15:10:09.000000000 +0100
+@@ -0,0 +1,85 @@
 +/* dazukofs: access control stackable filesystem
 +
-+   Copyright (C) 1997-2004 Erez Zadok
-+   Copyright (C) 2001-2004 Stony Brook University
-+   Copyright (C) 2004-2007 International Business Machines Corp.
 +   Copyright (C) 2008 John Ogness
 +     Author: John Ogness <dazukocode@ogness.net>
 +
@@ -72,156 +70,242 @@ Index: linux-2.6.27/fs/dazukofs/dazukofs_fs.h
 +   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 +*/
 +
-+#ifndef __DAZUKOFS_FS_H
-+#define __DAZUKOFS_FS_H
++#include <linux/device.h>
++#include <linux/fs.h>
++#include <linux/cdev.h>
++#include <linux/uaccess.h>
 +
-+extern struct kmem_cache *dazukofs_dentry_info_cachep;
-+extern struct kmem_cache *dazukofs_file_info_cachep;
-+extern struct file_operations dazukofs_main_fops;
-+extern const struct file_operations dazukofs_dir_fops;
-+extern struct dentry_operations dazukofs_dops;
-+extern struct address_space_operations dazukofs_aops;
++#include "dazukofs_fs.h"
++#include "event.h"
++#include "dev.h"
 +
-+extern int dazukofs_interpose(struct dentry *lower_dentry,
-+			      struct dentry *dentry, struct super_block *sb,
-+			      int already_hashed);
++static struct class *dazukofs_class;
 +
-+struct dazukofs_sb_info {
-+	struct super_block *lower_sb;
-+};
++static int dev_major;
++static int dev_minor_start;
++static int dev_minor_end;
 +
-+struct dazukofs_inode_info {
-+	struct inode *lower_inode;
++int dazukofs_dev_init(void)
++{
++	int err = 0;
++	dev_t devt;
++
++	err = dazukofs_init_events();
++	if (err)
++		goto error_out1;
++
++	err = alloc_chrdev_region(&devt, 0, 1, DEVICE_NAME);
++	if (err)
++		goto error_out2;
++	dev_major = MAJOR(devt);
++	dev_minor_start = MINOR(devt);
++
++	/* create class */
++	dazukofs_class = class_create(THIS_MODULE, DEVICE_NAME);
++	if (IS_ERR(dazukofs_class)) {
++		err = PTR_ERR(dazukofs_class);
++		goto error_out3;
++	}
++
++	dev_minor_end = dazukofs_group_dev_init(dev_major,
++						dev_minor_start + 1,
++						dazukofs_class);
++	if (dev_minor_end < 0) {
++		err = dev_minor_end;
++		goto error_out4;
++	}
++
++	return 0;
++
++error_out4:
++	class_destroy(dazukofs_class);
++error_out3:
++	unregister_chrdev_region(MKDEV(dev_major, dev_minor_start), 1);
++error_out2:
++	dazukofs_destroy_events();
++error_out1:
++	return err;
++}
++
++void dazukofs_dev_destroy(void)
++{
++	dazukofs_group_dev_destroy(dev_major, dev_minor_start + 1,
++				   dev_minor_end, dazukofs_class);
++	class_destroy(dazukofs_class);
++	unregister_chrdev_region(MKDEV(dev_major, dev_minor_start), 1);
++	dazukofs_destroy_events();
++}
+Index: linux-2.6.27/fs/dazukofs/group_dev.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.27/fs/dazukofs/group_dev.c	2008-12-21 15:10:09.000000000 +0100
+@@ -0,0 +1,159 @@
++/* dazukofs: access control stackable filesystem
++
++   Copyright (C) 2008 John Ogness
++     Author: John Ogness <dazukocode@ogness.net>
++
++   This program is free software; you can redistribute it and/or
++   modify it under the terms of the GNU General Public License
++   as published by the Free Software Foundation; either version 2
++   of the License, or (at your option) any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software
++   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*/
++
++#include <linux/device.h>
++#include <linux/fs.h>
++#include <linux/cdev.h>
++#include <linux/uaccess.h>
++
++#include "dazukofs_fs.h"
++#include "event.h"
++#include "dev.h"
++
++static ssize_t dazukofs_group_read(struct file *file,
++				   char __user *buffer, size_t length,
++				   loff_t *pos)
++{
++#define DAZUKOFS_MIN_READ_BUFFER 43
++	char tmp[DAZUKOFS_MIN_READ_BUFFER];
++	ssize_t tmp_used;
++	pid_t pid;
++	int fd;
++	int err;
++	unsigned long event_id;
++
++	if (*pos > 0)
++		return 0;
++
++	if (length < DAZUKOFS_MIN_READ_BUFFER)
++		return -EINVAL;
++
++	err = dazukofs_get_event(&event_id, &fd, &pid);
++	if (err) {
++		if (err == -ERESTARTSYS)
++			return -EINTR;
++		return err;
++	}
++
++	tmp_used = snprintf(tmp, sizeof(tmp)-1, "id=%lu\nfd=%d\npid=%d\n",
++			    event_id, fd, pid);
++	if (tmp_used >= sizeof(tmp))
++		return -EINVAL;
++
++	if (copy_to_user(buffer, tmp, tmp_used))
++		return -EFAULT;
++
++	*pos = tmp_used;
++
++	return tmp_used;
++}
++
++static ssize_t dazukofs_group_write(struct file *file,
++				    const char __user *buffer, size_t length,
++				    loff_t *pos)
++{
++#define DAZUKOFS_MAX_WRITE_BUFFER 19
++	char tmp[DAZUKOFS_MAX_WRITE_BUFFER];
++	int response;
++	unsigned long event_id;
++	char *p;
++	char *p2;
++	int ret;
++
++	if (length >= DAZUKOFS_MAX_WRITE_BUFFER)
++		length = DAZUKOFS_MAX_WRITE_BUFFER - 1;
++
++	if (copy_from_user(tmp, buffer, length))
++		return -EFAULT;
++	tmp[length] = 0;
++
++	p = strstr(tmp, "id=");
++	if (!p)
++		return -EINVAL;
++	event_id = simple_strtoul(p + 3, &p2, 10);
 +
 +	/*
-+	 * the inode (embedded)
++	 * checkpatch.pl recommends using strict_strtoul() instead of
++	 * simple_strtoul(). However, we _want_ a function that stops
++	 * on non-number characters rather than errors out.
 +	 */
-+	struct inode vfs_inode;
++
++	p = strstr(p2, "r=");
++	if (!p)
++		return -EINVAL;
++	response = (*(p + 2)) - '0';
++
++	ret = dazukofs_return_event(event_id, response);
++	if (ret == 0) {
++		*pos += length;
++		ret = length;
++	} else if (ret == -ERESTARTSYS) {
++		ret = -EINTR;
++	}
++
++	return ret;
++}
++
++static struct cdev group_cdev;
++
++static struct file_operations group_fops = {
++	.owner		= THIS_MODULE,
++	.read		= dazukofs_group_read,
++	.write		= dazukofs_group_write,
 +};
 +
-+struct dazukofs_dentry_info {
-+	struct dentry *lower_dentry;
-+	struct vfsmount *lower_mnt;
-+};
-+
-+struct dazukofs_file_info {
-+	struct file *lower_file;
-+};
-+
-+static inline
-+struct dazukofs_sb_info *GET_SB_INFO(struct super_block *upper_sb)
++int dazukofs_group_dev_init(int dev_major, int dev_minor_start,
++			    struct class *dazukofs_class)
 +{
-+	return upper_sb->s_fs_info;
++	int err = 0;
++	struct device *dev;
++	int dev_minor_end = dev_minor_start;
++
++	cdev_init(&group_cdev, &group_fops);
++	group_cdev.owner = THIS_MODULE;
++	err = cdev_add(&group_cdev, MKDEV(dev_major, dev_minor_start), 1);
++	if (err)
++		goto error_out1;
++
++	dev = device_create(dazukofs_class, NULL,
++			    MKDEV(dev_major, dev_minor_end), NULL,
++			    "%s.%d", DEVICE_NAME, 0);
++	if (IS_ERR(dev)) {
++		err = PTR_ERR(dev);
++		goto error_out2;
++	}
++	dev_minor_end++;
++
++	return dev_minor_end;
++
++error_out2:
++	device_destroy(dazukofs_class, MKDEV(dev_major, 0));
++error_out1:
++	cdev_del(&group_cdev);
++	return err;
 +}
 +
-+static inline void SET_SB_INFO(struct super_block *upper_sb,
-+			       struct dazukofs_sb_info *sbi)
++void dazukofs_group_dev_destroy(int dev_major, int dev_minor_start,
++				int dev_minor_end,
++				struct class *dazukofs_class)
 +{
-+	upper_sb->s_fs_info = sbi;
++	device_destroy(dazukofs_class, MKDEV(dev_major, 0));
++	cdev_del(&group_cdev);
 +}
-+
-+static inline struct super_block *GET_LOWER_SB(struct super_block *upper_sb)
-+{
-+	return ((struct dazukofs_sb_info *)upper_sb->s_fs_info)->lower_sb;
-+}
-+
-+static inline void SET_LOWER_SB(struct super_block *upper_sb,
-+				struct super_block *lower_sb)
-+{
-+       ((struct dazukofs_sb_info *)upper_sb->s_fs_info)->lower_sb = lower_sb;
-+}
-+
-+static inline
-+struct dazukofs_inode_info *GET_INODE_INFO(struct inode *upper_inode)
-+{
-+	return container_of(upper_inode, struct dazukofs_inode_info,
-+			    vfs_inode);
-+}
-+
-+static inline struct inode *GET_LOWER_INODE(struct inode *upper_inode)
-+{
-+	return ((struct dazukofs_inode_info *)
-+		container_of(upper_inode, struct dazukofs_inode_info,
-+			     vfs_inode))->lower_inode;
-+}
-+
-+static inline void SET_LOWER_INODE(struct inode *upper_inode,
-+				   struct inode *lower_inode)
-+{
-+	((struct dazukofs_inode_info *)
-+	 container_of(upper_inode, struct dazukofs_inode_info,
-+		      vfs_inode))->lower_inode = lower_inode;
-+}
-+
-+static inline
-+struct dazukofs_dentry_info *GET_DENTRY_INFO(struct dentry *upper_dentry)
-+{
-+	return upper_dentry->d_fsdata;
-+}
-+
-+static inline void SET_DENTRY_INFO(struct dentry *upper_dentry,
-+				   struct dazukofs_dentry_info *dentryi)
-+{
-+	upper_dentry->d_fsdata = dentryi;
-+}
-+
-+static inline struct dentry *GET_LOWER_DENTRY(struct dentry *upper_dentry)
-+{
-+	return ((struct dazukofs_dentry_info *)
-+		upper_dentry->d_fsdata)->lower_dentry;
-+}
-+
-+static inline struct vfsmount *GET_LOWER_MNT(struct dentry *upper_dentry)
-+{
-+	return ((struct dazukofs_dentry_info *)
-+		upper_dentry->d_fsdata)->lower_mnt;
-+}
-+
-+static inline void SET_LOWER_DENTRY(struct dentry *upper_dentry,
-+				    struct dentry *lower_dentry,
-+				    struct vfsmount *lower_mnt)
-+{
-+	((struct dazukofs_dentry_info *)upper_dentry->d_fsdata)->lower_dentry =
-+		lower_dentry;
-+	((struct dazukofs_dentry_info *)upper_dentry->d_fsdata)->lower_mnt =
-+		lower_mnt;
-+}
-+
-+static inline struct dazukofs_file_info *GET_FILE_INFO(struct file *upper_file)
-+{
-+	return upper_file->private_data;
-+}
-+
-+static inline void SET_FILE_INFO(struct file *upper_file,
-+				 struct dazukofs_file_info *filei)
-+{
-+	upper_file->private_data = filei;
-+}
-+
-+static inline struct file *GET_LOWER_FILE(struct file *upper_file)
-+{
-+	return ((struct dazukofs_file_info *)
-+		upper_file->private_data)->lower_file;
-+}
-+
-+static inline void SET_LOWER_FILE(struct file *upper_file,
-+				  struct file *lower_file)
-+{
-+	((struct dazukofs_file_info *)upper_file->private_data)->lower_file =
-+		lower_file;
-+}
-+
-+#endif  /* __DAZUKOFS_FS_H */
-Index: linux-2.6.27/fs/dazukofs/dentry.c
+Index: linux-2.6.27/fs/dazukofs/event.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.27/fs/dazukofs/dentry.c	2008-12-21 15:09:53.000000000 +0100
-@@ -0,0 +1,183 @@
++++ linux-2.6.27/fs/dazukofs/event.c	2008-12-21 15:10:09.000000000 +0100
+@@ -0,0 +1,628 @@
 +/* dazukofs: access control stackable filesystem
 +
-+   Copyright (C) 1997-2003 Erez Zadok
-+   Copyright (C) 2001-2003 Stony Brook University
-+   Copyright (C) 2004-2006 International Business Machines Corp.
 +   Copyright (C) 2008 John Ogness
 +     Author: John Ogness <dazukocode@ogness.net>
 +
@@ -240,1700 +324,621 @@ Index: linux-2.6.27/fs/dazukofs/dentry.c
 +   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 +*/
 +
-+#include <linux/module.h>
++#include <linux/list.h>
++#include <linux/sched.h>
++#include <linux/file.h>
 +#include <linux/fs.h>
-+#include <linux/namei.h>
 +#include <linux/mount.h>
-+#include <linux/fs_stack.h>
++#include <linux/freezer.h>
 +
 +#include "dazukofs_fs.h"
 +
-+/**
-+ * dazukofs_d_revalidate - revalidate a dentry found in the dcache
-+ * @dentry: dentry to revalidate
-+ * @nd: nameidata associated with dentry
-+ *
-+ * Description: Called when the VFS needs to revalidate a dentry. This is
-+ * called whenever a name look-up finds a dentry in the dcache. Most
-+ * filesystems leave this as NULL, because all their dentries in the dcache
-+ * are valid.
-+ *
-+ * Call d_revalidate() on the lower dentry if available. The mnt/dentry
-+ * (path) data in the nameidata needs to be temporarily swapped out for the
-+ * lower call.
-+ *
-+ * After the call, the original path data is restored and the dentry's inode
-+ * attributes are updated to match the lower inode.
-+ *
-+ * Returns 1 if dentry is valid, otherwise 0.
-+ */
-+static int dazukofs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
-+{
-+	struct vfsmount *lower_mnt;
-+	struct dentry *lower_dentry;
-+	struct vfsmount *vfsmount_save;
-+	struct dentry *dentry_save;
-+	int valid;
++struct dazukofs_proc {
++	struct list_head list;
++	struct task_struct *curr;
++};
 +
-+	valid = 1;
++struct dazukofs_event {
++	unsigned long event_id;
++	struct dentry *dentry;
++	struct vfsmount *mnt;
++	pid_t pid;
++	wait_queue_head_t queue;
 +
-+	lower_dentry = GET_LOWER_DENTRY(dentry);
++	/* protects: deny, deprecated, assigned */
++	struct mutex assigned_mutex;
 +
-+	if (!lower_dentry->d_op || !lower_dentry->d_op->d_revalidate)
-+		goto out;
++	int deny;
++	int deprecated;
++	int assigned;
++};
 +
-+	lower_mnt = GET_LOWER_MNT(dentry);
++struct dazukofs_event_container {
++	struct list_head list;
++	struct dazukofs_event *event;
++	struct file *file;
++	int fd;
++};
 +
-+	vfsmount_save = nd->path.mnt;
-+	dentry_save = nd->path.dentry;
++struct dazukofs_group {
++	struct dazukofs_event_container todo_list;
++	wait_queue_head_t queue;
++	struct dazukofs_event_container working_list;
++};
 +
-+	nd->path.mnt = mntget(lower_mnt);
-+	nd->path.dentry = dget(lower_dentry);
++static struct dazukofs_group reg_group;
 +
-+	valid = lower_dentry->d_op->d_revalidate(lower_dentry, nd);
++/* protects: grp->members, last_event_id,
++ *	     todo_list, working_list */
++static struct mutex work_mutex;
 +
-+	mntput(lower_mnt);
-+	dput(lower_dentry);
++static struct mutex proc_mutex;
++static struct dazukofs_proc proc_list;
 +
-+	nd->path.mnt = vfsmount_save;
-+	nd->path.dentry = dentry_save;
++static struct kmem_cache *dazukofs_event_container_cachep;
++static struct kmem_cache *dazukofs_event_cachep;
 +
-+	/* update the inode, even if d_revalidate() != 1 */
-+	if (dentry->d_inode) {
-+		struct inode *lower_inode;
-+
-+		lower_inode = GET_LOWER_INODE(dentry->d_inode);
-+
-+		fsstack_copy_attr_all(dentry->d_inode, lower_inode, NULL);
-+	}
-+out:
-+	return valid;
-+}
++static int last_event_id;
 +
 +/**
-+ * dazukofs_d_hash - hash the given name
-+ * @dentry: the parent dentry
-+ * @name: the name to hash
++ * dazukofs_init_events - initialize event handling infrastructure
 + *
-+ * Description: Called when the VFS adds a dentry to the hash table.
-+ *
-+ * Call d_hash() on the lower dentry if available. Otherwise dazukofs
-+ * does nothing. This is ok because the VFS will compute a default
-+ * hash.
++ * Description: This is called once to initialize all the structures
++ * needed to manage event handling.
 + *
 + * Returns 0 on success.
 + */
-+static int dazukofs_d_hash(struct dentry *dentry, struct qstr *name)
++int dazukofs_init_events(void)
 +{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
++	mutex_init(&proc_mutex);
++	mutex_init(&work_mutex);
++	INIT_LIST_HEAD(&proc_list.list);
 +
-+	if (!lower_dentry || !lower_dentry->d_op ||
-+	    !lower_dentry->d_op->d_hash) {
-+		return 0;
-+	}
++	init_waitqueue_head(&reg_group.queue);
++	INIT_LIST_HEAD(&reg_group.todo_list.list);
++	INIT_LIST_HEAD(&reg_group.working_list.list);
 +
-+	return lower_dentry->d_op->d_hash(lower_dentry, name);
-+}
++	dazukofs_event_container_cachep =
++		kmem_cache_create("dazukofs_event_container_cache",
++				  sizeof(struct dazukofs_event_container), 0,
++				  SLAB_HWCACHE_ALIGN, NULL);
++	if (!dazukofs_event_container_cachep)
++		goto error_out;
 +
-+/**
-+ * dazukofs_d_release - clean up dentry
-+ * @dentry: the dentry that will be released
-+ *
-+ * Description: Called when a dentry is really deallocated.
-+ *
-+ * Release our hold on the lower dentry and mnt. Then free the structure
-+ * (from the cache) containing the lower data for this dentry.
-+ */
-+static void dazukofs_d_release(struct dentry *dentry)
-+{
-+	if (GET_DENTRY_INFO(dentry)) {
-+		dput(GET_LOWER_DENTRY(dentry));
-+		mntput(GET_LOWER_MNT(dentry));
-+
-+		kmem_cache_free(dazukofs_dentry_info_cachep,
-+				GET_DENTRY_INFO(dentry));
-+	}
-+}
-+
-+/**
-+ * dazukofs_d_compare - used to compare dentry's
-+ * @dentry: the parent dentry
-+ * @a: qstr of an existing dentry
-+ * @b: qstr of a second dentry (dentry may not be valid)
-+ *
-+ * Description: Called when a dentry should be compared with another.
-+ *
-+ * Call d_compare() on the lower dentry if available. Otherwise, perform
-+ * some basic comparisons between the two qstr's.
-+ *
-+ * Returns 0 if they are the same, otherwise 1.
-+ */
-+static int dazukofs_d_compare(struct dentry *dentry, struct qstr *a,
-+			    struct qstr *b)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+
-+	if (lower_dentry && lower_dentry->d_op &&
-+	    lower_dentry->d_op->d_compare) {
-+
-+		return lower_dentry->d_op->d_compare(lower_dentry, a, b);
-+	}
-+
-+	if (a->len != b->len)
-+		return 1;
-+	if (memcmp(a->name, b->name, a->len))
-+		return 1;
++	dazukofs_event_cachep =
++		kmem_cache_create("dazukofs_event_cache",
++				  sizeof(struct dazukofs_event), 0,
++				  SLAB_HWCACHE_ALIGN, NULL);
++	if (!dazukofs_event_cachep)
++		goto error_out;
 +
 +	return 0;
 +
-+}
-+
-+/**
-+ * Unused operations:
-+ *   - d_delete
-+ *   - d_iput
-+ *   - d_dname
-+ */
-+struct dentry_operations dazukofs_dops = {
-+	.d_revalidate	= dazukofs_d_revalidate,
-+	.d_hash		= dazukofs_d_hash,
-+	.d_release	= dazukofs_d_release,
-+	.d_compare	= dazukofs_d_compare,
-+};
-Index: linux-2.6.27/fs/dazukofs/super.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.27/fs/dazukofs/super.c	2008-12-21 15:09:53.000000000 +0100
-@@ -0,0 +1,337 @@
-+/* dazukofs: access control stackable filesystem
-+
-+   Copyright (C) 1997-2003 Erez Zadok
-+   Copyright (C) 2001-2003 Stony Brook University
-+   Copyright (C) 2004-2006 International Business Machines Corp.
-+   Copyright (C) 2008 John Ogness
-+     Author: John Ogness <dazukocode@ogness.net>
-+
-+   This program is free software; you can redistribute it and/or
-+   modify it under the terms of the GNU General Public License
-+   as published by the Free Software Foundation; either version 2
-+   of the License, or (at your option) any later version.
-+
-+   This program is distributed in the hope that it will be useful,
-+   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+   GNU General Public License for more details.
-+
-+   You should have received a copy of the GNU General Public License
-+   along with this program; if not, write to the Free Software
-+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-+*/
-+
-+#include <linux/module.h>
-+#include <linux/version.h>
-+#include <linux/fs.h>
-+#include <linux/namei.h>
-+#include <linux/mount.h>
-+
-+#include "dazukofs_fs.h"
-+
-+static struct kmem_cache *dazukofs_inode_info_cachep;
-+static struct kmem_cache *dazukofs_sb_info_cachep;
-+struct kmem_cache *dazukofs_dentry_info_cachep;
-+struct kmem_cache *dazukofs_file_info_cachep;
-+
-+static struct inode *dazukofs_alloc_inode(struct super_block *sb)
-+{
-+	struct dazukofs_inode_info *inodei;
-+
-+	inodei = kmem_cache_alloc(dazukofs_inode_info_cachep, GFP_KERNEL);
-+	if (!inodei)
-+		return NULL;
-+
-+	/*
-+	 * The inode is embedded within the dazukofs_inode_info struct.
-+	 */
-+	return &(inodei->vfs_inode);
-+}
-+
-+static void dazukofs_destroy_inode(struct inode *inode)
-+{
-+	/*
-+	 * The inode is embedded within the dazukofs_inode_info struct.
-+	 */
-+	kmem_cache_free(dazukofs_inode_info_cachep,
-+			GET_INODE_INFO(inode));
-+}
-+
-+static int dazukofs_statfs(struct dentry *dentry, struct kstatfs *buf)
-+{
-+	return vfs_statfs(GET_LOWER_DENTRY(dentry), buf);
-+}
-+
-+static void dazukofs_clear_inode(struct inode *inode)
-+{
-+	iput(GET_LOWER_INODE(inode));
-+}
-+
-+static void dazukofs_put_super(struct super_block *sb)
-+{
-+	struct dazukofs_sb_info *sbi = GET_SB_INFO(sb);
-+
-+	if (sbi)
-+		kmem_cache_free(dazukofs_sb_info_cachep, sbi);
-+}
-+
-+/**
-+ * Unused operations:
-+ *   - dirty_inode
-+ *   - write_inode
-+ *   - put_inode
-+ *   - drop_inode
-+ *   - delete_inode
-+ *   - write_super
-+ *   - sync_fs
-+ *   - write_super_lockfs
-+ *   - unlockfs
-+ *   - remount_fs
-+ *   - umount_begin
-+ *   - show_options
-+ *   - show_stats
-+ *   - quota_read
-+ *   - quota_write
-+ */
-+static struct super_operations dazukofs_sops = {
-+	.alloc_inode	= dazukofs_alloc_inode,
-+	.destroy_inode	= dazukofs_destroy_inode,
-+	.put_super	= dazukofs_put_super,
-+	.statfs		= dazukofs_statfs,
-+	.clear_inode	= dazukofs_clear_inode,
-+};
-+
-+static int dazukofs_parse_mount_options(char *options, struct super_block *sb)
-+{
-+	return 0;
-+}
-+
-+static int dazukofs_fill_super(struct super_block *sb, void *data, int silent)
-+{
-+	struct dazukofs_sb_info *sbi;
-+	struct dentry *root;
-+	static const struct qstr name = { .name = "/", .len = 1 };
-+	struct dazukofs_dentry_info *di;
-+
-+	sbi =  kmem_cache_zalloc(dazukofs_sb_info_cachep, GFP_KERNEL);
-+	if (!sbi)
-+		return -ENOMEM;
-+
-+	sb->s_op = &dazukofs_sops;
-+
-+	root = d_alloc(NULL, &name);
-+	if (!root) {
-+		kmem_cache_free(dazukofs_sb_info_cachep, sbi);
-+		return -ENOMEM;
-+	}
-+
-+	sb->s_root = root;
-+
-+	sb->s_root->d_op = &dazukofs_dops;
-+	sb->s_root->d_sb = sb;
-+	sb->s_root->d_parent = sb->s_root;
-+
-+	di = kmem_cache_zalloc(dazukofs_dentry_info_cachep, GFP_KERNEL);
-+	if (!di) {
-+		kmem_cache_free(dazukofs_sb_info_cachep, sbi);
-+		dput(sb->s_root);
-+		return -ENOMEM;
-+	}
-+
-+	SET_DENTRY_INFO(sb->s_root, di);
-+
-+	SET_SB_INFO(sb, sbi);
-+
-+	return 0;
-+}
-+
-+static int dazukofs_read_super(struct super_block *sb, const char *dev_name)
-+{
-+	struct nameidata nd;
-+	struct dentry *lower_root;
-+	struct vfsmount *lower_mnt;
-+	int err;
-+
-+	memset(&nd, 0, sizeof(struct nameidata));
-+	err = path_lookup(dev_name, LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &nd);
-+	if (err)
-+		return err;
-+
-+	lower_root = dget(nd.path.dentry);
-+	lower_mnt = mntget(nd.path.mnt);
-+
-+	if (IS_ERR(lower_root)) {
-+		err = PTR_ERR(lower_root);
-+		goto out_put;
-+	}
-+
-+	if (!lower_root->d_inode) {
-+		err = -ENOENT;
-+		goto out_put;
-+	}
-+
-+	SET_LOWER_SB(sb, lower_root->d_sb);
-+	sb->s_maxbytes = lower_root->d_sb->s_maxbytes;
-+	SET_LOWER_DENTRY(sb->s_root, lower_root, lower_mnt);
-+
-+	err = dazukofs_interpose(lower_root, sb->s_root, sb, 0);
-+	if (err)
-+		goto out_put;
-+	goto out;
-+
-+out_put:
-+	dput(lower_root);
-+	mntput(lower_mnt);
-+out:
-+	path_put(&nd.path);
-+	return err;
-+}
-+
-+static int dazukofs_get_sb(struct file_system_type *fs_type, int flags,
-+			   const char *dev_name, void *data,
-+			   struct vfsmount *mnt)
-+{
-+	struct super_block *sb;
-+	int err;
-+
-+	err = get_sb_nodev(fs_type, flags, data, dazukofs_fill_super, mnt);
-+	if (err)
-+		goto out;
-+
-+	sb = mnt->mnt_sb;
-+
-+	err = dazukofs_parse_mount_options(data, sb);
-+	if (err)
-+		goto out_abort;
-+
-+	err = dazukofs_read_super(sb, dev_name);
-+	if (err)
-+		goto out_abort;
-+
-+	goto out;
-+
-+out_abort:
-+	up_write(&sb->s_umount);
-+	deactivate_super(sb);
-+out:
-+	return err;
-+}
-+
-+static void init_once(void *data)
-+{
-+	struct dazukofs_inode_info *inode_info =
-+		(struct dazukofs_inode_info *)data;
-+
-+	memset(inode_info, 0, sizeof(struct dazukofs_inode_info));
-+	inode_init_once(&(inode_info->vfs_inode));
-+}
-+
-+static void destroy_caches(void)
-+{
-+	if (dazukofs_inode_info_cachep) {
-+		kmem_cache_destroy(dazukofs_inode_info_cachep);
-+		dazukofs_inode_info_cachep = NULL;
-+	}
-+
-+	if (dazukofs_sb_info_cachep) {
-+		kmem_cache_destroy(dazukofs_sb_info_cachep);
-+		dazukofs_sb_info_cachep = NULL;
-+	}
-+
-+	if (dazukofs_dentry_info_cachep) {
-+		kmem_cache_destroy(dazukofs_dentry_info_cachep);
-+		dazukofs_dentry_info_cachep = NULL;
-+	}
-+
-+	if (dazukofs_file_info_cachep) {
-+		kmem_cache_destroy(dazukofs_file_info_cachep);
-+		dazukofs_file_info_cachep = NULL;
-+	}
-+}
-+
-+static int init_caches(void)
-+{
-+	dazukofs_inode_info_cachep =
-+		kmem_cache_create("dazukofs_inode_info_cache",
-+				  sizeof(struct dazukofs_inode_info), 0,
-+				  SLAB_HWCACHE_ALIGN,
-+				  init_once);
-+	if (!dazukofs_inode_info_cachep)
-+		goto out_nomem;
-+
-+	dazukofs_sb_info_cachep =
-+		kmem_cache_create("dazukofs_sb_info_cache",
-+				  sizeof(struct dazukofs_sb_info), 0,
-+				  SLAB_HWCACHE_ALIGN,
-+				  NULL);
-+	if (!dazukofs_sb_info_cachep)
-+		goto out_nomem;
-+
-+	dazukofs_dentry_info_cachep =
-+		kmem_cache_create("dazukofs_dentry_info_cache",
-+				  sizeof(struct dazukofs_dentry_info), 0,
-+				  SLAB_HWCACHE_ALIGN,
-+				  NULL);
-+	if (!dazukofs_dentry_info_cachep)
-+		goto out_nomem;
-+
-+	dazukofs_file_info_cachep =
-+		kmem_cache_create("dazukofs_file_info_cache",
-+				  sizeof(struct dazukofs_file_info), 0,
-+				  SLAB_HWCACHE_ALIGN,
-+				  NULL);
-+	if (!dazukofs_file_info_cachep)
-+		goto out_nomem;
-+
-+	return 0;
-+
-+out_nomem:
-+	destroy_caches();
++error_out:
++	if (dazukofs_event_container_cachep)
++		kmem_cache_destroy(dazukofs_event_container_cachep);
++	if (dazukofs_event_cachep)
++		kmem_cache_destroy(dazukofs_event_cachep);
 +	return -ENOMEM;
 +}
 +
-+static struct file_system_type dazukofs_fs_type = {
-+	.owner		= THIS_MODULE,
-+	.name		= "dazukofs",
-+	.get_sb		= dazukofs_get_sb,
-+	/*
-+	 * XXX: We are using kill_anon_super() instead of my own function.
-+	 *      Is this OK?
-+	 */
-+	.kill_sb	= kill_anon_super,
-+	.fs_flags	= 0,
-+};
-+
-+static int __init init_dazukofs_fs(void)
-+{
-+	int err = 0;
-+
-+	err = init_caches();
-+	if (err)
-+		goto error_out1;
-+
-+	err = register_filesystem(&dazukofs_fs_type);
-+	if (err)
-+		goto error_out2;
-+
-+	printk(KERN_INFO "dazukofs: loaded\n");
-+	return 0;
-+
-+error_out2:
-+	destroy_caches();
-+error_out1:
-+	return err;
-+}
-+
-+static void __exit exit_dazukofs_fs(void)
-+{
-+	unregister_filesystem(&dazukofs_fs_type);
-+	destroy_caches();
-+	printk(KERN_INFO "dazukofs: unloaded\n");
-+}
-+
-+MODULE_AUTHOR("John Ogness");
-+MODULE_DESCRIPTION("pass-through stackable filesystem");
-+MODULE_LICENSE("GPL");
-+module_init(init_dazukofs_fs)
-+module_exit(exit_dazukofs_fs)
-Index: linux-2.6.27/fs/dazukofs/file.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.27/fs/dazukofs/file.c	2008-12-21 15:09:53.000000000 +0100
-@@ -0,0 +1,340 @@
-+/* dazukofs: access control stackable filesystem
-+
-+   Copyright (C) 1997-2004 Erez Zadok
-+   Copyright (C) 2001-2004 Stony Brook University
-+   Copyright (C) 2004-2007 International Business Machines Corp.
-+   Copyright (C) 2008 John Ogness
-+     Author: John Ogness <dazukocode@ogness.net>
-+
-+   This program is free software; you can redistribute it and/or
-+   modify it under the terms of the GNU General Public License
-+   as published by the Free Software Foundation; either version 2
-+   of the License, or (at your option) any later version.
-+
-+   This program is distributed in the hope that it will be useful,
-+   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+   GNU General Public License for more details.
-+
-+   You should have received a copy of the GNU General Public License
-+   along with this program; if not, write to the Free Software
-+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-+*/
-+
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/mount.h>
-+#include <linux/file.h>
-+#include <linux/fs_stack.h>
-+
-+#include "dazukofs_fs.h"
-+
 +/**
-+ * Description: Called when the VFS needs to move the file position index.
-+ */
-+static loff_t dazukofs_llseek(struct file *file, loff_t offset, int origin)
-+{
-+	loff_t retval = -EINVAL;
-+	struct file *lower_file = GET_LOWER_FILE(file);
-+
-+	lower_file->f_pos = file->f_pos;
-+
-+	memcpy(&(lower_file->f_ra), &(file->f_ra),
-+	       sizeof(struct file_ra_state));
-+
-+	if (lower_file->f_op && lower_file->f_op->llseek)
-+		retval = lower_file->f_op->llseek(lower_file, offset, origin);
-+	else
-+		retval = generic_file_llseek(lower_file, offset, origin);
-+
-+	if (retval >= 0) {
-+		file->f_pos = lower_file->f_pos;
-+		file->f_version = lower_file->f_version;
-+	}
-+
-+	return retval;
-+}
-+
-+/**
-+ * Description: Called by read(2) and related system calls.
-+ */
-+static ssize_t dazukofs_read(struct file *file, char *buf, size_t count,
-+			   loff_t *ppos)
-+{
-+	int err = -EINVAL;
-+	struct file *lower_file = GET_LOWER_FILE(file);
-+	loff_t pos_copy = *ppos;
-+
-+	if (!lower_file->f_op || !lower_file->f_op->read)
-+		goto out;
-+
-+	err = lower_file->f_op->read(lower_file, buf, count, &pos_copy);
-+
-+	lower_file->f_pos = pos_copy;
-+	*ppos = pos_copy;
-+
-+	if (err >= 0) {
-+		fsstack_copy_attr_atime(file->f_dentry->d_inode,
-+					lower_file->f_dentry->d_inode);
-+	}
-+
-+	memcpy(&(file->f_ra), &(lower_file->f_ra),
-+	       sizeof(struct file_ra_state));
-+out:
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by write(2) and related system calls.
-+ */
-+static ssize_t dazukofs_write(struct file *file, const char *buf,
-+			      size_t count, loff_t *ppos)
-+{
-+	int err = -EINVAL;
-+	struct file *lower_file = GET_LOWER_FILE(file);
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct inode *lower_inode = GET_LOWER_INODE(inode);
-+	loff_t pos_copy = *ppos;
-+
-+	if (!lower_file->f_op || !lower_file->f_op->write)
-+		goto out;
-+
-+	err = lower_file->f_op->write(lower_file, buf, count, &pos_copy);
-+
-+	lower_file->f_pos = pos_copy;
-+	*ppos = pos_copy;
-+
-+	if (err >= 0)
-+		fsstack_copy_attr_atime(inode, lower_inode);
-+
-+	memcpy(&(file->f_ra), &(lower_file->f_ra),
-+	       sizeof(struct file_ra_state));
-+
-+	mutex_lock(&inode->i_mutex);
-+	i_size_write(inode, i_size_read(lower_inode));
-+	mutex_unlock(&inode->i_mutex);
-+out:
-+	return err;
-+}
-+
-+/**
-+ * Description: Called when the VFS needs to read the directory contents.
-+ */
-+static int dazukofs_readdir(struct file *file, void *dirent, filldir_t filldir)
-+{
-+	int err;
-+	struct file *lower_file = GET_LOWER_FILE(file);
-+	struct inode *inode = file->f_dentry->d_inode;
-+
-+	lower_file->f_pos = file->f_pos;
-+
-+	err = vfs_readdir(lower_file, filldir, dirent);
-+
-+	file->f_pos = lower_file->f_pos;
-+
-+	if (err >= 0)
-+		fsstack_copy_attr_atime(inode, lower_file->f_dentry->d_inode);
-+
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the ioctl(2) system call.
-+ */
-+static int dazukofs_ioctl(struct inode *inode, struct file *file,
-+			  unsigned int cmd, unsigned long arg)
-+{
-+	struct file *lower_file = GET_LOWER_FILE(file);
-+	struct inode *lower_inode = GET_LOWER_INODE(inode);
-+	int err = -ENOTTY;
-+
-+	if (!lower_file || !lower_file->f_op || !lower_file->f_op->ioctl ||
-+	    !lower_inode) {
-+		goto out;
-+	}
-+
-+	err = lower_file->f_op->ioctl(lower_inode, lower_file, cmd, arg);
-+out:
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the VFS when an inode should be opened. When the
-+ * VFS opens a file, it creates a new "struct file". It then calls the open
-+ * method for the newly allocated file structure. You might think that the
-+ * open method really belongs in "struct inode_operations", and you may be
-+ * right. I think it's done the way it is because it makes filesystems
-+ * simpler to implement. The open() method is a good place to initialize
-+ * the "private_data" member in the file structure if you want to point to
-+ * a device structure.
-+ */
-+static int dazukofs_open(struct inode *inode, struct file *file)
-+{
-+	struct dentry *dentry = file->f_dentry;
-+	struct dentry *lower_dentry = dget(GET_LOWER_DENTRY(dentry));
-+	struct vfsmount *lower_mnt = mntget(GET_LOWER_MNT(dentry));
-+	struct file *lower_file;
-+	int err = 0;
-+
-+	SET_FILE_INFO(file, kmem_cache_zalloc(dazukofs_file_info_cachep,
-+		      GFP_KERNEL));
-+	if (!GET_FILE_INFO(file)) {
-+		err = -ENOMEM;
-+		goto error_out1;
-+	}
-+
-+	lower_file = dentry_open(lower_dentry, lower_mnt, file->f_flags);
-+	if (IS_ERR(lower_file)) {
-+		err = PTR_ERR(lower_file);
-+		/* dentry_open() already did dput() and mntput() */
-+		goto error_out2;
-+	}
-+
-+	SET_LOWER_FILE(file, lower_file);
-+
-+	return 0;
-+
-+error_out1:
-+	dput(lower_dentry);
-+	mntput(lower_mnt);
-+error_out2:
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the close(2) system call to flush a file.
-+ */
-+static int dazukofs_flush(struct file *file, fl_owner_t td)
-+{
-+	struct file *lower_file = GET_LOWER_FILE(file);
-+	int err = 0;
-+
-+	if (!lower_file || !lower_file->f_op || !lower_file->f_op->flush)
-+		goto out;
-+
-+	err = lower_file->f_op->flush(lower_file, td);
-+out:
-+	return err;
-+}
-+
-+/**
-+ * Description: Called when the last reference to an open file is closed.
-+ */
-+static int dazukofs_release(struct inode *inode, struct file *file)
-+{
-+	struct inode *lower_inode = GET_LOWER_INODE(inode);
-+
-+	fput(GET_LOWER_FILE(file));
-+	inode->i_blocks = lower_inode->i_blocks;
-+
-+	kmem_cache_free(dazukofs_file_info_cachep, GET_FILE_INFO(file));
-+
-+	return 0;
-+}
-+
-+/**
-+ * Description: Called by the fsync(2) system call.
-+ */
-+static int dazukofs_fsync(struct file *file, struct dentry *dentry,
-+			  int datasync)
-+{
-+	struct file *lower_file = GET_LOWER_FILE(file);
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	int err = -EINVAL;
-+
-+	if (!lower_file || !lower_file->f_op || !lower_file->f_op->fsync)
-+		goto out;
-+
-+	err = lower_file->f_op->fsync(lower_file, lower_dentry, datasync);
-+out:
-+	return err;
-+}
-+
-+/**
-+ * Description: .called by the fcntl(2) system call when asynchronous
-+ * (non-blocking) mode is enabled for a file.
-+ */
-+static int dazukofs_fasync(int fd, struct file *file, int flag)
-+{
-+	struct file *lower_file = GET_LOWER_FILE(file);
-+	int err = 0;
-+
-+	if (!lower_file || !lower_file->f_op || !lower_file->f_op->fasync)
-+		goto out;
-+
-+	err = lower_file->f_op->fasync(fd, lower_file, flag);
-+out:
-+	return err;
-+}
-+
-+/**
-+ * Unused operations:
-+ *   - owner
-+ *   - aio_read (generic)
-+ *   - aio_write (generic)
-+ *   - poll
-+ *   - unlocked_ioctl
-+ *   - compat_ioctl
-+ *   - mmap (generic)
-+ *   - aio_fsync
-+ *   - lock
-+ *   - sendpage
-+ *   - get_unmapped_area
-+ *   - check_flags
-+ *   - dir_notify
-+ *   - flock
-+ *   - splice_write
-+ *   - splice_read (generic)
-+ *   - setlease
-+ */
-+struct file_operations dazukofs_main_fops = {
-+	.llseek		= dazukofs_llseek,
-+	.read		= dazukofs_read,
-+	.aio_read	= generic_file_aio_read,
-+	.write		= dazukofs_write,
-+	.aio_write	= generic_file_aio_write,
-+	.readdir	= dazukofs_readdir,
-+	.ioctl		= dazukofs_ioctl,
-+	.mmap		= generic_file_mmap,
-+	.open		= dazukofs_open,
-+	.flush		= dazukofs_flush,
-+	.release	= dazukofs_release,
-+	.fsync		= dazukofs_fsync,
-+	.fasync		= dazukofs_fasync,
-+	.splice_read	= generic_file_splice_read,
-+};
-+
-+/**
-+ * Unused operations:
-+ *   - owner
-+ *   - llseek
-+ *   - read
-+ *   - write
-+ *   - aio_read
-+ *   - aio_write
-+ *   - poll
-+ *   - unlocked_ioctl
-+ *   - compat_ioctl
-+ *   - mmap (generic)
-+ *   - aio_fsync
-+ *   - lock
-+ *   - sendpage
-+ *   - get_unmapped_area
-+ *   - check_flags
-+ *   - dir_notify
-+ *   - flock
-+ *   - splice_write
-+ *   - splice_read (generic)
-+ *   - setlease
-+ */
-+const struct file_operations dazukofs_dir_fops = {
-+	.readdir	= dazukofs_readdir,
-+	.ioctl		= dazukofs_ioctl,
-+	.mmap		= generic_file_mmap,
-+	.open		= dazukofs_open,
-+	.flush		= dazukofs_flush,
-+	.release	= dazukofs_release,
-+	.fsync		= dazukofs_fsync,
-+	.fasync		= dazukofs_fasync,
-+	.splice_read	= generic_file_splice_read,
-+};
-Index: linux-2.6.27/fs/dazukofs/inode.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.27/fs/dazukofs/inode.c	2008-12-21 15:09:53.000000000 +0100
-@@ -0,0 +1,832 @@
-+/* dazukofs: access control stackable filesystem
-+
-+   Copyright (C) 1997-2004 Erez Zadok
-+   Copyright (C) 2001-2004 Stony Brook University
-+   Copyright (C) 2004-2007 International Business Machines Corp.
-+   Copyright (C) 2008 John Ogness
-+     Author: John Ogness <dazukocode@ogness.net>
-+
-+   This program is free software; you can redistribute it and/or
-+   modify it under the terms of the GNU General Public License
-+   as published by the Free Software Foundation; either version 2
-+   of the License, or (at your option) any later version.
-+
-+   This program is distributed in the hope that it will be useful,
-+   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+   GNU General Public License for more details.
-+
-+   You should have received a copy of the GNU General Public License
-+   along with this program; if not, write to the Free Software
-+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-+*/
-+
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/namei.h>
-+#include <linux/mount.h>
-+#include <linux/uaccess.h>
-+#include <linux/fs_stack.h>
-+
-+#include "dazukofs_fs.h"
-+
-+static struct inode_operations dazukofs_symlink_iops;
-+static struct inode_operations dazukofs_dir_iops;
-+static struct inode_operations dazukofs_main_iops;
-+
-+static int dazukofs_inode_test(struct inode *inode,
-+			       void *candidate_lower_inode)
-+{
-+	if (GET_LOWER_INODE(inode) ==
-+	    (struct inode *)candidate_lower_inode) {
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+static void dazukofs_init_inode(struct inode *inode, struct inode *lower_inode)
-+{
-+	SET_LOWER_INODE(inode, lower_inode);
-+	inode->i_ino = lower_inode->i_ino;
-+	inode->i_version++;
-+	inode->i_op = &dazukofs_main_iops;
-+	inode->i_fop = &dazukofs_main_fops;
-+	inode->i_mapping->a_ops = &dazukofs_aops;
-+}
-+
-+static int dazukofs_inode_set(struct inode *inode, void *lower_inode)
-+{
-+	dazukofs_init_inode(inode, (struct inode *)lower_inode);
-+	return 0;
-+}
-+
-+/**
-+ * dazukofs_interpose - fill in new dentry, linking it to the lower dentry
-+ * @lower_dentry: the corresponding lower dentry
-+ * @denty: the new DazukoFS dentry
-+ * @sb: super block of DazukoFS
-+ * @already_hashed: flag to signify if "dentry" is already hashed
++ * release_event - release (and possible free) an event
++ * @evt: the event to release
++ * @decrement_assigned: flag to signal if the assigned count should be
++ *                      decremented (only for registered processes)
++ * @deny: flag if file access event should be denied
 + *
-+ * Description: This is the key function which sets up all the hooks to
-+ *              give DazukoFS control.
++ * Description: This function will decrement the assigned count for the
++ * event. The "decrement_assigned" flag is used to distinguish between
++ * the anonymous process accessing a file and the registered process. The
++ * assigned count is only incremented for registered process (although the
++ * anonymous process will also have a handle to the event).
++ *
++ * For the anonymous process (decrement_assigned = false):
++ * If the assigned count is not zero, there are registered processes that
++ * have a handle to this event. The event is marked deprecated. Otherwise
++ * we free the event.
++ *
++ * For a registered process (decrement_assigned = true):
++ * The assigned count is decremented. If it is now zero and the event is
++ * not deprecated, then the anonymous process still has a handle. In this
++ * case we wake the anonymous process. Otherwise we free the event.
++ *
++ * Aside from releasing the event, the deny status of the event is also
++ * updated. The "normal" release process involves the registered processes
++ * first releasing (and providing their deny values) and finally the
++ * anonymous process will release (and free) the event after reading the
++ * deny value.
++ */
++static void release_event(struct dazukofs_event *evt, int decrement_assigned,
++			  int deny)
++{
++	int free_event = 0;
++
++	mutex_lock(&evt->assigned_mutex);
++	if (deny)
++		evt->deny |= 1;
++
++	if (decrement_assigned) {
++		evt->assigned--;
++		if (evt->assigned == 0) {
++			if (!evt->deprecated)
++				wake_up(&evt->queue);
++			else
++				free_event = 1;
++		}
++	} else {
++		if (evt->assigned == 0)
++			free_event = 1;
++		else
++			evt->deprecated = 1;
++	}
++	mutex_unlock(&evt->assigned_mutex);
++
++	if (free_event) {
++		dput(evt->dentry);
++		mntput(evt->mnt);
++		kmem_cache_free(dazukofs_event_cachep, evt);
++	}
++}
++
++/**
++ * __clear_group_event_list - cleanup/release event list
++ * @event_list - the list to clear
++ *
++ * Description: All events (and their containers) will be released/freed
++ * for the given event list. The event list will be an empty (yet still
++ * valid) list after this function is finished.
++ *
++ * IMPORTANT: This function requires work_mutex to be held!
++ */
++static void __clear_group_event_list(struct list_head *event_list)
++{
++	struct dazukofs_event_container *ec;
++	struct list_head *pos;
++	struct list_head *q;
++
++	list_for_each_safe(pos, q, event_list) {
++		ec = list_entry(pos, struct dazukofs_event_container, list);
++		list_del(pos);
++
++		release_event(ec->event, 1, 0);
++
++		kmem_cache_free(dazukofs_event_container_cachep, ec);
++	}
++}
++
++/**
++ * __remove_group - clear all activity associated with the group
++ * @grp: the group to clear
++ *
++ * Description: All pending and in-progress events are released/freed.
++ * Any processes waiting on the queue are woken.
++ *
++ * IMPORTANT: This function requires work_mutex to be held!
++ */
++static void __remove_group(struct dazukofs_group *grp)
++{
++	__clear_group_event_list(&grp->working_list.list);
++	__clear_group_event_list(&grp->todo_list.list);
++
++	/* notify all registered process waiting for an event */
++	wake_up_all(&grp->queue);
++}
++
++/**
++ * dazukofs_destroy_events - cleanup/shutdown event handling infrastructure
++ *
++ * Description: Release all pending events, free all allocated structures.
++ */
++void dazukofs_destroy_events(void)
++{
++	/* free the group items */
++	mutex_lock(&work_mutex);
++	__remove_group(&reg_group);
++	mutex_unlock(&work_mutex);
++
++	/* free everything else */
++	kmem_cache_destroy(dazukofs_event_container_cachep);
++	kmem_cache_destroy(dazukofs_event_cachep);
++}
++
++/**
++ * check_recursion - check if current process is recursing
++ *
++ * Description: A list of anonymous processes is managed to prevent
++ * access event recursion. This function checks if the current process is
++ * a part of that list.
++ *
++ * If the current process is found in the process list, it is removed.
++ *
++ * NOTE: The proc structure is not freed. It is only removed from the
++ *       list. Since it is a recursive call, the caller can free the
++ *       structure after the call chain is finished.
++ *
++ * Returns 0 if this is a recursive process call.
++ */
++static int check_recursion(void)
++{
++	struct dazukofs_proc *proc;
++	struct list_head *pos;
++	int found = 0;
++
++	mutex_lock(&proc_mutex);
++	list_for_each(pos, &proc_list.list) {
++		proc = list_entry(pos, struct dazukofs_proc, list);
++		if (proc->curr == current) {
++			found = 1;
++			list_del(pos);
++			break;
++		}
++	}
++	mutex_unlock(&proc_mutex);
++
++	/* process event if not found */
++	return !found;
++}
++
++/**
++ * event_assigned - check if event is (still) assigned
++ * @event: event to check
++ *
++ * Description: This function checks if an event is still assigned. An
++ * assigned event means that it is sitting on the todo or working list
++ * of a group.
++ *
++ * Returns the number assigned count.
++ */
++static int event_assigned(struct dazukofs_event *event)
++{
++	int val;
++	mutex_lock(&event->assigned_mutex);
++	val = event->assigned;
++	mutex_unlock(&event->assigned_mutex);
++	return val;
++}
++
++/**
++ * check_access_precheck - check if an access event should be generated
++ *
++ * Description: Check if the current process should cause an access event
++ * to be generated.
++ *
++ * Returns 0 if an access event should be generated.
++ */
++static int check_access_precheck(void)
++{
++	/* am I a recursion process? */
++	if (!check_recursion())
++		return -1;
++
++	return 0;
++}
++
++/**
++ * assign_event_to_group - post an event to be processed
++ * @evt: the event to be posted
++ * @ec: the container for the event
++ *
++ * Description: This function will assign a unique id to the event.
++ * The event will be associated with its container and placed on the
++ * group's todo list. The group will also be woken to handle the new
++ * event.
++ */
++static void
++assign_event_to_group(struct dazukofs_event *evt,
++		      struct dazukofs_event_container *ec) {
++	struct dazukofs_group *grp = &reg_group;
++
++	mutex_lock(&work_mutex);
++	mutex_lock(&evt->assigned_mutex);
++
++	/* assign the event a "unique" id */
++
++	last_event_id++;
++	evt->event_id = last_event_id;
++
++	ec->event = evt;
++	evt->assigned = 1;
++	list_add_tail(&ec->list, &grp->todo_list.list);
++
++	/* notify someone to handle the event */
++	wake_up(&grp->queue);
++
++	mutex_unlock(&evt->assigned_mutex);
++	mutex_unlock(&work_mutex);
++}
++
++/**
++ * allocate_event_and_container - allocate an event and event container
++ * @evt: event pointer to be assigned a new event
++ * @ec: event container to be assigned a new container
++ *
++ * Description: New event and event container structures are allocated
++ * and initialized.
 + *
 + * Returns 0 on success.
 + */
-+int dazukofs_interpose(struct dentry *lower_dentry, struct dentry *dentry,
-+		       struct super_block *sb, int already_hashed)
++static int allocate_event_and_container(struct dazukofs_event **evt,
++					struct dazukofs_event_container **ec)
 +{
-+	struct inode *inode;
-+	struct inode *lower_inode = igrab(lower_dentry->d_inode);
-+	int err = 0;
++	*evt = kmem_cache_zalloc(dazukofs_event_cachep, GFP_KERNEL);
++	if (!*evt)
++		return -1;
++	init_waitqueue_head(&(*evt)->queue);
++	mutex_init(&(*evt)->assigned_mutex);
 +
-+	if (!lower_inode) {
-+		err = -ESTALE;
++	/* allocate container now while we don't have a lock */
++	*ec = kmem_cache_zalloc(dazukofs_event_container_cachep, GFP_KERNEL);
++	if (!*ec)
++		goto error_out;
++
++	return 0;
++
++error_out:
++	kmem_cache_free(dazukofs_event_cachep, *evt);
++	*evt = NULL;
++	return -1;
++}
++
++/**
++ * dazukofs_check_access - check for allowed file access
++ * @dentry: the dentry associated with the file access
++ * @mnt: the vfsmount associated with the file access
++ *
++ * Description: This is the only function used by the stackable filesystem
++ * layer to check if a file may be accessed.
++ *
++ * Returns 0 if the file access is allowed.
++ */
++int dazukofs_check_access(struct dentry *dentry, struct vfsmount *mnt)
++{
++	struct dazukofs_event_container *ec;
++	struct dazukofs_event *evt;
++	int err;
++
++	if (check_access_precheck())
++		return 0;
++
++	/* at this point, the access should be handled */
++
++	if (allocate_event_and_container(&evt, &ec)) {
++		err = -ENOMEM;
 +		goto out;
 +	}
 +
-+	if (lower_inode->i_sb != GET_LOWER_SB(sb)) {
-+		iput(lower_inode);
-+		err = -EXDEV;
-+		goto out;
++	evt->dentry = dget(dentry);
++	evt->mnt = mntget(mnt);
++	evt->pid = current->pid;
++
++	assign_event_to_group(evt, ec);
++
++	/* wait until event completely processed or signal */
++	err = wait_event_freezable(evt->queue, event_assigned(evt) == 0);
++
++	if (evt->deny)
++		err = -EPERM;
++
++	release_event(evt, 0, 0);
++out:
++	return err;
++}
++
++/**
++ * dazukofs_return_event - return checked file access results
++ * @event_id: the id of the event
++ * @deny: a flag indicating if file access should be denied
++ *
++ * Description: This function is called by the device layer when returning
++ * results from a checked file access event. If the event_id was valid, the
++ * event container will be freed and the event released.
++ *
++ * Returns 0 on success.
++ */
++int dazukofs_return_event(unsigned long event_id, int deny)
++{
++	struct dazukofs_group *grp = &reg_group;
++	struct dazukofs_event_container *ec;
++	struct dazukofs_event *evt = NULL;
++	struct list_head *pos;
++	int found = 0;
++	int ret = 0;
++
++	mutex_lock(&work_mutex);
++	list_for_each(pos, &grp->working_list.list) {
++		ec = list_entry(pos, struct dazukofs_event_container, list);
++		evt = ec->event;
++		if (evt->event_id == event_id) {
++			found = 1;
++			list_del(pos);
++			kmem_cache_free(dazukofs_event_container_cachep, ec);
++			break;
++		}
 +	}
++	mutex_unlock(&work_mutex);
 +
-+	inode = iget5_locked(sb, (unsigned long)lower_inode,
-+			     dazukofs_inode_test, dazukofs_inode_set,
-+			     lower_inode);
-+
-+	if (!inode) {
-+		iput(lower_inode);
-+		err = -EACCES;
-+		goto out;
-+	}
-+
-+	if (inode->i_state & I_NEW) {
-+		unlock_new_inode(inode);
-+		/*
-+		 * This is a new node so we leave the lower_node "in use"
-+		 * and do not call iput().
-+		 */
-+	} else {
-+		/*
-+		 * This is not a new node so we decrement the usage count.
-+		 */
-+		iput(lower_inode);
-+	}
-+
-+	if (S_ISLNK(lower_inode->i_mode))
-+		inode->i_op = &dazukofs_symlink_iops;
-+	else if (S_ISDIR(lower_inode->i_mode))
-+		inode->i_op = &dazukofs_dir_iops;
-+
-+	if (S_ISDIR(lower_inode->i_mode))
-+		inode->i_fop = &dazukofs_dir_fops;
-+
-+	if (special_file(lower_inode->i_mode)) {
-+		init_special_inode(inode, lower_inode->i_mode,
-+				   lower_inode->i_rdev);
-+	}
-+
-+	dentry->d_op = &dazukofs_dops;
-+
-+	if (already_hashed)
-+		d_add(dentry, inode);
++	if (found)
++		release_event(evt, 1, deny);
 +	else
-+		d_instantiate(dentry, inode);
-+
-+	fsstack_copy_attr_all(inode, lower_inode, NULL);
-+	fsstack_copy_inode_size(inode, lower_inode);
-+out:
-+	return err;
++		ret = -EFAULT;
++	return ret;
 +}
 +
 +/**
-+ * Description: Called when the VFS needs to look up an inode in a parent
-+ * directory. The name to look for is found in the dentry. This method
-+ * must call d_add() to insert the found inode into the dentry. The
-+ * "i_count" field in the inode structure should be incremented. If the
-+ * named inode does not exist a NULL inode should be inserted into the
-+ * dentry (this is called a negative dentry). Returning an error code
-+ * from this routine must only be done on a real error, otherwise
-+ * creating inodes with system calls like create(2), mknod(2), mkdir(2)
-+ * and so on will fail. If you wish to overload the dentry methods then
-+ * you should initialise the "d_dop" field in the dentry; this is a
-+ * pointer to a struct "dentry_operations". This method is called with
-+ * the directory inode semaphore held.
++ * unclaim_event - return an event to the todo list
++ * @grp: group to which the event is assigned
++ * @ec: event container of the event to be returned
++ *
++ * Description: This function puts the given event container on the todo
++ * list and wake the group.
 + */
-+static struct dentry *dazukofs_lookup(struct inode *dir, struct dentry *dentry,
-+				      struct nameidata *nd)
++static void unclaim_event(struct dazukofs_group *grp,
++			  struct dazukofs_event_container *ec)
 +{
-+	struct dentry *lower_dentry;
-+	struct dentry *lower_dentry_parent;
-+	struct vfsmount *lower_mnt;
-+	int err = 0;
++	/* put the event on the todo list */
++	mutex_lock(&work_mutex);
++	list_add(&ec->list, &grp->todo_list.list);
++	mutex_unlock(&work_mutex);
 +
-+	if ((dentry->d_name.len == 1 && !strcmp(dentry->d_name.name, "."))
-+	    || (dentry->d_name.len == 2 &&
-+		!strcmp(dentry->d_name.name, ".."))) {
-+		d_drop(dentry);
-+		goto out;
++	/* wake up someone else to handle the event */
++	wake_up(&grp->queue);
++}
++
++/**
++ * claim_event - grab an event from the todo list
++ * @grp: the group
++ *
++ * Description: Take the first event from the todo list and move it to the
++ * working list. The event is then returned to its called for processing.
++ *
++ * Returns the claimed event.
++ */
++static struct dazukofs_event_container *claim_event(struct dazukofs_group *grp)
++{
++	struct dazukofs_event_container *ec = NULL;
++
++	/* move first todo-item to working list */
++	mutex_lock(&work_mutex);
++	if (!list_empty(&grp->todo_list.list)) {
++		ec = list_first_entry(&grp->todo_list.list,
++				      struct dazukofs_event_container, list);
++		list_del(&ec->list);
++		list_add(&ec->list, &grp->working_list.list);
++	}
++	mutex_unlock(&work_mutex);
++
++	return ec;
++}
++
++/**
++ * mask_proc - mask the current process
++ * @proc: process structure to use for the list
++ *
++ * Description: Assign the current process to the provided proc structure
++ * and add the structure to the list. The list is used to prevent
++ * generating recursive file access events. The process is removed from
++ * the list with the check_recursion() function.
++ */
++static void mask_proc(struct dazukofs_proc *proc)
++{
++	proc->curr = current;
++	mutex_lock(&proc_mutex);
++	list_add(&proc->list, &proc_list.list);
++	mutex_unlock(&proc_mutex);
++}
++
++/**
++ * open_file - open a file for the current process (avoiding recursion)
++ * @ec: event container to store opened file descriptor
++ *
++ * Description: This function will open a file using the information within
++ * the provided event container. The calling process will be temporarily
++ * masked so that the file open does not generate a file access event.
++ *
++ * Returns 0 on success.
++ */
++static int open_file(struct dazukofs_event_container *ec)
++{
++	struct dazukofs_event *evt = ec->event;
++	struct dazukofs_proc proc;
++	int ret = 0;
++
++	/* open the file read-only */
++
++	ec->fd = get_unused_fd();
++	if (ec->fd < 0) {
++		ret = ec->fd;
++		goto error_out1;
 +	}
 +
-+	dentry->d_op = &dazukofs_dops;
++	/* add myself to be ignored on file open (to avoid recursion) */
++	mask_proc(&proc);
 +
-+	lower_dentry_parent = GET_LOWER_DENTRY(dentry->d_parent);
-+	lower_dentry = lookup_one_len(dentry->d_name.name, lower_dentry_parent,
-+				      dentry->d_name.len);
-+
-+	if (IS_ERR(lower_dentry)) {
-+		err = PTR_ERR(lower_dentry);
-+		d_drop(dentry);
-+		goto out;
++	ec->file = dentry_open(dget(evt->dentry), mntget(evt->mnt), O_RDONLY);
++	if (IS_ERR(ec->file)) {
++		check_recursion();  /* remove myself from proc_list */
++		ret = PTR_ERR(ec->file);
++		goto error_out2;
 +	}
 +
-+	BUG_ON(!atomic_read(&lower_dentry->d_count));
++	fd_install(ec->fd, ec->file);
 +
-+	SET_DENTRY_INFO(dentry, kmem_cache_zalloc(dazukofs_dentry_info_cachep,
-+			GFP_KERNEL));
++	return 0;
 +
-+	if (!GET_DENTRY_INFO(dentry)) {
-+		err = -ENOMEM;
-+		goto out_dput;
++error_out2:
++	put_unused_fd(ec->fd);
++error_out1:
++	return ret;
++}
++
++/**
++ * is_event_available - check if an event is available for processing
++ * @grp: the group
++ *
++ * Description: This function simply checks if there are any events posted
++ * in the group's todo list.
++ *
++ * Returns 0 if there are no events in the todo list.
++ */
++static int is_event_available(struct dazukofs_group *grp)
++{
++	int ret = 0;
++
++	mutex_lock(&work_mutex);
++	if (!list_empty(&grp->todo_list.list))
++		ret = 1;
++	mutex_unlock(&work_mutex);
++
++	return ret;
++}
++
++/**
++ * dazukofs_get_event - get an event to process
++ * @event_id: to be filled in with the new event id
++ * @fd: to be filled in with the opened file descriptor
++ * @pid: to be filled in with the pid of the process generating the event
++ *
++ * Description: This function is called by the device layer to get a new
++ * file access event to process. It waits until an event has been
++ * posted in the todo list (and is successfully claimed by this process).
++ *
++ * Returns 0 on success.
++ */
++int dazukofs_get_event(unsigned long *event_id, int *fd, pid_t *pid)
++{
++	struct dazukofs_group *grp = &reg_group;
++	struct dazukofs_event_container *ec;
++	int ret = 0;
++
++	while (1) {
++		ret = wait_event_freezable(grp->queue,
++					   is_event_available(grp));
++		if (ret != 0)
++			break;
++
++		ec = claim_event(grp);
++		if (ec) {
++			ret = open_file(ec);
++			if (ret == 0) {
++				*event_id = ec->event->event_id;
++				*fd = ec->fd;
++				*pid = ec->event->pid;
++				break;
++			} else {
++				unclaim_event(grp, ec);
++			}
++		}
 +	}
-+
-+	lower_mnt = mntget(GET_LOWER_MNT(dentry->d_parent));
-+
-+	fsstack_copy_attr_atime(dir, lower_dentry_parent->d_inode);
-+
-+	SET_LOWER_DENTRY(dentry, lower_dentry, lower_mnt);
-+
-+	if (!lower_dentry->d_inode) {
-+		/*
-+		 * We want to add because we could not find in lower.
-+		 */
-+		d_add(dentry, NULL);
-+		goto out;
-+	}
-+
-+	err = dazukofs_interpose(lower_dentry, dentry, dir->i_sb, 1);
-+	if (err)
-+		goto out_dput;
-+	goto out;
-+
-+out_dput:
-+	dput(lower_dentry);
-+	d_drop(dentry);
-+
-+out:
-+	return ERR_PTR(err);
++	return ret;
 +}
-+
-+/**
-+ * Description: Called by the mknod(2) system call to create a device
-+ * (char, block) inode or a named pipe (FIFO) or socket. Only required if
-+ * you want to support creating these types of inodes. You will probably
-+ * need to call d_instantiate() just as you would in the create() method.
-+ */
-+static int dazukofs_mknod(struct inode *dir, struct dentry *dentry, int mode,
-+			  dev_t dev)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct dentry *lower_dentry_parent = dget(lower_dentry->d_parent);
-+	struct inode *lower_dentry_parent_inode = lower_dentry_parent->d_inode;
-+	int err = -ENOENT;
-+
-+	mutex_lock_nested(&(lower_dentry_parent_inode->i_mutex),
-+			  I_MUTEX_PARENT);
-+
-+	err = vfs_mknod(lower_dentry_parent_inode, lower_dentry, mode, dev);
-+	if (err)
-+		goto out;
-+
-+	err = dazukofs_interpose(lower_dentry, dentry, dir->i_sb, 0);
-+	if (err)
-+		goto out;
-+
-+	fsstack_copy_attr_times(dir, lower_dentry_parent_inode);
-+	fsstack_copy_inode_size(dir, lower_dentry_parent_inode);
-+out:
-+	mutex_unlock(&(lower_dentry_parent_inode->i_mutex));
-+	dput(lower_dentry_parent);
-+
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the mkdir(2) system call. Only required if you
-+ * want to support creating subdirectories. You will probably need to call
-+ * d_instantiate() just as you would in the create() method.
-+ */
-+static int dazukofs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct dentry *lower_dentry_parent = dget(lower_dentry->d_parent);
-+	struct inode *lower_dentry_parent_inode = lower_dentry_parent->d_inode;
-+	int err = -ENOENT;
-+
-+	mutex_lock_nested(&(lower_dentry_parent_inode->i_mutex),
-+			  I_MUTEX_PARENT);
-+
-+	err = vfs_mkdir(lower_dentry_parent_inode, lower_dentry, mode);
-+	if (err)
-+		goto out;
-+
-+	err = dazukofs_interpose(lower_dentry, dentry, dir->i_sb, 0);
-+	if (err)
-+		goto out;
-+
-+	fsstack_copy_attr_times(dir, lower_dentry_parent_inode);
-+	fsstack_copy_inode_size(dir, lower_dentry_parent_inode);
-+	dir->i_nlink = lower_dentry_parent_inode->i_nlink;
-+out:
-+	mutex_unlock(&(lower_dentry_parent_inode->i_mutex));
-+	dput(lower_dentry_parent);
-+
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the open(2) and creat(2) system calls. Only
-+ * required if you want to support regular files. The dentry you get
-+ * should not have an inode (i.e. it should be a negative dentry). Here
-+ * you will probably call d_instantiate() with the dentry and the newly
-+ * created inode.
-+ */
-+static int dazukofs_create(struct inode *dir, struct dentry *dentry, int mode,
-+			   struct nameidata *nd)
-+{
-+	struct vfsmount *lower_mnt = GET_LOWER_MNT(dentry);
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct dentry *lower_dentry_parent = dget(lower_dentry->d_parent);
-+	struct inode *lower_dentry_parent_inode = lower_dentry_parent->d_inode;
-+	struct vfsmount *vfsmount_save;
-+	struct dentry *dentry_save;
-+	int err = -ENOENT;
-+
-+	mutex_lock_nested(&(lower_dentry_parent_inode->i_mutex),
-+			  I_MUTEX_PARENT);
-+
-+	vfsmount_save = nd->path.mnt;
-+	dentry_save = nd->path.dentry;
-+
-+	nd->path.mnt = mntget(lower_mnt);
-+	nd->path.dentry = dget(lower_dentry);
-+
-+	err = vfs_create(lower_dentry_parent_inode, lower_dentry, mode, nd);
-+
-+	mntput(lower_mnt);
-+	dput(lower_dentry);
-+
-+	nd->path.mnt = vfsmount_save;
-+	nd->path.dentry = dentry_save;
-+
-+	if (err)
-+		goto out;
-+
-+	err = dazukofs_interpose(lower_dentry, dentry, dir->i_sb, 0);
-+	if (err)
-+		goto out;
-+
-+	fsstack_copy_attr_times(dir, lower_dentry_parent_inode);
-+	fsstack_copy_inode_size(dir, lower_dentry_parent_inode);
-+out:
-+	mutex_unlock(&(lower_dentry_parent_inode->i_mutex));
-+	dput(lower_dentry_parent);
-+
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the symlink(2) system call. Only required if you
-+ * want to support symlinks. You will probably need to call d_instantiate()
-+ * just as you would in the create() method.
-+ */
-+static int dazukofs_symlink(struct inode *dir, struct dentry *dentry,
-+			    const char *symname)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct dentry *lower_dentry_parent = dget(lower_dentry->d_parent);
-+	struct inode *lower_dentry_parent_inode = lower_dentry_parent->d_inode;
-+	int err = -ENOENT;
-+
-+	mutex_lock_nested(&(lower_dentry_parent_inode->i_mutex),
-+			  I_MUTEX_PARENT);
-+
-+	err = vfs_symlink(lower_dentry_parent_inode, lower_dentry, symname);
-+	if (err)
-+		goto out;
-+
-+	err = dazukofs_interpose(lower_dentry, dentry, dir->i_sb, 0);
-+	if (err)
-+		goto out;
-+
-+	fsstack_copy_attr_times(dir, lower_dentry_parent_inode);
-+	fsstack_copy_inode_size(dir, lower_dentry_parent_inode);
-+out:
-+	mutex_unlock(&(lower_dentry_parent_inode->i_mutex));
-+	dput(lower_dentry_parent);
-+
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the readlink(2) system call. Only required if
-+ * you want to support reading symbolic links.
-+ */
-+static int dazukofs_readlink(struct dentry *dentry, char __user *buf,
-+			     int bufsiz)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct inode *lower_dentry_inode = lower_dentry->d_inode;
-+	int err = 0;
-+
-+	if (!lower_dentry_inode) {
-+		err = -ENOENT;
-+		d_drop(dentry);
-+		goto out;
-+	}
-+
-+	if (!lower_dentry_inode->i_op ||
-+	    !lower_dentry_inode->i_op->readlink) {
-+		err = -EINVAL;
-+		goto out;
-+	}
-+
-+	err = lower_dentry_inode->i_op->readlink(lower_dentry, buf, bufsiz);
-+	if (err)
-+		goto out;
-+
-+	fsstack_copy_attr_times(dentry->d_inode, lower_dentry_inode);
-+out:
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the VFS to follow a symbolic link to the inode
-+ * it points to. Only required if you want to support symbolic links. This
-+ * method returns a void pointer cookie that is passed to put_link().
-+ */
-+static void *dazukofs_follow_link(struct dentry *dentry, struct nameidata *nd)
-+{
-+	mm_segment_t fs_save;
-+	int rc;
-+	char *buf;
-+	int len = PAGE_SIZE;
-+	int err = 0;
-+
-+	/*
-+	 * Released in dazukofs_put_link(). Only release here on error.
-+	 */
-+	buf = kmalloc(len, GFP_KERNEL);
-+	if (!buf) {
-+		err = -ENOMEM;
-+		goto out;
-+	}
-+
-+	fs_save = get_fs();
-+	set_fs(get_ds());
-+	rc = dazukofs_readlink(dentry, (char __user *)buf, len);
-+	set_fs(fs_save);
-+
-+	if (rc < 0) {
-+		err = rc;
-+		goto out_free;
-+	}
-+	buf[rc] = 0;
-+
-+	nd_set_link(nd, buf);
-+	goto out;
-+
-+out_free:
-+	kfree(buf);
-+out:
-+	return ERR_PTR(err);
-+}
-+
-+/**
-+ * Description: Called by the VFS to release resources allocated by
-+ * follow_link(). The cookie returned by follow_link() is passed to this
-+ * method as the last parameter. It is used by filesystems such as NFS
-+ * where page cache is not stable (i.e. page that was installed when the
-+ * symbolic link walk started might not be in the page cache at the end
-+ * of the walk).
-+ */
-+static void dazukofs_put_link(struct dentry *dentry, struct nameidata *nd,
-+			      void *ptr)
-+{
-+	/*
-+	 * Release the char* from dazukofs_follow_link().
-+	 */
-+	kfree(nd_get_link(nd));
-+}
-+
-+/**
-+ * Description: Called by the VFS to check for access rights on a
-+ * POSIX-like filesystem.
-+ */
-+static int dazukofs_permission(struct inode *inode, int mask)
-+{
-+	return inode_permission(GET_LOWER_INODE(inode), mask);
-+}
-+
-+/**
-+ * Description: Called by the VFS to set attributes for a file. This method
-+ * is called by chmod(2) and related system calls.
-+ */
-+static int dazukofs_setattr(struct dentry *dentry, struct iattr *ia)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct inode *inode = dentry->d_inode;
-+	struct inode *lower_inode = GET_LOWER_INODE(inode);
-+	int err;
-+
-+	err = notify_change(lower_dentry, ia);
-+
-+	fsstack_copy_attr_all(inode, lower_inode, NULL);
-+	fsstack_copy_inode_size(inode, lower_inode);
-+
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the VFS to set an extended attribute for a file.
-+ * Extended attribute is a name:value pair associated with an inode. This
-+ * method is called by setxattr(2) system call.
-+ */
-+static int dazukofs_setxattr(struct dentry *dentry, const char *name,
-+			     const void *value, size_t size, int flags)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct inode *lower_dentry_inode = lower_dentry->d_inode;
-+	int err = 0;
-+
-+	if (!lower_dentry_inode) {
-+		err = -ENOENT;
-+		d_drop(dentry);
-+		goto out;
-+	}
-+
-+	if (!lower_dentry_inode->i_op ||
-+	    !lower_dentry_inode->i_op->setxattr) {
-+		err = -ENOSYS;
-+		goto out;
-+	}
-+
-+	err = lower_dentry_inode->i_op->setxattr(lower_dentry, name, value,
-+						 size, flags);
-+
-+	fsstack_copy_attr_all(dentry->d_inode, lower_dentry_inode, NULL);
-+	fsstack_copy_inode_size(dentry->d_inode, lower_dentry_inode);
-+out:
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the VFS to retrieve the value of an extended
-+ * attribute name. This method is called by getxattr(2) function call.
-+ */
-+static ssize_t dazukofs_getxattr(struct dentry *dentry, const char *name,
-+				 void *value, size_t size)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct inode *lower_dentry_inode = lower_dentry->d_inode;
-+	ssize_t err = 0;
-+
-+	if (!lower_dentry_inode) {
-+		err = -ENOENT;
-+		d_drop(dentry);
-+		goto out;
-+	}
-+
-+	if (!lower_dentry_inode->i_op ||
-+	    !lower_dentry_inode->i_op->getxattr) {
-+		err = -ENOSYS;
-+		goto out;
-+	}
-+
-+	err = lower_dentry_inode->i_op->getxattr(lower_dentry, name,
-+						 value, size);
-+out:
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the VFS to list all extended attributes for a
-+ * given file. This method is called by listxattr(2) system call.
-+ */
-+static ssize_t dazukofs_listxattr(struct dentry *dentry, char *list,
-+				  size_t size)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct inode *lower_dentry_inode = lower_dentry->d_inode;
-+	int err = 0;
-+
-+	if (!lower_dentry_inode) {
-+		err = -ENOENT;
-+		d_drop(dentry);
-+		goto out;
-+	}
-+
-+	if (!lower_dentry_inode->i_op ||
-+	    !lower_dentry_inode->i_op->listxattr) {
-+		err = -ENOSYS;
-+		goto out;
-+	}
-+
-+	err = lower_dentry_inode->i_op->listxattr(lower_dentry, list, size);
-+out:
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the VFS to remove an extended attribute from a
-+ * file. This method is called by removexattr(2) system call.
-+ */
-+static int dazukofs_removexattr(struct dentry *dentry, const char *name)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct inode *lower_dentry_inode = lower_dentry->d_inode;
-+	int err = 0;
-+
-+	if (!lower_dentry_inode) {
-+		err = -ENOENT;
-+		d_drop(dentry);
-+		goto out;
-+	}
-+
-+	if (!lower_dentry_inode->i_op ||
-+	    !lower_dentry_inode->i_op->removexattr) {
-+		err = -ENOSYS;
-+		goto out;
-+	}
-+
-+	err = lower_dentry_inode->i_op->removexattr(lower_dentry, name);
-+out:
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the link(2) system call. Only required if you want
-+ * to support hard links. You will probably need to call d_instantiate()
-+ * just as you would in the create() method.
-+ */
-+static int dazukofs_link(struct dentry *old_dentry, struct inode *dir,
-+			 struct dentry *new_dentry)
-+{
-+	struct dentry *lower_old_dentry = GET_LOWER_DENTRY(old_dentry);
-+	struct dentry *lower_new_dentry = GET_LOWER_DENTRY(new_dentry);
-+	struct dentry *lower_dentry_parent = dget(lower_new_dentry->d_parent);
-+	struct inode *lower_dentry_parent_inode = lower_dentry_parent->d_inode;
-+	int err = -ENOENT;
-+
-+	mutex_lock_nested(&(lower_dentry_parent_inode->i_mutex),
-+			  I_MUTEX_PARENT);
-+
-+	err = vfs_link(lower_old_dentry, lower_dentry_parent_inode,
-+		       lower_new_dentry);
-+	if (err)
-+		goto out;
-+
-+	err = dazukofs_interpose(lower_new_dentry, new_dentry, dir->i_sb, 0);
-+	if (err)
-+		goto out;
-+
-+	fsstack_copy_attr_times(dir, lower_dentry_parent_inode);
-+	fsstack_copy_inode_size(dir, lower_dentry_parent_inode);
-+out:
-+	mutex_unlock(&(lower_dentry_parent_inode->i_mutex));
-+	dput(lower_dentry_parent);
-+
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the unlink(2) system call. Only required if you
-+ * want to support deleting inodes.
-+ */
-+static int dazukofs_unlink(struct inode *dir, struct dentry *dentry)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct dentry *lower_dentry_parent = dget(lower_dentry->d_parent);
-+	struct inode *lower_dentry_parent_inode = lower_dentry_parent->d_inode;
-+	int err;
-+
-+	mutex_lock_nested(&(lower_dentry_parent_inode->i_mutex),
-+			  I_MUTEX_PARENT);
-+
-+	err = vfs_unlink(lower_dentry_parent_inode, lower_dentry);
-+	if (err)
-+		goto out;
-+
-+	fsstack_copy_attr_times(dir, lower_dentry_parent_inode);
-+	dentry->d_inode->i_nlink =
-+		GET_LOWER_INODE(dentry->d_inode)->i_nlink;
-+	fsstack_copy_attr_times(dentry->d_inode, dir);
-+out:
-+	mutex_unlock(&(lower_dentry_parent_inode->i_mutex));
-+	dput(lower_dentry_parent);
-+
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the rmdir(2) system call. Only required if you
-+ * want to support deleting subdirectories.
-+ */
-+static int dazukofs_rmdir(struct inode *dir, struct dentry *dentry)
-+{
-+	struct dentry *lower_dentry = GET_LOWER_DENTRY(dentry);
-+	struct dentry *lower_dentry_parent = dget(lower_dentry->d_parent);
-+	struct inode *lower_dentry_parent_inode = lower_dentry_parent->d_inode;
-+	int err;
-+
-+	mutex_lock_nested(&(lower_dentry_parent_inode->i_mutex),
-+			  I_MUTEX_PARENT);
-+
-+	err = vfs_rmdir(lower_dentry_parent_inode, lower_dentry);
-+	if (err)
-+		goto out;
-+
-+	fsstack_copy_attr_times(dir, lower_dentry_parent_inode);
-+	dir->i_nlink = lower_dentry_parent_inode->i_nlink;
-+out:
-+	mutex_unlock(&(lower_dentry_parent_inode->i_mutex));
-+	dput(lower_dentry_parent);
-+
-+	if (!err)
-+		d_drop(dentry);
-+
-+	return err;
-+}
-+
-+/**
-+ * Description: Called by the rename(2) system call to rename the object to
-+ * have the parent and name given by the second inode and dentry.
-+ */
-+static int dazukofs_rename(struct inode *old_dir, struct dentry *old_dentry,
-+			   struct inode *new_dir, struct dentry *new_dentry)
-+{
-+	struct dentry *lower_old_dentry = GET_LOWER_DENTRY(old_dentry);
-+	struct dentry *lower_new_dentry = GET_LOWER_DENTRY(new_dentry);
-+	struct dentry *lower_old_dentry_parent =
-+		dget(lower_old_dentry->d_parent);
-+	struct dentry *lower_new_dentry_parent =
-+		dget(lower_new_dentry->d_parent);
-+	struct inode *lower_old_dentry_parent_inode =
-+		lower_old_dentry_parent->d_inode;
-+	struct inode *lower_new_dentry_parent_inode =
-+		lower_new_dentry_parent->d_inode;
-+	int err = -ENOENT;
-+
-+	if (!lower_old_dentry_parent_inode) {
-+		d_drop(old_dentry);
-+		goto out;
-+	}
-+
-+	if (!lower_new_dentry_parent_inode) {
-+		d_drop(new_dentry);
-+		goto out;
-+	}
-+
-+	lock_rename(lower_old_dentry_parent, lower_new_dentry_parent);
-+	err = vfs_rename(lower_old_dentry_parent_inode, lower_old_dentry,
-+			 lower_new_dentry_parent_inode, lower_new_dentry);
-+	unlock_rename(lower_old_dentry_parent, lower_new_dentry_parent);
-+
-+	if (err)
-+		goto out;
-+
-+	fsstack_copy_attr_all(new_dir, lower_new_dentry_parent_inode, NULL);
-+	if (new_dir != old_dir)
-+		fsstack_copy_attr_all(old_dir, lower_old_dentry_parent_inode,
-+				      NULL);
-+out:
-+	dput(lower_old_dentry_parent);
-+	dput(lower_new_dentry_parent);
-+
-+	return err;
-+}
-+
-+/**
-+ * Unused operations:
-+ *   - create
-+ *   - lookup
-+ *   - link
-+ *   - unlink
-+ *   - symlink
-+ *   - mkdir
-+ *   - rmdir
-+ *   - mknod
-+ *   - rename
-+ *   - truncate
-+ *   - getattr
-+ *   - truncate_range
-+ *   - fallocate
-+ */
-+static struct inode_operations dazukofs_symlink_iops = {
-+	.readlink	= dazukofs_readlink,
-+	.follow_link	= dazukofs_follow_link,
-+	.put_link	= dazukofs_put_link,
-+	.permission	= dazukofs_permission,
-+	.setattr	= dazukofs_setattr,
-+	.setxattr	= dazukofs_setxattr,
-+	.getxattr	= dazukofs_getxattr,
-+	.listxattr	= dazukofs_listxattr,
-+	.removexattr	= dazukofs_removexattr,
-+};
-+
-+/**
-+ * Unused operations:
-+ *   - readlink
-+ *   - follow_link
-+ *   - put_link
-+ *   - truncate
-+ *   - getattr
-+ *   - truncate_range
-+ *   - fallocate
-+ */
-+static struct inode_operations dazukofs_dir_iops = {
-+	.create		= dazukofs_create,
-+	.lookup		= dazukofs_lookup,
-+	.link		= dazukofs_link,
-+	.unlink		= dazukofs_unlink,
-+	.symlink	= dazukofs_symlink,
-+	.mkdir		= dazukofs_mkdir,
-+	.rmdir		= dazukofs_rmdir,
-+	.mknod		= dazukofs_mknod,
-+	.rename		= dazukofs_rename,
-+	.permission	= dazukofs_permission,
-+	.setattr	= dazukofs_setattr,
-+	.setxattr	= dazukofs_setxattr,
-+	.getxattr	= dazukofs_getxattr,
-+	.listxattr	= dazukofs_listxattr,
-+	.removexattr	= dazukofs_removexattr,
-+};
-+
-+/**
-+ * Unused operations:
-+ *   - create
-+ *   - lookup
-+ *   - link
-+ *   - unlink
-+ *   - symlink
-+ *   - mkdir
-+ *   - rmdir
-+ *   - mknod
-+ *   - rename
-+ *   - readlink
-+ *   - follow_link
-+ *   - put_link
-+ *   - truncate
-+ *   - getattr
-+ *   - truncate_range
-+ *   - fallocate
-+ */
-+static struct inode_operations dazukofs_main_iops = {
-+	.permission	= dazukofs_permission,
-+	.setattr	= dazukofs_setattr,
-+	.setxattr	= dazukofs_setxattr,
-+	.getxattr	= dazukofs_getxattr,
-+	.listxattr	= dazukofs_listxattr,
-+	.removexattr	= dazukofs_removexattr,
-+};
-Index: linux-2.6.27/fs/dazukofs/mmap.c
+Index: linux-2.6.27/fs/dazukofs/dev.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.27/fs/dazukofs/mmap.c	2008-12-21 15:09:53.000000000 +0100
-@@ -0,0 +1,117 @@
++++ linux-2.6.27/fs/dazukofs/dev.h	2008-12-21 15:10:09.000000000 +0100
+@@ -0,0 +1,37 @@
 +/* dazukofs: access control stackable filesystem
 +
-+   Copyright (C) 1997-2003 Erez Zadok
-+   Copyright (C) 2001-2003 Stony Brook University
-+   Copyright (C) 2004-2007 International Business Machines Corp.
 +   Copyright (C) 2008 John Ogness
 +     Author: John Ogness <dazukocode@ogness.net>
 +
@@ -1952,229 +957,282 @@ Index: linux-2.6.27/fs/dazukofs/mmap.c
 +   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 +*/
 +
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/pagemap.h>
++#ifndef __DEV_H
++#define __DEV_H
 +
-+#include "dazukofs_fs.h"
++struct class;
 +
-+/**
-+ * Description: Called by the VM to read a page from backing store. The page
-+ * will be Locked when readpage is called, and should be unlocked and marked
-+ * uptodate once the read completes. If ->readpage discovers that it needs
-+ * to unlock the page for some reason, it can do so, and then return
-+ * AOP_TRUNCATED_PAGE. In this case, the page will be relocated, relocked
-+ * and if that all succeeds, ->readpage will be called again.
-+ */
-+static int dazukofs_readpage(struct file *file, struct page *page)
-+{
-+	struct dentry *dentry = file->f_dentry;
-+	struct file *lower_file = GET_LOWER_FILE(file);
-+	struct inode *inode = dentry->d_inode;
-+	struct inode *lower_inode = GET_LOWER_INODE(inode);
-+	const struct address_space_operations *lower_a_ops =
-+		lower_inode->i_mapping->a_ops;
-+	char *page_data;
-+	struct page *lower_page;
-+	char *lower_page_data;
-+	int err = 0;
++#define DEVICE_NAME	"dazukofs"
 +
-+	lower_page = read_cache_page(lower_inode->i_mapping, page->index,
-+				     (filler_t *)lower_a_ops->readpage,
-+				     (void *)lower_file);
++extern int dazukofs_dev_init(void);
++extern void dazukofs_dev_destroy(void);
 +
-+	if (IS_ERR(lower_page)) {
-+		err = PTR_ERR(lower_page);
-+		lower_page = NULL;
-+		printk(KERN_ERR "dazukofs: Error reading from page cache.\n");
-+		goto out;
-+	}
++extern int dazukofs_group_dev_init(int dev_major, int dev_minor_start,
++				   struct class *dazukofs_class);
++extern void dazukofs_group_dev_destroy(int dev_major, int dev_minor_start,
++				       int dev_minor_end,
++				       struct class *dazukofs_class);
 +
-+	wait_on_page_locked(lower_page);
-+
-+	page_data = (char *)kmap(page);
-+	if (!page_data) {
-+		err = -ENOMEM;
-+		printk(KERN_ERR "dazukofs: Error mapping page.\n");
-+		goto out;
-+	}
-+
-+	lower_page_data = (char *)kmap(lower_page);
-+	if (!lower_page_data) {
-+		err = -ENOMEM;
-+		printk(KERN_ERR "dazukofs: Error mapping lower page.\n");
-+		goto out;
-+	}
-+
-+	memcpy(page_data, lower_page_data, PAGE_CACHE_SIZE);
-+
-+	kunmap(lower_page);
-+	kunmap(page);
-+out:
-+	if (lower_page)
-+		page_cache_release(lower_page);
-+
-+	if (err)
-+		ClearPageUptodate(page);
-+	else
-+		SetPageUptodate(page);
-+
-+	unlock_page(page);
-+
-+	return err;
-+}
-+
-+/**
-+ * Unused operations:
-+ *   - writepage
-+ *   - sync_page
-+ *   - writepages
-+ *   - set_page_dirty
-+ *   - readpages
-+ *   - prepare_write
-+ *   - commit_write
-+ *   - write_begin
-+ *   - write_end
-+ *   - bmap
-+ *   - invalidatepage
-+ *   - releasepage
-+ *   - direct_IO
-+ *   - get_xip_page
-+ *   - migratepage
-+ *   - launder_page
-+ */
-+struct address_space_operations dazukofs_aops = {
-+	.readpage	= dazukofs_readpage,
-+};
++#endif /* __DEV_H */
 Index: linux-2.6.27/fs/dazukofs/Makefile
 ===================================================================
+--- linux-2.6.27.orig/fs/dazukofs/Makefile	2008-12-21 15:09:53.000000000 +0100
++++ linux-2.6.27/fs/dazukofs/Makefile	2008-12-21 15:10:09.000000000 +0100
+@@ -4,4 +4,5 @@
+ 
+ obj-$(CONFIG_DAZUKOFS_FS) += dazukofs.o
+ 
+-dazukofs-objs := super.o inode.o file.o dentry.o mmap.o
++dazukofs-objs := super.o inode.o file.o dentry.o mmap.o event.o \
++		 dev.o group_dev.o
+Index: linux-2.6.27/fs/dazukofs/super.c
+===================================================================
+--- linux-2.6.27.orig/fs/dazukofs/super.c	2008-12-21 15:09:53.000000000 +0100
++++ linux-2.6.27/fs/dazukofs/super.c	2008-12-21 15:10:09.000000000 +0100
+@@ -28,6 +28,7 @@
+ #include <linux/mount.h>
+ 
+ #include "dazukofs_fs.h"
++#include "dev.h"
+ 
+ static struct kmem_cache *dazukofs_inode_info_cachep;
+ static struct kmem_cache *dazukofs_sb_info_cachep;
+@@ -306,19 +307,25 @@
+ {
+ 	int err = 0;
+ 
+-	err = init_caches();
++	err = dazukofs_dev_init();
+ 	if (err)
+ 		goto error_out1;
+ 
+-	err = register_filesystem(&dazukofs_fs_type);
++	err = init_caches();
+ 	if (err)
+ 		goto error_out2;
+ 
++	err = register_filesystem(&dazukofs_fs_type);
++	if (err)
++		goto error_out3;
++
+ 	printk(KERN_INFO "dazukofs: loaded\n");
+ 	return 0;
+ 
+-error_out2:
++error_out3:
+ 	destroy_caches();
++error_out2:
++	dazukofs_dev_destroy();
+ error_out1:
+ 	return err;
+ }
+@@ -327,11 +334,12 @@
+ {
+ 	unregister_filesystem(&dazukofs_fs_type);
+ 	destroy_caches();
++	dazukofs_dev_destroy();
+ 	printk(KERN_INFO "dazukofs: unloaded\n");
+ }
+ 
+ MODULE_AUTHOR("John Ogness");
+-MODULE_DESCRIPTION("pass-through stackable filesystem");
++MODULE_DESCRIPTION("access control stackable filesystem");
+ MODULE_LICENSE("GPL");
+ module_init(init_dazukofs_fs)
+ module_exit(exit_dazukofs_fs)
+Index: linux-2.6.27/fs/dazukofs/file.c
+===================================================================
+--- linux-2.6.27.orig/fs/dazukofs/file.c	2008-12-21 15:09:53.000000000 +0100
++++ linux-2.6.27/fs/dazukofs/file.c	2008-12-21 15:10:09.000000000 +0100
+@@ -28,6 +28,7 @@
+ #include <linux/fs_stack.h>
+ 
+ #include "dazukofs_fs.h"
++#include "event.h"
+ 
+ /**
+  * Description: Called when the VFS needs to move the file position index.
+@@ -174,7 +175,11 @@
+ 	struct dentry *lower_dentry = dget(GET_LOWER_DENTRY(dentry));
+ 	struct vfsmount *lower_mnt = mntget(GET_LOWER_MNT(dentry));
+ 	struct file *lower_file;
+-	int err = 0;
++	int err;
++
++	err = dazukofs_check_access(file->f_dentry, file->f_vfsmnt);
++	if (err)
++		goto error_out1;
+ 
+ 	SET_FILE_INFO(file, kmem_cache_zalloc(dazukofs_file_info_cachep,
+ 		      GFP_KERNEL));
+Index: linux-2.6.27/fs/dazukofs/event.h
+===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.27/fs/dazukofs/Makefile	2008-12-21 15:09:53.000000000 +0100
-@@ -0,0 +1,7 @@
-+#
-+# Makefile for the Linux dazukofs-filesystem routines.
-+#
++++ linux-2.6.27/fs/dazukofs/event.h	2008-12-21 15:10:09.000000000 +0100
+@@ -0,0 +1,32 @@
++/* dazukofs: access control stackable filesystem
 +
-+obj-$(CONFIG_DAZUKOFS_FS) += dazukofs.o
++   Copyright (C) 2008 John Ogness
++     Author: John Ogness <dazukocode@ogness.net>
 +
-+dazukofs-objs := super.o inode.o file.o dentry.o mmap.o
++   This program is free software; you can redistribute it and/or
++   modify it under the terms of the GNU General Public License
++   as published by the Free Software Foundation; either version 2
++   of the License, or (at your option) any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software
++   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*/
++
++#ifndef __EVENT_H
++#define __EVENT_H
++
++extern int dazukofs_init_events(void);
++extern void dazukofs_destroy_events(void);
++
++extern int dazukofs_get_event(unsigned long *event_id, int *fd, pid_t *pid);
++extern int dazukofs_return_event(unsigned long event_id, int deny);
++
++extern int dazukofs_check_access(struct dentry *dentry, struct vfsmount *mnt);
++
++#endif /* __EVENT_H */
 Index: linux-2.6.27/fs/Kconfig
 ===================================================================
---- linux-2.6.27.orig/fs/Kconfig	2008-12-21 15:09:19.000000000 +0100
-+++ linux-2.6.27/fs/Kconfig	2008-12-21 15:09:53.000000000 +0100
-@@ -816,6 +816,17 @@
- 	  To compile this file system support as a module, choose M here: the
- 	  module will be called ecryptfs.
+--- linux-2.6.27.orig/fs/Kconfig	2008-12-21 15:09:53.000000000 +0100
++++ linux-2.6.27/fs/Kconfig	2008-12-21 15:10:09.000000000 +0100
+@@ -820,7 +820,8 @@
+ 	tristate "DazukoFS filesystem layer support (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+ 	help
+-	  A pass-through stackable filesystem (also referred to as nullfs).
++	  A stackable filesystem to allow userspace applications to perform
++	  online file access control.
+ 	  See <file:Documentation/filesystems/dazukofs.txt> to learn more
+ 	  about DazukoFS.
  
-+config DAZUKOFS_FS
-+	tristate "DazukoFS filesystem layer support (EXPERIMENTAL)"
-+	depends on EXPERIMENTAL
-+	help
-+	  A pass-through stackable filesystem (also referred to as nullfs).
-+	  See <file:Documentation/filesystems/dazukofs.txt> to learn more
-+	  about DazukoFS.
-+
-+	  To compile this file system support as a module, choose M here: the
-+	  module will be called dazukofs.
-+
- config HFS_FS
- 	tristate "Apple Macintosh file system support (EXPERIMENTAL)"
- 	depends on BLOCK && EXPERIMENTAL
-Index: linux-2.6.27/fs/Makefile
-===================================================================
---- linux-2.6.27.orig/fs/Makefile	2008-12-21 15:09:19.000000000 +0100
-+++ linux-2.6.27/fs/Makefile	2008-12-21 15:09:53.000000000 +0100
-@@ -86,6 +86,7 @@
- obj-$(CONFIG_HFSPLUS_FS)	+= hfsplus/ # Before hfs to find wrapped HFS+
- obj-$(CONFIG_HFS_FS)		+= hfs/
- obj-$(CONFIG_ECRYPT_FS)		+= ecryptfs/
-+obj-$(CONFIG_DAZUKOFS_FS)	+= dazukofs/
- obj-$(CONFIG_VXFS_FS)		+= freevxfs/
- obj-$(CONFIG_NFS_FS)		+= nfs/
- obj-$(CONFIG_EXPORTFS)		+= exportfs/
 Index: linux-2.6.27/Documentation/filesystems/dazukofs.txt
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.27/Documentation/filesystems/dazukofs.txt	2008-12-21 15:09:53.000000000 +0100
-@@ -0,0 +1,81 @@
-+================
-+ ABOUT DAZUKOFS
-+================
+--- linux-2.6.27.orig/Documentation/filesystems/dazukofs.txt	2008-12-21 15:09:53.000000000 +0100
++++ linux-2.6.27/Documentation/filesystems/dazukofs.txt	2008-12-21 15:10:09.000000000 +0100
+@@ -2,9 +2,10 @@
+  ABOUT DAZUKOFS
+ ================
+ 
+-DazukoFS is a pass-through stackable filesystem. A filesystem that does
+-not perform any special modification but simply passes VFS calls to and
+-from the lower filesystem is typically known as nullfs.
++DazukoFS is a stackable filesystem to allow userspace applications to
++perform online file access control. It was originally developed to
++support online virus scanners, but could be useful for any application
++that wishes to perform online file access control.
+ 
+ 
+ 
+@@ -19,7 +20,19 @@
+ # mount -t dazukofs /opt /opt
+ 
+ A process that accesses files in /opt will now be accessing them through
+-DazukoFS. The stackable filesystem can then be unmounted with:
++DazukoFS. Such file access events will be detected by a process that is
++registered with DazukoFS. That process can then choose to allow or deny
++the access.
 +
-+DazukoFS is a pass-through stackable filesystem. A filesystem that does
-+not perform any special modification but simply passes VFS calls to and
-+from the lower filesystem is typically known as nullfs.
++IMPORTANT: DazukoFS does not allow file access events unless a registered
++           application has approved them. This means that no file access
++           can take place on a DazukoFS mount until an application has
++           registered to perform file access control with DazukoFS.
++           Attempts to access files on a DazukoFS mount will result in the
++           process blocking until a registered application has approved
++           the access.
 +
-+
-+
-+=====================
-+ MOUNTING/UNMOUNTING
-+=====================
-+
-+DazukoFS is typically mounted on top of an existing directory. For example,
-+to stack DazukoFS on top of the /opt directory, the following mount(8)
-+command can be given:
-+
-+# mount -t dazukofs /opt /opt
-+
-+A process that accesses files in /opt will now be accessing them through
-+DazukoFS. The stackable filesystem can then be unmounted with:
-+
-+# umount /opt
-+
-+
-+
-+===============
-+ MOUNT ON BOOT
-+===============
-+
-+You may want DazukoFS to be mounted over certain directories when the
-+machine boots. The easiest way to do this is to add the mounts to
-+the end of /etc/fstab. They would look something like this:
-+
-+/usr   /usr   dazukofs   defaults   0   0
-+/opt   /opt   dazukofs   defaults   0   0
-+
-+
-+
-+=========
-+ WARNING
-+=========
-+
-+It is possible to mount DazukoFS to a directory other than the directory
-+that is being stacked upon. For example:
-+
-+# mount -t dazukofs /opt /mnt
-+
-+When accessing files within /mnt, you will be accessing files in /opt
-+(through DazukoFS). When accessing files directly in /opt, DazukoFS will not
-+be involved.
-+
-+THIS HAS POTENTIAL PROBLEMS!
-+
-+If files are modified directly in /opt, the DazukoFS layer will not know
-+about it. When DazukoFS later tries to access those files, it may result
-+in corrupt data or kernel crashes. As long as /opt is modified ONLY through
-+DazukoFS, there should not be any problems.
-+
-+This method of mounting DazukoFS may be interesting for servers that export
-+a part of the filesystem and the service is in a chroot environment.
++The stackable filesystem can then be unmounted with:
+ 
+ # umount /opt
+ 
+@@ -56,10 +69,11 @@
+ If files are modified directly in /opt, the DazukoFS layer will not know
+ about it. When DazukoFS later tries to access those files, it may result
+ in corrupt data or kernel crashes. As long as /opt is modified ONLY through
+-DazukoFS, there should not be any problems.
++DazukoFS (i.e. through /mnt), there should not be any problems.
+ 
+ This method of mounting DazukoFS may be interesting for servers that export
+-a part of the filesystem and the service is in a chroot environment.
++a part of the filesystem and the exporting service is within a chroot
++environment.
+ 
+ 
+ 
+@@ -79,3 +93,66 @@
+ Please report problems to the dazuko-devel mailing list
+ (subscription required):
+      http://lists.nongnu.org/mailman/listinfo/dazuko-devel
 +
 +
 +
-+==============
-+ KNOWN ISSUES
-+==============
++=======================
++ DAZUKOFS APPLICATIONS
++=======================
 +
-+- DazukoFS does not support writing to memory mapped files. This should not
-+  cause the kernel to crash, but will instead result in the application
-+  failing to perform the writes (although mmap() will appear to be
-+  successful from the application's viewpoint!).
++This last section is meant for developers of DazukoFS applications. This
++section will discuss the methods used for interacting with DazukoFS in
++order to perform online file access control.
 +
-+- It is not possible to stack DazukoFS over the root filesystem (/).
-+  Stacking over pseudo filesystems (/proc, /dev, /sys) has not been
-+  tested and should be avoided.
++Although this section describes the low-level communication between
++application and kernel, be aware that a userspace library libdazukofs
++exists that has already implemented this communication. Using the
++library makes it very easy to write applications for DazukoFS. The
++library can be found on the Dazuko website: http://www.dazuko.org
 +
-+Please report problems to the dazuko-devel mailing list
-+(subscription required):
-+     http://lists.nongnu.org/mailman/listinfo/dazuko-devel
++An application can register itself to receive notification about DazukoFS
++file access events. The application then also has the authority to block
++the file access.
++
++For each file access event, only one of the registered applications will
++be notified.
++
++By opening the device /dev/dazukofs.0 an application has registered itself.
++A read on the device will block until a file access event on DazukoFS has
++taken place. When a file access event has occured, the read will return with
++information about the file access event. For example:
++
++id=11
++fd=4
++pid=3226
++
++This means that the particular file access event has been given the id 11.
++The file descriptor 4 has been opened for the registered process. This file
++descriptor allows the registered process read-only access to the file being
++accessed. The pid of the accessing process is 3226.
++
++Using this information, the registered application must determine if the
++access should be denied or allowed. The application must then respond with
++an answer. This is done by writing to the device:
++
++id=11 r=0
++
++"r" is the response. A value of 0 means to allow the access. A value of 1
++means to deny the access.
++
++IMPORTANT: The application is responsible for closing the file descriptor
++           that was opened by DazukoFS.
++
++Since DazukoFS will open the file being accessed, the registered process
++only requires read/write permissions to the device in order to perform
++online file access control. The file is opened even if the registered
++application normally would not have access to the file. This allows an
++unprivileged process to perform file access control for any file on the
++system.
++
++By closing the device, the application will unregister itself.
++
++NOTE: It is not necessary for the device to be open while the application
++      decides if access should be allowed. In fact, it doesn't even have to
++      be the same process that responds. DazukoFS is only interested in a
++      response for the given event id.
