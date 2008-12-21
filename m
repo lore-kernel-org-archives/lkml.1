@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbYLUQUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbYLUQ2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754638AbYLUQUN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 11:20:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYLUQT7
+	id S1754542AbYLUQ2X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 11:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYLUQ2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 11:19:59 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:38862 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752585AbYLUQT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 11:19:58 -0500
-Date: Sun, 21 Dec 2008 17:19:55 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Julia Lawall <julia@diku.dk>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 4/11] drivers/mmc: Move a dereference below a NULL test
-Message-ID: <20081221171955.15c82df8@mjolnir.drzeus.cx>
-In-Reply-To: <Pine.LNX.4.64.0812161612440.20444@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0812161612440.20444@pc-004.diku.dk>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 21 Dec 2008 11:28:15 -0500
+Received: from www.tglx.de ([62.245.132.106]:40305 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752770AbYLUQ2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 11:28:14 -0500
+Date: Sun, 21 Dec 2008 17:26:57 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>, dsaxena@plexity.net,
+       linux-kernel@vger.kernel.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: TSC not updating after resume: Bug or Feature?
+In-Reply-To: <200812182319.57235.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0812211639210.3376@localhost.localdomain>
+References: <20081217172758.GA6010@trantor.hsd1.or.comcast.net> <1229592279.9487.133.camel@twins> <20081218123924.GH25715@elte.hu> <200812182319.57235.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Dec 2008 16:13:09 +0100 (CET)
-Julia Lawall <julia@diku.dk> wrote:
+On Thu, 18 Dec 2008, Rafael J. Wysocki wrote:
 
-> From: Julia Lawall <julia@diku.dk>
+> On Thursday, 18 of December 2008, Ingo Molnar wrote:
+> > 
+> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > Rafael, would something like this explain why we had to revert Shaggy's 
+> > > patch?
 > 
-> In each case, if the NULL test is necessary, then the dereference should be
-> moved below the NULL test.
-> 
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @@
-> type T;
-> expression E;
-> identifier i,fld;
-> statement S;
-> @@
-> 
-> - T i = E->fld;
-> + T i;
->   ... when != E
->       when != i
->   if (E == NULL) S
-> + i = E->fld;
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
+> Well, I have yet to understand what the suspend-resume of the timekeeping code
+> actually does.
 
-Quite right. Queued up.
+Thats rather simple:
 
-Rgds
--- 
-     -- Pierre Ossman
+suspend() saves the current time of the persistent clock (if
+available), forwards the timekeeping variables so they can be reused
+on resume, disables timekeeping activities and shuts down the clock
+events layer.
+ 
+resume() estimates the suspend time via persistent clock (if
+available) and update xtime with the sleep length. After that it
+reactivates timekeeping and resumes clock events and high resolution
+timers.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+So the sole purpose is:
+   - dis/enable timekeeping and clock event devices.
+   - keep track of the suspend time (if a persistent clock is available)
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+We reactivate clock event devices and hrtimers from timekeeping_resume
+because clock events depend on functional timekeeping.
+
+> The original description sounds worrisome to me, it looks like we've overlooked
+> something at least.
+
+Care to explain ?
+
+> > > His patch fixes the backward motion filter and I'm at an utter  
+> > > loss why that would break suspend.
+> > 
+> > yes, i'd love to have this commit reinstated:
+> > 
+> >  5b7dba4: sched_clock: prevent scd->clock from moving backwards
+> > 
+> > and the bug triggered by hibernation fixed instead.
+
+Hmm. Depending on the hibernation sleep time we can end up with a
+pretty long delta between the pre suspend and the post resume call to
+__update_sched_clock().
+
+I have the feeling that sched_clock looks into stale values after
+resume and the first call to __update_sched_clock() trips over the
+stale scd->clock value. Shaggy's patch brings scd->clock into the mix
+and that might cause the whole machinery to blow up on resume.
+
+Also we need to investigate whether sched_clock is referencing gtod
+values _before_ timekeeping is resume.
+
+Thanks,
+
+	tglx
+
