@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751874AbYLUUyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbYLUUzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751874AbYLUUyh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 15:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYLUUy2
+	id S1752552AbYLUUzA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 15:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbYLUUyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 15:54:28 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:34283 "EHLO mgw2.diku.dk"
+	Sun, 21 Dec 2008 15:54:49 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:34292 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751078AbYLUUy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 15:54:27 -0500
-Date: Sun, 21 Dec 2008 21:54:23 +0100 (CET)
+	id S1751120AbYLUUyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 15:54:47 -0500
+Date: Sun, 21 Dec 2008 21:54:45 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: kernel@pengutronix.de, linux-arm-kernel@lists.arm.linux.org.uk,
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/2] arch/arm/plat-mxc: Add local_irq_restore in error handling
- code
-Message-ID: <Pine.LNX.4.64.0812212153570.3635@ask.diku.dk>
+Subject: [PATCH 2/2] arch/powerpc/platforms/85xx: Add local_irq_restore in
+ error handling code
+Message-ID: <Pine.LNX.4.64.0812212154240.3635@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -62,17 +62,17 @@ local_irq_restore(l);
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/arm/plat-mxc/dma-mx1-mx2.c |    1 +
+ arch/powerpc/platforms/85xx/smp.c |    1 +
  1 file changed, 1 insertion(+)
 
-diff -u -p a/arch/arm/plat-mxc/dma-mx1-mx2.c b/arch/arm/plat-mxc/dma-mx1-mx2.c
---- a/arch/arm/plat-mxc/dma-mx1-mx2.c
-+++ b/arch/arm/plat-mxc/dma-mx1-mx2.c
-@@ -698,6 +698,7 @@ int imx_dma_request(int channel, const c
- 	if (ret) {
- 		printk(KERN_CRIT "Can't register IRQ %d for DMA channel %d\n",
- 				MXC_INT_DMACH0 + channel, channel);
+diff -u -p a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -58,6 +58,7 @@ smp_85xx_kick_cpu(int nr)
+ 
+ 	if (cpu_rel_addr == NULL) {
+ 		printk(KERN_ERR "No cpu-release-addr for cpu %d\n", nr);
 +		local_irq_restore(flags);
- 		return ret;
+ 		return;
  	}
- 	init_timer(&imxdma->watchdog);
+ 
