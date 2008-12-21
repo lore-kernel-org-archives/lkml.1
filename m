@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752544AbYLUHcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646AbYLUILs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752544AbYLUHcs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 02:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYLUHcj
+	id S1752646AbYLUILs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 03:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbYLUILj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 02:32:39 -0500
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:47038 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750984AbYLUHcj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 02:32:39 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=gWwv0Q2W1TLRwQiNcxr0a6uYCjQsR1eGaguvCjNOTQ/8KwdIUUK82RAtjmyMGtqeHO1+pn5CG1Twxkey/KpVEN2zp/E72irjORTukEeqcCTx2cfKiumTf8yOEbpWPLEGY3RvR08zDcb36cMObwsHsIaYQihHEQaCO8YOeSbG0TI=  ;
-X-YMail-OSG: 09PKwboVM1l5xt_5gCAqmxwvtgQxLs9rBt_tWBQeMG79I2pz4vQ7ZOo_i8g1_OMYZQpdJrwzrjV3iC8z8f2IHLI9d7Sx0jnpTwLzvQKp3sNf_Qzpnufh86e9uX.NKMFxaCs.7KadiDH1AIHwyFyKYed0KPnU0MRaA4S.Hz.mqhhe0p79dQM.TQby09xYDx1_dw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       spi-devel-general@lists.sourceforge.net
-Subject: [patch 2.6.28-rc9] spi: spi_write_then_read() regression fix
-Date: Sat, 20 Dec 2008 23:32:35 -0800
-User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Vernon Sauder <vernoninhand@gmail.com>
+	Sun, 21 Dec 2008 03:11:39 -0500
+Received: from ozlabs.org ([203.10.76.45]:55513 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751195AbYLUILi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 21 Dec 2008 03:11:38 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Define smp_call_function_many for UP
+Date: Sun, 21 Dec 2008 18:41:31 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Hollis Blanchard <hollisb@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       "kvm-devel" <kvm@vger.kernel.org>, linux-kernel@vger.kernel.org
+References: <20081208160945.7535A25006E@cleopatra.tlv.redhat.com> <200812191613.57719.rusty@rustcorp.com.au> <alpine.LFD.2.00.0812190903040.14014@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0812190903040.14014@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812202332.36281.david-b@pacbell.net>
+Message-Id: <200812211841.32138.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+On Saturday 20 December 2008 03:33:26 Linus Torvalds wrote:
+> Christmas at Rusty's house:
+> 
+> Dreary.
 
-The recent "simplify spi_write_then_read()" patch included a small
-regression from the 2.6.27 behavior with its performance win.
+Far from!  Sure, it's Arabella's first Xmas, but a Very Kernel Christmas can
+be lots of fun.  Why just this morning, we did this together!  See if you
+can tell which bits are hers...
 
-All SPI transfers are full duplex, and are packaged as half duplex
-by either discarding the data that's read ("write only"), or else
-by writing zeroes ("read only").  That patch wasn't ensuring that
-zeroes were getting written out during the "half duplex read" part
-of the transaction; instead, old RX bits were getting sent.
+Subject: Decorate lib/rbtree.c
+From: Rusty and Arabella Russell <rustabella@rustcorp.com.au>
 
-The fix is trivial:  zero the buffer before using it.
+A slight enhancement to the comments in lib/rbtree.c.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Vernon Sauder <vernoninhand@gmail.com>
+Signed-off-by: Rusty and Arabella Russell <rustabella@rustcorp.com.au>
+---
+ lib/rbtree.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
---- a/drivers/spi/spi.c
-+++ b/drivers/spi/spi.c
-@@ -677,11 +677,13 @@ int spi_write_then_read(struct spi_device *spi,
+diff --git a/lib/rbtree.c b/lib/rbtree.c
+index 48499c2..7848186 100644
+--- a/lib/rbtree.c
++++ b/lib/rbtree.c
+@@ -17,7 +17,8 @@
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
- 	/* ... unless someone else is using the pre-allocated buffer */
- 	if (!mutex_trylock(&lock)) {
--		local_buf = kmalloc(SPI_BUFSIZ, GFP_KERNEL);
-+		local_buf = kzalloc(SPI_BUFSIZ, GFP_KERNEL);
- 		if (!local_buf)
- 			return -ENOMEM;
--	} else
-+	} else {
- 		local_buf = buf;
-+		memset(local_buf, 0, x.len);
-+	}
+-  linux/lib/rbtree.c
++  An excellent description of this algorithm can be found at:
++	http://en.wikipedia.org/wiki/Red-black_tree
+ */
  
- 	memcpy(local_buf, txbuf, n_tx);
- 	x.tx_buf = local_buf;
+ #include <linux/rbtree.h>
+@@ -291,6 +292,7 @@ EXPORT_SYMBOL(rb_erase);
+ 
+ /*
+  * This function returns the first node (in sort order) of the tree.
++ * ssdddsddddddddddddd
+  */
+ struct rb_node *rb_first(struct rb_root *root)
+ {
+
+
