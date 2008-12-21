@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbYLUGRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbYLUG0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbYLUGRy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 21 Dec 2008 01:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYLUGRp
+	id S1752684AbYLUG0T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 21 Dec 2008 01:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbYLUG0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 21 Dec 2008 01:17:45 -0500
-Received: from an-out-0708.google.com ([209.85.132.250]:33064 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750921AbYLUGRo (ORCPT
+	Sun, 21 Dec 2008 01:26:06 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:43002 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbYLUG0D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 21 Dec 2008 01:17:44 -0500
+	Sun, 21 Dec 2008 01:26:03 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=DskH1t72FYs33LzwHXnG+LAu0baWzxYOCitYEHeXevVwhUhf5OK/ds3ez6slysiYZz
-         2hp0Ne+u0Hagn6ZUdzNsTrlP7rIvURHVRajIq3/+kxbBhAMNmxaemjKoVLOJ2EGdYVrf
-         PNXrGW80Ycz7TOqWyW5KAYDUehQIYPDzXK5hE=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Subject: Re: [PATCH] sh: maple: Robust checking for errors on maple keyboard initialisation
-Date: Sat, 20 Dec 2008 22:17:04 -0800
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-134.fc10.x86_64; KDE/4.1.3; x86_64; ; )
-Cc: lkmL <linux-kernel@vger.kernel.org>,
-       "linux-input" <linux-input@vger.kernel.org>,
-       "linux-sh" <linux-sh@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>,
-       Matt Fleming <matt@console-pimps.org>, Andrew Morton <akpm@osdl.org>
-References: <1229797527.6502.18.camel@localhost.localdomain>
-In-Reply-To: <1229797527.6502.18.camel@localhost.localdomain>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=NgI3qSJNlQAIqh2lljLcFeDVtreuxQrjfkROXluXoFrC0lvhbVQDPOBFQvEeOFYBmH
+         QLNLeahGgObeSlC+Wxa3nSmhZWtOObJLi2GM4nLMSRscqT9j3q7RZQXj+QdJ62EmegVY
+         ceK3x4GL5EKmC/tbrJ32+/tCJHUFxfuwxETCk=
+Message-ID: <f7848160812202226w1f930c86vfd17a2b0163bfc56@mail.gmail.com>
+Date: Sun, 21 Dec 2008 01:26:00 -0500
+From: "Parag Warudkar" <parag.lkml@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.28-rc9: USB Mouse unhappy
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
+       linux-usb@vger.kernel.org
+In-Reply-To: <20081220221253.e09b1b1f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200812202217.05002.dmitry.torokhov@gmail.com>
+References: <f7848160812201911k7988221asd095ce873fd8105f@mail.gmail.com>
+	 <20081220221253.e09b1b1f.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 20 December 2008 10:25:27 Adrian McMenamin wrote:
-> As was pointed out in response to http://lkml.org/lkml/2008/12/19/373
-> maple drivers were not properly checking for NULL pointers.
->
-> This patch fixes this for the keyboard driver already in mainline.
->
+On Sun, Dec 21, 2008 at 1:12 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> You're sure that 2.6.28-rc8 was OK?
 
-This driver is fine as is, only the joystick driver had the issue.
+Nope - not sure about 28-rc8. I meant to say some previous 28-rc's
+that I tested worked fine - can't recall which ones. it is likely I
+missed testing .28-rc8.
 
--- 
-Dmitry
+>
+> 2.6.28-rc9 had only a small number of changes.  Nothing I can see in
+> input or HID.  A few USB changes, but pretty specific ones -
+> unusual_devs entries and such.
+>
+> Maybe your mouse has died?  Did you retest with an older kernel?
+>
+I did - rebooting into 2.6.27 (original distro kernel) makes it work again.
+
+Thanks
+
+Parag
